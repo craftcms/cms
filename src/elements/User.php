@@ -2522,7 +2522,7 @@ JS, [
                 }
                 return $formatter->asDuration($duration);
             },
-            Craft::t('app', 'Created at') => $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT),
+            Craft::t('app', 'Created at') => $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT, true),
             Craft::t('app', 'Last login') => function() use ($formatter) {
                 if ($this->pending) {
                     return false;
@@ -2530,13 +2530,13 @@ JS, [
                 if (!$this->lastLoginDate) {
                     return Craft::t('app', 'Never');
                 }
-                return $formatter->asDatetime($this->lastLoginDate, Formatter::FORMAT_WIDTH_SHORT);
+                return $formatter->asDatetime($this->lastLoginDate, Formatter::FORMAT_WIDTH_SHORT, true);
             },
             Craft::t('app', 'Last login fail') => function() use ($formatter) {
                 if (!$this->locked || !$this->lastInvalidLoginDate) {
                     return false;
                 }
-                return $formatter->asDatetime($this->lastInvalidLoginDate, Formatter::FORMAT_WIDTH_SHORT);
+                return $formatter->asDatetime($this->lastInvalidLoginDate, Formatter::FORMAT_WIDTH_SHORT, true);
             },
             Craft::t('app', 'Login fail count') => function() use ($formatter) {
                 if (!$this->locked) {

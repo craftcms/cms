@@ -1066,10 +1066,17 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
      * @param string|null $locale The target locale the date should be formatted for. By default, the current system locale will be used.
+     * @param bool $withTimeZone Whether the time zone abbreviation should be appended to the formatted time
      * @return string
      */
-    public function timeFilter(TwigEnvironment $env, mixed $date, ?string $format = null, mixed $timezone = null, ?string $locale = null): string
-    {
+    public function timeFilter(
+        TwigEnvironment $env,
+        mixed $date,
+        ?string $format = null,
+        mixed $timezone = null,
+        ?string $locale = null,
+        bool $withTimeZone = false,
+    ): string {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
             if (str_starts_with($format, 'icu:')) {
@@ -1079,11 +1086,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
         }
 
-        $date = $env->getExtension(CoreExtension::class)->convertDate($date, $timezone);
+        $date = DateTime::createFromInterface($env->getExtension(CoreExtension::class)->convertDate($date, $timezone));
         $formatter = $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
-        $formatted = $formatter->asTime(DateTime::createFromInterface($date), $format);
+        $formatted = $formatter->asTime($date, $format, $withTimeZone);
         $formatter->timeZone = $fmtTimeZone;
         return $formatted;
     }
@@ -1096,10 +1103,17 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
      * @param string|null $locale The target locale the date should be formatted for. By default, the current system locale will be used.
+     * @param bool $withTimeZone Whether the time zone abbreviation should be appended to the formatted time
      * @return string
      */
-    public function datetimeFilter(TwigEnvironment $env, mixed $date, ?string $format = null, mixed $timezone = null, ?string $locale = null): string
-    {
+    public function datetimeFilter(
+        TwigEnvironment $env,
+        mixed $date,
+        ?string $format = null,
+        mixed $timezone = null,
+        ?string $locale = null,
+        bool $withTimeZone = false,
+    ): string {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
             if (str_starts_with($format, 'icu:')) {
@@ -1113,7 +1127,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $formatter = $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
-        $formatted = $formatter->asDatetime(DateTime::createFromInterface($date), $format);
+        $formatted = $formatter->asDatetime(DateTime::createFromInterface($date), $format, $withTimeZone);
         $formatter->timeZone = $fmtTimeZone;
         return $formatted;
     }

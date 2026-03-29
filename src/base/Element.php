@@ -6456,10 +6456,10 @@ JS, [
             },
         ], $metadata, [
             Craft::t('app', 'Created at') => $this->dateCreated && !$this->getIsUnpublishedDraft()
-                ? $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT)
+                ? $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT, true)
                 : false,
             Craft::t('app', 'Updated at') => $this->dateUpdated && !$this->getIsUnpublishedDraft()
-                ? $formatter->asDatetime($this->dateUpdated, Formatter::FORMAT_WIDTH_SHORT)
+                ? $formatter->asDatetime($this->dateUpdated, Formatter::FORMAT_WIDTH_SHORT, true)
                 : false,
             Craft::t('app', 'Notes') => function() {
                 if ($this->getIsRevision()) {
