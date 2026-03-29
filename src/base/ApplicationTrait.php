@@ -1647,13 +1647,10 @@ trait ApplicationTrait
     {
         $timeZone = null;
 
-        if ($useUserTz) {
+        if ($useUserTz && $this instanceof WebApplication) {
             // If the user is logged in *and* has a preferred time zone, use that
             // (don't actually try to fetch the user, as plugins haven't been loaded yet)
-            /** @var UserSession $user */
-            /** @phpstan-ignore-next-line */
-            $user = $this->getUser();
-            $id = Session::get($user->idParam);
+            $id = Session::get($this->getUser()->idParam);
             if ($id) {
                 $timeZone = $this->getUsers()->getUserPreference($id, 'timeZone');
             }
