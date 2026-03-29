@@ -1812,6 +1812,7 @@ $.extend(Craft, {
 
   _existingCss: null,
   _existingJs: null,
+  _appendHtmlQueue: null,
 
   _appendHtml: async function (html, $parent) {
     if (!html) {
@@ -1831,7 +1832,6 @@ $.extend(Craft, {
     const otherNodes = [];
 
     for (const node of $.parseHTML(html.trim(), true)) {
-
       // Deduplicate CSS
       if (node.nodeName === 'LINK' && node.href) {
         if (!this._existingCss) {
@@ -1891,14 +1891,22 @@ $.extend(Craft, {
     }
   },
 
+  _queueAppendHtml: function (html, $parent) {
+    const append = () => this._appendHtml(html, $parent);
+    this._appendHtmlQueue = (this._appendHtmlQueue || Promise.resolve())
+      .catch(() => {})
+      .then(append);
+    return this._appendHtmlQueue;
+  },
+
   /**
    * Appends HTML to the page `<head>`.
    *
    * @param {string} html
    * @returns {Promise}
    */
-  appendHeadHtml: async function (html) {
-    await this._appendHtml(html, $('head'));
+  appendHeadHtml: function (html) {
+    return this._queueAppendHtml(html, $('head'));
   },
 
   /**
@@ -1907,8 +1915,8 @@ $.extend(Craft, {
    * @param {string} html
    * @returns {Promise}
    */
-  appendBodyHtml: async function (html) {
-    await this._appendHtml(html, Garnish.$bod);
+  appendBodyHtml: function (html) {
+    return this._queueAppendHtml(html, Garnish.$bod);
   },
 
   /**
