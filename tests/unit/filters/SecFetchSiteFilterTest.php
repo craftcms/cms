@@ -54,7 +54,7 @@ class SecFetchSiteFilterTest extends TestCase
         self::assertTrue($this->filter->beforeAction($this->action));
     }
 
-    public function testAllowsFallbackWhenHeaderMissingAndNotStrict(): void
+    public function testAllowsFallbackWhenHeaderMissingAndNotOriginOnly(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $this->request->getHeaders()->remove('Sec-Fetch-Site');
@@ -63,7 +63,7 @@ class SecFetchSiteFilterTest extends TestCase
         self::assertTrue($this->filter->beforeAction($this->action));
     }
 
-    public function testRejectsWhenStrictAndHeaderInvalid(): void
+    public function testRejectsWhenOriginOnlyAndHeaderInvalid(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $this->request->getHeaders()->set('Sec-Fetch-Site', 'cross-site');
@@ -100,7 +100,7 @@ class SecFetchSiteFilterTest extends TestCase
         self::assertTrue($this->filter->beforeAction($this->action));
     }
 
-    public function testInvalidHeaderFallsThroughWhenNotStrict(): void
+    public function testInvalidHeaderFallsThroughWhenNotOriginOnly(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $this->request->getHeaders()->set('Sec-Fetch-Site', 'cross-site');
