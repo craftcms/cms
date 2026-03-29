@@ -54,21 +54,21 @@ class SecFetchSiteFilterTest extends TestCase
         self::assertTrue($this->filter->beforeAction($this->action));
     }
 
-    public function testAllowsFallbackWhenHeaderMissingAndOriginOnlyDisabled(): void
+    public function testAllowsFallbackWhenHeaderMissingAndNotStrict(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $this->request->getHeaders()->remove('Sec-Fetch-Site');
 
-        $this->filter->originOnly = false;
+        $this->filter->strict = false;
         self::assertTrue($this->filter->beforeAction($this->action));
     }
 
-    public function testRejectsWhenOriginOnlyAndHeaderInvalid(): void
+    public function testRejectsWhenStrictAndHeaderInvalid(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $this->request->getHeaders()->set('Sec-Fetch-Site', 'cross-site');
 
-        $this->filter->originOnly = true;
+        $this->filter->strict = true;
 
         $this->expectException(BadRequestHttpException::class);
         $this->filter->beforeAction($this->action);
@@ -83,7 +83,7 @@ class SecFetchSiteFilterTest extends TestCase
         $this->request->enableCsrfValidation = false;
 
         try {
-            $this->filter->originOnly = true;
+            $this->filter->strict = true;
             $this->expectException(BadRequestHttpException::class);
             $this->filter->beforeAction($this->action);
         } finally {
@@ -96,18 +96,16 @@ class SecFetchSiteFilterTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $this->request->getHeaders()->set('Sec-Fetch-Site', 'cross-site');
 
-        $this->filter->originOnly = true;
+        $this->filter->strict = true;
         self::assertTrue($this->filter->beforeAction($this->action));
     }
 
-    public function testDisabledFilterSkipsValidation(): void
+    public function testInvalidHeaderFallsThroughWhenNotStrict(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $this->request->getHeaders()->set('Sec-Fetch-Site', 'cross-site');
 
-        $this->filter->enabled = false;
-        $this->filter->originOnly = true;
-
+        $this->filter->strict = false;
         self::assertTrue($this->filter->beforeAction($this->action));
     }
 }

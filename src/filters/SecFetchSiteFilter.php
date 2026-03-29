@@ -20,8 +20,14 @@ class SecFetchSiteFilter extends ActionFilter
 {
     use ConditionalFilterTrait;
 
-    public bool $originOnly = true;
+    /**
+     * Whether to require a valid `Sec-Fetch-Site` header (no CSRF token fallback).
+     */
+    public bool $strict = true;
 
+    /**
+     * Whether to accept `same-site` in addition to `same-origin` (e.g. subdomains).
+     */
     public bool $allowSameSite = false;
 
     public string $headerName = 'Sec-Fetch-Site';
@@ -53,7 +59,7 @@ class SecFetchSiteFilter extends ActionFilter
             return true;
         }
 
-        if ($this->originOnly) {
+        if ($this->strict) {
             throw new BadRequestHttpException($this->errorMessage);
         }
 
