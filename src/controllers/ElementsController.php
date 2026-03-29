@@ -890,7 +890,7 @@ JS, [
                     /** @var ElementInterface&DraftBehavior $draft */
                     $creator = $draft->getCreator();
                     $timestamp = $formatter->asTimestamp($draft->dateUpdated, Locale::LENGTH_SHORT, true);
-                    $timestampWithDate = $formatter->asDatetime($draft->dateUpdated, Locale::LENGTH_SHORT);
+                    $timestampWithDate = $formatter->asDatetime($draft->dateUpdated, Locale::LENGTH_SHORT, true);
 
                     return [
                         'label' => $draft->draftName,
@@ -921,7 +921,7 @@ JS, [
                     /** @var ElementInterface&RevisionBehavior $revision */
                     $creator = $revision->getCreator();
                     $timestamp = $formatter->asTimestamp($revision->dateCreated, Locale::LENGTH_SHORT, true);
-                    $timestampWithDate = $formatter->asDatetime($revision->dateCreated, Locale::LENGTH_SHORT);
+                    $timestampWithDate = $formatter->asDatetime($revision->dateCreated, Locale::LENGTH_SHORT, true);
 
                     return [
                         'label' => $revision->getRevisionLabel(),

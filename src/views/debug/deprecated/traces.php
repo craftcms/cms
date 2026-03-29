@@ -22,7 +22,7 @@ echo $this->render('../table', [
         ],
         [
             Craft::t('app', 'Last Occurrence'),
-            Craft::$app->getFormatter()->asDatetime($log->lastOccurrence, 'short'),
+            Craft::$app->getFormatter()->asDatetime($log->lastOccurrence, \craft\i18n\Locale::LENGTH_SHORT, true),
         ],
     ],
 ]);

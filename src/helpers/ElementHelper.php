@@ -818,7 +818,7 @@ class ElementHelper
         if ($value instanceof DateTime) {
             $formatter = Craft::$app->getFormatter();
             return Html::tag('span', $formatter->asTimestamp($value, Locale::LENGTH_SHORT), [
-                'title' => $formatter->asDatetime($value, Locale::LENGTH_SHORT),
+                'title' => $formatter->asDatetime($value, Locale::LENGTH_SHORT, true),
             ]);
         }
 
