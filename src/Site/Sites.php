@@ -9,6 +9,7 @@ use craft\base\ElementInterface;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Jobs\PropagateElements;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -99,6 +100,7 @@ class Sites
     public function __construct(
         private readonly ProjectConfig $projectConfig,
         private readonly Updates $updates,
+        private readonly ElementCaches $elementCaches,
     ) {
         $this->loadAllSites();
     }
@@ -534,7 +536,7 @@ class Sites
         ));
 
         // Invalidate all element caches
-        Craft::$app->getElements()->invalidateAllCaches();
+        $this->elementCaches->invalidateAll();
     }
 
     /**
@@ -753,7 +755,7 @@ class Sites
         $this->refreshSites();
 
         // Invalidate all element caches
-        Craft::$app->getElements()->invalidateAllCaches();
+        $this->elementCaches->invalidateAll();
 
         // Was this the current site?
         if (isset($this->currentSite) && $this->currentSite->id === $site->id) {
@@ -763,7 +765,7 @@ class Sites
         event(new SiteDeleted($site));
 
         // Invalidate all element caches
-        Craft::$app->getElements()->invalidateAllCaches();
+        $this->elementCaches->invalidateAll();
     }
 
     /**

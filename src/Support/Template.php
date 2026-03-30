@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Shared\BaseModel;
+use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Twig;
@@ -67,7 +67,7 @@ class Template
         int $lineno = -1,
     ): mixed {
         if ($object instanceof ElementInterface) {
-            Craft::$app->getElements()->collectCacheInfoForElement($object);
+            ElementCaches::collectCacheInfoForElement($object);
         }
 
         if ($type !== TwigTemplate::METHOD_CALL) {

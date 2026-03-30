@@ -15,6 +15,7 @@ use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Support\Facades\ElementCaches;
 use Illuminate\Support\Facades\DB;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -114,7 +115,7 @@ class NestedElementsController extends Controller
             }
         }
 
-        Craft::$app->getElements()->invalidateCachesForElement($this->owner);
+        ElementCaches::invalidateForElement($this->owner);
 
         return $this->asSuccess(t('New {total, plural, =1{position} other{positions}} saved.', [
             'total' => count($ids),

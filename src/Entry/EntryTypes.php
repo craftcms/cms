@@ -9,6 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -72,6 +73,7 @@ class EntryTypes
 
     public function __construct(
         private readonly ProjectConfig $projectConfig,
+        private readonly ElementCaches $elementCaches,
     ) {}
 
     /**
@@ -427,7 +429,7 @@ class EntryTypes
         event(new EntryTypeSaved($entryType, $isNewEntryType));
 
         // Invalidate entry caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+        $this->elementCaches->invalidateForElementType(Entry::class);
     }
 
     /**
@@ -550,7 +552,7 @@ class EntryTypes
         event(new EntryTypeDeleted($entryType));
 
         // Invalidate entry caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+        $this->elementCaches->invalidateForElementType(Entry::class);
     }
 
     /**

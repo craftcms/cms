@@ -41,6 +41,7 @@ use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\AfterPropagate;
@@ -61,6 +62,7 @@ use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Structure\Models\StructureElement as StructureElementModel;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -73,8 +75,6 @@ use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Rules\HandleRule;
-use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
-use CraftCms\Cms\View\Data\TemplateCacheContext;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
 use Illuminate\Database\ConnectionInterface;
@@ -617,10 +617,11 @@ class Elements extends Component
      * @see startCollectingCacheInfo()
      * @see stopCollectingCacheInfo()
      * @since 4.3.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::isCollectingCacheInfo()} instead.
      */
     public function getIsCollectingCacheInfo(): bool
     {
-        return $this->cacheInfoCollector()->isCollecting();
+        return $this->elementCaches()->isCollectingCacheInfo();
     }
 
     /**
@@ -639,14 +640,11 @@ class Elements extends Component
      * Starts collecting element cache invalidation info.
      *
      * @since 4.3.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::startCollectingCacheInfo()} instead.
      */
     public function startCollectingCacheInfo(): void
     {
-        $this->cacheInfoCollector()->begin(new TemplateCacheContext(
-            cacheKey: '',
-            global: false,
-            resources: false,
-        ));
+        $this->elementCaches()->startCollectingCacheInfo();
     }
 
     /**
@@ -666,10 +664,11 @@ class Elements extends Component
      * @param string[] $tags
      *
      * @since 3.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::collectCacheTags()} instead.
      */
     public function collectCacheTags(array $tags): void
     {
-        $this->cacheInfoCollector()->collectTags($tags);
+        $this->elementCaches()->collectCacheTags($tags);
     }
 
     /**
@@ -680,10 +679,11 @@ class Elements extends Component
      * @param DateTime $expiryDate
      *
      * @since 4.3.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::setCacheExpiryDate()} instead.
      */
     public function setCacheExpiryDate(DateTime $expiryDate): void
     {
-        $this->cacheInfoCollector()->setExpiryDate($expiryDate);
+        $this->elementCaches()->setCacheExpiryDate($expiryDate);
     }
 
     /**
@@ -692,10 +692,11 @@ class Elements extends Component
      * @param ElementInterface $element
      *
      * @since 4.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::collectCacheInfoForElement()} instead.
      */
     public function collectCacheInfoForElement(ElementInterface $element): void
     {
-        $this->cacheInfoCollector()->collectElement($element);
+        $this->elementCaches()->collectCacheInfoForElement($element);
     }
 
     /**
@@ -707,11 +708,12 @@ class Elements extends Component
      * @return array
      * @phpstan-return array{TagDependency|null,int|null}
      * @since 4.3.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::stopCollectingCacheInfo()} instead.
      */
     public function stopCollectingCacheInfo(): array
     {
         try {
-            return $this->cacheInfoCollector()->stop();
+            return $this->elementCaches()->stopCollectingCacheInfo();
         } catch (RuntimeException $e) {
             throw new InvalidCallException($e->getMessage(), previous: $e);
         }
@@ -730,20 +732,15 @@ class Elements extends Component
         return $dep ?? new TagDependency();
     }
 
-    private function cacheInfoCollector(): DependencyCollector
-    {
-        return app(DependencyCollector::class);
-    }
-
     /**
      * Invalidates all element caches.
      *
      * @since 3.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::invalidateAll()} instead.
      */
     public function invalidateAllCaches(): void
     {
-        $tags = ['element'];
-        TagDependency::invalidate($tags);
+        $tags = $this->elementCaches()->invalidateAll();
 
         // Fire a 'invalidateCaches' event
         if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
@@ -759,11 +756,11 @@ class Elements extends Component
      * @param class-string<ElementInterface> $elementType
      *
      * @since 3.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::invalidateForElementType()} instead.
      */
     public function invalidateCachesForElementType(string $elementType): void
     {
-        $tags = ["element::$elementType"];
-        TagDependency::invalidate($tags);
+        $tags = $this->elementCaches()->invalidateForElementType($elementType);
 
         // Fire a 'invalidateCaches' event
         if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
@@ -779,49 +776,11 @@ class Elements extends Component
      * @param ElementInterface $element
      *
      * @since 3.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::invalidateForElement()} instead.
      */
     public function invalidateCachesForElement(ElementInterface $element): void
     {
-        $tags = [
-            sprintf('element::%s::*', $element::class),
-            sprintf('element::%s', $element->id),
-        ];
-
-        $rootElement = $element;
-
-        if ($element instanceof NestedElementInterface) {
-            try {
-                $owner = $element->getOwner();
-            } catch (InvalidConfigException) {
-                $owner = null;
-            }
-
-            if ($owner) {
-                $tags[] = sprintf('element::%s', $owner->id);
-
-                try {
-                    $rootElement = ElementHelper::rootElement($owner);
-                } catch (Throwable) {
-                    $rootElement = $owner;
-                }
-            }
-        }
-
-        if ($rootElement->getIsDraft()) {
-            $tags[] = sprintf('element::%s::drafts', $element::class);
-        } elseif ($rootElement->getIsRevision()) {
-            $tags[] = sprintf('element::%s::revisions', $element::class);
-        } else {
-            foreach ($element->getCacheTags() as $tag) {
-                // tags can be provided fully-formed, or relative to the element type
-                if (!str_starts_with($tag, 'element::')) {
-                    $tag = sprintf('element::%s::%s', $element::class, $tag);
-                }
-                $tags[] = $tag;
-            }
-        }
-
-        TagDependency::invalidate($tags);
+        $tags = $this->elementCaches()->invalidateForElement($element);
 
         // Fire a 'invalidateCaches' event
         if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
@@ -830,6 +789,11 @@ class Elements extends Component
                 'element' => $element,
             ]));
         }
+    }
+
+    private function elementCaches(): ElementCachesService
+    {
+        return app(ElementCachesService::class);
     }
 
     // Finding Elements
@@ -3565,10 +3529,10 @@ class Elements extends Component
                                     // If we're collecting cache info and the element is expirable, register its expiry date
                                     if (
                                         $element instanceof ExpirableElementInterface &&
-                                        $elementsService->getIsCollectingCacheInfo() &&
+                                        ElementCaches::isCollectingCacheInfo() &&
                                         ($expiryDate = $element->getExpiryDate()) !== null
                                     ) {
-                                        $elementsService->setCacheExpiryDate($expiryDate);
+                                        ElementCaches::setCacheExpiryDate($expiryDate);
                                     }
 
                                     if ($limit && ++$count == $limit) {

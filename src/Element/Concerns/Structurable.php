@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
@@ -12,6 +11,7 @@ use CraftCms\Cms\Element\Events\AfterMoveInStructure;
 use CraftCms\Cms\Element\Events\BeforeMoveInStructure;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Typecast;
 
 /**
@@ -370,7 +370,7 @@ trait Structurable
         event(new AfterMoveInStructure($this, $structureId));
 
         // Invalidate caches for this element
-        Craft::$app->getElements()->invalidateCachesForElement($this);
+        ElementCaches::invalidateForElement($this);
     }
 
     private function _getRelativeElement(mixed $criteria, int $direction): ?ElementInterface

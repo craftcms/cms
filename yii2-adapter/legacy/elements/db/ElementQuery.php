@@ -36,6 +36,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\Json;
@@ -1851,8 +1852,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function afterPopulate(array $elements): array
     {
         if (!$this->asArray) {
-            $elementsService = Craft::$app->getElements();
-
             foreach ($elements as $element) {
                 // Set the full query result on the element, in case it's needed for lazy eager loading
                 $element->elementQueryResult = $elements;
@@ -1860,12 +1859,14 @@ class ElementQuery extends Query implements ElementQueryInterface
                 // If we're collecting cache info and the element is expirable, register its expiry date
                 if (
                     $element instanceof ExpirableElementInterface &&
-                    $elementsService->getIsCollectingCacheInfo() &&
+                    ElementCaches::isCollectingCacheInfo() &&
                     ($expiryDate = $element->getExpiryDate()) !== null
                 ) {
-                    $elementsService->setCacheExpiryDate($expiryDate);
+                    ElementCaches::setCacheExpiryDate($expiryDate);
                 }
             }
+
+            $elementsService = Craft::$app->getElements();
 
             ElementHelper::setNextPrevOnElements($elements);
 
@@ -2522,9 +2523,8 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
-        $elementsService = Craft::$app->getElements();
-        if ($elementsService->getIsCollectingCacheInfo()) {
-            $elementsService->collectCacheTags($this->getCacheTags());
+        if (ElementCaches::isCollectingCacheInfo()) {
+            ElementCaches::collectCacheTags($this->getCacheTags());
         }
 
         return true;

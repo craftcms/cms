@@ -15,6 +15,7 @@ use CraftCms\Cms\Asset\Events\VolumeSaved;
 use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -42,6 +43,7 @@ class Volumes
         private readonly ProjectConfig $projectConfig,
         private readonly Assets $assets,
         private readonly Folders $folders,
+        private readonly ElementCaches $elementCaches,
     ) {}
 
     /** @return Collection<int, int> */
@@ -236,7 +238,7 @@ class Volumes
             isNew: $isNewVolume,
         ));
 
-        Craft::$app->getElements()->invalidateCachesForElementType(Asset::class);
+        $this->elementCaches->invalidateForElementType(Asset::class);
     }
 
     /** @param int[] $volumeIds */
@@ -325,7 +327,7 @@ class Volumes
 
         event(new VolumeDeleted(volume: $volume));
 
-        Craft::$app->getElements()->invalidateCachesForElementType(Asset::class);
+        $this->elementCaches->invalidateForElementType(Asset::class);
     }
 
     /**

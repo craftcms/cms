@@ -8,6 +8,7 @@ use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
@@ -88,6 +89,7 @@ class Sections
 
     public function __construct(
         private readonly ProjectConfig $projectConfig,
+        private readonly ElementCaches $elementCaches,
     ) {}
 
     /**
@@ -763,7 +765,7 @@ class Sections
         event(new SectionSaved($section, $isNewSection));
 
         // Invalidate entry caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+        $this->elementCaches->invalidateForElementType(Entry::class);
     }
 
     public function refreshSections(): void
@@ -1057,7 +1059,7 @@ class Sections
         event(new SectionDeleted($section));
 
         // Invalidate entry caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+        $this->elementCaches->invalidateForElementType(Entry::class);
     }
 
     /**

@@ -9,6 +9,7 @@ use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Image\Contracts\EagerImageTransformerInterface;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
@@ -45,6 +46,7 @@ class ImageTransforms
 
     public function __construct(
         private readonly ProjectConfig $projectConfig,
+        private readonly ElementCaches $elementCaches,
     ) {}
 
     /**
@@ -149,7 +151,7 @@ class ImageTransforms
             isNew: $isNewTransform,
         ));
 
-        Craft::$app->getElements()->invalidateCachesForElementType(Asset::class);
+        $this->elementCaches->invalidateForElementType(Asset::class);
     }
 
     public function deleteTransformById(int $id): bool
@@ -194,7 +196,7 @@ class ImageTransforms
 
         event(new TransformDeleted(transform: $transform));
 
-        Craft::$app->getElements()->invalidateCachesForElementType(Asset::class);
+        $this->elementCaches->invalidateForElementType(Asset::class);
     }
 
     /**
