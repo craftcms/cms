@@ -475,11 +475,6 @@ class LegacyBehaviorCompatibility
             return false;
         }
 
-        if (!method_exists($property, 'hasHook') || !enum_exists('PropertyHookType')) {
-            return true;
-        }
-
-        /** @phpstan-ignore-next-line PropertyHookType is only available on PHP 8.4+ */
         return !$property->hasHook(\PropertyHookType::Get) || $property->hasHook(\PropertyHookType::Set);
     }
 
