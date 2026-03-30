@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
