@@ -52,10 +52,6 @@ beforeEach(function () {
     TestTemplateCacheCollector::$calls = [];
 });
 
-afterEach(function () {
-    Paginator::currentPageResolver(fn (string $pageName = 'page') => app('request')->integer($pageName, 1));
-});
-
 it('dispatches the collector registration event', function () {
     Event::fake(RegisterTemplateCacheCollectors::class);
 
@@ -114,7 +110,7 @@ it('applies cached dependency info on cache hits', function () {
 it('scopes non-global caches by request type and page number', function () {
     setTemplateCacheConsoleState(false);
 
-    swapTemplateCacheRequest('/admin/news?p=2');
+    swapTemplateCacheRequest('/admin/news?page=2');
     $service = app(TemplateCaches::class);
     $service->startTemplateCache(global: false);
     $service->endTemplateCache('scoped-cache', false, null, null, 'cp-page-two');
@@ -122,10 +118,10 @@ it('scopes non-global caches by request type and page number', function () {
     swapTemplateCacheRequest('/admin/news');
     expect(app(TemplateCaches::class)->getTemplateCache('scoped-cache', false))->toBeNull();
 
-    swapTemplateCacheRequest('/news?p=2');
+    swapTemplateCacheRequest('/news?page=2');
     expect(app(TemplateCaches::class)->getTemplateCache('scoped-cache', false))->toBeNull();
 
-    swapTemplateCacheRequest('/admin/news?p=2');
+    swapTemplateCacheRequest('/admin/news?page=2');
     expect(app(TemplateCaches::class)->getTemplateCache('scoped-cache', false))->toBe('cp-page-two');
 });
 
