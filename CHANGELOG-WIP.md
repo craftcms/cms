@@ -19,6 +19,7 @@
 - Added the “Time Zone” user preference. ([#8518](https://github.com/craftcms/cms/discussions/8518))
 - Element indexes now automatically refresh after duplicating elements and the queue is completed, if there’s an active search term. ([#18636](https://github.com/craftcms/cms/issues/18636))
 - Timestamps in the control panel now include their time zone abbreviation. ([#18639](https://github.com/craftcms/cms/pull/18639))
+- Generated field values are no longer truncated within element cards. ([#18646](https://github.com/craftcms/cms/discussions/18646))
 
 ### Administration
 - Time fields’ “Max Time” settings can now be set to an earlier time than “Min Time”, for overnight time ranges. ([#18575](https://github.com/craftcms/cms/pull/18575))
