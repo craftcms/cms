@@ -6,11 +6,14 @@ namespace CraftCms\Cms\Support;
 
 use Craft;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Twig;
+use CraftCms\Cms\Twig\Variables\Paginate;
 use CraftCms\Cms\View\Enums\Position;
+use Illuminate\Database\Query\Builder;
 use Stringable;
 use Twig\Environment;
 use Twig\Error\RuntimeError;
@@ -186,6 +189,18 @@ class Template
         }
 
         $context += $singles;
+    }
+
+    public static function paginateQuery($query): array
+    {
+        /** @var Builder $query */
+        $paginator = $query->paginate(pageName: $pageParam = Cms::config()->getPageTriggerParam());
+        $paginator->appends(Arr::except(request()->query(), $pageParam));
+
+        return [
+            Paginate::create($paginator),
+            $paginator->items(),
+        ];
     }
 
     protected static function fallbackValueExists(string $name): bool

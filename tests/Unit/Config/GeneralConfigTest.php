@@ -83,5 +83,5 @@ it('normalizes pageTrigger on the main config class', function () {
         ->and($config->pageTrigger('p')->getPageTrigger())->toBe('?p=')
         ->and($config->pageTrigger('?p=')->getPageTrigger())->toBe('?p=')
         ->and($config->pageTrigger('page/')->getPageTrigger())->toBe('?page=')
-        ->and($config->pageTrigger('')->getPageTrigger())->toBe('?p=');
+        ->and($config->pageTrigger('')->getPageTrigger())->toBe('?page=');
 });

@@ -7,16 +7,9 @@
 
 namespace craft\helpers;
 
-use CraftCms\Cms\Cms;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Template as BaseTemplate;
-use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\TwigExceptionMapper;
-use CraftCms\Cms\Twig\Variables\Paginate;
 use CraftCms\Cms\View\TemplateProfiler;
-use Illuminate\Pagination\AbstractPaginator;
-use Illuminate\Pagination\LengthAwarePaginator;
-use yii\db\Query;
 use yii\db\QueryInterface;
 
 /**
@@ -65,62 +58,6 @@ class Template extends BaseTemplate
     public static function paginateCriteria(QueryInterface $query): array
     {
         return self::paginateQuery($query);
-    }
-
-    /**
-     * @deprecated 6.0.0 use `.paginate()` on a query directly.
-     */
-    public static function paginateQuery(QueryInterface $query): array
-    {
-        /** @var Query $query */
-        $pageParam = Cms::config()->getPageTriggerParam();
-        $pageSize = $query->limit ?: 100;
-        $currentPage = AbstractPaginator::resolveCurrentPage($pageParam);
-        $countQuery = clone $query;
-        $resultsQuery = clone $query;
-        $total = $countQuery
-            ->limit(null)
-            ->count('*');
-
-        if ($countQuery->offset) {
-            $total = max(0, $total - $query->offset);
-        }
-
-        $currentPage = min($currentPage, max((int) ceil($total / $pageSize), 1));
-
-        $pageOffset = ($query->offset ?? 0) + ($pageSize * ($currentPage - 1));
-        $pageLimit = $pageSize;
-
-        if ($pageSize * $currentPage > $total) {
-            $pageLimit = max(0, $total - ($pageSize * ($currentPage - 1)));
-        }
-
-        if (!$pageLimit) {
-            $pageResults = [];
-        } else {
-            $pageResults = $resultsQuery
-                ->offset($pageOffset)
-                ->limit($pageLimit)
-                ->all();
-        }
-
-        $paginator = new LengthAwarePaginator(
-            items: $pageResults,
-            total: $total,
-            perPage: $pageSize,
-            currentPage: $currentPage,
-            options: [
-                'path' => Url::url(request()->path()),
-                'pageName' => $pageParam,
-            ],
-        );
-
-        $paginator->appends(Arr::except(request()->query(), $pageParam));
-
-        return [
-            Paginate::create($paginator),
-            $paginator->items(),
-        ];
     }
 
     public static function beginProfile(string $type, string $name): void

@@ -1948,7 +1948,7 @@ class GeneralConfig extends BaseConfig
     public bool $optimizeImageFilesize = true;
 
     /**
-     * @var string The query string param Craft should use for paginated requests.
+     * @var string The query string param name Craft should use for paginated requests.
      *
      * | Example Value | Example URI |
      * | --- | --- |
@@ -5162,13 +5162,12 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The string preceding a number which Craft will look for when determining if the current request is for a particular page in
-     * a paginated list of pages.
+     * Sets the query string param name Craft should use for paginated requests.
      *
      * | Example Value | Example URI |
      * | --- | --- |
-     * | `?page` | `/news?page=5` |
-     * | `?p` | `/news?p=5` |
+     * | `page` | `/news?page=5` |
+     * | `p` | `/news?p=5` |
      *
      * ```php
      * ->pageTrigger('page')
@@ -6606,7 +6605,7 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Returns the normalized page trigger.
+     * Returns the normalized page trigger in query-string form.
      *
      * @see pageTrigger
      */

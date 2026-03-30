@@ -12,6 +12,9 @@ use ArrayIterator;
 use craft\base\ClonefixTrait;
 use craft\events\DefineBehaviorsEvent;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Url;
+use Illuminate\Pagination\AbstractPaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use IteratorAggregate;
 use yii\base\Exception;
@@ -412,5 +415,53 @@ class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
         } catch (QueryAbortedException) {
             return false;
         }
+    }
+
+    /**
+     * Add compatibility which returns a similar result
+     * to Laravel's `->paginate()` query method.
+     */
+    public function paginate($perPage = 15, $columns = ['*'], $pageName = 'page', $page = null): AbstractPaginator
+    {
+        $pageSize = $this->limit ?: $perPage;
+        $currentPage = $page ?? AbstractPaginator::resolveCurrentPage($pageName);
+        $countQuery = clone $this;
+        $resultsQuery = clone $this;
+        $total = $countQuery
+            ->limit(null)
+            ->count('*');
+
+        if ($countQuery->offset) {
+            $total = max(0, $total - $this->offset);
+        }
+
+        $currentPage = min($currentPage, max((int) ceil($total / $pageSize), 1));
+
+        $pageOffset = ($this->offset ?? 0) + ($pageSize * ($currentPage - 1));
+        $pageLimit = $pageSize;
+
+        if ($pageSize * $currentPage > $total) {
+            $pageLimit = max(0, $total - ($pageSize * ($currentPage - 1)));
+        }
+
+        if (!$pageLimit) {
+            $pageResults = [];
+        } else {
+            $pageResults = $resultsQuery
+                ->offset($pageOffset)
+                ->limit($pageLimit)
+                ->all();
+        }
+
+        return new LengthAwarePaginator(
+            items: $pageResults,
+            total: $total,
+            perPage: $pageSize,
+            currentPage: $currentPage,
+            options: [
+                'path' => Url::url(request()->path()),
+                'pageName' => $pageName,
+            ],
+        );
     }
 }
