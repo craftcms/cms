@@ -6,6 +6,7 @@ use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\User\Elements\User;
+use Twig\Markup;
 
 use function Pest\Laravel\actingAs;
 
@@ -147,4 +148,22 @@ it('returns null from getFieldFromAlternativeLayouts when no alternative layouts
     $result = $this->renderer->getFieldFromAlternativeLayouts($entry, 'nonexistent-uid');
 
     expect($result)->toBeNull();
+});
+
+it('renders plain values with attributeHtml', function () {
+    expect($this->renderer->attributeHtml('<strong>Test</strong>'))->toBe('Test');
+    expect($this->renderer->attributeHtml(new Markup('<em>Test</em>', 'UTF-8')))->toBe('<em>Test</em>');
+});
+
+it('renders direct link helpers', function () {
+    $linkHtml = $this->renderer->linkAttributeHtml('https://example.test');
+    $uriHtml = $this->renderer->uriAttributeHtml('path/to/page', 'https://example.test/path/to/page');
+
+    expect($linkHtml)
+        ->toContain('href="https://example.test"')
+        ->toContain('target="_blank"')
+        ->and($uriHtml)
+        ->toContain('>path/to/page<')
+        ->toContain('class="go"')
+        ->toContain('href="https://example.test/path/to/page"');
 });

@@ -344,6 +344,7 @@ class ElementHelper
      *
      * @return string
      * @since 3.7.25.1
+     * @deprecated 6.0.0 This method remains on the legacy helper only.
      */
     public static function rootSourceKey(string $sourceKey): string
     {
