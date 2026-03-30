@@ -45,6 +45,7 @@ use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\AfterPropagate;
+use CraftCms\Cms\Element\Events\InvalidateElementCaches;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
@@ -740,14 +741,7 @@ class Elements extends Component
      */
     public function invalidateAllCaches(): void
     {
-        $tags = $this->elementCaches()->invalidateAll();
-
-        // Fire a 'invalidateCaches' event
-        if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
-            $this->trigger(self::EVENT_INVALIDATE_CACHES, new InvalidateElementCachesEvent([
-                'tags' => $tags,
-            ]));
-        }
+        $this->elementCaches()->invalidateAll();
     }
 
     /**
@@ -760,14 +754,7 @@ class Elements extends Component
      */
     public function invalidateCachesForElementType(string $elementType): void
     {
-        $tags = $this->elementCaches()->invalidateForElementType($elementType);
-
-        // Fire a 'invalidateCaches' event
-        if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
-            $this->trigger(self::EVENT_INVALIDATE_CACHES, new InvalidateElementCachesEvent([
-                'tags' => $tags,
-            ]));
-        }
+        $this->elementCaches()->invalidateForElementType($elementType);
     }
 
     /**
@@ -780,15 +767,7 @@ class Elements extends Component
      */
     public function invalidateCachesForElement(ElementInterface $element): void
     {
-        $tags = $this->elementCaches()->invalidateForElement($element);
-
-        // Fire a 'invalidateCaches' event
-        if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
-            $this->trigger(self::EVENT_INVALIDATE_CACHES, new InvalidateElementCachesEvent([
-                'tags' => $tags,
-                'element' => $element,
-            ]));
-        }
+        $this->elementCaches()->invalidateForElement($element);
     }
 
     private function elementCaches(): ElementCachesService
@@ -4906,5 +4885,18 @@ class Elements extends Component
 
         $this->trigger($eventName, $event);
         return $event->authorized;
+    }
+
+    public static function registerEvents(): void
+    {
+        Event::listen(function(InvalidateElementCaches $event) {
+            // Fire a 'invalidateCaches' event
+            if (Craft::$app->getElements()->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
+                Craft::$app->getElements()->trigger(self::EVENT_INVALIDATE_CACHES, new InvalidateElementCachesEvent([
+                    'tags' => $event->tags,
+                    'element' => $event->element,
+                ]));
+            }
+        });
     }
 }

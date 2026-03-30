@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element;
 
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
+use CraftCms\Cms\Element\Events\InvalidateElementCaches;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use CraftCms\Cms\View\Data\TemplateCacheContext;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
@@ -62,7 +63,11 @@ readonly class ElementCaches
     /** @return list<string> */
     public function invalidateAll(): array
     {
-        return $this->invalidateTags(['element']);
+        $tags = $this->invalidateTags(['element']);
+
+        event(new InvalidateElementCaches($tags));
+
+        return $tags;
     }
 
     /**
@@ -71,7 +76,11 @@ readonly class ElementCaches
      */
     public function invalidateForElementType(string $elementType): array
     {
-        return $this->invalidateTags(["element::$elementType"]);
+        $tags = $this->invalidateTags(["element::$elementType"]);
+
+        event(new InvalidateElementCaches($tags));
+
+        return $tags;
     }
 
     /**
@@ -79,7 +88,11 @@ readonly class ElementCaches
      */
     public function invalidateForElement(ElementInterface $element): array
     {
-        return $this->invalidateTags($this->tagsForElement($element));
+        $tags = $this->invalidateTags($this->tagsForElement($element));
+
+        event(new InvalidateElementCaches($tags, $element));
+
+        return $tags;
     }
 
     /** @return list<string> */

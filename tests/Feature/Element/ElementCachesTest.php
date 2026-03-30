@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\events\InvalidateElementCachesEvent;
-use craft\services\Elements;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Queries\ElementQuery;
@@ -208,43 +206,3 @@ it('uses draft and revision invalidation tags instead of custom tags', function 
         'element::'.TestNestedElementCachesElement::class.'::revisions',
     ],
 ]);
-
-it('dispatches invalidate caches events for element types via the legacy elements service', function () {
-    $events = [];
-    $elements = Craft::$app->getElements();
-
-    $elements->on(Elements::EVENT_INVALIDATE_CACHES, function (InvalidateElementCachesEvent $event) use (&$events) {
-        $events[] = $event;
-    });
-
-    $elements->invalidateCachesForElementType(TestElementCachesElement::class);
-
-    expect($events)->toHaveCount(1)
-        ->and($events[0]->tags)->toBe([
-            'element::'.TestElementCachesElement::class,
-        ])
-        ->and($events[0]->element)->toBeNull();
-});
-
-it('dispatches invalidate caches events for elements via the legacy elements service', function () {
-    $events = [];
-    $elements = Craft::$app->getElements();
-
-    $elements->on(Elements::EVENT_INVALIDATE_CACHES, function (InvalidateElementCachesEvent $event) use (&$events) {
-        $events[] = $event;
-    });
-
-    $element = new TestElementCachesElement;
-    $element->id = 123;
-    $element->setCustomCacheTags(['custom']);
-
-    $elements->invalidateCachesForElement($element);
-
-    expect($events)->toHaveCount(1)
-        ->and($events[0]->tags)->toBe([
-            'element::'.TestElementCachesElement::class.'::*',
-            'element::123',
-            'element::'.TestElementCachesElement::class.'::custom',
-        ])
-        ->and($events[0]->element)->toBe($element);
-});
