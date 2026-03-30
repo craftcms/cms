@@ -918,6 +918,7 @@ class ProjectConfig extends Component
      * Returns a summary of all pending config changes.
      *
      * @return array
+     * @deprecated in 5.9.19
      */
     public function getPendingChangeSummary(): array
     {
@@ -929,7 +930,7 @@ class ProjectConfig extends Component
         foreach ($pendingChanges as $type => $changes) {
             $summary[$type] = [];
             foreach ($changes as $path) {
-                $pathParts = explode('.', $path);
+                $pathParts = ProjectConfigHelper::pathSegments($path);
                 if (count($pathParts) > 1) {
                     $summary[$type][$pathParts[0] . '.' . $pathParts[1]] = true;
                 }
@@ -1125,7 +1126,7 @@ class ProjectConfig extends Component
      */
     public function registerChangeEventHandler(string $event, string $path, callable $handler, mixed $data = null): void
     {
-        $specificity = substr_count($path, '.');
+        $specificity = ProjectConfigHelper::pathDepth($path);
         $pattern = '/^(?P<path>' . preg_quote($path, '/') . ')(?P<extra>\..+)?$/';
         $pattern = str_replace('\\{uid\\}', '(' . self::UID_PATTERN . ')', $pattern);
 
@@ -1487,8 +1488,8 @@ class ProjectConfig extends Component
 
         // Sort by number of dots to ensure deepest paths listed first
         $sorter = function($a, $b) {
-            $aDepth = substr_count($a, '.');
-            $bDepth = substr_count($b, '.');
+            $aDepth = ProjectConfigHelper::pathDepth($a);
+            $bDepth = ProjectConfigHelper::pathDepth($b);
             return $bDepth <=> $aDepth;
         };
 
@@ -1848,7 +1849,7 @@ class ProjectConfig extends Component
             $rows = $this->_createProjectConfigQuery()->orderBy('path')->pairs();
             foreach ($rows as $path => $value) {
                 $current = &$data;
-                $segments = explode('.', $path);
+                $segments = ProjectConfigHelper::pathSegments($path);
                 foreach ($segments as $segment) {
                     // If we're still traversing, enforce array to avoid errors.
                     /** @phpstan-ignore-next-line */
