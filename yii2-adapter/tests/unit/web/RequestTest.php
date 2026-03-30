@@ -63,7 +63,7 @@ class RequestTest extends TestCase
             'SCRIPT_NAME' => '/index.php',
             'SERVER_NAME' => 'craft.test',
         ]);
-        app()->bind('request', fn() => new \Illuminate\Http\Request(
+        app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
         $request = new Request();
@@ -83,7 +83,7 @@ class RequestTest extends TestCase
             'language' => 'en-US',
             'baseUrl' => 'http://craft.test/foo',
         ]));
-        app()->bind('request', fn() => new \Illuminate\Http\Request(
+        app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
         $request = new Request([
@@ -101,7 +101,7 @@ class RequestTest extends TestCase
         ]);
         $generalConfig = clone Cms::config();
         $generalConfig->cpTrigger = 'foo';
-        app()->bind('request', fn() => new \Illuminate\Http\Request(
+        app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
         $request = new Request([
@@ -118,7 +118,7 @@ class RequestTest extends TestCase
         ]);
         $generalConfig = clone Cms::config();
         $generalConfig->cpTrigger = 'foo';
-        app()->bind('request', fn() => new \Illuminate\Http\Request(
+        app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
         $request = new Request([
@@ -136,7 +136,7 @@ class RequestTest extends TestCase
         ]);
         $generalConfig = clone Cms::config();
         $generalConfig->cpTrigger = null;
-        app()->bind('request', fn() => new \Illuminate\Http\Request(
+        app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
         $request = new Request([
@@ -153,7 +153,7 @@ class RequestTest extends TestCase
             'SCRIPT_NAME' => '/foo/index.php',
             'SERVER_NAME' => 'craft.test',
         ]);
-        app()->bind('request', fn() => new \Illuminate\Http\Request(
+        app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
         $request = new Request();
@@ -174,7 +174,7 @@ class RequestTest extends TestCase
             'language' => 'en-US',
             'baseUrl' => 'http://craft.test/foo/bar',
         ]));
-        app()->bind('request', fn() => new \Illuminate\Http\Request(
+        app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
         $request = new Request([
@@ -192,7 +192,7 @@ class RequestTest extends TestCase
         ]);
         $generalConfig = clone Cms::config();
         $generalConfig->cpTrigger = 'bar';
-        app()->bind('request', fn() => new \Illuminate\Http\Request(
+        app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
         $request = new Request([
@@ -209,7 +209,7 @@ class RequestTest extends TestCase
         ]);
         $generalConfig = clone Cms::config();
         $generalConfig->cpTrigger = 'bar';
-        app()->bind('request', fn() => new \Illuminate\Http\Request(
+        app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
         $request = new Request([
@@ -227,7 +227,7 @@ class RequestTest extends TestCase
         ]);
         $generalConfig = clone Cms::config();
         $generalConfig->cpTrigger = null;
-        app()->bind('request', fn() => new \Illuminate\Http\Request(
+        app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
         $request = new Request([
@@ -385,6 +385,7 @@ class RequestTest extends TestCase
     public function testGetPageNumUsesPageQueryParamForSiteRequests(): void
     {
         app()->bind('request', fn() => new LaravelRequest(
+            query: ['page' => 3],
             server: [
                 'REQUEST_URI' => '/news',
                 'SCRIPT_NAME' => '/index.php',
@@ -404,9 +405,10 @@ class RequestTest extends TestCase
 
     public function testGetPageNumUsesLegacyPageTriggerQueryParam(): void
     {
-        $generalConfig = LegacyGeneralConfig::create()->pageTrigger('p');
+        Cms::config()->pageTrigger('p');
 
         app()->bind('request', fn() => new LaravelRequest(
+            query: ['p' => 4],
             server: [
                 'REQUEST_URI' => '/news',
                 'SCRIPT_NAME' => '/index.php',
@@ -414,9 +416,7 @@ class RequestTest extends TestCase
             ],
         ));
 
-        $request = new Request([
-            'generalConfig' => $generalConfig,
-        ]);
+        $request = new Request();
         $request->setQueryParams(['p' => 4]);
         $request->init();
 
