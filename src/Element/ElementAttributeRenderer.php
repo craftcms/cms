@@ -27,7 +27,6 @@ use DateTime;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Stringable;
-use Throwable;
 use Twig\Markup;
 
 use function CraftCms\Cms\t;
@@ -153,13 +152,11 @@ readonly class ElementAttributeRenderer
             return (string) $value;
         }
 
-        try {
-            $value = (string) $value;
-        } catch (Throwable) {
+        if (is_object($value) && ! $value instanceof Stringable) {
             return '';
         }
 
-        return Html::encode(strip_tags($value));
+        return Html::encode(strip_tags((string) $value));
     }
 
     public function linkAttributeHtml(?string $url): string
