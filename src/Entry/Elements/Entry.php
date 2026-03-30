@@ -24,7 +24,6 @@ use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\conditions\entries\SectionConditionRule;
 use craft\elements\conditions\entries\TypeConditionRule;
 use craft\elements\db\EagerLoadPlan;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
@@ -36,7 +35,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
@@ -65,6 +64,7 @@ use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -1194,9 +1194,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         ];
 
         // Is the section’s source enabled?
-        $elementSourcesService = app(ElementSources::class);
         $sourceKey = $section->type === SectionType::Single ? 'singles' : "section:$section->uid";
-        if ($elementSourcesService->sourceExists(Entry::class, $sourceKey)) {
+        if (ElementSources::sourceExists(Entry::class, $sourceKey)) {
             $sections = Sections::getEditableSections();
 
             // Filter out any sections that aren’t enabled for this site
@@ -1206,7 +1205,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             }
 
             // Filter out any sections that don’t have an enabled source / don’t belong in this page
-            $sources = $elementSourcesService->getSources(Entry::class, page: $page)->all();
+            $sources = ElementSources::getSources(Entry::class, page: $page)->all();
             $sourceKeys = array_flip(array_filter(array_map(fn (array $source) => $source['key'] ?? null, $sources)));
             $sections = $sections->filter(function (Section $s) use ($sourceKeys) {
                 $key = $s->type === SectionType::Single ? 'singles' : "section:$s->uid";
@@ -1374,7 +1373,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     #[Override]
     public function getTitleTranslationDescription(): ?string
     {
-        return ElementHelper::translationDescription($this->getType()->titleTranslationMethod);
+        return $this->getType()->titleTranslationMethod->description();
     }
 
     #[Override]
@@ -1382,7 +1381,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     {
         $type = $this->getType();
 
-        return ElementHelper::translationKey($this, $type->titleTranslationMethod, $type->titleTranslationKeyFormat);
+        return $type->titleTranslationMethod->elementKey($this, $type->titleTranslationKeyFormat);
     }
 
     #[Override]
@@ -1394,7 +1393,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     #[Override]
     public function getSlugTranslationDescription(): ?string
     {
-        return ElementHelper::translationDescription($this->getType()->slugTranslationMethod);
+        return $this->getType()->slugTranslationMethod->description();
     }
 
     #[Override]
@@ -1402,7 +1401,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     {
         $type = $this->getType();
 
-        return ElementHelper::translationKey($this, $type->slugTranslationMethod, $type->slugTranslationKeyFormat);
+        return $type->slugTranslationMethod->elementKey($this, $type->slugTranslationKeyFormat);
     }
 
     #[Override]

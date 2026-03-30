@@ -7,63 +7,40 @@
 
 namespace craft\helpers;
 
-use Craft;
 use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
-use craft\base\NestedElementInterface;
-use CraftCms\Cms\Cms;
-use CraftCms\Cms\Cp\Icons;
-use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\ElementAttributeRenderer;
+use CraftCms\Cms\Element\ElementHelper as LaravelElementHelper;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Field;
-use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
-use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Facades\Users;
-use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\Url;
-use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User as UserElement;
-use DateTime;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Throwable;
-use Tpetry\QueryExpressions\Language\Alias;
+use CraftCms\Cms\User\Users;
+use Illuminate\Support\Facades\Context;
+
 use Twig\Markup;
-use yii\base\Exception;
-use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
 use function CraftCms\Cms\renderObjectTemplate;
-use function CraftCms\Cms\t;
 
 /**
  * Class ElementHelper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 {@see \CraftCms\Cms\Element\ElementHelper} should be used for core element helper APIs, {@see ElementSources} for source lookup, {@see ElementAttributeRenderer} for attribute rendering, {@see Drafts} for provisional draft helpers, {@see TranslationMethod} for translation helpers, and {@see Context} with {@see Drafts::CONTEXT_PREVIEW_USER_ID} for preview-user context.
  */
 class ElementHelper
 {
-    private const URI_MAX_LENGTH = 255;
-
-    private static ?UserElement $provisionalDraftUser = null;
-
     /**
      * Generates a new temporary slug.
      *
      * @return string
      * @since 3.2.2
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::tempSlug()} instead.
      */
     public static function tempSlug(): string
     {
-        return '__temp_' . Str::random(36);
+        return LaravelElementHelper::tempSlug();
     }
 
     /**
@@ -73,10 +50,11 @@ class ElementHelper
      *
      * @return bool
      * @since 3.2.2
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::isTempSlug()} instead.
      */
     public static function isTempSlug(string $slug): bool
     {
-        return str_starts_with($slug, '__temp_');
+        return LaravelElementHelper::isTempSlug($slug);
     }
 
     /**
@@ -87,25 +65,18 @@ class ElementHelper
      * - Periods and underscores will be converted to dashes, whereas [[normalizeSlug()]] will leave those in-tact.
      * - The string may be converted to ASCII.
      *
-     * @param string $str The string
+     * @param string $value The string
      * @param bool|null $ascii Whether the slug should be converted to ASCII. If null, it will depend on
      * the <config5:limitAutoSlugsToAscii> config setting value.
      * @param string|null $language The language to pull ASCII character mappings for, if needed
      *
      * @return string
      * @since 3.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::generateSlug()} instead.
      */
-    public static function generateSlug(string $str, ?bool $ascii = null, ?string $language = null): string
+    public static function generateSlug(string $value, ?bool $ascii = null, ?string $language = null): string
     {
-        // Replace periods, underscores, and hyphens with spaces so they get separated with the slugWordSeparator
-        // to mimic the default JavaScript-based slug generation.
-        $slug = str_replace(['.', '_', '-'], ' ', $str);
-
-        if ($ascii ?? Cms::config()->limitAutoSlugsToAscii) {
-            $slug = Str::ascii($slug, $language);
-        }
-
-        return static::normalizeSlug($slug);
+        return LaravelElementHelper::generateSlug($value, $ascii, $language);
     }
 
     /**
@@ -115,31 +86,11 @@ class ElementHelper
      *
      * @return string
      * @since 3.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::normalizeSlug()} instead.
      */
     public static function normalizeSlug(string $slug): string
     {
-        // Special case for the homepage
-        if ($slug === Element::HOMEPAGE_URI) {
-            return $slug;
-        }
-
-        // Remove HTML tags
-        $slug = strip_tags($slug);
-
-        // Remove inner-word punctuation
-        $slug = preg_replace('/[\'"‘’“”ʻ\[\](){}:]/u', '', $slug);
-
-        // Make it lowercase
-        $generalConfig = Cms::config();
-        if (!$generalConfig->allowUppercaseInSlug) {
-            $slug = mb_strtolower($slug);
-        }
-
-        // Get the "words". Split on anything that is not alphanumeric or allowed punctuation
-        // Reference: http://www.regular-expressions.info/unicode.html
-        $words = Arr::whereNotEmpty(preg_split('/[^\p{L}\p{N}\p{M}\._\-]+/u', $slug));
-
-        return implode($generalConfig->slugWordSeparator, $words);
+        return LaravelElementHelper::normalizeSlug($slug);
     }
 
     /**
@@ -147,146 +98,13 @@ class ElementHelper
      *
      * @param ElementInterface $element
      *
-     * @throws OperationAbortedException if a unique URI could not be found
+     * @see \CraftCms\Cms\Element\ElementHelper::setUniqueUri()
+     * @throws \CraftCms\Cms\Shared\Exceptions\OperationAbortedException if a unique URI could not be found
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::setUniqueUri()} instead.
      */
     public static function setUniqueUri(ElementInterface $element): void
     {
-        $uriFormat = $element->getUriFormat();
-
-        // No URL format, no URI.
-        if ($uriFormat === null) {
-            $element->uri = null;
-            return;
-        }
-
-        // If the URL format returns an empty string, the URL format probably wrapped everything in a condition
-        $testUri = self::_renderUriFormat($uriFormat, $element);
-        if ($testUri === '') {
-            $element->uri = null;
-            return;
-        }
-
-        // Does the URL format even have a {slug} tag?
-        if (!static::doesUriFormatHaveSlugTag($uriFormat)) {
-            // Make sure it's unique
-            if (!self::_isUniqueUri($testUri, $element)) {
-                throw new OperationAbortedException('Could not find a unique URI for this element');
-            }
-
-            $element->uri = $testUri;
-            return;
-        }
-
-        $generalConfig = Cms::config();
-        $maxSlugIncrement = Cms::config()->maxSlugIncrement;
-        $originalSlug = $element->slug ?? '';
-        $originalSlugLen = mb_strlen($originalSlug);
-
-        for ($i = 1; $i <= $maxSlugIncrement; $i++) {
-            $suffix = ($i !== 1) ? $generalConfig->slugWordSeparator . $i : '';
-            $element->slug = $originalSlug . $suffix;
-            $testUri = self::_renderUriFormat($uriFormat, $element);
-
-            // Make sure we're not over our max length.
-            $testUriLen = mb_strlen($testUri);
-            if ($testUriLen > self::URI_MAX_LENGTH) {
-                // See how much over we are.
-                $overage = $testUriLen - self::URI_MAX_LENGTH;
-
-                // If the slug is too small to be trimmed down, we're SOL
-                if ($overage >= $originalSlugLen) {
-                    $element->slug = $originalSlug;
-                    throw new OperationAbortedException('Could not find a unique URI for this element');
-                }
-
-                $trimmedSlug = mb_substr($originalSlug, 0, -$overage);
-                if ($generalConfig->slugWordSeparator) {
-                    $trimmedSlug = rtrim($trimmedSlug, $generalConfig->slugWordSeparator);
-                }
-                $element->slug = $trimmedSlug . $suffix;
-                $testUri = self::_renderUriFormat($uriFormat, $element);
-            }
-
-            if (self::_isUniqueUri($testUri, $element)) {
-                // OMG!
-                $element->uri = $testUri;
-                return;
-            }
-        }
-
-        $element->slug = $originalSlug;
-        throw new OperationAbortedException('Could not find a unique URI for this element');
-    }
-
-    /**
-     * Renders and normalizes a given element URI Format.
-     *
-     * @param string $uriFormat
-     * @param ElementInterface $element
-     *
-     * @return string
-     */
-    private static function _renderUriFormat(string $uriFormat, ElementInterface $element): string
-    {
-        $variables = [];
-
-        // If the URI format contains {id}/{canonicalId}/{sourceId} but the element doesn't have one yet, preserve the tag
-        if (!$element->id) {
-            $element->tempId = 'id-' . Str::random(10);
-            if (str_contains($uriFormat, '{id')) {
-                $variables['id'] = $element->tempId;
-            }
-            if (!$element->getCanonicalId()) {
-                if (str_contains($uriFormat, '{canonicalId')) {
-                    $variables['canonicalId'] = $element->tempId;
-                }
-                if (str_contains($uriFormat, '{sourceId')) {
-                    $variables['sourceId'] = $element->tempId;
-                }
-            }
-        }
-
-        $uri = renderObjectTemplate($uriFormat, $element, $variables);
-
-        // Remove any leading/trailing/double slashes
-        return preg_replace('/^\/+|(?<=\/)\/+|\/+$/', '', $uri);
-    }
-
-    /**
-     * Tests a given element URI for uniqueness.
-     *
-     * @param string $testUri
-     * @param ElementInterface $element
-     *
-     * @return bool
-     */
-    private static function _isUniqueUri(string $testUri, ElementInterface $element): bool
-    {
-        $info = DB::table(Table::ELEMENTS_SITES, 'elements_sites')
-            ->select(['elements.id', 'elements.type'])
-            ->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', '=', 'elements_sites.elementId')
-            ->where('elements_sites.siteId', $element->siteId)
-            ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
-            ->where('elements_sites.uriLower', mb_strtolower($testUri))
-            ->when(
-                value: $sourceId = $element->getCanonicalId(),
-                callback: fn(Builder $query) => $query->whereNot('elements.id', $sourceId),
-            )
-            ->get();
-
-        if ($info->isEmpty()) {
-            return true;
-        }
-
-        // Make sure the element(s) isn't owned by a draft/revision
-        foreach ($info as $row) {
-            $conflictingElement = Craft::$app->getElements()->getElementById($row->id, $row->type, $element->siteId);
-            if ($conflictingElement && !static::isDraftOrRevision($conflictingElement)) {
-                return false;
-            }
-        }
-
-        return true;
+        LaravelElementHelper::setUniqueUri($element);
     }
 
     /**
@@ -295,10 +113,11 @@ class ElementHelper
      * @param string $uriFormat
      *
      * @return bool
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::doesUriFormatHaveSlugTag()} instead.
      */
     public static function doesUriFormatHaveSlugTag(string $uriFormat): bool
     {
-        return (bool)preg_match('/\bslug\b/', $uriFormat);
+        return LaravelElementHelper::doesUriFormatHaveSlugTag($uriFormat);
     }
 
     /**
@@ -310,44 +129,12 @@ class ElementHelper
      * @param bool $withUnpropagatedSites Whether to include sites the element is currently not being propagated to
      *
      * @return array[]
-     * @throws Exception if any of the element’s supported sites are invalid
+     * @throws \RuntimeException if any of the element’s supported sites are invalid
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::supportedSitesForElement()} instead.
      */
-    public static function supportedSitesForElement(
-        ElementInterface $element,
-        bool $withUnpropagatedSites = false,
-    ): array {
-        $sites = [];
-        $siteUidMap = Sites::getAllSites(true)->pluck('uid', 'id');
-
-        foreach ($element->getSupportedSites() as $site) {
-            if (!is_array($site)) {
-                $site = [
-                    'siteId' => (int)$site,
-                ];
-            } else {
-                if (!isset($site['siteId'])) {
-                    throw new Exception('Missing "siteId" key in ' . get_class($element) . '::getSupportedSites()');
-                }
-                $site['siteId'] = (int)$site['siteId'];
-            }
-
-            if (!isset($siteUidMap[$site['siteId']])) {
-                continue;
-            }
-
-            $site['siteUid'] = $siteUidMap[$site['siteId']];
-
-            $site += [
-                'propagate' => true,
-                'enabledByDefault' => true,
-            ];
-
-            if ($withUnpropagatedSites || $site['propagate']) {
-                $sites[] = $site;
-            }
-        }
-
-        return $sites;
+    public static function supportedSitesForElement(ElementInterface $element, bool $withUnpropagatedSites = false): array
+    {
+        return LaravelElementHelper::supportedSitesForElement($element, $withUnpropagatedSites);
     }
 
     /**
@@ -358,36 +145,11 @@ class ElementHelper
      *
      * @return array<int,bool> The site statuses, indexed by site ID
      * @since 4.4.7
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::siteStatusesForElement()} instead.
      */
     public static function siteStatusesForElement(ElementInterface $element, bool $editableOnly = false): array
     {
-        $supportedSites = static::supportedSitesForElement($element, true);
-        $propagatedSites = array_values(array_filter($supportedSites, fn($site) => $site['propagate']));
-        $propagatedSiteIds = array_map(fn($site) => $site['siteId'], $propagatedSites);
-
-        if ($editableOnly) {
-            $propagatedSiteIds = array_intersect($propagatedSiteIds, Sites::getEditableSiteIds()->all());
-        }
-
-        if (!$element->enabled || !$element->id) {
-            // If the element isn't saved yet, assume other sites will share its current status
-            $defaultStatus = !$element->id && $element->enabled && $element->getEnabledForSite();
-            return array_combine($propagatedSiteIds, array_map(fn() => $defaultStatus, $propagatedSiteIds));
-        }
-
-        return $element::find()
-            ->drafts($element->getIsDraft())
-            ->provisionalDrafts($element->isProvisionalDraft)
-            ->revisions($element->getIsRevision())
-            ->id($element->id)
-            ->siteId($propagatedSiteIds)
-            ->status(null)
-            ->trashed(null)
-            ->asArray()
-            ->select(['siteId', 'enabled'])
-            ->pluck('enabled', 'siteId')
-            ->map(fn($enabled) => (bool)$enabled)
-            ->all();
+        return LaravelElementHelper::siteStatusesForElement($element, $editableOnly);
     }
 
     /**
@@ -397,17 +159,11 @@ class ElementHelper
      *
      * @return bool
      * @since 3.7.4
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::shouldTrackChanges()} instead.
      */
     public static function shouldTrackChanges(ElementInterface $element): bool
     {
-        return (
-            $element->id &&
-            $element->siteSettingsId &&
-            $element->duplicateOf === null &&
-            $element::trackChanges() &&
-            !$element->mergingCanonicalChanges &&
-            !$element->resaving
-        );
+        return LaravelElementHelper::shouldTrackChanges($element);
     }
 
     /**
@@ -416,24 +172,11 @@ class ElementHelper
      * @param ElementInterface $element
      *
      * @return bool
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::isElementEditable()} instead.
      */
     public static function isElementEditable(ElementInterface $element): bool
     {
-        $user = Auth::user();
-
-        if ($user && Craft::$app->getElements()->canView($element, $user)) {
-            if (!Sites::isMultiSite()) {
-                return true;
-            }
-
-            foreach (static::supportedSitesForElement($element) as $siteInfo) {
-                if ($user->can(sprintf('editSite:%s', $siteInfo['siteUid']))) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return LaravelElementHelper::isElementEditable($element);
     }
 
     /**
@@ -442,25 +185,11 @@ class ElementHelper
      * @param ElementInterface $element
      *
      * @return array
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::editableSiteIdsForElement()} instead.
      */
     public static function editableSiteIdsForElement(ElementInterface $element): array
     {
-        $siteIds = [];
-        $user = Auth::user();
-
-        if ($user && Craft::$app->getElements()->canView($element, $user)) {
-            if (Sites::isMultiSite()) {
-                foreach (static::supportedSitesForElement($element) as $siteInfo) {
-                    if ($user->can(sprintf('editSite:%s', $siteInfo['siteUid']))) {
-                        $siteIds[] = $siteInfo['siteId'];
-                    }
-                }
-            } else {
-                $siteIds[] = Sites::getPrimarySite()->id;
-            }
-        }
-
-        return $siteIds;
+        return LaravelElementHelper::editableSiteIdsForElement($element);
     }
 
     /**
@@ -470,11 +199,11 @@ class ElementHelper
      *
      * @return ElementInterface
      * @since 3.2.0
-     * @deprecated in 5.4.0. Use [[ElementInterface::getRootOwner()]] instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::rootElement()} instead.
      */
     public static function rootElement(ElementInterface $element): ElementInterface
     {
-        return $element->getRootOwner();
+        return LaravelElementHelper::rootElement($element);
     }
 
     /**
@@ -484,21 +213,11 @@ class ElementHelper
      *
      * @return ElementInterface|null
      * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::rootElementIfCanonical()} instead.
      */
     public static function rootElementIfCanonical(ElementInterface $element): ?ElementInterface
     {
-        if (!$element->getIsCanonical()) {
-            return null;
-        }
-
-        if ($element instanceof NestedElementInterface) {
-            $owner = $element->getOwner();
-            if ($owner) {
-                return static::rootElementIfCanonical($owner);
-            }
-        }
-
-        return $element;
+        return LaravelElementHelper::rootElementIfCanonical($element);
     }
 
     /**
@@ -508,22 +227,11 @@ class ElementHelper
      *
      * @return bool
      * @since 3.7.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::isDraft()} instead.
      */
     public static function isDraft(ElementInterface $element): bool
     {
-        if ($element->getIsDraft()) {
-            return true;
-        }
-
-        // Defer to the owner element, if there is one
-        if ($element instanceof NestedElementInterface) {
-            $owner = $element->getOwner();
-            if ($owner) {
-                return static::isDraft($owner);
-            }
-        }
-
-        return false;
+        return LaravelElementHelper::isDraft($element);
     }
 
     /**
@@ -533,22 +241,11 @@ class ElementHelper
      *
      * @return bool
      * @since 3.7.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::isRevision()} instead.
      */
     public static function isRevision(ElementInterface $element): bool
     {
-        if ($element->getIsRevision()) {
-            return true;
-        }
-
-        // Defer to the owner element, if there is one
-        if ($element instanceof NestedElementInterface) {
-            $owner = $element->getOwner();
-            if ($owner) {
-                return static::isRevision($owner);
-            }
-        }
-
-        return false;
+        return LaravelElementHelper::isRevision($element);
     }
 
     /**
@@ -558,22 +255,11 @@ class ElementHelper
      *
      * @return bool
      * @since 3.2.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::isDraftOrRevision()} instead.
      */
     public static function isDraftOrRevision(ElementInterface $element): bool
     {
-        if ($element->getIsDraft() || $element->getIsRevision()) {
-            return true;
-        }
-
-        // Defer to the owner element, if there is one
-        if ($element instanceof NestedElementInterface) {
-            $owner = $element->getOwner();
-            if ($owner) {
-                return static::isDraftOrRevision($owner);
-            }
-        }
-
-        return false;
+        return LaravelElementHelper::isDraftOrRevision($element);
     }
 
     /**
@@ -583,10 +269,11 @@ class ElementHelper
      *
      * @return bool
      * @since 3.7.17
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::isCanonical()} instead.
      */
     public static function isCanonical(ElementInterface $element): bool
     {
-        return $element->getRootOwner()->getIsCanonical();
+        return LaravelElementHelper::isCanonical($element);
     }
 
     /**
@@ -596,10 +283,11 @@ class ElementHelper
      *
      * @return bool
      * @since 3.7.17
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::isDerivative()} instead.
      */
     public static function isDerivative(ElementInterface $element): bool
     {
-        return $element->getRootOwner()->getIsDerivative();
+        return LaravelElementHelper::isDerivative($element);
     }
 
     /**
@@ -609,24 +297,11 @@ class ElementHelper
      *
      * @return bool
      * @since 3.7.12
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::isOutdated()} instead.
      */
     public static function isOutdated(ElementInterface $element): bool
     {
-        if ($element->getIsCanonical()) {
-            return false;
-        }
-
-        $canonical = $element->getCanonical();
-
-        if ($element->dateCreated > $canonical->dateUpdated) {
-            return false;
-        }
-
-        if (!$element->dateLastMerged) {
-            return true;
-        }
-
-        return $element->dateLastMerged < $canonical->dateUpdated;
+        return LaravelElementHelper::isOutdated($element);
     }
 
     /**
@@ -637,7 +312,7 @@ class ElementHelper
      *
      * @return ElementInterface
      * @since 3.3.0
-     * @deprecated in 3.7.0. Use [[ElementInterface::getCanonical()]] instead.
+     * @deprecated 6.0.0 use {@see ElementInterface::getCanonical()} instead.
      */
     public static function sourceElement(ElementInterface $element, bool $anySite = false): ElementInterface
     {
@@ -649,24 +324,11 @@ class ElementHelper
      * and "prev" elements on them.
      *
      * @param iterable|ElementInterface[] $elements The array of elements.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::setNextPrevOnElements()} instead.
      */
     public static function setNextPrevOnElements(iterable $elements): void
     {
-        /** @var ElementInterface|null $lastElement */
-        $lastElement = null;
-
-        foreach ($elements as $element) {
-            if ($lastElement) {
-                $lastElement->setNext($element);
-                $element->setPrev($lastElement);
-            } else {
-                $element->setPrev(false);
-            }
-
-            $lastElement = $element;
-        }
-
-        $lastElement?->setNext(false);
+        LaravelElementHelper::setNextPrevOnElements($elements);
     }
 
     /**
@@ -676,11 +338,13 @@ class ElementHelper
      *
      * @return string
      * @since 3.7.25.1
+     * @deprecated 6.0.0 This method remains on the legacy helper only.
      */
     public static function rootSourceKey(string $sourceKey): string
     {
-        $pos = strpos($sourceKey, '/');
-        return $pos !== false ? substr($sourceKey, 0, $pos) : $sourceKey;
+        $position = strpos($sourceKey, '/');
+
+        return $position !== false ? substr($sourceKey, 0, $position) : $sourceKey;
     }
 
     /**
@@ -692,6 +356,7 @@ class ElementHelper
      * @param bool $withDisabled Whether disabled sources should be included
      * @param string|null $page The page to fetch sources for
      * @return array|null The source definition, or null if it cannot be found
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementSources::findSource()} instead.
      */
     public static function findSource(
         string $elementType,
@@ -700,53 +365,7 @@ class ElementHelper
         bool $withDisabled = false,
         ?string $page = null,
     ): ?array {
-        $path = explode('/', $sourceKey);
-        $sources = app(ElementSources::class)->getSources($elementType, $context, $withDisabled, $page);
-        $rootSource = null;
-
-        while ($path) {
-            $key = array_shift($path);
-            $source = null;
-
-            foreach ($sources as $testSource) {
-                if (isset($testSource['key']) && $testSource['key'] === $key) {
-                    $source = $testSource;
-                    break;
-                }
-            }
-
-            if ($source === null) {
-                break;
-            }
-
-            // Is that the end of the path?
-            if (empty($path)) {
-                // Is this a nested source?
-                if (isset($rootSource)) {
-                    $source['type'] = $rootSource['type'];
-                    $source['keyPath'] = $sourceKey;
-                }
-
-                return $source;
-            }
-
-            // Prepare for searching nested sources
-            if ($rootSource === null) {
-                $rootSource = $source;
-            }
-            $sources = $source['nested'] ?? [];
-        }
-
-        if (!str_starts_with($sourceKey, 'custom:')) {
-            // Let the element get involved
-            $source = $elementType::findSource($sourceKey, $context);
-            if ($source) {
-                $source['type'] = ElementSources::TYPE_NATIVE;
-                return $source;
-            }
-        }
-
-        return null;
+        return app(ElementSources::class)->findSource($elementType, $sourceKey, $context, $withDisabled, $page);
     }
 
     /**
@@ -756,15 +375,15 @@ class ElementHelper
      *
      * @return string|null
      * @since 3.5.0
+     * @deprecated 6.0.0 use {@see TranslationMethod::description()} instead.
      */
     public static function translationDescription(string|TranslationMethod $translationMethod): ?string
     {
-        return match ($translationMethod) {
-            Field::TRANSLATION_METHOD_SITE, TranslationMethod::Site => t('This field is translated for each site.'),
-            Field::TRANSLATION_METHOD_SITE_GROUP, TranslationMethod::SiteGroup => t('This field is translated for each site group.'),
-            Field::TRANSLATION_METHOD_LANGUAGE, TranslationMethod::Language => t('This field is translated for each language.'),
-            default => null,
-        };
+        if (!$translationMethod instanceof TranslationMethod) {
+            $translationMethod = TranslationMethod::tryFrom($translationMethod);
+        }
+
+        return $translationMethod?->description();
     }
 
     /**
@@ -777,32 +396,21 @@ class ElementHelper
      *
      * @return string
      * @since 3.5.0
+     * @deprecated 6.0.0 use {@see TranslationMethod::elementKey()} instead.
      */
     public static function translationKey(
         ElementInterface $element,
         string|TranslationMethod $translationMethod,
         ?string $translationKeyFormat = null,
     ): string {
-        switch ($translationMethod) {
-            case Field::TRANSLATION_METHOD_NONE:
-            case TranslationMethod::None:
-                return '1';
-            case Field::TRANSLATION_METHOD_SITE:
-            case TranslationMethod::Site:
-                return (string)$element->siteId;
-            case Field::TRANSLATION_METHOD_SITE_GROUP:
-            case TranslationMethod::SiteGroup:
-                return (string)$element->getSite()->groupId;
-            case Field::TRANSLATION_METHOD_LANGUAGE:
-            case TranslationMethod::Language:
-                return $element->getSite()->getLanguage();
-            default:
-                // Translate for each site if a translation key format wasn’t specified
-                if ($translationKeyFormat === null) {
-                    return (string)$element->siteId;
-                }
-                return renderObjectTemplate($translationKeyFormat, $element);
+        if (!$translationMethod instanceof TranslationMethod) {
+            $translationMethod = TranslationMethod::tryFrom($translationMethod);
         }
+
+        return $translationMethod?->elementKey($element, $translationKeyFormat)
+            ?? ($translationKeyFormat === null
+                ? (string) $element->siteId
+                : renderObjectTemplate($translationKeyFormat, $element));
     }
 
     /**
@@ -813,27 +421,11 @@ class ElementHelper
      *
      * @return bool
      * @since 4.2.6
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::isAttributeEmpty()} instead.
      */
     public static function isAttributeEmpty(ElementInterface $element, string $attribute): bool
     {
-        // See if we're setting a custom field
-        $fieldLayout = $element->getFieldLayout();
-        if ($fieldLayout) {
-            foreach ($fieldLayout->getTabs() as $tab) {
-                foreach ($tab->getElements() as $layoutElement) {
-                    if ($layoutElement instanceof CustomField && $layoutElement->attribute() === $attribute) {
-                        try {
-                            $field = $layoutElement->getField();
-                        } catch (FieldNotFoundException) {
-                            continue;
-                        }
-                        return $field->isValueEmpty($element->getFieldValue($attribute), $element);
-                    }
-                }
-            }
-        }
-
-        return empty($element->$attribute);
+        return LaravelElementHelper::isAttributeEmpty($element, $attribute);
     }
 
     /**
@@ -843,42 +435,11 @@ class ElementHelper
      *
      * @return string
      * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementAttributeRenderer::attributeHtml()} instead.
      */
     public static function attributeHtml(mixed $value): string
     {
-        if ($value instanceof DateTime) {
-            $formatter = I18N::getFormatter();
-            return Html::tag('span', $formatter->asTimestamp($value, Locale::LENGTH_SHORT), [
-                'title' => $formatter->asDatetime($value, Locale::LENGTH_SHORT),
-            ]);
-        }
-
-        if (is_bool($value)) {
-            if (!$value) {
-                return '';
-            }
-
-            return Html::tag('span', '', [
-                'class' => 'checkbox-icon',
-                'role' => 'img',
-                'title' => t('Enabled'),
-                'aria' => [
-                    'label' => t('Enabled'),
-                ],
-            ]);
-        }
-
-        if ($value instanceof Markup) {
-            return (string)$value;
-        }
-
-        try {
-            $value = (string)$value;
-        } catch (Throwable) {
-            return '';
-        }
-
-        return Html::encode(strip_tags($value));
+        return app(ElementAttributeRenderer::class)->attributeHtml($value);
     }
 
     /**
@@ -888,20 +449,11 @@ class ElementHelper
      *
      * @return string
      * @since 5.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementAttributeRenderer::linkAttributeHtml()} instead.
      */
     public static function linkAttributeHtml(?string $url): string
     {
-        return Html::beginTag('a', [
-                'href' => $url,
-                'rel' => 'noopener',
-                'target' => '_blank',
-                'title' => t('Visit webpage'),
-                'aria-label' => t('View'),
-            ]) .
-            Html::tag('span', Icons::svg('world'), [
-                'class' => ['cp-icon', 'small', 'inline-flex'],
-            ]) .
-            Html::endTag('a');
+        return app(ElementAttributeRenderer::class)->linkAttributeHtml($url);
     }
 
     /**
@@ -912,16 +464,11 @@ class ElementHelper
      *
      * @return string
      * @since 5.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementAttributeRenderer::uriAttributeHtml()} instead.
      */
     public static function uriAttributeHtml(?string $value, ?string $url): string
     {
-        return Html::a(Html::tag('span', $value, ['dir' => 'ltr']), $url, [
-            'href' => $url,
-            'rel' => 'noopener',
-            'target' => '_blank',
-            'class' => 'go',
-            'title' => t('Visit webpage'),
-        ]);
+        return app(ElementAttributeRenderer::class)->uriAttributeHtml($value, $url);
     }
 
     /**
@@ -931,15 +478,11 @@ class ElementHelper
      *
      * @return string[]
      * @since 4.6.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::searchableAttributes()} instead.
      */
     public static function searchableAttributes(ElementInterface $element): array
     {
-        $searchableAttributes = array_flip($element::searchableAttributes());
-        $searchableAttributes['slug'] = true;
-        if ($element::hasTitles()) {
-            $searchableAttributes['title'] = true;
-        }
-        return array_keys($searchableAttributes);
+        return LaravelElementHelper::searchableAttributes($element);
     }
 
     /**
@@ -950,20 +493,11 @@ class ElementHelper
      *
      * @return string
      * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::elementEditorUrl()} instead.
      */
     public static function elementEditorUrl(ElementInterface $element, bool $withParams = true): string
     {
-        $url = sprintf('edit/%s', $element->getCanonicalId());
-
-        if ($element->slug && !static::isTempSlug($element->slug)) {
-            $url .= "-$element->slug";
-        }
-
-        if ($withParams) {
-            return static::addElementEditorUrlParams($url, $element);
-        }
-
-        return Url::cpUrl($url);
+        return LaravelElementHelper::elementEditorUrl($element, $withParams);
     }
 
     /**
@@ -974,22 +508,11 @@ class ElementHelper
      *
      * @return string
      * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::addElementEditorUrlParams()} instead.
      */
     public static function addElementEditorUrlParams(string $url, ElementInterface $element): string
     {
-        $params = [];
-
-        if (Sites::isMultiSite()) {
-            $params['site'] = $element->getSite()->handle;
-        }
-
-        if ($element->getIsDraft() && !$element->isProvisionalDraft) {
-            $params['draftId'] = $element->draftId;
-        } elseif ($element->getIsRevision()) {
-            $params['revisionId'] = $element->revisionId;
-        }
-
-        return Url::cpUrl($url, $params);
+        return LaravelElementHelper::addElementEditorUrlParams($url, $element);
     }
 
     /**
@@ -999,18 +522,11 @@ class ElementHelper
      *
      * @return string
      * @since 5.2.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::postEditUrl()} instead.
      */
     public static function postEditUrl(ElementInterface $element): string
     {
-        if ($element instanceof NestedElementInterface) {
-            // redirect to the owner's edit page, if possible
-            $ownerEditUrl = $element->getOwner()?->getCpEditUrl();
-            if ($ownerEditUrl) {
-                return $ownerEditUrl;
-            }
-        }
-
-        return $element->getPostEditUrl() ?? Cms::config()->getPostCpLoginRedirect();
+        return LaravelElementHelper::postEditUrl($element);
     }
 
     /**
@@ -1019,16 +535,11 @@ class ElementHelper
      * @param ElementInterface $element
      * @return string
      * @since 5.9.7
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::elementRevisionsUrl()} instead.
      */
     public static function elementRevisionsUrl(ElementInterface $element): string
     {
-        $url = sprintf('revisions/%s', $element->getCanonicalId());
-
-        if ($element->slug && !static::isTempSlug($element->slug)) {
-            $url .= "-$element->slug";
-        }
-
-        return Url::cpUrl($url);
+        return LaravelElementHelper::elementRevisionsUrl($element);
     }
 
     /**
@@ -1041,15 +552,7 @@ class ElementHelper
      */
     public static function actionConfig(ElementActionInterface $action): array
     {
-        return [
-            'type' => $action::class,
-            'destructive' => $action->isDestructive(),
-            'download' => $action->isDownload(),
-            'name' => $action->getTriggerLabel(),
-            'trigger' => $action->getTriggerHtml(),
-            'confirm' => $action->getConfirmationMessage(),
-            'settings' => $action->getSettings() ?: null,
-        ];
+        return LaravelElementHelper::actionConfig($action);
     }
 
     /**
@@ -1060,57 +563,28 @@ class ElementHelper
      * @param ElementInterface[] $elements
      * @param array $variables
      *
-     * @return Markup
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
+     * @return \Twig\Markup
+     * @throws \yii\base\InvalidConfigException
+     * @throws \yii\base\NotSupportedException
      * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::renderElements()} instead.
      */
     public static function renderElements(array $elements, array $variables = []): Markup
     {
-        $output = array_map(fn(ElementInterface $element) => (string)$element->render($variables), $elements);
-        return new Markup(implode("\n", $output), Craft::$app->charset);
+        return LaravelElementHelper::renderElements($elements, $variables);
     }
 
     /**
      * Swaps out any canonical elements with provisional drafts, when they exist.
      *
-     * @template T of ElementInterface
-     * @param T[] $elements
+     * @param ElementInterface[] $elements
      *
      * @since 5.2.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Drafts::withProvisionalDrafts()} instead.
      */
     public static function swapInProvisionalDrafts(array &$elements): void
     {
-        /** @var T[] $drafts */
-        $drafts = self::provisionalDrafts($elements);
-
-        if (empty($drafts)) {
-            return;
-        }
-
-        // array_filter() preserves keys, so it's safe to loop through it rather than $elements here
-        foreach ($elements as $i => $element) {
-            if (isset($drafts[$element->id])) {
-                $draft = $drafts[$element->id];
-                $draft->setCanonical($element);
-
-                // retain canonical element structure data => ['root', 'lft', 'rgt', 'level']
-                if ($element->structureId !== null) {
-                    $draft->structureId = $element->structureId;
-                    $draft->root = $element->root;
-                    $draft->lft = $element->lft;
-                    $draft->rgt = $element->rgt;
-                    $draft->level = $element->level;
-                }
-
-                // retain the canonical element's ownerId
-                if ($element instanceof NestedElementInterface && $draft instanceof NestedElementInterface) {
-                    $draft->setOwnerId($element->getOwnerId());
-                }
-
-                $elements[$i] = $draft;
-            }
-        }
+        $elements = app(Drafts::class)->withProvisionalDrafts($elements);
     }
 
     /**
@@ -1119,66 +593,11 @@ class ElementHelper
      * @template T of ElementInterface
      * @param T[] $elements
      * @since 5.9.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Drafts::loadProvisionalChanges()} instead.
      */
     public static function loadProvisionalChanges(array $elements): void
     {
-        $drafts = self::provisionalDrafts($elements);
-
-        if (empty($drafts)) {
-            return;
-        }
-
-        // array_filter() preserves keys, so it's safe to loop through it rather than $elements here
-        foreach ($elements as $element) {
-            if (isset($drafts[$element->id])) {
-                $draft = $drafts[$element->id];
-                $element->hasProvisionalChanges = true;
-
-                foreach ($draft->getModifiedAttributes() as $name) {
-                    if ($element->canSetProperty($name)) {
-                        $element->$name = $draft->$name;
-                    }
-                }
-
-                foreach ($draft->getModifiedFields() as $handle) {
-                    $element->setFieldValue($handle, $draft->getFieldValue($handle));
-                }
-            }
-        }
-    }
-
-    /**
-     * @param ElementInterface[] $elements
-     * @return ElementInterface[]
-     */
-    private static function provisionalDrafts(array $elements): array
-    {
-        $user = self::$provisionalDraftUser ?? Auth::user();
-        if (!$user) {
-            return [];
-        }
-
-        // filter out drafts and revisions
-        // (don't just exclude derivative elements though! see https://github.com/craftcms/cms/issues/16626)
-        $canonicalElements = array_filter(
-            $elements,
-            fn(ElementInterface $element) => !$element->getIsDraft() && !$element->getIsRevision(),
-        );
-
-        if (empty($canonicalElements)) {
-            return [];
-        }
-
-        $first = reset($canonicalElements);
-
-        return $first::find()
-            ->draftOf($canonicalElements)
-            ->draftCreator($user)
-            ->provisionalDrafts()
-            ->siteId($first->siteId)
-            ->status(null)
-            ->indexBy('canonicalId')
-            ->all();
+        app(Drafts::class)->loadProvisionalChanges($elements);
     }
 
     /**
@@ -1187,19 +606,12 @@ class ElementHelper
      * @param ElementInterface $element
      *
      * @return bool
-     * @throws Exception
      * @since 5.8.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::isMultiSite()} instead.
      */
     public static function isMultiSite(ElementInterface $element): bool
     {
-        // Site info
-        $supportedSites = self::supportedSitesForElement($element, true);
-        if (count($supportedSites) <= 1) {
-            return false;
-        }
-
-        $propSites = array_filter($supportedSites, fn($site) => $site['propagate']);
-        return count($propSites) > 1;
+        return LaravelElementHelper::isMultiSite($element);
     }
 
     /**
@@ -1208,14 +620,15 @@ class ElementHelper
      * @param UserElement|int|null $user
      *
      * @since 5.8.0
+     * @deprecated 6.0.0 use {@see \Illuminate\Support\Facades\Context::addHidden()} with {@see \CraftCms\Cms\Element\Drafts::CONTEXT_PREVIEW_USER_ID} instead.
      */
     public static function setProvisionalDraftUser(UserElement|int|null $user): void
     {
         if (is_int($user)) {
-            $user = Users::getUserById($user);
+            $user = app(Users::class)->getUserById($user);
         }
 
-        self::$provisionalDraftUser = $user;
+        Context::addHidden(Drafts::CONTEXT_PREVIEW_USER_ID, $user?->id);
     }
 
     /**
@@ -1227,20 +640,6 @@ class ElementHelper
      */
     public static function cleanseQueryCriteria(array $criteria): array
     {
-        unset(
-            $criteria['where'],
-            $criteria['orderBy'],
-            $criteria['indexBy'],
-            $criteria['select'],
-            $criteria['selectOption'],
-            $criteria['from'],
-            $criteria['groupBy'],
-            $criteria['join'],
-            $criteria['having'],
-            $criteria['union'],
-            $criteria['withQueries'],
-            $criteria['params'],
-        );
-        return $criteria;
+        return LaravelElementHelper::cleanseQueryCriteria($criteria);
     }
 }

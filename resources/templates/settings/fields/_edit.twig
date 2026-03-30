@@ -76,7 +76,7 @@
 {{ missingFieldPlaceholder|raw }}
 
 {% if craft.sites.isMultiSite() %}
-  {% set translationMethods = field.supportedTranslationMethods %}
+  {% set translationMethods = field.supportedTranslationMethodValues %}
   {% if translationMethods|length > 1 %}
     <div id="translation-settings">
       {{ forms.selectField({
@@ -91,7 +91,7 @@
           'language' in translationMethods ? { value: 'language', label: "Translate for each language"|t('app') },
           'custom' in translationMethods ? { value: 'custom', label: "Custom…"|t('app') }
         ]|filter,
-        value: field.translationMethod,
+        value: field.translationMethodValue,
         toggle: true,
         targetPrefix: 'translation-method-',
         disabled: readOnly,
@@ -100,7 +100,7 @@
       {% if 'custom' in translationMethods %}
         {% tag 'div' with {
           id: 'translation-method-custom',
-          class: field.translationMethod != 'custom' ? 'hidden' : null,
+          class: field.translationMethodValue != 'custom' ? 'hidden' : null,
         } %}
           {{ forms.textField({
             label: "Translation Key Format"|t('app'),

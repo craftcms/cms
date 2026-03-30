@@ -10,6 +10,7 @@ namespace craft\base;
 use Closure;
 use Craft;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Contracts\Database\Query\Builder;
 use yii\base\InvalidConfigException;
@@ -21,6 +22,24 @@ use yii\validators\Validator;
 abstract class Field extends \CraftCms\Cms\Field\Field
 {
     use LegacyEventConstants;
+
+    public string $translationMethod {
+        get {
+            return $this->_translationMethod->value;
+        }
+    set(string | TranslationMethod $value) {
+            $translationMethod = $value instanceof TranslationMethod
+                ? $value
+                : TranslationMethod::tryFrom($value);
+
+            if ($translationMethod === null) {
+                $supportedTranslationMethods = static::supportedTranslationMethods();
+                $translationMethod = reset($supportedTranslationMethods) ?: TranslationMethod::None;
+            }
+
+            $this->_translationMethod = $translationMethod;
+        }
+    }
 
     public function __construct($config = [])
     {

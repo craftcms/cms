@@ -19,6 +19,7 @@ use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\MissingField;
@@ -175,7 +176,7 @@ class FieldsController
             'handle' => $request->input('handle'),
             'instructions' => $request->input('instructions'),
             'searchable' => (bool) $request->input('searchable', true),
-            'translationMethod' => $request->input('translationMethod', Field::TRANSLATION_METHOD_NONE),
+            'translationMethod' => $request->enum('translationMethod', TranslationMethod::class, TranslationMethod::None),
             'translationKeyFormat' => $request->input('translationKeyFormat'),
             'settings' => $request->input('types', [])[Html::id($type)] ?? [],
         ]);
@@ -404,6 +405,14 @@ class FieldsController
                 $supportedTranslationMethods[$class] = $class::supportedTranslationMethods();
             }
         }
+
+        $supportedTranslationMethods = array_map(
+            fn (array $translationMethods) => array_map(
+                static fn (TranslationMethod $translationMethod) => $translationMethod->value,
+                $translationMethods,
+            ),
+            $supportedTranslationMethods,
+        );
 
         // Allowed field types
         // ---------------------------------------------------------------------

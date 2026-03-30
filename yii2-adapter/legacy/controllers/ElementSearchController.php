@@ -9,12 +9,12 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\ElementHelper;
 use craft\web\Controller;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Search;

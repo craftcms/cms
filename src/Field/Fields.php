@@ -18,6 +18,7 @@ use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Entries as EntriesField;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\ApplyingFieldDelete;
 use CraftCms\Cms\Field\Events\ApplyingFieldSave;
 use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
@@ -631,7 +632,7 @@ class Fields
     public function prepFieldForSave(FieldInterface $field): void
     {
         // Clear the translation key format if not using a custom translation method
-        if ($field->translationMethod !== Field::TRANSLATION_METHOD_CUSTOM) {
+        if ($field->translationMethod !== TranslationMethod::Custom->value) {
             $field->translationKeyFormat = null;
         }
 
@@ -1167,7 +1168,7 @@ class Fields
             $deleteSearchIndexes = ! $isNewField && ! $searchable && $fieldRecord->searchable;
 
             // Clear the translation key format if not using a custom translation method
-            if ($data['translationMethod'] !== Field::TRANSLATION_METHOD_CUSTOM) {
+            if ($data['translationMethod'] !== TranslationMethod::Custom->value) {
                 $data['translationKeyFormat'] = null;
             }
 

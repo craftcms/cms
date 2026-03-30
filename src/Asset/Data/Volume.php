@@ -8,7 +8,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Validation\VolumeRules;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\CpEditable;
-use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
@@ -51,14 +51,11 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
 
     public ?string $handle = null;
 
-    /**
-     * @phpstan-var Field::TRANSLATION_METHOD_NONE|Field::TRANSLATION_METHOD_SITE|Field::TRANSLATION_METHOD_SITE_GROUP|Field::TRANSLATION_METHOD_LANGUAGE|Field::TRANSLATION_METHOD_CUSTOM
-     */
-    public string $titleTranslationMethod = Field::TRANSLATION_METHOD_SITE;
+    public TranslationMethod $titleTranslationMethod = TranslationMethod::Site;
 
     public ?string $titleTranslationKeyFormat = null;
 
-    public string $altTranslationMethod = Field::TRANSLATION_METHOD_NONE;
+    public TranslationMethod $altTranslationMethod = TranslationMethod::None;
 
     public ?string $altTranslationKeyFormat = null;
 
@@ -444,9 +441,9 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
             'subpath' => $this->_subpath,
             'transformFs' => $this->_transformFsHandle,
             'transformSubpath' => $this->_transformSubpath,
-            'titleTranslationMethod' => $this->titleTranslationMethod,
+            'titleTranslationMethod' => $this->titleTranslationMethod->value,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
-            'altTranslationMethod' => $this->altTranslationMethod,
+            'altTranslationMethod' => $this->altTranslationMethod->value,
             'altTranslationKeyFormat' => $this->altTranslationKeyFormat ?: null,
             'sortOrder' => $this->sortOrder,
         ];

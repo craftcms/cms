@@ -31,7 +31,6 @@ use craft\events\MultiElementActionEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db as DbHelper;
-use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\models\ElementActivity;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
@@ -43,12 +42,14 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\AfterPropagate;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -186,12 +187,12 @@ class Elements extends Component
     /**
      * @event ElementEvent The event that is triggered before an element is saved.
      *
-     * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
+     * If you want to ignore events for drafts or revisions, call [[\CraftCms\Cms\Element\ElementHelper::isDraftOrRevision()]]
      * from your event handler:
      *
      * ```php
      * use craft\events\ElementEvent;
-     * use craft\helpers\ElementHelper;
+     * use CraftCms\Cms\Element\ElementHelper;
      * use craft\services\Elements;
      *
      * Craft::$app->elements->on(Elements::EVENT_BEFORE_SAVE_ELEMENT, function(ElementEvent $e) {
@@ -208,12 +209,12 @@ class Elements extends Component
     /**
      * @event ElementEvent The event that is triggered after an element is saved.
      *
-     * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
+     * If you want to ignore events for drafts or revisions, call [[\CraftCms\Cms\Element\ElementHelper::isDraftOrRevision()]]
      * from your event handler:
      *
      * ```php
      * use craft\events\ElementEvent;
-     * use craft\helpers\ElementHelper;
+     * use CraftCms\Cms\Element\ElementHelper;
      * use craft\services\Elements;
      *
      * Craft::$app->elements->on(Elements::EVENT_AFTER_SAVE_ELEMENT, function(ElementEvent $e) {
@@ -586,7 +587,7 @@ class Elements extends Component
      * @throws InvalidArgumentException if $elementType is not a valid element
      * @since 3.5.0
      */
-    public function createElementQuery(string $elementType): ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery
+    public function createElementQuery(string $elementType): ElementQueryInterface|ElementQuery
     {
         if (!is_subclass_of($elementType, ElementInterface::class)) {
             throw new InvalidArgumentException("$elementType is not a valid element.");
@@ -3579,7 +3580,7 @@ class Elements extends Component
 
                         if (!empty($targetElementsForSource)) {
                             if (!empty($criteria['withProvisionalDrafts'])) {
-                                ElementHelper::swapInProvisionalDrafts($targetElementsForSource);
+                                $targetElementsForSource = app(Drafts::class)->withProvisionalDrafts($targetElementsForSource);
                             }
 
                             $sourceElement->setEagerLoadedElements($plan->alias, $targetElementsForSource, $plan);

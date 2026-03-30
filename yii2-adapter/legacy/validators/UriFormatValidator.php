@@ -7,8 +7,8 @@
 
 namespace craft\validators;
 
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\ElementHelper;
 use yii\validators\Validator;
 use function CraftCms\Cms\t;
 

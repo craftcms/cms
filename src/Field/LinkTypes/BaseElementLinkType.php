@@ -7,10 +7,10 @@ namespace CraftCms\Cms\Field\LinkTypes;
 use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Cp\FormFields;
-use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
+use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -170,7 +170,7 @@ JS, [
     {
         $availableSourceKeys = array_flip($this->availableSourceKeys());
 
-        return app(ElementSources::class)->getSources(
+        return ElementSources::getSources(
             static::elementType(),
             ElementSources::CONTEXT_FIELD,
         )->filter(fn (array $source) => (
