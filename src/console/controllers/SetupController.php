@@ -622,7 +622,7 @@ EOD;
         $io = new ConsoleIO($input, $output, new HelperSet([new QuestionHelper()]));
 
         $composerService->install([
-            'craftcms/cloud' => '*',
+            'craftcms/cloud' => '^3',
         ], $io);
 
         $message = sprintf('Extension %s', $moduleInstalled ? 'updated' : 'installed');
