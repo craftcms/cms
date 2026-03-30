@@ -33,6 +33,7 @@
 - `delete` GraphQL queries now have a `hardDelete` argument. ([#18511](https://github.com/craftcms/cms/pull/18511))
 - Entry `postDate` values are now `null` on creation, rather than set to the `dateCreated` value. ([#18642](https://github.com/craftcms/cms/pull/18642))
 - Assets’ `url` GraphQL fields’ `immediately` arguments are no longer deprecated. ([#18581](https://github.com/craftcms/cms/issues/18581))
+- Added `craft\filters\SecFetchSiteFilter` for request origin verification. ([#18641](https://github.com/craftcms/cms/pull/18641))
 - `craft\fields\data\LinkData::getUrl()` now has an `$anyStatus` argument, which can be set to `false` to prevent a value from being returned if a disabled/pending/expired element is linked. ([#18527](https://github.com/craftcms/cms/issues/18527))
 
 ### Extensibility
