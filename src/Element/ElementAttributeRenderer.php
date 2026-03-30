@@ -27,6 +27,7 @@ use DateTime;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Stringable;
+use Throwable;
 use Twig\Markup;
 
 use function CraftCms\Cms\t;
@@ -152,7 +153,11 @@ readonly class ElementAttributeRenderer
             return (string) $value;
         }
 
-        $value = (string) $value;
+        try {
+            $value = (string) $value;
+        } catch (Throwable) {
+            return '';
+        }
 
         return Html::encode(strip_tags($value));
     }

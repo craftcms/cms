@@ -139,6 +139,17 @@ it('normalizes translation methods to enums for src fields', function () {
         ->and($field->getTranslationDescription(null))->toBe(TranslationMethod::Site->description());
 });
 
+it('falls back to the first supported translation method for invalid src field values', function () {
+    $field = $this->fields->createField([
+        'type' => PlainText::class,
+        'translationMethod' => 'invalid',
+    ]);
+
+    expect($field->translationMethod)->toBe(TranslationMethod::None->value)
+        ->and($field->translationMethodValue)->toBe(TranslationMethod::None->value)
+        ->and($field->getTranslationDescription(null))->toBeNull();
+});
+
 it('creates a missing field if the field isnt recognized', function () {
     $field = $this->fields->createField([
         'type' => 'some\\unrecognized\\Field',

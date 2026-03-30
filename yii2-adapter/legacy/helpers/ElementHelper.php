@@ -18,6 +18,8 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use Illuminate\Support\Facades\Context;
 
+use function CraftCms\Cms\renderObjectTemplate;
+
 /**
  * Class ElementHelper
  *
@@ -385,9 +387,11 @@ class ElementHelper
      */
     public static function translationDescription(string|TranslationMethod $translationMethod): ?string
     {
-        return ($translationMethod instanceof TranslationMethod
-            ? $translationMethod
-            : TranslationMethod::from($translationMethod))->description();
+        if (!$translationMethod instanceof TranslationMethod) {
+            $translationMethod = TranslationMethod::tryFrom($translationMethod);
+        }
+
+        return $translationMethod?->description();
     }
 
     /**
@@ -407,9 +411,14 @@ class ElementHelper
         string|TranslationMethod $translationMethod,
         ?string $translationKeyFormat = null,
     ): string {
-        return ($translationMethod instanceof TranslationMethod
-            ? $translationMethod
-            : TranslationMethod::from($translationMethod))->elementKey($element, $translationKeyFormat);
+        if (!$translationMethod instanceof TranslationMethod) {
+            $translationMethod = TranslationMethod::tryFrom($translationMethod);
+        }
+
+        return $translationMethod?->elementKey($element, $translationKeyFormat)
+            ?? ($translationKeyFormat === null
+                ? (string) $element->siteId
+                : renderObjectTemplate($translationKeyFormat, $element));
     }
 
     /**

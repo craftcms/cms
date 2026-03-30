@@ -20,4 +20,16 @@ class FieldTranslationMethodCompatibilityTest extends TestCase
         self::assertSame('site', $field->translationMethodValue);
         self::assertSame(TranslationMethod::Site->description(), $field->getTranslationDescription(null));
     }
+
+    public function testLegacyFieldFallsBackForInvalidTranslationMethodAssignment(): void
+    {
+        $field = new class() extends \craft\base\Field {
+        };
+
+        $field->translationMethod = 'invalid';
+
+        self::assertSame(TranslationMethod::None->value, $field->translationMethod);
+        self::assertSame(TranslationMethod::None->value, $field->translationMethodValue);
+        self::assertNull($field->getTranslationDescription(null));
+    }
 }

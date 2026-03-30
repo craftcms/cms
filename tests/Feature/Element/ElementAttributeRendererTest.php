@@ -155,6 +155,10 @@ it('renders plain values with attributeHtml', function () {
     expect($this->renderer->attributeHtml(new Markup('<em>Test</em>', 'UTF-8')))->toBe('<em>Test</em>');
 });
 
+it('renders empty string for non stringable objects with attributeHtml', function () {
+    expect($this->renderer->attributeHtml(new stdClass))->toBe('');
+});
+
 it('renders direct link helpers', function () {
     $linkHtml = $this->renderer->linkAttributeHtml('https://example.test');
     $uriHtml = $this->renderer->uriAttributeHtml('path/to/page', 'https://example.test/path/to/page');

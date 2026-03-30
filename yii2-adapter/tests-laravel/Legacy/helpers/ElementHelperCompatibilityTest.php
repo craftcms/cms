@@ -6,9 +6,30 @@ namespace CraftCms\Yii2Adapter\Tests\Legacy\helpers;
 
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper as LaravelElementHelper;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Yii2Adapter\Tests\TestCase;
 use Mockery;
+
+class LegacyTranslationElement extends Element
+{
+    public string $foo = 'bar';
+
+    public Site $site;
+
+    #[\Override]
+    public static function displayName(): string
+    {
+        return 'Legacy Translation Element';
+    }
+
+    #[\Override]
+    public function getSite(): Site
+    {
+        return $this->site;
+    }
+}
 
 class ElementHelperCompatibilityTest extends TestCase
 {
@@ -55,5 +76,22 @@ class ElementHelperCompatibilityTest extends TestCase
         ElementHelper::swapInProvisionalDrafts($elements);
 
         self::assertSame($draft, $elements[0]);
+    }
+
+    public function testTranslationHelpersPreserveLegacyFallbackBehaviorForUnknownMethods(): void
+    {
+        $site = new Site();
+        $site->id = 2;
+        $site->groupId = 1;
+        $site->handle = 'test-site';
+        $site->language = 'en-US';
+
+        $element = new LegacyTranslationElement();
+        $element->siteId = 2;
+        $element->site = $site;
+
+        self::assertNull(ElementHelper::translationDescription('invalid'));
+        self::assertSame('2', ElementHelper::translationKey($element, 'invalid'));
+        self::assertSame('bar', ElementHelper::translationKey($element, 'invalid', '{foo}'));
     }
 }

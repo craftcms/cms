@@ -214,9 +214,16 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     public string $translationMethod {
         get => $this->_translationMethod->value;
         set(string|TranslationMethod $value) {
-            $this->_translationMethod = $value instanceof TranslationMethod
+            $translationMethod = $value instanceof TranslationMethod
                 ? $value
-                : TranslationMethod::from($value);
+                : TranslationMethod::tryFrom($value);
+
+            if ($translationMethod === null) {
+                $supportedTranslationMethods = static::supportedTranslationMethods();
+                $translationMethod = reset($supportedTranslationMethods) ?: TranslationMethod::None;
+            }
+
+            $this->_translationMethod = $translationMethod;
         }
     }
 

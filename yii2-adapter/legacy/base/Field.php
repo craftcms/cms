@@ -10,6 +10,7 @@ namespace craft\base;
 use Closure;
 use Craft;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Contracts\Database\Query\Builder;
 use yii\base\InvalidConfigException;
@@ -26,10 +27,17 @@ abstract class Field extends \CraftCms\Cms\Field\Field
         get {
             return $this->_translationMethod->value;
         }
-    set(string | \CraftCms\Cms\Field\Enums\TranslationMethod $value) {
-            $this->_translationMethod = $value instanceof \CraftCms\Cms\Field\Enums\TranslationMethod
+    set(string | TranslationMethod $value) {
+            $translationMethod = $value instanceof TranslationMethod
                 ? $value
-                : \CraftCms\Cms\Field\Enums\TranslationMethod::from($value);
+                : TranslationMethod::tryFrom($value);
+
+            if ($translationMethod === null) {
+                $supportedTranslationMethods = static::supportedTranslationMethods();
+                $translationMethod = reset($supportedTranslationMethods) ?: TranslationMethod::None;
+            }
+
+            $this->_translationMethod = $translationMethod;
         }
     }
 
