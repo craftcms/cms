@@ -296,8 +296,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 ->drafts(null)
                 ->status(null)
                 ->siteId($owner->siteId)
-                ->limit(null)
-                ->count();
+                ->getCountForPagination();
         }
 
         return $value->count();

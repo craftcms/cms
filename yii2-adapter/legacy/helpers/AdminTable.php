@@ -9,8 +9,10 @@ namespace craft\helpers;
 
 use Craft;
 use craft\db\Query;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Typecast;
 use Exception;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use yii\db\Expression;
 
@@ -31,21 +33,37 @@ abstract class AdminTable
      */
     public static function paginationLinks(int $page, int $total, int $limit): array
     {
-        $lastPage = ceil($total / $limit);
-        $from = ($page * $limit) - $limit;
-        $to = $from + $limit;
-        $to = min($to, $total);
-        $from++;
+        $pageParam = Cms::config()->getPageTriggerParam();
+        $paginator = new LengthAwarePaginator(
+            items: [],
+            total: $total,
+            perPage: $limit,
+            currentPage: $page,
+            options: [
+                'path' => request()->url(),
+                'pageName' => $pageParam,
+            ],
+        );
+
+        $paginator->appends(request()->except($pageParam));
+
+        $from = null;
+        $to = null;
+
+        if ($total > 0) {
+            $from = (($page - 1) * $limit) + 1;
+            $to = min($from + $limit - 1, $total);
+        }
 
         return [
-            'total' => $total,
-            'per_page' => $limit,
-            'current_page' => $page,
-            'last_page' => (int)$lastPage,
-            'next_page_url' => '?next',
-            'prev_page_url' => '?prev',
-            'from' => (int)$from,
-            'to' => (int)$to,
+            'total' => $paginator->total(),
+            'per_page' => $paginator->perPage(),
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'next_page_url' => $paginator->nextPageUrl(),
+            'prev_page_url' => $paginator->previousPageUrl(),
+            'from' => $from,
+            'to' => $to,
         ];
     }
 

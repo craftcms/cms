@@ -4015,4 +4015,11 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         throw new InvalidArgumentException('Invalid call to ->each');
     }
+
+    public function getCountForPagination($columns = ['*'])
+    {
+        return $this
+            ->select(new Expression('1'))
+            ->count();
+    }
 }

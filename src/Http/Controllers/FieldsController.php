@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
@@ -303,7 +304,7 @@ class FieldsController
 
     public function tableData(Request $request): Response
     {
-        $page = (int) $request->input('page', 1);
+        $page = (int) $request->input(Cms::config()->getPageTriggerParam(), 1);
         $limit = (int) $request->input('per_page', 100);
         $searchTerm = $request->input('search');
         $orderBy = match ($request->input('sort.0.field')) {

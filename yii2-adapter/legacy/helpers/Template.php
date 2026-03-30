@@ -57,7 +57,7 @@ class Template extends BaseTemplate
      */
     public static function paginateCriteria(QueryInterface $query): array
     {
-        return parent::paginateQuery($query);
+        return self::paginateQuery($query);
     }
 
     public static function beginProfile(string $type, string $name): void

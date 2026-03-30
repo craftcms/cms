@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry;
 
 use Craft;
-use craft\helpers\AdminTable;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Database\Table;
@@ -41,6 +41,7 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Http\Events\RequestHandled;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -576,7 +577,7 @@ class EntryTypes
         string $orderBy = 'name',
         int $sortDir = SORT_ASC,
     ): array {
-        [$results, $total] = $this->prepTableData(
+        [$results, $paginator] = $this->prepTableData(
             query: $this->_createEntryTypeQuery(),
             page: $page,
             limit: $limit,
@@ -617,7 +618,16 @@ class EntryTypes
             ];
         }
 
-        $pagination = AdminTable::paginationLinks($page, $total, $limit);
+        $pagination = Arr::only($paginator->toArray(), [
+            'total',
+            'per_page',
+            'current_page',
+            'last_page',
+            'next_page_url',
+            'prev_page_url',
+            'from',
+            'to',
+        ]);
 
         return [$pagination, $tableData];
     }
@@ -626,7 +636,7 @@ class EntryTypes
      * Returns query results needed for the VueAdminTable accounting for the pagination, search terms and sorting options.
      *
      *
-     * @return array{0: Collection, 1: int}
+     * @return array{0: Collection, 1: LengthAwarePaginator}
      */
     private function prepTableData(
         Builder $query,
@@ -637,8 +647,8 @@ class EntryTypes
         int $sortDir = SORT_ASC,
     ): array {
         $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
+        $pageParam = Cms::config()->getPageTriggerParam();
 
-        $offset = ($page - 1) * $limit;
         $query = $query->orderBy($orderBy, $sortDir === SORT_DESC ? 'desc' : 'asc');
 
         if ($searchTerm !== null && $searchTerm !== '') {
@@ -652,12 +662,12 @@ class EntryTypes
             }
         }
 
-        $total = $query->count();
+        $paginator = $query->paginate($limit, ['*'], $pageParam, $page);
+        $results = $paginator->getCollection();
 
-        $query->limit($limit);
-        $query->offset($offset);
+        $paginator->appends(request()->except($pageParam));
 
-        return [$query->get(), $total];
+        return [$results, $paginator];
     }
 
     /**

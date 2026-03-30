@@ -192,7 +192,7 @@ JS;
             'omitScriptNameInUrls' => $generalConfig->omitScriptNameInUrls,
             'orientation' => $orientation,
             'pageNum' => $request->getPageNum(),
-            'pageTrigger' => 'p',
+            'pageTrigger' => Cms::config()->getPageTriggerParam(),
             'path' => $request->getPathInfo(),
             'pathParam' => $generalConfig->pathParam,
             'registeredAssetBundles' => [], // force encode as JS object

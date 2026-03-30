@@ -285,4 +285,28 @@ it('can find field usages', function () {
     $this->markTestIncomplete('Add test with field usage');
 });
 
+it('returns laravel-style pagination metadata for table data', function () {
+    foreach (range(1, 3) as $index) {
+        $this->fields->saveField($this->fields->createField([
+            'type' => PlainText::class,
+            'name' => "Plain Text {$index}",
+            'handle' => "plainText{$index}",
+        ]));
+    }
+
+    [$pagination] = $this->fields->getTableData(2, 2, null, 'name', SORT_ASC);
+
+    expect($pagination)
+        ->toMatchArray([
+            'total' => 3,
+            'per_page' => 2,
+            'current_page' => 2,
+            'last_page' => 2,
+            'from' => 3,
+            'to' => 3,
+        ])
+        ->and($pagination['prev_page_url'])->toContain('page=1')
+        ->and($pagination['next_page_url'])->toBeNull();
+});
+
 test('field layouts')->todo('Implement once field layouts are ported.');

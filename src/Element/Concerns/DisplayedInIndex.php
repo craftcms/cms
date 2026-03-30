@@ -31,7 +31,6 @@ use Illuminate\Contracts\Database\Query\Expression as ExpressionInterface;
 use Illuminate\Support\Facades\DB;
 use Stringable;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
-use yii\db\Expression;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -343,15 +342,7 @@ trait DisplayedInIndex
      */
     public static function indexElementCount(ElementQueryInterface $elementQuery, ?string $sourceKey): int
     {
-        if ($elementQuery instanceof ElementQuery) {
-            return $elementQuery
-                ->select(DB::raw('1'))
-                ->count();
-        }
-
-        return (int) $elementQuery
-            ->select(new Expression('1'))
-            ->count();
+        return $elementQuery->getCountForPagination();
     }
 
     /**

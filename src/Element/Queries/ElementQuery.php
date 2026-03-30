@@ -149,7 +149,6 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         'explain',
         'getbindings',
         'getconnection',
-        'getcountforpagination',
         'getgrammar',
         'getrawbindings',
         'implode',
@@ -581,6 +580,34 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         return $this->applyAfterQueryCallbacks($result);
+    }
+
+    public function getCountForPagination($columns = ['*']): int
+    {
+        $query = clone $this;
+        $query->subQuery = $query->subQuery->cloneWithout([
+            'limit',
+            'offset',
+            'unionLimit',
+            'unionOffset',
+        ]);
+
+        try {
+            $query->applyBeforeQueryCallbacks();
+        } catch (QueryAbortedException) {
+            return 0;
+        }
+
+        if ((int) $query->queryCacheDuration >= 0) {
+            return DependencyCache::remember(
+                key: $query->queryCacheKey($query, 'getcountforpagination', $columns),
+                ttl: $query->queryCacheDuration,
+                callback: fn () => $query->query->getCountForPagination($columns),
+                dependency: $query->getCacheDependency(),
+            );
+        }
+
+        return $query->query->getCountForPagination($columns);
     }
 
     /** @TODO: Remove $db variable after ElementQueryInterface is removed */

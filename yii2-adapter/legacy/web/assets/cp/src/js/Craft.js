@@ -663,28 +663,16 @@ $.extend(Craft, {
       ? document.location.search.substring(1)
       : '';
 
-    // query string-based pagination?
-    if (Craft.pageTrigger[0] === '?') {
-      const pageParam = Craft.pageTrigger.substring(1);
-      // remove the existing page param
-      if (document.location.search) {
-        const params = Object.fromEntries(new URLSearchParams(qs).entries());
-        delete params[pageParam];
-        qs = $.param(params);
-      }
-      if (page !== 1) {
-        qs += (qs !== '' ? '&' : '') + `${pageParam}=${page}`;
-      }
-    } else {
-      // Remove the existing page segment(s)
-      url = url.replace(
-        new RegExp('/' + Craft.escapeRegex(Craft.pageTrigger) + '\\d+$'),
-        ''
-      );
+    const pageParam = Craft.pageTrigger || 'page';
 
-      if (page !== 1) {
-        url += `/${Craft.pageTrigger}${page}`;
-      }
+    if (document.location.search) {
+      const params = Object.fromEntries(new URLSearchParams(qs).entries());
+      delete params[pageParam];
+      qs = $.param(params);
+    }
+
+    if (page !== 1) {
+      qs += (qs !== '' ? '&' : '') + `${pageParam}=${page}`;
     }
 
     return url + (qs ? `?${qs}` : '') + document.location.hash;

@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
-use Closure;
 use Illuminate\Support\Facades\Facade;
 use Override;
-use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
 /**
  * @method static void register(string $name, \Closure|\Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface $definition)
