@@ -11,25 +11,21 @@ use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use CraftCms\Cms\View\Data\TemplateCacheContext;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
-use Illuminate\Container\Attributes\Scoped;
+use Illuminate\Container\Attributes\Singleton;
 use Throwable;
 use yii\base\InvalidConfigException;
 
-#[Scoped]
+#[Singleton]
 readonly class ElementCaches
 {
-    public function __construct(
-        private DependencyCollector $dependencyCollector,
-    ) {}
-
     public function isCollectingCacheInfo(): bool
     {
-        return $this->dependencyCollector->isCollecting();
+        return $this->dependencyCollector()->isCollecting();
     }
 
     public function startCollectingCacheInfo(): void
     {
-        $this->dependencyCollector->begin(new TemplateCacheContext(
+        $this->dependencyCollector()->begin(new TemplateCacheContext(
             cacheKey: '',
             global: false,
             resources: false,
@@ -39,17 +35,17 @@ readonly class ElementCaches
     /** @param list<string> $tags */
     public function collectCacheTags(array $tags): void
     {
-        $this->dependencyCollector->collectTags($tags);
+        $this->dependencyCollector()->collectTags($tags);
     }
 
     public function setCacheExpiryDate(DateTime $expiryDate): void
     {
-        $this->dependencyCollector->setExpiryDate($expiryDate);
+        $this->dependencyCollector()->setExpiryDate($expiryDate);
     }
 
     public function collectCacheInfoForElement(ElementInterface $element): void
     {
-        $this->dependencyCollector->collectElement($element);
+        $this->dependencyCollector()->collectElement($element);
     }
 
     /**
@@ -57,7 +53,7 @@ readonly class ElementCaches
      */
     public function stopCollectingCacheInfo(): array
     {
-        return $this->dependencyCollector->stop();
+        return $this->dependencyCollector()->stop();
     }
 
     /** @return list<string> */
@@ -153,5 +149,15 @@ readonly class ElementCaches
         }
 
         return $tags;
+    }
+
+    /**
+     * We specifically want to resolve the DependencyCollector
+     * from the container, as it is a scoped service, and
+     * we don't want it locked inside this singleton.
+     */
+    private function dependencyCollector(): DependencyCollector
+    {
+        return app(DependencyCollector::class);
     }
 }

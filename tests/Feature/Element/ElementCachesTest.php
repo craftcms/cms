@@ -99,7 +99,7 @@ beforeEach(function () {
     $this->elementCaches = app(ElementCaches::class);
 });
 
-it('is scoped within the current request and is available via the facade', function () {
+it('is a singleton and is available via the facade', function () {
     expect(app(ElementCaches::class))->toBe(app(ElementCaches::class));
 
     expect($this->elementCaches)->toBe(ElementCachesFacade::getFacadeRoot());
