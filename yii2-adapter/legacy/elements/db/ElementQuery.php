@@ -24,11 +24,12 @@ use craft\events\DefineValueEvent;
 use craft\events\PopulateElementEvent;
 use craft\events\PopulateElementsEvent;
 use craft\helpers\Db;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\QueryParam;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -3930,7 +3931,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
 
             if ($this->withProvisionalDrafts) {
-                ElementHelper::swapInProvisionalDrafts($elements);
+                $elements = app(Drafts::class)->withProvisionalDrafts($elements);
             }
 
             // Fire an 'afterPopulateElements' event

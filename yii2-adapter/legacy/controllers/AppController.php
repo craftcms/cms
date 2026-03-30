@@ -14,7 +14,6 @@ use craft\elements\db\NestedElementQueryInterface;
 use craft\helpers\App;
 use craft\helpers\Component;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\ElementHelper;
 use craft\web\Controller;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Data\Volume as LegacyVolume;
@@ -25,6 +24,7 @@ use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\Alerts;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\MenuHtml;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
@@ -430,7 +430,7 @@ class AppController extends Controller
             $elements = $query->all();
 
             // See if there are any provisional changes we should show
-            ElementHelper::loadProvisionalChanges($elements);
+            app(Drafts::class)->loadProvisionalChanges($elements);
 
             foreach ($elements as $element) {
                 foreach ($instances as $key => $instance) {

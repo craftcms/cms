@@ -15,7 +15,6 @@ use craft\db\Table as DbTable;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\OrderByPlaceholderExpression;
 use craft\events\CancelableEvent;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -92,7 +91,7 @@ abstract class BaseRelationField extends \CraftCms\Cms\Field\BaseRelationField
             // if this is the first instance of the field that was ever added to the field layout
             // and none of the other instances (which would have been added later on) have a value.
             if (!$this->allowMultipleSources && $this->source) {
-                $source = ElementHelper::findSource($class, $this->source, ElementSources::CONTEXT_FIELD);
+                $source = app(ElementSources::class)->findSource($class, $this->source, ElementSources::CONTEXT_FIELD);
 
                 // Does the source specify any criteria attributes?
                 if (isset($source['criteria'])) {

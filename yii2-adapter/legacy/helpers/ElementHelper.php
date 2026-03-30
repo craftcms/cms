@@ -16,8 +16,10 @@ use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\User\Elements\User as UserElement;
+use CraftCms\Cms\User\Users;
 use Illuminate\Support\Facades\Context;
 
+use Twig\Markup;
 use function CraftCms\Cms\renderObjectTemplate;
 
 /**
@@ -197,11 +199,11 @@ class ElementHelper
      *
      * @return ElementInterface
      * @since 3.2.0
-     * @deprecated 6.0.0 use {@see ElementInterface::getRootOwner()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::rootElement()} instead.
      */
     public static function rootElement(ElementInterface $element): ElementInterface
     {
-        return $element->getRootOwner();
+        return LaravelElementHelper::rootElement($element);
     }
 
     /**
@@ -211,24 +213,11 @@ class ElementHelper
      *
      * @return ElementInterface|null
      * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::rootElementIfCanonical()} instead.
      */
     public static function rootElementIfCanonical(ElementInterface $element): ?ElementInterface
     {
-        if (!$element->getIsCanonical()) {
-            return null;
-        }
-
-        if (!$element instanceof \craft\base\NestedElementInterface) {
-            return $element;
-        }
-
-        $owner = $element->getOwner();
-
-        if (!$owner) {
-            return $element;
-        }
-
-        return self::rootElementIfCanonical($owner);
+        return LaravelElementHelper::rootElementIfCanonical($element);
     }
 
     /**
@@ -280,10 +269,11 @@ class ElementHelper
      *
      * @return bool
      * @since 3.7.17
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::isCanonical()} instead.
      */
     public static function isCanonical(ElementInterface $element): bool
     {
-        return $element->getRootOwner()->getIsCanonical();
+        return LaravelElementHelper::isCanonical($element);
     }
 
     /**
@@ -293,10 +283,11 @@ class ElementHelper
      *
      * @return bool
      * @since 3.7.17
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::isDerivative()} instead.
      */
     public static function isDerivative(ElementInterface $element): bool
     {
-        return $element->getRootOwner()->getIsDerivative();
+        return LaravelElementHelper::isDerivative($element);
     }
 
     /**
@@ -487,17 +478,11 @@ class ElementHelper
      *
      * @return string[]
      * @since 4.6.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::searchableAttributes()} instead.
      */
     public static function searchableAttributes(ElementInterface $element): array
     {
-        $searchableAttributes = array_flip($element::searchableAttributes());
-        $searchableAttributes['slug'] = true;
-
-        if ($element::hasTitles()) {
-            $searchableAttributes['title'] = true;
-        }
-
-        return array_keys($searchableAttributes);
+        return LaravelElementHelper::searchableAttributes($element);
     }
 
     /**
@@ -567,15 +552,7 @@ class ElementHelper
      */
     public static function actionConfig(ElementActionInterface $action): array
     {
-        return [
-            'type' => $action::class,
-            'destructive' => $action->isDestructive(),
-            'download' => $action->isDownload(),
-            'name' => $action->getTriggerLabel(),
-            'trigger' => $action->getTriggerHtml(),
-            'confirm' => $action->getConfirmationMessage(),
-            'settings' => $action->getSettings() ?: null,
-        ];
+        return LaravelElementHelper::actionConfig($action);
     }
 
     /**
@@ -592,7 +569,7 @@ class ElementHelper
      * @since 5.0.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::renderElements()} instead.
      */
-    public static function renderElements(array $elements, array $variables = []): \Twig\Markup
+    public static function renderElements(array $elements, array $variables = []): Markup
     {
         return LaravelElementHelper::renderElements($elements, $variables);
     }
@@ -648,7 +625,7 @@ class ElementHelper
     public static function setProvisionalDraftUser(UserElement|int|null $user): void
     {
         if (is_int($user)) {
-            $user = app(\CraftCms\Cms\User\Users::class)->getUserById($user);
+            $user = app(Users::class)->getUserById($user);
         }
 
         Context::addHidden(Drafts::CONTEXT_PREVIEW_USER_ID, $user?->id);
@@ -663,20 +640,6 @@ class ElementHelper
      */
     public static function cleanseQueryCriteria(array $criteria): array
     {
-        unset(
-            $criteria['where'],
-            $criteria['orderBy'],
-            $criteria['indexBy'],
-            $criteria['select'],
-            $criteria['selectOption'],
-            $criteria['from'],
-            $criteria['groupBy'],
-            $criteria['join'],
-            $criteria['having'],
-            $criteria['union'],
-            $criteria['withQueries'],
-            $criteria['params'],
-        );
-        return $criteria;
+        return LaravelElementHelper::cleanseQueryCriteria($criteria);
     }
 }

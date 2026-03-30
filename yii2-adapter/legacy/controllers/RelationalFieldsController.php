@@ -8,8 +8,8 @@
 namespace craft\controllers;
 
 use craft\base\ElementInterface;
-use craft\helpers\ElementHelper;
 use craft\web\Controller;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Support\Facades\Structures;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -59,7 +59,7 @@ class RelationalFieldsController extends Controller
             }
         }
 
-        ElementHelper::loadProvisionalChanges($elements);
+        app(Drafts::class)->loadProvisionalChanges($elements);
 
         $html = template('_includes/forms/elementSelect', [
             'elements' => $elements,

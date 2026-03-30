@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use Craft;
+use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use CraftCms\Cms\Cms;
@@ -315,6 +316,36 @@ class ElementHelper
     }
 
     /**
+     * Returns the root owner of a given element.
+     */
+    public static function rootElement(ElementInterface $element): ElementInterface
+    {
+        return $element->getRootOwner();
+    }
+
+    /**
+     * Returns the root element of a given element, unless the element or any of its owners are not canonical.
+     */
+    public static function rootElementIfCanonical(ElementInterface $element): ?ElementInterface
+    {
+        if (! $element->getIsCanonical()) {
+            return null;
+        }
+
+        if (! $element instanceof NestedElementInterface) {
+            return $element;
+        }
+
+        $owner = $element->getOwner();
+
+        if (! $owner) {
+            return $element;
+        }
+
+        return self::rootElementIfCanonical($owner);
+    }
+
+    /**
      * Returns whether the given element, or its root element if it is nested, is a draft.
      */
     public static function isDraft(ElementInterface $element): bool
@@ -378,6 +409,22 @@ class ElementHelper
         }
 
         return self::isDraftOrRevision($owner);
+    }
+
+    /**
+     * Returns whether the given element (or its root element if a block element) is a canonical element.
+     */
+    public static function isCanonical(ElementInterface $element): bool
+    {
+        return $element->getRootOwner()->getIsCanonical();
+    }
+
+    /**
+     * Returns whether the given element (or its root element if a block element) is a derivative of another element.
+     */
+    public static function isDerivative(ElementInterface $element): bool
+    {
+        return $element->getRootOwner()->getIsDerivative();
     }
 
     /**
@@ -474,6 +521,24 @@ class ElementHelper
     }
 
     /**
+     * Returns an element action's JavaScript configuration.
+     *
+     * @return array<string, mixed>
+     */
+    public static function actionConfig(ElementActionInterface $action): array
+    {
+        return [
+            'type' => $action::class,
+            'destructive' => $action->isDestructive(),
+            'download' => $action->isDownload(),
+            'name' => $action->getTriggerLabel(),
+            'trigger' => $action->getTriggerHtml(),
+            'confirm' => $action->getConfirmationMessage(),
+            'settings' => $action->getSettings() ?: null,
+        ];
+    }
+
+    /**
      * Returns a generic editor URL for the given element.
      */
     public static function elementEditorUrl(ElementInterface $element, bool $withParams = true): string
@@ -555,6 +620,49 @@ class ElementHelper
         $propagatedSites = array_filter($supportedSites, fn (array $site) => $site['propagate']);
 
         return count($propagatedSites) > 1;
+    }
+
+    /**
+     * Removes values from posted element query criteria which should not be user-editable.
+     *
+     * @param  array<string, mixed>  $criteria
+     * @return array<string, mixed>
+     */
+    public static function cleanseQueryCriteria(array $criteria): array
+    {
+        Arr::forget($criteria, [
+            'where',
+            'orderBy',
+            'indexBy',
+            'select',
+            'selectOption',
+            'from',
+            'groupBy',
+            'join',
+            'having',
+            'union',
+            'withQueries',
+            'params',
+        ]);
+
+        return $criteria;
+    }
+
+    /**
+     * Returns the searchable attributes for a given element, ensuring that `slug` and `title` are included.
+     *
+     * @return string[]
+     */
+    public static function searchableAttributes(ElementInterface $element): array
+    {
+        $searchableAttributes = array_flip($element::searchableAttributes());
+        $searchableAttributes['slug'] = true;
+
+        if ($element::hasTitles()) {
+            $searchableAttributes['title'] = true;
+        }
+
+        return array_keys($searchableAttributes);
     }
 
     private static function renderUriFormat(string $uriFormat, ElementInterface $element): string
