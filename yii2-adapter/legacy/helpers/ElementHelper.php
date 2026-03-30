@@ -25,6 +25,7 @@ use function CraftCms\Cms\renderObjectTemplate;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 {@see \CraftCms\Cms\Element\ElementHelper} should be used for core element helper APIs, {@see ElementSources} for source lookup, {@see ElementAttributeRenderer} for attribute rendering, {@see Drafts} for provisional draft helpers, {@see TranslationMethod} for translation helpers, and {@see Context} with {@see Drafts::CONTEXT_PREVIEW_USER_ID} for preview-user context.
  */
 class ElementHelper
 {
