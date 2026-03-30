@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Element\Jobs;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\console\controllers\ResaveController;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Element\Commands\Resave\ResaveCommand;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Queue\BatchedElementJob;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -61,7 +61,7 @@ class ResaveElements extends BatchedElementJob
             }
 
             if ($set) {
-                $to = ResaveController::normalizeTo($this->to);
+                $to = ResaveCommand::normalizeTo($this->to);
                 $element->{$this->set} = $to($element);
             }
         }

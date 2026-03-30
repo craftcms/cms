@@ -18,7 +18,6 @@ use craft\controllers\AppController;
 use craft\db\QueryAbortedException;
 use craft\elements\db\EagerLoadInfo;
 use craft\elements\db\EagerLoadPlan;
-use craft\elements\db\ElementQuery;
 use craft\errors\ElementNotFoundException;
 use craft\events\AuthorizationCheckEvent;
 use craft\events\BulkOpEvent;
@@ -88,7 +87,6 @@ use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
-use Tpetry\QueryExpressions\Function\String\Lower;
 use Tpetry\QueryExpressions\Language\Alias;
 use UnitEnum;
 use yii\base\Behavior;
@@ -964,7 +962,7 @@ class Elements extends Component
             ->join(new Alias(Table::ELEMENTS_SITES, 'elements_sites'), 'elements_sites.elementId', 'elements.id')
             ->where('elements_sites.siteId', $siteId)
             ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
-            ->where(new Lower('elements_sites.uri'), mb_strtolower($uri))
+            ->where('elements_sites.uriLower', mb_strtolower($uri))
             ->when(
                 $enabledOnly,
                 fn(Builder $query) => $query->where([
@@ -1548,7 +1546,6 @@ class Elements extends Component
         ?bool $updateSearchIndex = null,
         bool $touch = false,
     ): void {
-        /** @var ElementQuery $query */
         // Fire a 'beforeResaveElements' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENTS)) {
             $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENTS, new ElementQueryEvent([
@@ -1560,7 +1557,7 @@ class Elements extends Component
             $position = 0;
 
             try {
-                foreach (DbHelper::each($query) as $element) {
+                $query->each(function(ElementInterface $element) use ($continueOnError, $query, &$position, $skipRevisions, $touch, $updateSearchIndex) {
                     /** @var ElementInterface $element */
                     $position++;
 
@@ -1600,7 +1597,8 @@ class Elements extends Component
                         if (!$continueOnError) {
                             throw $e;
                         }
-                        Craft::$app->getErrorHandler()->logException($e);
+
+                        report($e);
                     }
 
                     // Fire an 'afterResaveElement' event
@@ -1612,7 +1610,7 @@ class Elements extends Component
                             'exception' => $e,
                         ]));
                     }
-                }
+                });
             } catch (QueryAbortedException) {
                 // Fail silently
             }
@@ -1642,7 +1640,6 @@ class Elements extends Component
         array|int $siteIds = null,
         bool $continueOnError = false,
     ): void {
-        /** @var ElementQuery $query */
         // Fire a 'beforePropagateElements' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_PROPAGATE_ELEMENTS)) {
             $this->trigger(self::EVENT_BEFORE_PROPAGATE_ELEMENTS, new ElementQueryEvent([
@@ -1659,7 +1656,7 @@ class Elements extends Component
             $position = 0;
 
             try {
-                foreach (DbHelper::each($query) as $element) {
+                $query->each(function(ElementInterface $element) use ($continueOnError, $query, &$position, $siteIds) {
                     /** @var ElementInterface $element */
                     $position++;
 
@@ -1701,7 +1698,8 @@ class Elements extends Component
                         if (!$continueOnError) {
                             throw $e;
                         }
-                        Craft::$app->getErrorHandler()->logException($e);
+
+                        report($e);
                     }
 
                     // Fire an 'afterPropagateElement' event
@@ -1719,7 +1717,7 @@ class Elements extends Component
 
                     // Clear caches
                     $this->invalidateCachesForElement($element);
-                }
+                });
             } catch (QueryAbortedException) {
                 // Fail silently
             }

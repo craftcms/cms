@@ -86,7 +86,7 @@ use Illuminate\Support\Facades\Route;
  * Actions that are accessible both with and without CP can be registered here.
  */
 foreach ([
-    Cms::config()->actionTrigger => [],
+    Cms::config()->actionTrigger => ['craft.web'],
     implode('/', [
         Cms::config()->cpTrigger,
         Cms::config()->actionTrigger,

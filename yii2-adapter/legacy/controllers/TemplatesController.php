@@ -10,10 +10,9 @@ namespace craft\controllers;
 use Craft;
 use craft\db\Connection;
 use craft\helpers\Db;
-use craft\web\Application;
 use craft\web\Controller;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Route\DynamicRoute;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Twig\TemplateResolver;
@@ -28,6 +27,7 @@ use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
+
 use function CraftCms\Cms\t;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
@@ -89,26 +89,16 @@ class TemplatesController extends Controller
      */
     public function actionRender(string $template, array $variables = []): Response
     {
-        // Does that template exist?
-        if (
-            (
-                Cms::config()->headlessMode &&
-                $this->request->getIsSiteRequest()
-            ) ||
-            !Path::ensurePathIsContained($template) || // avoid the Craft::warning() from View::_validateTemplateName()
-            !app(TemplateResolver::class)->exists($template)
-        ) {
-            throw new NotFoundHttpException('Template not found: ' . $template);
-        }
-
-        // Merge any additional route params
-        /** @var Application $app */
-        $app = Craft::$app;
-        $routeParams = $app->getUrlManager()->getRouteParams();
+        $routeParams = Craft::$app->getUrlManager()->getRouteParams();
         unset($routeParams['template']);
         $variables = array_merge($variables, $routeParams);
 
-        return $this->renderTemplate($template, $variables);
+        $this->response->content = new DynamicRoute('templates/render', [
+            'template' => $template,
+            'variables' => $variables,
+        ])->handle(request())->getContent();
+
+        return $this->response;
     }
 
     /**
