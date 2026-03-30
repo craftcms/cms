@@ -168,6 +168,6 @@ it('returns laravel-style pagination metadata for table data', function () {
             'from' => 3,
             'to' => 3,
         ])
-        ->and($pagination['prev_page_url'])->toContain('p=1')
+        ->and($pagination['prev_page_url'])->toContain('page=1')
         ->and($pagination['next_page_url'])->toBeNull();
 });

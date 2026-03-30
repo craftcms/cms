@@ -82,7 +82,7 @@ describe('URL detection', function () {
         [true, '/22'],
         [false, '//cdn.craftcms.com/22'],
         [false, 'https://www.craftcms.com/'],
-        [false, '?p=test'],
+        [false, '?page=test'],
     ]);
 });
 
