@@ -14,49 +14,36 @@
   import type {SlideoutInstance} from '@/types/globals';
 
   const emit = defineEmits<{
-    (e: 'update:modelValue', value: Array<number>): void;
+    (e: 'update:modelValue', value: Array<EntryType>): void;
   }>();
   const props = defineProps<{
-    modelValue: Array<number>;
-    types: Array<EntryType>;
+    modelValue: Array<EntryType>;
+    entryTypes: Array<EntryType>;
     actions?: Array<any>;
   }>();
-
-  const selectedTypes = computed(() => {
-    return props.modelValue
-      .map((id) => {
-        return props.types?.find((type) => type.id === id) ?? null;
-      })
-      .filter(Boolean);
-  });
 
   const entryTypeQuery = ref('');
 
   const selectableTypes = computed(() => {
-    return props.types?.filter(
-      (type) =>
-        type.name.includes(entryTypeQuery.value) ||
-        type.handle.includes(entryTypeQuery.value)
+    return props.entryTypes?.filter(
+      (entryType) =>
+        entryType.name.includes(entryTypeQuery.value) ||
+        entryType.handle.includes(entryTypeQuery.value)
     );
   });
 
   function handleTypeSelect(type: EntryType) {
-    let newValue = [...props.modelValue];
-    if (newValue.includes(type.id)) {
-      newValue.splice(newValue.indexOf(type.id), 1);
+    if (props.modelValue.find((item) => item.id === type.id)) {
+      removeItem(type.id);
     } else {
-      newValue.push(type.id);
+      emit('update:modelValue', [...props.modelValue, type]);
     }
-
-    emit('update:modelValue', newValue);
   }
 
   function removeItem(itemId: number) {
-    let newValue = [...props.modelValue];
-    if (newValue.includes(itemId)) {
-      newValue.splice(newValue.indexOf(itemId), 1);
-    }
-    emit('update:modelValue', newValue);
+    emit('update:modelValue', [
+      ...props.modelValue.filter((item) => item.id !== itemId),
+    ]);
   }
 
   const slideout = ref<SlideoutInstance | undefined>(undefined);
@@ -193,17 +180,17 @@
 
 <template>
   <div>
-    <template v-for="type in selectedTypes">
+    <template v-for="entryType in modelValue">
       <craft-chip
-        v-if="type"
-        :icon="type.icon"
-        :data-color="type.color?.value ?? 'white'"
+        v-if="entryType"
+        :icon="entryType.icon"
+        :data-color="entryType.color?.value ?? entryType.color ?? 'white'"
       >
-        <div :data-id="type.id">
+        <div :data-id="entryType.id">
           <div class="font-bold">
-            {{ overrides[type.id]?.name ?? type.name }}
+            {{ overrides[entryType.id]?.name ?? entryType.name }}
           </div>
-          <code>{{ overrides[type.id]?.handle ?? type.handle }}</code>
+          <code>{{ overrides[entryType.id]?.handle ?? entryType.handle }}</code>
         </div>
 
         <div slot="suffix" class="flex gap-1 items-center">
@@ -212,13 +199,13 @@
               {
                 label: t('Settings'),
                 icon: 'gear',
-                onClick: () => openSlideout(type.id),
+                onClick: () => openSlideout(entryType.id),
               },
               {
                 label: t('Remove'),
                 variant: 'danger',
                 icon: 'x',
-                onClick: () => removeItem(type.id),
+                onClick: () => removeItem(entryType.id),
               },
             ]"
           />
@@ -229,7 +216,7 @@
   </div>
 
   <div class="flex gap-2 mt-3 items-center">
-    <craft-action-menu v-if="types?.length">
+    <craft-action-menu v-if="entryTypes?.length">
       <craft-button type="button" slot="invoker" appearance="filled">
         <craft-icon name="chevron-down" slot="prefix"></craft-icon>
         {{ t('Choose') }}
@@ -255,17 +242,19 @@
           </div>
         </template>
         <template v-else>
-          <template v-for="type in selectableTypes" :key="type.id">
+          <template v-for="entryType in selectableTypes" :key="entryType.id">
             <craft-action-item
-              @click="handleTypeSelect(type)"
+              @click="handleTypeSelect(entryType)"
               type="checkbox"
-              :icon="type.icon ?? 'empty'"
-              :checked="modelValue.includes(type.id)"
-              :data-color="type.color?.value ?? 'white'"
+              :icon="entryType.icon ?? 'empty'"
+              :checked="
+                modelValue.find((valueType) => valueType.id === entryType.id)
+              "
+              :data-color="entryType.color?.value ?? 'white'"
             >
               <div>
-                {{ type.name }}
-                <pre>{{ type.handle }}</pre>
+                {{ entryType.name }}
+                <pre>{{ entryType.handle }}</pre>
               </div>
             </craft-action-item>
           </template>

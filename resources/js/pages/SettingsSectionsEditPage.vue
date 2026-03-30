@@ -43,7 +43,7 @@
     name: props.section.name ?? '',
     handle: props.section.handle ?? '',
     type: props.section.type,
-    entryTypes: props.section.entryTypes?.map((type) => type.id) ?? [],
+    entryTypes: props.section.entryTypes ?? [],
     enableVersioning: props.section.enableVersioning,
     maxAuthors: props.section.maxAuthors ?? 1,
     maxLevels: props.section.maxLevels ?? '',
@@ -297,7 +297,10 @@
                 )
               }}
             </p>
-            <EntryTypeSelect :types="entryTypes" v-model="form.entryTypes" />
+            <EntryTypeSelect
+              :entry-types="entryTypes"
+              v-model="form.entryTypes"
+            />
           </div>
         </div>
 
