@@ -1244,6 +1244,8 @@ return [
     'Password' => 'รหัสผ่าน',
     'Past year' => 'ปีที่ผ่านมา',
     'Past {num} days' => '{num} วันก่อน',
+    'Paste {type} above' => 'Paste {type} above',
+    'Paste {type} before' => 'Paste {type} before',
     'Paste {type}' => 'วาง {type}',
     'Pay {price}' => 'ชำระเงิน {price}',
     'Pending' => 'กำลังรอดำเนินการ',
