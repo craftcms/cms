@@ -1243,6 +1243,8 @@ return [
     'Password' => 'Wachtwoord',
     'Past year' => 'Vorig jaar',
     'Past {num} days' => 'Afgelopen {num} dagen',
+    'Paste {type} above' => 'Paste {type} above',
+    'Paste {type} before' => 'Paste {type} before',
     'Paste {type}' => '{type} plakken',
     'Pay {price}' => 'Betalen {price}',
     'Pending' => 'Wachtend',
