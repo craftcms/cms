@@ -1243,6 +1243,8 @@ return [
     'Password' => 'كلمة المرور',
     'Past year' => 'العام الماضي',
     'Past {num} days' => 'الأيام {num} الماضية',
+    'Paste {type} above' => 'Paste {type} above',
+    'Paste {type} before' => 'Paste {type} before',
     'Paste {type}' => 'نسخ {type}',
     'Pay {price}' => 'أدفع {price}',
     'Pending' => 'معلق',
