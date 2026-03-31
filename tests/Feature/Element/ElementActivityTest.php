@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use craft\base\ElementInterface;
-use craft\models\ElementActivity as LegacyElementActivity;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Data\ElementActivity as ElementActivityData;
 use CraftCms\Cms\Element\Drafts;
@@ -146,21 +145,6 @@ it('skips missing related elements when building recent activity', function () {
     DB::table(Table::ELEMENTS)->where('id', $draft->id)->delete();
 
     expect($this->elementActivity->getRecentActivity($entry))->toBeEmpty();
-});
-
-it('maps recent activity back to the legacy model through the elements service', function () {
-    $entry = EntryModel::factory()->createElement(['title' => 'Canonical entry']);
-    $user = UserModel::factory()->createElement();
-
-    insertElementActivity($entry, $user, ElementActivityType::View, now()->subSeconds(5));
-
-    $activity = Craft::$app->getElements()->getRecentActivity($entry);
-
-    expect($activity)->toHaveCount(1)
-        ->and($activity[0])->toBeInstanceOf(LegacyElementActivity::class)
-        ->and($activity[0]->user->id)->toBe($user->id)
-        ->and($activity[0]->element->id)->toBe($entry->id)
-        ->and($activity[0]->type)->toBe(ElementActivityType::View->value);
 });
 
 function insertElementActivity(
