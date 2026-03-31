@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section\Resources;
 
+use CraftCms\Cms\Entry\Resources\EntryTypeResource;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use Illuminate\Http\Request;
@@ -30,7 +31,7 @@ class SectionResource extends JsonResource
             'propagationMethod' => $this->propagationMethod->value,
             'defaultPlacement' => $this->defaultPlacement->value,
             'previewTargets' => $this->previewTargets ?? [],
-            'entryTypes' => $this->entryTypes,
+            'entryTypes' => EntryTypeResource::collection($this->entryTypes),
         ];
     }
 }
