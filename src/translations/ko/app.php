@@ -1243,6 +1243,8 @@ return [
     'Password' => '비밀번호',
     'Past year' => '작년',
     'Past {num} days' => '지난 {num}일',
+    'Paste {type} above' => 'Paste {type} above',
+    'Paste {type} before' => 'Paste {type} before',
     'Paste {type}' => '{type} 붙여넣기',
     'Pay {price}' => '{price} 결제',
     'Pending' => '대기 중',
