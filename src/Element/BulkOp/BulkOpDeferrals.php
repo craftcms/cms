@@ -29,11 +29,6 @@ class BulkOpDeferrals
      */
     private array $pending = [];
 
-    /**
-     * @var list<callable(): array<int, string>>
-     */
-    private static array $activeKeyResolvers = [];
-
     public function __construct(
         private readonly BulkOps $bulkOps,
         private readonly ConnectionInterface $connection,
@@ -50,7 +45,7 @@ class BulkOpDeferrals
         }
 
         Event::listen($event, function () use ($event, $watchKey) {
-            foreach ($this->activeKeys() as $key) {
+            foreach ($this->bulkOps->activeKeys() as $key) {
                 $this->pending[$key][$event][$watchKey] = true;
             }
         });
@@ -116,29 +111,9 @@ class BulkOpDeferrals
         }
     }
 
-    public static function registerActiveKeyResolver(callable $resolver): void
-    {
-        self::$activeKeyResolvers[] = $resolver;
-    }
-
     public static function reset(): void
     {
         self::$handlers = [];
         self::$listening = [];
-        self::$activeKeyResolvers = [];
-    }
-
-    /**
-     * @return string[]
-     */
-    private function activeKeys(): array
-    {
-        $activeKeys = $this->bulkOps->activeKeys();
-
-        foreach (self::$activeKeyResolvers as $resolver) {
-            $activeKeys = [...$activeKeys, ...$resolver()];
-        }
-
-        return array_values(array_unique($activeKeys));
     }
 }

@@ -14,7 +14,6 @@ use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\CustomFieldBehavior;
-use craft\controllers\AppController;
 use craft\db\QueryAbortedException;
 use craft\elements\db\EagerLoadInfo;
 use craft\elements\db\EagerLoadPlan;
@@ -39,6 +38,9 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\BulkOp\BulkOps;
+use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
+use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
@@ -1012,17 +1014,16 @@ class Elements extends Component
     // Bulk ops
     // -------------------------------------------------------------------------
 
-    private array $bulkKeys = [];
-
     /**
      * Returns the active bulk op keys.
      *
      * @return string[]
      * @since 5.7.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\BulkOp\BulkOps::activeKeys()} instead.
      */
     public function getBulkOpKeys(): array
     {
-        return array_keys($this->bulkKeys);
+        return app(BulkOps::class)->activeKeys();
     }
 
     /**
@@ -1030,19 +1031,11 @@ class Elements extends Component
      *
      * @return string The bulk operation key
      * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\BulkOp\BulkOps::start()} instead.
      */
     public function beginBulkOp(): string
     {
-        $key = Str::random(10);
-
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_BULK_OP)) {
-            $this->trigger(self::EVENT_BEFORE_BULK_OP, new BulkOpEvent([
-                'key' => $key,
-            ]));
-        }
-
-        $this->resumeBulkOp($key);
-        return $key;
+        return app(BulkOps::class)->start();
     }
 
     /**
@@ -1051,10 +1044,11 @@ class Elements extends Component
      * @param string $key The bulk operation key returned by [[beginBulkOp()]].
      *
      * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\BulkOp\BulkOps::resume()} instead.
      */
     public function resumeBulkOp(string $key): void
     {
-        $this->bulkKeys[$key] = true;
+        app(BulkOps::class)->resume($key);
     }
 
     /**
@@ -1063,22 +1057,11 @@ class Elements extends Component
      * @param string $key The bulk operation key returned by [[beginBulkOp()]].
      *
      * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\BulkOp\BulkOps::end()} instead.
      */
     public function endBulkOp(string $key): void
     {
-        unset($this->bulkKeys[$key]);
-
-        if ($this->hasEventHandlers(self::EVENT_AFTER_BULK_OP)) {
-            $this->trigger(self::EVENT_AFTER_BULK_OP, new BulkOpEvent([
-                'key' => $key,
-            ]));
-        }
-
-        if (!$this->isMigrationRequest()) {
-            $this->getBulkOpConnection()->table(Table::ELEMENTS_BULKOPS)
-                ->where('key', $key)
-                ->delete();
-        }
+        app(BulkOps::class)->end($key);
     }
 
     /**
@@ -1087,37 +1070,11 @@ class Elements extends Component
      * @param ElementInterface $element
      *
      * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\BulkOp\BulkOps::trackElement()} instead.
      */
     public function trackElementInBulkOps(ElementInterface $element): void
     {
-        if (empty($this->bulkKeys) || $this->isMigrationRequest()) {
-            return;
-        }
-
-        $timestamp = now();
-
-        $connection = $this->getBulkOpConnection();
-        foreach (array_keys($this->bulkKeys) as $key) {
-            $connection->table(Table::ELEMENTS_BULKOPS)
-                ->upsert([
-                    'elementId' => $element->id,
-                    'key' => $key,
-                    'timestamp' => $timestamp,
-                ], ['elementId', 'key']);
-        }
-    }
-
-    private function isMigrationRequest(): bool
-    {
-        return (
-            // TODO: Still necessary?
-            //Craft::$app->controller instanceof MigrateController ||
-            //Craft::$app->controller instanceof UpController ||
-            (
-                Craft::$app->controller instanceof AppController &&
-                Craft::$app->controller->action?->id === 'update'
-            )
-        );
+        app(BulkOps::class)->trackElement($element);
     }
 
     /**
@@ -1125,22 +1082,14 @@ class Elements extends Component
      * callback function.
      *
      * @param callable $callback
+     *
      * @return mixed
      * @since 5.3.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\BulkOp\BulkOps::ensure()} instead.
      */
     public function ensureBulkOp(callable $callback): mixed
     {
-        if (empty($this->bulkKeys)) {
-            $bulkKey = $this->beginBulkOp();
-        }
-
-        try {
-            return $callback();
-        } finally {
-            if (isset($bulkKey)) {
-                $this->endBulkOp($bulkKey);
-            }
-        }
+        return app(BulkOps::class)->ensure($callback);
     }
 
     // Saving Elements
@@ -4889,6 +4838,26 @@ class Elements extends Component
 
     public static function registerEvents(): void
     {
+        Event::listen(function(BeforeBulkOp $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_BULK_OP)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_BEFORE_BULK_OP, new BulkOpEvent([
+                'key' => $event->key,
+            ]));
+        });
+
+        Event::listen(function(AfterBulkOp $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_BULK_OP)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_AFTER_BULK_OP, new BulkOpEvent([
+                'key' => $event->key,
+            ]));
+        });
+
         Event::listen(function(InvalidateElementCaches $event) {
             // Fire a 'invalidateCaches' event
             if (Craft::$app->getElements()->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
