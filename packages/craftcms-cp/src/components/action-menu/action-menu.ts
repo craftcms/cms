@@ -47,22 +47,14 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
   }
 
   /**
-   * Adds functionality to close the overlay on click
-   * To maintain focus management, a focus listener is added on the target so that when it gets re-focused, it triggers a close event on the overlay.
+   * @TODO Figure out how to best manage passing an elementToFocusAfterHide to the Lion modal
    * @private
    */
-  private __addAutoCloseOnSelect() {
-    this._overlayContentNode.addEventListener('click', (event) => {
-      const target = event.target as HTMLElement;
-      target.addEventListener(
-        'focus',
-        () => {
-          setTimeout(() => {
-            target.dispatchEvent(new Event('close-overlay', {bubbles: true}));
-          }, 300);
-        },
-        {once: true}
-      );
+  private __addEventListeners() {
+    this.actionItems.forEach((item) => {
+      item.addEventListener('click', (e) => {
+        e.target?.dispatchEvent(new Event('close-overlay', {bubbles: true}));
+      });
     });
   }
 
@@ -90,7 +82,7 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
 
   override firstUpdated() {
     this.uid = uuid();
-    this.__addAutoCloseOnSelect();
+    this.__addEventListeners();
   }
 
   protected override render(): unknown {
