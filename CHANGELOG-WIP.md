@@ -3,6 +3,7 @@
 ### Content Management
 - Collapsed Matrix blocks now show their entries’ UI labels as preview text, whenever possible. ([#18484](https://github.com/craftcms/cms/discussions/18484))
 - Element-level actions within nested element management fields (Matrix, Addresses, etc.) now consistently affect all selected elements, when performed on a selected element. ([#18561](https://github.com/craftcms/cms/pull/18561))
+- Elements within Matrix and Addresses fields now have “Paste above” actions when a compatible element is copied. ([#17406](https://github.com/craftcms/cms/discussions/17406)) 
 - Addresses fields now have a “Copy all addresses” field-level action. ([#18561](https://github.com/craftcms/cms/pull/18561))
 - Matrix fields’ “Expand”, “Collapse”, and “Copy” field-level actions now always affect all nested entries, regardless of whether any entries are selected. ([#18561](https://github.com/craftcms/cms/pull/18561))
 - Matrix fields no longer have “Duplicate” and “Delete” field-level actions. ([#18561](https://github.com/craftcms/cms/pull/18561))

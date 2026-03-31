@@ -323,6 +323,8 @@ JS;
             'Password',
             'Past year',
             'Past {num} days',
+            'Paste {type} above',
+            'Paste {type} before',
             'Paste {type}',
             'Pay {price}',
             'Pending',

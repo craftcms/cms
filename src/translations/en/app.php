@@ -1243,6 +1243,8 @@ return [
     'Password' => 'Password',
     'Past year' => 'Past year',
     'Past {num} days' => 'Past {num} days',
+    'Paste {type} above' => 'Paste {type} above',
+    'Paste {type} before' => 'Paste {type} before',
     'Paste {type}' => 'Paste {type}',
     'Pay {price}' => 'Pay {price}',
     'Pending' => 'Pending',

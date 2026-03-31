@@ -120,17 +120,30 @@
   ]) %}
 {% endif %}
 
-{% set actionMenuItems = actionMenuItems|merge([
-  {
-    icon: 'clone-dashed',
-    color: 'fuchsia',
-    label: 'Copy'|t('app'),
-    attributes: {
-      data: {action: 'copy'},
-    },
+{% set actionMenuItems = actionMenuItems|push({
+  icon: 'clone-dashed',
+  color: 'fuchsia',
+  label: 'Copy'|t('app'),
+  attributes: {
+    data: {action: 'copy'},
   },
-  {hr: true},
-]) %}
+}) %}
+
+{% if not staticEntries %}
+  {% set actionMenuItems = actionMenuItems|push({
+    icon: 'duplicate',
+    color: 'fuchsia',
+    label: 'Paste {type} above'|t('app', {type: 'entry'|t('app')}),
+    attributes: {
+      data: {action: 'paste'},
+    },
+    liAttributes: {
+      class: ['hidden'],
+    },
+  }) %}
+{% endif %}
+
+{% set actionMenuItems = actionMenuItems|push({hr: true}) %}
 
 {% if not staticEntries %}
   {% for entryType in entryTypes %}

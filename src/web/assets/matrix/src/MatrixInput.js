@@ -213,7 +213,7 @@
         return true;
       },
 
-      async pasteEntries() {
+      async pasteEntries($before = null) {
         Craft.cp.announce(Craft.t('app', 'Loading'));
         this.$pasteBtn.addClass('loading');
 
@@ -261,7 +261,13 @@
           await this.elementEditor?.pause();
 
           const $newEntries = $(data.blockHtml);
-          this.$entriesContainer.append($newEntries);
+
+          if ($before) {
+            $newEntries.insertBefore($before);
+          } else {
+            this.$entriesContainer.append($newEntries);
+          }
+
           await Craft.appendHeadHtml(data.headHtml);
           await Craft.appendBodyHtml(data.bodyHtml);
           Craft.initUiElements($newEntries);
@@ -761,6 +767,25 @@
                 })
               : Craft.t('app', 'Delete')
           );
+
+        const $pasteBtn = $buttons.filter('[data-action="paste"]');
+        const copiedElements = Craft.cp.getCopiedElements();
+        const showPasteButton =
+          copiedElements.length && this.matrix.canPaste(copiedElements);
+        if (showPasteButton) {
+          this.actionDisclosure.showItem($pasteBtn[0]);
+          $pasteBtn.children('.menu-item-label').text(
+            copiedElements.length === 1
+              ? Craft.t('app', 'Paste {type} above', {
+                  type: Craft.t('app', 'block'),
+                })
+              : Craft.t('app', 'Paste {type} above', {
+                  type: Craft.t('app', 'blocks'),
+                })
+          );
+        } else {
+          this.actionDisclosure.hideItem($pasteBtn[0]);
+        }
       });
 
       this.actionDisclosure.on('hide', () => {
@@ -1168,6 +1193,10 @@
           Craft.cp.copyElements(elementInfo);
           break;
         }
+
+        case 'paste':
+          this.matrix.pasteEntries(this.$container);
+          break;
 
         case 'delete': {
           if (this.bulkActionMode()) {
