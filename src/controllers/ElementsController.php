@@ -1729,6 +1729,13 @@ JS, [
                         ->only($element->safeAttributes())
                         ->all();
 
+                    if ($element->getIsRevision() && $element->dateDeleted !== null) {
+                        $safeNewAttributes['dateDeleted'] = null;
+                        $safeNewAttributes['deletedWithOwner'] = null;
+                        $safeNewAttributes['trashed'] = false;
+                        $safeNewAttributes['revisionId'] = null;
+                    }
+
                     try {
                         $newElement = $elementsService->duplicateElement(
                             $element,
