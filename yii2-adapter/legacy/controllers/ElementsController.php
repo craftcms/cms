@@ -2495,7 +2495,7 @@ JS, [
         ElementActivityFacade::trackActivity($element, ElementActivityType::View, $currentUser);
 
         return $this->asJson([
-            'activity' => $activity->map(fn(ElementActivity $record) => $record->toActivityRow($element), $activity),
+            'activity' => $activity->map(fn(ElementActivity $record) => $record->toActivityRow($element))->all(),
             'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
             'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated->getTimestamp(),
         ]);
