@@ -52,7 +52,7 @@ class Asset extends ElementMutationResolver
             $this->requireSchemaAction('volumes.'.$volume->uid, 'save');
 
             if (! empty($arguments['uid'])) {
-                $asset = $elementService->createElementQuery(AssetElement::class)->uid($arguments['uid'])->one();
+                $asset = Elements::createElementQuery(AssetElement::class)->uid($arguments['uid'])->one();
             } else {
                 $asset = $elementService->getElementById($arguments['id'], AssetElement::class);
             }

@@ -48,7 +48,7 @@ class Tag extends ElementMutationResolver
 
         if ($canIdentify) {
             if (!empty($arguments['uid'])) {
-                $tag = $elementService->createElementQuery(TagElement::class)->uid($arguments['uid'])->one();
+                $tag = Elements::createElementQuery(TagElement::class)->uid($arguments['uid'])->one();
             } else {
                 $tag = $elementService->getElementById($arguments['id'], TagElement::class);
             }

@@ -51,7 +51,7 @@ class Category extends ElementMutationResolver
 
         if ($canIdentify) {
             if (!empty($arguments['uid'])) {
-                $category = $elementService->createElementQuery(CategoryElement::class)->uid($arguments['uid'])->one();
+                $category = Elements::createElementQuery(CategoryElement::class)->uid($arguments['uid'])->one();
             } else {
                 $category = $elementService->getElementById($arguments['id'], CategoryElement::class);
             }

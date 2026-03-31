@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Handlers;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Typecast;
 use Override;
 
@@ -25,7 +25,7 @@ abstract class RelationArgumentHandler extends ArgumentHandler
 
         foreach ($criteriaList as $criteria) {
             /** @var ElementQuery $elementQuery */
-            $elementQuery = Typecast::configure(Craft::$app->getElements()->createElementQuery($elementType), $criteria);
+            $elementQuery = Typecast::configure(Elements::createElementQuery($elementType), $criteria);
             $idSets[] = $elementQuery->ids();
         }
 

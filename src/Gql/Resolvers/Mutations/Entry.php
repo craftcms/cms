@@ -94,7 +94,7 @@ class Entry extends ElementMutationResolver
         $this->performStructureOperations($entry, $arguments);
 
         /** @var EntryQuery $query */
-        $query = Craft::$app->getElements()->createElementQuery(EntryElement::class)
+        $query = Elements::createElementQuery(EntryElement::class)
             ->siteId($entry->siteId)
             ->status(null);
 
@@ -164,8 +164,7 @@ class Entry extends ElementMutationResolver
     public function publishDraft(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): int
     {
         /** @var EntryElement|null $draft */
-        $draft = Craft::$app->getElements()
-            ->createElementQuery(EntryElement::class)
+        $draft = Elements::createElementQuery(EntryElement::class)
             ->status(null)
             ->provisionalDrafts($arguments['provisional'] ?? false)
             ->draftId($arguments['id'])
@@ -219,13 +218,11 @@ class Entry extends ElementMutationResolver
             throw new Error('Unable to perform the action.');
         }
 
-        $elementService = Craft::$app->getElements();
-
         if ($canIdentify) {
             // Prepare the element query
             $siteId = $arguments['siteId'] ?? Sites::getPrimarySite()->id;
             /** @var EntryQuery $entryQuery */
-            $entryQuery = $elementService->createElementQuery(EntryElement::class)->status(null)->siteId($siteId);
+            $entryQuery = Elements::createElementQuery(EntryElement::class)->status(null)->siteId($siteId);
             $entryQuery = $this->identifyEntry($entryQuery, $arguments);
 
             $entry = $entryQuery->one();

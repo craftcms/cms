@@ -589,14 +589,11 @@ class Elements extends Component
      * @return ElementQueryInterface The element query
      * @throws InvalidArgumentException if $elementType is not a valid element
      * @since 3.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::createElementQuery()} instead.
      */
     public function createElementQuery(string $elementType): ElementQueryInterface|ElementQuery
     {
-        if (!is_subclass_of($elementType, ElementInterface::class)) {
-            throw new InvalidArgumentException("$elementType is not a valid element.");
-        }
-
-        return $elementType::find();
+        return ElementsFacade::createElementQuery($elementType);
     }
 
     /**
