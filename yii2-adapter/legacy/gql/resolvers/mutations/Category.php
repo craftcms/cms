@@ -12,6 +12,7 @@ use craft\elements\Category as CategoryElement;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\StructureMutationTrait;
 use craft\models\CategoryGroup;
+use CraftCms\Cms\Support\Facades\Elements;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Support\Facades\DB;
@@ -59,7 +60,7 @@ class Category extends ElementMutationResolver
                 throw new Error('No such category exists');
             }
         } else {
-            $category = $elementService->createElement(['type' => CategoryElement::class, 'groupId' => $categoryGroup->id]);
+            $category = Elements::createElement(['type' => CategoryElement::class, 'groupId' => $categoryGroup->id]);
         }
 
         /** @var \craft\elements\Category $category */

@@ -11,6 +11,7 @@ use Craft;
 use craft\elements\Tag as TagElement;
 use craft\gql\base\ElementMutationResolver;
 use craft\models\TagGroup;
+use CraftCms\Cms\Support\Facades\Elements;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Support\Facades\DB;
@@ -56,7 +57,7 @@ class Tag extends ElementMutationResolver
                 throw new Error('No such tag exists');
             }
         } else {
-            $tag = $elementService->createElement(['type' => TagElement::class, 'groupId' => $tagGroup->id]);
+            $tag = Elements::createElement(['type' => TagElement::class, 'groupId' => $tagGroup->id]);
         }
 
         /** @var \craft\elements\Tag $tag */

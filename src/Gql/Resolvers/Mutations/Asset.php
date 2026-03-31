@@ -16,6 +16,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Gql\Resolvers\ElementMutationResolver;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Url;
@@ -75,7 +76,7 @@ class Asset extends ElementMutationResolver
                 $newFolderId = Folders::getRootFolderByVolumeId($volume->id)->id;
             }
 
-            $asset = $elementService->createElement([
+            $asset = Elements::createElement([
                 'type' => AssetElement::class,
                 'volumeId' => $volume->id,
                 'newFolderId' => $newFolderId,

@@ -26,6 +26,7 @@ use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Resolvers\Elements\ContentBlock as ContentBlockResolver;
 use CraftCms\Cms\Gql\Types\Generators\ContentBlock as ContentBlockGenerator;
 use CraftCms\Cms\Gql\Types\Input\ContentBlock as ContentBlockInputType;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -459,7 +460,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
 
     private function createContentBlockElement(?ElementInterface $owner): ContentBlockElement
     {
-        return Craft::$app->getElements()->createElement([
+        return Elements::createElement([
             'type' => ContentBlockElement::class,
             'siteId' => $owner->siteId,
             'owner' => $owner,

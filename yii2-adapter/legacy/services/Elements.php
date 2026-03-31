@@ -69,6 +69,7 @@ use CraftCms\Cms\Structure\Models\StructureElement as StructureElementModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Facades\ElementCaches;
+use CraftCms\Cms\Support\Facades\Elements as ElementsFacade;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -573,14 +574,11 @@ class Elements extends Component
      *
      * @phpstan-param class-string<T>|array{type:class-string<T>} $config
      * @return T The element
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::createElement()} instead.
      */
     public function createElement(mixed $config): ElementInterface
     {
-        if (is_string($config)) {
-            $config = ['type' => $config];
-        }
-
-        return ComponentHelper::createComponent($config, ElementInterface::class);
+        return ElementsFacade::createElement($config);
     }
 
     /**

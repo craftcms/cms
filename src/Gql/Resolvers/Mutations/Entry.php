@@ -15,6 +15,7 @@ use CraftCms\Cms\Gql\Resolvers\ElementMutationResolver;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Drafts;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use Error;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -233,7 +234,7 @@ class Entry extends ElementMutationResolver
                 throw new Error('No such entry exists');
             }
         } else {
-            $entry = $elementService->createElement(EntryElement::class);
+            $entry = Elements::createElement(EntryElement::class);
         }
 
         // If they are identifying a specific entry, don't allow changing the section/field ID.
