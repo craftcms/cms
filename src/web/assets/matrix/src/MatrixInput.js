@@ -205,7 +205,7 @@
 
         const entryTypeIds = this.entryTypes.map((entryType) => entryType.id);
         for (const info of elementInfo) {
-          if (!entryTypeIds.includes(info.data.entryTypeId)) {
+          if (!entryTypeIds.includes(info.data?.entryTypeId)) {
             return false;
           }
         }
