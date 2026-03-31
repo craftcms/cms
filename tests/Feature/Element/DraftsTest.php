@@ -14,6 +14,7 @@ use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\User\Elements\User;
@@ -191,14 +192,14 @@ it('can load provisional changes onto canonical elements', function () {
     $entry->title = 'Canonical title';
     $entry->slug = 'canonical-title';
     $entry->setFieldValue('testField', 'canonical field value');
-    Craft::$app->getElements()->saveElement($entry);
+    Elements::saveElement($entry);
 
     $draft = $this->drafts->createDraft($entry, User::findOne()->id, provisional: true);
     $draft->title = 'Draft title';
     $draft->setDirtyAttributes(['title']);
     $draft->setFieldValue('testField', 'draft field value');
     $draft->setDirtyFields(['testField']);
-    Craft::$app->getElements()->saveElement($draft);
+    Elements::saveElement($draft);
 
     DB::table(Table::CHANGEDATTRIBUTES)->insert([
         'elementId' => $draft->id,

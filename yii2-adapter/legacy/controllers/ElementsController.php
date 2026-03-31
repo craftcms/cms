@@ -311,7 +311,7 @@ class ElementsController extends Controller
                 ElementHelper::isOutdated($element)
             );
             if ($mergeCanonicalChanges) {
-                Craft::$app->getElements()->mergeCanonicalChanges($element);
+                Elements::mergeCanonicalChanges($element);
             }
 
             $this->_applyParamsToElement($element);
@@ -1465,7 +1465,7 @@ JS, [
         try {
             $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
             // crossSiteValidate only if it's multisite, element supports drafts and we're not in a slideout
-            $success = $elementsService->saveElement(
+            $success = Elements::saveElement(
                 $element,
                 crossSiteValidate: ($namespace === null && Sites::isMultiSite() && $elementsService->canCreateDrafts($element, $user)),
             );
@@ -1598,7 +1598,7 @@ JS, [
             // Remove the draft data, but preserve the canonicalId
             $element->setPrimaryOwner($owner);
             $element->setOwner($owner);
-            $elementsService->saveElement($element);
+            Elements::saveElement($element);
 
             $this->_applyParamsToElement($element);
 
@@ -1611,7 +1611,7 @@ JS, [
             }
 
             try {
-                $success = $elementsService->saveElement($element);
+                $success = Elements::saveElement($element);
             } catch (UnsupportedSiteException $e) {
                 $element->errors()->add('siteId', $e->getMessage());
                 $success = false;
@@ -2012,7 +2012,7 @@ JS, [
             // If the field layout ID changed, save all content
             $saveContent = $element->getFieldLayout()?->id !== $oldFieldLayoutId;
 
-            if (!$elementsService->saveElement($element, saveContent: $saveContent)) {
+            if (!Elements::saveElement($element, saveContent: $saveContent)) {
                 DbFacade::rollBack();
                 return $this->_asFailure($element, mb_ucfirst(t('Couldn’t save {type}.', [
                     'type' => t('draft'),
@@ -2183,7 +2183,7 @@ JS, [
         $element->applyingDraft = true;
 
         $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
-        if (!$elementsService->saveElement($element, crossSiteValidate: ($namespace === null && Sites::isMultiSite()))) {
+        if (!Elements::saveElement($element, crossSiteValidate: ($namespace === null && Sites::isMultiSite()))) {
             return $this->_asAppyDraftFailure($element);
         }
 

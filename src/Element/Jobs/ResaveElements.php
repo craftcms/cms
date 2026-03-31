@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Jobs;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Commands\Resave\ResaveCommand;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Queue\BatchedElementJob;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\I18N;
 use Override;
 use Throwable;
@@ -70,8 +70,8 @@ class ResaveElements extends BatchedElementJob
         $element->resaving = true;
 
         try {
-            Craft::$app->getElements()->saveElement(
-                $element,
+            Elements::saveElement(
+                element: $element,
                 updateSearchIndex: $this->updateSearchIndex,
                 forceTouch: $this->touch,
                 saveContent: true,

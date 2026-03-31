@@ -12,6 +12,7 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Queue\BatchedJob;
 use CraftCms\Cms\Structure\Enums\Mode;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
@@ -210,7 +211,7 @@ class ApplyNewPropagationMethod extends BatchedJob
         $item->resaving = true;
 
         try {
-            Craft::$app->getElements()->saveElement($item, updateSearchIndex: false, saveContent: true);
+            Elements::saveElement($item, updateSearchIndex: false, saveContent: true);
         } catch (Throwable $e) {
             report($e);
         }

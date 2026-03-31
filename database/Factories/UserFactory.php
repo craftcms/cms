@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Factories;
 
-use Craft;
 use CraftCms\Cms\Auth\Models\WebAuthn;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
@@ -98,7 +98,7 @@ class UserFactory extends Factory
                 }
             }
 
-            if (! Craft::$app->getElements()->saveElement($element = $model->asElement())) {
+            if (! Elements::saveElement($element = $model->asElement())) {
                 dump($element->errors()->all());
                 throw new RuntimeException('Could not save user.');
             }

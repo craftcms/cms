@@ -854,7 +854,7 @@ JS, [
                     // Only set $resaving=true if the element isn’t new.
                     // Otherwise NestedElementTrait::saveOwnership() won’t do its thing.
                     $element->resaving = $owner->resaving && $element->id;
-                    $elementsService->saveElement($element, false);
+                    Elements::saveElement($element, false);
 
                     // If this element's primary owner is $owner, and it’s a draft of another element whose owner is
                     // $owner's canonical (e.g. a draft entry created by Matrix::_createEntriesFromSerializedData()),
@@ -1356,7 +1356,7 @@ JS, [
                         }
                     } elseif (!$derivativeElement->trashed && ElementHelper::isOutdated($derivativeElement)) {
                         // Merge the upstream changes into the derivative nested element
-                        $elementsService->mergeCanonicalChanges($derivativeElement);
+                        Elements::mergeCanonicalChanges($derivativeElement);
                     }
                 } elseif (!$canonicalElement->trashed && $canonicalElement->dateCreated > $owner->dateCreated) {
                     // This is a new nested element, so duplicate its ownership into the derivative
@@ -1413,7 +1413,7 @@ JS, [
 
                     if ($newOwnerId) {
                         $element->setPrimaryOwnerId($newOwnerId);
-                        $elementsService->saveElement($element);
+                        Elements::saveElement($element);
                         continue;
                     }
                 }

@@ -12,6 +12,7 @@ use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\Auth;
@@ -130,7 +131,7 @@ JS, [static::class]);
                     break;
             }
 
-            if ($elementsService->saveElement($element) === false) {
+            if (Elements::saveElement($element) === false) {
                 // Validation error
                 $failCount++;
             }

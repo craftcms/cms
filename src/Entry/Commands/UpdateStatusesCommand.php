@@ -158,7 +158,7 @@ final class UpdateStatusesCommand extends Command implements Isolatable
 
             try {
                 $this->ensureEntryCanBeResaved($entry);
-                $elements->saveElement($entry, true, true, false, false, false, true);
+                \CraftCms\Cms\Support\Facades\Elements::saveElement($entry, true, true, false, false, false, true);
             } catch (Throwable $exception) {
                 report($exception);
             }

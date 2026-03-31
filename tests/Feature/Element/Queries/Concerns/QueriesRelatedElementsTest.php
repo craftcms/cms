@@ -4,6 +4,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\User\Elements\User;
 
@@ -38,7 +39,7 @@ test('related elements', function () {
     $entry->title = 'Test entry';
     $entry->setFieldValue('entriesField', $entries[1]->id);
 
-    Craft::$app->getElements()->saveElement($entry);
+    Elements::saveElement($entry);
 
     expect(entryQuery()->count())->toBe(3);
     expect(entryQuery()->relatedTo($entries[1]->id)->count())->toBe(1);

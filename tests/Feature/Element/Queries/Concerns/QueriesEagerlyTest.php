@@ -10,6 +10,7 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\ElementCaches;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 
@@ -48,7 +49,7 @@ beforeEach(function () {
         $entryElement = entryQuery()->id($model->id)->firstOrFail();
         $entryElement->title = 'Test entry '.$model->id;
         $entryElement->setFieldValue('entriesField', [$relatedEntry->id]);
-        Craft::$app->getElements()->saveElement($entryElement);
+        Elements::saveElement($entryElement);
     }
 
     ElementCaches::invalidateAll();

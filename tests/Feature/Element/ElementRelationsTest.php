@@ -11,6 +11,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
@@ -63,7 +64,7 @@ describe('updateRelations', function () {
         $element = entryQuery()->id($sourceEntry->id)->firstOrFail();
         $element->setFieldValue('relatedEntries', [$targetEntry->id]);
 
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         $relation = DB::table(Table::RELATIONS)
             ->where('sourceId', $element->id)
@@ -88,7 +89,7 @@ describe('updateRelations', function () {
         $element = entryQuery()->id($sourceEntry->id)->firstOrFail();
         $element->setFieldValue('relatedEntries', $targetIds);
 
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         $relations = DB::table(Table::RELATIONS)
             ->where('sourceId', $element->id)
@@ -116,11 +117,11 @@ describe('updateRelations', function () {
 
         $element = entryQuery()->id($sourceEntry->id)->firstOrFail();
         $element->setFieldValue('relatedEntries', [$targetEntries[0]->id]);
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         $element = entryQuery()->id($sourceEntry->id)->firstOrFail();
         $element->setFieldValue('relatedEntries', [$targetEntries[1]->id]);
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         $relations = DB::table(Table::RELATIONS)
             ->where('sourceId', $element->id)
@@ -142,13 +143,13 @@ describe('updateRelations', function () {
 
         $element = entryQuery()->id($sourceEntry->id)->firstOrFail();
         $element->setFieldValue('relatedEntries', [$targetEntry->id]);
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         expect(DB::table(Table::RELATIONS)->where('sourceId', $element->id)->count())->toBe(1);
 
         $element = entryQuery()->id($sourceEntry->id)->firstOrFail();
         $element->setFieldValue('relatedEntries', []);
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         expect(DB::table(Table::RELATIONS)->where('sourceId', $element->id)->count())->toBe(0);
     });
@@ -165,11 +166,11 @@ describe('updateRelations', function () {
 
         $element = entryQuery()->id($sourceEntry->id)->firstOrFail();
         $element->setFieldValue('relatedEntries', $targetIds);
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         $element = entryQuery()->id($sourceEntry->id)->firstOrFail();
         $element->setFieldValue('relatedEntries', array_reverse($targetIds));
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         $relations = DB::table(Table::RELATIONS)
             ->where('sourceId', $element->id)
@@ -207,7 +208,7 @@ describe('updateRelations', function () {
 
         $element = entryQuery()->id($sourceEntry->id)->firstOrFail();
         $element->setFieldValue('relatedEntries', [$targetEntry->id, $targetEntry->id, $targetEntry->id]);
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         $relations = DB::table(Table::RELATIONS)
             ->where('sourceId', $element->id)

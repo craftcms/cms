@@ -6,6 +6,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 
@@ -39,7 +40,7 @@ it('can query custom fields', function () {
     $entry->title = 'Test entry';
     $entry->setFieldValue('textField', 'Foo');
 
-    Craft::$app->getElements()->saveElement($entry);
+    Elements::saveElement($entry);
 
     expect(entryQuery()->textField('Foo')->count())->toBe(1);
     expect(entryQuery()->textField('Fo*')->count())->toBe(1);

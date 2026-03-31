@@ -19,6 +19,7 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Facades\ElementCaches;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
@@ -380,7 +381,7 @@ class Globals extends Component
                 if ($element && $element->trashed) {
                     $element->fieldLayoutId = $globalSetRecord->fieldLayoutId;
                     if (
-                        !$elementsService->saveElement($element) ||
+                        !Elements::saveElement($element) ||
                         !$elementsService->restoreElement($element)
                     ) {
                         $element = null;
@@ -396,7 +397,7 @@ class Globals extends Component
             $element->handle = $globalSetRecord->handle;
             $element->fieldLayoutId = $globalSetRecord->fieldLayoutId;
 
-            if (!$elementsService->saveElement($element, false)) {
+            if (!Elements::saveElement($element, false)) {
                 throw new ElementNotFoundException('Unable to save the element required for global set.');
             }
 

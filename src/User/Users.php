@@ -114,7 +114,7 @@ class Users
             throw new InvalidArgumentException($user->errors()->first('email'));
         }
 
-        if (! Craft::$app->getElements()->saveElement($user, false)) {
+        if (! $this->elements->saveElement($user, false)) {
             throw new Exception('Unable to save user: '.implode(', ', $user->getFirstErrors()));
         }
 
@@ -402,7 +402,7 @@ class Users
         $photo->setScenario(Asset::SCENARIO_MOVE);
         $photo->avoidFilenameConflicts = true;
         $photo->newFolderId = $folderId;
-        Craft::$app->getElements()->saveElement($photo);
+        $this->elements->saveElement($photo);
     }
 
     /**

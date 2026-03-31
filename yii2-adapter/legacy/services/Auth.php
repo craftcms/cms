@@ -14,6 +14,7 @@ use CraftCms\Cms\Auth\Events\SettingPassword;
 use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Auth\Passkeys\WebauthnServer;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
@@ -333,7 +334,7 @@ class Auth extends Component
             $user->newPassword = $event->newPassword;
             $user->setScenario(User::SCENARIO_PASSWORD);
 
-            if (!Craft::$app->getElements()->saveElement($user)) {
+            if (!Elements::saveElement($user)) {
                 $event->status = 'password.save_failed';
                 return;
             }

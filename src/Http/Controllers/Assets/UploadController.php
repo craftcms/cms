@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
-use Craft;
 use craft\errors\UploadFailedException;
-use craft\helpers\Db;
 use craft\web\UploadedFile;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetsHelper;
@@ -22,6 +20,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Formatter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -44,7 +43,6 @@ readonly class UploadController
 
     public function upload(Request $request): Response
     {
-        $elementsService = Craft::$app->getElements();
         $uploadedFile = UploadedFile::getInstanceByName('assets-upload');
 
         abort_if(! $uploadedFile, 400, 'No file was uploaded');
@@ -115,7 +113,7 @@ readonly class UploadController
         }
 
         $asset->setScenario(Asset::SCENARIO_CREATE);
-        $result = $elementsService->saveElement($asset);
+        $result = $this->elements->saveElement($asset);
 
         // In case of error, let user know about it.
         if (! $result) {
@@ -125,7 +123,7 @@ readonly class UploadController
         if ($selectionCondition) {
             if (! $selectionCondition->matchElement($asset)) {
                 // delete and reject it
-                $elementsService->deleteElement($asset, true);
+                $this->elements->deleteElement($asset, true);
 
                 return $this->asFailure(t('{filename} isn’t selectable for this field.', [
                     'filename' => $uploadedFile->name,
@@ -138,7 +136,7 @@ readonly class UploadController
                 $asset->newFolderId = $originalFolder->id;
                 $asset->setScenario(Asset::SCENARIO_MOVE);
 
-                if (! $elementsService->saveElement($asset)) {
+                if (! $this->elements->saveElement($asset)) {
                     return $this->asModelFailure($asset);
                 }
             }
@@ -229,19 +227,19 @@ readonly class UploadController
                 $assetToReplace = Asset::find()
                     ->select(['elements.id'])
                     ->folderId($sourceAsset->folderId)
-                    ->filename(Db::escapeParam($targetFilename))
+                    ->filename(Query::escapeParam($targetFilename))
                     ->one();
             }
 
             if (! empty($assetToReplace)) {
                 $tempPath = $sourceAsset->getCopyOfFile();
                 $this->assets->replaceAssetFile($assetToReplace, $tempPath, $assetToReplace->getFilename(), $sourceAsset->getMimeType());
-                Craft::$app->getElements()->deleteElement($sourceAsset);
+                $this->elements->deleteElement($sourceAsset);
             } else {
                 $volume = $sourceAsset->getVolume();
                 $volume->sourceDisk()->delete(rtrim((string) $sourceAsset->folderPath, '/').'/'.$targetFilename);
                 $sourceAsset->newFilename = $targetFilename;
-                Craft::$app->getElements()->saveElement($sourceAsset);
+                $this->elements->saveElement($sourceAsset);
                 $assetId = $sourceAsset->id;
             }
         }

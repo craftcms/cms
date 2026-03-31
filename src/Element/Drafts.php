@@ -17,6 +17,7 @@ use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Singleton;
@@ -38,6 +39,10 @@ use function CraftCms\Cms\t;
 readonly class Drafts
 {
     public const string CONTEXT_PREVIEW_USER_ID = 'craft.preview-user-id';
+
+    public function __construct(
+        private \CraftCms\Cms\Element\Elements $elements,
+    ) {}
 
     /**
      * Returns drafts for a given element ID that the current user is allowed to edit
@@ -211,7 +216,7 @@ readonly class Drafts
         $element->markDraftAsSaved = $markAsSaved;
 
         // Try to save and return the result
-        return Craft::$app->getElements()->saveElement($element);
+        return $this->elements->saveElement($element);
     }
 
     /**
@@ -264,7 +269,7 @@ readonly class Drafts
             if ($canonical !== $draft) {
                 // Merge in any attribute & field values that were updated in the canonical element, but not the draft
                 if ($draft::trackChanges() && ElementHelper::isOutdated($draft)) {
-                    $elementsService->mergeCanonicalChanges($draft);
+                    $this->elements->mergeCanonicalChanges($draft);
                 }
 
                 // "Duplicate" the draft with the canonical element’s ID and UID
@@ -340,7 +345,7 @@ readonly class Drafts
         try {
             // no need to propagate or save content here – and it could end up overriding any
             // content changes made to other sites from a previous onAfterPropagate(), etc.
-            if ($draft->errors()->isNotEmpty() || ! Craft::$app->getElements()->saveElement($draft, false, false)) {
+            if ($draft->errors()->isNotEmpty() || ! $this->elements->saveElement($draft, false, false)) {
                 throw new InvalidElementException($draft, "Draft $draft->id could not be applied because it doesn't validate.");
             }
 

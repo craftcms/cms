@@ -8,6 +8,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Cache\LockTimeoutException;
@@ -111,7 +112,7 @@ it('handles provisional drafts', function () {
     $liveEntry = Entry::find()->id($entryModel->id)->status(null)->one();
     $draft = app(Drafts::class)->createDraft($liveEntry, $this->user->id);
     $draft->isProvisionalDraft = true;
-    Craft::$app->getElements()->saveElement($draft);
+    Elements::saveElement($draft);
 
     expect($draft->isProvisionalDraft)->toBeTrue();
 

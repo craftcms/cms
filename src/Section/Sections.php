@@ -10,6 +10,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
@@ -88,8 +89,9 @@ class Sections
     private array $sectionSiteSettings = [];
 
     public function __construct(
-        private readonly ProjectConfig $projectConfig,
+        private readonly Elements $elements,
         private readonly ElementCaches $elementCaches,
+        private readonly ProjectConfig $projectConfig,
     ) {}
 
     /**
@@ -912,7 +914,7 @@ class Sections
 
         if (
             $entry->errors()->isNotEmpty() ||
-            ! Craft::$app->getElements()->saveElement($entry, false)
+            ! $this->elements->saveElement($entry, false)
         ) {
             throw new Exception("Couldn’t save single entry for section $section->name due to validation errors: ".implode(', ',
                 $entry->getFirstErrors()));

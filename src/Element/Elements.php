@@ -7,13 +7,20 @@ namespace CraftCms\Cms\Element;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Actions\MergeCanonicalChangesAction;
+use CraftCms\Cms\Element\Actions\SaveElementAction;
+use CraftCms\Cms\Element\Events\SetElementUri;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
+use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Typecast;
+use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
 #[Singleton]
@@ -275,5 +282,124 @@ class Elements
             ->where('enabled', true)
             ->pluck('siteId')
             ->all();
+    }
+
+    // Saving Elements
+    // -------------------------------------------------------------------------
+    /**
+     * Handles all of the routine tasks that go along with saving elements.
+     *
+     * Those tasks include:
+     *
+     * - Validating its content (if $validateContent is `true`, or it’s left as `null` and the element is enabled)
+     * - Ensuring the element has a title if its type [[Element::hasTitles()|has titles]], and giving it a
+     *   default title in the event that $validateContent is set to `false`
+     * - Saving a row in the `elements` table
+     * - Assigning the element’s ID on the element model, if it’s a new element
+     * - Assigning the element’s ID on the element’s content model, if there is one and it’s a new set of content
+     * - Updating the search index with new keywords from the element’s content
+     * - Setting a unique URI on the element, if it’s supposed to have one.
+     * - Saving the element’s row(s) in the `elements_sites` and `content` tables
+     * - Deleting any rows in the `elements_sites` and `content` tables that no longer need to be there
+     * - Cleaning any template caches that the element was involved in
+     *
+     * The function will fire `beforeElementSave` and `afterElementSave` events, and will call `beforeSave()`
+     *  and `afterSave()` methods on the passed-in element, giving the element opportunities to hook into the
+     * save process.
+     *
+     * Example usage - creating a new entry:
+     *
+     * ```php
+     * $entry = new Entry();
+     * $entry->sectionId = 10;
+     * $entry->typeId = 1;
+     * $entry->authorId = 5;
+     * $entry->enabled = true;
+     * $entry->title = "Hello World!";
+     * $entry->setFieldValues([
+     *     'body' => "<p>I can’t believe I literally just called this “Hello World!”.</p>",
+     * ]);
+     * $success = Elements::saveElement($entry);
+     * if (!$success) {
+     *     Log::error('Couldn’t save the entry "'.$entry->title.'"', [__METHOD__]);
+     * }
+     * ```
+     *
+     * @param  ElementInterface  $element  The element that is being saved
+     * @param  bool  $runValidation  Whether the element should be validated
+     * @param  bool  $propagate  Whether the element should be saved across all of its supported sites
+     *                           (this can only be disabled when updating an existing element)
+     * @param  bool|null  $updateSearchIndex  Whether to update the element search index for the element
+     *                                        (this will happen via a background job if this is a web request)
+     * @param  bool  $forceTouch  Whether to force the `dateUpdated` timestamp to be updated for the element,
+     *                            regardless of whether it’s being resaved
+     * @param  bool|null  $crossSiteValidate  Whether the element should be validated across all supported sites
+     * @param  bool  $saveContent  Whether all the element’s content should be saved. When false (default) only dirty fields will be saved.
+     *
+     * @throws ElementNotFoundException if $element has an invalid $id
+     * @throws Exception if the $element doesn’t have any supported sites
+     * @throws Throwable if reasons
+     */
+    public function saveElement(
+        ElementInterface $element,
+        bool $runValidation = true,
+        bool $propagate = true,
+        ?bool $updateSearchIndex = null,
+        bool $forceTouch = false,
+        ?bool $crossSiteValidate = false,
+        bool $saveContent = false,
+    ): bool {
+        // Force propagation for new elements
+        $propagate = ! $element->id || $propagate;
+
+        // Not currently being duplicated
+        $duplicateOf = $element->duplicateOf;
+        $element->duplicateOf = null;
+
+        // Force isNewForSite = false here, in case the element is getting saved recursively
+        // (see https://github.com/craftcms/cms/issues/15517)
+        $isNewForSite = $element->isNewForSite;
+        $element->isNewForSite = false;
+
+        $success = app(SaveElementAction::class)->handle(
+            $element,
+            $runValidation,
+            $propagate,
+            $updateSearchIndex,
+            forceTouch: $forceTouch,
+            crossSiteValidate: $crossSiteValidate,
+            saveContent: $saveContent,
+        );
+
+        $element->duplicateOf = $duplicateOf;
+        $element->isNewForSite = $isNewForSite;
+
+        return $success;
+    }
+
+    /**
+     * Sets the URI on an element.
+     *
+     * @throws OperationAbortedException if a unique URI could not be found
+     */
+    public function setElementUri(ElementInterface $element): void
+    {
+        event($event = new SetElementUri($element));
+
+        if ($event->handled) {
+            return;
+        }
+
+        ElementHelper::setUniqueUri($element);
+    }
+
+    /**
+     * Merges recent canonical element changes into a given derivative, such as a draft.
+     *
+     * @param  ElementInterface  $element  The derivative element
+     */
+    public function mergeCanonicalChanges(ElementInterface $element): void
+    {
+        app(MergeCanonicalChangesAction::class)->handle($element);
     }
 }

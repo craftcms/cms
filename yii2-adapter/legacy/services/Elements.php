@@ -12,7 +12,6 @@ use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
-use craft\base\NestedElementInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\db\QueryAbortedException;
 use craft\elements\db\EagerLoadInfo;
@@ -38,6 +37,8 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Actions\PropagateElementAction;
+use CraftCms\Cms\Element\Actions\SaveElementAction;
 use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
 use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
 use CraftCms\Cms\Element\Data\ElementActivity as ElementActivityData;
@@ -48,11 +49,15 @@ use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
-use CraftCms\Cms\Element\Events\AfterPropagate;
+use CraftCms\Cms\Element\Events\AfterMergeCanonicalChanges;
+use CraftCms\Cms\Element\Events\AfterSaveElement;
+use CraftCms\Cms\Element\Events\BeforeMergeCanonicalChanges;
+use CraftCms\Cms\Element\Events\BeforeSaveElement;
+use CraftCms\Cms\Element\Events\BeforeUpdateSearchIndex;
 use CraftCms\Cms\Element\Events\InvalidateElementCaches;
+use CraftCms\Cms\Element\Events\SetElementUri;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
-use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
@@ -84,7 +89,6 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -100,10 +104,7 @@ use yii\base\Behavior;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidCallException;
-use yii\base\InvalidConfigException;
 use yii\web\ForbiddenHttpException;
-use function CraftCms\Cms\normalizeValue;
-use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
@@ -558,12 +559,6 @@ class Elements extends Component
      * @var string[]
      */
     private array $_elementTypesByRefHandle = [];
-
-    /**
-     * @var bool|null Whether we should be updating search indexes for elements if not told explicitly.
-     * @since 3.1.2
-     */
-    private ?bool $_updateSearchIndex = null;
 
     /**
      * Creates an element with a given config.
@@ -1046,6 +1041,7 @@ class Elements extends Component
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
      * @throws Throwable if reasons
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::saveElement()} instead.
      */
     public function saveElement(
         ElementInterface $element,
@@ -1056,32 +1052,7 @@ class Elements extends Component
         ?bool $crossSiteValidate = false,
         bool $saveContent = false,
     ): bool {
-        // Force propagation for new elements
-        $propagate = !$element->id || $propagate;
-
-        // Not currently being duplicated
-        $duplicateOf = $element->duplicateOf;
-        $element->duplicateOf = null;
-
-        // Force isNewForSite = false here, in case the element is getting saved recursively
-        // (see https://github.com/craftcms/cms/issues/15517)
-        $isNewForSite = $element->isNewForSite;
-        $element->isNewForSite = false;
-
-        $success = $this->_saveElementInternal(
-            $element,
-            $runValidation,
-            $propagate,
-            $updateSearchIndex,
-            forceTouch: $forceTouch,
-            crossSiteValidate: $crossSiteValidate,
-            saveContent: $saveContent,
-        );
-
-        $element->duplicateOf = $duplicateOf;
-        $element->isNewForSite = $isNewForSite;
-
-        return $success;
+        return ElementsFacade::saveElement($element, $runValidation, $propagate, $updateSearchIndex, $forceTouch, $crossSiteValidate, $saveContent);
     }
 
     /**
@@ -1091,19 +1062,11 @@ class Elements extends Component
      *
      * @throws OperationAbortedException if a unique URI could not be found
      * @since 4.6.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::setElementUri()} instead.
      */
     public function setElementUri(ElementInterface $element): void
     {
-        // Fire a 'setElementUri' event
-        if ($this->hasEventHandlers(self::EVENT_SET_ELEMENT_URI)) {
-            $event = new ElementEvent(['element' => $element]);
-            $this->trigger(self::EVENT_SET_ELEMENT_URI, $event);
-            if ($event->handled) {
-                return;
-            }
-        }
-
-        ElementHelper::setUniqueUri($element);
+        ElementsFacade::setElementUri($element);
     }
 
     /**
@@ -1112,88 +1075,11 @@ class Elements extends Component
      * @param ElementInterface $element The derivative element
      *
      * @since 3.7.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::mergeCanonicalChanges()} instead.
      */
     public function mergeCanonicalChanges(ElementInterface $element): void
     {
-        if ($element->getIsCanonical()) {
-            throw new InvalidArgumentException('Only a derivative element can be passed to ' . __METHOD__);
-        }
-
-        if (!$element::trackChanges()) {
-            throw new InvalidArgumentException(get_class($element) . ' elements don’t track their changes');
-        }
-
-        // Make sure the derivative element actually supports its own site ID
-        $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
-        if (!isset($supportedSites[$element->siteId])) {
-            throw new Exception('Attempting to merge source changes for a draft in an unsupported site.');
-        }
-
-        // Fire a 'beforeMergeCanonical' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_MERGE_CANONICAL_CHANGES)) {
-            $this->trigger(self::EVENT_BEFORE_MERGE_CANONICAL_CHANGES, new ElementEvent([
-                'element' => $element,
-            ]));
-        }
-
-        BulkOps::ensure(function() use ($element, $supportedSites) {
-            DB::transaction(function() use ($element, $supportedSites) {
-                // Start with the other sites (if any), so we don't update dateLastMerged until the end
-                $otherSiteIds = array_keys(Arr::except($supportedSites, $element->siteId));
-                if (!empty($otherSiteIds)) {
-                    $siteElements = $this->_localizedElementQuery($element)
-                        ->siteId($otherSiteIds)
-                        ->status(null)
-                        ->all();
-                } else {
-                    $siteElements = [];
-                }
-
-                foreach ($siteElements as $siteElement) {
-                    $siteElement->mergeCanonicalChanges();
-                    $siteElement->mergingCanonicalChanges = true;
-                    $this->_saveElementInternal($siteElement, false, false, null, $supportedSites);
-                }
-
-                // Now the $element’s site
-                $element->mergeCanonicalChanges();
-                $duplicateOf = $element->duplicateOf;
-                $element->duplicateOf = null;
-                $element->dateLastMerged = DateTimeHelper::now();
-                $element->mergingCanonicalChanges = true;
-                $this->_saveElementInternal($element, false, false, null, $supportedSites);
-                $element->duplicateOf = $duplicateOf;
-
-                // It's now fully merged and propagated
-                $element->afterPropagate(false);
-            });
-
-            $element->mergingCanonicalChanges = false;
-        });
-
-        // Fire an 'afterMergeCanonical' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_MERGE_CANONICAL_CHANGES)) {
-            $this->trigger(self::EVENT_AFTER_MERGE_CANONICAL_CHANGES, new ElementEvent([
-                'element' => $element,
-            ]));
-        }
-    }
-
-    private function _localizedElementQuery(ElementInterface $element): ElementQueryInterface
-    {
-        // use getLocalized() unless it’s eager-loaded
-        $query = $element->getLocalized();
-        if ($query instanceof ElementQueryInterface) {
-            return $query;
-        }
-
-        return $element::find()
-            ->id($element->id ?: false)
-            ->structureId($element->structureId)
-            ->siteId(['not', $element->siteId])
-            ->drafts($element->getIsDraft())
-            ->provisionalDrafts($element->isProvisionalDraft)
-            ->revisions($element->getIsRevision());
+        ElementsFacade::mergeCanonicalChanges($element);
     }
 
     /**
@@ -1381,7 +1267,7 @@ class Elements extends Component
                             }
                         }
 
-                        $this->_saveElementInternal($element, true, true, $updateSearchIndex, forceTouch: $touch,
+                        app(SaveElementAction::class)->handle($element, true, true, $updateSearchIndex, forceTouch: $touch,
                             saveContent: true);
                     } catch (Throwable $e) {
                         if (!$continueOnError) {
@@ -1476,7 +1362,7 @@ class Elements extends Component
                                 $siteElement = $this->getElementById($element->id, $elementType, $siteId);
                                 if ($siteElement === null || $siteElement->dateUpdated < $element->dateUpdated) {
                                     $siteElement ??= false;
-                                    $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
+                                    app(PropagateElementAction::class)->handle($element, $supportedSites, $siteId, $siteElement);
                                 }
                             }
                         }
@@ -1681,7 +1567,7 @@ class Elements extends Component
             DB::beginTransaction();
             try {
                 // Start with $element’s site
-                if (!$this->_saveElementInternal($mainClone, false, false, null, $supportedSites, saveContent: true)) {
+                if (!app(SaveElementAction::class)->handle($mainClone, false, false, null, $supportedSites, saveContent: true)) {
                     throw new InvalidElementException($mainClone,
                         'Element ' . $element->id . ' could not be duplicated for site ' . $element->siteId);
                 }
@@ -1710,7 +1596,7 @@ class Elements extends Component
                 // Propagate it
                 $otherSiteIds = array_keys(Arr::except($supportedSites, $mainClone->siteId));
                 if ($element->id && !empty($otherSiteIds)) {
-                    $siteElements = $this->_localizedElementQuery($element)
+                    $siteElements = $element->getLocalizedQuery()
                         ->siteId($otherSiteIds)
                         ->status(null)
                         ->all();
@@ -1778,7 +1664,7 @@ class Elements extends Component
                             }
                         }
 
-                        if (!$this->_saveElementInternal($siteClone, false, false, supportedSites: $supportedSites,
+                        if (!app(SaveElementAction::class)->handle($siteClone, false, false, supportedSites: $supportedSites,
                             saveContent: true)) {
                             throw new InvalidElementException($siteClone,
                                 "Element $element->id could not be duplicated for site $siteElement->siteId: " . implode(', ',
@@ -1799,7 +1685,7 @@ class Elements extends Component
                     foreach ($supportedSites as $siteId => $siteInfo) {
                         if (!isset($propagatedTo[$siteId]) && $siteInfo['propagate']) {
                             $siteClone = $element->getIsDraft() && !$element->getIsUnpublishedDraft() ? null : false;
-                            if (!$this->_propagateElement($mainClone, $supportedSites, $siteId, $siteClone)) {
+                            if (!app(PropagateElementAction::class)->handle($mainClone, $supportedSites, $siteId, $siteClone)) {
                                 /** @phpstan-ignore-next-line */
                                 throw $siteClone
                                     ? new InvalidElementException($siteClone,
@@ -1981,7 +1867,7 @@ class Elements extends Component
                 continue;
             }
 
-            $elementInOtherSite = $this->_localizedElementQuery($element)
+            $elementInOtherSite = $element->getLocalizedQuery()
                 ->siteId($siteId)
                 ->one();
 
@@ -2535,7 +2421,7 @@ class Elements extends Component
                 $otherSiteIds = array_keys(Arr::except($supportedSites, $element->siteId));
 
                 if (!empty($otherSiteIds)) {
-                    $siteElements = $this->_localizedElementQuery($element)
+                    $siteElements = $element->getLocalizedQuery()
                         ->siteId($otherSiteIds)
                         ->status(null)
                         ->trashed(null)
@@ -3434,7 +3320,7 @@ class Elements extends Component
         $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
 
         BulkOps::ensure(function() use ($element, $supportedSites, $siteId, &$siteElement) {
-            $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
+            app(PropagateElementAction::class)->handle($element, $supportedSites, $siteId, $siteElement);
 
             // Track this element in bulk operations
             BulkOps::trackElement($element);
@@ -3444,631 +3330,6 @@ class Elements extends Component
         $this->elementCaches()->invalidateForElement($element);
 
         return $siteElement;
-    }
-
-    /**
-     * Saves an element.
-     *
-     * @param ElementInterface $element The element that is being saved
-     * @param bool $runValidation Whether the element should be validated
-     * @param bool $propagate Whether the element should be saved across all of its supported sites
-     * @param bool|null $updateSearchIndex Whether to update the element search index for the element
-     * (this will happen via a background job if this is a web request)
-     * @param array|null $supportedSites The element’s supported site info, indexed by site ID
-     * @param bool $forceTouch Whether to force the `dateUpdated` timestamp to be updated for the element,
-     * regardless of whether it’s being resaved
-     * @param bool $crossSiteValidate Whether the element should be validated across all supported sites
-     * @param bool $saveContent Whether all the element’s content should be saved. When false (default) only dirty fields will be saved.
-     * @param ElementSiteSettings|null $siteSettingsRecord
-     *
-     * @return bool
-     * @throws ElementNotFoundException if $element has an invalid $id
-     * @throws UnsupportedSiteException if the element is being saved for a site it doesn’t support
-     * @throws Throwable if reasons
-     */
-    private function _saveElementInternal(
-        ElementInterface $element,
-        bool $runValidation = true,
-        bool $propagate = true,
-        ?bool $updateSearchIndex = null,
-        ?array $supportedSites = null,
-        bool $forceTouch = false,
-        bool $crossSiteValidate = false,
-        bool $saveContent = false,
-        ?ElementSiteSettings &$siteSettingsRecord = null,
-    ): bool {
-        /** @var ElementInterface $element */
-        $isNewElement = !$element->id;
-
-        // Are we tracking changes?
-        $trackChanges = ElementHelper::shouldTrackChanges($element);
-        $dirtyAttributes = [];
-
-        // Force propagation for new elements
-        $propagate = $propagate && $element::isLocalized() && Sites::isMultiSite();
-        $originalPropagateAll = $element->propagateAll;
-        $originalFirstSave = $element->firstSave;
-        $originalIsNewForSite = $element->isNewForSite;
-        $originalDateUpdated = $element->dateUpdated;
-
-        $element->firstSave = (
-            !$element->getIsDraft() &&
-            !$element->getIsRevision() &&
-            ($element->firstSave || $isNewElement)
-        );
-
-        if ($isNewElement) {
-            // Give it a UID right away
-            $element->uid ??= Str::uuid()->toString();
-
-            if (!$element->getIsDraft() && !$element->getIsRevision()) {
-                // Let Matrix fields, etc., know they should be duplicating their values across all sites.
-                $element->propagateAll = true;
-            }
-        }
-
-        // Fire a 'beforeSaveElement' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_ELEMENT)) {
-            $this->trigger(self::EVENT_BEFORE_SAVE_ELEMENT, new ElementEvent([
-                'element' => $element,
-                'isNew' => $isNewElement,
-            ]));
-        }
-
-        if (!$element->beforeSave($isNewElement)) {
-            $element->firstSave = $originalFirstSave;
-            $element->isNewForSite = $originalIsNewForSite;
-            $element->propagateAll = $originalPropagateAll;
-            return false;
-        }
-
-        // Get the sites supported by this element
-        $supportedSites ??= Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
-
-        // Make sure the element actually supports the site it's being saved in
-        if (!isset($supportedSites[$element->siteId])) {
-            $element->firstSave = $originalFirstSave;
-            $element->isNewForSite = $originalIsNewForSite;
-            $element->propagateAll = $originalPropagateAll;
-            throw new UnsupportedSiteException($element, $element->siteId,
-                'Attempting to save an element in an unsupported site.');
-        }
-
-        // If the element only supports a single site, ensure it's enabled for that site
-        if (count($supportedSites) === 1 && !$element->getEnabledForSite()) {
-            $element->enabled = false;
-            $element->setEnabledForSite(true);
-        }
-
-        // If we're skipping validation, at least make sure the title is valid
-        if (!$runValidation && $element::hasTitles()) {
-            foreach ($element->getActiveValidators('title') as $validator) {
-                $validator->validateAttributes($element, ['title']);
-            }
-            if ($element->errors()->has('title')) {
-                // Set a default title
-                if ($isNewElement) {
-                    $element->title = t('New {type}', ['type' => $element::displayName()]);
-                } else {
-                    $element->title = $element::displayName() . ' ' . $element->id;
-                }
-            }
-        }
-
-        $fieldLayout = $element->getFieldLayout();
-        $dirtyFields = $element->getDirtyFields();
-
-        // Get the element's site record
-        if (!$isNewElement && !$element->isNewForSite) {
-            $siteSettingsRecord = ElementSiteSettings::query()
-                ->where('elementId', $element->id)
-                ->where('siteId', $element->siteId)
-                ->first();
-        }
-
-        $element->isNewForSite = empty($siteSettingsRecord);
-
-        // Validate
-        if ($runValidation) {
-            // If we're propagating, only validate changed custom fields,
-            // unless we're enabling this element
-            if ($element->propagating && !(
-                    $element->getIsDerivative() &&
-                    $element->getIsDraft() &&
-                    $element->getEnabledForSite() &&
-                    !$element->getCanonical()->getEnabledForSite())
-            ) {
-                $names = array_map(
-                    fn(string $handle) => "field:$handle",
-                    array_unique(array_merge($dirtyFields, $element->getModifiedFields())),
-                );
-            } else {
-                $names = null;
-            }
-
-            if (($names === null || !empty($names)) && !$element->validate($names)) {
-                Log::info('Element not saved due to validation error: ' . print_r($element->errors, true), [__METHOD__]);
-                $element->firstSave = $originalFirstSave;
-                $element->isNewForSite = $originalIsNewForSite;
-                $element->propagateAll = $originalPropagateAll;
-                return false;
-            }
-        }
-
-        $success = BulkOps::ensure(function() use (
-            $element,
-            $isNewElement,
-            $originalFirstSave,
-            $originalIsNewForSite,
-            $originalPropagateAll,
-            $forceTouch,
-            $saveContent,
-            $trackChanges,
-            $dirtyAttributes,
-            $updateSearchIndex,
-            $fieldLayout,
-            $propagate,
-            $supportedSites,
-            $crossSiteValidate,
-            $runValidation,
-            $originalDateUpdated,
-            $dirtyFields,
-            &$siteSettingsRecord,
-        ) {
-            // Figure out whether we will be updating the search index (and memoize that for nested element saves)
-            $oldUpdateSearchIndex = $this->_updateSearchIndex;
-            $updateSearchIndex = $this->_updateSearchIndex = $updateSearchIndex ?? $this->_updateSearchIndex ?? true;
-
-            $newSiteIds = $element->newSiteIds;
-            $element->newSiteIds = [];
-
-            DB::beginTransaction();
-
-            try {
-                // No need to save the element record multiple times
-                if (!$element->propagating) {
-                    // Get the element record
-                    if (!$isNewElement) {
-                        $elementModel = ElementModel::find($element->id);
-
-                        if (!$elementModel) {
-                            $element->firstSave = $originalFirstSave;
-                            $element->isNewForSite = $originalIsNewForSite;
-                            $element->propagateAll = $originalPropagateAll;
-                            throw new ElementNotFoundException("No element exists with the ID '$element->id'");
-                        }
-                    } else {
-                        $elementModel = new ElementModel();
-                        $elementModel->type = $element::class;
-                    }
-
-                    // Set the attributes
-                    $elementModel->uid = $element->uid;
-                    $canonicalId = $element->getCanonicalId();
-                    $elementModel->canonicalId = $canonicalId !== $element->id ? $canonicalId : null;
-                    $elementModel->draftId = (int)$element->draftId ?: null;
-                    $elementModel->revisionId = (int)$element->revisionId ?: null;
-                    $elementModel->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $fieldLayout->id ?? 0) ?: null;
-                    $elementModel->enabled = (bool)$element->enabled;
-                    $elementModel->archived = (bool)$element->archived;
-                    $elementModel->dateLastMerged = Query::prepareDateForDb($element->dateLastMerged);
-                    $elementModel->dateDeleted = Query::prepareDateForDb($element->dateDeleted);
-
-                    if ($isNewElement) {
-                        if (isset($element->dateCreated)) {
-                            $elementModel->dateCreated = Query::prepareDateForDb($element->dateCreated);
-                        }
-                        if (isset($element->dateUpdated)) {
-                            $elementModel->dateUpdated = Query::prepareDateForDb($element->dateUpdated);
-                        }
-                    } elseif (!$element->resaving || $forceTouch) {
-                        // Force a new dateUpdated value
-                        $elementModel->dateUpdated = now();
-                    }
-
-                    // Update our list of dirty attributes
-                    if ($trackChanges) {
-                        array_push($dirtyAttributes, ...array_keys(Arr::only($elementModel->getDirty(), [
-                            'fieldLayoutId',
-                            'enabled',
-                            'archived',
-                        ])));
-                    }
-
-                    // Save the element record
-                    $elementModel->save();
-
-                    $dateCreated = DateTimeHelper::toDateTime($elementModel->dateCreated);
-
-                    if ($dateCreated === false) {
-                        $element->firstSave = $originalFirstSave;
-                        $element->isNewForSite = $originalIsNewForSite;
-                        $element->propagateAll = $originalPropagateAll;
-                        throw new Exception('There was a problem calculating dateCreated.');
-                    }
-
-                    $dateUpdated = DateTimeHelper::toDateTime($elementModel->dateUpdated);
-
-                    if ($dateUpdated === false) {
-                        throw new Exception('There was a problem calculating dateUpdated.');
-                    }
-
-                    // Save the new dateCreated and dateUpdated dates on the model
-                    $element->dateCreated = $dateCreated;
-                    $element->dateUpdated = $dateUpdated;
-
-                    if ($isNewElement) {
-                        // Save the element ID on the element model
-                        $element->id = $elementModel->id;
-
-                        // If there's a temp ID, update the URI
-                        if ($element->tempId && $element->uri) {
-                            $element->uri = str_replace($element->tempId, (string)$element->id, $element->uri);
-                            $element->tempId = null;
-                        }
-                    }
-                }
-
-                // Save the element’s site settings record
-                if ($siteSettingsRecord === null) {
-                    // First time we've saved the element for this site
-                    $siteSettingsRecord = new ElementSiteSettings();
-                    $siteSettingsRecord->elementId = $element->id;
-                    $siteSettingsRecord->siteId = $element->siteId;
-                }
-
-                $title = $element::hasTitles() ? $element->title : null;
-                $siteSettingsRecord->title = $title !== null && $title !== '' ? $title : null;
-                $siteSettingsRecord->slug = $element->slug;
-                $siteSettingsRecord->uri = $element->uri;
-
-                // Avoid `enabled` getting marked as dirty if it’s not really changing
-                $enabledForSite = $element->getEnabledForSite();
-                if (!$siteSettingsRecord->exists || $siteSettingsRecord->enabled !== $enabledForSite) {
-                    $siteSettingsRecord->enabled = $enabledForSite;
-                }
-
-                // Update our list of dirty attributes
-                if ($trackChanges && !$element->isNewForSite) {
-                    array_push($dirtyAttributes, ...array_keys(Arr::only($siteSettingsRecord->getDirty(), [
-                        'slug',
-                        'uri',
-                    ])));
-                    if ($siteSettingsRecord->isDirty('enabled')) {
-                        $dirtyAttributes[] = 'enabledForSite';
-                    }
-                }
-
-                $saveContent = $saveContent || $element->isNewForSite;
-                $generatedFields = $fieldLayout?->getGeneratedFields() ?? [];
-
-                if ($saveContent || !empty($dirtyFields) || !empty($generatedFields)) {
-                    $oldContent = $siteSettingsRecord->content ?? []; // we'll need that if we're not saving all the content
-                    if (is_string($oldContent)) {
-                        $oldContent = $oldContent !== '' ? Json::decode($oldContent) : [];
-                    }
-
-                    $content = [];
-
-                    if ($fieldLayout) {
-                        $validUids = [];
-
-                        foreach ($fieldLayout->getCustomFields() as $field) {
-                            $validUids[$field->layoutElement->uid] = true;
-
-                            if (($saveContent || in_array($field->handle, $dirtyFields)) && $field::dbType() !== null) {
-                                $value = $element->getFieldValue($field->handle);
-                                if ($element->isNewForSite && $field->isValueEmpty($value, $element)) {
-                                    // don't store empty values if element is new for site
-                                    // https://github.com/craftcms/cms/issues/16797
-                                    continue;
-                                }
-                                $serializedValue = $field->serializeValueForDb($value, $element);
-                                if ($serializedValue !== null) {
-                                    $content[$field->layoutElement->uid] = $serializedValue;
-                                } elseif (!$saveContent) {
-                                    // if serialized value is null, and we're not saving all the content,
-                                    // we need to register the fact that the new value is empty
-                                    unset($oldContent[$field->layoutElement->uid]);
-                                }
-                            }
-                        }
-
-                        if ($oldContent) {
-                            foreach ($generatedFields as $field) {
-                                if (isset($oldContent[$field['uid']])) {
-                                    $content[$field['uid']] = $oldContent[$field['uid']];
-                                }
-                            }
-                        }
-                    }
-
-                    // if we're only saving dirty fields, merge in the existing values,
-                    // excluding any UUIDs that are no longer valid (see https://github.com/craftcms/cms/issues/17768)
-                    if (!$saveContent && $oldContent) {
-                        foreach ($oldContent as $uid => $value) {
-                            if (!isset($content[$uid]) && isset($validUids[$uid])) {
-                                $content[$uid] = $value;
-                            }
-                        }
-                    }
-
-                    $siteSettingsRecord->content = $content ?: null;
-                }
-
-                // Save the site settings record
-                if (!$siteSettingsRecord->save()) {
-                    $element->firstSave = $originalFirstSave;
-                    $element->isNewForSite = $originalIsNewForSite;
-                    $element->propagateAll = $originalPropagateAll;
-                    throw new Exception('Couldn’t save elements’ site settings record.');
-                }
-
-                $element->siteSettingsId = $siteSettingsRecord->id;
-
-                // Set all of the dirty attributes on the element, in case an event listener wants to know
-                if ($trackChanges) {
-                    array_push($dirtyAttributes, ...$element->getDirtyAttributes());
-                    $element->setDirtyAttributes($dirtyAttributes, false);
-                }
-
-                // It is now officially saved
-                $element->afterSave($isNewElement);
-
-                // Update the list of dirty attributes
-                $dirtyAttributes = $element->getDirtyAttributes();
-
-                /** @var array<int,ElementInterface> $siteElements */
-                $siteElements = [];
-                /** @var array<int,ElementSiteSettings> $siteSettingsRecords */
-                $siteSettingsRecords = [];
-
-                // Update the element across the other sites?
-                if ($propagate) {
-                    $otherSiteIds = array_keys(Arr::except($supportedSites, $element->siteId));
-
-                    if (!empty($otherSiteIds)) {
-                        if (!$isNewElement) {
-                            $siteElements = $this->_localizedElementQuery($element)
-                                ->siteId($otherSiteIds)
-                                ->status(null)
-                                ->indexBy('siteId')
-                                ->all();
-                        }
-
-                        foreach (array_keys($supportedSites) as $siteId) {
-                            // Skip the initial site
-                            if ($siteId != $element->siteId) {
-                                $siteElement = $siteElements[$siteId] ?? false;
-                                $siteElementRecord = null;
-                                if (!$this->_propagateElement(
-                                    $element,
-                                    $supportedSites,
-                                    $siteId,
-                                    $siteElement,
-                                    crossSiteValidate: $runValidation && $crossSiteValidate,
-                                    siteSettingsRecord: $siteElementRecord,
-                                )) {
-                                    throw new InvalidConfigException();
-                                }
-                                $siteElements[$siteId] = $siteElement;
-                                $siteSettingsRecords[$siteId] = $siteElementRecord;
-                            }
-                        }
-                    }
-                }
-
-                // Save the generated fields after the element has been fully propagated,
-                // so Matrix/CB/etc. have had a chance to save their data via afterElementPropagate()
-                // (see https://github.com/craftcms/cms/issues/17938)
-                if (!$element->propagating && !empty($generatedFields)) {
-                    $siteElements[$element->siteId] = $element;
-                    $siteSettingsRecords[$element->siteId] = $siteSettingsRecord;
-
-                    Event::listen(function(AfterPropagate $event) use ($element, $generatedFields, $siteElements, $siteSettingsRecords) {
-                        if ($event->element->id !== $element->id) {
-                            return;
-                        }
-
-                        foreach ($siteElements as $siteId => $siteElement) {
-                            $siteSettingsRecord = $siteSettingsRecords[$siteId];
-                            $content = $siteSettingsRecord->content ?? [];
-                            if (is_string($content)) {
-                                $content = $content !== '' ? Json::decode($content) : [];
-                            }
-                            $generatedFieldValues = [];
-                            $updated = false;
-
-                            foreach ($generatedFields as $field) {
-                                $value = renderObjectTemplate($field['template'] ?? '', $siteElement);
-
-                                // handle 'true'/'false'/'null'/int/float values
-                                $value = normalizeValue($value) ?? '';
-
-                                if ($value !== ($content[$field['uid']] ?? '')) {
-                                    $updated = true;
-                                }
-                                if ($value !== '') {
-                                    $content[$field['uid']] = $value;
-                                    if (($field['handle'] ?? '') !== '') {
-                                        $generatedFieldValues[$field['handle']] = $value;
-                                    }
-                                } else {
-                                    unset($content[$field['uid']]);
-                                }
-                            }
-
-                            if ($updated) {
-                                $siteSettingsRecord->content = $content;
-                                $siteSettingsRecord->save();
-                                $siteElement->setGeneratedFieldValues($generatedFieldValues);
-                            }
-                        }
-                    });
-                }
-
-                // It's now fully saved and propagated
-                if (
-                    !$element->propagating &&
-                    !$element->duplicateOf &&
-                    !$element->mergingCanonicalChanges
-                ) {
-                    $element->afterPropagate($isNewElement);
-
-                    // Track this element in bulk operations
-                    BulkOps::trackElement($element);
-                }
-
-                DB::commit();
-            } catch (Throwable $e) {
-                DB::rollBack();
-                $element->firstSave = $originalFirstSave;
-                $element->isNewForSite = $originalIsNewForSite;
-                $element->propagateAll = $originalPropagateAll;
-                $element->dateUpdated = $originalDateUpdated;
-                if ($e instanceof InvalidConfigException) {
-                    return false;
-                }
-                throw $e;
-            } finally {
-                $this->_updateSearchIndex = $oldUpdateSearchIndex;
-                $element->newSiteIds = $newSiteIds;
-            }
-
-            if (!$element->propagating) {
-                // Delete the rows that don't need to be there anymore
-                if (!$isNewElement) {
-                    $deleteCondition = fn(Builder $query) => $query
-                        ->where('elementId', $element->id)
-                         ->whereNotIn('siteId', array_keys($supportedSites));
-
-                    DB::table(Table::ELEMENTS_SITES)->where($deleteCondition)->delete();
-                    DB::table(Table::SEARCHINDEX)->where($deleteCondition)->delete();
-                    DB::table(Table::SEARCHINDEXQUEUE)->where($deleteCondition)->delete();
-                }
-
-                // Invalidate any caches involving this element
-                $this->elementCaches()->invalidateForElement($element);
-            }
-
-            // Update search index
-            if ($updateSearchIndex && !$element->getIsRevision() && !ElementHelper::isRevision($element)) {
-                $searchableDirtyFields = array_filter(
-                    $dirtyFields,
-                    fn(string $handle) => $fieldLayout?->getFieldByHandle($handle)?->searchable,
-                );
-
-                if (
-                    !$trackChanges ||
-                    !empty($searchableDirtyFields) ||
-                    !empty(array_intersect($dirtyAttributes, ElementHelper::searchableAttributes($element)))
-                ) {
-                    // Fire a 'beforeUpdateSearchIndex' event
-                    if ($this->hasEventHandlers(self::EVENT_BEFORE_UPDATE_SEARCH_INDEX)) {
-                        $event = new ElementEvent(['element' => $element]);
-                        $this->trigger(self::EVENT_BEFORE_UPDATE_SEARCH_INDEX, $event);
-                        $isValid = $event->isValid;
-                    } else {
-                        $isValid = true;
-                    }
-
-                    if ($isValid) {
-                        $this->updateSearchIndex($element, $searchableDirtyFields, $propagate);
-                    }
-                }
-            }
-
-            // Update the changed attributes & fields
-            if ($trackChanges) {
-                $userId = Craft::$app->getUser()->getId();
-                $timestamp = now();
-
-                foreach ($dirtyAttributes as $attributeName) {
-                    DB::table(Table::CHANGEDATTRIBUTES)
-                        ->upsert([
-                            'elementId' => $element->id,
-                            'siteId' => $element->siteId,
-                            'attribute' => $attributeName,
-                            'dateUpdated' => $timestamp,
-                            'propagated' => $element->propagating,
-                            'userId' => $userId,
-                        ], ['elementId', 'siteId', 'attribute']);
-                }
-
-                if ($fieldLayout) {
-                    foreach ($dirtyFields as $fieldHandle) {
-                        if (($field = $fieldLayout->getFieldByHandle($fieldHandle)) !== null) {
-                            DB::table(Table::CHANGEDFIELDS)
-                                ->upsert([
-                                    'elementId' => $element->id,
-                                    'siteId' => $element->siteId,
-                                    'fieldId' => $field->id,
-                                    'layoutElementUid' => $field->layoutElement->uid,
-                                    'dateUpdated' => $timestamp,
-                                    'propagated' => $element->propagating,
-                                    'userId' => $userId,
-                                ], ['elementId', 'siteId', 'fieldId', 'layoutElementUid']);
-                        }
-                    }
-                }
-            }
-
-            return true;
-        });
-
-        if (!$success) {
-            return false;
-        }
-
-        // Fire an 'afterSaveElement' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ELEMENT)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_ELEMENT, new ElementEvent([
-                'element' => $element,
-                'isNew' => $isNewElement,
-            ]));
-        }
-
-        // Clear the element’s record of dirty fields
-        $element->markAsClean();
-        $element->firstSave = $originalFirstSave;
-        $element->isNewForSite = $originalIsNewForSite;
-        $element->propagateAll = $originalPropagateAll;
-
-        return true;
-    }
-
-    private function updateSearchIndex(
-        ElementInterface $element,
-        array $searchableDirtyFields,
-        bool $propagate,
-        ?bool $updateForOwner = null,
-    ): void {
-        if ($element->updateSearchIndexImmediately ?? app()->runningInConsole()) {
-            Search::indexElementAttributes($element, $searchableDirtyFields);
-        } else {
-            Search::queueIndexElement($element, $searchableDirtyFields);
-        }
-
-        $updateForOwner = (
-            $element instanceof NestedElementInterface &&
-            ($field = $element->getField()) &&
-            $field->searchable &&
-            ($updateForOwner ??
-                $element->getIsCanonical() &&
-                isset($element->fieldId) &&
-                isset($element->updateSearchIndexForOwner) &&
-                $element->updateSearchIndexForOwner
-            )
-        );
-
-        if ($updateForOwner) {
-            /** @var NestedElementInterface $element */
-            $owner = $element->getOwner();
-            if ($owner) {
-                $this->updateSearchIndex($owner, [$field->handle], $propagate, true);
-                $this->elementCaches()->invalidateForElement($owner);
-            }
-        }
     }
 
     /**
@@ -4095,220 +3356,9 @@ class Elements extends Component
         bool $saveContent = true,
         ?ElementSiteSettings &$siteSettingsRecord = null,
     ): bool {
-        // Make sure the element actually supports the site it's being saved in
-        if (!isset($supportedSites[$siteId])) {
-            throw new UnsupportedSiteException($element, $siteId,
-                'Attempting to propagate an element to an unsupported site.');
-        }
-
-        $siteInfo = $supportedSites[$siteId];
-
-        // Try to fetch the element in this site
-        if ($siteElement === null && $element->id) {
-            /** @phpstan-ignore-next-line */
-            $siteElement = $this->getElementById($element->id, get_class($element), $siteInfo['siteId']);
-        } elseif (!$siteElement) {
-            /** @phpstan-ignore-next-line */
-            $siteElement = null;
-        }
-
-        // If it doesn't exist yet, just clone the initial site
-        if ($siteElement === null) {
-            $siteElement = clone $element;
-            $siteElement->siteId = $siteInfo['siteId'];
-            $siteElement->siteSettingsId = null;
-            $siteElement->setEnabledForSite($siteInfo['enabledByDefault']);
-            // set isNewForSite to true unless we're reverting content from a revision
-            // in which case, it's possible that the canonical element exists for the site already,
-            // but didn't back when the revision was created.
-            // (see https://github.com/craftcms/cms/issues/15679)
-            $siteElement->isNewForSite = !$siteElement->duplicateOf?->getIsRevision();
-
-            // Keep track of this new site ID
-            $element->newSiteIds[] = $siteInfo['siteId'];
-        } elseif ($element->propagateAll) {
-            $oldSiteElement = $siteElement;
-            $siteElement = clone $element;
-            $siteElement->siteId = $oldSiteElement->siteId;
-            $siteElement->setEnabledForSite($oldSiteElement->getEnabledForSite());
-            $siteElement->uri = $oldSiteElement->uri;
-        } else {
-            $siteElement->enabled = $element->enabled;
-            $siteElement->resaving = $element->resaving;
-        }
-
-        // Does the main site's element specify a status for this site?
-        $enabledForSite = $element->getEnabledForSite($siteElement->siteId);
-        if ($enabledForSite !== null) {
-            $siteElement->setEnabledForSite($enabledForSite);
-        }
-
-        // Copy the timestamps
-        $siteElement->dateCreated = $element->dateCreated;
-        $siteElement->dateUpdated = $element->dateUpdated;
-
-        // Copy the title value?
-        if (
-            $element::hasTitles() &&
-            (
-                $siteElement->getTitleTranslationKey() === $element->getTitleTranslationKey() ||
-                ($element->propagateRequired && empty($siteElement->title))
-            )
-        ) {
-            $siteElement->title = $element->title;
-        }
-
-        // Copy the slug value?
-        if (
-            $element->slug !== null &&
-            (
-                $siteElement->getSlugTranslationKey() === $element->getSlugTranslationKey() ||
-                ($element->propagateRequired && empty($siteElement->slug))
-            )
-        ) {
-            $siteElement->slug = $element->slug;
-        }
-
-        // Ensure the uri is properly localized
-        // see https://github.com/craftcms/cms/issues/13812 for more details
-        if (
-            $element::hasUris() &&
-            (
-                $siteElement->isNewForSite ||
-                in_array('uri', $element->getDirtyAttributes()) ||
-                $element->resaving
-            )
-        ) {
-            // Set a unique URI on the site clone
-            try {
-                $this->setElementUri($siteElement);
-            } catch (OperationAbortedException) {
-                // carry on
-            }
-        }
-
-        // Save it
-        $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
-
-        // validate element against "live" scenario across all sites, if element is enabled for the site
-        if (
-            ($crossSiteValidate || $element->propagateRequired) &&
-            $siteElement->enabled &&
-            $siteElement->getEnabledForSite()
-        ) {
-            $siteElement->setScenario(Element::SCENARIO_LIVE);
-        }
-
-
-        // Copy the dirty attributes (except title, slug and uri, which may be translatable)
-        $siteElement->setDirtyAttributes(array_filter($element->getDirtyAttributes(),
-            fn(string $attribute): bool => $attribute !== 'title' && $attribute !== 'slug'));
-
-        if ($saveContent) {
-            // Copy any non-translatable field values
-            if ($siteElement->isNewForSite) {
-                // Copy all the field values
-                $siteElement->setFieldValues($element->getFieldValues());
-            } else {
-                $fieldLayout = $element->getFieldLayout();
-
-                if ($fieldLayout !== null) {
-                    foreach ($fieldLayout->getCustomFields() as $field) {
-                        if (
-                            $element->propagateAll ||
-                            // If propagateRequired is set, is the field value invalid on the propagated site element?
-                            (
-                                $element->propagateRequired &&
-                                $field->layoutElement->required &&
-                                $field->isValueEmpty($siteElement->getFieldValue($field->handle), $siteElement)
-                            ) ||
-                            // Has this field changed, and does it produce the same translation key as it did for the initial element?
-                            (
-                                $element->isFieldDirty($field->handle) &&
-                                $field->getTranslationKey($siteElement) === $field->getTranslationKey($element)
-                            )
-                        ) {
-                            $field->propagateValue($element, $siteElement);
-                        }
-                    }
-                }
-            }
-        }
-
-        $siteElement->propagating = true;
-        $siteElement->propagatingFrom = $element;
-
-        $success = $this->_saveElementInternal(
-            $siteElement,
-            $crossSiteValidate,
-            false,
-            supportedSites: $supportedSites,
-            saveContent: $saveContent,
-            siteSettingsRecord: $siteSettingsRecord,
-        );
-
-        if (!$success) {
-            // if the element we're trying to save has validation errors, notify original element about them
-            if ($siteElement->errors()->isNotEmpty()) {
-                return $this->_crossSiteValidationErrors($siteElement, $element);
-            } else {
-                // Log the errors
-                $error = 'Couldn’t propagate element to other site due to validation errors:';
-                foreach ($siteElement->errors()->all() as $attributeError) {
-                    $error .= "\n- " . $attributeError;
-                }
-                Log::error($error);
-                throw new Exception('Couldn’t propagate element to other site.');
-            }
-        }
-
-        return true;
     }
 
-    /**
-     * @param ElementInterface $siteElement
-     * @param ElementInterface $element
-     *
-     * @return bool
-     * @throws Throwable
-     */
-    private function _crossSiteValidationErrors(
-        ElementInterface $siteElement,
-        ElementInterface $element,
-    ): bool {
-        // get site we're propagating to
-        $propagateToSite = Sites::getSiteById($siteElement->siteId);
-        $user = Auth::user();
-        $message = t('Validation errors for site: “{siteName}“', [
-            'siteName' => $propagateToSite?->getName(),
-        ]);
 
-        // check user can edit this element for the site that throws validation error on propagation
-        if ($user &&
-            Sites::isMultiSite() &&
-            $user->can("editSite:{$propagateToSite?->uid}") &&
-            $siteElement->canSave($user)
-        ) {
-            $queryParams = Arr::except(Craft::$app->getRequest()->getQueryParams(), 'site');
-            $url = Url::url($siteElement->getCpEditUrl(), $queryParams + ['prevalidate' => 1]);
-            $message = Html::beginTag('a', [
-                    'href' => $url,
-                    'class' => 'cross-site-validate',
-                    'target' => '_blank',
-                ]) .
-                $message .
-                Html::tag('span', '', [
-                    'data-icon' => 'external',
-                    'aria-label' => t('Open in a new tab'),
-                    'role' => 'img',
-                ]) .
-                Html::endTag('a');
-        }
-
-        $element->errors()->add('global', $message);
-
-        return false;
-    }
 
     /**
      * Soft-deletes or restores the drafts and revisions of the given element.
@@ -4675,6 +3725,74 @@ class Elements extends Component
                     'element' => $event->element,
                 ]));
             }
+        });
+
+        Event::listen(function(BeforeSaveElement $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_SAVE_ELEMENT)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_BEFORE_SAVE_ELEMENT, $yiiEvent = new ElementEvent([
+                'element' => $event->element,
+                'isNew' => $event->isNew,
+            ]));
+
+            $event->isValid = $yiiEvent->isValid;
+        });
+
+        Event::listen(function(AfterSaveElement $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_SAVE_ELEMENT)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_AFTER_SAVE_ELEMENT, $yiiEvent = new ElementEvent([
+                'element' => $event->element,
+                'isNew' => $event->isNew,
+            ]));
+        });
+
+        Event::listen(function(BeforeUpdateSearchIndex $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_UPDATE_SEARCH_INDEX)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_BEFORE_UPDATE_SEARCH_INDEX, $yiiEvent = new ElementEvent([
+                'element' => $event->element,
+            ]));
+
+            $event->isValid = $yiiEvent->isValid;
+        });
+
+        Event::listen(function(SetElementUri $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_SET_ELEMENT_URI)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_SET_ELEMENT_URI, $yiiEvent = new ElementEvent([
+                'element' => $event->element,
+            ]));
+
+            $event->handled = $yiiEvent->handled;
+        });
+
+        Event::listen(function(BeforeMergeCanonicalChanges $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_MERGE_CANONICAL_CHANGES)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_BEFORE_MERGE_CANONICAL_CHANGES, $yiiEvent = new ElementEvent([
+                'element' => $event->element,
+            ]));
+        });
+
+        Event::listen(function(AfterMergeCanonicalChanges $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_MERGE_CANONICAL_CHANGES)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_AFTER_MERGE_CANONICAL_CHANGES, $yiiEvent = new ElementEvent([
+                'element' => $event->element,
+            ]));
         });
     }
 }

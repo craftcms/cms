@@ -8,6 +8,7 @@ use Craft;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -31,6 +32,7 @@ readonly class StoreEntryController
 
     public function __construct(
         private Request $request,
+        private Elements $elements,
         private Entries $entries,
         private Sites $sites,
     ) {}
@@ -75,7 +77,7 @@ readonly class StoreEntryController
         }
 
         try {
-            $success = Craft::$app->getElements()->saveElement($entry);
+            $success = $this->elements->saveElement($entry);
         } catch (UnsupportedSiteException $e) {
             $entry->errors()->add('siteId', $e->getMessage());
             $success = false;

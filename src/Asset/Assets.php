@@ -96,7 +96,7 @@ class Assets
         $asset->uploaderId = Auth::user()?->id;
         $asset->avoidFilenameConflicts = true;
         $asset->setScenario(Asset::SCENARIO_REPLACE);
-        Craft::$app->getElements()->saveElement($asset);
+        $this->elements->saveElement($asset);
 
         event(new AfterReplaceAsset(
             asset: $asset,
@@ -124,7 +124,7 @@ class Assets
             $asset->setScenario(Asset::SCENARIO_MOVE);
         }
 
-        return Craft::$app->getElements()->saveElement($asset);
+        return $this->elements->saveElement($asset);
     }
 
     public function getThumbUrl(Asset $asset, int $width, ?int $height = null, bool $iconFallback = true): ?string

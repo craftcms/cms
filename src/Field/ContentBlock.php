@@ -587,7 +587,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         // Make sure the content block is fully saved
         /** @var ContentBlockElement $value */
         if (! $value->id) {
-            Craft::$app->getElements()->saveElement($value);
+            Elements::saveElement($value);
         }
 
         $id = $this->getInputId();

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Commands;
 
-use Craft;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\User\Elements\User;
@@ -15,6 +15,7 @@ use CraftCms\Cms\User\Users;
 use Illuminate\Console\Command;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
+use Override;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\password;
@@ -24,7 +25,7 @@ class CreateCommand extends Command
 {
     use CraftCommand;
 
-    #[\Override]
+    #[Override]
     protected $signature = 'craft:users:create
         {--email= : The user’s email address.}
         {--username= : The user’s username.}
@@ -36,13 +37,13 @@ class CreateCommand extends Command
         {--groupIds=* : The group IDs to assign the created user to.}
     ';
 
-    #[\Override]
+    #[Override]
     protected $description = 'Creates a new user.';
 
-    #[\Override]
+    #[Override]
     protected $aliases = ['users/create'];
 
-    public function handle(GeneralConfig $generalConfig, Users $users): int
+    public function handle(Elements $elements, GeneralConfig $generalConfig, Users $users): int
     {
         if (! $users->canCreateUsers()) {
             $this->components->error('The maximum number of users has already been reached.');
@@ -116,8 +117,8 @@ class CreateCommand extends Command
         $failed = false;
         $this->components->task(
             description: 'Saving the user',
-            task: function () use ($user, &$failed) {
-                $failed = ! Craft::$app->getElements()->saveElement($user, false);
+            task: function () use ($elements, $user, &$failed) {
+                $failed = ! $elements->saveElement($user, false);
 
                 return $failed;
             }

@@ -28,6 +28,7 @@ use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Str;
@@ -1107,7 +1108,7 @@ class Install extends Migration
                 'newPassword' => $this->password,
                 'email' => $this->email,
             ]);
-            Craft::$app->getElements()->saveElement($user);
+            Elements::saveElement($user);
 
             Users::saveUserPreferences($user, [
                 'language' => $this->site->getLanguage(),

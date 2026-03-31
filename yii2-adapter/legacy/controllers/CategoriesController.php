@@ -19,6 +19,7 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Url;
@@ -380,7 +381,7 @@ class CategoriesController extends Controller
             $category->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if (!Craft::$app->getElements()->saveElement($category)) {
+        if (!Elements::saveElement($category)) {
             return $this->asModelFailure(
                 $category,
                 mb_ucfirst(t('Couldn’t save {type}.', [
