@@ -6,23 +6,23 @@ namespace CraftCms\Cms\Element\BulkOp;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\Events\DeferredBulkOpReplay;
-use Illuminate\Container\Attributes\Scoped;
+use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Event;
 
-#[Scoped]
+#[Singleton]
 class BulkOpDeferrals
 {
     /**
      * @var array<string, array<string, list<array{0: callable, 1: mixed}>>>
      */
-    private static array $handlers = [];
+    private array $handlers = [];
 
     /**
      * @var array<string, true>
      */
-    private static array $listening = [];
+    private array $listening = [];
 
     /**
      * @var array<string, array<string, array<string, true>>>
@@ -30,7 +30,6 @@ class BulkOpDeferrals
     private array $pending = [];
 
     public function __construct(
-        private readonly BulkOps $bulkOps,
         private readonly ConnectionInterface $connection,
     ) {}
 
@@ -38,19 +37,19 @@ class BulkOpDeferrals
     {
         $watchKey ??= $event;
 
-        self::$handlers[$event][$watchKey][] = [$handler, $data];
+        $this->handlers[$event][$watchKey][] = [$handler, $data];
 
-        if (isset(self::$listening[$event])) {
+        if (isset($this->listening[$event])) {
             return;
         }
 
         Event::listen($event, function () use ($event, $watchKey) {
-            foreach ($this->bulkOps->activeKeys() as $key) {
+            foreach (app(BulkOps::class)->activeKeys() as $key) {
                 $this->pending[$key][$event][$watchKey] = true;
             }
         });
 
-        self::$listening[$event] = true;
+        $this->listening[$event] = true;
     }
 
     public function persistPending(): void
@@ -74,6 +73,8 @@ class BulkOpDeferrals
                 }
             }
         }
+
+        $this->pending = [];
     }
 
     public function replay(string $key): void
@@ -99,7 +100,7 @@ class BulkOpDeferrals
 
         foreach ($triggers as $event => $watchKeys) {
             foreach (array_keys($watchKeys) as $watchKey) {
-                foreach (self::$handlers[$event][$watchKey] ?? [] as [$handler, $data]) {
+                foreach ($this->handlers[$event][$watchKey] ?? [] as [$handler, $data]) {
                     $handler(new DeferredBulkOpReplay(
                         key: $key,
                         event: $event,
@@ -111,9 +112,10 @@ class BulkOpDeferrals
         }
     }
 
-    public static function reset(): void
+    public function reset(): void
     {
-        self::$handlers = [];
-        self::$listening = [];
+        $this->handlers = [];
+        $this->listening = [];
+        $this->pending = [];
     }
 }

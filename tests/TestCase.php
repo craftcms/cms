@@ -166,7 +166,7 @@ class TestCase extends Orchestra
             new ReflectionProperty($class, $property)->setValue(null, $default);
         }
 
-        BulkOpDeferrals::reset();
+        app(BulkOpDeferrals::class)->reset();
     }
 
     protected function refreshTestDatabase(): void
