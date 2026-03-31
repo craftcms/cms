@@ -9,6 +9,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 
@@ -50,7 +51,7 @@ beforeEach(function () {
         Craft::$app->getElements()->saveElement($entryElement);
     }
 
-    Craft::$app->getElements()->invalidateAllCaches();
+    ElementCaches::invalidateAll();
 
     $this->entryModels = $entryModels;
 });

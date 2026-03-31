@@ -21,6 +21,7 @@ use CraftCms\Cms\Address\Events\DefineAddressSubdivisions;
 use CraftCms\Cms\Address\Events\DefineAddressUsedFields;
 use CraftCms\Cms\Address\Events\DefineAddressUsedSubdivisionFields;
 use CraftCms\Cms\Address\Repositories\SubdivisionRepository;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -44,6 +45,7 @@ readonly class Addresses implements FieldLayoutProviderInterface
         private SubdivisionRepository $subdivisionRepository,
         private AddressFormatRepository $addressFormatRepository,
         private Fields $fields,
+        private ElementCaches $elementCaches,
         ?FormatterInterface $formatter = null,
     ) {
         $this->formatter = $formatter ?? new DefaultFormatter(
@@ -283,6 +285,6 @@ readonly class Addresses implements FieldLayoutProviderInterface
         $this->fields->saveLayout($layout);
 
         // Invalidate user caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Address::class);
+        $this->elementCaches->invalidateForElementType(Address::class);
     }
 }

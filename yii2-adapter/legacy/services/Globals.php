@@ -18,6 +18,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
@@ -422,7 +423,7 @@ class Globals extends Component
         }
 
         // Invalidate all element caches
-        Craft::$app->getElements()->invalidateAllCaches();
+        ElementCaches::invalidateAll();
     }
 
     /**
@@ -523,7 +524,7 @@ class Globals extends Component
         }
 
         // Invalidate all element caches
-        Craft::$app->getElements()->invalidateAllCaches();
+        ElementCaches::invalidateAll();
     }
 
     /**

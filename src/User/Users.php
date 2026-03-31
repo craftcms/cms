@@ -14,6 +14,7 @@ use CraftCms\Cms\Asset\Exceptions\VolumeException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Field\Fields;
@@ -75,6 +76,10 @@ use function CraftCms\Cms\t;
 #[Singleton]
 class Users
 {
+    public function __construct(
+        private readonly ElementCaches $elementCaches,
+    ) {}
+
     /**
      * @var array Cached user preferences.
      *
@@ -1145,7 +1150,7 @@ class Users
         $fieldsService->saveLayout($layout, false);
 
         // Invalidate user caches
-        Craft::$app->getElements()->invalidateCachesForElementType(User::class);
+        $this->elementCaches->invalidateForElementType(User::class);
     }
 
     /**

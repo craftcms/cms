@@ -11,6 +11,7 @@ use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -161,6 +162,7 @@ class Gql
 
     public function __construct(
         private readonly ProjectConfig $projectConfig,
+        private readonly ElementCaches $elementCaches,
     ) {}
 
     /**
@@ -326,8 +328,7 @@ class Gql
                 $isIntrospectionQuery = GqlHelper::isIntrospectionQuery($query);
                 $prebuildSchema = $isIntrospectionQuery || ! Cms::config()->lazyGqlTypes;
                 $schemaDef = $this->getSchemaDef($schema, $prebuildSchema);
-                $elementsService = Craft::$app->getElements();
-                $elementsService->startCollectingCacheInfo();
+                $this->elementCaches->startCollectingCacheInfo();
 
                 $result = GraphQL::executeQuery(
                     $schemaDef,
@@ -342,7 +343,7 @@ class Gql
                     ->setErrorsHandler($this->handleQueryErrors(...))
                     ->toArray($debugMode ? DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE : DebugFlag::NONE);
 
-                [$dep, $duration] = $elementsService->stopCollectingCacheInfo();
+                [$dep, $duration] = $this->elementCaches->stopCollectingCacheInfo();
 
                 if (empty($result['errors']) && $cacheKey && $this->shouldCache($result)) {
                     $this->setCachedResult($cacheKey, $result, $dep, $duration);

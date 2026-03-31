@@ -40,6 +40,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
+use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -2181,7 +2182,7 @@ JS, [
             // Should we transfer the content to a new user?
             if ($this->inheritorOnDelete) {
                 // Invalidate all entry caches
-                $elementsService->invalidateCachesForElementType(Entry::class);
+                ElementCaches::invalidateForElementType(Entry::class);
 
                 // Update the entry/version/draft tables to point to the new user
                 $userRefs = [

@@ -28,6 +28,7 @@ use craft\services\Addresses;
 use craft\services\Auth;
 use craft\services\Dashboard;
 use craft\services\Drafts;
+use craft\services\Elements;
 use craft\services\Entries;
 use craft\services\Fields;
 use craft\services\Fs;
@@ -107,6 +108,7 @@ readonly class EventCompatibility
         Auth::registerEvents();
         Connection::registerEvents();
         Drafts::registerEvents();
+        Elements::registerEvents();
         Entries::registerEvents();
         Fields::registerEvents();
         Fs::registerEvents();

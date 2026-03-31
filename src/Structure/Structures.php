@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Structure;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Structure\Data\Structure;
 use CraftCms\Cms\Structure\Enums\Action;
 use CraftCms\Cms\Structure\Enums\Mode;
@@ -36,6 +36,10 @@ class Structures
      * @var StructureElementModel[]
      */
     private array $rootElementRecordsByStructureId = [];
+
+    public function __construct(
+        private readonly ElementCaches $elementCaches,
+    ) {}
 
     // Structure CRUD
     // -------------------------------------------------------------------------
@@ -471,7 +475,7 @@ class Structures
 
         // Invalidate all caches for the element type
         // (see https://github.com/craftcms/cms/issues/14846)
-        Craft::$app->getElements()->invalidateCachesForElementType($element::class);
+        $this->elementCaches->invalidateForElementType($element::class);
 
         event(new $afterEvent(
             element: $element,

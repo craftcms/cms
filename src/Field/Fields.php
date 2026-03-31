@@ -13,6 +13,7 @@ use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Field\Addresses as AddressesField;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -97,6 +98,10 @@ class Fields
      * @var array<string,bool>|null Memoized map of all generated field handles.
      */
     private ?array $_allGeneratedFieldHandles = null;
+
+    public function __construct(
+        private readonly ElementCaches $elementCaches,
+    ) {}
 
     // Handle Registry
     // -------------------------------------------------------------------------
@@ -766,7 +771,7 @@ class Fields
         event(new FieldDeleted($field));
 
         // Invalidate all element caches
-        Craft::$app->getElements()->invalidateAllCaches();
+        $this->elementCaches->invalidateAll();
     }
 
     /**
@@ -1228,7 +1233,7 @@ class Fields
         }
 
         // Invalidate all element caches
-        Craft::$app->getElements()->invalidateAllCaches();
+        $this->elementCaches->invalidateAll();
     }
 
     /**
