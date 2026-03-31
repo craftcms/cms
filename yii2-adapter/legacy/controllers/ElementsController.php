@@ -1483,7 +1483,7 @@ JS, [
             ])));
         }
 
-        ElementActivityFacade::trackActivity($canonical, ElementActivityType::Save);
+        ElementActivityFacade::trackActivity($element, ElementActivityType::Save);
 
         // See if the user happens to have a provisional element. If so delete it.
         $provisional = $element::find()
@@ -2349,7 +2349,7 @@ JS, [
 
         $canonical = app(Revisions::class)->revertToRevision($element, $user->id);
 
-        ElementActivityFacade::trackActivity($element, ElementActivityType::Save);
+        ElementActivityFacade::trackActivity($canonical, ElementActivityType::Save);
 
         return $this->_asSuccess(t('{type} reverted to past revision.', [
             'type' => $element::displayName(),
