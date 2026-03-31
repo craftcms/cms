@@ -1243,6 +1243,8 @@ return [
     'Password' => 'Κωδικός πρόσβασης',
     'Past year' => 'Προηγούμενο έτος',
     'Past {num} days' => 'Τελευταίες {num} ημέρες',
+    'Paste {type} above' => 'Paste {type} above',
+    'Paste {type} before' => 'Paste {type} before',
     'Paste {type}' => 'Επικόλληση {type}',
     'Pay {price}' => 'Πληρώστε {price}',
     'Pending' => 'Σε εκκρεμότητα',
