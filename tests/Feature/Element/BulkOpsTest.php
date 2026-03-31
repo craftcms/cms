@@ -8,12 +8,13 @@ use CraftCms\Cms\Element\Events\AfterBulkOp;
 use CraftCms\Cms\Element\Events\BeforeBulkOp;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
     Craft::$app->controller = null;
     $this->bulkOps = app(BulkOps::class);
-    $this->bulkOpConnection = Craft::$app->getElements()->getBulkOpConnection();
+    $this->bulkOpConnection = DB::connection('db2');
 });
 
 it('is scoped within a request', function () {

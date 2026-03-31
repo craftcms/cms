@@ -11,7 +11,7 @@ use CraftCms\Cms\Element\Events\AfterBulkOp;
 use CraftCms\Cms\Element\Events\BeforeBulkOp;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Scoped;
-use Illuminate\Database\Connection;
+use Illuminate\Database\ConnectionInterface;
 
 #[Scoped]
 class BulkOps
@@ -20,6 +20,10 @@ class BulkOps
      * @var array<string, true>
      */
     private array $activeKeys = [];
+
+    public function __construct(
+        private readonly ConnectionInterface $connection,
+    ) {}
 
     /**
      * @return string[]
@@ -55,7 +59,7 @@ class BulkOps
             return;
         }
 
-        $this->bulkOpConnection()
+        $this->connection
             ->table(Table::ELEMENTS_BULKOPS)
             ->where('key', $key)
             ->delete();
@@ -72,10 +76,10 @@ class BulkOps
         }
 
         $timestamp = now();
-        $connection = $this->bulkOpConnection();
 
         foreach ($this->activeKeys() as $key) {
-            $connection->table(Table::ELEMENTS_BULKOPS)
+            $this->connection
+                ->table(Table::ELEMENTS_BULKOPS)
                 ->upsert([
                     'elementId' => $element->id,
                     'key' => $key,
@@ -97,11 +101,6 @@ class BulkOps
         } finally {
             $this->end($key);
         }
-    }
-
-    private function bulkOpConnection(): Connection
-    {
-        return Craft::$app->getElements()->getBulkOpConnection();
     }
 
     private function shouldBypassPersistence(): bool
