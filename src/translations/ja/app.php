@@ -1243,6 +1243,8 @@ return [
     'Password' => 'パスワード',
     'Past year' => '去年',
     'Past {num} days' => '過去{num}日間',
+    'Paste {type} above' => 'Paste {type} above',
+    'Paste {type} before' => 'Paste {type} before',
     'Paste {type}' => '{type}を貼り付け',
     'Pay {price}' => '{price} を支払う',
     'Pending' => '保留中',
