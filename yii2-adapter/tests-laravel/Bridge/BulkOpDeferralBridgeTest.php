@@ -62,8 +62,18 @@ it('replays legacy deferred handlers keyed by event name', function() {
     $replays = [];
 
     BulkOpEvent::defer(AdapterDeferredBulkEvent::class, 'custom-event', function(BulkOpEvent $event) use (&$replays) {
-        $replays[] = $event;
-    }, data: ['source' => 'legacy-watch-key']);
+        $replays[] = [
+            'key' => $event->key,
+            'data' => $event->data,
+        ];
+    }, data: ['source' => 'custom-event']);
+
+    BulkOpEvent::defer(AdapterDeferredBulkEvent::class, 'other-custom-event', function(BulkOpEvent $event) use (&$replays) {
+        $replays[] = [
+            'key' => $event->key,
+            'data' => $event->data,
+        ];
+    }, data: ['source' => 'other-custom-event']);
 
     $key = Craft::$app->getElements()->beginBulkOp();
 
@@ -71,7 +81,13 @@ it('replays legacy deferred handlers keyed by event name', function() {
 
     Craft::$app->getElements()->endBulkOp($key);
 
-    expect($replays)->toHaveCount(1)
-        ->and($replays[0]->key)->toBe($key)
-        ->and($replays[0]->data)->toBe(['source' => 'legacy-watch-key']);
+    expect($replays)->toHaveCount(2)
+        ->and($replays)->toContain([
+            'key' => $key,
+            'data' => ['source' => 'custom-event'],
+        ])
+        ->and($replays)->toContain([
+            'key' => $key,
+            'data' => ['source' => 'other-custom-event'],
+        ]);
 });

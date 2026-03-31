@@ -45,13 +45,15 @@ class BulkOpDeferrals
             return;
         }
 
-        Event::listen($event, function () use ($event, $watchKey) {
+        Event::listen($event, function () use ($event) {
             /**
              * @note We specifically use the Facade as otherwise the
              * scoped service would get locked in this singleton
              */
             foreach (BulkOps::activeKeys() as $key) {
-                $this->pending[$key][$event][$watchKey] = true;
+                foreach (array_keys($this->handlers[$event] ?? []) as $watchKey) {
+                    $this->pending[$key][$event][$watchKey] = true;
+                }
             }
         });
 
