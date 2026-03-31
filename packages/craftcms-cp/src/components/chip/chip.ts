@@ -29,7 +29,7 @@ export default class CraftChip extends LitElement {
   @property() icon: string | null = null;
 
   renderPrefix() {
-    return html`<div class="chip__prefix" part="prefix">
+    return html`<div class="cp-chip__prefix" part="prefix">
       <slot name="prefix">
         ${this.icon
           ? html`<craft-icon name="${this.icon}"></craft-icon>`
@@ -47,19 +47,19 @@ export default class CraftChip extends LitElement {
       <div
         part="chip"
         class="${classMap({
-          chip: true,
-          'chip--small': this.size === 'small',
-          'chip--medium': this.size === 'medium',
-          'chip--large': this.size === 'large',
-          'chip--plain': this.variant === 'plain',
+          'cp-chip': true,
+          'cp-chip--small': this.size === 'small',
+          'cp-chip--medium': this.size === 'medium',
+          'cp-chip--large': this.size === 'large',
+          'cp-chip--plain': this.variant === 'plain',
         })}"
       >
         ${renderPrefix ? this.renderPrefix() : nothing}
-        <div class="chip__body">
+        <div class="cp-chip__body">
           <slot></slot>
         </div>
         ${renderSuffix
-          ? html`<div class="chip__suffix" part="suffix">
+          ? html`<div class="cp-chip__suffix" part="suffix">
               <slot name="suffix"></slot>
             </div>`
           : nothing}
