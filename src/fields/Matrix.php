@@ -994,6 +994,11 @@ JS, [
         $view = Craft::$app->getView();
         $id = sprintf('action-copy-%s', mt_rand());
 
+        $baseInfo = Json::encode([
+            'type' => Entry::class,
+            'fieldId' => $this->id,
+        ]);
+
         $view->registerJsWithVars(fn($id, $fieldId, $entrySelector) => <<<JS
 (() => {
   const btn = $('#' + $id);
@@ -1010,7 +1015,17 @@ JS, [
   const getEntries = () => field.find($entrySelector);
 
   btn.on('activate', () => {
-    Craft.cp.copyElements(getEntries());
+    Craft.cp.copyElements(getEntries().toArray().map((element) => {
+      element = $(element);
+      return {
+          ... $baseInfo,
+          id: element.data('id'),
+          draftId: element.data('draftId'),
+          revisionId: element.data('revisionId'),
+          ownerId: element.data('ownerId'),
+          siteId: element.data('siteId'),
+        };
+    }));
   });
 
   setTimeout(() => {
