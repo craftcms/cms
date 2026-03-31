@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element\BulkOp;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\Events\DeferredBulkOpReplay;
+use CraftCms\Cms\Support\Facades\BulkOps;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Arr;
@@ -44,7 +45,11 @@ class BulkOpDeferrals
         }
 
         Event::listen($event, function () use ($event, $watchKey) {
-            foreach (app(BulkOps::class)->activeKeys() as $key) {
+            /**
+             * @note We specifically use the Facade as otherwise the
+             * scoped service would get locked in this singleton
+             */
+            foreach (BulkOps::activeKeys() as $key) {
                 $this->pending[$key][$event][$watchKey] = true;
             }
         });
@@ -110,12 +115,5 @@ class BulkOpDeferrals
                 }
             }
         }
-    }
-
-    public function reset(): void
-    {
-        $this->handlers = [];
-        $this->listening = [];
-        $this->pending = [];
     }
 }

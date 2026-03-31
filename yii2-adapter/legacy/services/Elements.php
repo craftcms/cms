@@ -38,7 +38,6 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
 use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
 use CraftCms\Cms\Element\Drafts;
@@ -65,6 +64,7 @@ use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Structure\Models\StructureElement as StructureElementModel;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Search;
@@ -1023,7 +1023,7 @@ class Elements extends Component
      */
     public function getBulkOpKeys(): array
     {
-        return app(BulkOps::class)->activeKeys();
+        return BulkOps::activeKeys();
     }
 
     /**
@@ -1035,7 +1035,7 @@ class Elements extends Component
      */
     public function beginBulkOp(): string
     {
-        return app(BulkOps::class)->start();
+        return BulkOps::start();
     }
 
     /**
@@ -1048,7 +1048,7 @@ class Elements extends Component
      */
     public function resumeBulkOp(string $key): void
     {
-        app(BulkOps::class)->resume($key);
+        BulkOps::resume($key);
     }
 
     /**
@@ -1061,7 +1061,7 @@ class Elements extends Component
      */
     public function endBulkOp(string $key): void
     {
-        app(BulkOps::class)->end($key);
+        BulkOps::end($key);
     }
 
     /**
@@ -1074,7 +1074,7 @@ class Elements extends Component
      */
     public function trackElementInBulkOps(ElementInterface $element): void
     {
-        app(BulkOps::class)->trackElement($element);
+        BulkOps::trackElement($element);
     }
 
     /**
@@ -1089,7 +1089,7 @@ class Elements extends Component
      */
     public function ensureBulkOp(callable $callback): mixed
     {
-        return app(BulkOps::class)->ensure($callback);
+        return BulkOps::ensure($callback);
     }
 
     // Saving Elements

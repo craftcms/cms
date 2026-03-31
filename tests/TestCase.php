@@ -11,7 +11,6 @@ use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Element\BulkOp\BulkOpDeferrals;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Field;
@@ -165,8 +164,6 @@ class TestCase extends Orchestra
         foreach ($resets as [$class, $property, $default]) {
             new ReflectionProperty($class, $property)->setValue(null, $default);
         }
-
-        app(BulkOpDeferrals::class)->reset();
     }
 
     protected function refreshTestDatabase(): void
