@@ -12,7 +12,8 @@ use CraftCms\Cms\Database\Commands\DropTablePrefixCommand;
 use CraftCms\Cms\Database\Commands\MigrateCommand;
 use CraftCms\Cms\Database\Commands\RepairCommand;
 use CraftCms\Cms\Database\Commands\RestoreCommand;
-use CraftCms\Cms\Element\BulkOps;
+use CraftCms\Cms\Element\BulkOp\BulkOpDeferrals;
+use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Cache\DatabaseStore;
 use Illuminate\Contracts\Config\Repository;
@@ -42,6 +43,11 @@ class DatabaseServiceProvider extends ServiceProvider
 
         $this->app
             ->when(BulkOps::class)
+            ->needs(ConnectionInterface::class)
+            ->give(fn () => $this->app->make(ConnectionResolverInterface::class)->connection(config('database.bulk_ops_connection', 'db2')));
+
+        $this->app
+            ->when(BulkOpDeferrals::class)
             ->needs(ConnectionInterface::class)
             ->give(fn () => $this->app->make(ConnectionResolverInterface::class)->connection(config('database.bulk_ops_connection', 'db2')));
 

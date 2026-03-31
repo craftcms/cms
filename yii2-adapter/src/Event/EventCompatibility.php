@@ -71,6 +71,8 @@ readonly class EventCompatibility
 {
     public function boot(): void
     {
+        app(BulkOpDeferralBridge::class)->boot();
+
         /**
          * Elements
          */

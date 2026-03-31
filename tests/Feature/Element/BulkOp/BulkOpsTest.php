@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\BulkOps;
-use CraftCms\Cms\Element\Events\AfterBulkOp;
-use CraftCms\Cms\Element\Events\BeforeBulkOp;
+use CraftCms\Cms\Element\BulkOp\BulkOps;
+use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
+use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use Illuminate\Support\Facades\DB;

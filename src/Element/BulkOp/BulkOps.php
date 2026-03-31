@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Element;
+namespace CraftCms\Cms\Element\BulkOp;
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Events\AfterBulkOp;
-use CraftCms\Cms\Element\Events\BeforeBulkOp;
+use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
+use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\ConnectionInterface;

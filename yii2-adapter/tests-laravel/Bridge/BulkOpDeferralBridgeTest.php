@@ -1,0 +1,58 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\BulkOp\BulkOpDeferrals;
+use CraftCms\Cms\Element\BulkOp\Events\DeferredBulkOpReplay;
+use CraftCms\Cms\Tests\TestCase as CmsTestCase;
+use Illuminate\Support\Facades\DB;
+
+uses(CmsTestCase::class);
+
+class AdapterDeferredBulkEvent
+{
+    public function __construct(
+        public string $value,
+    ) {
+    }
+}
+
+beforeEach(function() {
+    $this->deferrals = app(BulkOpDeferrals::class);
+    $this->bulkOpConnection = DB::connection('db2');
+});
+
+it('replays native deferred handlers when a legacy bulk op ends', function() {
+    $replays = [];
+
+    $this->deferrals->defer(AdapterDeferredBulkEvent::class, function(DeferredBulkOpReplay $event) use (&$replays) {
+        $replays[] = $event;
+    }, data: ['source' => 'legacy']);
+
+    $key = Craft::$app->getElements()->beginBulkOp();
+
+    event(new AdapterDeferredBulkEvent('inside'));
+
+    expect($this->bulkOpConnection->table(Table::BULKOPEVENTS)->count())->toBe(0);
+
+    Craft::$app->getElements()->endBulkOp($key);
+
+    expect($replays)->toHaveCount(1)
+        ->and($replays[0]->key)->toBe($key)
+        ->and($replays[0]->data)->toBe(['source' => 'legacy']);
+});
+
+it('persists native deferred triggers while a legacy bulk op remains open', function() {
+    $this->deferrals->defer(AdapterDeferredBulkEvent::class, function() {
+    });
+
+    $key = Craft::$app->getElements()->beginBulkOp();
+
+    event(new AdapterDeferredBulkEvent('inside'));
+    $this->deferrals->persistPending();
+
+    expect($this->bulkOpConnection->table(Table::BULKOPEVENTS)
+        ->where('key', $key)
+        ->count())->toBe(1);
+});
