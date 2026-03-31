@@ -1729,11 +1729,15 @@ JS, [
                         ->only($element->safeAttributes())
                         ->all();
 
-                    if ($element->getIsRevision() && $element->dateDeleted !== null) {
-                        $safeNewAttributes['dateDeleted'] = null;
-                        $safeNewAttributes['deletedWithOwner'] = null;
-                        $safeNewAttributes['trashed'] = false;
+                    // if element is a revision, we need to nullify some additional attributes
+                    if ($element->getIsRevision()) {
                         $safeNewAttributes['revisionId'] = null;
+
+                        if ($element->dateDeleted !== null) {
+                            $safeNewAttributes['dateDeleted'] = null;
+                            $safeNewAttributes['deletedWithOwner'] = null;
+                            $safeNewAttributes['trashed'] = false;
+                        }
                     }
 
                     try {
