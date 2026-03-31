@@ -14,6 +14,7 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Url;
 use GuzzleHttp\Utils;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Foundation\Application;
@@ -22,6 +23,7 @@ use Illuminate\Foundation\Events\LocaleUpdated;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
 use Illuminate\Routing\UrlGenerator;
 use Illuminate\Support\Collection;
@@ -31,7 +33,6 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use IntlDateFormatter;
@@ -55,6 +56,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        JsonResource::withoutWrapping();
+
         Event::listen(LocaleUpdated::class, function (LocaleUpdated $event) {
             setlocale(
                 LC_COLLATE,
@@ -159,10 +162,10 @@ class AppServiceProvider extends ServiceProvider
 
         UrlGenerator::macro('defaultReturnUrl', function (): string {
             if (request()->isCpRequest() && Gate::check('accessCp')) {
-                return \CraftCms\Cms\Support\Url::cpUrl(Cms::config()->getPostCpLoginRedirect());
+                return Url::cpUrl(Cms::config()->getPostCpLoginRedirect());
             }
 
-            return \CraftCms\Cms\Support\Url::siteUrl(Cms::config()->getPostLoginRedirect());
+            return Url::siteUrl(Cms::config()->getPostLoginRedirect());
         });
 
         UrlGenerator::macro('returnUrl', function (?string $defaultUrl = null): string {
