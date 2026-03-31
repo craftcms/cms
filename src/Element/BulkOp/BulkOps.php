@@ -102,6 +102,11 @@ class BulkOps
         }
     }
 
+    public function defer(string $event, callable $handler, mixed $data = null, ?string $watchKey = null): void
+    {
+        app(BulkOpDeferrals::class)->defer($event, $handler, $data, $watchKey);
+    }
+
     private function shouldBypassPersistence(): bool
     {
         if (app()->runningInConsole()) {

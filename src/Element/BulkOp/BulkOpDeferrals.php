@@ -12,6 +12,7 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Event;
 
+/** @internal */
 #[Singleton]
 class BulkOpDeferrals
 {

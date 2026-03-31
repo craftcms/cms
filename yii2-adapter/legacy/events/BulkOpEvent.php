@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
-use CraftCms\Cms\Element\BulkOp\BulkOpDeferrals;
 use CraftCms\Cms\Element\BulkOp\Events\DeferredBulkOpReplay;
+use CraftCms\Cms\Support\Facades\BulkOps;
 
 /**
  * Bulk operation event class.
@@ -41,7 +41,7 @@ class BulkOpEvent extends ElementQueryEvent
         callable $handler,
         mixed $data = null,
     ): void {
-        app(BulkOpDeferrals::class)->defer($class, function(DeferredBulkOpReplay $replay) use ($handler) {
+        BulkOps::defer($class, function(DeferredBulkOpReplay $replay) use ($handler) {
             $event = new self([
                 'key' => $replay->key,
                 'data' => $replay->data,
