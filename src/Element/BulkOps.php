@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\AfterBulkOp;
@@ -105,16 +104,10 @@ class BulkOps
 
     private function shouldBypassPersistence(): bool
     {
-        $controller = Craft::$app->controller;
-
-        if (! $controller) {
+        if (app()->runningInConsole()) {
             return false;
         }
 
-        if ($controller::class !== 'craft\\controllers\\AppController') {
-            return false;
-        }
-
-        return ($controller->action?->id ?? null) === 'update';
+        return request()->actionSegments() === ['app', 'update'];
     }
 }
