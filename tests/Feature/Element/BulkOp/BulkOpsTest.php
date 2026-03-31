@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Facade;
 
 beforeEach(function () {
-    Craft::$app->controller = null;
     $this->bulkOps = app(BulkOps::class);
     $this->bulkOpConnection = DB::connection('db2');
 });
@@ -98,7 +97,7 @@ it('dispatches after event before cleaning up persisted rows', function () {
             return;
         }
 
-        $rowsVisibleDuringAfterEvent = Craft::$app->getElements()->getBulkOpConnection()
+        $rowsVisibleDuringAfterEvent = $this->bulkOpConnection
             ->table(Table::ELEMENTS_BULKOPS)
             ->where('key', $event->key)
             ->count();

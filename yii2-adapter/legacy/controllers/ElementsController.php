@@ -39,6 +39,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -1737,7 +1738,7 @@ JS, [
 
         $result = DbFacade::transaction(function() use ($elementInfo, $newAttributes, &$newElementInfo) {
             $elementsService = Craft::$app->getElements();
-            return $elementsService->ensureBulkOp(function() use ($elementInfo, $newAttributes, &$newElementInfo, $elementsService) {
+            return BulkOps::ensure(function() use ($elementInfo, $newAttributes, &$newElementInfo, $elementsService) {
                 foreach ($elementInfo as $info) {
                     $element = $this->_element($info);
 

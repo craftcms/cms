@@ -80,7 +80,6 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
-use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -607,11 +606,6 @@ class Elements extends Component
 
     // Element caches
     // -------------------------------------------------------------------------
-
-    public function getBulkOpConnection(): ConnectionInterface
-    {
-        return DB::connection($this->bulkOpDb);
-    }
 
     /**
      * Returns whether we are currently collecting element cache invalidation info.
@@ -1239,7 +1233,7 @@ class Elements extends Component
             ]));
         }
 
-        $this->ensureBulkOp(function() use ($element, $supportedSites) {
+        BulkOps::ensure(function() use ($element, $supportedSites) {
             DB::transaction(function() use ($element, $supportedSites) {
                 // Start with the other sites (if any), so we don't update dateLastMerged until the end
                 $otherSiteIds = array_keys(Arr::except($supportedSites, $element->siteId));
@@ -1446,7 +1440,7 @@ class Elements extends Component
             ]));
         }
 
-        $this->ensureBulkOp(function() use ($query, $skipRevisions, $touch, $updateSearchIndex, $continueOnError) {
+        BulkOps::ensure(function() use ($query, $skipRevisions, $touch, $updateSearchIndex, $continueOnError) {
             $position = 0;
 
             try {
@@ -1545,7 +1539,7 @@ class Elements extends Component
             $siteIds = array_map(fn($siteId) => (int)$siteId, (array)$siteIds);
         }
 
-        $this->ensureBulkOp(function() use ($query, $siteIds, $continueOnError) {
+        BulkOps::ensure(function() use ($query, $siteIds, $continueOnError) {
             $position = 0;
 
             try {
@@ -1606,7 +1600,7 @@ class Elements extends Component
                     }
 
                     // Track this element in bulk operations
-                    $this->trackElementInBulkOps($element);
+                    BulkOps::trackElement($element);
 
                     // Clear caches
                     $this->invalidateCachesForElement($element);
@@ -1770,7 +1764,7 @@ class Elements extends Component
                 'Element ' . $element->id . ' could not be duplicated because it doesn\'t validate.');
         }
 
-        $this->ensureBulkOp(function() use (
+        BulkOps::ensure(function() use (
             $mainClone,
             $supportedSites,
             $element,
@@ -2397,7 +2391,7 @@ class Elements extends Component
             return false;
         }
 
-        $this->ensureBulkOp(function() use ($element) {
+        BulkOps::ensure(function() use ($element) {
             DB::beginTransaction();
             try {
                 // First delete any structure nodes with this element, so NestedSetBehavior can do its thing.
@@ -2442,7 +2436,7 @@ class Elements extends Component
 
                 if (!$element->hardDelete) {
                     // Track this element in bulk operations
-                    $this->trackElementInBulkOps($element);
+                    BulkOps::trackElement($element);
                 }
 
                 DB::commit();
@@ -3624,11 +3618,11 @@ class Elements extends Component
     ): ElementInterface {
         $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
 
-        $this->ensureBulkOp(function() use ($element, $supportedSites, $siteId, &$siteElement) {
+        BulkOps::ensure(function() use ($element, $supportedSites, $siteId, &$siteElement) {
             $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
 
             // Track this element in bulk operations
-            $this->trackElementInBulkOps($element);
+            BulkOps::trackElement($element);
         });
 
         // Clear caches
@@ -3786,7 +3780,7 @@ class Elements extends Component
             }
         }
 
-        $success = $this->ensureBulkOp(function() use (
+        $success = BulkOps::ensure(function() use (
             $element,
             $isNewElement,
             $originalFirstSave,
@@ -4107,7 +4101,7 @@ class Elements extends Component
                     $element->afterPropagate($isNewElement);
 
                     // Track this element in bulk operations
-                    $this->trackElementInBulkOps($element);
+                    BulkOps::trackElement($element);
                 }
 
                 DB::commit();
