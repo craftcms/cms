@@ -174,7 +174,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         $fieldLayouts = array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes);
         $tableColumns = array_merge(
             ElementSources::getAvailableTableAttributes(Entry::class)->all(),
-            ElementSources::getTableAttributesForFieldLayouts($fieldLayouts)->all(),
+            ElementSources::getTableAttributesForFieldLayouts(collect($fieldLayouts))->all(),
         );
 
         $options = [];
