@@ -1243,6 +1243,8 @@ return [
     'Password' => 'Şifre',
     'Past year' => 'Geçen yıl',
     'Past {num} days' => 'Son {num} gün',
+    'Paste {type} above' => 'Paste {type} above',
+    'Paste {type} before' => 'Paste {type} before',
     'Paste {type}' => '{type} öğesini yapıştır',
     'Pay {price}' => 'Ödeme {price}',
     'Pending' => 'Beklemede',
