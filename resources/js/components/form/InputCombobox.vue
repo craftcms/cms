@@ -22,6 +22,7 @@
   }>();
   const props = withDefaults(
     defineProps<{
+      label: string;
       options?: Array<SelectItem>;
       modelValue?: string;
       requireOptionMatch?: boolean;
@@ -157,6 +158,7 @@
         appearance="plain"
         size="small"
         icon
+        :aria-label="label"
       >
         <craft-icon name="chevron-down" style="font-size: 0.8em"></craft-icon>
       </ComboboxButton>

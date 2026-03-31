@@ -37,7 +37,7 @@
     :has-feedback-for="error ? 'error' : ''"
     v-bind="$attrs"
   >
-    <InputCombobox slot="input" v-model="valueProxy" :options="options" />
+    <InputCombobox slot="input" v-model="valueProxy" :options="options" :label />
 
     <div slot="after">
       <craft-callout
