@@ -1243,6 +1243,8 @@ return [
     'Password' => 'Heslo',
     'Past year' => 'Minulý rok',
     'Past {num} days' => 'Posledních {num} dnů',
+    'Paste {type} above' => 'Paste {type} above',
+    'Paste {type} before' => 'Paste {type} before',
     'Paste {type}' => 'Vložit {type}',
     'Pay {price}' => 'Zaplatit {price}',
     'Pending' => 'Čeká',
