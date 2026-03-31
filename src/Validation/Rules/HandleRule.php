@@ -44,7 +44,7 @@ class HandleRule implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (! preg_match(sprintf('/^%s$/', self::$handlePattern), (string) $value)) {
-            $fail(t('“{handle}” isn’t a valid handle.'));
+            $fail(t('“{handle}” isn’t a valid handle.', ['handle' => $value]));
 
             return;
         }
