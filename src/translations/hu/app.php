@@ -1243,6 +1243,8 @@ return [
     'Password' => 'Jelszó',
     'Past year' => 'Elmúlt év',
     'Past {num} days' => 'Az elmúlt {num} nap',
+    'Paste {type} above' => 'Paste {type} above',
+    'Paste {type} before' => 'Paste {type} before',
     'Paste {type}' => '{type} beillesztése',
     'Pay {price}' => '{price} fizetése',
     'Pending' => 'Függőben',
