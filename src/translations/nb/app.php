@@ -1243,6 +1243,8 @@ return [
     'Password' => 'Passord',
     'Past year' => 'Siste år',
     'Past {num} days' => 'Siste {num} dager',
+    'Paste {type} above' => 'Paste {type} above',
+    'Paste {type} before' => 'Paste {type} before',
     'Paste {type}' => 'Lim inn {type}',
     'Pay {price}' => 'Betal {price}',
     'Pending' => 'Ventende',
