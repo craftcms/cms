@@ -18,6 +18,7 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\BulkOps;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
@@ -62,7 +63,7 @@ class Entries
                 ->value('sections.structureId');
         }
 
-        return Craft::$app->getElements()->getElementById($entryId, Entry::class, $siteId, $criteria);
+        return Elements::getElementById($entryId, Entry::class, $siteId, $criteria);
     }
 
     /**

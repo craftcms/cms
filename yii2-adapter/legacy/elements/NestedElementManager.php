@@ -32,6 +32,7 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -364,7 +365,7 @@ class NestedElementManager extends Component
                     } else {
                         $cacheKey = sprintf('%s-%s-%s', md5($this->propagationKeyFormat), $owner->id, $siteId);
                         if (!isset(self::$renderedPropagationFormats[$cacheKey])) {
-                            $siteOwner = $elementsService->getElementById($owner->id, get_class($owner), $siteId);
+                            $siteOwner = Elements::getElementById($owner->id, get_class($owner), $siteId);
                             self::$renderedPropagationFormats[$cacheKey] = $siteOwner
                                 ? renderObjectTemplate($this->propagationKeyFormat, $siteOwner)
                                 : false;

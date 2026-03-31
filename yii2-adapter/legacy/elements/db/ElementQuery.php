@@ -37,6 +37,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ElementCaches;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\Json;
@@ -3446,7 +3447,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if (!$element instanceof ElementInterface) {
-            $element = Craft::$app->getElements()->getElementById($element, $class, $this->siteId, [
+            $element = Elements::getElementById($element, $class, $this->siteId, [
                 'structureId' => $this->structureId,
             ]);
 

@@ -42,6 +42,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\ElementActivity as ElementActivityFacade;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -398,7 +399,7 @@ class ElementsController extends Controller
         }
 
         if ($element->enabled && $element->id) {
-            $enabledSiteIds = array_flip($elementsService->getEnabledSiteIdsForElement($element->id));
+            $enabledSiteIds = array_flip(Elements::getEnabledSiteIdsForElement($element->id));
         } else {
             $enabledSiteIds = [];
         }
@@ -1553,7 +1554,7 @@ JS, [
 
         // Get the new owner and make sure it's a derivative element,
         // and that its canonical element is the nested element's primary owner
-        $owner = $elementsService->getElementById($this->_newOwnerId, siteId: $element->siteId);
+        $owner = Elements::getElementById($this->_newOwnerId, siteId: $element->siteId);
         if ($owner->getIsCanonical()) {
             throw new BadRequestHttpException('The owner element must be a derivative.');
         }
@@ -2531,12 +2532,12 @@ JS, [
 
         if (!$elementType) {
             if ($elementId) {
-                $elementType = $elementsService->getElementTypeById($elementId);
+                $elementType = Elements::getElementTypeById($elementId);
                 if (!$elementType) {
                     throw new BadRequestHttpException("Invalid element ID: $elementId");
                 }
             } elseif ($elementUid) {
-                $elementType = $elementsService->getElementTypeByUid($elementUid);
+                $elementType = Elements::getElementTypeByUid($elementUid);
                 if (!$elementType) {
                     throw new BadRequestHttpException("Invalid element UUID: $elementUid");
                 }

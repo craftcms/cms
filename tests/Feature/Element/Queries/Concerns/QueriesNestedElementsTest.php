@@ -5,6 +5,7 @@ use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Support\Facades\ElementCaches;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Illuminate\Support\Facades\DB;
@@ -38,11 +39,11 @@ test('nested element query', function () {
     expect(entryQuery()->field($field->handle)->count())->toBe(1);
     expect(entryQuery()->field(Fields::getFieldById($field->id))->count())->toBe(1);
 
-    expect(entryQuery()->primaryOwner(Craft::$app->getElements()->getElementById($entry->id))->count())->toBe(1);
+    expect(entryQuery()->primaryOwner(Elements::getElementById($entry->id))->count())->toBe(1);
     expect(entryQuery()->primaryOwnerId($entry->id)->count())->toBe(1);
 
     expect(entryQuery()->ownerId($entry->id)->count())->toBe(1);
-    expect(entryQuery()->owner(Craft::$app->getElements()->getElementById($entry->id))->count())->toBe(1);
+    expect(entryQuery()->owner(Elements::getElementById($entry->id))->count())->toBe(1);
 
     ElementCaches::startCollectingCacheInfo();
 

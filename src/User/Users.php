@@ -15,6 +15,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Field\Fields;
@@ -77,6 +78,7 @@ use function CraftCms\Cms\t;
 class Users
 {
     public function __construct(
+        private readonly Elements $elements,
         private readonly ElementCaches $elementCaches,
     ) {}
 
@@ -131,7 +133,7 @@ class Users
      */
     public function getUserById(int $userId): ?User
     {
-        return Craft::$app->getElements()->getElementById($userId, User::class);
+        return $this->elements->getElementById($userId, User::class);
     }
 
     /**

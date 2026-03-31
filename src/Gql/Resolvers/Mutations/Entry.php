@@ -118,7 +118,7 @@ class Entry extends ElementMutationResolver
 
         $elementService = Craft::$app->getElements();
         /** @var EntryElement|null $entry */
-        $entry = $elementService->getElementById($entryId, EntryElement::class, $siteId);
+        $entry = Elements::getElementById($entryId, EntryElement::class, $siteId);
 
         if (! $entry) {
             return false;
@@ -135,7 +135,7 @@ class Entry extends ElementMutationResolver
         $entryId = $arguments['id'];
 
         /** @var EntryElement|null $entry */
-        $entry = Craft::$app->getElements()->getElementById($entryId, EntryElement::class);
+        $entry = Elements::getElementById($entryId, EntryElement::class);
 
         if (! $entry) {
             throw new Error('Unable to perform the action.');

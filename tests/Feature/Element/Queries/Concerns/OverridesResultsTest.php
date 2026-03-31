@@ -1,11 +1,12 @@
 <?php
 
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Support\Facades\Elements;
 
 test('overrides', function () {
     $entry = Entry::factory()->create();
 
-    $element = Craft::$app->getElements()->getElementById($entry->id);
+    $element = Elements::getElementById($entry->id);
 
     $query = entryQuery()->id(999);
 

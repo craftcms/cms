@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Concerns;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Structures;
 use GraphQL\Error\Error;
 
@@ -34,7 +34,7 @@ trait PerformsStructureMutations
 
     protected function getRelatedElement(int $elementId): ElementInterface
     {
-        $relatedElement = Craft::$app->getElements()->getElementById($elementId, null, '*');
+        $relatedElement = Elements::getElementById($elementId, null, '*');
 
         if (! $relatedElement) {
             throw new Error('Unable to move element in a structure');

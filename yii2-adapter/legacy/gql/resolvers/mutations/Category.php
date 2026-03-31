@@ -53,7 +53,7 @@ class Category extends ElementMutationResolver
             if (!empty($arguments['uid'])) {
                 $category = Elements::createElementQuery(CategoryElement::class)->uid($arguments['uid'])->one();
             } else {
-                $category = $elementService->getElementById($arguments['id'], CategoryElement::class);
+                $category = Elements::getElementById($arguments['id'], CategoryElement::class);
             }
 
             if (!$category) {
@@ -94,7 +94,7 @@ class Category extends ElementMutationResolver
         $categoryId = $arguments['id'];
 
         $elementService = Craft::$app->getElements();
-        $category = $elementService->getElementById($categoryId, CategoryElement::class);
+        $category = Elements::getElementById($categoryId, CategoryElement::class);
 
         if (!$category) {
             return false;

@@ -50,7 +50,7 @@ class Tag extends ElementMutationResolver
             if (!empty($arguments['uid'])) {
                 $tag = Elements::createElementQuery(TagElement::class)->uid($arguments['uid'])->one();
             } else {
-                $tag = $elementService->getElementById($arguments['id'], TagElement::class);
+                $tag = Elements::getElementById($arguments['id'], TagElement::class);
             }
 
             if (!$tag) {
@@ -70,7 +70,7 @@ class Tag extends ElementMutationResolver
         $tag = $this->populateElementWithData($tag, $arguments, $resolveInfo);
         $tag = $this->saveElement($tag);
 
-        return $elementService->getElementById($tag->id, TagElement::class);
+        return Elements::getElementById($tag->id, TagElement::class);
     }
 
     /**
@@ -88,7 +88,7 @@ class Tag extends ElementMutationResolver
         $tagId = $arguments['id'];
 
         $elementService = Craft::$app->getElements();
-        $tag = $elementService->getElementById($tagId, TagElement::class);
+        $tag = Elements::getElementById($tagId, TagElement::class);
 
         if (!$tag) {
             return false;

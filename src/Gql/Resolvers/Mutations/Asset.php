@@ -44,7 +44,7 @@ class Asset extends ElementMutationResolver
         /** @var Volume $volume */
         $volume = $this->getResolutionData('volume');
         $canIdentify = ! empty($arguments['id']) || ! empty($arguments['uid']);
-        $elementService = Craft::$app->getElements();
+        Craft::$app->getElements();
 
         $newFolderId = $arguments['newFolderId'] ?? null;
 
@@ -54,7 +54,7 @@ class Asset extends ElementMutationResolver
             if (! empty($arguments['uid'])) {
                 $asset = Elements::createElementQuery(AssetElement::class)->uid($arguments['uid'])->one();
             } else {
-                $asset = $elementService->getElementById($arguments['id'], AssetElement::class);
+                $asset = Elements::getElementById($arguments['id'], AssetElement::class);
             }
 
             if (! $asset) {
@@ -122,7 +122,7 @@ class Asset extends ElementMutationResolver
             ));
         }
 
-        return $elementService->getElementById($asset->id, AssetElement::class);
+        return Elements::getElementById($asset->id, AssetElement::class);
     }
 
     public function deleteAsset(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): bool
@@ -131,7 +131,7 @@ class Asset extends ElementMutationResolver
         $elementService = Craft::$app->getElements();
 
         /** @var AssetElement|null $asset */
-        $asset = $elementService->getElementById($assetId, AssetElement::class);
+        $asset = Elements::getElementById($assetId, AssetElement::class);
 
         if (! $asset) {
             return false;

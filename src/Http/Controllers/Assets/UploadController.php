@@ -16,6 +16,7 @@ use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -38,6 +39,7 @@ readonly class UploadController
         private Assets $assets,
         private Folders $folders,
         private Fields $fields,
+        private Elements $elements,
     ) {}
 
     public function upload(Request $request): Response
@@ -62,7 +64,7 @@ readonly class UploadController
 
             if ($elementId = $request->input('elementId')) {
                 $siteId = $request->input('siteId') ?: null;
-                $element = $elementsService->getElementById($elementId, null, $siteId);
+                $element = $this->elements->getElementById($elementId, null, $siteId);
             } else {
                 $element = null;
             }

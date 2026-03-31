@@ -426,46 +426,6 @@ abstract class ResaveCommand extends Command
         return $this->hasOption($name) ? $this->input->getOption($name) : null;
     }
 
-    protected function propagateElement(ElementInterface $element, Elements $elementsService): void
-    {
-        $supportedSites = collect(ElementHelper::supportedSitesForElement($element))
-            ->keyBy('siteId')
-            ->all();
-        $elementSiteIds = array_intersect($this->resolvedPropagateTo ?? [], array_keys($supportedSites));
-        $elementType = $element::class;
-
-        $element->setScenario(Element::SCENARIO_ESSENTIALS);
-        $element->newSiteIds = [];
-
-        foreach ($elementSiteIds as $siteId) {
-            if ($siteId === $element->siteId) {
-                continue;
-            }
-
-            $siteElement = $elementsService->getElementById($element->id, $elementType, $siteId);
-
-            if ($siteElement && $siteElement->dateUpdated >= $element->dateUpdated) {
-                continue;
-            }
-
-            $clone = clone $element;
-            $clone->siteId = $siteId;
-            $clone->propagating = true;
-            $clone->isNewForSite = $siteElement === null;
-            $clone->enabled = $element->getEnabledForSite($siteId);
-
-            $elementsService->saveElement(
-                $clone,
-                propagate: false,
-                updateSearchIndex: false,
-                saveContent: true,
-            );
-        }
-
-        $element->markAsDirty();
-        $element->afterPropagate(false);
-    }
-
     /**
      * @return array<int, string>
      */

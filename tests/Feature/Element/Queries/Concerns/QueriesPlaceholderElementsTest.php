@@ -1,6 +1,7 @@
 <?php
 
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Support\Facades\Elements;
 
 test('placeholder elements', function () {
     $entry = Entry::factory()->create();
@@ -8,7 +9,7 @@ test('placeholder elements', function () {
         'title' => 'Old title',
     ]);
 
-    $element = Craft::$app->getElements()->getElementById($entry->id);
+    $element = Elements::getElementById($entry->id);
 
     expect($element->title)->toBe('Old title');
 

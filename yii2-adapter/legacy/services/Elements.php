@@ -551,7 +551,6 @@ class Elements extends Component
     /**
      * @var array
      * @see setPlaceholderElement()
-     * @see getElementByUri()
      */
     private array $_placeholderUris;
 
@@ -787,6 +786,7 @@ class Elements extends Component
      * @param array $criteria
      *
      * @return T|null The matching element, or `null`.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getElementById()} instead.
      */
     public function getElementById(
         int $elementId,
@@ -794,7 +794,7 @@ class Elements extends Component
         array|int|string|null $siteId = null,
         array $criteria = [],
     ): ?ElementInterface {
-        return $this->_elementById('id', $elementId, $elementType, $siteId, $criteria);
+        return ElementsFacade::getElementById($elementId, $elementType, $siteId, $criteria);
     }
 
     /**
@@ -813,6 +813,7 @@ class Elements extends Component
      *
      * @return T|null The matching element, or `null`.
      * @since 3.5.13
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getElementByUid()} instead.
      */
     public function getElementByUid(
         string $uid,
@@ -820,52 +821,7 @@ class Elements extends Component
         array|int|string $siteId = null,
         array $criteria = [],
     ): ?ElementInterface {
-        return $this->_elementById('uid', $uid, $elementType, $siteId, $criteria);
-    }
-
-    /**
-     * Returns an element by its ID or UID.
-     *
-     * @template T of ElementInterface
-     * @param string $property Either `id` or `uid`
-     * @param int|string $elementId The element’s ID/UID
-     * @param class-string<T>|null $elementType The element class.
-     * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
-     * Defaults to the current site.
-     * @param array $criteria
-     *
-     * @return T|null The matching element, or `null`.
-     */
-    private function _elementById(
-        string $property,
-        int|string $elementId,
-        ?string $elementType = null,
-        array|int|string $siteId = null,
-        array $criteria = [],
-    ): ?ElementInterface {
-        if (!$elementId) {
-            return null;
-        }
-
-        if ($elementType === null) {
-            $elementType = $this->_elementTypeById($property, $elementId);
-        }
-
-        if ($elementType === null || !class_exists($elementType)) {
-            return null;
-        }
-
-        $query = $this->createElementQuery($elementType)
-            ->siteId($siteId)
-            ->status(null)
-            ->drafts(null)
-            ->provisionalDrafts(null)
-            ->revisions(null);
-
-        $query->$property = $elementId;
-        Typecast::configure($query, $criteria);
-
-        return $query->one();
+        return ElementsFacade::getElementByUId($uid, $elementType, $siteId, $criteria);
     }
 
     /**
@@ -877,41 +833,11 @@ class Elements extends Component
      * @param bool $enabledOnly Whether to only look for an enabled element. Defaults to `false`.
      *
      * @return ElementInterface|null The matching element, or `null`.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getElementByUri()} instead.
      */
     public function getElementByUri(string $uri, ?int $siteId = null, bool $enabledOnly = false): ?ElementInterface
     {
-        if ($uri === '') {
-            $uri = Element::HOMEPAGE_URI;
-        }
-
-        if ($siteId === null) {
-            /** @noinspection PhpUnhandledExceptionInspection */
-            $siteId = Sites::getCurrentSite()->id;
-        }
-
-        // See if we already have a placeholder for this element URI
-        if (isset($this->_placeholderUris[$uri][$siteId])) {
-            return $this->_placeholderUris[$uri][$siteId];
-        }
-
-        // First get the element ID and type
-        $result = DB::table(new Alias(Table::ELEMENTS, 'elements'))
-            ->select(['elements.id', 'elements.type'])
-            ->join(new Alias(Table::ELEMENTS_SITES, 'elements_sites'), 'elements_sites.elementId', 'elements.id')
-            ->where('elements_sites.siteId', $siteId)
-            ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
-            ->where('elements_sites.uriLower', mb_strtolower($uri))
-            ->when(
-                $enabledOnly,
-                fn(Builder $query) => $query->where([
-                    'elements_sites.enabled' => true,
-                    'elements.enabled' => true,
-                    'elements.archived' => false,
-                ]),
-            )
-            ->first();
-
-        return $result ? $this->getElementById($result->id, $result->type, $siteId) : null;
+        return ElementsFacade::getElementByUri($uri, $siteId, $enabledOnly);
     }
 
     /**
@@ -920,10 +846,11 @@ class Elements extends Component
      * @param int $elementId The element’s ID
      *
      * @return class-string<ElementInterface>|null The element’s class, or null if it could not be found
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getElementTypeById()} instead.
      */
     public function getElementTypeById(int $elementId): ?string
     {
-        return $this->_elementTypeById('id', $elementId);
+        return ElementsFacade::getElementTypeById($elementId);
     }
 
     /**
@@ -933,25 +860,11 @@ class Elements extends Component
      *
      * @return string|null The element’s class, or null if it could not be found
      * @since 3.5.13
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getElementTypeByUid()} instead.
      */
     public function getElementTypeByUid(string $uid): ?string
     {
-        return $this->_elementTypeById('uid', $uid);
-    }
-
-    /**
-     * Returns the class of an element with a given ID/UID.
-     *
-     * @param string $property Either `id` or `uid`
-     * @param int|string $elementId The element’s ID/UID
-     *
-     * @return string|null The element’s class, or null if it could not be found
-     */
-    private function _elementTypeById(string $property, int|string $elementId): ?string
-    {
-        return DB::table(Table::ELEMENTS)
-            ->where($property, $elementId)
-            ->value('type');
+        return ElementsFacade::getElementTypeByUid($uid);
     }
 
     /**
@@ -960,14 +873,11 @@ class Elements extends Component
      * @param int[] $elementIds The elements’ IDs
      *
      * @return string[]
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getElementTypesByIds()} instead.
      */
     public function getElementTypesByIds(array $elementIds): array
     {
-        return DB::table(Table::ELEMENTS)
-            ->whereIn('id', $elementIds)
-            ->distinct()
-            ->pluck('type')
-            ->all();
+        return ElementsFacade::getElementTypesByIds($elementIds);
     }
 
     /**
@@ -976,14 +886,12 @@ class Elements extends Component
      * @param int $elementId The element’s ID.
      * @param int $siteId The site to search for the element’s URI in.
      *
-     * @return string|null The element’s URI or `null`, or `false` if the element doesn’t exist.
+     * @return string|null The element’s URI or `null` if the element doesn’t exist.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getElementUriForSite()} instead.
      */
-    public function getElementUriForSite(int $elementId, int $siteId): string|null
+    public function getElementUriForSite(int $elementId, int $siteId): ?string
     {
-        return DB::table(Table::ELEMENTS_SITES)
-            ->where('elementId', $elementId)
-            ->where('siteId', $siteId)
-            ->value('uri');
+        return ElementsFacade::getElementUriForSite($elementId, $siteId);
     }
 
     /**
@@ -993,14 +901,11 @@ class Elements extends Component
      *
      * @return int[] The site IDs that the element is enabled in. If the element could not be found, an empty array
      * will be returned.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getEnabledSiteIdsForElement()} instead.
      */
     public function getEnabledSiteIdsForElement(int $elementId): array
     {
-        return DB::table(Table::ELEMENTS_SITES)
-            ->where('elementId', $elementId)
-            ->where('enabled', true)
-            ->pluck('siteId')
-            ->all();
+        return ElementsFacade::getEnabledSiteIdsForElement($elementId);
     }
 
     // Bulk ops
@@ -1601,7 +1506,7 @@ class Elements extends Component
                     BulkOps::trackElement($element);
 
                     // Clear caches
-                    $this->invalidateCachesForElement($element);
+                    $this->elementCaches()->invalidateForElement($element);
                 });
             } catch (QueryAbortedException) {
                 // Fail silently
@@ -2053,7 +1958,7 @@ class Elements extends Component
         }
 
         // Invalidate any caches involving this element
-        $this->invalidateCachesForElement($element);
+        $this->elementCaches()->invalidateForElement($element);
 
         if ($updateOtherSites) {
             $this->updateElementSlugAndUriInOtherSites($element);
@@ -2406,7 +2311,7 @@ class Elements extends Component
                 }
 
                 // Invalidate any caches involving this element
-                $this->invalidateCachesForElement($element);
+                $this->elementCaches()->invalidateForElement($element);
 
                 DateTimeHelper::pause();
 
@@ -2676,7 +2581,7 @@ class Elements extends Component
                 }
 
                 // Invalidate caches
-                $this->invalidateCachesForElement($element);
+                $this->elementCaches()->invalidateForElement($element);
             }
 
             // Fire "after" events
@@ -3536,7 +3441,7 @@ class Elements extends Component
         });
 
         // Clear caches
-        $this->invalidateCachesForElement($element);
+        $this->elementCaches()->invalidateForElement($element);
 
         return $siteElement;
     }
@@ -4043,7 +3948,7 @@ class Elements extends Component
                 }
 
                 // Invalidate any caches involving this element
-                $this->invalidateCachesForElement($element);
+                $this->elementCaches()->invalidateForElement($element);
             }
 
             // Update search index
@@ -4161,7 +4066,7 @@ class Elements extends Component
             $owner = $element->getOwner();
             if ($owner) {
                 $this->updateSearchIndex($owner, [$field->handle], $propagate, true);
-                $this->invalidateCachesForElement($owner);
+                $this->elementCaches()->invalidateForElement($owner);
             }
         }
     }

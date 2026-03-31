@@ -13,6 +13,7 @@ use craft\elements\db\EagerLoadPlan;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use Illuminate\Support\Facades\DB;
@@ -455,7 +456,7 @@ trait NestedElementTrait
             if (!$ownerId) {
                 return null;
             }
-            $ownerType = Craft::$app->getElements()->getElementTypeById($ownerId);
+            $ownerType = Elements::getElementTypeById($ownerId);
             if (!$ownerType) {
                 return null;
             }

@@ -15,6 +15,7 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
 use CraftCms\Cms\Support\Facades\Conditions;
+use CraftCms\Cms\Support\Facades\Elements;
 use yii\web\BadRequestHttpException;
 
 /**
@@ -101,7 +102,7 @@ abstract class BaseElementsController extends Controller
                 if ($ownerId) {
                     $criteria['ownerId'] = $ownerId;
                 }
-                $condition->referenceElement = Craft::$app->getElements()->getElementById(
+                $condition->referenceElement = Elements::getElementById(
                     (int)$referenceElementId,
                     siteId: $siteId,
                     criteria: $criteria,

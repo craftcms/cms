@@ -17,6 +17,7 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -89,7 +90,7 @@ class MatrixController extends Controller
         $staticEntries = $this->request->getBodyParam('staticEntries', false);
 
         $elementsService = Craft::$app->getElements();
-        $owner = $elementsService->getElementById($ownerId, $ownerElementType, $siteId);
+        $owner = Elements::getElementById($ownerId, $ownerElementType, $siteId);
         if (!$owner) {
             throw new BadRequestHttpException("Invalid owner ID, element type, or site ID.");
         }

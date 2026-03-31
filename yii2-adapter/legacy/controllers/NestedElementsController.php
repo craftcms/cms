@@ -16,6 +16,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\ElementCaches;
+use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Facades\DB;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -49,7 +50,7 @@ class NestedElementsController extends Controller
         $ownerElementType = $this->request->getRequiredBodyParam('ownerElementType');
         $ownerId = $this->request->getRequiredBodyParam('ownerId');
         $ownerSiteId = $this->request->getRequiredBodyParam('ownerSiteId');
-        $owner = Craft::$app->getElements()->getElementById($ownerId, $ownerElementType, $ownerSiteId);
+        $owner = Elements::getElementById($ownerId, $ownerElementType, $ownerSiteId);
         if (!$owner) {
             throw new BadRequestHttpException('Invalid owner params');
         }
