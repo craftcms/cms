@@ -881,7 +881,41 @@ class Html
 
     private static function _namespaceInputs(string &$html, string $namespace): void
     {
+        // Escape elements that use name= for non-form purposes
+        $markers = self::_escapeNonFormNameAttributes($html);
+
         $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '${1}'.$namespace.'[$3]$4$2', $html) ?? '';
+
+        // Restore escaped elements
+        if (! empty($markers)) {
+            $html = strtr($html, $markers);
+        }
+    }
+
+    /**
+     * Escapes name= attributes on elements that shouldn't be namespaced.
+     *
+     * @return array<string, string> Markers to original content mapping
+     */
+    private static function _escapeNonFormNameAttributes(string &$html): array
+    {
+        $markers = [];
+
+        // Elements that use name= for non-form purposes
+        $excludedElements = ['slot', 'craft-icon'];
+
+        $html = preg_replace_callback(
+            '/<('.implode('|', $excludedElements).')\b[^>]*>/i',
+            function (array $match) use (&$markers): string {
+                $marker = sprintf('{ns-marker:%s}', mt_rand());
+                $markers[$marker] = $match[0];
+
+                return $marker;
+            },
+            $html
+        ) ?? $html;
+
+        return $markers;
     }
 
     /**

@@ -337,6 +337,12 @@ test('NamespaceInputs', function (string $expected, string $html, string $namesp
     ['<textarea name="foo[bar]">blah</textarea>', '<textarea name="bar">blah</textarea>', 'foo'],
     ['<textarea name="foo[bar]"><input name="foo"></textarea>', '<textarea name="bar"><input name="foo"></textarea>', 'foo'],
     ['<input name="3[foo]">', '<input name="foo">', '3'],
+    // Excluded elements should NOT have name attributes namespaced
+    ['<craft-icon name="check">', '<craft-icon name="check">', 'foo'],
+    ['<slot name="prefix">', '<slot name="prefix">', 'foo'],
+    // Form elements mixed with excluded elements
+    ['<input name="foo[bar]"><craft-icon name="check">', '<input name="bar"><craft-icon name="check">', 'foo'],
+    ['<slot name="input"><input name="foo[field]"></slot>', '<slot name="input"><input name="field"></slot>', 'foo'],
 ]);
 
 test('NamespaceAttributes', function (string $expected, string $html, string $namespace, bool $classNames): void {

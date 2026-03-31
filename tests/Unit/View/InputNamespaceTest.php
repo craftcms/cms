@@ -204,6 +204,17 @@ describe('namespaceInputs with string html', function () {
             ->toContain('name="foo[title]"')
             ->toContain('id="foo-title"');
     });
+
+    it('does not namespace excluded element name attributes', function () {
+        $html = '<input type="text" name="title"><craft-icon name="check"><slot name="prefix">';
+
+        $result = $this->inputNamespace->namespaceInputs($html, 'foo');
+
+        expect($result)
+            ->toContain('name="foo[title]"')
+            ->toContain('<craft-icon name="check">')
+            ->toContain('<slot name="prefix">');
+    });
 });
 
 describe('namespaceInputs with callable', function () {
