@@ -1243,6 +1243,8 @@ return [
     'Password' => 'Adgangskode',
     'Past year' => 'Sidste år',
     'Past {num} days' => 'Seneste {num} dage',
+    'Paste {type} above' => 'Paste {type} above',
+    'Paste {type} before' => 'Paste {type} before',
     'Paste {type}' => 'Indsæt {type}',
     'Pay {price}' => 'Betal {price}',
     'Pending' => 'Venter på godkendelse',
