@@ -1243,6 +1243,8 @@ return [
     'Password' => 'Lösenord',
     'Past year' => 'Senaste året',
     'Past {num} days' => 'Senaste {num} dagarna',
+    'Paste {type} above' => 'Paste {type} above',
+    'Paste {type} before' => 'Paste {type} before',
     'Paste {type}' => 'Klistra in {type}',
     'Pay {price}' => 'Betala {price}',
     'Pending' => 'I avvaktan',
