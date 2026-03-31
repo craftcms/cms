@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use craft\events\BulkOpEvent;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\BulkOpDeferrals;
 use CraftCms\Cms\Element\BulkOp\Events\DeferredBulkOpReplay;
@@ -55,4 +56,22 @@ it('persists native deferred triggers while a legacy bulk op remains open', func
     expect($this->bulkOpConnection->table(Table::BULKOPEVENTS)
         ->where('key', $key)
         ->count())->toBe(1);
+});
+
+it('replays legacy deferred handlers keyed by event name', function() {
+    $replays = [];
+
+    BulkOpEvent::defer(AdapterDeferredBulkEvent::class, 'custom-event', function(BulkOpEvent $event) use (&$replays) {
+        $replays[] = $event;
+    }, data: ['source' => 'legacy-watch-key']);
+
+    $key = Craft::$app->getElements()->beginBulkOp();
+
+    event(new AdapterDeferredBulkEvent('inside'));
+
+    Craft::$app->getElements()->endBulkOp($key);
+
+    expect($replays)->toHaveCount(1)
+        ->and($replays[0]->key)->toBe($key)
+        ->and($replays[0]->data)->toBe(['source' => 'legacy-watch-key']);
 });

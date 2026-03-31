@@ -8,8 +8,10 @@ use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
 use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Facade;
 
 beforeEach(function () {
     Craft::$app->controller = null;
@@ -67,6 +69,20 @@ it('upserts tracked elements for the same key', function () {
     expect($this->bulkOpConnection->table(Table::ELEMENTS_BULKOPS)
         ->where('key', $key)
         ->count())->toBe(1);
+});
+
+it('tracks an element for every active bulk op key', function () {
+    $entry = Entry::factory()->create();
+
+    $firstKey = $this->bulkOps->start();
+    $secondKey = $this->bulkOps->start();
+
+    $this->bulkOps->trackElement(EntryElement::findOne($entry->id));
+
+    expect($this->bulkOpConnection->table(Table::ELEMENTS_BULKOPS)
+        ->where('elementId', $entry->id)
+        ->whereIn('key', [$firstKey, $secondKey])
+        ->count())->toBe(2);
 });
 
 it('dispatches after event before cleaning up persisted rows', function () {
@@ -142,4 +158,55 @@ it('reuses the outer bulk op for nested ensure calls', function () {
     expect($startedKeys)->toBe([$outerKey])
         ->and($endedKeys)->toBe([$outerKey])
         ->and($this->bulkOps->activeKeys())->toBe([]);
+});
+
+it('cleans up the active key when ensure throws', function () {
+    $endedKeys = [];
+
+    Event::listen(AfterBulkOp::class, function (AfterBulkOp $event) use (&$endedKeys) {
+        $endedKeys[] = $event->key;
+    });
+
+    try {
+        $this->bulkOps->ensure(function () {
+            throw new RuntimeException('bulk op failed');
+        });
+
+        $this->fail('Expected ensure() to rethrow the callback exception.');
+    } catch (RuntimeException $exception) {
+        expect($exception->getMessage())->toBe('bulk op failed');
+    }
+
+    expect($endedKeys)->toHaveCount(1)
+        ->and($this->bulkOps->activeKeys())->toBe([]);
+});
+
+it('skips persistence during updater requests', function () {
+    $request = Request::create('/news?action=app/update', 'POST');
+
+    app()->instance('request', $request);
+    Facade::clearResolvedInstance('request');
+
+    $runningInConsole = new ReflectionProperty(app(), 'isRunningInConsole');
+    $originalRunningInConsole = $runningInConsole->getValue(app());
+    $runningInConsole->setValue(app(), false);
+
+    try {
+        $entry = Entry::factory()->create();
+
+        $key = $this->bulkOps->start();
+        $this->bulkOps->trackElement(EntryElement::findOne($entry->id));
+
+        expect($this->bulkOpConnection->table(Table::ELEMENTS_BULKOPS)
+            ->where('key', $key)
+            ->count())->toBe(0);
+
+        $this->bulkOps->end($key);
+
+        expect($this->bulkOpConnection->table(Table::ELEMENTS_BULKOPS)
+            ->where('key', $key)
+            ->count())->toBe(0);
+    } finally {
+        $runningInConsole->setValue(app(), $originalRunningInConsole);
+    }
 });

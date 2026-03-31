@@ -92,6 +92,27 @@ it('replays multiple handlers for the same watched event', function () {
     expect($calls)->toBe(['first', 'second']);
 });
 
+it('replays once per active bulk op key and leaves other keys pending', function () {
+    $replayedKeys = [];
+
+    $this->deferrals->defer(TestDeferredBulkEvent::class, function (DeferredBulkOpReplay $event) use (&$replayedKeys) {
+        $replayedKeys[] = $event->key;
+    });
+
+    $firstKey = $this->bulkOps->start();
+    $secondKey = $this->bulkOps->start();
+
+    event(new TestDeferredBulkEvent('inside'));
+
+    $this->bulkOps->end($firstKey);
+
+    expect($replayedKeys)->toBe([$firstKey]);
+
+    $this->bulkOps->end($secondKey);
+
+    expect($replayedKeys)->toBe([$firstKey, $secondKey]);
+});
+
 it('persists pending triggers for later replay', function () {
     $this->deferrals->defer(TestDeferredBulkEvent::class, function () {});
 
