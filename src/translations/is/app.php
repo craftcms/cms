@@ -1243,6 +1243,8 @@ return [
     'Password' => 'Lykilorð',
     'Past year' => 'Síðastliðið ár',
     'Past {num} days' => 'Undanfarna {num} dagar',
+    'Paste {type} above' => 'Paste {type} above',
+    'Paste {type} before' => 'Paste {type} before',
     'Paste {type}' => 'Líma {type}',
     'Pay {price}' => 'Borgaðu {price}',
     'Pending' => 'Í bið',
