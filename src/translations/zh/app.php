@@ -1243,6 +1243,8 @@ return [
     'Password' => '密码',
     'Past year' => '过去一年',
     'Past {num} days' => '过去 {num} 天',
+    'Paste {type} above' => 'Paste {type} above',
+    'Paste {type} before' => 'Paste {type} before',
     'Paste {type}' => '粘贴{type}',
     'Pay {price}' => '支付 {price}',
     'Pending' => '暂停',
