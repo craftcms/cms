@@ -16,6 +16,7 @@ use DateTime;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Data\ElementActivity} instead.
  */
 class ElementActivity
 {

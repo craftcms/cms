@@ -40,11 +40,14 @@ use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
 use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
+use CraftCms\Cms\Element\Data\ElementActivity as ElementActivityData;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementActivity as ElementActivityService;
 use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Enums\ElementActivityType;
 use CraftCms\Cms\Element\Events\AfterPropagate;
 use CraftCms\Cms\Element\Events\InvalidateElementCaches;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
@@ -2713,128 +2716,40 @@ class Elements extends Component
      *
      * @return ElementActivity[]
      * @since 4.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementActivity::getRecentActivity()} instead.
      */
     public function getRecentActivity(ElementInterface $element, ?int $excludeUserId = null): array
     {
-        $results = DB::table(Table::ELEMENTACTIVITY)
-            ->select(['userId', 'siteId', 'draftId', 'type', 'timestamp'])
-            ->where('elementId', $element->getCanonicalId())
-            ->where('timestamp', '>', now()->subMinute())
-            ->orderByDesc('timestamp')
-            ->when(
-                $excludeUserId,
-                fn(Builder $query) => $query->whereNot('userId', $excludeUserId),
-            )->get();
-
-        if ($results->isEmpty()) {
-            return [];
-        }
-
-        // get all the unique users
-        $userIds = $results->pluck('userId')->unique()->all();
-        $users = User::find()
-            ->id($userIds)
-            ->status(null)
-            ->get()
-            ->keyBy('id')
+        return collect(app(ElementActivityService::class)->getRecentActivity($element, $excludeUserId))
+            ->map(fn(ElementActivityData $activity) => self::activityToLegacyActivity($activity))
             ->all();
-
-        /** @var Collection<ElementActivity> $activity */
-        $activity = Collection::make();
-        /** @var ElementActivity[] $activityByUserId */
-        $activityByUserId = [];
-        $elements = [];
-        $isCanonical = $element->getIsCanonical() || $element->isProvisionalDraft;
-        $elements[$isCanonical ? 0 : $element->draftId][$element->siteId] = $element;
-
-        foreach ($results as $result) {
-            // do we already have an activity record for this user?
-            if (isset($activityByUserId[$result->userId])) {
-                $newerRecord = $activityByUserId[$result->userId];
-                // edit/save trumps view
-                if (
-                    $newerRecord->type === ElementActivity::TYPE_VIEW &&
-                    $result->type !== ElementActivity::TYPE_VIEW
-                ) {
-                    $activity = $activity->filter(fn(ElementActivity $record) => $record !== $newerRecord);
-                    unset($activityByUserId[$result->userId]);
-                } else {
-                    continue;
-                }
-            }
-
-            // fetch the element (draft)
-            $elementKey = $result->draftId ?: 0;
-            if (!isset($elements[$elementKey][$result->siteId])) {
-                $resultElement = $element::find()
-                    ->id($result->draftId ? null : $element->getCanonicalId())
-                    ->draftId($result->draftId)
-                    ->site('*')
-                    ->preferSites([$result->siteId, $element->siteId])
-                    ->status(null)
-                    ->one();
-
-                // just to be safe...
-                if (!$resultElement) {
-                    Log::warning(sprintf(
-                        'Couldn’t load %s element %s%s for site %s',
-                        $element::class,
-                        $element->getCanonicalId(),
-                        $result->draftId ? " (draft {$result->draftId})" : '',
-                        $result->siteId,
-                    ), [__METHOD__]);
-                    continue;
-                }
-
-                $elements[$elementKey][$result->siteId] = $resultElement;
-            }
-
-            $record = $activityByUserId[$result->userId] = new ElementActivity(
-                $users[$result->userId],
-                $elements[$elementKey][$result->siteId],
-                $result->type,
-                DateTimeHelper::toDateTime($result->timestamp),
-            );
-            $activity->push($record);
-        }
-
-        return $activity->values()->all();
     }
 
     /**
      * Tracks new activity for an element.
      *
      * @param ElementInterface $element
-     * @param ElementActivity::TYPE_* $type $type
+     * @param 'view'|'edit'|'save' $type $type
      * @param User|null $user
      *
      * @since 4.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementActivity::trackActivity()} instead.
      */
     public function trackActivity(ElementInterface $element, string $type, ?User $user = null): void
     {
-        if ($user === null) {
-            $user = Auth::user();
-            if (!$user) {
-                throw new InvalidArgumentException('$user must be set if no user is signed in.');
-            }
-        }
+        $type = ElementActivityType::from($type);
 
-        // save => edit, if a provisional draft
-        if ($type === ElementActivity::TYPE_SAVE && $element->isProvisionalDraft) {
-            $type = ElementActivity::TYPE_EDIT;
-        }
+        app(ElementActivityService::class)->trackActivity($element, $type, $user);
+    }
 
-        $isCanonical = $element->getIsCanonical() || $element->isProvisionalDraft;
-
-        DB::table(Table::ELEMENTACTIVITY)
-            ->upsert([
-                'elementId' => $element->getCanonicalId(),
-                'userId' => $user->id,
-                'siteId' => $element->siteId,
-                'draftId' => $isCanonical ? null : $element->draftId,
-                'type' => $type,
-                'timestamp' => now(),
-            ], ['elementId', 'userId', 'type']);
+    private static function activityToLegacyActivity(ElementActivityData $activity): ElementActivity
+    {
+        return new ElementActivity(
+            $activity->user,
+            $activity->element,
+            $activity->type->value,
+            $activity->timestamp,
+        );
     }
 
     // Element classes
