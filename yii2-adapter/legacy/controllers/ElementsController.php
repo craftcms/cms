@@ -1483,7 +1483,7 @@ JS, [
             ])));
         }
 
-        ElementActivityFacade::trackActivity($element, ElementActivityType::Save);
+        ElementActivityFacade::trackActivity($canonical, ElementActivityType::Save);
 
         // See if the user happens to have a provisional element. If so delete it.
         $provisional = $element::find()

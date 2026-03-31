@@ -52,7 +52,7 @@ class ElementActivity extends Component
             'userId' => $this->user->id,
             'userName' => $this->user->getName(),
             'userThumb' => $this->user->getThumbHtml(26),
-            'type' => $this->type,
+            'type' => $this->type->value,
             'message' => $message,
         ];
     }
