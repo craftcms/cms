@@ -728,17 +728,13 @@ JS, [
     #[Override]
     public function beforeElementDeleteForSite(ElementInterface $element): bool
     {
-        $elementsService = Craft::$app->getElements();
-
         /** @var ContentBlockElement[] $contentBlocks */
         $contentBlocks = ContentBlockElement::find()
             ->primaryOwner($element)
             ->status(null)
             ->all();
 
-        foreach ($contentBlocks as $contentBlock) {
-            $elementsService->deleteElementForSite($contentBlock);
-        }
+        Elements::deleteElementsForSite($contentBlocks);
 
         return true;
     }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Console\Commands\Utils;
 
-use Craft;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Str;
@@ -27,13 +27,12 @@ class PruneOrphanedEntriesCommand extends Command
     #[Override]
     protected $aliases = ['utils/prune-orphaned-entries', 'utils/prune-orphaned-entries:index', 'utils/prune-orphaned-entries/index'];
 
-    public function handle(Connection $connection, Sites $sites): int
+    public function handle(Connection $connection, Elements $elements, Sites $sites): int
     {
         if (! $sites->isMultiSite()) {
             $this->components->warn('This command should only be run for multi-site installs.');
         }
 
-        $elements = Craft::$app->getElements();
         $totalDeleted = 0;
 
         foreach ($sites->getAllSites() as $site) {

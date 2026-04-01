@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use Illuminate\Support\Facades\Auth;
 use function CraftCms\Cms\t;
@@ -105,7 +106,7 @@ JS, [static::class]);
             ),
         );
 
-        $elementsService->deleteElementsForSite($elements);
+        Elements::deleteElementsForSite($elements);
 
         if (isset($this->successMessage)) {
             $this->setMessage($this->successMessage);

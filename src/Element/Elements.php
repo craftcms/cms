@@ -8,6 +8,7 @@ use craft\base\ElementInterface;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\DeleteElementAction;
+use CraftCms\Cms\Element\Actions\DeleteElementsForSiteAction;
 use CraftCms\Cms\Element\Actions\DuplicateElementAction;
 use CraftCms\Cms\Element\Actions\MergeCanonicalChangesAction;
 use CraftCms\Cms\Element\Actions\MergeElementsAction;
@@ -726,5 +727,25 @@ class Elements
     public function deleteElement(ElementInterface $element, bool $hardDelete = false): bool
     {
         return app(DeleteElementAction::class)->handle($element, $hardDelete);
+    }
+
+    /**
+     * Deletes an element in the site it’s loaded in.
+     */
+    public function deleteElementForSite(ElementInterface $element): void
+    {
+        $this->deleteElementsForSite([$element]);
+    }
+
+    /**
+     * Deletes elements in the site they are currently loaded in.
+     *
+     * @param  ElementInterface[]  $elements
+     *
+     * @throws InvalidArgumentException if all elements don’t have the same type and site ID.
+     */
+    public function deleteElementsForSite(array $elements): void
+    {
+        app(DeleteElementsForSiteAction::class)->handle($elements);
     }
 }

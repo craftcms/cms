@@ -33,7 +33,6 @@ use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\CascadeDeleteDraftsAndRevisionsAction;
 use CraftCms\Cms\Element\Actions\PropagateElementAction;
-use CraftCms\Cms\Element\Actions\ResaveElementsAction;
 use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
 use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
 use CraftCms\Cms\Element\Data\ElementActivity as ElementActivityData;
@@ -44,6 +43,7 @@ use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
 use CraftCms\Cms\Element\Events\AfterDeleteElement;
+use CraftCms\Cms\Element\Events\AfterDeleteForSite;
 use CraftCms\Cms\Element\Events\AfterMergeCanonicalChanges;
 use CraftCms\Cms\Element\Events\AfterMergeElements;
 use CraftCms\Cms\Element\Events\AfterPropagateElement;
@@ -53,6 +53,7 @@ use CraftCms\Cms\Element\Events\AfterResaveElements;
 use CraftCms\Cms\Element\Events\AfterSaveElement;
 use CraftCms\Cms\Element\Events\AfterUpdateSlugAndUri;
 use CraftCms\Cms\Element\Events\BeforeDeleteElement;
+use CraftCms\Cms\Element\Events\BeforeDeleteForSite;
 use CraftCms\Cms\Element\Events\BeforeMergeCanonicalChanges;
 use CraftCms\Cms\Element\Events\BeforePropagateElement;
 use CraftCms\Cms\Element\Events\BeforePropagateElements;
@@ -1303,10 +1304,11 @@ class Elements extends Component
      * @param ElementInterface $element
      *
      * @since 4.4.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::deleteElementForSite()} instead.
      */
     public function deleteElementForSite(ElementInterface $element): void
     {
-        $this->deleteElementsForSite([$element]);
+        ElementsFacade::deleteElementForSite($element);
     }
 
     /**
@@ -1316,98 +1318,11 @@ class Elements extends Component
      *
      * @throws InvalidArgumentException if all elements don’t have the same type and site ID.
      * @since 4.4.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::deleteElementsForSite()} instead.
      */
     public function deleteElementsForSite(array $elements): void
     {
-        if (empty($elements)) {
-            return;
-        }
-
-        // Make sure each element has the same type and site ID
-        $firstElement = reset($elements);
-        $elementType = get_class($firstElement);
-
-        foreach ($elements as $element) {
-            if (get_class($element) !== $elementType || $element->siteId !== $firstElement->siteId) {
-                throw new InvalidArgumentException('All elements must have the same type and site ID.');
-            }
-        }
-
-        // Separate the multi-site elements from the single-site elements
-        $multiSiteElementIds = $firstElement::find()
-            ->id(array_map(fn(ElementInterface $element) => $element->id, $elements))
-            ->status(null)
-            ->drafts(null)
-            ->siteId(['not', $firstElement->siteId])
-            ->unique()
-            ->select(['elements.id'])
-            ->pluck('id')
-            ->all();
-
-        $multiSiteElementIdsIdx = array_flip($multiSiteElementIds);
-        $multiSiteElements = [];
-        $singleSiteElements = [];
-
-        foreach ($elements as $element) {
-            if (isset($multiSiteElementIdsIdx[$element->id])) {
-                $multiSiteElements[] = $element;
-            } else {
-                $singleSiteElements[] = $element;
-            }
-        }
-
-        if (!empty($multiSiteElements)) {
-            // Fire 'beforeDeleteForSite' events
-            if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FOR_SITE)) {
-                foreach ($multiSiteElements as $element) {
-                    $this->trigger(self::EVENT_BEFORE_DELETE_FOR_SITE, new ElementEvent([
-                        'element' => $element,
-                    ]));
-                }
-            }
-
-            foreach ($multiSiteElements as $element) {
-                $element->beforeDeleteForSite();
-            }
-
-            // Delete the rows in elements_sites
-            DB::table(Table::ELEMENTS_SITES)
-                ->whereIn('elementId', $multiSiteElementIds)
-                ->where('siteId', $firstElement->siteId)
-                ->delete();
-
-            // Resave them
-            app(ResaveElementsAction::class)->handle(
-                $firstElement::find()
-                    ->id($multiSiteElementIds)
-                    ->status(null)
-                    ->drafts(null)
-                    ->site('*')
-                    ->unique(),
-                true,
-                updateSearchIndex: false,
-            );
-
-            foreach ($multiSiteElements as $element) {
-                $element->afterDeleteForSite();
-            }
-
-            // Fire 'afterDeleteForSite' events
-            if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FOR_SITE)) {
-                foreach ($multiSiteElements as $element) {
-                    $this->trigger(self::EVENT_AFTER_DELETE_FOR_SITE, new ElementEvent([
-                        'element' => $element,
-                    ]));
-                }
-            }
-        }
-
-        // Fully delete any single-site elements
-        if (!empty($singleSiteElements)) {
-            foreach ($singleSiteElements as $element) {
-                $this->deleteElement($element, true);
-            }
-        }
+        ElementsFacade::deleteElementsForSite($elements);
     }
 
     /**
@@ -2985,6 +2900,26 @@ class Elements extends Component
             }
 
             Craft::$app->getElements()->trigger(self::EVENT_AFTER_DELETE_ELEMENT, new ElementEvent([
+                'element' => $event->element,
+            ]));
+        });
+
+        Event::listen(function(BeforeDeleteForSite $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_DELETE_FOR_SITE)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_BEFORE_DELETE_FOR_SITE, new ElementEvent([
+                'element' => $event->element,
+            ]));
+        });
+
+        Event::listen(function(AfterDeleteForSite $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_DELETE_FOR_SITE)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_AFTER_DELETE_FOR_SITE, new ElementEvent([
                 'element' => $event->element,
             ]));
         });

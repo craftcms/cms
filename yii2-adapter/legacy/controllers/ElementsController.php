@@ -1861,14 +1861,14 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to delete the element for this site.');
         }
 
-        $elementsService->deleteElementForSite($element);
+        Elements::deleteElementForSite($element);
 
         if ($element->isProvisionalDraft) {
             // see if the canonical element exists for this site
             $canonical = $element->getCanonical();
             if ($canonical->id !== $element->id) {
                 $element = $canonical;
-                $elementsService->deleteElementForSite($element);
+                Elements::deleteElementForSite($element);
             }
         }
 

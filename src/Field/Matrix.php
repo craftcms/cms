@@ -47,6 +47,7 @@ use CraftCms\Cms\Gql\Types\Input\Matrix as MatrixInputType;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -1631,17 +1632,13 @@ JS,
     #[Override]
     public function beforeElementDeleteForSite(ElementInterface $element): bool
     {
-        $elementsService = Craft::$app->getElements();
-
         /** @var Entry[] $entries */
         $entries = Entry::find()
             ->primaryOwner($element)
             ->status(null)
             ->all();
 
-        foreach ($entries as $entry) {
-            $elementsService->deleteElementForSite($entry);
-        }
+        Elements::deleteElementsForSite($entries);
 
         return true;
     }
