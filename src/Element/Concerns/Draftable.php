@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use Craft;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\AuthorizeCreateDrafts;
 use CraftCms\Cms\User\Elements\User as UserElement;
@@ -148,7 +147,7 @@ trait Draftable
     public function canDuplicateAsDraft(UserElement $user): bool
     {
         // if anything, this will be more lenient than canDuplicate()
-        return Craft::$app->getElements()->canDuplicate($this, $user);
+        return $user->can('duplicate', $this);
     }
 
     public function getIsDraft(): bool

@@ -7,7 +7,6 @@
 
 namespace craft\elements\actions;
 
-use Craft;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
@@ -15,7 +14,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Structures;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Throwable;
 use function CraftCms\Cms\t;
 
@@ -129,13 +128,10 @@ JS, [
      */
     private function _duplicateElements(ElementQueryInterface $query, array $elements, int &$successCount, int &$failCount, array &$duplicatedElementIds = [], ?ElementInterface $newParent = null): void
     {
-        $elementsService = Craft::$app->getElements();
-        $user = Auth::user();
-
         foreach ($elements as $element) {
             $allowed = $this->asDrafts
-                ? $elementsService->canDuplicateAsDraft($element, $user)
-                : $elementsService->canDuplicate($element, $user);
+                ? Gate::check('duplicateAsDraft', $element)
+                : Gate::check('duplicate', $element);
 
             if (!$allowed) {
                 continue;

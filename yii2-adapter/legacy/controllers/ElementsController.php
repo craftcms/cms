@@ -1651,19 +1651,12 @@ JS, [
 
         $this->element = $element;
 
-        $elementsService = Craft::$app->getElements();
-        $user = static::currentUser();
-
         // save as a new is now available to people who can create drafts
         $asUnpublishedDraft = $this->_asUnpublishedDraft && $element::hasDrafts();
         if ($asUnpublishedDraft) {
-            $authorized = $elementsService->canDuplicateAsDraft($element, $user);
+            Gate::authorize('duplicateAsDraft', $element);
         } else {
-            $authorized = $elementsService->canDuplicate($element, $user);
-        }
-
-        if (!$authorized) {
-            throw new ForbiddenHttpException('User not authorized to duplicate this element.');
+            Gate::authorize('duplicate', $element);
         }
 
         $newAttributes = [
