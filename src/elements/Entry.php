@@ -3015,10 +3015,11 @@ JS;
             return;
         }
 
+        $section = $this->getSection();
         if (
-            empty($this->getAuthors()) &&
-            !isset($this->fieldId) &&
-            $this->getSection()->type !== Section::TYPE_SINGLE
+            $section?->type !== Section::TYPE_SINGLE &&
+            $section?->maxAuthors !== 0 &&
+            empty($this->getAuthors())
         ) {
             $user = Craft::$app->getUser()->getIdentity();
             if ($user) {
