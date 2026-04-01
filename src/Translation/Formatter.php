@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Translation;
 
 use Carbon\CarbonInterface;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Str;
 use DateInterval;
 use DateTime;
@@ -31,7 +32,7 @@ class Formatter
     }
 
     public string $timeZone {
-        get => $this->timeZone ?? app()->getTimezone();
+        get => $this->timeZone ?? Cms::timezone();
     }
 
     public string $defaultDateFormat = 'medium';

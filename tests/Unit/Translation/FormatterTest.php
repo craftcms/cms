@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\Translation\Locale;
@@ -274,7 +275,7 @@ test('asDuration', function () {
 
 test('asTimestamp', function (mixed $input, string $output, ?string $locale = null) {
     $this->formatter->locale = $locale;
-    config()->set('app.timezone', 'UTC');
+    Cms::config()->timezone('UTC');
 
     expect($this->formatter->asTimestamp($input))->toBe($output);
 })->with(function () {

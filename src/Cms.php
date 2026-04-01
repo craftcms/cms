@@ -13,6 +13,8 @@ use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use IntlDateFormatter;
+use IntlException;
 use PDOException;
 use Throwable;
 
@@ -29,6 +31,30 @@ readonly class Cms
     public static function config(): GeneralConfig
     {
         return app(GeneralConfig::class) ?? GeneralConfig::create();
+    }
+
+    public static function timezone(): string
+    {
+        $timezone = Cms::config()->timezone
+            ?? ProjectConfig::get('system.timeZone')
+            ?? config('app.timezone', 'UTC');
+
+        $timezone = Env::parse($timezone);
+
+        if ($timezone !== 'UTC') {
+            // Make sure that ICU supports this timezone
+            try {
+                $formatter = new IntlDateFormatter(app()->getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+                if (! $formatter->setTimeZone($timezone)) {
+                    $timezone = 'UTC';
+                }
+            } catch (IntlException) {
+                Log::warning("Time zone “{$timezone}” does not appear to be supported by ICU: ".intl_get_error_message());
+                $timezone = 'UTC';
+            }
+        }
+
+        return $timezone;
     }
 
     public static function systemName(): string

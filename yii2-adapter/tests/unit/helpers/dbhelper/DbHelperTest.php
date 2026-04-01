@@ -13,6 +13,7 @@ use craft\db\Table;
 use craft\helpers\Db;
 use craft\test\mockclasses\serializable\Serializable;
 use craft\test\TestCase;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\User\Data\UserGroup;
 use DateTime;
 use DateTimeZone;
@@ -793,7 +794,7 @@ class DbHelperTest extends TestCase
      */
     protected function _before(): void
     {
-        $this->systemTimezone = new DateTimeZone(app()->getTimezone());
+        $this->systemTimezone = new DateTimeZone(Cms::timezone());
         $this->utcTimezone = new DateTimeZone('UTC');
         $this->asiaTokyoTimezone = new DateTimeZone('Asia/Tokyo');
         $this->isMysql = Craft::$app->getDb()->getIsMysql();

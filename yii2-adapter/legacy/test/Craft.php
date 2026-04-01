@@ -160,7 +160,7 @@ class Craft extends Yii2
         }
         Config::set('craft.general', $generalConfig);
 
-        Config::set('app.timezone', 'America/Los_Angeles');
+        $generalConfig->timezone('America/Los_Angeles');
 
         date_default_timezone_set('America/Los_Angeles');
 

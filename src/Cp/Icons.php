@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp;
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Log;
@@ -187,7 +188,7 @@ readonly class Icons
 
     public static function earth(): string
     {
-        $tzGroup = explode('/', (string) app()->getTimezone(), 2)[0];
+        $tzGroup = explode('/', Cms::timezone(), 2)[0];
 
         return match ($tzGroup) {
             'Africa' => 'earth-africa',
