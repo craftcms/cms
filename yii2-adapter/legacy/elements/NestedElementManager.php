@@ -839,7 +839,7 @@ JS, [
                 // but now it's showing up again, e.g. if an entry card was cut from a CKEditor field
                 // and then pasted back in somewhere else.)
                 if (isset($element->dateDeleted)) {
-                    $elementsService->restoreElement($element);
+                    Elements::restoreElement($element);
                 }
 
                 // if the owner is propagating required fields and attributes, so should the nested elements
@@ -1431,8 +1431,6 @@ JS, [
      */
     public function restoreNestedElements(ElementInterface $owner): void
     {
-        $elementsService = Craft::$app->getElements();
-
         foreach (ElementHelper::supportedSitesForElement($owner) as $siteInfo) {
             $query = $this->nestedElementQuery($owner)
                 ->status(null)
@@ -1442,9 +1440,8 @@ JS, [
 
             $query->{$this->ownerIdParam} = null;
             $query->{$this->primaryOwnerIdParam} = $owner->id;
-            /** @var NestedElementInterface[] $elements */
-            $elements = $query->all();
-            $elementsService->restoreElements($elements);
+
+            Elements::restoreElements($query->all());
         }
     }
 }

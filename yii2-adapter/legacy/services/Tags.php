@@ -304,7 +304,8 @@ class Tags extends Component
                 ->trashed()
                 ->andWhere(['tags.deletedWithGroup' => true])
                 ->all();
-            Craft::$app->getElements()->restoreElements($tags);
+
+            Elements::restoreElements($tags);
         }
 
         // Fire an 'afterSaveGroup' event

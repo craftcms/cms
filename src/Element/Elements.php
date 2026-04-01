@@ -14,6 +14,7 @@ use CraftCms\Cms\Element\Actions\MergeCanonicalChangesAction;
 use CraftCms\Cms\Element\Actions\MergeElementsAction;
 use CraftCms\Cms\Element\Actions\PropagateElementsAction;
 use CraftCms\Cms\Element\Actions\ResaveElementsAction;
+use CraftCms\Cms\Element\Actions\RestoreElementsAction;
 use CraftCms\Cms\Element\Actions\SaveElementAction;
 use CraftCms\Cms\Element\Actions\UpdateCanonicalElementAction;
 use CraftCms\Cms\Element\Events\AfterUpdateSlugAndUri;
@@ -26,6 +27,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
+use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Typecast;
 use Exception;
@@ -747,5 +749,30 @@ class Elements
     public function deleteElementsForSite(array $elements): void
     {
         app(DeleteElementsForSiteAction::class)->handle($elements);
+    }
+
+    /**
+     * Restores an element.
+     *
+     *
+     * @return bool Whether the element was restored successfully
+     */
+    public function restoreElement(ElementInterface $element): bool
+    {
+        return $this->restoreElements([$element]);
+    }
+
+    /**
+     * Restores multiple elements.
+     *
+     * @param  ElementInterface[]  $elements
+     * @return bool Whether at least one element was restored successfully
+     *
+     * @throws UnsupportedSiteException if an element is being restored for a site it doesn’t support
+     * @throws Throwable if reasons
+     */
+    public function restoreElements(array $elements): bool
+    {
+        return app(RestoreElementsAction::class)->handle($elements);
     }
 }

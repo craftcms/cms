@@ -31,7 +31,6 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Actions\CascadeDeleteDraftsAndRevisionsAction;
 use CraftCms\Cms\Element\Actions\PropagateElementAction;
 use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
 use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
@@ -50,6 +49,7 @@ use CraftCms\Cms\Element\Events\AfterPropagateElement;
 use CraftCms\Cms\Element\Events\AfterPropagateElements;
 use CraftCms\Cms\Element\Events\AfterResaveElement;
 use CraftCms\Cms\Element\Events\AfterResaveElements;
+use CraftCms\Cms\Element\Events\AfterRestoreElement;
 use CraftCms\Cms\Element\Events\AfterSaveElement;
 use CraftCms\Cms\Element\Events\AfterUpdateSlugAndUri;
 use CraftCms\Cms\Element\Events\BeforeDeleteElement;
@@ -59,6 +59,7 @@ use CraftCms\Cms\Element\Events\BeforePropagateElement;
 use CraftCms\Cms\Element\Events\BeforePropagateElements;
 use CraftCms\Cms\Element\Events\BeforeResaveElement;
 use CraftCms\Cms\Element\Events\BeforeResaveElements;
+use CraftCms\Cms\Element\Events\BeforeRestoreElement;
 use CraftCms\Cms\Element\Events\BeforeSaveElement;
 use CraftCms\Cms\Element\Events\BeforeUpdateSearchIndex;
 use CraftCms\Cms\Element\Events\BeforeUpdateSlugAndUri;
@@ -1334,10 +1335,11 @@ class Elements extends Component
      * @throws Exception if the $element doesn’t have any supported sites
      * @throws Throwable if reasons
      * @since 3.1.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::restoreElement()} instead.
      */
     public function restoreElement(ElementInterface $element): bool
     {
-        return $this->restoreElements([$element]);
+        return ElementsFacade::restoreElement($element);
     }
 
     /**
@@ -1348,115 +1350,11 @@ class Elements extends Component
      * @return bool Whether at least one element was restored successfully
      * @throws UnsupportedSiteException if an element is being restored for a site it doesn’t support
      * @throws Throwable if reasons
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::restoreElements()} instead.
      */
     public function restoreElements(array $elements): bool
     {
-        // Fire "before" events
-        foreach ($elements as $element) {
-            // Fire a 'beforeRestoreElement' event
-            if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_ELEMENT)) {
-                $this->trigger(self::EVENT_BEFORE_RESTORE_ELEMENT, new ElementEvent([
-                    'element' => $element,
-                ]));
-            }
-
-            if (!$element->beforeRestore()) {
-                return false;
-            }
-        }
-
-        DB::beginTransaction();
-        try {
-            // Restore the elements
-            foreach ($elements as $element) {
-                // Get the sites supported by this element
-                $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
-                if (empty($supportedSites)) {
-                    throw new UnsupportedSiteException($element, $element->siteId,
-                        "Element $element->id has no supported sites.");
-                }
-
-                // Make sure the element actually supports the site it's being saved in
-                if (!isset($supportedSites[$element->siteId])) {
-                    throw new UnsupportedSiteException($element, $element->siteId,
-                        'Attempting to restore an element in an unsupported site.');
-                }
-
-                // Get the element in each supported site
-                $otherSiteIds = array_keys(Arr::except($supportedSites, $element->siteId));
-
-                if (!empty($otherSiteIds)) {
-                    $siteElements = $element->getLocalizedQuery()
-                        ->siteId($otherSiteIds)
-                        ->status(null)
-                        ->trashed(null)
-                        ->all();
-                } else {
-                    $siteElements = [];
-                }
-
-                // Make sure it still passes essential validation
-                $element->setScenario(Element::SCENARIO_ESSENTIALS);
-                if (!$element->validate()) {
-                    Log::warning("Unable to restore element $element->id: doesn't pass essential validation: " . print_r($element->errors, true), [__METHOD__]);
-                    DB::rollBack();
-                    return false;
-                }
-
-                foreach ($siteElements as $siteElement) {
-                    if ($siteElement !== $element) {
-                        $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
-                        if (!$siteElement->validate()) {
-                            Log::warning("Unable to restore element $element->id: doesn't pass essential validation for site $element->siteId: " . print_r($element->errors, true), [__METHOD__]);
-                            throw new Exception("Element $element->id doesn't pass essential validation for site $element->siteId.");
-                        }
-                    }
-                }
-
-                // Restore it
-                DB::table(Table::ELEMENTS)
-                    ->where('id', $element->id)
-                    ->update([
-                        'dateDeleted' => null,
-                        'dateUpdated' => now(),
-                        'deletedWithOwner' => null,
-                    ]);
-
-                // Also restore the element’s drafts & revisions
-                app(CascadeDeleteDraftsAndRevisionsAction::class)->handle($element->id, false);
-
-                // Restore its search indexes
-                Search::indexElementAttributes($element);
-                foreach ($siteElements as $siteElement) {
-                    Search::indexElementAttributes($siteElement);
-                }
-
-                // Invalidate caches
-                $this->elementCaches()->invalidateForElement($element);
-            }
-
-            // Fire "after" events
-            foreach ($elements as $element) {
-                $element->afterRestore();
-                $element->trashed = false;
-                $element->dateDeleted = null;
-                $element->deletedWithOwner = null;
-
-                // Fire an 'afterRestoreElement' event
-                if ($this->hasEventHandlers(self::EVENT_AFTER_RESTORE_ELEMENT)) {
-                    $this->trigger(self::EVENT_AFTER_RESTORE_ELEMENT, new ElementEvent([
-                        'element' => $element,
-                    ]));
-                }
-            }
-
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
-
-        return true;
+        return ElementsFacade::restoreElements($elements);
     }
 
     /**
@@ -2692,73 +2590,47 @@ class Elements extends Component
             }
         });
 
-        Event::listen(function(BeforeSaveElement $event) {
-            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_SAVE_ELEMENT)) {
-                return;
-            }
+        $elementEvents = [
+            BeforeSaveElement::class => self::EVENT_BEFORE_SAVE_ELEMENT,
+            AfterSaveElement::class => self::EVENT_AFTER_SAVE_ELEMENT,
+            BeforeUpdateSearchIndex::class => self::EVENT_BEFORE_UPDATE_SEARCH_INDEX,
+            SetElementUri::class => self::EVENT_SET_ELEMENT_URI,
+            BeforeMergeCanonicalChanges::class => self::EVENT_BEFORE_MERGE_CANONICAL_CHANGES,
+            AfterMergeCanonicalChanges::class => self::EVENT_AFTER_MERGE_CANONICAL_CHANGES,
+            BeforeUpdateSlugAndUri::class => self::EVENT_BEFORE_UPDATE_SLUG_AND_URI,
+            AfterUpdateSlugAndUri::class => self::EVENT_AFTER_UPDATE_SLUG_AND_URI,
+            AfterDeleteElement::class => self::EVENT_AFTER_DELETE_ELEMENT,
+            BeforeDeleteForSite::class => self::EVENT_BEFORE_DELETE_FOR_SITE,
+            AfterDeleteForSite::class => self::EVENT_AFTER_DELETE_FOR_SITE,
+            BeforeRestoreElement::class => self::EVENT_BEFORE_RESTORE_ELEMENT,
+            AfterRestoreElement::class => self::EVENT_AFTER_RESTORE_ELEMENT,
+        ];
 
-            Craft::$app->getElements()->trigger(self::EVENT_BEFORE_SAVE_ELEMENT, $yiiEvent = new ElementEvent([
-                'element' => $event->element,
-                'isNew' => $event->isNew,
-            ]));
+        foreach ($elementEvents as $newEventClass => $yiiEventClass) {
+            Event::listen($newEventClass, function($event) use ($yiiEventClass) {
+                if (!Craft::$app->getElements()->hasEventHandlers($yiiEventClass)) {
+                    return;
+                }
 
-            $event->isValid = $yiiEvent->isValid;
-        });
+                $yiiEvent = new ElementEvent([
+                    'element' => $event->element,
+                ]);
 
-        Event::listen(function(AfterSaveElement $event) {
-            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_SAVE_ELEMENT)) {
-                return;
-            }
+                if (property_exists($event, 'isNew')) {
+                    $yiiEvent->isNew = $event->isNew;
+                }
 
-            Craft::$app->getElements()->trigger(self::EVENT_AFTER_SAVE_ELEMENT, $yiiEvent = new ElementEvent([
-                'element' => $event->element,
-                'isNew' => $event->isNew,
-            ]));
-        });
+                Craft::$app->getElements()->trigger($yiiEventClass, $yiiEvent);
 
-        Event::listen(function(BeforeUpdateSearchIndex $event) {
-            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_UPDATE_SEARCH_INDEX)) {
-                return;
-            }
+                if (property_exists($event, 'isValid')) {
+                    $event->isValid = $yiiEvent->isValid;
+                }
 
-            Craft::$app->getElements()->trigger(self::EVENT_BEFORE_UPDATE_SEARCH_INDEX, $yiiEvent = new ElementEvent([
-                'element' => $event->element,
-            ]));
-
-            $event->isValid = $yiiEvent->isValid;
-        });
-
-        Event::listen(function(SetElementUri $event) {
-            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_SET_ELEMENT_URI)) {
-                return;
-            }
-
-            Craft::$app->getElements()->trigger(self::EVENT_SET_ELEMENT_URI, $yiiEvent = new ElementEvent([
-                'element' => $event->element,
-            ]));
-
-            $event->handled = $yiiEvent->handled;
-        });
-
-        Event::listen(function(BeforeMergeCanonicalChanges $event) {
-            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_MERGE_CANONICAL_CHANGES)) {
-                return;
-            }
-
-            Craft::$app->getElements()->trigger(self::EVENT_BEFORE_MERGE_CANONICAL_CHANGES, new ElementEvent([
-                'element' => $event->element,
-            ]));
-        });
-
-        Event::listen(function(AfterMergeCanonicalChanges $event) {
-            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_MERGE_CANONICAL_CHANGES)) {
-                return;
-            }
-
-            Craft::$app->getElements()->trigger(self::EVENT_AFTER_MERGE_CANONICAL_CHANGES, new ElementQueryEvent([
-                'element' => $event->element,
-            ]));
-        });
+                if (property_exists($event, 'handled')) {
+                    $event->handled = $yiiEvent->handled;
+                }
+            });
+        }
 
         Event::listen(function(BeforeResaveElements $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENTS)) {
@@ -2850,26 +2722,6 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(BeforeUpdateSlugAndUri $event) {
-            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_UPDATE_SLUG_AND_URI)) {
-                return;
-            }
-
-            Craft::$app->getElements()->trigger(self::EVENT_BEFORE_UPDATE_SLUG_AND_URI, new ElementEvent([
-                'element' => $event->element,
-            ]));
-        });
-
-        Event::listen(function(AfterUpdateSlugAndUri $event) {
-            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_UPDATE_SLUG_AND_URI)) {
-                return;
-            }
-
-            Craft::$app->getElements()->trigger(self::EVENT_AFTER_UPDATE_SLUG_AND_URI, new ElementEvent([
-                'element' => $event->element,
-            ]));
-        });
-
         Event::listen(function(AfterMergeElements $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_MERGE_ELEMENTS)) {
                 return;
@@ -2892,36 +2744,6 @@ class Elements extends Component
             ]));
 
             $event->hardDelete = $yiiEvent->hardDelete;
-        });
-
-        Event::listen(function(AfterDeleteElement $event) {
-            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_DELETE_ELEMENT)) {
-                return;
-            }
-
-            Craft::$app->getElements()->trigger(self::EVENT_AFTER_DELETE_ELEMENT, new ElementEvent([
-                'element' => $event->element,
-            ]));
-        });
-
-        Event::listen(function(BeforeDeleteForSite $event) {
-            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_DELETE_FOR_SITE)) {
-                return;
-            }
-
-            Craft::$app->getElements()->trigger(self::EVENT_BEFORE_DELETE_FOR_SITE, new ElementEvent([
-                'element' => $event->element,
-            ]));
-        });
-
-        Event::listen(function(AfterDeleteForSite $event) {
-            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_DELETE_FOR_SITE)) {
-                return;
-            }
-
-            Craft::$app->getElements()->trigger(self::EVENT_AFTER_DELETE_FOR_SITE, new ElementEvent([
-                'element' => $event->element,
-            ]));
         });
     }
 }

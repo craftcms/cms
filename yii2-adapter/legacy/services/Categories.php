@@ -514,7 +514,8 @@ class Categories extends Component
                 ->trashed()
                 ->andWhere(['categories.deletedWithGroup' => true])
                 ->all();
-            Craft::$app->getElements()->restoreElements($categories);
+
+            Elements::restoreElements($categories);
         }
 
         // Fire an 'afterSaveGroup' event

@@ -382,7 +382,7 @@ class Globals extends Component
                     $element->fieldLayoutId = $globalSetRecord->fieldLayoutId;
                     if (
                         !Elements::saveElement($element) ||
-                        !$elementsService->restoreElement($element)
+                        !Elements::restoreElement($element)
                     ) {
                         $element = null;
                     }

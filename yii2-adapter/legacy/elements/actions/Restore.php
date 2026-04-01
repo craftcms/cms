@@ -10,7 +10,9 @@ namespace craft\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use Illuminate\Support\Facades\Auth;
 use function CraftCms\Cms\t;
 
 /**
@@ -94,7 +96,7 @@ class Restore extends ElementAction
             }
             return true;
         },
-    });
+    })
 })();
 JS, [
             static::class,
@@ -112,14 +114,14 @@ JS, [
         $anySuccess = false;
         $anyFail = false;
         $elementsService = Craft::$app->getElements();
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
 
         foreach ($query->all() as $element) {
             if (!$elementsService->canSave($element, $user)) {
                 continue;
             }
 
-            if ($elementsService->restoreElement($element)) {
+            if (Elements::restoreElement($element)) {
                 $anySuccess = true;
             } else {
                 $anyFail = true;

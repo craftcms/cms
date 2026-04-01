@@ -749,7 +749,8 @@ class Sections
                     array_walk($typeEntries, function (Entry $entry) {
                         $entry->deletedWithSection = false;
                     });
-                    Craft::$app->getElements()->restoreElements($typeEntries);
+
+                    $this->elements->restoreElements($typeEntries);
                 } catch (InvalidConfigException) {
                     // the entry type probably wasn't restored
                 }
@@ -870,7 +871,7 @@ class Sections
 
             if ($entry !== null) {
                 if (isset($entry->dateDeleted)) {
-                    Craft::$app->getElements()->restoreElement($entry);
+                    $this->elements->restoreElement($entry);
                 }
 
                 $entry->setTypeId($entryTypeIds[0]);

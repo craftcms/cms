@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Commands;
 
-use Craft;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Element\Commands\Concerns\ResolvesElementById;
+use CraftCms\Cms\Element\Elements;
 use Illuminate\Console\Command;
 use Illuminate\Console\View\TaskResult;
 use Override;
@@ -27,7 +27,7 @@ final class RestoreCommand extends Command
     #[Override]
     protected $aliases = ['elements/restore'];
 
-    public function handle(): int
+    public function handle(Elements $elements): int
     {
         $element = $this->resolveElementById((int) $this->argument('id'));
 
@@ -45,8 +45,8 @@ final class RestoreCommand extends Command
 
         $this->components->task(
             sprintf('Restoring "%s"', $element->getUiLabel()),
-            function () use ($element, &$failed): TaskResult {
-                $failed = ! Craft::$app->getElements()->restoreElement($element);
+            function () use ($elements, $element, &$failed): TaskResult {
+                $failed = ! $elements->restoreElement($element);
 
                 if ($failed) {
                     return TaskResult::Failure;

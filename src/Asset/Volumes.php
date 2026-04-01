@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
-use Craft;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\ApplyingVolumeDelete;
@@ -231,7 +230,7 @@ class Volumes
                 ->where('assets.deletedWithVolume', true)
                 ->all();
 
-            Craft::$app->getElements()->restoreElements($assets);
+            Elements::restoreElements($assets);
         }
 
         event(new VolumeSaved(
