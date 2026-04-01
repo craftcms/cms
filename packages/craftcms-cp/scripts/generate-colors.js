@@ -136,7 +136,7 @@ function buildTokens(colors, scaleFn) {
 }
 
 function buildStyleBlock(color) {
-  return `.c-colorable--${color},
+  return `.cp-colorable--${color},
 [data-color='${color}'] {
   --c-color-fill-quiet: var(--c-color-${color}-fill-quiet);
   --c-color-border-quiet: var(--c-color-${color}-border-quiet);
@@ -161,7 +161,7 @@ ${buildTokens(colors, lightScale)}
 ${buildTokens(colors, darkScale)}
 }
 
-.c-colorable,
+.cp-colorable,
 [data-color] {
   --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
   --c-color-fill-normal: var(--c-color-neutral-fill-normal);
