@@ -89,7 +89,6 @@ class MatrixController extends Controller
         $namespace = $this->request->getRequiredBodyParam('namespace');
         $staticEntries = $this->request->getBodyParam('staticEntries', false);
 
-        $elementsService = Craft::$app->getElements();
         $owner = Elements::getElementById($ownerId, $ownerElementType, $siteId);
         if (!$owner) {
             throw new BadRequestHttpException("Invalid owner ID, element type, or site ID.");
@@ -218,7 +217,6 @@ class MatrixController extends Controller
             ->status(null)
             ->all();
 
-        $elementsService = Craft::$app->getElements();
         $view = $this->getView();
         $field = null;
         $entryTypes = null;

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Craft;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Elements;
@@ -98,7 +97,7 @@ readonly class PhotoController
         abort_if(! $user, 400, 'Invalid user ID: '.$request->integer('userId'));
 
         if ($user->photoId) {
-            Craft::$app->getElements()->deleteElementById($user->photoId, Asset::class);
+            $elements->deleteElementById($user->photoId, Asset::class);
         }
 
         $user->photoId = null;

@@ -328,7 +328,6 @@ class ElementsController extends Controller
 
         $this->element = $element;
 
-        $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
 
         // Figure out what we're dealing with here
@@ -797,8 +796,6 @@ JS, [
         if (!$element->id || $element->getIsUnpublishedDraft()) {
             return [];
         }
-
-        $elementsService = Craft::$app->getElements();
 
         if (!$isUnpublishedDraft) {
             $user = Auth::user();
@@ -1538,7 +1535,6 @@ JS, [
         }
 
         $this->element = $element;
-        $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
 
         // Check save permissions before and after applying POST params to the element
@@ -1722,8 +1718,7 @@ JS, [
         $newElementInfo = [];
 
         $result = DbFacade::transaction(function() use ($elementInfo, $newAttributes, &$newElementInfo) {
-            $elementsService = Craft::$app->getElements();
-            return BulkOps::ensure(function() use ($elementInfo, $newAttributes, &$newElementInfo, $elementsService) {
+            return BulkOps::ensure(function() use ($elementInfo, $newAttributes, &$newElementInfo) {
                 foreach ($elementInfo as $info) {
                     $element = $this->_element($info);
 
@@ -1833,8 +1828,6 @@ JS, [
 
         $this->element = $element;
 
-        $elementsService = Craft::$app->getElements();
-
         Gate::authorize('deleteForSite', $element);
 
         Elements::deleteElementForSite($element);
@@ -1919,7 +1912,6 @@ JS, [
             throw new BadRequestHttpException('No element was identified by the request.');
         }
 
-        $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
 
         if (!$element->getIsDraft() && !$this->_provisional) {
@@ -2108,7 +2100,6 @@ JS, [
     public function actionApplyDraft(): ?Response
     {
         $this->requirePostRequest();
-        $elementsService = Craft::$app->getElements();
 
         /**
          * @var Element|Response|null $element
@@ -2356,20 +2347,13 @@ JS, [
             throw new BadRequestHttpException('No element was identified by the request.');
         }
 
-        $elementsService = Craft::$app->getElements();
-        $user = static::currentUser();
-
-        if (!$user->can('view', $element)) {
-            throw new ForbiddenHttpException('User not authorized to view this element.');
-        }
+        Gate::authorize('view', $element);
 
         $this->element = $element;
         $this->_applyParamsToElement($element);
 
         // Make sure nothing just changed that would prevent the user from saving
-        if (!$user->can('view', $element)) {
-            throw new ForbiddenHttpException('User not authorized to view this element.');
-        }
+        Gate::authorize('view', $element);
 
         $data = $this->_fieldLayoutData($this->element);
 
@@ -2478,7 +2462,6 @@ JS, [
         bool $checkForProvisionalDraft = false,
         bool $strictSite = true,
     ): ElementInterface|Response|null {
-        $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
 
         $elementType = $elementInfo['type'] ?? $this->_elementType;

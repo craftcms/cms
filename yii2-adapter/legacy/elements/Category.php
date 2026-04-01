@@ -257,7 +257,6 @@ class Category extends Element
 
         // Now figure out what we can do with it
         $actions = [];
-        $elementsService = Craft::$app->getElements();
 
         if ($group) {
             // New Child

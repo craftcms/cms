@@ -8,7 +8,6 @@
 namespace craft\elements;
 
 use Closure;
-use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\actions\ChangeSortOrder;
@@ -337,8 +336,6 @@ class NestedElementManager extends Component
             ElementHelper::supportedSitesForElement($owner),
         );
         $siteIds = [];
-
-        $elementsService = Craft::$app->getElements();
 
         if ($this->propagationMethod === PropagationMethod::Custom && $this->propagationKeyFormat !== null) {
             $cacheKey = sprintf('%s-%s-%s', md5($this->propagationKeyFormat), $owner->id, $owner->siteId);
@@ -808,8 +805,6 @@ JS, [
 
     private function saveNestedElements(ElementInterface $owner): void
     {
-        $elementsService = Craft::$app->getElements();
-
         $value = $this->getValue($owner, true);
         if ($value instanceof ElementCollection) {
             $elements = $value->all();
@@ -1021,7 +1016,6 @@ JS, [
 
         $elements = $query->whereNotIn('elements.id', $except)->all();
 
-        $elementsService = Craft::$app->getElements();
         $deleteOwnership = [];
 
         /** @var NestedElementInterface[] $elements */
@@ -1062,7 +1056,6 @@ JS, [
         bool $deleteOtherNestedElements = true,
         bool $force = false,
     ): void {
-        $elementsService = Craft::$app->getElements();
         $elements = $this->getValue($source, true);
         if ($elements instanceof ElementQueryInterface) {
             $elements = ElementCollection::make($elements->getResultOverride() ?? $elements->all());
@@ -1315,7 +1308,6 @@ JS, [
             ->ignorePlaceholders()
             ->all();
 
-        $elementsService = Craft::$app->getElements();
         $handledSiteIds = [];
 
         foreach ($canonicalOwners as $canonicalOwner) {
@@ -1389,7 +1381,6 @@ JS, [
     public function deleteNestedElements(ElementInterface $owner, bool $hardDelete = false): void
     {
         foreach (Sites::getAllSiteIds() as $siteId) {
-            $elementsService = Craft::$app->getElements();
             $query = $this->nestedElementQuery($owner)
                 ->status(null)
                 ->siteId($siteId);

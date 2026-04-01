@@ -4,22 +4,24 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry\Commands;
 
-use Craft;
-use craft\events\ElementQueryEvent;
-use craft\events\MultiElementActionEvent;
-use craft\services\Elements;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Events\AfterResaveElement;
+use CraftCms\Cms\Element\Events\AfterResaveElements;
+use CraftCms\Cms\Element\Events\BeforeResaveElement;
+use CraftCms\Cms\Element\Events\BeforeResaveElements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Query;
 use DateTimeInterface;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\Isolatable;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Event;
 use Override;
 use Throwable;
 
@@ -41,13 +43,12 @@ final class UpdateStatusesCommand extends Command implements Isolatable
 
     public function handle(): int
     {
-        $elements = Craft::$app->getElements();
         $now = Query::prepareDateForDb(DateTimeHelper::now());
 
         foreach ($this->conditions($now) as $status => $condition) {
             $this->components->task(
                 "Updating $status entries",
-                function () use ($condition, $elements, $status) {
+                function () use ($condition, $status) {
                     $query = Entry::find()
                         ->site('*')
                         ->unique()
@@ -55,7 +56,7 @@ final class UpdateStatusesCommand extends Command implements Isolatable
                         ->where('status', '!=', $status)
                         ->where($condition);
 
-                    $this->resaveEntries($elements, $query);
+                    $this->resaveEntries($query);
                 },
             );
         }
@@ -91,11 +92,11 @@ final class UpdateStatusesCommand extends Command implements Isolatable
         ];
     }
 
-    private function resaveEntries(Elements $elements, EntryQuery $query): void
+    private function resaveEntries(EntryQuery $query): void
     {
         $count = $query->count();
 
-        $beforeCallback = function (MultiElementActionEvent $event) use ($count, $query) {
+        $beforeCallback = function (BeforeResaveElement $event) use ($count, $query) {
             if ($event->query !== $query) {
                 return;
             }
@@ -103,7 +104,7 @@ final class UpdateStatusesCommand extends Command implements Isolatable
             $this->output->write("    - [$event->position/$count] Updating entry ({$event->element->id}) ... ");
         };
 
-        $afterCallback = function (MultiElementActionEvent $event) use ($query) {
+        $afterCallback = function (AfterResaveElement $event) use ($query) {
             if ($event->query !== $query) {
                 return;
             }
@@ -124,22 +125,15 @@ final class UpdateStatusesCommand extends Command implements Isolatable
             $this->output->writeln('done');
         };
 
-        $elements->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
-        $elements->on(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
+        Event::listen(fn (BeforeResaveElement $event) => $beforeCallback($event));
+        Event::listen(fn (AfterResaveElement $event) => $afterCallback($event));
 
-        try {
-            $this->resaveQuery($elements, $query);
-        } finally {
-            $elements->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
-            $elements->off(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
-        }
+        $this->resaveQuery($query);
     }
 
-    private function resaveQuery(Elements $elements, EntryQuery $query): void
+    private function resaveQuery(EntryQuery $query): void
     {
-        $elements->trigger(Elements::EVENT_BEFORE_RESAVE_ELEMENTS, new ElementQueryEvent([
-            'query' => $query,
-        ]));
+        event(new BeforeResaveElements($query));
 
         $position = 0;
 
@@ -148,32 +142,21 @@ final class UpdateStatusesCommand extends Command implements Isolatable
             $entry->setScenario(Element::SCENARIO_ESSENTIALS);
             $entry->resaving = true;
 
-            $elements->trigger(Elements::EVENT_BEFORE_RESAVE_ELEMENT, new MultiElementActionEvent([
-                'query' => $query,
-                'element' => $entry,
-                'position' => $position,
-            ]));
+            event(new BeforeResaveElement($query, $entry, $position));
 
             $exception = null;
 
             try {
                 $this->ensureEntryCanBeResaved($entry);
-                \CraftCms\Cms\Support\Facades\Elements::saveElement($entry, true, true, false, false, false, true);
+                Elements::saveElement($entry, true, true, false, false, false, true);
             } catch (Throwable $exception) {
                 report($exception);
             }
 
-            $elements->trigger(Elements::EVENT_AFTER_RESAVE_ELEMENT, new MultiElementActionEvent([
-                'query' => $query,
-                'element' => $entry,
-                'position' => $position,
-                'exception' => $exception,
-            ]));
+            event(new AfterResaveElement($query, $entry, $position, $exception));
         }
 
-        $elements->trigger(Elements::EVENT_AFTER_RESAVE_ELEMENTS, new ElementQueryEvent([
-            'query' => $query,
-        ]));
+        event(new AfterResaveElements($query));
     }
 
     private function ensureEntryCanBeResaved(Entry $entry): void

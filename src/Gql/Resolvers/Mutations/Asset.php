@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Resolvers\Mutations;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
@@ -44,7 +43,6 @@ class Asset extends ElementMutationResolver
         /** @var Volume $volume */
         $volume = $this->getResolutionData('volume');
         $canIdentify = ! empty($arguments['id']) || ! empty($arguments['uid']);
-        Craft::$app->getElements();
 
         $newFolderId = $arguments['newFolderId'] ?? null;
 
@@ -128,7 +126,6 @@ class Asset extends ElementMutationResolver
     public function deleteAsset(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): bool
     {
         $assetId = $arguments['id'];
-        $elementService = Craft::$app->getElements();
 
         /** @var AssetElement|null $asset */
         $asset = Elements::getElementById($assetId, AssetElement::class);
@@ -140,7 +137,7 @@ class Asset extends ElementMutationResolver
         $volumeUid = DB::table(Table::VOLUMES)->uidById($asset->getVolumeId());
         $this->requireSchemaAction('volumes.'.$volumeUid, 'delete');
 
-        return $elementService->deleteElementById($assetId);
+        return Elements::deleteElementById($assetId);
     }
 
     #[Override]

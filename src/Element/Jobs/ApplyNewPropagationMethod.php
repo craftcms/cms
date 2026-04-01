@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Jobs;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
@@ -80,7 +79,6 @@ class ApplyNewPropagationMethod extends BatchedJob
             return;
         }
 
-        Craft::$app->getElements();
         $allSiteIds = Sites::getAllSiteIds()->all();
 
         // See what sites the element should exist in going forward

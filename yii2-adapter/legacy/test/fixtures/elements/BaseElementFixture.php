@@ -181,7 +181,7 @@ abstract class BaseElementFixture extends DbFixture
      */
     protected function saveElement(ElementInterface $element): bool
     {
-        return Craft::$app->getElements()->saveElement($element, true, true, false);
+        return Elements::saveElement($element, true, true, false);
     }
 
     /**

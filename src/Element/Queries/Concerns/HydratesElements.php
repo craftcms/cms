@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
 use CraftCms\Cms\Element\Drafts;
@@ -58,7 +57,6 @@ trait HydratesElements
 
         $elements = $this->afterHydrate($elements)
             ->unless($this->asArray, function (Collection $elements) {
-                $elementsService = Craft::$app->getElements();
                 $dependencyCollector = app(DependencyCollector::class);
 
                 $allElements = $elements->all();

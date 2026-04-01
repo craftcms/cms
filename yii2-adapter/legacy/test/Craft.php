@@ -463,7 +463,7 @@ class Craft extends Yii2
      */
     public function saveElement(ElementInterface $element, bool $failHard = true): bool
     {
-        if (!\Craft::$app->getElements()->saveElement($element)) {
+        if (!Elements::saveElement($element)) {
             if ($failHard) {
                 throw new InvalidArgumentException(
                     implode(', ', $element->getErrorSummary(true))

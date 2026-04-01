@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -116,8 +115,6 @@ readonly class Revisions
             $notes = $event->revisionNotes;
             $creatorId = $event->creatorId;
             $canonical = $event->canonical;
-
-            $elementsService = Craft::$app->getElements();
 
             DB::beginTransaction();
             try {

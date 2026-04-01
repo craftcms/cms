@@ -7,7 +7,6 @@
 
 namespace craft\elements\actions;
 
-use Craft;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
@@ -16,7 +15,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Html;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use function CraftCms\Cms\t;
@@ -165,7 +163,6 @@ JS, [static::class]);
     public function performAction(ElementQueryInterface $query): bool
     {
         $withDescendants = $this->withDescendants && !$this->hard;
-        $elementsService = Craft::$app->getElements();
 
         if ($withDescendants) {
             $query
@@ -182,8 +179,6 @@ JS, [static::class]);
         }
 
         $deletedElementIds = [];
-        $user = Auth::user();
-
         $deleteOwnership = [];
 
         foreach ($query->all() as $element) {
@@ -199,12 +194,12 @@ JS, [static::class]);
                             Gate::check('view', $descendant) &&
                             Gate::check('delete', $descendant)
                         ) {
-                            $this->deleteElement($descendant, $elementsService, $deleteOwnership);
+                            $this->deleteElement($descendant, $deleteOwnership);
                             $deletedElementIds[$descendant->id] = true;
                         }
                     }
                 }
-                $this->deleteElement($element, $elementsService, $deleteOwnership);
+                $this->deleteElement($element, $deleteOwnership);
                 $deletedElementIds[$element->id] = true;
             }
         }
@@ -229,7 +224,6 @@ JS, [static::class]);
 
     private function deleteElement(
         ElementInterface $element,
-        Elements $elementsService,
         array &$deleteOwnership,
     ): void {
         // If the element primarily belongs to a different element, (and we're not hard deleting) just delete the ownership

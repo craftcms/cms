@@ -7,7 +7,6 @@
 
 namespace craft\gql\resolvers\mutations;
 
-use Craft;
 use craft\elements\Category as CategoryElement;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\StructureMutationTrait;
@@ -47,7 +46,6 @@ class Category extends ElementMutationResolver
         /** @var CategoryGroup $categoryGroup */
         $categoryGroup = $this->getResolutionData('categoryGroup');
         $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']);
-        $elementService = Craft::$app->getElements();
 
         if ($canIdentify) {
             if (!empty($arguments['uid'])) {
@@ -76,7 +74,7 @@ class Category extends ElementMutationResolver
 
         $this->performStructureOperations($category, $arguments);
 
-        return $elementService->getElementById($category->id, CategoryElement::class);
+        return Elements::getElementById($category->id, CategoryElement::class);
     }
 
     /**
@@ -93,7 +91,6 @@ class Category extends ElementMutationResolver
     {
         $categoryId = $arguments['id'];
 
-        $elementService = Craft::$app->getElements();
         $category = Elements::getElementById($categoryId, CategoryElement::class);
 
         if (!$category) {
@@ -103,6 +100,6 @@ class Category extends ElementMutationResolver
         $categoryGroupUid = DB::table('categorygroups')->uidById($category->groupId);
         $this->requireSchemaAction('categorygroups.' . $categoryGroupUid, 'delete');
 
-        return $elementService->deleteElementById($categoryId);
+        return Elements::deleteElementById($categoryId);
     }
 }

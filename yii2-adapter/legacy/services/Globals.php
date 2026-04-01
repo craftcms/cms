@@ -369,7 +369,6 @@ class Globals extends Component
 
             // Make sure there's an element for it.
             $element = null;
-            $elementsService = Craft::$app->getElements();
             if (!$globalSetRecord->getIsNewRecord()) {
                 /** @var GlobalSet|null $element */
                 $element = GlobalSet::find()
@@ -507,7 +506,7 @@ class Globals extends Component
                 ->where('id', $globalSetRecord->id)
                 ->value('fieldLayoutId');
 
-            Craft::$app->getElements()->deleteElementById($globalSetRecord->id);
+            Elements::deleteElementById($globalSetRecord->id);
 
             if ($fieldLayoutId) {
                 $fieldLayout = app(Fields::class)->getLayoutById($fieldLayoutId);

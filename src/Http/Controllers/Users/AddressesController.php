@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Craft;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Elements;
@@ -50,7 +49,6 @@ readonly class AddressesController
 
     public function store(Request $request, Elements $elements): Response
     {
-        Craft::$app->getElements();
         $user = $request->user();
 
         $userId = (int) ($request->input('userId') ?? $user->id);

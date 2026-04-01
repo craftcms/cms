@@ -373,11 +373,10 @@ class Users
             $photo->setVolumeId($volume->id);
 
             // Save photo.
-            $elementsService = Craft::$app->getElements();
-            $elementsService->saveElement($photo);
+            $this->elements->saveElement($photo);
 
             $user->setPhoto($photo);
-            $elementsService->saveElement($user, false);
+            $this->elements->saveElement($user, false);
         }
 
         event(new UserPhotoSaved($user, $photo->id));
@@ -461,7 +460,7 @@ class Users
 
         event(new DeletingUserPhoto($user, $photoId));
 
-        $result = Craft::$app->getElements()->deleteElementById($photoId, Asset::class);
+        $result = $this->elements->deleteElementById($photoId, Asset::class);
 
         if ($result) {
             $user->setPhoto();

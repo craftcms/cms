@@ -7,9 +7,9 @@
 
 namespace craft\test\fixtures\elements;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Typecast;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -151,6 +151,6 @@ abstract class BaseContentFixture extends DbFixture
      */
     protected function saveElement(ElementInterface $element): bool
     {
-        return Craft::$app->getElements()->saveElement($element, true, true, false);
+        return Elements::saveElement($element, true, true, false);
     }
 }

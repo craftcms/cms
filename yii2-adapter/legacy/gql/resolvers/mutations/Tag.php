@@ -7,7 +7,6 @@
 
 namespace craft\gql\resolvers\mutations;
 
-use Craft;
 use craft\elements\Tag as TagElement;
 use craft\gql\base\ElementMutationResolver;
 use craft\models\TagGroup;
@@ -44,7 +43,6 @@ class Tag extends ElementMutationResolver
         /** @var TagGroup $tagGroup */
         $tagGroup = $this->getResolutionData('tagGroup');
         $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']);
-        $elementService = Craft::$app->getElements();
 
         if ($canIdentify) {
             if (!empty($arguments['uid'])) {
@@ -87,7 +85,6 @@ class Tag extends ElementMutationResolver
     {
         $tagId = $arguments['id'];
 
-        $elementService = Craft::$app->getElements();
         $tag = Elements::getElementById($tagId, TagElement::class);
 
         if (!$tag) {
@@ -97,6 +94,6 @@ class Tag extends ElementMutationResolver
         $tagGroupUid = DB::table('taggroups')->uidById($tag->groupId);
         $this->requireSchemaAction('taggroups.' . $tagGroupUid, 'delete');
 
-        return $elementService->deleteElementById($tagId);
+        return Elements::deleteElementById($tagId);
     }
 }

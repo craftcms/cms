@@ -30,7 +30,6 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Translation\Formatter;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Stringable;
 use yii\web\Response;
@@ -162,7 +161,6 @@ trait HasControlPanelUI
     protected function safeActionMenuItems(): array
     {
         $items = [];
-        Craft::$app->getElements();
 
         // Validate
         if (
@@ -299,9 +297,6 @@ JS, [
     protected function destructiveActionMenuItems(): array
     {
         $items = [];
-
-        Craft::$app->getElements();
-        Auth::user();
 
         $isCanonical = $this->getIsCanonical();
         $isDraft = $this->getIsDraft();
