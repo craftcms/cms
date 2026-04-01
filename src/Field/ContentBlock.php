@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Field;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\elements\db\EagerLoadPlan;
 use craft\elements\NestedElementManager;
 use craft\web\assets\cp\CpAsset;
+use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
@@ -437,9 +437,9 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
                     if ($contentBlock) {
                         $this->setOwnerOnContentBlockElement($e, $contentBlock);
                     }
-                    $e->setEagerLoadedElements($handle, $contentBlock ? [$contentBlock] : [], new EagerLoadPlan([
-                        'handle' => $handle,
-                    ]));
+                    $e->setEagerLoadedElements($handle, $contentBlock ? [$contentBlock] : [], new EagerLoadPlan(
+                        handle: $handle,
+                    ));
                 }
 
                 /** @phpstan-ignore-next-line */

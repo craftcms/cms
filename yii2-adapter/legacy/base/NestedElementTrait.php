@@ -8,9 +8,8 @@
 
 namespace craft\base;
 
-use Craft;
-use craft\elements\db\EagerLoadPlan;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -204,7 +203,7 @@ trait NestedElementTrait
             if (!empty($sameSiteElements)) {
                 // Eager-load the primary owner for each of the elements in the result,
                 // as we're probably going to end up needing them too
-                Craft::$app->getElements()->eagerLoadElements($this::class, $sameSiteElements, [
+                Elements::eagerLoadElements($this::class, $sameSiteElements, [
                     [
                         'path' => 'primaryOwner',
                         'criteria' => $this->ownerCriteria(),
@@ -285,7 +284,7 @@ trait NestedElementTrait
             if (!empty($sameSiteElements)) {
                 // Eager-load the owner for each of the elements in the result,
                 // as we're probably going to end up needing them too
-                Craft::$app->getElements()->eagerLoadElements($this::class, $sameSiteElements, [
+                Elements::eagerLoadElements($this::class, $sameSiteElements, [
                     [
                         'path' => 'owner',
                         'criteria' => $this->ownerCriteria(),

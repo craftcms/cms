@@ -22,6 +22,7 @@ use CraftCms\Cms\Element\Actions\ResaveElementsAction;
 use CraftCms\Cms\Element\Actions\RestoreElementsAction;
 use CraftCms\Cms\Element\Actions\SaveElementAction;
 use CraftCms\Cms\Element\Actions\UpdateCanonicalElementAction;
+use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Events\AfterUpdateSlugAndUri;
 use CraftCms\Cms\Element\Events\BeforeUpdateSlugAndUri;
 use CraftCms\Cms\Element\Events\RegisterElementTypes;
@@ -40,6 +41,7 @@ use CraftCms\Cms\User\Elements\User;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -948,5 +950,30 @@ class Elements
     public function getPlaceholderElement(int $sourceId, int $siteId): ?ElementInterface
     {
         return $this->_placeholderElements[$sourceId][$siteId] ?? null;
+    }
+
+    /**
+     * Normalizes a `with` element query param into an array of eager-loading plans.
+     *
+     *
+     * @phpstan-param string|array<EagerLoadPlan|array|string> $with
+     *
+     * @return EagerLoadPlan[]
+     */
+    public function createEagerLoadingPlans(string|array $with): array
+    {
+        return app(ElementEagerLoader::class)->createEagerLoadingPlans($with);
+    }
+
+    /**
+     * Eager-loads additional elements onto a given set of elements.
+     *
+     * @param  class-string<ElementInterface>  $elementType  The root element type class
+     * @param  ElementInterface[]  $elements  The root element models that should be updated with the eager-loaded elements
+     * @param  array<string|array>|string|EagerLoadPlan[]  $with  Dot-delimited paths of the elements that should be eager-loaded into the root elements
+     */
+    public function eagerLoadElements(string $elementType, array|Collection $elements, array|string $with): void
+    {
+        app(ElementEagerLoader::class)->eagerLoadElements($elementType, $elements, $with);
     }
 }

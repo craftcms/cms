@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Gql;
 
 use ArrayObject;
-use craft\elements\db\EagerLoadPlan;
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Assets as AssetField;
 use CraftCms\Cms\Field\BaseRelationField;
@@ -497,11 +497,11 @@ class ElementQueryConditionBuilder extends Component
 
             // If not, create a new plan.
             if (! $foundPlan) {
-                $plans[] = new EagerLoadPlan([
-                    'handle' => $countedHandle,
-                    'alias' => $countedHandle,
-                    'count' => true,
-                ]);
+                $plans[] = new EagerLoadPlan(
+                    handle: $countedHandle,
+                    alias: $countedHandle,
+                    count: true,
+                );
             }
         }
 

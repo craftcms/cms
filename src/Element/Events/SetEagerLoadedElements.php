@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Events;
 
 use craft\base\ElementInterface;
-use craft\elements\db\EagerLoadPlan;
+use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Shared\Concerns\HandleableEvent;
 
 /**

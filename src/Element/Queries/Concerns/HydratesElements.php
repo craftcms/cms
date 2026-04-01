@@ -83,7 +83,7 @@ trait HydratesElements
 
                 // Should we eager-load some elements onto these?
                 if ($this->with) {
-                    $elementsService->eagerLoadElements($this->elementType, $elements, $this->with);
+                    Elements::eagerLoadElements($this->elementType, $elements, $this->with);
                 }
 
                 return $elements;

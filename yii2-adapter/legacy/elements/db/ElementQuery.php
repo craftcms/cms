@@ -1867,13 +1867,11 @@ class ElementQuery extends Query implements ElementQueryInterface
                 }
             }
 
-            $elementsService = Craft::$app->getElements();
-
             ElementHelper::setNextPrevOnElements($elements);
 
             // Should we eager-load some elements onto these?
             if ($this->with) {
-                $elementsService->eagerLoadElements($this->elementType, $elements, $this->with);
+                Elements::eagerLoadElements($this->elementType, $elements, $this->with);
             }
         }
 
@@ -1916,7 +1914,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
             if ($this->with) {
-                Craft::$app->getElements()->eagerLoadElements($this->elementType, $cachedResult, $this->with);
+                Elements::eagerLoadElements($this->elementType, $cachedResult, $this->with);
             }
             return $cachedResult;
         }
@@ -1952,18 +1950,18 @@ class ElementQuery extends Query implements ElementQueryInterface
         };
 
         if (!$eagerLoaded) {
-            Craft::$app->getElements()->eagerLoadElements(
+            Elements::eagerLoadElements(
                 $this->eagerLoadSourceElement::class,
                 $this->eagerLoadSourceElement->elementQueryResult,
                 [
-                    new EagerLoadPlan([
-                        'handle' => $this->eagerLoadHandle,
-                        'alias' => $alias,
-                        'criteria' => $criteria + $this->getCriteria() + ['with' => $this->with],
-                        'all' => !$count,
-                        'count' => $count,
-                        'lazy' => true,
-                    ]),
+                    new \CraftCms\Cms\Element\Data\EagerLoadPlan(
+                        handle: $this->eagerLoadHandle,
+                        alias: $alias,
+                        criteria: $criteria + $this->getCriteria() + ['with' => $this->with],
+                        all: !$count,
+                        count: $count,
+                        lazy: true,
+                    ),
                 ],
             );
         }

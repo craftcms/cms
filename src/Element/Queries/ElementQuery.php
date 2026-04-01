@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries;
 
 use Closure;
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Database\Table;
@@ -17,6 +16,7 @@ use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Exception;
@@ -476,7 +476,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     {
         if (! is_null($result = $this->getResultOverride())) {
             if ($this->with) {
-                Craft::$app->getElements()->eagerLoadElements($this->elementType, $result, $this->with);
+                Elements::eagerLoadElements($this->elementType, $result, $this->with);
             }
 
             return $result;

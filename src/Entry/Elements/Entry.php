@@ -23,7 +23,6 @@ use craft\elements\actions\Restore;
 use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\conditions\entries\SectionConditionRule;
 use craft\elements\conditions\entries\TypeConditionRule;
-use craft\elements\db\EagerLoadPlan;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
@@ -34,6 +33,7 @@ use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
@@ -1686,7 +1686,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             } else {
                 if (isset($this->elementQueryResult) && count($this->elementQueryResult) > 1) {
                     // eager-load authors for all queried entries
-                    Craft::$app->getElements()->eagerLoadElements(self::class, $this->elementQueryResult, ['authors']);
+                    Elements::eagerLoadElements(self::class, $this->elementQueryResult, ['authors']);
 
                     return $this->_authors ?? [];
                 }

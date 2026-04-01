@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use craft\elements\db\EagerLoadPlan;
+use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -24,9 +24,9 @@ beforeEach(function () {
 
 describe('hasEagerLoadedElements', function () {
     test('returns true when eager-loaded elements exist', function () {
-        $this->entry1->setEagerLoadedElements('testHandle', [], new EagerLoadPlan([
-            'handle' => 'testHandle',
-        ]));
+        $this->entry1->setEagerLoadedElements('testHandle', [], new EagerLoadPlan(
+            handle: 'testHandle',
+        ));
 
         expect($this->entry1->hasEagerLoadedElements('testHandle'))->toBeTrue();
     });
@@ -36,9 +36,9 @@ describe('getEagerLoadedElements', function () {
     test('returns ElementCollection when eager-loaded elements exist', function () {
         expect($this->entry1->getEagerLoadedElements('testHandle'))->toBeNull();
 
-        $this->entry1->setEagerLoadedElements('testHandle', [$this->entry2, $this->entry3], new EagerLoadPlan([
-            'handle' => 'testHandle',
-        ]));
+        $this->entry1->setEagerLoadedElements('testHandle', [$this->entry2, $this->entry3], new EagerLoadPlan(
+            handle: 'testHandle',
+        ));
 
         expect($this->entry1->getEagerLoadedElements('testHandle'))
             ->toBeInstanceOf(ElementCollection::class)
@@ -53,9 +53,9 @@ describe('setEagerLoadedElements', function () {
 
         expect($child->parent)->toBeNull();
 
-        $child->setEagerLoadedElements('parent', [$parent], new EagerLoadPlan([
-            'handle' => 'parent',
-        ]));
+        $child->setEagerLoadedElements('parent', [$parent], new EagerLoadPlan(
+            handle: 'parent',
+        ));
 
         // Parent should be set directly, not stored in eager-loaded array
         expect($child->parent)->toBe($parent);
@@ -64,9 +64,9 @@ describe('setEagerLoadedElements', function () {
     test('handles currentRevision relationship specially', function () {
         $revision = entryQuery()->revisions()->where('elements.canonicalId', $this->entry1->id)->one();
 
-        $this->entry1->setEagerLoadedElements('currentRevision', [$revision], new EagerLoadPlan([
-            'handle' => 'currentRevision',
-        ]));
+        $this->entry1->setEagerLoadedElements('currentRevision', [$revision], new EagerLoadPlan(
+            handle: 'currentRevision',
+        ));
 
         expect($this->entry1->currentRevision)->toBe($revision);
     });
