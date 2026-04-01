@@ -111,12 +111,14 @@ class TestDuplicateElementActionElement extends Element
     #[Override]
     public function getLocalizedQuery(): ElementQuery
     {
-        return tap(new class(static::class) extends ElementQuery
+        $query = new class(static::class) extends ElementQuery
         {
             use UsesLocalizedElementsOverride;
-        }, function (ElementQuery $query) {
-            $query->elements = $this->localizedElements;
-        });
+        };
+
+        $query->elements = $this->localizedElements;
+
+        return $query;
     }
 
     #[Override]
