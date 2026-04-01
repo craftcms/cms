@@ -350,9 +350,9 @@ class ElementsController extends Controller
 
         // Permissions
         $canSave = $this->_canSave($element, $user);
-        $canSaveCanonical = $elementsService->canSaveCanonical($element, $user);
-        $canCreateDrafts = $elementsService->canCreateDrafts($canonical, $user);
-        $canDuplicate = !$isRevision && $elementsService->canDuplicateAsDraft($element, $user);
+        $canSaveCanonical = Gate::check('saveCanonical', $element);
+        $canCreateDrafts = Gate::check('createDrafts', $canonical);
+        $canDuplicate = !$isRevision && Gate::check('duplicateAsDraft', $element);
 
         // Preview targets
         $previewTargets = $element->id ? $element->getPreviewTargets() : [];

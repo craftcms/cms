@@ -79,8 +79,7 @@ trait HasControlPanelUI
     public function getAltActions(): array
     {
         $isUnpublishedDraft = $this->getIsUnpublishedDraft();
-        $elementsService = Craft::$app->getElements();
-        $canSaveCanonical = $elementsService->canSaveCanonical($this);
+        $canSaveCanonical = Gate::check('saveCanonical', $this);
 
         $altActions = [
             [
@@ -119,7 +118,7 @@ trait HasControlPanelUI
                 ];
             }
 
-            if (! $this->getIsRevision() && $elementsService->canDuplicateAsDraft($this)) {
+            if (! $this->getIsRevision() && Gate::check('duplicateAsDraft', $this)) {
                 $altActions[] = [
                     'label' => t('Save as a new {type}', [
                         'type' => static::lowerDisplayName(),
