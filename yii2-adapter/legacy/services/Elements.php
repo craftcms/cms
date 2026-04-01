@@ -30,7 +30,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db as DbHelper;
 use craft\helpers\Queue;
 use craft\models\ElementActivity;
-use craft\queue\jobs\UpdateElementSlugsAndUris;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\ComponentHelper;
@@ -53,6 +52,7 @@ use CraftCms\Cms\Element\Events\AfterPropagateElements;
 use CraftCms\Cms\Element\Events\AfterResaveElement;
 use CraftCms\Cms\Element\Events\AfterResaveElements;
 use CraftCms\Cms\Element\Events\AfterSaveElement;
+use CraftCms\Cms\Element\Events\AfterUpdateSlugAndUri;
 use CraftCms\Cms\Element\Events\BeforeMergeCanonicalChanges;
 use CraftCms\Cms\Element\Events\BeforePropagateElement;
 use CraftCms\Cms\Element\Events\BeforePropagateElements;
@@ -60,6 +60,7 @@ use CraftCms\Cms\Element\Events\BeforeResaveElement;
 use CraftCms\Cms\Element\Events\BeforeResaveElements;
 use CraftCms\Cms\Element\Events\BeforeSaveElement;
 use CraftCms\Cms\Element\Events\BeforeUpdateSearchIndex;
+use CraftCms\Cms\Element\Events\BeforeUpdateSlugAndUri;
 use CraftCms\Cms\Element\Events\InvalidateElementCaches;
 use CraftCms\Cms\Element\Events\SetElementUri;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
@@ -1184,6 +1185,7 @@ class Elements extends Component
      * @param bool $queue Whether the element’s slug and URI should be updated via a job in the queue.
      *
      * @throws OperationAbortedException if a unique URI can’t be generated based on the element’s URI format
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::updateElementSlugAndUri()} instead.
      */
     public function updateElementSlugAndUri(
         ElementInterface $element,
@@ -1191,77 +1193,18 @@ class Elements extends Component
         bool $updateDescendants = true,
         bool $queue = false,
     ): void {
-        if ($queue) {
-            Queue::push(new UpdateElementSlugsAndUris([
-                'elementId' => $element->id,
-                'elementType' => get_class($element),
-                'siteId' => $element->siteId,
-                'updateOtherSites' => $updateOtherSites,
-                'updateDescendants' => $updateDescendants,
-            ]));
-
-            return;
-        }
-
-        if ($element::hasUris()) {
-            $this->setElementUri($element);
-        }
-
-        // Fire a 'beforeUpdateSlugAndUri' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_UPDATE_SLUG_AND_URI)) {
-            $this->trigger(self::EVENT_BEFORE_UPDATE_SLUG_AND_URI, new ElementEvent([
-                'element' => $element,
-            ]));
-        }
-
-        DB::table(Table::ELEMENTS_SITES)
-            ->where('elementId', $element->id)
-            ->where('siteId', $element->siteId)
-            ->update([
-                'slug' => $element->slug,
-                'uri' => $element->uri,
-                'dateUpdated' => now(),
-            ]);
-
-        // Fire a 'afterUpdateSlugAndUri' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_UPDATE_SLUG_AND_URI)) {
-            $this->trigger(self::EVENT_AFTER_UPDATE_SLUG_AND_URI, new ElementEvent([
-                'element' => $element,
-            ]));
-        }
-
-        // Invalidate any caches involving this element
-        $this->elementCaches()->invalidateForElement($element);
-
-        if ($updateOtherSites) {
-            $this->updateElementSlugAndUriInOtherSites($element);
-        }
-
-        if ($updateDescendants) {
-            $this->updateDescendantSlugsAndUris($element, $updateOtherSites);
-        }
+        ElementsFacade::updateElementSlugAndUri($element, $updateOtherSites, $updateDescendants, $queue);
     }
 
     /**
      * Updates an element’s slug and URI, for any sites besides the given one.
      *
      * @param ElementInterface $element The element to update.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::updateElementSlugAndUriInOtherSites()} instead.
      */
     public function updateElementSlugAndUriInOtherSites(ElementInterface $element): void
     {
-        foreach (Sites::getAllSiteIds() as $siteId) {
-            if ($siteId === $element->siteId) {
-                continue;
-            }
-
-            $elementInOtherSite = $element->getLocalizedQuery()
-                ->siteId($siteId)
-                ->one();
-
-            if ($elementInOtherSite) {
-                $this->updateElementSlugAndUri($elementInOtherSite, false, false);
-            }
-        }
+        ElementsFacade::updateElementSlugAndUriInOtherSites($element);
     }
 
     /**
@@ -1270,37 +1213,14 @@ class Elements extends Component
      * @param ElementInterface $element The element whose descendants should be updated.
      * @param bool $updateOtherSites Whether the element’s other sites should also be updated.
      * @param bool $queue Whether the descendants’ slugs and URIs should be updated via a job in the queue.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::updateDescendantSlugsAndUris()} instead.
      */
     public function updateDescendantSlugsAndUris(
         ElementInterface $element,
         bool $updateOtherSites = true,
         bool $queue = false,
     ): void {
-        $query = $this->createElementQuery(get_class($element))
-            ->descendantOf($element)
-            ->descendantDist(1)
-            ->status(null)
-            ->siteId($element->siteId);
-
-        if ($queue) {
-            $childIds = $query->ids();
-
-            if (!empty($childIds)) {
-                Queue::push(new UpdateElementSlugsAndUris([
-                    'elementId' => $childIds,
-                    'elementType' => get_class($element),
-                    'siteId' => $element->siteId,
-                    'updateOtherSites' => $updateOtherSites,
-                    'updateDescendants' => true,
-                ]));
-            }
-        } else {
-            $children = $query->all();
-
-            foreach ($children as $child) {
-                $this->updateElementSlugAndUri($child, $updateOtherSites, true, false);
-            }
-        }
+        ElementsFacade::updateDescendantSlugsAndUris($element, $updateOtherSites, $queue);
     }
 
     /**
@@ -3269,6 +3189,26 @@ class Elements extends Component
 
             Craft::$app->getElements()->trigger(self::EVENT_AFTER_PROPAGATE_ELEMENTS, new ElementQueryEvent([
                 'query' => $event->query,
+            ]));
+        });
+
+        Event::listen(function(BeforeUpdateSlugAndUri $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_UPDATE_SLUG_AND_URI)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_BEFORE_UPDATE_SLUG_AND_URI, new ElementEvent([
+                'element' => $event->element,
+            ]));
+        });
+
+        Event::listen(function(AfterUpdateSlugAndUri $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_UPDATE_SLUG_AND_URI)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_AFTER_UPDATE_SLUG_AND_URI, new ElementEvent([
+                'element' => $event->element,
             ]));
         });
     }

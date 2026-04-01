@@ -13,9 +13,12 @@ use CraftCms\Cms\Element\Actions\PropagateElementsAction;
 use CraftCms\Cms\Element\Actions\ResaveElementsAction;
 use CraftCms\Cms\Element\Actions\SaveElementAction;
 use CraftCms\Cms\Element\Actions\UpdateCanonicalElementAction;
+use CraftCms\Cms\Element\Events\AfterUpdateSlugAndUri;
+use CraftCms\Cms\Element\Events\BeforeUpdateSlugAndUri;
 use CraftCms\Cms\Element\Events\SetElementUri;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
+use CraftCms\Cms\Element\Jobs\UpdateElementSlugsAndUris;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -39,6 +42,10 @@ class Elements
      * @see getElementByUri()
      */
     private array $_placeholderUris;
+
+    public function __construct(
+        private readonly ElementCaches $elementCaches,
+    ) {}
 
     /**
      * Creates an element with a given config.
@@ -494,5 +501,126 @@ class Elements
         bool $copyModifiedFields = false,
     ): ElementInterface {
         return app(DuplicateElementAction::class)->handle($element, $newAttributes, $placeInStructure, $asUnpublishedDraft, $checkAuthorization, $copyModifiedFields);
+    }
+
+    /**
+     * Updates an element’s slug and URI, along with any descendants.
+     *
+     * @param  ElementInterface  $element  The element to update.
+     * @param  bool  $updateOtherSites  Whether the element’s other sites should also be updated.
+     * @param  bool  $updateDescendants  Whether the element’s descendants should also be updated.
+     * @param  bool  $queue  Whether the element’s slug and URI should be updated via a job in the queue.
+     *
+     * @throws OperationAbortedException if a unique URI can’t be generated based on the element’s URI format
+     */
+    public function updateElementSlugAndUri(
+        ElementInterface $element,
+        bool $updateOtherSites = true,
+        bool $updateDescendants = true,
+        bool $queue = false,
+    ): void {
+        if ($queue) {
+            dispatch(new UpdateElementSlugsAndUris(
+                $element::class,
+                $element->id,
+                $element->siteId,
+                $updateOtherSites,
+                $updateDescendants,
+            ));
+
+            return;
+        }
+
+        if ($element::hasUris()) {
+            $this->setElementUri($element);
+        }
+
+        event(new BeforeUpdateSlugAndUri($element));
+
+        DB::table(Table::ELEMENTS_SITES)
+            ->where('elementId', $element->id)
+            ->where('siteId', $element->siteId)
+            ->update([
+                'slug' => $element->slug,
+                'uri' => $element->uri,
+                'dateUpdated' => now(),
+            ]);
+
+        event(new AfterUpdateSlugAndUri($element));
+
+        // Invalidate any caches involving this element
+        $this->elementCaches->invalidateForElement($element);
+
+        if ($updateOtherSites) {
+            $this->updateElementSlugAndUriInOtherSites($element);
+        }
+
+        if ($updateDescendants) {
+            $this->updateDescendantSlugsAndUris($element, $updateOtherSites);
+        }
+    }
+
+    /**
+     * Updates an element’s slug and URI, for any sites besides the given one.
+     *
+     * @param  ElementInterface  $element  The element to update.
+     */
+    public function updateElementSlugAndUriInOtherSites(ElementInterface $element): void
+    {
+        foreach (Sites::getAllSiteIds() as $siteId) {
+            if ($siteId === $element->siteId) {
+                continue;
+            }
+
+            $elementInOtherSite = $element->getLocalizedQuery()
+                ->siteId($siteId)
+                ->one();
+
+            if ($elementInOtherSite) {
+                $this->updateElementSlugAndUri($elementInOtherSite, false, false);
+            }
+        }
+    }
+
+    /**
+     * Updates an element’s descendants’ slugs and URIs.
+     *
+     * @param  ElementInterface  $element  The element whose descendants should be updated.
+     * @param  bool  $updateOtherSites  Whether the element’s other sites should also be updated.
+     * @param  bool  $queue  Whether the descendants’ slugs and URIs should be updated via a job in the queue.
+     */
+    public function updateDescendantSlugsAndUris(
+        ElementInterface $element,
+        bool $updateOtherSites = true,
+        bool $queue = false,
+    ): void {
+        $query = $this->createElementQuery($element::class)
+            ->descendantOf($element)
+            ->descendantDist(1)
+            ->status(null)
+            ->siteId($element->siteId);
+
+        if ($queue) {
+            $childIds = $query->ids();
+
+            if (! empty($childIds)) {
+                dispatch(new UpdateElementSlugsAndUris(
+                    elementType: $element::class,
+                    elementId: $childIds,
+                    siteId: $element->siteId,
+                    updateOtherSites: $updateOtherSites,
+                    updateDescendants: true,
+                ));
+            }
+
+            return;
+        }
+
+        $query->each(fn (ElementInterface $child) => $this->updateElementSlugAndUri(
+            element: $child,
+            updateOtherSites: $updateOtherSites,
+            updateDescendants: true,
+            queue: false,
+        ));
     }
 }

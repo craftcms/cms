@@ -489,7 +489,7 @@ class Categories extends Component
                                     ->one();
 
                                 if ($category) {
-                                    Craft::$app->getElements()->updateElementSlugAndUri($category, false, false);
+                                    Elements::updateElementSlugAndUri($category, false, false);
                                 }
                             }
                         }

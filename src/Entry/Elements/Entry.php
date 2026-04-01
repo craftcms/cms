@@ -64,6 +64,7 @@ use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\EntryTypes;
@@ -2602,7 +2603,7 @@ JS;
 
                 // Update the entry’s descendants, who may be using this entry’s URI in their own URIs
                 if (! $isNew && $this->getIsCanonical()) {
-                    Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+                    Elements::updateDescendantSlugsAndUris($this, true, true);
                 }
             }
         }
@@ -2770,7 +2771,12 @@ JS;
         $section = $this->getSection();
 
         if ($section->type === SectionType::Structure && $section->structureId == $structureId) {
-            Craft::$app->getElements()->updateElementSlugAndUri($this, true, true, true);
+            Elements::updateElementSlugAndUri(
+                element: $this,
+                updateOtherSites: true,
+                updateDescendants: true,
+                queue: true,
+            );
 
             // If this is the canonical entry, update its drafts
             if ($this->getIsCanonical()) {
