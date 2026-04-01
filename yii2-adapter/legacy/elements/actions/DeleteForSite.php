@@ -7,13 +7,12 @@
 
 namespace craft\elements\actions;
 
-use Craft;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use function CraftCms\Cms\t;
 
 /**
@@ -94,15 +93,12 @@ JS, [static::class]);
      */
     public function performAction(ElementQueryInterface $query): bool
     {
-        $elementsService = Craft::$app->getElements();
-        $user = Auth::user();
-
         // Ignore any elements the user doesn’t have permission to delete
         $elements = array_filter(
             $query->all(),
             fn(ElementInterface $element) => (
-                $user?->can('view', $element) &&
-                $elementsService->canDeleteForSite($element, $user)
+                Gate::check('view', $element) &&
+                Gate::check('deleteForSite', $element)
             ),
         );
 

@@ -1835,9 +1835,7 @@ JS, [
 
         $elementsService = Craft::$app->getElements();
 
-        if (!$elementsService->canDeleteForSite($element)) {
-            throw new ForbiddenHttpException('User not authorized to delete the element for this site.');
-        }
+        Gate::authorize('deleteForSite', $element);
 
         Elements::deleteElementForSite($element);
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Html;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use CraftCms\Cms\Component\Contracts\Actionable;
@@ -519,7 +518,6 @@ JS, [
 
     private function baseElementAttributes(ElementInterface $element, array $config): array
     {
-        $elementsService = Craft::$app->getElements();
         $user = Auth::user();
         $editable = $user && $user->can('view', $element);
 
@@ -559,7 +557,7 @@ JS, [
                         $editable &&
                         $this->contextIsAdministrative($config['context']) &&
                         ElementHelper::isMultiSite($element) &&
-                        $elementsService->canDeleteForSite($element, $user)
+                        Gate::check('deleteForSite', $element)
                     ),
                 ]),
             ],
