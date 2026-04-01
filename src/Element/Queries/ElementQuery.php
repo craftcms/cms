@@ -7,11 +7,11 @@ namespace CraftCms\Cms\Element\Queries;
 use Closure;
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
@@ -149,7 +149,6 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         'explain',
         'getbindings',
         'getconnection',
-        'getcountforpagination',
         'getgrammar',
         'getrawbindings',
         'implode',
@@ -248,6 +247,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             'id' => 'elements.id',
             'slug' => 'elements_sites.slug',
             'uid' => 'elements.uid',
+            'siteId' => 'elements_sites.siteId',
         ];
 
         if ($this->elementType::hasTitles()) {
@@ -580,6 +580,34 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         return $this->applyAfterQueryCallbacks($result);
+    }
+
+    public function getCountForPagination($columns = ['*']): int
+    {
+        $query = clone $this;
+        $query->subQuery = $query->subQuery->cloneWithout([
+            'limit',
+            'offset',
+            'unionLimit',
+            'unionOffset',
+        ]);
+
+        try {
+            $query->applyBeforeQueryCallbacks();
+        } catch (QueryAbortedException) {
+            return 0;
+        }
+
+        if ((int) $query->queryCacheDuration >= 0) {
+            return DependencyCache::remember(
+                key: $query->queryCacheKey($query, 'getcountforpagination', $columns),
+                ttl: $query->queryCacheDuration,
+                callback: fn () => $query->query->getCountForPagination($columns),
+                dependency: $query->getCacheDependency(),
+            );
+        }
+
+        return $query->query->getCountForPagination($columns);
     }
 
     /** @TODO: Remove $db variable after ElementQueryInterface is removed */

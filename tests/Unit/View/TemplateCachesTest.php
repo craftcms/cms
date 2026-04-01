@@ -10,6 +10,7 @@ use CraftCms\Cms\View\Data\TemplateCacheContext;
 use CraftCms\Cms\View\Events\RegisterTemplateCacheCollectors;
 use CraftCms\Cms\View\TemplateCaches;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 
@@ -109,7 +110,7 @@ it('applies cached dependency info on cache hits', function () {
 it('scopes non-global caches by request type and page number', function () {
     setTemplateCacheConsoleState(false);
 
-    swapTemplateCacheRequest('/admin/news/p2');
+    swapTemplateCacheRequest('/admin/news?page=2');
     $service = app(TemplateCaches::class);
     $service->startTemplateCache(global: false);
     $service->endTemplateCache('scoped-cache', false, null, null, 'cp-page-two');
@@ -117,11 +118,27 @@ it('scopes non-global caches by request type and page number', function () {
     swapTemplateCacheRequest('/admin/news');
     expect(app(TemplateCaches::class)->getTemplateCache('scoped-cache', false))->toBeNull();
 
-    swapTemplateCacheRequest('/news/p2');
+    swapTemplateCacheRequest('/news?page=2');
     expect(app(TemplateCaches::class)->getTemplateCache('scoped-cache', false))->toBeNull();
 
-    swapTemplateCacheRequest('/admin/news/p2');
+    swapTemplateCacheRequest('/admin/news?page=2');
     expect(app(TemplateCaches::class)->getTemplateCache('scoped-cache', false))->toBe('cp-page-two');
+});
+
+it('scopes non-global caches using the paginator current page resolver', function () {
+    setTemplateCacheConsoleState(false);
+    swapTemplateCacheRequest('/admin/news?page=2');
+    Paginator::currentPageResolver(fn () => 3);
+
+    $service = app(TemplateCaches::class);
+    $service->startTemplateCache(global: false);
+    $service->endTemplateCache('resolved-page-cache', false, null, null, 'cp-page-three');
+
+    swapTemplateCacheRequest('/admin/news?page=3');
+    expect(app(TemplateCaches::class)->getTemplateCache('resolved-page-cache', false))->toBe('cp-page-three');
+
+    swapTemplateCacheRequest('/admin/news?page=2');
+    expect(app(TemplateCaches::class)->getTemplateCache('resolved-page-cache', false))->toBe('cp-page-three');
 });
 
 function swapTemplateCacheRequest(string $uri): void

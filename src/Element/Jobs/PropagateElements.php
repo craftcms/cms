@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Element\Jobs;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Queue\BatchedElementJob;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;

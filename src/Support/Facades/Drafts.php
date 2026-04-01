@@ -16,6 +16,8 @@ use Override;
  * @method static void removeDraftData(\craft\base\ElementInterface $draft)
  * @method static void purgeUnsavedDrafts()
  * @method static int insertDraftRow(string|null $name, string|null $notes = null, int|null $creatorId = null, int|null $canonicalId = null, bool $trackChanges = false, bool $provisional = false)
+ * @method static mixed[] withProvisionalDrafts(mixed[] $elements, \CraftCms\Cms\User\Elements\User|null $user = null)
+ * @method static void loadProvisionalChanges(mixed[] $elements, \CraftCms\Cms\User\Elements\User|null $user = null)
  *
  * @see \CraftCms\Cms\Element\Drafts
  */

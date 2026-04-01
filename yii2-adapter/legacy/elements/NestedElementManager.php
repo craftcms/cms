@@ -16,7 +16,6 @@ use craft\elements\actions\MoveDown;
 use craft\elements\actions\MoveUp;
 use craft\events\BulkElementsEvent;
 use craft\events\DuplicateNestedElementsEvent;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\ElementIndexHtml;
@@ -25,6 +24,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Revisions;
@@ -435,7 +435,7 @@ class NestedElementManager extends Component
                 }
 
                 // See if there are any provisional changes we should show
-                ElementHelper::loadProvisionalChanges($elements);
+                app(Drafts::class)->loadProvisionalChanges($elements);
 
                 if ($this->hasErrors($owner)) {
                     foreach ($elements as $element) {

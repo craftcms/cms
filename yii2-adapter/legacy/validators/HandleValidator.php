@@ -62,12 +62,12 @@ class HandleValidator extends Validator
         $message = null;
 
         if (!preg_match(sprintf('/^%s$/', static::$handlePattern), $value)) {
-            $message = $this->message ?? t('“{handle}” isn’t a valid handle.');
+            $message = $this->message ?? t('“{handle}” isn’t a valid handle.', ['handle' => $value]);
         } else {
             $reservedWords = array_merge($this->reservedWords, static::$baseReservedWords);
             $reservedWords = array_map('strtolower', $reservedWords);
             if (in_array(strtolower($value), $reservedWords, true)) {
-                $message = t('“{handle}” is a reserved word.');
+                $message = t('“{handle}” is a reserved word.', ['handle' => $value]);
             }
         }
 

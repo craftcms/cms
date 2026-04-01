@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Html\ContentHtml;
@@ -205,7 +206,7 @@ class EntryTypesController
 
     public function tableData(Request $request): JsonResponse
     {
-        $page = (int) $request->input('page', 1);
+        $page = (int) $request->input(Cms::config()->getPageTriggerParam(), 1);
         $limit = (int) $request->input('per_page', 100);
         $searchTerm = $request->input('search');
         $orderBy = match ($request->input('sort.0.field')) {
@@ -267,7 +268,7 @@ class EntryTypesController
         $entryType->showStatusField = $request->boolean('showStatusField', $entryType->showStatusField);
 
         // If we're duplicating the entry type and the handle hasn't changed, find a unique one
-        if ($entryType->handle === ($originalEntryType->handle ?? null)) {
+        if ($saveAsNew && $entryType->handle === ($originalEntryType->handle ?? null)) {
             if (preg_match('/^(.*?)(\d+)$/', (string) $entryType->handle, $match)) {
                 $baseHandle = $match[1];
                 $i = (int) $match[2];

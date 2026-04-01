@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Field;
 
 use craft\base\ElementInterface;
 use craft\base\Serializable;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
@@ -18,6 +17,7 @@ use CraftCms\Cms\Component\Events\ComponentEvent;
 use CraftCms\Cms\Database\Expressions\Cast;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
@@ -211,15 +211,35 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
      */
     public ?string $describedBy = null;
 
-    /**
-     * @var string The field’s translation method
-     *
-     * @phpstan-var self::TRANSLATION_METHOD_*
-     */
-    public string $translationMethod = self::TRANSLATION_METHOD_NONE;
+    public string $translationMethod {
+        get => $this->_translationMethod->value;
+        set(string|TranslationMethod $value) {
+            $translationMethod = $value instanceof TranslationMethod
+                ? $value
+                : TranslationMethod::tryFrom($value);
+
+            if ($translationMethod === null) {
+                $supportedTranslationMethods = static::supportedTranslationMethods();
+                $translationMethod = reset($supportedTranslationMethods) ?: TranslationMethod::None;
+            }
+
+            $this->_translationMethod = $translationMethod;
+        }
+    }
 
     /** @var string|null The field’s translation key format, if [[translationMethod]] is "custom" */
     public ?string $translationKeyFormat = null;
+
+    public string $translationMethodValue {
+        get => $this->_translationMethod->value;
+    }
+
+    public array $supportedTranslationMethodValues {
+        get => array_map(
+            static fn (TranslationMethod $translationMethod) => $translationMethod->value,
+            static::supportedTranslationMethods(),
+        );
+    }
 
     /** @var string|null The field’s previous handle */
     public ?string $oldHandle = null;
@@ -336,6 +356,8 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
      */
     private ?bool $_isFresh = null;
 
+    protected TranslationMethod $_translationMethod = TranslationMethod::None;
+
     /**
      * @var array<string,string|false>
      *
@@ -351,12 +373,12 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         parent::__construct($config);
 
         // Validate the translation method
-        $supportedTranslationMethods = static::supportedTranslationMethods() ?: [self::TRANSLATION_METHOD_NONE];
-        if (! in_array($this->translationMethod, $supportedTranslationMethods, true)) {
-            $this->translationMethod = reset($supportedTranslationMethods);
+        $supportedTranslationMethods = static::supportedTranslationMethods() ?: [TranslationMethod::None];
+        if (! in_array($this->_translationMethod, $supportedTranslationMethods, true)) {
+            $this->_translationMethod = reset($supportedTranslationMethods);
         }
 
-        if ($this->translationMethod !== self::TRANSLATION_METHOD_CUSTOM) {
+        if ($this->_translationMethod !== TranslationMethod::Custom) {
             $this->translationKeyFormat = null;
         }
     }
@@ -388,16 +410,16 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     {
         if (static::dbType() === null) {
             return [
-                self::TRANSLATION_METHOD_NONE,
+                TranslationMethod::None,
             ];
         }
 
         return [
-            self::TRANSLATION_METHOD_NONE,
-            self::TRANSLATION_METHOD_SITE,
-            self::TRANSLATION_METHOD_SITE_GROUP,
-            self::TRANSLATION_METHOD_LANGUAGE,
-            self::TRANSLATION_METHOD_CUSTOM,
+            TranslationMethod::None,
+            TranslationMethod::Site,
+            TranslationMethod::SiteGroup,
+            TranslationMethod::Language,
+            TranslationMethod::Custom,
         ];
     }
 
@@ -499,16 +521,16 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             'translationMethod' => [
                 'required',
                 Rule::in([
-                    self::TRANSLATION_METHOD_NONE,
-                    self::TRANSLATION_METHOD_SITE,
-                    self::TRANSLATION_METHOD_SITE_GROUP,
-                    self::TRANSLATION_METHOD_LANGUAGE,
-                    self::TRANSLATION_METHOD_CUSTOM,
+                    TranslationMethod::None->value,
+                    TranslationMethod::Site->value,
+                    TranslationMethod::SiteGroup->value,
+                    TranslationMethod::Language->value,
+                    TranslationMethod::Custom->value,
                 ]),
             ],
             'translationKeyFormat' => [
                 'nullable',
-                'required_if:translationMethod,'.self::TRANSLATION_METHOD_CUSTOM,
+                'required_if:translationMethod,'.TranslationMethod::Custom->value,
             ],
         ];
     }
@@ -604,11 +626,11 @@ JS, [
 
     public function getIsTranslatable(?ElementInterface $element): bool
     {
-        if ($this->translationMethod === self::TRANSLATION_METHOD_CUSTOM) {
+        if ($this->_translationMethod === TranslationMethod::Custom) {
             return $element === null || $this->getTranslationKey($element) !== '';
         }
 
-        return $this->translationMethod !== self::TRANSLATION_METHOD_NONE;
+        return $this->_translationMethod !== TranslationMethod::None;
     }
 
     public function getTranslationDescription(?ElementInterface $element): ?string
@@ -617,12 +639,12 @@ JS, [
             return null;
         }
 
-        return ElementHelper::translationDescription($this->translationMethod);
+        return $this->_translationMethod->description();
     }
 
     public function getTranslationKey(ElementInterface $element): string
     {
-        return ElementHelper::translationKey($element, $this->translationMethod, $this->translationKeyFormat);
+        return $this->_translationMethod->elementKey($element, $this->translationKeyFormat);
     }
 
     public function showStatus(): bool
@@ -780,7 +802,7 @@ JS, [
      */
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
-        return ElementHelper::attributeHtml($value);
+        return app(ElementAttributeRenderer::class)->attributeHtml($value);
     }
 
     /**

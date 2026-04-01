@@ -132,7 +132,7 @@ class Twig
         }
 
         $core = $twig->getExtension(CoreExtension::class);
-        $core->setTimezone(app()->getTimezone());
+        $core->setTimezone(Cms::timezone());
 
         event(new TwigCreated($twig, TemplateMode::get()));
 

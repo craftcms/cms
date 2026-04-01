@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Section;
 
 use Craft;
-use craft\helpers\AdminTable;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
@@ -46,6 +47,7 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -78,8 +80,16 @@ class Sections
      */
     private ?MemoizableArray $sections = null;
 
+    /**
+     * @var array<int, SectionSiteSettings[]>
+     *
+     * @see getSectionSiteSettings()
+     */
+    private array $sectionSiteSettings = [];
+
     public function __construct(
         private readonly ProjectConfig $projectConfig,
+        private readonly ElementCaches $elementCaches,
     ) {}
 
     /**
@@ -363,11 +373,15 @@ class Sections
      */
     public function getSectionSiteSettings(int $sectionId): array
     {
-        return $this->_createSectionSiteSettingsQuery()
-            ->where('sections_sites.sectionId', $sectionId)
-            ->get()
-            ->mapInto(SectionSiteSettings::class)
-            ->all();
+        if (! isset($this->sectionSiteSettings[$sectionId])) {
+            $this->sectionSiteSettings[$sectionId] = $this->_createSectionSiteSettingsQuery()
+                ->where('sections_sites.sectionId', $sectionId)
+                ->get()
+                ->mapInto(SectionSiteSettings::class)
+                ->all();
+        }
+
+        return $this->sectionSiteSettings[$sectionId];
     }
 
     private function _createSectionSiteSettingsQuery(): Builder
@@ -751,12 +765,13 @@ class Sections
         event(new SectionSaved($section, $isNewSection));
 
         // Invalidate entry caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+        $this->elementCaches->invalidateForElementType(Entry::class);
     }
 
     public function refreshSections(): void
     {
         $this->sections = null;
+        $this->sectionSiteSettings = [];
         $this->_sections();
     }
 
@@ -1044,7 +1059,7 @@ class Sections
         event(new SectionDeleted($section));
 
         // Invalidate entry caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+        $this->elementCaches->invalidateForElementType(Entry::class);
     }
 
     /**
@@ -1089,7 +1104,7 @@ class Sections
         string $orderBy = 'name',
         int $sortDir = SORT_ASC,
     ): array {
-        [$results, $total] = $this->prepTableData($this->createSectionQuery()->reorder(), $page, $limit, $searchTerm, $orderBy,
+        [$results, $paginator] = $this->prepTableData($this->createSectionQuery()->reorder(), $page, $limit, $searchTerm, $orderBy,
             $sortDir);
 
         /** @var Collection<Section> $sections */
@@ -1112,7 +1127,16 @@ class Sections
             ];
         }
 
-        $pagination = AdminTable::paginationLinks($page, $total, $limit);
+        $pagination = Arr::only($paginator->toArray(), [
+            'total',
+            'per_page',
+            'current_page',
+            'last_page',
+            'next_page_url',
+            'prev_page_url',
+            'from',
+            'to',
+        ]);
 
         return [$pagination, $tableData];
     }
@@ -1121,7 +1145,7 @@ class Sections
      * Returns query results needed for the VueAdminTable accounting for the pagination, search terms and sorting options.
      *
      *
-     * @return array{0: Collection, 1: int}
+     * @return array{0: Collection, 1: LengthAwarePaginator}
      */
     private function prepTableData(
         Builder $query,
@@ -1133,8 +1157,8 @@ class Sections
     ): array {
         $sortDir = $sortDir === SORT_DESC ? 'desc' : 'asc';
         $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
+        $pageParam = Cms::config()->getPageTriggerParam();
 
-        $offset = ($page - 1) * $limit;
         $query = $query->orderBy($orderBy, $sortDir);
 
         if ($searchTerm !== null && $searchTerm !== '') {
@@ -1148,12 +1172,12 @@ class Sections
             }
         }
 
-        $total = $query->count();
+        $paginator = $query->paginate($limit, ['*'], $pageParam, $page);
+        $results = $paginator->getCollection();
 
-        $query->limit($limit);
-        $query->offset($offset);
+        $paginator->appends(request()->except($pageParam));
 
-        return [$query->get(), $total];
+        return [$results, $paginator];
     }
 
     /**

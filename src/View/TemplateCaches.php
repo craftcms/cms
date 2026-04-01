@@ -16,6 +16,7 @@ use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use DateTime;
 use Illuminate\Container\Attributes\Scoped;
+use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
@@ -255,38 +256,16 @@ class TemplateCaches
             }
         }
 
-        $pageNum = request()->pageNumber();
-        $path = $this->stripPageNumberFromPath($path, $isCpRequest, $pageNum);
+        $pageParam = Cms::config()->getPageTriggerParam();
+        $pageNum = AbstractPaginator::resolveCurrentPage($pageParam);
 
         $this->path = ($isCpRequest ? 'cp:' : 'site:').$path;
 
         if ($pageNum !== 1) {
-            $pageTrigger = $isCpRequest ? 'p' : Cms::config()->getPageTrigger();
-            $this->path .= sprintf('/%s%s', $pageTrigger, $pageNum);
+            $this->path .= sprintf('?%s=%s', $pageParam, $pageNum);
         }
 
         return $this->path;
-    }
-
-    private function stripPageNumberFromPath(string $path, bool $isCpRequest, int $pageNum): string
-    {
-        if ($pageNum === 1) {
-            return $path;
-        }
-
-        $pageTrigger = $isCpRequest ? 'p' : Cms::config()->getPageTrigger();
-
-        if (str_starts_with($pageTrigger, '?') || $path === '') {
-            return $path;
-        }
-
-        $pageTriggerPattern = preg_quote($pageTrigger, '/');
-
-        if (preg_match("/^(?:(.*)\\/)?{$pageTriggerPattern}{$pageNum}$/", $path, $matches)) {
-            return $matches[1] ?? '';
-        }
-
-        return $path;
     }
 
     /**

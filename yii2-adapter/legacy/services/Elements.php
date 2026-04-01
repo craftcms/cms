@@ -18,7 +18,6 @@ use craft\controllers\AppController;
 use craft\db\QueryAbortedException;
 use craft\elements\db\EagerLoadInfo;
 use craft\elements\db\EagerLoadPlan;
-use craft\elements\db\ElementQuery;
 use craft\errors\ElementNotFoundException;
 use craft\events\AuthorizationCheckEvent;
 use craft\events\BulkOpEvent;
@@ -32,7 +31,6 @@ use craft\events\MultiElementActionEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db as DbHelper;
-use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\models\ElementActivity;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
@@ -43,13 +41,17 @@ use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\AfterPropagate;
+use CraftCms\Cms\Element\Events\InvalidateElementCaches;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -61,6 +63,7 @@ use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Structure\Models\StructureElement as StructureElementModel;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -73,8 +76,6 @@ use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Rules\HandleRule;
-use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
-use CraftCms\Cms\View\Data\TemplateCacheContext;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
 use Illuminate\Database\ConnectionInterface;
@@ -88,7 +89,6 @@ use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
-use Tpetry\QueryExpressions\Function\String\Lower;
 use Tpetry\QueryExpressions\Language\Alias;
 use UnitEnum;
 use yii\base\Behavior;
@@ -188,12 +188,12 @@ class Elements extends Component
     /**
      * @event ElementEvent The event that is triggered before an element is saved.
      *
-     * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
+     * If you want to ignore events for drafts or revisions, call [[\CraftCms\Cms\Element\ElementHelper::isDraftOrRevision()]]
      * from your event handler:
      *
      * ```php
      * use craft\events\ElementEvent;
-     * use craft\helpers\ElementHelper;
+     * use CraftCms\Cms\Element\ElementHelper;
      * use craft\services\Elements;
      *
      * Craft::$app->elements->on(Elements::EVENT_BEFORE_SAVE_ELEMENT, function(ElementEvent $e) {
@@ -210,12 +210,12 @@ class Elements extends Component
     /**
      * @event ElementEvent The event that is triggered after an element is saved.
      *
-     * If you want to ignore events for drafts or revisions, call [[\craft\helpers\ElementHelper::isDraftOrRevision()]]
+     * If you want to ignore events for drafts or revisions, call [[\CraftCms\Cms\Element\ElementHelper::isDraftOrRevision()]]
      * from your event handler:
      *
      * ```php
      * use craft\events\ElementEvent;
-     * use craft\helpers\ElementHelper;
+     * use CraftCms\Cms\Element\ElementHelper;
      * use craft\services\Elements;
      *
      * Craft::$app->elements->on(Elements::EVENT_AFTER_SAVE_ELEMENT, function(ElementEvent $e) {
@@ -588,7 +588,7 @@ class Elements extends Component
      * @throws InvalidArgumentException if $elementType is not a valid element
      * @since 3.5.0
      */
-    public function createElementQuery(string $elementType): ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery
+    public function createElementQuery(string $elementType): ElementQueryInterface|ElementQuery
     {
         if (!is_subclass_of($elementType, ElementInterface::class)) {
             throw new InvalidArgumentException("$elementType is not a valid element.");
@@ -618,10 +618,11 @@ class Elements extends Component
      * @see startCollectingCacheInfo()
      * @see stopCollectingCacheInfo()
      * @since 4.3.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::isCollectingCacheInfo()} instead.
      */
     public function getIsCollectingCacheInfo(): bool
     {
-        return $this->cacheInfoCollector()->isCollecting();
+        return $this->elementCaches()->isCollectingCacheInfo();
     }
 
     /**
@@ -640,14 +641,11 @@ class Elements extends Component
      * Starts collecting element cache invalidation info.
      *
      * @since 4.3.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::startCollectingCacheInfo()} instead.
      */
     public function startCollectingCacheInfo(): void
     {
-        $this->cacheInfoCollector()->begin(new TemplateCacheContext(
-            cacheKey: '',
-            global: false,
-            resources: false,
-        ));
+        $this->elementCaches()->startCollectingCacheInfo();
     }
 
     /**
@@ -667,10 +665,11 @@ class Elements extends Component
      * @param string[] $tags
      *
      * @since 3.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::collectCacheTags()} instead.
      */
     public function collectCacheTags(array $tags): void
     {
-        $this->cacheInfoCollector()->collectTags($tags);
+        $this->elementCaches()->collectCacheTags($tags);
     }
 
     /**
@@ -681,10 +680,11 @@ class Elements extends Component
      * @param DateTime $expiryDate
      *
      * @since 4.3.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::setCacheExpiryDate()} instead.
      */
     public function setCacheExpiryDate(DateTime $expiryDate): void
     {
-        $this->cacheInfoCollector()->setExpiryDate($expiryDate);
+        $this->elementCaches()->setCacheExpiryDate($expiryDate);
     }
 
     /**
@@ -693,10 +693,11 @@ class Elements extends Component
      * @param ElementInterface $element
      *
      * @since 4.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::collectCacheInfoForElement()} instead.
      */
     public function collectCacheInfoForElement(ElementInterface $element): void
     {
-        $this->cacheInfoCollector()->collectElement($element);
+        $this->elementCaches()->collectCacheInfoForElement($element);
     }
 
     /**
@@ -708,11 +709,12 @@ class Elements extends Component
      * @return array
      * @phpstan-return array{TagDependency|null,int|null}
      * @since 4.3.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::stopCollectingCacheInfo()} instead.
      */
     public function stopCollectingCacheInfo(): array
     {
         try {
-            return $this->cacheInfoCollector()->stop();
+            return $this->elementCaches()->stopCollectingCacheInfo();
         } catch (RuntimeException $e) {
             throw new InvalidCallException($e->getMessage(), previous: $e);
         }
@@ -731,27 +733,15 @@ class Elements extends Component
         return $dep ?? new TagDependency();
     }
 
-    private function cacheInfoCollector(): DependencyCollector
-    {
-        return app(DependencyCollector::class);
-    }
-
     /**
      * Invalidates all element caches.
      *
      * @since 3.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::invalidateAll()} instead.
      */
     public function invalidateAllCaches(): void
     {
-        $tags = ['element'];
-        TagDependency::invalidate($tags);
-
-        // Fire a 'invalidateCaches' event
-        if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
-            $this->trigger(self::EVENT_INVALIDATE_CACHES, new InvalidateElementCachesEvent([
-                'tags' => $tags,
-            ]));
-        }
+        $this->elementCaches()->invalidateAll();
     }
 
     /**
@@ -760,18 +750,11 @@ class Elements extends Component
      * @param class-string<ElementInterface> $elementType
      *
      * @since 3.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::invalidateForElementType()} instead.
      */
     public function invalidateCachesForElementType(string $elementType): void
     {
-        $tags = ["element::$elementType"];
-        TagDependency::invalidate($tags);
-
-        // Fire a 'invalidateCaches' event
-        if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
-            $this->trigger(self::EVENT_INVALIDATE_CACHES, new InvalidateElementCachesEvent([
-                'tags' => $tags,
-            ]));
-        }
+        $this->elementCaches()->invalidateForElementType($elementType);
     }
 
     /**
@@ -780,57 +763,16 @@ class Elements extends Component
      * @param ElementInterface $element
      *
      * @since 3.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::invalidateForElement()} instead.
      */
     public function invalidateCachesForElement(ElementInterface $element): void
     {
-        $tags = [
-            sprintf('element::%s::*', $element::class),
-            sprintf('element::%s', $element->id),
-        ];
+        $this->elementCaches()->invalidateForElement($element);
+    }
 
-        $rootElement = $element;
-
-        if ($element instanceof NestedElementInterface) {
-            try {
-                $owner = $element->getOwner();
-            } catch (InvalidConfigException) {
-                $owner = null;
-            }
-
-            if ($owner) {
-                $tags[] = sprintf('element::%s', $owner->id);
-
-                try {
-                    $rootElement = ElementHelper::rootElement($owner);
-                } catch (Throwable) {
-                    $rootElement = $owner;
-                }
-            }
-        }
-
-        if ($rootElement->getIsDraft()) {
-            $tags[] = sprintf('element::%s::drafts', $element::class);
-        } elseif ($rootElement->getIsRevision()) {
-            $tags[] = sprintf('element::%s::revisions', $element::class);
-        } else {
-            foreach ($element->getCacheTags() as $tag) {
-                // tags can be provided fully-formed, or relative to the element type
-                if (!str_starts_with($tag, 'element::')) {
-                    $tag = sprintf('element::%s::%s', $element::class, $tag);
-                }
-                $tags[] = $tag;
-            }
-        }
-
-        TagDependency::invalidate($tags);
-
-        // Fire a 'invalidateCaches' event
-        if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
-            $this->trigger(self::EVENT_INVALIDATE_CACHES, new InvalidateElementCachesEvent([
-                'tags' => $tags,
-                'element' => $element,
-            ]));
-        }
+    private function elementCaches(): ElementCachesService
+    {
+        return app(ElementCachesService::class);
     }
 
     // Finding Elements
@@ -964,7 +906,7 @@ class Elements extends Component
             ->join(new Alias(Table::ELEMENTS_SITES, 'elements_sites'), 'elements_sites.elementId', 'elements.id')
             ->where('elements_sites.siteId', $siteId)
             ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
-            ->where(new Lower('elements_sites.uri'), mb_strtolower($uri))
+            ->where('elements_sites.uriLower', mb_strtolower($uri))
             ->when(
                 $enabledOnly,
                 fn(Builder $query) => $query->where([
@@ -1548,7 +1490,6 @@ class Elements extends Component
         ?bool $updateSearchIndex = null,
         bool $touch = false,
     ): void {
-        /** @var ElementQuery $query */
         // Fire a 'beforeResaveElements' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENTS)) {
             $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENTS, new ElementQueryEvent([
@@ -1560,7 +1501,7 @@ class Elements extends Component
             $position = 0;
 
             try {
-                foreach (DbHelper::each($query) as $element) {
+                $query->each(function(ElementInterface $element) use ($continueOnError, $query, &$position, $skipRevisions, $touch, $updateSearchIndex) {
                     /** @var ElementInterface $element */
                     $position++;
 
@@ -1600,7 +1541,8 @@ class Elements extends Component
                         if (!$continueOnError) {
                             throw $e;
                         }
-                        Craft::$app->getErrorHandler()->logException($e);
+
+                        report($e);
                     }
 
                     // Fire an 'afterResaveElement' event
@@ -1612,7 +1554,7 @@ class Elements extends Component
                             'exception' => $e,
                         ]));
                     }
-                }
+                });
             } catch (QueryAbortedException) {
                 // Fail silently
             }
@@ -1642,7 +1584,6 @@ class Elements extends Component
         array|int $siteIds = null,
         bool $continueOnError = false,
     ): void {
-        /** @var ElementQuery $query */
         // Fire a 'beforePropagateElements' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_PROPAGATE_ELEMENTS)) {
             $this->trigger(self::EVENT_BEFORE_PROPAGATE_ELEMENTS, new ElementQueryEvent([
@@ -1659,7 +1600,7 @@ class Elements extends Component
             $position = 0;
 
             try {
-                foreach (DbHelper::each($query) as $element) {
+                $query->each(function(ElementInterface $element) use ($continueOnError, $query, &$position, $siteIds) {
                     /** @var ElementInterface $element */
                     $position++;
 
@@ -1701,7 +1642,8 @@ class Elements extends Component
                         if (!$continueOnError) {
                             throw $e;
                         }
-                        Craft::$app->getErrorHandler()->logException($e);
+
+                        report($e);
                     }
 
                     // Fire an 'afterPropagateElement' event
@@ -1719,7 +1661,7 @@ class Elements extends Component
 
                     // Clear caches
                     $this->invalidateCachesForElement($element);
-                }
+                });
             } catch (QueryAbortedException) {
                 // Fail silently
             }
@@ -3566,10 +3508,10 @@ class Elements extends Component
                                     // If we're collecting cache info and the element is expirable, register its expiry date
                                     if (
                                         $element instanceof ExpirableElementInterface &&
-                                        $elementsService->getIsCollectingCacheInfo() &&
+                                        ElementCaches::isCollectingCacheInfo() &&
                                         ($expiryDate = $element->getExpiryDate()) !== null
                                     ) {
-                                        $elementsService->setCacheExpiryDate($expiryDate);
+                                        ElementCaches::setCacheExpiryDate($expiryDate);
                                     }
 
                                     if ($limit && ++$count == $limit) {
@@ -3581,7 +3523,7 @@ class Elements extends Component
 
                         if (!empty($targetElementsForSource)) {
                             if (!empty($criteria['withProvisionalDrafts'])) {
-                                ElementHelper::swapInProvisionalDrafts($targetElementsForSource);
+                                $targetElementsForSource = app(Drafts::class)->withProvisionalDrafts($targetElementsForSource);
                             }
 
                             $sourceElement->setEagerLoadedElements($plan->alias, $targetElementsForSource, $plan);
@@ -4943,5 +4885,18 @@ class Elements extends Component
 
         $this->trigger($eventName, $event);
         return $event->authorized;
+    }
+
+    public static function registerEvents(): void
+    {
+        Event::listen(function(InvalidateElementCaches $event) {
+            // Fire a 'invalidateCaches' event
+            if (Craft::$app->getElements()->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
+                Craft::$app->getElements()->trigger(self::EVENT_INVALIDATE_CACHES, new InvalidateElementCachesEvent([
+                    'tags' => $event->tags,
+                    'element' => $event->element,
+                ]));
+            }
+        });
     }
 }

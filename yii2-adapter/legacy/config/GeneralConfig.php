@@ -247,26 +247,6 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     public bool $requireUserAgentAndIpForSession = true;
 
     /**
-     * @var string|null The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
-     *
-     * This can be set to one of PHP’s [supported timezones](https://php.net/manual/en/timezones.php).
-     *
-     * ::: code
-     * ```php Static Config
-     * ->timezone('Europe/London')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_TIMEZONE=Europe/London
-     * ```
-     * :::
-     *
-     * @group System
-     *
-     * @deprecated in 6.0.0. Laravel's `app.timezone` config variable should be used instead.
-     */
-    public ?string $timezone = null;
-
-    /**
      * @var mixed The amount of time before a user will get logged out due to inactivity.
      *
      * Set to `0` if you want users to stay logged in as long as their browser is open rather than a predetermined amount of time.
@@ -875,34 +855,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
-    /**
-     * Configures Craft to send all system emails to either a single email address or an array of email addresses
-     * for testing purposes.
-     *
-     * The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
-     *
-     * This can be set to one of PHP’s [supported timezones](https://php.net/manual/en/timezones.php).
-     *
-     * ```php
-     * ->timezone('Europe/London')
-     * ```
-     *
-     * @group System
-     *
-     * @see $timezone
-     */
-    #[Deprecated(message: "in 6.0.0. Laravel's `app.timezone` config variable should be used instead.")]
-    public function timezone(?string $value): self
-    {
-        app()->booting(function() use ($value) {
-            Deprecator::log('generalConfig.timezone', 'Calling timezone() is deprecated. Laravel\'s `app.timezone` config variable should be used instead.');
-            ConfigFacade::set('app.timezone', $value);
-        });
 
-        $this->timezone = $value;
-
-        return $this;
-    }
     /**
      * The configuration for trusted security-related headers.
      *

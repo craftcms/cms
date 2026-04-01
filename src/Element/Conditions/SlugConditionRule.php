@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Conditions;
 
 use craft\base\ElementInterface;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Condition\BaseTextConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 use function CraftCms\Cms\t;

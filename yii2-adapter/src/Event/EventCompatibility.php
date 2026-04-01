@@ -8,6 +8,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\Event as YiiEvent;
 use craft\base\FieldLayoutComponent;
+use craft\console\controllers\ResaveController;
 use craft\controllers\UsersController;
 use craft\db\Connection;
 use craft\elements\Asset;
@@ -27,6 +28,7 @@ use craft\services\Addresses;
 use craft\services\Auth;
 use craft\services\Dashboard;
 use craft\services\Drafts;
+use craft\services\Elements;
 use craft\services\Entries;
 use craft\services\Fields;
 use craft\services\Fs;
@@ -106,6 +108,7 @@ readonly class EventCompatibility
         Auth::registerEvents();
         Connection::registerEvents();
         Drafts::registerEvents();
+        Elements::registerEvents();
         Entries::registerEvents();
         Fields::registerEvents();
         Fs::registerEvents();
@@ -132,6 +135,7 @@ readonly class EventCompatibility
         /**
          * Controllers
          */
+        ResaveController::registerEvents();
         UsersController::registerEvents();
 
         /**

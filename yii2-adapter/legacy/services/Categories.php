@@ -23,6 +23,7 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Structure\Data\Structure;
+use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\MemoizableArray;
@@ -524,7 +525,7 @@ class Categories extends Component
         }
 
         // Invalidate category caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Category::class);
+        ElementCaches::invalidateForElementType(Category::class);
     }
 
     /**
@@ -669,7 +670,7 @@ class Categories extends Component
         }
 
         // Invalidate category caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Category::class);
+        ElementCaches::invalidateForElementType(Category::class);
     }
 
     /**

@@ -23,8 +23,6 @@ use craft\elements\actions\ShowInFolder;
 use craft\elements\conditions\assets\AssetCondition;
 use craft\elements\db\EagerLoadPlan;
 use craft\errors\AssetException;
-use craft\helpers\ElementHelper;
-use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\AssetsHelper;
@@ -47,9 +45,11 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
@@ -64,6 +64,7 @@ use CraftCms\Cms\Search\SearchQueryTerm;
 use CraftCms\Cms\Search\SearchQueryTermGroup;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
+use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -661,7 +662,7 @@ class Asset extends Element
             ],
             'link' => [
                 'label' => t('Link'),
-                'placeholder' => fn () => ElementHelper::linkAttributeHtml(null),
+                'placeholder' => fn () => app(ElementAttributeRenderer::class)->linkAttributeHtml(null),
             ],
             'dateModified' => [
                 'label' => t('File Modified Date'),
@@ -703,7 +704,7 @@ class Asset extends Element
             $totalFolders = $folderQuery->count();
 
             if ((int) $totalFolders > (int) $elementQuery->offset) {
-                $source = ElementHelper::findSource(self::class, $sourceKey);
+                $source = ElementSources::findSource(self::class, $sourceKey);
                 if (isset($source['criteria']['folderId'])) {
                     $baseFolder = Folders::getFolderById($source['criteria']['folderId']);
                 } else {
@@ -1295,12 +1296,11 @@ class Asset extends Element
         ];
 
         // Is the volume’s source enabled?
-        $elementSourcesService = app(\CraftCms\Cms\Element\ElementSources::class);
-        if ($elementSourcesService->sourceExists(Asset::class, "volume:$volume->uid")) {
+        if (ElementSources::sourceExists(Asset::class, "volume:$volume->uid")) {
             $volumes = Volumes::getViewableVolumes();
 
             // Filter out any volumes that don’t have an enabled source
-            $sources = $elementSourcesService->getSources(Asset::class);
+            $sources = ElementSources::getSources(Asset::class);
             $sourceKeys = array_flip(array_filter(array_map(fn (array $source) => $source['key'] ?? null, $sources->all())));
             $volumes = $volumes->filter(fn (Volume $v) => isset($sourceKeys["volume:$v->uid"]));
 
@@ -1807,21 +1807,21 @@ JS, [
     #[Override]
     public function getIsTitleTranslatable(): bool
     {
-        return $this->getVolume()->titleTranslationMethod !== Field::TRANSLATION_METHOD_NONE;
+        return $this->getVolume()->titleTranslationMethod !== TranslationMethod::None;
     }
 
     #[Override]
     public function getTitleTranslationDescription(): ?string
     {
-        return ElementHelper::translationDescription($this->getVolume()->titleTranslationMethod);
+        return $this->getVolume()->titleTranslationMethod->description();
     }
 
     #[Override]
     public function getTitleTranslationKey(): string
     {
-        $type = $this->getVolume();
+        $volume = $this->getVolume();
 
-        return ElementHelper::translationKey($this, $type->titleTranslationMethod, $type->titleTranslationKeyFormat);
+        return $volume->titleTranslationMethod->elementKey($this, $volume->titleTranslationKeyFormat);
     }
 
     /**
@@ -1831,7 +1831,7 @@ JS, [
     {
         $volume = $this->getVolume();
 
-        return ElementHelper::translationKey($this, $volume->altTranslationMethod, $volume->altTranslationKeyFormat);
+        return $volume->altTranslationMethod->elementKey($this, $volume->altTranslationKeyFormat);
     }
 
     #[Override]

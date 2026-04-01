@@ -29,7 +29,6 @@ use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Language\AST\ValueNode;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\ScalarType;
-use Illuminate\Support\Facades\Config;
 
 class ScalarTypesTest extends TestCase
 {
@@ -113,8 +112,6 @@ class ScalarTypesTest extends TestCase
     {
         $this->markTestSkipped('Mocking fields no longer works.');
 
-        Config::set('app.timezone', 'America/New_York');
-
         $dateTime = new \DateTime('now', new DateTimeZone('UTC'));
         $dateField = $this->make(Date::class, [
             'showTimeZone' => false,
@@ -129,12 +126,12 @@ class ScalarTypesTest extends TestCase
         ]);
 
         $settingValue = Cms::config()->setGraphqlDatesToSystemTimeZone;
-        $currentTimezone = app()->getTimezone();
+        $currentTimezone = Cms::timezone();
 
         // Make sure we don't use UTC
         $newTimezone = 'America/New_York';
 
-        Config::set('app.timezone', $newTimezone);
+        Cms::config()->timezone = $newTimezone;
         Cms::config()->setGraphqlDatesToSystemTimeZone = true;
         $value1 = $resolver($element, [], null, $resolveInfo);
 
@@ -144,7 +141,7 @@ class ScalarTypesTest extends TestCase
         Cms::config()->setGraphqlDatesToSystemTimeZone = $settingValue;
 
         self::assertNotEquals($value1->getTimeZone(), $value2->getTimeZone());
-        Config::set('app.timezone', $currentTimezone);
+        Cms::config()->timezone = $currentTimezone;
     }
 
     /**
@@ -159,7 +156,7 @@ class ScalarTypesTest extends TestCase
         return [
             [DateTime::getType(), 'testString', 'testString'],
             [DateTime::getType(), null, null],
-            [DateTime::getType(), clone $now, $now->setTimezone(new DateTimeZone(app()->getTimezone()))->format(FormatDateTime::DEFAULT_FORMAT)],
+            [DateTime::getType(), clone $now, $now->setTimezone(new DateTimeZone(Cms::timezone()))->format(FormatDateTime::DEFAULT_FORMAT)],
 
             [Number::getType(), 'testString', 'testString'],
             [Number::getType(), '', null],

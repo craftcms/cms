@@ -30,11 +30,16 @@ class RunCommand extends Command
     {
         $garbageCollection->deleteAllTrashed = $this->option('deleteAllTrashed') || ($this->input->isInteractive() && confirm('Delete all trashed items?'));
         $garbageCollection->silent = $this->option('silent');
+        $garbageCollection->output = $this->output->getOutput();
 
-        $this->components->info('Running garbage collection ...');
+        if (! $garbageCollection->silent) {
+            $this->components->info('Running garbage collection ...');
+        }
 
         $garbageCollection->run(force: true);
 
-        $this->components->success('Finished running garbage collection.');
+        if (! $garbageCollection->silent) {
+            $this->components->success('Finished running garbage collection.');
+        }
     }
 }

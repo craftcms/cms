@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use Craft;
 use craft\base\ElementInterface;
-use craft\db\Paginator;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Shared\BaseModel;
+use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Twig\Variables\Paginate;
 use CraftCms\Cms\View\Enums\Position;
+use Illuminate\Database\Query\Builder;
 use Stringable;
 use Twig\Environment;
 use Twig\Error\RuntimeError;
@@ -25,8 +26,6 @@ use Twig\TemplateWrapper;
 use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
-use yii\db\Query;
-use yii\db\QueryInterface;
 
 class Template
 {
@@ -68,7 +67,7 @@ class Template
         int $lineno = -1,
     ): mixed {
         if ($object instanceof ElementInterface) {
-            Craft::$app->getElements()->collectCacheInfoForElement($object);
+            ElementCaches::collectCacheInfoForElement($object);
         }
 
         if ($type !== TwigTemplate::METHOD_CALL) {
@@ -119,20 +118,6 @@ class Template
             $sandboxed,
             $lineno,
         );
-    }
-
-    public static function paginateQuery(QueryInterface $query): array
-    {
-        /** @var Query $query */
-        $paginator = new Paginator((clone $query)->limit(null), [
-            'currentPage' => Craft::$app->getRequest()->getPageNum(),
-            'pageSize' => $query->limit ?: 100,
-        ]);
-
-        return [
-            Paginate::create($paginator),
-            $paginator->getPageResults(),
-        ];
     }
 
     public static function raw(string $value): Markup
@@ -204,6 +189,18 @@ class Template
         }
 
         $context += $singles;
+    }
+
+    public static function paginateQuery($query): array
+    {
+        /** @var Builder $query */
+        $paginator = $query->paginate(pageName: $pageParam = Cms::config()->getPageTriggerParam());
+        $paginator->appends(Arr::except(request()->query(), $pageParam));
+
+        return [
+            Paginate::create($paginator),
+            $paginator->items(),
+        ];
     }
 
     protected static function fallbackValueExists(string $name): bool

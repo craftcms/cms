@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Field;
 
 use craft\base\ElementInterface;
 use craft\helpers\Db;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\DateFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -228,7 +229,7 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var DateTime|null $value */
-        $timezone = $this->showTimeZone && $value ? $value->getTimezone()->getName() : app()->getTimezone();
+        $timezone = $this->showTimeZone && $value ? $value->getTimezone()->getName() : Cms::timezone();
 
         if ($value === null) {
             // Override the initial value being set to null by CustomField::inputHtml()

@@ -12,12 +12,11 @@ use craft\elements\db\CategoryQuery;
 use craft\gql\arguments\elements\Category as CategoryArguments;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
-use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
-use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Support\Facades\Structures;
 use GraphQL\Type\Definition\Type;
@@ -144,7 +143,7 @@ class Categories extends \CraftCms\Cms\Field\BaseRelationField
     {
         // Make sure the field is set to a valid category group
         if ($this->source) {
-            $source = ElementHelper::findSource(self::elementType(), $this->source, ElementSources::CONTEXT_FIELD);
+            $source = app(ElementSources::class)->findSource(self::elementType(), $this->source, ElementSources::CONTEXT_FIELD);
         }
 
         if (empty($source)) {

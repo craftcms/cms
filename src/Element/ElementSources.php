@@ -254,6 +254,64 @@ class ElementSources
     }
 
     /**
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    public function findSource(
+        string $elementType,
+        string $sourceKey,
+        string $context = self::CONTEXT_INDEX,
+        bool $withDisabled = false,
+        ?string $page = null,
+    ): ?array {
+        $path = explode('/', $sourceKey);
+        $sources = $this->getSources($elementType, $context, $withDisabled, $page)->all();
+        $rootSource = null;
+
+        while ($path) {
+            $key = array_shift($path);
+            $source = null;
+
+            foreach ($sources as $candidate) {
+                if (($candidate['key'] ?? null) === $key) {
+                    $source = $candidate;
+                    break;
+                }
+            }
+
+            if ($source === null) {
+                break;
+            }
+
+            if (empty($path)) {
+                if ($rootSource !== null) {
+                    $source['type'] = $rootSource['type'];
+                    $source['keyPath'] = $sourceKey;
+                }
+
+                return $source;
+            }
+
+            if ($rootSource === null) {
+                $rootSource = $source;
+            }
+
+            $sources = $source['nested'] ?? [];
+        }
+
+        if (! str_starts_with($sourceKey, 'custom:')) {
+            $source = $elementType::findSource($sourceKey, $context);
+
+            if ($source) {
+                $source['type'] = self::TYPE_NATIVE;
+
+                return $source;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Returns the unique pages found for the given element type’s sources.
      *
      * @param  class-string<ElementInterface>  $elementType  The element type class

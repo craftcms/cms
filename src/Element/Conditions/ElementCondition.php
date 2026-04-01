@@ -9,13 +9,13 @@ use CraftCms\Cms\Condition\BaseCondition;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
-use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Conditions\GeneratedFieldConditionRule;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use Override;
@@ -104,7 +104,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
 
         // If we have a source key, we can fetch just the field layouts that are available to it
         if ($this->sourceKey) {
-            return app(ElementSources::class)->getFieldLayoutsForSource($this->elementType, $this->sourceKey)->all();
+            return ElementSources::getFieldLayoutsForSource($this->elementType, $this->sourceKey)->all();
         }
 
         return app(Fields::class)->getLayoutsByType($this->elementType)->all();

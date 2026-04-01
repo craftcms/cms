@@ -7,11 +7,12 @@
         {!! $headHtml !!}
         <script>let Craft = (window.Craft || {})</script>
         @vite(['resources/css/cp.css', 'resources/js/cp.ts'], 'vendor/craft/build')
-        @inertiaHead
+        <x-inertia::head>
+            <title>{{ config('app.name') }}</title>
+        </x-inertia::head>
     </head>
     <body>
-        @inertia
-
+        <x-inertia::app />
         {!! $bodyHtml !!}
         <script>
           let CpConfig = {!! json_encode(\CraftCms\Cms\Cp\Cp::config()) !!};

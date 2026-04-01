@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset;
 
 use craft\base\ElementInterface;
-use craft\helpers\ElementHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
@@ -13,6 +12,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\RegisterFileKinds;
 use CraftCms\Cms\Asset\Events\SetAssetFilename;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;

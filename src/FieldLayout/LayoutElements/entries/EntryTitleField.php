@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements\entries;
 
 use craft\base\ElementInterface;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -55,7 +54,7 @@ class EntryTitleField extends TitleField
             throw new InvalidArgumentException(sprintf('%s can only be used in entry field layouts.', self::class));
         }
 
-        return ElementHelper::translationDescription($element->getType()->titleTranslationMethod);
+        return $element->getType()->titleTranslationMethod->description();
     }
 
     #[Override]

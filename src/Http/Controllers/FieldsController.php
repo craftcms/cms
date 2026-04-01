@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
@@ -18,6 +19,7 @@ use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\MissingField;
@@ -174,7 +176,7 @@ class FieldsController
             'handle' => $request->input('handle'),
             'instructions' => $request->input('instructions'),
             'searchable' => (bool) $request->input('searchable', true),
-            'translationMethod' => $request->input('translationMethod', Field::TRANSLATION_METHOD_NONE),
+            'translationMethod' => $request->enum('translationMethod', TranslationMethod::class, TranslationMethod::None),
             'translationKeyFormat' => $request->input('translationKeyFormat'),
             'settings' => $request->input('types', [])[Html::id($type)] ?? [],
         ]);
@@ -303,7 +305,7 @@ class FieldsController
 
     public function tableData(Request $request): Response
     {
-        $page = (int) $request->input('page', 1);
+        $page = (int) $request->input(Cms::config()->getPageTriggerParam(), 1);
         $limit = (int) $request->input('per_page', 100);
         $searchTerm = $request->input('search');
         $orderBy = match ($request->input('sort.0.field')) {
@@ -403,6 +405,14 @@ class FieldsController
                 $supportedTranslationMethods[$class] = $class::supportedTranslationMethods();
             }
         }
+
+        $supportedTranslationMethods = array_map(
+            fn (array $translationMethods) => array_map(
+                static fn (TranslationMethod $translationMethod) => $translationMethod->value,
+                $translationMethods,
+            ),
+            $supportedTranslationMethods,
+        );
 
         // Allowed field types
         // ---------------------------------------------------------------------

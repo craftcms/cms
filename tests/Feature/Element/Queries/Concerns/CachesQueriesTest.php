@@ -1,6 +1,7 @@
 <?php
 
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Support\Facades\ElementCaches;
 
 it('caches queries', function () {
     Entry::factory()->create();
@@ -19,7 +20,7 @@ it('caches queries', function () {
     expect(entryQuery()->count())->toBe(2);
     expect(entryQuery()->get()->count())->toBe(2);
 
-    Craft::$app->getElements()->invalidateCachesForElementType(CraftCms\Cms\Entry\Elements\Entry::class);
+    ElementCaches::invalidateForElementType(CraftCms\Cms\Entry\Elements\Entry::class);
 
     expect(entryQuery()->cache()->count())->toBe(2);
     expect(entryQuery()->cache()->get()->count())->toBe(2);

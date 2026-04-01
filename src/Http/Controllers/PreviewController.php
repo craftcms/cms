@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\RouteToken\Data\RouteToken;
 use CraftCms\Cms\RouteToken\RouteTokens;
@@ -72,7 +72,7 @@ readonly class PreviewController
             ! is_null($tokenData->draftId) => fn () => $query->draftId($tokenData->draftId)->one(),
             ! is_null($tokenData->revisionId) => fn () => $query->revisionId($tokenData->revisionId)->one(),
             ! is_null($tokenData->userId) => function () use ($tokenData, $query) {
-                ElementHelper::setProvisionalDraftUser($tokenData->userId);
+                Context::addHidden(Drafts::CONTEXT_PREVIEW_USER_ID, $tokenData->userId);
 
                 $element = (clone $query)
                     ->draftOf($tokenData->canonicalId)

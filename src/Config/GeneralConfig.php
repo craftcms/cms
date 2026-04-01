@@ -1948,20 +1948,12 @@ class GeneralConfig extends BaseConfig
     public bool $optimizeImageFilesize = true;
 
     /**
-     * @var string The string preceding a number which Craft will look for when determining if the current request is for a particular page in
-     *             a paginated list of pages.
+     * @var string The query string param name Craft should use for paginated requests.
      *
      * | Example Value | Example URI |
      * | --- | --- |
-     * | `p` | `/news/p5` |
-     * | `page` | `/news/page5` |
-     * | `page/` | `/news/page/5` |
-     * | `?page` | `/news?page=5` |
-     *
-     * ::: warning
-     * Craft may override this setting if it conflicts with <config5:pathParam>. If you want to set this to `?p` (e.g. `/news?p=5`), you’ll also need to change your <config5:pathParam> setting (which defaults to `p`).
-     * Then, if your server is running Apache, you’ll need to update the redirect code in your `.htaccess` file to match your new `pathParam` value.
-     * :::
+     * | `page` | `/news?page=5` |
+     * | `p` | `/news?p=5` |
      *
      * ::: code
      * ```php Static Config
@@ -1976,7 +1968,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group Routing
      */
-    public string $pageTrigger = 'p';
+    public string $pageTrigger = 'page';
 
     /**
      * @var string The path within the `templates` folder where element partial templates will live.
@@ -2968,6 +2960,24 @@ class GeneralConfig extends BaseConfig
      * @group Assets
      */
     public ?string $tempAssetUploadFs = null;
+
+    /**
+     * @var string|null The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
+     *
+     * This can be set to one of PHP’s [supported timezones](https://php.net/manual/en/timezones.php).
+     *
+     * ::: code
+     * ```php Static Config
+     * ->timezone('Europe/London')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_TIMEZONE=Europe/London
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public ?string $timezone = null;
 
     /**
     /**
@@ -5170,20 +5180,12 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The string preceding a number which Craft will look for when determining if the current request is for a particular page in
-     * a paginated list of pages.
+     * Sets the query string param name Craft should use for paginated requests.
      *
      * | Example Value | Example URI |
      * | --- | --- |
-     * | `p` | `/news/p5` |
-     * | `page` | `/news/page5` |
-     * | `page/` | `/news/page/5` |
-     * | `?page` | `/news?page=5` |
-     *
-     * ::: warning
-     * Craft may override this setting if it conflicts with <config5:pathParam>. If you want to set this to `?p` (e.g. `/news?p=5`), you’ll also need to change your <config5:pathParam> setting (which defaults to `p`).
-     * Then, if your server is running Apache, you’ll need to update the redirect code in your `.htaccess` file to match your new `pathParam` value.
-     * :::
+     * | `page` | `/news?page=5` |
+     * | `p` | `/news?p=5` |
      *
      * ```php
      * ->pageTrigger('page')
@@ -5195,7 +5197,7 @@ class GeneralConfig extends BaseConfig
      */
     public function pageTrigger(string $value): self
     {
-        $this->pageTrigger = $value;
+        $this->pageTrigger = $this->normalizePageTrigger($value);
 
         return $this;
     }
@@ -6163,6 +6165,29 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * Configures Craft to send all system emails to either a single email address or an array of email addresses
+     * for testing purposes.
+     *
+     * The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
+     *
+     * This can be set to one of PHP’s [supported timezones](https://php.net/manual/en/timezones.php).
+     *
+     * ```php
+     * ->timezone('Europe/London')
+     * ```
+     *
+     * @group System
+     *
+     * @see $timezone
+     */
+    public function timezone(?string $value): self
+    {
+        $this->timezone = $value;
+
+        return $this;
+    }
+
+    /**
      * Whether GIF files should be cleansed/transformed.
      *
      * ```php
@@ -6621,25 +6646,31 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Returns the normalized page trigger.
+     * Returns the normalized page trigger in query-string form.
      *
      * @see pageTrigger
      */
     public function getPageTrigger(): string
     {
-        $pageTrigger = $this->pageTrigger;
+        return '?'.$this->getPageTriggerParam().'=';
+    }
+
+    public function getPageTriggerParam(): string
+    {
+        return $this->normalizePageTrigger($this->pageTrigger);
+    }
+
+    private function normalizePageTrigger(string $pageTrigger): string
+    {
+        $pageTrigger = trim($pageTrigger);
 
         if ($pageTrigger === '') {
-            $pageTrigger = 'p';
+            return 'page';
         }
 
-        // Is this query string-based pagination?
-        if (str_starts_with($pageTrigger, '?')) {
-            $pageTrigger = trim($pageTrigger, '?=');
+        $pageTrigger = trim($pageTrigger, '?=');
+        $pageTrigger = rtrim($pageTrigger, '/');
 
-            return '?'.$pageTrigger.'=';
-        }
-
-        return $pageTrigger;
+        return $pageTrigger !== '' ? $pageTrigger : 'page';
     }
 }

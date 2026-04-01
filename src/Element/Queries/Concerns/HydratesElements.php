@@ -7,7 +7,8 @@ namespace CraftCms\Cms\Element\Queries\Concerns;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
-use craft\helpers\ElementHelper;
+use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Events\ElementHydrated;
 use CraftCms\Cms\Element\Queries\Events\ElementsHydrated;
 use CraftCms\Cms\Element\Queries\Events\HydratingElement;
@@ -88,7 +89,7 @@ trait HydratesElements
             })->all();
 
         if ($this->withProvisionalDrafts) {
-            ElementHelper::swapInProvisionalDrafts($elements);
+            $elements = app(Drafts::class)->withProvisionalDrafts($elements);
         }
 
         event($event = new ElementsHydrated($elements, $items));

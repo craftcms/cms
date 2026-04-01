@@ -11,7 +11,13 @@ use CraftCms\Cms\Element\Events\DraftApplied;
 use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
@@ -133,4 +139,94 @@ it('can remove draft data from an element', function () {
     $this->drafts->removeDraftData($draft);
 
     expect($draft->draftId)->toBeNull();
+});
+
+it('can replace canonical elements with provisional drafts', function () {
+    actingAs(User::findOne());
+
+    Entry::factory()->count(2)->create();
+    $entries = EntryElement::find()->orderBy('elements.id')->all();
+
+    $provisionalDraft = $this->drafts->createDraft($entries[0], User::findOne()->id, provisional: true);
+
+    $elementsWithDrafts = $this->drafts->withProvisionalDrafts($entries);
+
+    expect($elementsWithDrafts[0]->id)->toBe($provisionalDraft->id)
+        ->and($elementsWithDrafts[0]->getCanonicalId())->toBe($entries[0]->id)
+        ->and($elementsWithDrafts[1]->id)->toBe($entries[1]->id);
+});
+
+it('can replace canonical elements with provisional drafts for a preview user from context', function () {
+    $previewUser = User::findOne();
+
+    Entry::factory()->create();
+    $entry = EntryElement::findOne();
+
+    $provisionalDraft = $this->drafts->createDraft($entry, $previewUser->id, provisional: true);
+
+    Context::addHidden(Drafts::CONTEXT_PREVIEW_USER_ID, $previewUser->id);
+
+    expect($this->drafts->withProvisionalDrafts([$entry])[0]->id)->toBe($provisionalDraft->id);
+});
+
+it('can load provisional changes onto canonical elements', function () {
+    actingAs(User::findOne());
+
+    $field = Field::factory()->create([
+        'handle' => 'testField',
+        'type' => PlainText::class,
+    ]);
+
+    $fieldLayout = FieldLayout::factory()->forField($field)->create();
+
+    $entryModel = Entry::factory()->create();
+    $entryModel->element->update(['fieldLayoutId' => $fieldLayout->id]);
+    $entryModel->entryType->update(['fieldLayoutId' => $fieldLayout->id]);
+
+    EntryTypes::refreshEntryTypes();
+    Fields::invalidateCaches();
+    Fields::refreshFields();
+
+    $entry = entryQuery()->id($entryModel->id)->one();
+    $entry->title = 'Canonical title';
+    $entry->slug = 'canonical-title';
+    $entry->setFieldValue('testField', 'canonical field value');
+    Craft::$app->getElements()->saveElement($entry);
+
+    $draft = $this->drafts->createDraft($entry, User::findOne()->id, provisional: true);
+    $draft->title = 'Draft title';
+    $draft->setDirtyAttributes(['title']);
+    $draft->setFieldValue('testField', 'draft field value');
+    $draft->setDirtyFields(['testField']);
+    Craft::$app->getElements()->saveElement($draft);
+
+    DB::table(Table::CHANGEDATTRIBUTES)->insert([
+        'elementId' => $draft->id,
+        'siteId' => $draft->siteId,
+        'attribute' => 'title',
+        'dateUpdated' => now(),
+        'userId' => User::findOne()->id,
+        'propagated' => false,
+    ]);
+
+    DB::table(Table::CHANGEDFIELDS)->insert([
+        'elementId' => $draft->id,
+        'siteId' => $draft->siteId,
+        'fieldId' => $field->id,
+        'layoutElementUid' => $draft->getFieldLayout()->getCustomFieldElements()[0]->uid,
+        'dateUpdated' => now(),
+        'propagated' => false,
+    ]);
+
+    $entry = entryQuery()->id($entry->id)->one();
+    $draft = entryQuery()->id($draft->id)->drafts()->provisionalDrafts()->one();
+
+    expect($draft->getModifiedAttributes())->toContain('title')
+        ->and($draft->getModifiedFields())->toContain('testField');
+
+    $this->drafts->loadProvisionalChanges([$entry], User::findOne());
+
+    expect($entry->hasProvisionalChanges)->toBeTrue()
+        ->and($entry->title)->toBe('Draft title')
+        ->and($entry->getFieldValue('testField'))->toBe('draft field value');
 });

@@ -8,6 +8,7 @@ use Craft;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
@@ -39,6 +40,7 @@ readonly class UserGroups
 
     public function __construct(
         private ProjectConfig $projectConfig,
+        private ElementCaches $elementCaches,
     ) {}
 
     /**
@@ -291,7 +293,7 @@ readonly class UserGroups
         event(new UserGroupSaved($this->getGroupById($groupModel->id), $isNewGroup));
 
         // Invalidate user caches
-        Craft::$app->getElements()->invalidateCachesForElementType(User::class);
+        $this->elementCaches->invalidateForElementType(User::class);
     }
 
     /**
@@ -315,7 +317,7 @@ readonly class UserGroups
         event(new UserGroupDeleted($group));
 
         // Invalidate user caches
-        Craft::$app->getElements()->invalidateCachesForElementType(User::class);
+        $this->elementCaches->invalidateForElementType(User::class);
     }
 
     public function deleteGroupById(int $groupId): bool

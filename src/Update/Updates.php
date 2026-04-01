@@ -263,7 +263,7 @@ class Updates
      */
     public function wasCraftBreakpointSkipped(): bool
     {
-        return version_compare(Cms::SCHEMA_VERSION, Info::fetch()->version, '>');
+        return version_compare(Cms::VERSION, Info::fetch()->version, '>');
     }
 
     /**

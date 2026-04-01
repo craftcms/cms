@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Element;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\ElementHelper;
+use craft\base\NestedElementInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\AfterPropagate;
@@ -18,10 +18,12 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
@@ -35,6 +37,8 @@ use function CraftCms\Cms\t;
 #[Singleton]
 readonly class Drafts
 {
+    public const string CONTEXT_PREVIEW_USER_ID = 'craft.preview-user-id';
+
     /**
      * Returns drafts for a given element ID that the current user is allowed to edit
      *
@@ -413,5 +417,118 @@ readonly class Drafts
             'notes' => $notes,
             'trackChanges' => $trackChanges,
         ]);
+    }
+
+    /**
+     * @template T of ElementInterface
+     *
+     * @param  T[]  $elements
+     * @return T[]
+     */
+    public function withProvisionalDrafts(array $elements, ?User $user = null): array
+    {
+        $drafts = $this->provisionalDrafts($elements, $user);
+
+        if (empty($drafts)) {
+            return $elements;
+        }
+
+        $elementsWithDrafts = $elements;
+
+        foreach ($elements as $index => $element) {
+            if (! isset($drafts[$element->id])) {
+                continue;
+            }
+
+            $draft = $drafts[$element->id];
+            $draft->setCanonical($element);
+
+            if ($element->structureId !== null) {
+                $draft->structureId = $element->structureId;
+                $draft->root = $element->root;
+                $draft->lft = $element->lft;
+                $draft->rgt = $element->rgt;
+                $draft->level = $element->level;
+            }
+
+            if ($element instanceof NestedElementInterface && $draft instanceof NestedElementInterface) {
+                $draft->setOwnerId($element->getOwnerId());
+            }
+
+            $elementsWithDrafts[$index] = $draft;
+        }
+
+        return $elementsWithDrafts;
+    }
+
+    /**
+     * @template T of ElementInterface
+     *
+     * @param  T[]  $elements
+     */
+    public function loadProvisionalChanges(array $elements, ?User $user = null): void
+    {
+        $drafts = $this->provisionalDrafts($elements, $user);
+
+        if (empty($drafts)) {
+            return;
+        }
+
+        foreach ($elements as $element) {
+            if (! isset($drafts[$element->id])) {
+                continue;
+            }
+
+            $draft = $drafts[$element->id];
+            $element->hasProvisionalChanges = true;
+
+            foreach ($draft->getModifiedAttributes() as $name) {
+                if ($element->canSetProperty($name)) {
+                    $element->$name = $draft->$name;
+                }
+            }
+
+            foreach ($draft->getModifiedFields() as $handle) {
+                $element->setFieldValue($handle, $draft->getFieldValue($handle));
+            }
+        }
+    }
+
+    /**
+     * @param  ElementInterface[]  $elements
+     * @return ElementInterface[]
+     */
+    private function provisionalDrafts(array $elements, ?User $user = null): array
+    {
+        if ($user === null && Context::hasHidden(self::CONTEXT_PREVIEW_USER_ID)) {
+            $userId = Context::getHidden(self::CONTEXT_PREVIEW_USER_ID);
+            $user = User::find()->id($userId)->status(null)->one();
+        }
+
+        $user ??= Auth::user();
+
+        if (! $user) {
+            return [];
+        }
+
+        $canonicalElements = array_filter(
+            $elements,
+            fn (ElementInterface $element) => ! $element->getIsDraft() && ! $element->getIsRevision(),
+        );
+
+        if (empty($canonicalElements)) {
+            return [];
+        }
+
+        $first = reset($canonicalElements);
+
+        return $first::find()
+            ->draftOf($canonicalElements)
+            ->draftCreator($user)
+            ->provisionalDrafts()
+            ->siteId($first->siteId)
+            ->status(null)
+            ->indexBy('canonicalId')
+            ->all();
     }
 }

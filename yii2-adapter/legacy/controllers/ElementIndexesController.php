@@ -19,10 +19,10 @@ use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
@@ -650,7 +650,7 @@ class ElementIndexesController extends BaseElementsController
             ];
         }
 
-        $source = ElementHelper::findSource($this->elementType, $this->sourceKey, $this->context);
+        $source = app(ElementSources::class)->findSource($this->elementType, $this->sourceKey, $this->context);
 
         if ($source === null) {
             // That wasn't a valid source, or the user doesn't have access to it in this context

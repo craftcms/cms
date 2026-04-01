@@ -234,7 +234,7 @@ describe('create', function () {
 
         $core = $env->getExtension(CoreExtension::class);
 
-        expect($core->getTimezone()->getName())->toBe(app()->getTimezone());
+        expect($core->getTimezone()->getName())->toBe(Cms::timezone());
     });
 
     it('dispatches the TwigCreated event', function () {

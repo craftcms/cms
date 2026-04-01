@@ -8,7 +8,7 @@ use CraftCms\Cms\Support\DateTimeHelper;
 
 function supportSystemDateTime(string $dateTime = '2018-08-09 20:00:00'): DateTime
 {
-    $systemTimeZone = new DateTimeZone(app()->getTimezone());
+    $systemTimeZone = new DateTimeZone(Cms::timezone());
     $date = new DateTime($dateTime, new DateTimeZone('UTC'));
     $date->setTimezone($systemTimeZone);
 
@@ -23,15 +23,13 @@ function supportSystemDateTimeAtMidnight(): DateTime
 function supportTokyoToSystemDateTime(): DateTime
 {
     $date = new DateTime('2018-08-09 20:00:00', new DateTimeZone('Asia/Tokyo'));
-    $date->setTimezone(new DateTimeZone(app()->getTimezone()));
+    $date->setTimezone(new DateTimeZone(Cms::timezone()));
 
     return $date;
 }
 
 beforeEach(function () {
-    config()->set('app.timezone', 'America/Los_Angeles');
-
-    $this->systemTimeZone = new DateTimeZone(app()->getTimezone());
+    $this->systemTimeZone = new DateTimeZone(Cms::timezone());
     $this->utcTimeZone = new DateTimeZone('UTC');
     $this->asiaTokyoTimeZone = new DateTimeZone('Asia/Tokyo');
 

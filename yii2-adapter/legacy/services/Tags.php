@@ -19,6 +19,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
@@ -313,7 +314,7 @@ class Tags extends Component
         }
 
         // Invalidate tag caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Tag::class);
+        ElementCaches::invalidateForElementType(Tag::class);
     }
 
     /**
@@ -447,7 +448,7 @@ SQL)->execute();
         }
 
         // Invalidate tag caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Tag::class);
+        ElementCaches::invalidateForElementType(Tag::class);
     }
 
     /**

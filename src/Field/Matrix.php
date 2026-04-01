@@ -20,7 +20,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
-use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
@@ -35,6 +34,7 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\DefineEntryTypesForField;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
@@ -47,6 +47,7 @@ use CraftCms\Cms\Gql\Types\Input\Matrix as MatrixInputType;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -110,7 +111,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         // Don't ever automatically propagate values to other sites.
         return [
-            self::TRANSLATION_METHOD_SITE,
+            TranslationMethod::Site,
         ];
     }
 
@@ -171,10 +172,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     public static function defaultTableColumnOptions(array $entryTypes): array
     {
         $fieldLayouts = array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes);
-        $elementSources = app(ElementSources::class);
         $tableColumns = array_merge(
-            $elementSources->getAvailableTableAttributes(Entry::class)->all(),
-            $elementSources->getTableAttributesForFieldLayouts($fieldLayouts)->all(),
+            ElementSources::getAvailableTableAttributes(Entry::class)->all(),
+            ElementSources::getTableAttributesForFieldLayouts(collect($fieldLayouts))->all(),
         );
 
         $options = [];
@@ -560,8 +560,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             return (clone $value)
                 ->status(null)
                 ->siteId($owner->siteId)
-                ->limit(null)
-                ->count();
+                ->getCountForPagination();
         }
 
         return $value->count();

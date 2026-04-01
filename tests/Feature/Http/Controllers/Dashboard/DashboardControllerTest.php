@@ -10,14 +10,14 @@ use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 
 it('requires login', function () {
-    get(action(DashboardController::class))
+    get(action([DashboardController::class, 'index']))
         ->assertRedirect(Cms::config()->cpTrigger.'/login');
 });
 
 it('can be rendered', function () {
     actingAs(User::find()->one());
 
-    get(action(DashboardController::class))
+    get(action([DashboardController::class, 'index']))
         ->assertOk()
         ->assertSee('Dashboard')
         ->assertSee('Widget');

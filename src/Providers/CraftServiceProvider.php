@@ -10,6 +10,7 @@ use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Console\ConsoleServiceProvider;
 use CraftCms\Cms\Database\DatabaseServiceProvider;
 use CraftCms\Cms\Deprecator\DeprecatorServiceProvider;
+use CraftCms\Cms\Element\ElementServiceProvider;
 use CraftCms\Cms\Email\EmailServiceProvider;
 use CraftCms\Cms\Entry\EntryServiceProvider;
 use CraftCms\Cms\Field\FieldsServiceProvider;
@@ -48,6 +49,7 @@ class CraftServiceProvider extends AggregateServiceProvider
         AppServiceProvider::class,
         IconServiceProvider::class,
         ConsoleServiceProvider::class,
+        ElementServiceProvider::class,
         EmailServiceProvider::class,
         GqlServiceProvider::class,
         PluginServiceProvider::class,

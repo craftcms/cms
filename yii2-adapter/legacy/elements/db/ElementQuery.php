@@ -7,6 +7,7 @@
 
 namespace craft\elements\db;
 
+use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
@@ -23,17 +24,19 @@ use craft\events\DefineValueEvent;
 use craft\events\PopulateElementEvent;
 use craft\events\PopulateElementsEvent;
 use craft\helpers\Db;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\QueryParam;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\Json;
@@ -1776,7 +1779,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->uri) {
-            $this->subQuery->andWhere(Db::parseParam('elements_sites.uri', $this->uri, '=', true));
+            $this->subQuery->andWhere(Db::parseParam('elements_sites.uriLower', mb_strtolower($this->uri)));
         }
 
         $this->_applyRelatedToParam();
@@ -1849,8 +1852,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function afterPopulate(array $elements): array
     {
         if (!$this->asArray) {
-            $elementsService = Craft::$app->getElements();
-
             foreach ($elements as $element) {
                 // Set the full query result on the element, in case it's needed for lazy eager loading
                 $element->elementQueryResult = $elements;
@@ -1858,12 +1859,14 @@ class ElementQuery extends Query implements ElementQueryInterface
                 // If we're collecting cache info and the element is expirable, register its expiry date
                 if (
                     $element instanceof ExpirableElementInterface &&
-                    $elementsService->getIsCollectingCacheInfo() &&
+                    ElementCaches::isCollectingCacheInfo() &&
                     ($expiryDate = $element->getExpiryDate()) !== null
                 ) {
-                    $elementsService->setCacheExpiryDate($expiryDate);
+                    ElementCaches::setCacheExpiryDate($expiryDate);
                 }
             }
+
+            $elementsService = Craft::$app->getElements();
 
             ElementHelper::setNextPrevOnElements($elements);
 
@@ -2520,9 +2523,8 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
-        $elementsService = Craft::$app->getElements();
-        if ($elementsService->getIsCollectingCacheInfo()) {
-            $elementsService->collectCacheTags($this->getCacheTags());
+        if (ElementCaches::isCollectingCacheInfo()) {
+            ElementCaches::collectCacheTags($this->getCacheTags());
         }
 
         return true;
@@ -3929,7 +3931,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
 
             if ($this->withProvisionalDrafts) {
-                ElementHelper::swapInProvisionalDrafts($elements);
+                $elements = app(Drafts::class)->withProvisionalDrafts($elements);
             }
 
             // Fire an 'afterPopulateElements' event
@@ -3989,5 +3991,36 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function whereIn($column, $values, $boolean = 'and', $not = false): static
     {
         return $this->andWhere(['in', $column, $values]);
+    }
+
+    /**
+     * Re-implement each as a supported call similar
+     * to Laravel's ->each on query builder.
+     * @return ?\yii\db\BatchQueryResult
+     */
+    public function each($batchSize = 100, $db = null)
+    {
+        if (is_int($batchSize)) {
+            return parent::each($batchSize, $db);
+        }
+
+        if ($batchSize instanceof Closure) {
+            $count = is_int($db) ? $db : 100;
+
+            foreach (Db::each($this, $count) as $element) {
+                $batchSize($element);
+            }
+
+            return null;
+        }
+
+        throw new InvalidArgumentException('Invalid call to ->each');
+    }
+
+    public function getCountForPagination($columns = ['*'])
+    {
+        return $this
+            ->select(new Expression('1'))
+            ->count();
     }
 }
