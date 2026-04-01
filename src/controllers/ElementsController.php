@@ -2146,6 +2146,9 @@ JS, [
 
         $this->element = $element;
 
+        // keep track of the original field layout ID, in case it changes here
+        $oldFieldLayoutId = $element->getFieldLayout()?->id;
+
         $this->_applyParamsToElement($element);
         $user = static::currentUser();
 
@@ -2173,8 +2176,25 @@ JS, [
 
         $element->applyingDraft = true;
 
+        // If the field layout ID changed, save all content
+        $saveContent = $element->getFieldLayout()?->id !== $oldFieldLayoutId;
+
         $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
-        if (!$elementsService->saveElement($element, crossSiteValidate: ($namespace === null && Craft::$app->getIsMultiSite()))) {
+        $crossSiteValidate = $namespace === null && Craft::$app->getIsMultiSite();
+
+        if (!$elementsService->saveElement(
+            element: $element,
+            crossSiteValidate: $crossSiteValidate,
+            saveContent: $saveContent,
+        )) {
+            // save the draft anyway, so we don’t lose the latest changes
+            // (see https://github.com/craftcms/cms/issues/18657)
+            $errors = $element->getErrors();
+            $element->setScenario(Element::SCENARIO_ESSENTIALS);
+            $elementsService->saveElement($element, saveContent: $saveContent);
+            $element->clearErrors();
+            $element->addErrors($errors);
+
             return $this->_asAppyDraftFailure($element);
         }
 
