@@ -1923,9 +1923,7 @@ JS, [
         $user = static::currentUser();
 
         if (!$element->getIsDraft() && !$this->_provisional) {
-            if (!$elementsService->canCreateDrafts($element, $user)) {
-                throw new ForbiddenHttpException('User not authorized to create drafts for this element.');
-            }
+            Gate::authorize('createDrafts', $element);
         } elseif (!$this->_canSave($element, $user)) {
             throw new ForbiddenHttpException('User not authorized to save this element.');
         }
@@ -2069,12 +2067,9 @@ JS, [
             ]);
         }
 
-        $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
 
-        if (!$elementsService->canCreateDrafts($element, $user)) {
-            throw new ForbiddenHttpException('User not authorized to create drafts for this element.');
-        }
+        Gate::authorize('createDrafts', $element);
 
         $this->element = $element;
 
