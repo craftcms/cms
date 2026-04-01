@@ -14,6 +14,7 @@
 - Fixed a bug where the submit button within Live Preview was labelled “Save” rather than “Create entry” when editing an unpublished draft. ([#18579](https://github.com/craftcms/cms/discussions/18579))
 - Fixed a bug where recent changes could be lost when creating an element or applying a draft, if there were validation errors. ([#18657](https://github.com/craftcms/cms/issues/18657))
 - Fixed a bug where nested elements would get soft-deleted after running the `entrify/global-set` command. ([#18650](https://github.com/craftcms/cms/issues/18650))
+- Fixed a bug where the “Max Authors” section setting was visible for Single sections.
 
 ## 5.9.18 - 2026-03-26
 
