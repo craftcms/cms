@@ -15,6 +15,7 @@
 - Fixed a bug where recent changes could be lost when creating an element or applying a draft, if there were validation errors. ([#18657](https://github.com/craftcms/cms/issues/18657))
 - Fixed a bug where nested elements would get soft-deleted after running the `entrify/global-set` command. ([#18650](https://github.com/craftcms/cms/issues/18650))
 - Fixed a bug where the “Max Authors” section setting was visible for Single sections.
+- Fixed an exception that would be thrown when attempting to access undefined keys within `craft\fields\data\JsonData` objects from Twig. ([#18656](https://github.com/craftcms/cms/issues/18656))
 
 ## 5.9.18 - 2026-03-26
 
