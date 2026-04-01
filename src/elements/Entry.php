@@ -3000,14 +3000,15 @@ JS;
     private function maybeSetDefaultAttributes(): void
     {
         // if we're resaving, we shouldn't be setting the defaults
-        if ($this->resaving) {
+        if ($this->resaving || $this->getIsRevision()) {
             return;
         }
 
+        $section = $this->getSection();
         if (
-            empty($this->getAuthors()) &&
-            !isset($this->fieldId) &&
-            $this->getSection()->type !== Section::TYPE_SINGLE
+            $section?->type !== Section::TYPE_SINGLE &&
+            $section?->maxAuthors !== 0 &&
+            empty($this->getAuthors())
         ) {
             $user = Craft::$app->getUser()->getIdentity();
             if ($user) {
@@ -3017,7 +3018,6 @@ JS;
 
         if (
             !$this->postDate &&
-            !$this->getIsRevision() &&
             $this->enabled &&
             in_array($this->scenario, [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT])
         ) {
