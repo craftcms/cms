@@ -10,6 +10,7 @@
 - Fixed a bug where custom entry index page icons weren’t getting stored properly if the source name contained periods. ([#18631](https://github.com/craftcms/cms/issues/18631))
 - Fixed a bug where copying nested entries on a revision wasn’t working. ([#18648](https://github.com/craftcms/cms/issues/18648))
 - Fixed a bug where Matrix fields in Blocks view could have “Duplicate selected blocks” and “Delete selected blocks” field-level actions. ([#18652](https://github.com/craftcms/cms/pull/18652))
+- Fixed a bug where the submit button within Live Preview was labelled “Save” rather than “Create entry” when editing an unpublished draft. ([#18579](https://github.com/craftcms/cms/discussions/18579))
 
 ## 5.9.18 - 2026-03-26
 
