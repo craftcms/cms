@@ -37,6 +37,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Path as PathFacade;
 use CraftCms\Cms\Support\Path as LaravelPath;
 use CraftCms\Cms\User\Users;
@@ -484,7 +485,7 @@ class Craft extends Yii2
      */
     public function deleteElement(ElementInterface $element, bool $hardDelete = true, bool $failHard = true): bool
     {
-        if (!\Craft::$app->getElements()->deleteElement($element, $hardDelete)) {
+        if (!Elements::deleteElement($element, $hardDelete)) {
             if ($failHard) {
                 throw new InvalidArgumentException(
                     implode(', ', $element->getErrorSummary(true))

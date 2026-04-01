@@ -168,7 +168,7 @@ class NestedElementsController extends Controller
 
             $success = true;
         } else {
-            $success = $elementsService->deleteElement($element);
+            $success = Elements::deleteElement($element);
         }
 
         if (!$success) {

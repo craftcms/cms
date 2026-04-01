@@ -923,7 +923,6 @@ class Sections
         // Delete any other entries in the section
         // ---------------------------------------------------------------------
 
-        $elementsService = Craft::$app->getElements();
         $otherEntriesQuery = Entry::find()
             ->sectionId($section->id)
             ->drafts(null)
@@ -933,10 +932,9 @@ class Sections
             ->id(['not', $entry->id])
             ->status(null);
 
-        $otherEntriesQuery->each(function (Entry $entryToDelete) use ($entry, $elementsService) {
-            /** @var Entry $entryToDelete */
-            if (! $entryToDelete->getIsDraft() || $entry->canonicalId != $entry->id) {
-                $elementsService->deleteElement($entryToDelete, true);
+        $otherEntriesQuery->each(function (Entry $entryToDelete) use ($entry) {
+            if (! $entryToDelete->getIsDraft() || $entry->canonicalId !== $entry->id) {
+                $this->elements->deleteElement($entryToDelete, true);
             }
         }, 100);
 

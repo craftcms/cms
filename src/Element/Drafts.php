@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use CraftCms\Cms\Cms;
@@ -261,7 +260,6 @@ readonly class Drafts
             draft: $draft,
         ));
 
-        $elementsService = Craft::$app->getElements();
         $draftNotes = $draft->draftNotes;
 
         DB::beginTransaction();
@@ -283,7 +281,7 @@ readonly class Drafts
                 }
 
                 // Now delete the draft
-                $elementsService->deleteElement($draft, true);
+                $this->elements->deleteElement($draft, true);
             } else {
                 // Just remove the draft data
                 $draft->setRevisionNotes($draftNotes);
@@ -377,8 +375,6 @@ readonly class Drafts
             ->where('elements.dateUpdated', '<', now()->subSeconds(Cms::config()->purgeUnsavedDraftsDuration))
             ->get();
 
-        $elementsService = Craft::$app->getElements();
-
         foreach ($drafts as $draftInfo) {
             /** @var class-string<ElementInterface> $elementType */
             $elementType = $draftInfo->type;
@@ -389,7 +385,7 @@ readonly class Drafts
                 ->one();
 
             if ($draft) {
-                $elementsService->deleteElement($draft, true);
+                $this->elements->deleteElement($draft, true);
             } else {
                 // Perhaps the draft's row in the `entries` table was deleted manually or something.
                 // Just drop its row in the `drafts` table, and let that cascade to `elements` and whatever other tables

@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Actions\DeleteElementAction;
 use CraftCms\Cms\Element\Actions\DuplicateElementAction;
 use CraftCms\Cms\Element\Actions\MergeCanonicalChangesAction;
 use CraftCms\Cms\Element\Actions\MergeElementsAction;
@@ -669,5 +670,61 @@ class Elements
     public function mergeElements(ElementInterface $mergedElement, ElementInterface $prevailingElement): bool
     {
         return app(MergeElementsAction::class)->handle($mergedElement, $prevailingElement);
+    }
+
+    /**
+     * Deletes an element by its ID.
+     *
+     * @param  int  $elementId  The element’s ID
+     * @param  class-string<ElementInterface>|null  $elementType  The element class.
+     * @param  int|null  $siteId  The site to fetch the element in.
+     *                            Defaults to the current site.
+     * @param  bool  $hardDelete  Whether the element should be hard-deleted immediately, instead of soft-deleted
+     * @return bool Whether the element was deleted successfully
+     */
+    public function deleteElementById(
+        int $elementId,
+        ?string $elementType = null,
+        ?int $siteId = null,
+        bool $hardDelete = false,
+    ): bool {
+        $elementType ??= $this->getElementTypeById($elementId);
+
+        if ($elementType === null) {
+            return false;
+        }
+
+        if ($siteId === null && $elementType::isLocalized() && Sites::isMultiSite()) {
+            // Get a site this element is enabled in
+            $siteId = (int) DB::table(Table::ELEMENTS_SITES)
+                ->where('elementId', $elementId)
+                ->value('siteId');
+
+            if ($siteId === 0) {
+                return false;
+            }
+        }
+
+        $element = $this->getElementById($elementId, $elementType, $siteId);
+
+        if (! $element) {
+            return false;
+        }
+
+        return $this->deleteElement($element, $hardDelete);
+    }
+
+    /**
+     * Deletes an element.
+     *
+     * @param  ElementInterface  $element  The element to be deleted
+     * @param  bool  $hardDelete  Whether the element should be hard-deleted immediately, instead of soft-deleted
+     * @return bool Whether the element was deleted successfully
+     *
+     * @throws Throwable
+     */
+    public function deleteElement(ElementInterface $element, bool $hardDelete = false): bool
+    {
+        return app(DeleteElementAction::class)->handle($element, $hardDelete);
     }
 }

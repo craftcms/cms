@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Console\Commands\Utils;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
 use Illuminate\Database\Connection;
@@ -29,7 +29,7 @@ class PruneProvisionalDraftsCommand extends Command
     #[Override]
     protected $aliases = ['utils/prune-provisional-drafts', 'utils/prune-provisional-drafts:index', 'utils/prune-provisional-drafts/index'];
 
-    public function handle(Connection $connection): int
+    public function handle(Connection $connection, Elements $elements): int
     {
         $this->components->task(
             'Finding elements with multiple provisional drafts per user',
@@ -44,7 +44,6 @@ class PruneProvisionalDraftsCommand extends Command
             return self::SUCCESS;
         }
 
-        $elementsService = Craft::$app->getElements();
         $prunedDraftCount = 0;
 
         foreach ($elements as $element) {
@@ -82,7 +81,7 @@ class PruneProvisionalDraftsCommand extends Command
                     continue;
                 }
 
-                $elementsService->deleteElement($extraDraft, true);
+                $elements->deleteElement($extraDraft, true);
             }
 
             $prunedDraftCount += count($extraDrafts);

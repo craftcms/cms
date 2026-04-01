@@ -17,6 +17,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\DB;
 use PDO;
@@ -191,6 +192,6 @@ abstract class BaseElementFixture extends DbFixture
      */
     protected function deleteElement(ElementInterface $element): bool
     {
-        return Craft::$app->getElements()->deleteElement($element, true);
+        return Elements::deleteElement($element, true);
     }
 }

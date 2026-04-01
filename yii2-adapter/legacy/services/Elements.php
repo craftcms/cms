@@ -25,13 +25,13 @@ use craft\events\InvalidateElementCachesEvent;
 use craft\events\MergeElementsEvent;
 use craft\events\MultiElementActionEvent;
 use craft\events\RegisterComponentTypesEvent;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\Queue;
 use craft\models\ElementActivity;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Actions\CascadeDeleteDraftsAndRevisionsAction;
 use CraftCms\Cms\Element\Actions\PropagateElementAction;
 use CraftCms\Cms\Element\Actions\ResaveElementsAction;
 use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
@@ -43,6 +43,7 @@ use CraftCms\Cms\Element\ElementActivity as ElementActivityService;
 use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
+use CraftCms\Cms\Element\Events\AfterDeleteElement;
 use CraftCms\Cms\Element\Events\AfterMergeCanonicalChanges;
 use CraftCms\Cms\Element\Events\AfterMergeElements;
 use CraftCms\Cms\Element\Events\AfterPropagateElement;
@@ -51,6 +52,7 @@ use CraftCms\Cms\Element\Events\AfterResaveElement;
 use CraftCms\Cms\Element\Events\AfterResaveElements;
 use CraftCms\Cms\Element\Events\AfterSaveElement;
 use CraftCms\Cms\Element\Events\AfterUpdateSlugAndUri;
+use CraftCms\Cms\Element\Events\BeforeDeleteElement;
 use CraftCms\Cms\Element\Events\BeforeMergeCanonicalChanges;
 use CraftCms\Cms\Element\Events\BeforePropagateElement;
 use CraftCms\Cms\Element\Events\BeforePropagateElements;
@@ -69,7 +71,6 @@ use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
-use CraftCms\Cms\Structure\Models\StructureElement as StructureElementModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Facades\ElementCaches;
@@ -1270,6 +1271,7 @@ class Elements extends Component
      *
      * @return bool Whether the element was deleted successfully
      * @throws Throwable
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::deleteElementById()} instead.
      */
     public function deleteElementById(
         int $elementId,
@@ -1277,32 +1279,7 @@ class Elements extends Component
         ?int $siteId = null,
         bool $hardDelete = false,
     ): bool {
-        if ($elementType === null) {
-            $elementType = $this->getElementTypeById($elementId);
-
-            if ($elementType === null) {
-                return false;
-            }
-        }
-
-        if ($siteId === null && $elementType::isLocalized() && Sites::isMultiSite()) {
-            // Get a site this element is enabled in
-            $siteId = (int)DB::table(Table::ELEMENTS_SITES)
-                ->where('elementId', $elementId)
-                ->value('siteId');
-
-            if ($siteId === 0) {
-                return false;
-            }
-        }
-
-        $element = $this->getElementById($elementId, $elementType, $siteId);
-
-        if (!$element) {
-            return false;
-        }
-
-        return $this->deleteElement($element, $hardDelete);
+        return ElementsFacade::deleteElementById($elementId, $elementType, $siteId, $hardDelete);
     }
 
     /**
@@ -1313,90 +1290,11 @@ class Elements extends Component
      *
      * @return bool Whether the element was deleted successfully
      * @throws Throwable
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::deleteElement()} instead.
      */
     public function deleteElement(ElementInterface $element, bool $hardDelete = false): bool
     {
-        // Fire a 'beforeDeleteElement' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ELEMENT)) {
-            $event = new DeleteElementEvent([
-                'element' => $element,
-                'hardDelete' => $hardDelete,
-            ]);
-            $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, $event);
-            $hardDelete = $hardDelete || $event->hardDelete;
-        }
-
-        $element->hardDelete = $hardDelete;
-
-        if (!$element->beforeDelete()) {
-            return false;
-        }
-
-        BulkOps::ensure(function() use ($element) {
-            DB::beginTransaction();
-            try {
-                // First delete any structure nodes with this element, so NestedSetBehavior can do its thing.
-                while (($record = StructureElementModel::where('elementId', $element->id)->first()) !== null) {
-                    // If this element still has any children, move them up before the one getting deleted.
-                    while (($child = $record->children(1)->first()) !== null) {
-                        /** @var StructureElementModel $child */
-                        $child->insertBefore($record);
-                        // Re-fetch the record since its lft and rgt attributes just changed
-                        $record->refresh();
-                    }
-                    // Delete this element’s node
-                    $record->deleteWithChildren();
-                }
-
-                // Invalidate any caches involving this element
-                $this->elementCaches()->invalidateForElement($element);
-
-                DateTimeHelper::pause();
-
-                if ($element->hardDelete) {
-                    DB::table(Table::ELEMENTS)->delete($element->id);
-                    DB::table(Table::SEARCHINDEX)
-                        ->where('elementId', $element->id)
-                        ->delete();
-                } else {
-                    // Soft delete the elements table row
-                    DB::table(Table::ELEMENTS)
-                        ->where('id', $element->id)
-                        ->update([
-                            'dateUpdated' => $now = now(),
-                            'dateDeleted' => $now,
-                            'deletedWithOwner' => $element->deletedWithOwner,
-                        ]);
-
-                    // Also soft delete the element’s drafts & revisions
-                    $this->_cascadeDeleteDraftsAndRevisions($element->id);
-                }
-
-                $element->dateDeleted = DateTimeHelper::now();
-                $element->afterDelete();
-
-                if (!$element->hardDelete) {
-                    // Track this element in bulk operations
-                    BulkOps::trackElement($element);
-                }
-
-                DB::commit();
-            } catch (Throwable $e) {
-                DB::rollBack();
-                throw $e;
-            } finally {
-                DateTimeHelper::resume();
-            }
-        });
-
-        // Fire an 'afterDeleteElement' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ELEMENT)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_ELEMENT, new ElementEvent([
-                'element' => $element,
-            ]));
-        }
-
-        return true;
+        return ElementsFacade::deleteElement($element, $hardDelete);
     }
 
     /**
@@ -1610,7 +1508,7 @@ class Elements extends Component
                     ]);
 
                 // Also restore the element’s drafts & revisions
-                $this->_cascadeDeleteDraftsAndRevisions($element->id, false);
+                app(CascadeDeleteDraftsAndRevisionsAction::class)->handle($element->id, false);
 
                 // Restore its search indexes
                 Search::indexElementAttributes($element);
@@ -3065,6 +2963,29 @@ class Elements extends Component
             Craft::$app->getElements()->trigger(self::EVENT_AFTER_MERGE_ELEMENTS, new MergeElementsEvent([
                 'mergedElementId' => $event->mergedElementId,
                 'prevailingElementId' => $event->prevailingElementId,
+            ]));
+        });
+
+        Event::listen(function(BeforeDeleteElement $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_DELETE_ELEMENT)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, $yiiEvent = new DeleteElementEvent([
+                'element' => $event->element,
+                'hardDelete' => $event->hardDelete,
+            ]));
+
+            $event->hardDelete = $yiiEvent->hardDelete;
+        });
+
+        Event::listen(function(AfterDeleteElement $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_DELETE_ELEMENT)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_AFTER_DELETE_ELEMENT, new ElementEvent([
+                'element' => $event->element,
             ]));
         });
     }

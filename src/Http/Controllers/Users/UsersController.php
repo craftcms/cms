@@ -10,6 +10,7 @@ use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -121,7 +122,7 @@ readonly class UsersController
             );
     }
 
-    public function destroy(Request $request, Users $users): Response
+    public function destroy(Request $request, Elements $elements, Users $users): Response
     {
         $request->validate([
             'userId' => ['required', 'integer'],
@@ -157,7 +158,7 @@ readonly class UsersController
         // Delete the user
         $user->inheritorOnDelete = $transferContentTo;
 
-        if (! Craft::$app->getElements()->deleteElement($user)) {
+        if (! $elements->deleteElement($user)) {
             return $this->asFailure(t('Couldn’t delete {type}.', [
                 'type' => User::lowerDisplayName(),
             ]));

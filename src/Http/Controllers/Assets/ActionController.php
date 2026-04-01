@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
-use Craft;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
@@ -34,6 +33,7 @@ readonly class ActionController
 
     public function __construct(
         private Assets $assets,
+        private Elements $elements,
         private Folders $folders,
     ) {}
 
@@ -50,7 +50,7 @@ readonly class ActionController
         $this->requireVolumePermissionByAsset('deleteAssets', $asset);
         $this->requirePeerVolumePermissionByAsset('deletePeerAssets', $asset);
 
-        $success = Craft::$app->getElements()->deleteElement($asset);
+        $success = $this->elements->deleteElement($asset);
 
         if (! $success) {
             return $this->asModelFailure(

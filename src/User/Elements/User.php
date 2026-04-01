@@ -41,6 +41,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\ElementCaches;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -2173,12 +2174,8 @@ JS, [
             return false;
         }
 
-        $elementsService = Craft::$app->getElements();
-
         // Do all this stuff within a transaction
-        DbFacade::beginTransaction();
-
-        try {
+        DbFacade::transaction(function () {
             // Should we transfer the content to a new user?
             if ($this->inheritorOnDelete) {
                 // Invalidate all entry caches
@@ -2198,27 +2195,24 @@ JS, [
                             $column => $this->inheritorOnDelete->id,
                         ]);
                 }
-            } else {
-                // Delete the entries
-                $entryQuery = Entry::find()
-                    ->authorId($this->id)
-                    ->status(null)
-                    ->site('*')
-                    ->unique();
 
-                $entryQuery->each(function (Entry $entry) use ($elementsService) {
-                    // only delete their entry if they're the sole author
-                    if ($entry->getAuthorIds() === [$this->id]) {
-                        $elementsService->deleteElement($entry);
-                    }
-                }, 100);
+                return;
             }
 
-            DbFacade::commit();
-        } catch (Throwable $e) {
-            DbFacade::rollBack();
-            throw $e;
-        }
+            // Delete the entries
+            $entryQuery = Entry::find()
+                ->authorId($this->id)
+                ->status(null)
+                ->site('*')
+                ->unique();
+
+            $entryQuery->each(function (Entry $entry) {
+                // only delete their entry if they're the sole author
+                if ($entry->getAuthorIds() === [$this->id]) {
+                    Elements::deleteElement($entry);
+                }
+            }, 100);
+        });
 
         $this->getAddressManager()->deleteNestedElements($this, $this->hardDelete);
 

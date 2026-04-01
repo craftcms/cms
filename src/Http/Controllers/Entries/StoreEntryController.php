@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
-use Craft;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Element;
@@ -106,7 +105,7 @@ readonly class StoreEntryController
             ->one();
 
         if ($provisional) {
-            Craft::$app->getElements()->deleteElement($provisional, true);
+            $this->elements->deleteElement($provisional, true);
         }
 
         $data = [];

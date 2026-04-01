@@ -968,7 +968,7 @@ class Users
             })
             ->each(function (User $user) {
                 try {
-                    Craft::$app->getElements()->deleteElement($user);
+                    $this->elements->deleteElement($user);
                     Log::info("Just deleted pending user $user->username ($user->id), because they took too long to activate their account.", [__METHOD__]);
                 } catch (UserException $e) {
                     Log::warning($e->getMessage(), [__METHOD__]);

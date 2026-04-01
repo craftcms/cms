@@ -1496,7 +1496,7 @@ JS, [
             ->one();
 
         if ($provisional) {
-            $elementsService->deleteElement($provisional, true);
+            Elements::deleteElement($provisional, true);
         }
 
         if (!$this->request->getAcceptsJson()) {
@@ -1715,7 +1715,7 @@ JS, [
         // If the original element is a provisional draft,
         // delete the draft as the changes are likely no longer wanted.
         if ($this->_deleteProvisionalDraft && $element->isProvisionalDraft) {
-            Craft::$app->getElements()->deleteElement($element);
+            Elements::deleteElement($element);
         }
 
         return $this->_asSuccess(t('{type} duplicated.', [
@@ -1823,7 +1823,7 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to delete this element.');
         }
 
-        if (!$elementsService->deleteElement($element)) {
+        if (!Elements::deleteElement($element)) {
             return $this->_asFailure($element, t('Couldn’t delete {type}.', [
                 'type' => $element::lowerDisplayName(),
             ]));
@@ -1968,7 +1968,7 @@ JS, [
 
             if ($existingProvisionalDraft) {
                 Log::warning("Overwriting an existing provisional draft for element/user $element->id/$user->id", [__METHOD__]);
-                $elementsService->deleteElement($existingProvisionalDraft, true);
+                Elements::deleteElement($existingProvisionalDraft, true);
             }
         }
 
@@ -2293,7 +2293,7 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to delete this draft.');
         }
 
-        if (!$elementsService->deleteElement($element, true)) {
+        if (!Elements::deleteElement($element, true)) {
             return $this->_asFailure($element, t('Couldn’t delete {type}.', [
                 'type' => t('draft'),
             ]));

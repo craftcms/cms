@@ -1028,7 +1028,7 @@ JS, [
         foreach ($elements as $element) {
             if ($element->getPrimaryOwnerId() === $owner->id) {
                 $hardDelete = $element->getIsUnpublishedDraft();
-                $elementsService->deleteElement($element, $hardDelete);
+                Elements::deleteElement($element, $hardDelete);
             } else {
                 // Just delete the ownership relation
                 $deleteOwnership[] = $element->id;
@@ -1352,7 +1352,7 @@ JS, [
                     if ($canonicalElement->trashed) {
                         // Delete the derivative element too, unless any changes were made to it
                         if ($derivativeElement->dateUpdated == $derivativeElement->dateCreated) {
-                            $elementsService->deleteElement($derivativeElement);
+                            Elements::deleteElement($derivativeElement);
                         }
                     } elseif (!$derivativeElement->trashed && ElementHelper::isOutdated($derivativeElement)) {
                         // Merge the upstream changes into the derivative nested element
@@ -1419,7 +1419,7 @@ JS, [
                 }
 
                 $element->deletedWithOwner = true;
-                $elementsService->deleteElement($element, $hardDelete);
+                Elements::deleteElement($element, $hardDelete);
             }
         }
     }

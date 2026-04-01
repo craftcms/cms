@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementAction;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
@@ -173,7 +174,7 @@ JS,
         foreach ($users as $user) {
             if ($elementsService->canDelete($user, $currentUser)) {
                 $user->inheritorOnDelete = $transferContentTo;
-                if ($elementsService->deleteElement($user, $this->hard)) {
+                if (Elements::deleteElement($user, $this->hard)) {
                     $deletedCount++;
                 }
             }

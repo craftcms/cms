@@ -105,7 +105,7 @@ readonly class AddressesController
         ]));
     }
 
-    public function destroy(Request $request): Response
+    public function destroy(Request $request, Elements $elements): Response
     {
         $request->validate([
             'addressId' => ['required', 'integer'],
@@ -119,7 +119,7 @@ readonly class AddressesController
 
         abort_if(! $elementsService->canDelete($address), 403, 'User is not permitted to delete this address.');
 
-        if (! $elementsService->deleteElement($address)) {
+        if (! $elements->deleteElement($address)) {
             return $this->asModelFailure($address, t('Couldn’t delete {type}.', [
                 'type' => Address::lowerDisplayName(),
             ]), 'address');

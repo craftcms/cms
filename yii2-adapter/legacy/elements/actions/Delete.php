@@ -239,6 +239,6 @@ JS, [static::class]);
             }
         }
 
-        $elementsService->deleteElement($element, $this->hard);
+        \CraftCms\Cms\Support\Facades\Elements::deleteElement($element, $this->hard);
     }
 }
