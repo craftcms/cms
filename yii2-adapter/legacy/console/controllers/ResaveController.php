@@ -655,7 +655,7 @@ class ResaveController extends Controller
         } else {
             $elementsService->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
             $elementsService->on(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
-            \CraftCms\Cms\Support\Facades\Elements::resaveElements($query, true, $this->revisions === false, $this->updateSearchIndex, $this->touch);
+            $elementsService->resaveElements($query, true, $this->revisions === false, $this->updateSearchIndex, $this->touch);
             $elementsService->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
             $elementsService->off(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
         }

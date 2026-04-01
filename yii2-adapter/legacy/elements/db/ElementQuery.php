@@ -2003,6 +2003,11 @@ class ElementQuery extends Query implements ElementQueryInterface
         return null;
     }
 
+    public function first(): mixed
+    {
+        return $this->one();
+    }
+
     /**
      * @inheritdoc
      * @since 3.3.16.2

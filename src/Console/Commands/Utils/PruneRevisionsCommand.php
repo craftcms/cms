@@ -37,7 +37,7 @@ class PruneRevisionsCommand extends Command
     #[Override]
     protected $aliases = ['utils/prune-revisions', 'utils/prune-revisions:index', 'utils/prune-revisions/index'];
 
-    public function handle(Connection $connection, Elements $elements, GeneralConfig $generalConfig): int
+    public function handle(Connection $connection, Elements $elementsService, GeneralConfig $generalConfig): int
     {
         $sectionIds = $this->resolveSectionIds();
 
@@ -95,7 +95,7 @@ class PruneRevisionsCommand extends Command
                     continue;
                 }
 
-                $elements->deleteElement($extraRevision, true);
+                $elementsService->deleteElement($extraRevision, true);
             }
 
             $prunedRevisionCount += count($extraRevisions);

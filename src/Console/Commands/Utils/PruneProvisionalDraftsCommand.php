@@ -29,7 +29,7 @@ class PruneProvisionalDraftsCommand extends Command
     #[Override]
     protected $aliases = ['utils/prune-provisional-drafts', 'utils/prune-provisional-drafts:index', 'utils/prune-provisional-drafts/index'];
 
-    public function handle(Connection $connection, Elements $elements): int
+    public function handle(Connection $connection, Elements $elementsService): int
     {
         $this->components->task(
             'Finding elements with multiple provisional drafts per user',
@@ -81,7 +81,7 @@ class PruneProvisionalDraftsCommand extends Command
                     continue;
                 }
 
-                $elements->deleteElement($extraDraft, true);
+                $elementsService->deleteElement($extraDraft, true);
             }
 
             $prunedDraftCount += count($extraDrafts);

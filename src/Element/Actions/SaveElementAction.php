@@ -489,7 +489,7 @@ class SaveElementAction
 
             // Update the changed attributes & fields
             if ($this->trackChanges) {
-                $userId = Auth::user()->id;
+                $userId = Auth::user()?->id;
                 $timestamp = now();
 
                 foreach ($this->dirtyAttributes as $attributeName) {
