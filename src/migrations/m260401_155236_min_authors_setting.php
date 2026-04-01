@@ -25,7 +25,7 @@ class m260401_155236_min_authors_setting extends Migration
 
         $entriesService = Craft::$app->getEntries();
         foreach ($entriesService->getAllSections() as $section) {
-            $section->minAuthors = 1;
+            $section->minAuthors = $section->maxAuthors === 0 ? 0 : 1;
             $entriesService->saveSection($section);
         }
 
