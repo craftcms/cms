@@ -1799,12 +1799,7 @@ JS, [
 
         $this->element = $element;
 
-        $elementsService = Craft::$app->getElements();
-        $user = static::currentUser();
-
-        if (!$elementsService->canDelete($element, $user)) {
-            throw new ForbiddenHttpException('User not authorized to delete this element.');
-        }
+        Gate::authorize('delete', $element);
 
         if (!Elements::deleteElement($element)) {
             return $this->_asFailure($element, t('Couldn’t delete {type}.', [
@@ -2266,12 +2261,7 @@ JS, [
 
         $this->element = $element;
 
-        $elementsService = Craft::$app->getElements();
-        $user = static::currentUser();
-
-        if (!$elementsService->canDelete($element, $user)) {
-            throw new ForbiddenHttpException('User not authorized to delete this draft.');
-        }
+        Gate::authorize('delete', $element);
 
         if (!Elements::deleteElement($element, true)) {
             return $this->_asFailure($element, t('Couldn’t delete {type}.', [

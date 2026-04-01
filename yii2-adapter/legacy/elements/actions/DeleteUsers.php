@@ -7,7 +7,6 @@
 
 namespace craft\elements\actions;
 
-use Craft;
 use craft\base\ElementAction;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -15,8 +14,8 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Gate;
 use yii\base\Exception;
 use function CraftCms\Cms\t;
 
@@ -167,12 +166,10 @@ JS,
         }
 
         // Delete the users
-        $elementsService = Craft::$app->getElements();
-        $currentUser = Auth::user();
         $deletedCount = 0;
 
         foreach ($users as $user) {
-            if ($elementsService->canDelete($user, $currentUser)) {
+            if (Gate::check('delete', $user)) {
                 $user->inheritorOnDelete = $transferContentTo;
                 if (Elements::deleteElement($user, $this->hard)) {
                     $deletedCount++;

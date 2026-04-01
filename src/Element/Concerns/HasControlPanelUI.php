@@ -162,7 +162,7 @@ trait HasControlPanelUI
     protected function safeActionMenuItems(): array
     {
         $items = [];
-        $elementsService = Craft::$app->getElements();
+        Craft::$app->getElements();
 
         // Validate
         if (
@@ -250,7 +250,7 @@ JS, [
             ]);
 
             // Copy
-            if (! $this->getIsRevision() && $elementsService->canCopy($this)) {
+            if (! $this->getIsRevision() && Gate::check('copy', $this)) {
                 $copyId = sprintf('action-copy-%s', mt_rand());
                 $items[] = [
                     'id' => $copyId,
@@ -300,8 +300,8 @@ JS, [
     {
         $items = [];
 
-        $elementsService = Craft::$app->getElements();
-        $user = Auth::user();
+        Craft::$app->getElements();
+        Auth::user();
 
         $isCanonical = $this->getIsCanonical();
         $isDraft = $this->getIsDraft();
@@ -320,13 +320,13 @@ JS, [
             default => false,
         };
 
-        $canDeleteDraft = $isDraft && ! $this->isProvisionalDraft && $elementsService->canDelete($this, $user);
-        $canDeleteCanonical = $elementsService->canDelete($canonical, $user);
-        $canDeleteCanonicalForSite = $elementsService->canDeleteForSite($canonical, $user);
+        $canDeleteDraft = $isDraft && ! $this->isProvisionalDraft && Gate::check('delete', $this);
+        $canDeleteCanonical = Gate::check('delete', $canonical);
+        $canDeleteCanonicalForSite = Gate::check('deleteForSite', $canonical);
         $canDeleteForSite = (
             ElementHelper::isMultiSite($this) &&
             (($isCurrent && $canDeleteCanonicalForSite) || ($canDeleteDraft && $isNewSite)) &&
-            $elementsService->canDeleteForSite($this, $user)
+            Gate::check('deleteForSite', $this)
         );
 
         if ($isCurrent) {

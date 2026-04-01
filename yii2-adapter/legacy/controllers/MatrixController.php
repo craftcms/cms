@@ -25,7 +25,6 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Gate;
 use Throwable;
 use yii\web\BadRequestHttpException;
-use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 use function CraftCms\Cms\t;
@@ -141,9 +140,7 @@ class MatrixController extends Controller
             // set owner so that the canDuplicateAsDraft checks the max entries on the right owner and not only the canonical
             $source->setOwner($owner);
 
-            if (!$elementsService->canDuplicateAsDraft($source, $user)) {
-                throw new ForbiddenHttpException('User not authorized to duplicate this element.');
-            }
+            Gate::authorize('duplicateAsDraft', $source);
 
             try {
                 $entry = Elements::duplicateElement($source, [

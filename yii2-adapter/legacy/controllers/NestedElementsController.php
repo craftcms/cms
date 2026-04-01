@@ -7,7 +7,6 @@
 
 namespace craft\controllers;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\web\Controller;
@@ -18,6 +17,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -152,11 +152,7 @@ class NestedElementsController extends Controller
             throw new BadRequestHttpException('Invalid elementId param');
         }
 
-        $elementsService = Craft::$app->getElements();
-
-        if (!$elementsService->canDelete($element)) {
-            throw new ForbiddenHttpException('User not authorized to delete this element.');
-        }
+        Gate::authorize('delete', $element);
 
         // If the element primarily belongs to a different element, just delete the ownership
         /** @var NestedElementInterface $element */

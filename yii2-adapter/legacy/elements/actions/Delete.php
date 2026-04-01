@@ -18,6 +18,7 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use function CraftCms\Cms\t;
 
 /**
@@ -186,16 +187,17 @@ JS, [static::class]);
         $deleteOwnership = [];
 
         foreach ($query->all() as $element) {
-            if (!$user->can('view', $element) || !$elementsService->canDelete($element, $user)) {
+            if (!Gate::check('view', $element) || !Gate::check('delete', $element)) {
                 continue;
             }
+
             if (!isset($deletedElementIds[$element->id])) {
                 if ($withDescendants) {
                     foreach ($element->getDescendants()->all() as $descendant) {
                         if (
                             !isset($deletedElementIds[$descendant->id]) &&
-                            $user->can('view', $descendant) &&
-                            $elementsService->canDelete($descendant, $user)
+                            Gate::check('view', $descendant) &&
+                            Gate::check('delete', $descendant)
                         ) {
                             $this->deleteElement($descendant, $elementsService, $deleteOwnership);
                             $deletedElementIds[$descendant->id] = true;

@@ -115,9 +115,7 @@ readonly class AddressesController
 
         abort_if(! $address, 400, "Invalid address ID: $addressId");
 
-        $elementsService = Craft::$app->getElements();
-
-        abort_if(! $elementsService->canDelete($address), 403, 'User is not permitted to delete this address.');
+        Gate::authorize('delete', $address);
 
         if (! $elements->deleteElement($address)) {
             return $this->asModelFailure($address, t('Couldn’t delete {type}.', [
