@@ -12,12 +12,10 @@ use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\events\DefineElementEditorHtmlEvent;
-use craft\models\ElementActivity;
 use craft\services\Drafts;
 use craft\web\Controller;
 use craft\web\CpScreenResponseBehavior;
 use craft\web\UrlManager;
-use craft\web\View;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
@@ -25,8 +23,10 @@ use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Data\ElementActivity;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Enums\ElementActivityType;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
@@ -41,6 +41,7 @@ use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\ElementActivity as ElementActivityFacade;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -1482,7 +1483,7 @@ JS, [
             ])));
         }
 
-        $elementsService->trackActivity($element, ElementActivity::TYPE_SAVE);
+        ElementActivityFacade::trackActivity($element, ElementActivityType::Save);
 
         // See if the user happens to have a provisional element. If so delete it.
         $provisional = $element::find()
@@ -2023,7 +2024,7 @@ JS, [
             throw $e;
         }
 
-        $elementsService->trackActivity($element, ElementActivity::TYPE_SAVE);
+        ElementActivityFacade::trackActivity($element, ElementActivityType::Save);
 
         $creator = $element->getDraftCreator();
 
@@ -2210,7 +2211,7 @@ JS, [
             }
         }
 
-        $elementsService->trackActivity($canonical, ElementActivity::TYPE_SAVE);
+        ElementActivityFacade::trackActivity($canonical, ElementActivityType::Save);
 
         if (!$this->request->getAcceptsJson()) {
             // Tell all browser windows about the element save
@@ -2347,7 +2348,8 @@ JS, [
         }
 
         $canonical = app(Revisions::class)->revertToRevision($element, $user->id);
-        Craft::$app->getElements()->trackActivity($canonical, ElementActivity::TYPE_SAVE);
+
+        ElementActivityFacade::trackActivity($canonical, ElementActivityType::Save);
 
         return $this->_asSuccess(t('{type} reverted to past revision.', [
             'type' => $element::displayName(),
@@ -2488,45 +2490,12 @@ JS, [
             throw new BadRequestHttpException('No element was identified by the request.');
         }
 
-        $elementsService = Craft::$app->getElements();
         $currentUser = Auth::user();
-        $activity = $elementsService->getRecentActivity($element, $currentUser->id);
-        $elementsService->trackActivity($element, ElementActivity::TYPE_VIEW, $currentUser);
+        $activity = ElementActivityFacade::getRecentActivity($element, $currentUser->id);
+        ElementActivityFacade::trackActivity($element, ElementActivityType::View, $currentUser);
 
         return $this->asJson([
-            'activity' => array_map(function(ElementActivity $record) use ($element) {
-                $recordIsCanonical = $record->element->getIsCanonical() || $record->element->isProvisionalDraft;
-                $recordIsCanonicalAndPublished = $recordIsCanonical && !$record->element->getIsUnpublishedDraft();
-                $isSameOrUpstream = $element->id === $record->element->id || $recordIsCanonical;
-
-                if ($isSameOrUpstream) {
-                    $messageParams = [
-                        'user' => $record->user->getName(),
-                        'type' => $recordIsCanonicalAndPublished ? $element::lowerDisplayName() : t('draft'),
-                    ];
-                    $message = match ($record->type) {
-                        ElementActivity::TYPE_VIEW => t('{user} is viewing this {type}.', $messageParams),
-                        ElementActivity::TYPE_EDIT, ElementActivity::TYPE_SAVE => t('{user} is editing this {type}.', $messageParams),
-                    };
-                } else {
-                    $messageParams = [
-                        'user' => $record->user->getName(),
-                        'type' => $element::lowerDisplayName(),
-                    ];
-                    $message = match ($record->type) {
-                        ElementActivity::TYPE_VIEW => t('{user} is viewing a draft of this {type}.', $messageParams),
-                        ElementActivity::TYPE_EDIT, ElementActivity::TYPE_SAVE => t('{user} is editing a draft of this {type}.', $messageParams),
-                    };
-                }
-
-                return [
-                    'userId' => $record->user->id,
-                    'userName' => $record->user->getName(),
-                    'userThumb' => $record->user->getThumbHtml(26),
-                    'type' => $record->type,
-                    'message' => $message,
-                ];
-            }, $activity),
+            'activity' => $activity->map(fn(ElementActivity $record) => $record->toActivityRow($element))->all(),
             'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
             'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated->getTimestamp(),
         ]);

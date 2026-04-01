@@ -431,6 +431,9 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
   - Deprecated `craft\services\Elements::trackElementInBulkOps()`. `CraftCms\Cms\Element\BulkOp\BulkOps::trackElement()` should be used instead.
   - Deprecated `craft\services\Elements::ensureBulkOp()`. `CraftCms\Cms\Element\BulkOp\BulkOps::ensure()` should be used instead.
   - Deprecated `craft\events\BulkOpEvent::defer()`. `CraftCms\Cms\Element\BulkOp\BulkOps::defer()` should be used instead.
+- Added `CraftCms\Cms\Element\ElementActivity`, `CraftCms\Cms\Element\Data\ElementActivity`, `CraftCms\Cms\Element\Enums\ElementActivityType`, and `CraftCms\Cms\Support\Facades\ElementActivity`.
+  - Deprecated `craft\services\Elements::getRecentActivity()`. `CraftCms\Cms\Element\ElementActivity::getRecentActivity()` should be used instead.
+  - Deprecated `craft\services\Elements::trackActivity()`. `CraftCms\Cms\Element\ElementActivity::trackActivity()` should be used instead.
 - Deprecated `craft\errors\InvalidTypeException`. `CraftCms\Cms\Element\Exceptions\InvalidTypeException` should be used instead.
 - Deprecated `craft\errors\UnsupportedSiteException`. `CraftCms\Cms\Element\Exceptions\UnsupportedSiteException` should be used instead.
 
