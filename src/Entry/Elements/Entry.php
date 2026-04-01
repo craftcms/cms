@@ -1250,7 +1250,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
 
         if ($section->type === SectionType::Structure) {
-            $elementsService = Craft::$app->getElements();
             $user = Auth::user();
 
             $ancestors = $this->getAncestors();
@@ -1259,7 +1258,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             }
 
             foreach ($ancestors->all() as $ancestor) {
-                if ($elementsService->canView($ancestor, $user)) {
+                if ($user->can('view', $ancestor)) {
                     $crumbs[] = [
                         'html' => app(ElementHtml::class)->elementChipHtml($ancestor, [
                             'class' => 'chromeless',

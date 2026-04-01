@@ -30,6 +30,7 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
@@ -304,7 +305,7 @@ readonly class ElementHtml
             'sortable' => false,
         ];
 
-        $showEditButton = $config['showEditButton'] && Craft::$app->getElements()->canView($element);
+        $showEditButton = $config['showEditButton'] && Gate::check('view', $element);
 
         if ($showEditButton) {
             $editId = sprintf('action-edit-%s', mt_rand());
@@ -520,7 +521,7 @@ JS, [
     {
         $elementsService = Craft::$app->getElements();
         $user = Auth::user();
-        $editable = $user && $elementsService->canView($element, $user);
+        $editable = $user && $user->can('view', $element);
 
         return Arr::merge(
             Html::normalizeTagAttributes($element->getHtmlAttributes($config['context'])),

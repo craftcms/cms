@@ -17,6 +17,7 @@ use CraftCms\Cms\Element\Actions\DuplicateElementAction;
 use CraftCms\Cms\Element\Actions\MergeCanonicalChangesAction;
 use CraftCms\Cms\Element\Actions\MergeElementsAction;
 use CraftCms\Cms\Element\Actions\ParseRefsAction;
+use CraftCms\Cms\Element\Actions\PropagateElementAction;
 use CraftCms\Cms\Element\Actions\PropagateElementsAction;
 use CraftCms\Cms\Element\Actions\ResaveElementsAction;
 use CraftCms\Cms\Element\Actions\RestoreElementsAction;
@@ -34,6 +35,8 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Typecast;
@@ -490,6 +493,38 @@ class Elements
         bool $continueOnError = false,
     ): void {
         app(PropagateElementsAction::class)->handle($query, $siteIds, $continueOnError);
+    }
+
+    /**
+     * Propagates an element to a different site.
+     *
+     * @param  ElementInterface  $element  The element to propagate
+     * @param  int  $siteId  The site ID that the element should be propagated to
+     * @param  ElementInterface|false|null  $siteElement  The element loaded for the propagated site (only pass this if you
+     *                                                    already had a reason to load it). Set to `false` if it is known to not exist yet.
+     * @return ElementInterface The element in the target site
+     *
+     * @throws Exception if the element couldn't be propagated
+     * @throws UnsupportedSiteException if the element doesn’t support `$siteId`
+     */
+    public function propagateElement(
+        ElementInterface $element,
+        int $siteId,
+        ElementInterface|false|null $siteElement = null,
+    ): ElementInterface {
+        $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
+
+        BulkOps::ensure(function () use ($element, $supportedSites, $siteId, &$siteElement) {
+            app(PropagateElementAction::class)->handle($element, $supportedSites, $siteId, $siteElement);
+
+            // Track this element in bulk operations
+            BulkOps::trackElement($element);
+        });
+
+        // Clear caches
+        $this->elementCaches->invalidateForElement($element);
+
+        return $siteElement;
     }
 
     /**

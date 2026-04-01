@@ -23,7 +23,6 @@ use craft\events\MergeElementsEvent;
 use craft\events\MultiElementActionEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\models\ElementActivity;
-use CraftCms\Cms\Element\Actions\PropagateElementAction;
 use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
 use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
@@ -66,7 +65,6 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Facades\Elements as ElementsFacade;
 use CraftCms\Cms\Support\Facades\Search;
@@ -1534,25 +1532,14 @@ class Elements extends Component
      * @throws Exception if the element couldn't be propagated
      * @throws UnsupportedSiteException if the element doesn’t support `$siteId`
      * @since 3.0.13
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::propagateElement()} instead.
      */
     public function propagateElement(
         ElementInterface $element,
         int $siteId,
         ElementInterface|false|null $siteElement = null,
     ): ElementInterface {
-        $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
-
-        BulkOps::ensure(function() use ($element, $supportedSites, $siteId, &$siteElement) {
-            app(PropagateElementAction::class)->handle($element, $supportedSites, $siteId, $siteElement);
-
-            // Track this element in bulk operations
-            BulkOps::trackElement($element);
-        });
-
-        // Clear caches
-        $this->elementCaches()->invalidateForElement($element);
-
-        return $siteElement;
+        return ElementsFacade::propagateElement($element, $siteId, $siteElement);
     }
 
     /**
@@ -1563,23 +1550,10 @@ class Elements extends Component
      *
      * @return bool
      * @since 4.3.0
+     * @deprecated 6.0.0 use `Gate::forUser($user)->allows('view', $element)` instead.
      */
     public function canView(ElementInterface $element, ?User $user = null): bool
     {
-        if (!$user) {
-            $user = Auth::user();
-            if (!$user) {
-                return false;
-            }
-        }
-
-        // Fire deprecated Yii events for plugin compatibility
-        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_VIEW);
-        if ($eventResult !== null) {
-            return $eventResult;
-        }
-
-        // Delegate to Laravel Gate
         return Gate::forUser($user)->allows('view', $element);
     }
 
@@ -1809,9 +1783,9 @@ class Elements extends Component
         return Gate::forUser($user)->allows('createDrafts', $element);
     }
 
-    private function _authCheck(ElementInterface $element, User $user, string $eventName): ?bool
+    private static function _authCheck(ElementInterface $element, User $user, string $eventName): ?bool
     {
-        if (!$this->hasEventHandlers($eventName)) {
+        if (!Craft::$app->getElements()->hasEventHandlers($eventName)) {
             return null;
         }
 
@@ -1820,7 +1794,8 @@ class Elements extends Component
             'authorized' => null,
         ]);
 
-        $this->trigger($eventName, $event);
+        Craft::$app->getElements()->trigger($eventName, $event);
+
         return $event->authorized;
     }
 
@@ -2036,6 +2011,32 @@ class Elements extends Component
             ]));
 
             $event->with = $yiiEvent->with;
+        });
+
+        // Fire deprecated Yii auth events for plugin compatibility
+        Gate::before(function(User $user, string $ability, mixed $arguments) {
+            $element = $arguments[0] ?? null;
+
+            if (!$element instanceof ElementInterface) {
+                return null;
+            }
+
+            $event = [
+                'view' => self::EVENT_AUTHORIZE_VIEW,
+                'save' => self::EVENT_AUTHORIZE_SAVE,
+                'createDrafts' => self::EVENT_AUTHORIZE_CREATE_DRAFTS,
+                'duplicate' => self::EVENT_AUTHORIZE_DUPLICATE,
+                'duplicateAsDraft' => self::EVENT_AUTHORIZE_DUPLICATE_AS_DRAFT,
+                'copy' => self::EVENT_AUTHORIZE_COPY,
+                'delete' => self::EVENT_AUTHORIZE_DELETE,
+                'deleteForSite' => self::EVENT_AUTHORIZE_DELETE_FOR_SITE,
+            ][$ability] ?? null;
+
+            if (!$event) {
+                return null;
+            }
+
+            return self::_authCheck($element, $user, $ability);
         });
     }
 }

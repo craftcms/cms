@@ -63,6 +63,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\helpers\Markdown;
@@ -810,7 +811,7 @@ JS, [
                     ->orderByDesc('dateUpdated')
                     ->with(['draftCreator'])
                     ->get()
-                    ->filter(fn(ElementInterface $draft) => $elementsService->canView($draft, $user))
+                    ->filter(fn(ElementInterface $draft) => $user->can('view', $draft))
                     ->all();
             } else {
                 $drafts = $element::find()
@@ -820,7 +821,7 @@ JS, [
                     ->orderBy(['dateUpdated' => SORT_DESC])
                     ->with(['draftCreator'])
                     ->get()
-                    ->filter(fn(ElementInterface $draft) => $elementsService->canView($draft, $user))
+                    ->filter(fn(ElementInterface $draft) => $user->can('view', $draft))
                     ->all();
             }
         } else {
@@ -2398,7 +2399,7 @@ JS, [
         $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
 
-        if (!$elementsService->canView($element, $user)) {
+        if (!$user->can('view', $element)) {
             throw new ForbiddenHttpException('User not authorized to view this element.');
         }
 
@@ -2406,7 +2407,7 @@ JS, [
         $this->_applyParamsToElement($element);
 
         // Make sure nothing just changed that would prevent the user from saving
-        if (!$elementsService->canView($element, $user)) {
+        if (!$user->can('view', $element)) {
             throw new ForbiddenHttpException('User not authorized to view this element.');
         }
 
@@ -2606,7 +2607,7 @@ JS, [
                     $siteId,
                     $preferSites,
                 );
-                if ($element && $elementsService->canView($element, $user)) {
+                if ($element && $user->can('view', $element)) {
                     if (!$this->request->getAcceptsJson()) {
                         return $this->redirect($element->getCpEditUrl());
                     }
@@ -2633,7 +2634,7 @@ JS, [
             return null;
         }
 
-        if (!$elementsService->canView($element, $user)) {
+        if (!$user->can('view', $element)) {
             throw new ForbiddenHttpException('User not authorized to edit this element.');
         }
 
@@ -2876,7 +2877,7 @@ JS, [
         $element->setScenario($scenario);
 
         // Now that the element is fully configured, make sure the user can actually view it
-        if (!Craft::$app->getElements()->canView($element)) {
+        if (!Gate::check('view', $element)) {
             throw new ForbiddenHttpException('User not authorized to edit this element.');
         }
 

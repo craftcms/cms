@@ -186,7 +186,7 @@ JS, [static::class]);
         $deleteOwnership = [];
 
         foreach ($query->all() as $element) {
-            if (!$elementsService->canView($element, $user) || !$elementsService->canDelete($element, $user)) {
+            if (!$user->can('view', $element) || !$elementsService->canDelete($element, $user)) {
                 continue;
             }
             if (!isset($deletedElementIds[$element->id])) {
@@ -194,7 +194,7 @@ JS, [static::class]);
                     foreach ($element->getDescendants()->all() as $descendant) {
                         if (
                             !isset($deletedElementIds[$descendant->id]) &&
-                            $elementsService->canView($descendant, $user) &&
+                            $user->can('view', $descendant) &&
                             $elementsService->canDelete($descendant, $user)
                         ) {
                             $this->deleteElement($descendant, $elementsService, $deleteOwnership);

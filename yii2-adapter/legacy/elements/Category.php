@@ -497,7 +497,6 @@ class Category extends Element
             ],
         ];
 
-        $elementsService = Craft::$app->getElements();
         $user = Auth::user();
 
         $ancestors = $this->getAncestors();
@@ -506,7 +505,7 @@ class Category extends Element
         }
 
         foreach ($ancestors->all() as $ancestor) {
-            if ($elementsService->canView($ancestor, $user)) {
+            if ($user?->can('view', $ancestor)) {
                 $crumbs[] = [
                     'html' => app(ElementHtml::class)->elementChipHtml($ancestor, [
                         'class' => 'chromeless',

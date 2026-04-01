@@ -101,7 +101,7 @@ JS, [static::class]);
         $elements = array_filter(
             $query->all(),
             fn(ElementInterface $element) => (
-                $elementsService->canView($element, $user) &&
+                $user?->can('view', $element) &&
                 $elementsService->canDeleteForSite($element, $user)
             ),
         );

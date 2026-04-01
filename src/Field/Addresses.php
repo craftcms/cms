@@ -229,7 +229,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
     public function canViewElement(NestedElementInterface $element, User $user): bool
     {
-        return Craft::$app->getElements()->canView($element->getOwner(), $user);
+        return $user->can('view', $element->getOwner());
     }
 
     public function canSaveElement(NestedElementInterface $element, User $user): bool

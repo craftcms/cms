@@ -31,6 +31,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Translation\Formatter;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Stringable;
 use yii\web\Response;
 
@@ -222,7 +223,7 @@ JS, [
             ];
         }
 
-        if ($elementsService->canView($this)) {
+        if (Gate::check('view', $this)) {
             // Edit
             $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [

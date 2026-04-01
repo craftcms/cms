@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Jobs;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
@@ -76,7 +75,6 @@ class PropagateElements extends BatchedElementJob
         $element->isNewSite = $this->isNewSite;
         $supportedSiteIds = array_map(fn ($siteInfo) => $siteInfo['siteId'], ElementHelper::supportedSitesForElement($element));
         $elementSiteIds = $this->siteId !== null ? array_intersect($this->siteId, $supportedSiteIds) : $supportedSiteIds;
-        $elementsService = Craft::$app->getElements();
 
         foreach ($elementSiteIds as $siteId) {
             if ($siteId !== $element->siteId) {
@@ -84,7 +82,7 @@ class PropagateElements extends BatchedElementJob
                 $siteElement = Elements::getElementById($element->id, $element::class, $siteId);
 
                 if ($siteElement === null || $siteElement->dateUpdated < $element->dateUpdated) {
-                    $elementsService->propagateElement($element, $siteId, $siteElement ?? false);
+                    Elements::propagateElement($element, $siteId, $siteElement ?? false);
                 }
             }
         }

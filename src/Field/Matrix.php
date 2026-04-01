@@ -489,7 +489,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         $owner = $element->getOwner();
 
-        return $owner && Craft::$app->getElements()->canView($owner, $user);
+        return $owner && $user->can('view', $owner);
     }
 
     public function canSaveElement(NestedElementInterface $element, User $user): bool

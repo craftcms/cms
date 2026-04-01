@@ -274,7 +274,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     {
         $owner = $element->getOwner();
 
-        return $owner && Craft::$app->getElements()->canView($owner, $user);
+        return $owner && $user->can('view', $owner);
     }
 
     public function canSaveElement(NestedElementInterface $element, User $user): bool
