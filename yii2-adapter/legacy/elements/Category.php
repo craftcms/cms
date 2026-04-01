@@ -268,7 +268,7 @@ class Category extends Element
                     $newChildUrl .= '?site=' . $site->handle;
                 }
 
-                $actions[] = $elementsService->createAction([
+                $actions[] = Elements::createAction([
                     'type' => NewChild::class,
                     'maxLevels' => $group->maxLevels,
                     'newChildUrl' => $newChildUrl,

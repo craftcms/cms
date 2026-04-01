@@ -27,7 +27,6 @@ use craft\events\MultiElementActionEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\Queue;
 use craft\models\ElementActivity;
-use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\PropagateElementAction;
 use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
@@ -1426,10 +1425,11 @@ class Elements extends Component
      *
      * @phpstan-param class-string<T>|array{type:class-string<T>} $config
      * @return T The element action
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::createAction()} instead.
      */
     public function createAction(mixed $config): ElementActionInterface
     {
-        return ComponentHelper::createComponent($config, ElementActionInterface::class);
+        return ElementsFacade::createAction($config);
     }
 
     /**
@@ -1440,10 +1440,11 @@ class Elements extends Component
      *
      * @phpstan-param class-string<T>|array{type:class-string<T>} $config
      * @return T The element exporter
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::createExporter()} instead.
      */
     public function createExporter(mixed $config): ElementExporterInterface
     {
-        return ComponentHelper::createComponent($config, ElementExporterInterface::class);
+        return ElementsFacade::createExporter($config);
     }
 
     // Misc

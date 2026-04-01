@@ -879,7 +879,7 @@ class ElementIndexesController extends BaseElementsController
                 /** @var array $action */
                 /** @phpstan-var array{type:class-string<ElementActionInterface>} $action */
                 $action['elementType'] = $this->elementType;
-                $actions[$i] = $action = Craft::$app->getElements()->createAction($action);
+                $actions[$i] = $action = Elements::createAction($action);
             }
 
             if ($this->elementQuery->trashed) {
@@ -934,7 +934,7 @@ class ElementIndexesController extends BaseElementsController
                     $exporter = ['type' => $exporter];
                 }
                 $exporter['elementType'] = $this->elementType;
-                $exporters[$i] = Craft::$app->getElements()->createExporter($exporter);
+                $exporters[$i] = Elements::createExporter($exporter);
             }
         }
 

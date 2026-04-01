@@ -403,7 +403,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
         // Now figure out what we can do with these
         $actions = [];
-        $elementsService = Craft::$app->getElements();
 
         if ($section) {
             $user = Auth::user();
@@ -419,18 +418,18 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                     $newEntryUrl .= '?site='.$site->handle;
                 }
 
-                $actions[] = $elementsService->createAction([
+                $actions[] = Elements::createAction([
                     'type' => NewSiblingBefore::class,
                     'newSiblingUrl' => $newEntryUrl,
                 ]);
 
-                $actions[] = $elementsService->createAction([
+                $actions[] = Elements::createAction([
                     'type' => NewSiblingAfter::class,
                     'newSiblingUrl' => $newEntryUrl,
                 ]);
 
                 if ($section->maxLevels !== 1) {
-                    $actions[] = $elementsService->createAction([
+                    $actions[] = Elements::createAction([
                         'type' => NewChild::class,
                         'maxLevels' => $section->maxLevels,
                         'newChildUrl' => $newEntryUrl,
