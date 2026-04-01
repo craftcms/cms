@@ -536,17 +536,6 @@ class Elements extends Component
     public const EVENT_AFTER_DELETE_FOR_SITE = 'afterDeleteForSite';
 
     /**
-     * @var array|null
-     */
-    private ?array $_placeholderElements = null;
-
-    /**
-     * @var array
-     * @see setPlaceholderElement()
-     */
-    private array $_placeholderUris;
-
-    /**
      * Creates an element with a given config.
      *
      * @template T of ElementInterface
@@ -1477,19 +1466,11 @@ class Elements extends Component
      *
      * @throws InvalidArgumentException if the element is missing an ID
      * @see getPlaceholderElement()
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::setPlaceholderElement()} instead.
      */
     public function setPlaceholderElement(ElementInterface $element): void
     {
-        // Won't be able to do anything with this if it doesn't have an ID or site ID
-        if (!$element->id || !$element->siteId) {
-            throw new InvalidArgumentException('Placeholder element is missing an ID');
-        }
-
-        $this->_placeholderElements[$element->getCanonicalId()][$element->siteId] = $element;
-
-        if ($element->uri) {
-            $this->_placeholderUris[$element->uri][$element->siteId] = $element;
-        }
+        ElementsFacade::setPlaceholderElement($element);
     }
 
     /**
@@ -1497,14 +1478,11 @@ class Elements extends Component
      *
      * @return ElementInterface[]
      * @since 3.2.5
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getPlaceholderElements()} instead.
      */
     public function getPlaceholderElements(): array
     {
-        if (!isset($this->_placeholderElements)) {
-            return [];
-        }
-
-        return call_user_func_array('array_merge', $this->_placeholderElements);
+        return ElementsFacade::getPlaceholderElements();
     }
 
     /**
@@ -1515,10 +1493,11 @@ class Elements extends Component
      *
      * @return ElementInterface|null The placeholder element if one exists, or null.
      * @see setPlaceholderElement()
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getPlaceholderElement()} instead.
      */
     public function getPlaceholderElement(int $sourceId, int $siteId): ?ElementInterface
     {
-        return $this->_placeholderElements[$sourceId][$siteId] ?? null;
+        return ElementsFacade::getPlaceholderElement($sourceId, $siteId);
     }
 
     /**

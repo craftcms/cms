@@ -2368,7 +2368,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (
             !$this->ignorePlaceholders &&
             isset($row['id'], $row['siteId']) &&
-            ($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $row['siteId'])) !== null
+            ($element = Elements::getPlaceholderElement($row['id'], $row['siteId'])) !== null
         ) {
             return $element;
         }
@@ -2725,7 +2725,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if (!isset($this->_placeholderCondition) || $this->siteId !== $this->_placeholderSiteIds) {
             $placeholderSourceIds = [];
-            $placeholderElements = Craft::$app->getElements()->getPlaceholderElements();
+            $placeholderElements = Elements::getPlaceholderElements();
             if (!empty($placeholderElements)) {
                 $siteIds = array_flip((array)$this->siteId);
                 foreach ($placeholderElements as $element) {

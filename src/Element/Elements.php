@@ -49,6 +49,8 @@ use Tpetry\QueryExpressions\Language\Alias;
 #[Singleton]
 class Elements
 {
+    private ?array $_placeholderElements = null;
+
     /**
      * @see setPlaceholderElement()
      * @see getElementByUri()
@@ -892,5 +894,59 @@ class Elements
     public function parseRefs(string $str, ?int $defaultSiteId = null): string
     {
         return app(ParseRefsAction::class)->handle($str, $defaultSiteId);
+    }
+
+    /**
+     * Stores a placeholder element that element queries should use instead of populating a new element with a
+     * matching ID and site ID.
+     *
+     * This is used by Live Preview and Sharing features.
+     *
+     * @param  ElementInterface  $element  The element currently being edited by Live Preview.
+     *
+     * @throws InvalidArgumentException if the element is missing an ID
+     *
+     * @see getPlaceholderElement()
+     */
+    public function setPlaceholderElement(ElementInterface $element): void
+    {
+        // Won't be able to do anything with this if it doesn't have an ID or site ID
+        if (! $element->id || ! $element->siteId) {
+            throw new InvalidArgumentException('Placeholder element is missing an ID');
+        }
+
+        $this->_placeholderElements[$element->getCanonicalId()][$element->siteId] = $element;
+
+        if ($element->uri) {
+            $this->_placeholderUris[$element->uri][$element->siteId] = $element;
+        }
+    }
+
+    /**
+     * Returns all placeholder elements.
+     *
+     * @return ElementInterface[]
+     */
+    public function getPlaceholderElements(): array
+    {
+        if (! isset($this->_placeholderElements)) {
+            return [];
+        }
+
+        return array_merge(...$this->_placeholderElements);
+    }
+
+    /**
+     * Returns a placeholder element by its ID and site ID.
+     *
+     * @param  int  $sourceId  The element’s ID
+     * @param  int  $siteId  The element’s site ID
+     * @return ElementInterface|null The placeholder element if one exists, or null.
+     *
+     * @see setPlaceholderElement()
+     */
+    public function getPlaceholderElement(int $sourceId, int $siteId): ?ElementInterface
+    {
+        return $this->_placeholderElements[$sourceId][$siteId] ?? null;
     }
 }

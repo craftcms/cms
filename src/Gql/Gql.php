@@ -1014,7 +1014,7 @@ class Gql
         }
 
         // No cache key if we have placeholder elements
-        if (! empty(Craft::$app->getElements()->getPlaceholderElements())) {
+        if (! empty(Elements::getPlaceholderElements())) {
             return null;
         }
 

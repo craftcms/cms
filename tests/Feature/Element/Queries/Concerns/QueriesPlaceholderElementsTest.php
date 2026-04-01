@@ -17,7 +17,7 @@ test('placeholder elements', function () {
 
     expect(entryQuery()->id($entry->id)->first()->title)->toBe('Old title');
 
-    Craft::$app->getElements()->setPlaceholderElement($element);
+    Elements::setPlaceholderElement($element);
 
     expect(entryQuery()->id($entry->id)->first()->title)->toBe('New title');
     expect(entryQuery()->id($entry->id)->ignorePlaceholders()->first()->title)->toBe('Old title');

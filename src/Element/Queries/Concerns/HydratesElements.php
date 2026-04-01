@@ -13,6 +13,7 @@ use CraftCms\Cms\Element\Queries\Events\ElementHydrated;
 use CraftCms\Cms\Element\Queries\Events\ElementsHydrated;
 use CraftCms\Cms\Element\Queries\Events\HydratingElement;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
@@ -108,7 +109,7 @@ trait HydratesElements
         if (
             ! $this->ignorePlaceholders &&
             isset($row['id'], $row['siteId']) &&
-            ! is_null($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $row['siteId']))
+            ! is_null($element = Elements::getPlaceholderElement($row['id'], $row['siteId']))
         ) {
             return $element;
         }
