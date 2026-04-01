@@ -1344,8 +1344,7 @@ trait ApplicationTrait
         $this->getLog();
 
         $this->language = app()->getLocale();
-        $this->setTimeZone(app()->getTimezone());
-        date_default_timezone_set(app()->getTimezone());
+        $this->setTimeZone(Cms::timezone());
 
         // Use our own Markdown parser classes
         $flavors = [

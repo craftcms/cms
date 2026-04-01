@@ -132,11 +132,11 @@ class Application extends \yii\web\Application
     }
 
     /**
-     * @deprecated 6.0.0 use `app()->getTimezone()` instead.
+     * @deprecated 6.0.0 use `Cms::timezone()` instead.
      */
     public function getTimeZone(): string
     {
-        return app()->getTimezone();
+        return Cms::timezone();
     }
 
     /**

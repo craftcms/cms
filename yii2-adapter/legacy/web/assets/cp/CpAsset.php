@@ -202,7 +202,7 @@ JS;
             'scriptName' => basename($request->getScriptFile()),
             'systemUid' => Craft::$app->getSystemUid(),
             'timepickerOptions' => $this->_timepickerOptions($formattingLocale, $orientation),
-            'timezone' => app()->getTimezone(),
+            'timezone' => Cms::timezone(),
             'tokenParam' => $generalConfig->tokenParam,
             'translations' => I18N::getAllTranslationsForLocale(app()->getLocale()) ?: new stdClass(),
             'useEmailAsUsername' => $generalConfig->useEmailAsUsername,

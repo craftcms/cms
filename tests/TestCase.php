@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Tests;
 
 use Craft;
 use craft\test\TestSetup;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
@@ -30,7 +31,6 @@ use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -62,8 +62,7 @@ class TestCase extends Orchestra
         // Reset timezone to a consistent value for tests
         // This is needed because AppServiceProvider::setTimezone() runs during boot,
         // before RefreshDatabase has prepared the database, potentially reading stale data
-        Config::set('app.timezone', 'America/Los_Angeles');
-        date_default_timezone_set('America/Los_Angeles');
+        Cms::config()->timezone('America/Los_Angeles');
 
         // Tests run in Cp by default
         TemplateMode::set(TemplateMode::Cp);
