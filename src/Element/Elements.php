@@ -16,6 +16,7 @@ use CraftCms\Cms\Element\Actions\DeleteElementsForSiteAction;
 use CraftCms\Cms\Element\Actions\DuplicateElementAction;
 use CraftCms\Cms\Element\Actions\MergeCanonicalChangesAction;
 use CraftCms\Cms\Element\Actions\MergeElementsAction;
+use CraftCms\Cms\Element\Actions\ParseRefsAction;
 use CraftCms\Cms\Element\Actions\PropagateElementsAction;
 use CraftCms\Cms\Element\Actions\ResaveElementsAction;
 use CraftCms\Cms\Element\Actions\RestoreElementsAction;
@@ -53,6 +54,11 @@ class Elements
      * @see getElementByUri()
      */
     private array $_placeholderUris;
+
+    /**
+     * @var string[]
+     */
+    private array $_elementTypesByRefHandle = [];
 
     public function __construct(
         private readonly ElementCaches $elementCaches,
@@ -831,5 +837,60 @@ class Elements
     public function createExporter(string|array $config): ElementExporterInterface
     {
         return ComponentHelper::createComponent($config, ElementExporterInterface::class);
+    }
+
+    // Misc
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns an element class by its handle.
+     *
+     * @param  string  $refHandle  The element class handle
+     * @return string|null The element class, or null if it could not be found
+     */
+    public function getElementTypeByRefHandle(string $refHandle): ?string
+    {
+        if (! isset($this->_elementTypesByRefHandle[$refHandle])) {
+            $class = $this->elementTypeByRefHandle($refHandle);
+
+            // Special cases for categories/tags/globals, if they've been removed
+            if ($class === false && in_array($refHandle, ['category', 'tag', 'globalset'])) {
+                $class = Entry::class;
+            }
+
+            $this->_elementTypesByRefHandle[$refHandle] = $class;
+        }
+
+        return $this->_elementTypesByRefHandle[$refHandle] ?: null;
+    }
+
+    private function elementTypeByRefHandle(string $refHandle): string|false
+    {
+        if (is_subclass_of($refHandle, ElementInterface::class)) {
+            return $refHandle;
+        }
+
+        foreach ($this->getAllElementTypes() as $class) {
+            if (
+                ($elementRefHandle = $class::refHandle()) !== null &&
+                strcasecmp($elementRefHandle, $refHandle) === 0
+            ) {
+                return $class;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Parses a string for element [reference tags](https://craftcms.com/docs/5.x/system/reference-tags.html).
+     *
+     * @param  string  $str  The string to parse
+     * @param  int|null  $defaultSiteId  The default site ID to query the elements in
+     * @return string The parsed string
+     */
+    public function parseRefs(string $str, ?int $defaultSiteId = null): string
+    {
+        return app(ParseRefsAction::class)->handle($str, $defaultSiteId);
     }
 }

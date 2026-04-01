@@ -65,12 +65,10 @@ use CraftCms\Cms\Element\Events\RegisterElementTypes;
 use CraftCms\Cms\Element\Events\SetElementUri;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
-use CraftCms\Cms\Element\Models\ElementSiteSettings;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
-use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Facades\ElementCaches;
@@ -80,9 +78,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
-use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
@@ -92,7 +88,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
@@ -550,11 +545,6 @@ class Elements extends Component
      * @see setPlaceholderElement()
      */
     private array $_placeholderUris;
-
-    /**
-     * @var string[]
-     */
-    private array $_elementTypesByRefHandle = [];
 
     /**
      * Creates an element with a given config.
@@ -1456,40 +1446,11 @@ class Elements extends Component
      * @param string $refHandle The element class handle
      *
      * @return string|null The element class, or null if it could not be found
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getElementTypeByRefHandle()} instead.
      */
     public function getElementTypeByRefHandle(string $refHandle): ?string
     {
-        if (!isset($this->_elementTypesByRefHandle[$refHandle])) {
-            $class = $this->elementTypeByRefHandle($refHandle);
-
-            // Special cases for categories/tags/globals, if they've been removed
-            if ($class === false && in_array($refHandle, ['category', 'tag', 'globalset'])) {
-                $class = Entry::class;
-            }
-
-            $this->_elementTypesByRefHandle[$refHandle] = $class;
-        }
-
-        return $this->_elementTypesByRefHandle[$refHandle] ?: null;
-    }
-
-    private function elementTypeByRefHandle(string $refHandle): string|false
-    {
-        if (is_subclass_of($refHandle, ElementInterface::class)) {
-            return $refHandle;
-        }
-
-        foreach ($this->getAllElementTypes() as $class) {
-            /** @var class-string<ElementInterface> $class */
-            if (
-                ($elementRefHandle = $class::refHandle()) !== null &&
-                strcasecmp($elementRefHandle, $refHandle) === 0
-            ) {
-                return $class;
-            }
-        }
-
-        return false;
+        return ElementsFacade::getElementTypeByRefHandle($refHandle);
     }
 
     /**
@@ -1499,128 +1460,11 @@ class Elements extends Component
      * @param int|null $defaultSiteId The default site ID to query the elements in
      *
      * @return string The parsed string
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::parseRefs()} instead.
      */
     public function parseRefs(string $str, ?int $defaultSiteId = null): string
     {
-        if (!str_contains($str, '{')) {
-            return $str;
-        }
-
-        // First catalog all of the ref tags by element type, ref type ('id' or 'ref'), and ref name,
-        // and replace them with placeholder tokens
-        $allRefTagTokens = [];
-        $str = preg_replace_callback(
-            '/
-                \{                                      # Tags always begin with a {
-                    (?P<elementType>[\w\\\\]+)          # Ref handle or element type class
-                    \:(?P<ref>[^@\:\}\|]+)              # Identifier (ID, or another format supported by the element type)
-                    (?:@(?P<site>[^\:\}\|]+))?          # [Optional] Site handle, ID, or UUID
-                    (?:\:(?P<attr>[^\}\| ]+))?          # [Optional] Attribute, property, or field
-                    (?:\ *\|\|\ *(?P<fallback>[^\}]+))? # [Optional] Fallback text (if the ref fails to resolve)
-                \}                                      # Tags always close with a }
-            /x',
-            function(array $matches) use (
-                $defaultSiteId,
-                &$allRefTagTokens
-            ) {
-                $fullMatch = $matches[0];
-                $elementType = $matches['elementType'];
-                $ref = $matches['ref'];
-                $siteId = $matches['site'] ?? null;
-                $attribute = $matches['attr'] ?? null;
-                $fallback = $matches['fallback'] ?? $fullMatch;
-
-                // Swap out the ref handle for the element type
-                $elementType = $this->getElementTypeByRefHandle($elementType);
-
-                // Use the fallback if we couldn't find an element type
-                if ($elementType === null) {
-                    return $fallback;
-                }
-
-                // Get the site
-                if (!empty($siteId)) {
-                    if (is_numeric($siteId)) {
-                        $siteId = (int)$siteId;
-                    } else {
-                        try {
-                            $site = Str::isUuid($siteId)
-                                ? Sites::getSiteByUid($siteId)
-                                : Sites::getSiteByHandle($siteId);
-                        } catch (SiteNotFoundException) {
-                            $site = null;
-                        }
-                        if (!$site) {
-                            return $fallback;
-                        }
-                        $siteId = $site->id;
-                    }
-                } else {
-                    $siteId = $defaultSiteId;
-                }
-
-                $refType = is_numeric($ref) ? 'id' : 'ref';
-                $token = '{' . Str::random(9) . '}';
-                $allRefTagTokens[$siteId][$elementType][$refType][$ref][] = [$token, $attribute, $fallback, $fullMatch];
-
-                return $token;
-            },
-            $str,
-            -1,
-            $count,
-        );
-
-        if ($count === 0) {
-            // No ref tags
-            return $str;
-        }
-
-        // Now swap them with the resolved values
-        $search = [];
-        $replace = [];
-
-        foreach ($allRefTagTokens as $siteId => $siteTokens) {
-            foreach ($siteTokens as $elementType => $tokensByType) {
-                foreach ($tokensByType as $refType => $tokensByName) {
-                    // Get the elements, indexed by their ref value
-                    $refNames = array_keys($tokensByName);
-                    $elementQuery = $this->createElementQuery($elementType)
-                        ->siteId($siteId)
-                        ->status(null);
-
-                    if ($refType === 'id') {
-                        $elementQuery->id($refNames);
-                    } elseif (method_exists($elementQuery, 'ref')) {
-                        $elementQuery->ref($refNames);
-                    }
-
-                    $elements = [];
-                    foreach ($elementQuery->all() as $element) {
-                        $ref = $refType === 'id' ? $element->id : $element->getRef();
-                        $elements[$ref] = $element;
-
-                        // if the reference contains a slash (e.g. section/slug),
-                        // also index it by just whatever comes after it
-                        if ($refType === 'ref' && ($slash = strrpos($ref, '/')) !== false) {
-                            $elements[substr($ref, $slash + 1)] ??= $element;
-                        }
-                    }
-
-                    // Now append new token search/replace strings
-                    foreach ($tokensByName as $refName => $tokens) {
-                        $element = $elements[$refName] ?? null;
-
-                        foreach ($tokens as [$token, $attribute, $fallback, $fullMatch]) {
-                            $search[] = $token;
-                            $replace[] = $this->_getRefTokenReplacement($element, $attribute, $fallback, $fullMatch);
-                        }
-                    }
-                }
-            }
-        }
-
-        // Swap the tokens with the references
-        return str_replace($search, $replace, $str);
+        return ElementsFacade::parseRefs($str, $defaultSiteId);
     }
 
     /**
@@ -2180,100 +2024,6 @@ class Elements extends Component
         $this->elementCaches()->invalidateForElement($element);
 
         return $siteElement;
-    }
-
-    /**
-     * Propagates an element to a different site
-     *
-     * @param ElementInterface $element
-     * @param array $supportedSites The element’s supported site info, indexed by site ID
-     * @param int $siteId The site ID being propagated to
-     * @param ElementInterface|false|null $siteElement The element loaded for the propagated site
-     * @param-out ElementInterface $siteElement
-     * @param bool $crossSiteValidate Whether the element should be validated across all supported sites
-     * @param bool $saveContent Whether the element’s content should be saved
-     * @param ElementSiteSettings|null $siteSettingsRecord
-     *
-     * @retrun bool
-     * @throws Exception if the element couldn't be propagated
-     */
-    private function _propagateElement(
-        ElementInterface $element,
-        array $supportedSites,
-        int $siteId,
-        ElementInterface|false|null &$siteElement = null,
-        bool $crossSiteValidate = false,
-        bool $saveContent = true,
-        ?ElementSiteSettings &$siteSettingsRecord = null,
-    ): bool {
-    }
-
-
-
-    /**
-     * Soft-deletes or restores the drafts and revisions of the given element.
-     *
-     * @param int $canonicalId The canonical element ID
-     * @param bool $delete `true` if the drafts/revisions should be soft-deleted; `false` if they should be restored
-     */
-    private function _cascadeDeleteDraftsAndRevisions(int $canonicalId, bool $delete = true): void
-    {
-        foreach (['draftId' => Table::DRAFTS, 'revisionId' => Table::REVISIONS] as $fk => $table) {
-            DB::table(new Alias(Table::ELEMENTS, 'e'))
-                ->whereIn(
-                    "e.$fk",
-                    DB::table(new Alias($table, 't'))
-                        ->select('t.id')
-                        ->where('t.canonicalId', $canonicalId),
-                )
-                ->update([
-                    'dateDeleted' => $delete ? now() : null,
-                ]);
-        }
-    }
-
-    /**
-     * Returns the replacement for a given reference tag.
-     *
-     * @param ElementInterface|null $element
-     * @param string|null $attribute
-     * @param string $fallback
-     * @param string $fullMatch
-     *
-     * @return string
-     * @see parseRefs()
-     */
-    private function _getRefTokenReplacement(
-        ?ElementInterface $element,
-        ?string $attribute,
-        string $fallback,
-        string $fullMatch,
-    ): string {
-        if ($element === null) {
-            // Put the ref tag back
-            return $fallback;
-        }
-
-        if (empty($attribute) || !isset($element->$attribute)) {
-            // Default to the URL
-            return (string)$element->getUrl();
-        }
-
-        try {
-            $value = $element->$attribute;
-
-            if (is_object($value) && !method_exists($value, '__toString')) {
-                throw new Exception('Object of class ' . get_class($value) . ' could not be converted to string');
-            }
-
-            return $this->parseRefs((string)$value);
-        } catch (Throwable $e) {
-            // Log it
-            Log::error("An exception was thrown when parsing the ref tag \"$fullMatch\":\n" . $e->getMessage(), [__METHOD__]);
-
-            // Replace the token with the default value
-            return $fallback;
-        }
     }
 
     /**
