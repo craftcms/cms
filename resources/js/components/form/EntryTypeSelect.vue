@@ -130,16 +130,8 @@
           case 'close':
             slideout.close();
             break;
-          // case 'apply':
-          //   form.requestSubmit();
-          //   break;
         }
       });
-    });
-
-    slideout.on('open', () => {
-      console.log('opened');
-      // Focus first text field
     });
 
     slideout.on('close', () => {
@@ -151,11 +143,17 @@
 
   async function openSlideout(id: number) {
     try {
+      const entryType = props.modelValue.find((item) => item.id === id);
       const {data} = await Craft.sendActionRequest(
         'POST',
         renderOverrideSettings().url,
         {
-          data: {id},
+          data: {
+            id,
+            name: entryType?.name,
+            handle: entryType?.handle,
+            description: entryType?.description,
+          },
         }
       );
 
