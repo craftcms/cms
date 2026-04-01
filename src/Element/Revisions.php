@@ -29,6 +29,10 @@ use function CraftCms\Cms\t;
 #[Singleton]
 readonly class Revisions
 {
+    public function __construct(
+        private Elements $elements,
+    ) {}
+
     /**
      * Creates a new revision for the given element and returns its ID.
      *
@@ -200,7 +204,7 @@ readonly class Revisions
         ));
 
         // "Duplicate" the revision with the source element’s ID and UID
-        $newSource = Craft::$app->getElements()->updateCanonicalElement($revision, [
+        $newSource = $this->elements->updateCanonicalElement($revision, [
             'revisionCreatorId' => $creatorId,
             'revisionNotes' => t('Reverted content from revision {num}.', ['num' => $revision->revisionNum]),
         ]);

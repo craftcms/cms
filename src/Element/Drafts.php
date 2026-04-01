@@ -273,7 +273,7 @@ readonly class Drafts
                 }
 
                 // "Duplicate" the draft with the canonical element’s ID and UID
-                $newCanonical = $elementsService->updateCanonicalElement($draft, array_merge($newAttributes, [
+                $newCanonical = $this->elements->updateCanonicalElement($draft, array_merge($newAttributes, [
                     'revisionNotes' => $draftNotes ?: t('Applied “{name}”', ['name' => $draft->draftName]),
                 ]));
 

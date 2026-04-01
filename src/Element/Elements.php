@@ -9,9 +9,11 @@ use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\MergeCanonicalChangesAction;
 use CraftCms\Cms\Element\Actions\SaveElementAction;
+use CraftCms\Cms\Element\Actions\UpdateCanonicalElementAction;
 use CraftCms\Cms\Element\Events\SetElementUri;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Typecast;
@@ -401,5 +403,21 @@ class Elements
     public function mergeCanonicalChanges(ElementInterface $element): void
     {
         app(MergeCanonicalChangesAction::class)->handle($element);
+    }
+
+    /**
+     * Updates the canonical element from a given derivative, such as a draft or revision.
+     *
+     * @template T of ElementInterface
+     *
+     * @param  T  $element  The derivative element
+     * @param  array  $newAttributes  Any attributes to apply to the canonical element
+     * @return T The updated canonical element
+     *
+     * @throws InvalidArgumentException if the element is already a canonical element
+     */
+    public function updateCanonicalElement(ElementInterface $element, array $newAttributes = []): ElementInterface
+    {
+        return app(UpdateCanonicalElementAction::class)->handle($element, $newAttributes);
     }
 }

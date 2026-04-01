@@ -1107,7 +1107,7 @@ JS, [
                         !empty($target->newSiteIds) ||
                         (!$source::trackChanges() || $this->isModified($source, true))
                     ) {
-                        $newElementId = $elementsService->updateCanonicalElement($element, $newAttributes)->id;
+                        $newElementId = Elements::updateCanonicalElement($element, $newAttributes)->id;
                         // upsert newElementId in case it was removed from the ownership table before
                         // this will happen if we add a nested element to the owner & save,
                         // then remove that nested element & save,
