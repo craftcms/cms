@@ -550,11 +550,11 @@ JS, [
                     'level' => $element->level,
                     'trashed' => $element->trashed,
                     'editable' => $editable,
-                    'savable' => $editable && $this->contextIsAdministrative($config['context']) && $elementsService->canSave($element, $user),
-                    'duplicatable' => $editable && $this->contextIsAdministrative($config['context']) && $elementsService->canDuplicate($element, $user),
-                    'duplicatable-as-draft' => $editable && $this->contextIsAdministrative($config['context']) && $elementsService->canDuplicateAsDraft($element, $user),
-                    'copyable' => $editable && $this->contextIsAdministrative($config['context']) && $elementsService->canCopy($element, $user),
-                    'deletable' => $editable && $this->contextIsAdministrative($config['context']) && $elementsService->canDelete($element, $user),
+                    'savable' => $editable && $this->contextIsAdministrative($config['context']) && $user?->can('save', $element),
+                    'duplicatable' => $editable && $this->contextIsAdministrative($config['context']) && $user?->can('duplicate', $element),
+                    'duplicatable-as-draft' => $editable && $this->contextIsAdministrative($config['context']) && $user?->can('duplicateAsDraft', $element),
+                    'copyable' => $editable && $this->contextIsAdministrative($config['context']) && $user?->can('copy', $element),
+                    'deletable' => $editable && $this->contextIsAdministrative($config['context']) && $user?->can('delete', $element),
                     'deletable-for-site' => (
                         $editable &&
                         $this->contextIsAdministrative($config['context']) &&

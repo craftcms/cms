@@ -57,7 +57,7 @@ readonly class UsersController
     {
         $user = new User;
 
-        abort_unless(Craft::$app->getElements()->canSave($user), 403, 'User not authorized to save this user.');
+        $this->authorize('save', $user);
 
         $user->setScenario(Element::SCENARIO_ESSENTIALS);
         if (! $drafts->saveElementAsDraft($user, $request->user()->id, markAsSaved: false)) {

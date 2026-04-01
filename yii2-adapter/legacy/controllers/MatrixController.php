@@ -166,9 +166,7 @@ class MatrixController extends Controller
                 ...$attributes,
             ]);
 
-            if (!$elementsService->canSave($entry, $user)) {
-                throw new ForbiddenHttpException('User not authorized to create this element.');
-            }
+            Gate::authorize('save', $entry);
 
             $entry->setScenario(Element::SCENARIO_ESSENTIALS);
             if (!app(Drafts::class)->saveElementAsDraft($entry, $user->id, markAsSaved: false)) {

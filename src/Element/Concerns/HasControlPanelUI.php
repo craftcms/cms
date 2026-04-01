@@ -96,7 +96,7 @@ trait HasControlPanelUI
 
         if ($this->getIsCanonical() || $this->isProvisionalDraft) {
             $newElement = $this->createAnother();
-            if ($newElement && $elementsService->canSave($newElement)) {
+            if ($newElement && Gate::check('save', $newElement)) {
                 $altActions[] = [
                     'label' => $isUnpublishedDraft && $canSaveCanonical
                         ? t('Create and add another')

@@ -50,7 +50,7 @@ readonly class AddressesController
 
     public function store(Request $request, Elements $elements): Response
     {
-        $elementsService = Craft::$app->getElements();
+        Craft::$app->getElements();
         $user = $request->user();
 
         $userId = (int) ($request->input('userId') ?? $user->id);
@@ -67,7 +67,7 @@ readonly class AddressesController
             ]);
         }
 
-        abort_if(! $elementsService->canSave($address, $user), 403, 'User is not permitted to edit this address.');
+        Gate::authorize('save', $address);
 
         // Addresses have no status, and the default element save controller also sets the address scenario to live
         $address->setScenario(Element::SCENARIO_LIVE);

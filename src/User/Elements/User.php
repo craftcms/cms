@@ -1494,7 +1494,7 @@ XML;
             switch ($status) {
                 case Element::STATUS_ARCHIVED:
                 case Element::STATUS_DISABLED:
-                    if (Craft::$app->getElements()->canSave($this)) {
+                    if (Gate::check('save', $this)) {
                         $statusItems[] = [
                             'label' => t('Enable'),
                             'action' => 'users/enable-user',

@@ -7,7 +7,6 @@
 
 namespace craft\elements\actions;
 
-use Craft;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Element;
@@ -15,7 +14,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Sites;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -90,14 +89,12 @@ JS, [static::class]);
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $this->elementType;
         $isLocalized = $elementType::isLocalized() && Sites::isMultiSite();
-        $elementsService = Craft::$app->getElements();
-        $user = Auth::user();
 
         $elements = $query->all();
         $failCount = 0;
 
         foreach ($elements as $element) {
-            if (!$elementsService->canSave($element, $user)) {
+            if (!Gate::check('save', $element)) {
                 continue;
             }
 

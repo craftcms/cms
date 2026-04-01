@@ -1550,11 +1550,11 @@ class Elements extends Component
      *
      * @return bool
      * @since 4.3.0
-     * @deprecated 6.0.0 use `Gate::forUser($user)->allows('view', $element)` instead.
+     * @deprecated 6.0.0 use `Gate::forUser($user)->check('view', $element)` instead.
      */
     public function canView(ElementInterface $element, ?User $user = null): bool
     {
-        return Gate::forUser($user)->allows('view', $element);
+        return Gate::forUser($user)->check('view', $element);
     }
 
     /**
@@ -1565,24 +1565,11 @@ class Elements extends Component
      *
      * @return bool
      * @since 4.3.0
+     * @deprecated 6.0.0 use `Gate::forUser($user)->check('save', $element)` instead.
      */
     public function canSave(ElementInterface $element, ?User $user = null): bool
     {
-        if (!$user) {
-            $user = Auth::user();
-            if (!$user) {
-                return false;
-            }
-        }
-
-        // Fire deprecated Yii events for plugin compatibility
-        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_SAVE);
-        if ($eventResult !== null) {
-            return $eventResult;
-        }
-
-        // Delegate to Laravel Gate
-        return Gate::forUser($user)->allows('save', $element);
+        return Gate::forUser($user)->check('save', $element);
     }
 
     /**
@@ -1593,16 +1580,11 @@ class Elements extends Component
      *
      * @return bool
      * @since 5.6.0
+     * @deprecated 6.0.0 use `Gate::forUser($user)->check('saveCanonical', $element)` instead.
      */
     public function canSaveCanonical(ElementInterface $element, ?User $user = null): bool
     {
-        if ($element->getIsUnpublishedDraft()) {
-            $fakeCanonical = clone $element;
-            $fakeCanonical->draftId = null;
-            return $this->canSave($fakeCanonical, $user);
-        }
-
-        return $this->canSave($element->getCanonical(true), $user);
+        return Gate::forUser($user)->check('saveCanonical', $element);
     }
 
     /**
@@ -1615,24 +1597,11 @@ class Elements extends Component
      *
      * @return bool
      * @since 4.3.0
+     * @deprecated 6.0.0 use `Gate::forUser($user)->check('duplicate', $element)` instead.
      */
     public function canDuplicate(ElementInterface $element, ?User $user = null): bool
     {
-        if (!$user) {
-            $user = Auth::user();
-            if (!$user) {
-                return false;
-            }
-        }
-
-        // Fire deprecated Yii events for plugin compatibility
-        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DUPLICATE);
-        if ($eventResult !== null) {
-            return $eventResult;
-        }
-
-        // Delegate to Laravel Gate
-        return Gate::forUser($user)->allows('duplicate', $element);
+        return Gate::forUser($user)->check('duplicate', $element);
     }
 
     /**
@@ -1643,24 +1612,11 @@ class Elements extends Component
      *
      * @return bool
      * @since 5.0.0
+     * @deprecated 6.0.0 use `Gate::forUser($user)->check('duplicateAsDraft', $element)` instead.
      */
     public function canDuplicateAsDraft(ElementInterface $element, ?User $user = null): bool
     {
-        if (!$user) {
-            $user = Auth::user();
-            if (!$user) {
-                return false;
-            }
-        }
-
-        // Fire deprecated Yii events for plugin compatibility
-        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DUPLICATE_AS_DRAFT);
-        if ($eventResult !== null) {
-            return $eventResult;
-        }
-
-        // Delegate to Laravel Gate
-        return Gate::forUser($user)->allows('duplicateAsDraft', $element);
+        return Gate::forUser($user)->check('duplicateAsDraft', $element);
     }
 
     /**
@@ -1673,24 +1629,11 @@ class Elements extends Component
      *
      * @return bool
      * @since 5.7.0
+     * @deprecated 6.0.0 use `Gate::forUser($user)->check('copy', $element)` instead.
      */
     public function canCopy(ElementInterface $element, ?User $user = null): bool
     {
-        if (!$user) {
-            $user = Auth::user();
-            if (!$user) {
-                return false;
-            }
-        }
-
-        // Fire deprecated Yii events for plugin compatibility
-        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_COPY);
-        if ($eventResult !== null) {
-            return $eventResult;
-        }
-
-        // Delegate to Laravel Gate
-        return Gate::forUser($user)->allows('copy', $element);
+        return Gate::forUser($user)->check('copy', $element);
     }
 
     /**
@@ -1703,24 +1646,11 @@ class Elements extends Component
      *
      * @return bool
      * @since 4.3.0
+     * @deprecated 6.0.0 use `Gate::forUser($user)->check('delete', $element)` instead.
      */
     public function canDelete(ElementInterface $element, ?User $user = null): bool
     {
-        if (!$user) {
-            $user = Auth::user();
-            if (!$user) {
-                return false;
-            }
-        }
-
-        // Fire deprecated Yii events for plugin compatibility
-        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DELETE);
-        if ($eventResult !== null) {
-            return $eventResult;
-        }
-
-        // Delegate to Laravel Gate
-        return Gate::forUser($user)->allows('delete', $element);
+        return Gate::forUser($user)->check('delete', $element);
     }
 
     /**
@@ -1733,24 +1663,11 @@ class Elements extends Component
      *
      * @return bool
      * @since 4.3.0
+     * @deprecated 6.0.0 use `Gate::forUser($user)->check('deleteForSite', $element)` instead.
      */
     public function canDeleteForSite(ElementInterface $element, ?User $user = null): bool
     {
-        if (!$user) {
-            $user = Auth::user();
-            if (!$user) {
-                return false;
-            }
-        }
-
-        // Fire deprecated Yii events for plugin compatibility
-        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DELETE_FOR_SITE);
-        if ($eventResult !== null) {
-            return $eventResult;
-        }
-
-        // Delegate to Laravel Gate
-        return Gate::forUser($user)->allows('deleteForSite', $element);
+        return Gate::forUser($user)->check('deleteForSite', $element);
     }
 
     /**
@@ -1763,24 +1680,11 @@ class Elements extends Component
      *
      * @return bool
      * @since 4.3.0
+     * @deprecated 6.0.0 use `Gate::forUser($user)->check('createDrafts', $element)` instead.
      */
     public function canCreateDrafts(ElementInterface $element, ?User $user = null): bool
     {
-        if (!$user) {
-            $user = Auth::user();
-            if (!$user) {
-                return false;
-            }
-        }
-
-        // Fire deprecated Yii events for plugin compatibility
-        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_CREATE_DRAFTS);
-        if ($eventResult !== null) {
-            return $eventResult;
-        }
-
-        // Delegate to Laravel Gate
-        return Gate::forUser($user)->allows('createDrafts', $element);
+        return Gate::forUser($user)->check('createDrafts', $element);
     }
 
     private static function _authCheck(ElementInterface $element, User $user, string $eventName): ?bool

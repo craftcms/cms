@@ -23,6 +23,7 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Support\Facades\Gate;
 use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -278,9 +279,7 @@ class CategoriesController extends Controller
         }
 
         // Make sure the user is allowed to create this category
-        if (!Craft::$app->getElements()->canSave($category)) {
-            throw new ForbiddenHttpException('User not authorized to save this category.');
-        }
+        Gate::authorize('save' . $category);
 
         // Title & slug
         $category->title = $this->request->getQueryParam('title');

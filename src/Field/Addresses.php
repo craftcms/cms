@@ -234,12 +234,12 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
     public function canSaveElement(NestedElementInterface $element, User $user): bool
     {
-        if (! Craft::$app->getElements()->canSave($element->getOwner(), $user)) {
+        if (! $user->can('save', $owner = $element->getOwner())) {
             return false;
         }
 
         // If this is a new address, make sure we aren't hitting the Max Addresses limit
-        if (! $element->id && $element->getIsCanonical() && $this->maxAddressesReached($element->getOwner())) {
+        if (! $element->id && $element->getIsCanonical() && $this->maxAddressesReached($owner)) {
             return false;
         }
 
@@ -249,7 +249,8 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     public function canDuplicateElement(NestedElementInterface $element, User $user): bool
     {
         $owner = $element->getOwner();
-        if (! Craft::$app->getElements()->canSave($owner, $user)) {
+
+        if (! $user->can('save', $owner)) {
             return false;
         }
 
@@ -260,7 +261,8 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     public function canDeleteElement(NestedElementInterface $element, User $user): bool
     {
         $owner = $element->getOwner();
-        if (! Craft::$app->getElements()->canSave($element->getOwner(), $user)) {
+
+        if (! $user->can('save', $element->getOwner())) {
             return false;
         }
 

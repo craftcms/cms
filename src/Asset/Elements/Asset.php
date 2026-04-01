@@ -3155,7 +3155,7 @@ JS;
             $attributes['data']['editable-image'] = true;
         }
 
-        if ($this->dateDeleted && $this->keptFile && Craft::$app->getElements()->canSave($this)) {
+        if ($this->dateDeleted && $this->keptFile && Gate::check('save', $this)) {
             $attributes['data']['restorable'] = true;
         }
 

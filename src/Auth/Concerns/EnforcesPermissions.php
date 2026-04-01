@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth\Concerns;
 
-use Craft;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 trait EnforcesPermissions
 {
@@ -26,16 +26,10 @@ trait EnforcesPermissions
     {
         if ($duplicate) {
             $id = $entry->id;
-            $entry->id = null;
-        }
-
-        $canSave = Craft::$app->getElements()->canSave($entry);
-
-        if ($duplicate) {
             $entry->id = $id;
         }
 
-        abort_unless($canSave, 403, 'User is not authorized to perform this action.');
+        Gate::authorize('save', $entry);
     }
 
     protected function requireSessionAuthorization(string $permission): void

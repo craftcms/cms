@@ -500,15 +500,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             return false;
         }
 
-        if (Craft::$app->getElements()->canSave($owner, $user)) {
+        if ($user->can('save', $owner)) {
             return true;
         }
 
         // Check all the owners. Maybe the user can save one of the other ones?
-        /** @phpstan-ignore-next-line  */
-        if (! Craft::$app->getElements()->canSave($owner, $user) && ! $owner->getIsRevision()) {
+        if (! $owner->getIsRevision()) {
             foreach ($element->getOwners(['revisions' => false]) as $o) {
-                if ($o->id !== $owner->id && Craft::$app->getElements()->canSave($o, $user)) {
+                if ($o->id !== $owner->id && $user->can('save', $o)) {
                     return true;
                 }
             }
@@ -521,7 +520,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         $owner = $element->getOwner();
 
-        if (! $owner || ! Craft::$app->getElements()->canSave($owner, $user)) {
+        if (! $owner || ! $user->can('save', $owner)) {
             return false;
         }
 
@@ -533,7 +532,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         $owner = $element->getOwner();
 
-        if (! $owner || ! Craft::$app->getElements()->canSave($element->getOwner(), $user)) {
+        if (! $owner || ! $user->can('save', $element->getOwner())) {
             return false;
         }
 

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Craft;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -32,7 +32,8 @@ readonly class EnableController
         $user = $this->users->getUserById($request->integer('userId'));
 
         abort_if(! $user, 400, 'User not found');
-        abort_if(! Craft::$app->getElements()->canSave($user), 403, 'User is not authorized to perform this action.');
+
+        Gate::authorize('save', $user);
 
         $user->enabled = true;
         $user->enabledForSite = true;

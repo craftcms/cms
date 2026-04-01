@@ -17,6 +17,7 @@ class ElementPolicy
     private const array ABILITIES = [
         'view',
         'save',
+        'saveCanonical',
         'delete',
         'duplicate',
         'copy',
@@ -33,6 +34,17 @@ class ElementPolicy
     {
         if (! $element instanceof ElementInterface) {
             return null;
+        }
+
+        if ($ability === 'saveCanonical') {
+            if ($element->getIsUnpublishedDraft()) {
+                $fakeCanonical = clone $element;
+                $fakeCanonical->draftId = null;
+
+                return $this->before($user, 'save', $fakeCanonical);
+            }
+
+            return $this->before($user, 'save', $element->getCanonical(true));
         }
 
         // Site authorization (for view and save)

@@ -36,6 +36,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\base\InvalidValueException;
@@ -539,9 +540,6 @@ class ElementIndexesController extends BaseElementsController
             throw new BadRequestHttpException('No element data provided.');
         }
 
-        $elementsService = Craft::$app->getElements();
-        $user = static::currentUser();
-
         // get all the elements
         $elementIds = array_map(
             fn(string $key) => (int) Str::chopStart($key, 'element-'),
@@ -561,9 +559,7 @@ class ElementIndexesController extends BaseElementsController
 
         // make sure they're editable
         foreach ($elements as $element) {
-            if (!$elementsService->canSave($element, $user)) {
-                throw new ForbiddenHttpException('User not authorized to save this element.');
-            }
+            Gate::authorize('save', $element);
         }
 
         // set attributes and validate everything

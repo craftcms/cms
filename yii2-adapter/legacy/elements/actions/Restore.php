@@ -7,12 +7,11 @@
 
 namespace craft\elements\actions;
 
-use Craft;
 use craft\base\ElementAction;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use function CraftCms\Cms\t;
 
 /**
@@ -113,11 +112,9 @@ JS, [
     {
         $anySuccess = false;
         $anyFail = false;
-        $elementsService = Craft::$app->getElements();
-        $user = Auth::user();
 
         foreach ($query->all() as $element) {
-            if (!$elementsService->canSave($element, $user)) {
+            if (!Gate::check('save', $element)) {
                 continue;
             }
 
