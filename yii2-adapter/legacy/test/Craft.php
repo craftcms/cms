@@ -188,6 +188,7 @@ class Craft extends Yii2
         TestSetup::removeProjectConfigFolders(CRAFT_VENDOR_PATH . '/orchestra/testbench-core/laravel/config/craft/project');
         $this->resetPathService();
 
+        app()->forgetInstance(\CraftCms\Cms\Element\Elements::class);
         app()->forgetInstance(Sites::class);
         app()->forgetInstance(EntryTypes::class);
         app()->forgetInstance(Fields::class);
@@ -243,6 +244,7 @@ class Craft extends Yii2
 
     public function _after(TestInterface $test): void
     {
+        app()->forgetInstance(\CraftCms\Cms\Element\Elements::class);
         app()->forgetInstance(EntryTypes::class);
         app()->forgetInstance(Sections::class);
         app()->forgetInstance(Filesystems::class);
@@ -252,6 +254,7 @@ class Craft extends Yii2
         app()->forgetInstance(ImageTransforms::class);
         $this->resetPathService();
 
+        Elements::clearResolvedInstances();
         \CraftCms\Cms\Support\Facades\EntryTypes::clearResolvedInstances();
         \CraftCms\Cms\Support\Facades\Sections::clearResolvedInstances();
         \CraftCms\Cms\Support\Facades\Assets::clearResolvedInstances();
