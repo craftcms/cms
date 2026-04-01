@@ -1235,9 +1235,10 @@ class Fields extends Component
      * Deletes a field layout(s) by its ID.
      *
      * @param int|int[] $layoutId The field layout’s ID
+     * @param bool $hardDelete Whether the field layout should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the field layout was deleted successfully
      */
-    public function deleteLayoutById(array|int $layoutId): bool
+    public function deleteLayoutById(array|int $layoutId, bool $hardDelete = false): bool
     {
         if (!$layoutId) {
             return false;
@@ -1247,7 +1248,7 @@ class Fields extends Component
             $layout = $this->getLayoutById($thisLayoutId);
 
             if ($layout) {
-                $this->deleteLayout($layout);
+                $this->deleteLayout($layout, $hardDelete);
             }
         }
 
@@ -1258,9 +1259,10 @@ class Fields extends Component
      * Deletes a field layout.
      *
      * @param FieldLayout $layout The field layout
+     * @param bool $hardDelete Whether the field layout should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the field layout was deleted successfully
      */
-    public function deleteLayout(FieldLayout $layout): bool
+    public function deleteLayout(FieldLayout $layout, bool $hardDelete = false): bool
     {
         // Fire a 'beforeDeleteFieldLayout' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT)) {
@@ -1269,9 +1271,15 @@ class Fields extends Component
             ]));
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->softDelete(Table::FIELDLAYOUTS, ['id' => $layout->id])
-            ->execute();
+        if ($hardDelete) {
+            Craft::$app->getDb()->createCommand()
+                ->delete(Table::FIELDLAYOUTS, ['id' => $layout->id])
+                ->execute();
+        } else {
+            Craft::$app->getDb()->createCommand()
+                ->softDelete(Table::FIELDLAYOUTS, ['id' => $layout->id])
+                ->execute();
+        }
 
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_LAYOUT)) {
             $this->trigger(self::EVENT_AFTER_DELETE_FIELD_LAYOUT, new FieldLayoutEvent([

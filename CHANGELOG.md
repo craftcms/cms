@@ -4,6 +4,7 @@
 
 - Most classes can now be instantiated via the `create()` Twig function. ([#18376](https://github.com/craftcms/cms/discussions/18376))
 - Added `craft\helpers\ProjectConfig::pathDepth()`.
+- `craft\services\Fields::deleteLayout()` and `deleteLayoutById()` now have `$hardDelete` arguments.
 - Deprecated `craft\services\ProjectConfig::getPendingChangeSummary()`.
 - Fixed a bug where element search query caches weren’t getting invalidated when elements’ search keywords were indexed. ([#18275](https://github.com/craftcms/cms/issues/18275))
 - Fixed a bug where disabled sites weren’t getting loaded when running Codeception tests. ([#18638](https://github.com/craftcms/cms/issues/18638))
@@ -12,6 +13,7 @@
 - Fixed a bug where Matrix fields in Blocks view could have “Duplicate selected blocks” and “Delete selected blocks” field-level actions. ([#18652](https://github.com/craftcms/cms/pull/18652))
 - Fixed a bug where the submit button within Live Preview was labelled “Save” rather than “Create entry” when editing an unpublished draft. ([#18579](https://github.com/craftcms/cms/discussions/18579))
 - Fixed a bug where recent changes could be lost when creating an element or applying a draft, if there were validation errors. ([#18657](https://github.com/craftcms/cms/issues/18657))
+- Fixed a bug where nested elements would get soft-deleted after running the `entrify/global-set` command. ([#18650](https://github.com/craftcms/cms/issues/18650))
 
 ## 5.9.18 - 2026-03-26
 
