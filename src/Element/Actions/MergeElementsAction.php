@@ -32,7 +32,7 @@ readonly class MergeElementsAction
                 ->join(new Alias(Table::ELEMENTS, 'e'), 'e.id', 'r.sourceId')
                 ->where('r.targetId', $mergedElement->id)
                 ->get()
-                ->groupBy(['type', fn ($r) => $r['sourceSiteId'] ?? '*']);
+                ->groupBy(['type', fn ($r) => $r->sourceSiteId ?? '*']);
 
             foreach ($data as $elementType => $typeData) {
                 foreach ($typeData as $siteId => $relations) {
@@ -133,7 +133,7 @@ readonly class MergeElementsAction
             $elementType = $this->elements->getElementTypeById($prevailingElement->id);
 
             if ($elementType !== null && ($refHandle = $elementType::refHandle()) !== null) {
-                $refTagPrefix = "\{$refHandle:";
+                $refTagPrefix = '{'.$refHandle.':';
 
                 dispatch(new FindAndReplace(
                     find: $refTagPrefix.$mergedElement->id.':',
@@ -143,7 +143,7 @@ readonly class MergeElementsAction
 
                 dispatch(new FindAndReplace(
                     find: $refTagPrefix.$mergedElement->id.'}',
-                    replace: $refTagPrefix.$prevailingElement->id.':',
+                    replace: $refTagPrefix.$prevailingElement->id.'}',
                     description: $refTagPrefix.$prevailingElement->id.'}',
                 ));
             }
@@ -151,11 +151,7 @@ readonly class MergeElementsAction
             event(new AfterMergeElements($mergedElement->id, $prevailingElement->id));
 
             // Now delete the merged element
-            $success = $this->elements->deleteElement($mergedElement);
-
-            DB::commit();
-
-            return $success;
+            return $this->elements->deleteElement($mergedElement);
         });
     }
 }

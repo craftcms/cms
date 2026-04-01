@@ -2,57 +2,12 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Entry\Models\Entry;
-use CraftCms\Cms\Structure\Models\Structure;
-use CraftCms\Cms\Structure\Models\StructureElement;
-
-/**
- * Creates a structure with a root element and children.
- *
- * Structure:
- *   root (level 0)
- *   ├── child1 (level 1)
- *   │   └── grandchild (level 2)
- *   └── child2 (level 1)
- */
 beforeEach(function () {
-    $structure = Structure::factory()->create();
-    $structure->structureElements()->delete();
-
-    $root = Entry::factory()->create();
-    $child1 = Entry::factory()->create();
-    $child2 = Entry::factory()->create();
-    $grandChild = Entry::factory()->create();
-
-    $rootElement = new StructureElement([
-        'structureId' => $structure->id,
-        'elementId' => $root->id,
-    ]);
-    $rootElement->makeRoot();
-
-    $child1Element = new StructureElement([
-        'structureId' => $structure->id,
-        'elementId' => $child1->id,
-    ]);
-    $child1Element->appendTo($rootElement);
-
-    $child2Element = new StructureElement([
-        'structureId' => $structure->id,
-        'elementId' => $child2->id,
-    ]);
-    $child2Element->appendTo($rootElement);
-
-    $grandchildElement = new StructureElement([
-        'structureId' => $structure->id,
-        'elementId' => $grandChild->id,
-    ]);
-    $grandchildElement->appendTo($child1Element);
-
-    // Refresh entries using entryQuery() to get structure data as Entry elements
-    $this->root = entryQuery()->id($root->id)->structureId($structure->id)->one();
-    $this->child1 = entryQuery()->id($child1->id)->structureId($structure->id)->one();
-    $this->child2 = entryQuery()->id($child2->id)->structureId($structure->id)->one();
-    $this->grandChild = entryQuery()->id($grandChild->id)->structureId($structure->id)->one();
+    [
+        'root' => $this->root,
+        'children' => [$this->child1, $this->child2],
+        'nested' => [$this->grandChild],
+    ] = createStructureHierarchy();
 });
 
 describe('parent/child relationships', function () {

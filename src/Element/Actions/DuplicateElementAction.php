@@ -343,11 +343,13 @@ readonly class DuplicateElementAction
         ];
 
         if ($from->duplicateOf?->getIsDraft()) {
-            $modifiedAttributes += [
+            $modifiedAttributes = [
+                ...$modifiedAttributes,
                 ...$from->duplicateOf->getModifiedAttributes(),
                 ...$from->duplicateOf->getDirtyAttributes(),
             ];
-            $modifiedFields += [
+            $modifiedFields = [
+                ...$modifiedFields,
                 ...$from->duplicateOf->getModifiedFields(),
                 ...$from->duplicateOf->getDirtyFields(),
             ];

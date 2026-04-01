@@ -6,8 +6,6 @@ use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
-use CraftCms\Cms\Structure\Models\Structure;
-use CraftCms\Cms\Structure\Models\StructureElement;
 use CraftCms\Cms\User\Elements\User;
 
 beforeEach(function () {
@@ -196,51 +194,12 @@ describe('eagerLoadingMap', function () {
 
 describe('structure relationships', function () {
     beforeEach(function () {
-        /**
-         * Create a structure with hierarchy:
-         *   root (level 0)
-         *   ├── child1 (level 1)
-         *   │   └── grandchild (level 2)
-         *   └── child2 (level 1)
-         */
-        $structure = Structure::factory()->create();
-        $structure->structureElements()->delete();
-
-        $root = EntryModel::factory()->create();
-        $child1 = EntryModel::factory()->create();
-        $child2 = EntryModel::factory()->create();
-        $grandChild = EntryModel::factory()->create();
-
-        $rootElement = new StructureElement([
-            'structureId' => $structure->id,
-            'elementId' => $root->id,
-        ]);
-        $rootElement->makeRoot();
-
-        $child1Element = new StructureElement([
-            'structureId' => $structure->id,
-            'elementId' => $child1->id,
-        ]);
-        $child1Element->appendTo($rootElement);
-
-        $child2Element = new StructureElement([
-            'structureId' => $structure->id,
-            'elementId' => $child2->id,
-        ]);
-        $child2Element->appendTo($rootElement);
-
-        $grandchildElement = new StructureElement([
-            'structureId' => $structure->id,
-            'elementId' => $grandChild->id,
-        ]);
-        $grandchildElement->appendTo($child1Element);
-
-        // Refresh entries using entryQuery() to get structure data as Entry elements
-        $this->structure = $structure;
-        $this->root = entryQuery()->id($root->id)->structureId($structure->id)->one();
-        $this->child1 = entryQuery()->id($child1->id)->structureId($structure->id)->one();
-        $this->child2 = entryQuery()->id($child2->id)->structureId($structure->id)->one();
-        $this->grandChild = entryQuery()->id($grandChild->id)->structureId($structure->id)->one();
+        [
+            'structure' => $this->structure,
+            'root' => $this->root,
+            'children' => [$this->child1, $this->child2],
+            'nested' => [$this->grandChild],
+        ] = createStructureHierarchy();
     });
 
     test('descendants returns all descendants of root element', function () {

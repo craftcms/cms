@@ -9,6 +9,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Events\AfterDeleteForSite;
 use CraftCms\Cms\Element\Events\BeforeDeleteForSite;
+use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -45,13 +46,12 @@ readonly class DeleteElementsForSiteAction
 
         // Separate the multi-site elements from the single-site elements
         $multiSiteElementIds = $firstElement::find()
-            ->id(array_map(fn (ElementInterface $element) => $element->id, $elements))
+            ->id(Arr::pluck($elements, 'id'))
             ->status(null)
             ->drafts(null)
             ->siteId(['not', $firstElement->siteId])
             ->unique()
-            ->select(['elements.id'])
-            ->pluck('id')
+            ->pluck('elements.id')
             ->all();
 
         $multiSiteElementIdsIdx = array_flip($multiSiteElementIds);
@@ -83,13 +83,13 @@ readonly class DeleteElementsForSiteAction
 
             // Resave them
             $this->resaveElementsAction->handle(
-                $firstElement::find()
+                query: $firstElement::find()
                     ->id($multiSiteElementIds)
                     ->status(null)
                     ->drafts(null)
                     ->site('*')
                     ->unique(),
-                true,
+                continueOnError: true,
                 updateSearchIndex: false,
             );
 
