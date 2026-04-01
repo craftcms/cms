@@ -12,7 +12,6 @@ use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
-use craft\behaviors\CustomFieldBehavior;
 use craft\elements\db\EagerLoadInfo;
 use craft\elements\db\EagerLoadPlan;
 use craft\errors\ElementNotFoundException;
@@ -27,7 +26,6 @@ use craft\events\MergeElementsEvent;
 use craft\events\MultiElementActionEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db as DbHelper;
 use craft\helpers\Queue;
 use craft\models\ElementActivity;
 use CraftCms\Cms\Address\Elements\Address;
@@ -43,10 +41,10 @@ use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementActivity as ElementActivityService;
 use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
-use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
 use CraftCms\Cms\Element\Events\AfterMergeCanonicalChanges;
+use CraftCms\Cms\Element\Events\AfterMergeElements;
 use CraftCms\Cms\Element\Events\AfterPropagateElement;
 use CraftCms\Cms\Element\Events\AfterPropagateElements;
 use CraftCms\Cms\Element\Events\AfterResaveElement;
@@ -69,8 +67,6 @@ use CraftCms\Cms\Element\Models\ElementSiteSettings;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Field\BaseRelationField;
-use CraftCms\Cms\Search\Jobs\FindAndReplace;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Structure\Models\StructureElement as StructureElementModel;
@@ -78,12 +74,10 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Elements as ElementsFacade;
-use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
@@ -1237,21 +1231,11 @@ class Elements extends Component
      * @return bool Whether the elements were merged successfully.
      * @throws ElementNotFoundException if one of the element IDs don’t exist.
      * @throws Throwable if reasons
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::mergeElementsByIds()} instead.
      */
     public function mergeElementsByIds(int $mergedElementId, int $prevailingElementId): bool
     {
-        // Get the elements
-        $mergedElement = $this->getElementById($mergedElementId);
-        if (!$mergedElement) {
-            throw new ElementNotFoundException("No element exists with the ID '$mergedElementId'");
-        }
-        $prevailingElement = $this->getElementById($prevailingElementId);
-        if (!$prevailingElement) {
-            throw new ElementNotFoundException("No element exists with the ID '$prevailingElementId'");
-        }
-
-        // Merge them
-        return $this->mergeElements($mergedElement, $prevailingElement);
+        return ElementsFacade::mergeElementsByIds($mergedElementId, $prevailingElementId);
     }
 
     /**
@@ -1268,150 +1252,11 @@ class Elements extends Component
      * @return bool Whether the elements were merged successfully.
      * @throws Throwable if reasons
      * @since 3.1.31
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::mergeElements()} instead.
      */
     public function mergeElements(ElementInterface $mergedElement, ElementInterface $prevailingElement): bool
     {
-        DB::beginTransaction();
-        try {
-            // Find elements that relate to the merged element
-            $data = DB::table(Table::RELATIONS, 'r')
-                ->select(['r.sourceId', 'r.sourceSiteId', 'e.type'])
-                ->join(new Alias(Table::ELEMENTS, 'e'), 'e.id', 'r.sourceId')
-                ->where('r.targetId', $mergedElement->id)
-                ->get()
-                ->groupBy(['type', fn($r) => $r['sourceSiteId'] ?? '*']);
-
-            foreach ($data as $elementType => $typeData) {
-                foreach ($typeData as $siteId => $relations) {
-                    /** @var class-string<ElementInterface> $elementType */
-                    /** @var ElementCollection $relations */
-                    $query = $elementType::find()
-                        ->id($relations->pluck('sourceId'))
-                        ->siteId($siteId)
-                        ->drafts(null)
-                        ->revisions(null)
-                        ->trashed(null)
-                        ->status(null);
-
-                    if ($siteId === '*') {
-                        $query->unique();
-                    }
-
-                    foreach (DbHelper::each($query) as $element) {
-                        /** @var ElementInterface $element */
-                        /** @var CustomFieldBehavior $behavior */
-                        $behavior = $element->getBehavior('customFields');
-                        foreach ($element->getFieldLayout()?->getCustomFields() ?? [] as $field) {
-                            if (
-                                $field instanceof BaseRelationField &&
-                                isset($behavior->{$field->handle}) &&
-                                is_array($behavior->{$field->handle}) &&
-                                in_array($mergedElement->id, $behavior->{$field->handle})
-                            ) {
-                                // see if the prevailing element is related too
-                                if (in_array($prevailingElement->id, $behavior->{$field->handle})) {
-                                    $value = array_values(array_filter($behavior->{$field->handle}, fn($v) => $v != $mergedElement->id));
-                                } else {
-                                    $value = array_map(fn($v) => $v == $mergedElement->id ? $prevailingElement->id : $v, $behavior->{$field->handle});
-                                }
-                                $element->setFieldValue($field->handle, $value);
-                            }
-                        }
-                        if (!empty($element->getDirtyFields())) {
-                            $element->resaving = true;
-                            $this->saveElement($element, false);
-                        }
-                    }
-                }
-            }
-
-            // Deal with any remaining relation values
-            // (Not all relation field values have been saved since 5.3.0 when relation fields
-            // started saving the target element IDs in the content JSON.)
-            $relations = DB::table(Table::RELATIONS)
-                ->select(['id', 'fieldId', 'sourceId', 'sourceSiteId'])
-                ->where('targetId', $mergedElement->id)
-                ->get();
-
-            foreach ($relations as $relation) {
-                // Make sure the persisting element isn't already selected in the same field
-                $persistingElementIsRelatedToo = DB::table(Table::RELATIONS)
-                    ->where('fieldId', $relation->fieldId)
-                    ->where('sourceId', $relation->sourceId)
-                    ->where('sourceSiteId', $relation->sourceSiteId)
-                    ->where('targetId', $prevailingElement->id)
-                    ->exists();
-
-                if (!$persistingElementIsRelatedToo) {
-                    DB::table(Table::RELATIONS)
-                        ->where('id', $relation->id)
-                        ->update([
-                            'targetId' => $prevailingElement->id,
-                            'dateUpdated' => now(),
-                        ]);
-                }
-            }
-
-            // Update any structures that the merged element is in
-            $structureElements = DB::table(Table::STRUCTUREELEMENTS)
-                ->select(['id', 'structureId'])
-                ->where('elementId', $mergedElement->id)
-                ->get();
-
-            foreach ($structureElements as $structureElement) {
-                // Make sure the persisting element isn't already a part of that structure
-                $persistingElementIsInStructureToo = DB::table(Table::STRUCTUREELEMENTS)
-                    ->where('structureId', $structureElement->structureId)
-                    ->where('elementId', $prevailingElement->id)
-                    ->exists();
-
-                if (!$persistingElementIsInStructureToo) {
-                    DB::table(Table::STRUCTUREELEMENTS)
-                        ->where('id', $structureElement->id)
-                        ->update([
-                            'elementId' => $prevailingElement->id,
-                            'dateUpdated' => now(),
-                        ]);
-                }
-            }
-
-            // Update any reference tags
-            $elementType = $this->getElementTypeById($prevailingElement->id);
-
-            if ($elementType !== null && ($refHandle = $elementType::refHandle()) !== null) {
-                $refTagPrefix = "\{$refHandle:";
-
-                dispatch(new FindAndReplace(
-                    find: $refTagPrefix . $mergedElement->id . ':',
-                    replace: $refTagPrefix . $prevailingElement->id . ':',
-                    description: I18N::prep('Updating element references'),
-                ));
-
-                dispatch(new FindAndReplace(
-                    find: $refTagPrefix . $mergedElement->id . '}',
-                    replace: $refTagPrefix . $prevailingElement->id . ':',
-                    description: $refTagPrefix . $prevailingElement->id . '}',
-                ));
-            }
-
-            // Fire an 'afterMergeElements' event
-            if ($this->hasEventHandlers(self::EVENT_AFTER_MERGE_ELEMENTS)) {
-                $this->trigger(self::EVENT_AFTER_MERGE_ELEMENTS, new MergeElementsEvent([
-                    'mergedElementId' => $mergedElement->id,
-                    'prevailingElementId' => $prevailingElement->id,
-                ]));
-            }
-
-            // Now delete the merged element
-            $success = $this->deleteElement($mergedElement);
-
-            DB::commit();
-
-            return $success;
-        } catch (Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
+        return ElementsFacade::mergeElements($mergedElement, $prevailingElement);
     }
 
     /**
@@ -3209,6 +3054,17 @@ class Elements extends Component
 
             Craft::$app->getElements()->trigger(self::EVENT_AFTER_UPDATE_SLUG_AND_URI, new ElementEvent([
                 'element' => $event->element,
+            ]));
+        });
+
+        Event::listen(function(AfterMergeElements $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_MERGE_ELEMENTS)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_AFTER_MERGE_ELEMENTS, new MergeElementsEvent([
+                'mergedElementId' => $event->mergedElementId,
+                'prevailingElementId' => $event->prevailingElementId,
             ]));
         });
     }

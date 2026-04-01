@@ -9,6 +9,7 @@ use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\DuplicateElementAction;
 use CraftCms\Cms\Element\Actions\MergeCanonicalChangesAction;
+use CraftCms\Cms\Element\Actions\MergeElementsAction;
 use CraftCms\Cms\Element\Actions\PropagateElementsAction;
 use CraftCms\Cms\Element\Actions\ResaveElementsAction;
 use CraftCms\Cms\Element\Actions\SaveElementAction;
@@ -622,5 +623,51 @@ class Elements
             updateDescendants: true,
             queue: false,
         ));
+    }
+
+    /**
+     * Merges two elements together by their IDs.
+     *
+     * This method will update the following:
+     * - Any relations involving the merged element
+     * - Any structures that contain the merged element
+     * - Any reference tags in textual custom fields referencing the merged element
+     *
+     * @param  int  $mergedElementId  The ID of the element that is going away.
+     * @param  int  $prevailingElementId  The ID of the element that is sticking around.
+     * @return bool Whether the elements were merged successfully.
+     *
+     * @throws ElementNotFoundException if one of the element IDs don’t exist.
+     */
+    public function mergeElementsByIds(int $mergedElementId, int $prevailingElementId): bool
+    {
+        // Get the elements
+        if (! $mergedElement = $this->getElementById($mergedElementId)) {
+            throw new ElementNotFoundException("No element exists with the ID '$mergedElementId'");
+        }
+
+        if (! $prevailingElement = $this->getElementById($prevailingElementId)) {
+            throw new ElementNotFoundException("No element exists with the ID '$prevailingElementId'");
+        }
+
+        // Merge them
+        return $this->mergeElements($mergedElement, $prevailingElement);
+    }
+
+    /**
+     * Merges two elements together.
+     *
+     * This method will update the following:
+     * - Any relations involving the merged element
+     * - Any structures that contain the merged element
+     * - Any reference tags in textual custom fields referencing the merged element
+     *
+     * @param  ElementInterface  $mergedElement  The element that is going away.
+     * @param  ElementInterface  $prevailingElement  The element that is sticking around.
+     * @return bool Whether the elements were merged successfully.
+     */
+    public function mergeElements(ElementInterface $mergedElement, ElementInterface $prevailingElement): bool
+    {
+        return app(MergeElementsAction::class)->handle($mergedElement, $prevailingElement);
     }
 }

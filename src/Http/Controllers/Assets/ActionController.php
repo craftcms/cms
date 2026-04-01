@@ -11,6 +11,7 @@ use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Query;
@@ -70,7 +71,7 @@ readonly class ActionController
         );
     }
 
-    public function moveAsset(Request $request): Response
+    public function moveAsset(Request $request, Elements $elements): Response
     {
         $request->validate([
             'assetId' => ['required'],
@@ -101,7 +102,7 @@ readonly class ActionController
                 ->one();
 
             if ($conflictingAsset) {
-                Craft::$app->getElements()->mergeElementsByIds($conflictingAsset->id, $asset->id);
+                $elements->mergeElementsByIds($conflictingAsset->id, $asset->id);
             } else {
                 $volume = $folder->getVolume();
                 $volume->sourceDisk()->delete(rtrim($folder->path, '/').'/'.$asset->getFilename());
