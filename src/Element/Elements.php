@@ -8,6 +8,7 @@ use craft\base\ElementInterface;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\MergeCanonicalChangesAction;
+use CraftCms\Cms\Element\Actions\ResaveElementsAction;
 use CraftCms\Cms\Element\Actions\SaveElementAction;
 use CraftCms\Cms\Element\Actions\UpdateCanonicalElementAction;
 use CraftCms\Cms\Element\Events\SetElementUri;
@@ -419,5 +420,27 @@ class Elements
     public function updateCanonicalElement(ElementInterface $element, array $newAttributes = []): ElementInterface
     {
         return app(UpdateCanonicalElementAction::class)->handle($element, $newAttributes);
+    }
+
+    /**
+     * Resaves all elements that match a given element query.
+     *
+     * @param  ElementQueryInterface  $query  The element query to fetch elements with
+     * @param  bool  $continueOnError  Whether to continue going if an error occurs
+     * @param  bool  $skipRevisions  Whether elements that are (or belong to) a revision should be skipped
+     * @param  bool|null  $updateSearchIndex  Whether to update the element search index for the element
+     *                                        (this will happen via a background job if this is a web request)
+     * @param  bool  $touch  Whether to update the `dateUpdated` timestamps for the elements
+     *
+     * @throws Throwable if reasons
+     */
+    public function resaveElements(
+        ElementQueryInterface $query,
+        bool $continueOnError = false,
+        bool $skipRevisions = true,
+        ?bool $updateSearchIndex = null,
+        bool $touch = false,
+    ): void {
+        app(ResaveElementsAction::class)->handle($query, $continueOnError, $skipRevisions, $updateSearchIndex, $touch);
     }
 }

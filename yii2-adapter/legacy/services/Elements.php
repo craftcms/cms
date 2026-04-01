@@ -38,6 +38,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\PropagateElementAction;
+use CraftCms\Cms\Element\Actions\ResaveElementsAction;
 use CraftCms\Cms\Element\Actions\SaveElementAction;
 use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
 use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
@@ -50,8 +51,12 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
 use CraftCms\Cms\Element\Events\AfterMergeCanonicalChanges;
+use CraftCms\Cms\Element\Events\AfterResaveElement;
+use CraftCms\Cms\Element\Events\AfterResaveElements;
 use CraftCms\Cms\Element\Events\AfterSaveElement;
 use CraftCms\Cms\Element\Events\BeforeMergeCanonicalChanges;
+use CraftCms\Cms\Element\Events\BeforeResaveElement;
+use CraftCms\Cms\Element\Events\BeforeResaveElements;
 use CraftCms\Cms\Element\Events\BeforeSaveElement;
 use CraftCms\Cms\Element\Events\BeforeUpdateSearchIndex;
 use CraftCms\Cms\Element\Events\InvalidateElementCaches;
@@ -1108,6 +1113,7 @@ class Elements extends Component
      *
      * @throws Throwable if reasons
      * @since 3.2.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::resaveElements()} instead.
      */
     public function resaveElements(
         ElementQueryInterface $query,
@@ -1116,82 +1122,7 @@ class Elements extends Component
         ?bool $updateSearchIndex = null,
         bool $touch = false,
     ): void {
-        // Fire a 'beforeResaveElements' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENTS)) {
-            $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENTS, new ElementQueryEvent([
-                'query' => $query,
-            ]));
-        }
-
-        BulkOps::ensure(function() use ($query, $skipRevisions, $touch, $updateSearchIndex, $continueOnError) {
-            $position = 0;
-
-            try {
-                $query->each(function(ElementInterface $element) use ($continueOnError, $query, &$position, $skipRevisions, $touch, $updateSearchIndex) {
-                    /** @var ElementInterface $element */
-                    $position++;
-
-                    $element->setScenario(Element::SCENARIO_ESSENTIALS);
-                    $element->resaving = true;
-
-                    $e = null;
-                    try {
-                        // Fire a 'beforeResaveElement' event
-                        if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENT)) {
-                            $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENT, new MultiElementActionEvent([
-                                'query' => $query,
-                                'element' => $element,
-                                'position' => $position,
-                            ]));
-                        }
-
-                        // Make sure this isn't a revision
-                        if ($skipRevisions) {
-                            $label = $element->getUiLabel();
-                            $label = $label !== '' ? "$label ($element->id)" : sprintf('%s %s',
-                                $element::lowerDisplayName(), $element->id);
-                            try {
-                                if (ElementHelper::isRevision($element)) {
-                                    throw new InvalidElementException($element,
-                                        "Skipped resaving $label because it's a revision.");
-                                }
-                            } catch (Throwable $rootException) {
-                                throw new InvalidElementException($element,
-                                    "Skipped resaving $label due to an error obtaining its root element: " . $rootException->getMessage());
-                            }
-                        }
-
-                        app(SaveElementAction::class)->handle($element, true, true, $updateSearchIndex, forceTouch: $touch,
-                            saveContent: true);
-                    } catch (Throwable $e) {
-                        if (!$continueOnError) {
-                            throw $e;
-                        }
-
-                        report($e);
-                    }
-
-                    // Fire an 'afterResaveElement' event
-                    if ($this->hasEventHandlers(self::EVENT_AFTER_RESAVE_ELEMENT)) {
-                        $this->trigger(self::EVENT_AFTER_RESAVE_ELEMENT, new MultiElementActionEvent([
-                            'query' => $query,
-                            'element' => $element,
-                            'position' => $position,
-                            'exception' => $e,
-                        ]));
-                    }
-                });
-            } catch (QueryAbortedException) {
-                // Fail silently
-            }
-        });
-
-        // Fire an 'afterResaveElements' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_RESAVE_ELEMENTS)) {
-            $this->trigger(self::EVENT_AFTER_RESAVE_ELEMENTS, new ElementQueryEvent([
-                'query' => $query,
-            ]));
-        }
+        ElementsFacade::resaveElements($query, $continueOnError, $skipRevisions, $updateSearchIndex, $touch);
     }
 
     /**
@@ -2221,7 +2152,7 @@ class Elements extends Component
                 ->delete();
 
             // Resave them
-            $this->resaveElements(
+            app(ResaveElementsAction::class)->handle(
                 $firstElement::find()
                     ->id($multiSiteElementIds)
                     ->status(null)
@@ -3674,7 +3605,7 @@ class Elements extends Component
                 return;
             }
 
-            Craft::$app->getElements()->trigger(self::EVENT_BEFORE_MERGE_CANONICAL_CHANGES, $yiiEvent = new ElementEvent([
+            Craft::$app->getElements()->trigger(self::EVENT_BEFORE_MERGE_CANONICAL_CHANGES, new ElementEvent([
                 'element' => $event->element,
             ]));
         });
@@ -3684,8 +3615,53 @@ class Elements extends Component
                 return;
             }
 
-            Craft::$app->getElements()->trigger(self::EVENT_AFTER_MERGE_CANONICAL_CHANGES, $yiiEvent = new ElementEvent([
+            Craft::$app->getElements()->trigger(self::EVENT_AFTER_MERGE_CANONICAL_CHANGES, new ElementQueryEvent([
                 'element' => $event->element,
+            ]));
+        });
+
+        Event::listen(function(BeforeResaveElements $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENTS)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_BEFORE_RESAVE_ELEMENTS, new ElementQueryEvent([
+                'query' => $event->query,
+            ]));
+        });
+
+        Event::listen(function(BeforeResaveElement $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENT)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_BEFORE_RESAVE_ELEMENT, new MultiElementActionEvent([
+                'query' => $event->query,
+                'element' => $event->element,
+                'position' => $event->position,
+            ]));
+        });
+
+        Event::listen(function(AfterResaveElement $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_RESAVE_ELEMENT)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_AFTER_RESAVE_ELEMENT, new MultiElementActionEvent([
+                'query' => $event->query,
+                'element' => $event->element,
+                'position' => $event->position,
+                'exception' => $event->exception,
+            ]));
+        });
+
+        Event::listen(function(AfterResaveElements $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_RESAVE_ELEMENTS)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_AFTER_RESAVE_ELEMENTS, new ElementQueryEvent([
+                'query' => $event->query,
             ]));
         });
     }

@@ -405,7 +405,7 @@ abstract class ResaveCommand extends Command
         } else {
             Craft::$app->getElements()->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
             Craft::$app->getElements()->on(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
-            Craft::$app->getElements()->resaveElements($query, true, $this->resolvedRevisions === false, (bool) $this->option('update-search-index'), (bool) $this->option('touch'));
+            \CraftCms\Cms\Support\Facades\Elements::resaveElements($query, true, $this->resolvedRevisions === false, (bool) $this->option('update-search-index'), (bool) $this->option('touch'));
             Craft::$app->getElements()->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
             Craft::$app->getElements()->off(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
         }
