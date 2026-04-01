@@ -126,6 +126,7 @@
               'cursor-pointer select-none': header.column.getCanSort(),
             }"
             @click="header.column.getToggleSortingHandler()?.($event)"
+            scope="col"
           >
             <div
               class="flex gap-1 items-center"
