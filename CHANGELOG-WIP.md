@@ -423,6 +423,14 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
   - Deprecated `craft\services\Elements::invalidateAllCaches()`. `CraftCms\Cms\Element\ElementCaches::invalidateAll()` should be used instead.
   - Deprecated `craft\services\Elements::invalidateCachesForElementType()`. `CraftCms\Cms\Element\ElementCaches::invalidateForElementType()` should be used instead.
   - Deprecated `craft\services\Elements::invalidateCachesForElement()`. `CraftCms\Cms\Element\ElementCaches::invalidateForElement()` should be used instead.
+- Added `CraftCms\Cms\Element\BulkOp\BulkOps`, `CraftCms\Cms\Element\BulkOp\BulkOpDeferrals`, and `CraftCms\Cms\Support\Facades\BulkOps`.
+  - Deprecated `craft\services\Elements::getBulkOpKeys()`. `CraftCms\Cms\Element\BulkOp\BulkOps::activeKeys()` should be used instead.
+  - Deprecated `craft\services\Elements::beginBulkOp()`. `CraftCms\Cms\Element\BulkOp\BulkOps::start()` should be used instead.
+  - Deprecated `craft\services\Elements::resumeBulkOp()`. `CraftCms\Cms\Element\BulkOp\BulkOps::resume()` should be used instead.
+  - Deprecated `craft\services\Elements::endBulkOp()`. `CraftCms\Cms\Element\BulkOp\BulkOps::end()` should be used instead.
+  - Deprecated `craft\services\Elements::trackElementInBulkOps()`. `CraftCms\Cms\Element\BulkOp\BulkOps::trackElement()` should be used instead.
+  - Deprecated `craft\services\Elements::ensureBulkOp()`. `CraftCms\Cms\Element\BulkOp\BulkOps::ensure()` should be used instead.
+  - Deprecated `craft\events\BulkOpEvent::defer()`. `CraftCms\Cms\Element\BulkOp\BulkOps::defer()` should be used instead.
 - Deprecated `craft\errors\InvalidTypeException`. `CraftCms\Cms\Element\Exceptions\InvalidTypeException` should be used instead.
 - Deprecated `craft\errors\UnsupportedSiteException`. `CraftCms\Cms\Element\Exceptions\UnsupportedSiteException` should be used instead.
 
