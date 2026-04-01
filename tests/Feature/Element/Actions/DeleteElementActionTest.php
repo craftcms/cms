@@ -32,7 +32,7 @@ beforeEach(function () {
     actingAs(User::findOne());
 });
 
-function insertSearchIndexRow(int $elementId, int $siteId): void
+function insertSearchIndexRowForSite(int $elementId, int $siteId): void
 {
     $row = [
         'elementId' => $elementId,
@@ -52,7 +52,7 @@ function insertSearchIndexRow(int $elementId, int $siteId): void
 it('returns false when beforeDelete vetoes the delete', function () {
     $entry = EntryModel::factory()->createElement();
 
-    insertSearchIndexRow($entry->id, $entry->siteId);
+    insertSearchIndexRowForSite($entry->id, $entry->siteId);
 
     Event::fake([
         BeforeDeleteElement::class,
@@ -88,7 +88,7 @@ it('soft deletes an element, cascades drafts and revisions, and tracks it in the
         app(Revisions::class)->createRevision($entry, notes: 'Revision notes'),
     );
 
-    insertSearchIndexRow($entry->id, $entry->siteId);
+    insertSearchIndexRowForSite($entry->id, $entry->siteId);
 
     Event::fake([
         BeforeDelete::class,
@@ -127,7 +127,7 @@ it('soft deletes an element, cascades drafts and revisions, and tracks it in the
 it('hard deletes an element and removes its search indexes without tracking it', function () {
     $entry = EntryModel::factory()->createElement();
 
-    insertSearchIndexRow($entry->id, $entry->siteId);
+    insertSearchIndexRowForSite($entry->id, $entry->siteId);
 
     Event::fake([
         BeforeDelete::class,
@@ -172,7 +172,7 @@ it('allows BeforeDeleteElement to force hard deleting derivative elements', func
         $metadataId = $derivative->revisionId;
     }
 
-    insertSearchIndexRow($derivative->id, $derivative->siteId);
+    insertSearchIndexRowForSite($derivative->id, $derivative->siteId);
 
     $receivedHardDelete = null;
     $afterDeleteElementDispatched = false;
@@ -242,7 +242,7 @@ it('moves structure children up before removing the deleted element node', funct
 it('rolls back the delete when afterDelete throws', function () {
     $entry = EntryModel::factory()->createElement();
 
-    insertSearchIndexRow($entry->id, $entry->siteId);
+    insertSearchIndexRowForSite($entry->id, $entry->siteId);
 
     $beforeDeleteElementDispatched = false;
     $afterDeleteElementDispatched = false;
