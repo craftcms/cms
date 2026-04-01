@@ -99,6 +99,7 @@ readonly class PropagateElementsAction
                     // Clear caches
                     $this->elementCaches->invalidateForElement($element);
                 });
+                /** @phpstan-ignore-next-line */
             } catch (QueryAbortedException) {
                 // Fail silently
             }

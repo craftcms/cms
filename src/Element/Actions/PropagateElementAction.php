@@ -48,10 +48,8 @@ readonly class PropagateElementAction
 
         // Try to fetch the element in this site
         if ($siteElement === null && $element->id) {
-            /** @phpstan-ignore-next-line */
             $siteElement = $this->elements->getElementById($element->id, $element::class, $siteInfo['siteId']);
         } elseif (! $siteElement) {
-            /** @phpstan-ignore-next-line */
             $siteElement = null;
         }
 

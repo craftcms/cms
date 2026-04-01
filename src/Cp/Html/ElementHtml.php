@@ -548,11 +548,11 @@ JS, [
                     'level' => $element->level,
                     'trashed' => $element->trashed,
                     'editable' => $editable,
-                    'savable' => $editable && $this->contextIsAdministrative($config['context']) && $user?->can('save', $element),
-                    'duplicatable' => $editable && $this->contextIsAdministrative($config['context']) && $user?->can('duplicate', $element),
-                    'duplicatable-as-draft' => $editable && $this->contextIsAdministrative($config['context']) && $user?->can('duplicateAsDraft', $element),
-                    'copyable' => $editable && $this->contextIsAdministrative($config['context']) && $user?->can('copy', $element),
-                    'deletable' => $editable && $this->contextIsAdministrative($config['context']) && $user?->can('delete', $element),
+                    'savable' => $editable && $this->contextIsAdministrative($config['context']) && Gate::check('save', $element),
+                    'duplicatable' => $editable && $this->contextIsAdministrative($config['context']) && Gate::check('duplicate', $element),
+                    'duplicatable-as-draft' => $editable && $this->contextIsAdministrative($config['context']) && Gate::check('duplicateAsDraft', $element),
+                    'copyable' => $editable && $this->contextIsAdministrative($config['context']) && Gate::check('copy', $element),
+                    'deletable' => $editable && $this->contextIsAdministrative($config['context']) && Gate::check('delete', $element),
                     'deletable-for-site' => (
                         $editable &&
                         $this->contextIsAdministrative($config['context']) &&

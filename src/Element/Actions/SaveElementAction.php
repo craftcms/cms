@@ -17,6 +17,7 @@ use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Arr;
@@ -221,7 +222,7 @@ class SaveElementAction
             DB::beginTransaction();
 
             try {
-                $this->updateModel($element, $isNewElement, $forceTouch);
+                $this->updateModel($element, $isNewElement, $forceTouch, $fieldLayout);
 
                 // Save the element’s site settings record
                 if ($siteSettingsRecord === null) {
@@ -537,7 +538,7 @@ class SaveElementAction
         return true;
     }
 
-    private function updateModel(ElementInterface $element, bool $isNewElement, bool $forceTouch): void
+    private function updateModel(ElementInterface $element, bool $isNewElement, bool $forceTouch, FieldLayout $fieldLayout): void
     {
         // No need to save the element record multiple times
         if ($element->propagating) {

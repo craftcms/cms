@@ -110,14 +110,14 @@ readonly class PasswordController
         ]);
     }
 
-    public function requireReset(Request $request, Users $users): Response
+    public function requireReset(Request $request, Elements $elements, Users $users): Response
     {
-        return $this->togglePasswordResetRequirement($request, $users, required: true);
+        return $this->togglePasswordResetRequirement($request, $elements, $users, required: true);
     }
 
-    public function removeResetRequirement(Request $request, Users $users): Response
+    public function removeResetRequirement(Request $request, Elements $elements, Users $users): Response
     {
-        return $this->togglePasswordResetRequirement($request, $users, required: false);
+        return $this->togglePasswordResetRequirement($request, $elements, $users, required: false);
     }
 
     public function verifyPassword(Request $request): Response

@@ -26,7 +26,7 @@ readonly class StructuresController
     public function __construct(
         private Request $request,
         private Structures $structures,
-        private Elements $elements,
+        Elements $elements,
     ) {
         [
             'structureId' => $structureId,

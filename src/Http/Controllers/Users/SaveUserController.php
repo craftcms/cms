@@ -303,7 +303,7 @@ readonly class SaveUserController
         }
 
         // Save the user’s photo, if it was submitted
-        $this->processUserPhoto($request, $user);
+        $this->processUserPhoto($request, app(Elements::class), $user);
 
         // If this is public registration, assign the user to the default user group
         if (Edition::isAtLeast(Edition::Pro) && $isPublicRegistration) {

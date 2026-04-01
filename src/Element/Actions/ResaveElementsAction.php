@@ -78,6 +78,7 @@ readonly class ResaveElementsAction
 
                     event(new AfterResaveElement($query, $element, $position, $e));
                 });
+                /** @phpstan-ignore-next-line */
             } catch (QueryAbortedException) {
                 // Fail silently
             }

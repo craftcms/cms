@@ -22,6 +22,7 @@ use CraftCms\Cms\Support\Typecast;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 use UnitEnum;
@@ -122,7 +123,7 @@ readonly class DuplicateElementAction
         $mainClone->setDirtyFields($dirtyFields, false);
 
         // Check authorization?
-        if ($checkAuthorization && ! ($this->elements->canDuplicate($mainClone) && $this->elements->canSave($mainClone))) {
+        if ($checkAuthorization && ! (Gate::check('duplicate', $mainClone) && Gate::check('save', $mainClone))) {
             abort(403, 'User not authorized to duplicate this element.');
         }
 
@@ -296,7 +297,6 @@ readonly class DuplicateElementAction
                         if (! isset($propagatedTo[$siteId]) && $siteInfo['propagate']) {
                             $siteClone = $element->getIsDraft() && ! $element->getIsUnpublishedDraft() ? null : false;
                             if (! $this->propagateElementAction->handle($mainClone, $supportedSites, $siteId, $siteClone)) {
-                                /** @phpstan-ignore-next-line */
                                 throw $siteClone
                                     ? new InvalidElementException($siteClone,
                                         "Element $siteClone->id could not be propagated to site $siteId: ".implode(', ',
