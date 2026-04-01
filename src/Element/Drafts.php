@@ -155,7 +155,7 @@ readonly class Drafts
                 );
             });
 
-            $draft = Craft::$app->getElements()->duplicateElement($canonical, $newAttributes);
+            $draft = $this->elements->duplicateElement($canonical, $newAttributes);
 
             DB::commit();
         } catch (Throwable $e) {

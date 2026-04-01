@@ -349,7 +349,7 @@ class CategoriesController extends Controller
         if ($this->request->getBodyParam('duplicate')) {
             // Swap $category with the duplicate
             try {
-                $category = Craft::$app->getElements()->duplicateElement($category);
+                $category = Elements::duplicateElement($category);
             } catch (InvalidElementException $e) {
                 /** @var Category $clone */
                 $clone = $e->element;

@@ -145,7 +145,7 @@ class MatrixController extends Controller
             }
 
             try {
-                $entry = $elementsService->duplicateElement($source, [
+                $entry = Elements::duplicateElement($source, [
                     ...$attributes,
                     'isProvisionalDraft' => false,
                     'draftId' => null,

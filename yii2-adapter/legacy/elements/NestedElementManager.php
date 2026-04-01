@@ -1145,7 +1145,7 @@ JS, [
 
                     $newElementId = $element->id;
                 } else {
-                    $newElementId = $elementsService->duplicateElement($element, $newAttributes)->id;
+                    $newElementId = Elements::duplicateElement($element, $newAttributes)->id;
                 }
 
                 $newElementIds[$element->id] = $newElementId;

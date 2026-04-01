@@ -12,6 +12,7 @@ use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Structures;
 use Illuminate\Support\Facades\Auth;
@@ -78,7 +79,7 @@ class Duplicate extends ElementAction
     afterActivate: async (selectedItems, elementIndex) => {
       await elementIndex.settings.onDuplicateElements(selectedItems);
     },
-  });
+  })
 })();
 JS, [
             static::class,
@@ -159,7 +160,7 @@ JS, [
             }
 
             try {
-                $duplicate = $elementsService->duplicateElement(
+                $duplicate = Elements::duplicateElement(
                     $element,
                     $attributes,
                     asUnpublishedDraft: $this->asDrafts,

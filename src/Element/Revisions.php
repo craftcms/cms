@@ -145,9 +145,9 @@ readonly class Revisions
                     $newAttributes['dateCreated'] = $canonical->dateUpdated;
                 }
 
-                $revision = $elementsService->duplicateElement(
-                    $canonical,
-                    $newAttributes,
+                $revision = $this->elements->duplicateElement(
+                    element: $canonical,
+                    newAttributes: $newAttributes,
                     copyModifiedFields: true,
                 );
 

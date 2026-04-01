@@ -80,7 +80,7 @@ class ApplyNewPropagationMethod extends BatchedJob
             return;
         }
 
-        $elementsService = Craft::$app->getElements();
+        Craft::$app->getElements();
         $allSiteIds = Sites::getAllSiteIds()->all();
 
         // See what sites the element should exist in going forward
@@ -133,7 +133,7 @@ class ApplyNewPropagationMethod extends BatchedJob
             $otherSiteElement = array_pop($otherSiteElements);
 
             try {
-                $newElement = $elementsService->duplicateElement($otherSiteElement, [], false);
+                $newElement = Elements::duplicateElement($otherSiteElement, [], false);
             } catch (UnsupportedSiteException $e) {
                 Log::warning(sprintf(
                     'Unable to duplicate "%s" to site %d: %s',

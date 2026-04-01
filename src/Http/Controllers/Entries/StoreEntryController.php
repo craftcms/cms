@@ -188,7 +188,7 @@ readonly class StoreEntryController
             $wasEnabled = $entry->enabled;
             $entry->draftId = null;
             $entry->isProvisionalDraft = false;
-            $entry = Craft::$app->getElements()->duplicateElement($entry);
+            $entry = $this->elements->duplicateElement($entry);
             if ($wasEnabled && ! $entry->enabled) {
                 $forceDisabled = true;
             }

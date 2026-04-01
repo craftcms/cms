@@ -7,12 +7,15 @@ namespace CraftCms\Cms\Element;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Actions\DuplicateElementAction;
 use CraftCms\Cms\Element\Actions\MergeCanonicalChangesAction;
 use CraftCms\Cms\Element\Actions\PropagateElementsAction;
 use CraftCms\Cms\Element\Actions\ResaveElementsAction;
 use CraftCms\Cms\Element\Actions\SaveElementAction;
 use CraftCms\Cms\Element\Actions\UpdateCanonicalElementAction;
 use CraftCms\Cms\Element\Events\SetElementUri;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -24,6 +27,7 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
@@ -458,5 +462,37 @@ class Elements
         bool $continueOnError = false,
     ): void {
         app(PropagateElementsAction::class)->handle($query, $siteIds, $continueOnError);
+    }
+
+    /**
+     * Duplicates an element.
+     *
+     * @template T of ElementInterface
+     *
+     * @param  T  $element  the element to duplicate
+     * @param  array  $newAttributes  any attributes to apply to the duplicate. This can contain a `siteAttributes` key,
+     *                                set to an array of site-specific attribute array, indexed by site IDs.
+     * @param  bool  $placeInStructure  whether to position the cloned element after the original one in its structure.
+     *                                  (This will only happen if the duplicated element is canonical.)
+     * @param  bool  $asUnpublishedDraft  whether the duplicate should be created as unpublished draft
+     * @param  bool  $checkAuthorization  whether to ensure the current user is authorized to save the new element,
+     *                                    once its new attributes have been applied to it
+     * @param  bool  $copyModifiedFields  whether to copy modified attribute/field data over to the duplicated element
+     * @return T the duplicated element
+     *
+     * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
+     * @throws InvalidElementException if saveElement() returns false for any of the sites
+     * @throws HttpException if the user isn't authorized to save the duplicated element
+     * @throws Throwable if reasons
+     */
+    public function duplicateElement(
+        ElementInterface $element,
+        array $newAttributes = [],
+        bool $placeInStructure = true,
+        bool $asUnpublishedDraft = false,
+        bool $checkAuthorization = false,
+        bool $copyModifiedFields = false,
+    ): ElementInterface {
+        return app(DuplicateElementAction::class)->handle($element, $newAttributes, $placeInStructure, $asUnpublishedDraft, $checkAuthorization, $copyModifiedFields);
     }
 }

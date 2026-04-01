@@ -1699,7 +1699,7 @@ JS, [
         }
 
         try {
-            $newElement = $elementsService->duplicateElement(
+            $newElement = Elements::duplicateElement(
                 $element,
                 $newAttributes,
                 asUnpublishedDraft: $asUnpublishedDraft,
@@ -1754,7 +1754,7 @@ JS, [
                         ->all();
 
                     try {
-                        $newElement = $elementsService->duplicateElement(
+                        $newElement = Elements::duplicateElement(
                             $element,
                             $safeNewAttributes + $element::baseBulkDuplicateAttributes(),
                             false,
