@@ -68,7 +68,7 @@ class SecFetchSiteFilter extends ActionFilter
 
     private function setDefaults(): void
     {
-        $this->safeMethods = $this->safeMethods ?? Craft::$app->getRequest()->csrfTokenSafeMethods;
-        $this->errorMessage = $this->errorMessage ?? Craft::t('yii', 'Unable to verify your data submission.');
+        $this->safeMethods ??= Craft::$app->getRequest()->csrfTokenSafeMethods;
+        $this->errorMessage ??= Craft::t('yii', 'Unable to verify your data submission.');
     }
 }
