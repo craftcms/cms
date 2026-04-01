@@ -33,8 +33,9 @@
     }|filter|keys,
   }|merge(item.liAttributes ?? {}) %}
     {% set selected = item.selected ?? false %}
-    {% tag (type == 'button' ? 'button' : 'a') with {
+    {% tag 'craft-action-item' with {
       id: id,
+      icon: item.icon ?? null,
       class: {
         'menu-item': true,
         sel: selected,
@@ -54,15 +55,6 @@
       }|filter,
     }|merge(item.attributes ?? {}, recursive=true) %}
       {%- apply spaceless %}
-        {% if item.icon ?? false %}
-          {{ tag('span', {
-            class: [
-              'icon',
-              _self.color(item.color ?? null),
-            ]|filter,
-            html: iconSvg(item.icon),
-          }) }}
-        {% endif %}
         {% if item.status ?? false -%}
           {{ statusIndicator(item.status) }}
         {%- endif -%}
@@ -85,7 +77,7 @@
   {% endtag %}
   {% if type == 'link' %}
     {% js %}
-      $('#{{ id|namespaceInputId }}').on('keydown', (ev) => {
+    $(document.body).on('keydown', '#{{ id|namespaceInputId }}' (ev) => {
         if (ev.keyCode === Garnish.SPACE_KEY) {
           ev.currentTarget.click();
         }
@@ -93,14 +85,16 @@
     {% endjs %}
   {% endif %}
   {% js %}
-    $('#{{ id|namespaceInputId }}').on('activate', () => {
+  $(document.body).on('activate', '#{{ id|namespaceInputId }}', () => {
       setTimeout(() => {
+      console.log('{{menuId|namespaceInputId}}');
         $('#{{ menuId|namespaceInputId }}').data('disclosureMenu').hide();
       }, 1);
     });
   {% endjs %}
 {% endmacro %}
 
+<craft-action-menu>
 {% if withButton %}
   {% if html ?? false %}
     {{ html|raw }}
@@ -108,15 +102,14 @@
     <span>{{ label }}</span>
   {% endif %}
 
-  {% tag 'button' with {
-    class: ['btn', 'menubtn'],
+  {% tag 'craft-button' with {
     type: 'button',
+    size: 'small',
+    icon: true,
+    appearance: 'plain',
+    slot: 'invoker',
     aria: {
-      controls: id,
       label: hiddenLabel ?? null
-    },
-    data: {
-      'disclosure-trigger': true,
     },
     disabled: disabled ?? false,
   }|merge(buttonAttributes ?? {}, recursive=true) %}
@@ -140,7 +133,8 @@
 
 {% tag 'div' with {
   id: id,
-  class: (class ?? [])|explodeClass|merge(['menu', 'menu--disclosure']),
+  class: (class ?? [])|explodeClass,
+  slot: 'content',
   data: {
     'with-search-input': withSearchInput,
   },
@@ -203,3 +197,4 @@
     {% if ulStarted %}{{ '</ul>'|raw }}{% endif %}
   {% endblock %}
 {% endtag %}
+</craft-action-menu>

@@ -297,10 +297,7 @@
                 )
               }}
             </p>
-            <EntryTypeSelect
-              :entry-types="entryTypes"
-              v-model="form.entryTypes"
-            />
+            <EntryTypeSelect v-model="form.entryTypes" :options="entryTypes" />
           </div>
         </div>
 

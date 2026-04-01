@@ -1577,21 +1577,6 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
-/* grids */
-.grid {
-  position: relative;
-  min-height: 1px; // Required for Grid.js to run
-
-  &::after {
-    @include mixins.clearafter;
-  }
-
-  & > .item {
-    display: none;
-    box-sizing: border-box;
-  }
-}
-
 %type-heading-small {
   text-transform: uppercase;
   color: var(--medium-text-color);

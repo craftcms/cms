@@ -55,8 +55,8 @@ enum Color: string
         }
 
         return match ($this) {
-            self::White, self::Gray, self::Black => sprintf('var(--%s)', $this->value),
-            default => sprintf('var(--%s-%s)', $this->value, str_pad((string) $shade, 3, '0', STR_PAD_LEFT)),
+            self::White, self::Gray, self::Black => sprintf('var(--color-%s)', $this->value),
+            default => sprintf('var(--color-%s-%s)', $this->value, str_pad((string) $shade, 3, '0', STR_PAD_LEFT)),
         };
     }
 }

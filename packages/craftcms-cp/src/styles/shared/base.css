@@ -40,12 +40,17 @@ ul {
   list-style: none;
 }
 
-.code {
-  font-size: 0.9em;
+.cp-code {
+  font-size: 0.75em;
+  font-family: var(--c-font-mono);
   display: inline-flex;
   padding: 0 var(--c-spacing-sm);
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--c-color-on-quiet);
+  border: 1px solid var(--c-color-border-quiet);
+  background-color: color-mix(
+    var(--c-color-fill-loud) 10%,
+    var(--c-color-fill-quiet)
+  );
   border-radius: var(--c-radius-sm);
 }
 

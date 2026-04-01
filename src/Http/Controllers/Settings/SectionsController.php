@@ -11,6 +11,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\EntryTypes;
+use CraftCms\Cms\Entry\Resources\EntryTypeResource;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Section\Data\Section as SectionData;
@@ -137,7 +138,7 @@ readonly class SectionsController
             'section' => SectionResource::make($section),
             'homepageUri' => Element::HOMEPAGE_URI,
             'brandNew' => $brandNew,
-            'entryTypes' => $this->entryTypes->getAllEntryTypes(),
+            'entryTypes' => EntryTypeResource::collection($this->entryTypes->getAllEntryTypes()),
             'typeOptions' => SectionType::asOptions(),
             'propagationOptions' => PropagationMethod::asOptions(),
             'placementOptions' => DefaultPlacement::asOptions(),

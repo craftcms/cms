@@ -37,13 +37,13 @@ export default css`
 
   .cp-chip[size='small'],
   .cp-chip--small {
-    padding-block: 0;
+    padding-block: var(--c-spacing-xs);
     min-height: var(--c-size-control-sm);
   }
 
   .cp-chip[size='medium'],
   .cp-chip--medium {
-    padding-block: 0;
+    padding-block: var(--c-spacing-sm);
     min-height: var(--c-size-control-md);
   }
 
