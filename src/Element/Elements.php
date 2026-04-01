@@ -8,6 +8,7 @@ use craft\base\ElementInterface;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\MergeCanonicalChangesAction;
+use CraftCms\Cms\Element\Actions\PropagateElementsAction;
 use CraftCms\Cms\Element\Actions\ResaveElementsAction;
 use CraftCms\Cms\Element\Actions\SaveElementAction;
 use CraftCms\Cms\Element\Actions\UpdateCanonicalElementAction;
@@ -442,5 +443,20 @@ class Elements
         bool $touch = false,
     ): void {
         app(ResaveElementsAction::class)->handle($query, $continueOnError, $skipRevisions, $updateSearchIndex, $touch);
+    }
+
+    /**
+     * Propagates all elements that match a given element query to another site(s).
+     *
+     * @param  ElementQueryInterface  $query  The element query to fetch elements with
+     * @param  int|int[]|null  $siteIds  The site ID(s) that the elements should be propagated to. If null, elements will be
+     * @param  bool  $continueOnError  Whether to continue going if an error occurs
+     */
+    public function propagateElements(
+        ElementQueryInterface $query,
+        array|int|null $siteIds = null,
+        bool $continueOnError = false,
+    ): void {
+        app(PropagateElementsAction::class)->handle($query, $siteIds, $continueOnError);
     }
 }

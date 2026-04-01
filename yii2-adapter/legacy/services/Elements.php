@@ -13,7 +13,6 @@ use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
 use craft\behaviors\CustomFieldBehavior;
-use craft\db\QueryAbortedException;
 use craft\elements\db\EagerLoadInfo;
 use craft\elements\db\EagerLoadPlan;
 use craft\errors\ElementNotFoundException;
@@ -51,10 +50,14 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
 use CraftCms\Cms\Element\Events\AfterMergeCanonicalChanges;
+use CraftCms\Cms\Element\Events\AfterPropagateElement;
+use CraftCms\Cms\Element\Events\AfterPropagateElements;
 use CraftCms\Cms\Element\Events\AfterResaveElement;
 use CraftCms\Cms\Element\Events\AfterResaveElements;
 use CraftCms\Cms\Element\Events\AfterSaveElement;
 use CraftCms\Cms\Element\Events\BeforeMergeCanonicalChanges;
+use CraftCms\Cms\Element\Events\BeforePropagateElement;
+use CraftCms\Cms\Element\Events\BeforePropagateElements;
 use CraftCms\Cms\Element\Events\BeforeResaveElement;
 use CraftCms\Cms\Element\Events\BeforeResaveElements;
 use CraftCms\Cms\Element\Events\BeforeSaveElement;
@@ -1135,101 +1138,14 @@ class Elements extends Component
      * @throws Throwable if reasons
      * propagated to all supported sites, except the one they were queried in.
      * @since 3.2.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::propagateElements()} instead.
      */
     public function propagateElements(
         ElementQueryInterface $query,
-        array|int $siteIds = null,
+        array|int|null $siteIds = null,
         bool $continueOnError = false,
     ): void {
-        // Fire a 'beforePropagateElements' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_PROPAGATE_ELEMENTS)) {
-            $this->trigger(self::EVENT_BEFORE_PROPAGATE_ELEMENTS, new ElementQueryEvent([
-                'query' => $query,
-            ]));
-        }
-
-        if ($siteIds !== null) {
-            // Typecast to integers
-            $siteIds = array_map(fn($siteId) => (int)$siteId, (array)$siteIds);
-        }
-
-        BulkOps::ensure(function() use ($query, $siteIds, $continueOnError) {
-            $position = 0;
-
-            try {
-                $query->each(function(ElementInterface $element) use ($continueOnError, $query, &$position, $siteIds) {
-                    /** @var ElementInterface $element */
-                    $position++;
-
-                    // Fire a 'beforePropagateElement' event
-                    if ($this->hasEventHandlers(self::EVENT_BEFORE_PROPAGATE_ELEMENT)) {
-                        $this->trigger(self::EVENT_BEFORE_PROPAGATE_ELEMENT, new MultiElementActionEvent([
-                            'query' => $query,
-                            'element' => $element,
-                            'position' => $position,
-                        ]));
-                    }
-
-                    $element->setScenario(Element::SCENARIO_ESSENTIALS);
-                    $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
-                    $supportedSiteIds = array_keys($supportedSites);
-                    $elementSiteIds = $siteIds !== null ? array_intersect($siteIds,
-                        $supportedSiteIds) : $supportedSiteIds;
-                    $elementType = get_class($element);
-
-                    $e = null;
-                    try {
-                        $element->newSiteIds = [];
-
-                        foreach ($elementSiteIds as $siteId) {
-                            if ($siteId != $element->siteId) {
-                                // Make sure the site element wasn't updated more recently than the main one
-                                $siteElement = $this->getElementById($element->id, $elementType, $siteId);
-                                if ($siteElement === null || $siteElement->dateUpdated < $element->dateUpdated) {
-                                    $siteElement ??= false;
-                                    app(PropagateElementAction::class)->handle($element, $supportedSites, $siteId, $siteElement);
-                                }
-                            }
-                        }
-
-                        // It's now fully duplicated and propagated
-                        $element->markAsDirty();
-                        $element->afterPropagate(false);
-                    } catch (Throwable $e) {
-                        if (!$continueOnError) {
-                            throw $e;
-                        }
-
-                        report($e);
-                    }
-
-                    // Fire an 'afterPropagateElement' event
-                    if ($this->hasEventHandlers(self::EVENT_AFTER_PROPAGATE_ELEMENT)) {
-                        $this->trigger(self::EVENT_AFTER_PROPAGATE_ELEMENT, new MultiElementActionEvent([
-                            'query' => $query,
-                            'element' => $element,
-                            'position' => $position,
-                            'exception' => $e,
-                        ]));
-                    }
-
-                    // Track this element in bulk operations
-                    BulkOps::trackElement($element);
-
-                    // Clear caches
-                    $this->elementCaches()->invalidateForElement($element);
-                });
-            } catch (QueryAbortedException) {
-                // Fail silently
-            }
-        });
-
-        // Fire an 'afterPropagateElements' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_PROPAGATE_ELEMENTS)) {
-            $this->trigger(self::EVENT_AFTER_PROPAGATE_ELEMENTS, new ElementQueryEvent([
-                'query' => $query,
-            ]));
-        }
+        ElementsFacade::propagateElements($query, $siteIds, $continueOnError);
     }
 
     /**
@@ -3661,6 +3577,51 @@ class Elements extends Component
             }
 
             Craft::$app->getElements()->trigger(self::EVENT_AFTER_RESAVE_ELEMENTS, new ElementQueryEvent([
+                'query' => $event->query,
+            ]));
+        });
+
+        Event::listen(function(BeforePropagateElements $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_PROPAGATE_ELEMENTS)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_BEFORE_PROPAGATE_ELEMENTS, new ElementQueryEvent([
+                'query' => $event->query,
+            ]));
+        });
+
+        Event::listen(function(BeforePropagateElement $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_PROPAGATE_ELEMENT)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_BEFORE_PROPAGATE_ELEMENT, new MultiElementActionEvent([
+                'query' => $event->query,
+                'element' => $event->element,
+                'position' => $event->position,
+            ]));
+        });
+
+        Event::listen(function(AfterPropagateElement $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_PROPAGATE_ELEMENT)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_AFTER_PROPAGATE_ELEMENT, new MultiElementActionEvent([
+                'query' => $event->query,
+                'element' => $event->element,
+                'position' => $event->position,
+                'exception' => $event->exception,
+            ]));
+        });
+
+        Event::listen(function(AfterPropagateElements $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_PROPAGATE_ELEMENTS)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_AFTER_PROPAGATE_ELEMENTS, new ElementQueryEvent([
                 'query' => $event->query,
             ]));
         });
