@@ -27,8 +27,6 @@ use craft\events\MultiElementActionEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\Queue;
 use craft\models\ElementActivity;
-use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\PropagateElementAction;
@@ -64,6 +62,7 @@ use CraftCms\Cms\Element\Events\BeforeSaveElement;
 use CraftCms\Cms\Element\Events\BeforeUpdateSearchIndex;
 use CraftCms\Cms\Element\Events\BeforeUpdateSlugAndUri;
 use CraftCms\Cms\Element\Events\InvalidateElementCaches;
+use CraftCms\Cms\Element\Events\RegisterElementTypes;
 use CraftCms\Cms\Element\Events\SetElementUri;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
@@ -1409,24 +1408,11 @@ class Elements extends Component
      *
      * @return string[] The available element classes.
      * @phpstan-return class-string<ElementInterface>[]
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getAllElementTypes()} instead.
      */
     public function getAllElementTypes(): array
     {
-        $elementTypes = [
-            Address::class,
-            Asset::class,
-            Entry::class,
-            User::class,
-        ];
-
-        // Fire a 'registerElementTypes' event
-        if ($this->hasEventHandlers(self::EVENT_REGISTER_ELEMENT_TYPES)) {
-            $event = new RegisterComponentTypesEvent(['types' => $elementTypes]);
-            $this->trigger(self::EVENT_REGISTER_ELEMENT_TYPES, $event);
-            return $event->types;
-        }
-
-        return $elementTypes;
+        return ElementsFacade::getAllElementTypes();
     }
 
     // Element Actions & Exporters
@@ -2744,6 +2730,18 @@ class Elements extends Component
             ]));
 
             $event->hardDelete = $yiiEvent->hardDelete;
+        });
+
+        Event::listen(function(RegisterElementTypes $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_REGISTER_ELEMENT_TYPES)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_REGISTER_ELEMENT_TYPES, $yiiEvent = new RegisterComponentTypesEvent([
+                'types' => $event->types,
+            ]));
+
+            $event->types = $yiiEvent->types;
         });
     }
 }

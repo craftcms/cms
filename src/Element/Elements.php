@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use craft\base\ElementInterface;
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\DeleteElementAction;
@@ -19,6 +21,7 @@ use CraftCms\Cms\Element\Actions\SaveElementAction;
 use CraftCms\Cms\Element\Actions\UpdateCanonicalElementAction;
 use CraftCms\Cms\Element\Events\AfterUpdateSlugAndUri;
 use CraftCms\Cms\Element\Events\BeforeUpdateSlugAndUri;
+use CraftCms\Cms\Element\Events\RegisterElementTypes;
 use CraftCms\Cms\Element\Events\SetElementUri;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
@@ -30,6 +33,7 @@ use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\User\Elements\User;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
@@ -774,5 +778,27 @@ class Elements
     public function restoreElements(array $elements): bool
     {
         return app(RestoreElementsAction::class)->handle($elements);
+    }
+
+    // Element classes
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns all available element classes.
+     *
+     * @return class-string<ElementInterface>[] The available element classes.
+     */
+    public function getAllElementTypes(): array
+    {
+        $elementTypes = [
+            Address::class,
+            Asset::class,
+            Entry::class,
+            User::class,
+        ];
+
+        event($event = new RegisterElementTypes($elementTypes));
+
+        return $event->types;
     }
 }

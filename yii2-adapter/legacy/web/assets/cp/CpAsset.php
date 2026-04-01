@@ -42,6 +42,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Api;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Images;
@@ -230,7 +231,7 @@ JS;
         }
 
         $elementTypeNames = [];
-        foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
+        foreach (Elements::getAllElementTypes() as $elementType) {
             /** @var class-string<ElementInterface> $elementType */
             $elementTypeNames[$elementType] = [
                 $elementType::displayName(),
