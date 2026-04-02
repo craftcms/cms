@@ -18,6 +18,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request as HttpRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use UnitTester;
 use yii\base\Action;
@@ -51,6 +52,8 @@ class ControllerTest extends TestCase
     public function testBeforeAction(): void
     {
         Cms::config()->isSystemLive = true;
+        Auth::logout();
+        Craft::$app->getUser()->setIdentity(null);
 
         $this->tester->expectThrowable(ForbiddenHttpException::class, function() {
             // AllowAnonymous should redirect and Craft::$app->exit(); I.E. An exit exception
