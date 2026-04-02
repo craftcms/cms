@@ -1685,7 +1685,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             } else {
                 if (isset($this->elementQueryResult) && count($this->elementQueryResult) > 1) {
                     // eager-load authors for all queried entries
-                    app(Elements::class)->eagerLoadElements(self::class, $this->elementQueryResult, ['authors']);
+                    Elements::eagerLoadElements(self::class, $this->elementQueryResult, ['authors']);
 
                     return $this->_authors ?? [];
                 }
