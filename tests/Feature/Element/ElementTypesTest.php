@@ -27,9 +27,9 @@ test('returns element types by id uid and key', function () {
 test('returns null when an element type cannot be found', function () {
     $elementTypes = new ElementTypes;
 
-    expect($elementTypes->getElementTypeById(PHP_INT_MAX))->toBeNull()
+    expect($elementTypes->getElementTypeById(9999))->toBeNull()
         ->and($elementTypes->getElementTypeByUid('missing-uid'))->toBeNull()
-        ->and($elementTypes->getElementTypeByKey('id', PHP_INT_MAX))->toBeNull()
+        ->and($elementTypes->getElementTypeByKey('id', 9999))->toBeNull()
         ->and($elementTypes->getElementTypeByKey('uid', 'missing-uid'))->toBeNull();
 });
 
