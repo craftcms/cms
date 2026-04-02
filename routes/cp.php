@@ -33,6 +33,7 @@ use CraftCms\Cms\Http\Controllers\Settings\SitesController;
 use CraftCms\Cms\Http\Controllers\Settings\UserGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
+use CraftCms\Cms\Http\Controllers\UiController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Users\AddressesController;
 use CraftCms\Cms\Http\Controllers\Users\PasskeysController;
@@ -254,4 +255,6 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     });
 
     Route::post('updates', [UpdaterController::class, 'index']);
+
+    Route::get('ui/{type}/{id}/{component}', [UiController::class, 'render']);
 });

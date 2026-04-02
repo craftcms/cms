@@ -102,10 +102,20 @@ readonly class SectionsController
             ->inertiaPage('SettingsSectionsEditPage', $this->sectionProps($section, $sites, brandNew: true));
     }
 
-    public function edit(Sections $sections, Sites $sites, SectionModel $section): CpScreenResponse
+    public function edit(Request $request, Sections $sections, Sites $sites, SectionModel $section): CpScreenResponse
     {
         $sectionData = $sections->getSectionById($section->id);
         abort_if(is_null($sectionData), 404, 'Section not found');
+
+        // Configure our entry type chips
+        $request->merge([
+            'chipConfig' => [
+                'showHandle' => true,
+                'showActionMenu' => true,
+                'showIndicators' => true,
+                'showDescription' => true,
+            ],
+        ]);
 
         return new CpScreenResponse()
             ->title(trim($sectionData->name) ?: t('Edit Section'))

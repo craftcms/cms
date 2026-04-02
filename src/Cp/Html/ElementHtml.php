@@ -28,6 +28,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\View\Components\Tooltip;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Auth;
 use yii\base\InvalidConfigException;
@@ -158,9 +159,10 @@ readonly class ElementHtml
                 /** @var Chippable&Describable $component */
                 $description = $component->getDescription();
                 if ($description) {
-                    $labelHtml .= Html::tag('span',
-                        $this->contentHtml->parseMarkdown(Html::encode($description)),
-                        ['class' => 'info']);
+                    $labelHtml .= Tooltip::make()
+                        ->id('description-tooltip-'.$config['id'])
+                        ->content($description)
+                        ->toHtml();
                 }
             }
 
@@ -683,6 +685,7 @@ JS, [
                         'icon' => true,
                         'size' => 'small',
                         'appearance' => 'plain',
+                        'variant' => 'inherit',
                     ],
                     'omitIfEmpty' => false,
                 ]);

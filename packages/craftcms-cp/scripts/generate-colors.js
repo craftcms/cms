@@ -55,9 +55,9 @@ function lightScale(color) {
         borderQuiet: 'var(--color-gray-800)',
         borderNormal: 'var(--color-gray-800)',
         borderLoud: 'var(--color-gray-800)',
-        onQuiet: 'var(--color-gray-100)',
-        onNormal: 'var(--color-gray-100)',
-        onLoud: 'var(--color-gray-100)',
+        onQuiet: 'var(--color-gray-50)',
+        onNormal: 'var(--color-gray-50)',
+        onLoud: 'var(--color-gray-50)',
       };
     default:
       return {

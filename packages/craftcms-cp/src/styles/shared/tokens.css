@@ -283,13 +283,19 @@
   /**
   Web Awesome
    */
+
+  /* Colors */
+  --wa-color-surface-border: var(--c-color-neutral-border-quiet);
+  --wa-color-surface-raised: var(--c-surface-raised);
+
+  /* Shadow */
+  --wa-shadow-l: var(--c-shadow-lg);
+
+  /* Panels */
   --wa-panel-border-style: solid;
   --wa-panel-border-width: 1px;
-  --wa-color-surface-border: var(--c-color-neutral-border-quiet);
   --wa-panel-border-color: var(--c-color-neutral-border-quiet);
   --wa-panel-border-radius: var(--c-radius-md);
-  --wa-color-surface-raised: var(--c-surface-raised);
-  --wa-shadow-l: var(--c-shadow-lg);
 }
 
 [data-theme='dark'] {

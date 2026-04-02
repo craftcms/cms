@@ -36,7 +36,7 @@ export default css`
     :host(:hover) {
       background-color: color-mix(
         in oklab,
-        var(--c-color-fill-loud, var(--c-button-default-fill)),
+        var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)),
         var(--c-color-mix-hover)
       );
       color: var(--c-color-on-loud);
@@ -123,7 +123,7 @@ export default css`
   :host([appearance~='plain']:hover) {
     background-color: color-mix(
       in oklab,
-      var(--c-color-fill-quiet, var(--c-button-default-fill)),
+      var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
       var(--c-color-mix-hover)
     );
     color: var(--c-color-on-quiet);

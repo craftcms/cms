@@ -11,7 +11,7 @@
   import CraftInputHandle from '@craftcms/cp/vue/CraftInputHandle.vue';
   import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
   import CraftSelect from '@craftcms/cp/vue/CraftSelect.vue';
-  import EntryTypeSelect from '@/components/form/EntryTypeSelect.vue';
+  import EntryTypeSelect from '@/components/form/ComponentSelect/EntryTypeSelect.vue';
   import {useInputGenerator} from '@/composables/useInputGenerator';
   import type {
     SectionResource,
@@ -297,7 +297,17 @@
                 )
               }}
             </p>
-            <EntryTypeSelect v-model="form.entryTypes" :options="entryTypes" />
+            <EntryTypeSelect
+              v-model="form.entryTypes"
+              :options="entryTypes"
+              :allow-overrides="true"
+              :errors="form.errors.entryTypes"
+              id="entry-types"
+              name="entryTypes[]"
+              data-error-key="entryTypes"
+              :create="!readOnly"
+              :disabled="readOnly"
+            />
           </div>
         </div>
 
