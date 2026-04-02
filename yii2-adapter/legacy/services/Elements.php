@@ -1555,7 +1555,7 @@ class Elements extends Component
      */
     public function canView(ElementInterface $element, ?User $user = null): bool
     {
-        return Gate::forUser($user)->check('view', $element);
+        return $this->_checkAuthorization($element, 'view', $user);
     }
 
     /**
@@ -1570,7 +1570,7 @@ class Elements extends Component
      */
     public function canSave(ElementInterface $element, ?User $user = null): bool
     {
-        return Gate::forUser($user)->check('save', $element);
+        return $this->_checkAuthorization($element, 'save', $user);
     }
 
     /**
@@ -1585,7 +1585,14 @@ class Elements extends Component
      */
     public function canSaveCanonical(ElementInterface $element, ?User $user = null): bool
     {
-        return Gate::forUser($user)->check('saveCanonical', $element);
+        if ($element->getIsUnpublishedDraft()) {
+            $fakeCanonical = clone $element;
+            $fakeCanonical->draftId = null;
+
+            return $this->canSave($fakeCanonical, $user);
+        }
+
+        return $this->canSave($element->getCanonical(true), $user);
     }
 
     /**
@@ -1602,7 +1609,7 @@ class Elements extends Component
      */
     public function canDuplicate(ElementInterface $element, ?User $user = null): bool
     {
-        return Gate::forUser($user)->check('duplicate', $element);
+        return $this->_checkAuthorization($element, 'duplicate', $user);
     }
 
     /**
@@ -1617,7 +1624,7 @@ class Elements extends Component
      */
     public function canDuplicateAsDraft(ElementInterface $element, ?User $user = null): bool
     {
-        return Gate::forUser($user)->check('duplicateAsDraft', $element);
+        return $this->_checkAuthorization($element, 'duplicateAsDraft', $user);
     }
 
     /**
@@ -1634,7 +1641,7 @@ class Elements extends Component
      */
     public function canCopy(ElementInterface $element, ?User $user = null): bool
     {
-        return Gate::forUser($user)->check('copy', $element);
+        return $this->_checkAuthorization($element, 'copy', $user);
     }
 
     /**
@@ -1651,7 +1658,7 @@ class Elements extends Component
      */
     public function canDelete(ElementInterface $element, ?User $user = null): bool
     {
-        return Gate::forUser($user)->check('delete', $element);
+        return $this->_checkAuthorization($element, 'delete', $user);
     }
 
     /**
@@ -1668,7 +1675,7 @@ class Elements extends Component
      */
     public function canDeleteForSite(ElementInterface $element, ?User $user = null): bool
     {
-        return Gate::forUser($user)->check('deleteForSite', $element);
+        return $this->_checkAuthorization($element, 'deleteForSite', $user);
     }
 
     /**
@@ -1685,7 +1692,18 @@ class Elements extends Component
      */
     public function canCreateDrafts(ElementInterface $element, ?User $user = null): bool
     {
-        return Gate::forUser($user)->check('createDrafts', $element);
+        return $this->_checkAuthorization($element, 'createDrafts', $user);
+    }
+
+    private function _checkAuthorization(ElementInterface $element, string $ability, ?User $user = null): bool
+    {
+        $user ??= Auth::user();
+
+        if (!$user) {
+            return false;
+        }
+
+        return Gate::forUser($user)->check($ability, $element);
     }
 
     private static function _authCheck(ElementInterface $element, User $user, string $eventName): ?bool
@@ -1941,7 +1959,7 @@ class Elements extends Component
                 return null;
             }
 
-            return self::_authCheck($element, $user, $ability);
+            return self::_authCheck($element, $user, $event);
         });
     }
 }
