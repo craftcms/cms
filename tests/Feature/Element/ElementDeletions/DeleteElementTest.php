@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Actions\DeleteElementAction;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Events\AfterDelete;
@@ -11,6 +10,7 @@ use CraftCms\Cms\Element\Events\AfterDeleteElement;
 use CraftCms\Cms\Element\Events\BeforeDelete;
 use CraftCms\Cms\Element\Events\BeforeDeleteElement;
 use CraftCms\Cms\Element\Events\InvalidateElementCaches;
+use CraftCms\Cms\Element\Operations\ElementDeletions;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Event;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
-    $this->action = app(DeleteElementAction::class);
+    $this->deletions = app(ElementDeletions::class);
     $this->bulkOps = app(BulkOps::class);
     $this->bulkOpConnection = DB::connection('db2');
     $this->drafts = app(Drafts::class);
@@ -68,7 +68,7 @@ it('returns false when beforeDelete vetoes the delete', function () {
         $event->isValid = false;
     });
 
-    expect($this->action->handle($entry))->toBeFalse()
+    expect($this->deletions->deleteElement($entry))->toBeFalse()
         ->and(DB::table(Table::ELEMENTS)->where('id', $entry->id)->value('dateDeleted'))->toBeNull()
         ->and(DB::table(Table::SEARCHINDEX)->where('elementId', $entry->id)->exists())->toBeTrue();
 
@@ -101,7 +101,7 @@ it('soft deletes an element, cascades drafts and revisions, and tracks it in the
     $key = $this->bulkOps->start();
 
     try {
-        expect($this->action->handle($entry))->toBeTrue()
+        expect($this->deletions->deleteElement($entry))->toBeTrue()
             ->and(DB::table(Table::ELEMENTS)->where('id', $entry->id)->value('dateDeleted'))->not()->toBeNull()
             ->and((bool) DB::table(Table::ELEMENTS)->where('id', $entry->id)->value('deletedWithOwner'))->toBeTrue()
             ->and(DB::table(Table::SEARCHINDEX)->where('elementId', $entry->id)->exists())->toBeTrue()
@@ -140,7 +140,7 @@ it('hard deletes an element and removes its search indexes without tracking it',
     $key = $this->bulkOps->start();
 
     try {
-        expect($this->action->handle($entry, true))->toBeTrue()
+        expect($this->deletions->deleteElement($entry, true))->toBeTrue()
             ->and(DB::table(Table::ELEMENTS)->where('id', $entry->id)->exists())->toBeFalse()
             ->and(DB::table(Table::SEARCHINDEX)->where('elementId', $entry->id)->exists())->toBeFalse()
             ->and($this->bulkOpConnection->table(Table::ELEMENTS_BULKOPS)
@@ -194,7 +194,7 @@ it('allows BeforeDeleteElement to force hard deleting derivative elements', func
         $afterDeleteElementDispatched = true;
     });
 
-    expect($this->action->handle($derivative))->toBeTrue()
+    expect($this->deletions->deleteElement($derivative))->toBeTrue()
         ->and($receivedHardDelete)->toBeFalse()
         ->and($derivative->hardDelete)->toBeTrue()
         ->and($derivative->dateDeleted)->not()->toBeNull()
@@ -217,7 +217,7 @@ it('moves structure children up before removing the deleted element node', funct
 
     expect(StructureElement::where('structureId', $structure->id)->count())->toBe(4);
 
-    $this->action->handle($child1);
+    $this->deletions->deleteElement($child1);
 
     $rootNode = StructureElement::where('structureId', $structure->id)
         ->where('elementId', $root->id)
@@ -271,7 +271,7 @@ it('rolls back the delete when afterDelete throws', function () {
         $afterDeleteElementDispatched = true;
     });
 
-    expect(fn () => $this->action->handle($entry))
+    expect(fn () => $this->deletions->deleteElement($entry))
         ->toThrow(RuntimeException::class, 'delete failed');
 
     expect($beforeDeleteElementDispatched)->toBeTrue()

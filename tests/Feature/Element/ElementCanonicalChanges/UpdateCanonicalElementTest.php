@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Actions\UpdateCanonicalElementAction;
+use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\Operations\ElementCanonicalChanges;
+use CraftCms\Cms\Element\Operations\ElementDuplicates;
+use CraftCms\Cms\Element\Operations\ElementWrites;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\EntryTypes as EntryTypesService;
@@ -37,7 +39,7 @@ it('throws when the element is already canonical', function () {
 
     [$action, $state] = createActionSpy();
 
-    expect(fn () => $action->handle($entry))
+    expect(fn () => $action->updateCanonicalElement($entry))
         ->toThrow(InvalidArgumentException::class, 'Element was already canonical');
 
     expect($state->duplicateCall)->toBeNull();
@@ -61,7 +63,7 @@ it('throws when the derivative entry type is no longer allowed in its section', 
 
     [$action, $state] = createActionSpy();
 
-    expect(fn () => $action->handle($draft))
+    expect(fn () => $action->updateCanonicalElement($draft))
         ->toThrow(InvalidArgumentException::class, 'Entry Type is no longer allowed in this section.');
 
     expect($state->duplicateCall)->toBeNull();
@@ -164,7 +166,7 @@ it('prepares duplicate attributes and defers canonical change tracking updates f
 
     [$action, $state] = createActionSpy($updatedCanonical);
 
-    expect($action->handle($draft, ['custom' => 'value']))->toBe($updatedCanonical);
+    expect($action->updateCanonicalElement($draft, ['custom' => 'value']))->toBe($updatedCanonical);
 
     expect($state->duplicateCall)->not->toBeNull();
     expect($state->duplicateCall['element'])->toBe($draft);
@@ -235,7 +237,7 @@ it('marks all custom fields as dirty when updating from a revision', function ()
 
     [$action, $state] = createActionSpy($updatedCanonical);
 
-    $action->handle($revision, ['dirtyFields' => ['ignoredField']]);
+    $action->updateCanonicalElement($revision, ['dirtyFields' => ['ignoredField']]);
 
     expect($state->duplicateCall)->not->toBeNull();
     expect($state->duplicateCall['newAttributes']['dirtyFields'])->toBe([$field->handle]);
@@ -248,8 +250,8 @@ function createActionSpy(?ElementInterface $duplicateResult = null): array
         public ?array $duplicateCall = null;
     };
 
-    $elements = Mockery::mock(Elements::class);
-    $elements->shouldReceive('duplicateElement')
+    $duplicates = Mockery::mock(ElementDuplicates::class);
+    $duplicates->shouldReceive('duplicateElement')
         ->andReturnUsing(function (
             ElementInterface $element,
             array $newAttributes = [],
@@ -270,5 +272,5 @@ function createActionSpy(?ElementInterface $duplicateResult = null): array
             return $duplicateResult ?? $element;
         });
 
-    return [new UpdateCanonicalElementAction($elements), $state];
+    return [new ElementCanonicalChanges(Mockery::mock(BulkOps::class), Mockery::mock(ElementWrites::class), $duplicates), $state];
 }

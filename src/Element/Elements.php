@@ -9,54 +9,37 @@ use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Actions\DeleteElementAction;
-use CraftCms\Cms\Element\Actions\DeleteElementsForSiteAction;
-use CraftCms\Cms\Element\Actions\DuplicateElementAction;
-use CraftCms\Cms\Element\Actions\MergeCanonicalChangesAction;
-use CraftCms\Cms\Element\Actions\MergeElementsAction;
-use CraftCms\Cms\Element\Actions\ParseRefsAction;
-use CraftCms\Cms\Element\Actions\PropagateElementAction;
-use CraftCms\Cms\Element\Actions\PropagateElementsAction;
-use CraftCms\Cms\Element\Actions\ResaveElementsAction;
-use CraftCms\Cms\Element\Actions\RestoreElementsAction;
-use CraftCms\Cms\Element\Actions\SaveElementAction;
-use CraftCms\Cms\Element\Actions\UpdateCanonicalElementAction;
-use CraftCms\Cms\Element\Events\AfterUpdateSlugAndUri;
-use CraftCms\Cms\Element\Events\BeforeUpdateSlugAndUri;
-use CraftCms\Cms\Element\Events\SetElementUri;
+use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
-use CraftCms\Cms\Element\Jobs\UpdateElementSlugsAndUris;
+use CraftCms\Cms\Element\Operations\ElementCanonicalChanges;
+use CraftCms\Cms\Element\Operations\ElementDeletions;
+use CraftCms\Cms\Element\Operations\ElementDuplicates;
+use CraftCms\Cms\Element\Operations\ElementEagerLoader;
+use CraftCms\Cms\Element\Operations\ElementPlaceholders;
+use CraftCms\Cms\Element\Operations\ElementRefs;
+use CraftCms\Cms\Element\Operations\ElementUris;
+use CraftCms\Cms\Element\Operations\ElementWrites;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
-use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Typecast;
-use Exception;
-use Illuminate\Container\Attributes\Singleton;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
-#[Singleton]
 class Elements
 {
-    private ?array $_placeholderElements = null;
-
-    /**
-     * @see setPlaceholderElement()
-     * @see getElementByUri()
-     */
-    private array $_placeholderUris;
-
     public function __construct(
-        private readonly ElementCaches $elementCaches,
         private readonly ElementTypes $elementTypes,
+        private readonly ElementPlaceholders $placeholders,
     ) {}
 
     /**
@@ -204,8 +187,10 @@ class Elements
         $siteId ??= Sites::getCurrentSite()->id;
 
         // See if we already have a placeholder for this element URI
-        if (isset($this->_placeholderUris[$uri][$siteId])) {
-            return $this->_placeholderUris[$uri][$siteId];
+        $placeholder = $this->placeholders->getPlaceholderByUri($uri, $siteId);
+
+        if ($placeholder !== null) {
+            return $placeholder;
         }
 
         // First get the element ID and type
@@ -311,7 +296,7 @@ class Elements
      * @param  bool  $saveContent  Whether all the element’s content should be saved. When false (default) only dirty fields will be saved.
      *
      * @throws ElementNotFoundException if $element has an invalid $id
-     * @throws Exception if the $element doesn’t have any supported sites
+     * @throws \Exception if the $element doesn’t have any supported sites
      * @throws Throwable if reasons
      */
     public function saveElement(
@@ -323,32 +308,15 @@ class Elements
         ?bool $crossSiteValidate = false,
         bool $saveContent = false,
     ): bool {
-        // Force propagation for new elements
-        $propagate = ! $element->id || $propagate;
-
-        // Not currently being duplicated
-        $duplicateOf = $element->duplicateOf;
-        $element->duplicateOf = null;
-
-        // Force isNewForSite = false here, in case the element is getting saved recursively
-        // (see https://github.com/craftcms/cms/issues/15517)
-        $isNewForSite = $element->isNewForSite;
-        $element->isNewForSite = false;
-
-        $success = app(SaveElementAction::class)->handle(
+        return app(ElementWrites::class)->saveElement(
             $element,
             $runValidation,
             $propagate,
             $updateSearchIndex,
-            forceTouch: $forceTouch,
-            crossSiteValidate: $crossSiteValidate,
-            saveContent: $saveContent,
+            $forceTouch,
+            $crossSiteValidate,
+            $saveContent,
         );
-
-        $element->duplicateOf = $duplicateOf;
-        $element->isNewForSite = $isNewForSite;
-
-        return $success;
     }
 
     /**
@@ -358,13 +326,7 @@ class Elements
      */
     public function setElementUri(ElementInterface $element): void
     {
-        event($event = new SetElementUri($element));
-
-        if ($event->handled) {
-            return;
-        }
-
-        ElementHelper::setUniqueUri($element);
+        app(ElementUris::class)->setElementUri($element);
     }
 
     /**
@@ -374,7 +336,7 @@ class Elements
      */
     public function mergeCanonicalChanges(ElementInterface $element): void
     {
-        app(MergeCanonicalChangesAction::class)->handle($element);
+        app(ElementCanonicalChanges::class)->mergeCanonicalChanges($element);
     }
 
     /**
@@ -390,7 +352,7 @@ class Elements
      */
     public function updateCanonicalElement(ElementInterface $element, array $newAttributes = []): ElementInterface
     {
-        return app(UpdateCanonicalElementAction::class)->handle($element, $newAttributes);
+        return app(ElementCanonicalChanges::class)->updateCanonicalElement($element, $newAttributes);
     }
 
     /**
@@ -412,7 +374,7 @@ class Elements
         ?bool $updateSearchIndex = null,
         bool $touch = false,
     ): void {
-        app(ResaveElementsAction::class)->handle($query, $continueOnError, $skipRevisions, $updateSearchIndex, $touch);
+        app(ElementWrites::class)->resaveElements($query, $continueOnError, $skipRevisions, $updateSearchIndex, $touch);
     }
 
     /**
@@ -427,7 +389,7 @@ class Elements
         array|int|null $siteIds = null,
         bool $continueOnError = false,
     ): void {
-        app(PropagateElementsAction::class)->handle($query, $siteIds, $continueOnError);
+        app(ElementWrites::class)->propagateElements($query, $siteIds, $continueOnError);
     }
 
     /**
@@ -439,7 +401,7 @@ class Elements
      *                                                    already had a reason to load it). Set to `false` if it is known to not exist yet.
      * @return ElementInterface The element in the target site
      *
-     * @throws Exception if the element couldn't be propagated
+     * @throws \Exception if the element couldn't be propagated
      * @throws UnsupportedSiteException if the element doesn’t support `$siteId`
      */
     public function propagateElement(
@@ -447,19 +409,7 @@ class Elements
         int $siteId,
         ElementInterface|false|null $siteElement = null,
     ): ElementInterface {
-        $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
-
-        BulkOps::ensure(function () use ($element, $supportedSites, $siteId, &$siteElement) {
-            app(PropagateElementAction::class)->handle($element, $supportedSites, $siteId, $siteElement);
-
-            // Track this element in bulk operations
-            BulkOps::trackElement($element);
-        });
-
-        // Clear caches
-        $this->elementCaches->invalidateForElement($element);
-
-        return $siteElement;
+        return app(ElementWrites::class)->propagateElement($element, $siteId, $siteElement);
     }
 
     /**
@@ -491,7 +441,14 @@ class Elements
         bool $checkAuthorization = false,
         bool $copyModifiedFields = false,
     ): ElementInterface {
-        return app(DuplicateElementAction::class)->handle($element, $newAttributes, $placeInStructure, $asUnpublishedDraft, $checkAuthorization, $copyModifiedFields);
+        return app(ElementDuplicates::class)->duplicateElement(
+            $element,
+            $newAttributes,
+            $placeInStructure,
+            $asUnpublishedDraft,
+            $checkAuthorization,
+            $copyModifiedFields,
+        );
     }
 
     /**
@@ -510,45 +467,7 @@ class Elements
         bool $updateDescendants = true,
         bool $queue = false,
     ): void {
-        if ($queue) {
-            dispatch(new UpdateElementSlugsAndUris(
-                $element::class,
-                $element->id,
-                $element->siteId,
-                $updateOtherSites,
-                $updateDescendants,
-            ));
-
-            return;
-        }
-
-        if ($element::hasUris()) {
-            $this->setElementUri($element);
-        }
-
-        event(new BeforeUpdateSlugAndUri($element));
-
-        DB::table(Table::ELEMENTS_SITES)
-            ->where('elementId', $element->id)
-            ->where('siteId', $element->siteId)
-            ->update([
-                'slug' => $element->slug,
-                'uri' => $element->uri,
-                'dateUpdated' => now(),
-            ]);
-
-        event(new AfterUpdateSlugAndUri($element));
-
-        // Invalidate any caches involving this element
-        $this->elementCaches->invalidateForElement($element);
-
-        if ($updateOtherSites) {
-            $this->updateElementSlugAndUriInOtherSites($element);
-        }
-
-        if ($updateDescendants) {
-            $this->updateDescendantSlugsAndUris($element, $updateOtherSites);
-        }
+        app(ElementUris::class)->updateElementSlugAndUri($element, $updateOtherSites, $updateDescendants, $queue);
     }
 
     /**
@@ -558,19 +477,7 @@ class Elements
      */
     public function updateElementSlugAndUriInOtherSites(ElementInterface $element): void
     {
-        foreach (Sites::getAllSiteIds() as $siteId) {
-            if ($siteId === $element->siteId) {
-                continue;
-            }
-
-            $elementInOtherSite = $element->getLocalizedQuery()
-                ->siteId($siteId)
-                ->one();
-
-            if ($elementInOtherSite) {
-                $this->updateElementSlugAndUri($elementInOtherSite, false, false);
-            }
-        }
+        app(ElementUris::class)->updateElementSlugAndUriInOtherSites($element);
     }
 
     /**
@@ -585,34 +492,7 @@ class Elements
         bool $updateOtherSites = true,
         bool $queue = false,
     ): void {
-        $query = $this->createElementQuery($element::class)
-            ->descendantOf($element)
-            ->descendantDist(1)
-            ->status(null)
-            ->siteId($element->siteId);
-
-        if ($queue) {
-            $childIds = $query->ids();
-
-            if (! empty($childIds)) {
-                dispatch(new UpdateElementSlugsAndUris(
-                    elementType: $element::class,
-                    elementId: $childIds,
-                    siteId: $element->siteId,
-                    updateOtherSites: $updateOtherSites,
-                    updateDescendants: true,
-                ));
-            }
-
-            return;
-        }
-
-        $query->each(fn (ElementInterface $child) => $this->updateElementSlugAndUri(
-            element: $child,
-            updateOtherSites: $updateOtherSites,
-            updateDescendants: true,
-            queue: false,
-        ));
+        app(ElementUris::class)->updateDescendantSlugsAndUris($element, $updateOtherSites, $queue);
     }
 
     /**
@@ -631,17 +511,7 @@ class Elements
      */
     public function mergeElementsByIds(int $mergedElementId, int $prevailingElementId): bool
     {
-        // Get the elements
-        if (! $mergedElement = $this->getElementById($mergedElementId)) {
-            throw new ElementNotFoundException("No element exists with the ID '$mergedElementId'");
-        }
-
-        if (! $prevailingElement = $this->getElementById($prevailingElementId)) {
-            throw new ElementNotFoundException("No element exists with the ID '$prevailingElementId'");
-        }
-
-        // Merge them
-        return $this->mergeElements($mergedElement, $prevailingElement);
+        return app(ElementDeletions::class)->mergeElementsByIds($mergedElementId, $prevailingElementId);
     }
 
     /**
@@ -658,7 +528,7 @@ class Elements
      */
     public function mergeElements(ElementInterface $mergedElement, ElementInterface $prevailingElement): bool
     {
-        return app(MergeElementsAction::class)->handle($mergedElement, $prevailingElement);
+        return app(ElementDeletions::class)->mergeElements($mergedElement, $prevailingElement);
     }
 
     /**
@@ -677,30 +547,7 @@ class Elements
         ?int $siteId = null,
         bool $hardDelete = false,
     ): bool {
-        $elementType ??= $this->elementTypes->getElementTypeById($elementId);
-
-        if ($elementType === null) {
-            return false;
-        }
-
-        if ($siteId === null && $elementType::isLocalized() && Sites::isMultiSite()) {
-            // Get a site this element is enabled in
-            $siteId = (int) DB::table(Table::ELEMENTS_SITES)
-                ->where('elementId', $elementId)
-                ->value('siteId');
-
-            if ($siteId === 0) {
-                return false;
-            }
-        }
-
-        $element = $this->getElementById($elementId, $elementType, $siteId);
-
-        if (! $element) {
-            return false;
-        }
-
-        return $this->deleteElement($element, $hardDelete);
+        return app(ElementDeletions::class)->deleteElementById($elementId, $elementType, $siteId, $hardDelete);
     }
 
     /**
@@ -714,7 +561,7 @@ class Elements
      */
     public function deleteElement(ElementInterface $element, bool $hardDelete = false): bool
     {
-        return app(DeleteElementAction::class)->handle($element, $hardDelete);
+        return app(ElementDeletions::class)->deleteElement($element, $hardDelete);
     }
 
     /**
@@ -722,7 +569,7 @@ class Elements
      */
     public function deleteElementForSite(ElementInterface $element): void
     {
-        $this->deleteElementsForSite([$element]);
+        app(ElementDeletions::class)->deleteElementForSite($element);
     }
 
     /**
@@ -734,7 +581,7 @@ class Elements
      */
     public function deleteElementsForSite(array $elements): void
     {
-        app(DeleteElementsForSiteAction::class)->handle($elements);
+        app(ElementDeletions::class)->deleteElementsForSite($elements);
     }
 
     /**
@@ -745,7 +592,7 @@ class Elements
      */
     public function restoreElement(ElementInterface $element): bool
     {
-        return $this->restoreElements([$element]);
+        return app(ElementDeletions::class)->restoreElement($element);
     }
 
     /**
@@ -759,11 +606,8 @@ class Elements
      */
     public function restoreElements(array $elements): bool
     {
-        return app(RestoreElementsAction::class)->handle($elements);
+        return app(ElementDeletions::class)->restoreElements($elements);
     }
-
-    // Element classes
-    // -------------------------------------------------------------------------
 
     // Element Actions & Exporters
     // -------------------------------------------------------------------------
@@ -806,7 +650,7 @@ class Elements
      */
     public function parseRefs(string $str, ?int $defaultSiteId = null): string
     {
-        return app(ParseRefsAction::class)->handle($str, $defaultSiteId);
+        return app(ElementRefs::class)->parseRefs($str, $defaultSiteId);
     }
 
     /**
@@ -823,16 +667,7 @@ class Elements
      */
     public function setPlaceholderElement(ElementInterface $element): void
     {
-        // Won't be able to do anything with this if it doesn't have an ID or site ID
-        if (! $element->id || ! $element->siteId) {
-            throw new InvalidArgumentException('Placeholder element is missing an ID');
-        }
-
-        $this->_placeholderElements[$element->getCanonicalId()][$element->siteId] = $element;
-
-        if ($element->uri) {
-            $this->_placeholderUris[$element->uri][$element->siteId] = $element;
-        }
+        $this->placeholders->setPlaceholderElement($element);
     }
 
     /**
@@ -842,11 +677,7 @@ class Elements
      */
     public function getPlaceholderElements(): array
     {
-        if (! isset($this->_placeholderElements)) {
-            return [];
-        }
-
-        return array_merge(...$this->_placeholderElements);
+        return $this->placeholders->getPlaceholderElements();
     }
 
     /**
@@ -860,6 +691,31 @@ class Elements
      */
     public function getPlaceholderElement(int $sourceId, int $siteId): ?ElementInterface
     {
-        return $this->_placeholderElements[$sourceId][$siteId] ?? null;
+        return $this->placeholders->getPlaceholderElement($sourceId, $siteId);
+    }
+
+    /**
+     * Normalizes a `with` element query param into an array of eager-loading plans.
+     *
+     *
+     * @phpstan-param string|array<EagerLoadPlan|array|string> $with
+     *
+     * @return EagerLoadPlan[]
+     */
+    public function createEagerLoadingPlans(string|array $with): array
+    {
+        return app(ElementEagerLoader::class)->createEagerLoadingPlans($with);
+    }
+
+    /**
+     * Eager-loads additional elements onto a given set of elements.
+     *
+     * @param  class-string<ElementInterface>  $elementType  The root element type class
+     * @param  ElementInterface[]  $elements  The root element models that should be updated with the eager-loaded elements
+     * @param  array<string|array>|string|EagerLoadPlan[]  $with  Dot-delimited paths of the elements that should be eager-loaded into the root elements
+     */
+    public function eagerLoadElements(string $elementType, array|Collection $elements, array|string $with): void
+    {
+        app(ElementEagerLoader::class)->eagerLoadElements($elementType, $elements, $with);
     }
 }

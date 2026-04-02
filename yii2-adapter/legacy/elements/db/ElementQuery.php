@@ -29,7 +29,6 @@ use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
-use CraftCms\Cms\Element\ElementEagerLoader;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -1872,7 +1871,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             // Should we eager-load some elements onto these?
             if ($this->with) {
-                app(ElementEagerLoader::class)->eagerLoadElements($this->elementType, $elements, $this->with);
+                Elements::eagerLoadElements($this->elementType, $elements, $this->with);
             }
         }
 
@@ -1915,7 +1914,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
             if ($this->with) {
-                app(ElementEagerLoader::class)->eagerLoadElements($this->elementType, $cachedResult, $this->with);
+                Elements::eagerLoadElements($this->elementType, $cachedResult, $this->with);
             }
             return $cachedResult;
         }
@@ -1951,7 +1950,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         };
 
         if (!$eagerLoaded) {
-            app(ElementEagerLoader::class)->eagerLoadElements(
+            Elements::eagerLoadElements(
                 $this->eagerLoadSourceElement::class,
                 $this->eagerLoadSourceElement->elementQueryResult,
                 [

@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Actions\MergeElementsAction;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Events\AfterMergeElements;
+use CraftCms\Cms\Element\Operations\ElementDeletions;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -85,7 +85,7 @@ test('replaces related field values with the prevailing element id', function ()
     Queue::fake();
     Event::fake([AfterMergeElements::class]);
 
-    $success = app(MergeElementsAction::class)->handle($this->mergedEntry, $this->prevailingEntry);
+    $success = app(ElementDeletions::class)->mergeElements($this->mergedEntry, $this->prevailingEntry);
 
     $reloadedSource = entryQuery()->id($source->id)->status(null)->firstOrFail();
     $relations = DB::table(Table::RELATIONS)
@@ -111,7 +111,7 @@ test('deduplicates related field values when the prevailing element is already s
 
     Queue::fake();
 
-    app(MergeElementsAction::class)->handle($this->mergedEntry, $this->prevailingEntry);
+    app(ElementDeletions::class)->mergeElements($this->mergedEntry, $this->prevailingEntry);
 
     $reloadedSource = entryQuery()->id($source->id)->status(null)->firstOrFail();
 
@@ -134,7 +134,7 @@ test('updates remaining relation rows to the prevailing element id', function ()
 
     Queue::fake();
 
-    app(MergeElementsAction::class)->handle($this->mergedEntry, $this->prevailingEntry);
+    app(ElementDeletions::class)->mergeElements($this->mergedEntry, $this->prevailingEntry);
 
     expect(DB::table(Table::RELATIONS)
         ->where('sourceId', $source->id)
@@ -163,7 +163,7 @@ test('updates structure rows to the prevailing element id', function () {
 
     Queue::fake();
 
-    app(MergeElementsAction::class)->handle($this->mergedEntry, $this->prevailingEntry);
+    app(ElementDeletions::class)->mergeElements($this->mergedEntry, $this->prevailingEntry);
 
     expect(DB::table(Table::STRUCTUREELEMENTS)
         ->where('structureId', $structureId)
@@ -203,7 +203,7 @@ test('deletes duplicate structure rows when the prevailing element is already in
 
     Queue::fake();
 
-    app(MergeElementsAction::class)->handle($this->mergedEntry, $this->prevailingEntry);
+    app(ElementDeletions::class)->mergeElements($this->mergedEntry, $this->prevailingEntry);
 
     expect(DB::table(Table::STRUCTUREELEMENTS)
         ->where('structureId', $structureId)
@@ -216,7 +216,7 @@ test('deletes duplicate structure rows when the prevailing element is already in
 test('dispatches find and replace jobs for entry reference tags', function () {
     Queue::fake();
 
-    app(MergeElementsAction::class)->handle($this->mergedEntry, $this->prevailingEntry);
+    app(ElementDeletions::class)->mergeElements($this->mergedEntry, $this->prevailingEntry);
 
     Queue::assertPushed(FindAndReplace::class, fn (FindAndReplace $job) => $job->find === '{entry:'.$this->mergedEntry->id.':'
         && $job->replace === '{entry:'.$this->prevailingEntry->id.':');
@@ -252,7 +252,7 @@ test('queries unique related elements when a relation source site id is null', f
 
     Queue::fake();
 
-    app(MergeElementsAction::class)->handle($this->mergedEntry, $this->prevailingEntry);
+    app(ElementDeletions::class)->mergeElements($this->mergedEntry, $this->prevailingEntry);
 
     expect(DB::table(Table::RELATIONS)
         ->where('sourceId', $sourceModel->id)

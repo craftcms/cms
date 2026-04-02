@@ -2,8 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Element\Actions\PropagateElementAction;
-use CraftCms\Cms\Element\Actions\PropagateElementsAction;
+use craft\base\ElementInterface;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
@@ -12,8 +11,12 @@ use CraftCms\Cms\Element\Events\AfterPropagateElement;
 use CraftCms\Cms\Element\Events\AfterPropagateElements;
 use CraftCms\Cms\Element\Events\BeforePropagateElement;
 use CraftCms\Cms\Element\Events\BeforePropagateElements;
+use CraftCms\Cms\Element\Models\ElementSiteSettings;
+use CraftCms\Cms\Element\Operations\ElementUris;
+use CraftCms\Cms\Element\Operations\ElementWrites;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
+use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites as SitesService;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -110,13 +113,15 @@ beforeEach(function () {
 
     $this->elementCaches = Mockery::mock(ElementCaches::class);
     $this->elements = Mockery::mock(Elements::class);
-    $this->propagateElementAction = Mockery::mock(PropagateElementAction::class);
 
-    $this->action = new PropagateElementsAction(
-        $this->elementCaches,
+    $this->action = new TestPropagateElementsWrites(
         $this->elements,
-        $this->propagateElementAction,
+        Mockery::mock(ElementUris::class),
+        $this->elementCaches,
+        Mockery::mock(Search::class),
+        app(SitesService::class),
     );
+    $this->writes = $this->action;
 });
 
 afterEach(function () {
@@ -204,32 +209,12 @@ it('propagates elements to supported target sites and dispatches lifecycle event
         ->with(100, TestPropagateElementsActionElement::class, 3)
         ->andReturnNull();
 
-    $this->propagateElementAction
-        ->shouldReceive('handle')
-        ->once()
-        ->with(
-            $element,
-            Mockery::on(fn (array $supportedSites): bool => array_keys($supportedSites) === [1, 2, 3]),
-            2,
-            $olderSiteElement,
-        );
-
-    $this->propagateElementAction
-        ->shouldReceive('handle')
-        ->once()
-        ->with(
-            $element,
-            Mockery::on(fn (array $supportedSites): bool => array_keys($supportedSites) === [1, 2, 3]),
-            3,
-            false,
-        );
-
     $this->elementCaches
         ->shouldReceive('invalidateForElement')
         ->once()
         ->with($element);
 
-    $this->action->handle($query);
+    $this->action->propagateElements($query);
 
     expect($element->getScenario())->toBe(Element::SCENARIO_ESSENTIALS)
         ->and($element->newSiteIds)->toBe([])
@@ -238,7 +223,14 @@ it('propagates elements to supported target sites and dispatches lifecycle event
     $bulkOps = app(BulkOps::class);
 
     expect($bulkOps->ensureCalls)->toBe(1)
-        ->and($bulkOps->trackedElements)->toBe([$element]);
+        ->and($bulkOps->trackedElements)->toBe([$element])
+        ->and($this->writes->propagateCalls)->toHaveCount(2)
+        ->and($this->writes->propagateCalls[0]['element'])->toBe($element)
+        ->and(array_keys($this->writes->propagateCalls[0]['supportedSites']))->toBe([1, 2, 3])
+        ->and($this->writes->propagateCalls[0]['siteId'])->toBe(2)
+        ->and($this->writes->propagateCalls[0]['siteElement'])->toBe($olderSiteElement)
+        ->and($this->writes->propagateCalls[1]['siteId'])->toBe(3)
+        ->and($this->writes->propagateCalls[1]['siteElement'])->toBeFalse();
 
     Event::assertDispatched(fn (BeforePropagateElements $event): bool => $event->query === $query);
     Event::assertDispatched(fn (BeforePropagateElement $event): bool => $event->query === $query
@@ -264,17 +256,15 @@ it('filters requested site ids and skips the source site and newer localized ele
         ->with(200, TestPropagateElementsActionElement::class, 3)
         ->andReturn($newerSiteElement);
 
-    $this->propagateElementAction
-        ->shouldNotReceive('handle');
-
     $this->elementCaches
         ->shouldReceive('invalidateForElement')
         ->once()
         ->with($element);
 
-    $this->action->handle($query, [1, 3, 99]);
+    $this->action->propagateElements($query, [1, 3, 99]);
 
-    expect($element->afterPropagateCalled)->toBeTrue();
+    expect($element->afterPropagateCalled)->toBeTrue()
+        ->and($this->writes->propagateCalls)->toBeEmpty();
 });
 
 it('rethrows propagation errors when continueOnError is false', function () {
@@ -290,15 +280,12 @@ it('rethrows propagation errors when continueOnError is false', function () {
         ->with(300, TestPropagateElementsActionElement::class, 2)
         ->andReturnNull();
 
-    $this->propagateElementAction
-        ->shouldReceive('handle')
-        ->once()
-        ->andThrow($exception);
+    $this->writes->exceptionToThrow = $exception;
 
     $this->elementCaches
         ->shouldNotReceive('invalidateForElement');
 
-    expect(fn () => $this->action->handle($query, 2))
+    expect(fn () => $this->action->propagateElements($query, 2))
         ->toThrow($exception);
 
     $bulkOps = app(BulkOps::class);
@@ -321,17 +308,14 @@ it('continues after propagation errors when continueOnError is true', function (
         ->with(400, TestPropagateElementsActionElement::class, 2)
         ->andReturnNull();
 
-    $this->propagateElementAction
-        ->shouldReceive('handle')
-        ->once()
-        ->andThrow($exception);
+    $this->writes->exceptionToThrow = $exception;
 
     $this->elementCaches
         ->shouldReceive('invalidateForElement')
         ->once()
         ->with($element);
 
-    $this->action->handle($query, 2, true);
+    $this->action->propagateElements($query, 2, true);
 
     $bulkOps = app(BulkOps::class);
 
@@ -351,19 +335,43 @@ it('swallows aborted queries and still dispatches the final event', function () 
         ->once()
         ->andThrow(new QueryAbortedException);
 
-    $this->propagateElementAction
-        ->shouldNotReceive('handle');
-
     $this->elementCaches
         ->shouldNotReceive('invalidateForElement');
 
-    $this->action->handle($query);
+    $this->action->propagateElements($query);
 
     $bulkOps = app(BulkOps::class);
 
     expect($bulkOps->ensureCalls)->toBe(1)
-        ->and($bulkOps->trackedElements)->toBe([]);
+        ->and($bulkOps->trackedElements)->toBe([])
+        ->and($this->writes->propagateCalls)->toBeEmpty();
 
     Event::assertDispatched(fn (BeforePropagateElements $event): bool => $event->query === $query);
     Event::assertDispatched(fn (AfterPropagateElements $event): bool => $event->query === $query);
 });
+
+readonly class TestPropagateElementsWrites extends ElementWrites
+{
+    public array $propagateCalls = [];
+
+    public ?Throwable $exceptionToThrow = null;
+
+    #[Override]
+    public function propagate(
+        ElementInterface $element,
+        array $supportedSites,
+        int $siteId,
+        ElementInterface|false|null &$siteElement = null,
+        bool $crossSiteValidate = false,
+        bool $saveContent = true,
+        ?ElementSiteSettings &$siteSettingsRecord = null,
+    ): bool {
+        $this->propagateCalls[] = compact('element', 'supportedSites', 'siteId', 'siteElement');
+
+        if ($this->exceptionToThrow !== null) {
+            throw $this->exceptionToThrow;
+        }
+
+        return true;
+    }
+}

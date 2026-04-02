@@ -4,19 +4,23 @@ declare(strict_types=1);
 
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use CraftCms\Cms\Element\Actions\ResaveElementsAction;
-use CraftCms\Cms\Element\Actions\SaveElementAction;
 use CraftCms\Cms\Element\BulkOp\BulkOps as BulkOpsService;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Events\AfterResaveElement;
 use CraftCms\Cms\Element\Events\AfterResaveElements;
 use CraftCms\Cms\Element\Events\BeforeResaveElement;
 use CraftCms\Cms\Element\Events\BeforeResaveElements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
+use CraftCms\Cms\Element\Operations\ElementUris;
+use CraftCms\Cms\Element\Operations\ElementWrites;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Search\Search;
+use CraftCms\Cms\Site\Sites;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -29,8 +33,14 @@ beforeEach(function () {
 
     app(BulkOpsService::class)->resume('test-bulk-op');
 
-    $this->saveElementAction = new TestResaveSaveElementAction;
-    $this->action = new ResaveElementsAction($this->saveElementAction);
+    $this->action = new TestResaveElementWrites(
+        Mockery::mock(Elements::class),
+        Mockery::mock(ElementUris::class),
+        Mockery::mock(ElementCaches::class),
+        Mockery::mock(Search::class),
+        Mockery::mock(Sites::class),
+    );
+    $this->saveElementAction = $this->action;
 });
 
 it('resaves matching elements and dispatches lifecycle events', function () {
@@ -38,7 +48,7 @@ it('resaves matching elements and dispatches lifecycle events', function () {
     $secondElement = new TestResaveElement(['id' => 2]);
     $query = mockResaveQuery([$firstElement, $secondElement]);
 
-    $this->action->handle(
+    $this->action->resaveElements(
         query: $query,
         updateSearchIndex: false,
         touch: true,
@@ -72,7 +82,7 @@ it('reports save errors and continues when continueOnError is enabled', function
 
     $this->saveElementAction->exceptionsByElementId[1] = new RuntimeException('First save failed.');
 
-    $this->action->handle(
+    $this->action->resaveElements(
         query: $query,
         continueOnError: true,
     );
@@ -95,7 +105,7 @@ it('rethrows save errors when continueOnError is disabled', function () {
 
     $this->saveElementAction->exceptionsByElementId[1] = new RuntimeException('First save failed.');
 
-    expect(fn () => $this->action->handle(query: $query))
+    expect(fn () => $this->action->resaveElements(query: $query))
         ->toThrow(RuntimeException::class, 'First save failed.');
 
     expect($this->saveElementAction->calls)->toHaveCount(1);
@@ -111,7 +121,7 @@ it('wraps revision skips with a fallback label when no UI label exists', functio
     $element->revision = true;
     $query = mockResaveQuery([$element]);
 
-    $this->action->handle(
+    $this->action->resaveElements(
         query: $query,
         continueOnError: true,
     );
@@ -130,7 +140,7 @@ it('wraps root lookup errors with the element UI label', function () {
     $element->throwOnOwnerLookup = true;
     $query = mockResaveQuery([$element]);
 
-    $this->action->handle(
+    $this->action->resaveElements(
         query: $query,
         continueOnError: true,
     );
@@ -148,7 +158,7 @@ it('resaves revisions when skipRevisions is disabled', function () {
     $element->revision = true;
     $query = mockResaveQuery([$element]);
 
-    $this->action->handle(
+    $this->action->resaveElements(
         query: $query,
         skipRevisions: false,
     );
@@ -162,7 +172,7 @@ it('resaves revisions when skipRevisions is disabled', function () {
 it('fails silently when the query aborts', function () {
     $query = mockAbortedResaveQuery();
 
-    $this->action->handle(query: $query);
+    $this->action->resaveElements(query: $query);
 
     expect($this->saveElementAction->calls)->toBeEmpty();
 
@@ -200,17 +210,15 @@ function mockAbortedResaveQuery(): ElementQueryInterface
     return $query;
 }
 
-class TestResaveSaveElementAction extends SaveElementAction
+readonly class TestResaveElementWrites extends ElementWrites
 {
     public array $calls = [];
 
     /** @var array<int, Throwable> */
     public array $exceptionsByElementId = [];
 
-    public function __construct() {}
-
     #[Override]
-    public function handle(
+    public function save(
         ElementInterface $element,
         bool $runValidation = true,
         bool $propagate = true,

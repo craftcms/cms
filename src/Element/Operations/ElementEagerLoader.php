@@ -2,13 +2,16 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Element;
+namespace CraftCms\Cms\Element\Operations;
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadInfo;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
+use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Events\BeforeEagerLoadElements;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
@@ -19,6 +22,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
+ * @internal
+ *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
 #[Singleton]

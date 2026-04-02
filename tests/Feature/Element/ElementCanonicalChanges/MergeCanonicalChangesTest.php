@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Element\Actions\MergeCanonicalChangesAction;
-use CraftCms\Cms\Element\Actions\SaveElementAction;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
@@ -11,6 +9,9 @@ use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Events\AfterMergeCanonicalChanges;
 use CraftCms\Cms\Element\Events\AfterPropagate;
 use CraftCms\Cms\Element\Events\BeforeMergeCanonicalChanges;
+use CraftCms\Cms\Element\Operations\ElementCanonicalChanges;
+use CraftCms\Cms\Element\Operations\ElementDuplicates;
+use CraftCms\Cms\Element\Operations\ElementWrites;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -116,8 +117,8 @@ it('throws when the element is canonical', function () {
     $element->id = 1;
     $element->siteId = 1;
 
-    expect(fn () => app(MergeCanonicalChangesAction::class)->handle($element))
-        ->toThrow(InvalidArgumentException::class, 'Only a derivative element can be passed to CraftCms\\Cms\\Element\\Actions\\MergeCanonicalChangesAction::handle');
+    expect(fn () => app(ElementCanonicalChanges::class)->mergeCanonicalChanges($element))
+        ->toThrow(InvalidArgumentException::class, 'Only a derivative element can be passed to CraftCms\\Cms\\Element\\Operations\\ElementCanonicalChanges::mergeCanonicalChanges');
 });
 
 it('throws when the element type does not track changes', function () {
@@ -128,7 +129,7 @@ it('throws when the element type does not track changes', function () {
     $element->siteId = 1;
     $element->setCanonicalId(2);
 
-    expect(fn () => app(MergeCanonicalChangesAction::class)->handle($element))
+    expect(fn () => app(ElementCanonicalChanges::class)->mergeCanonicalChanges($element))
         ->toThrow(InvalidArgumentException::class, TestMergeCanonicalChangesElement::class.' elements don’t track their changes');
 });
 
@@ -139,7 +140,7 @@ it('throws when the derivative site is unsupported', function () {
     $element->setCanonicalId(2);
     $element->supportedSites = [1];
 
-    expect(fn () => app(MergeCanonicalChangesAction::class)->handle($element))
+    expect(fn () => app(ElementCanonicalChanges::class)->mergeCanonicalChanges($element))
         ->toThrow(Exception::class, 'Attempting to merge source changes for a draft in an unsupported site.');
 });
 
@@ -199,8 +200,8 @@ it('merges and saves localized derivatives before the requested site', function 
     Elements::saveElement($secondaryDraft, false, false);
 
     $saveCalls = [];
-    $saveElementAction = Mockery::mock(SaveElementAction::class);
-    $saveElementAction->shouldReceive('handle')
+    $writes = Mockery::mock(ElementWrites::class);
+    $writes->shouldReceive('save')
         ->twice()
         ->andReturnUsing(function (Entry $element, bool $runValidation, bool $propagate, ?bool $updateSearchIndex = null, ?array $supportedSites = null) use (&$saveCalls) {
             $saveCalls[] = [
@@ -217,12 +218,12 @@ it('merges and saves localized derivatives before the requested site', function 
             return true;
         });
 
-    $action = new MergeCanonicalChangesAction(app(BulkOps::class), $saveElementAction);
+    $service = new ElementCanonicalChanges(app(BulkOps::class), $writes, Mockery::mock(ElementDuplicates::class));
 
     $originalDuplicate = new Entry;
     $draft->duplicateOf = $originalDuplicate;
 
-    $action->handle($draft);
+    $service->mergeCanonicalChanges($draft);
 
     expect($saveCalls)->toHaveCount(2)
         ->and($saveCalls[0]['id'])->toBe($secondaryDraft->id)
@@ -276,14 +277,14 @@ it('merges localized elements, sets dateLastMerged, and resets the merging flag'
 
     $currentSiteElement->localizedQuery = new TestMergeCanonicalChangesQuery([$otherSiteElement]);
 
-    $saveElementAction = Mockery::mock(SaveElementAction::class);
-    $saveElementAction->shouldReceive('handle')
+    $writes = Mockery::mock(ElementWrites::class);
+    $writes->shouldReceive('save')
         ->twice()
         ->andReturnUsing(fn () => true);
 
-    $action = new MergeCanonicalChangesAction(app(BulkOps::class), $saveElementAction);
+    $service = new ElementCanonicalChanges(app(BulkOps::class), $writes, Mockery::mock(ElementDuplicates::class));
 
-    $action->handle($currentSiteElement);
+    $service->mergeCanonicalChanges($currentSiteElement);
 
     expect($otherSiteElement->mergeCanonicalChangesCalls)->toBe(1)
         ->and($otherSiteElement->mergingCanonicalChanges)->toBeTrue()

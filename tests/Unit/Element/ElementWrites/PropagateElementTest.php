@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
-use CraftCms\Cms\Element\Actions\PropagateElementAction;
-use CraftCms\Cms\Element\Actions\SaveElementAction;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
+use CraftCms\Cms\Element\Operations\ElementUris;
+use CraftCms\Cms\Element\Operations\ElementWrites;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
@@ -24,12 +26,15 @@ use Illuminate\Support\Facades\Log;
 beforeEach(function () {
     $this->elements = instantiateWithoutConstructor(TestElements::class);
     $this->sites = instantiateWithoutConstructor(TestSites::class);
-    $this->saveElementAction = instantiateWithoutConstructor(TestSaveElementAction::class);
+    $this->uris = instantiateWithoutConstructor(TestElementUris::class);
+    $this->writes = instantiateWithoutConstructor(TestElementWrites::class);
 
-    $this->action = new PropagateElementAction(
+    $this->executor = new TestPropagateElementWrites(
         $this->elements,
+        $this->uris,
+        Mockery::mock(ElementCaches::class),
+        Mockery::mock(Search::class),
         $this->sites,
-        $this->saveElementAction,
     );
 
     $this->primarySite = new Site([
@@ -59,7 +64,7 @@ beforeEach(function () {
 it('throws for unsupported sites', function () {
     $element = testElement();
 
-    expect(fn () => $this->action->handle($element, [], 99))
+    expect(fn () => $this->executor->propagate($element, [], 99))
         ->toThrow(UnsupportedSiteException::class, 'Attempting to propagate an element to an unsupported site.');
 });
 
@@ -83,7 +88,7 @@ it('clones a new site element and saves it with propagated state', function () {
     $siteElement = null;
     $siteSettingsRecord = new ElementSiteSettings;
 
-    $result = $this->action->handle(
+    $result = $this->executor->propagate(
         $element,
         $supportedSites,
         2,
@@ -110,15 +115,15 @@ it('clones a new site element and saves it with propagated state', function () {
         ->and($element->newSiteIds)->toBe([2]);
 
     expect($this->elements->getElementByIdCalls)->toHaveCount(1)
-        ->and($this->elements->setElementUriCalls)->toHaveCount(1)
-        ->and($this->saveElementAction->calls)->toHaveCount(1)
-        ->and($this->saveElementAction->calls[0]['siteElement'])->toBe($siteElement)
-        ->and($this->saveElementAction->calls[0]['runValidation'])->toBeTrue()
-        ->and($this->saveElementAction->calls[0]['crossSiteValidate'])->toBeFalse()
-        ->and($this->saveElementAction->calls[0]['propagate'])->toBeFalse()
-        ->and($this->saveElementAction->calls[0]['supportedSites'])->toBe($supportedSites)
-        ->and($this->saveElementAction->calls[0]['saveContent'])->toBeTrue()
-        ->and($this->saveElementAction->calls[0]['siteSettingsRecord'])->toBe($siteSettingsRecord);
+        ->and($this->uris->setElementUriCalls)->toHaveCount(1)
+        ->and($this->executor->saveCalls)->toHaveCount(1)
+        ->and($this->executor->saveCalls[0]['siteElement'])->toBe($siteElement)
+        ->and($this->executor->saveCalls[0]['runValidation'])->toBeTrue()
+        ->and($this->executor->saveCalls[0]['crossSiteValidate'])->toBeFalse()
+        ->and($this->executor->saveCalls[0]['propagate'])->toBeFalse()
+        ->and($this->executor->saveCalls[0]['supportedSites'])->toBe($supportedSites)
+        ->and($this->executor->saveCalls[0]['saveContent'])->toBeTrue()
+        ->and($this->executor->saveCalls[0]['siteSettingsRecord'])->toBe($siteSettingsRecord);
 });
 
 it('preserves an existing site uri when propagateAll is enabled', function () {
@@ -144,7 +149,7 @@ it('preserves an existing site uri when propagateAll is enabled', function () {
 
     $originalSiteElement = $siteElement;
 
-    $this->action->handle($element, supportedSites(), 2, $siteElement);
+    $this->executor->propagate($element, supportedSites(), 2, $siteElement);
 
     expect($siteElement)->toBeInstanceOf(TestElement::class)
         ->and($siteElement)->not->toBe($originalSiteElement)
@@ -170,7 +175,7 @@ it('copies all field values for newly propagated sites', function () {
 
     $siteElement = null;
 
-    $this->action->handle($element, supportedSites(), 2, $siteElement, saveContent: true);
+    $this->executor->propagate($element, supportedSites(), 2, $siteElement, saveContent: true);
 
     expect($siteElement->getFieldValue('plainText'))->toBe('hello world');
 });
@@ -196,7 +201,7 @@ it('propagates dirty fields with matching translation keys for existing sites', 
     $siteElement->setFieldValue('plainText', 'from secondary');
     $siteElement->isNewForSite = false;
 
-    $this->action->handle($element, supportedSites(), 2, $siteElement, saveContent: true);
+    $this->executor->propagate($element, supportedSites(), 2, $siteElement, saveContent: true);
 
     expect($siteElement->getFieldValue('plainText'))->toBe('from primary')
         ->and($field->propagateCalls)->toHaveCount(1);
@@ -223,7 +228,7 @@ it('propagates required empty fields when propagateRequired is enabled', functio
     $siteElement->setFieldValue('plainText', '');
     $siteElement->isNewForSite = false;
 
-    $this->action->handle($element, supportedSites(), 2, $siteElement, saveContent: true);
+    $this->executor->propagate($element, supportedSites(), 2, $siteElement, saveContent: true);
 
     expect($siteElement->getFieldValue('plainText'))->toBe('fallback value')
         ->and($field->propagateCalls)->toHaveCount(1)
@@ -241,13 +246,13 @@ it('uses the live scenario when cross-site validation applies to enabled site el
 
     $siteElement = null;
 
-    $this->action->handle($element, supportedSites(enabledByDefault: true), 2, $siteElement, crossSiteValidate: true);
+    $this->executor->propagate($element, supportedSites(enabledByDefault: true), 2, $siteElement, crossSiteValidate: true);
 
     expect($siteElement->getScenario())->toBe(Element::SCENARIO_LIVE);
 });
 
 it('continues when uri generation is aborted', function () {
-    $this->elements->setElementUriException = new OperationAbortedException;
+    $this->uris->setElementUriException = new OperationAbortedException;
 
     $element = testElement();
     $element->id = 106;
@@ -257,12 +262,12 @@ it('continues when uri generation is aborted', function () {
 
     $siteElement = null;
 
-    expect($this->action->handle($element, supportedSites(), 2, $siteElement))->toBeTrue()
-        ->and($this->elements->setElementUriCalls)->toHaveCount(1);
+    expect($this->executor->propagate($element, supportedSites(), 2, $siteElement))->toBeTrue()
+        ->and($this->uris->setElementUriCalls)->toHaveCount(1);
 });
 
 it('adds a plain validation error when a propagated save fails', function () {
-    $this->saveElementAction->returnValue = false;
+    $this->executor->returnValue = false;
 
     $element = testElement();
     $element->id = 107;
@@ -273,7 +278,7 @@ it('adds a plain validation error when a propagated save fails', function () {
     $siteElement->siteId = 2;
     $siteElement->errors()->add('title', 'Title is invalid');
 
-    $result = $this->action->handle($element, supportedSites(), 2, $siteElement);
+    $result = $this->executor->propagate($element, supportedSites(), 2, $siteElement);
 
     expect($result)->toBeFalse()
         ->and($element->errors()->get('global'))->toHaveCount(1)
@@ -284,7 +289,7 @@ it('adds a linked validation error when the current user can fix the propagated 
     Auth::setUser(new AuthorizedUser);
     swapUrlRequest('/admin/entries/100?foo=bar&site=primary');
 
-    $this->saveElementAction->returnValue = false;
+    $this->executor->returnValue = false;
     $this->sites->isMultiSiteValue = true;
 
     $element = testElement();
@@ -298,7 +303,7 @@ it('adds a linked validation error when the current user can fix the propagated 
     $siteElement->errors()->add('title', 'Title is invalid');
     $siteElement->canSave = true;
 
-    $result = $this->action->handle($element, supportedSites(), 2, $siteElement);
+    $result = $this->executor->propagate($element, supportedSites(), 2, $siteElement);
     $message = $element->errors()->first('global');
 
     expect($result)->toBeFalse()
@@ -311,7 +316,7 @@ it('adds a linked validation error when the current user can fix the propagated 
 it('logs site errors and throws when the propagated save fails without validation messages', function () {
     Log::spy();
 
-    $this->saveElementAction->returnValue = false;
+    $this->executor->returnValue = false;
 
     $element = testElement();
     $element->id = 109;
@@ -321,7 +326,7 @@ it('logs site errors and throws when the propagated save fails without validatio
     $siteElement->id = 109;
     $siteElement->siteId = 2;
 
-    expect(fn () => $this->action->handle($element, supportedSites(), 2, $siteElement))
+    expect(fn () => $this->executor->propagate($element, supportedSites(), 2, $siteElement))
         ->toThrow(Exception::class, 'Couldn’t propagate element to other site.');
 
     Log::shouldHaveReceived('error')->once()->with('Couldn’t propagate element to other site due to validation errors:');
@@ -352,11 +357,7 @@ class TestElements extends Elements
 {
     public ?Element $fetchedElement = null;
 
-    public ?OperationAbortedException $setElementUriException = null;
-
     public array $getElementByIdCalls = [];
-
-    public array $setElementUriCalls = [];
 
     #[Override]
     public function getElementById(int $elementId, ?string $elementType = null, array|int|string|null $siteId = null, array $criteria = []): ?ElementInterface
@@ -364,18 +365,6 @@ class TestElements extends Elements
         $this->getElementByIdCalls[] = compact('elementId', 'elementType', 'siteId', 'criteria');
 
         return $this->fetchedElement;
-    }
-
-    #[Override]
-    public function setElementUri(ElementInterface $element): void
-    {
-        $this->setElementUriCalls[] = $element;
-
-        if ($this->setElementUriException) {
-            throw $this->setElementUriException;
-        }
-
-        $element->uri = sprintf('localized-%s', $element->siteId);
     }
 }
 
@@ -398,14 +387,40 @@ class TestSites extends Sites
     }
 }
 
-class TestSaveElementAction extends SaveElementAction
+readonly class TestElementUris extends ElementUris
+{
+    public ?OperationAbortedException $setElementUriException = null;
+
+    public array $setElementUriCalls = [];
+
+    public function __construct() {}
+
+    #[Override]
+    public function setElementUri(ElementInterface $element): void
+    {
+        $this->setElementUriCalls[] = $element;
+
+        if ($this->setElementUriException) {
+            throw $this->setElementUriException;
+        }
+
+        $element->uri = sprintf('localized-%s', $element->siteId);
+    }
+}
+
+readonly class TestElementWrites extends ElementWrites
+{
+    public function __construct() {}
+}
+
+readonly class TestPropagateElementWrites extends ElementWrites
 {
     public bool $returnValue = true;
 
-    public array $calls = [];
+    public array $saveCalls = [];
 
     #[Override]
-    public function handle(
+    protected function saveInternal(
         ElementInterface $element,
         bool $runValidation = true,
         bool $propagate = true,
@@ -415,8 +430,9 @@ class TestSaveElementAction extends SaveElementAction
         bool $crossSiteValidate = false,
         bool $saveContent = false,
         ?ElementSiteSettings &$siteSettingsRecord = null,
+        ?bool $inheritedUpdateSearchIndex = null,
     ): bool {
-        $this->calls[] = [
+        $this->saveCalls[] = [
             'siteElement' => $element,
             'runValidation' => $runValidation,
             'propagate' => $propagate,

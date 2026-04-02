@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Actions\SaveElementAction;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Events\AfterSaveElement;
 use CraftCms\Cms\Element\Events\BeforeSaveElement;
 use CraftCms\Cms\Element\Events\BeforeUpdateSearchIndex;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
+use CraftCms\Cms\Element\Operations\ElementWrites;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -142,7 +142,7 @@ class TestLocalizedSaveElementActionElement extends TestSaveElementActionElement
 beforeEach(function () {
     actingAs(User::findOne());
 
-    $this->action = app(SaveElementAction::class);
+    $this->writes = app(ElementWrites::class);
 });
 
 function createEntryWithPlainTextField(array $entryAttributes = []): array
@@ -179,7 +179,7 @@ it('returns false when BeforeSaveElement vetoes the save', function () {
         }
     });
 
-    expect($this->action->handle($element))->toBeFalse()
+    expect($this->writes->saveElement($element))->toBeFalse()
         ->and($element->id)->toBeNull()
         ->and($element->beforeSaveCalled)->toBeFalse()
         ->and($afterSaveTriggered)->toBeFalse()
@@ -195,7 +195,7 @@ it('returns false when the element beforeSave hook vetoes the save', function ()
     $element->isNewForSite = true;
     $element->returnFalseFromBeforeSave = true;
 
-    expect($this->action->handle($element))->toBeFalse()
+    expect($this->writes->saveElement($element))->toBeFalse()
         ->and($element->id)->toBeNull()
         ->and($element->beforeSaveCalled)->toBeTrue()
         ->and($element->propagateAll)->toBeTrue()
@@ -211,7 +211,7 @@ it('throws for unsupported sites and resets transient flags', function () {
     $element->firstSave = true;
     $element->isNewForSite = true;
 
-    expect(fn () => $this->action->handle($element))
+    expect(fn () => $this->writes->saveElement($element))
         ->toThrow(UnsupportedSiteException::class);
 
     expect($element->id)->toBeNull()
@@ -224,7 +224,7 @@ it('assigns a default title when validation is skipped and title is invalid', fu
     $entry = EntryModel::factory()->createElement();
     $entry->title = str_repeat('a', 256);
 
-    expect($this->action->handle($entry, runValidation: false))->toBeTrue();
+    expect($this->writes->saveElement($entry, runValidation: false))->toBeTrue();
 
     $savedEntry = entryQuery()->id($entry->id)->firstOrFail();
 
@@ -243,7 +243,7 @@ it('returns false when validation fails and does not dispatch AfterSaveElement',
         }
     });
 
-    expect($this->action->handle($entry))->toBeFalse()
+    expect($this->writes->saveElement($entry))->toBeFalse()
         ->and($entry->errors()->has('title'))->toBeTrue()
         ->and($afterSaveTriggered)->toBeFalse();
 });
@@ -254,7 +254,7 @@ it('throws when saving an existing element ID that does not exist', function () 
     $element->siteId = Sites::getPrimarySite()->id;
     $element->title = 'Missing element';
 
-    expect(fn () => $this->action->handle($element))
+    expect(fn () => $this->writes->saveElement($element))
         ->toThrow(ElementNotFoundException::class, "No element exists with the ID '999999'");
 });
 
@@ -264,7 +264,7 @@ it('persists custom field content and records changed attributes and fields', fu
     $entry->title = 'Updated title';
     $entry->setFieldValue($field->handle, 'Updated body');
 
-    expect($this->action->handle($entry, updateSearchIndex: false))->toBeTrue();
+    expect($this->writes->saveElement($entry, updateSearchIndex: false))->toBeTrue();
 
     $siteSettings = DB::table(Table::ELEMENTS_SITES)
         ->where('elementId', $entry->id)
@@ -306,7 +306,7 @@ it('queues search index updates for searchable dirty fields', function () {
         }
     });
 
-    expect($this->action->handle($entry))->toBeTrue()
+    expect($this->writes->saveElement($entry))->toBeTrue()
         ->and($beforeUpdateTriggered)->toBeTrue()
         ->and(DB::table(Table::SEARCHINDEXQUEUE)
             ->where('elementId', $entry->id)
@@ -327,7 +327,7 @@ it('can cancel search index updates with BeforeUpdateSearchIndex', function () {
         }
     });
 
-    expect($this->action->handle($entry))->toBeTrue()
+    expect($this->writes->saveElement($entry))->toBeTrue()
         ->and(DB::table(Table::SEARCHINDEXQUEUE)
             ->where('elementId', $entry->id)
             ->exists())->toBeFalse();
@@ -339,7 +339,7 @@ it('fires AfterSaveElement and marks the element clean after a successful save',
 
     Event::fake([AfterSaveElement::class]);
 
-    expect($this->action->handle($entry, updateSearchIndex: false))->toBeTrue()
+    expect($this->writes->saveElement($entry, updateSearchIndex: false))->toBeTrue()
         ->and($entry->getDirtyAttributes())->toBeEmpty()
         ->and($entry->getDirtyFields())->toBeEmpty();
 
@@ -353,7 +353,7 @@ it('enables the current site when a single-site element is disabled for that sit
     $element->enabled = true;
     $element->setEnabledForSite(false);
 
-    expect($this->action->handle($element, updateSearchIndex: false))->toBeTrue()
+    expect($this->writes->saveElement($element, updateSearchIndex: false))->toBeTrue()
         ->and($element->enabled)->toBeFalse()
         ->and($element->getEnabledForSite())->toBeTrue();
 });
@@ -366,7 +366,7 @@ it('saves a new localized element across all supported sites', function () {
     $element->siteId = Sites::getPrimarySite()->id;
     $element->title = 'Localized element';
 
-    expect($this->action->handle($element, updateSearchIndex: false))->toBeTrue()
+    expect($this->writes->saveElement($element, updateSearchIndex: false))->toBeTrue()
         ->and($element->afterSaveCalled)->toBeTrue()
         ->and($element->afterPropagateCalled)->toBeTrue()
         ->and(DB::table(Table::ELEMENTS_SITES)
@@ -392,7 +392,7 @@ it('stores generated field values after save', function () {
     ]);
     $element->setDirtyAttributes(['title']);
 
-    expect($this->action->handle($element, updateSearchIndex: false))->toBeTrue()
+    expect($this->writes->saveElement($element, updateSearchIndex: false))->toBeTrue()
         ->and($element->getGeneratedFieldValues())->toBe(['generatedField' => 'Generated element']);
 
     $content = DB::table(Table::ELEMENTS_SITES)
@@ -422,7 +422,7 @@ it('returns false when an afterValidate hook adds errors during save validation'
     $entry->dateUpdated = $baseEntry->dateUpdated;
     $entry->title = 'Updated entry';
 
-    expect($this->action->handle($entry))->toBeFalse()
+    expect($this->writes->saveElement($entry))->toBeFalse()
         ->and($entry->afterValidateCalled)->toBeTrue()
         ->and($entry->errors()->has('customError'))->toBeTrue()
         ->and(entryQuery()->id($baseEntry->id)->firstOrFail()->title)->toBe('Existing entry');

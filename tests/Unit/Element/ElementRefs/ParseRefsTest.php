@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Element\Actions\ParseRefsAction;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\ElementTypes;
+use CraftCms\Cms\Element\Operations\ElementRefs;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
@@ -102,9 +103,14 @@ class TestParseRefsRefQuery extends TestParseRefsQuery
 }
 
 beforeEach(function () {
+    $this->elementTypes = $this->getMockBuilder(ElementTypes::class)
+        ->disableOriginalConstructor()
+        ->onlyMethods(['getElementTypeByRefHandle'])
+        ->getMock();
+
     $this->elements = $this->getMockBuilder(Elements::class)
         ->disableOriginalConstructor()
-        ->onlyMethods(['getElementTypeByRefHandle', 'createElementQuery'])
+        ->onlyMethods(['createElementQuery'])
         ->getMock();
 
     $this->sites = $this->getMockBuilder(Sites::class)
@@ -112,7 +118,7 @@ beforeEach(function () {
         ->onlyMethods(['getSiteByHandle', 'getSiteByUid'])
         ->getMock();
 
-    $this->action = new ParseRefsAction($this->elements, $this->sites);
+    $this->action = new ElementRefs($this->elementTypes, $this->elements, $this->sites);
 });
 
 function createParseRefsElement(
@@ -136,26 +142,26 @@ function createParseRefsElement(
 
 it('returns the original string when it does not contain reference syntax', function () {
     $this->elements->expects(test()->never())
-        ->method('getElementTypeByRefHandle');
-
-    $this->elements->expects(test()->never())
         ->method('createElementQuery');
 
-    expect($this->action->handle('Plain text only'))->toBe('Plain text only');
+    $this->elementTypes->expects(test()->never())
+        ->method('getElementTypeByRefHandle');
+
+    expect($this->action->parseRefs('Plain text only'))->toBe('Plain text only');
 });
 
 it('returns the original string when it contains braces but no ref tags', function () {
     $this->elements->expects(test()->never())
-        ->method('getElementTypeByRefHandle');
-
-    $this->elements->expects(test()->never())
         ->method('createElementQuery');
 
-    expect($this->action->handle('Before {not-a-ref} after'))->toBe('Before {not-a-ref} after');
+    $this->elementTypes->expects(test()->never())
+        ->method('getElementTypeByRefHandle');
+
+    expect($this->action->parseRefs('Before {not-a-ref} after'))->toBe('Before {not-a-ref} after');
 });
 
 it('uses an explicit fallback when the element type is unknown', function () {
-    $this->elements->expects(test()->once())
+    $this->elementTypes->expects(test()->once())
         ->method('getElementTypeByRefHandle')
         ->with('unknown')
         ->willReturn(null);
@@ -163,12 +169,12 @@ it('uses an explicit fallback when the element type is unknown', function () {
     $this->elements->expects(test()->never())
         ->method('createElementQuery');
 
-    expect($this->action->handle('Before {unknown:item || fallback text} after'))
+    expect($this->action->parseRefs('Before {unknown:item || fallback text} after'))
         ->toBe('Before fallback text after');
 });
 
 it('uses the original tag as the fallback when a site handle cannot be resolved', function () {
-    $this->elements->expects(test()->once())
+    $this->elementTypes->expects(test()->once())
         ->method('getElementTypeByRefHandle')
         ->with('test')
         ->willReturn(TestParseRefsElement::class);
@@ -181,7 +187,7 @@ it('uses the original tag as the fallback when a site handle cannot be resolved'
     $this->elements->expects(test()->never())
         ->method('createElementQuery');
 
-    expect($this->action->handle('Before {test:entry@missing} after'))
+    expect($this->action->parseRefs('Before {test:entry@missing} after'))
         ->toBe('Before {test:entry@missing} after');
 });
 
@@ -190,7 +196,7 @@ it('uses the default site id and resolves numeric id refs to urls', function () 
         createParseRefsElement(id: 1, url: 'https://example.test/id-1'),
     ]);
 
-    $this->elements->expects(test()->once())
+    $this->elementTypes->expects(test()->once())
         ->method('getElementTypeByRefHandle')
         ->with('test')
         ->willReturn(TestParseRefsElement::class);
@@ -200,7 +206,7 @@ it('uses the default site id and resolves numeric id refs to urls', function () 
         ->with(TestParseRefsElement::class)
         ->willReturn($query);
 
-    expect($this->action->handle('Link: {test:1}', 7))
+    expect($this->action->parseRefs('Link: {test:1}', 7))
         ->toBe('Link: https://example.test/id-1')
         ->and($query->recordedSiteId)->toBe(7)
         ->and($query->recordedStatus)->toBeNull()
@@ -212,7 +218,7 @@ it('resolves site handles before querying elements', function () {
         createParseRefsElement(ref: 'entry', url: 'https://example.test/handle-site'),
     ]);
 
-    $this->elements->expects(test()->once())
+    $this->elementTypes->expects(test()->once())
         ->method('getElementTypeByRefHandle')
         ->with('test')
         ->willReturn(TestParseRefsElement::class);
@@ -232,7 +238,7 @@ it('resolves site handles before querying elements', function () {
         ->with(TestParseRefsElement::class)
         ->willReturn($query);
 
-    expect($this->action->handle('{test:entry@secondary}'))
+    expect($this->action->parseRefs('{test:entry@secondary}'))
         ->toBe('https://example.test/handle-site')
         ->and($query->recordedSiteId)->toBe(2)
         ->and($query->recordedStatus)->toBeNull()
@@ -245,7 +251,7 @@ it('resolves numeric site ids without looking up a site record', function () {
         createParseRefsElement(ref: 'entry', url: 'https://example.test/numeric-site'),
     ]);
 
-    $this->elements->expects(test()->once())
+    $this->elementTypes->expects(test()->once())
         ->method('getElementTypeByRefHandle')
         ->with('test')
         ->willReturn(TestParseRefsElement::class);
@@ -261,7 +267,7 @@ it('resolves numeric site ids without looking up a site record', function () {
         ->with(TestParseRefsElement::class)
         ->willReturn($query);
 
-    expect($this->action->handle('{test:entry@4}'))
+    expect($this->action->parseRefs('{test:entry@4}'))
         ->toBe('https://example.test/numeric-site')
         ->and($query->recordedSiteId)->toBe(4)
         ->and($query->recordedStatus)->toBeNull()
@@ -271,7 +277,7 @@ it('resolves numeric site ids without looking up a site record', function () {
 it('falls back when resolving a site uid throws an exception', function () {
     $uuid = '550e8400-e29b-41d4-a716-446655440000';
 
-    $this->elements->expects(test()->once())
+    $this->elementTypes->expects(test()->once())
         ->method('getElementTypeByRefHandle')
         ->with('test')
         ->willReturn(TestParseRefsElement::class);
@@ -284,7 +290,7 @@ it('falls back when resolving a site uid throws an exception', function () {
     $this->elements->expects(test()->never())
         ->method('createElementQuery');
 
-    expect($this->action->handle("{test:entry@$uuid||fallback}"))
+    expect($this->action->parseRefs("{test:entry@$uuid||fallback}"))
         ->toBe('fallback');
 });
 
@@ -293,7 +299,7 @@ it('resolves suffix refs even when the query does not support ref lookups', func
         createParseRefsElement(ref: 'section/slug', url: 'https://example.test/slug-match'),
     ]);
 
-    $this->elements->expects(test()->once())
+    $this->elementTypes->expects(test()->once())
         ->method('getElementTypeByRefHandle')
         ->with('test')
         ->willReturn(TestParseRefsElement::class);
@@ -303,7 +309,7 @@ it('resolves suffix refs even when the query does not support ref lookups', func
         ->with(TestParseRefsElement::class)
         ->willReturn($query);
 
-    expect($this->action->handle('{test:slug:summary}'))
+    expect($this->action->parseRefs('{test:slug:summary}'))
         ->toBe('https://example.test/slug-match')
         ->and($query->recordedSiteId)->toBe('')
         ->and($query->recordedStatus)->toBeNull()
@@ -319,7 +325,7 @@ it('parses referenced attributes recursively', function () {
         createParseRefsElement(ref: 'nested-ref', title: 'Nested title'),
     ]);
 
-    $this->elements->expects(test()->exactly(2))
+    $this->elementTypes->expects(test()->exactly(2))
         ->method('getElementTypeByRefHandle')
         ->with('test')
         ->willReturn(TestParseRefsElement::class);
@@ -329,7 +335,7 @@ it('parses referenced attributes recursively', function () {
         ->with(TestParseRefsElement::class)
         ->willReturnOnConsecutiveCalls($primaryQuery, $nestedQuery);
 
-    expect($this->action->handle('Start {test:primary-ref:body} end'))
+    expect($this->action->parseRefs('Start {test:primary-ref:body} end'))
         ->toBe('Start See Nested title end')
         ->and($primaryQuery->recordedRef)->toBe(['primary-ref'])
         ->and($nestedQuery->recordedRef)->toBe(['nested-ref']);
@@ -338,7 +344,7 @@ it('parses referenced attributes recursively', function () {
 it('uses the fallback when no matching element is found', function () {
     $query = new TestParseRefsRefQuery([]);
 
-    $this->elements->expects(test()->once())
+    $this->elementTypes->expects(test()->once())
         ->method('getElementTypeByRefHandle')
         ->with('test')
         ->willReturn(TestParseRefsElement::class);
@@ -348,7 +354,7 @@ it('uses the fallback when no matching element is found', function () {
         ->with(TestParseRefsElement::class)
         ->willReturn($query);
 
-    expect($this->action->handle('{test:missing||fallback}'))
+    expect($this->action->parseRefs('{test:missing||fallback}'))
         ->toBe('fallback')
         ->and($query->recordedRef)->toBe(['missing']);
 });
@@ -362,9 +368,9 @@ it('logs and falls back when a referenced attribute cannot be converted to a str
         ->once()
         ->withArgs(fn (string $message, array $context): bool => str_contains($message, 'An exception was thrown when parsing the ref tag "{test:error:problem || fallback}"')
             && str_contains($message, 'could not be converted to string')
-            && $context === ['CraftCms\\Cms\\Element\\Actions\\ParseRefsAction::getRefTokenReplacement']);
+            && $context === ['CraftCms\\Cms\\Element\\Operations\\ElementRefs::getRefTokenReplacement']);
 
-    $this->elements->expects(test()->once())
+    $this->elementTypes->expects(test()->once())
         ->method('getElementTypeByRefHandle')
         ->with('test')
         ->willReturn(TestParseRefsElement::class);
@@ -374,7 +380,7 @@ it('logs and falls back when a referenced attribute cannot be converted to a str
         ->with(TestParseRefsElement::class)
         ->willReturn($query);
 
-    expect($this->action->handle('{test:error:problem || fallback}'))
+    expect($this->action->parseRefs('{test:error:problem || fallback}'))
         ->toBe('fallback')
         ->and($query->recordedRef)->toBe(['error']);
 });

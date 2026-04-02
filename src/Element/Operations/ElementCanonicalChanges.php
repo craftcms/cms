@@ -2,49 +2,106 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Element\Actions;
+namespace CraftCms\Cms\Element\Operations;
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\BulkOp\BulkOps;
+use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Events\AfterMergeCanonicalChanges;
+use CraftCms\Cms\Element\Events\BeforeMergeCanonicalChanges;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
+use Exception;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 /** @internal */
-readonly class UpdateCanonicalElementAction
+readonly class ElementCanonicalChanges
 {
     public function __construct(
-        private Elements $elements,
+        private BulkOps $bulkOps,
+        private ElementWrites $elementWrites,
+        private ElementDuplicates $elementDuplicates,
     ) {}
 
-    /**
-     * Updates the canonical element from a given derivative, such as a draft or revision.
-     *
-     * @template T of ElementInterface
-     *
-     * @param  T  $element  The derivative element
-     * @param  array  $newAttributes  Any attributes to apply to the canonical element
-     * @return T The updated canonical element
-     *
-     * @throws InvalidArgumentException if the element is already a canonical element
-     */
-    public function handle(ElementInterface $element, array $newAttributes = []): ElementInterface
+    public function mergeCanonicalChanges(ElementInterface $element): void
+    {
+        if ($element->getIsCanonical()) {
+            throw new InvalidArgumentException('Only a derivative element can be passed to '.__METHOD__);
+        }
+
+        if (! $element::trackChanges()) {
+            throw new InvalidArgumentException($element::class.' elements don’t track their changes');
+        }
+
+        $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
+        if (! isset($supportedSites[$element->siteId])) {
+            throw new Exception('Attempting to merge source changes for a draft in an unsupported site.');
+        }
+
+        event(new BeforeMergeCanonicalChanges($element));
+
+        $this->bulkOps->ensure(function () use ($element, $supportedSites) {
+            DB::transaction(function () use ($element, $supportedSites) {
+                $otherSiteIds = array_keys(Arr::except($supportedSites, $element->siteId));
+                if (! empty($otherSiteIds)) {
+                    $siteElements = $element->getLocalizedQuery()
+                        ->siteId($otherSiteIds)
+                        ->status(null)
+                        ->all();
+                } else {
+                    $siteElements = [];
+                }
+
+                foreach ($siteElements as $siteElement) {
+                    $siteElement->mergeCanonicalChanges();
+                    $siteElement->mergingCanonicalChanges = true;
+                    $this->elementWrites->save(
+                        element: $siteElement,
+                        runValidation: false,
+                        propagate: false,
+                        supportedSites: $supportedSites,
+                    );
+                }
+
+                $element->mergeCanonicalChanges();
+                $duplicateOf = $element->duplicateOf;
+                $element->duplicateOf = null;
+                $element->dateLastMerged = DateTimeHelper::now();
+                $element->mergingCanonicalChanges = true;
+                $this->elementWrites->save(
+                    element: $element,
+                    runValidation: false,
+                    propagate: false,
+                    supportedSites: $supportedSites,
+                );
+                $element->duplicateOf = $duplicateOf;
+
+                $element->afterPropagate(false);
+            });
+
+            $element->mergingCanonicalChanges = false;
+        });
+
+        event(new AfterMergeCanonicalChanges($element));
+    }
+
+    public function updateCanonicalElement(ElementInterface $element, array $newAttributes = []): ElementInterface
     {
         if ($element->getIsCanonical()) {
             throw new InvalidArgumentException('Element was already canonical');
         }
 
-        // we need to check if the entry type is still available for this element's section
         /** @phpstan-ignore-next-line */
         if ($element->hasMethod('isEntryTypeCompatible') && ! $element->isEntryTypeCompatible()) {
             throw new InvalidArgumentException('Entry Type is no longer allowed in this section.');
         }
 
-        // "Duplicate" the derivative element with the canonical element’s ID and UID
         $canonical = $element->getCanonical();
 
         $changedAttributes = DB::table(Table::CHANGEDATTRIBUTES)
@@ -95,7 +152,6 @@ readonly class UpdateCanonicalElementAction
             }
         }
 
-        // if we're working with a revision, ensure we mark element's custom fields as dirty;
         if ($element->getIsRevision()) {
             $newAttributes['dirtyFields'] = array_map(
                 fn (FieldInterface $field) => $field->handle,
@@ -103,7 +159,7 @@ readonly class UpdateCanonicalElementAction
             );
         }
 
-        $updatedCanonical = $this->elements->duplicateElement($element, $newAttributes);
+        $updatedCanonical = $this->elementDuplicates->duplicateElement($element, $newAttributes);
 
         app()->terminating(function () use (
             $canonical,
@@ -111,7 +167,6 @@ readonly class UpdateCanonicalElementAction
             $changedAttributes,
             $changedFields
         ) {
-            // Update change tracking for the canonical element
             foreach ($changedAttributes as $attribute) {
                 DB::table(Table::CHANGEDATTRIBUTES)
                     ->upsert([

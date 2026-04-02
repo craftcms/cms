@@ -5,16 +5,18 @@ declare(strict_types=1);
 use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\CascadeDeleteDraftsAndRevisionsAction;
-use CraftCms\Cms\Element\Actions\RestoreElementsAction;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Element\Events\AfterRestoreElement;
 use CraftCms\Cms\Element\Events\BeforeRestoreElement;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Models\Draft;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Models\Revision;
+use CraftCms\Cms\Element\Operations\ElementDeletions;
+use CraftCms\Cms\Element\Operations\ElementWrites;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
@@ -36,9 +38,9 @@ it('restores a trashed entry and updates restore side effects', function () {
         'deletedWithOwner' => true,
     ]);
 
-    $action = app(RestoreElementsAction::class);
+    $deletions = app(ElementDeletions::class);
 
-    expect($action->handle([$entry]))->toBeTrue();
+    expect($deletions->restoreElements([$entry]))->toBeTrue();
 
     $elementRecord = ElementModel::withTrashed()->findOrFail($entry->id);
 
@@ -53,10 +55,10 @@ it('restores a trashed entry and updates restore side effects', function () {
 });
 
 it('returns false when an element vetoes restore in beforeRestore', function () {
-    $action = restoreElementsAction();
+    $action = restoreElementsService();
     $element = new TestRestoreElement(beforeRestoreResult: false);
 
-    expect($action->handle([$element]))->toBeFalse()
+    expect($action->restoreElements([$element]))->toBeFalse()
         ->and($element->afterRestoreCalls)->toBe(0);
 });
 
@@ -67,29 +69,29 @@ it('returns false and rolls back when essential validation fails on the primary 
         'deletedWithOwner' => true,
     ]);
 
-    $action = restoreElementsAction();
+    $action = restoreElementsService();
     $element = new TestRestoreElement(validateResult: false);
     $element->id = $elementRecord->id;
     $element->siteId = 1;
 
-    expect($action->handle([$element]))->toBeFalse();
+    expect($action->restoreElements([$element]))->toBeFalse();
 
     expect(ElementModel::withTrashed()->findOrFail($elementRecord->id)->dateDeleted)->not->toBeNull();
 });
 
 it('throws when an element has no supported sites', function () {
-    $action = restoreElementsAction();
+    $action = restoreElementsService();
     $element = new TestRestoreElement(supportedSites: []);
 
-    $action->handle([$element]);
+    $action->restoreElements([$element]);
 })->throws(UnsupportedSiteException::class, 'has no supported sites');
 
 it('throws when an element is restored in an unsupported site', function () {
-    $action = restoreElementsAction();
+    $action = restoreElementsService();
     $site = Site::factory()->create(['handle' => 'unsupported-site']);
     $element = new TestRestoreElement(supportedSites: [['siteId' => $site->id]]);
 
-    $action->handle([$element]);
+    $action->restoreElements([$element]);
 })->throws(UnsupportedSiteException::class, 'unsupported site');
 
 it('throws and rolls back when another supported site fails essential validation', function () {
@@ -110,7 +112,7 @@ it('throws and rolls back when another supported site fails essential validation
     $query->shouldReceive('trashed')->once()->andReturnSelf();
     $query->shouldReceive('all')->once()->andReturn([$siteElement]);
 
-    $action = restoreElementsAction();
+    $action = restoreElementsService();
     $element = new TestRestoreElement(localizedQuery: $query, supportedSites: [
         ['siteId' => 1],
         ['siteId' => $otherSite->id],
@@ -118,7 +120,7 @@ it('throws and rolls back when another supported site fails essential validation
     $element->id = $elementRecord->id;
     $element->siteId = 1;
 
-    expect(fn () => $action->handle([$element]))->toThrow(Exception::class, "Element {$element->id} doesn't pass essential validation for site {$element->siteId}.");
+    expect(fn () => $action->restoreElements([$element]))->toThrow(Exception::class, "Element {$element->id} doesn't pass essential validation for site {$element->siteId}.");
 
     expect(ElementModel::withTrashed()->findOrFail($elementRecord->id)->dateDeleted)->not->toBeNull();
 });
@@ -189,10 +191,13 @@ it('restores drafts and revisions, reindexes supported sites, and invalidates ca
             return [];
         });
 
-    $action = new RestoreElementsAction(
-        new CascadeDeleteDraftsAndRevisionsAction,
+    $deletions = new ElementDeletions(
+        Mockery::mock(Elements::class),
+        Mockery::mock(ElementTypes::class),
+        Mockery::mock(ElementWrites::class),
         $elementCaches,
         $search,
+        new CascadeDeleteDraftsAndRevisionsAction,
     );
 
     $element = new TestRestoreElement(localizedQuery: $query, supportedSites: [
@@ -203,7 +208,7 @@ it('restores drafts and revisions, reindexes supported sites, and invalidates ca
     $element->siteId = 1;
     $element->trashed = true;
 
-    expect($action->handle([$element]))->toBeTrue();
+    expect($deletions->restoreElements([$element]))->toBeTrue();
 
     expect(ElementModel::withTrashed()->findOrFail($draftElement->id)->dateDeleted)->toBeNull()
         ->and(ElementModel::withTrashed()->findOrFail($revisionElement->id)->dateDeleted)->toBeNull()
@@ -217,7 +222,7 @@ it('restores drafts and revisions, reindexes supported sites, and invalidates ca
         ->and($element->afterRestoreCalls)->toBe(1);
 });
 
-function restoreElementsAction(): RestoreElementsAction
+function restoreElementsService(): ElementDeletions
 {
     $search = Mockery::mock(Search::class);
     $search->shouldReceive('indexElementAttributes')->andReturn(true);
@@ -225,10 +230,13 @@ function restoreElementsAction(): RestoreElementsAction
     $elementCaches = Mockery::mock(ElementCaches::class);
     $elementCaches->shouldReceive('invalidateForElement')->andReturn([]);
 
-    return new RestoreElementsAction(
-        new CascadeDeleteDraftsAndRevisionsAction,
+    return new ElementDeletions(
+        Mockery::mock(Elements::class),
+        Mockery::mock(ElementTypes::class),
+        Mockery::mock(ElementWrites::class),
         $elementCaches,
         $search,
+        new CascadeDeleteDraftsAndRevisionsAction,
     );
 }
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Element\Actions;
+namespace CraftCms\Cms\Element\Operations;
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Elements;
@@ -11,33 +11,26 @@ use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Str;
 use Exception;
+use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /** @internal */
-readonly class ParseRefsAction
+#[Singleton]
+readonly class ElementRefs
 {
     public function __construct(
-        private Elements $elements,
         private ElementTypes $elementTypes,
+        private Elements $elements,
         private Sites $sites,
     ) {}
 
-    /**
-     * Parses a string for element [reference tags](https://craftcms.com/docs/5.x/system/reference-tags.html).
-     *
-     * @param  string  $str  The string to parse
-     * @param  int|null  $defaultSiteId  The default site ID to query the elements in
-     * @return string The parsed string
-     */
-    public function handle(string $str, ?int $defaultSiteId = null): string
+    public function parseRefs(string $str, ?int $defaultSiteId = null): string
     {
         if (! str_contains($str, '{')) {
             return $str;
         }
 
-        // First catalog all of the ref tags by element type, ref type ('id' or 'ref'), and ref name,
-        // and replace them with placeholder tokens
         $allRefTagTokens = [];
         $str = preg_replace_callback(
             '/
@@ -49,10 +42,7 @@ readonly class ParseRefsAction
                     (?:\ *\|\|\ *(?P<fallback>[^\}]+))? # [Optional] Fallback text (if the ref fails to resolve)
                 \}                                      # Tags always close with a }
             /x',
-            function (array $matches) use (
-                $defaultSiteId,
-                &$allRefTagTokens
-            ) {
+            function (array $matches) use ($defaultSiteId, &$allRefTagTokens) {
                 $fullMatch = $matches[0];
                 $elementType = $matches['elementType'];
                 $ref = $matches['ref'];
@@ -60,15 +50,12 @@ readonly class ParseRefsAction
                 $attribute = $matches['attr'] ?? null;
                 $fallback = $matches['fallback'] ?? $fullMatch;
 
-                // Swap out the ref handle for the element type
                 $elementType = $this->elementTypes->getElementTypeByRefHandle($elementType);
 
-                // Use the fallback if we couldn't find an element type
                 if ($elementType === null) {
                     return $fallback;
                 }
 
-                // Get the site
                 if (! empty($siteId)) {
                     if (is_numeric($siteId)) {
                         $siteId = (int) $siteId;
@@ -80,9 +67,11 @@ readonly class ParseRefsAction
                         } catch (SiteNotFoundException) {
                             $site = null;
                         }
+
                         if (! $site) {
                             return $fallback;
                         }
+
                         $siteId = $site->id;
                     }
                 } else {
@@ -101,18 +90,15 @@ readonly class ParseRefsAction
         );
 
         if ($count === 0) {
-            // No ref tags
             return $str;
         }
 
-        // Now swap them with the resolved values
         $search = [];
         $replace = [];
 
         foreach ($allRefTagTokens as $siteId => $siteTokens) {
             foreach ($siteTokens as $elementType => $tokensByType) {
                 foreach ($tokensByType as $refType => $tokensByName) {
-                    // Get the elements, indexed by their ref value
                     $refNames = array_keys($tokensByName);
                     $elementQuery = $this->elements->createElementQuery($elementType)
                         ->siteId($siteId)
@@ -129,14 +115,11 @@ readonly class ParseRefsAction
                         $ref = $refType === 'id' ? $element->id : $element->getRef();
                         $elements[$ref] = $element;
 
-                        // if the reference contains a slash (e.g. section/slug),
-                        // also index it by just whatever comes after it
                         if ($refType === 'ref' && ($slash = strrpos((string) $ref, '/')) !== false) {
                             $elements[substr((string) $ref, $slash + 1)] ??= $element;
                         }
                     }
 
-                    // Now append new token search/replace strings
                     foreach ($tokensByName as $refName => $tokens) {
                         $element = $elements[$refName] ?? null;
 
@@ -149,13 +132,9 @@ readonly class ParseRefsAction
             }
         }
 
-        // Swap the tokens with the references
         return str_replace($search, $replace, $str);
     }
 
-    /**
-     * Returns the replacement for a given reference tag.
-     */
     private function getRefTokenReplacement(
         ?ElementInterface $element,
         ?string $attribute,
@@ -163,12 +142,10 @@ readonly class ParseRefsAction
         string $fullMatch,
     ): string {
         if ($element === null) {
-            // Put the ref tag back
             return $fallback;
         }
 
         if (empty($attribute) || ! isset($element->$attribute)) {
-            // Default to the URL
             return (string) $element->getUrl();
         }
 
@@ -179,12 +156,10 @@ readonly class ParseRefsAction
                 throw new Exception('Object of class '.$value::class.' could not be converted to string');
             }
 
-            return $this->handle((string) $value);
-        } catch (Throwable $e) {
-            // Log it
-            Log::error("An exception was thrown when parsing the ref tag \"$fullMatch\":\n".$e->getMessage(), [__METHOD__]);
+            return $this->parseRefs((string) $value);
+        } catch (Throwable $throwable) {
+            Log::error("An exception was thrown when parsing the ref tag \"$fullMatch\":\n".$throwable->getMessage(), [__METHOD__]);
 
-            // Replace the token with the default value
             return $fallback;
         }
     }

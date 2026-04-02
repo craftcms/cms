@@ -31,7 +31,6 @@ use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementActivity as ElementActivityService;
 use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
-use CraftCms\Cms\Element\ElementEagerLoader;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
 use CraftCms\Cms\Element\Events\AfterDeleteElement;
@@ -1501,11 +1500,11 @@ class Elements extends Component
      * @phpstan-param string|array<EagerLoadPlan|array|string> $with
      * @return EagerLoadPlan[]
      * @since 3.5.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementEagerLoader::createEagerLoadingPlans()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::createEagerLoadingPlans()} instead.
      */
     public function createEagerLoadingPlans(string|array $with): array
     {
-        return app(ElementEagerLoader::class)->createEagerLoadingPlans($with);
+        return ElementsFacade::createEagerLoadingPlans($with);
     }
 
     /**
@@ -1515,11 +1514,11 @@ class Elements extends Component
      * @param ElementInterface[] $elements The root element models that should be updated with the eager-loaded elements
      * @param array<string|array>|string|EagerLoadPlan[] $with Dot-delimited paths of the elements that should be eager-loaded into the root elements
      *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementEagerLoader::eagerLoadElements()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::eagerLoadElements()} instead.
      */
     public function eagerLoadElements(string $elementType, array|Collection $elements, array|string $with): void
     {
-        app(ElementEagerLoader::class)->eagerLoadElements($elementType, $elements, $with);
+        ElementsFacade::eagerLoadElements($elementType, $elements, $with);
     }
 
     /**

@@ -10,7 +10,6 @@ namespace craft\base;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
-use CraftCms\Cms\Element\ElementEagerLoader;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -205,7 +204,7 @@ trait NestedElementTrait
             if (!empty($sameSiteElements)) {
                 // Eager-load the primary owner for each of the elements in the result,
                 // as we're probably going to end up needing them too
-                app(ElementEagerLoader::class)->eagerLoadElements($this::class, $sameSiteElements, [
+                \CraftCms\Cms\Support\Facades\Elements::eagerLoadElements($this::class, $sameSiteElements, [
                     [
                         'path' => 'primaryOwner',
                         'criteria' => $this->ownerCriteria(),
@@ -286,7 +285,7 @@ trait NestedElementTrait
             if (!empty($sameSiteElements)) {
                 // Eager-load the owner for each of the elements in the result,
                 // as we're probably going to end up needing them too
-                app(ElementEagerLoader::class)->eagerLoadElements($this::class, $sameSiteElements, [
+                \CraftCms\Cms\Support\Facades\Elements::eagerLoadElements($this::class, $sameSiteElements, [
                     [
                         'path' => 'owner',
                         'criteria' => $this->ownerCriteria(),

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Actions\DuplicateElementAction;
-use CraftCms\Cms\Element\Actions\PropagateElementAction;
-use CraftCms\Cms\Element\Actions\SaveElementAction;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Events\AfterPropagate;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
+use CraftCms\Cms\Element\Operations\ElementDeletions;
+use CraftCms\Cms\Element\Operations\ElementDuplicates;
+use CraftCms\Cms\Element\Operations\ElementUris;
+use CraftCms\Cms\Element\Operations\ElementWrites;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
@@ -44,7 +44,7 @@ test('throws for unsaved elements', function () {
     $element = TestDuplicateElementActionElement::create(['id' => null]);
     $action = duplicateAction();
 
-    expect(fn () => $action->handle($element))
+    expect(fn () => $action->duplicateElement($element))
         ->toThrow(Exception::class, 'Attempting to duplicate an unsaved element.');
 });
 
@@ -57,7 +57,7 @@ test('throws when duplicating into an unsupported site', function () {
     ]);
     $action = duplicateAction();
 
-    expect(fn () => $action->handle($element))
+    expect(fn () => $action->duplicateElement($element))
         ->toThrow(UnsupportedSiteException::class, 'Attempting to duplicate an element in an unsupported site.');
 });
 
@@ -67,20 +67,20 @@ test('throws when authorization fails', function () {
 
     [$entry] = createDuplicateActionEntryWithFieldLayout(sectionHandle: 'auth-duplicate-test');
 
-    expect(fn () => app(DuplicateElementAction::class)->handle($entry, checkAuthorization: true))
+    expect(fn () => app(ElementDuplicates::class)->duplicateElement($entry, checkAuthorization: true))
         ->toThrow(HttpException::class, 'User not authorized to duplicate this element.');
 });
 
 test('disables clone and revalidates when uri is invalid', function () {
     Event::fake([AfterPropagate::class]);
     $saveCalls = [];
-    $action = duplicateAction(saveElementAction: successfulSaveElementAction($saveCalls));
+    $action = duplicateAction(writes: successfulElementWrites($saveCalls));
 
     $element = TestDuplicateElementActionElement::create([
         'returnUriErrorOnFirstValidate' => true,
     ]);
 
-    $clone = $action->handle($element);
+    $clone = $action->duplicateElement($element);
 
     expect($clone->enabled)->toBeFalse()
         ->and($clone->validateCallCount)->toBe(2);
@@ -94,7 +94,7 @@ test('throws when validation still fails', function () {
     $element->forcedValidationMessage = 'Title is invalid.';
     $action = duplicateAction();
 
-    expect(fn () => $action->handle($element))
+    expect(fn () => $action->duplicateElement($element))
         ->toThrow(InvalidElementException::class, "Element {$element->id} could not be duplicated because it doesn't validate.");
 });
 
@@ -103,8 +103,8 @@ test('creates an unpublished draft and deletes provisional source draft', functi
     $deletedElements = [];
     $saveCalls = [];
 
-    $elements = Mockery::mock(Elements::class);
-    $elements->shouldReceive('deleteElementById')
+    $deletions = Mockery::mock(ElementDeletions::class);
+    $deletions->shouldReceive('deleteElementById')
         ->once()
         ->andReturnUsing(function (
             int $elementId,
@@ -138,16 +138,16 @@ test('creates an unpublished draft and deletes provisional source draft', functi
         });
 
     $action = duplicateAction(
-        elements: $elements,
         drafts: $drafts,
-        saveElementAction: successfulSaveElementAction($saveCalls),
+        deletions: $deletions,
+        writes: successfulElementWrites($saveCalls),
     );
 
     $element = TestDuplicateElementActionElement::create([
         'isProvisionalDraft' => true,
     ]);
 
-    $clone = $action->handle($element, asUnpublishedDraft: true);
+    $clone = $action->duplicateElement($element, asUnpublishedDraft: true);
 
     expect($clone->draftId)->toBe(1)
         ->and($clone->draftName)->toBe('First draft')
@@ -158,7 +158,7 @@ test('creates an unpublished draft and deletes provisional source draft', functi
 
 test('clones object field values without mutating the source', function () {
     $saveCalls = [];
-    $action = duplicateAction(saveElementAction: successfulSaveElementAction($saveCalls));
+    $action = duplicateAction(writes: successfulElementWrites($saveCalls));
 
     $field = Field::factory()->create([
         'handle' => 'testField',
@@ -175,7 +175,7 @@ test('clones object field values without mutating the source', function () {
     $element->setFieldValue('testField', $value);
     $element->setDirtyFields(['testField'], false);
 
-    $clone = $action->handle($element);
+    $clone = $action->duplicateElement($element);
 
     expect($clone->getFieldValue('testField'))->not->toBe($value)
         ->and($clone->getDirtyFields())->toBe(['testField']);
@@ -189,7 +189,7 @@ test('copies modified attributes and fields to changed data tables', function ()
     $entry->setFieldValue('testField', 'Field change');
     $entry->setDirtyFields(['testField'], false);
 
-    $clone = app(DuplicateElementAction::class)->handle($entry, copyModifiedFields: true);
+    $clone = app(ElementDuplicates::class)->duplicateElement($entry, copyModifiedFields: true);
 
     expect(DB::table(Table::CHANGEDATTRIBUTES)
         ->where('elementId', $clone->id)
@@ -215,7 +215,7 @@ test('also copies modified changes from duplicated draft source', function () {
     $entry->duplicateOf = $draftSource;
     $entry->setDirtyAttributes(['title'], false);
 
-    $clone = app(DuplicateElementAction::class)->handle($entry, copyModifiedFields: true);
+    $clone = app(ElementDuplicates::class)->duplicateElement($entry, copyModifiedFields: true);
 
     expect(DB::table(Table::CHANGEDATTRIBUTES)
         ->where('elementId', $clone->id)
@@ -248,7 +248,7 @@ test('moves canonical clones after the source element in a structure', function 
     $otherNode->appendTo($root);
 
     $source = entryQuery()->id($otherModel->id)->structureId($structure->id)->status(null)->one();
-    $clone = app(DuplicateElementAction::class)->handle($source);
+    $clone = app(ElementDuplicates::class)->duplicateElement($source);
     $reloadedClone = entryQuery()->id($clone->id)->structureId($structure->id)->status(null)->one();
 
     expect($reloadedClone)->not->toBeNull()
@@ -270,7 +270,7 @@ test('uses auto mode when forcing an id in new attributes for structure placemen
     ]);
     $source->canonicalOverride = $source;
 
-    $saveElementAction = successfulSaveElementAction($saveCalls, idsToAssign: [777]);
+    $writes = successfulElementWrites($saveCalls, idsToAssign: [777]);
 
     $structureCalls = [];
 
@@ -285,15 +285,15 @@ test('uses auto mode when forcing an id in new attributes for structure placemen
             return true;
         });
 
-    $action = new DuplicateElementAction(
-        elements: Mockery::mock(Elements::class),
+    $action = new ElementDuplicates(
+        $writes,
+        Mockery::mock(ElementUris::class),
+        Mockery::mock(ElementDeletions::class),
         drafts: Mockery::mock(Drafts::class),
-        propagateElementAction: Mockery::mock(PropagateElementAction::class),
-        saveElementAction: $saveElementAction,
         structures: $mockStructures,
     );
 
-    $action->handle($source, ['id' => 777]);
+    $action->duplicateElement($source, ['id' => 777]);
 
     expect($structureCalls[0]['mode'])->toBe(Mode::Auto);
 });
@@ -301,7 +301,7 @@ test('uses auto mode when forcing an id in new attributes for structure placemen
 test('throws when a localized site clone has an invalid slug', function () {
     $saveCalls = [];
     $action = duplicateAction(
-        saveElementAction: successfulSaveElementAction($saveCalls),
+        writes: successfulElementWrites($saveCalls),
     );
 
     $site = Site::factory()->create();
@@ -322,23 +322,23 @@ test('throws when a localized site clone has an invalid slug', function () {
 
     $element->localizedElements = [$siteElement];
 
-    expect(fn () => $action->handle($element))
+    expect(fn () => $action->duplicateElement($element))
         ->toThrow(InvalidElementException::class, "Element {$element->id} could not be duplicated for site {$site->id}: Slug is invalid.");
 });
 
 test('continues when setting uri for a localized clone is aborted', function () {
     $saveCalls = [];
 
-    $elements = Mockery::mock(Elements::class);
-    $elements->shouldReceive('setElementUri')
+    $uris = Mockery::mock(ElementUris::class);
+    $uris->shouldReceive('setElementUri')
         ->once()
         ->andReturnUsing(function (ElementInterface $element): void {
             throw new OperationAbortedException('URI aborted.');
         });
 
     $action = duplicateAction(
-        elements: $elements,
-        saveElementAction: successfulSaveElementAction($saveCalls, expectedCalls: 2),
+        uris: $uris,
+        writes: successfulElementWrites($saveCalls, expectedSaveCalls: 2),
     );
 
     $site = Site::factory()->create();
@@ -358,7 +358,7 @@ test('continues when setting uri for a localized clone is aborted', function () 
 
     $element->localizedElements = [$siteElement];
 
-    $clone = $action->handle($element);
+    $clone = $action->duplicateElement($element);
 
     expect($clone->id)->not->toBeNull()
         ->and($saveCalls)->toHaveCount(2);
@@ -368,8 +368,7 @@ test('propagates to supported sites the source element does not exist in', funct
     $saveCalls = [];
     $propagateCalls = [];
     $action = duplicateAction(
-        saveElementAction: successfulSaveElementAction($saveCalls),
-        propagateElementAction: propagateElementActionForMissingSite($propagateCalls),
+        writes: elementWritesForMissingSitePropagation($saveCalls, $propagateCalls),
     );
 
     $site = Site::factory()->create();
@@ -382,7 +381,7 @@ test('propagates to supported sites the source element does not exist in', funct
         ],
     ]);
 
-    $clone = $action->handle($element);
+    $clone = $action->duplicateElement($element);
 
     expect($propagateCalls[0]['siteId'])->toBe($site->id)
         ->and($clone->newSiteIds)->toContain($site->id);
@@ -392,8 +391,7 @@ test('throws when propagation to a missing source site fails', function () {
     $saveCalls = [];
     $propagateCalls = [];
     $action = duplicateAction(
-        saveElementAction: successfulSaveElementAction($saveCalls),
-        propagateElementAction: propagateElementActionForMissingSite($propagateCalls, false),
+        writes: elementWritesForMissingSitePropagation($saveCalls, $propagateCalls, false),
     );
 
     $site = Site::factory()->create();
@@ -406,7 +404,7 @@ test('throws when propagation to a missing source site fails', function () {
         ],
     ]);
 
-    expect(fn () => $action->handle($element))
+    expect(fn () => $action->duplicateElement($element))
         ->toThrow(InvalidElementException::class, 'could not be propagated to site');
 });
 
@@ -446,26 +444,26 @@ function createDuplicateActionEntryWithFieldLayout(string $sectionHandle = 'dupl
 }
 
 function duplicateAction(
-    ?Elements $elements = null,
     ?Drafts $drafts = null,
-    ?PropagateElementAction $propagateElementAction = null,
-    ?SaveElementAction $saveElementAction = null,
+    ?ElementWrites $writes = null,
+    ?ElementUris $uris = null,
+    ?ElementDeletions $deletions = null,
     ?Structures $structures = null,
-): DuplicateElementAction {
-    return new DuplicateElementAction(
-        elements: $elements ?? Mockery::mock(Elements::class),
-        drafts: $drafts ?? Mockery::mock(Drafts::class),
-        propagateElementAction: $propagateElementAction ?? Mockery::mock(PropagateElementAction::class),
-        saveElementAction: $saveElementAction ?? Mockery::mock(SaveElementAction::class),
-        structures: $structures ?? Mockery::mock(Structures::class),
+): ElementDuplicates {
+    return new ElementDuplicates(
+        $writes ?? Mockery::mock(ElementWrites::class),
+        $uris ?? Mockery::mock(ElementUris::class),
+        $deletions ?? Mockery::mock(ElementDeletions::class),
+        $drafts ?? Mockery::mock(Drafts::class),
+        $structures ?? Mockery::mock(Structures::class),
     );
 }
 
-function successfulSaveElementAction(array &$calls, array $idsToAssign = [], int $expectedCalls = 1): SaveElementAction
+function successfulElementWrites(array &$calls, array $idsToAssign = [], int $expectedSaveCalls = 1): ElementWrites
 {
-    $saveElementAction = Mockery::mock(SaveElementAction::class);
-    $saveElementAction->shouldReceive('handle')
-        ->times($expectedCalls)
+    $writes = Mockery::mock(ElementWrites::class);
+    $writes->shouldReceive('save')
+        ->times($expectedSaveCalls)
         ->andReturnUsing(function (
             ElementInterface $element,
             bool $runValidation = true,
@@ -492,13 +490,13 @@ function successfulSaveElementAction(array &$calls, array $idsToAssign = [], int
             return true;
         });
 
-    return $saveElementAction;
+    return $writes;
 }
 
-function propagateElementActionForMissingSite(array &$calls, bool $result = true): PropagateElementAction
+function elementWritesForMissingSitePropagation(array &$saveCalls, array &$propagateCalls, bool $result = true): ElementWrites
 {
-    $propagateElementAction = Mockery::mock(PropagateElementAction::class);
-    $propagateElementAction->shouldReceive('handle')
+    $writes = successfulElementWrites($saveCalls);
+    $writes->shouldReceive('propagate')
         ->once()
         ->andReturnUsing(function (
             ElementInterface $element,
@@ -508,8 +506,8 @@ function propagateElementActionForMissingSite(array &$calls, bool $result = true
             bool $crossSiteValidate = false,
             bool $saveContent = true,
             mixed &$siteSettingsRecord = null,
-        ) use (&$calls, $result): bool {
-            $calls[] = [
+        ) use (&$propagateCalls, $result): bool {
+            $propagateCalls[] = [
                 'siteId' => $siteId,
                 'siteClone' => $siteElement,
             ];
@@ -526,5 +524,5 @@ function propagateElementActionForMissingSite(array &$calls, bool $result = true
             return true;
         });
 
-    return $propagateElementAction;
+    return $writes;
 }

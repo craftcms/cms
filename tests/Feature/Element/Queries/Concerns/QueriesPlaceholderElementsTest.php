@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Support\Facades\Elements;
 
-test('placeholder elements', function () {
+test('queries return placeholder elements unless placeholders are ignored', function () {
     $entry = Entry::factory()->create();
     $entry->element->siteSettings()->first()->update([
         'title' => 'Old title',

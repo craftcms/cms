@@ -10,7 +10,6 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
-use CraftCms\Cms\Element\ElementEagerLoader;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
@@ -477,7 +476,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     {
         if (! is_null($result = $this->getResultOverride())) {
             if ($this->with) {
-                app(ElementEagerLoader::class)->eagerLoadElements($this->elementType, $result, $this->with);
+                app(Elements::class)->eagerLoadElements($this->elementType, $result, $this->with);
             }
 
             return $result;

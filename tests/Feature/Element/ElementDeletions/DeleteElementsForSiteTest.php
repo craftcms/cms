@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Actions\DeleteElementsForSiteAction;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Events\AfterDeleteForSite;
 use CraftCms\Cms\Element\Events\BeforeDeleteForSite;
+use CraftCms\Cms\Element\Operations\ElementDeletions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -29,13 +29,13 @@ use function Pest\Laravel\actingAs;
 beforeEach(function () {
     actingAs(User::findOne());
 
-    $this->action = app(DeleteElementsForSiteAction::class);
+    $this->deletions = app(ElementDeletions::class);
 });
 
 it('does nothing when no elements are provided', function () {
     $elementSiteCount = DB::table(Table::ELEMENTS_SITES)->count();
 
-    $this->action->handle([]);
+    $this->deletions->deleteElementsForSite([]);
 
     expect(DB::table(Table::ELEMENTS_SITES)->count())->toBe($elementSiteCount);
 });
@@ -50,7 +50,7 @@ it('requires all elements to have the same type and site id', function () {
     $secondEntry = EntryModel::factory()->createElement();
     $secondEntry->siteId = $secondSite->id;
 
-    expect(fn () => $this->action->handle([$firstEntry, $secondEntry]))
+    expect(fn () => $this->deletions->deleteElementsForSite([$firstEntry, $secondEntry]))
         ->toThrow(InvalidArgumentException::class, 'All elements must have the same type and site ID.');
 
     expect($primarySite->id)->not()->toBe($secondSite->id);
@@ -59,7 +59,7 @@ it('requires all elements to have the same type and site id', function () {
 it('hard deletes single-site elements', function () {
     $entry = EntryModel::factory()->createElement(['title' => 'Single-site entry']);
 
-    $this->action->handle([$entry]);
+    $this->deletions->deleteElementsForSite([$entry]);
 
     expect(Entry::find()->status(null)->siteId($entry->siteId)->id($entry->id)->exists())->toBeFalse()
         ->and(DB::table(Table::ELEMENTS)->where('id', $entry->id)->exists())->toBeFalse()
@@ -80,7 +80,7 @@ it('deletes only the requested site for multi-site elements and dispatches event
         ->status(null)
         ->one();
 
-    $this->action->handle([$siteEntry]);
+    $this->deletions->deleteElementsForSite([$siteEntry]);
 
     expect(DB::table(Table::ELEMENTS)->where('id', $entry->id)->value('dateDeleted'))->toBeNull()
         ->and(DB::table(Table::ELEMENTS_SITES)->where('elementId', $entry->id)->where('siteId', $secondarySite->id)->exists())->toBeFalse()
@@ -140,7 +140,7 @@ it('removes localized relations when deleting an element for a site', function (
         'uid' => Str::uuid(),
     ]);
 
-    $this->action->handle([$secondaryEntry]);
+    $this->deletions->deleteElementsForSite([$secondaryEntry]);
 
     $remainingRelations = DB::table(Table::RELATIONS)
         ->where('sourceId', $entry->id)

@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Element\Actions;
+namespace CraftCms\Cms\Element\Operations;
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
@@ -30,38 +29,23 @@ use UnitEnum;
 use function CraftCms\Cms\t;
 
 /** @internal */
-readonly class DuplicateElementAction
+readonly class ElementDuplicates
 {
     public function __construct(
-        private Elements $elements,
+        private ElementWrites $elementWrites,
+        private ElementUris $elementUris,
+        private ElementDeletions $elementDeletions,
         private Drafts $drafts,
-        private PropagateElementAction $propagateElementAction,
-        private SaveElementAction $saveElementAction,
         private Structures $structures,
     ) {}
 
     /**
-     * Duplicates an element.
-     *
-     * @template T of ElementInterface
-     *
-     * @param  T  $element  the element to duplicate
-     * @param  array  $newAttributes  any attributes to apply to the duplicate. This can contain a `siteAttributes` key,
-     *                                set to an array of site-specific attribute array, indexed by site IDs.
-     * @param  bool  $placeInStructure  whether to position the cloned element after the original one in its structure.
-     *                                  (This will only happen if the duplicated element is canonical.)
-     * @param  bool  $asUnpublishedDraft  whether the duplicate should be created as unpublished draft
-     * @param  bool  $checkAuthorization  whether to ensure the current user is authorized to save the new element,
-     *                                    once its new attributes have been applied to it
-     * @param  bool  $copyModifiedFields  whether to copy modified attribute/field data over to the duplicated element
-     * @return T the duplicated element
-     *
-     * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
-     * @throws InvalidElementException if saveElement() returns false for any of the sites
-     * @throws HttpException if the user isn't authorized to save the duplicated element
-     * @throws Throwable if reasons
+     * @throws UnsupportedSiteException
+     * @throws InvalidElementException
+     * @throws HttpException
+     * @throws Throwable
      */
-    public function handle(
+    public function duplicateElement(
         ElementInterface $element,
         array $newAttributes = [],
         bool $placeInStructure = true,
@@ -69,15 +53,12 @@ readonly class DuplicateElementAction
         bool $checkAuthorization = false,
         bool $copyModifiedFields = false,
     ): ElementInterface {
-        // Make sure the element exists
         if (! $element->id) {
             throw new Exception('Attempting to duplicate an unsaved element.');
         }
 
-        // Ensure all fields have been normalized
         $element->getFieldValues();
 
-        // Create our first clone for the $element’s site
         $mainClone = clone $element;
         $mainClone->id = null;
         $mainClone->uid = Str::uuid()->toString();
@@ -96,24 +77,19 @@ readonly class DuplicateElementAction
         Arr::pull($newAttributes, 'behaviors', []);
         $mainClone->setRevisionNotes(Arr::pull($newAttributes, 'revisionNotes'));
 
-        // Extract any attributes that are meant for other sites
         $siteAttributes = Arr::pull($newAttributes, 'siteAttributes', []);
 
-        // Note: must use Craft::configure() rather than setAttributes() here,
-        // so we're not limited to whatever attributes() returns
         Typecast::configure($mainClone, Arr::merge(
             $newAttributes,
             $siteAttributes[$mainClone->siteId] ?? [],
         ));
 
-        // Make sure the element actually supports its own site ID
         $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($mainClone), 'siteId');
         if (! isset($supportedSites[$mainClone->siteId])) {
             throw new UnsupportedSiteException($element, $mainClone->siteId,
                 'Attempting to duplicate an element in an unsupported site.');
         }
 
-        // Clone any field values that are objects (without affecting the dirty fields)
         $dirtyFields = $mainClone->getDirtyFields();
         foreach ($mainClone->getFieldValues() as $handle => $value) {
             if (is_object($value) && ! $value instanceof UnitEnum) {
@@ -122,14 +98,11 @@ readonly class DuplicateElementAction
         }
         $mainClone->setDirtyFields($dirtyFields, false);
 
-        // Check authorization?
         if ($checkAuthorization && ! (Gate::check('duplicate', $mainClone) && Gate::check('save', $mainClone))) {
             abort(403, 'User not authorized to duplicate this element.');
         }
 
-        // If we are duplicating a draft as another draft, create a new draft row
         if ($mainClone->draftId && $mainClone->draftId === $element->draftId) {
-            // Are we duplicating a draft of a published element?
             if ($element->getIsDerivative()) {
                 $mainClone->draftName = $this->drafts->generateDraftName($element->getCanonicalId());
             } else {
@@ -145,7 +118,6 @@ readonly class DuplicateElementAction
             );
         }
 
-        // If we are supposed to save it as new unpublished draft
         if ($asUnpublishedDraft) {
             $mainClone->draftName = t('First draft');
             $mainClone->draftNotes = null;
@@ -157,11 +129,9 @@ readonly class DuplicateElementAction
             );
         }
 
-        // Validate
         $mainClone->setScenario(Element::SCENARIO_ESSENTIALS);
         $mainClone->validate();
 
-        // If there are any errors on the URI, re-validate as disabled
         if ($mainClone->errors()->has('uri') && $mainClone->enabled) {
             $mainClone->enabled = false;
             $mainClone->validate();
@@ -184,8 +154,14 @@ readonly class DuplicateElementAction
         ) {
             DB::beginTransaction();
             try {
-                // Start with $element’s site
-                if (! $this->saveElementAction->handle($mainClone, false, false, null, $supportedSites, saveContent: true)) {
+                if (! $this->elementWrites->save(
+                    $mainClone,
+                    false,
+                    false,
+                    null,
+                    $supportedSites,
+                    saveContent: true,
+                )) {
                     throw new InvalidElementException($mainClone,
                         'Element '.$element->id.' could not be duplicated for site '.$element->siteId);
                 }
@@ -194,7 +170,6 @@ readonly class DuplicateElementAction
                     $this->copyModifiedFields($element, $mainClone);
                 }
 
-                // Should we add the clone to the source element’s structure?
                 if (
                     $placeInStructure &&
                     $mainClone->getIsCanonical() &&
@@ -211,7 +186,6 @@ readonly class DuplicateElementAction
                 $propagatedTo = [$mainClone->siteId => true];
                 $mainClone->newSiteIds = [];
 
-                // Propagate it
                 $otherSiteIds = array_keys(Arr::except($supportedSites, $mainClone->siteId));
                 if ($element->id && ! empty($otherSiteIds)) {
                     $siteElements = $element->getLocalizedQuery()
@@ -220,7 +194,6 @@ readonly class DuplicateElementAction
                         ->all();
 
                     foreach ($siteElements as $siteElement) {
-                        // Ensure all fields have been normalized
                         $siteElement->getFieldValues();
 
                         $siteClone = clone $siteElement;
@@ -241,15 +214,12 @@ readonly class DuplicateElementAction
                         $siteClone->dateLastMerged = null;
                         $siteClone->setCanonicalId(null);
 
-                        // Note: must use Typecast::configure() rather than setAttributes() here,
-                        // so we're not limited to whatever attributes() returns
                         Typecast::configure($siteClone, Arr::merge(
                             $newAttributes,
                             $siteAttributes[$siteElement->siteId] ?? [],
                         ));
                         $siteClone->siteId = $siteElement->siteId;
 
-                        // Clone any field values that are objects (without affecting the dirty fields)
                         $dirtyFields = $siteClone->getDirtyFields();
                         foreach ($siteClone->getFieldValues() as $handle => $value) {
                             if (is_object($value) && ! $value instanceof UnitEnum) {
@@ -259,7 +229,6 @@ readonly class DuplicateElementAction
                         $siteClone->setDirtyFields($dirtyFields, false);
 
                         if ($element::hasUris()) {
-                            // Make sure it has a valid slug
                             $siteClone->validate(['slug']);
 
                             if ($siteClone->errors()->has('slug')) {
@@ -267,16 +236,20 @@ readonly class DuplicateElementAction
                                     "Element $element->id could not be duplicated for site $siteElement->siteId: ".$siteClone->errors()->first('slug'));
                             }
 
-                            // Set a unique URI on the site clone
                             try {
-                                $this->elements->setElementUri($siteClone);
+                                $this->elementUris->setElementUri($siteClone);
                             } catch (OperationAbortedException) {
                                 // Oh well, not worth bailing over
                             }
                         }
 
-                        if (! $this->saveElementAction->handle($siteClone, false, false, supportedSites: $supportedSites,
-                            saveContent: true)) {
+                        if (! $this->elementWrites->save(
+                            $siteClone,
+                            false,
+                            false,
+                            supportedSites: $supportedSites,
+                            saveContent: true,
+                        )) {
                             throw new InvalidElementException($siteClone,
                                 "Element $element->id could not be duplicated for site $siteElement->siteId: ".implode(', ',
                                     $siteClone->getFirstErrors()));
@@ -292,11 +265,10 @@ readonly class DuplicateElementAction
                         }
                     }
 
-                    // Now propagate $mainClone to any sites the source element didn’t already exist in
                     foreach ($supportedSites as $siteId => $siteInfo) {
                         if (! isset($propagatedTo[$siteId]) && $siteInfo['propagate']) {
                             $siteClone = $element->getIsDraft() && ! $element->getIsUnpublishedDraft() ? null : false;
-                            if (! $this->propagateElementAction->handle($mainClone, $supportedSites, $siteId, $siteClone)) {
+                            if (! $this->elementWrites->propagate($mainClone, $supportedSites, $siteId, $siteClone)) {
                                 throw $siteClone
                                     ? new InvalidElementException($siteClone,
                                         "Element $siteClone->id could not be propagated to site $siteId: ".implode(', ',
@@ -310,21 +282,18 @@ readonly class DuplicateElementAction
                     }
                 }
 
-                // It's now fully duplicated and propagated
                 $mainClone->afterPropagate(empty($newAttributes['id']));
 
                 DB::commit();
-            } catch (Throwable $e) {
+            } catch (Throwable $throwable) {
                 DB::rollBack();
-                throw $e;
+                throw $throwable;
             }
 
-            // Clean up our tracks
             $mainClone->duplicateOf = null;
 
-            // discard draft from the original element, if it was a provisional draft
             if ($asUnpublishedDraft && $element->isProvisionalDraft) {
-                $this->elements->deleteElementById($element->id);
+                $this->elementDeletions->deleteElementById($element->id);
             }
         });
 

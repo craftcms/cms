@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Element\Queries\Concerns;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\ElementEagerLoader;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Events\ElementHydrated;
 use CraftCms\Cms\Element\Queries\Events\ElementsHydrated;
@@ -82,7 +81,7 @@ trait HydratesElements
 
                 // Should we eager-load some elements onto these?
                 if ($this->with) {
-                    app(ElementEagerLoader::class)->eagerLoadElements($this->elementType, $elements, $this->with);
+                    Elements::eagerLoadElements($this->elementType, $elements, $this->with);
                 }
 
                 return $elements;

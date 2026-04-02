@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
-use CraftCms\Cms\Element\ElementEagerLoader;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Collection;
 
@@ -59,7 +58,7 @@ trait QueriesEagerly
                 return $result;
             }
 
-            app(ElementEagerLoader::class)->eagerLoadElements($this->elementType, $result->all(), $this->with);
+            Elements::eagerLoadElements($this->elementType, $result->all(), $this->with);
 
             return $result;
         });
@@ -213,7 +212,7 @@ trait QueriesEagerly
         };
 
         if (! $eagerLoaded) {
-            app(ElementEagerLoader::class)->eagerLoadElements(
+            Elements::eagerLoadElements(
                 $this->eagerLoadSourceElement::class,
                 $this->eagerLoadSourceElement->elementQueryResult,
                 [
