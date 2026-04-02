@@ -148,7 +148,11 @@ final class UpdateStatusesCommand extends Command implements Isolatable
 
             try {
                 $this->ensureEntryCanBeResaved($entry);
-                Elements::saveElement($entry, true, true, false, false, false, true);
+                Elements::saveElement(
+                    element: $entry,
+                    updateSearchIndex: false,
+                    saveContent: true,
+                );
             } catch (Throwable $exception) {
                 report($exception);
             }

@@ -16,7 +16,6 @@ use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Singleton;
@@ -40,7 +39,7 @@ readonly class Drafts
     public const string CONTEXT_PREVIEW_USER_ID = 'craft.preview-user-id';
 
     public function __construct(
-        private \CraftCms\Cms\Element\Elements $elements,
+        private Elements $elements,
     ) {}
 
     /**

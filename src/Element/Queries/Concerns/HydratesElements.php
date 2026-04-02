@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use craft\base\ElementInterface;
-use craft\base\ExpirableElementInterface;
+use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Events\ElementHydrated;

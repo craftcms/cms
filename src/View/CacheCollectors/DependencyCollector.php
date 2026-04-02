@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\View\CacheCollectors;
 
 use craft\base\ElementInterface;
-use craft\base\ExpirableElementInterface;
+use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\View\Contracts\CacheCollectorInterface;
 use CraftCms\Cms\View\Data\TemplateCacheContext;

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Database\Factories;
 
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
@@ -86,6 +87,11 @@ class UserFactory extends Factory
             'userId' => $user->id,
             'credentialId' => $credentialId,
         ]));
+    }
+
+    public function withPermissions(array $permissions): self
+    {
+        return $this->afterCreating(fn (User $user) => UserPermissions::saveUserPermissions($user->id, $permissions));
     }
 
     #[Override]

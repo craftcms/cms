@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Entry\Elements;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\ExpirableElementInterface;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use craft\controllers\ElementIndexesController;
@@ -33,6 +32,7 @@ use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
