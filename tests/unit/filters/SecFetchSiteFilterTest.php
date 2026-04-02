@@ -43,6 +43,8 @@ class SecFetchSiteFilterTest extends TestCase
         $this->request->getHeaders()->set('Sec-Fetch-Site', 'same-origin');
 
         self::assertTrue($this->filter->beforeAction($this->action));
+
+        unset($_SERVER['REQUEST_METHOD']);
     }
 
     public function testAllowsSameSiteWhenConfigured(): void
@@ -52,6 +54,8 @@ class SecFetchSiteFilterTest extends TestCase
 
         $this->filter->allowSameSite = true;
         self::assertTrue($this->filter->beforeAction($this->action));
+
+        unset($_SERVER['REQUEST_METHOD']);
     }
 
     public function testAllowsFallbackWhenHeaderMissingAndNotOriginOnly(): void
@@ -61,6 +65,8 @@ class SecFetchSiteFilterTest extends TestCase
 
         $this->filter->originOnly = false;
         self::assertTrue($this->filter->beforeAction($this->action));
+
+        unset($_SERVER['REQUEST_METHOD']);
     }
 
     public function testRejectsWhenOriginOnlyAndHeaderInvalid(): void
@@ -72,6 +78,8 @@ class SecFetchSiteFilterTest extends TestCase
 
         $this->expectException(BadRequestHttpException::class);
         $this->filter->beforeAction($this->action);
+
+        unset($_SERVER['REQUEST_METHOD']);
     }
 
     public function testEnforcesWhenCsrfDisabled(): void
@@ -89,6 +97,8 @@ class SecFetchSiteFilterTest extends TestCase
         } finally {
             $this->request->enableCsrfValidation = $original;
         }
+
+        unset($_SERVER['REQUEST_METHOD']);
     }
 
     public function testSkipsSafeMethods(): void
@@ -98,6 +108,8 @@ class SecFetchSiteFilterTest extends TestCase
 
         $this->filter->originOnly = true;
         self::assertTrue($this->filter->beforeAction($this->action));
+
+        unset($_SERVER['REQUEST_METHOD']);
     }
 
     public function testInvalidHeaderFallsThroughWhenNotOriginOnly(): void
@@ -107,5 +119,7 @@ class SecFetchSiteFilterTest extends TestCase
 
         $this->filter->originOnly = false;
         self::assertTrue($this->filter->beforeAction($this->action));
+
+        unset($_SERVER['REQUEST_METHOD']);
     }
 }

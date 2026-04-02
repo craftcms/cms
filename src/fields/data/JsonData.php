@@ -16,6 +16,7 @@ use IteratorAggregate;
 use Traversable;
 use yii\base\BaseObject;
 use yii\base\InvalidCallException;
+use yii\base\UnknownMethodException;
 
 /**
  * JSON field data class.
@@ -36,6 +37,20 @@ class JsonData extends BaseObject implements ArrayAccess, IteratorAggregate, Ser
     public function __toString(): string
     {
         return $this->getJson();
+    }
+
+    public function __call($name, $params)
+    {
+        try {
+            return parent::__call($name, $params);
+        } catch (UnknownMethodException $e) {
+            if (!empty($params)) {
+                throw $e;
+            }
+
+            // This is probably just Twig falling back to calling a properly like it's a method
+            return null;
+        }
     }
 
     public function getType(): string
