@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element\Actions;
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Str;
@@ -18,6 +19,7 @@ readonly class ParseRefsAction
 {
     public function __construct(
         private Elements $elements,
+        private ElementTypes $elementTypes,
         private Sites $sites,
     ) {}
 
@@ -59,7 +61,7 @@ readonly class ParseRefsAction
                 $fallback = $matches['fallback'] ?? $fullMatch;
 
                 // Swap out the ref handle for the element type
-                $elementType = $this->elements->getElementTypeByRefHandle($elementType);
+                $elementType = $this->elementTypes->getElementTypeByRefHandle($elementType);
 
                 // Use the fallback if we couldn't find an element type
                 if ($elementType === null) {

@@ -11,6 +11,7 @@ use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
+use CraftCms\Cms\Support\Facades\ElementTypes;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -232,7 +233,7 @@ JS, [
         }
 
         /** @var class-string<ElementInterface>|null $elementType */
-        $elementType = Elements::getElementTypeByRefHandle($matches['elementType']);
+        $elementType = ElementTypes::getElementTypeByRefHandle($matches['elementType']);
         if (! $elementType) {
             return true;
         }

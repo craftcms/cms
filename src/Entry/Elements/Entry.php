@@ -35,6 +35,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementEagerLoader;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -1685,7 +1686,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             } else {
                 if (isset($this->elementQueryResult) && count($this->elementQueryResult) > 1) {
                     // eager-load authors for all queried entries
-                    Elements::eagerLoadElements(self::class, $this->elementQueryResult, ['authors']);
+                    app(ElementEagerLoader::class)->eagerLoadElements(self::class, $this->elementQueryResult, ['authors']);
 
                     return $this->_authors ?? [];
                 }

@@ -19,8 +19,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
- * @internal Call the methods on {@see Elements} instead.
- *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
 #[Singleton]

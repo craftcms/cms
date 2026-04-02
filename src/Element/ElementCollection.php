@@ -95,7 +95,7 @@ class ElementCollection extends Collection
         $elementsByClass = $this->groupBy(fn (ElementInterface $element) => $element::class)->all();
 
         foreach ($elementsByClass as $class => $classElements) {
-            Elements::eagerLoadElements($class, $this->items, $with);
+            app(ElementEagerLoader::class)->eagerLoadElements($class, $this->items, $with);
         }
 
         return $this;

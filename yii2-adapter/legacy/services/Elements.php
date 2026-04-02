@@ -31,6 +31,7 @@ use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementActivity as ElementActivityService;
 use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
+use CraftCms\Cms\Element\ElementEagerLoader;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
 use CraftCms\Cms\Element\Events\AfterDeleteElement;
@@ -67,6 +68,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Facades\Elements as ElementsFacade;
+use CraftCms\Cms\Support\Facades\ElementTypes;
 use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
@@ -807,11 +809,11 @@ class Elements extends Component
      * @param int $elementId The element’s ID
      *
      * @return class-string<ElementInterface>|null The element’s class, or null if it could not be found
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getElementTypeById()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementTypes::getElementTypeById()} instead.
      */
     public function getElementTypeById(int $elementId): ?string
     {
-        return ElementsFacade::getElementTypeById($elementId);
+        return ElementTypes::getElementTypeById($elementId);
     }
 
     /**
@@ -821,11 +823,11 @@ class Elements extends Component
      *
      * @return string|null The element’s class, or null if it could not be found
      * @since 3.5.13
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getElementTypeByUid()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementTypes::getElementTypeByUid()} instead.
      */
     public function getElementTypeByUid(string $uid): ?string
     {
-        return ElementsFacade::getElementTypeByUid($uid);
+        return ElementTypes::getElementTypeByUid($uid);
     }
 
     /**
@@ -834,11 +836,11 @@ class Elements extends Component
      * @param int[] $elementIds The elements’ IDs
      *
      * @return string[]
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getElementTypesByIds()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementTypes::getElementTypesByIds()} instead.
      */
     public function getElementTypesByIds(array $elementIds): array
     {
-        return ElementsFacade::getElementTypesByIds($elementIds);
+        return ElementTypes::getElementTypesByIds($elementIds);
     }
 
     /**
@@ -1377,11 +1379,11 @@ class Elements extends Component
      *
      * @return string[] The available element classes.
      * @phpstan-return class-string<ElementInterface>[]
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getAllElementTypes()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementTypes::getAllElementTypes()} instead.
      */
     public function getAllElementTypes(): array
     {
-        return ElementsFacade::getAllElementTypes();
+        return ElementTypes::getAllElementTypes();
     }
 
     // Element Actions & Exporters
@@ -1426,11 +1428,11 @@ class Elements extends Component
      * @param string $refHandle The element class handle
      *
      * @return string|null The element class, or null if it could not be found
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getElementTypeByRefHandle()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementTypes::getElementTypeByRefHandle()} instead.
      */
     public function getElementTypeByRefHandle(string $refHandle): ?string
     {
-        return ElementsFacade::getElementTypeByRefHandle($refHandle);
+        return ElementTypes::getElementTypeByRefHandle($refHandle);
     }
 
     /**
@@ -1499,11 +1501,11 @@ class Elements extends Component
      * @phpstan-param string|array<EagerLoadPlan|array|string> $with
      * @return EagerLoadPlan[]
      * @since 3.5.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::createEagerLoadingPlans()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementEagerLoader::createEagerLoadingPlans()} instead.
      */
     public function createEagerLoadingPlans(string|array $with): array
     {
-        return ElementsFacade::createEagerLoadingPlans($with);
+        return app(ElementEagerLoader::class)->createEagerLoadingPlans($with);
     }
 
     /**
@@ -1513,11 +1515,11 @@ class Elements extends Component
      * @param ElementInterface[] $elements The root element models that should be updated with the eager-loaded elements
      * @param array<string|array>|string|EagerLoadPlan[] $with Dot-delimited paths of the elements that should be eager-loaded into the root elements
      *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::eagerLoadElements()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementEagerLoader::eagerLoadElements()} instead.
      */
     public function eagerLoadElements(string $elementType, array|Collection $elements, array|string $with): void
     {
-        ElementsFacade::eagerLoadElements($elementType, $elements, $with);
+        app(ElementEagerLoader::class)->eagerLoadElements($elementType, $elements, $with);
     }
 
     /**

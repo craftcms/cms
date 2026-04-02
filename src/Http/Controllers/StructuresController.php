@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Structure\Data\Structure;
 use CraftCms\Cms\Structure\Structures;
@@ -26,7 +27,7 @@ readonly class StructuresController
     public function __construct(
         private Request $request,
         private Structures $structures,
-        Elements $elements,
+        ElementTypes $elementTypes,
     ) {
         [
             'structureId' => $structureId,
@@ -47,7 +48,7 @@ readonly class StructuresController
         );
 
         abort_if(
-            is_null($elementType = $elements->getElementTypeById($elementId)),
+            is_null($elementType = $elementTypes->getElementTypeById($elementId)),
             404,
             'Element not found.'
         );

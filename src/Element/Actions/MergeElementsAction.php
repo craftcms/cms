@@ -9,6 +9,7 @@ use craft\behaviors\CustomFieldBehavior;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Element\Events\AfterMergeElements;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Search\Jobs\FindAndReplace;
@@ -21,6 +22,7 @@ readonly class MergeElementsAction
 {
     public function __construct(
         private Elements $elements,
+        private ElementTypes $elementTypes,
     ) {}
 
     public function handle(ElementInterface $mergedElement, ElementInterface $prevailingElement): bool
@@ -130,7 +132,7 @@ readonly class MergeElementsAction
             }
 
             // Update any reference tags
-            $elementType = $this->elements->getElementTypeById($prevailingElement->id);
+            $elementType = $this->elementTypes->getElementTypeById($prevailingElement->id);
 
             if ($elementType !== null && ($refHandle = $elementType::refHandle()) !== null) {
                 $refTagPrefix = '{'.$refHandle.':';

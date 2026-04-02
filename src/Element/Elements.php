@@ -7,8 +7,6 @@ namespace CraftCms\Cms\Element;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
-use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\DeleteElementAction;
@@ -23,28 +21,22 @@ use CraftCms\Cms\Element\Actions\ResaveElementsAction;
 use CraftCms\Cms\Element\Actions\RestoreElementsAction;
 use CraftCms\Cms\Element\Actions\SaveElementAction;
 use CraftCms\Cms\Element\Actions\UpdateCanonicalElementAction;
-use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Events\AfterUpdateSlugAndUri;
 use CraftCms\Cms\Element\Events\BeforeUpdateSlugAndUri;
-use CraftCms\Cms\Element\Events\RegisterElementTypes;
 use CraftCms\Cms\Element\Events\SetElementUri;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Jobs\UpdateElementSlugsAndUris;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
-use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\BulkOps;
-use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Typecast;
-use CraftCms\Cms\User\Elements\User;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -62,13 +54,9 @@ class Elements
      */
     private array $_placeholderUris;
 
-    /**
-     * @var string[]
-     */
-    private array $_elementTypesByRefHandle = [];
-
     public function __construct(
         private readonly ElementCaches $elementCaches,
+        private readonly ElementTypes $elementTypes,
     ) {}
 
     /**
@@ -178,7 +166,7 @@ class Elements
             return null;
         }
 
-        $elementType ??= $this->elementTypeByKey($property, $elementId);
+        $elementType ??= $this->elementTypes->getElementTypeByKey($property, $elementId);
 
         if ($elementType === null || ! class_exists($elementType)) {
             return null;
@@ -238,59 +226,6 @@ class Elements
             ->first();
 
         return $result ? $this->getElementById($result->id, $result->type, $siteId) : null;
-    }
-
-    /**
-     * Returns the class of an element with a given ID.
-     *
-     * @param  int  $elementId  The element’s ID
-     * @return class-string<ElementInterface>|null The element’s class, or null if it could not be found
-     */
-    public function getElementTypeById(int $elementId): ?string
-    {
-        return $this->elementTypeByKey('id', $elementId);
-    }
-
-    /**
-     * Returns the class of an element with a given UID.
-     *
-     * @param  string  $uid  The element’s UID
-     * @return string|null The element’s class, or null if it could not be found
-     *
-     * @since 3.5.13
-     */
-    public function getElementTypeByUid(string $uid): ?string
-    {
-        return $this->elementTypeByKey('uid', $uid);
-    }
-
-    /**
-     * Returns the class of an element with a given ID/UID.
-     *
-     * @param  string  $property  Either `id` or `uid`
-     * @param  int|string  $elementId  The element’s ID/UID
-     * @return string|null The element’s class, or null if it could not be found
-     */
-    private function elementTypeByKey(string $property, int|string $elementId): ?string
-    {
-        return DB::table(Table::ELEMENTS)
-            ->where($property, $elementId)
-            ->value('type');
-    }
-
-    /**
-     * Returns the classes of elements with the given IDs.
-     *
-     * @param  int[]  $elementIds  The elements’ IDs
-     * @return string[]
-     */
-    public function getElementTypesByIds(array $elementIds): array
-    {
-        return DB::table(Table::ELEMENTS)
-            ->whereIn('id', $elementIds)
-            ->distinct()
-            ->pluck('type')
-            ->all();
     }
 
     /**
@@ -742,7 +677,7 @@ class Elements
         ?int $siteId = null,
         bool $hardDelete = false,
     ): bool {
-        $elementType ??= $this->getElementTypeById($elementId);
+        $elementType ??= $this->elementTypes->getElementTypeById($elementId);
 
         if ($elementType === null) {
             return false;
@@ -830,25 +765,6 @@ class Elements
     // Element classes
     // -------------------------------------------------------------------------
 
-    /**
-     * Returns all available element classes.
-     *
-     * @return class-string<ElementInterface>[] The available element classes.
-     */
-    public function getAllElementTypes(): array
-    {
-        $elementTypes = [
-            Address::class,
-            Asset::class,
-            Entry::class,
-            User::class,
-        ];
-
-        event($event = new RegisterElementTypes($elementTypes));
-
-        return $event->types;
-    }
-
     // Element Actions & Exporters
     // -------------------------------------------------------------------------
 
@@ -880,46 +796,6 @@ class Elements
 
     // Misc
     // -------------------------------------------------------------------------
-
-    /**
-     * Returns an element class by its handle.
-     *
-     * @param  string  $refHandle  The element class handle
-     * @return string|null The element class, or null if it could not be found
-     */
-    public function getElementTypeByRefHandle(string $refHandle): ?string
-    {
-        if (! isset($this->_elementTypesByRefHandle[$refHandle])) {
-            $class = $this->elementTypeByRefHandle($refHandle);
-
-            // Special cases for categories/tags/globals, if they've been removed
-            if ($class === false && in_array($refHandle, ['category', 'tag', 'globalset'])) {
-                $class = Entry::class;
-            }
-
-            $this->_elementTypesByRefHandle[$refHandle] = $class;
-        }
-
-        return $this->_elementTypesByRefHandle[$refHandle] ?: null;
-    }
-
-    private function elementTypeByRefHandle(string $refHandle): string|false
-    {
-        if (is_subclass_of($refHandle, ElementInterface::class)) {
-            return $refHandle;
-        }
-
-        foreach ($this->getAllElementTypes() as $class) {
-            if (
-                ($elementRefHandle = $class::refHandle()) !== null &&
-                strcasecmp($elementRefHandle, $refHandle) === 0
-            ) {
-                return $class;
-            }
-        }
-
-        return false;
-    }
 
     /**
      * Parses a string for element [reference tags](https://craftcms.com/docs/5.x/system/reference-tags.html).
@@ -985,30 +861,5 @@ class Elements
     public function getPlaceholderElement(int $sourceId, int $siteId): ?ElementInterface
     {
         return $this->_placeholderElements[$sourceId][$siteId] ?? null;
-    }
-
-    /**
-     * Normalizes a `with` element query param into an array of eager-loading plans.
-     *
-     *
-     * @phpstan-param string|array<EagerLoadPlan|array|string> $with
-     *
-     * @return EagerLoadPlan[]
-     */
-    public function createEagerLoadingPlans(string|array $with): array
-    {
-        return app(ElementEagerLoader::class)->createEagerLoadingPlans($with);
-    }
-
-    /**
-     * Eager-loads additional elements onto a given set of elements.
-     *
-     * @param  class-string<ElementInterface>  $elementType  The root element type class
-     * @param  ElementInterface[]  $elements  The root element models that should be updated with the eager-loaded elements
-     * @param  array<string|array>|string|EagerLoadPlan[]  $with  Dot-delimited paths of the elements that should be eager-loaded into the root elements
-     */
-    public function eagerLoadElements(string $elementType, array|Collection $elements, array|string $with): void
-    {
-        app(ElementEagerLoader::class)->eagerLoadElements($elementType, $elements, $with);
     }
 }
