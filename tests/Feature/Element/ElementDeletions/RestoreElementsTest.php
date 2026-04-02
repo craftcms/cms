@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Actions\CascadeDeleteDraftsAndRevisionsAction;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
@@ -197,7 +196,6 @@ it('restores drafts and revisions, reindexes supported sites, and invalidates ca
         Mockery::mock(ElementWrites::class),
         $elementCaches,
         $search,
-        new CascadeDeleteDraftsAndRevisionsAction,
     );
 
     $element = new TestRestoreElement(localizedQuery: $query, supportedSites: [
@@ -236,7 +234,6 @@ function restoreElementsService(): ElementDeletions
         Mockery::mock(ElementWrites::class),
         $elementCaches,
         $search,
-        new CascadeDeleteDraftsAndRevisionsAction,
     );
 }
 

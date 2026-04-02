@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Actions\CascadeDeleteDraftsAndRevisionsAction;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Operations\ElementDeletions;
 use CraftCms\Cms\Element\Revisions;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
-    $this->action = app(CascadeDeleteDraftsAndRevisionsAction::class);
+    $this->deletions = app(ElementDeletions::class);
     $this->drafts = app(Drafts::class);
     $this->revisions = app(Revisions::class);
 
@@ -55,11 +56,11 @@ it('soft deletes all drafts and revisions for the given canonical only', functio
 
     expect(deletedDatesForElements([...$targetIds, ...$otherIds]))->each->toBeNull();
 
-    $this->action->handle($targetCanonical->id);
+    $this->deletions->deleteElement($targetCanonical);
 
     expect(DB::table(Table::DRAFTS)->count())->toBe(4)
         ->and(DB::table(Table::REVISIONS)->count())->toBe(4)
-        ->and(DB::table(Table::ELEMENTS)->where('id', $targetCanonical->id)->value('dateDeleted'))->toBeNull()
+        ->and(DB::table(Table::ELEMENTS)->where('id', $targetCanonical->id)->value('dateDeleted'))->not->toBeNull()
         ->and(deletedDatesForElements($targetIds))->each->not->toBeNull()
         ->and(deletedDatesForElements($otherIds))->each->toBeNull();
 });
@@ -74,19 +75,21 @@ it('restores all drafts and revisions for the given canonical only', function ()
     $targetIds = [...$targetElements['drafts'], ...$targetElements['revisions']];
     $otherIds = [...$otherElements['drafts'], ...$otherElements['revisions']];
 
-    $this->action->handle($targetCanonical->id);
-    $this->action->handle($otherCanonical->id);
+    $this->deletions->deleteElement($targetCanonical);
+    $this->deletions->deleteElement($otherCanonical);
 
     expect(deletedDatesForElements([...$targetIds, ...$otherIds]))->each->not->toBeNull();
 
-    $this->action->handle($targetCanonical->id, delete: false);
+    $targetCanonical = EntryElement::find()->id($targetCanonical->id)->trashed()->one();
+
+    $this->deletions->restoreElement($targetCanonical);
 
     expect(DB::table(Table::ELEMENTS)->where('id', $targetCanonical->id)->value('dateDeleted'))->toBeNull()
         ->and(deletedDatesForElements($targetIds))->each->toBeNull()
         ->and(deletedDatesForElements($otherIds))->each->not->toBeNull();
 });
 
-it('does nothing when the canonical has no drafts or revisions', function () {
+it('does not affect unrelated drafts or revisions when the canonical has none', function () {
     $canonical = EntryModel::factory()->createElement();
     $otherCanonical = EntryModel::factory()->createElement();
     $otherElements = createRelatedDraftAndRevisionElements($otherCanonical);
@@ -94,8 +97,10 @@ it('does nothing when the canonical has no drafts or revisions', function () {
 
     $beforeDeletedDates = deletedDatesForElements($otherIds);
 
-    $this->action->handle($canonical->id);
-    $this->action->handle($canonical->id, delete: false);
+    $this->deletions->deleteElement($canonical);
+
+    $canonical = EntryElement::find()->id($canonical->id)->trashed()->one();
+    $this->deletions->restoreElement($canonical);
 
     expect(DB::table(Table::ELEMENTS)->where('id', $canonical->id)->value('dateDeleted'))->toBeNull()
         ->and(deletedDatesForElements($otherIds))->toBe($beforeDeletedDates);

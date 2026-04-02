@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Element\Operations;
 use craft\base\ElementInterface;
 use craft\behaviors\CustomFieldBehavior;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Actions\CascadeDeleteDraftsAndRevisionsAction;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
@@ -48,7 +47,6 @@ readonly class ElementDeletions
         private ElementWrites $elementWrites,
         private ElementCaches $elementCaches,
         private Search $search,
-        private CascadeDeleteDraftsAndRevisionsAction $cascadeDeleteDraftsAndRevisionsAction,
     ) {}
 
     public function mergeElementsByIds(int $mergedElementId, int $prevailingElementId): bool
@@ -256,7 +254,7 @@ readonly class ElementDeletions
                             'deletedWithOwner' => $element->deletedWithOwner,
                         ]);
 
-                    $this->cascadeDeleteDraftsAndRevisionsAction->handle($element->id);
+                    $this->setDraftAndRevisionDeletionState($element->id);
                 }
 
                 $element->dateDeleted = DateTimeHelper::now();
@@ -435,7 +433,7 @@ readonly class ElementDeletions
                         'deletedWithOwner' => null,
                     ]);
 
-                $this->cascadeDeleteDraftsAndRevisionsAction->handle($element->id, false);
+                $this->setDraftAndRevisionDeletionState($element->id, false);
 
                 $this->search->indexElementAttributes($element);
                 foreach ($siteElements as $siteElement) {
@@ -462,5 +460,21 @@ readonly class ElementDeletions
         }
 
         return true;
+    }
+
+    private function setDraftAndRevisionDeletionState(int $canonicalId, bool $delete = true): void
+    {
+        foreach (['draftId' => Table::DRAFTS, 'revisionId' => Table::REVISIONS] as $foreignKey => $table) {
+            DB::table(new Alias(Table::ELEMENTS, 'e'))
+                ->whereIn(
+                    "e.$foreignKey",
+                    DB::table(new Alias($table, 't'))
+                        ->select('t.id')
+                        ->where('t.canonicalId', $canonicalId),
+                )
+                ->update([
+                    'dateDeleted' => $delete ? now() : null,
+                ]);
+        }
     }
 }
