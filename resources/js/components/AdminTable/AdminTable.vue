@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {FlexRender} from '@tanstack/vue-table';
+  import {FlexRender, type Column} from '@tanstack/vue-table';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import {computed} from 'vue';
   import {useReorderableRows} from '@/composables/useReorderableRows';
@@ -88,6 +88,17 @@
 
     return value;
   }
+
+  function getAriaSortAttribute(
+    column: Column<any>
+  ): 'ascending' | 'descending' | 'none' | undefined {
+    if (column.getCanSort()) {
+      if (column.getIsSorted()) {
+        return column.getIsSorted() === 'asc' ? 'ascending' : 'descending';
+      }
+      return 'none';
+    }
+  }
 </script>
 
 <template>
@@ -127,6 +138,7 @@
             }"
             @click="header.column.getToggleSortingHandler()?.($event)"
             scope="col"
+            :aria-sort="getAriaSortAttribute(header.column)"
           >
             <div
               class="flex gap-1 items-center"

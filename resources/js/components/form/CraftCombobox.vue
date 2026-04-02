@@ -9,7 +9,7 @@
   }>();
   const props = defineProps<{
     modelValue: string;
-    label?: string;
+    label: string;
     id?: string;
     name?: string;
     disabled?: boolean;
@@ -37,7 +37,12 @@
     :has-feedback-for="error ? 'error' : ''"
     v-bind="$attrs"
   >
-    <InputCombobox slot="input" v-model="valueProxy" :options="options" :label />
+    <InputCombobox
+      slot="input"
+      v-model="valueProxy"
+      :options="options"
+      :label="label"
+    />
 
     <div slot="after">
       <craft-callout
