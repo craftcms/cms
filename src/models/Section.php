@@ -89,7 +89,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
 
     /**
      * @var int Min authors
-     * @since 5.0.0
+     * @since 5.10.0
      */
     public int $minAuthors = 1;
 
