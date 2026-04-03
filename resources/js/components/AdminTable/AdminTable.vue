@@ -4,6 +4,7 @@
   import {computed} from 'vue';
   import {useReorderableRows} from '@/composables/useReorderableRows';
   import {TableSpacing} from '@/types';
+  import ColumnHeaderTitle from '@/components/AdminTable/ColumnHeaderTitle.vue';
   import ReorderButton from '@/components/ReorderButton.vue';
   import DropIndicator from '@/components/DropIndicator.vue';
   import Select from '@/components/form/Select.vue';
@@ -152,25 +153,28 @@
                 ),
               }"
             >
-              <FlexRender
-                v-if="!header.isPlaceholder"
-                :render="header.column.columnDef.header"
-                :props="header.getContext()"
-              />
-              <craft-icon
-                v-if="
-                  header.column.getCanSort() && !header.column.getIsSorted()
-                "
-                name="arrow-up-arrow-down"
-              ></craft-icon>
-              <craft-icon
-                v-else-if="header.column.getIsSorted() === 'asc'"
-                name="arrow-down"
-              ></craft-icon>
-              <craft-icon
-                v-else-if="header.column.getIsSorted() === 'desc'"
-                name="arrow-up"
-              ></craft-icon>
+              <ColumnHeaderTitle :isSortable="header.column.getCanSort()">
+                <FlexRender
+                  v-if="!header.isPlaceholder"
+                  :render="header.column.columnDef.header"
+                  :props="header.getContext()"
+                />
+
+                <craft-icon
+                  v-if="
+                    header.column.getCanSort() && !header.column.getIsSorted()
+                  "
+                  name="arrow-up-arrow-down"
+                ></craft-icon>
+                <craft-icon
+                  v-else-if="header.column.getIsSorted() === 'asc'"
+                  name="arrow-down"
+                ></craft-icon>
+                <craft-icon
+                  v-else-if="header.column.getIsSorted() === 'desc'"
+                  name="arrow-up"
+                ></craft-icon>
+              </ColumnHeaderTitle>
 
               <template v-if="header.column.columnDef.meta?.headerTip">
                 <c-tooltip :for="`header-info-${header.column.id}`">{{
