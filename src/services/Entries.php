@@ -273,7 +273,7 @@ class Entries extends Component
      */
     private function _createSectionQuery(): Query
     {
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'sections.id',
                 'sections.structureId',
@@ -296,6 +296,13 @@ class Entries extends Component
             ->from(['sections' => Table::SECTIONS])
             ->where(['sections.dateDeleted' => null])
             ->orderBy(['name' => SORT_ASC]);
+
+        // todo: remove this after the next breakpoint
+        if (Craft::$app->getDb()->columnExists(Table::SECTIONS, 'minAuthors')) {
+            $query->addSelect('sections.minAuthors');
+        }
+
+        return $query;
     }
 
     /**
@@ -649,6 +656,7 @@ class Entries extends Component
             $sectionRecord->handle = $data['handle'];
             $sectionRecord->type = $data['type'];
             $sectionRecord->enableVersioning = (bool)$data['enableVersioning'];
+            $sectionRecord->minAuthors = $data['minAuthors'] ?? 0;
             $sectionRecord->maxAuthors = $data['maxAuthors'] ?? null;
             $sectionRecord->propagationMethod = $data['propagationMethod'] ?? PropagationMethod::All->value;
             $sectionRecord->defaultPlacement = $data['defaultPlacement'] ?? Section::DEFAULT_PLACEMENT_END;

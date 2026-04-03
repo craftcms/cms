@@ -22,6 +22,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * @property string $handle Handle
  * @property string $type Type
  * @property bool $enableVersioning Enable versioning
+ * @property int $minAuthors The minimum number of authors
  * @property int|null $maxAuthors The maximum number of authors
  * @property string $propagationMethod Propagation method
  * @property string $defaultPlacement Default placement

@@ -67,6 +67,7 @@ use craft\models\Site;
 use craft\records\Entry as EntryRecord;
 use craft\services\ElementSources;
 use craft\services\Structures;
+use craft\validators\ArrayValidator;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
 use craft\web\twig\AllowedInSandbox;
@@ -1019,6 +1020,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected function defineRules(): array
     {
+        $section = $this->getSection();
+
         $rules = parent::defineRules();
         $rules[] = [['sectionId', 'fieldId', 'ownerId', 'primaryOwnerId', 'typeId', 'sortOrder'], 'number', 'integerOnly' => true];
         $rules[] = [['authorIds'], 'each', 'rule' => ['number', 'integerOnly' => true]];
@@ -1063,15 +1066,15 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             'when' => fn() => $this->postDate && $this->expiryDate,
             'on' => self::SCENARIO_LIVE,
         ];
-        $rules[] = [
-            ['authorIds'],
-            'required',
-            'when' => function() {
-                $section = $this->getSection();
-                return $section && $section->type !== Section::TYPE_SINGLE && $section->maxAuthors !== 0;
-            },
-            'on' => self::SCENARIO_LIVE,
-        ];
+        if ($section && $section->type !== Section::TYPE_SINGLE && $section->maxAuthors !== 0) {
+            $rules[] = [
+                ['authorIds'],
+                ArrayValidator::class,
+                'min' => $section->minAuthors,
+                'max' => $section->maxAuthors,
+                'on' => self::SCENARIO_LIVE,
+            ];
+        }
         $rules[] = [
             ['typeId'],
             function(string $attribute) {
@@ -3007,7 +3010,7 @@ JS;
         $section = $this->getSection();
         if (
             $section?->type !== Section::TYPE_SINGLE &&
-            $section?->maxAuthors !== 0 &&
+            $section?->minAuthors === 1 &&
             empty($this->getAuthors())
         ) {
             $user = Craft::$app->getUser()->getIdentity();
