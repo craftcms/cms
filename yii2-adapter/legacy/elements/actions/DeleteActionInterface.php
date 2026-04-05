@@ -16,18 +16,8 @@ namespace craft\elements\actions;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.5
  * @mixin Delete
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Contracts\DeleteActionInterface} instead.
  */
-interface DeleteActionInterface
+interface DeleteActionInterface extends \CraftCms\Cms\Element\Contracts\DeleteActionInterface
 {
-    /**
-     * Returns whether the action is capable of hard-deleting elements.
-     *
-     * @return bool
-     */
-    public function canHardDelete(): bool;
-
-    /**
-     * Instructs the action that the elements should be hard-deleted.
-     */
-    public function setHardDelete(): void;
 }

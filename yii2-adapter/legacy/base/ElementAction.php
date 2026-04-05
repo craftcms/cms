@@ -7,7 +7,8 @@
 
 namespace craft\base;
 
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Yii2Adapter\ModelWrapper;
+use CraftCms\Yii2Adapter\Validation\LegacyYiiRules;
 
 /**
  * ElementAction is the base class for classes representing element actions in terms of objects.
@@ -15,90 +16,24 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class ElementAction extends ConfigurableComponent implements ElementActionInterface
+abstract class ElementAction extends \CraftCms\Cms\Element\Actions\ElementAction implements ElementActionInterface
 {
-    /**
-     * @inheritdoc
-     */
-    public static function isDestructive(): bool
+    public function getRules(): array
     {
-        return false;
+        return LegacyYiiRules::mergeAttributeRules(
+            rules: parent::getRules(),
+            target: $this,
+            yiiRules: $this->defineRules(),
+            validatorTarget: fn() => new ModelWrapper($this),
+            allowMethodValidators: true,
+        );
     }
 
     /**
-     * @inheritdoc
+     * @return array<int, array|string>
      */
-    public static function isDownload(): bool
+    protected function defineRules(): array
     {
-        return false;
-    }
-
-    /**
-     * @var class-string<ElementInterface>
-     * @since 3.0.30
-     */
-    protected string $elementType;
-
-    /**
-     * @var string|null
-     */
-    private ?string $_message = null;
-
-    /**
-     * @inheritdoc
-     */
-    public function setElementType(string $elementType): void
-    {
-        $this->elementType = $elementType;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerLabel(): string
-    {
-        return static::displayName();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerHtml(): ?string
-    {
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getConfirmationMessage(): ?string
-    {
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function performAction(ElementQueryInterface $query): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getMessage(): ?string
-    {
-        return $this->_message;
-    }
-
-    /**
-     * Sets the message that should be displayed to the user after the action is performed.
-     *
-     * @param string $message The message that should be displayed to the user after the action is performed.
-     */
-    protected function setMessage(string $message): void
-    {
-        $this->_message = $message;
+        return [];
     }
 }

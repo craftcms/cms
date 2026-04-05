@@ -1,58 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\elements\actions;
 
-use craft\base\ElementAction;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use yii\base\Exception;
-use function CraftCms\Cms\t;
-
-/**
- * CopyReferenceTag represents a Copy Reference Tag element action.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-class CopyReferenceTag extends ElementAction
-{
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerLabel(): string
+/** @phpstan-ignore-next-line */
+if (false) {
+    class CopyReferenceTag extends \CraftCms\Cms\Asset\Actions\CopyReferenceTag
     {
-        return t('Copy reference tag');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerHtml(): ?string
-    {
-        $refHandle = $this->elementType::refHandle();
-        if ($refHandle === null) {
-            throw new Exception("Element type \"$this->elementType\" doesn't have a reference handle.");
-        }
-
-        HtmlStack::jsWithVars(fn($type, $refHandle) => <<<JS
-(() => {
-    new Craft.ElementActionTrigger({
-        type: $type,
-        bulk: false,
-        activate: (selectedItems, elementIndex) => {
-            Craft.ui.createCopyTextPrompt({
-                label: Craft.t('app', 'Copy the reference tag'),
-                value: '{' + $refHandle + ':' + selectedItems.find('.element').data('id') + '}',
-            });
-        },
-    })
-})();
-JS, [static::class, $refHandle]);
-
-        return null;
     }
 }
+
+class_alias(\CraftCms\Cms\Asset\Actions\CopyReferenceTag::class, CopyReferenceTag::class);

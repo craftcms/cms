@@ -10,15 +10,11 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\db\ExcludeDescendantIdsExpression;
-use craft\elements\actions\DeleteActionInterface;
-use craft\elements\actions\Restore;
 use craft\elements\exporters\Raw;
-use craft\events\ElementActionEvent;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Element;
@@ -29,9 +25,9 @@ use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
+use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
@@ -101,7 +97,7 @@ class ElementIndexesController extends BaseElementsController
             return false;
         }
 
-        if (!in_array($action->id, ['export', 'perform-action'], true)) {
+        if ($action->id !== 'export') {
             $this->requireAcceptsJson();
         }
 
@@ -116,7 +112,7 @@ class ElementIndexesController extends BaseElementsController
             $this->elementQuery = $this->elementQuery();
 
             if (
-                in_array($action->id, ['get-elements', 'get-more-elements', 'perform-action', 'export']) &&
+                in_array($action->id, ['get-elements', 'get-more-elements', 'export'], true) &&
                 $this->isAdministrative() &&
                 isset($this->sourceKey)
             ) {
@@ -242,112 +238,6 @@ class ElementIndexesController extends BaseElementsController
             'total' => $total,
             'unfilteredTotal' => $unfilteredTotal,
         ]);
-    }
-
-    /**
-     * Performs an action on one or more selected elements.
-     *
-     * @throws BadRequestHttpException if the requested element action is not supported by the element type, or its parameters didn’t validate
-     */
-    public function actionPerformAction(): ?Response
-    {
-        $this->requirePostRequest();
-
-        $elementsService = Craft::$app->getElements();
-
-        $actionClass = $this->request->getRequiredBodyParam('elementAction');
-        $elementIds = $this->request->getRequiredBodyParam('elementIds');
-
-        // Find that action from the list of available actions for the source
-        if (!empty($this->actions)) {
-            /** @var ElementAction $availableAction */
-            foreach ($this->actions as $availableAction) {
-                if ($actionClass === get_class($availableAction)) {
-                    $action = clone $availableAction;
-                    break;
-                }
-            }
-        }
-
-        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
-        if (!isset($action)) {
-            throw new BadRequestHttpException('Element action is not supported by the element type');
-        }
-
-        // Check for any params in the post data
-        foreach ($action->settingsAttributes() as $paramName) {
-            $paramValue = $this->request->getBodyParam($paramName);
-
-            if ($paramValue !== null) {
-                $action->$paramName = $paramValue;
-            }
-        }
-
-        // Make sure the action validates
-        if (!$action->validate()) {
-            throw new BadRequestHttpException('Element action params did not validate');
-        }
-
-        // Perform the action
-        $actionCriteria = (clone $this->elementQuery)
-            ->offset(0)
-            ->limit(null)
-            ->orderBy([])
-            ->positionedAfter(null)
-            ->positionedBefore(null)
-            ->id($elementIds);
-
-        // Fire a 'beforePerformAction' event
-        $event = new ElementActionEvent([
-            'action' => $action,
-            'criteria' => $actionCriteria,
-        ]);
-
-        $elementsService->trigger($elementsService::EVENT_BEFORE_PERFORM_ACTION, $event);
-
-        if ($event->isValid) {
-            $success = $action->performAction($actionCriteria);
-            $message = $action->getMessage();
-
-            if ($success) {
-                // Fire an 'afterPerformAction' event
-                $elementsService->trigger($elementsService::EVENT_AFTER_PERFORM_ACTION, new ElementActionEvent([
-                    'action' => $action,
-                    'criteria' => $actionCriteria,
-                ]));
-            }
-        } else {
-            $success = false;
-            $message = $event->message;
-        }
-
-        // Respond
-        if ($action->isDownload()) {
-            return $this->response;
-        }
-
-        if (!$success) {
-            return $this->asFailure($message);
-        }
-
-        // Send a new set of elements
-        $responseData = $this->elementResponseData(true, true);
-
-        // Send updated badge counts
-        $formatter = I18N::getFormatter();
-        foreach (app(ElementSources::class)->getSources($this->elementType, $this->context) as $source) {
-            if (!isset($source['key'])) {
-                continue;
-            }
-
-            if (isset($source['badgeCount'])) {
-                $responseData['badgeCounts'][$source['key']] = $formatter->asDecimal($source['badgeCount'], 0);
-            } else {
-                $responseData['badgeCounts'][$source['key']] = null;
-            }
-        }
-
-        return $this->asSuccess($message, data: $responseData);
     }
 
     /**
@@ -862,48 +752,11 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function availableActions(): ?array
     {
-        $actions = $this->elementType::actions($this->sourceKey);
-
-        foreach ($actions as $i => $action) {
-            // $action could be a string or config array
-            if ($action instanceof ElementActionInterface) {
-                $action->setElementType($this->elementType);
-            } else {
-                if (is_string($action)) {
-                    $action = ['type' => $action];
-                }
-                /** @var array $action */
-                /** @phpstan-var array{type:class-string<ElementActionInterface>} $action */
-                $action['elementType'] = $this->elementType;
-                $actions[$i] = $action = Elements::createAction($action);
-            }
-
-            if ($this->elementQuery->trashed) {
-                if ($action instanceof DeleteActionInterface && $action->canHardDelete()) {
-                    $action->setHardDelete();
-                } elseif (!$action instanceof Restore) {
-                    unset($actions[$i]);
-                }
-            } elseif ($action instanceof Restore) {
-                unset($actions[$i]);
-            }
-        }
-
-        if ($this->elementQuery->trashed) {
-            // Make sure Restore goes first
-            usort($actions, function($a, $b): int {
-                if ($a instanceof Restore) {
-                    return -1;
-                }
-                if ($b instanceof Restore) {
-                    return 1;
-                }
-
-                return 0;
-            });
-        }
-
-        return array_values($actions);
+        return ElementActions::availableActions(
+            elementType: $this->elementType,
+            sourceKey: $this->sourceKey,
+            elementQuery: $this->elementQuery,
+        );
     }
 
     /**
@@ -946,14 +799,7 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        $actionData = [];
-
-        /** @var ElementAction $action */
-        foreach ($this->actions as $action) {
-            $actionData[] = ElementHelper::actionConfig($action);
-        }
-
-        return $actionData;
+        return ElementActions::serializeActions($this->actions);
     }
 
     /**

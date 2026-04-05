@@ -27,6 +27,7 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Structure\Enums\Mode;
+use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
@@ -267,11 +268,11 @@ class Category extends Element
                     $newChildUrl .= '?site=' . $site->handle;
                 }
 
-                $actions[] = Elements::createAction([
+                $actions[] = ElementActions::createAction([
                     'type' => NewChild::class,
                     'maxLevels' => $group->maxLevels,
                     'newChildUrl' => $newChildUrl,
-                ]);
+                ], static::class);
             }
 
             // Duplicate

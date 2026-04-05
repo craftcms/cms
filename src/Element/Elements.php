@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Component\ComponentHelper;
@@ -611,19 +610,6 @@ class Elements
 
     // Element Actions & Exporters
     // -------------------------------------------------------------------------
-
-    /**
-     * Creates an element action with a given config.
-     *
-     * @template T of ElementActionInterface
-     *
-     * @param  class-string<T>|array{type:class-string<T>}  $config  The element action’s class name, or its config, with a `type` value and optionally a `settings` value
-     * @return T The element action
-     */
-    public function createAction(string|array $config): ElementActionInterface
-    {
-        return ComponentHelper::createComponent($config, ElementActionInterface::class);
-    }
 
     /**
      * Creates an element exporter with a given config.

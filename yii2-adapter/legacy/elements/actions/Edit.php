@@ -1,66 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\elements\actions;
 
-use craft\base\ElementAction;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use function CraftCms\Cms\t;
-
-/**
- * Edit represents an Edit element action.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-class Edit extends ElementAction
-{
-    /**
-     * @var string|null The trigger label
-     */
-    public ?string $label = null;
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
+/** @phpstan-ignore-next-line */
+if (false) {
+    class Edit extends \CraftCms\Cms\Element\Actions\Edit
     {
-        if (!isset($this->label)) {
-            $this->label = t('Edit');
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerLabel(): string
-    {
-        return $this->label;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerHtml(): ?string
-    {
-        HtmlStack::jsWithVars(fn($type) => <<<JS
-(() => {
-    new Craft.ElementActionTrigger({
-        type: $type,
-        bulk: false,
-        validateSelection: (selectedItems, elementIndex) => Garnish.hasAttr(selectedItems.find('.element'), 'data-savable'),
-        activate: (selectedItems, elementIndex) => {
-            const \$element = selectedItems.find('.element:first');
-            Craft.createElementEditor(\$element.data('type'), \$element);
-        },
-    });
-})();
-JS, [static::class]);
-
-        return null;
     }
 }
+
+class_alias(\CraftCms\Cms\Element\Actions\Edit::class, Edit::class);

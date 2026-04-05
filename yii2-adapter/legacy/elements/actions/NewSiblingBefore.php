@@ -1,73 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\elements\actions;
 
-use craft\base\ElementAction;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use function CraftCms\Cms\t;
-
-/**
- * NewSibling represents a “Create a new X before” element action.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.7.0
- */
-class NewSiblingBefore extends ElementAction
-{
-    /**
-     * @var string|null The trigger label
-     */
-    public ?string $label = null;
-
-    /**
-     * @var string|null The URL that the user should be taken to after clicking on this element action
-     */
-    public ?string $newSiblingUrl = null;
-
-    /**
-     * @inheritdoc
-     */
-    public function setElementType(string $elementType): void
+/** @phpstan-ignore-next-line */
+if (false) {
+    class NewSiblingBefore extends \CraftCms\Cms\Entry\Actions\NewSiblingBefore
     {
-        parent::setElementType($elementType);
-
-        if (!isset($this->label)) {
-            $this->label = t('Create a new {type} before', [
-                'type' => $elementType::lowerDisplayName(),
-            ]);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerLabel(): string
-    {
-        return $this->label;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerHtml(): ?string
-    {
-        HtmlStack::jsWithVars(fn($type, $newSiblingUrl) => <<<JS
-(() => {
-    new Craft.ElementActionTrigger({
-        type: $type,
-        bulk: false,
-        activate: (selectedItems, elementIndex) => {
-            Craft.redirectTo(Craft.getUrl($newSiblingUrl, 'before=' + selectedItems.find('.element').data('id')));
-        },
-    });
-})();
-JS, [static::class, $this->newSiblingUrl]);
-
-        return null;
     }
 }
+
+class_alias(\CraftCms\Cms\Entry\Actions\NewSiblingBefore::class, NewSiblingBefore::class);

@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\errors\ElementNotFoundException;
@@ -16,6 +15,7 @@ use craft\events\AuthorizationCheckEvent;
 use craft\events\BulkOpEvent;
 use craft\events\DeleteElementEvent;
 use craft\events\EagerLoadElementsEvent;
+use craft\events\ElementActionEvent;
 use craft\events\ElementEvent;
 use craft\events\ElementQueryEvent;
 use craft\events\InvalidateElementCachesEvent;
@@ -23,8 +23,10 @@ use craft\events\MergeElementsEvent;
 use craft\events\MultiElementActionEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\models\ElementActivity;
+use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
 use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
+use CraftCms\Cms\Element\Contracts\ElementActionInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Data\ElementActivity as ElementActivityData;
 use CraftCms\Cms\Element\Drafts;
@@ -37,6 +39,7 @@ use CraftCms\Cms\Element\Events\AfterDeleteElement;
 use CraftCms\Cms\Element\Events\AfterDeleteForSite;
 use CraftCms\Cms\Element\Events\AfterMergeCanonicalChanges;
 use CraftCms\Cms\Element\Events\AfterMergeElements;
+use CraftCms\Cms\Element\Events\AfterPerformAction;
 use CraftCms\Cms\Element\Events\AfterPropagateElement;
 use CraftCms\Cms\Element\Events\AfterPropagateElements;
 use CraftCms\Cms\Element\Events\AfterResaveElement;
@@ -48,6 +51,7 @@ use CraftCms\Cms\Element\Events\BeforeDeleteElement;
 use CraftCms\Cms\Element\Events\BeforeDeleteForSite;
 use CraftCms\Cms\Element\Events\BeforeEagerLoadElements;
 use CraftCms\Cms\Element\Events\BeforeMergeCanonicalChanges;
+use CraftCms\Cms\Element\Events\BeforePerformAction;
 use CraftCms\Cms\Element\Events\BeforePropagateElement;
 use CraftCms\Cms\Element\Events\BeforePropagateElements;
 use CraftCms\Cms\Element\Events\BeforeResaveElement;
@@ -1396,11 +1400,11 @@ class Elements extends Component
      *
      * @phpstan-param class-string<T>|array{type:class-string<T>} $config
      * @return T The element action
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::createAction()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Actions\ElementActions::createAction()} instead.
      */
     public function createAction(mixed $config): ElementActionInterface
     {
-        return ElementsFacade::createAction($config);
+        return ComponentHelper::createComponent($config, \CraftCms\Cms\Element\Contracts\ElementActionInterface::class);
     }
 
     /**
@@ -1908,6 +1912,33 @@ class Elements extends Component
             ]));
 
             $event->hardDelete = $yiiEvent->hardDelete;
+        });
+
+        Event::listen(function(BeforePerformAction $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_PERFORM_ACTION)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_BEFORE_PERFORM_ACTION, $yiiEvent = new ElementActionEvent([
+                'action' => $event->action,
+                'criteria' => $event->query,
+                'message' => $event->message,
+            ]));
+
+            $event->isValid = $yiiEvent->isValid;
+            $event->message = $yiiEvent->message;
+        });
+
+        Event::listen(function(AfterPerformAction $event) {
+            if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_PERFORM_ACTION)) {
+                return;
+            }
+
+            Craft::$app->getElements()->trigger(self::EVENT_AFTER_PERFORM_ACTION, new ElementActionEvent([
+                'action' => $event->action,
+                'criteria' => $event->query,
+                'message' => $event->message,
+            ]));
         });
 
         Event::listen(function(RegisterElementTypes $event) {

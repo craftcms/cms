@@ -25,6 +25,7 @@ use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\NewUsersController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\EditionController;
+use CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
@@ -206,6 +207,9 @@ Route::prefix(implode('/', [
             Route::post('app/try-edition', [EditionController::class, 'tryEdition']);
             Route::post('app/switch-to-licensed-edition', [EditionController::class, 'switchToLicensedEdition']);
         });
+
+        // Elements
+        Route::post('element-indexes/perform-action', PerformElementActionController::class);
 
         // Entries
         Route::post('entries/create', CreateEntryController::class);
