@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\Element\Actions\ElementAction} instead.
  */
 abstract class ElementAction extends \CraftCms\Cms\Element\Actions\ElementAction implements ElementActionInterface
 {
