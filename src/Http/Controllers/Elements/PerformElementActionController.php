@@ -99,7 +99,7 @@ readonly class PerformElementActionController
         abort_if(! $result['valid'], 400, 'Element action params did not validate');
 
         if ($action->isDownload()) {
-            return $result['response'];
+            return $action->getResponse() ?? abort(500, 'Download element actions must provide a response');
         }
 
         if (! $result['success']) {
@@ -222,6 +222,7 @@ readonly class PerformElementActionController
         }
 
         if ($source['type'] === ElementSources::TYPE_CUSTOM) {
+            /** @var ElementConditionInterface $sourceCondition */
             $sourceCondition = $this->conditions->createCondition($source['condition']);
             $sourceCondition->modifyQuery($query);
         }
@@ -265,6 +266,7 @@ readonly class PerformElementActionController
         }
 
         if ($filterConditionConfig) {
+            /** @var ElementConditionInterface $filterCondition */
             $filterCondition = $this->conditions->createCondition($filterConditionConfig);
             $filterCondition->modifyQuery($query);
         }

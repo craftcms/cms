@@ -9,6 +9,7 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Element\Contracts\ElementActionInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 abstract class ElementAction extends Component implements ElementActionInterface
 {
@@ -20,6 +21,8 @@ abstract class ElementAction extends Component implements ElementActionInterface
     protected string $elementType;
 
     private ?string $message = null;
+
+    private ?Response $response = null;
 
     public static function isDestructive(): bool
     {
@@ -61,8 +64,18 @@ abstract class ElementAction extends Component implements ElementActionInterface
         return $this->message;
     }
 
+    public function getResponse(): ?Response
+    {
+        return $this->response;
+    }
+
     protected function setMessage(string $message): void
     {
         $this->message = $message;
+    }
+
+    protected function setResponse(Response $response): void
+    {
+        $this->response = $response;
     }
 }

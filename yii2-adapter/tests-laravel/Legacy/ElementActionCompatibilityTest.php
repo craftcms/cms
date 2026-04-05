@@ -43,4 +43,26 @@ class ElementActionCompatibilityTest extends TestCase
         self::assertTrue($action->validate());
         self::assertFalse($action->hasErrors('status'));
     }
+
+    public function testLegacyDownloadActionsExposeSymfonyResponses(): void
+    {
+        $action = new class() extends \craft\base\ElementAction {
+            public static function isDownload(): bool
+            {
+                return true;
+            }
+        };
+
+        $response = Craft::$app->getResponse();
+        $response->clear();
+        $response->setStatusCode(200);
+        $response->content = 'downloaded';
+        $response->setDownloadHeaders('entries.txt');
+
+        $downloadResponse = $action->getResponse();
+
+        self::assertNotNull($downloadResponse);
+        self::assertSame('downloaded', $downloadResponse->getContent());
+        self::assertStringContainsString('entries.txt', (string)$downloadResponse->headers->get('content-disposition'));
+    }
 }
