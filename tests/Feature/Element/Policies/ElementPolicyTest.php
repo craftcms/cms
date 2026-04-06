@@ -51,7 +51,7 @@ it('delegates unpublished save canonical checks to a cloned save check', functio
         $event->authorize();
     });
 
-    $result = $this->policy->before($user, 'saveCanonical', $element);
+    $result = $this->policy->saveCanonical($user, $element);
 
     expect($result)->toBeTrue()
         ->and($element->draftId)->toBe(100);
@@ -69,9 +69,42 @@ it('delegates published save canonical checks to the canonical element', functio
         $event->authorize();
     });
 
-    $result = $this->policy->before($user, 'saveCanonical', $element);
+    $result = $this->policy->saveCanonical($user, $element);
 
     expect($result)->toBeTrue();
+});
+
+it('allows gate save canonical checks for unpublished drafts when save is authorized', function () {
+    $user = UserModel::factory()->createElement();
+    $element = createElementPolicyElement();
+    $element->draftId = 100;
+
+    Event::listen(AuthorizingElement::class, function (AuthorizingElement $event) use ($element): void {
+        if ($event->ability !== 'save') {
+            return;
+        }
+
+        expect($event->element === $element)->toBeFalse()
+            ->and($event->element->draftId)->toBeNull();
+
+        $event->authorize();
+    });
+
+    expect(Gate::forUser($user)->check('saveCanonical', $element))->toBeTrue();
+});
+
+it('denies gate save canonical checks when the delegated save check is denied', function () {
+    $user = UserModel::factory()->createElement();
+    $element = createElementPolicyElement();
+    $element->draftId = 100;
+
+    Event::listen(AuthorizingElement::class, function (AuthorizingElement $event): void {
+        if ($event->ability === 'save') {
+            $event->deny();
+        }
+    });
+
+    expect(Gate::forUser($user)->check('saveCanonical', $element))->toBeFalse();
 });
 
 it('returns false for view when the site does not exist', function () {
@@ -282,7 +315,6 @@ it('returns false for built-in abilities via __call', function (string $ability)
 })->with([
     'view',
     'save',
-    'saveCanonical',
     'delete',
     'duplicate',
     'copy',

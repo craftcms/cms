@@ -11,6 +11,7 @@ use CraftCms\Cms\Auth\Events\AuthorizingElement;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Gate;
 
 class ElementPolicy
 {
@@ -36,17 +37,6 @@ class ElementPolicy
             return null;
         }
 
-        if ($ability === 'saveCanonical') {
-            if ($element->getIsUnpublishedDraft()) {
-                $fakeCanonical = clone $element;
-                $fakeCanonical->draftId = null;
-
-                return $this->before($user, 'save', $fakeCanonical);
-            }
-
-            return $this->before($user, 'save', $element->getCanonical(true));
-        }
-
         // Site authorization (for view and save)
         if (in_array($ability, ['view', 'save'], true)
             && $this->checkSiteAuthorization($user, $element) === false
@@ -63,6 +53,18 @@ class ElementPolicy
         event($event = new AuthorizingElement($user, $element, $ability));
 
         return $event->authorized;
+    }
+
+    public function saveCanonical(User $user, ElementInterface $element): bool
+    {
+        if ($element->getIsUnpublishedDraft()) {
+            $fakeCanonical = clone $element;
+            $fakeCanonical->draftId = null;
+
+            return Gate::forUser($user)->check('save', $fakeCanonical);
+        }
+
+        return Gate::forUser($user)->check('save', $element->getCanonical(true));
     }
 
     /**
