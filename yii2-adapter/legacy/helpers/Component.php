@@ -14,9 +14,6 @@ use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Cp\Icons;
 use DateTime;
-use ReflectionClass;
-use ReflectionNamedType;
-use ReflectionProperty;
 use RuntimeException;
 use yii\base\InvalidConfigException;
 
@@ -101,19 +98,8 @@ class Component extends ComponentHelper
      * @param Model|ElementInterface $model
      * @return array
      */
-    public static function datetimeAttributes(Model|ElementInterface $model): array
+    public static function datetimeAttributes(object $model): array
     {
-        $datetimeAttributes = [];
-        foreach ((new ReflectionClass($model))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
-            if (!$property->isStatic()) {
-                $type = $property->getType();
-                if ($type instanceof ReflectionNamedType && $type->getName() === DateTime::class) {
-                    $datetimeAttributes[] = $property->getName();
-                }
-            }
-        }
-
-        // Include datetimeAttributes() for now
-        return array_unique(array_merge($datetimeAttributes, $model->datetimeAttributes()));
+        return array_unique(array_merge(parent::datetimeAttributes($model), $model->datetimeAttributes()));
     }
 }

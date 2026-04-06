@@ -187,6 +187,7 @@ class ElementExporters
                 filename: $filename,
                 contentType: 'application/x-yaml; charset=UTF-8',
             ),
+            default => throw new InvalidArgumentException("Unsupported export format: $format"),
         };
     }
 

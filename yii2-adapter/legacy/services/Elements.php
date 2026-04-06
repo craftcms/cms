@@ -29,7 +29,6 @@ use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
 use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
 use CraftCms\Cms\Element\Contracts\ElementActionInterface;
-use CraftCms\Cms\Element\Contracts\ElementExporterInterface as LaravelElementExporterInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Data\ElementActivity as ElementActivityData;
 use CraftCms\Cms\Element\Drafts;
@@ -1453,13 +1452,16 @@ class Elements extends Component
      *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementExporters::createExporter()} instead.
      */
-    public function createExporter(mixed $config): LaravelElementExporterInterface
+    public function createExporter(mixed $config): ElementExporterInterface
     {
         if (is_string($config)) {
             $config = ['type' => $config];
         }
 
-        return ElementExporters::createExporter($config, $config['elementType'] ?? Element::class);
+        /** @var T $exporter */
+        $exporter = ElementExporters::createExporter($config, $config['elementType'] ?? Element::class);
+
+        return $exporter;
     }
 
     // Misc

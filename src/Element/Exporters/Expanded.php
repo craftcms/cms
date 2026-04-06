@@ -5,18 +5,19 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Exporters;
 
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQuery;
-use craft\helpers\Component;
-use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Support\DateTimeHelper;
+use Override;
 
 use function CraftCms\Cms\t;
 
 class Expanded extends ElementExporter
 {
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Expanded');
@@ -45,7 +46,6 @@ class Expanded extends ElementExporter
         $query->with($eagerLoadableFields);
 
         $query->each(function (ElementInterface $element) use (&$data) {
-            /** @var ElementInterface $element */
             $attributes = array_flip($element->attributes());
 
             if (($fieldLayout = $element->getFieldLayout()) !== null) {
@@ -54,7 +54,7 @@ class Expanded extends ElementExporter
                 }
             }
 
-            $datetimeAttributes = Component::datetimeAttributes($element);
+            $datetimeAttributes = ComponentHelper::datetimeAttributes($element);
             $otherAttributes = array_diff(array_keys($attributes), $datetimeAttributes);
             $elementArr = $element->toArray($otherAttributes);
 
