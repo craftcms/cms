@@ -8,8 +8,6 @@ use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\elements\NestedElementManager;
-use craft\events\BulkElementsEvent;
 use craft\validators\StringValidator;
 use craft\validators\UriFormatValidator;
 use craft\web\assets\cp\CpAsset;
@@ -21,8 +19,10 @@ use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Events\AfterSaveNestedElements;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
+use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
@@ -64,6 +64,7 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -390,7 +391,13 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 ],
             );
 
-            $this->_entryManager->on(NestedElementManager::EVENT_AFTER_SAVE_ELEMENTS, $this->afterSaveEntries(...));
+            Event::listen(function (AfterSaveNestedElements $event) {
+                if ($event->manager !== $this->_entryManager) {
+                    return;
+                }
+
+                $this->afterSaveEntries($event);
+            });
         }
 
         return $this->_entryManager;
@@ -1591,27 +1598,28 @@ JS,
     /**
      * Handles nested entry saves.
      */
-    public function afterSaveEntries(BulkElementsEvent $event): void
+    public function afterSaveEntries(AfterSaveNestedElements $event): void
     {
-        if (
-            ! app()->runningInConsole() &&
-            ! Craft::$app->getResponse()->isSent
-        ) {
-            // Tell the browser to collapse any new entry IDs
-            $collapsedIds = Collection::make($event->elements)
-                /** @phpstan-ignore-next-line */
-                ->filter(fn (Entry $entry) => $entry->collapsed)
-                /** @phpstan-ignore-next-line */
-                ->map(fn (Entry $entry) => $entry->id)
-                ->all();
+        if (app()->runningInConsole()) {
+            return;
+        }
 
-            if (! empty($collapsedIds)) {
-                Craft::$app->getSession()->addAssetBundleFlash(MatrixAsset::class);
+        // Tell the browser to collapse any new entry IDs
+        $collapsedIds = Collection::make($event->elements)
+            /** @phpstan-ignore-next-line */
+            ->filter(fn (Entry $entry) => $entry->collapsed)
+            /** @phpstan-ignore-next-line */
+            ->map(fn (Entry $entry) => $entry->id)
+            ->all();
 
-                foreach ($collapsedIds as $id) {
-                    Craft::$app->getSession()->addJsFlash("Craft.MatrixInput.rememberCollapsedEntryId($id);", View::POS_END);
-                }
-            }
+        if (empty($collapsedIds)) {
+            return;
+        }
+
+        Craft::$app->getSession()->addAssetBundleFlash(MatrixAsset::class);
+
+        foreach ($collapsedIds as $id) {
+            Craft::$app->getSession()->addJsFlash("Craft.MatrixInput.rememberCollapsedEntryId($id);", View::POS_END);
         }
     }
 
