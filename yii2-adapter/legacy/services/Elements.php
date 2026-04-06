@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -27,11 +29,14 @@ use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
 use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
 use CraftCms\Cms\Element\Contracts\ElementActionInterface;
+use CraftCms\Cms\Element\Contracts\ElementExporterInterface as LaravelElementExporterInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Data\ElementActivity as ElementActivityData;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementActions;
 use CraftCms\Cms\Element\ElementActivity as ElementActivityService;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
@@ -70,6 +75,7 @@ use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Facades\BulkOps;
+use CraftCms\Cms\Support\Facades\ElementExporters;
 use CraftCms\Cms\Support\Facades\Elements as ElementsFacade;
 use CraftCms\Cms\Support\Facades\ElementTypes;
 use CraftCms\Cms\Support\Facades\Search;
@@ -92,6 +98,7 @@ use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidCallException;
 use yii\web\ForbiddenHttpException;
+
 use function CraftCms\Cms\t;
 
 /**
@@ -100,7 +107,9 @@ use function CraftCms\Cms\t;
  * An instance of the service is available via [[\craft\base\ApplicationTrait::getElements()|`Craft::$app->getElements()`]].
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class Elements extends Component
@@ -129,6 +138,7 @@ class Elements extends Component
 
     /**
      * @event EagerLoadElementsEvent The event that is triggered before elements are eager-loaded.
+     *
      * @since 3.5.0
      */
     public const EVENT_BEFORE_EAGER_LOAD_ELEMENTS = 'beforeEagerLoadElements';
@@ -168,12 +178,14 @@ class Elements extends Component
 
     /**
      * @event ElementEvent The event that is triggered before an element is restored.
+     *
      * @since 3.1.0
      */
     public const EVENT_BEFORE_RESTORE_ELEMENT = 'beforeRestoreElement';
 
     /**
      * @event ElementEvent The event that is triggered after an element is restored.
+     *
      * @since 3.1.0
      */
     public const EVENT_AFTER_RESTORE_ELEMENT = 'afterRestoreElement';
@@ -227,7 +239,7 @@ class Elements extends Component
      *
      * Event handlers must set `$event->handled` to `true` for their change to take effect.
      *
-     * @see setElementUri()
+     * @see SetElementUri()
      * @since 4.6.0
      */
     public const EVENT_SET_ELEMENT_URI = 'setElementUri';
@@ -306,18 +318,21 @@ class Elements extends Component
 
     /**
      * @event ElementEvent The event that is triggered before canonical element changes are merged into a derivative.
+     *
      * @since 3.7.0
      */
     public const EVENT_BEFORE_MERGE_CANONICAL_CHANGES = 'beforeMergeCanonical';
 
     /**
      * @event ElementEvent The event that is triggered after canonical element changes are merged into a derivative.
+     *
      * @since 3.7.0
      */
     public const EVENT_AFTER_MERGE_CANONICAL_CHANGES = 'afterMergeCanonical';
 
     /**
      * @event InvalidateElementCachesEvent The event that is triggered when element caches are invalidated.
+     *
      * @since 4.2.0
      */
     public const EVENT_INVALIDATE_CACHES = 'invalidateCaches';
@@ -517,6 +532,7 @@ class Elements extends Component
 
     /**
      * @event ElementEvent The event that is triggered before deleting an element for a single site.
+     *
      * @see deleteElementForSite()
      * @see deleteElementsForSite()
      * @since 4.4.0
@@ -525,6 +541,7 @@ class Elements extends Component
 
     /**
      * @event ElementEvent The event that is triggered after deleting an element for a single site.
+     *
      * @see deleteElementForSite()
      * @see deleteElementsForSite()
      * @since 4.4.0
@@ -535,10 +552,13 @@ class Elements extends Component
      * Creates an element with a given config.
      *
      * @template T of ElementInterface
-     * @param class-string<T>|array $config The element’s class name, or its config, with a `type` value
+     *
+     * @param  class-string<T>|array  $config  The element’s class name, or its config, with a `type` value
      *
      * @phpstan-param class-string<T>|array{type:class-string<T>} $config
+     *
      * @return T The element
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::createElement()} instead.
      */
     public function createElement(mixed $config): ElementInterface
@@ -549,10 +569,11 @@ class Elements extends Component
     /**
      * Creates an element query for a given element type.
      *
-     * @param class-string<ElementInterface> $elementType The element class
-     *
+     * @param  class-string<ElementInterface>  $elementType  The element class
      * @return ElementQueryInterface The element query
+     *
      * @throws InvalidArgumentException if $elementType is not a valid element
+     *
      * @since 3.5.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::createElementQuery()} instead.
      */
@@ -563,6 +584,7 @@ class Elements extends Component
 
     /**
      * @var string the DB connection name that should be used to store element bulk op records.
+     *
      * @since 5.3.0
      */
     public string $bulkOpDb = 'db2';
@@ -573,11 +595,10 @@ class Elements extends Component
     /**
      * Returns whether we are currently collecting element cache invalidation info.
      *
-     * @return bool
      * @see startCollectingCacheInfo()
      * @see stopCollectingCacheInfo()
      * @since 4.3.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::isCollectingCacheInfo()} instead.
+     * @deprecated 6.0.0 use {@see ElementCaches::isCollectingCacheInfo()} instead.
      */
     public function getIsCollectingCacheInfo(): bool
     {
@@ -587,7 +608,6 @@ class Elements extends Component
     /**
      * Returns whether we are currently collecting element cache invalidation tags.
      *
-     * @return bool
      * @since 3.5.0
      * @deprecated in 4.3.0. [[getIsCollectingCacheInfo()]] should be used instead.
      */
@@ -600,7 +620,7 @@ class Elements extends Component
      * Starts collecting element cache invalidation info.
      *
      * @since 4.3.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::startCollectingCacheInfo()} instead.
+     * @deprecated 6.0.0 use {@see ElementCaches::startCollectingCacheInfo()} instead.
      */
     public function startCollectingCacheInfo(): void
     {
@@ -621,10 +641,10 @@ class Elements extends Component
     /**
      * Adds element cache invalidation tags to the current collection.
      *
-     * @param string[] $tags
+     * @param  string[]  $tags
      *
      * @since 3.5.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::collectCacheTags()} instead.
+     * @deprecated 6.0.0 use {@see ElementCaches::collectCacheTags()} instead.
      */
     public function collectCacheTags(array $tags): void
     {
@@ -636,10 +656,9 @@ class Elements extends Component
      *
      * The value will only be used if it is less than the currently stored expiration date.
      *
-     * @param DateTime $expiryDate
      *
      * @since 4.3.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::setCacheExpiryDate()} instead.
+     * @deprecated 6.0.0 use {@see ElementCaches::setCacheExpiryDate()} instead.
      */
     public function setCacheExpiryDate(DateTime $expiryDate): void
     {
@@ -649,10 +668,9 @@ class Elements extends Component
     /**
      ** Stores cache invalidation info for a given element.
      *
-     * @param ElementInterface $element
      *
      * @since 4.5.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::collectCacheInfoForElement()} instead.
+     * @deprecated 6.0.0 use {@see ElementCaches::collectCacheInfoForElement()} instead.
      */
     public function collectCacheInfoForElement(ElementInterface $element): void
     {
@@ -665,10 +683,10 @@ class Elements extends Component
      *
      * If no cache tags were registered, `[null, null]` will be returned.
      *
-     * @return array
      * @phpstan-return array{TagDependency|null,int|null}
+     *
      * @since 4.3.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::stopCollectingCacheInfo()} instead.
+     * @deprecated 6.0.0 use {@see ElementCaches::stopCollectingCacheInfo()} instead.
      */
     public function stopCollectingCacheInfo(): array
     {
@@ -682,13 +700,13 @@ class Elements extends Component
     /**
      * Stops collecting element cache invalidation tags, and returns a cache dependency object.
      *
-     * @return TagDependency
      * @since 3.5.0
      * @deprecated in 4.3.0. [[stopCollectingCacheInfo()]] should be used instead.
      */
     public function stopCollectingCacheTags(): TagDependency
     {
         [$dep] = $this->stopCollectingCacheInfo();
+
         return $dep ?? new TagDependency();
     }
 
@@ -696,7 +714,7 @@ class Elements extends Component
      * Invalidates all element caches.
      *
      * @since 3.5.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::invalidateAll()} instead.
+     * @deprecated 6.0.0 use {@see ElementCaches::invalidateAll()} instead.
      */
     public function invalidateAllCaches(): void
     {
@@ -706,10 +724,10 @@ class Elements extends Component
     /**
      * Invalidates caches for the given element type.
      *
-     * @param class-string<ElementInterface> $elementType
+     * @param  class-string<ElementInterface>  $elementType
      *
      * @since 3.5.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::invalidateForElementType()} instead.
+     * @deprecated 6.0.0 use {@see ElementCaches::invalidateForElementType()} instead.
      */
     public function invalidateCachesForElementType(string $elementType): void
     {
@@ -719,10 +737,9 @@ class Elements extends Component
     /**
      * Invalidates caches for the given element.
      *
-     * @param ElementInterface $element
      *
      * @since 3.5.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementCaches::invalidateForElement()} instead.
+     * @deprecated 6.0.0 use {@see ElementCaches::invalidateForElement()} instead.
      */
     public function invalidateCachesForElement(ElementInterface $element): void
     {
@@ -745,13 +762,13 @@ class Elements extends Component
      * The element’s status will not be a factor when using this method.
      *
      * @template T of ElementInterface
-     * @param int $elementId The element’s ID.
-     * @param class-string<T>|null $elementType The element class.
-     * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
-     * Defaults to the current site.
-     * @param array $criteria
      *
+     * @param  int  $elementId  The element’s ID.
+     * @param  class-string<T>|null  $elementType  The element class.
+     * @param  int|string|int[]|null  $siteId  The site(s) to fetch the element in.
+     *                                         Defaults to the current site.
      * @return T|null The matching element, or `null`.
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getElementById()} instead.
      */
     public function getElementById(
@@ -771,20 +788,20 @@ class Elements extends Component
      * The element’s status will not be a factor when using this method.
      *
      * @template T of ElementInterface
-     * @param string $uid The element’s UID.
-     * @param class-string<T>|null $elementType The element class.
-     * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
-     * Defaults to the current site.
-     * @param array $criteria
      *
+     * @param  string  $uid  The element’s UID.
+     * @param  class-string<T>|null  $elementType  The element class.
+     * @param  int|string|int[]|null  $siteId  The site(s) to fetch the element in.
+     *                                         Defaults to the current site.
      * @return T|null The matching element, or `null`.
+     *
      * @since 3.5.13
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getElementByUid()} instead.
      */
     public function getElementByUid(
         string $uid,
         ?string $elementType = null,
-        array|int|string $siteId = null,
+        array|int|string|null $siteId = null,
         array $criteria = [],
     ): ?ElementInterface {
         return ElementsFacade::getElementByUId($uid, $elementType, $siteId, $criteria);
@@ -793,12 +810,12 @@ class Elements extends Component
     /**
      * Returns an element by its URI.
      *
-     * @param string $uri The element’s URI.
-     * @param int|null $siteId The site to look for the URI in, and to return the element in.
-     * Defaults to the current site.
-     * @param bool $enabledOnly Whether to only look for an enabled element. Defaults to `false`.
-     *
+     * @param  string  $uri  The element’s URI.
+     * @param  int|null  $siteId  The site to look for the URI in, and to return the element in.
+     *                            Defaults to the current site.
+     * @param  bool  $enabledOnly  Whether to only look for an enabled element. Defaults to `false`.
      * @return ElementInterface|null The matching element, or `null`.
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getElementByUri()} instead.
      */
     public function getElementByUri(string $uri, ?int $siteId = null, bool $enabledOnly = false): ?ElementInterface
@@ -809,9 +826,9 @@ class Elements extends Component
     /**
      * Returns the class of an element with a given ID.
      *
-     * @param int $elementId The element’s ID
-     *
+     * @param  int  $elementId  The element’s ID
      * @return class-string<ElementInterface>|null The element’s class, or null if it could not be found
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementTypes::getElementTypeById()} instead.
      */
     public function getElementTypeById(int $elementId): ?string
@@ -822,9 +839,9 @@ class Elements extends Component
     /**
      * Returns the class of an element with a given UID.
      *
-     * @param string $uid The element’s UID
-     *
+     * @param  string  $uid  The element’s UID
      * @return string|null The element’s class, or null if it could not be found
+     *
      * @since 3.5.13
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementTypes::getElementTypeByUid()} instead.
      */
@@ -836,9 +853,9 @@ class Elements extends Component
     /**
      * Returns the classes of elements with the given IDs.
      *
-     * @param int[] $elementIds The elements’ IDs
-     *
+     * @param  int[]  $elementIds  The elements’ IDs
      * @return string[]
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementTypes::getElementTypesByIds()} instead.
      */
     public function getElementTypesByIds(array $elementIds): array
@@ -849,10 +866,10 @@ class Elements extends Component
     /**
      * Returns an element’s URI for a given site.
      *
-     * @param int $elementId The element’s ID.
-     * @param int $siteId The site to search for the element’s URI in.
-     *
+     * @param  int  $elementId  The element’s ID.
+     * @param  int  $siteId  The site to search for the element’s URI in.
      * @return string|null The element’s URI or `null` if the element doesn’t exist.
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getElementUriForSite()} instead.
      */
     public function getElementUriForSite(int $elementId, int $siteId): ?string
@@ -863,10 +880,10 @@ class Elements extends Component
     /**
      * Returns the site IDs that a given element is enabled in.
      *
-     * @param int $elementId The element’s ID.
-     *
+     * @param  int  $elementId  The element’s ID.
      * @return int[] The site IDs that the element is enabled in. If the element could not be found, an empty array
-     * will be returned.
+     *               will be returned.
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getEnabledSiteIdsForElement()} instead.
      */
     public function getEnabledSiteIdsForElement(int $elementId): array
@@ -881,6 +898,7 @@ class Elements extends Component
      * Returns the active bulk op keys.
      *
      * @return string[]
+     *
      * @since 5.7.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\BulkOp\BulkOps::activeKeys()} instead.
      */
@@ -893,6 +911,7 @@ class Elements extends Component
      * Begins tracking element saves and deletes as part of a bulk operation, identified by a unique key.
      *
      * @return string The bulk operation key
+     *
      * @since 5.0.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\BulkOp\BulkOps::start()} instead.
      */
@@ -904,7 +923,7 @@ class Elements extends Component
     /**
      * Resumes tracking element saves and deletes as part of a bulk operation.
      *
-     * @param string $key The bulk operation key returned by [[beginBulkOp()]].
+     * @param  string  $key  The bulk operation key returned by [[beginBulkOp()]].
      *
      * @since 5.0.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\BulkOp\BulkOps::resume()} instead.
@@ -917,7 +936,7 @@ class Elements extends Component
     /**
      * Finishes tracking element saves and deletes as part of a bulk operation.
      *
-     * @param string $key The bulk operation key returned by [[beginBulkOp()]].
+     * @param  string  $key  The bulk operation key returned by [[beginBulkOp()]].
      *
      * @since 5.0.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\BulkOp\BulkOps::end()} instead.
@@ -930,7 +949,6 @@ class Elements extends Component
     /**
      * Tracks an element as being affected by any active bulk operations.
      *
-     * @param ElementInterface $element
      *
      * @since 5.0.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\BulkOp\BulkOps::trackElement()} instead.
@@ -944,9 +962,7 @@ class Elements extends Component
      * Ensures that we’re tracking element saves and deletes as part of a bulk operation, then executes the given
      * callback function.
      *
-     * @param callable $callback
      *
-     * @return mixed
      * @since 5.3.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\BulkOp\BulkOps::ensure()} instead.
      */
@@ -997,21 +1013,21 @@ class Elements extends Component
      * }
      * ```
      *
-     * @param ElementInterface $element The element that is being saved
-     * @param bool $runValidation Whether the element should be validated
-     * @param bool $propagate Whether the element should be saved across all of its supported sites
-     * (this can only be disabled when updating an existing element)
-     * @param bool|null $updateSearchIndex Whether to update the element search index for the element
-     * (this will happen via a background job if this is a web request)
-     * @param bool $forceTouch Whether to force the `dateUpdated` timestamp to be updated for the element,
-     * regardless of whether it’s being resaved
-     * @param bool|null $crossSiteValidate Whether the element should be validated across all supported sites
-     * @param bool $saveContent Whether all the element’s content should be saved. When false (default) only dirty fields will be saved.
+     * @param  ElementInterface  $element  The element that is being saved
+     * @param  bool  $runValidation  Whether the element should be validated
+     * @param  bool  $propagate  Whether the element should be saved across all of its supported sites
+     *                           (this can only be disabled when updating an existing element)
+     * @param  bool|null  $updateSearchIndex  Whether to update the element search index for the element
+     *                                        (this will happen via a background job if this is a web request)
+     * @param  bool  $forceTouch  Whether to force the `dateUpdated` timestamp to be updated for the element,
+     *                            regardless of whether it’s being resaved
+     * @param  bool|null  $crossSiteValidate  Whether the element should be validated across all supported sites
+     * @param  bool  $saveContent  Whether all the element’s content should be saved. When false (default) only dirty fields will be saved.
      *
-     * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
      * @throws Throwable if reasons
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::saveElement()} instead.
      */
     public function saveElement(
@@ -1029,9 +1045,9 @@ class Elements extends Component
     /**
      * Sets the URI on an element.
      *
-     * @param ElementInterface $element
      *
      * @throws OperationAbortedException if a unique URI could not be found
+     *
      * @since 4.6.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::setElementUri()} instead.
      */
@@ -1043,7 +1059,7 @@ class Elements extends Component
     /**
      * Merges recent canonical element changes into a given derivative, such as a draft.
      *
-     * @param ElementInterface $element The derivative element
+     * @param  ElementInterface  $element  The derivative element
      *
      * @since 3.7.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::mergeCanonicalChanges()} instead.
@@ -1057,11 +1073,13 @@ class Elements extends Component
      * Updates the canonical element from a given derivative, such as a draft or revision.
      *
      * @template T of ElementInterface
-     * @param T $element The derivative element
-     * @param array $newAttributes Any attributes to apply to the canonical element
      *
+     * @param  T  $element  The derivative element
+     * @param  array  $newAttributes  Any attributes to apply to the canonical element
      * @return T The updated canonical element
+     *
      * @throws InvalidArgumentException if the element is already a canonical element
+     *
      * @since 3.7.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::updateCanonicalElement()} instead.
      */
@@ -1073,14 +1091,15 @@ class Elements extends Component
     /**
      * Resaves all elements that match a given element query.
      *
-     * @param ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery $query The element query to fetch elements with
-     * @param bool $continueOnError Whether to continue going if an error occurs
-     * @param bool $skipRevisions Whether elements that are (or belong to) a revision should be skipped
-     * @param bool|null $updateSearchIndex Whether to update the element search index for the element
-     * (this will happen via a background job if this is a web request)
-     * @param bool $touch Whether to update the `dateUpdated` timestamps for the elements
+     * @param  ElementQueryInterface|ElementQuery  $query  The element query to fetch elements with
+     * @param  bool  $continueOnError  Whether to continue going if an error occurs
+     * @param  bool  $skipRevisions  Whether elements that are (or belong to) a revision should be skipped
+     * @param  bool|null  $updateSearchIndex  Whether to update the element search index for the element
+     *                                        (this will happen via a background job if this is a web request)
+     * @param  bool  $touch  Whether to update the `dateUpdated` timestamps for the elements
      *
      * @throws Throwable if reasons
+     *
      * @since 3.2.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::resaveElements()} instead.
      */
@@ -1097,12 +1116,13 @@ class Elements extends Component
     /**
      * Propagates all elements that match a given element query to another site(s).
      *
-     * @param ElementQueryInterface $query The element query to fetch elements with
-     * @param int|int[]|null $siteIds The site ID(s) that the elements should be propagated to. If null, elements will be
-     * @param bool $continueOnError Whether to continue going if an error occurs
+     * @param  ElementQueryInterface  $query  The element query to fetch elements with
+     * @param  int|int[]|null  $siteIds  The site ID(s) that the elements should be propagated to. If null, elements will be
+     * @param  bool  $continueOnError  Whether to continue going if an error occurs
      *
      * @throws Throwable if reasons
-     * propagated to all supported sites, except the one they were queried in.
+     *                   propagated to all supported sites, except the one they were queried in.
+     *
      * @since 3.2.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::propagateElements()} instead.
      */
@@ -1118,21 +1138,23 @@ class Elements extends Component
      * Duplicates an element.
      *
      * @template T of ElementInterface
-     * @param T $element the element to duplicate
-     * @param array $newAttributes any attributes to apply to the duplicate. This can contain a `siteAttributes` key,
-     * set to an array of site-specific attribute array, indexed by site IDs.
-     * @param bool $placeInStructure whether to position the cloned element after the original one in its structure.
-     * (This will only happen if the duplicated element is canonical.)
-     * @param bool $asUnpublishedDraft whether the duplicate should be created as unpublished draft
-     * @param bool $checkAuthorization whether to ensure the current user is authorized to save the new element,
-     * once its new attributes have been applied to it
-     * @param bool $copyModifiedFields whether to copy modified attribute/field data over to the duplicated element
      *
+     * @param  T  $element  the element to duplicate
+     * @param  array  $newAttributes  any attributes to apply to the duplicate. This can contain a `siteAttributes` key,
+     *                                set to an array of site-specific attribute array, indexed by site IDs.
+     * @param  bool  $placeInStructure  whether to position the cloned element after the original one in its structure.
+     *                                  (This will only happen if the duplicated element is canonical.)
+     * @param  bool  $asUnpublishedDraft  whether the duplicate should be created as unpublished draft
+     * @param  bool  $checkAuthorization  whether to ensure the current user is authorized to save the new element,
+     *                                    once its new attributes have been applied to it
+     * @param  bool  $copyModifiedFields  whether to copy modified attribute/field data over to the duplicated element
      * @return T the duplicated element
+     *
      * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
      * @throws InvalidElementException if saveElement() returns false for any of the sites
      * @throws ForbiddenHttpException if the user isn't authorized to save the duplicated element
      * @throws Throwable if reasons
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::duplicateElement()} instead.
      */
     public function duplicateElement(
@@ -1149,12 +1171,13 @@ class Elements extends Component
     /**
      * Updates an element’s slug and URI, along with any descendants.
      *
-     * @param ElementInterface $element The element to update.
-     * @param bool $updateOtherSites Whether the element’s other sites should also be updated.
-     * @param bool $updateDescendants Whether the element’s descendants should also be updated.
-     * @param bool $queue Whether the element’s slug and URI should be updated via a job in the queue.
+     * @param  ElementInterface  $element  The element to update.
+     * @param  bool  $updateOtherSites  Whether the element’s other sites should also be updated.
+     * @param  bool  $updateDescendants  Whether the element’s descendants should also be updated.
+     * @param  bool  $queue  Whether the element’s slug and URI should be updated via a job in the queue.
      *
      * @throws OperationAbortedException if a unique URI can’t be generated based on the element’s URI format
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::updateElementSlugAndUri()} instead.
      */
     public function updateElementSlugAndUri(
@@ -1169,7 +1192,8 @@ class Elements extends Component
     /**
      * Updates an element’s slug and URI, for any sites besides the given one.
      *
-     * @param ElementInterface $element The element to update.
+     * @param  ElementInterface  $element  The element to update.
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::updateElementSlugAndUriInOtherSites()} instead.
      */
     public function updateElementSlugAndUriInOtherSites(ElementInterface $element): void
@@ -1180,9 +1204,10 @@ class Elements extends Component
     /**
      * Updates an element’s descendants’ slugs and URIs.
      *
-     * @param ElementInterface $element The element whose descendants should be updated.
-     * @param bool $updateOtherSites Whether the element’s other sites should also be updated.
-     * @param bool $queue Whether the descendants’ slugs and URIs should be updated via a job in the queue.
+     * @param  ElementInterface  $element  The element whose descendants should be updated.
+     * @param  bool  $updateOtherSites  Whether the element’s other sites should also be updated.
+     * @param  bool  $queue  Whether the descendants’ slugs and URIs should be updated via a job in the queue.
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::updateDescendantSlugsAndUris()} instead.
      */
     public function updateDescendantSlugsAndUris(
@@ -1201,12 +1226,13 @@ class Elements extends Component
      * - Any structures that contain the merged element
      * - Any reference tags in textual custom fields referencing the merged element
      *
-     * @param int $mergedElementId The ID of the element that is going away.
-     * @param int $prevailingElementId The ID of the element that is sticking around.
-     *
+     * @param  int  $mergedElementId  The ID of the element that is going away.
+     * @param  int  $prevailingElementId  The ID of the element that is sticking around.
      * @return bool Whether the elements were merged successfully.
+     *
      * @throws ElementNotFoundException if one of the element IDs don’t exist.
      * @throws Throwable if reasons
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::mergeElementsByIds()} instead.
      */
     public function mergeElementsByIds(int $mergedElementId, int $prevailingElementId): bool
@@ -1222,11 +1248,12 @@ class Elements extends Component
      * - Any structures that contain the merged element
      * - Any reference tags in textual custom fields referencing the merged element
      *
-     * @param ElementInterface $mergedElement The element that is going away.
-     * @param ElementInterface $prevailingElement The element that is sticking around.
-     *
+     * @param  ElementInterface  $mergedElement  The element that is going away.
+     * @param  ElementInterface  $prevailingElement  The element that is sticking around.
      * @return bool Whether the elements were merged successfully.
+     *
      * @throws Throwable if reasons
+     *
      * @since 3.1.31
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::mergeElements()} instead.
      */
@@ -1238,14 +1265,15 @@ class Elements extends Component
     /**
      * Deletes an element by its ID.
      *
-     * @param int $elementId The element’s ID
-     * @param class-string<ElementInterface>|null $elementType The element class.
-     * @param int|null $siteId The site to fetch the element in.
-     * Defaults to the current site.
-     * @param bool $hardDelete Whether the element should be hard-deleted immediately, instead of soft-deleted
-     *
+     * @param  int  $elementId  The element’s ID
+     * @param  class-string<ElementInterface>|null  $elementType  The element class.
+     * @param  int|null  $siteId  The site to fetch the element in.
+     *                            Defaults to the current site.
+     * @param  bool  $hardDelete  Whether the element should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the element was deleted successfully
+     *
      * @throws Throwable
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::deleteElementById()} instead.
      */
     public function deleteElementById(
@@ -1260,11 +1288,12 @@ class Elements extends Component
     /**
      * Deletes an element.
      *
-     * @param ElementInterface $element The element to be deleted
-     * @param bool $hardDelete Whether the element should be hard-deleted immediately, instead of soft-deleted
-     *
+     * @param  ElementInterface  $element  The element to be deleted
+     * @param  bool  $hardDelete  Whether the element should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the element was deleted successfully
+     *
      * @throws Throwable
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::deleteElement()} instead.
      */
     public function deleteElement(ElementInterface $element, bool $hardDelete = false): bool
@@ -1275,7 +1304,6 @@ class Elements extends Component
     /**
      * Deletes an element in the site it’s loaded in.
      *
-     * @param ElementInterface $element
      *
      * @since 4.4.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::deleteElementForSite()} instead.
@@ -1288,9 +1316,10 @@ class Elements extends Component
     /**
      * Deletes elements in the site they are currently loaded in.
      *
-     * @param ElementInterface[] $elements
+     * @param  ElementInterface[]  $elements
      *
      * @throws InvalidArgumentException if all elements don’t have the same type and site ID.
+     *
      * @since 4.4.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::deleteElementsForSite()} instead.
      */
@@ -1302,11 +1331,12 @@ class Elements extends Component
     /**
      * Restores an element.
      *
-     * @param ElementInterface $element
      *
      * @return bool Whether the element was restored successfully
+     *
      * @throws Exception if the $element doesn’t have any supported sites
      * @throws Throwable if reasons
+     *
      * @since 3.1.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::restoreElement()} instead.
      */
@@ -1318,11 +1348,12 @@ class Elements extends Component
     /**
      * Restores multiple elements.
      *
-     * @param ElementInterface[] $elements
-     *
+     * @param  ElementInterface[]  $elements
      * @return bool Whether at least one element was restored successfully
+     *
      * @throws UnsupportedSiteException if an element is being restored for a site it doesn’t support
      * @throws Throwable if reasons
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::restoreElements()} instead.
      */
     public function restoreElements(array $elements): bool
@@ -1333,12 +1364,11 @@ class Elements extends Component
     /**
      * Returns the recent activity for an element.
      *
-     * @param ElementInterface $element
-     * @param int|null $excludeUserId
      *
      * @return ElementActivity[]
+     *
      * @since 4.5.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementActivity::getRecentActivity()} instead.
+     * @deprecated 6.0.0 use {@see ElementActivityService::getRecentActivity()} instead.
      */
     public function getRecentActivity(ElementInterface $element, ?int $excludeUserId = null): array
     {
@@ -1350,12 +1380,10 @@ class Elements extends Component
     /**
      * Tracks new activity for an element.
      *
-     * @param ElementInterface $element
-     * @param 'view'|'edit'|'save' $type $type
-     * @param User|null $user
+     * @param  'view'|'edit'|'save'  $type  $type
      *
      * @since 4.5.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementActivity::trackActivity()} instead.
+     * @deprecated 6.0.0 use {@see ElementActivityService::trackActivity()} instead.
      */
     public function trackActivity(ElementInterface $element, string $type, ?User $user = null): void
     {
@@ -1381,7 +1409,9 @@ class Elements extends Component
      * Returns all available element classes.
      *
      * @return string[] The available element classes.
+     *
      * @phpstan-return class-string<ElementInterface>[]
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementTypes::getAllElementTypes()} instead.
      */
     public function getAllElementTypes(): array
@@ -1396,30 +1426,40 @@ class Elements extends Component
      * Creates an element action with a given config.
      *
      * @template T of ElementActionInterface
-     * @param class-string<T>|array $config The element action’s class name, or its config, with a `type` value and optionally a `settings` value
+     *
+     * @param  class-string<T>|array  $config  The element action’s class name, or its config, with a `type` value and optionally a `settings` value
      *
      * @phpstan-param class-string<T>|array{type:class-string<T>} $config
+     *
      * @return T The element action
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Actions\ElementActions::createAction()} instead.
+     *
+     * @deprecated 6.0.0 use {@see ElementActions::createAction()} instead.
      */
     public function createAction(mixed $config): ElementActionInterface
     {
-        return ComponentHelper::createComponent($config, \CraftCms\Cms\Element\Contracts\ElementActionInterface::class);
+        return ComponentHelper::createComponent($config, ElementActionInterface::class);
     }
 
     /**
      * Creates an element exporter with a given config.
      *
      * @template T of ElementExporterInterface
-     * @param class-string<T>|array $config The element exporter’s class name, or its config, with a `type` value and optionally a `settings` value
+     *
+     * @param  class-string<T>|array  $config  The element exporter’s class name, or its config, with a `type` value and optionally a `settings` value
      *
      * @phpstan-param class-string<T>|array{type:class-string<T>} $config
+     *
      * @return T The element exporter
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::createExporter()} instead.
+     *
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementExporters::createExporter()} instead.
      */
-    public function createExporter(mixed $config): ElementExporterInterface
+    public function createExporter(mixed $config): LaravelElementExporterInterface
     {
-        return ElementsFacade::createExporter($config);
+        if (is_string($config)) {
+            $config = ['type' => $config];
+        }
+
+        return ElementExporters::createExporter($config, $config['elementType'] ?? Element::class);
     }
 
     // Misc
@@ -1428,9 +1468,9 @@ class Elements extends Component
     /**
      * Returns an element class by its handle.
      *
-     * @param string $refHandle The element class handle
-     *
+     * @param  string  $refHandle  The element class handle
      * @return string|null The element class, or null if it could not be found
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementTypes::getElementTypeByRefHandle()} instead.
      */
     public function getElementTypeByRefHandle(string $refHandle): ?string
@@ -1441,10 +1481,10 @@ class Elements extends Component
     /**
      * Parses a string for element [reference tags](https://craftcms.com/docs/5.x/system/reference-tags.html).
      *
-     * @param string $str The string to parse
-     * @param int|null $defaultSiteId The default site ID to query the elements in
-     *
+     * @param  string  $str  The string to parse
+     * @param  int|null  $defaultSiteId  The default site ID to query the elements in
      * @return string The parsed string
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::parseRefs()} instead.
      */
     public function parseRefs(string $str, ?int $defaultSiteId = null): string
@@ -1458,9 +1498,10 @@ class Elements extends Component
      *
      * This is used by Live Preview and Sharing features.
      *
-     * @param ElementInterface $element The element currently being edited by Live Preview.
+     * @param  ElementInterface  $element  The element currently being edited by Live Preview.
      *
      * @throws InvalidArgumentException if the element is missing an ID
+     *
      * @see getPlaceholderElement()
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::setPlaceholderElement()} instead.
      */
@@ -1473,6 +1514,7 @@ class Elements extends Component
      * Returns all placeholder elements.
      *
      * @return ElementInterface[]
+     *
      * @since 3.2.5
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getPlaceholderElements()} instead.
      */
@@ -1484,10 +1526,10 @@ class Elements extends Component
     /**
      * Returns a placeholder element by its ID and site ID.
      *
-     * @param int $sourceId The element’s ID
-     * @param int $siteId The element’s site ID
-     *
+     * @param  int  $sourceId  The element’s ID
+     * @param  int  $siteId  The element’s site ID
      * @return ElementInterface|null The placeholder element if one exists, or null.
+     *
      * @see setPlaceholderElement()
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getPlaceholderElement()} instead.
      */
@@ -1499,10 +1541,11 @@ class Elements extends Component
     /**
      * Normalizes a `with` element query param into an array of eager-loading plans.
      *
-     * @param string|array $with
      *
      * @phpstan-param string|array<EagerLoadPlan|array|string> $with
+     *
      * @return EagerLoadPlan[]
+     *
      * @since 3.5.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::createEagerLoadingPlans()} instead.
      */
@@ -1514,9 +1557,9 @@ class Elements extends Component
     /**
      * Eager-loads additional elements onto a given set of elements.
      *
-     * @param class-string<ElementInterface> $elementType The root element type class
-     * @param ElementInterface[] $elements The root element models that should be updated with the eager-loaded elements
-     * @param array<string|array>|string|EagerLoadPlan[] $with Dot-delimited paths of the elements that should be eager-loaded into the root elements
+     * @param  class-string<ElementInterface>  $elementType  The root element type class
+     * @param  ElementInterface[]  $elements  The root element models that should be updated with the eager-loaded elements
+     * @param  array<string|array>|string|EagerLoadPlan[]  $with  Dot-delimited paths of the elements that should be eager-loaded into the root elements
      *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::eagerLoadElements()} instead.
      */
@@ -1528,14 +1571,15 @@ class Elements extends Component
     /**
      * Propagates an element to a different site.
      *
-     * @param ElementInterface $element The element to propagate
-     * @param int $siteId The site ID that the element should be propagated to
-     * @param ElementInterface|false|null $siteElement The element loaded for the propagated site (only pass this if you
-     * already had a reason to load it). Set to `false` if it is known to not exist yet.
-     *
+     * @param  ElementInterface  $element  The element to propagate
+     * @param  int  $siteId  The site ID that the element should be propagated to
+     * @param  ElementInterface|false|null  $siteElement  The element loaded for the propagated site (only pass this if you
+     *                                                    already had a reason to load it). Set to `false` if it is known to not exist yet.
      * @return ElementInterface The element in the target site
+     *
      * @throws Exception if the element couldn't be propagated
      * @throws UnsupportedSiteException if the element doesn’t support `$siteId`
+     *
      * @since 3.0.13
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::propagateElement()} instead.
      */
@@ -1550,10 +1594,7 @@ class Elements extends Component
     /**
      * Returns whether a user is authorized to view the given element’s edit page.
      *
-     * @param ElementInterface $element
-     * @param User|null $user
      *
-     * @return bool
      * @since 4.3.0
      * @deprecated 6.0.0 use `Gate::forUser($user)->check('view', $element)` instead.
      */
@@ -1565,10 +1606,7 @@ class Elements extends Component
     /**
      * Returns whether a user is authorized to save the given element in its current form.
      *
-     * @param ElementInterface $element
-     * @param User|null $user
      *
-     * @return bool
      * @since 4.3.0
      * @deprecated 6.0.0 use `Gate::forUser($user)->check('save', $element)` instead.
      */
@@ -1580,10 +1618,7 @@ class Elements extends Component
     /**
      * Returns whether a user is authorized to save the canonical version of the given element.
      *
-     * @param ElementInterface $element
-     * @param User|null $user
      *
-     * @return bool
      * @since 5.6.0
      * @deprecated 6.0.0 use `Gate::forUser($user)->check('saveCanonical', $element)` instead.
      */
@@ -1604,10 +1639,7 @@ class Elements extends Component
      *
      * This should always be called in conjunction with [[canView()]] or [[canSave()]].
      *
-     * @param ElementInterface $element
-     * @param User|null $user
      *
-     * @return bool
      * @since 4.3.0
      * @deprecated 6.0.0 use `Gate::forUser($user)->check('duplicate', $element)` instead.
      */
@@ -1619,10 +1651,7 @@ class Elements extends Component
     /**
      * Returns whether a user is authorized to duplicate the given element as an unpublished draft.
      *
-     * @param ElementInterface $element
-     * @param User|null $user
      *
-     * @return bool
      * @since 5.0.0
      * @deprecated 6.0.0 use `Gate::forUser($user)->check('duplicateAsDraft', $element)` instead.
      */
@@ -1636,10 +1665,7 @@ class Elements extends Component
      *
      *  This should always be called in conjunction with [[canView()]].
      *
-     * @param ElementInterface $element
-     * @param User|null $user
      *
-     * @return bool
      * @since 5.7.0
      * @deprecated 6.0.0 use `Gate::forUser($user)->check('copy', $element)` instead.
      */
@@ -1653,10 +1679,7 @@ class Elements extends Component
      *
      * This should always be called in conjunction with [[canView()]] or [[canSave()]].
      *
-     * @param ElementInterface $element
-     * @param User|null $user
      *
-     * @return bool
      * @since 4.3.0
      * @deprecated 6.0.0 use `Gate::forUser($user)->check('delete', $element)` instead.
      */
@@ -1670,10 +1693,7 @@ class Elements extends Component
      *
      * This should always be called in conjunction with [[canView()]] or [[canSave()]].
      *
-     * @param ElementInterface $element
-     * @param User|null $user
      *
-     * @return bool
      * @since 4.3.0
      * @deprecated 6.0.0 use `Gate::forUser($user)->check('deleteForSite', $element)` instead.
      */
@@ -1687,10 +1707,7 @@ class Elements extends Component
      *
      * This should always be called in conjunction with [[canView()]] or [[canSave()]].
      *
-     * @param ElementInterface $element
-     * @param User|null $user
      *
-     * @return bool
      * @since 4.3.0
      * @deprecated 6.0.0 use `Gate::forUser($user)->check('createDrafts', $element)` instead.
      */

@@ -25,6 +25,7 @@ use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\NewUsersController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\EditionController;
+use CraftCms\Cms\Http\Controllers\Elements\ExportElementIndexController;
 use CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController;
@@ -209,6 +210,7 @@ Route::prefix(implode('/', [
         });
 
         // Elements
+        Route::post('element-indexes/export', ExportElementIndexController::class);
         Route::post('element-indexes/perform-action', PerformElementActionController::class);
 
         // Entries

@@ -11,12 +11,11 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementActionInterface;
-use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\db\ExcludeDescendantIdsExpression;
-use craft\elements\exporters\Raw;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Contracts\ElementExporterInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\ElementSources;
@@ -26,6 +25,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\ElementActions;
+use CraftCms\Cms\Support\Facades\ElementExporters;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Html;
@@ -35,7 +35,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Throwable;
-use yii\base\InvalidValueException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -97,9 +96,7 @@ class ElementIndexesController extends BaseElementsController
             return false;
         }
 
-        if ($action->id !== 'export') {
-            $this->requireAcceptsJson();
-        }
+        $this->requireAcceptsJson();
 
         $this->elementType = $this->elementType();
         $this->context = $this->context();
@@ -112,7 +109,7 @@ class ElementIndexesController extends BaseElementsController
             $this->elementQuery = $this->elementQuery();
 
             if (
-                in_array($action->id, ['get-elements', 'get-more-elements', 'export'], true) &&
+                in_array($action->id, ['get-elements', 'get-more-elements'], true) &&
                 $this->isAdministrative() &&
                 isset($this->sourceKey)
             ) {
@@ -255,90 +252,6 @@ class ElementIndexesController extends BaseElementsController
                 'sources' => $sources->all(),
             ]),
         ]);
-    }
-
-    /**
-     * Exports element data.
-     *
-     * @throws BadRequestHttpException
-     *
-     * @since 3.4.4
-     */
-    public function actionExport(): Response
-    {
-        $exporter = $this->_exporter();
-        $exporter->setElementType($this->elementType);
-
-        // Set the filename header before calling export() in case export() starts outputting the data
-        $filename = $exporter->getFilename();
-        if ($exporter::isFormattable()) {
-            $this->response->format = $this->request->getBodyParam('format', 'csv');
-            $filename .= '.' . $this->response->format;
-        }
-        $this->response->setDownloadHeaders($filename);
-
-        $export = $exporter->export($this->elementQuery);
-
-        if ($exporter::isFormattable()) {
-            // Handle being passed in a generator function or other callable
-            if (is_callable($export)) {
-                $export = $export();
-            }
-            if (!is_iterable($export)) {
-                throw new InvalidValueException(get_class($exporter) . '::export() must return an array or generator function since isFormattable() returns true.');
-            }
-
-            $this->response->data = $export;
-
-            switch ($this->response->format) {
-                case Response::FORMAT_JSON:
-                    $this->response->formatters[Response::FORMAT_JSON]['prettyPrint'] = true;
-                    break;
-                case Response::FORMAT_XML:
-                    app()->setLocale('en-US');
-                    $this->response->formatters[Response::FORMAT_XML]['rootTag'] = Str::camel($this->elementType::pluralLowerDisplayName());
-                    break;
-            }
-        } elseif (
-            is_callable($export) ||
-            is_resource($export) ||
-            (is_array($export) && isset($export[0]) && is_resource($export[0]))
-        ) {
-            $this->response->stream = $export;
-        } else {
-            $this->response->data = $export;
-            $this->response->format = Response::FORMAT_RAW;
-        }
-
-        return $this->response;
-    }
-
-    /**
-     * Returns the exporter for the request.
-     *
-     * @throws BadRequestHttpException
-     */
-    private function _exporter(): ElementExporterInterface
-    {
-        if (!$this->sourceKey) {
-            throw new BadRequestHttpException('Request missing required body param');
-        }
-
-        if (!$this->isAdministrative()) {
-            throw new BadRequestHttpException('Request missing index context');
-        }
-
-        // Find that exporter from the list of available exporters for the source
-        $exporterClass = $this->request->getBodyParam('type', Raw::class);
-        if (!empty($this->exporters)) {
-            foreach ($this->exporters as $exporter) {
-                if ($exporterClass === get_class($exporter)) {
-                    return $exporter;
-                }
-            }
-        }
-
-        throw new BadRequestHttpException('Element exporter is not supported by the element type');
     }
 
     /**
@@ -772,22 +685,7 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        $exporters = $this->elementType::exporters($this->sourceKey);
-
-        foreach ($exporters as $i => $exporter) {
-            // $action could be a string or config array
-            if ($exporter instanceof ElementExporterInterface) {
-                $exporter->setElementType($this->elementType);
-            } else {
-                if (is_string($exporter)) {
-                    $exporter = ['type' => $exporter];
-                }
-                $exporter['elementType'] = $this->elementType;
-                $exporters[$i] = Elements::createExporter($exporter);
-            }
-        }
-
-        return array_values($exporters);
+        return ElementExporters::availableExporters($this->elementType, $this->sourceKey);
     }
 
     /**
@@ -813,17 +711,7 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        $exporterData = [];
-
-        foreach ($this->exporters as $exporter) {
-            $exporterData[] = [
-                'type' => get_class($exporter),
-                'name' => $exporter::displayName(),
-                'formattable' => $exporter::isFormattable(),
-            ];
-        }
-
-        return $exporterData;
+        return ElementExporters::serializeExporters($this->exporters);
     }
 
     /**

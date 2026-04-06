@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\ElementAction;
 use CraftCms\Cms\Element\Events\RegisterActions;
+use CraftCms\Cms\Element\Exporters\Raw;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -102,4 +103,16 @@ it('returns native Laravel download responses for download actions', function ()
 
     expect($response->headers->get('content-disposition'))->toContain('entries.txt')
         ->and($response->getContent())->toBe('downloaded');
+});
+
+it('includes exporter metadata in the refreshed element response', function () {
+    $entry = EntryModel::factory()->createElement();
+
+    ($this->performElementAction)([
+        'elementType' => Entry::class,
+        'elementAction' => Delete::class,
+        'elementIds' => [$entry->id],
+    ])->assertOk()
+        ->assertJsonPath('exporters.0.type', Raw::class)
+        ->assertJsonPath('exporters.0.formattable', true);
 });

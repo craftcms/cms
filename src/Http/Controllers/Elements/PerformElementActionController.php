@@ -5,21 +5,17 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
 use Closure;
-use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
-use CraftCms\Cms\Condition\Conditions;
-use CraftCms\Cms\Element\Actions\ElementActions;
-use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
-use CraftCms\Cms\Element\Conditions\ElementCondition;
-use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Element\Elements as ElementElements;
+use CraftCms\Cms\Element\Contracts\ElementExporterInterface;
+use CraftCms\Cms\Element\ElementActions;
+use CraftCms\Cms\Element\ElementExporters;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Translation\I18N as TranslationI18N;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -28,6 +24,7 @@ use function CraftCms\Cms\t;
 
 readonly class PerformElementActionController
 {
+    use InteractsWithElementIndexes;
     use RespondsWithFlash;
 
     public function __construct(
@@ -35,8 +32,7 @@ readonly class PerformElementActionController
         private ElementActions $elementActions,
         private ElementSources $elementSources,
         private TranslationI18N $i18N,
-        private Conditions $conditions,
-        private ElementElements $elements,
+        private ElementExporters $elementExporters,
     ) {}
 
     public function __invoke(): SymfonyResponse
@@ -133,191 +129,6 @@ readonly class PerformElementActionController
         return $this->asSuccess($result['message'], $responseData);
     }
 
-    private function condition(): ?ElementConditionInterface
-    {
-        /** @var array|null $conditionConfig */
-        /** @phpstan-var array{class:class-string<ElementConditionInterface>}|null $conditionConfig */
-        $conditionConfig = $this->request->input('condition');
-
-        if (! $conditionConfig) {
-            return null;
-        }
-
-        /** @var ElementConditionInterface $condition */
-        $condition = $this->conditions->createCondition($conditionConfig);
-
-        if ($condition instanceof ElementCondition) {
-            $referenceElementId = $this->request->input('referenceElementId');
-            if ($referenceElementId) {
-                $criteria = [];
-
-                if ($ownerId = $this->request->input('referenceElementOwnerId')) {
-                    $criteria['ownerId'] = $ownerId;
-                }
-
-                $condition->referenceElement = $this->elements->getElementById(
-                    (int) $referenceElementId,
-                    siteId: $this->request->input('referenceElementSiteId'),
-                    criteria: $criteria,
-                );
-            }
-        }
-
-        return $condition;
-    }
-
-    /**
-     * @param  class-string<ElementInterface>  $elementType
-     * @return array{0:?string,1:?array}
-     */
-    private function source(string $elementType, ?string $sourceKey, string $context): array
-    {
-        if (! isset($sourceKey)) {
-            return [$sourceKey, null];
-        }
-
-        if ($sourceKey === '__IMP__') {
-            return [$sourceKey, [
-                'type' => ElementSources::TYPE_NATIVE,
-                'key' => '__IMP__',
-                'label' => t('All elements'),
-                'hasThumbs' => $elementType::hasThumbs(),
-            ]];
-        }
-
-        $source = $this->elementSources->findSource($elementType, $sourceKey, $context);
-
-        if ($source === null) {
-            $sourceKey = null;
-        }
-
-        return [$sourceKey, $source];
-    }
-
-    private function viewState(): array
-    {
-        $viewState = $this->request->input('viewState', []);
-
-        if (empty($viewState['mode'])) {
-            $viewState['mode'] = 'table';
-        }
-
-        return $viewState;
-    }
-
-    /**
-     * @param  class-string<ElementInterface>  $elementType
-     */
-    private function elementQuery(
-        string $elementType,
-        ?array $source,
-        ?ElementConditionInterface $condition,
-    ): ElementQueryInterface {
-        $query = $elementType::find();
-
-        if (! $source) {
-            $query->id(false);
-
-            return $query;
-        }
-
-        if ($source['type'] === ElementSources::TYPE_CUSTOM) {
-            /** @var ElementConditionInterface $sourceCondition */
-            $sourceCondition = $this->conditions->createCondition($source['condition']);
-            $sourceCondition->modifyQuery($query);
-        }
-
-        $applyCriteria = function (array $criteria) use ($query): void {
-            if (! $criteria) {
-                return;
-            }
-
-            if (isset($criteria['trashed'])) {
-                $criteria['trashed'] = filter_var($criteria['trashed'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
-            }
-
-            if (isset($criteria['drafts'])) {
-                $criteria['drafts'] = filter_var($criteria['drafts'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
-            }
-
-            if (isset($criteria['draftOf'])) {
-                if (is_numeric($criteria['draftOf']) && $criteria['draftOf'] != 0) {
-                    $criteria['draftOf'] = (int) $criteria['draftOf'];
-                } else {
-                    $criteria['draftOf'] = filter_var($criteria['draftOf'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-                }
-            }
-
-            Typecast::configure($query, ElementHelper::cleanseQueryCriteria($criteria));
-        };
-
-        $applyCriteria($this->request->input('baseCriteria') ?? []);
-
-        if ($condition) {
-            $condition->modifyQuery($query);
-        }
-
-        $applyCriteria($this->request->input('criteria') ?? []);
-
-        $filterConditionConfig = $this->request->input('filterConfig');
-        if (! $filterConditionConfig && $filterConditionStr = $this->request->input('filters')) {
-            parse_str((string) $filterConditionStr, $filterConditionConfig);
-            $filterConditionConfig = $filterConditionConfig['condition'] ?? null;
-        }
-
-        if ($filterConditionConfig) {
-            /** @var ElementConditionInterface $filterCondition */
-            $filterCondition = $this->conditions->createCondition($filterConditionConfig);
-            $filterCondition->modifyQuery($query);
-        }
-
-        $collapsedElementIds = $this->request->input('collapsedElementIds');
-
-        if (! $collapsedElementIds) {
-            return $query;
-        }
-
-        $descendantQuery = (clone $query)
-            ->offset(null)
-            ->limit(null)
-            ->reorder()
-            ->positionedAfter(null)
-            ->positionedBefore(null)
-            ->status(null);
-
-        $collapsedElements = (clone $descendantQuery)
-            ->id($collapsedElementIds)
-            ->orderBy('lft')
-            ->all();
-
-        if (empty($collapsedElements)) {
-            return $query;
-        }
-
-        $descendantIds = [];
-
-        foreach ($collapsedElements as $element) {
-            if (in_array($element->id, $descendantIds, false)) {
-                continue;
-            }
-
-            $descendantIds = array_merge($descendantIds, (clone $descendantQuery)
-                ->descendantOf($element)
-                ->ids());
-        }
-
-        if (empty($descendantIds)) {
-            return $query;
-        }
-
-        return $query->whereNotIn('elements.id', $descendantIds);
-    }
-
-    private function isAdministrative(string $context): bool
-    {
-        return in_array($context, ['index', 'embedded-index'], true);
-    }
-
     /**
      * @param  class-string<ElementInterface>  $elementType
      */
@@ -335,28 +146,11 @@ readonly class PerformElementActionController
      */
     private function availableExporters(string $elementType, string $sourceKey): ?array
     {
-        if (request()->isMobileBrowser()) {
+        if ($this->request->isMobileBrowser()) {
             return null;
         }
 
-        $exporters = $elementType::exporters($sourceKey);
-
-        foreach ($exporters as $index => $exporter) {
-            if ($exporter instanceof ElementExporterInterface) {
-                $exporter->setElementType($elementType);
-
-                continue;
-            }
-
-            if (is_string($exporter)) {
-                $exporter = ['type' => $exporter];
-            }
-
-            $exporter['elementType'] = $elementType;
-            $exporters[$index] = $this->elements->createExporter($exporter);
-        }
-
-        return array_values($exporters);
+        return $this->elementExporters->availableExporters($elementType, $sourceKey);
     }
 
     /**
@@ -432,16 +226,6 @@ readonly class PerformElementActionController
             return null;
         }
 
-        $data = [];
-
-        foreach ($exporters as $exporter) {
-            $data[] = [
-                'type' => $exporter::class,
-                'name' => $exporter::displayName(),
-                'formattable' => $exporter::isFormattable(),
-            ];
-        }
-
-        return $data;
+        return $this->elementExporters->serializeExporters($exporters);
     }
 }
