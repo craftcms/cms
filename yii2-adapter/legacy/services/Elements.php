@@ -10,7 +10,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\errors\ElementNotFoundException;
 use craft\events\AuthorizationCheckEvent;
@@ -29,6 +28,7 @@ use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
 use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
 use CraftCms\Cms\Element\Contracts\ElementActionInterface;
+use CraftCms\Cms\Element\Contracts\ElementExporterInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Data\ElementActivity as ElementActivityData;
 use CraftCms\Cms\Element\Drafts;

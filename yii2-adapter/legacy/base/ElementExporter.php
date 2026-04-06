@@ -13,7 +13,7 @@ namespace craft\base;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.0
  */
-abstract class ElementExporter extends Component implements ElementExporterInterface
+abstract class ElementExporter extends Component implements \CraftCms\Cms\Element\Contracts\ElementExporterInterface
 {
     /**
      * @inheritdoc
