@@ -14,6 +14,7 @@ use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
+use Override;
 use RuntimeException;
 
 use function CraftCms\Cms\t;
@@ -34,7 +35,7 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
         $this->hard = true;
     }
 
-    #[\Override]
+    #[Override]
     public function getTriggerLabel(): string
     {
         if ($this->hard) {
@@ -44,7 +45,7 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
         return t('Delete…');
     }
 
-    #[\Override]
+    #[Override]
     public static function isDestructive(): bool
     {
         return true;
@@ -112,7 +113,7 @@ JS,
         return null;
     }
 
-    #[\Override]
+    #[Override]
     public function performAction(ElementQueryInterface $query): bool
     {
         /** @var User[] $users */
@@ -124,7 +125,7 @@ JS,
         }
 
         if ($this->transferContentTo) {
-            $transferContentTo = Users::getUserById($this->transferContentTo);
+            $transferContentTo = Users::getUserById((int) $this->transferContentTo);
 
             if (! $transferContentTo) {
                 throw new RuntimeException("No user exists with the ID “{$this->transferContentTo}”");
