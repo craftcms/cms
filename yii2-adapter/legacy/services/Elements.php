@@ -909,7 +909,7 @@ class Elements extends Component
             ->when(
                 DB::isPgsql(),
                 fn(Builder $query) => $query->where(new Lower('elements_sites.uri'), mb_strtolower($uri)),
-                fn(Builder $query) => $query->where('elements_sites.uri', mb_strtolower($uri)),
+                fn(Builder $query) => $query->where('elements_sites.uri', $uri),
             )
             ->when(
                 $enabledOnly,

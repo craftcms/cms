@@ -47,7 +47,7 @@ class SingleSectionUriValidator extends UriFormatValidator
             ->when(
                 DB::isPgsql(),
                 fn(Builder $query) => $query->where(new Lower('elements_sites.uri'), mb_strtolower($model->uriFormat)),
-                fn(Builder $query) => $query->where('elements_sites.uri', mb_strtolower($model->uriFormat)),
+                fn(Builder $query) => $query->where('elements_sites.uri', $model->uriFormat),
             )
             ->when(
                 $section->id,

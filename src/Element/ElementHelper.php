@@ -703,7 +703,7 @@ class ElementHelper
             ->when(
                 DB::isPgsql(),
                 fn (Builder $query) => $query->where(new Lower('elements_sites.uri'), mb_strtolower($testUri)),
-                fn (Builder $query) => $query->where('elements_sites.uri', mb_strtolower($testUri)),
+                fn (Builder $query) => $query->where('elements_sites.uri', $testUri),
             )
             ->when(
                 value: $element->getCanonicalId(),

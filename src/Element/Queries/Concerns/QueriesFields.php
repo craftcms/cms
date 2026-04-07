@@ -132,7 +132,7 @@ trait QueriesFields
             }
 
             if ($elementQuery->uri) {
-                $elementQuery->subQuery->whereParam('elements_sites.uri', mb_strtolower((string) $elementQuery->uri), caseInsensitive: true);
+                $elementQuery->subQuery->whereParam('elements_sites.uri', $elementQuery->uri, caseInsensitive: true);
             }
 
             if ($elementQuery->inBulkOp) {
