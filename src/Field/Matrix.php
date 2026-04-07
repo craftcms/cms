@@ -1604,9 +1604,7 @@ JS,
 
         // Tell the browser to collapse any new entry IDs
         $collapsedIds = Collection::make($event->elements)
-            /** @phpstan-ignore-next-line */
             ->filter(fn (Entry $entry) => $entry->collapsed)
-            /** @phpstan-ignore-next-line */
             ->map(fn (Entry $entry) => $entry->id)
             ->all();
 
