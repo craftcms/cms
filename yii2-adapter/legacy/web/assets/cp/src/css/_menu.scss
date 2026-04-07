@@ -1,0 +1,286 @@
+@use 'sass:color';
+@use '@craftcms/sass/mixins';
+
+/* ----------------------------------------
+/*  Menus
+/* ---------------------------------------- */
+
+.menu,
+.ui-datepicker,
+.ui-timepicker-list {
+  @include mixins.menu-styles;
+}
+
+.ui-datepicker,
+.ui-timepicker-list {
+  padding: 0;
+}
+
+.menu {
+  position: absolute;
+
+  &:not(.visible) {
+    display: none;
+  }
+
+  &.padded {
+    padding-block: var(--s);
+    padding-inline: calc(var(--m) + var(--s));
+
+    hr {
+      margin-block: var(--s);
+      margin-inline: calc((var(--m) + var(--s)) * -1);
+    }
+
+    ul {
+      li {
+        margin-block: 0;
+        margin-inline: calc(var(--m) * -1);
+        padding-block: 0;
+        padding-inline: var(--m);
+
+        a {
+          border-radius: var(--radius-lg);
+        }
+      }
+    }
+
+    .extralight {
+      margin-block-start: 2px;
+    }
+  }
+
+  h6,
+  .h6 {
+    &:first-child {
+      margin-block-start: 14px !important;
+    }
+  }
+
+  ul {
+    &.padded {
+      li {
+        a,
+        .menu-item,
+        .menu-option {
+          padding-inline-start: calc(var(--m) + 18rem / 16);
+
+          &.sel {
+            &:not([data-icon])::before {
+              float: inline-start;
+              margin-inline: calc(-18rem / 16 - 4px) 0;
+              margin-block: 4px 0;
+              font-size: 14px;
+              width: 14px;
+              content: 'check' / '';
+              color: currentcolor;
+              margin-block-start: 3px !important;
+            }
+          }
+        }
+      }
+    }
+
+    li {
+      a,
+      .menu-item,
+      .menu-option {
+        margin-block: 0;
+        margin-inline: -14px;
+        padding-block: 10px;
+        padding-inline: 14px;
+        white-space: nowrap;
+        font-size: 14px;
+        appearance: none;
+
+        &:not(:last-child) {
+          margin-inline-end: 0;
+        }
+
+        &:not(.flex, .hidden) {
+          display: block;
+          width: calc(100% + 28px);
+          text-align: start;
+        }
+
+        &.flex {
+          [data-icon] {
+            margin-block-start: -2px;
+          }
+        }
+
+        &.sel {
+          cursor: default;
+        }
+
+        .shortcut {
+          float: inline-end;
+          margin-inline-start: 14px;
+          padding-block: 0;
+          padding-inline: 4px;
+          border-radius: var(--radius-md);
+          box-shadow:
+            0 0 0 1px color.adjust(mixins.$grey600, $alpha: -0.75),
+            0 1px 3px -1px color.adjust(mixins.$grey600, $alpha: -0.5);
+        }
+
+        .infoicon-container {
+          display: inline-flex;
+          align-items: flex-start;
+          margin-inline-start: var(--s);
+          font-size: 0.8em;
+        }
+
+        .menu-item-description:empty {
+          display: none;
+        }
+      }
+    }
+  }
+
+  & > .flex {
+    margin-block: 10px;
+    position: relative;
+
+    &.padded {
+      margin-inline-start: -14px;
+      padding-inline-start: 24px;
+
+      &.sel {
+        &::before {
+          position: absolute;
+          inset-block-start: 36px;
+          inset-inline-start: 7px;
+          content: 'check';
+          font-size: 14px;
+          color: var(--light-text-color);
+        }
+      }
+    }
+  }
+
+  hr {
+    margin-block: 5px;
+    margin-inline: -14px;
+  }
+
+  .go::after {
+    color: inherit;
+  }
+
+  &:not(.menu--disclosure) ul li a,
+  ul li .menu-item,
+  ul li .menu-option {
+    color: mixins.$menuOptionColor;
+    text-decoration: none;
+    cursor: default;
+  }
+}
+
+.menu li {
+  & > a,
+  & > button,
+  & > .menu-item {
+    &[data-icon]::before,
+    [data-icon]::before,
+    span.icon:not([data-icon]) {
+      display: inline-block;
+      width: calc(14rem / 16);
+      height: calc(14rem / 16);
+      margin-inline: -1px 9px;
+    }
+
+    &[data-icon]::before,
+    [data-icon]::before {
+      position: relative;
+      inset-block-start: -2px;
+      text-align: center;
+      font-size: 14px;
+      color: currentcolor;
+    }
+
+    span.icon:not([data-icon]) svg {
+      display: block;
+      position: relative;
+      inset-block-start: 1px;
+      width: 100%;
+      height: 100%;
+      @include mixins.svg-mask(var(--icon-color, var(--ui-control-color)));
+    }
+
+    &.error {
+      &[data-icon]::before,
+      [data-icon]::before {
+        color: var(--fg-error);
+      }
+
+      span.icon:not([data-icon]) svg {
+        @include mixins.svg-mask(var(--fg-error));
+      }
+    }
+
+    .chip {
+      display: flex;
+      margin-block: -4px;
+    }
+  }
+}
+
+/* prettier-ignore */
+.menu:not(.menu--disclosure) ul li a:not(.disabled):hover,
+.menu:not(.menu--disclosure) ul li .menu-item:not(.sel, .disabled):hover,
+.menu:not(.menu--disclosure) ul li .menu-option:not(.sel, .disabled):hover,
+.menu:not(.menu--disclosure, :hover) ul li a:not(.disabled).hover,
+.menu:not(.menu--disclosure, :hover) ul li .menu-item:not(.sel, .disabled).hover,
+.menu:not(.menu--disclosure, :hover) ul li .menu-option:not(.sel, .disabled).hover {
+  @include mixins.menu-item-active-styles;
+
+  // Pretty gnarly, but needs to override the default hover styles with this selector
+  .status:not(.on, .live, .active, .enabled, .all) {
+    &:not(.pending, .warning, .off, .suspended, .expired) {
+      &:not(.light, .gray, .red, .orange, .amber, .yellow) {
+        &:not(.lime, .green, .emerald, .teal, .cyan, .sky) {
+          &:not(.blue, .indigo, .violet, .purple, .fuchsia) {
+            &:not(.pink, .rose, .grey, .black, .disabled) {
+              &:not(.inactive) {
+                border-color: currentcolor;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.menu {
+  hr.padded,
+  .h6.padded,
+  h6.padded {
+    margin-inline-start: 20px;
+  }
+}
+
+.menu--disclosure {
+  & > .search-container {
+    margin-inline: calc(var(--m) * -1);
+    padding: var(--m);
+    border-block-end: 1px solid var(--border-hairline);
+  }
+
+  ul li {
+    &.filtered {
+      display: none;
+    }
+
+    & > a:not(.crumb-link),
+    & > .menu-item,
+    & > .menu-option {
+      --focus-ring: var(--focus-ring-inner);
+
+      &:hover {
+        @include mixins.disclosure-link-hover-styles;
+      }
+    }
+  }
+}

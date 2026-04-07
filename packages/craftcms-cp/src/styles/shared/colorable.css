@@ -455,10 +455,6 @@
   --c-color-on-quiet: var(--c-color-neutral-on-quiet);
   --c-color-on-normal: var(--c-color-neutral-on-quiet);
   --c-color-on-loud: var(--c-color-neutral-on-quiet);
-
-  background-color: var(--c-color-fill-quiet);
-  border-color: var(--c-color-border-quiet);
-  color: var(--c-color-on-quiet);
 }
 
 .c-colorable--red,

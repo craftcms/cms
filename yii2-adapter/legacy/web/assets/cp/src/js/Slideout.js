@@ -28,7 +28,7 @@ import $ from 'jquery';
           this.settings.containerAttributes
         )
           .attr('data-slideout', '')
-          .addClass('slideout')
+          .addClass('slideout cp-legacy')
           .append(contents)
           .data('slideout', this)
           .appendTo(this.$outerContainer);

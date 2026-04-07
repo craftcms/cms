@@ -1,25 +1,22 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
   import ActionMenu from '@/components/ActionMenu.vue';
   import ReorderButton from '@/components/ReorderButton.vue';
   import type {EntryType} from '@/types';
-  import {reactive} from 'vue';
-  import VarDump from '@/components/VarDump.vue';
   import Tooltip from '@/components/Tooltip/Tooltip.vue';
 
-  interface EntryTypeOverrides {
-    name: string | null;
-    handle: string | null;
-    description: string | null;
-  }
-
-  defineProps<EntryType>();
-
-  const overrides = reactive<EntryTypeOverrides>({
-    name: null,
-    handle: null,
-    description: null,
-  });
+  defineProps<
+    Pick<
+      EntryType,
+      | 'name'
+      | 'id'
+      | 'handle'
+      | 'color'
+      | 'icon'
+      | 'description'
+      | 'indicators'
+      | 'actions'
+    >
+  >();
 </script>
 
 <template>
@@ -37,7 +34,7 @@
           <Tooltip>{{ description }}</Tooltip>
         </template>
       </div>
-      <code class="cp-code">{{ handle }}</code>
+      <div class="cp-code">{{ handle }}</div>
 
       <div v-if="indicators">
         <craft-icon

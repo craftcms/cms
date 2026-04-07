@@ -42,6 +42,7 @@ ul {
 
 .cp-code {
   font-size: 0.75em;
+  font-family: var(--c-font-mono);
   display: inline-flex;
   padding: 0 var(--c-spacing-sm);
   color: var(--c-color-on-quiet);
