@@ -961,7 +961,7 @@ class Install extends Migration
             DB::statement('CREATE INDEX keywords_index ON '.DB::getTablePrefix().Table::SEARCHINDEX.' USING btree(keywords)');
         } else {
             // SQLite: basic indexes only, no full-text or tsvector
-            Schema::createIndex(Table::ELEMENTS_SITES, ['uri', 'siteId']);
+            DB::statement('CREATE INDEX sites_uri_siteid_index ON '.DB::getTablePrefix().Table::ELEMENTS_SITES.' (lower(uri), "siteId")');
             Schema::createIndex(Table::USERS, ['email']);
             Schema::createIndex(Table::USERS, ['username']);
         }
