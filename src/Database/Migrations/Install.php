@@ -38,7 +38,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use ReflectionClass;
 use Throwable;
-use Tpetry\QueryExpressions\Function\String\Lower;
 
 class Install extends Migration
 {
@@ -333,10 +332,6 @@ class Install extends Migration
             $table->string('title')->nullable();
             $table->string('slug')->nullable();
             $table->string('uri')->nullable();
-            $table->string('uriLower')
-                ->nullable()
-                ->storedAs(new Lower('uri'))
-                ->invisible();
             $table->jsonb('content')->nullable();
             $table->boolean('enabled')->default(true);
             $table->dateTime('dateCreated');
@@ -861,7 +856,6 @@ class Install extends Migration
         Schema::createIndex(Table::ELEMENTS_SITES, ['title', 'siteId']);
         Schema::createIndex(Table::ELEMENTS_SITES, ['slug', 'siteId']);
         Schema::createIndex(Table::ELEMENTS_SITES, ['enabled']);
-        Schema::createIndex(Table::ELEMENTS_SITES, ['uriLower', 'siteId']);
         Schema::createIndex(Table::SYSTEMMESSAGES, ['key', 'language'], unique: true);
         Schema::createIndex(Table::SYSTEMMESSAGES, ['language']);
         Schema::createIndex(Table::ENTRIES, ['postDate']);
@@ -946,6 +940,7 @@ class Install extends Migration
         });
 
         if (DB::isMysql()) {
+            Schema::createIndex(Table::ELEMENTS_SITES, ['uri', 'siteId']);
             Schema::createIndex(Table::USERS, ['email']);
             Schema::createIndex(Table::USERS, ['username']);
 
@@ -954,6 +949,7 @@ class Install extends Migration
             });
         } elseif (DB::isPgsql()) {
             // Postgres is case-sensitive
+            DB::statement('CREATE INDEX sites_uri_siteid_index ON '.DB::getTablePrefix().Table::ELEMENTS_SITES.' (lower(uri), "siteId")');
             DB::statement('CREATE INDEX users_email_index ON '.DB::getTablePrefix().Table::USERS.' (lower(email))');
             DB::statement('CREATE INDEX users_username_index ON '.DB::getTablePrefix().Table::USERS.' (lower(username))');
 
@@ -965,6 +961,7 @@ class Install extends Migration
             DB::statement('CREATE INDEX keywords_index ON '.DB::getTablePrefix().Table::SEARCHINDEX.' USING btree(keywords)');
         } else {
             // SQLite: basic indexes only, no full-text or tsvector
+            Schema::createIndex(Table::ELEMENTS_SITES, ['uri', 'siteId']);
             Schema::createIndex(Table::USERS, ['email']);
             Schema::createIndex(Table::USERS, ['username']);
         }

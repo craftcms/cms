@@ -699,7 +699,11 @@ class ElementHelper
             ->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', '=', 'elements_sites.elementId')
             ->where('elements_sites.siteId', $element->siteId)
             ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
-            ->where('elements_sites.uriLower', mb_strtolower($testUri))
+            ->when(
+                DB::isPgsql(),
+                fn (Builder $query) => $query->where(new Lower('elements_sites.uri'), mb_strtolower($testUri)),
+                fn (Builder $query) => $query->where('elements_sites.uri', mb_strtolower($testUri)),
+            )
             ->when(
                 value: $element->getCanonicalId(),
                 callback: fn (Builder $query, int $sourceId) => $query->whereNot('elements.id', $sourceId),

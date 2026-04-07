@@ -142,7 +142,7 @@ readonly class Query
         $isPgsql = $connection->isPgsql();
 
         // Only PostgreSQL supports case-sensitive strings on non-JSON column values
-        if ($isMysql && $columnType !== self::TYPE_JSON) {
+        if (! $isPgsql && $columnType !== self::TYPE_JSON) {
             $caseInsensitive = false;
         }
 
