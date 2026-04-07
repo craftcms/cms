@@ -192,7 +192,7 @@
 </script>
 
 <template>
-  <div>
+  <div class="grid gap-2 justify-items-start">
     <template v-for="entryType in modelValue" :key="entryType.id">
       <EntryTypeChip
         v-if="entryType"
@@ -210,8 +210,7 @@
             onClick: () => removeItem(entryType.id),
           },
         ]"
-      >
-      </EntryTypeChip>
+      />
     </template>
   </div>
 
@@ -265,16 +264,4 @@
   </div>
 </template>
 
-<style scoped lang="scss">
-  craft-chip::part(chip) {
-    min-width: 200px;
-  }
-
-  // Some special styles for nice icon alignment. We might want to move this
-  // into chips, but for right now this is the only spot
-  craft-chip::part(prefix) {
-    align-self: start;
-    height: 1lh;
-    justify-content: center;
-  }
-</style>
+<style scoped lang="scss"></style>

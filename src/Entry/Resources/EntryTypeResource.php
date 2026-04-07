@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Resources;
 
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -17,9 +19,10 @@ class EntryTypeResource extends JsonResource
     {
         $elementHtml = app(ElementHtml::class);
 
-        return parent::toArray($request) + [
+        return Arr::merge(parent::toArray($request), [
             'indicators' => $this->getIndicators(),
             'actions' => $this->getActionMenuItems(),
+            'icon' => $this->getIcon() ? Icons::resolveIconData($this->getIcon()) : null,
             'chipHtml' => $elementHtml->chipHtml($this->resource, [
                 'showHandle' => true,
                 // 'checkbox' => $this->resource->selectable,
@@ -27,6 +30,6 @@ class EntryTypeResource extends JsonResource
                 'showIndicators' => true,
                 'showDescription' => true,
             ]),
-        ];
+        ]);
     }
 }

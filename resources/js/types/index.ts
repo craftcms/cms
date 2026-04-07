@@ -50,7 +50,11 @@ export interface EntryType {
   name: string;
   handle: string;
   description: string | null;
-  icon?: string | null;
+  icon?: null | {
+    name: string;
+    family: string;
+    variant: string;
+  };
   color: string | {name: string; value: string} | null;
   uiLabelFormat: string;
   hasTitleField: boolean;
@@ -68,7 +72,7 @@ export interface EntryType {
   original: null;
   idAttribute: null;
   actions?: Array<ActionItem>;
-  indicators?: Array<ChipIndicator>
+  indicators?: Array<ChipIndicator>;
 }
 
 export interface TranslationMethod {

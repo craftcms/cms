@@ -121,9 +121,7 @@ readonly class ElementHtml
                 /** @var Chippable&Iconic $component */
                 $icon = $component->getIcon();
                 if ($icon || $icon === '0') {
-                    $html .= Html::tag('div', Icons::svg($icon), [
-                        'class' => array_filter(['thumb', 'cp-icon', $color?->value]),
-                    ]);
+                    $html .= Html::tag('craft-icon', '', Icons::resolveIconData($icon));
                 }
             }
         }

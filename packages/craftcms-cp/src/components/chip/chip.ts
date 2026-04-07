@@ -31,16 +31,21 @@ export default class CraftChip extends LitElement {
   renderPrefix() {
     return html`<div class="cp-chip__prefix" part="prefix">
       <slot name="prefix">
-        ${this.icon
-          ? html`<craft-icon name="${this.icon}"></craft-icon>`
-          : nothing}
+        <slot name="icon">
+          ${this.icon
+            ? html`<craft-icon name="${this.icon}"></craft-icon>`
+            : nothing}
+        </slot>
       </slot>
     </div>`;
   }
 
   override render() {
     // query the element Light DOM children for slotted elements
-    const renderPrefix = !!this.querySelector('[slot="prefix"]') || this.icon;
+    const renderPrefix =
+      !!this.querySelector('[slot="prefix"]') ||
+      !!this.querySelector('[slot="icon"]') ||
+      this.icon;
     const renderSuffix = !!this.querySelector('[slot="suffix"]');
 
     return html`

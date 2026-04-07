@@ -20,11 +20,10 @@
 </script>
 
 <template>
-  <craft-chip
-    :icon="icon"
-    :data-color="color?.value ?? color ?? 'white'"
-    :data-id="id"
-  >
+  <craft-chip :data-color="color?.value ?? color ?? 'white'" :data-id="id">
+    <template v-if="icon">
+      <craft-icon slot="icon" v-bind="icon" />
+    </template>
     <div class="grid gap-1 justify-items-start">
       <div class="flex gap-1">
         <div class="font-bold">
@@ -55,4 +54,12 @@
   </craft-chip>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+  // Some special styles for nice icon alignment. We might want to move this
+  // into chips, but for right now this is the only spot
+  craft-chip::part(prefix) {
+    align-self: start;
+    height: 1lh;
+    justify-content: center;
+  }
+</style>
