@@ -114,7 +114,9 @@ Craft.InfoIcon = Garnish.Base.extend({
   },
 
   destroy: function () {
+    this.hud?.destroy();
     this.$icon.removeData('infoicon');
+    this.removeAllListeners(this.$icon);
     this.base();
   },
 });
