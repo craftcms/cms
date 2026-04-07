@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d687c373f5825f70000cf0e083751595",
+    "content-hash": "2c6fc4f0684a0080927ddac26949c945",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -528,16 +528,16 @@
         },
         {
             "name": "craftcms/server-check",
-            "version": "5.0.4",
+            "version": "5.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/craftcms/server-check.git",
-                "reference": "3b1f239c1cc781710978b0baa3e3bc99410d1973"
+                "reference": "7a4f1720c4fe1f0731254a82e63060a217f51cdc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/server-check/zipball/3b1f239c1cc781710978b0baa3e3bc99410d1973",
-                "reference": "3b1f239c1cc781710978b0baa3e3bc99410d1973",
+                "url": "https://api.github.com/repos/craftcms/server-check/zipball/7a4f1720c4fe1f0731254a82e63060a217f51cdc",
+                "reference": "7a4f1720c4fe1f0731254a82e63060a217f51cdc",
                 "shasum": ""
             },
             "type": "library",
@@ -566,7 +566,7 @@
                 "rss": "https://github.com/craftcms/server-check/releases.atom",
                 "source": "https://github.com/craftcms/server-check"
             },
-            "time": "2025-07-23T14:22:43+00:00"
+            "time": "2026-04-07T16:48:35+00:00"
         },
         {
             "name": "creocoder/yii2-nested-sets",
