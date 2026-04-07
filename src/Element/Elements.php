@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use craft\base\ElementActionInterface;
-use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
@@ -607,35 +605,6 @@ class Elements
     public function restoreElements(array $elements): bool
     {
         return app(ElementDeletions::class)->restoreElements($elements);
-    }
-
-    // Element Actions & Exporters
-    // -------------------------------------------------------------------------
-
-    /**
-     * Creates an element action with a given config.
-     *
-     * @template T of ElementActionInterface
-     *
-     * @param  class-string<T>|array{type:class-string<T>}  $config  The element action’s class name, or its config, with a `type` value and optionally a `settings` value
-     * @return T The element action
-     */
-    public function createAction(string|array $config): ElementActionInterface
-    {
-        return ComponentHelper::createComponent($config, ElementActionInterface::class);
-    }
-
-    /**
-     * Creates an element exporter with a given config.
-     *
-     * @template T of ElementExporterInterface
-     *
-     * @param  class-string<T>|array{type:class-string<T>}  $config  The element exporter’s class name, or its config, with a `type` value and optionally a `settings` value
-     * @return T The element exporter
-     */
-    public function createExporter(string|array $config): ElementExporterInterface
-    {
-        return ComponentHelper::createComponent($config, ElementExporterInterface::class);
     }
 
     // Misc

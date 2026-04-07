@@ -1,73 +1,15 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\elements\actions;
 
-use craft\base\ElementAction;
-use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use yii\base\Exception;
-use function CraftCms\Cms\t;
-
-/**
- * ShowInFolder represents a Show In Folder element action.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0.0
- */
-class ShowInFolder extends ElementAction
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Actions\ShowInFolder} instead.
      */
-    public function getTriggerLabel(): string
+    class ShowInFolder extends \CraftCms\Cms\Asset\Actions\ShowInFolder
     {
-        return t('Show in folder');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerHtml(): ?string
-    {
-        if ($this->elementType !== Asset::class) {
-            throw new Exception("Show in folder is only available for Assets.");
-        }
-
-        HtmlStack::jsWithVars(fn($type) => <<<JS
-(() => {
-    new Craft.ElementActionTrigger({
-        type: $type,
-        bulk: false,
-        activate: (selectedItem, elementIndex) => {
-          const data = {
-            'assetId': selectedItem.find('.element:first').data('id')
-          }
-
-          Craft.sendActionRequest('POST', 'assets/show-in-folder', {data})
-          .then(({data}) => {
-            elementIndex.sourcePath = data.sourcePath;
-            elementIndex.stopSearching();
-
-            // prevent searching in subfolders - we want the exact folder the asset belongs to
-            elementIndex.setSelecetedSourceState('includeSubfolders', false);
-
-            // search for the selected asset's filename
-            elementIndex.\$search.val(data.filename);
-            elementIndex.\$search.trigger('input');
-          })
-          .catch((e) => {
-            Craft.cp.displayError(e?.response?.data?.message);
-          });
-        },
-    })
-})();
-JS, [static::class]);
-
-        return null;
     }
 }
+
+class_alias(\CraftCms\Cms\Asset\Actions\ShowInFolder::class, ShowInFolder::class);

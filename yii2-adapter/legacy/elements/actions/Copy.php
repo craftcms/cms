@@ -1,64 +1,15 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\elements\actions;
 
-use craft\base\ElementAction;
-
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use function CraftCms\Cms\t;
-
-/**
- * Copy represents a Copy element action.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.7.0
- */
-class Copy extends ElementAction
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Actions\Copy} instead.
      */
-    public function getTriggerLabel(): string
+    class Copy extends \CraftCms\Cms\Element\Actions\Copy
     {
-        return t('Copy');
-    }
-
-    /**
-     * @inheritdoc
-     * @since 3.5.0
-     */
-    public function getTriggerHtml(): ?string
-    {
-        // Only enable for copyable elements, per canCopy()
-        HtmlStack::jsWithVars(fn($type) => <<<JS
-(() => {
-  new Craft.ElementActionTrigger({
-    type: $type,
-    validateSelection: (selectedItems, elementIndex) => {
-      for (let i = 0; i < selectedItems.length; i++) {
-        if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), 'data-copyable')) {
-          return false;
-        }
-      }
-
-      return true;
-    },
-    activate: (selectedItems, elementIndex) => {
-      let elements = $();
-      selectedItems.each((i, item) => {
-        elements = elements.add($(item).find('.element:first'));
-      });
-      Craft.cp.copyElements(elements);
-    },
-  })
-})();
-JS, [static::class]);
-
-        return null;
     }
 }
+
+class_alias(\CraftCms\Cms\Element\Actions\Copy::class, Copy::class);

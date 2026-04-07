@@ -10,15 +10,6 @@ use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use craft\controllers\ElementIndexesController;
 use craft\controllers\ElementsController;
-use craft\elements\actions\Copy;
-use craft\elements\actions\Delete;
-use craft\elements\actions\DeleteForSite;
-use craft\elements\actions\Duplicate;
-use craft\elements\actions\MoveToSection;
-use craft\elements\actions\NewChild;
-use craft\elements\actions\NewSiblingAfter;
-use craft\elements\actions\NewSiblingBefore;
-use craft\elements\actions\Restore;
 use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\conditions\entries\SectionConditionRule;
 use craft\elements\conditions\entries\TypeConditionRule;
@@ -31,6 +22,11 @@ use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Actions\Delete;
+use CraftCms\Cms\Element\Actions\DeleteForSite;
+use CraftCms\Cms\Element\Actions\Duplicate;
+use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
@@ -40,6 +36,10 @@ use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Revisions;
+use CraftCms\Cms\Entry\Actions\MoveToSection;
+use CraftCms\Cms\Entry\Actions\NewChild;
+use CraftCms\Cms\Entry\Actions\NewSiblingAfter;
+use CraftCms\Cms\Entry\Actions\NewSiblingBefore;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Events\DefineEntryTypes;
 use CraftCms\Cms\Entry\Events\DefineMetaFields;
@@ -64,6 +64,7 @@ use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Entries;
@@ -418,22 +419,22 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                     $newEntryUrl .= '?site='.$site->handle;
                 }
 
-                $actions[] = Elements::createAction([
+                $actions[] = ElementActions::createAction([
                     'type' => NewSiblingBefore::class,
                     'newSiblingUrl' => $newEntryUrl,
-                ]);
+                ], static::class);
 
-                $actions[] = Elements::createAction([
+                $actions[] = ElementActions::createAction([
                     'type' => NewSiblingAfter::class,
                     'newSiblingUrl' => $newEntryUrl,
-                ]);
+                ], static::class);
 
                 if ($section->maxLevels !== 1) {
-                    $actions[] = Elements::createAction([
+                    $actions[] = ElementActions::createAction([
                         'type' => NewChild::class,
                         'maxLevels' => $section->maxLevels,
                         'newChildUrl' => $newEntryUrl,
-                    ]);
+                    ], static::class);
                 }
             }
 

@@ -1,87 +1,15 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\elements\actions;
 
-use craft\base\ElementAction;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use function CraftCms\Cms\t;
-
-/**
- * ReplaceFile represents a Replace File element action.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-class ReplaceFile extends ElementAction
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Actions\ReplaceFile} instead.
      */
-    public function getTriggerLabel(): string
+    class ReplaceFile extends \CraftCms\Cms\Asset\Actions\ReplaceFile
     {
-        return t('Replace file');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerHtml(): ?string
-    {
-        HtmlStack::jsWithVars(fn($type) => <<<JS
-(() => {
-    new Craft.ElementActionTrigger({
-        type: $type,
-        bulk: false,
-        validateSelection: (selectedItems, elementIndex) => Garnish.hasAttr(selectedItems.find('.element'), 'data-replaceable'),
-        activate: (selectedItems, elementIndex) => {
-            $('.replaceFile').remove();
-
-            const \$element = selectedItems.find('.element');
-            const \$fileInput = $('<input type="file" name="replaceFile" class="replaceFile" style="display: none;"/>').appendTo(Garnish.\$bod);
-            const settings = elementIndex._currentUploaderSettings;
-
-            settings.dropZone = null;
-            settings.fileInput = \$fileInput;
-            settings.paramName = 'replaceFile';
-            settings.replace = true;
-            settings.events = {};
-
-            const fileuploaddone = settings.events?.fileuploaddone;
-            settings.events = Object.assign({}, settings.events || {}, {
-              fileuploaddone: (event, data = null) => {
-                const result = event instanceof CustomEvent ? event.detail : data.result;
-                if (!result.error) {
-                  Craft.cp.displayNotice(Craft.t('app', 'New file uploaded.'));
-                  // update the element row
-                  if (Craft.broadcaster) {
-                      Craft.broadcaster.postMessage({
-                        event: 'saveElement',
-                        id: result.assetId,
-                      });
-                  }
-                }
-                if (fileuploaddone) {
-                  fileuploaddone(event, data);
-                }
-              }
-            });
-
-            const tempUploader = Craft.createUploader(elementIndex.uploader.fsType, \$fileInput, settings);
-            tempUploader.setParams({
-                assetId: \$element.data('id')
-            });
-
-            \$fileInput.click();
-        },
-    });
-})();
-JS, [static::class]);
-
-        return null;
     }
 }
+
+class_alias(\CraftCms\Cms\Asset\Actions\ReplaceFile::class, ReplaceFile::class);
