@@ -1031,10 +1031,8 @@ JS, [
 
         if ($deleteOwnership) {
             DB::table(Table::ELEMENTS_OWNERS)
-                ->where([
-                    'elementId' => $deleteOwnership,
-                    'ownerId' => $owner->id,
-                ])
+                ->whereIn('elementId', $deleteOwnership)
+                ->where('ownerId', $owner->id)
                 ->delete();
         }
     }
