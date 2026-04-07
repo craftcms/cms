@@ -2962,6 +2962,24 @@ class GeneralConfig extends BaseConfig
     public ?string $tempAssetUploadFs = null;
 
     /**
+     * @var string|null The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
+     *
+     * This can be set to one of PHP’s [supported timezones](https://php.net/manual/en/timezones.php).
+     *
+     * ::: code
+     * ```php Static Config
+     * ->timezone('Europe/London')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_TIMEZONE=Europe/London
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public ?string $timezone = null;
+
+    /**
     /**
      * @var bool Whether GIF files should be cleansed/transformed.
      *
@@ -6142,6 +6160,29 @@ class GeneralConfig extends BaseConfig
     public function tempAssetUploadFs(?string $value): self
     {
         $this->tempAssetUploadFs = $value;
+
+        return $this;
+    }
+
+    /**
+     * Configures Craft to send all system emails to either a single email address or an array of email addresses
+     * for testing purposes.
+     *
+     * The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
+     *
+     * This can be set to one of PHP’s [supported timezones](https://php.net/manual/en/timezones.php).
+     *
+     * ```php
+     * ->timezone('Europe/London')
+     * ```
+     *
+     * @group System
+     *
+     * @see $timezone
+     */
+    public function timezone(?string $value): self
+    {
+        $this->timezone = $value;
 
         return $this;
     }

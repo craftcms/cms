@@ -30,18 +30,18 @@ class ExecController extends Controller
     /**
      * Executes a PHP statement and outputs the result.
      *
-     * @param string $command
+     * @param string $code
      * @return int
      */
-    public function actionExec(string $command): int
+    public function actionExec(string $code): int
     {
         ob_start();
 
         try {
-            eval("\$result = $command;");
+            eval("\$result = $code;");
             $showResult = true;
         } catch (ParseError) {
-            eval("$command;");
+            eval("$code;");
             $showResult = false;
         }
 

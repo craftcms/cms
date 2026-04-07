@@ -15,7 +15,6 @@ use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\File;
 use GuzzleHttp\Utils;
-use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Foundation\Events\LocaleUpdated;
@@ -29,13 +28,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
-use IntlDateFormatter;
-use IntlException;
 use Override;
 use ReflectionClass;
 use RuntimeException;
@@ -70,7 +66,6 @@ class AppServiceProvider extends ServiceProvider
             'Version' => Cms::VERSION,
         ]);
 
-        $this->setTimezone();
         $this->setNamespace();
         $this->bootAliases();
 
@@ -120,11 +115,6 @@ class AppServiceProvider extends ServiceProvider
 
             return Env::parseBoolean(app(ProjectConfig::class)->get('system.live')) ?? false;
         });
-
-        Application::macro(
-            'getTimezone',
-            fn (): string => $this->make(ConfigRepository::class)->get('app.timezone') ?? date_default_timezone_get(),
-        );
 
         // Register Collection::one() as an alias of first()
         Collection::macro('one', fn () => $this->first(...func_get_args()));
@@ -194,31 +184,6 @@ class AppServiceProvider extends ServiceProvider
                     'proxy' => Cms::config()->httpProxy,
                 ]),
             ));
-    }
-
-    private function setTimezone(): void
-    {
-        $timezone = app(ProjectConfig::class)->get('system.timeZone')
-            ?? $this->app->make(ConfigRepository::class)->get('app.timezone')
-            ?? 'UTC';
-
-        $timezone = Env::parse($timezone);
-
-        if ($timezone !== 'UTC') {
-            // Make sure that ICU supports this timezone
-            try {
-                $formatter = new IntlDateFormatter($this->app->getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
-                if (! $formatter->setTimeZone($timezone)) {
-                    $timezone = 'UTC';
-                }
-            } catch (IntlException) {
-                Log::warning("Time zone “{$timezone}” does not appear to be supported by ICU: ".intl_get_error_message());
-                $timezone = 'UTC';
-            }
-        }
-
-        $this->app->make(ConfigRepository::class)->set('app.timezone', $timezone);
-        date_default_timezone_set($timezone);
     }
 
     private function setNamespace(): void
