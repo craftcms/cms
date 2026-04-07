@@ -757,7 +757,7 @@ class AssetsHelper
             return $path;
         }
 
-        $svg = file_get_contents(Aliases::get('@app/elements/thumbs/file.svg'));
+        $svg = file_get_contents(Aliases::get('@resources/images/thumbs/file.svg'));
 
         $extLength = strlen($extension);
 

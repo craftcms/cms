@@ -2056,7 +2056,7 @@ JS, [
     protected function thumbSvg(): string
     {
         if ($this->isFolder) {
-            return file_get_contents(Aliases::get('@app/elements/thumbs/folder.svg'));
+            return file_get_contents(Aliases::get('@resources/images/thumbs/folder.svg'));
         }
 
         return AssetsHelper::iconSvg($this->getExtension());
