@@ -17,6 +17,7 @@ use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
@@ -191,7 +192,7 @@ class Entries
         $entry->resaving = true;
 
         $elementsService = Craft::$app->getElements();
-        $elementsService->ensureBulkOp(function () use (
+        BulkOps::ensure(function () use (
             $entry,
             $section,
             $oldSection,

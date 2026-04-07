@@ -1036,10 +1036,8 @@ JS, [
 
         if ($deleteOwnership) {
             DB::table(Table::ELEMENTS_OWNERS)
-                ->where([
-                    'elementId' => $deleteOwnership,
-                    'ownerId' => $owner->id,
-                ])
+                ->whereIn('elementId', $deleteOwnership)
+                ->where('ownerId', $owner->id)
                 ->delete();
         }
     }
@@ -1267,14 +1265,11 @@ JS, [
         }
 
         DB::table(Table::ELEMENTS_OWNERS)
-            ->where([
-                'ownerId' => $revision->id,
-                'elementId' => $elementRevisionIds,
-            ])
+            ->where('ownerId', $revision->id)
+            ->whereIn('elementId', $elementRevisionIds)
             ->delete();
 
-        DB::table(Table::ELEMENTS_OWNERS)
-            ->insert($ownershipData);
+        DB::table(Table::ELEMENTS_OWNERS)->insert($ownershipData);
 
         // Fire a 'afterDuplicateNestedElements' event
         if (!empty($map) && $this->hasEventHandlers(self::EVENT_AFTER_CREATE_REVISIONS)) {

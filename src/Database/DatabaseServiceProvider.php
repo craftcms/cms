@@ -12,11 +12,14 @@ use CraftCms\Cms\Database\Commands\DropTablePrefixCommand;
 use CraftCms\Cms\Database\Commands\MigrateCommand;
 use CraftCms\Cms\Database\Commands\RepairCommand;
 use CraftCms\Cms\Database\Commands\RestoreCommand;
+use CraftCms\Cms\Element\BulkOp\BulkOpDeferrals;
+use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Cache\DatabaseStore;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Connection;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Migrations\MigrationRepositoryInterface;
 use Illuminate\Database\Query\Builder;
@@ -37,6 +40,16 @@ class DatabaseServiceProvider extends ServiceProvider
             ->when(Migrator::class)
             ->needs(MigrationRepositoryInterface::class)
             ->give(fn () => $this->app->make(MigrationRepository::class, ['table' => Table::MIGRATIONS]));
+
+        $this->app
+            ->when(BulkOps::class)
+            ->needs(ConnectionInterface::class)
+            ->give(fn () => $this->app->make(ConnectionResolverInterface::class)->connection(config('database.bulk_ops_connection', 'db2')));
+
+        $this->app
+            ->when(BulkOpDeferrals::class)
+            ->needs(ConnectionInterface::class)
+            ->give(fn () => $this->app->make(ConnectionResolverInterface::class)->connection(config('database.bulk_ops_connection', 'db2')));
 
         Connection::macro('isMysql', fn (bool $strict = false) => $strict ? $this->getDriverName() === 'mysql' : in_array($this->getDriverName(), ['mysql', 'mariadb']));
         Connection::macro('isMaria', fn () => $this->getDriverName() === 'mariadb');

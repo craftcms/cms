@@ -26,7 +26,7 @@ composer tests-adapter
 ./vendor/bin/codecept run unit --filter="test name"
 ```
 
-
+- Do not run Feature tests in parallel, there is only one database connection.
 - When running tests with `./vendor/bin/pest`, always add `--compact` to reduce output verbosity and token count.
 - When writing tests, don't use Mockery or Mocks unless absolutely necessary. Prefer using Laravel's Facade fakes or running real code. Tests written are feature or integration tests and not unit tests.
 

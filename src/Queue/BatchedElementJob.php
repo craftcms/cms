@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Queue;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Contracts\Database\Query\Builder;
 
@@ -60,16 +60,16 @@ abstract class BatchedElementJob extends BatchedJob
 
     protected function before(): void
     {
-        $this->bulkOpKey = Craft::$app->getElements()->beginBulkOp();
+        $this->bulkOpKey = BulkOps::start();
     }
 
     protected function beforeBatch(): void
     {
-        Craft::$app->getElements()->resumeBulkOp($this->bulkOpKey);
+        BulkOps::resume($this->bulkOpKey);
     }
 
     protected function after(): void
     {
-        Craft::$app->getElements()->endBulkOp($this->bulkOpKey);
+        BulkOps::end($this->bulkOpKey);
     }
 }
