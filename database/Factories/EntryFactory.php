@@ -13,6 +13,8 @@ use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\Fields;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Override;
 
@@ -120,6 +122,19 @@ class EntryFactory extends Factory
     public function forEntryType(EntryType $type): static
     {
         return $this->state(fn () => ['typeId' => $type->id]);
+    }
+
+    public function withFieldLayout(FieldLayout|FieldLayoutFactory $fieldLayout): static
+    {
+        if ($fieldLayout instanceof FieldLayoutFactory) {
+            $fieldLayout = $fieldLayout->create();
+        }
+
+        return $this->afterCreating(function (Entry $entry) use ($fieldLayout) {
+            $this->attachFieldLayoutToModel($entry, $fieldLayout);
+            EntryTypes::refreshEntryTypes();
+            Fields::refreshFields();
+        });
     }
 
     public function createElement(array $attributes = []): EntryElement

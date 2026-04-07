@@ -6,12 +6,11 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Matrix;
-use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 
 function createMatrixRulesEntryType(): EntryTypeModel
 {
     return EntryTypeModel::factory()
-        ->withFieldLayout(FieldLayoutModel::factory()->withContentTab()->create())
+        ->withFieldLayout()
         ->create([
             'name' => 'Block',
             'handle' => 'block',

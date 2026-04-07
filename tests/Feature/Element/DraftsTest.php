@@ -17,8 +17,6 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\Elements;
-use CraftCms\Cms\Support\Facades\EntryTypes;
-use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Context;
@@ -181,15 +179,9 @@ it('can load provisional changes onto canonical elements', function () {
         'type' => PlainText::class,
     ]);
 
-    $fieldLayout = FieldLayout::factory()->forField($field)->create();
-
-    $entryModel = Entry::factory()->create();
-    $entryModel->element->update(['fieldLayoutId' => $fieldLayout->id]);
-    $entryModel->entryType->update(['fieldLayoutId' => $fieldLayout->id]);
-
-    EntryTypes::refreshEntryTypes();
-    Fields::invalidateCaches();
-    Fields::refreshFields();
+    $entryModel = Entry::factory()
+        ->withFieldLayout(FieldLayout::factory()->forField($field))
+        ->create();
 
     $entry = entryQuery()->id($entryModel->id)->one();
     $entry->title = 'Canonical title';
@@ -237,10 +229,8 @@ it('preserves matrix nested field values through draft apply', function () {
         'type' => PlainText::class,
     ]);
 
-    $matrixBlockLayout = FieldLayout::factory()->forField($innerField)->create();
-
     $matrixEntryType = EntryType::factory()
-        ->withFieldLayout($matrixBlockLayout)
+        ->withField($innerField)
         ->create([
             'name' => 'Matrix Block',
             'handle' => 'matrixBlock',
@@ -254,15 +244,9 @@ it('preserves matrix nested field values through draft apply', function () {
         'settings' => ['entryTypes' => [$matrixEntryType->id]],
     ]);
 
-    $entryFieldLayout = FieldLayout::factory()->forField($matrixField)->create();
-
-    $entryModel = Entry::factory()->create();
-    $entryModel->element->update(['fieldLayoutId' => $entryFieldLayout->id]);
-    $entryModel->entryType->update(['fieldLayoutId' => $entryFieldLayout->id]);
-
-    EntryTypes::refreshEntryTypes();
-    Fields::invalidateCaches();
-    Fields::refreshFields();
+    $entryModel = Entry::factory()
+        ->withFieldLayout(FieldLayout::factory()->forField($matrixField))
+        ->create();
 
     $entry = entryQuery()->id($entryModel->id)->one();
     $blockUid = Str::uuid()->toString();

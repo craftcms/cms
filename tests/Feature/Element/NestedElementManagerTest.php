@@ -12,7 +12,6 @@ use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Matrix;
-use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
@@ -29,7 +28,7 @@ beforeEach(function () {
 function createMatrixEntryType(): EntryTypeModel
 {
     return EntryTypeModel::factory()
-        ->withFieldLayout(FieldLayoutModel::factory()->withContentTab()->create())
+        ->withFieldLayout()
         ->create([
             'name' => 'Block',
             'handle' => 'block',

@@ -10,7 +10,6 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Str;
@@ -121,10 +120,8 @@ test('matrix field preserves nested values through element validation', function
         'type' => PlainText::class,
     ]);
 
-    $entryTypeLayout = FieldLayout::factory()->forField($innerField)->create();
-
     $matrixEntryType = EntryType::factory()
-        ->withFieldLayout($entryTypeLayout)
+        ->withField($innerField)
         ->create([
             'name' => 'Matrix Block',
             'handle' => 'matrixBlock',
