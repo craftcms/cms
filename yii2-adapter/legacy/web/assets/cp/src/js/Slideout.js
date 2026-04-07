@@ -21,7 +21,7 @@ import $ from 'jquery';
         this.setSettings(settings, Craft.Slideout.defaults);
 
         this.$outerContainer = $('<div/>', {
-          class: 'slideout-container hidden',
+          class: 'slideout-container cp-legacy hidden',
         });
         this.$container = $(
           `<${this.settings.containerElement}/>`,

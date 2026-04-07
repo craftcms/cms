@@ -3,19 +3,23 @@
 // @use 'color-palette';
 // @use 'tokens';
 // @use 'variables';
-@use 'compat';
-@use 'main';
-@use 'cp';
-@use 'range';
-@use 'global-sidebar';
-@use 'craft-disclosure';
-@use 'craft-spinner';
-@use 'craft-tooltip';
-@use 'preview';
-@use 'login';
-@use 'entry-type-select';
-@use 'fld';
-@use 'grouped-entry-type-select';
-@use 'image_editor';
-@use 'shame';
-@use 'debug_toolbar';
+@import 'compat';
+@import 'slideouts';
+
+.cp-legacy {
+  @import 'main';
+  @import 'cp';
+  @import 'range';
+  @import 'global-sidebar';
+  @import 'craft-disclosure';
+  @import 'craft-spinner';
+  @import 'craft-tooltip';
+  @import 'preview';
+  @import 'login';
+  @import 'entry-type-select';
+  @import 'fld';
+  @import 'grouped-entry-type-select';
+  @import 'image_editor';
+  @import 'shame';
+  @import 'debug_toolbar';
+}

@@ -188,7 +188,7 @@
           <div class="font-bold">
             {{ overrides[entryType.id]?.name ?? entryType.name }}
           </div>
-          <code>{{ overrides[entryType.id]?.handle ?? entryType.handle }}</code>
+          <code class="cp-code">{{ overrides[entryType.id]?.handle ?? entryType.handle }}</code>
         </div>
 
         <div slot="suffix" class="flex gap-1 items-center">
