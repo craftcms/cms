@@ -1779,7 +1779,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->uri) {
-            $this->subQuery->andWhere(Db::parseParam('elements_sites.uriLower', mb_strtolower($this->uri)));
+            $this->subQuery->andWhere(Db::parseParam('elements_sites.uri', $this->uri, '=', true));
         }
 
         $this->_applyRelatedToParam();
