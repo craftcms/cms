@@ -83,19 +83,6 @@ class AppController extends Controller
     }
 
     /**
-     * Returns an empty response.
-     *
-     * @since 3.5.0
-     */
-    public function actionHealthCheck(): Response
-    {
-        // All that matters is the 200 response
-        $this->response->format = Response::FORMAT_RAW;
-        $this->response->data = '';
-        return $this->response;
-    }
-
-    /**
      * Loads the given JavaScript resource URL and returns it.
      *
      * @param string $url

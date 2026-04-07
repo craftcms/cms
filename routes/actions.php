@@ -34,6 +34,7 @@ use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Http\Controllers\Gql\ApiController as GqlApiController;
 use CraftCms\Cms\Http\Controllers\Gql\SchemasController as GqlSchemasController;
 use CraftCms\Cms\Http\Controllers\Gql\TokensController as GqlTokensController;
+use CraftCms\Cms\Http\Controllers\HealthCheckController;
 use CraftCms\Cms\Http\Controllers\IconController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
@@ -95,6 +96,9 @@ foreach ([
     ]) => ['craft.cp'],
 ] as $prefix => $middleware) {
     Route::prefix($prefix)->middleware($middleware)->group(function () {
+        // App
+        Route::get('app/health-check', HealthCheckController::class);
+
         // Auth
         Route::post('users/login', [LoginController::class, 'attemptLogin']);
         Route::post('auth/verify-totp', [TwoFactorAuthenticationController::class, 'verify']);
