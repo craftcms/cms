@@ -966,7 +966,7 @@ JS, [
                         } else {
                             // Duplicate the elements, but **don't track** the duplications, so the edit page doesn’t think
                             // its elements have been replaced by the other sites’ nested elements
-                            if ($owner->propagateAll || $this->propagateRequired($owner, $localizedOwner) || !empty($owner->newSiteIds)) {
+                            if ($owner->propagateAll || $this->propagateRequired($owner, $localizedOwner) || in_array($localizedOwner->siteId, $owner->newSiteIds)) {
                                 $this->duplicateNestedElements($owner, $localizedOwner, force: true);
                             }
                         }
@@ -1085,6 +1085,7 @@ JS, [
                     'primaryOwner' => $target,
                     'owner' => $target,
                     'propagating' => false,
+                    'resaving' => false,
                     'sortOrder' => $element->getSortOrder(),
                 ];
 
