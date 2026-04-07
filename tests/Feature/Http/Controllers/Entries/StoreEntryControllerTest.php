@@ -50,7 +50,7 @@ function createFieldLayoutConfig(Field|FieldInterface $field, bool $required = f
     ];
 }
 
-function createMatrixEntryType(Field $field): EntryType
+function createStoreEntryMatrixEntryType(Field $field): EntryType
 {
     $layout = FieldLayout::create([
         'type' => Entry::class,
@@ -242,7 +242,7 @@ it('persists nested matrix field values when creating an entry', function () {
         'type' => PlainText::class,
     ]);
 
-    $matrixEntryType = createMatrixEntryType($innerField);
+    $matrixEntryType = createStoreEntryMatrixEntryType($innerField);
     $matrixField = Field::factory()->create([
         'name' => 'Matrix Field',
         'handle' => 'matrixField',
