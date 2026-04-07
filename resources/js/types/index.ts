@@ -1,3 +1,5 @@
+import type {ActionItem} from '@/components/ActionMenu.vue';
+
 export interface CheckboxOption {
   label: string;
   value: string;
@@ -37,12 +39,18 @@ export interface SectionSiteSettingsData {
   template: string | null;
 }
 
+export interface ChipIndicator {
+  label?: string;
+  iconColor?: string;
+  icon?: string;
+}
+
 export interface EntryType {
   id: number;
   name: string;
   handle: string;
-  description: null;
-  icon: string;
+  description: string | null;
+  icon?: string | null;
   color: string | {name: string; value: string} | null;
   uiLabelFormat: string;
   hasTitleField: boolean;
@@ -59,6 +67,8 @@ export interface EntryType {
   group: null;
   original: null;
   idAttribute: null;
+  actions?: Array<ActionItem>;
+  indicators?: Array<ChipIndicator>
 }
 
 export interface TranslationMethod {

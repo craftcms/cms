@@ -9,6 +9,7 @@
   import Breadcrumbs from '@/components/Breadcrumbs.vue';
   import {useAnnouncer} from '@/composables/useAnnouncer';
   import LiveRegion from '@/components/LiveRegion.vue';
+  import {useAppendHtml} from '@/composables/useAppendHtml';
 
   withDefaults(
     defineProps<{
@@ -37,6 +38,8 @@
 
   watch(successFlash, (newMessage) => announce(newMessage));
   watch(errorFlash, (newMessage) => announce(newMessage));
+
+  useAppendHtml();
 
   const state = reactive<{
     sidebar: {

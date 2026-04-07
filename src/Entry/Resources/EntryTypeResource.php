@@ -18,6 +18,8 @@ class EntryTypeResource extends JsonResource
         $elementHtml = app(ElementHtml::class);
 
         return parent::toArray($request) + [
+            'indicators' => $this->getIndicators(),
+            'actions' => $this->getActionMenuItems(),
             'chipHtml' => $elementHtml->chipHtml($this->resource, [
                 'showHandle' => true,
                 // 'checkbox' => $this->resource->selectable,

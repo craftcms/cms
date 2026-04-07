@@ -12,6 +12,7 @@
     renderOverrideSettings,
   } from '@actions/Settings/EntryTypesController';
   import type {SlideoutInstance} from '@/types/globals';
+  import EntryTypeChip from '@/components/EntryType/EntryTypeChip.vue';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<EntryType>): void;
@@ -111,6 +112,21 @@
           ...overrides.value,
           [data.config.id]: data.config,
         };
+
+        // Update the modelValue
+        emit(
+          'update:modelValue',
+          props.modelValue.map((entryType) => {
+            if (entryType.id === data.entryType.id) {
+              return {
+                ...entryType,
+                ...data.entryType,
+              };
+            }
+
+            return entryType;
+          })
+        );
         slideout.close();
       } catch (e) {
         console.error(e);
@@ -178,38 +194,25 @@
 
 <template>
   <div>
-    <template v-for="entryType in modelValue">
-      <craft-chip
+    <template v-for="entryType in modelValue" :key="entryType.id">
+      <EntryTypeChip
         v-if="entryType"
-        :icon="entryType.icon"
-        :data-color="entryType.color?.value ?? entryType.color ?? 'white'"
+        v-bind="entryType"
+        :actions="[
+          {
+            label: t('Settings'),
+            icon: 'gear',
+            onClick: () => openSlideout(entryType.id),
+          },
+          {
+            label: t('Remove'),
+            variant: 'danger',
+            icon: 'x',
+            onClick: () => removeItem(entryType.id),
+          },
+        ]"
       >
-        <div :data-id="entryType.id">
-          <div class="font-bold">
-            {{ overrides[entryType.id]?.name ?? entryType.name }}
-          </div>
-          <code class="cp-code">{{ overrides[entryType.id]?.handle ?? entryType.handle }}</code>
-        </div>
-
-        <div slot="suffix" class="flex gap-1 items-center">
-          <ActionMenu
-            :actions="[
-              {
-                label: t('Settings'),
-                icon: 'gear',
-                onClick: () => openSlideout(entryType.id),
-              },
-              {
-                label: t('Remove'),
-                variant: 'danger',
-                icon: 'x',
-                onClick: () => removeItem(entryType.id),
-              },
-            ]"
-          />
-          <ReorderButton variant="inherit"></ReorderButton>
-        </div>
-      </craft-chip>
+      </EntryTypeChip>
     </template>
   </div>
 

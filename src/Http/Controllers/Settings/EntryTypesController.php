@@ -14,6 +14,7 @@ use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
+use CraftCms\Cms\Entry\Resources\EntryTypeResource;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -384,6 +385,12 @@ class EntryTypesController
         ]);
 
         return new JsonResponse([
+            'entryType' => EntryTypeResource::make($entryType)->additional([
+                'id' => $entryType->id,
+                'name' => $entryType->name,
+                'handle' => $entryType->handle,
+                'description' => $entryType->description,
+            ]),
             'config' => [
                 'id' => $entryType->id,
                 'name' => $entryType->name,

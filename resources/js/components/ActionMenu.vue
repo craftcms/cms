@@ -4,6 +4,7 @@
   import {computed} from 'vue';
 
   export interface ActionItem {
+    id?: string;
     label: string;
     variant?: VariantKey;
     icon?: string;
@@ -51,6 +52,7 @@
     <div slot="content" class="m-sm">
       <craft-action-item
         v-for="(action, idx) in safeActions"
+        :id="action.id"
         :key="`safe-${idx}`"
         :icon="action.icon"
         @click="action.onClick"
@@ -59,6 +61,7 @@
       <hr class="m-0" />
       <craft-action-item
         v-for="(action, idx) in dangerousActions"
+        :id="action.id"
         :key="`dangerous-${idx}`"
         :icon="action.icon"
         :variant="action.variant"
