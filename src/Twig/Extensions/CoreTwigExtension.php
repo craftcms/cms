@@ -66,6 +66,7 @@ use CraftCms\Cms\Twig\TokenParsers\TagTokenParser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\TemplateGlobals;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use InvalidArgumentException;
@@ -281,12 +282,12 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('entries', fn (array $config = []) => new EntryQuery($config)),
             new TwigFunction('users', fn (array $config = []) => new UserQuery($config)),
 
-            new TwigFunction('canCreateDrafts', fn (ElementInterface $element, ?User $user = null) => Craft::$app->getElements()->canCreateDrafts($element, $user)),
-            new TwigFunction('canDelete', fn (ElementInterface $element, ?User $user = null) => Craft::$app->getElements()->canDelete($element, $user)),
-            new TwigFunction('canDeleteForSite', fn (ElementInterface $element, ?User $user = null) => Craft::$app->getElements()->canDeleteForSite($element, $user)),
-            new TwigFunction('canDuplicate', fn (ElementInterface $element, ?User $user = null) => Craft::$app->getElements()->canDuplicate($element, $user)),
-            new TwigFunction('canSave', fn (ElementInterface $element, ?User $user = null) => Craft::$app->getElements()->canSave($element, $user)),
-            new TwigFunction('canView', fn (ElementInterface $element, ?User $user = null) => Craft::$app->getElements()->canView($element, $user)),
+            new TwigFunction('canCreateDrafts', fn (ElementInterface $element, ?User $user = null) => ($user ?? Auth::user())?->can('createDrafts', $element)),
+            new TwigFunction('canDelete', fn (ElementInterface $element, ?User $user = null) => ($user ?? Auth::user())?->can('delete', $element)),
+            new TwigFunction('canDeleteForSite', fn (ElementInterface $element, ?User $user = null) => ($user ?? Auth::user())?->can('deleteForSite', $element)),
+            new TwigFunction('canDuplicate', fn (ElementInterface $element, ?User $user = null) => ($user ?? Auth::user())?->can('duplicate', $element)),
+            new TwigFunction('canSave', fn (ElementInterface $element, ?User $user = null) => ($user ?? Auth::user())?->can('save', $element)),
+            new TwigFunction('canView', fn (ElementInterface $element, ?User $user = null) => ($user ?? Auth::user())?->can('view', $element)),
 
             new TwigFunction('head', $this->pageLifecycle->head(...)),
             new TwigFunction('beginBody', $this->pageLifecycle->beginBody(...)),

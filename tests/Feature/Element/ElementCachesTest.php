@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use craft\base\ElementInterface;
-use craft\base\ExpirableElementInterface;
 use craft\base\NestedElementInterface;
+use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Events\InvalidateElementCaches;

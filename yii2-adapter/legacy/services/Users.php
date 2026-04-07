@@ -21,6 +21,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Users as UsersFacade;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
@@ -229,7 +230,7 @@ class Users extends Component
      */
     public function getUserById(int $userId): ?User
     {
-        return Craft::$app->getElements()->getElementById($userId, User::class);
+        return Elements::getElementById($userId, User::class);
     }
 
     /**

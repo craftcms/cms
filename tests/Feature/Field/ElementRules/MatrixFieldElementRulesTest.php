@@ -3,38 +3,23 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Matrix;
-use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
-use CraftCms\Cms\Support\Str;
 
-function createMatrixEntryType(): EntryTypeModel
+function createMatrixRulesEntryType(): EntryTypeModel
 {
-    $layout = FieldLayoutModel::create([
-        'type' => EntryElement::class,
-        'config' => [
-            'tabs' => [
-                [
-                    'uid' => Str::uuid()->toString(),
-                    'name' => 'Content',
-                    'elements' => [],
-                ],
-            ],
-        ],
-    ]);
-
-    return EntryTypeModel::factory()->create([
-        'fieldLayoutId' => $layout->id,
-        'name' => 'Block',
-        'handle' => 'block',
-        'hasTitleField' => true,
-    ]);
+    return EntryTypeModel::factory()
+        ->withFieldLayout()
+        ->create([
+            'name' => 'Block',
+            'handle' => 'block',
+            'hasTitleField' => true,
+        ]);
 }
 
 test('matrix field enforces min entries', function () {
-    $entryType = createMatrixEntryType();
+    $entryType = createMatrixRulesEntryType();
 
     $result = EntryModel::factory()
         ->withField('matrixField', Matrix::class, ['entryTypes' => [$entryType->id], 'minEntries' => 1], value: '')
@@ -47,7 +32,7 @@ test('matrix field enforces min entries', function () {
 });
 
 test('matrix field surfaces nested entry validation errors', function () {
-    $entryType = createMatrixEntryType();
+    $entryType = createMatrixRulesEntryType();
 
     $value = [
         'new1' => [

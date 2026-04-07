@@ -7,11 +7,11 @@
 
 namespace craft\gql\resolvers\mutations;
 
-use Craft;
 use craft\elements\Category as CategoryElement;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\StructureMutationTrait;
 use craft\models\CategoryGroup;
+use CraftCms\Cms\Support\Facades\Elements;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Support\Facades\DB;
@@ -46,20 +46,19 @@ class Category extends ElementMutationResolver
         /** @var CategoryGroup $categoryGroup */
         $categoryGroup = $this->getResolutionData('categoryGroup');
         $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']);
-        $elementService = Craft::$app->getElements();
 
         if ($canIdentify) {
             if (!empty($arguments['uid'])) {
-                $category = $elementService->createElementQuery(CategoryElement::class)->uid($arguments['uid'])->one();
+                $category = Elements::createElementQuery(CategoryElement::class)->uid($arguments['uid'])->one();
             } else {
-                $category = $elementService->getElementById($arguments['id'], CategoryElement::class);
+                $category = Elements::getElementById($arguments['id'], CategoryElement::class);
             }
 
             if (!$category) {
                 throw new Error('No such category exists');
             }
         } else {
-            $category = $elementService->createElement(['type' => CategoryElement::class, 'groupId' => $categoryGroup->id]);
+            $category = Elements::createElement(['type' => CategoryElement::class, 'groupId' => $categoryGroup->id]);
         }
 
         /** @var \craft\elements\Category $category */
@@ -75,7 +74,7 @@ class Category extends ElementMutationResolver
 
         $this->performStructureOperations($category, $arguments);
 
-        return $elementService->getElementById($category->id, CategoryElement::class);
+        return Elements::getElementById($category->id, CategoryElement::class);
     }
 
     /**
@@ -92,8 +91,7 @@ class Category extends ElementMutationResolver
     {
         $categoryId = $arguments['id'];
 
-        $elementService = Craft::$app->getElements();
-        $category = $elementService->getElementById($categoryId, CategoryElement::class);
+        $category = Elements::getElementById($categoryId, CategoryElement::class);
 
         if (!$category) {
             return false;
@@ -102,6 +100,6 @@ class Category extends ElementMutationResolver
         $categoryGroupUid = DB::table('categorygroups')->uidById($category->groupId);
         $this->requireSchemaAction('categorygroups.' . $categoryGroupUid, 'delete');
 
-        return $elementService->deleteElementById($categoryId);
+        return Elements::deleteElementById($categoryId);
     }
 }

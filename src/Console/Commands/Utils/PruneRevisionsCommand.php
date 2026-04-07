@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Console\Commands\Utils;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
@@ -37,7 +37,7 @@ class PruneRevisionsCommand extends Command
     #[Override]
     protected $aliases = ['utils/prune-revisions', 'utils/prune-revisions:index', 'utils/prune-revisions/index'];
 
-    public function handle(Connection $connection, GeneralConfig $generalConfig): int
+    public function handle(Connection $connection, Elements $elementsService, GeneralConfig $generalConfig): int
     {
         $sectionIds = $this->resolveSectionIds();
 
@@ -60,7 +60,6 @@ class PruneRevisionsCommand extends Command
             return self::SUCCESS;
         }
 
-        $elementsService = Craft::$app->getElements();
         $prunedRevisionCount = 0;
 
         foreach ($elements as $element) {

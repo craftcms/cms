@@ -12,6 +12,7 @@ use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -43,6 +44,7 @@ readonly class SaveUserController
     use RespondsWithFlash;
 
     public function __construct(
+        private Elements $elements,
         private GeneralConfig $generalConfig,
         private ProjectConfig $projectConfig,
         private Sites $sites,
@@ -262,7 +264,7 @@ readonly class SaveUserController
         }
 
         // Manually validate the user so we can pass $clearErrors=false
-        $success = $user->validate(null, false) && Craft::$app->getElements()->saveElement($user, false);
+        $success = $user->validate(null, false) && $this->elements->saveElement($user, false);
 
         if (! $success) {
             Log::info('User not saved due to validation error.', [__METHOD__]);
@@ -301,7 +303,7 @@ readonly class SaveUserController
         }
 
         // Save the user’s photo, if it was submitted
-        $this->processUserPhoto($request, $user);
+        $this->processUserPhoto($request, app(Elements::class), $user);
 
         // If this is public registration, assign the user to the default user group
         if (Edition::isAtLeast(Edition::Pro) && $isPublicRegistration) {
@@ -363,13 +365,13 @@ readonly class SaveUserController
         return $this->redirectToPostedUrl($user);
     }
 
-    private function processUserPhoto(Request $request, User $user): void
+    private function processUserPhoto(Request $request, Elements $elements, User $user): void
     {
         // Delete their photo?
         if ($request->input('deletePhoto')) {
             $this->users->deleteUserPhoto($user);
             $user->photoId = null;
-            Craft::$app->getElements()->saveElement($user);
+            $elements->saveElement($user);
         }
 
         $newPhoto = false;

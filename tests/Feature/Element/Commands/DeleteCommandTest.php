@@ -8,6 +8,7 @@ use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Facades\Event;
 
 it('soft deletes an element', function () {
@@ -50,7 +51,7 @@ it('blocks deleting a single section entry', function () {
 it('fails when soft deleting an already soft-deleted element', function () {
     $entry = EntryModel::factory()->createElement();
 
-    Craft::$app->getElements()->deleteElement($entry);
+    Elements::deleteElement($entry);
 
     $this->artisan('craft:elements:delete', ['id' => $entry->id])
         ->expectsOutputToContain('already soft-deleted')

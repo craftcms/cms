@@ -64,6 +64,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
@@ -877,7 +878,7 @@ class Gql
     public function defineContentArgumentsForFields(string $elementType, array $fields): array
     {
         $arguments = [];
-        $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
+        $elementQuery = Elements::createElementQuery($elementType);
 
         foreach ($fields as $field) {
             if (
@@ -898,7 +899,7 @@ class Gql
     public function defineContentArgumentsForGeneratedFields(string $elementType, array $fields): array
     {
         $arguments = [];
-        $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
+        $elementQuery = Elements::createElementQuery($elementType);
 
         foreach ($fields as $field) {
             $handle = $field['handle'] ?? '';
@@ -1013,7 +1014,7 @@ class Gql
         }
 
         // No cache key if we have placeholder elements
-        if (! empty(Craft::$app->getElements()->getPlaceholderElements())) {
+        if (! empty(Elements::getPlaceholderElements())) {
             return null;
         }
 

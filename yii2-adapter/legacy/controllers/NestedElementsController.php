@@ -7,7 +7,6 @@
 
 namespace craft\controllers;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\web\Controller;
@@ -16,7 +15,9 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\ElementCaches;
+use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -49,7 +50,7 @@ class NestedElementsController extends Controller
         $ownerElementType = $this->request->getRequiredBodyParam('ownerElementType');
         $ownerId = $this->request->getRequiredBodyParam('ownerId');
         $ownerSiteId = $this->request->getRequiredBodyParam('ownerSiteId');
-        $owner = Craft::$app->getElements()->getElementById($ownerId, $ownerElementType, $ownerSiteId);
+        $owner = Elements::getElementById($ownerId, $ownerElementType, $ownerSiteId);
         if (!$owner) {
             throw new BadRequestHttpException('Invalid owner params');
         }
@@ -151,11 +152,7 @@ class NestedElementsController extends Controller
             throw new BadRequestHttpException('Invalid elementId param');
         }
 
-        $elementsService = Craft::$app->getElements();
-
-        if (!$elementsService->canDelete($element)) {
-            throw new ForbiddenHttpException('User not authorized to delete this element.');
-        }
+        Gate::authorize('delete', $element);
 
         // If the element primarily belongs to a different element, just delete the ownership
         /** @var NestedElementInterface $element */
@@ -167,7 +164,7 @@ class NestedElementsController extends Controller
 
             $success = true;
         } else {
-            $success = $elementsService->deleteElement($element);
+            $success = Elements::deleteElement($element);
         }
 
         if (!$success) {

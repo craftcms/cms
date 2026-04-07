@@ -7,23 +7,18 @@
 
 namespace craft\elements\db;
 
-use craft\base\ElementInterface;
-
-/**
- * Class EagerLoadInfo
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0.0
- */
-class EagerLoadInfo
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @param EagerLoadPlan $plan The eager loading plan
-     * @param ElementInterface[] $sourceElements The source elements
+     * Class EagerLoadInfo
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Data\EagerLoadInfo} instead.
      */
-    public function __construct(
-        public EagerLoadPlan $plan,
-        public array $sourceElements,
-    ) {
+    class EagerLoadInfo
+    {
     }
 }
+
+class_alias(\CraftCms\Cms\Element\Data\EagerLoadInfo::class, EagerLoadInfo::class);

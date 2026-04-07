@@ -1707,11 +1707,9 @@ class ProjectConfig
                 $segments = explode('.', $path);
                 foreach ($segments as $segment) {
                     // If we're still traversing, enforce array to avoid errors.
-                    /** @phpstan-ignore-next-line */
                     if (! is_array($current)) {
                         $current = [];
                     }
-                    /** @phpstan-ignore-next-line */
                     if (! array_key_exists($segment, $current)) {
                         $current[$segment] = [];
                     }

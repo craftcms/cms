@@ -1,142 +1,15 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\elements\actions;
 
-use Craft;
-use craft\base\ElementAction;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use function CraftCms\Cms\t;
-
-/**
- * Restore represents a Restore element action.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1.0
- */
-class Restore extends ElementAction
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @var string|null The message that should be shown after the elements get restored
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Actions\Restore} instead.
      */
-    public ?string $successMessage = null;
-
-    /**
-     * @var string|null The message that should be shown after some elements get restored
-     */
-    public ?string $partialSuccessMessage = null;
-
-    /**
-     * @var string|null The message that should be shown if no elements get restored
-     */
-    public ?string $failMessage = null;
-
-    /**
-     * @var bool Whether the action should only be available for elements with a `data-restorable` attribute
-     * @since 4.3.0
-     */
-    public bool $restorableElementsOnly = false;
-
-    /**
-     * @inheritdoc
-     */
-    public function setElementType(string $elementType): void
+    class Restore extends \CraftCms\Cms\Element\Actions\Restore
     {
-        parent::setElementType($elementType);
-
-        if (!isset($this->successMessage)) {
-            $this->successMessage = t('{type} restored.', [
-                'type' => $elementType::pluralDisplayName(),
-            ]);
-        }
-
-        if (!isset($this->partialSuccessMessage)) {
-            $this->partialSuccessMessage = t('Some {type} restored.', [
-                'type' => $elementType::pluralLowerDisplayName(),
-            ]);
-        }
-
-        if (!isset($this->failMessage)) {
-            $this->failMessage = t('{type} not restored.', [
-                'type' => $elementType::pluralDisplayName(),
-            ]);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerLabel(): string
-    {
-        return t('Restore');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerHtml(): ?string
-    {
-        // Only enable for restorable/savable elements
-        HtmlStack::jsWithVars(fn($type, $attribute) => <<<JS
-(() => {
-    new Craft.ElementActionTrigger({
-        type: $type,
-        validateSelection: (selectedItems, elementIndex) => {
-            for (let i = 0; i < selectedItems.length; i++) {
-                if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), $attribute)) {
-                    return false;
-                }
-            }
-            return true;
-        },
-    });
-})();
-JS, [
-            static::class,
-            $this->restorableElementsOnly ? 'data-restorable' : 'data-savable',
-        ]);
-
-        return '<div class="btn formsubmit">' . $this->getTriggerLabel() . '</div>';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function performAction(ElementQueryInterface $query): bool
-    {
-        $anySuccess = false;
-        $anyFail = false;
-        $elementsService = Craft::$app->getElements();
-        $user = Craft::$app->getUser()->getIdentity();
-
-        foreach ($query->all() as $element) {
-            if (!$elementsService->canSave($element, $user)) {
-                continue;
-            }
-
-            if ($elementsService->restoreElement($element)) {
-                $anySuccess = true;
-            } else {
-                $anyFail = true;
-            }
-        }
-
-        if (!$anySuccess && $anyFail) {
-            $this->setMessage($this->failMessage);
-            return false;
-        }
-
-        if ($anyFail) {
-            $this->setMessage($this->partialSuccessMessage);
-        } else {
-            $this->setMessage($this->successMessage);
-        }
-
-        return true;
     }
 }
+
+class_alias(\CraftCms\Cms\Element\Actions\Restore::class, Restore::class);

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Jobs;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Queue\Job;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\I18N;
 use Override;
 
@@ -52,11 +52,10 @@ class PruneRevisions extends Job
         }
 
         $total = count($extraRevisions);
-        $elementsService = Craft::$app->getElements();
 
         foreach ($extraRevisions as $i => $extraRevision) {
             $this->setProgress((int) ((($i + 1) / $total) * 100));
-            $elementsService->deleteElement($extraRevision, true);
+            Elements::deleteElement($extraRevision, true);
         }
     }
 

@@ -7,7 +7,6 @@
 
 namespace craft\controllers;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\web\Controller;
 use CraftCms\Cms\Component\ComponentHelper;
@@ -17,6 +16,7 @@ use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
 use CraftCms\Cms\Support\Facades\Conditions;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Search;
 use CraftCms\Cms\Support\Typecast;
 use yii\web\BadRequestHttpException;
@@ -80,7 +80,7 @@ class ElementSearchController extends Controller
                     if ($ownerId) {
                         $criteria['ownerId'] = $ownerId;
                     }
-                    $condition->referenceElement = Craft::$app->getElements()->getElementById(
+                    $condition->referenceElement = Elements::getElementById(
                         (int)$referenceElementId,
                         siteId: $siteId,
                         criteria: $criteria,

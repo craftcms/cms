@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
-use Craft;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\ApplyingVolumeDelete;
@@ -23,6 +22,7 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
@@ -230,7 +230,7 @@ class Volumes
                 ->where('assets.deletedWithVolume', true)
                 ->all();
 
-            Craft::$app->getElements()->restoreElements($assets);
+            Elements::restoreElements($assets);
         }
 
         event(new VolumeSaved(
@@ -303,12 +303,11 @@ class Volumes
                 ->volumeId($volumeModel->id)
                 ->status(null)
                 ->all();
-            $elementsService = Craft::$app->getElements();
 
             foreach ($assets as $asset) {
                 $asset->deletedWithVolume = true;
                 $asset->keepFileOnDelete = true;
-                $elementsService->deleteElement($asset);
+                Elements::deleteElement($asset);
             }
 
             if ($volumeModel->fieldLayoutId) {

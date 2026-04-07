@@ -10,17 +10,12 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
-use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\db\ExcludeDescendantIdsExpression;
-use craft\elements\actions\DeleteActionInterface;
-use craft\elements\actions\Restore;
-use craft\elements\exporters\Raw;
-use craft\events\ElementActionEvent;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Contracts\ElementExporterInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\ElementSources;
@@ -29,15 +24,17 @@ use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
+use CraftCms\Cms\Support\Facades\ElementActions;
+use CraftCms\Cms\Support\Facades\ElementExporters;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Throwable;
-use yii\base\InvalidValueException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -99,9 +96,7 @@ class ElementIndexesController extends BaseElementsController
             return false;
         }
 
-        if (!in_array($action->id, ['export', 'perform-action'], true)) {
-            $this->requireAcceptsJson();
-        }
+        $this->requireAcceptsJson();
 
         $this->elementType = $this->elementType();
         $this->context = $this->context();
@@ -114,7 +109,7 @@ class ElementIndexesController extends BaseElementsController
             $this->elementQuery = $this->elementQuery();
 
             if (
-                in_array($action->id, ['get-elements', 'get-more-elements', 'perform-action', 'export']) &&
+                in_array($action->id, ['get-elements', 'get-more-elements'], true) &&
                 $this->isAdministrative() &&
                 isset($this->sourceKey)
             ) {
@@ -243,112 +238,6 @@ class ElementIndexesController extends BaseElementsController
     }
 
     /**
-     * Performs an action on one or more selected elements.
-     *
-     * @throws BadRequestHttpException if the requested element action is not supported by the element type, or its parameters didn’t validate
-     */
-    public function actionPerformAction(): ?Response
-    {
-        $this->requirePostRequest();
-
-        $elementsService = Craft::$app->getElements();
-
-        $actionClass = $this->request->getRequiredBodyParam('elementAction');
-        $elementIds = $this->request->getRequiredBodyParam('elementIds');
-
-        // Find that action from the list of available actions for the source
-        if (!empty($this->actions)) {
-            /** @var ElementAction $availableAction */
-            foreach ($this->actions as $availableAction) {
-                if ($actionClass === get_class($availableAction)) {
-                    $action = clone $availableAction;
-                    break;
-                }
-            }
-        }
-
-        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
-        if (!isset($action)) {
-            throw new BadRequestHttpException('Element action is not supported by the element type');
-        }
-
-        // Check for any params in the post data
-        foreach ($action->settingsAttributes() as $paramName) {
-            $paramValue = $this->request->getBodyParam($paramName);
-
-            if ($paramValue !== null) {
-                $action->$paramName = $paramValue;
-            }
-        }
-
-        // Make sure the action validates
-        if (!$action->validate()) {
-            throw new BadRequestHttpException('Element action params did not validate');
-        }
-
-        // Perform the action
-        $actionCriteria = (clone $this->elementQuery)
-            ->offset(0)
-            ->limit(null)
-            ->orderBy([])
-            ->positionedAfter(null)
-            ->positionedBefore(null)
-            ->id($elementIds);
-
-        // Fire a 'beforePerformAction' event
-        $event = new ElementActionEvent([
-            'action' => $action,
-            'criteria' => $actionCriteria,
-        ]);
-
-        $elementsService->trigger($elementsService::EVENT_BEFORE_PERFORM_ACTION, $event);
-
-        if ($event->isValid) {
-            $success = $action->performAction($actionCriteria);
-            $message = $action->getMessage();
-
-            if ($success) {
-                // Fire an 'afterPerformAction' event
-                $elementsService->trigger($elementsService::EVENT_AFTER_PERFORM_ACTION, new ElementActionEvent([
-                    'action' => $action,
-                    'criteria' => $actionCriteria,
-                ]));
-            }
-        } else {
-            $success = false;
-            $message = $event->message;
-        }
-
-        // Respond
-        if ($action->isDownload()) {
-            return $this->response;
-        }
-
-        if (!$success) {
-            return $this->asFailure($message);
-        }
-
-        // Send a new set of elements
-        $responseData = $this->elementResponseData(true, true);
-
-        // Send updated badge counts
-        $formatter = I18N::getFormatter();
-        foreach (app(ElementSources::class)->getSources($this->elementType, $this->context) as $source) {
-            if (!isset($source['key'])) {
-                continue;
-            }
-
-            if (isset($source['badgeCount'])) {
-                $responseData['badgeCounts'][$source['key']] = $formatter->asDecimal($source['badgeCount'], 0);
-            } else {
-                $responseData['badgeCounts'][$source['key']] = null;
-            }
-        }
-
-        return $this->asSuccess($message, data: $responseData);
-    }
-
-    /**
      * Returns the source tree HTML for an element index.
      */
     public function actionGetSourceTreeHtml(): Response
@@ -363,90 +252,6 @@ class ElementIndexesController extends BaseElementsController
                 'sources' => $sources->all(),
             ]),
         ]);
-    }
-
-    /**
-     * Exports element data.
-     *
-     * @throws BadRequestHttpException
-     *
-     * @since 3.4.4
-     */
-    public function actionExport(): Response
-    {
-        $exporter = $this->_exporter();
-        $exporter->setElementType($this->elementType);
-
-        // Set the filename header before calling export() in case export() starts outputting the data
-        $filename = $exporter->getFilename();
-        if ($exporter::isFormattable()) {
-            $this->response->format = $this->request->getBodyParam('format', 'csv');
-            $filename .= '.' . $this->response->format;
-        }
-        $this->response->setDownloadHeaders($filename);
-
-        $export = $exporter->export($this->elementQuery);
-
-        if ($exporter::isFormattable()) {
-            // Handle being passed in a generator function or other callable
-            if (is_callable($export)) {
-                $export = $export();
-            }
-            if (!is_iterable($export)) {
-                throw new InvalidValueException(get_class($exporter) . '::export() must return an array or generator function since isFormattable() returns true.');
-            }
-
-            $this->response->data = $export;
-
-            switch ($this->response->format) {
-                case Response::FORMAT_JSON:
-                    $this->response->formatters[Response::FORMAT_JSON]['prettyPrint'] = true;
-                    break;
-                case Response::FORMAT_XML:
-                    app()->setLocale('en-US');
-                    $this->response->formatters[Response::FORMAT_XML]['rootTag'] = Str::camel($this->elementType::pluralLowerDisplayName());
-                    break;
-            }
-        } elseif (
-            is_callable($export) ||
-            is_resource($export) ||
-            (is_array($export) && isset($export[0]) && is_resource($export[0]))
-        ) {
-            $this->response->stream = $export;
-        } else {
-            $this->response->data = $export;
-            $this->response->format = Response::FORMAT_RAW;
-        }
-
-        return $this->response;
-    }
-
-    /**
-     * Returns the exporter for the request.
-     *
-     * @throws BadRequestHttpException
-     */
-    private function _exporter(): ElementExporterInterface
-    {
-        if (!$this->sourceKey) {
-            throw new BadRequestHttpException('Request missing required body param');
-        }
-
-        if (!$this->isAdministrative()) {
-            throw new BadRequestHttpException('Request missing index context');
-        }
-
-        // Find that exporter from the list of available exporters for the source
-        $exporterClass = $this->request->getBodyParam('type', Raw::class);
-        if (!empty($this->exporters)) {
-            foreach ($this->exporters as $exporter) {
-                if ($exporterClass === get_class($exporter)) {
-                    return $exporter;
-                }
-            }
-        }
-
-        throw new BadRequestHttpException('Element exporter is not supported by the element type');
     }
 
     /**
@@ -538,9 +343,6 @@ class ElementIndexesController extends BaseElementsController
             throw new BadRequestHttpException('No element data provided.');
         }
 
-        $elementsService = Craft::$app->getElements();
-        $user = static::currentUser();
-
         // get all the elements
         $elementIds = array_map(
             fn(string $key) => (int) Str::chopStart($key, 'element-'),
@@ -560,9 +362,7 @@ class ElementIndexesController extends BaseElementsController
 
         // make sure they're editable
         foreach ($elements as $element) {
-            if (!$elementsService->canSave($element, $user)) {
-                throw new ForbiddenHttpException('User not authorized to save this element.');
-            }
+            Gate::authorize('save', $element);
         }
 
         // set attributes and validate everything
@@ -605,7 +405,7 @@ class ElementIndexesController extends BaseElementsController
 
         try {
             foreach ($elements as $element) {
-                if (!$elementsService->saveElement($element)) {
+                if (!Elements::saveElement($element)) {
                     Log::error("Couldn’t save element $element->id: " . implode(', ', $element->getFirstErrors()));
                     throw new ServerErrorHttpException("Couldn’t save element $element->id");
                 }
@@ -865,48 +665,11 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function availableActions(): ?array
     {
-        $actions = $this->elementType::actions($this->sourceKey);
-
-        foreach ($actions as $i => $action) {
-            // $action could be a string or config array
-            if ($action instanceof ElementActionInterface) {
-                $action->setElementType($this->elementType);
-            } else {
-                if (is_string($action)) {
-                    $action = ['type' => $action];
-                }
-                /** @var array $action */
-                /** @phpstan-var array{type:class-string<ElementActionInterface>} $action */
-                $action['elementType'] = $this->elementType;
-                $actions[$i] = $action = Craft::$app->getElements()->createAction($action);
-            }
-
-            if ($this->elementQuery->trashed) {
-                if ($action instanceof DeleteActionInterface && $action->canHardDelete()) {
-                    $action->setHardDelete();
-                } elseif (!$action instanceof Restore) {
-                    unset($actions[$i]);
-                }
-            } elseif ($action instanceof Restore) {
-                unset($actions[$i]);
-            }
-        }
-
-        if ($this->elementQuery->trashed) {
-            // Make sure Restore goes first
-            usort($actions, function($a, $b): int {
-                if ($a instanceof Restore) {
-                    return -1;
-                }
-                if ($b instanceof Restore) {
-                    return 1;
-                }
-
-                return 0;
-            });
-        }
-
-        return array_values($actions);
+        return ElementActions::availableActions(
+            elementType: $this->elementType,
+            sourceKey: $this->sourceKey,
+            elementQuery: $this->elementQuery,
+        );
     }
 
     /**
@@ -922,22 +685,7 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        $exporters = $this->elementType::exporters($this->sourceKey);
-
-        foreach ($exporters as $i => $exporter) {
-            // $action could be a string or config array
-            if ($exporter instanceof ElementExporterInterface) {
-                $exporter->setElementType($this->elementType);
-            } else {
-                if (is_string($exporter)) {
-                    $exporter = ['type' => $exporter];
-                }
-                $exporter['elementType'] = $this->elementType;
-                $exporters[$i] = Craft::$app->getElements()->createExporter($exporter);
-            }
-        }
-
-        return array_values($exporters);
+        return ElementExporters::availableExporters($this->elementType, $this->sourceKey);
     }
 
     /**
@@ -949,14 +697,7 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        $actionData = [];
-
-        /** @var ElementAction $action */
-        foreach ($this->actions as $action) {
-            $actionData[] = ElementHelper::actionConfig($action);
-        }
-
-        return $actionData;
+        return ElementActions::serializeActions($this->actions);
     }
 
     /**
@@ -970,17 +711,7 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        $exporterData = [];
-
-        foreach ($this->exporters as $exporter) {
-            $exporterData[] = [
-                'type' => get_class($exporter),
-                'name' => $exporter::displayName(),
-                'formattable' => $exporter::isFormattable(),
-            ];
-        }
-
-        return $exporterData;
+        return ElementExporters::serializeExporters($this->exporters);
     }
 
     /**

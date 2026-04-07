@@ -1,120 +1,15 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\elements\actions;
 
-use Craft;
-use craft\base\ElementAction;
-use craft\base\ElementInterface;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use Illuminate\Support\Facades\Auth;
-use function CraftCms\Cms\t;
-
-/**
- * Delete represents a “Delete for site” element action.
- *
- * Element types that make this action available should implement [[ElementInterface::canDelete()]] to explicitly state whether they can be
- * deleted by the current user.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.7.0
- */
-class DeleteForSite extends ElementAction
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @var string|null The confirmation message that should be shown before the elements get deleted
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Actions\DeleteForSite} instead.
      */
-    public ?string $confirmationMessage = null;
-
-    /**
-     * @var string|null The message that should be shown after the elements get deleted
-     */
-    public ?string $successMessage = null;
-
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerHtml(): ?string
+    class DeleteForSite extends \CraftCms\Cms\Element\Actions\DeleteForSite
     {
-        // Only enable for deletable elements, per canDelete()
-        HtmlStack::jsWithVars(fn($type) => <<<JS
-(() => {
-    new Craft.ElementActionTrigger({
-        type: $type,
-        validateSelection: (selectedItems, elementIndex) => {
-            for (let i = 0; i < selectedItems.length; i++) {
-                if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), 'data-deletable-for-site')) {
-                    return false;
-                }
-            }
-
-            return elementIndex.settings.canDeleteElements(selectedItems);
-        },
-    })
-})();
-JS, [static::class]);
-
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerLabel(): string
-    {
-        return t('Delete for site');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function isDestructive(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getConfirmationMessage(): ?string
-    {
-        return $this->confirmationMessage ?? t('Are you sure you want to delete the selected {type} for this site?', [
-            'type' => $this->elementType::pluralLowerDisplayName(),
-        ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function performAction(ElementQueryInterface $query): bool
-    {
-        $elementsService = Craft::$app->getElements();
-        $user = Auth::user();
-
-        // Ignore any elements the user doesn’t have permission to delete
-        $elements = array_filter(
-            $query->all(),
-            fn(ElementInterface $element) => (
-                $elementsService->canView($element, $user) &&
-                $elementsService->canDeleteForSite($element, $user)
-            ),
-        );
-
-        $elementsService->deleteElementsForSite($elements);
-
-        if (isset($this->successMessage)) {
-            $this->setMessage($this->successMessage);
-        } else {
-            $this->setMessage(t('{type} deleted for site.', [
-                'type' => $this->elementType::pluralDisplayName(),
-            ]));
-        }
-
-        return true;
     }
 }
+
+class_alias(\CraftCms\Cms\Element\Actions\DeleteForSite::class, DeleteForSite::class);

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Commands;
 
-use Craft;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Element\Commands\Concerns\ResolvesElementById;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Enums\SectionType;
 use Illuminate\Console\Command;
@@ -32,7 +32,7 @@ final class DeleteCommand extends Command
     #[Override]
     protected $aliases = ['elements/delete'];
 
-    public function handle(): int
+    public function handle(Elements $elements): int
     {
         $element = $this->resolveElementById((int) $this->argument('id'));
 
@@ -66,8 +66,8 @@ final class DeleteCommand extends Command
 
         $this->components->task(
             sprintf('Deleting "%s"', $element->getUiLabel()),
-            function () use ($element, &$failed): TaskResult {
-                $failed = ! Craft::$app->getElements()->deleteElement($element, (bool) $this->option('hard'));
+            function () use ($elements, $element, &$failed): TaskResult {
+                $failed = ! $elements->deleteElement($element, (bool) $this->option('hard'));
 
                 if ($failed) {
                     return TaskResult::Failure;

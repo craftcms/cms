@@ -8,7 +8,6 @@
 namespace crafttests\unit\gql\mutations;
 
 use Codeception\Stub\Expected;
-use Craft;
 use craft\elements\db\EntryQuery;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\Mutation;
@@ -206,10 +205,10 @@ class GeneralMutationResolverTest extends TestCase
      */
     public function testSavingElementWithValidationError(): void
     {
-        $elementService = $this->make(Elements::class, [
-            'saveElement' => Expected::once(false),
-        ]);
-        Craft::$app->set('elements', $elementService);
+        \CraftCms\Cms\Support\Facades\Elements::partialMock()
+            ->shouldReceive('saveElement')
+            ->andReturn(false)
+            ->once();
 
         $validationError = 'There was an error saving the element';
 
@@ -239,10 +238,9 @@ class GeneralMutationResolverTest extends TestCase
             'sections' => SectionsFixture::class,
         ]);
 
-        $elementService = $this->make(Elements::class, [
-            'saveElement' => false,
-        ]);
-        Craft::$app->set('elements', $elementService);
+        \CraftCms\Cms\Support\Facades\Elements::partialMock()
+            ->shouldReceive('saveElement')
+            ->andReturn(false);
 
         $entry = new Entry();
         $entry->title = 'Entry title';
@@ -310,10 +308,9 @@ class GeneralMutationResolverTest extends TestCase
             'one' => $entry,
         ]);
 
-        Craft::$app->set('elements', $this->make(Elements::class, [
-            'saveElement' => true,
-            'createElementQuery' => $query,
-        ]));
+        \CraftCms\Cms\Support\Facades\Elements::partialMock()
+            ->shouldReceive('saveElement')->andReturn(true)
+            ->shouldReceive('createElementQuery')->andReturn($query);
 
         // Set up the mutation resolve to return our mock entry and pretend to save the entry, when asked to
         // Also mock our input type definitions

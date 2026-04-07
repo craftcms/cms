@@ -30,7 +30,7 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Translation\Formatter;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Stringable;
 use yii\web\Response;
 
@@ -78,8 +78,7 @@ trait HasControlPanelUI
     public function getAltActions(): array
     {
         $isUnpublishedDraft = $this->getIsUnpublishedDraft();
-        $elementsService = Craft::$app->getElements();
-        $canSaveCanonical = $elementsService->canSaveCanonical($this);
+        $canSaveCanonical = Gate::check('saveCanonical', $this);
 
         $altActions = [
             [
@@ -95,7 +94,7 @@ trait HasControlPanelUI
 
         if ($this->getIsCanonical() || $this->isProvisionalDraft) {
             $newElement = $this->createAnother();
-            if ($newElement && $elementsService->canSave($newElement)) {
+            if ($newElement && Gate::check('save', $newElement)) {
                 $altActions[] = [
                     'label' => $isUnpublishedDraft && $canSaveCanonical
                         ? t('Create and add another')
@@ -118,7 +117,7 @@ trait HasControlPanelUI
                 ];
             }
 
-            if (! $this->getIsRevision() && $elementsService->canDuplicateAsDraft($this)) {
+            if (! $this->getIsRevision() && Gate::check('duplicateAsDraft', $this)) {
                 $altActions[] = [
                     'label' => t('Save as a new {type}', [
                         'type' => static::lowerDisplayName(),
@@ -162,7 +161,6 @@ trait HasControlPanelUI
     protected function safeActionMenuItems(): array
     {
         $items = [];
-        $elementsService = Craft::$app->getElements();
 
         // Validate
         if (
@@ -222,7 +220,7 @@ JS, [
             ];
         }
 
-        if ($elementsService->canView($this)) {
+        if (Gate::check('view', $this)) {
             // Edit
             $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [
@@ -250,7 +248,7 @@ JS, [
             ]);
 
             // Copy
-            if (! $this->getIsRevision() && $elementsService->canCopy($this)) {
+            if (! $this->getIsRevision() && Gate::check('copy', $this)) {
                 $copyId = sprintf('action-copy-%s', mt_rand());
                 $items[] = [
                     'id' => $copyId,
@@ -300,9 +298,6 @@ JS, [
     {
         $items = [];
 
-        $elementsService = Craft::$app->getElements();
-        $user = Auth::user();
-
         $isCanonical = $this->getIsCanonical();
         $isDraft = $this->getIsDraft();
         $isUnpublishedDraft = $this->getIsUnpublishedDraft();
@@ -320,13 +315,13 @@ JS, [
             default => false,
         };
 
-        $canDeleteDraft = $isDraft && ! $this->isProvisionalDraft && $elementsService->canDelete($this, $user);
-        $canDeleteCanonical = $elementsService->canDelete($canonical, $user);
-        $canDeleteCanonicalForSite = $elementsService->canDeleteForSite($canonical, $user);
+        $canDeleteDraft = $isDraft && ! $this->isProvisionalDraft && Gate::check('delete', $this);
+        $canDeleteCanonical = Gate::check('delete', $canonical);
+        $canDeleteCanonicalForSite = Gate::check('deleteForSite', $canonical);
         $canDeleteForSite = (
             ElementHelper::isMultiSite($this) &&
             (($isCurrent && $canDeleteCanonicalForSite) || ($canDeleteDraft && $isNewSite)) &&
-            $elementsService->canDeleteForSite($this, $user)
+            Gate::check('deleteForSite', $this)
         );
 
         if ($isCurrent) {

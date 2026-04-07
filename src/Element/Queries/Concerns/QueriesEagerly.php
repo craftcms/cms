@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
-use Craft;
 use craft\base\ElementInterface;
-use craft\elements\db\EagerLoadPlan;
+use CraftCms\Cms\Element\Data\EagerLoadPlan;
+use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Collection;
 
 /**
@@ -58,8 +58,7 @@ trait QueriesEagerly
                 return $result;
             }
 
-            $elementsService = Craft::$app->getElements();
-            $elementsService->eagerLoadElements($this->elementType, $result->all(), $this->with);
+            Elements::eagerLoadElements($this->elementType, $result->all(), $this->with);
 
             return $result;
         });
@@ -213,18 +212,18 @@ trait QueriesEagerly
         };
 
         if (! $eagerLoaded) {
-            Craft::$app->getElements()->eagerLoadElements(
+            Elements::eagerLoadElements(
                 $this->eagerLoadSourceElement::class,
                 $this->eagerLoadSourceElement->elementQueryResult,
                 [
-                    new EagerLoadPlan([
-                        'handle' => $this->eagerLoadHandle,
-                        'alias' => $alias,
-                        'criteria' => $criteria + $this->getCriteria() + ['with' => $this->with],
-                        'all' => ! $count,
-                        'count' => $count,
-                        'lazy' => true,
-                    ]),
+                    new EagerLoadPlan(
+                        handle: $this->eagerLoadHandle,
+                        alias: $alias,
+                        criteria: $criteria + $this->getCriteria() + ['with' => $this->with],
+                        all: ! $count,
+                        count: $count,
+                        lazy: true,
+                    ),
                 ],
             );
         }

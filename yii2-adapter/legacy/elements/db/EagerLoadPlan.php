@@ -7,60 +7,29 @@
 
 namespace craft\elements\db;
 
-use yii\base\BaseObject;
+use CraftCms\Cms\Support\Arr;
 
 /**
  * Class EagerLoadPlan
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Data\EagerLoadPlan} instead.
  */
-class EagerLoadPlan extends BaseObject
+class EagerLoadPlan extends \CraftCms\Cms\Element\Data\EagerLoadPlan
 {
-    /**
-     * @var string|null The eager-loading handle
-     */
-    public ?string $handle = null;
+    public function __construct(
+        array $config,
+    ) {
+        $handle = Arr::get($config, 'handle');
+        $alias = Arr::get($config, 'alias');
+        $criteria = Arr::get($config, 'criteria', []);
+        $all = Arr::get($config, 'all', false);
+        $count = Arr::get($config, 'count', false);
+        $when = Arr::get($config, 'when');
+        $nested = Arr::get($config, 'nested', []);
+        $lazy = Arr::get($config, 'lazy', false);
 
-    /**
-     * @var string|null The eager-loading alias
-     */
-    public ?string $alias = null;
-
-    /**
-     * @var array The criteria that should be applied when eager-loading these elements
-     */
-    public array $criteria = [];
-
-    /**
-     * @var bool Whether to eager-load the matching elements
-     * @since 3.5.12
-     */
-    public bool $all = false;
-
-    /**
-     * @var bool Whether to eager-load the count of the matching elements
-     */
-    public bool $count = false;
-
-    /**
-     * @var callable|null A PHP callable whose return value determines whether to apply eager-loaded elements to the given element.
-     *
-     * The signature of the callable should be `function (\craft\base\ElementInterface $element): bool`, where `$element` refers to the element
-     * the eager-loaded elements are about to be applied to. The callable should return a boolean value.
-     *
-     * @since 3.5.12
-     */
-    public $when;
-
-    /**
-     * @var EagerLoadPlan[] Nested eager-loading plans to apply to the eager-loaded elements.
-     */
-    public array $nested = [];
-
-    /**
-     * @var bool Whether the elements are being eager-loaded lazily.
-     * @since 5.0.0
-     */
-    public bool $lazy = false;
+        parent::__construct($handle, $alias, $criteria, $all, $count, $when, $nested, $lazy);
+    }
 }

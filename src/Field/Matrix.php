@@ -8,8 +8,6 @@ use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\elements\NestedElementManager;
-use craft\events\BulkElementsEvent;
 use craft\validators\StringValidator;
 use craft\validators\UriFormatValidator;
 use craft\web\assets\cp\CpAsset;
@@ -21,8 +19,10 @@ use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Events\AfterSaveNestedElements;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
+use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
@@ -47,6 +47,7 @@ use CraftCms\Cms\Gql\Types\Input\Matrix as MatrixInputType;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -63,6 +64,7 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -389,7 +391,13 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 ],
             );
 
-            $this->_entryManager->on(NestedElementManager::EVENT_AFTER_SAVE_ELEMENTS, $this->afterSaveEntries(...));
+            Event::listen(function (AfterSaveNestedElements $event) {
+                if ($event->manager !== $this->_entryManager) {
+                    return;
+                }
+
+                $this->afterSaveEntries($event);
+            });
         }
 
         return $this->_entryManager;
@@ -488,7 +496,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         $owner = $element->getOwner();
 
-        return $owner && Craft::$app->getElements()->canView($owner, $user);
+        return $owner && $user->can('view', $owner);
     }
 
     public function canSaveElement(NestedElementInterface $element, User $user): bool
@@ -499,15 +507,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             return false;
         }
 
-        if (Craft::$app->getElements()->canSave($owner, $user)) {
+        if ($user->can('save', $owner)) {
             return true;
         }
 
         // Check all the owners. Maybe the user can save one of the other ones?
-        /** @phpstan-ignore-next-line  */
-        if (! Craft::$app->getElements()->canSave($owner, $user) && ! $owner->getIsRevision()) {
+        if (! $owner->getIsRevision()) {
             foreach ($element->getOwners(['revisions' => false]) as $o) {
-                if ($o->id !== $owner->id && Craft::$app->getElements()->canSave($o, $user)) {
+                if ($o->id !== $owner->id && $user->can('save', $o)) {
                     return true;
                 }
             }
@@ -520,7 +527,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         $owner = $element->getOwner();
 
-        if (! $owner || ! Craft::$app->getElements()->canSave($owner, $user)) {
+        if (! $owner || ! $user->can('save', $owner)) {
             return false;
         }
 
@@ -532,7 +539,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         $owner = $element->getOwner();
 
-        if (! $owner || ! Craft::$app->getElements()->canSave($element->getOwner(), $user)) {
+        if (! $owner || ! $user->can('save', $element->getOwner())) {
             return false;
         }
 
@@ -668,21 +675,19 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         // Existing element?
         if ($owner && $owner->id) {
-            $query->beforeQuery(function (EntryQuery $entryQuery) use ($owner) {
-                $entryQuery->owner($owner);
+            $query->owner($owner);
 
-                // Clear out id=false if this query was populated previously
-                if ($entryQuery->id === false) {
-                    $entryQuery->id = null;
-                }
+            // Clear out id=false if this query was populated previously
+            if ($query->id === false) {
+                $query->id = null;
+            }
 
-                // If the owner is a revision, allow revision entries to be returned as well
-                if ($owner->getIsRevision()) {
-                    $entryQuery
-                        ->revisions(null)
-                        ->trashed(null);
-                }
-            });
+            // If the owner is a revision, allow revision entries to be returned as well
+            if ($owner->getIsRevision()) {
+                $query
+                    ->revisions(null)
+                    ->trashed(null);
+            }
 
             // Prepare the query for lazy eager loading
             $query->prepForEagerLoading($this->handle, $owner);
@@ -1591,27 +1596,26 @@ JS,
     /**
      * Handles nested entry saves.
      */
-    public function afterSaveEntries(BulkElementsEvent $event): void
+    public function afterSaveEntries(AfterSaveNestedElements $event): void
     {
-        if (
-            ! app()->runningInConsole() &&
-            ! Craft::$app->getResponse()->isSent
-        ) {
-            // Tell the browser to collapse any new entry IDs
-            $collapsedIds = Collection::make($event->elements)
-                /** @phpstan-ignore-next-line */
-                ->filter(fn (Entry $entry) => $entry->collapsed)
-                /** @phpstan-ignore-next-line */
-                ->map(fn (Entry $entry) => $entry->id)
-                ->all();
+        if (app()->runningInConsole()) {
+            return;
+        }
 
-            if (! empty($collapsedIds)) {
-                Craft::$app->getSession()->addAssetBundleFlash(MatrixAsset::class);
+        // Tell the browser to collapse any new entry IDs
+        $collapsedIds = Collection::make($event->elements)
+            ->filter(fn (Entry $entry) => $entry->collapsed)
+            ->map(fn (Entry $entry) => $entry->id)
+            ->all();
 
-                foreach ($collapsedIds as $id) {
-                    Craft::$app->getSession()->addJsFlash("Craft.MatrixInput.rememberCollapsedEntryId($id);", View::POS_END);
-                }
-            }
+        if (empty($collapsedIds)) {
+            return;
+        }
+
+        Craft::$app->getSession()->addAssetBundleFlash(MatrixAsset::class);
+
+        foreach ($collapsedIds as $id) {
+            Craft::$app->getSession()->addJsFlash("Craft.MatrixInput.rememberCollapsedEntryId($id);", View::POS_END);
         }
     }
 
@@ -1631,17 +1635,13 @@ JS,
     #[Override]
     public function beforeElementDeleteForSite(ElementInterface $element): bool
     {
-        $elementsService = Craft::$app->getElements();
-
         /** @var Entry[] $entries */
         $entries = Entry::find()
             ->primaryOwner($element)
             ->status(null)
             ->all();
 
-        foreach ($entries as $entry) {
-            $elementsService->deleteElementForSite($entry);
-        }
+        Elements::deleteElementsForSite($entries);
 
         return true;
     }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Structure\Data\Structure;
 use CraftCms\Cms\Structure\Structures;
@@ -26,6 +26,7 @@ readonly class StructuresController
     public function __construct(
         private Request $request,
         private Structures $structures,
+        Elements $elements,
     ) {
         [
             'structureId' => $structureId,
@@ -45,10 +46,8 @@ readonly class StructuresController
             'Structure not found.'
         );
 
-        $elementsService = Craft::$app->getElements();
-
         abort_if(
-            is_null($elementType = $elementsService->getElementTypeById($elementId)),
+            is_null($elementType = $elements->getElementTypeById($elementId)),
             404,
             'Element not found.'
         );
@@ -72,16 +71,16 @@ readonly class StructuresController
         ]);
     }
 
-    public function moveElement(): Response
+    public function moveElement(Elements $elements): Response
     {
         $parentElementId = $this->request->input('parentId');
         $prevElementId = $this->request->input('prevId');
 
         if ($prevElementId) {
-            $prevElement = Craft::$app->getElements()->getElementById($prevElementId, null, $this->element->siteId);
+            $prevElement = $elements->getElementById($prevElementId, null, $this->element->siteId);
             $success = $this->structures->moveAfter($this->structure->id, $this->element, $prevElement);
         } elseif ($parentElementId) {
-            $parentElement = Craft::$app->getElements()->getElementById($parentElementId, null, $this->element->siteId);
+            $parentElement = $elements->getElementById($parentElementId, null, $this->element->siteId);
             $success = $this->structures->prepend($this->structure->id, $this->element, $parentElement);
         } else {
             $success = $this->structures->prependToRoot($this->structure->id, $this->element);

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Site;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
@@ -26,6 +25,7 @@ use CraftCms\Cms\Site\Events\SitesReordered;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Str;
@@ -911,7 +911,7 @@ class Sites
             // Update all of the non-localized elements
             $nonLocalizedElementTypes = [];
 
-            foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
+            foreach (Elements::getAllElementTypes() as $elementType) {
                 /** @var class-string<ElementInterface> $elementType */
                 if (! $elementType::isLocalized()) {
                     $nonLocalizedElementTypes[] = $elementType;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
-use Craft;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -31,6 +31,7 @@ readonly class StoreEntryController
 
     public function __construct(
         private Request $request,
+        private Elements $elements,
         private Entries $entries,
         private Sites $sites,
     ) {}
@@ -75,7 +76,7 @@ readonly class StoreEntryController
         }
 
         try {
-            $success = Craft::$app->getElements()->saveElement($entry);
+            $success = $this->elements->saveElement($entry);
         } catch (UnsupportedSiteException $e) {
             $entry->errors()->add('siteId', $e->getMessage());
             $success = false;
@@ -104,7 +105,7 @@ readonly class StoreEntryController
             ->one();
 
         if ($provisional) {
-            Craft::$app->getElements()->deleteElement($provisional, true);
+            $this->elements->deleteElement($provisional, true);
         }
 
         $data = [];
@@ -186,7 +187,7 @@ readonly class StoreEntryController
             $wasEnabled = $entry->enabled;
             $entry->draftId = null;
             $entry->isProvisionalDraft = false;
-            $entry = Craft::$app->getElements()->duplicateElement($entry);
+            $entry = $this->elements->duplicateElement($entry);
             if ($wasEnabled && ! $entry->enabled) {
                 $forceDisabled = true;
             }

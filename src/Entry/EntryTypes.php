@@ -30,6 +30,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Markdown;
@@ -399,7 +400,7 @@ class EntryTypes
                 $entriesBySection = $entries->groupBy('sectionId')->all();
                 foreach ($entriesBySection as $sectionEntries) {
                     try {
-                        Craft::$app->getElements()->restoreElements($sectionEntries);
+                        Elements::restoreElements($sectionEntries);
                     } catch (InvalidConfigException) {
                         // the section probably wasn't restored
                     }

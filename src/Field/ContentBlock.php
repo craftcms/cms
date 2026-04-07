@@ -7,13 +7,13 @@ namespace CraftCms\Cms\Field;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\elements\db\EagerLoadPlan;
-use craft\elements\NestedElementManager;
 use craft\web\assets\cp\CpAsset;
+use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -26,6 +26,7 @@ use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Resolvers\Elements\ContentBlock as ContentBlockResolver;
 use CraftCms\Cms\Gql\Types\Generators\ContentBlock as ContentBlockGenerator;
 use CraftCms\Cms\Gql\Types\Input\ContentBlock as ContentBlockInputType;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -273,7 +274,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     {
         $owner = $element->getOwner();
 
-        return $owner && Craft::$app->getElements()->canView($owner, $user);
+        return $owner && $user->can('view', $owner);
     }
 
     public function canSaveElement(NestedElementInterface $element, User $user): bool
@@ -284,15 +285,14 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
             return false;
         }
 
-        if (Craft::$app->getElements()->canSave($owner, $user)) {
+        if ($user->can('save', $owner)) {
             return true;
         }
 
         // Check all the owners. Maybe the user can save one of the other ones?
-        /** @phpstan-ignore-next-line  */
-        if (! Craft::$app->getElements()->canSave($owner, $user) && ! $owner->getIsRevision()) {
+        if (! $owner->getIsRevision()) {
             foreach ($element->getOwners(['revisions' => false]) as $o) {
-                if ($o->id !== $owner->id && Craft::$app->getElements()->canSave($o, $user)) {
+                if ($o->id !== $owner->id && $user->can('save', $o)) {
                     return true;
                 }
             }
@@ -355,6 +355,14 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         ?ElementInterface $element,
         bool $fromRequest,
     ): ContentBlockElement {
+        if ($value instanceof ContentBlockElement) {
+            if ($element) {
+                $this->setOwnerOnContentBlockElement($element, $value);
+            }
+
+            return $value;
+        }
+
         if ($value instanceof ElementQueryInterface) {
             /** @var ?ContentBlockElement $contentBlock */
             $contentBlock = $value->one();
@@ -436,9 +444,9 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
                     if ($contentBlock) {
                         $this->setOwnerOnContentBlockElement($e, $contentBlock);
                     }
-                    $e->setEagerLoadedElements($handle, $contentBlock ? [$contentBlock] : [], new EagerLoadPlan([
-                        'handle' => $handle,
-                    ]));
+                    $e->setEagerLoadedElements($handle, $contentBlock ? [$contentBlock] : [], new EagerLoadPlan(
+                        handle: $handle,
+                    ));
                 }
 
                 /** @phpstan-ignore-next-line */
@@ -459,7 +467,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
 
     private function createContentBlockElement(?ElementInterface $owner): ContentBlockElement
     {
-        return Craft::$app->getElements()->createElement([
+        return Elements::createElement([
             'type' => ContentBlockElement::class,
             'siteId' => $owner->siteId,
             'owner' => $owner,
@@ -586,7 +594,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         // Make sure the content block is fully saved
         /** @var ContentBlockElement $value */
         if (! $value->id) {
-            Craft::$app->getElements()->saveElement($value);
+            Elements::saveElement($value);
         }
 
         $id = $this->getInputId();
@@ -727,17 +735,13 @@ JS, [
     #[Override]
     public function beforeElementDeleteForSite(ElementInterface $element): bool
     {
-        $elementsService = Craft::$app->getElements();
-
         /** @var ContentBlockElement[] $contentBlocks */
         $contentBlocks = ContentBlockElement::find()
             ->primaryOwner($element)
             ->status(null)
             ->all();
 
-        foreach ($contentBlocks as $contentBlock) {
-            $elementsService->deleteElementForSite($contentBlock);
-        }
+        Elements::deleteElementsForSite($contentBlocks);
 
         return true;
     }

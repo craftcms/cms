@@ -11,12 +11,14 @@ use CraftCms\Cms\Auth\Events\AuthorizingElement;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Gate;
 
 class ElementPolicy
 {
     private const array ABILITIES = [
         'view',
         'save',
+        'saveCanonical',
         'delete',
         'duplicate',
         'copy',
@@ -51,6 +53,18 @@ class ElementPolicy
         event($event = new AuthorizingElement($user, $element, $ability));
 
         return $event->authorized;
+    }
+
+    public function saveCanonical(User $user, ElementInterface $element): bool
+    {
+        if ($element->getIsUnpublishedDraft()) {
+            $fakeCanonical = clone $element;
+            $fakeCanonical->draftId = null;
+
+            return Gate::forUser($user)->check('save', $fakeCanonical);
+        }
+
+        return Gate::forUser($user)->check('save', $element->getCanonical(true));
     }
 
     /**

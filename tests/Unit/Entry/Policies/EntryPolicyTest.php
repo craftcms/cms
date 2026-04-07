@@ -155,6 +155,16 @@ it('requires create entries permission for new entry', function () {
     expect($result)->toBeTrue();
 });
 
+it('allows gate save canonical for unpublished drafts when creating a new entry is allowed', function () {
+    $user = createEntryTestUser(['createEntries:channel-section-uid']);
+    $entry = createEntryTestDraft($this->channelSection, draftCreatorId: $user->id, id: null, unpublished: true);
+    Gate::policy($entry::class, EntryPolicy::class);
+
+    $result = Gate::forUser($user)->check('saveCanonical', $entry);
+
+    expect($result)->toBeTrue();
+});
+
 it('does not allow saving new single entry', function () {
     $user = createEntryTestUser(['createEntries:single-section-uid']);
     $entry = createEntryTestEntry($this->singleSection, id: null);
@@ -459,30 +469,31 @@ function createEntryTestEntry(Section $section, ?int $id = 100, array $authorIds
     return $entry;
 }
 
-function createEntryTestDraft(Section $section, int $draftCreatorId): Entry
+function createEntryTestDraft(Section $section, int $draftCreatorId, ?int $id = 100, bool $unpublished = false): Entry
 {
     $entry = new class extends Entry
     {
         public ?Section $mockSection = null;
 
-        public bool $mockIsDraft = false;
+        public bool $mockIsCanonical = false;
 
         public function getSection(): ?Section
         {
             return $this->mockSection;
         }
 
-        public function getIsDraft(): bool
+        public function getIsCanonical(): bool
         {
-            return $this->mockIsDraft;
+            return $this->mockIsCanonical;
         }
     };
 
-    $entry->id = 100;
+    $entry->id = $id;
     $entry->siteId = null;
     $entry->sectionId = $section->id;
     $entry->mockSection = $section;
-    $entry->mockIsDraft = true;
+    $entry->mockIsCanonical = $unpublished;
+    $entry->draftId = 100;
     $entry->draftCreatorId = $draftCreatorId;
 
     return $entry;

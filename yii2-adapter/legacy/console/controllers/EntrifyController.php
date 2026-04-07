@@ -32,6 +32,7 @@ use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Facades\Users;
@@ -595,7 +596,7 @@ class EntrifyController extends Controller
                 ->one();
 
             if ($oldEntry) {
-                Craft::$app->getElements()->deleteElement($oldEntry, true);
+                Elements::deleteElement($oldEntry, true);
             }
 
             DbFacade::table(Table::ENTRIES)

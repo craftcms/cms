@@ -11,6 +11,7 @@ use Craft;
 use craft\errors\ElementNotFoundException;
 use craft\test\TestCase;
 use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Str;
 use UnitTester;
 
@@ -48,7 +49,7 @@ class GlobalsTest extends TestCase
             tokenMatches: ['testuid'],
         );
 
-        $this->tester->mockMethods(Craft::$app, 'elements', ['saveElement' => false]);
+        Elements::partialMock()->shouldReceive('saveElement')->andReturn(false);
 
         $this->tester->expectThrowable(ElementNotFoundException::class, function() use ($configEvent) {
             Craft::$app->getGlobals()->handleChangedGlobalSet($configEvent);

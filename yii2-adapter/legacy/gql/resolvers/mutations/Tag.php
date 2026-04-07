@@ -7,10 +7,10 @@
 
 namespace craft\gql\resolvers\mutations;
 
-use Craft;
 use craft\elements\Tag as TagElement;
 use craft\gql\base\ElementMutationResolver;
 use craft\models\TagGroup;
+use CraftCms\Cms\Support\Facades\Elements;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Support\Facades\DB;
@@ -43,20 +43,19 @@ class Tag extends ElementMutationResolver
         /** @var TagGroup $tagGroup */
         $tagGroup = $this->getResolutionData('tagGroup');
         $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']);
-        $elementService = Craft::$app->getElements();
 
         if ($canIdentify) {
             if (!empty($arguments['uid'])) {
-                $tag = $elementService->createElementQuery(TagElement::class)->uid($arguments['uid'])->one();
+                $tag = Elements::createElementQuery(TagElement::class)->uid($arguments['uid'])->one();
             } else {
-                $tag = $elementService->getElementById($arguments['id'], TagElement::class);
+                $tag = Elements::getElementById($arguments['id'], TagElement::class);
             }
 
             if (!$tag) {
                 throw new Error('No such tag exists');
             }
         } else {
-            $tag = $elementService->createElement(['type' => TagElement::class, 'groupId' => $tagGroup->id]);
+            $tag = Elements::createElement(['type' => TagElement::class, 'groupId' => $tagGroup->id]);
         }
 
         /** @var \craft\elements\Tag $tag */
@@ -69,7 +68,7 @@ class Tag extends ElementMutationResolver
         $tag = $this->populateElementWithData($tag, $arguments, $resolveInfo);
         $tag = $this->saveElement($tag);
 
-        return $elementService->getElementById($tag->id, TagElement::class);
+        return Elements::getElementById($tag->id, TagElement::class);
     }
 
     /**
@@ -86,8 +85,7 @@ class Tag extends ElementMutationResolver
     {
         $tagId = $arguments['id'];
 
-        $elementService = Craft::$app->getElements();
-        $tag = $elementService->getElementById($tagId, TagElement::class);
+        $tag = Elements::getElementById($tagId, TagElement::class);
 
         if (!$tag) {
             return false;
@@ -96,6 +94,6 @@ class Tag extends ElementMutationResolver
         $tagGroupUid = DB::table('taggroups')->uidById($tag->groupId);
         $this->requireSchemaAction('taggroups.' . $tagGroupUid, 'delete');
 
-        return $elementService->deleteElementById($tagId);
+        return Elements::deleteElementById($tagId);
     }
 }

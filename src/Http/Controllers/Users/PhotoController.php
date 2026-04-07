@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Craft;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Twig\TemplateResolver;
@@ -86,7 +86,7 @@ readonly class PhotoController
 
     }
 
-    public function destroy(Request $request): JsonResponse
+    public function destroy(Request $request, Elements $elements): JsonResponse
     {
         $request->validate([
             'userId' => ['required', 'integer'],
@@ -97,11 +97,11 @@ readonly class PhotoController
         abort_if(! $user, 400, 'Invalid user ID: '.$request->integer('userId'));
 
         if ($user->photoId) {
-            Craft::$app->getElements()->deleteElementById($user->photoId, Asset::class);
+            $elements->deleteElementById($user->photoId, Asset::class);
         }
 
         $user->photoId = null;
-        Craft::$app->getElements()->saveElement($user, false);
+        $elements->saveElement($user, false);
 
         return $this->renderPhotoTemplate($request, $user);
     }

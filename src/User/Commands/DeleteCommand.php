@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Commands;
 
-use Craft;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\Users;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
+use Override;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\suggest;
@@ -19,7 +20,7 @@ class DeleteCommand extends Command implements PromptsForMissingInput
     use CraftCommand;
     use PromptsForMissingUser;
 
-    #[\Override]
+    #[Override]
     protected $signature = 'craft:users:delete
         {user}
         {--inheritor= : The email, username or ID of the user to inherit content when deleting a user.}
@@ -27,13 +28,13 @@ class DeleteCommand extends Command implements PromptsForMissingInput
         {--hard : Whether the user should be hard-deleted immediately, instead of soft-deleted.}
     ';
 
-    #[\Override]
+    #[Override]
     protected $description = 'Deletes a user.';
 
-    #[\Override]
+    #[Override]
     protected $aliases = ['users/delete'];
 
-    public function handle(Users $users): int
+    public function handle(Elements $elements, Users $users): int
     {
         if (! $user = $this->getUser()) {
             return self::FAILURE;
@@ -86,8 +87,8 @@ class DeleteCommand extends Command implements PromptsForMissingInput
         $fail = false;
         $this->components->task(
             'Deleting the user',
-            function () use ($user, &$fail) {
-                $fail = ! Craft::$app->getElements()->deleteElement($user, $this->option('hard'));
+            function () use ($elements, $user, &$fail) {
+                $fail = ! $elements->deleteElement($user, $this->option('hard'));
             }
         );
 

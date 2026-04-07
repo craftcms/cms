@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
-use Craft;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\OAuth\OAuth;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\User\Elements\User;
@@ -40,7 +40,7 @@ readonly class OAuthController extends AuthenticationController
         return $oauthManager->buildProvider($definition, $isCpRequest)->redirect();
     }
 
-    public function callback(Request $request, string $provider, OAuth $oauthManager, Users $users): Response
+    public function callback(Request $request, string $provider, OAuth $oauthManager, Users $users, Elements $elements): Response
     {
         abort_if(! $definition = $oauthManager->getProviderDefinition($provider), 404);
 
@@ -70,7 +70,7 @@ readonly class OAuthController extends AuthenticationController
                 $user->pending = false;
             }
 
-            if (! Craft::$app->getElements()->saveElement($user, false)) {
+            if (! $elements->saveElement($user, false)) {
                 throw new InvalidElementException($user);
             }
 

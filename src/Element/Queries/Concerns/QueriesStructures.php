@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
+use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
@@ -757,7 +757,7 @@ trait QueriesStructures
         }
 
         if (! $element instanceof ElementInterface) {
-            $element = Craft::$app->getElements()->getElementById($element, $this->elementType, $this->siteId, [
+            $element = Elements::getElementById($element, $this->elementType, $this->siteId, [
                 'structureId' => $this->structureId,
             ]);
 

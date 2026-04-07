@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Validation;
 
 use Closure;
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Validation\Rules\ElementUriRule;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\DisallowMb4;
 use CraftCms\Cms\Validation\Rules\SiteIdRule;
@@ -224,7 +224,7 @@ abstract class ElementRules extends Ruleset
         }
 
         try {
-            Craft::$app->getElements()->setElementUri($this->component);
+            Elements::setElementUri($this->component);
         } catch (OperationAbortedException) {
             if (
                 $this->component->enabled &&

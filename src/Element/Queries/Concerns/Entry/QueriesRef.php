@@ -26,7 +26,7 @@ trait QueriesRef
     protected function initQueriesRef(): void
     {
         $this->beforeQuery(function (EntryQuery $query) {
-            if (! $query->ref) {
+            if (is_null($query->ref)) {
                 return;
             }
 
@@ -38,7 +38,7 @@ trait QueriesRef
             $joinSections = false;
             $query->subQuery->where(function (Builder $query) use (&$joinSections, $refs) {
                 foreach ($refs as $ref) {
-                    $parts = array_filter(explode('/', (string) $ref));
+                    $parts = array_filter(explode('/', (string) $ref), static fn (string $part) => $part !== '');
 
                     if (empty($parts)) {
                         continue;

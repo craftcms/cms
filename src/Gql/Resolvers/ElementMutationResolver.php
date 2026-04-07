@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Resolvers;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Gql\Events\AfterPopulateElement;
 use CraftCms\Cms\Gql\Events\BeforePopulateElement;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
+use CraftCms\Cms\Support\Facades\Elements;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\FieldArgument;
 use GraphQL\Type\Definition\InputObjectType;
@@ -108,7 +108,7 @@ abstract class ElementMutationResolver extends MutationResolver
         }
 
         try {
-            Craft::$app->getElements()->saveElement($element);
+            Elements::saveElement($element);
         } finally {
             if ($isNotNew) {
                 $mutex->release();

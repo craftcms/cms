@@ -411,7 +411,7 @@ class ImageTransformHelper
             $position = 'center-center';
         }
 
-        $scaleIfSmaller = $transform->upscale ?? Cms::config()->upscaleImages;
+        $scaleIfSmaller = $transform->upscale;
 
         switch ($transform->mode) {
             case 'letterbox':

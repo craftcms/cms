@@ -10,7 +10,6 @@ namespace craft\elements\db;
 use Closure;
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\ExpirableElementInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\cache\ElementQueryTagDependency;
 use craft\db\CoalesceColumnsExpression;
@@ -26,6 +25,7 @@ use craft\events\PopulateElementsEvent;
 use craft\helpers\Db;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\QueryParam;
+use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
@@ -37,6 +37,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ElementCaches;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\Json;
@@ -1866,13 +1867,11 @@ class ElementQuery extends Query implements ElementQueryInterface
                 }
             }
 
-            $elementsService = Craft::$app->getElements();
-
             ElementHelper::setNextPrevOnElements($elements);
 
             // Should we eager-load some elements onto these?
             if ($this->with) {
-                $elementsService->eagerLoadElements($this->elementType, $elements, $this->with);
+                Elements::eagerLoadElements($this->elementType, $elements, $this->with);
             }
         }
 
@@ -1915,7 +1914,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
             if ($this->with) {
-                Craft::$app->getElements()->eagerLoadElements($this->elementType, $cachedResult, $this->with);
+                Elements::eagerLoadElements($this->elementType, $cachedResult, $this->with);
             }
             return $cachedResult;
         }
@@ -1951,18 +1950,18 @@ class ElementQuery extends Query implements ElementQueryInterface
         };
 
         if (!$eagerLoaded) {
-            Craft::$app->getElements()->eagerLoadElements(
+            Elements::eagerLoadElements(
                 $this->eagerLoadSourceElement::class,
                 $this->eagerLoadSourceElement->elementQueryResult,
                 [
-                    new EagerLoadPlan([
-                        'handle' => $this->eagerLoadHandle,
-                        'alias' => $alias,
-                        'criteria' => $criteria + $this->getCriteria() + ['with' => $this->with],
-                        'all' => !$count,
-                        'count' => $count,
-                        'lazy' => true,
-                    ]),
+                    new \CraftCms\Cms\Element\Data\EagerLoadPlan(
+                        handle: $this->eagerLoadHandle,
+                        alias: $alias,
+                        criteria: $criteria + $this->getCriteria() + ['with' => $this->with],
+                        all: !$count,
+                        count: $count,
+                        lazy: true,
+                    ),
                 ],
             );
         }
@@ -2002,6 +2001,11 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         return null;
+    }
+
+    public function first(): mixed
+    {
+        return $this->one();
     }
 
     /**
@@ -2367,7 +2371,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (
             !$this->ignorePlaceholders &&
             isset($row['id'], $row['siteId']) &&
-            ($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $row['siteId'])) !== null
+            ($element = Elements::getPlaceholderElement($row['id'], $row['siteId'])) !== null
         ) {
             return $element;
         }
@@ -2724,7 +2728,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if (!isset($this->_placeholderCondition) || $this->siteId !== $this->_placeholderSiteIds) {
             $placeholderSourceIds = [];
-            $placeholderElements = Craft::$app->getElements()->getPlaceholderElements();
+            $placeholderElements = Elements::getPlaceholderElements();
             if (!empty($placeholderElements)) {
                 $siteIds = array_flip((array)$this->siteId);
                 foreach ($placeholderElements as $element) {
@@ -3446,7 +3450,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if (!$element instanceof ElementInterface) {
-            $element = Craft::$app->getElements()->getElementById($element, $class, $this->siteId, [
+            $element = Elements::getElementById($element, $class, $this->siteId, [
                 'structureId' => $this->structureId,
             ]);
 

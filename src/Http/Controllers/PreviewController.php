@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use Craft;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\RouteToken\Data\RouteToken;
 use CraftCms\Cms\RouteToken\RouteTokens;
@@ -59,7 +59,7 @@ readonly class PreviewController
         return new JsonResponse(compact('token'));
     }
 
-    public function preview(Request $request, Kernel $kernel): mixed
+    public function preview(Request $request, Kernel $kernel, Elements $elements): mixed
     {
         $tokenData = new RouteToken($request->all());
         $tokenData->validate(throw: true);
@@ -97,7 +97,7 @@ readonly class PreviewController
             }
 
             $element->previewing = true;
-            Craft::$app->getElements()->setPlaceholderElement($element);
+            $elements->setPlaceholderElement($element);
         }
 
         /** @var Uri $originalUri */

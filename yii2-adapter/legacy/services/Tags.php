@@ -20,10 +20,12 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Facades\ElementCaches;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use DateTime;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\base\Component;
@@ -228,7 +230,7 @@ class Tags extends Component
                 $tagGroup->uid = Str::uuid()->toString();
             }
         } elseif (!$tagGroup->uid) {
-            $tagGroup->uid = \Illuminate\Support\Facades\DB::table('taggroups')->uidById($tagGroup->id);
+            $tagGroup->uid = DB::table('taggroups')->uidById($tagGroup->id);
         }
 
         $configPath = \craft\services\ProjectConfig::PATH_TAG_GROUPS . '.' . $tagGroup->uid;
@@ -236,7 +238,7 @@ class Tags extends Component
         app(ProjectConfig::class)->set($configPath, $configData, "Save the “{$tagGroup->handle}” tag group");
 
         if ($isNewTagGroup) {
-            $tagGroup->id = \Illuminate\Support\Facades\DB::table('taggroups')->idByUid($tagGroup->uid);
+            $tagGroup->id = DB::table('taggroups')->idByUid($tagGroup->uid);
         }
 
         return true;
@@ -255,7 +257,7 @@ class Tags extends Component
         // Make sure fields are processed
         ProjectConfigHelper::ensureAllFieldsProcessed();
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
         try {
             $tagGroupRecord = $this->_getTagGroupRecord($tagGroupUid, true);
             $isNewTagGroup = $tagGroupRecord->getIsNewRecord();
@@ -285,9 +287,9 @@ class Tags extends Component
                 $tagGroupRecord->save(false);
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -302,7 +304,8 @@ class Tags extends Component
                 ->trashed()
                 ->andWhere(['tags.deletedWithGroup' => true])
                 ->all();
-            Craft::$app->getElements()->restoreElements($tags);
+
+            Elements::restoreElements($tags);
         }
 
         // Fire an 'afterSaveGroup' event
@@ -384,7 +387,7 @@ class Tags extends Component
             ]));
         }
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
         try {
             // Delete the tags
             $elementsTable = Table::ELEMENTS;
@@ -429,11 +432,11 @@ SQL)->execute();
             }
 
             // Delete the tag group
-            \Illuminate\Support\Facades\DB::table('taggroups')->softDelete($tagGroupRecord->id);
+            DB::table('taggroups')->softDelete($tagGroupRecord->id);
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -470,7 +473,7 @@ SQL)->execute();
      */
     public function getTagById(int $tagId, ?int $siteId = null): ?Tag
     {
-        return Craft::$app->getElements()->getElementById($tagId, Tag::class, $siteId);
+        return Elements::getElementById($tagId, Tag::class, $siteId);
     }
 
     /**

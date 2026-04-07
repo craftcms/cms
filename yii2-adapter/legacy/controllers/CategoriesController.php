@@ -19,9 +19,11 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Support\Facades\Gate;
 use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -277,9 +279,7 @@ class CategoriesController extends Controller
         }
 
         // Make sure the user is allowed to create this category
-        if (!Craft::$app->getElements()->canSave($category)) {
-            throw new ForbiddenHttpException('User not authorized to save this category.');
-        }
+        Gate::authorize('save' . $category);
 
         // Title & slug
         $category->title = $this->request->getQueryParam('title');
@@ -348,7 +348,7 @@ class CategoriesController extends Controller
         if ($this->request->getBodyParam('duplicate')) {
             // Swap $category with the duplicate
             try {
-                $category = Craft::$app->getElements()->duplicateElement($category);
+                $category = Elements::duplicateElement($category);
             } catch (InvalidElementException $e) {
                 /** @var Category $clone */
                 $clone = $e->element;
@@ -380,7 +380,7 @@ class CategoriesController extends Controller
             $category->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if (!Craft::$app->getElements()->saveElement($category)) {
+        if (!Elements::saveElement($category)) {
             return $this->asModelFailure(
                 $category,
                 mb_ucfirst(t('Couldn’t save {type}.', [

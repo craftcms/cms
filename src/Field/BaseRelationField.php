@@ -27,7 +27,6 @@ use CraftCms\Cms\Element\Events\DefineElementCriteria;
 use CraftCms\Cms\Element\Jobs\LocalizeRelations;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
-use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Field\Conditions\RelationalFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
@@ -732,8 +731,8 @@ JS, [
         }
 
         $class = static::elementType();
-        // TODO: $class::find()
-        $query = new EntryQuery()
+        /** @var ElementQuery $query */
+        $query = $class::find()
             ->siteId($this->targetSiteId($element));
 
         if (is_array($value) || is_int($value)) {
