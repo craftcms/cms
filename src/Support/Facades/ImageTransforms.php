@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static \Illuminate\Support\Collection getAllTransforms()
+ * @method static \Illuminate\Support\Collection<int, \CraftCms\Cms\Image\Data\ImageTransform> getAllTransforms()
  * @method static \CraftCms\Cms\Image\Data\ImageTransform|null getTransformByHandle(string $handle)
  * @method static \CraftCms\Cms\Image\Data\ImageTransform|null getTransformById(int $id)
  * @method static \CraftCms\Cms\Image\Data\ImageTransform|null getTransformByUid(string $uid)
@@ -18,8 +18,8 @@ use Override;
  * @method static bool deleteTransform(\CraftCms\Cms\Image\Data\ImageTransform $transform)
  * @method static void handleDeletedTransform(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event)
  * @method static void eagerLoadTransforms(\CraftCms\Cms\Asset\Elements\Asset[] $assets, array $transforms)
- * @method static mixed getImageTransformer(string $class, array $config = [])
- * @method static string[] getAllImageTransformers()
+ * @method static \CraftCms\Cms\Image\Contracts\ImageTransformerInterface getImageTransformer(string<\CraftCms\Cms\Image\Contracts\ImageTransformerInterface> $class, array $config = [])
+ * @method static string<\CraftCms\Cms\Image\Contracts\ImageTransformerInterface>[] getAllImageTransformers()
  * @method static void deleteAllTransformData(\CraftCms\Cms\Asset\Elements\Asset $asset)
  * @method static void deleteResizedAssetVersion(\CraftCms\Cms\Asset\Elements\Asset $asset)
  * @method static void deleteCreatedTransformsForAsset(\CraftCms\Cms\Asset\Elements\Asset $asset)

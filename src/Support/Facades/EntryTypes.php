@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Support\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static \Illuminate\Support\Collection getEntryTypesBySectionId(int $sectionId)
- * @method static \Illuminate\Support\Collection getAllEntryTypes()
+ * @method static \Illuminate\Support\Collection<\CraftCms\Cms\Entry\Data\EntryType> getEntryTypesBySectionId(int $sectionId)
+ * @method static \Illuminate\Support\Collection<\CraftCms\Cms\Entry\Data\EntryType> getAllEntryTypes()
  * @method static \CraftCms\Cms\Entry\Data\EntryType|null getEntryTypeById(int $entryTypeId, bool $withTrashed = false)
  * @method static \CraftCms\Cms\Entry\Data\EntryType|null getEntryTypeByUid(string $uid)
  * @method static \CraftCms\Cms\Entry\Data\EntryType|null getEntryTypeByHandle(string $entryTypeHandle)
