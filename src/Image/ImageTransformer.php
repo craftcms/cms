@@ -682,9 +682,9 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
             ->where([
                 'assetId' => $asset->id,
                 'fileExists' => true,
-                'transformString' => $possibleLocations,
                 'format' => $index->detectedFormat,
             ])
+            ->whereIn('transformString', $possibleLocations)
             ->whereNot('id', $index->id)
             ->first();
 
