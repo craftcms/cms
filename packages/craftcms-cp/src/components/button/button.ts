@@ -85,6 +85,8 @@ export default class CraftButton extends LionButtonSubmit {
 
   override render() {
     return html`
+      <!--@TODO need to figure this out-->
+      <!--<div role="status" class="sr-only"></div>-->
       <div
         class="${classMap({
           'button-content': true,

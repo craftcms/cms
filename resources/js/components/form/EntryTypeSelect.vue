@@ -2,17 +2,16 @@
   import type {EntryType} from '@/types';
   import {computed, ref} from 'vue';
   import {appendBodyHtml, appendHeadHtml, t} from '@craftcms/cp';
-  import ReorderButton from '@/components/ReorderButton.vue';
-  import ActionMenu from '@/components/ActionMenu.vue';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import Text from '@/components/Text.vue';
   import {
     applyOverrideSettings,
-    create,
     renderOverrideSettings,
   } from '@actions/Settings/EntryTypesController';
   import type {SlideoutInstance} from '@/types/globals';
   import EntryTypeChip from '@/components/EntryType/EntryTypeChip.vue';
+  import CreateEntryTypeButton from '@/components/EntryType/CreateEntryTypeButton.vue';
+  import {router} from '@inertiajs/vue3';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<EntryType>): void;
@@ -262,25 +261,8 @@
         </template>
       </div>
     </craft-action-menu>
-    <a :href="create['/admin/settings/entry-types/new']().url" class="">
-      <craft-icon name="plus" slot="prefix"></craft-icon>
-      {{ t('Create') }}
-    </a>
+    <CreateEntryTypeButton @success="router.reload({only: ['entryTypes']})" />
   </div>
-
-  <!--<Teleport to="body">-->
-  <!--  <div class="slideout right-0" v-if="slideoutHtml" ref="slideoutTemplate">-->
-  <!--    <div class="entry-type-override-settings-body">-->
-  <!--      <div class="fields" v-html="slideoutHtml"></div>-->
-  <!--    </div>-->
-  <!--    <div class="entry-type-override-settings-footer">-->
-  <!--      <craft-button type="button" @click="() => slideout.close()">{{-->
-  <!--        t('Close')-->
-  <!--      }}</craft-button>-->
-  <!--      <craft-button type="submit">{{ t('Apply') }}</craft-button>-->
-  <!--    </div>-->
-  <!--  </div>-->
-  <!--</Teleport>-->
 </template>
 
 <style scoped lang="scss">
