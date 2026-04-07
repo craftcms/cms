@@ -23,6 +23,7 @@ use craft\fieldlayoutelements\addresses\OrganizationField;
 use craft\fieldlayoutelements\addresses\OrganizationTaxIdField;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\fieldlayoutelements\FullNameField;
+use craft\helpers\Html;
 use craft\models\FieldLayout;
 use craft\records\Address as AddressRecord;
 use craft\validators\StringValidator;
@@ -129,6 +130,15 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         ]);
     }
 
+    /**
+     * @inheritdoc
+     */
+    protected static function defineDefaultCardAttributes(): array
+    {
+        return [
+            'address',
+        ];
+    }
 
     /**
      * @inheritdoc
@@ -136,6 +146,10 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     protected function attributeHtml(string $attribute): string
     {
         switch ($attribute) {
+            case 'address':
+                return Html::tag('div', Craft::$app->getAddresses()->formatAddress($this), [
+                    'class' => 'no-truncate',
+                ]);
             case 'country':
                 return $this->getCountry()->getName();
             default:

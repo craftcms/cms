@@ -162,8 +162,10 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       ev.stopPropagation();
       ev.stopImmediatePropagation();
 
+      this.showSubmitSpinner();
       await this.settings.onBeforeSubmit();
       this.elementEditor.handleSubmit(ev);
+      this.hideSubmitSpinner();
     },
 
     handleSubmitError: function (e) {
