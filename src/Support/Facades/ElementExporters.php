@@ -11,11 +11,11 @@ use Override;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * @method static array availableExporters(string $elementType, string $sourceKey)
- * @method static ElementExporterInterface createExporter(mixed $exporter, string $elementType)
- * @method static array serializeExporters(iterable $exporters)
- * @method static ElementExporterInterface|null resolveExporter(iterable $exporters, string $exporterClass)
- * @method static Response export(ElementExporterInterface $exporter, ElementQueryInterface $query, string $format = 'csv')
+ * @method static \CraftCms\Cms\Element\Contracts\ElementExporterInterface[] availableExporters(string<\craft\base\ElementInterface> $elementType, string $sourceKey)
+ * @method static \CraftCms\Cms\Element\Contracts\ElementExporterInterface createExporter(\CraftCms\Cms\Element\Contracts\ElementExporterInterface|string<\CraftCms\Cms\Element\Contracts\ElementExporterInterface>|array $exporter, string<\craft\base\ElementInterface> $elementType)
+ * @method static array serializeExporters(iterable<\CraftCms\Cms\Element\Contracts\ElementExporterInterface> $exporters)
+ * @method static \CraftCms\Cms\Element\Contracts\ElementExporterInterface|null resolveExporter(iterable<\CraftCms\Cms\Element\Contracts\ElementExporterInterface> $exporters, string $exporterClass)
+ * @method static \Symfony\Component\HttpFoundation\Response export(\CraftCms\Cms\Element\Contracts\ElementExporterInterface $exporter, \CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $query, string $format = 'csv')
  *
  * @see \CraftCms\Cms\Element\ElementExporters
  */

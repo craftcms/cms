@@ -15,7 +15,7 @@ use Override;
  * @method static void collectCacheInfoForElement(\craft\base\ElementInterface $element)
  * @method static array stopCollectingCacheInfo()
  * @method static array<string> invalidateAll()
- * @method static array<string> invalidateForElementType(class-string<\craft\base\ElementInterface> $elementType)
+ * @method static array<string> invalidateForElementType(string<\craft\base\ElementInterface> $elementType)
  * @method static array<string> invalidateForElement(\craft\base\ElementInterface $element)
  *
  * @see \CraftCms\Cms\Element\ElementCaches

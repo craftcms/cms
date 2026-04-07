@@ -9,7 +9,7 @@ use Override;
 
 /**
  * @method static array createFilesystemConfig(\CraftCms\Cms\Filesystem\Contracts\FsInterface $fs)
- * @method static \Illuminate\Support\Collection<int, class-string<\CraftCms\Cms\Filesystem\Contracts\FsInterface>> getAllFilesystemTypes()
+ * @method static \Illuminate\Support\Collection<int, string<\CraftCms\Cms\Filesystem\Contracts\FsInterface>> getAllFilesystemTypes()
  * @method static \Illuminate\Support\Collection<int, \CraftCms\Cms\Filesystem\Contracts\FsInterface> getAllFilesystems()
  * @method static \CraftCms\Cms\Filesystem\Contracts\FsInterface|null getFilesystemByHandle(string $handle)
  * @method static string toDiskName(string $handle)
@@ -18,7 +18,7 @@ use Override;
  * @method static void registerDisk(string $handle, array<string, mixed>|null $filesystemConfig = null)
  * @method static void purgeDisk(string $handle)
  * @method static bool saveFilesystem(\CraftCms\Cms\Filesystem\Contracts\FsInterface $fs, bool $runValidation = true)
- * @method static \CraftCms\Cms\Filesystem\Contracts\FsInterface createFilesystem(class-string<\CraftCms\Cms\Filesystem\Contracts\FsInterface>|array $config)
+ * @method static \CraftCms\Cms\Filesystem\Contracts\FsInterface createFilesystem(string<\CraftCms\Cms\Filesystem\Contracts\FsInterface>|array $config)
  * @method static bool removeFilesystem(\CraftCms\Cms\Filesystem\Contracts\FsInterface $fs)
  * @method static void handleChangedFilesystem(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent|null $event = null)
  * @method static void handleDeletedFilesystem(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent|null $event = null)

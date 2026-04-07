@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static \CraftCms\Cms\Condition\Contracts\ConditionInterface createCondition(array|class-string<\CraftCms\Cms\Condition\Contracts\ConditionInterface> $config)
+ * @method static \CraftCms\Cms\Condition\Contracts\ConditionInterface createCondition(array|string<\CraftCms\Cms\Condition\Contracts\ConditionInterface> $config)
  * @method static \CraftCms\Cms\Condition\Contracts\ConditionRuleInterface createConditionRule(array|string $config)
  *
  * @see \CraftCms\Cms\Condition\Conditions
