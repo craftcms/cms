@@ -32,7 +32,7 @@ use CraftCms\Cms\Address\Elements\Address;
  * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\AddressQuery} instead.
  * @phpstan-ignore class.missingExtends
  */
-class AddressQuery extends ElementQuery implements NestedElementQueryInterface
+class AddressQuery extends ElementQuery implements \CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface
 {
     use NestedElementQueryTrait {
         cacheTags as nestedTraitCacheTags;
