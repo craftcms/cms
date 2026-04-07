@@ -18,6 +18,9 @@
 - Fixed an exception that would be thrown when attempting to access undefined keys within `craft\fields\data\JsonData` objects from Twig. ([#18656](https://github.com/craftcms/cms/issues/18656))
 - Fixed a bug where address cards could be missing their address preview. ([#18632](https://github.com/craftcms/cms/issues/18632))
 - Fixed a bug where the Save button’s spinner wouldn’t appear right away when saving a nested element in a slideout. ([#18664](https://github.com/craftcms/cms/discussions/18664))
+- Fixed a bug where the server check script wasn’t treating GD as a requirement. ([craftcms/server-check#30](https://github.com/craftcms/server-check/issues/30))
+- Fixed a bug where tooltips could be instantiated multiple times within Link fields. ([#18666](https://github.com/craftcms/cms/issues/18666))
+- Fixed a bug where localized nested element content could be overwritten when the owner element was propagated to a new site. ([#18659](https://github.com/craftcms/cms/issues/18659))
 
 ## 5.9.18 - 2026-03-26
 
