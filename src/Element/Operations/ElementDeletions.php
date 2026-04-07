@@ -12,7 +12,6 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Element\Events\AfterDeleteElement;
 use CraftCms\Cms\Element\Events\AfterDeleteForSite;
 use CraftCms\Cms\Element\Events\AfterMergeElements;
@@ -43,7 +42,6 @@ readonly class ElementDeletions
 {
     public function __construct(
         private Elements $elements,
-        private ElementTypes $elementTypes,
         private ElementWrites $elementWrites,
         private ElementCaches $elementCaches,
         private Search $search,
@@ -159,7 +157,7 @@ readonly class ElementDeletions
                 }
             }
 
-            $elementType = $this->elementTypes->getElementTypeById($prevailingElement->id);
+            $elementType = $this->elements->getElementTypeById($prevailingElement->id);
 
             if ($elementType !== null && ($refHandle = $elementType::refHandle()) !== null) {
                 $refTagPrefix = '{'.$refHandle.':';
@@ -189,7 +187,7 @@ readonly class ElementDeletions
         ?int $siteId = null,
         bool $hardDelete = false,
     ): bool {
-        $elementType ??= $this->elementTypes->getElementTypeById($elementId);
+        $elementType ??= $this->elements->getElementTypeById($elementId);
 
         if ($elementType === null) {
             return false;

@@ -7,7 +7,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Element\Events\AfterRestoreElement;
 use CraftCms\Cms\Element\Events\BeforeRestoreElement;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
@@ -192,7 +191,6 @@ it('restores drafts and revisions, reindexes supported sites, and invalidates ca
 
     $deletions = new ElementDeletions(
         Mockery::mock(Elements::class),
-        Mockery::mock(ElementTypes::class),
         Mockery::mock(ElementWrites::class),
         $elementCaches,
         $search,
@@ -230,7 +228,6 @@ function restoreElementsService(): ElementDeletions
 
     return new ElementDeletions(
         Mockery::mock(Elements::class),
-        Mockery::mock(ElementTypes::class),
         Mockery::mock(ElementWrites::class),
         $elementCaches,
         $search,

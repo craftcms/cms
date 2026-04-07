@@ -7,7 +7,6 @@ namespace CraftCms\Cms\GarbageCollection\Actions;
 use craft\base\NestedElementInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Facades\Elements;
-use CraftCms\Cms\Support\Facades\ElementTypes;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -28,7 +27,7 @@ class HardDeleteElements extends GarbageCollectionAction
         $normalElementTypes = [];
         $nestedElementTypes = [];
 
-        foreach (ElementTypes::getAllElementTypes() as $elementType) {
+        foreach (Elements::getAllElementTypes() as $elementType) {
             if (is_subclass_of($elementType, NestedElementInterface::class)) {
                 $nestedElementTypes[] = $elementType;
             } else {

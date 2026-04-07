@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Element\Operations\ElementRefs;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Site\Data\Site;
@@ -103,14 +102,9 @@ class TestParseRefsRefQuery extends TestParseRefsQuery
 }
 
 beforeEach(function () {
-    $this->elementTypes = $this->getMockBuilder(ElementTypes::class)
-        ->disableOriginalConstructor()
-        ->onlyMethods(['getElementTypeByRefHandle'])
-        ->getMock();
-
     $this->elements = $this->getMockBuilder(Elements::class)
         ->disableOriginalConstructor()
-        ->onlyMethods(['createElementQuery'])
+        ->onlyMethods(['createElementQuery', 'getElementTypeByRefHandle'])
         ->getMock();
 
     $this->sites = $this->getMockBuilder(Sites::class)
@@ -118,7 +112,7 @@ beforeEach(function () {
         ->onlyMethods(['getSiteByHandle', 'getSiteByUid'])
         ->getMock();
 
-    $this->action = new ElementRefs($this->elementTypes, $this->elements, $this->sites);
+    $this->action = new ElementRefs($this->elements, $this->sites);
 });
 
 function createParseRefsElement(
@@ -144,7 +138,7 @@ it('returns the original string when it does not contain reference syntax', func
     $this->elements->expects(test()->never())
         ->method('createElementQuery');
 
-    $this->elementTypes->expects(test()->never())
+    $this->elements->expects(test()->never())
         ->method('getElementTypeByRefHandle');
 
     expect($this->action->parseRefs('Plain text only'))->toBe('Plain text only');
@@ -154,14 +148,14 @@ it('returns the original string when it contains braces but no ref tags', functi
     $this->elements->expects(test()->never())
         ->method('createElementQuery');
 
-    $this->elementTypes->expects(test()->never())
+    $this->elements->expects(test()->never())
         ->method('getElementTypeByRefHandle');
 
     expect($this->action->parseRefs('Before {not-a-ref} after'))->toBe('Before {not-a-ref} after');
 });
 
 it('uses an explicit fallback when the element type is unknown', function () {
-    $this->elementTypes->expects(test()->once())
+    $this->elements->expects(test()->once())
         ->method('getElementTypeByRefHandle')
         ->with('unknown')
         ->willReturn(null);
@@ -174,7 +168,7 @@ it('uses an explicit fallback when the element type is unknown', function () {
 });
 
 it('uses the original tag as the fallback when a site handle cannot be resolved', function () {
-    $this->elementTypes->expects(test()->once())
+    $this->elements->expects(test()->once())
         ->method('getElementTypeByRefHandle')
         ->with('test')
         ->willReturn(TestParseRefsElement::class);
@@ -196,7 +190,7 @@ it('uses the default site id and resolves numeric id refs to urls', function () 
         createParseRefsElement(id: 1, url: 'https://example.test/id-1'),
     ]);
 
-    $this->elementTypes->expects(test()->once())
+    $this->elements->expects(test()->once())
         ->method('getElementTypeByRefHandle')
         ->with('test')
         ->willReturn(TestParseRefsElement::class);
@@ -218,7 +212,7 @@ it('resolves site handles before querying elements', function () {
         createParseRefsElement(ref: 'entry', url: 'https://example.test/handle-site'),
     ]);
 
-    $this->elementTypes->expects(test()->once())
+    $this->elements->expects(test()->once())
         ->method('getElementTypeByRefHandle')
         ->with('test')
         ->willReturn(TestParseRefsElement::class);
@@ -251,7 +245,7 @@ it('resolves numeric site ids without looking up a site record', function () {
         createParseRefsElement(ref: 'entry', url: 'https://example.test/numeric-site'),
     ]);
 
-    $this->elementTypes->expects(test()->once())
+    $this->elements->expects(test()->once())
         ->method('getElementTypeByRefHandle')
         ->with('test')
         ->willReturn(TestParseRefsElement::class);
@@ -277,7 +271,7 @@ it('resolves numeric site ids without looking up a site record', function () {
 it('falls back when resolving a site uid throws an exception', function () {
     $uuid = '550e8400-e29b-41d4-a716-446655440000';
 
-    $this->elementTypes->expects(test()->once())
+    $this->elements->expects(test()->once())
         ->method('getElementTypeByRefHandle')
         ->with('test')
         ->willReturn(TestParseRefsElement::class);
@@ -299,7 +293,7 @@ it('resolves suffix refs even when the query does not support ref lookups', func
         createParseRefsElement(ref: 'section/slug', url: 'https://example.test/slug-match'),
     ]);
 
-    $this->elementTypes->expects(test()->once())
+    $this->elements->expects(test()->once())
         ->method('getElementTypeByRefHandle')
         ->with('test')
         ->willReturn(TestParseRefsElement::class);
@@ -325,7 +319,7 @@ it('parses referenced attributes recursively', function () {
         createParseRefsElement(ref: 'nested-ref', title: 'Nested title'),
     ]);
 
-    $this->elementTypes->expects(test()->exactly(2))
+    $this->elements->expects(test()->exactly(2))
         ->method('getElementTypeByRefHandle')
         ->with('test')
         ->willReturn(TestParseRefsElement::class);
@@ -344,7 +338,7 @@ it('parses referenced attributes recursively', function () {
 it('uses the fallback when no matching element is found', function () {
     $query = new TestParseRefsRefQuery([]);
 
-    $this->elementTypes->expects(test()->once())
+    $this->elements->expects(test()->once())
         ->method('getElementTypeByRefHandle')
         ->with('test')
         ->willReturn(TestParseRefsElement::class);
@@ -370,7 +364,7 @@ it('logs and falls back when a referenced attribute cannot be converted to a str
             && str_contains($message, 'could not be converted to string')
             && $context === ['CraftCms\\Cms\\Element\\Operations\\ElementRefs::getRefTokenReplacement']);
 
-    $this->elementTypes->expects(test()->once())
+    $this->elements->expects(test()->once())
         ->method('getElementTypeByRefHandle')
         ->with('test')
         ->willReturn(TestParseRefsElement::class);

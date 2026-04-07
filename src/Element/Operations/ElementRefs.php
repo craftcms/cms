@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Element\Operations;
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Str;
@@ -20,7 +19,6 @@ use Throwable;
 readonly class ElementRefs
 {
     public function __construct(
-        private ElementTypes $elementTypes,
         private Elements $elements,
         private Sites $sites,
     ) {}
@@ -50,7 +48,7 @@ readonly class ElementRefs
                 $attribute = $matches['attr'] ?? null;
                 $fallback = $matches['fallback'] ?? $fullMatch;
 
-                $elementType = $this->elementTypes->getElementTypeByRefHandle($elementType);
+                $elementType = $this->elements->getElementTypeByRefHandle($elementType);
 
                 if ($elementType === null) {
                     return $fallback;

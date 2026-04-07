@@ -13,7 +13,6 @@ use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Elements;
-use CraftCms\Cms\Support\Facades\ElementTypes;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use Illuminate\Support\Facades\DB;
@@ -204,7 +203,7 @@ trait NestedElementTrait
             if (!empty($sameSiteElements)) {
                 // Eager-load the primary owner for each of the elements in the result,
                 // as we're probably going to end up needing them too
-                \CraftCms\Cms\Support\Facades\Elements::eagerLoadElements($this::class, $sameSiteElements, [
+                Elements::eagerLoadElements($this::class, $sameSiteElements, [
                     [
                         'path' => 'primaryOwner',
                         'criteria' => $this->ownerCriteria(),
@@ -285,7 +284,7 @@ trait NestedElementTrait
             if (!empty($sameSiteElements)) {
                 // Eager-load the owner for each of the elements in the result,
                 // as we're probably going to end up needing them too
-                \CraftCms\Cms\Support\Facades\Elements::eagerLoadElements($this::class, $sameSiteElements, [
+                Elements::eagerLoadElements($this::class, $sameSiteElements, [
                     [
                         'path' => 'owner',
                         'criteria' => $this->ownerCriteria(),
@@ -456,7 +455,7 @@ trait NestedElementTrait
             if (!$ownerId) {
                 return null;
             }
-            $ownerType = ElementTypes::getElementTypeById($ownerId);
+            $ownerType = Elements::getElementTypeById($ownerId);
             if (!$ownerType) {
                 return null;
             }

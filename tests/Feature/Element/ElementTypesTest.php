@@ -5,7 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Element as BaseElement;
-use CraftCms\Cms\Element\ElementTypes;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Events\RegisterElementTypes;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Event;
 test('returns element types by id uid and key', function () {
     $entry = EntryModel::factory()->createElement();
 
-    $elementTypes = new ElementTypes;
+    $elementTypes = app(Elements::class);
 
     expect($elementTypes->getElementTypeById($entry->id))->toBe(EntryElement::class)
         ->and($elementTypes->getElementTypeByUid($entry->uid))->toBe(EntryElement::class)
@@ -25,7 +25,7 @@ test('returns element types by id uid and key', function () {
 });
 
 test('returns null when an element type cannot be found', function () {
-    $elementTypes = new ElementTypes;
+    $elementTypes = app(Elements::class);
 
     expect($elementTypes->getElementTypeById(9999))->toBeNull()
         ->and($elementTypes->getElementTypeByUid('missing-uid'))->toBeNull()
@@ -38,7 +38,7 @@ test('returns distinct element types for ids', function () {
     $secondEntry = EntryModel::factory()->createElement();
     $user = UserModel::factory()->createElement();
 
-    $types = (new ElementTypes)->getElementTypesByIds([
+    $types = (app(Elements::class))->getElementTypesByIds([
         $firstEntry->id,
         $secondEntry->id,
         $user->id,
@@ -56,7 +56,7 @@ test('returns all built-in element types and registered element types', function
         $event->types[] = TestRegisteredElementType::class;
     });
 
-    $types = (new ElementTypes)->getAllElementTypes();
+    $types = (app(Elements::class))->getAllElementTypes();
 
     expect($types)->toHaveCount(5)
         ->toContain(
@@ -69,16 +69,16 @@ test('returns all built-in element types and registered element types', function
 });
 
 test('matches ref handles case-insensitively', function () {
-    expect((new ElementTypes)->getElementTypeByRefHandle('UsEr'))->toBe(UserElement::class);
+    expect((app(Elements::class))->getElementTypeByRefHandle('UsEr'))->toBe(UserElement::class);
 });
 
 test('returns element subclasses passed as ref handles', function () {
-    expect((new ElementTypes)->getElementTypeByRefHandle(TestRegisteredElementType::class))
+    expect((app(Elements::class))->getElementTypeByRefHandle(TestRegisteredElementType::class))
         ->toBe(TestRegisteredElementType::class);
 });
 
 test('falls back to entries for removed legacy ref handles', function (string $refHandle) {
-    expect((new ElementTypes)->getElementTypeByRefHandle($refHandle))->toBe(EntryElement::class);
+    expect((app(Elements::class))->getElementTypeByRefHandle($refHandle))->toBe(EntryElement::class);
 })->with([
     'category' => 'category',
     'tag' => 'tag',
@@ -86,7 +86,7 @@ test('falls back to entries for removed legacy ref handles', function (string $r
 ]);
 
 test('returns null for unknown ref handles', function () {
-    expect((new ElementTypes)->getElementTypeByRefHandle('missing-ref-handle'))->toBeNull();
+    expect((app(Elements::class))->getElementTypeByRefHandle('missing-ref-handle'))->toBeNull();
 });
 
 test('caches resolved ref handles', function () {
@@ -97,7 +97,7 @@ test('caches resolved ref handles', function () {
         $event->types[] = TestRegisteredElementType::class;
     });
 
-    $elementTypes = new ElementTypes;
+    $elementTypes = app(Elements::class);
 
     expect($elementTypes->getElementTypeByRefHandle('test-registered-element'))->toBe(TestRegisteredElementType::class);
 

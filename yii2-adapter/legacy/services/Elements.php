@@ -71,23 +71,15 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
-use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Facades\ElementExporters;
 use CraftCms\Cms\Support\Facades\Elements as ElementsFacade;
-use CraftCms\Cms\Support\Facades\ElementTypes;
-use CraftCms\Cms\Support\Facades\Search;
-use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Facades\Structures;
-use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
@@ -828,11 +820,11 @@ class Elements extends Component
      * @param  int  $elementId  The element’s ID
      * @return class-string<ElementInterface>|null The element’s class, or null if it could not be found
      *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementTypes::getElementTypeById()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getElementTypeById()} instead.
      */
     public function getElementTypeById(int $elementId): ?string
     {
-        return ElementTypes::getElementTypeById($elementId);
+        return ElementsFacade::getElementTypeById($elementId);
     }
 
     /**
@@ -842,11 +834,11 @@ class Elements extends Component
      * @return string|null The element’s class, or null if it could not be found
      *
      * @since 3.5.13
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementTypes::getElementTypeByUid()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getElementTypeByUid()} instead.
      */
     public function getElementTypeByUid(string $uid): ?string
     {
-        return ElementTypes::getElementTypeByUid($uid);
+        return ElementsFacade::getElementTypeByUid($uid);
     }
 
     /**
@@ -855,11 +847,11 @@ class Elements extends Component
      * @param  int[]  $elementIds  The elements’ IDs
      * @return string[]
      *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementTypes::getElementTypesByIds()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getElementTypesByIds()} instead.
      */
     public function getElementTypesByIds(array $elementIds): array
     {
-        return ElementTypes::getElementTypesByIds($elementIds);
+        return ElementsFacade::getElementTypesByIds($elementIds);
     }
 
     /**
@@ -1411,11 +1403,11 @@ class Elements extends Component
      *
      * @phpstan-return class-string<ElementInterface>[]
      *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementTypes::getAllElementTypes()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getAllElementTypes()} instead.
      */
     public function getAllElementTypes(): array
     {
-        return ElementTypes::getAllElementTypes();
+        return ElementsFacade::getAllElementTypes();
     }
 
     // Element Actions & Exporters
@@ -1473,11 +1465,11 @@ class Elements extends Component
      * @param  string  $refHandle  The element class handle
      * @return string|null The element class, or null if it could not be found
      *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementTypes::getElementTypeByRefHandle()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Elements::getElementTypeByRefHandle()} instead.
      */
     public function getElementTypeByRefHandle(string $refHandle): ?string
     {
-        return ElementTypes::getElementTypeByRefHandle($refHandle);
+        return ElementsFacade::getElementTypeByRefHandle($refHandle);
     }
 
     /**

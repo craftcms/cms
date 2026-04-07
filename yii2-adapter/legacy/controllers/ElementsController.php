@@ -43,7 +43,6 @@ use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\ElementActivity as ElementActivityFacade;
 use CraftCms\Cms\Support\Facades\Elements;
-use CraftCms\Cms\Support\Facades\ElementTypes;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -2477,12 +2476,12 @@ JS, [
 
         if (!$elementType) {
             if ($elementId) {
-                $elementType = ElementTypes::getElementTypeById($elementId);
+                $elementType = Elements::getElementTypeById($elementId);
                 if (!$elementType) {
                     throw new BadRequestHttpException("Invalid element ID: $elementId");
                 }
             } elseif ($elementUid) {
-                $elementType = ElementTypes::getElementTypeByUid($elementUid);
+                $elementType = Elements::getElementTypeByUid($elementUid);
                 if (!$elementType) {
                     throw new BadRequestHttpException("Invalid element UUID: $elementUid");
                 }
