@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static \Illuminate\Support\Collection getRecentActivity(\craft\base\ElementInterface $element, int|null $excludeUserId = null)
+ * @method static \Illuminate\Support\Collection<int, \CraftCms\Cms\Element\Data\ElementActivity> getRecentActivity(\craft\base\ElementInterface $element, int|null $excludeUserId = null)
  * @method static void trackActivity(\craft\base\ElementInterface $element, \CraftCms\Cms\Element\Enums\ElementActivityType $type, \CraftCms\Cms\User\Elements\User|null $user = null)
  *
  * @see \CraftCms\Cms\Element\ElementActivity
