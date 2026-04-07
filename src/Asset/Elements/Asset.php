@@ -1953,7 +1953,7 @@ JS, [
         $url = $event->url;
 
         // If BeforeDefineAssetUrl::$url is set to null, only respect that if $handled is true
-        if ($event->url === null && ! ($event->handled ?? false)) {
+        if ($event->url === null && ! $event->handled) {
             $url = $this->_url($transform, $immediately);
         }
 

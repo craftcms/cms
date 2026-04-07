@@ -140,7 +140,6 @@ class SearchQuery
             $term->term = $token;
 
             if ($appendToPrevious) {
-                /** @phpstan-ignore-next-line */
                 $previousToken->terms[] = $term;
             } else {
                 $this->tokens[] = $term;
