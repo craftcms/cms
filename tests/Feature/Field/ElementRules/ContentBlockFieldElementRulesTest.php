@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\ContentBlock;
@@ -11,7 +10,6 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Str;
@@ -122,31 +120,13 @@ test('matrix field preserves nested values through element validation', function
         'type' => PlainText::class,
     ]);
 
-    $entryTypeLayout = FieldLayout::create([
-        'type' => Entry::class,
-        'config' => [
-            'tabs' => [
-                [
-                    'uid' => Str::uuid()->toString(),
-                    'name' => 'Content',
-                    'elements' => [
-                        [
-                            'uid' => Str::uuid()->toString(),
-                            'type' => CustomField::class,
-                            'fieldUid' => $innerField->uid,
-                        ],
-                    ],
-                ],
-            ],
-        ],
-    ]);
-
-    $matrixEntryType = EntryType::factory()->create([
-        'fieldLayoutId' => $entryTypeLayout->id,
-        'name' => 'Matrix Block',
-        'handle' => 'matrixBlock',
-        'hasTitleField' => true,
-    ]);
+    $matrixEntryType = EntryType::factory()
+        ->withField($innerField)
+        ->create([
+            'name' => 'Matrix Block',
+            'handle' => 'matrixBlock',
+            'hasTitleField' => true,
+        ]);
 
     $matrixField = Field::factory()->create([
         'name' => 'Matrix Field',
