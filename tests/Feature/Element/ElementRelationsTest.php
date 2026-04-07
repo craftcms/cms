@@ -44,9 +44,9 @@ describe('updateRelations', function () {
             'handle' => 'testSection',
         ]);
 
-        $this->entryType = EntryType::factory()->create([
-            'fieldLayoutId' => $this->fieldLayout->id,
-        ]);
+        $this->entryType = EntryType::factory()
+            ->withFieldLayout($this->fieldLayout)
+            ->create();
 
         app(Fields::class)->invalidateCaches();
         app(Fields::class)->refreshFields();
@@ -234,9 +234,9 @@ describe('deleteSiteRelations', function () {
             'handle' => 'siteTestSection',
         ]);
 
-        $this->entryType = EntryType::factory()->create([
-            'fieldLayoutId' => $this->fieldLayout->id,
-        ]);
+        $this->entryType = EntryType::factory()
+            ->withFieldLayout($this->fieldLayout)
+            ->create();
 
         app(Fields::class)->invalidateCaches();
         app(Fields::class)->refreshFields();

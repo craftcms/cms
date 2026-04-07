@@ -15,7 +15,6 @@ use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
-use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
@@ -238,31 +237,15 @@ it('preserves matrix nested field values through draft apply', function () {
         'type' => PlainText::class,
     ]);
 
-    $matrixBlockLayout = FieldLayout::create([
-        'type' => EntryElement::class,
-        'config' => [
-            'tabs' => [
-                [
-                    'uid' => Str::uuid()->toString(),
-                    'name' => 'Content',
-                    'elements' => [
-                        [
-                            'uid' => Str::uuid()->toString(),
-                            'type' => CustomField::class,
-                            'fieldUid' => $innerField->uid,
-                        ],
-                    ],
-                ],
-            ],
-        ],
-    ]);
+    $matrixBlockLayout = FieldLayout::factory()->forField($innerField)->create();
 
-    $matrixEntryType = EntryType::factory()->create([
-        'fieldLayoutId' => $matrixBlockLayout->id,
-        'name' => 'Matrix Block',
-        'handle' => 'matrixBlock',
-        'hasTitleField' => true,
-    ]);
+    $matrixEntryType = EntryType::factory()
+        ->withFieldLayout($matrixBlockLayout)
+        ->create([
+            'name' => 'Matrix Block',
+            'handle' => 'matrixBlock',
+            'hasTitleField' => true,
+        ]);
 
     $matrixField = Field::factory()->create([
         'name' => 'Matrix Field',
@@ -271,24 +254,7 @@ it('preserves matrix nested field values through draft apply', function () {
         'settings' => ['entryTypes' => [$matrixEntryType->id]],
     ]);
 
-    $entryFieldLayout = FieldLayout::create([
-        'type' => EntryElement::class,
-        'config' => [
-            'tabs' => [
-                [
-                    'uid' => Str::uuid()->toString(),
-                    'name' => 'Content',
-                    'elements' => [
-                        [
-                            'uid' => Str::uuid()->toString(),
-                            'type' => CustomField::class,
-                            'fieldUid' => $matrixField->uid,
-                        ],
-                    ],
-                ],
-            ],
-        ],
-    ]);
+    $entryFieldLayout = FieldLayout::factory()->forField($matrixField)->create();
 
     $entryModel = Entry::factory()->create();
     $entryModel->element->update(['fieldLayoutId' => $entryFieldLayout->id]);

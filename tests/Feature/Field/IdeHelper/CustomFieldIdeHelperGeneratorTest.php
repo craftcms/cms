@@ -5,7 +5,6 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Fields;
@@ -130,24 +129,14 @@ describe('CustomFieldIdeHelperGenerator', function () {
     });
 
     it('generates use imports inside namespace blocks for matrix fields', function () {
-        $imageLayout = FieldLayout::create([
-            'type' => EntryElement::class,
-            'config' => [
-                'tabs' => [
-                    [
-                        'uid' => Str::uuid()->toString(),
-                        'name' => 'Content',
-                        'elements' => [],
-                    ],
-                ],
-            ],
-        ]);
+        $imageLayout = FieldLayout::factory()->withContentTab()->create();
 
-        $imageEntryType = EntryTypeModel::factory()->create([
-            'fieldLayoutId' => $imageLayout->id,
-            'name' => 'Image',
-            'handle' => 'image',
-        ]);
+        $imageEntryType = EntryTypeModel::factory()
+            ->withFieldLayout($imageLayout)
+            ->create([
+                'name' => 'Image',
+                'handle' => 'image',
+            ]);
 
         $headingEntryType = EntryTypeModel::factory()->create([
             'name' => 'Heading',

@@ -54,17 +54,15 @@ function createFieldLayoutConfig(Field|FieldInterface $field, bool $required = f
 
 function createStoreEntryMatrixEntryType(Field $field): EntryType
 {
-    $layout = FieldLayout::create([
-        'type' => Entry::class,
-        'config' => createFieldLayoutConfig($field),
-    ]);
+    $layout = FieldLayout::factory()->forField($field)->create();
 
-    return EntryType::factory()->create([
-        'fieldLayoutId' => $layout->id,
-        'name' => 'Matrix Block',
-        'handle' => 'matrixBlock',
-        'hasTitleField' => true,
-    ]);
+    return EntryType::factory()
+        ->withFieldLayout($layout)
+        ->create([
+            'name' => 'Matrix Block',
+            'handle' => 'matrixBlock',
+            'hasTitleField' => true,
+        ]);
 }
 
 function createContentBlockSettings(Field $field): array

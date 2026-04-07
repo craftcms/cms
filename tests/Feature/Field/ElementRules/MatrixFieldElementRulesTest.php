@@ -3,34 +3,20 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
-use CraftCms\Cms\Support\Str;
 
 function createMatrixRulesEntryType(): EntryTypeModel
 {
-    $layout = FieldLayoutModel::create([
-        'type' => EntryElement::class,
-        'config' => [
-            'tabs' => [
-                [
-                    'uid' => Str::uuid()->toString(),
-                    'name' => 'Content',
-                    'elements' => [],
-                ],
-            ],
-        ],
-    ]);
-
-    return EntryTypeModel::factory()->create([
-        'fieldLayoutId' => $layout->id,
-        'name' => 'Block',
-        'handle' => 'block',
-        'hasTitleField' => true,
-    ]);
+    return EntryTypeModel::factory()
+        ->withFieldLayout(FieldLayoutModel::factory()->withContentTab()->create())
+        ->create([
+            'name' => 'Block',
+            'handle' => 'block',
+            'hasTitleField' => true,
+        ]);
 }
 
 test('matrix field enforces min entries', function () {
