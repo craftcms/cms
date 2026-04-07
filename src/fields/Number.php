@@ -21,12 +21,12 @@ use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Localization;
+use craft\helpers\Markdown;
 use craft\i18n\Locale;
 use GraphQL\Type\Definition\Type;
 use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\db\Schema;
-use yii\helpers\Markdown;
 
 /**
  * Number represents a Number field.

@@ -14,7 +14,7 @@ echo $this->render('../table', [
     'values' => [
         [
             Craft::t('app', 'Message'),
-            \yii\helpers\Markdown::processParagraph(\craft\helpers\Html::encode($log->message)),
+            \craft\helpers\Markdown::processParagraph(\craft\helpers\Html::encode($log->message)),
         ],
         [
             Craft::t('app', 'Origin'),

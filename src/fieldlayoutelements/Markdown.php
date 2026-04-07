@@ -11,8 +11,8 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
+use craft\helpers\Markdown as MarkdownHelper;
 use craft\helpers\StringHelper;
-use yii\helpers\Markdown as MarkdownHelper;
 
 /**
  * Markdown represents a UI element based on Markdown content can be included in field layouts.

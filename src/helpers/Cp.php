@@ -50,7 +50,6 @@ use Illuminate\Support\Collection;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\helpers\Markdown;
 use yii\validators\RequiredValidator;
 
 /**

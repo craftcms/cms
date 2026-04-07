@@ -26,6 +26,7 @@ use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\HtmlPurifier;
 use craft\helpers\Json;
+use craft\helpers\Markdown;
 use craft\helpers\MoneyHelper;
 use craft\helpers\Sequence;
 use craft\helpers\StringHelper;
@@ -92,7 +93,6 @@ use yii\behaviors\AttributeTypecastBehavior;
 use yii\db\Exception;
 use yii\db\Expression;
 use yii\db\QueryInterface;
-use yii\helpers\Markdown;
 
 /**
  * Class Extension

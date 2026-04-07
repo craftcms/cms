@@ -11,13 +11,13 @@ use Craft;
 use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\helpers\App;
+use craft\helpers\Markdown;
 use craft\helpers\Template;
 use craft\models\Site;
 use craft\web\View;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Throwable;
 use yii\base\InvalidConfigException;
-use yii\helpers\Markdown;
 use yii\mail\MailEvent;
 
 /**
