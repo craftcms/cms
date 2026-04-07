@@ -12,36 +12,29 @@ export default class CraftTooltip extends WaTooltip {
     return [
       WaTooltip.styles,
       css`
-        wa-popup {
-          --wa-z-index-tooltip: var(--c-tooltip-z-index, 1000);
-          --wa-tooltip-background-color: var(
-            --c-tooltip-fill,
-            var(--c-surface-overlay)
-          );
-          --wa-tooltip-border-color: var(
-            --c-tooltip-border,
-            var(--c-color-neutral-border-quiet)
-          );
-          --wa-tooltip-content-color: var(--c-tooltip-text, currentColor);
+        :host {
+          --wa-tooltip-background-color: var(--c-color-black-fill-loud);
+          --wa-tooltip-border-color: var(--c-color-black-border-loud);
+          --wa-tooltip-content-color: var(--c-color-black-on-loud);
           --wa-tooltip-padding: var(
             --c-tooltip-padding,
             calc(4rem / 16) calc(8rem / 16)
           );
           --wa-tooltip-arrow-size: var(--c-tooltip-arrow-size, 5px);
           --wa-tooltip-font-family: inherit;
-          --wa-tooltip-font-size: var(
-            --c-tooltip-font-size,
-            var(--c-text-base)
-          );
-          --wa-tooltip-font-weight: var(--c-tooltip-font-weight, 400);
-          --wa-tooltip-line-height: var(--c-tooltip-line-height, 1.3);
-          --wa-tooltip-border-radius: var(
-            --c-tooltip-border-radius,
-            var(--c-radius-sm)
-          );
-          font-weight: 400;
-          color: var(--c-tooltip-text, currentColor);
+          --wa-tooltip-font-size: var(--c-text-base);
+          --wa-tooltip-font-weight: 400;
+          --wa-tooltip-line-height: 1.3;
+          --wa-tooltip-border-radius: var(--c-radius-sm);
+        }
+
+        &::part(base) {
           box-shadow: var(--c-shadow-md);
+        }
+
+        .body {
+          color: var(--wa-tooltip-content-color);
+          font-weight: var(--wa-tooltip-font-weight);
         }
       `,
     ];
