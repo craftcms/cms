@@ -12,7 +12,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ElementSiteSettings extends BasePivot
 {
     #[\Override]
-    protected $primaryKey;
+    protected $primaryKey = 'id';
+
+    #[\Override]
+    public $incrementing = true;
 
     #[\Override]
     protected $table = Table::ELEMENTS_SITES;

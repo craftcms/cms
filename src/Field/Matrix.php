@@ -176,7 +176,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         $fieldLayouts = array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes);
         $tableColumns = array_merge(
             ElementSources::getAvailableTableAttributes(Entry::class)->all(),
-            ElementSources::getTableAttributesForFieldLayouts($fieldLayouts)->all(),
+            ElementSources::getTableAttributesForFieldLayouts(collect($fieldLayouts))->all(),
         );
 
         $options = [];
@@ -675,21 +675,19 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         // Existing element?
         if ($owner && $owner->id) {
-            $query->beforeQuery(function (EntryQuery $entryQuery) use ($owner) {
-                $entryQuery->owner($owner);
+            $query->owner($owner);
 
-                // Clear out id=false if this query was populated previously
-                if ($entryQuery->id === false) {
-                    $entryQuery->id = null;
-                }
+            // Clear out id=false if this query was populated previously
+            if ($query->id === false) {
+                $query->id = null;
+            }
 
-                // If the owner is a revision, allow revision entries to be returned as well
-                if ($owner->getIsRevision()) {
-                    $entryQuery
-                        ->revisions(null)
-                        ->trashed(null);
-                }
-            });
+            // If the owner is a revision, allow revision entries to be returned as well
+            if ($owner->getIsRevision()) {
+                $query
+                    ->revisions(null)
+                    ->trashed(null);
+            }
 
             // Prepare the query for lazy eager loading
             $query->prepForEagerLoading($this->handle, $owner);

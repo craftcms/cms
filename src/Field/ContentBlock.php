@@ -355,6 +355,14 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         ?ElementInterface $element,
         bool $fromRequest,
     ): ContentBlockElement {
+        if ($value instanceof ContentBlockElement) {
+            if ($element) {
+                $this->setOwnerOnContentBlockElement($element, $value);
+            }
+
+            return $value;
+        }
+
         if ($value instanceof ElementQueryInterface) {
             /** @var ?ContentBlockElement $contentBlock */
             $contentBlock = $value->one();

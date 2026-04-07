@@ -268,7 +268,7 @@ class EntryTypesController
         $entryType->showStatusField = $request->boolean('showStatusField', $entryType->showStatusField);
 
         // If we're duplicating the entry type and the handle hasn't changed, find a unique one
-        if ($entryType->handle === ($originalEntryType->handle ?? null)) {
+        if ($saveAsNew && $entryType->handle === ($originalEntryType->handle ?? null)) {
             if (preg_match('/^(.*?)(\d+)$/', (string) $entryType->handle, $match)) {
                 $baseHandle = $match[1];
                 $i = (int) $match[2];

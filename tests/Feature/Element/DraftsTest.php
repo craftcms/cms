@@ -11,12 +11,16 @@ use CraftCms\Cms\Element\Events\DraftApplied;
 use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
@@ -201,23 +205,16 @@ it('can load provisional changes onto canonical elements', function () {
     $draft->setDirtyFields(['testField']);
     Elements::saveElement($draft);
 
-    DB::table(Table::CHANGEDATTRIBUTES)->insert([
-        'elementId' => $draft->id,
-        'siteId' => $draft->siteId,
-        'attribute' => 'title',
-        'dateUpdated' => now(),
-        'userId' => User::findOne()->id,
-        'propagated' => false,
-    ]);
-
-    DB::table(Table::CHANGEDFIELDS)->insert([
-        'elementId' => $draft->id,
-        'siteId' => $draft->siteId,
-        'fieldId' => $field->id,
-        'layoutElementUid' => $draft->getFieldLayout()->getCustomFieldElements()[0]->uid,
-        'dateUpdated' => now(),
-        'propagated' => false,
-    ]);
+    expect(DB::table(Table::CHANGEDATTRIBUTES)
+        ->where('elementId', $draft->id)
+        ->where('siteId', $draft->siteId)
+        ->where('attribute', 'title')
+        ->exists())->toBeTrue()
+        ->and(DB::table(Table::CHANGEDFIELDS)
+            ->where('elementId', $draft->id)
+            ->where('siteId', $draft->siteId)
+            ->where('fieldId', $field->id)
+            ->exists())->toBeTrue();
 
     $entry = entryQuery()->id($entry->id)->one();
     $draft = entryQuery()->id($draft->id)->drafts()->provisionalDrafts()->one();
@@ -230,4 +227,150 @@ it('can load provisional changes onto canonical elements', function () {
     expect($entry->hasProvisionalChanges)->toBeTrue()
         ->and($entry->title)->toBe('Draft title')
         ->and($entry->getFieldValue('testField'))->toBe('draft field value');
+});
+
+it('preserves matrix nested field values through draft apply', function () {
+    actingAs(User::findOne());
+
+    $innerField = Field::factory()->create([
+        'name' => 'Inner Text',
+        'handle' => 'innerText',
+        'type' => PlainText::class,
+    ]);
+
+    $matrixBlockLayout = FieldLayout::create([
+        'type' => EntryElement::class,
+        'config' => [
+            'tabs' => [
+                [
+                    'uid' => Str::uuid()->toString(),
+                    'name' => 'Content',
+                    'elements' => [
+                        [
+                            'uid' => Str::uuid()->toString(),
+                            'type' => CustomField::class,
+                            'fieldUid' => $innerField->uid,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ]);
+
+    $matrixEntryType = EntryType::factory()->create([
+        'fieldLayoutId' => $matrixBlockLayout->id,
+        'name' => 'Matrix Block',
+        'handle' => 'matrixBlock',
+        'hasTitleField' => true,
+    ]);
+
+    $matrixField = Field::factory()->create([
+        'name' => 'Matrix Field',
+        'handle' => 'matrixField',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$matrixEntryType->id]],
+    ]);
+
+    $entryFieldLayout = FieldLayout::create([
+        'type' => EntryElement::class,
+        'config' => [
+            'tabs' => [
+                [
+                    'uid' => Str::uuid()->toString(),
+                    'name' => 'Content',
+                    'elements' => [
+                        [
+                            'uid' => Str::uuid()->toString(),
+                            'type' => CustomField::class,
+                            'fieldUid' => $matrixField->uid,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ]);
+
+    $entryModel = Entry::factory()->create();
+    $entryModel->element->update(['fieldLayoutId' => $entryFieldLayout->id]);
+    $entryModel->entryType->update(['fieldLayoutId' => $entryFieldLayout->id]);
+
+    EntryTypes::refreshEntryTypes();
+    Fields::invalidateCaches();
+    Fields::refreshFields();
+
+    $entry = entryQuery()->id($entryModel->id)->one();
+    $blockUid = Str::uuid()->toString();
+
+    $entry->setFieldValueFromRequest('matrixField', [
+        'entries' => [
+            "uid:$blockUid" => [
+                'type' => $matrixEntryType->handle,
+                'title' => 'Block 1',
+                'enabled' => true,
+                'fields' => [
+                    'innerText' => 'Canonical matrix value',
+                ],
+            ],
+        ],
+        'sortOrder' => [$blockUid],
+    ]);
+
+    Elements::saveElement($entry);
+
+    expect($entry->getFieldValue('matrixField')->status(null)->one()->getFieldValue('innerText'))
+        ->toBe('Canonical matrix value');
+
+    $draft = $this->drafts->createDraft($entry, User::findOne()->id, name: 'Matrix draft');
+
+    expect($draft->siteSettingsId)->not->toBeNull();
+
+    $canonicalBlock = $draft->getFieldValue('matrixField')->status(null)->one();
+
+    $draft->setFieldValueFromRequest('matrixField', [
+        'entries' => [
+            "uid:$canonicalBlock->uid" => [
+                'type' => $matrixEntryType->handle,
+                'title' => 'Block 1',
+                'enabled' => true,
+                'fields' => [
+                    'innerText' => 'Draft matrix value',
+                ],
+            ],
+        ],
+        'sortOrder' => [$canonicalBlock->uid],
+    ]);
+
+    $draftMatrixQuery = $draft->getFieldValue('matrixField');
+    $draftMatrixEntry = $draftMatrixQuery->getResultOverride()[0];
+
+    expect($draftMatrixQuery->getResultOverride())->not->toBeNull()
+        ->and($draftMatrixEntry->id)->not->toBe($canonicalBlock->id)
+        ->and($draftMatrixEntry->draftId)->not->toBeNull()
+        ->and($draftMatrixEntry->getOwnerId())->toBe($draft->id)
+        ->and($draftMatrixEntry->getPrimaryOwnerId())->toBe($draft->id)
+        ->and($draftMatrixEntry->getFieldValue('innerText'))->toBe('Draft matrix value');
+
+    Elements::saveElement($draft);
+
+    $savedDraftQuery = $draft->getFieldValue('matrixField')->status(null);
+    $savedDraftBlock = $savedDraftQuery->one();
+    $draftOwnedBlockIds = DB::table(Table::ELEMENTS_OWNERS)
+        ->where('ownerId', $draft->id)
+        ->pluck('elementId')
+        ->all();
+
+    expect($draftOwnedBlockIds)->toContain($savedDraftBlock->id)
+        ->and($draftOwnedBlockIds)->toContain($draftMatrixEntry->id)
+        ->and($draftOwnedBlockIds)->not->toContain($canonicalBlock->id)
+        ->and($savedDraftBlock->getOwnerId())->toBe($draft->id)
+        ->and($savedDraftBlock->getPrimaryOwnerId())->toBe($draft->id);
+
+    expect($savedDraftBlock->getFieldValue('innerText'))
+        ->toBe('Draft matrix value');
+
+    $applied = $this->drafts->applyDraft($draft);
+    $appliedBlock = $applied->getFieldValue('matrixField')->status(null)->one();
+
+    expect($appliedBlock->getFieldValue('innerText'))
+        ->toBe('Draft matrix value');
 });

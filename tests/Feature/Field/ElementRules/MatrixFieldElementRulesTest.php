@@ -10,7 +10,7 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Support\Str;
 
-function createMatrixEntryType(): EntryTypeModel
+function createMatrixRulesEntryType(): EntryTypeModel
 {
     $layout = FieldLayoutModel::create([
         'type' => EntryElement::class,
@@ -34,7 +34,7 @@ function createMatrixEntryType(): EntryTypeModel
 }
 
 test('matrix field enforces min entries', function () {
-    $entryType = createMatrixEntryType();
+    $entryType = createMatrixRulesEntryType();
 
     $result = EntryModel::factory()
         ->withField('matrixField', Matrix::class, ['entryTypes' => [$entryType->id], 'minEntries' => 1], value: '')
@@ -47,7 +47,7 @@ test('matrix field enforces min entries', function () {
 });
 
 test('matrix field surfaces nested entry validation errors', function () {
-    $entryType = createMatrixEntryType();
+    $entryType = createMatrixRulesEntryType();
 
     $value = [
         'new1' => [
