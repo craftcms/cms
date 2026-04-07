@@ -42,9 +42,9 @@ class SingleSectionUriRule implements DataAwareRule, ValidationRule
             ->where('elements_sites.siteId', $this->data['siteId'])
             ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
             ->when(
-                DB::isPgsql(),
-                fn (Builder $query) => $query->where(new Lower('elements_sites.uri'), mb_strtolower((string) $this->data['uriFormat'])),
+                DB::isMysql(),
                 fn (Builder $query) => $query->where('elements_sites.uri', (string) $this->data['uriFormat']),
+                fn (Builder $query) => $query->where(new Lower('elements_sites.uri'), mb_strtolower((string) $this->data['uriFormat'])),
             )
             ->when(
                 $section->id,

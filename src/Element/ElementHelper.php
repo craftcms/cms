@@ -701,9 +701,9 @@ class ElementHelper
             ->where('elements_sites.siteId', $element->siteId)
             ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
             ->when(
-                DB::isPgsql(),
-                fn (Builder $query) => $query->where(new Lower('elements_sites.uri'), mb_strtolower($testUri)),
+                DB::isMysql(),
                 fn (Builder $query) => $query->where('elements_sites.uri', $testUri),
+                fn (Builder $query) => $query->where(new Lower('elements_sites.uri'), mb_strtolower($testUri)),
             )
             ->when(
                 value: $element->getCanonicalId(),
