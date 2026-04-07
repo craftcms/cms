@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Matrix;
@@ -346,4 +348,42 @@ it('persists nested content block field values when creating an entry', function
         ->and($contentBlock->id)->not->toBeNull()
         ->and($innerLayoutField)->not->toBeNull()
         ->and($contentBlock->getFieldValue('innerText'))->toBe('Nested content block value');
+});
+
+it('persists asset field values when creating an entry', function () {
+    $asset = AssetModel::factory()->createElement();
+
+    $assetsField = Field::factory()->create([
+        'name' => 'Asset Field',
+        'handle' => 'assetField',
+        'type' => Assets::class,
+    ]);
+
+    $fieldLayout = FieldLayout::create([
+        'type' => Entry::class,
+        'config' => createFieldLayoutConfig($assetsField),
+    ]);
+
+    $this->entryType->update(['fieldLayoutId' => $fieldLayout->id]);
+
+    EntryTypes::refreshEntryTypes();
+    Fields::invalidateCaches();
+    Fields::refreshFields();
+
+    post(action(StoreEntryController::class), [
+        'sectionId' => $this->section->id,
+        'title' => 'Asset Entry',
+        'slug' => 'asset-entry',
+        'fields' => [
+            'assetField' => [$asset->id],
+        ],
+    ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $entry = Entry::find()->slug('asset-entry')->status(null)->one();
+    $relatedAssetIds = $entry->getFieldValue('assetField')->ids();
+
+    expect($entry)->not->toBeNull()
+        ->and($relatedAssetIds)->toBe([$asset->id]);
 });
