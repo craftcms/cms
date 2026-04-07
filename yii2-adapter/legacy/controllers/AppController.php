@@ -20,7 +20,6 @@ use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Iconic;
-use CraftCms\Cms\Cp\Alerts;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Element\Drafts;
@@ -33,12 +32,9 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
-use DateInterval;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Uri;
@@ -119,43 +115,6 @@ class AppController extends Controller
         return $this->response->sendFile($publishedPath, null, [
             'inline' => true,
         ]);
-    }
-
-    /**
-     * Returns any alerts that should be displayed in the control panel.
-     *
-     * @return Response
-     */
-    public function actionGetCpAlerts(): Response
-    {
-        $this->requireAcceptsJson();
-        $this->requirePermission('accessCp');
-
-        $path = $this->request->getRequiredBodyParam('path');
-
-        return $this->asJson([
-            'alerts' => app(Alerts::class)->get($path, true),
-        ]);
-    }
-
-    /**
-     * Shuns a control panel alert for 24 hours.
-     *
-     * @return Response
-     */
-    public function actionShunCpAlert(): Response
-    {
-        $this->requireAcceptsJson();
-        $this->requirePermission('accessCp');
-
-        $message = $this->request->getRequiredBodyParam('message');
-
-        $currentTime = DateTimeHelper::currentUTCDateTime();
-        $tomorrow = $currentTime->add(new DateInterval('P1D'));
-
-        Users::shunMessageForUser(Auth::user()->id, $message, $tomorrow);
-
-        return $this->asSuccess();
     }
 
     /**

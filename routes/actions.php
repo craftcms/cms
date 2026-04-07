@@ -7,6 +7,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\AddressesController;
 use CraftCms\Cms\Http\Controllers\AnnouncementsController;
 use CraftCms\Cms\Http\Controllers\ApiController;
+use CraftCms\Cms\Http\Controllers\App\CpAlertsController;
 use CraftCms\Cms\Http\Controllers\Assets\ActionController as AssetsActionController;
 use CraftCms\Cms\Http\Controllers\Assets\FolderController as AssetsFolderController;
 use CraftCms\Cms\Http\Controllers\Assets\IconController as AssetsIconController;
@@ -177,6 +178,10 @@ Route::prefix(implode('/', [
         // Addresses
         Route::post('addresses/fields', [AddressesController::class, 'fields']);
         Route::middleware(RequireAdminChanges::class)->post('addresses/save-field-layout', [AddressesController::class, 'saveFieldLayout']);
+
+        // App
+        Route::get('app/get-cp-alerts', [CpAlertsController::class, 'index']);
+        Route::get('app/shun-cp-alert', [CpAlertsController::class, 'destroy']);
 
         // Auth methods
         Route::post('auth/method-setup-html', [AuthMethodController::class, 'setupHtml']);
