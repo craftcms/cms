@@ -33,9 +33,7 @@ describe('appendHeadHtml', () => {
     const links = document.head.querySelectorAll('link');
     expect(links.length).toBe(1);
     expect(links[0].getAttribute('rel')).toBe('stylesheet');
-    expect(links[0].getAttribute('href')).toBe(
-      'https://example.com/style.css'
-    );
+    expect(links[0].getAttribute('href')).toBe('https://example.com/style.css');
   });
 
   test('appends a script element to head', async () => {
@@ -106,14 +104,10 @@ describe('appendBodyHtml', () => {
 
   test('appends script with src to body', async () => {
     const {appendBodyHtml} = await freshImport();
-    await appendBodyHtml(
-      '<script src="https://example.com/body.js"></script>'
-    );
+    await appendBodyHtml('<script src="https://example.com/body.js"></script>');
     const scripts = document.body.querySelectorAll('script');
     expect(scripts.length).toBe(1);
-    expect(scripts[0].getAttribute('src')).toBe(
-      'https://example.com/body.js'
-    );
+    expect(scripts[0].getAttribute('src')).toBe('https://example.com/body.js');
   });
 });
 
