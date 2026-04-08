@@ -8,16 +8,16 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static string<\craft\base\ElementInterface>|null getElementTypeById(int $elementId)
+ * @method static class-string<\craft\base\ElementInterface>|null getElementTypeById(int $elementId)
  * @method static string|null getElementTypeByUid(string $uid)
  * @method static string|null getElementTypeByKey(string $property, int|string $elementId)
  * @method static string[] getElementTypesByIds(int[] $elementIds)
- * @method static string<\craft\base\ElementInterface>[] getAllElementTypes()
+ * @method static class-string<\craft\base\ElementInterface>[] getAllElementTypes()
  * @method static string|null getElementTypeByRefHandle(string $refHandle)
- * @method static \craft\base\ElementInterface createElement(string<\craft\base\ElementInterface>|array $config)
- * @method static \CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface createElementQuery(string<\craft\base\ElementInterface> $elementType)
- * @method static \craft\base\ElementInterface|null getElementById(int $elementId, string<\craft\base\ElementInterface>|null $elementType = null, int|string|int[]|null $siteId = null, array $criteria = [])
- * @method static \craft\base\ElementInterface|null getElementByUid(string $uid, string<\craft\base\ElementInterface>|null $elementType = null, int|string|int[]|null $siteId = null, array $criteria = [])
+ * @method static \craft\base\ElementInterface createElement(class-string<\craft\base\ElementInterface>|array $config)
+ * @method static \CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface createElementQuery(class-string<\craft\base\ElementInterface> $elementType)
+ * @method static \craft\base\ElementInterface|null getElementById(int $elementId, class-string<\craft\base\ElementInterface>|null $elementType = null, int|string|int[]|null $siteId = null, array $criteria = [])
+ * @method static \craft\base\ElementInterface|null getElementByUid(string $uid, class-string<\craft\base\ElementInterface>|null $elementType = null, int|string|int[]|null $siteId = null, array $criteria = [])
  * @method static \craft\base\ElementInterface|null getElementByUri(string $uri, int|null $siteId = null, bool $enabledOnly = false)
  * @method static string|null getElementUriForSite(int $elementId, int $siteId)
  * @method static int[] getEnabledSiteIdsForElement(int $elementId)
@@ -34,7 +34,7 @@ use Override;
  * @method static void updateDescendantSlugsAndUris(\craft\base\ElementInterface $element, bool $updateOtherSites = true, bool $queue = false)
  * @method static bool mergeElementsByIds(int $mergedElementId, int $prevailingElementId)
  * @method static bool mergeElements(\craft\base\ElementInterface $mergedElement, \craft\base\ElementInterface $prevailingElement)
- * @method static bool deleteElementById(int $elementId, string<\craft\base\ElementInterface>|null $elementType = null, int|null $siteId = null, bool $hardDelete = false)
+ * @method static bool deleteElementById(int $elementId, class-string<\craft\base\ElementInterface>|null $elementType = null, int|null $siteId = null, bool $hardDelete = false)
  * @method static bool deleteElement(\craft\base\ElementInterface $element, bool $hardDelete = false)
  * @method static void deleteElementForSite(\craft\base\ElementInterface $element)
  * @method static void deleteElementsForSite(\craft\base\ElementInterface[] $elements)
@@ -45,7 +45,7 @@ use Override;
  * @method static \craft\base\ElementInterface[] getPlaceholderElements()
  * @method static \craft\base\ElementInterface|null getPlaceholderElement(int $sourceId, int $siteId)
  * @method static \CraftCms\Cms\Element\Data\EagerLoadPlan[] createEagerLoadingPlans(array|string $with)
- * @method static void eagerLoadElements(string<\craft\base\ElementInterface> $elementType, \craft\base\ElementInterface[] $elements, array<string|array>|string|\CraftCms\Cms\Element\Data\EagerLoadPlan[] $with)
+ * @method static void eagerLoadElements(class-string<\craft\base\ElementInterface> $elementType, \craft\base\ElementInterface[] $elements, array<string|array>|string|\CraftCms\Cms\Element\Data\EagerLoadPlan[] $with)
  *
  * @see \CraftCms\Cms\Element\Elements
  */
