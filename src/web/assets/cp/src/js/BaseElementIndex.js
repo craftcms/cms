@@ -1623,6 +1623,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         selectable: this.selectable,
         sortable: this.sortable && sortAttribute === 'sortOrder',
         prevalidate: this.settings.prevalidate,
+        returnUrl: document.location.href,
       };
 
       params.viewState.showHeaderColumn = this.settings.showHeaderColumn;
