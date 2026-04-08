@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Commands\Concerns;
 
-use Craft;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Console\Command;
 
 trait ResolvesElementById
@@ -18,7 +18,7 @@ trait ResolvesElementById
             return Command::INVALID;
         }
 
-        $element = Craft::$app->getElements()->getElementById(
+        $element = Elements::getElementById(
             $id,
             criteria: [
                 'siteId' => '*',

@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Craft;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -18,6 +19,7 @@ readonly class EnableController
     use RespondsWithFlash;
 
     public function __construct(
+        private Elements $elements,
         private Users $users,
     ) {}
 
@@ -31,15 +33,13 @@ readonly class EnableController
 
         abort_if(! $user, 400, 'User not found');
 
-        $elementsService = Craft::$app->getElements();
-
-        abort_if(! $elementsService->canSave($user), 403, 'User is not authorized to perform this action.');
+        Gate::authorize('save', $user);
 
         $user->enabled = true;
         $user->enabledForSite = true;
         $user->archived = false;
 
-        if (! $elementsService->saveElement($user, false)) {
+        if (! $this->elements->saveElement($user, false)) {
             return $this->asFailure(mb_ucfirst(t('Couldn’t save {type}.', [
                 'type' => User::lowerDisplayName(),
             ])));

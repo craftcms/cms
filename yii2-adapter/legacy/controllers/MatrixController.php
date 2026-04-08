@@ -17,13 +17,14 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\Gate;
 use Throwable;
 use yii\web\BadRequestHttpException;
-use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 use function CraftCms\Cms\t;
@@ -88,8 +89,7 @@ class MatrixController extends Controller
         $namespace = $this->request->getRequiredBodyParam('namespace');
         $staticEntries = $this->request->getBodyParam('staticEntries', false);
 
-        $elementsService = Craft::$app->getElements();
-        $owner = $elementsService->getElementById($ownerId, $ownerElementType, $siteId);
+        $owner = Elements::getElementById($ownerId, $ownerElementType, $siteId);
         if (!$owner) {
             throw new BadRequestHttpException("Invalid owner ID, element type, or site ID.");
         }
@@ -139,12 +139,10 @@ class MatrixController extends Controller
             // set owner so that the canDuplicateAsDraft checks the max entries on the right owner and not only the canonical
             $source->setOwner($owner);
 
-            if (!$elementsService->canDuplicateAsDraft($source, $user)) {
-                throw new ForbiddenHttpException('User not authorized to duplicate this element.');
-            }
+            Gate::authorize('duplicateAsDraft', $source);
 
             try {
-                $entry = $elementsService->duplicateElement($source, [
+                $entry = Elements::duplicateElement($source, [
                     ...$attributes,
                     'isProvisionalDraft' => false,
                     'draftId' => null,
@@ -164,9 +162,7 @@ class MatrixController extends Controller
                 ...$attributes,
             ]);
 
-            if (!$elementsService->canSave($entry, $user)) {
-                throw new ForbiddenHttpException('User not authorized to create this element.');
-            }
+            Gate::authorize('save', $entry);
 
             $entry->setScenario(Element::SCENARIO_ESSENTIALS);
             if (!app(Drafts::class)->saveElementAsDraft($entry, $user->id, markAsSaved: false)) {
@@ -221,7 +217,6 @@ class MatrixController extends Controller
             ->status(null)
             ->all();
 
-        $elementsService = Craft::$app->getElements();
         $view = $this->getView();
         $field = null;
         $entryTypes = null;
@@ -234,9 +229,8 @@ class MatrixController extends Controller
                     throw new BadRequestHttpException('Entry must belong to a Matrix field.');
                 }
                 $entryTypes ??= $field->getEntryTypesForField($entries, $entry->getOwner());
-                if (!$elementsService->canView($entry)) {
-                    throw new ForbiddenHttpException('User not authorized to view this element.');
-                }
+
+                Gate::authorize('view', $entry);
 
                 $html .= InputNamespace::namespaceInputs(fn() => template('_components/fieldtypes/Matrix/block', [
                     'name' => $field->handle,

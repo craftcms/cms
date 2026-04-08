@@ -8,6 +8,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Gate;
 
@@ -231,7 +232,7 @@ describe('Author permission validation', function () {
             ->forEntryType($entryType)
             ->createElement();
         $entry->setAuthorIds([$initialAuthor->id]);
-        Craft::$app->getElements()->saveElement($entry);
+        Elements::saveElement($entry);
 
         $entry->setAuthorIds([$user->id]);
 
@@ -266,7 +267,7 @@ describe('Author permission validation', function () {
             ->forEntryType($entryType)
             ->createElement();
         $entry->setAuthorIds([$initialAuthor->id]);
-        Craft::$app->getElements()->saveElement($entry);
+        Elements::saveElement($entry);
 
         $entry->setAuthorIds([$user->id]);
 
@@ -292,7 +293,7 @@ describe('Author permission validation', function () {
             ->forEntryType($entryType)
             ->createElement();
         $entry->setAuthorIds([$initialAuthor->id]);
-        Craft::$app->getElements()->saveElement($entry);
+        Elements::saveElement($entry);
 
         $entry->setAuthorIds([$adminUser->id]);
 

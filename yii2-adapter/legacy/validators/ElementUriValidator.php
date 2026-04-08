@@ -7,10 +7,10 @@
 
 namespace craft\validators;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
+use CraftCms\Cms\Support\Facades\Elements;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
 
@@ -66,7 +66,7 @@ class ElementUriValidator extends UriValidator
         }
 
         try {
-            Craft::$app->getElements()->setElementUri($model);
+            Elements::setElementUri($model);
         } catch (OperationAbortedException) {
             // Not a big deal if the element isn't enabled yet
             if (

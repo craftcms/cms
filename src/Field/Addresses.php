@@ -8,13 +8,13 @@ use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\elements\NestedElementManager;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Database\Table as DbTable;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Conditions\EmptyFieldConditionRule;
@@ -229,17 +229,17 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
     public function canViewElement(NestedElementInterface $element, User $user): bool
     {
-        return Craft::$app->getElements()->canView($element->getOwner(), $user);
+        return $user->can('view', $element->getOwner());
     }
 
     public function canSaveElement(NestedElementInterface $element, User $user): bool
     {
-        if (! Craft::$app->getElements()->canSave($element->getOwner(), $user)) {
+        if (! $user->can('save', $owner = $element->getOwner())) {
             return false;
         }
 
         // If this is a new address, make sure we aren't hitting the Max Addresses limit
-        if (! $element->id && $element->getIsCanonical() && $this->maxAddressesReached($element->getOwner())) {
+        if (! $element->id && $element->getIsCanonical() && $this->maxAddressesReached($owner)) {
             return false;
         }
 
@@ -249,7 +249,8 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     public function canDuplicateElement(NestedElementInterface $element, User $user): bool
     {
         $owner = $element->getOwner();
-        if (! Craft::$app->getElements()->canSave($owner, $user)) {
+
+        if (! $user->can('save', $owner)) {
             return false;
         }
 
@@ -260,7 +261,8 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     public function canDeleteElement(NestedElementInterface $element, User $user): bool
     {
         $owner = $element->getOwner();
-        if (! Craft::$app->getElements()->canSave($element->getOwner(), $user)) {
+
+        if (! $user->can('save', $element->getOwner())) {
             return false;
         }
 

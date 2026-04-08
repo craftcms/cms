@@ -85,7 +85,7 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
         $attributes = [];
 
         if ($this->hasCustomWidth()) {
-            $attributes['class'][] = 'width-'.($this->width ?? 100);
+            $attributes['class'][] = "width-$this->width";
         }
 
         return $attributes;

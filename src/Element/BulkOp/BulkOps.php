@@ -8,6 +8,7 @@ use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
 use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\ConnectionInterface;
@@ -16,7 +17,7 @@ use Illuminate\Database\ConnectionInterface;
 class BulkOps
 {
     /**
-     * @var array<string, true>
+     * @var list<string>
      */
     private array $activeKeys = [];
 
@@ -29,7 +30,7 @@ class BulkOps
      */
     public function activeKeys(): array
     {
-        return array_keys($this->activeKeys);
+        return $this->activeKeys;
     }
 
     public function start(): string
@@ -45,12 +46,16 @@ class BulkOps
 
     public function resume(string $key): void
     {
-        $this->activeKeys[$key] = true;
+        if (in_array($key, $this->activeKeys, true)) {
+            return;
+        }
+
+        $this->activeKeys[] = $key;
     }
 
     public function end(string $key): void
     {
-        unset($this->activeKeys[$key]);
+        $this->activeKeys = Arr::exceptValues($this->activeKeys, $key, true);
 
         event(new AfterBulkOp($key));
 

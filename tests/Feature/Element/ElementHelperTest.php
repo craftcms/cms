@@ -11,6 +11,7 @@ use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 
@@ -142,7 +143,7 @@ test('detects drafts revisions and outdated derivatives', function () {
     $entry = Entry::factory()->createElement();
     $draft = app(Drafts::class)->createDraft($entry);
     $revisionId = app(Revisions::class)->createRevision($entry);
-    $revision = Craft::$app->getElements()->getElementById($revisionId, EntryElement::class, $entry->siteId);
+    $revision = Elements::getElementById($revisionId, EntryElement::class, $entry->siteId);
 
     $canonical = new TestFeatureOutdatedElement;
     $canonical->id = 999;

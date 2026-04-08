@@ -37,6 +37,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Path as PathFacade;
 use CraftCms\Cms\Support\Path as LaravelPath;
 use CraftCms\Cms\User\Users;
@@ -187,6 +188,7 @@ class Craft extends Yii2
         TestSetup::removeProjectConfigFolders(CRAFT_VENDOR_PATH . '/orchestra/testbench-core/laravel/config/craft/project');
         $this->resetPathService();
 
+        app()->forgetInstance(\CraftCms\Cms\Element\Elements::class);
         app()->forgetInstance(Sites::class);
         app()->forgetInstance(EntryTypes::class);
         app()->forgetInstance(Fields::class);
@@ -242,6 +244,7 @@ class Craft extends Yii2
 
     public function _after(TestInterface $test): void
     {
+        app()->forgetInstance(\CraftCms\Cms\Element\Elements::class);
         app()->forgetInstance(EntryTypes::class);
         app()->forgetInstance(Sections::class);
         app()->forgetInstance(Filesystems::class);
@@ -251,6 +254,7 @@ class Craft extends Yii2
         app()->forgetInstance(ImageTransforms::class);
         $this->resetPathService();
 
+        Elements::clearResolvedInstances();
         \CraftCms\Cms\Support\Facades\EntryTypes::clearResolvedInstances();
         \CraftCms\Cms\Support\Facades\Sections::clearResolvedInstances();
         \CraftCms\Cms\Support\Facades\Assets::clearResolvedInstances();
@@ -462,7 +466,7 @@ class Craft extends Yii2
      */
     public function saveElement(ElementInterface $element, bool $failHard = true): bool
     {
-        if (!\Craft::$app->getElements()->saveElement($element)) {
+        if (!Elements::saveElement($element)) {
             if ($failHard) {
                 throw new InvalidArgumentException(
                     implode(', ', $element->getErrorSummary(true))
@@ -484,7 +488,7 @@ class Craft extends Yii2
      */
     public function deleteElement(ElementInterface $element, bool $hardDelete = true, bool $failHard = true): bool
     {
-        if (!\Craft::$app->getElements()->deleteElement($element, $hardDelete)) {
+        if (!Elements::deleteElement($element, $hardDelete)) {
             if ($failHard) {
                 throw new InvalidArgumentException(
                     implode(', ', $element->getErrorSummary(true))

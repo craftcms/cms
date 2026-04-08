@@ -169,11 +169,12 @@ class ElementSources extends Component
      * @param class-string<ElementInterface> $elementType The element type class
      * @param string $sourceKey The element type source key
      * @param string[]|null $customAttributes Custom attributes to show rather than the defaults
+     * @param FieldLayout[]|null $fieldLayouts The field layouts that should be factored in
      * @return array[]
      */
-    public function getTableAttributes(string $elementType, string $sourceKey, ?array $customAttributes = null): array
+    public function getTableAttributes(string $elementType, string $sourceKey, ?array $customAttributes = null, ?array $fieldLayouts = null): array
     {
-        return app(\CraftCms\Cms\Element\ElementSources::class)->getTableAttributes($elementType, $sourceKey, $customAttributes)->all();
+        return app(\CraftCms\Cms\Element\ElementSources::class)->getTableAttributes($elementType, $sourceKey, $customAttributes, $fieldLayouts)->all();
     }
 
     /**

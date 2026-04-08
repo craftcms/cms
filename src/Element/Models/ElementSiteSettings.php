@@ -12,6 +12,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ElementSiteSettings extends BasePivot
 {
     #[\Override]
+    protected $primaryKey = 'id';
+
+    #[\Override]
+    public $incrementing = true;
+
+    #[\Override]
     protected $table = Table::ELEMENTS_SITES;
 
     #[\Override]
@@ -19,6 +25,13 @@ class ElementSiteSettings extends BasePivot
         'enabled' => 'bool',
         'content' => 'json',
     ];
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        $this->setPivotKeys('elementId', 'siteId');
+    }
 
     /**
      * @return BelongsTo<Element, $this>

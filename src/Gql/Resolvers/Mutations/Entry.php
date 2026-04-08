@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Resolvers\Mutations;
 
-use Craft;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
@@ -15,6 +14,7 @@ use CraftCms\Cms\Gql\Resolvers\ElementMutationResolver;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Drafts;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use Error;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -93,7 +93,7 @@ class Entry extends ElementMutationResolver
         $this->performStructureOperations($entry, $arguments);
 
         /** @var EntryQuery $query */
-        $query = Craft::$app->getElements()->createElementQuery(EntryElement::class)
+        $query = Elements::createElementQuery(EntryElement::class)
             ->siteId($entry->siteId)
             ->status(null);
 
@@ -115,9 +115,8 @@ class Entry extends ElementMutationResolver
         $entryId = $arguments['id'];
         $siteId = $arguments['siteId'] ?? null;
 
-        $elementService = Craft::$app->getElements();
         /** @var EntryElement|null $entry */
-        $entry = $elementService->getElementById($entryId, EntryElement::class, $siteId);
+        $entry = Elements::getElementById($entryId, EntryElement::class, $siteId);
 
         if (! $entry) {
             return false;
@@ -126,7 +125,7 @@ class Entry extends ElementMutationResolver
         $section = $entry->getSection();
         $this->requireSchemaAction("sections.$section->uid", 'delete');
 
-        return $elementService->deleteElementById($entryId);
+        return Elements::deleteElementById($entryId);
     }
 
     public function createDraft(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
@@ -134,7 +133,7 @@ class Entry extends ElementMutationResolver
         $entryId = $arguments['id'];
 
         /** @var EntryElement|null $entry */
-        $entry = Craft::$app->getElements()->getElementById($entryId, EntryElement::class);
+        $entry = Elements::getElementById($entryId, EntryElement::class);
 
         if (! $entry) {
             throw new Error('Unable to perform the action.');
@@ -163,8 +162,7 @@ class Entry extends ElementMutationResolver
     public function publishDraft(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): int
     {
         /** @var EntryElement|null $draft */
-        $draft = Craft::$app->getElements()
-            ->createElementQuery(EntryElement::class)
+        $draft = Elements::createElementQuery(EntryElement::class)
             ->status(null)
             ->provisionalDrafts($arguments['provisional'] ?? false)
             ->draftId($arguments['id'])
@@ -218,22 +216,22 @@ class Entry extends ElementMutationResolver
             throw new Error('Unable to perform the action.');
         }
 
-        $elementService = Craft::$app->getElements();
-
         if ($canIdentify) {
             // Prepare the element query
             $siteId = $arguments['siteId'] ?? Sites::getPrimarySite()->id;
             /** @var EntryQuery $entryQuery */
-            $entryQuery = $elementService->createElementQuery(EntryElement::class)->status(null)->siteId($siteId);
+            $entryQuery = Elements::createElementQuery(EntryElement::class)->status(null)->siteId($siteId);
             $entryQuery = $this->identifyEntry($entryQuery, $arguments);
 
+            /** @var EntryElement|null $entry */
             $entry = $entryQuery->one();
 
             if (! $entry) {
                 throw new Error('No such entry exists');
             }
         } else {
-            $entry = $elementService->createElement(EntryElement::class);
+            /** @var EntryElement $entry */
+            $entry = Elements::createElement(EntryElement::class);
         }
 
         // If they are identifying a specific entry, don't allow changing the section/field ID.

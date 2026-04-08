@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
-use Craft;
-use craft\helpers\Db as DbHelper;
 use CraftCms\Cms\Asset\Data\AssetIndexEntry;
 use CraftCms\Cms\Asset\Data\IndexingSession;
 use CraftCms\Cms\Asset\Data\Volume;
@@ -20,11 +18,13 @@ use CraftCms\Cms\Asset\Exceptions\VolumeException;
 use CraftCms\Cms\Asset\Models\AssetIndexingSession as AssetIndexingSessionModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Generator;
@@ -49,8 +49,9 @@ class AssetIndexer
     }
 
     public function __construct(
-        private readonly Volumes $volumes,
+        private readonly Elements $elements,
         private readonly Folders $folders,
+        private readonly Volumes $volumes,
     ) {}
 
     public function getIndexListOnVolume(Volume $volume, string $directory = ''): Generator
@@ -609,7 +610,7 @@ class AssetIndexer
 
         /** @var Asset|null $asset */
         $asset = Asset::find()
-            ->filename(DbHelper::escapeParam($filename))
+            ->filename(Query::escapeParam($filename))
             ->folderId($folder->id)
             ->one();
 
@@ -671,7 +672,7 @@ class AssetIndexer
                 $asset->setHeight($h);
                 $asset->dateModified = $timeModified;
 
-                Craft::$app->getElements()->saveElement($asset);
+                $this->elements->saveElement($asset);
 
                 $shouldCache = ! $isLocalFs && $cacheImages && Cms::config()->maxCachedCloudImageSize > 0;
 
@@ -682,7 +683,7 @@ class AssetIndexer
                 }
             } else {
                 $asset->dateModified = $timeModified;
-                Craft::$app->getElements()->saveElement($asset);
+                $this->elements->saveElement($asset);
             }
         } catch (Throwable $exception) {
             Log::info($exception->getMessage());

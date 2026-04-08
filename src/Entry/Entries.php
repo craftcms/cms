@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry;
 
-use Craft;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -36,6 +36,10 @@ class Entries
      */
     private array $singleEntries = [];
 
+    public function __construct(
+        private readonly Elements $elements,
+    ) {}
+
     /**
      * Returns an entry by its ID.
      *
@@ -62,7 +66,7 @@ class Entries
                 ->value('sections.structureId');
         }
 
-        return Craft::$app->getElements()->getElementById($entryId, Entry::class, $siteId, $criteria);
+        return $this->elements->getElementById($entryId, Entry::class, $siteId, $criteria);
     }
 
     /**
@@ -191,17 +195,15 @@ class Entries
         // prevents revision from being created
         $entry->resaving = true;
 
-        $elementsService = Craft::$app->getElements();
         BulkOps::ensure(function () use (
             $entry,
             $section,
             $oldSection,
-            $elementsService,
         ) {
             DB::beginTransaction();
             try {
                 // Start with $entry’s site
-                if (! $elementsService->saveElement($entry, false, false)) {
+                if (! $this->elements->saveElement($entry, false, false)) {
                     throw new InvalidElementException($entry,
                         'Element '.$entry->id.' could not be moved for site '.$entry->siteId);
                 }

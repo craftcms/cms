@@ -4,21 +4,19 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Jobs;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Queue\BatchedJob;
 use CraftCms\Cms\Structure\Enums\Mode;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Override;
 use Throwable;
 
@@ -79,7 +77,6 @@ class ApplyNewPropagationMethod extends BatchedJob
             return;
         }
 
-        $elementsService = Craft::$app->getElements();
         $allSiteIds = Sites::getAllSiteIds()->all();
 
         // See what sites the element should exist in going forward
@@ -131,20 +128,7 @@ class ApplyNewPropagationMethod extends BatchedJob
             /** @var ElementInterface $otherSiteElement */
             $otherSiteElement = array_pop($otherSiteElements);
 
-            try {
-                $newElement = $elementsService->duplicateElement($otherSiteElement, [], false);
-            } catch (UnsupportedSiteException $e) {
-                Log::warning(sprintf(
-                    'Unable to duplicate "%s" to site %d: %s',
-                    $otherSiteElement::class,
-                    $otherSiteElement->siteId,
-                    $e->getMessage()
-                ));
-
-                report($e);
-
-                continue;
-            }
+            $newElement = Elements::duplicateElement($otherSiteElement, [], false);
 
             // Should we add the clone to the source element's structure?
             if (
@@ -210,7 +194,7 @@ class ApplyNewPropagationMethod extends BatchedJob
         $item->resaving = true;
 
         try {
-            Craft::$app->getElements()->saveElement($item, updateSearchIndex: false, saveContent: true);
+            Elements::saveElement($item, updateSearchIndex: false, saveContent: true);
         } catch (Throwable $e) {
             report($e);
         }

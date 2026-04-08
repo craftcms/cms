@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Extensions;
 
-use Craft;
 use craft\errors\AssetException;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
@@ -83,7 +83,7 @@ class HtmlTwigExtension extends AbstractExtension
 
     public function parseRefsFilter(mixed $str, ?int $siteId = null): string
     {
-        return Craft::$app->getElements()->parseRefs((string) $str, $siteId);
+        return Elements::parseRefs((string) $str, $siteId);
     }
 
     public function prependFilter(string $tag, string $html, ?string $ifExists = null): string

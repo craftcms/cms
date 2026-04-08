@@ -11,13 +11,13 @@ use CommerceGuys\Addressing\Subdivision\SubdivisionUpdater;
 use Craft;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
-use craft\elements\actions\Copy;
 use craft\elements\conditions\addresses\AddressCondition;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Address\Validation\AddressRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Actions\Copy;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\AddressQuery;
@@ -29,6 +29,7 @@ use CraftCms\Cms\Validation\Attributes\Ruleset;
 use Deprecated;
 use Override;
 use yii\base\InvalidConfigException;
+use yii\helpers\Html;
 
 use function CraftCms\Cms\t;
 
@@ -108,9 +109,20 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     #[Override]
+    protected static function defineDefaultCardAttributes(): array
+    {
+        return [
+            'address',
+        ];
+    }
+
+    #[Override]
     protected function attributeHtml(string $attribute): string
     {
         return match ($attribute) {
+            'address' => Html::tag('div', app(Addresses::class)->formatAddress($this), [
+                'class' => 'no-truncate',
+            ]),
             'country' => $this->getCountry()->getName(),
             default => parent::attributeHtml($attribute),
         };

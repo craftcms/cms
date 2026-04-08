@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use craft\base\ElementInterface;
-use craft\elements\db\EagerLoadInfo;
-use craft\elements\db\EagerLoadPlan;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Data\EagerLoadInfo;
+use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\DefineEagerLoadingMap;

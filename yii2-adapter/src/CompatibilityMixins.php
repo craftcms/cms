@@ -10,6 +10,7 @@ use CraftCms\Cms\Asset\Data\FolderCriteria as AssetFolderCriteria;
 use CraftCms\Cms\Asset\Data\Volume as AssetVolume;
 use CraftCms\Cms\Asset\Data\VolumeFolder as AssetVolumeFolder;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
+use CraftCms\Cms\Element\Actions\ElementAction;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Field;
@@ -54,6 +55,7 @@ readonly class CompatibilityMixins
             $class::mixin(new LegacyBehaviorMixin());
         }
 
+        ElementAction::mixin(new ValidateMixin());
         Element::mixin(new ValidateMixin());
         Element::mixin(new ElementMixin());
         Field::mixin(new ValidateMixin());

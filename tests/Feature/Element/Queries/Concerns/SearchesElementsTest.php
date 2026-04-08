@@ -1,6 +1,7 @@
 <?php
 
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Search;
 
 test('search', function () {
@@ -14,8 +15,8 @@ test('search', function () {
         'title' => 'Bar',
     ]);
 
-    $element1 = Craft::$app->getElements()->getElementById($entry1->id);
-    $element2 = Craft::$app->getElements()->getElementById($entry2->id);
+    $element1 = Elements::getElementById($entry1->id);
+    $element2 = Elements::getElementById($entry2->id);
 
     Search::indexElementAttributes($element1);
     Search::indexElementAttributes($element2);
@@ -37,8 +38,8 @@ test('search with score', function () {
         'slug' => 'Foo',
     ]);
 
-    $element1 = Craft::$app->getElements()->getElementById($entry1->id);
-    $element2 = Craft::$app->getElements()->getElementById($entry2->id);
+    $element1 = Elements::getElementById($entry1->id);
+    $element2 = Elements::getElementById($entry2->id);
 
     Search::indexElementAttributes($element1);
     Search::indexElementAttributes($element2);

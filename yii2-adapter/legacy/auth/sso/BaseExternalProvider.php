@@ -17,6 +17,7 @@ use craft\services\Sso;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -205,7 +206,7 @@ abstract class BaseExternalProvider extends BaseProvider
         }
 
         // Save user
-        if (!Craft::$app->getElements()->saveElement($user)) {
+        if (!Elements::saveElement($user)) {
             throw new SsoFailedException(
                 $this,
                 $user,

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Craft;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Html;
@@ -47,9 +47,8 @@ readonly class AddressesController
         return $response;
     }
 
-    public function store(Request $request): Response
+    public function store(Request $request, Elements $elements): Response
     {
-        $elementsService = Craft::$app->getElements();
         $user = $request->user();
 
         $userId = (int) ($request->input('userId') ?? $user->id);
@@ -66,7 +65,7 @@ readonly class AddressesController
             ]);
         }
 
-        abort_if(! $elementsService->canSave($address, $user), 403, 'User is not permitted to edit this address.');
+        Gate::authorize('save', $address);
 
         // Addresses have no status, and the default element save controller also sets the address scenario to live
         $address->setScenario(Element::SCENARIO_LIVE);
@@ -93,7 +92,7 @@ readonly class AddressesController
         $fieldsLocation = $request->input('fieldsLocation') ?? 'fields';
         $address->setFieldValuesFromRequest($fieldsLocation);
 
-        if (! $elementsService->saveElement($address)) {
+        if (! $elements->saveElement($address)) {
             return $this->asModelFailure($address, mb_ucfirst(t('Couldn’t save {type}.', [
                 'type' => Address::lowerDisplayName(),
             ])), 'address');
@@ -104,7 +103,7 @@ readonly class AddressesController
         ]));
     }
 
-    public function destroy(Request $request): Response
+    public function destroy(Request $request, Elements $elements): Response
     {
         $request->validate([
             'addressId' => ['required', 'integer'],
@@ -114,11 +113,9 @@ readonly class AddressesController
 
         abort_if(! $address, 400, "Invalid address ID: $addressId");
 
-        $elementsService = Craft::$app->getElements();
+        Gate::authorize('delete', $address);
 
-        abort_if(! $elementsService->canDelete($address), 403, 'User is not permitted to delete this address.');
-
-        if (! $elementsService->deleteElement($address)) {
+        if (! $elements->deleteElement($address)) {
             return $this->asModelFailure($address, t('Couldn’t delete {type}.', [
                 'type' => Address::lowerDisplayName(),
             ]), 'address');

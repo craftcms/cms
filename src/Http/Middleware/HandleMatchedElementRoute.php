@@ -5,16 +5,21 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
-use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Route\DynamicRoute;
 use CraftCms\Cms\Route\MatchedElement;
-use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Site\Sites;
 use Illuminate\Http\Request;
 
 readonly class HandleMatchedElementRoute
 {
+    public function __construct(
+        private Elements $elements,
+        private Sites $sites,
+    ) {}
+
     public function handle(Request $request, Closure $next): mixed
     {
         if (! Cms::isInstalled() || ! $request->isSiteRequest() || $request->isActionRequest() || Cms::config()->headlessMode) {
@@ -27,7 +32,7 @@ readonly class HandleMatchedElementRoute
             return $next($request);
         }
 
-        $element = Craft::$app->getElements()->getElementByUri($path, Sites::getCurrentSite()->id, true);
+        $element = $this->elements->getElementByUri($path, $this->sites->getCurrentSite()->id, true);
 
         if (! $element) {
             return $next($request);

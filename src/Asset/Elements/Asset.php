@@ -9,22 +9,20 @@ use craft\base\ElementInterface;
 use craft\controllers\ElementIndexesController;
 use craft\controllers\ElementSelectorModalsController;
 use craft\db\QueryAbortedException;
-use craft\elements\actions\CopyReferenceTag;
-use craft\elements\actions\CopyUrl;
-use craft\elements\actions\DeleteAssets;
-use craft\elements\actions\DownloadAssetFile;
-use craft\elements\actions\EditImage;
-use craft\elements\actions\MoveAssets;
-use craft\elements\actions\PreviewAsset;
-use craft\elements\actions\RenameFile;
-use craft\elements\actions\ReplaceFile;
-use craft\elements\actions\Restore;
-use craft\elements\actions\ShowInFolder;
 use craft\elements\conditions\assets\AssetCondition;
-use craft\elements\db\EagerLoadPlan;
 use craft\errors\AssetException;
 use craft\validators\AssetLocationValidator;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Actions\CopyReferenceTag;
+use CraftCms\Cms\Asset\Actions\CopyUrl;
+use CraftCms\Cms\Asset\Actions\DeleteAssets;
+use CraftCms\Cms\Asset\Actions\DownloadAssetFile;
+use CraftCms\Cms\Asset\Actions\EditImage;
+use CraftCms\Cms\Asset\Actions\MoveAssets;
+use CraftCms\Cms\Asset\Actions\PreviewAsset;
+use CraftCms\Cms\Asset\Actions\RenameFile;
+use CraftCms\Cms\Asset\Actions\ReplaceFile;
+use CraftCms\Cms\Asset\Actions\ShowInFolder;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
@@ -43,7 +41,9 @@ use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\Enums\MenuItemType;
@@ -1953,7 +1953,7 @@ JS, [
         $url = $event->url;
 
         // If BeforeDefineAssetUrl::$url is set to null, only respect that if $handled is true
-        if ($event->url === null && ! ($event->handled ?? false)) {
+        if ($event->url === null && ! $event->handled) {
             $url = $this->_url($transform, $immediately);
         }
 
@@ -3155,7 +3155,7 @@ JS;
             $attributes['data']['editable-image'] = true;
         }
 
-        if ($this->dateDeleted && $this->keptFile && Craft::$app->getElements()->canSave($this)) {
+        if ($this->dateDeleted && $this->keptFile && Gate::check('save', $this)) {
             $attributes['data']['restorable'] = true;
         }
 

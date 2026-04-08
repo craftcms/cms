@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -29,6 +28,10 @@ use function CraftCms\Cms\t;
 #[Singleton]
 readonly class Revisions
 {
+    public function __construct(
+        private Elements $elements,
+    ) {}
+
     /**
      * Creates a new revision for the given element and returns its ID.
      *
@@ -113,8 +116,6 @@ readonly class Revisions
             $creatorId = $event->creatorId;
             $canonical = $event->canonical;
 
-            $elementsService = Craft::$app->getElements();
-
             DB::beginTransaction();
             try {
                 // Even if no existing revision info was found, there could be an orphaned row in there
@@ -141,9 +142,9 @@ readonly class Revisions
                     $newAttributes['dateCreated'] = $canonical->dateUpdated;
                 }
 
-                $revision = $elementsService->duplicateElement(
-                    $canonical,
-                    $newAttributes,
+                $revision = $this->elements->duplicateElement(
+                    element: $canonical,
+                    newAttributes: $newAttributes,
                     copyModifiedFields: true,
                 );
 
@@ -200,7 +201,7 @@ readonly class Revisions
         ));
 
         // "Duplicate" the revision with the source element’s ID and UID
-        $newSource = Craft::$app->getElements()->updateCanonicalElement($revision, [
+        $newSource = $this->elements->updateCanonicalElement($revision, [
             'revisionCreatorId' => $creatorId,
             'revisionNotes' => t('Reverted content from revision {num}.', ['num' => $revision->revisionNum]),
         ]);

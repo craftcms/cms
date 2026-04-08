@@ -354,6 +354,8 @@ Craft.LoginForm = Garnish.Base.extend(
 
         if (message) {
           this.showError(message);
+        } else {
+          console.warn(e);
         }
       } finally {
         this.passkeyBtn.endBusyState();

@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use Craft;
-use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementActionInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites as SitesFacade;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
@@ -716,7 +717,7 @@ class ElementHelper
         }
 
         foreach ($rows as $row) {
-            $conflictingElement = Craft::$app->getElements()->getElementById($row->id, $row->type, $element->siteId);
+            $conflictingElement = Elements::getElementById($row->id, $row->type, $element->siteId);
 
             if ($conflictingElement && ! self::isDraftOrRevision($conflictingElement)) {
                 return false;

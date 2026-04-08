@@ -17,6 +17,7 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Support\Facades\AssetIndexer;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
@@ -108,14 +109,14 @@ trait IndexesAssets
 
             $this->components->task(
                 'Deleting the'.($totalMissingFiles > 1 ? ' '.$totalMissingFiles : '').' missing asset record'.Str::plural('record', $totalMissingFiles),
-                function () use ($craft, $assetIds) {
+                function () use ($assetIds) {
                     /** @var ElementCollection<Asset> $assets */
                     $assets = Asset::find()->id($assetIds)->get();
 
                     foreach ($assets as $asset) {
                         app(ImageTransforms::class)->deleteCreatedTransformsForAsset($asset);
                         $asset->keepFileOnDelete = true;
-                        $craft->getElements()->deleteElement($asset);
+                        Elements::deleteElement($asset);
                     }
                 }
             );

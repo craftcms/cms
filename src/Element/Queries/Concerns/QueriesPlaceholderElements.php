@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use Closure;
-use Craft;
+use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Database\Query\Builder;
 
 /**
@@ -59,7 +59,7 @@ trait QueriesPlaceholderElements
 
         if (! isset($this->placeholderCondition) || $this->siteId !== $this->placeholderSiteIds) {
             $placeholderSourceIds = [];
-            $placeholderElements = Craft::$app->getElements()->getPlaceholderElements();
+            $placeholderElements = Elements::getPlaceholderElements();
             if (! empty($placeholderElements)) {
                 $siteIds = array_flip((array) $this->siteId);
                 foreach ($placeholderElements as $element) {

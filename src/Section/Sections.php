@@ -10,6 +10,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
@@ -88,8 +89,9 @@ class Sections
     private array $sectionSiteSettings = [];
 
     public function __construct(
-        private readonly ProjectConfig $projectConfig,
+        private readonly Elements $elements,
         private readonly ElementCaches $elementCaches,
+        private readonly ProjectConfig $projectConfig,
     ) {}
 
     /**
@@ -747,7 +749,8 @@ class Sections
                     array_walk($typeEntries, function (Entry $entry) {
                         $entry->deletedWithSection = false;
                     });
-                    Craft::$app->getElements()->restoreElements($typeEntries);
+
+                    $this->elements->restoreElements($typeEntries);
                 } catch (InvalidConfigException) {
                     // the entry type probably wasn't restored
                 }
@@ -868,7 +871,7 @@ class Sections
 
             if ($entry !== null) {
                 if (isset($entry->dateDeleted)) {
-                    Craft::$app->getElements()->restoreElement($entry);
+                    $this->elements->restoreElement($entry);
                 }
 
                 $entry->setTypeId($entryTypeIds[0]);
@@ -912,7 +915,7 @@ class Sections
 
         if (
             $entry->errors()->isNotEmpty() ||
-            ! Craft::$app->getElements()->saveElement($entry, false)
+            ! $this->elements->saveElement($entry, false)
         ) {
             throw new Exception("Couldn’t save single entry for section $section->name due to validation errors: ".implode(', ',
                 $entry->getFirstErrors()));
@@ -921,7 +924,6 @@ class Sections
         // Delete any other entries in the section
         // ---------------------------------------------------------------------
 
-        $elementsService = Craft::$app->getElements();
         $otherEntriesQuery = Entry::find()
             ->sectionId($section->id)
             ->drafts(null)
@@ -931,10 +933,9 @@ class Sections
             ->id(['not', $entry->id])
             ->status(null);
 
-        $otherEntriesQuery->each(function (Entry $entryToDelete) use ($entry, $elementsService) {
-            /** @var Entry $entryToDelete */
-            if (! $entryToDelete->getIsDraft() || $entry->canonicalId != $entry->id) {
-                $elementsService->deleteElement($entryToDelete, true);
+        $otherEntriesQuery->each(function (Entry $entryToDelete) use ($entry) {
+            if (! $entryToDelete->getIsDraft() || $entry->canonicalId !== $entry->id) {
+                $this->elements->deleteElement($entryToDelete, true);
             }
         }, 100);
 

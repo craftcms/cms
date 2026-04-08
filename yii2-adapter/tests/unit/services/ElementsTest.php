@@ -11,17 +11,20 @@ declare(strict_types=1);
 namespace crafttests\unit\services;
 
 use Craft;
+use craft\events\AuthorizationCheckEvent;
 use craft\services\Elements;
 use craft\test\TestCase;
 use craft\test\TestSetup;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use crafttests\fixtures\AssetFixture;
 use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\settings\GeneralConfigSettingFixture;
 use crafttests\fixtures\SitesFixture;
 use crafttests\fixtures\UserFixture;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Unit tests for the config service
@@ -86,6 +89,36 @@ class ElementsTest extends TestCase
         }
     }
 
+    public function testCanViewFallsBackToCurrentUser(): void
+    {
+        $entry = $this->_getEntry();
+        $user = $this->_getUser();
+
+        Auth::login($user);
+        Craft::$app->getUser()->setIdentity(new IdentityWrapper($user));
+
+        $this->elements->on(Elements::EVENT_AUTHORIZE_VIEW, function(AuthorizationCheckEvent $event) use ($user) {
+            self::assertSame($user->id, $event->user->id);
+            $event->authorized = true;
+        });
+
+        self::assertTrue($this->elements->canView($entry));
+    }
+
+    public function testCanSaveCanonicalUsesAuthorizeSaveEvent(): void
+    {
+        $entry = clone $this->_getEntry();
+        $user = $this->_getUser();
+        $entry->draftId = 100;
+
+        $this->elements->on(Elements::EVENT_AUTHORIZE_SAVE, function(AuthorizationCheckEvent $event) use ($user) {
+            self::assertSame($user->id, $event->user->id);
+            $event->authorized = true;
+        });
+
+        self::assertTrue($this->elements->canSaveCanonical($entry, $user));
+    }
+
     /**
      * @inheritdoc
      */
@@ -126,5 +159,18 @@ class ElementsTest extends TestCase
     {
         parent::_before();
         $this->elements = Craft::$app->getElements();
+    }
+
+    private function _getEntry(): Entry
+    {
+        return Entry::find()
+            ->site('*')
+            ->status(null)
+            ->one();
+    }
+
+    private function _getUser()
+    {
+        return Craft::$app->getUsers()->getUserById(1);
     }
 }

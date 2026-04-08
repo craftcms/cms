@@ -6,24 +6,13 @@ namespace CraftCms\Cms\Entry\Elements;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\ExpirableElementInterface;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use craft\controllers\ElementIndexesController;
 use craft\controllers\ElementsController;
-use craft\elements\actions\Copy;
-use craft\elements\actions\Delete;
-use craft\elements\actions\DeleteForSite;
-use craft\elements\actions\Duplicate;
-use craft\elements\actions\MoveToSection;
-use craft\elements\actions\NewChild;
-use craft\elements\actions\NewSiblingAfter;
-use craft\elements\actions\NewSiblingBefore;
-use craft\elements\actions\Restore;
 use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\conditions\entries\SectionConditionRule;
 use craft\elements\conditions\entries\TypeConditionRule;
-use craft\elements\db\EagerLoadPlan;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
@@ -33,13 +22,24 @@ use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Actions\Delete;
+use CraftCms\Cms\Element\Actions\DeleteForSite;
+use CraftCms\Cms\Element\Actions\Duplicate;
+use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
+use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Revisions;
+use CraftCms\Cms\Entry\Actions\MoveToSection;
+use CraftCms\Cms\Entry\Actions\NewChild;
+use CraftCms\Cms\Entry\Actions\NewSiblingAfter;
+use CraftCms\Cms\Entry\Actions\NewSiblingBefore;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Events\DefineEntryTypes;
 use CraftCms\Cms\Entry\Events\DefineMetaFields;
@@ -64,6 +64,8 @@ use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\ElementActions;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\EntryTypes;
@@ -402,7 +404,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
         // Now figure out what we can do with these
         $actions = [];
-        $elementsService = Craft::$app->getElements();
 
         if ($section) {
             $user = Auth::user();
@@ -418,22 +419,22 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                     $newEntryUrl .= '?site='.$site->handle;
                 }
 
-                $actions[] = $elementsService->createAction([
+                $actions[] = ElementActions::createAction([
                     'type' => NewSiblingBefore::class,
                     'newSiblingUrl' => $newEntryUrl,
-                ]);
+                ], static::class);
 
-                $actions[] = $elementsService->createAction([
+                $actions[] = ElementActions::createAction([
                     'type' => NewSiblingAfter::class,
                     'newSiblingUrl' => $newEntryUrl,
-                ]);
+                ], static::class);
 
                 if ($section->maxLevels !== 1) {
-                    $actions[] = $elementsService->createAction([
+                    $actions[] = ElementActions::createAction([
                         'type' => NewChild::class,
                         'maxLevels' => $section->maxLevels,
                         'newChildUrl' => $newEntryUrl,
-                    ]);
+                    ], static::class);
                 }
             }
 
@@ -1250,7 +1251,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
 
         if ($section->type === SectionType::Structure) {
-            $elementsService = Craft::$app->getElements();
             $user = Auth::user();
 
             $ancestors = $this->getAncestors();
@@ -1259,7 +1259,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             }
 
             foreach ($ancestors->all() as $ancestor) {
-                if ($elementsService->canView($ancestor, $user)) {
+                if ($user->can('view', $ancestor)) {
                     $crumbs[] = [
                         'html' => app(ElementHtml::class)->elementChipHtml($ancestor, [
                             'class' => 'chromeless',
@@ -1686,7 +1686,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             } else {
                 if (isset($this->elementQueryResult) && count($this->elementQueryResult) > 1) {
                     // eager-load authors for all queried entries
-                    Craft::$app->getElements()->eagerLoadElements(self::class, $this->elementQueryResult, ['authors']);
+                    Elements::eagerLoadElements(self::class, $this->elementQueryResult, ['authors']);
 
                     return $this->_authors ?? [];
                 }
@@ -2508,17 +2508,17 @@ JS;
     private function maybeSetDefaultAttributes(): void
     {
         // if we're resaving, we shouldn't be setting the defaults
-        if ($this->resaving) {
+        if ($this->resaving || $this->getIsRevision()) {
             return;
         }
 
+        $section = $this->getSection();
         if (
-            empty($this->getAuthors()) &&
-            ! isset($this->fieldId) &&
-            $this->getSection()->type !== SectionType::Single
+            $section?->type !== SectionType::Single &&
+            $section?->maxAuthors !== 0 &&
+            empty($this->getAuthors())
         ) {
-            $user = Auth::user();
-            if ($user) {
+            if ($user = Auth::user()) {
                 $this->setAuthor($user);
             }
         }
@@ -2527,7 +2527,7 @@ JS;
             ! $this->_userPostDate() &&
             (
                 in_array($this->scenario, [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]) ||
-                (! $this->getIsDraft() && ! $this->getIsRevision())
+                ! $this->getIsDraft()
             )
         ) {
             // Default the post date to the current date/time
@@ -2602,7 +2602,7 @@ JS;
 
                 // Update the entry’s descendants, who may be using this entry’s URI in their own URIs
                 if (! $isNew && $this->getIsCanonical()) {
-                    Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+                    Elements::updateDescendantSlugsAndUris($this, true, true);
                 }
             }
         }
@@ -2770,7 +2770,12 @@ JS;
         $section = $this->getSection();
 
         if ($section->type === SectionType::Structure && $section->structureId == $structureId) {
-            Craft::$app->getElements()->updateElementSlugAndUri($this, true, true, true);
+            Elements::updateElementSlugAndUri(
+                element: $this,
+                updateOtherSites: true,
+                updateDescendants: true,
+                queue: true,
+            );
 
             // If this is the canonical entry, update its drafts
             if ($this->getIsCanonical()) {

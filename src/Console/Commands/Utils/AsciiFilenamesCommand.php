@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Console\Commands\Utils;
 
-use Craft;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\File;
 use Exception;
@@ -32,7 +32,7 @@ class AsciiFilenamesCommand extends Command
     #[Override]
     protected $aliases = ['utils/ascii-filenames'];
 
-    public function handle(GeneralConfig $generalConfig): int
+    public function handle(GeneralConfig $generalConfig, Elements $elements): int
     {
         if (! $generalConfig->convertFilenamesToAscii) {
             $this->components->warn(<<<'EOD'
@@ -83,9 +83,9 @@ class AsciiFilenamesCommand extends Command
 
             $this->components->task(
                 "Renaming {$asset->getFilename()} to $asset->newFilename",
-                function () use (&$failCount, &$successCount, $asset) {
+                function () use ($elements, &$failCount, &$successCount, $asset) {
                     try {
-                        if (! Craft::$app->getElements()->saveElement($asset)) {
+                        if (! $elements->saveElement($asset)) {
                             throw new InvalidElementException($asset, implode(', ', $asset->getFirstErrors()));
                         }
 

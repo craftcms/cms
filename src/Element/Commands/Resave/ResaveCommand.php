@@ -4,22 +4,25 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Commands\Resave;
 
-use Craft;
 use craft\base\ElementInterface;
-use craft\events\MultiElementActionEvent;
-use craft\services\Elements;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Events\AfterPropagateElement;
+use CraftCms\Cms\Element\Events\AfterResaveElement;
+use CraftCms\Cms\Element\Events\BeforePropagateElement;
+use CraftCms\Cms\Element\Events\BeforeResaveElement;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Jobs\ResaveElements as ResaveElementsJob;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Event;
 use Throwable;
 
 use function CraftCms\Cms\normalizeValue;
@@ -330,7 +333,7 @@ abstract class ResaveCommand extends Command
             $setEnabledForSite = (bool) normalizeValue($setEnabledForSite);
         }
 
-        $beforeCallback = function (MultiElementActionEvent $e) use ($count, $query, $to, $set, $ifEmpty, $ifInvalid, $setEnabledForSite) {
+        $beforeCallback = function (BeforeResaveElement|BeforePropagateElement $e) use ($count, $query, $to, $set, $ifEmpty, $ifInvalid, $setEnabledForSite) {
             if ($e->query !== $query) {
                 return;
             }
@@ -378,7 +381,7 @@ abstract class ResaveCommand extends Command
             }
         };
 
-        $afterCallback = function (MultiElementActionEvent $e) use ($query, &$fail) {
+        $afterCallback = function (AfterPropagateElement|AfterResaveElement $e) use ($query, &$fail) {
             if ($e->query !== $query) {
                 return;
             }
@@ -397,17 +400,13 @@ abstract class ResaveCommand extends Command
         };
 
         if (isset($this->resolvedPropagateTo)) {
-            Craft::$app->getElements()->on(Elements::EVENT_BEFORE_PROPAGATE_ELEMENT, $beforeCallback);
-            Craft::$app->getElements()->on(Elements::EVENT_AFTER_PROPAGATE_ELEMENT, $afterCallback);
-            Craft::$app->getElements()->propagateElements($query, $this->resolvedPropagateTo, true);
-            Craft::$app->getElements()->off(Elements::EVENT_BEFORE_PROPAGATE_ELEMENT, $beforeCallback);
-            Craft::$app->getElements()->off(Elements::EVENT_AFTER_PROPAGATE_ELEMENT, $afterCallback);
+            Event::listen(fn (BeforePropagateElement $event) => $beforeCallback($event));
+            Event::listen(fn (AfterPropagateElement $event) => $afterCallback($event));
+            Elements::propagateElements($query, $this->resolvedPropagateTo, true);
         } else {
-            Craft::$app->getElements()->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
-            Craft::$app->getElements()->on(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
-            Craft::$app->getElements()->resaveElements($query, true, $this->resolvedRevisions === false, (bool) $this->option('update-search-index'), (bool) $this->option('touch'));
-            Craft::$app->getElements()->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
-            Craft::$app->getElements()->off(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
+            Event::listen(fn (BeforeResaveElement $event) => $beforeCallback($event));
+            Event::listen(fn (AfterResaveElement $event) => $afterCallback($event));
+            Elements::resaveElements($query, true, $this->resolvedRevisions === false, (bool) $this->option('update-search-index'), (bool) $this->option('touch'));
         }
 
         $label = isset($this->resolvedPropagateTo) ? 'propagating' : 'resaving';
@@ -424,46 +423,6 @@ abstract class ResaveCommand extends Command
     protected function optionalOption(string $name): mixed
     {
         return $this->hasOption($name) ? $this->input->getOption($name) : null;
-    }
-
-    protected function propagateElement(ElementInterface $element, Elements $elementsService): void
-    {
-        $supportedSites = collect(ElementHelper::supportedSitesForElement($element))
-            ->keyBy('siteId')
-            ->all();
-        $elementSiteIds = array_intersect($this->resolvedPropagateTo ?? [], array_keys($supportedSites));
-        $elementType = $element::class;
-
-        $element->setScenario(Element::SCENARIO_ESSENTIALS);
-        $element->newSiteIds = [];
-
-        foreach ($elementSiteIds as $siteId) {
-            if ($siteId === $element->siteId) {
-                continue;
-            }
-
-            $siteElement = $elementsService->getElementById($element->id, $elementType, $siteId);
-
-            if ($siteElement && $siteElement->dateUpdated >= $element->dateUpdated) {
-                continue;
-            }
-
-            $clone = clone $element;
-            $clone->siteId = $siteId;
-            $clone->propagating = true;
-            $clone->isNewForSite = $siteElement === null;
-            $clone->enabled = $element->getEnabledForSite($siteId);
-
-            $elementsService->saveElement(
-                $clone,
-                propagate: false,
-                updateSearchIndex: false,
-                saveContent: true,
-            );
-        }
-
-        $element->markAsDirty();
-        $element->afterPropagate(false);
     }
 
     /**

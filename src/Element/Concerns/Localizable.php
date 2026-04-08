@@ -125,6 +125,24 @@ trait Localizable
             ->revisions(null);
     }
 
+    public function getLocalizedQuery(): ElementQueryInterface
+    {
+        // use getLocalized() unless it’s eager-loaded
+        $query = $this->getLocalized();
+
+        if ($query instanceof ElementQueryInterface) {
+            return $query;
+        }
+
+        return $this::find()
+            ->id($this->id ?: false)
+            ->structureId($this->structureId)
+            ->siteId(['not', $this->siteId])
+            ->drafts($this->getIsDraft())
+            ->provisionalDrafts($this->isProvisionalDraft)
+            ->revisions($this->getIsRevision());
+    }
+
     public function getIsCrossSiteCopyable(): bool
     {
         if (isset($this->isCrossSiteCopyable)) {

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
-use Craft;
 use craft\base\ElementInterface;
-use craft\base\ExpirableElementInterface;
+use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Events\ElementHydrated;
 use CraftCms\Cms\Element\Queries\Events\ElementsHydrated;
 use CraftCms\Cms\Element\Queries\Events\HydratingElement;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
@@ -57,7 +57,6 @@ trait HydratesElements
 
         $elements = $this->afterHydrate($elements)
             ->unless($this->asArray, function (Collection $elements) {
-                $elementsService = Craft::$app->getElements();
                 $dependencyCollector = app(DependencyCollector::class);
 
                 $allElements = $elements->all();
@@ -82,7 +81,7 @@ trait HydratesElements
 
                 // Should we eager-load some elements onto these?
                 if ($this->with) {
-                    $elementsService->eagerLoadElements($this->elementType, $elements, $this->with);
+                    Elements::eagerLoadElements($this->elementType, $elements->all(), $this->with);
                 }
 
                 return $elements;
@@ -108,7 +107,7 @@ trait HydratesElements
         if (
             ! $this->ignorePlaceholders &&
             isset($row['id'], $row['siteId']) &&
-            ! is_null($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $row['siteId']))
+            ! is_null($element = Elements::getPlaceholderElement($row['id'], $row['siteId']))
         ) {
             return $element;
         }

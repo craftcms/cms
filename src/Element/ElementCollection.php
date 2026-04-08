@@ -8,6 +8,7 @@ use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Enumerable;
@@ -92,10 +93,9 @@ class ElementCollection extends Collection
     {
         /** @var array<class-string<TElement>,TElement[]> $elementsByClass */
         $elementsByClass = $this->groupBy(fn (ElementInterface $element) => $element::class)->all();
-        $elementsService = Craft::$app->getElements();
 
         foreach ($elementsByClass as $class => $classElements) {
-            $elementsService->eagerLoadElements($class, $this->items, $with);
+            app(Elements::class)->eagerLoadElements($class, $this->items, $with);
         }
 
         return $this;

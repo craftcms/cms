@@ -8,9 +8,9 @@
 namespace craft\base;
 
 use craft\behaviors\CustomFieldBehavior;
-use craft\elements\db\EagerLoadPlan;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -765,7 +765,7 @@ interface ElementInterface extends
     /**
      * Merges changes from the canonical element into this one.
      *
-     * @see \craft\services\Elements::mergeCanonicalChanges()
+     * @see \CraftCms\Cms\Element\Elements::mergeCanonicalChanges()
      * @since 3.7.0
      */
     public function mergeCanonicalChanges(): void;
@@ -1138,6 +1138,13 @@ interface ElementInterface extends
      * @return ElementQueryInterface|ElementCollection
      */
     public function getLocalized(): ElementQueryInterface|ElementQuery|ElementCollection;
+
+    /**
+     * Returns a query for the same element in other locales.
+     *
+     * @return ElementQueryInterface
+     */
+    public function getLocalizedQuery(): ElementQueryInterface;
 
     /**
      * Returns the next element relative to this one, from a given set of criteria.

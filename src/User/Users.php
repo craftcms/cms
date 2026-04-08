@@ -15,6 +15,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Field\Fields;
@@ -77,6 +78,7 @@ use function CraftCms\Cms\t;
 class Users
 {
     public function __construct(
+        private readonly Elements $elements,
         private readonly ElementCaches $elementCaches,
     ) {}
 
@@ -112,7 +114,7 @@ class Users
             throw new InvalidArgumentException($user->errors()->first('email'));
         }
 
-        if (! Craft::$app->getElements()->saveElement($user, false)) {
+        if (! $this->elements->saveElement($user, false)) {
             throw new Exception('Unable to save user: '.implode(', ', $user->getFirstErrors()));
         }
 
@@ -131,7 +133,7 @@ class Users
      */
     public function getUserById(int $userId): ?User
     {
-        return Craft::$app->getElements()->getElementById($userId, User::class);
+        return $this->elements->getElementById($userId, User::class);
     }
 
     /**
@@ -371,11 +373,10 @@ class Users
             $photo->setVolumeId($volume->id);
 
             // Save photo.
-            $elementsService = Craft::$app->getElements();
-            $elementsService->saveElement($photo);
+            $this->elements->saveElement($photo);
 
             $user->setPhoto($photo);
-            $elementsService->saveElement($user, false);
+            $this->elements->saveElement($user, false);
         }
 
         event(new UserPhotoSaved($user, $photo->id));
@@ -400,7 +401,7 @@ class Users
         $photo->setScenario(Asset::SCENARIO_MOVE);
         $photo->avoidFilenameConflicts = true;
         $photo->newFolderId = $folderId;
-        Craft::$app->getElements()->saveElement($photo);
+        $this->elements->saveElement($photo);
     }
 
     /**
@@ -459,7 +460,7 @@ class Users
 
         event(new DeletingUserPhoto($user, $photoId));
 
-        $result = Craft::$app->getElements()->deleteElementById($photoId, Asset::class);
+        $result = $this->elements->deleteElementById($photoId, Asset::class);
 
         if ($result) {
             $user->setPhoto();
@@ -966,7 +967,7 @@ class Users
             })
             ->each(function (User $user) {
                 try {
-                    Craft::$app->getElements()->deleteElement($user);
+                    $this->elements->deleteElement($user);
                     Log::info("Just deleted pending user $user->username ($user->id), because they took too long to activate their account.", [__METHOD__]);
                 } catch (UserException $e) {
                     Log::warning($e->getMessage(), [__METHOD__]);

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -18,6 +18,7 @@ use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -45,7 +46,7 @@ abstract class BaseElementLinkType extends BaseLinkType
         return static::elementType()::refHandle();
     }
 
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return static::elementType()::displayName();
@@ -112,7 +113,7 @@ abstract class BaseElementLinkType extends BaseLinkType
         return (bool) preg_match(sprintf('/^\{%s:(\d+)(@(\d+))?:url\}$/', static::elementType()::refHandle()), $value);
     }
 
-    #[\Override]
+    #[Override]
     public function renderValue(string $value): string
     {
         return $this->element($value)?->getUrl() ?? '';
@@ -216,7 +217,7 @@ JS, [
         return true;
     }
 
-    #[\Override]
+    #[Override]
     public function isValueEmpty(string $value): bool
     {
         // check if the element we're linking to still exists (e.g. it wasn't deleted)
@@ -231,7 +232,7 @@ JS, [
         }
 
         /** @var class-string<ElementInterface>|null $elementType */
-        $elementType = Craft::$app->getElements()->getElementTypeByRefHandle($matches['elementType']);
+        $elementType = Elements::getElementTypeByRefHandle($matches['elementType']);
         if (! $elementType) {
             return true;
         }
@@ -246,7 +247,7 @@ JS, [
             ->exists();
     }
 
-    #[\Override]
+    #[Override]
     public function normalizeValue(ElementInterface|int|string $value): string
     {
         if ($value instanceof ElementInterface) {

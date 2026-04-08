@@ -6,13 +6,14 @@ use CraftCms\Cms\Element\Events\AfterRestore;
 use CraftCms\Cms\Element\Events\BeforeRestore;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Facades\Event;
 
 it('restores a soft-deleted element', function () {
     Event::fake([BeforeRestore::class, AfterRestore::class]);
 
     $entry = EntryModel::factory()->createElement();
-    Craft::$app->getElements()->deleteElement($entry);
+    Elements::deleteElement($entry);
 
     $this->artisan('elements/restore', ['id' => $entry->id])
         ->expectsOutputToContain('Element restored.')

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
-use Craft;
 use craft\base\ElementInterface;
 use craft\web\UploadedFile;
 use CraftCms\Cms\Asset\AssetsHelper;
@@ -35,6 +34,7 @@ use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
 use CraftCms\Cms\Gql\Resolvers\Elements\Asset as AssetResolver;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
@@ -497,7 +497,7 @@ class Assets extends BaseRelationField
                         $asset->avoidFilenameConflicts = true;
                         $asset->setScenario(Asset::SCENARIO_CREATE);
 
-                        if (Craft::$app->getElements()->saveElement($asset)) {
+                        if (Elements::saveElement($asset)) {
                             $assetIds[] = $asset->id;
                         } else {
                             Log::warning('Couldn’t save uploaded asset due to validation errors: '.implode(', ', $asset->getFirstErrors()), [__METHOD__]);

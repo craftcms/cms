@@ -9,12 +9,12 @@
 
 namespace craft\controllers;
 
-use Craft;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
@@ -85,7 +85,7 @@ class AssetsController extends Controller
         // Save the asset
         $asset->setScenario(Element::SCENARIO_LIVE);
 
-        if (!Craft::$app->getElements()->saveElement($asset)) {
+        if (!Elements::saveElement($asset)) {
             return $this->asModelFailure(
                 $asset,
                 mb_ucfirst(t('Couldn’t save {type}.', [

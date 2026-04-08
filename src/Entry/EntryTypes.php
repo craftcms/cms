@@ -30,6 +30,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Markdown;
@@ -49,7 +50,6 @@ use Illuminate\Support\Facades\Event;
 use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidConfigException;
 
 #[Singleton]
 class EntryTypes
@@ -398,11 +398,7 @@ class EntryTypes
                 /** @var Entry[][] $entriesBySection */
                 $entriesBySection = $entries->groupBy('sectionId')->all();
                 foreach ($entriesBySection as $sectionEntries) {
-                    try {
-                        Craft::$app->getElements()->restoreElements($sectionEntries);
-                    } catch (InvalidConfigException) {
-                        // the section probably wasn't restored
-                    }
+                    Elements::restoreElements($sectionEntries);
                 }
             });
         }
@@ -616,7 +612,7 @@ class EntryTypes
                 'title' => $label,
                 'chip' => $chipCellContent,
                 'handle' => $entryType->handle,
-                'usages' => app(PreviewHtml::class)->componentPreviewHtml($usages[$entryType->id] ?? []),
+                'usages' => app(PreviewHtml::class)->componentPreviewHtml($usages[$entryType->id] ?? [], ['hyperlink' => true]),
             ];
         }
 

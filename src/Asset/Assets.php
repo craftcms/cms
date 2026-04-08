@@ -21,6 +21,7 @@ use CraftCms\Cms\Asset\PreviewHandlers\Text;
 use CraftCms\Cms\Asset\PreviewHandlers\Video;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
@@ -56,11 +57,12 @@ class Assets
 
     public function __construct(
         private readonly Folders $folders,
+        private readonly Elements $elements,
     ) {}
 
     public function getAssetById(int $assetId, ?int $siteId = null): ?Asset
     {
-        return Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
+        return $this->elements->getElementById($assetId, Asset::class, $siteId);
     }
 
     public function getTotalAssets(mixed $criteria = null): int
@@ -94,7 +96,7 @@ class Assets
         $asset->uploaderId = Auth::user()?->id;
         $asset->avoidFilenameConflicts = true;
         $asset->setScenario(Asset::SCENARIO_REPLACE);
-        Craft::$app->getElements()->saveElement($asset);
+        $this->elements->saveElement($asset);
 
         event(new AfterReplaceAsset(
             asset: $asset,
@@ -122,7 +124,7 @@ class Assets
             $asset->setScenario(Asset::SCENARIO_MOVE);
         }
 
-        return Craft::$app->getElements()->saveElement($asset);
+        return $this->elements->saveElement($asset);
     }
 
     public function getThumbUrl(Asset $asset, int $width, ?int $height = null, bool $iconFallback = true): ?string

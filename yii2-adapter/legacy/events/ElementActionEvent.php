@@ -7,7 +7,7 @@
 
 namespace craft\events;
 
-use craft\base\ElementActionInterface;
+use CraftCms\Cms\Element\Contracts\ElementActionInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 /**

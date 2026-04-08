@@ -65,7 +65,7 @@ trait QueriesAuthors
 
     private function applyAuthorId(EntryQuery $query): void
     {
-        if (! $query->authorId) {
+        if (is_null($query->authorId)) {
             return;
         }
 
@@ -105,7 +105,7 @@ trait QueriesAuthors
 
     private function applyAuthorGroupId(EntryQuery $query): void
     {
-        if (! $query->authorGroupId) {
+        if (is_null($query->authorGroupId)) {
             return;
         }
 

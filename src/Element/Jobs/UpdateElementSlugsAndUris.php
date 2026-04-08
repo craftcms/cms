@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Jobs;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Support\Facades\Log;
 use Override;
@@ -73,9 +73,8 @@ class UpdateElementSlugsAndUris extends Job
     private function processElements(ElementQueryInterface $query): void
     {
         $this->totalToProcess += $query->count();
-        $elementsService = Craft::$app->getElements();
 
-        $query->each(function ($element) use ($elementsService) {
+        $query->each(function ($element) {
             // totalToProcess can be 0 somehow (https://github.com/craftcms/cms/issues/16787)
             $this->setProgress((int) (($this->totalProcessed / max($this->totalToProcess, $this->totalProcessed + 1)) * 100));
             $this->totalProcessed++;
@@ -84,7 +83,7 @@ class UpdateElementSlugsAndUris extends Job
             $oldUri = $element->uri;
 
             try {
-                $elementsService->updateElementSlugAndUri($element, $this->updateOtherSites, false, false);
+                Elements::updateElementSlugAndUri($element, $this->updateOtherSites, false, false);
             } catch (OperationAbortedException $e) {
                 Log::info("Couldn't update slug and URI for element $element->id: {$e->getMessage()}");
 

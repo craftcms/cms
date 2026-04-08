@@ -130,24 +130,33 @@ it('can get sites by group id', function () {
     expect($this->sites->getSitesByGroupId(999))->toBeEmpty();
     expect($this->sites->getEditableSitesByGroupId(999))->toBeEmpty();
 
+    $siteGroup = SiteGroup::factory()->create();
+
     Site::factory()->create([
-        'groupId' => 1,
+        'groupId' => $siteGroup->id,
     ]);
 
-    expect($this->sites->getSitesByGroupId(1))->toHaveCount(1);
-    expect($this->sites->getEditableSitesByGroupId(1))->toHaveCount(1);
+    expect($this->sites->getSitesByGroupId($siteGroup->id))->toHaveCount(1);
+    expect($this->sites->getEditableSitesByGroupId($siteGroup->id))->toBeEmpty();
+
+    actingAs(User::find()->one());
+    $this->sites->refreshSites();
+
+    expect($this->sites->getEditableSitesByGroupId($siteGroup->id))->toHaveCount(1);
 });
 
 it('can get total amount of sites', function () {
-    expect($this->sites->getTotalSites())->toBe(1);
+    $initialCount = $this->sites->getTotalSites();
+
+    expect($initialCount)->toBe(1);
 
     Site::factory()->create();
 
-    expect($this->sites->getTotalSites())->toBe(1);
+    expect($this->sites->getTotalSites())->toBe($initialCount + 1);
 
     SitesFacade::refreshSites();
 
-    expect($this->sites->getTotalSites())->toBe(2);
+    expect($this->sites->getTotalSites())->toBe($initialCount + 1);
 });
 
 it('can get sites by id', function () {

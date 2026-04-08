@@ -6,13 +6,7 @@ namespace CraftCms\Cms\User\Elements;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\actions\DeleteUsers;
-use craft\elements\actions\Restore;
-use craft\elements\actions\SuspendUsers;
-use craft\elements\actions\UnsuspendUsers;
 use craft\elements\conditions\users\UserCondition;
-use craft\elements\db\EagerLoadPlan;
-use craft\elements\NestedElementManager;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
@@ -22,11 +16,14 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\UserQuery;
@@ -41,6 +38,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\ElementCaches;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -53,6 +51,9 @@ use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
+use CraftCms\Cms\User\Actions\DeleteUsers;
+use CraftCms\Cms\User\Actions\SuspendUsers;
+use CraftCms\Cms\User\Actions\UnsuspendUsers;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Events\DefineFriendlyName;
 use CraftCms\Cms\User\Events\DefineName;
@@ -1493,7 +1494,7 @@ XML;
             switch ($status) {
                 case Element::STATUS_ARCHIVED:
                 case Element::STATUS_DISABLED:
-                    if (Craft::$app->getElements()->canSave($this)) {
+                    if (Gate::check('save', $this)) {
                         $statusItems[] = [
                             'label' => t('Enable'),
                             'action' => 'users/enable-user',
@@ -2173,12 +2174,8 @@ JS, [
             return false;
         }
 
-        $elementsService = Craft::$app->getElements();
-
         // Do all this stuff within a transaction
-        DbFacade::beginTransaction();
-
-        try {
+        DbFacade::transaction(function () {
             // Should we transfer the content to a new user?
             if ($this->inheritorOnDelete) {
                 // Invalidate all entry caches
@@ -2198,27 +2195,24 @@ JS, [
                             $column => $this->inheritorOnDelete->id,
                         ]);
                 }
-            } else {
-                // Delete the entries
-                $entryQuery = Entry::find()
-                    ->authorId($this->id)
-                    ->status(null)
-                    ->site('*')
-                    ->unique();
 
-                $entryQuery->each(function (Entry $entry) use ($elementsService) {
-                    // only delete their entry if they're the sole author
-                    if ($entry->getAuthorIds() === [$this->id]) {
-                        $elementsService->deleteElement($entry);
-                    }
-                }, 100);
+                return;
             }
 
-            DbFacade::commit();
-        } catch (Throwable $e) {
-            DbFacade::rollBack();
-            throw $e;
-        }
+            // Delete the entries
+            $entryQuery = Entry::find()
+                ->authorId($this->id)
+                ->status(null)
+                ->site('*')
+                ->unique();
+
+            $entryQuery->each(function (Entry $entry) {
+                // only delete their entry if they're the sole author
+                if ($entry->getAuthorIds() === [$this->id]) {
+                    Elements::deleteElement($entry);
+                }
+            }, 100);
+        });
 
         $this->getAddressManager()->deleteNestedElements($this, $this->hardDelete);
 
