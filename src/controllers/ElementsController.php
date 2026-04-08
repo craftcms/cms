@@ -3022,6 +3022,11 @@ JS, [
                 ]);
             }
 
+            $returnUrl = $this->request->getParam('returnUrl');
+            if ($returnUrl) {
+                $url = UrlHelper::urlWithParams($url, ['returnUrl' => $returnUrl]);
+            }
+
             $response->redirect($url);
         }
 
