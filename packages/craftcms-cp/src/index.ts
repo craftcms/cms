@@ -21,6 +21,7 @@ export {default as CraftSelect} from './components/select/select.js';
 export {default as CraftOption} from './components/option/option.js';
 export {default as CraftDropdown} from './components/dropdown/dropdown.js';
 export {default as CraftIcon} from './components/icon/icon.js';
+export {default as CraftInfoIcon} from './components/info-icon/info-icon.js';
 export {default as CraftTabs} from './components/tabs/tabs.js';
 export {default as CraftCard} from './components/card/card.js';
 export {default as CraftTab} from './components/tab/tab.js';
@@ -46,6 +47,7 @@ export {default as CraftProgress} from './components/progress/progress.js';
 export {default as CraftProgressBar} from './components/progress-bar/progress-bar.js';
 export {default as CraftRadioGroup} from './components/radio-group/radio-group.js';
 export {default as CraftRadio} from './components/radio/radio.js';
+export {default as CraftVisuallyHidden} from './components/visually-hidden/visually-hidden.js';
 /* plop:component */
 
 export * from './utilities/cookies.js';
