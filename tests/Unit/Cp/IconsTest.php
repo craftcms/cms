@@ -15,6 +15,50 @@ describe('resolveIconName', function () {
     });
 });
 
+describe('resolveIconFamily', function () {
+    it('returns custom-icons for a custom icon', function () {
+        expect(Icons::resolveIconFamily('graphql'))->toBe('custom-icons');
+    });
+
+    it('returns a font-awesome family for a system icon', function () {
+        expect(Icons::resolveIconFamily('gear'))->not->toBe('custom-icons')
+            ->and(Icons::resolveIconFamily('gear'))->not->toBeEmpty();
+    });
+});
+
+describe('resolveIconData', function () {
+    it('returns name and family keys for a custom icon', function () {
+        $data = Icons::resolveIconData('graphql');
+
+        expect($data)->toHaveKeys(['name', 'family'])
+            ->and($data['name'])->toBe('graphql')
+            ->and($data['family'])->toBe('custom-icons');
+    });
+
+    it('returns name and family keys for a system icon', function () {
+        $data = Icons::resolveIconData('gear');
+
+        expect($data)->toHaveKeys(['name', 'family'])
+            ->and($data['name'])->toBe('gear')
+            ->and($data['family'])->not->toBe('custom-icons');
+    });
+});
+
+describe('resolveIconPath', function () {
+    it('returns a custom-icons path for a custom icon', function () {
+        $path = Icons::resolveIconPath('graphql');
+
+        expect($path)->toContain('custom-icons/graphql.svg');
+    });
+
+    it('returns a path ending in .svg for a system icon', function () {
+        $path = Icons::resolveIconPath('gear');
+
+        expect($path)->toEndWith('gear.svg')
+            ->and($path)->not->toContain('custom-icons');
+    });
+});
+
 describe('svg', function () {
     it('returns null for null icon', function () {
         expect(Icons::svg(null))->toBeNull();

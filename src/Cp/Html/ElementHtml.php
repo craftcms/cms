@@ -84,7 +84,7 @@ readonly class ElementHtml
             'id' => $config['id'],
             'class' => [
                 'cp-colorable',
-                'cp-colorable--'.$color?->value ?? 'white',
+                'cp-colorable--'.($color->value ?? 'white'),
                 $config['size'],
                 ...Html::explodeClass($config['class']),
             ],
