@@ -1,0 +1,96 @@
+@use 'sass:color';
+@use '@craftcms/sass/mixins';
+
+/**
+These variables will be removed in the next major version and area only provided for compatibility.
+Use the new values in the `tokens.scss` file instead.
+*/
+:root {
+  --bg-color: var(--body-bg);
+  --bg-color-hsl: 212deg, 50%, 93%;
+
+  // submit button colors
+  --primary-color: var(--bg-primary);
+  --secondary-color: var(--bg-secondary);
+  --input-color: var(--fg-input);
+
+  // text colors
+  --medium-dark-text-color: var(--fg-subtle);
+  --medium-text-color: var(--fg-subtle);
+
+  // font styles
+  --font-weight-bold: 700;
+
+  // hairline colors
+  --hairline-color: var(--border-hairline);
+  --medium-hairline-color: var(--border-hairline-medium);
+  --dark-hairline-color: var(--border-hairline-dark);
+
+  // focus colors
+  --light-focus-color: var(--focus-outline-light);
+  --medium-focus-color: var(--focus-outline-medium);
+  --dark-focus-color: var(--focus-outline-dark);
+
+  // focus rings
+  --light-focus-ring: var(--focus-ring-light);
+  --medium-focus-ring: var(--focus-ring-medium);
+  --dark-focus-ring: var(--focus-ring-dark);
+
+  // selection colors
+  --light-sel-color: var(--bg-selection-light);
+  --dark-sel-color: var(--bg-selection-dark);
+
+  // alert/notice colors
+  --error-color-rgb: 216 31 35;
+  --error-color: var(--fg-error);
+  --warning-color: var(--fg-warning);
+  --warning-background: var(--bg-warning);
+  --warning-border-color: var(--border-warning);
+  --success-color: var(--fg-success);
+  --notice-color: var(--fg-notice);
+  --notice-background: var(--bg-notice);
+  --notice-border-color: var(--border-notice);
+
+  // status colors
+  --enabled-color: var(--bg-enabled);
+  --pending-color: var(--bg-pending);
+  --disabled-color: var(--bg-disabled);
+
+  // misc colors
+  --indicator-border-color: var(--border-warning-emphasis);
+  --indicator-icon-color: var(--fg-warning);
+
+  // UI element styles
+  --small-border-radius: var(--radius-sm);
+  --medium-border-radius: var(--radius-md);
+  --large-border-radius: var(--radius-lg);
+  --menu-border-radius: var(--medium-border-radius);
+
+  // Variables from _main.scss
+  --ui-control-color: var(--ui-control-fg);
+  --ui-control-hover-color: var(--ui-control-fg-hover);
+  --ui-control-active-color: var(--ui-control-fg-active);
+  --ui-control-static-bg-color: var(--ui-control-bg-static);
+  --ui-control-bg-color: var(--ui-control-bg);
+  --ui-control-hover-bg-color: var(--ui-control-bg-hover);
+  --ui-control-active-bg-color: var(--ui-control-bg-active);
+  --ui-control-border-radius: var(--ui-control-radius);
+  --ui-control-height--small: var(--ui-control-height-small);
+  --light-focus-hsl: 212deg, 96%, 78%;
+  --dark-focus-hsl: 203deg, 84%, 38%;
+  --inner-focus-ring: var(--focus-ring-inner);
+  --touch-target-size: var(--size-touch-target);
+  --icon-size: var(--size-icon);
+  --lh: var(--size-line-height);
+
+  // Sidebar
+  --sidebar-bgColor: var(--sidebar-bg);
+
+  // Nav items (compatibility)
+  --nav-item-badge-bgColor: var(--nav-item-badge-bg);
+  --nav-item-badge-fgColor: var(--nav-item-badge-fg);
+  --nav-item-fgColor-active: var(--nav-item-fg-active);
+  --nav-item-bgColor-active: var(--nav-item-bg-active);
+  --nav-item-fgColor-hover: var(--nav-item-fg-hover);
+  --nav-item-bgColor-hover: var(--nav-item-bg-hover);
+}
