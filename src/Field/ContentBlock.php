@@ -467,6 +467,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
 
     private function createContentBlockElement(?ElementInterface $owner): ContentBlockElement
     {
+        /** @var ContentBlockElement */
         return Elements::createElement([
             'type' => ContentBlockElement::class,
             'siteId' => $owner->siteId,

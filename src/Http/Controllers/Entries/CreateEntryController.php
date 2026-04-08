@@ -55,11 +55,15 @@ readonly class CreateEntryController
         $entry = Craft::createObject(Entry::class);
         $entry->siteId = $site->id;
         $entry->sectionId = $section->id;
-        $entry->setAuthorIds(
-            $this->request->input('authorIds') ??
-            $this->request->input('authorId') ??
-            $user->id
-        );
+
+        if ($section->maxAuthors !== 0) {
+            $entry->setAuthorIds(
+                $this->request->input('authorIds') ??
+                $this->request->input('authorId') ??
+                $user->id
+            );
+        }
+
         $this->setTypeId($entry);
         $this->setStatus($entry, $section);
 

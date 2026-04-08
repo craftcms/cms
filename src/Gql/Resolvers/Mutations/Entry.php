@@ -223,12 +223,14 @@ class Entry extends ElementMutationResolver
             $entryQuery = Elements::createElementQuery(EntryElement::class)->status(null)->siteId($siteId);
             $entryQuery = $this->identifyEntry($entryQuery, $arguments);
 
+            /** @var EntryElement|null $entry */
             $entry = $entryQuery->one();
 
             if (! $entry) {
                 throw new Error('No such entry exists');
             }
         } else {
+            /** @var EntryElement $entry */
             $entry = Elements::createElement(EntryElement::class);
         }
 

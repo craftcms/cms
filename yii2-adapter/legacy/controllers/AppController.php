@@ -427,6 +427,11 @@ class AppController extends Controller
                     ->ownerId($ownerId);
             }
 
+            // if we have revisionId, then we might need to look through soft-deleted elements too
+            if (isset($criterion['revisionId'])) {
+                $query->trashed(null);
+            }
+
             $elements = $query->all();
 
             // See if there are any provisional changes we should show

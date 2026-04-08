@@ -410,7 +410,14 @@ class ElementQueryConditionBuilder extends Component
                         $plan->alias = $alias ?: $nodeName;
                         /** @var InlineFragmentNode|FragmentDefinitionNode|null $wrappingFragment */
                         if ($wrappingFragment) {
-                            $plan->when = fn (Element $element) => $element->getGqlTypeName() === $wrappingFragment->typeCondition->name->value;
+                            $plan->when = function (Element $element) use ($wrappingFragment) {
+                                $typeName = $wrappingFragment->typeCondition->name->value;
+                                if (preg_match('/^(\w+)Interface$/', $typeName, $match)) {
+                                    return str_ends_with($element->getGqlTypeName(), "_{$match[1]}");
+                                }
+
+                                return $element->getGqlTypeName() === $typeName;
+                            };
                         }
                         $plan->criteria = array_merge_recursive($plan->criteria, $this->_argumentManager->prepareArguments($arguments));
                     }

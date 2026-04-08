@@ -185,7 +185,7 @@ readonly class MenuHtml
                 $items[] = [
                     'heading' => t($siteGroup->name, category: 'site'),
                     'items' => $groupSiteItems,
-                    'hidden' => ! $groupSiteItems->contains(fn (array $item) => ! $item['hidden']),
+                    'hidden' => $groupSiteItems->doesntContain(fn (array $item) => ! $item['hidden']),
                 ];
             } else {
                 array_push($items, ...$groupSiteItems);

@@ -470,8 +470,9 @@ Craft.ElementEditor = Garnish.Base.extend(
                       // Broadcast a saveMessage event, in case any chips/cards should be
                       // updated to stop showing the provisional changes
                       Craft.broadcaster.postMessage({
-                        event: 'saveElement',
-                        id: this.settings.canonicalId,
+                        event: 'deleteDraft',
+                        canonicalId: this.settings.canonicalId,
+                        draftId: this.settings.draftId,
                       });
 
                       this.slideout?.close();

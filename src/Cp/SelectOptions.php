@@ -245,10 +245,10 @@ class SelectOptions
             $allLocales = I18N::getAllLocales();
         }
 
-        $allLocales = $allLocales->sortBy(fn (Locale $locale) => $locale->getDisplayName());
+        $allLocales = $allLocales->sortBy(fn (Locale $locale) => $locale->getDisplayName(app()->getLocale()));
 
         foreach ($allLocales as $locale) {
-            $name = $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : '';
+            $name = $locale->getLanguageID() !== $languageId ? $locale->getDisplayName(app()->getLocale()) : '';
             $option = [
                 'label' => $locale->getDisplayName(app()->getLocale()),
                 'value' => $locale->id,
