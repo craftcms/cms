@@ -232,8 +232,10 @@
           :id="entryType.id"
           :handle="entryType.handle"
           :color="entryType.color"
+          :icon="entryType.icon"
           :description="entryType.description"
           :draggable="modelValue.length > 1"
+          :indicators="entryType.indicators"
           :actions="[
             {
               label: t('Settings'),
