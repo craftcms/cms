@@ -1820,47 +1820,6 @@ ul.icons {
   }
 }
 
-.flex {
-  display: flex;
-  align-items: center;
-  align-content: stretch;
-  gap: var(--s);
-
-  &.flex-gap-xs {
-    gap: var(--xs);
-  }
-
-  &.flex-gap-m {
-    gap: var(--m);
-  }
-
-  &.flex-gap-l {
-    gap: var(--l);
-  }
-
-  &.flex-gap-xl {
-    gap: var(--xl);
-  }
-
-  &:not(.flex-nowrap) {
-    flex-wrap: wrap;
-  }
-
-  & > * {
-    &.label {
-      white-space: nowrap;
-    }
-  }
-
-  .centeralign & {
-    justify-content: center;
-  }
-
-  &.rightalign {
-    justify-content: right;
-  }
-}
-
 .inline-flex {
   display: inline-flex !important;
   align-items: center;
