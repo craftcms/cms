@@ -43,6 +43,7 @@ use CraftCms\Cms\Http\Controllers\IconController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\MatrixController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
+use CraftCms\Cms\Http\Controllers\NestedElementsController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\InstallController as PluginStoreInstallController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
@@ -301,6 +302,10 @@ Route::prefix(implode('/', [
 
         // Migrations
         Route::post('utilities/apply-new-migrations', MigrationsController::class);
+
+        // Nested entries
+        Route::post('nested-elements/reorder', [NestedElementsController::class, 'reorder']);
+        Route::post('nested-elements/delete', [NestedElementsController::class, 'destroy']);
 
         // Asset Indexes
         Route::post('asset-indexes/start-indexing', [AssetIndexesController::class, 'startIndexing']);
