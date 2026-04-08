@@ -106,6 +106,7 @@ readonly class RenderController
             'components' => ['required', 'array'],
             'components.*.type' => ['required', 'string'],
             'components.*.id' => ['required'],
+            'components.*.instances' => ['required', 'array'],
             'withMenuItems' => ['nullable', 'boolean'],
             'menuId' => ['nullable'],
         ]);
