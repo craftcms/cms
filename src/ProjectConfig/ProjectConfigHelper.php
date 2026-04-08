@@ -457,7 +457,7 @@ class ProjectConfigHelper
         foreach ($array as $key => $value) {
             // escape periods within keys, so they don't get confused as multiple path segments
             // (see https://github.com/craftcms/cms/issues/18631)
-            $thisPath = ltrim(sprintf('%s.%s', $path, str_replace('.', '\.', $key)), '.');
+            $thisPath = ltrim(sprintf('%s.%s', $path, str_replace('.', '\.', (string) $key)), '.');
 
             if (is_array($value)) {
                 self::flattenConfigArray($value, $thisPath, $result);
