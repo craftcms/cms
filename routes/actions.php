@@ -10,6 +10,7 @@ use CraftCms\Cms\Http\Controllers\ApiController;
 use CraftCms\Cms\Http\Controllers\App\CpAlertsController;
 use CraftCms\Cms\Http\Controllers\App\HealthCheckController;
 use CraftCms\Cms\Http\Controllers\App\LicensesController;
+use CraftCms\Cms\Http\Controllers\App\RenderController;
 use CraftCms\Cms\Http\Controllers\Assets\ActionController as AssetsActionController;
 use CraftCms\Cms\Http\Controllers\Assets\FolderController as AssetsFolderController;
 use CraftCms\Cms\Http\Controllers\Assets\IconController as AssetsIconController;
@@ -181,11 +182,13 @@ Route::prefix(implode('/', [
         Route::middleware(RequireAdminChanges::class)->post('addresses/save-field-layout', [AddressesController::class, 'saveFieldLayout']);
 
         // App
-        Route::get('app/get-cp-alerts', [CpAlertsController::class, 'index']);
-        Route::get('app/shun-cp-alert', [CpAlertsController::class, 'destroy']);
+        Route::any('app/get-cp-alerts', [CpAlertsController::class, 'index']);
+        Route::any('app/shun-cp-alert', [CpAlertsController::class, 'destroy']);
         Route::any('app/set-license-shun-cookie', [LicensesController::class, 'setShunCookie']);
         Route::middleware(RequireAdmin::class)->get('app/get-plugin-license-info', [CraftCms\Cms\Http\Controllers\App\PluginsController::class, 'getLicenseInfo']);
         Route::middleware(RequireAdminChanges::class)->post('app/update-plugin-license', [CraftCms\Cms\Http\Controllers\App\PluginsController::class, 'updateLicense']);
+        Route::any('app/render-elements', [RenderController::class, 'elements']);
+        Route::any('app/render-components', [RenderController::class, 'components']);
 
         // Auth methods
         Route::post('auth/method-setup-html', [AuthMethodController::class, 'setupHtml']);
