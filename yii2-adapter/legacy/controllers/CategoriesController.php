@@ -348,6 +348,7 @@ class CategoriesController extends Controller
         if ($this->request->getBodyParam('duplicate')) {
             // Swap $category with the duplicate
             try {
+                /** @var Category $category */
                 $category = Elements::duplicateElement($category);
             } catch (InvalidElementException $e) {
                 /** @var Category $clone */

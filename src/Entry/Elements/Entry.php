@@ -2508,17 +2508,17 @@ JS;
     private function maybeSetDefaultAttributes(): void
     {
         // if we're resaving, we shouldn't be setting the defaults
-        if ($this->resaving) {
+        if ($this->resaving || $this->getIsRevision()) {
             return;
         }
 
+        $section = $this->getSection();
         if (
-            empty($this->getAuthors()) &&
-            ! isset($this->fieldId) &&
-            $this->getSection()->type !== SectionType::Single
+            $section?->type !== SectionType::Single &&
+            $section?->maxAuthors !== 0 &&
+            empty($this->getAuthors())
         ) {
-            $user = Auth::user();
-            if ($user) {
+            if ($user = Auth::user()) {
                 $this->setAuthor($user);
             }
         }
@@ -2527,7 +2527,7 @@ JS;
             ! $this->_userPostDate() &&
             (
                 in_array($this->scenario, [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]) ||
-                (! $this->getIsDraft() && ! $this->getIsRevision())
+                ! $this->getIsDraft()
             )
         ) {
             // Default the post date to the current date/time

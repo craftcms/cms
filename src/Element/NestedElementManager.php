@@ -552,7 +552,8 @@ JS, [
         if ($owner->duplicateOf !== null) {
             if ($owner->getIsRevision()) {
                 $this->createRevisions($owner->duplicateOf, $owner);
-            } elseif ($owner->getIsCanonical()) {
+                // getIsUnpublishedDraft is needed for "save as new" duplication
+            } elseif (! $owner->getIsDraft() || $owner->getIsUnpublishedDraft()) {
                 $this->duplicateNestedElements($owner->duplicateOf, $owner, true, ! $isNew);
             }
             $resetValue = true;
@@ -800,7 +801,9 @@ JS, [
                         ) {
                             $this->saveNestedElements($preexistingLocalizedOwner);
                         } else {
-                            if ($owner->propagateAll || $this->propagateRequired($owner, $localizedOwner)) {
+                            // Duplicate the elements, but **don't track** the duplications, so the edit page doesn’t think
+                            // its elements have been replaced by the other sites’ nested elements
+                            if ($owner->propagateAll || $this->propagateRequired($owner, $localizedOwner) || in_array($localizedOwner->siteId, $owner->newSiteIds)) {
                                 $this->duplicateNestedElements($owner, $localizedOwner, force: true);
                             }
                         }
@@ -887,15 +890,19 @@ JS, [
 
         DB::beginTransaction();
         try {
+            // Only set the canonicalId if the target owner element is a derivative
+            // and if the target's canonical element is not the same as target element, see
+            // https://app.frontapp.com/open/msg_ukaoki1?key=U6zkE_S6_ApMXn3ntPMwUxSLe0sUPsmY for more info
             $setCanonicalId = $target->getIsDerivative() && $target->getCanonical()->id !== $target->id;
 
             /** @var NestedElementInterface[] $elements */
             foreach ($elements as $element) {
                 $newAttributes = [
-                    'canonicalId' => $setCanonicalId ? $element->id : null,
+                    'canonicalId' => $setCanonicalId ? ($element->getCanonical()->getCanonicalId() ?? $element->id) : null,
                     'primaryOwner' => $target,
                     'owner' => $target,
                     'propagating' => false,
+                    'resaving' => false,
                     'sortOrder' => $element->getSortOrder(),
                 ];
 
@@ -923,7 +930,9 @@ JS, [
                                 ],
                             );
                     } else {
-                        $newElementId = $element->getCanonicalId();
+                        // If we're updating the canonical owner element, then go with the nested element’s canonical ID.
+                        // Otherwise, leave the current ID intact.
+                        $newElementId = $target->getIsCanonical() ? $element->getCanonicalId() : $element->id;
                     }
                 } elseif (! $force && $element->getPrimaryOwnerId() === $target->id) {
                     DB::table(Table::ELEMENTS_OWNERS)
@@ -1107,8 +1116,6 @@ JS, [
                 ->indexBy('canonicalId')
                 ->all();
 
-            $newOwnershipData = [];
-
             foreach ($canonicalElements as $canonicalElement) {
                 if (isset($derivativeElements[$canonicalElement->id])) {
                     $derivativeElement = $derivativeElements[$canonicalElement->id];
@@ -1121,18 +1128,20 @@ JS, [
                         Elements::mergeCanonicalChanges($derivativeElement);
                     }
                 } elseif (! $canonicalElement->trashed && $canonicalElement->dateCreated > $owner->dateCreated) {
-                    $newOwnershipData[] = [
-                        'elementId' => $canonicalElement->id,
-                        'ownerId' => $owner->id,
-                        'sortOrder' => $canonicalElement->getSortOrder(),
-                    ];
+                    // This is a new nested element, so duplicate its ownership into the derivative
+                    DB::table(Table::ELEMENTS_OWNERS)->upsert(
+                        values: [
+                            'elementId' => $canonicalElement->id,
+                            'ownerId' => $owner->id,
+                            'sortOrder' => $canonicalElement->getSortOrder(),
+                        ],
+                        uniqueBy: ['elementId', 'ownerId'],
+                        update: ['sortOrder' => $canonicalElement->getSortOrder()],
+                    );
                 }
             }
 
-            if (! empty($newOwnershipData)) {
-                DB::table(Table::ELEMENTS_OWNERS)->insert($newOwnershipData);
-            }
-
+            // Keep track of the sites we've already covered
             $siteIds = $this->getSupportedSiteIds($canonicalOwner);
             foreach ($siteIds as $siteId) {
                 $handledSiteIds[$siteId] = true;

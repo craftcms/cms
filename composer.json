@@ -40,7 +40,7 @@
     "craftcms/laravel-aliases": "^2.0",
     "craftcms/laravel-dependency-aware-cache": "^1.1",
     "craftcms/plugin-installer": "~1.6.0",
-    "craftcms/server-check": "~5.0.1",
+    "craftcms/server-check": "~5.1.0",
     "craftcms/yii2-adapter": "self.version",
     "elvanto/litemoji": "~4.3.0",
     "enshrined/svg-sanitize": "~0.22.0",

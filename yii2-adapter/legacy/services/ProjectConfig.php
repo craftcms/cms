@@ -18,8 +18,10 @@ use CraftCms\Cms\ProjectConfig\Events\RebuildConfig;
 use CraftCms\Cms\ProjectConfig\Events\YamlFilesWritten;
 use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
 use Illuminate\Support\Facades\Event;
+use ReflectionClass;
 use Throwable;
 use yii\base\Component;
 use yii\base\ErrorException;
@@ -516,10 +518,30 @@ class ProjectConfig extends Component
      * Returns a summary of all pending config changes.
      *
      * @return array
+     * @deprecated in 5.9.19
      */
     public function getPendingChangeSummary(): array
     {
-        return app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->getPendingChangeSummary();
+        /**
+         * Call the private method to get the pending changes.
+         */
+        $reflectionMethod = new ReflectionClass(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->getMethod('_getPendingChanges');
+        $pendingChanges = $reflectionMethod->invoke(app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class));
+
+        $summary = [];
+
+        // Reduce all the small changes to overall item changes.
+        foreach ($pendingChanges as $type => $changes) {
+            $summary[$type] = [];
+            foreach ($changes as $path) {
+                $pathParts = ProjectConfigHelper::pathSegments($path);
+                if (count($pathParts) > 1) {
+                    $summary[$type][$pathParts[0] . '.' . $pathParts[1]] = true;
+                }
+            }
+        }
+
+        return $summary;
     }
 
     /**

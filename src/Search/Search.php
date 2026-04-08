@@ -133,7 +133,7 @@ class Search
         $mutex->release();
 
         TagDependency::invalidate([
-            sprintf('element-search-query:%s', $element::class),
+            sprintf('element-search-query::%s', $element::class),
         ]);
 
         return true;

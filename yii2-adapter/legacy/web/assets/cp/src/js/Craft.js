@@ -2984,8 +2984,13 @@ if (typeof BroadcastChannel !== 'undefined') {
   });
 
   Craft.messageReceiver.addEventListener('message', (ev) => {
-    if (ev.data.event === 'saveElement') {
-      Craft.refreshElementInstances(ev.data.id);
+    switch (ev.data.event) {
+      case 'saveElement':
+        Craft.refreshElementInstances(ev.data.id);
+        break;
+      case 'deleteDraft':
+        Craft.refreshElementInstances(ev.data.canonicalId);
+        break;
     }
   });
 }

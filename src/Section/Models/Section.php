@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Override;
 
 class Section extends BaseModel
 {
@@ -25,10 +26,10 @@ class Section extends BaseModel
     use HasUid;
     use SoftDeletes;
 
-    #[\Override]
+    #[Override]
     protected $table = Table::SECTIONS;
 
-    #[\Override]
+    #[Override]
     protected $casts = [
         'previewTargets' => 'array',
         'enableVersioning' => 'boolean',

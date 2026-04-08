@@ -278,11 +278,15 @@ class Mailer extends \yii\symfonymailer\Mailer
 
             return true;
         } catch (TransportExceptionInterface $e) {
+            Craft::warning('Error sending email: ' . $e->getMessage(), __METHOD__);
+
             if ($message instanceof Message) {
                 $message->error = $e;
             }
 
-            throw $e;
+            Craft::$app->getErrorHandler()->logException($e);
+
+            return false;
         }
     }
 }

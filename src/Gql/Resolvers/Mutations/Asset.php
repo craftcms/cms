@@ -120,6 +120,7 @@ class Asset extends ElementMutationResolver
             ));
         }
 
+        /** @var AssetElement */
         return Elements::getElementById($asset->id, AssetElement::class);
     }
 

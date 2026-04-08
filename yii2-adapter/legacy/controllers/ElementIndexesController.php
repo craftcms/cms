@@ -10,9 +10,9 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\db\ExcludeDescendantIdsExpression;
+use craft\helpers\Component;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementExporterInterface;
@@ -31,6 +31,7 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -64,6 +65,13 @@ class ElementIndexesController extends BaseElementsController
     protected ?array $source = null;
 
     /**
+     * @var FieldLayout[]|null
+     * @since 5.9.18
+     */
+    protected ?array $fieldLayouts = null;
+
+    /**
+     * @var ElementConditionInterface|null
      * @since 4.0.0
      */
     protected ?ElementConditionInterface $condition = null;
@@ -78,7 +86,7 @@ class ElementIndexesController extends BaseElementsController
     protected ElementQueryInterface|null $unfilteredElementQuery = null;
 
     /**
-     * @var ElementActionInterface[]|null
+     * @var \CraftCms\Cms\Element\Contracts\ElementActionInterface[]|null
      */
     protected ?array $actions = null;
 
@@ -102,6 +110,7 @@ class ElementIndexesController extends BaseElementsController
         $this->context = $this->context();
         $this->sourceKey = $this->request->getParam('source') ?: null;
         $this->source = $this->source();
+        $this->fieldLayouts = $this->fieldLayouts();
         $this->condition = $this->condition();
 
         if (!in_array($action->id, ['filter-hud', 'save-elements'])) {
@@ -177,7 +186,11 @@ class ElementIndexesController extends BaseElementsController
                 ->values()
                 ->all();
 
-            $defaultTableColumns = $elementSources->getTableAttributes($this->elementType, $this->sourceKey)
+            $defaultTableColumns = Collection::make($elementSources->getTableAttributes(
+                elementType: $this->elementType,
+                sourceKey: $this->sourceKey,
+                fieldLayouts: $this->fieldLayouts
+            ))
                 ->map(fn(array $attribute) => $attribute[0])
                 ->filter(fn(string $attribute) => $attribute !== 'title')
                 ->values()
@@ -264,7 +277,6 @@ class ElementIndexesController extends BaseElementsController
         $id = $this->request->getRequiredBodyParam('id');
         $conditionConfig = $this->request->getBodyParam('conditionConfig');
         $serialized = $this->request->getBodyParam('serialized');
-        $fieldLayouts = $this->request->getBodyParam('fieldLayouts');
 
         if (!$conditionConfig && $serialized) {
             parse_str($serialized, $conditionConfig);
@@ -278,11 +290,8 @@ class ElementIndexesController extends BaseElementsController
             $condition = $this->elementType()::createCondition();
         }
 
-        if (!empty($fieldLayouts)) {
-            $condition->setFieldLayouts(array_map(
-                fn(array $config) => FieldLayout::createFromConfig($config),
-                $fieldLayouts,
-            ));
+        if (!empty($this->fieldLayouts)) {
+            $condition->setFieldLayouts($this->fieldLayouts);
         }
 
         $condition->mainTag = 'div';
@@ -458,6 +467,20 @@ class ElementIndexesController extends BaseElementsController
         }
 
         return $source;
+    }
+
+    private function fieldLayouts(): ?array
+    {
+        $fieldLayouts = $this->request->getBodyParam('fieldLayouts');
+
+        if (empty($fieldLayouts)) {
+            return null;
+        }
+
+        return array_map(
+            fn(array $config) => FieldLayout::createFromConfig($config),
+            Component::cleanseConfig($fieldLayouts),
+        );
     }
 
     /**
@@ -639,7 +662,10 @@ class ElementIndexesController extends BaseElementsController
             $responseData['html'] = $this->elementType::indexHtml(
                 $this->elementQuery,
                 $disabledElementIds,
-                $this->viewState,
+                [
+                    ...$this->viewState,
+                    'fieldLayouts' => $this->fieldLayouts,
+                ],
                 $this->sourceKey,
                 $this->context,
                 $includeContainer,
@@ -661,7 +687,7 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the available actions for the current source.
      *
-     * @return ElementActionInterface[]|null
+     * @return \CraftCms\Cms\Element\Contracts\ElementActionInterface[]|null
      */
     protected function availableActions(): ?array
     {
@@ -754,10 +780,11 @@ class ElementIndexesController extends BaseElementsController
             throw new BadRequestHttpException("Invalid element ID: $id");
         }
 
-        $attributes = app(ElementSources::class)->getTableAttributes(
-            $this->elementType,
-            $this->sourceKey,
-            $this->viewState['tableColumns'] ?? null,
+        $attributes = Craft::$app->getElementSources()->getTableAttributes(
+            elementType: $this->elementType,
+            sourceKey: $this->sourceKey,
+            customAttributes: $this->viewState['tableColumns'] ?? null,
+            fieldLayouts: $this->fieldLayouts,
         );
         $attributeHtml = [];
 

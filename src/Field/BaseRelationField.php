@@ -889,12 +889,6 @@ JS, [
     }
 
     #[Override]
-    public function getIsTranslatable(?ElementInterface $element): bool
-    {
-        return $this->localizeRelations;
-    }
-
-    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->_inputHtml($value, $element, $inline, false);

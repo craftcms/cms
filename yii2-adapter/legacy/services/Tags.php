@@ -473,6 +473,7 @@ SQL)->execute();
      */
     public function getTagById(int $tagId, ?int $siteId = null): ?Tag
     {
+        /** @var Tag|null */
         return Elements::getElementById($tagId, Tag::class, $siteId);
     }
 

@@ -230,6 +230,7 @@ class Users extends Component
      */
     public function getUserById(int $userId): ?User
     {
+        /** @var User|null */
         return Elements::getElementById($userId, User::class);
     }
 
