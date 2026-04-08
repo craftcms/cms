@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Http\Controllers;
+namespace CraftCms\Cms\Http\Controllers\App;
 
 use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Http\Response;
