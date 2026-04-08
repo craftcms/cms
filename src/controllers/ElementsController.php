@@ -1052,9 +1052,16 @@ JS, [
 
         // Revert content from this revision
         if ($isRevision && $canSaveCanonical && $element->hasRevisions()) {
+            $returnUrl = $this->request->getQueryParam('returnUrl');
             $components[] = Html::beginForm() .
                 Html::actionInput('elements/revert') .
                 Html::redirectInput('{cpEditUrl}') .
+                ($returnUrl
+                    ? Html::hiddenInput('redirectParams', Json::encode([
+                        'returnUrl' => $returnUrl,
+                    ]))
+                    : ''
+                ) .
                 Html::hiddenInput('elementId', (string)$canonical->id) .
                 Html::hiddenInput('revisionId', (string)$element->revisionId) .
                 Html::button(Craft::t('app', 'Revert content from this revision'), [
