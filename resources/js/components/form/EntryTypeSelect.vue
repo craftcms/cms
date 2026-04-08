@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import type {EntryType} from '@/types';
-  import {computed, ref} from 'vue';
+  import {computed, inject, ref} from 'vue';
   import {appendBodyHtml, appendHeadHtml, t} from '@craftcms/cp';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import Text from '@/components/Text.vue';
@@ -14,6 +14,7 @@
   import {router} from '@inertiajs/vue3';
   import DragShadow from '@/components/DragShadow.vue';
   import {useReorderableItems} from '@/composables/useReorderableItems';
+  import {Config} from '@/types/keys';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<EntryType>): void;

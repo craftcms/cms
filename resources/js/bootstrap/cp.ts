@@ -1,7 +1,6 @@
 import {ConfigService} from '@craftcms/cp/dist/services/Config.ts.mjs';
 import {QueueService} from '@craftcms/cp/dist/services/Queue.ts.mjs';
 import {createInertiaApp} from '@inertiajs/vue3';
-import {createApp, h} from 'vue';
 import QueueManager from '@/components/utilities/QueueManager/QueueManager.vue';
 import {Axios, Config, Queue} from '@/types/keys';
 import axios from 'axios';
@@ -81,6 +80,7 @@ const Cp = {
         app.provide(Queue, queue);
         app.provide(Axios, axios);
         app.provide(Config, config);
+        app.provide(Craft, config);
 
         app.component('QueueManager', QueueManager);
         app.component('QueueManagerToolbar', QueueManagerToolbar);
