@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp;
 
 use Craft;
-use craft\services\Path;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
@@ -17,6 +16,7 @@ use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Path;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\View\TemplateMode;
 use DateTime;
@@ -403,7 +403,7 @@ class SelectOptions
     {
         // Get all the template files sorted by path length
         $roots = Arr::merge([
-            '' => [app(Path::class)->getSiteTemplatesPath()],
+            '' => [app(Path::class)->siteTemplates()],
         ], TemplateMode::Site->templateRoots());
 
         $suggestions = [];

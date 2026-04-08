@@ -43,7 +43,7 @@ use Override;
  * @method static array defineContentArgumentsForFields(class-string<\craft\base\ElementInterface> $elementType, \CraftCms\Cms\Field\Contracts\FieldInterface[] $fields)
  * @method static array defineContentArgumentsForGeneratedFields(class-string<\craft\base\ElementInterface> $elementType, array $fields)
  * @method static array getContentArguments(array $contexts, class-string<\craft\base\ElementInterface> $elementType)
- * @method static \Error[] handleQueryErrors(\Error[] $errors, callable $formatter)
+ * @method static \GraphQL\Error\Error[] handleQueryErrors(\GraphQL\Error\Error[] $errors, callable $formatter)
  * @method static array prepareFieldDefinitions(array $fields, string $typeName)
  *
  * @see \CraftCms\Cms\Gql\Gql
