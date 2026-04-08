@@ -74,7 +74,10 @@ class Category extends ElementMutationResolver
 
         $this->performStructureOperations($category, $arguments);
 
-        return Elements::getElementById($category->id, CategoryElement::class);
+        /** @var ?CategoryElement $category */
+        $category = Elements::getElementById($category->id, CategoryElement::class);
+
+        return $category;
     }
 
     /**
