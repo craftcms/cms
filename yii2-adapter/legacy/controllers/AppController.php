@@ -12,10 +12,8 @@ use craft\base\ElementInterface;
 use craft\helpers\App;
 use craft\helpers\Component;
 use craft\web\Controller;
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Data\Volume as LegacyVolume;
 use CraftCms\Cms\Asset\Volumes;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\Html\ElementHtml;
@@ -30,7 +28,6 @@ use CraftCms\Cms\Support\Typecast;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 use InvalidArgumentException;
-use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -50,7 +47,6 @@ class AppController extends Controller
      */
     protected array|bool|int $allowAnonymous = [
         'migrate' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'broken-image' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'health-check' => self::ALLOW_ANONYMOUS_LIVE,
         'resource-js' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
@@ -104,27 +100,6 @@ class AppController extends Controller
         return $this->response->sendFile($publishedPath, null, [
             'inline' => true,
         ]);
-    }
-
-    /**
-     * Sends a broken image.
-     *
-     * @return Response
-     * @throws InvalidConfigException
-     * @since 3.5.0
-     */
-    public function actionBrokenImage(): Response
-    {
-        $generalConfig = Cms::config();
-        $imagePath = Aliases::get($generalConfig->brokenImagePath);
-        if (!is_file($imagePath)) {
-            throw new InvalidConfigException("Invalid broken image path: $generalConfig->brokenImagePath");
-        }
-
-        $statusCode = $this->response->getStatusCode();
-        return $this->response
-            ->sendFile($imagePath, null, ['inline' => true])
-            ->setStatusCode($statusCode);
     }
 
     /**
