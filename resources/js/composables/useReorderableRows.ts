@@ -1,9 +1,5 @@
 import {nextTick, onMounted, onUnmounted, ref, watch} from 'vue';
-import {
-  type DragState,
-  type DropState,
-  useTableDragAndDrop,
-} from './useTableDragAndDrop';
+import {type DragState, type DropState, useDragAndDrop} from './useDragAndDrop';
 
 export type {DragState, DropState};
 
@@ -17,11 +13,13 @@ export function useReorderableRows(options: UseReorderableRowsOptions) {
   const rowRefs = ref<Map<string, HTMLTableRowElement>>(new Map());
   const handleRefs = ref<Map<string, HTMLElement>>(new Map());
   const cleanupFns = ref<Map<string, () => void>>(new Map());
+  let monitorCleanup: (() => void) | null = null;
 
-  const {registerRow, getDragState, getDropState} = useTableDragAndDrop({
-    onReorder: options.onReorder,
-    getRowId: (row) => row.id,
-  });
+  const {registerItem, getDragState, getDropState, setupMonitor} =
+    useDragAndDrop({
+      onReorder: options.onReorder,
+      axis: 'vertical',
+    });
 
   function setRowRef(el: HTMLTableRowElement | null, rowId: string) {
     if (el) {
@@ -56,7 +54,7 @@ export function useReorderableRows(options: UseReorderableRowsOptions) {
       const handleEl = handleRefs.value.get(id);
 
       if (rowEl) {
-        const cleanup = registerRow(rowEl, handleEl ?? null, id, index);
+        const cleanup = registerItem(rowEl, handleEl ?? null, id, index);
         cleanupFns.value.set(id, cleanup);
       }
     });
@@ -72,11 +70,14 @@ export function useReorderableRows(options: UseReorderableRowsOptions) {
   );
 
   onMounted(() => {
+    // Setup the monitor
+    monitorCleanup = setupMonitor();
     nextTick(refreshRegistrations);
   });
 
   onUnmounted(() => {
     cleanupFns.value.forEach((fn) => fn());
+    monitorCleanup?.();
   });
 
   return {

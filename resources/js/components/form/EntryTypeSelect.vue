@@ -12,6 +12,8 @@
   import EntryTypeChip from '@/components/EntryType/EntryTypeChip.vue';
   import CreateEntryTypeButton from '@/components/EntryType/CreateEntryTypeButton.vue';
   import {router} from '@inertiajs/vue3';
+  import DragShadow from '@/components/DragShadow.vue';
+  import {useReorderableItems} from '@/composables/useReorderableItems';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<EntryType>): void;
@@ -31,6 +33,18 @@
         entryType.handle.includes(entryTypeQuery.value)
     );
   });
+
+  const {setItemRef, setHandleRef, getDragState, getDropState} =
+    useReorderableItems({
+      getItemIds: () => props.modelValue.map((et) => et.id),
+      onReorder: (startIndex, finishIndex) => {
+        const items = [...props.modelValue];
+        const [removed] = items.splice(startIndex, 1);
+        items.splice(finishIndex, 0, removed);
+        emit('update:modelValue', items);
+      },
+      enabled: () => props.modelValue.length > 1,
+    });
 
   function handleTypeSelect(type: EntryType) {
     if (props.modelValue.find((item) => item.id === type.id)) {
@@ -192,25 +206,59 @@
 </script>
 
 <template>
-  <div class="grid gap-2 justify-items-start">
+  <div class="entry-type-list">
     <template v-for="entryType in modelValue" :key="entryType.id">
-      <EntryTypeChip
-        v-if="entryType"
-        v-bind="entryType"
-        :actions="[
-          {
-            label: t('Settings'),
-            icon: 'gear',
-            onClick: () => openSlideout(entryType.id),
-          },
-          {
-            label: t('Remove'),
-            variant: 'danger',
-            icon: 'x',
-            onClick: () => removeItem(entryType.id),
-          },
-        ]"
-      />
+      <div
+        :ref="(el) => setItemRef(el as HTMLElement, entryType.id)"
+        class="entry-type-item"
+        :class="{
+          'entry-type-item--dragging':
+            getDragState(entryType.id).type === 'is-dragging',
+          'entry-type-item--hidden':
+            getDragState(entryType.id).type === 'is-dragging-and-left-self',
+        }"
+      >
+        <!-- Shadow before item when dragged over top edge -->
+        <DragShadow
+          v-if="
+            getDropState(entryType.id).type === 'is-over' &&
+            getDropState(entryType.id).closestEdge === 'top'
+          "
+          :height="getDropState(entryType.id).draggingRect?.height"
+        />
+
+        <EntryTypeChip
+          :name="entryType.name"
+          :id="entryType.id"
+          :handle="entryType.handle"
+          :color="entryType.color"
+          :description="entryType.description"
+          :draggable="modelValue.length > 1"
+          :actions="[
+            {
+              label: t('Settings'),
+              icon: 'gear',
+              onClick: () => openSlideout(entryType.id),
+            },
+            {
+              label: t('Remove'),
+              variant: 'danger',
+              icon: 'x',
+              onClick: () => removeItem(entryType.id),
+            },
+          ]"
+          @handle-ref="(el) => setHandleRef(el, entryType.id)"
+        />
+
+        <!-- Shadow after item when dragged over bottom edge -->
+        <DragShadow
+          v-if="
+            getDropState(entryType.id).type === 'is-over' &&
+            getDropState(entryType.id).closestEdge === 'bottom'
+          "
+          :height="getDropState(entryType.id).draggingRect?.height"
+        />
+      </div>
     </template>
   </div>
 
@@ -264,4 +312,35 @@
   </div>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+  .entry-type-list {
+    display: inline-flex;
+    flex-direction: column;
+    gap: var(--c-spacing-sm);
+  }
+
+  .entry-type-item {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .entry-type-item > * {
+    outline: 1px solid red;
+  }
+
+  // Item is being dragged but still over itself - show with reduced opacity
+  .entry-type-item--dragging {
+    opacity: 0.4;
+  }
+
+  // Item has been dragged away from itself - collapse vertically but maintain width
+  // This ensures the container doesn't shrink when the widest item is dragged
+  .entry-type-item--hidden {
+    visibility: hidden;
+    height: 0;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+  }
+</style>

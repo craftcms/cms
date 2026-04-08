@@ -3,20 +3,40 @@
   import ReorderButton from '@/components/ReorderButton.vue';
   import type {EntryType} from '@/types';
   import Tooltip from '@/components/Tooltip/Tooltip.vue';
+  import {ref, watch} from 'vue';
 
-  defineProps<
-    Pick<
-      EntryType,
-      | 'name'
-      | 'id'
-      | 'handle'
-      | 'color'
-      | 'icon'
-      | 'description'
-      | 'indicators'
-      | 'actions'
-    >
-  >();
+  const emit = defineEmits<{
+    (e: 'handle-ref', el: HTMLElement | null): void;
+  }>();
+
+  withDefaults(
+    defineProps<
+      Pick<
+        EntryType,
+        | 'name'
+        | 'id'
+        | 'handle'
+        | 'color'
+        | 'icon'
+        | 'description'
+        | 'indicators'
+        | 'actions'
+      > & {
+        draggable?: boolean;
+      }
+    >(),
+    {draggable: false}
+  );
+
+  const handleRef = ref<HTMLElement | null>(null);
+
+  watch(
+    handleRef,
+    (el) => {
+      emit('handle-ref', el);
+    },
+    {immediate: true}
+  );
 </script>
 
 <template>
@@ -47,9 +67,13 @@
       </div>
     </div>
 
-    <div slot="suffix" class="flex gap-1 items-center">
+    <div slot="suffix" class="flex gap-0.5 items-center">
       <ActionMenu v-if="actions" :actions="actions" />
-      <ReorderButton variant="inherit"></ReorderButton>
+      <span v-if="draggable" ref="handleRef" class="drag-handle">
+        <slot name="drag-handle">
+          <ReorderButton variant="inherit" />
+        </slot>
+      </span>
     </div>
   </craft-chip>
 </template>
@@ -61,5 +85,10 @@
     align-self: start;
     height: 1lh;
     justify-content: center;
+  }
+
+  .drag-handle {
+    display: inline-flex;
+    cursor: grab;
   }
 </style>
