@@ -79,7 +79,7 @@ describe('js registration', function () {
 
         $body = $this->registry->bodyEndHtml();
 
-        expect($body)->toContain('<script>var x = 1;</script>');
+        expect($body)->toContain('<script type="module">var x = 1;</script>');
     });
 });
 
