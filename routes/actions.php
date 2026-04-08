@@ -48,6 +48,7 @@ use CraftCms\Cms\Http\Controllers\PluginStore\InstallController as PluginStoreIn
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\PreviewController;
+use CraftCms\Cms\Http\Controllers\RelationalFieldsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
@@ -330,6 +331,9 @@ Route::prefix(implode('/', [
 
         // Preview
         Route::any('preview/create-token', [PreviewController::class, 'createToken']);
+
+        // Relational fields
+        Route::any('relational-fields/structured-input-html', [RelationalFieldsController::class, 'structuredInputHtml']);
 
         // Widgets
         Route::post('dashboard/create-widget', [WidgetsController::class, 'store']);
