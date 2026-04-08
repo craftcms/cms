@@ -503,7 +503,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
     this.$addBtn = $tabContent.children('.fld-add-btn');
 
     const hud = new Garnish.HUD(this.$addBtn, {
-      hudClass: 'hud fld-library-hud',
+      hudClass: 'hud fld-library-hud cp-legacy',
       listenToMainResize: false,
       showOnInit: false,
       orientations: ['right', 'bottom', 'left'],
