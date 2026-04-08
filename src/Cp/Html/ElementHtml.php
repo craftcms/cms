@@ -221,7 +221,7 @@ readonly class ElementHtml
             $html .= Html::hiddenInput($config['inputName'], (string) $inputValue);
         } // .element
 
-        return $html.Html::endTag('div');
+        return $html.Html::endTag('craft-chip');
     }
 
     public function elementChipHtml(ElementInterface $element, array $config = []): string

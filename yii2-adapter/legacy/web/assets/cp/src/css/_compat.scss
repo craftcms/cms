@@ -294,10 +294,10 @@
   /**
    * Sizing
    */
-  --size-touch-target: var(--c-size-control-md);
+  --size-touch-target: calc(24rem / 16);
   --size-icon: var(--c-size-icon-md);
   --size-line-height: var(--c-leading-normal);
-  --touch-target-size: var(--c-size-control-sm);
+  --touch-target-size: var(--size-touch-target);
   --icon-size: var(--c-size-icon-md);
   --lh: var(--c-leading-normal);
 
