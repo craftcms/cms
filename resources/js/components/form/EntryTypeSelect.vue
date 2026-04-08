@@ -325,10 +325,6 @@
     align-items: stretch;
   }
 
-  .entry-type-item > * {
-    outline: 1px solid red;
-  }
-
   // Item is being dragged but still over itself - show with reduced opacity
   .entry-type-item--dragging {
     opacity: 0.4;
