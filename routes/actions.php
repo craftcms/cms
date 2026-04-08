@@ -9,6 +9,7 @@ use CraftCms\Cms\Http\Controllers\AnnouncementsController;
 use CraftCms\Cms\Http\Controllers\ApiController;
 use CraftCms\Cms\Http\Controllers\App\CpAlertsController;
 use CraftCms\Cms\Http\Controllers\App\HealthCheckController;
+use CraftCms\Cms\Http\Controllers\App\LicensesController;
 use CraftCms\Cms\Http\Controllers\Assets\ActionController as AssetsActionController;
 use CraftCms\Cms\Http\Controllers\Assets\FolderController as AssetsFolderController;
 use CraftCms\Cms\Http\Controllers\Assets\IconController as AssetsIconController;
@@ -182,6 +183,7 @@ Route::prefix(implode('/', [
         // App
         Route::get('app/get-cp-alerts', [CpAlertsController::class, 'index']);
         Route::get('app/shun-cp-alert', [CpAlertsController::class, 'destroy']);
+        Route::any('app/set-license-shun-cookie', [LicensesController::class, 'setShunCookie']);
 
         // Auth methods
         Route::post('auth/method-setup-html', [AuthMethodController::class, 'setupHtml']);
