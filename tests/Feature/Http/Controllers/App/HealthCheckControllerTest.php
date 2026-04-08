@@ -5,8 +5,14 @@ declare(strict_types=1);
 use CraftCms\Cms\Http\Controllers\App\HealthCheckController;
 use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\File;
 
 use function Pest\Laravel\get;
+
+beforeEach(function () {
+    File::ensureDirectoryExists(base_path('vendor/laravel/framework/src/Illuminate/Foundation/resources'));
+    File::put(base_path('vendor/laravel/framework/src/Illuminate/Foundation/resources/health-up.blade.php'), "Application {{ \$exception ? 'experiencing problems' : 'up' }}");
+});
 
 test('health check action route responds successfully', function () {
     Event::fake([DiagnosingHealth::class]);
