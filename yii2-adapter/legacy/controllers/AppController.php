@@ -7,12 +7,10 @@
 
 namespace craft\controllers;
 
-use Carbon\CarbonInterval;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\App;
 use craft\helpers\Component;
-use craft\helpers\DateTimeHelper;
 use craft\web\Controller;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Data\Volume as LegacyVolume;
@@ -25,25 +23,16 @@ use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\License\License;
-use CraftCms\Cms\Plugin\Plugins;
-use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
-use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Uri;
 use InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
-use yii\web\Cookie;
 use yii\web\Response;
-use function CraftCms\Cms\t;
 
 /**
  * The AppController class is a controller that handles various actions for Craft updates, control panel requests,
@@ -115,128 +104,6 @@ class AppController extends Controller
         return $this->response->sendFile($publishedPath, null, [
             'inline' => true,
         ]);
-    }
-
-
-
-    /**
-     * Fetches plugin license statuses.
-     *
-     * @return Response
-     */
-    public function actionGetPluginLicenseInfo(): Response
-    {
-        $this->requireAdmin(false);
-        $pluginLicenses = $this->request->getBodyParam('pluginLicenses');
-        $result = $this->_pluginLicenseInfo($pluginLicenses);
-        $result = Arr::sort($result, 'name');
-        return $this->asJson($result);
-    }
-
-    /**
-     * Updates a plugin’s license key.
-     *
-     * @return Response
-     */
-    public function actionUpdatePluginLicense(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-        $this->requireAdmin();
-
-        $handle = $this->request->getRequiredBodyParam('handle');
-        $newKey = $this->request->getRequiredBodyParam('key');
-
-        // Get the current key and set the new one
-        $pluginsService = app(Plugins::class);
-        $pluginsService->setPluginLicenseKey($handle, $newKey ?: null);
-
-        // Return the new plugin license info
-        return $this->asJson(1);
-    }
-
-    /**
-     * Returns plugin license info.
-     *
-     * @param array|null $pluginLicenses
-     * @return array
-     */
-    private function _pluginLicenseInfo(?array $pluginLicenses = null): array
-    {
-        $result = [];
-
-        if ($pluginLicenses === null) {
-            // Update our records and get license info from the API
-            $licenseInfo = app(Api::class)->getLicenseInfo(['plugins']);
-            $pluginLicenses = $licenseInfo['pluginLicenses'] ?? [];
-        }
-
-        $pluginsService = app(Plugins::class);
-        $allPluginInfo = $pluginsService->getAllPluginInfo();
-
-        // Update our records & use all licensed plugins as a starting point
-        if (!empty($pluginLicenses)) {
-            $defaultIconUrl = Craft::$app->getAssetManager()->getPublishedUrl('@appicons/default-plugin.svg', true);
-            $formatter = I18N::getFormatter();
-            foreach ($pluginLicenses as $pluginLicenseInfo) {
-                if (isset($pluginLicenseInfo['plugin'])) {
-                    $pluginInfo = $pluginLicenseInfo['plugin'];
-                    $handle = $pluginInfo['handle'];
-
-                    // The same plugin could be associated with this Craft license more than once,
-                    // so make sure this is the same license they've entered a license key for, if there is one
-                    if (
-                        !isset($allPluginInfo[$handle]) ||
-                        !$allPluginInfo[$handle]['licenseKey'] ||
-                        $pluginsService->normalizePluginLicenseKey(Env::parse($allPluginInfo[$handle]['licenseKey'])) === $pluginLicenseInfo['key']
-                    ) {
-                        $result[$handle] = [
-                            'edition' => null,
-                            'isComposerInstalled' => false,
-                            'isInstalled' => false,
-                            'isEnabled' => false,
-                            'licenseKey' => $pluginLicenseInfo['key'],
-                            'licensedEdition' => $pluginLicenseInfo['edition'],
-                            'licenseKeyStatus' => LicenseKeyStatus::Valid->value,
-                            'licenseIssues' => [],
-                            'name' => $pluginInfo['name'],
-                            'description' => $pluginInfo['shortDescription'],
-                            'iconUrl' => $pluginInfo['icon']['url'] ?? $defaultIconUrl,
-                            'documentationUrl' => $pluginInfo['documentationUrl'] ?? null,
-                            'packageName' => $pluginInfo['packageName'],
-                            'latestVersion' => $pluginInfo['latestVersion'],
-                            'expired' => $pluginLicenseInfo['expired'],
-                        ];
-                        if ($pluginLicenseInfo['expired']) {
-                            $result[$handle]['renewalUrl'] = $pluginLicenseInfo['renewalUrl'];
-                            $result[$handle]['renewalText'] = t('Renew for {price}', [
-                                'price' => $formatter->asCurrency($pluginLicenseInfo['renewalPrice'], $pluginLicenseInfo['renewalCurrency']),
-                            ]);
-                        }
-                    }
-                }
-            }
-        }
-
-        // Override with info for the installed plugins
-        foreach ($allPluginInfo as $handle => $pluginInfo) {
-            $result[$handle] = array_merge($result[$handle] ?? [], [
-                'isComposerInstalled' => true,
-                'isInstalled' => $pluginInfo['isInstalled'],
-                'isEnabled' => $pluginInfo['isEnabled'],
-                'version' => $pluginInfo['version'],
-                'hasMultipleEditions' => $pluginInfo['hasMultipleEditions'],
-                'edition' => $pluginInfo['edition'],
-                'licenseKey' => $pluginsService->normalizePluginLicenseKey(Env::parse($pluginInfo['licenseKey'])),
-                'licensedEdition' => $pluginInfo['licensedEdition'],
-                'licenseKeyStatus' => $pluginInfo['licenseKeyStatus'],
-                'licenseIssues' => $pluginInfo['licenseIssues'],
-                'isTrial' => $pluginInfo['isTrial'],
-                'upgradeAvailable' => $pluginInfo['upgradeAvailable'],
-            ]);
-        }
-
-        return $result;
     }
 
     /**

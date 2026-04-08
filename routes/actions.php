@@ -184,6 +184,8 @@ Route::prefix(implode('/', [
         Route::get('app/get-cp-alerts', [CpAlertsController::class, 'index']);
         Route::get('app/shun-cp-alert', [CpAlertsController::class, 'destroy']);
         Route::any('app/set-license-shun-cookie', [LicensesController::class, 'setShunCookie']);
+        Route::middleware(RequireAdmin::class)->get('app/get-plugin-license-info', [CraftCms\Cms\Http\Controllers\App\PluginsController::class, 'getLicenseInfo']);
+        Route::middleware(RequireAdminChanges::class)->post('app/update-plugin-license', [CraftCms\Cms\Http\Controllers\App\PluginsController::class, 'updateLicense']);
 
         // Auth methods
         Route::post('auth/method-setup-html', [AuthMethodController::class, 'setupHtml']);
