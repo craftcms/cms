@@ -8,8 +8,8 @@
     "name": "AdminTable",
     "imports": [
       "__plugin-vue_export-helper.js",
-      "_Queue-H95cobWn.js",
-      "_nav-item-uryMT3Fg.js"
+      "_Queue-C2kVe8rA.js",
+      "_nav-item-ChCEIDF_.js"
     ],
     "css": [
       "assets/AdminTable.css"
@@ -25,7 +25,7 @@
     "imports": [
       "__plugin-vue_export-helper.js",
       "_dist.js",
-      "_nav-item-uryMT3Fg.js",
+      "_nav-item-ChCEIDF_.js",
       "_useAnnouncer.js"
     ],
     "css": [
@@ -37,7 +37,7 @@
     "name": "CalloutReadOnly",
     "imports": [
       "__plugin-vue_export-helper.js",
-      "_nav-item-uryMT3Fg.js"
+      "_nav-item-ChCEIDF_.js"
     ]
   },
   "_CpGlobalSidebar.js": {
@@ -45,7 +45,7 @@
     "name": "CpGlobalSidebar",
     "imports": [
       "_decorate.js",
-      "_Queue-H95cobWn.js",
+      "_Queue-C2kVe8rA.js",
       "_lit.js",
       "_decorators.js"
     ]
@@ -55,7 +55,7 @@
     "name": "CpQueueIndicator",
     "imports": [
       "_decorate.js",
-      "_Queue-H95cobWn.js",
+      "_Queue-C2kVe8rA.js",
       "_lit.js",
       "_decorators.js",
       "_queue.js"
@@ -66,7 +66,7 @@
     "name": "DeleteSiteModal",
     "imports": [
       "__plugin-vue_export-helper.js",
-      "_nav-item-uryMT3Fg.js",
+      "_nav-item-ChCEIDF_.js",
       "_ModalForm.js",
       "_wayfinder.js"
     ]
@@ -81,7 +81,7 @@
     "imports": [
       "__plugin-vue_export-helper.js",
       "_dist.js",
-      "_nav-item-uryMT3Fg.js",
+      "_nav-item-ChCEIDF_.js",
       "_AppLayout.js"
     ],
     "css": [
@@ -130,7 +130,7 @@
     "name": "ModalForm",
     "imports": [
       "__plugin-vue_export-helper.js",
-      "_nav-item-uryMT3Fg.js",
+      "_nav-item-ChCEIDF_.js",
       "_Modal.js",
       "_Pane.js"
     ]
@@ -149,13 +149,13 @@
       "assets/Pane.css"
     ]
   },
-  "_Queue-H95cobWn.js": {
-    "file": "Queue-H95cobWn.js",
-    "name": "Queue-H95cobWn",
+  "_Queue-C2kVe8rA.js": {
+    "file": "Queue-C2kVe8rA.js",
+    "name": "Queue-C2kVe8rA",
     "imports": [
       "_lit.js",
       "_decorators.js",
-      "_decorate-D0rs42HP.js"
+      "_decorate-EBysIGtV.js"
     ]
   },
   "_SectionsController.js": {
@@ -169,12 +169,12 @@
     "file": "_plugin-vue_export-helper.js",
     "name": "_plugin-vue_export-helper",
     "imports": [
-      "_Queue-H95cobWn.js",
+      "_Queue-C2kVe8rA.js",
       "_lit.js",
       "_decorators.js",
-      "_nav-item-uryMT3Fg.js",
-      "_decorate-D0rs42HP.js",
-      "_nav-list-tR5SBgrm.js"
+      "_nav-item-ChCEIDF_.js",
+      "_decorate-EBysIGtV.js",
+      "_nav-list-Cg7ivPRt.js"
     ],
     "dynamicImports": [
       "node_modules/@lion/ui/components/form-core/translations/bg-BG.js",
@@ -272,11 +272,11 @@
     "name": "cp",
     "imports": [
       "__plugin-vue_export-helper.js",
-      "_Queue-H95cobWn.js",
+      "_Queue-C2kVe8rA.js",
       "_AdminTable.js",
       "_keyboard.js",
       "_dist.js",
-      "_nav-item-uryMT3Fg.js",
+      "_nav-item-ChCEIDF_.js",
       "_useFetch.js",
       "_queue.js",
       "_ModalForm.js",
@@ -302,9 +302,9 @@
       "assets/cp2.css"
     ]
   },
-  "_decorate-D0rs42HP.js": {
-    "file": "decorate-D0rs42HP.js",
-    "name": "decorate-D0rs42HP"
+  "_decorate-EBysIGtV.js": {
+    "file": "decorate-EBysIGtV.js",
+    "name": "decorate-EBysIGtV"
   },
   "_decorate.js": {
     "file": "decorate.js",
@@ -335,18 +335,18 @@
     "file": "lit.js",
     "name": "lit"
   },
-  "_nav-item-uryMT3Fg.js": {
-    "file": "nav-item-uryMT3Fg.js",
-    "name": "nav-item-uryMT3Fg",
+  "_nav-item-ChCEIDF_.js": {
+    "file": "nav-item-ChCEIDF_.js",
+    "name": "nav-item-ChCEIDF_",
     "imports": [
       "_lit.js",
       "_decorators.js",
-      "_decorate-D0rs42HP.js"
+      "_decorate-EBysIGtV.js"
     ]
   },
-  "_nav-list-tR5SBgrm.js": {
-    "file": "nav-list-tR5SBgrm.js",
-    "name": "nav-list-tR5SBgrm",
+  "_nav-list-Cg7ivPRt.js": {
+    "file": "nav-list-Cg7ivPRt.js",
+    "name": "nav-list-Cg7ivPRt",
     "imports": [
       "_lit.js"
     ]
@@ -383,7 +383,7 @@
     "name": "useFetch",
     "imports": [
       "__plugin-vue_export-helper.js",
-      "_Queue-H95cobWn.js",
+      "_Queue-C2kVe8rA.js",
       "_dist.js"
     ]
   },
@@ -1019,7 +1019,7 @@
     "src": "packages/craftcms-cp/dist/components/nav-item/nav-item.ts.mjs",
     "isDynamicEntry": true,
     "imports": [
-      "_nav-item-uryMT3Fg.js"
+      "_nav-item-ChCEIDF_.js"
     ]
   },
   "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs": {
@@ -1028,7 +1028,7 @@
     "src": "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
     "isDynamicEntry": true,
     "imports": [
-      "_nav-list-tR5SBgrm.js"
+      "_nav-list-Cg7ivPRt.js"
     ]
   },
   "resources/css/cp.css": {
@@ -1091,10 +1091,10 @@
     "isDynamicEntry": true,
     "imports": [
       "__plugin-vue_export-helper.js",
-      "_Queue-H95cobWn.js",
+      "_Queue-C2kVe8rA.js",
       "_lit.js",
       "_dist.js",
-      "_nav-item-uryMT3Fg.js",
+      "_nav-item-ChCEIDF_.js",
       "_useFetch.js",
       "_Modal.js",
       "_Pane.js"
@@ -1119,7 +1119,7 @@
       "_AdminTable.js",
       "_InputCombobox.js",
       "_dist.js",
-      "_nav-item-uryMT3Fg.js",
+      "_nav-item-ChCEIDF_.js",
       "_useEditableTable.js",
       "_AppLayout.js",
       "_CalloutReadOnly.js",
@@ -1137,7 +1137,7 @@
     "imports": [
       "__plugin-vue_export-helper.js",
       "_dist.js",
-      "_nav-item-uryMT3Fg.js",
+      "_nav-item-ChCEIDF_.js",
       "_AppLayout.js",
       "_CalloutReadOnly.js",
       "_useAnnouncer.js",
@@ -1154,7 +1154,7 @@
     "isDynamicEntry": true,
     "imports": [
       "__plugin-vue_export-helper.js",
-      "_nav-item-uryMT3Fg.js",
+      "_nav-item-ChCEIDF_.js",
       "_AppLayout.js",
       "_CalloutReadOnly.js"
     ],
@@ -1171,7 +1171,7 @@
       "__plugin-vue_export-helper.js",
       "_AdminTable.js",
       "_dist.js",
-      "_nav-item-uryMT3Fg.js",
+      "_nav-item-ChCEIDF_.js",
       "_useEditableTable.js",
       "_SectionsController.js",
       "_AppLayout.js",
@@ -1193,7 +1193,7 @@
     "imports": [
       "__plugin-vue_export-helper.js",
       "_AdminTable.js",
-      "_nav-item-uryMT3Fg.js",
+      "_nav-item-ChCEIDF_.js",
       "_SectionsController.js",
       "_AppLayout.js",
       "_useAnnouncer.js",
@@ -1209,7 +1209,7 @@
       "__plugin-vue_export-helper.js",
       "_InputCombobox.js",
       "_dist.js",
-      "_nav-item-uryMT3Fg.js",
+      "_nav-item-ChCEIDF_.js",
       "_DeleteSiteModal.js",
       "_ModalForm.js",
       "_AppLayout.js",
@@ -1227,7 +1227,7 @@
       "__plugin-vue_export-helper.js",
       "_AdminTable.js",
       "_InputCombobox.js",
-      "_nav-item-uryMT3Fg.js",
+      "_nav-item-ChCEIDF_.js",
       "_DeleteSiteModal.js",
       "_ModalForm.js",
       "_CalloutReadOnly.js",
@@ -1246,8 +1246,8 @@
     "isDynamicEntry": true,
     "imports": [
       "__plugin-vue_export-helper.js",
-      "_Queue-H95cobWn.js",
-      "_nav-item-uryMT3Fg.js"
+      "_Queue-C2kVe8rA.js",
+      "_nav-item-ChCEIDF_.js"
     ],
     "css": [
       "assets/Updater.css"
