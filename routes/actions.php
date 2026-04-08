@@ -23,6 +23,7 @@ use CraftCms\Cms\Http\Controllers\Auth\PasskeyController;
 use CraftCms\Cms\Http\Controllers\Auth\SessionInfoController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
+use CraftCms\Cms\Http\Controllers\ConditionsController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
@@ -210,6 +211,11 @@ Route::prefix(implode('/', [
         // ClearCaches
         Route::post('utilities/clear-caches-perform-action', [ClearCachesController::class, 'clearCaches']);
         Route::post('utilities/invalidate-tags', [ClearCachesController::class, 'invalidateTags']);
+
+        // Conditions
+        Route::post('conditions/render', [ConditionsController::class, 'show']);
+        Route::post('conditions/add-rule', [ConditionsController::class, 'store']);
+        Route::post('conditions/remove-rule', [ConditionsController::class, 'destroy']);
 
         // DbBackup
         Route::post('utilities/db-backup-perform-action', DbBackupController::class);
