@@ -2170,7 +2170,7 @@ class View extends \yii\web\View
 
             $yiiEvent = new RegisterTemplateRootsEvent();
             Craft::$app->getView()->trigger(self::EVENT_REGISTER_CP_TEMPLATE_ROOTS, $yiiEvent);
-            $event->roots = $yiiEvent->roots;
+            $event->roots = array_merge($event->roots, $yiiEvent->roots);
         });
 
         Event::listen(RegisterSiteTemplateRoots::class, function(RegisterSiteTemplateRoots $event) {
@@ -2180,7 +2180,7 @@ class View extends \yii\web\View
 
             $yiiEvent = new RegisterTemplateRootsEvent();
             Craft::$app->getView()->trigger(self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, $yiiEvent);
-            $event->roots = $yiiEvent->roots;
+            $event->roots = array_merge($event->roots, $yiiEvent->roots);
         });
 
         Event::listen(function(TwigCreated $event) {
