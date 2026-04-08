@@ -9,6 +9,11 @@ Craft.SortableCheckboxSelect = Garnish.Base.extend({
 
   init: function (container) {
     this.$container = $(container);
+
+    if (this.$container.data('sortableCheckboxSelect')) {
+      this.$container.data('sortableCheckboxSelect', null);
+    }
+
     this.$container.data('sortableCheckboxSelect', this);
 
     const $sortItems = this.$container.children(
@@ -85,6 +90,8 @@ Craft.SortableCheckboxSelect.Item = Garnish.Base.extend({
   },
 
   onCheck: function () {
+    this.$actionMenuBtn = this.$item.find('[data-disclosure-trigger]');
+
     if (this.$actionMenuBtn) {
       this.onUncheck();
     }

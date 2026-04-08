@@ -1896,9 +1896,19 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
     this.$libraryContainer = this.$container.find(
       '.cvd-library .checkbox-select'
     );
+
     this.sortableCheckboxSelect = this.$libraryContainer.data(
       'sortableCheckboxSelect'
     );
+
+    // If the checkboxes haven't been initialized yet, do that.
+    if (!this.sortableCheckboxSelect) {
+      console.trace('Not initialized');
+      this.sortableCheckboxSelect = new Craft.SortableCheckboxSelect(
+        this.$libraryContainer
+      );
+    }
+
     this.$thumbManagementContainer = this.$container.find('.thumb-management');
     this.alwaysShowThumbAlignmentBtns =
       designer.settings.alwaysShowThumbAlignmentBtns;
