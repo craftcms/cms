@@ -5,10 +5,10 @@
 // @use 'variables';
 @import 'compat';
 @import 'slideouts';
+@import 'menu';
 
 .cp-legacy {
   @import 'main';
-  @import 'menu';
   @import 'cp';
   @import 'range';
   @import 'global-sidebar';
