@@ -189,6 +189,9 @@ readonly class ActionController
 
         abort_if($asset === null, 400, "Invalid asset ID: $assetId");
 
+        $this->requireVolumePermissionByAsset('viewAssets', $asset);
+        $this->requirePeerVolumePermissionByAsset('viewPeerAssets', $asset);
+
         $folder = $asset->getFolder();
         $sourcePath[] = $folder->getSourcePathInfo();
 

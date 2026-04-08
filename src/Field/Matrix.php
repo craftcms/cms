@@ -865,12 +865,14 @@ JS, [
             $entrySelector = ' > .blocks > .matrixblock';
 
             $items[] = $this->copyAction($type, $entrySelector);
-            $items[] = $this->duplicateAction($type, $entrySelector, <<<'JS'
+            if (! $this->static) {
+                $items[] = $this->duplicateAction($type, $entrySelector, <<<'JS'
 field.data('matrix').duplicateSelectedEntries();
 JS);
-            $items[] = $this->deleteAction($type, $entrySelector, <<<'JS'
+                $items[] = $this->deleteAction($type, $entrySelector, <<<'JS'
 field.data('matrix').deleteSelectedEntries();
 JS);
+            }
         }
 
         return $items;
@@ -1325,15 +1327,15 @@ JS,
                 ->all();
 
             $invalidEntryIds = [];
+            $scenario = $element->getScenario();
 
             foreach ($entries as $entry) {
                 $entry->setOwner($element);
 
-                if (
-                    $element->inScenarios(Element::SCENARIO_ESSENTIALS) ||
-                    ($entry->enabled && $element->inScenarios(Element::SCENARIO_LIVE))
-                ) {
-                    $entry->setScenario($element->getScenario());
+                if (! $entry->enabled) {
+                    $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+                } else {
+                    $entry->setScenario($scenario);
                 }
 
                 if (! $entry->validate()) {

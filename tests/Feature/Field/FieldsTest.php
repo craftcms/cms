@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Color;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -14,7 +15,9 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\Models\Field as FieldModel;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -300,6 +303,40 @@ it('can delete a field', function () {
     $this->fields->deleteField($field);
 
     expect(FieldModel::count())->toBe(0);
+});
+
+it('can hard delete a field layout by id', function () {
+    $field = FieldModel::factory()->create([
+        'name' => 'Plain Text',
+        'handle' => 'plainTextLayoutField',
+        'type' => PlainText::class,
+    ]);
+
+    $layout = $this->fields->createLayout([
+        'type' => EntryElement::class,
+        'tabs' => [
+            [
+                'uid' => Str::uuid()->toString(),
+                'name' => 'Content',
+                'elements' => [
+                    [
+                        'uid' => Str::uuid()->toString(),
+                        'type' => CraftCms\Cms\FieldLayout\LayoutElements\CustomField::class,
+                        'fieldUid' => $field->uid,
+                    ],
+                ],
+            ],
+        ],
+    ]);
+
+    expect($this->fields->saveLayout($layout))->toBeTrue();
+
+    expect($this->fields->getLayoutById($layout->id))->not()->toBeNull();
+
+    expect($this->fields->deleteLayoutById($layout->id, hardDelete: true))->toBeTrue();
+
+    expect(FieldLayoutModel::withTrashed()->find($layout->id))->toBeNull()
+        ->and($this->fields->getLayoutById($layout->id))->toBeNull();
 });
 
 it('can find field usages', function () {

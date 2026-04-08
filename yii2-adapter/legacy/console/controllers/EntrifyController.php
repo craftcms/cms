@@ -584,6 +584,14 @@ class EntrifyController extends Controller
             &$projectConfigChanged,
         ) {
             if (!$globalSet->dateDeleted) {
+                // Delete the layout first, so custom fields’ beforeElementDelete()
+                // and afterElementDelete() methods don’t get called
+                // (see https://github.com/craftcms/cms/issues/18650)
+                $fieldLayout = $globalSet->getFieldLayout();
+                if ($fieldLayout->id) {
+                    Craft::$app->getFields()->deleteLayout($fieldLayout, true);
+                }
+
                 Craft::$app->getGlobals()->deleteSet($globalSet);
                 $projectConfigChanged = true;
             }

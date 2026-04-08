@@ -736,7 +736,10 @@ class Categories extends Component
             return null;
         }
 
-        return Elements::getElementById($categoryId, Category::class, $siteId, $criteria);
+        /** @var ?Category $category */
+        $category = Elements::getElementById($categoryId, Category::class, $siteId, $criteria);
+
+        return $category;
     }
 
     /**

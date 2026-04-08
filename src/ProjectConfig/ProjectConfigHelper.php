@@ -455,7 +455,9 @@ class ProjectConfigHelper
     public static function flattenConfigArray(array $array, string $path, array &$result): void
     {
         foreach ($array as $key => $value) {
-            $thisPath = ltrim($path.'.'.$key, '.');
+            // escape periods within keys, so they don't get confused as multiple path segments
+            // (see https://github.com/craftcms/cms/issues/18631)
+            $thisPath = ltrim(sprintf('%s.%s', $path, str_replace('.', '\.', (string) $key)), '.');
 
             if (is_array($value)) {
                 self::flattenConfigArray($value, $thisPath, $result);
@@ -493,7 +495,7 @@ class ProjectConfigHelper
     public static function traverseDataArray(array &$data, string|array $path, mixed $value = null, bool $delete = false): mixed
     {
         if (is_string($path)) {
-            $path = explode('.', $path);
+            $path = static::pathSegments($path);
         }
 
         $nextSegment = array_shift($path);
@@ -738,7 +740,25 @@ class ProjectConfigHelper
             throw new InvalidArgumentException('No project config path provided.');
         }
 
+        if (str_contains($path, '\.')) {
+            $segments = preg_split('/(?<!\\\)\./', $path);
+
+            return array_map(fn (string $segment) => str_replace('\.', '.', $segment), $segments);
+        }
+
         return explode('.', $path);
+    }
+
+    /**
+     * Returns the number of segments in the given path.
+     */
+    public static function pathDepth(string $path): int
+    {
+        if (str_contains($path, '\.')) {
+            return preg_match_all('/(?<!\\\)\./', $path);
+        }
+
+        return substr_count($path, '.');
     }
 
     /**
@@ -761,8 +781,15 @@ class ProjectConfigHelper
     public static function pathWithoutLastSegment(string $path): ?string
     {
         $segments = self::pathSegments($path);
+
         array_pop($segments);
 
-        return ! empty($segments) ? implode('.', $segments) : null;
+        if (empty($segments)) {
+            return null;
+        }
+
+        $segments = array_map(fn (string $segment) => str_replace('.', '\.', $segment), $segments);
+
+        return implode('.', $segments);
     }
 }

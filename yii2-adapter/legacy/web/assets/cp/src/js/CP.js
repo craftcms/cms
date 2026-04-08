@@ -2197,6 +2197,7 @@ Craft.CP.ElementCopyNotification = Craft.CP.Notification.extend({
             type: e.type,
             id: e.id,
             siteId: e.siteId,
+            revisionId: e.revisionId ?? null,
             instances: [
               {
                 ui: 'chip',

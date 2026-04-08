@@ -495,20 +495,25 @@ class ElementSources
      * @param  class-string<ElementInterface>  $elementType  The element type class
      * @param  string  $sourceKey  The element type source key
      * @param  string[]|null  $customAttributes  Custom attributes to show rather than the defaults
+     * @param  FieldLayout[]|null  $fieldLayouts  The field layouts that should be factored in
      * @return Collection<array>
      */
-    public function getTableAttributes(string $elementType, string $sourceKey, ?array $customAttributes = null): Collection
-    {
+    public function getTableAttributes(
+        string $elementType,
+        string $sourceKey,
+        ?array $customAttributes = null,
+        ?array $fieldLayouts = null,
+    ): Collection {
         // If this is a source path, use the first segment
         if (($slash = strpos($sourceKey, '/')) !== false) {
             $sourceKey = substr($sourceKey, 0, $slash);
         }
 
-        if ($sourceKey === '__IMP__') {
-            $sourceAttributes = $this->getTableAttributesForFieldLayouts($elementType::fieldLayouts(null));
-        } else {
-            $sourceAttributes = $this->getSourceTableAttributes($elementType, $sourceKey);
-        }
+        $sourceAttributes = match (true) {
+            $fieldLayouts !== null => $this->getTableAttributesForFieldLayouts($fieldLayouts),
+            $sourceKey === '__IMP__' => $this->getTableAttributesForFieldLayouts($elementType::fieldLayouts(null)),
+            default => $this->getSourceTableAttributes($elementType, $sourceKey),
+        };
 
         $availableAttributes = $this->getAvailableTableAttributes($elementType)->merge($sourceAttributes);
 

@@ -110,6 +110,7 @@ abstract class BaseElementsController extends Controller
             }
         }
 
+        /** @var ElementConditionInterface $condition */
         return $condition;
     }
 }

@@ -68,7 +68,10 @@ class Tag extends ElementMutationResolver
         $tag = $this->populateElementWithData($tag, $arguments, $resolveInfo);
         $tag = $this->saveElement($tag);
 
-        return Elements::getElementById($tag->id, TagElement::class);
+        /** @var ?TagElement $tag */
+        $tag = Elements::getElementById($tag->id, TagElement::class);
+
+        return $tag;
     }
 
     /**

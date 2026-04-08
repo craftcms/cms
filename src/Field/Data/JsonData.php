@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Field\Data;
 
 use ArrayAccess;
 use ArrayIterator;
+use BadMethodCallException;
 use craft\base\Serializable;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
@@ -28,6 +29,21 @@ class JsonData extends Component implements ArrayAccess, IteratorAggregate, Seri
     public function __toString(): string
     {
         return $this->getJson();
+    }
+
+    #[\Override]
+    public function __call($method, $parameters)
+    {
+        try {
+            return parent::__call($method, $parameters);
+        } catch (BadMethodCallException $e) {
+            if (! empty($parameters)) {
+                throw $e;
+            }
+
+            // This is probably just Twig falling back to calling a properly like it's a method
+            return null;
+        }
     }
 
     public function getType(): string

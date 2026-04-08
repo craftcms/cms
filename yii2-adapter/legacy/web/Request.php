@@ -1654,12 +1654,14 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
             $this->_isLoginRequest = false;
         }
 
+        // Avoid infinite recursion if something else calls checkIfActionRequest() in the process
+        // (see https://github.com/craftcms/cms/issues/18605)
+        $this->_checkedRequestType = true;
+
         // If there's a token on the request, then that should take precedence over everything else
         if (!$checkToken || $this->getToken() === null) {
             $this->_isActionRequest = $this->_checkIfActionRequestInternal($checkSpecialPaths);
         }
-
-        $this->_checkedRequestType = true;
     }
 
     private function _checkIfActionRequestInternal(bool $checkSpecialPaths): bool

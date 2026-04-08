@@ -29,6 +29,7 @@ use CraftCms\Cms\Validation\Attributes\Ruleset;
 use Deprecated;
 use Override;
 use yii\base\InvalidConfigException;
+use yii\helpers\Html;
 
 use function CraftCms\Cms\t;
 
@@ -108,9 +109,20 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     #[Override]
+    protected static function defineDefaultCardAttributes(): array
+    {
+        return [
+            'address',
+        ];
+    }
+
+    #[Override]
     protected function attributeHtml(string $attribute): string
     {
         return match ($attribute) {
+            'address' => Html::tag('div', app(Addresses::class)->formatAddress($this), [
+                'class' => 'no-truncate',
+            ]),
             'country' => $this->getCountry()->getName(),
             default => parent::attributeHtml($attribute),
         };

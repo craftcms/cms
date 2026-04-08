@@ -1073,9 +1073,10 @@ class Fields
      * Deletes a field layout(s) by its ID.
      *
      * @param  int|int[]  $layoutId  The field layout’s ID
+     * @param  bool  $hardDelete  Whether the field layout should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the field layout was deleted successfully
      */
-    public function deleteLayoutById(array|int $layoutId): bool
+    public function deleteLayoutById(array|int $layoutId, bool $hardDelete = false): bool
     {
         if (! $layoutId) {
             return false;
@@ -1083,7 +1084,7 @@ class Fields
 
         foreach (Arr::wrap($layoutId) as $thisLayoutId) {
             if ($layout = $this->getLayoutById($thisLayoutId)) {
-                $this->deleteLayout($layout);
+                $this->deleteLayout($layout, $hardDelete);
             }
         }
 
@@ -1094,13 +1095,18 @@ class Fields
      * Deletes a field layout.
      *
      * @param  FieldLayout  $layout  The field layout
+     * @param  bool  $hardDelete  Whether the field layout should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the field layout was deleted successfully
      */
-    public function deleteLayout(FieldLayout $layout): bool
+    public function deleteLayout(FieldLayout $layout, bool $hardDelete = false): bool
     {
         event(new FieldLayoutDeleting($layout));
 
-        DB::table(Table::FIELDLAYOUTS)->softDelete($layout->id);
+        if ($hardDelete) {
+            DB::table(Table::FIELDLAYOUTS)->delete($layout->id);
+        } else {
+            DB::table(Table::FIELDLAYOUTS)->softDelete($layout->id);
+        }
 
         event(new FieldLayoutDeleted($layout));
 

@@ -66,12 +66,15 @@ use CraftCms\Cms\Twig\TokenParsers\TagTokenParser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\TemplateGlobals;
+use DirectoryIterator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use InvalidArgumentException;
 use Money\Money;
 use Override;
+use SimpleXMLElement;
+use Symfony\Component\Process\Process;
 use Throwable;
 use Twig\Environment as TwigEnvironment;
 use Twig\ExpressionParser\Infix\BinaryOperatorExpressionParser;
@@ -82,6 +85,7 @@ use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
 use yii\base\BaseObject;
+use yii\behaviors\AttributeTypecastBehavior;
 use yii\db\Expression;
 use yii\db\QueryInterface;
 
@@ -425,6 +429,22 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
     public function createFunction(string|array $type, array $params = []): object
     {
         $class = is_string($type) ? $type : ($type['__class'] ?? $type['class'] ?? null);
+
+        if (! $class) {
+            throw new InvalidArgumentException('No class specified for create().');
+        }
+
+        foreach ([
+            AttributeTypecastBehavior::class,
+            DirectoryIterator::class,
+            Process::class,
+            SimpleXMLElement::class,
+        ] as $blockedClass) {
+            if (is_a($class, $blockedClass, true)) {
+                throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
+            }
+        }
+
         if (
             ! is_subclass_of($class, BaseObject::class) &&
             ! str_starts_with($class, 'craft\\helpers\\') &&

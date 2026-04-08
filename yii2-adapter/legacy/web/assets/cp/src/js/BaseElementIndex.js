@@ -1610,6 +1610,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         elementType: this.elementType,
         canHaveDrafts: this.settings.canHaveDrafts,
         source: this.sourceKey,
+        fieldLayouts: this.$source?.data('field-layouts'),
         condition: this.settings.condition,
         referenceElementId: this.settings.referenceElementId,
         referenceElementOwnerId: this.settings.referenceElementOwnerId,
@@ -2314,6 +2315,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               elementType: this.elementType,
               context: this.settings.context,
               source: $source.data('key'),
+              fieldLayouts: $source.data('field-layouts'),
             },
           }
         );

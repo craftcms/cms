@@ -858,9 +858,10 @@ class Sites
      */
     private function allSites(?bool $withDisabled = null): Collection
     {
-        if ($withDisabled === null) {
-            $withDisabled = ! request()->isSiteRequest() || request()->isActionRequest();
-        }
+        $withDisabled ??= (
+            app()->runningInConsole() ||
+            (request()->isCpRequest() && Auth::check())
+        );
 
         return $withDisabled ? $this->allSitesById : $this->enabledSitesById;
     }
