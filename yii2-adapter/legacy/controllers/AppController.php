@@ -25,6 +25,7 @@ use yii\web\Response;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0
  * @internal
  */
 class AppController extends Controller
@@ -33,22 +34,8 @@ class AppController extends Controller
      * @inheritdoc
      */
     protected array|bool|int $allowAnonymous = [
-        'migrate' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'health-check' => self::ALLOW_ANONYMOUS_LIVE,
         'resource-js' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeAction($action): bool
-    {
-        if ($action->id === 'migrate') {
-            $this->enableCsrfValidation = false;
-        }
-
-        return parent::beforeAction($action);
-    }
 
     /**
      * Loads the given JavaScript resource URL and returns it.
