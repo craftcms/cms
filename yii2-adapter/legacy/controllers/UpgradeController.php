@@ -19,6 +19,7 @@ use yii\web\Response;
 /**
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @internal
+ * @deprecated 6.0.0
  */
 class UpgradeController extends Controller
 {
