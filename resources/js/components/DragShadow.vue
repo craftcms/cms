@@ -11,8 +11,7 @@
     class="drag-shadow"
     :class="`drag-shadow--${position ?? 'bottom'}`"
     :style="{height: `${height}px`}"
-  >
-  </div>
+  ></div>
 </template>
 
 <style scoped lang="scss">

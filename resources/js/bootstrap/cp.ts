@@ -1,5 +1,5 @@
-import {ConfigService} from '@craftcms/cp/dist/services/Config.ts.mjs';
-import {QueueService} from '@craftcms/cp/dist/services/Queue.ts.mjs';
+import {ConfigService} from '@craftcms/cp/services/Config.ts.mjs';
+import {QueueService} from '@craftcms/cp/services/Queue.ts.mjs';
 import {createInertiaApp} from '@inertiajs/vue3';
 import QueueManager from '@/components/utilities/QueueManager/QueueManager.vue';
 import {Axios, Config, Queue} from '@/types/keys';
