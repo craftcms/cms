@@ -41,6 +41,7 @@ use CraftCms\Cms\Http\Controllers\Gql\SchemasController as GqlSchemasController;
 use CraftCms\Cms\Http\Controllers\Gql\TokensController as GqlTokensController;
 use CraftCms\Cms\Http\Controllers\IconController;
 use CraftCms\Cms\Http\Controllers\InstallController;
+use CraftCms\Cms\Http\Controllers\MatrixController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\InstallController as PluginStoreInstallController;
@@ -291,6 +292,11 @@ Route::prefix(implode('/', [
                 Route::post('graphql/save-public-schema', [GqlSchemasController::class, 'savePublic']);
             });
         });
+
+        // Matrix
+        Route::post('matrix/default-table-column-options', [MatrixController::class, 'defaultTableColumnOptions']);
+        Route::post('matrix/create-entry', [MatrixController::class, 'createEntry']);
+        Route::post('matrix/render-blocks', [MatrixController::class, 'renderBlocks']);
 
         // Migrations
         Route::post('utilities/apply-new-migrations', MigrationsController::class);
