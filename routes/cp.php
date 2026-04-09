@@ -243,6 +243,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         ])->group(function () {
             Route::get('/', [FilesystemsController::class, 'index']);
             Route::get('new', [FilesystemsController::class, 'create']);
+            Route::get('{handle}', [FilesystemsController::class, 'edit']);
             Route::get('{handle}/edit', [FilesystemsController::class, 'edit']);
         });
 
