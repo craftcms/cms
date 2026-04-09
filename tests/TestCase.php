@@ -23,6 +23,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Tests\Support\DatabaseLock;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
@@ -47,6 +48,14 @@ class TestCase extends Orchestra
 {
     use RefreshDatabase;
     use WithWorkbench;
+
+    #[Override]
+    public static function setUpBeforeClass(): void
+    {
+        parent::setUpBeforeClass();
+
+        DatabaseLock::acquire();
+    }
 
     #[Override]
     protected function setUp(): void
