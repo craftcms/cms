@@ -73,7 +73,7 @@ class Upgrade extends Utility
 
         $version = (int) Cms::VERSION + 1;
         HtmlStack::jsWithVars(fn($args) => <<<JS
-window.upgardeUtility = new Craft.UpgradeUtility(...$args)
+window.upgradeUtility = new Craft.UpgradeUtility(...$args)
 JS, [
             [$version, $allPlugins],
         ]);

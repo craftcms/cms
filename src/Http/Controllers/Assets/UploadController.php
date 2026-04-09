@@ -301,7 +301,13 @@ readonly class UploadController
             return false;
         }
 
-        $uploadedFile->move(dirname($tempPath), basename($tempPath));
+        try {
+            $uploadedFile->move(dirname($tempPath), basename($tempPath));
+        } catch (Throwable) {
+            File::delete($tempPath);
+
+            return false;
+        }
 
         return $tempPath;
     }

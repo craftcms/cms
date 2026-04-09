@@ -172,7 +172,8 @@ class Deprecator
             $templateTrace = 2;
         } elseif (
             isset($traces[1]['class'], $traces[1]['function']) &&
-            ($traces[1]['class'] instanceof ElementQueryInterface && $traces[1]['function'] === 'getIterator')
+            is_a($traces[1]['class'], ElementQueryInterface::class, true) &&
+            $traces[1]['function'] === 'getIterator'
         ) {
             // looping through element queries
             if (isset($traces[4]['function']) && $traces[4]['function'] === 'twig_array_batch') {
@@ -183,7 +184,7 @@ class Deprecator
             }
         } elseif (
             isset($traces[1]['class'], $traces[1]['function']) &&
-            $traces[1]['class'] instanceof AbstractExtension &&
+            is_a($traces[1]['class'], AbstractExtension::class, true) &&
             in_array($traces[1]['function'], [
                 'getCsrfInput',
                 'getFootHtml',
