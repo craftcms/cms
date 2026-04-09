@@ -48,6 +48,19 @@ class ViewServiceProvider extends ServiceProvider
         $hooks->register('cp.layouts.elementindex', PrepareElementIndexVariables::class);
         $hooks->register('cp.elements.toolbar', PrepareElementToolbarVariables::class);
         $hooks->register('cp.elements.sources', PrepareElementSourcesVariables::class);
+
+        $this->app->booted(function () {
+            /**
+             * This ensures that when Laravel tries to find an error view,
+             * it will look in the CP templates for it as well.
+             */
+            if (request()->isCpRequest()) {
+                config()->set('view.paths', array_merge(
+                    config('view.paths'),
+                    [dirname(__DIR__, 2).'/resources/templates']
+                ));
+            }
+        });
     }
 
     private function registerTemplateGlobals(): void
