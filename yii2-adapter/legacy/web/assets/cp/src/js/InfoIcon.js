@@ -9,7 +9,9 @@ Craft.InfoIcon = Garnish.Base.extend({
    * @param HTMLElement icon
    */
   init: function (icon) {
-    console.warn('Craft.InfoIcon is deprecated. Use <craft-info-icon> instead.');
+    console.warn(
+      'Craft.InfoIcon is deprecated. Use <craft-info-icon> instead.'
+    );
     this.icon = document.createElement('craft-info-icon');
     if (icon.classList.contains('disabled')) {
       this.icon.setAttribute('disabled', '');

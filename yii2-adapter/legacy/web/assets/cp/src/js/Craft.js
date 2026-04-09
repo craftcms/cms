@@ -2117,21 +2117,22 @@ $.extend(Craft, {
      * Swap any instruction text with info icons but avoid those with the class
      * visually-hidden as those have already been swapped
      * This needs to happen before the `infoicon` method
-     */
+     *
+     * The primary place this happens is in the advanced settings of the link field
+     * */
     $(
       '.field.info-icon-instructions > .instructions, #details .meta > .field > .instructions',
       $container
     )
-      .not('.visually-hidden')
+      .not('.visually-hidden,.sr-only')
       .each(function () {
         const $instructions = $(this);
         const $label = $instructions.siblings('.heading').find('label');
-        $('<div/>', {
-          class: 'info',
+        $('<craft-info-icon>', {
           html: $instructions.children().html(),
         }).appendTo($label);
         // Keep the original element around in case an aria-describedby attribute is referencing it
-        $instructions.addClass('visually-hidden');
+        $instructions.addClass('sr-only');
       });
 
     $('.info', $container).infoicon();
