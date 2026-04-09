@@ -195,19 +195,9 @@
               </ColumnHeaderTitle>
 
               <template v-if="header.column.columnDef.meta?.headerTip">
-                <c-tooltip :for="`header-info-${header.column.id}`">{{
+                <craft-info-icon>{{
                   header.column.columnDef.meta.headerTip
-                }}</c-tooltip>
-
-                <craft-button
-                  type="button"
-                  :id="`header-info-${header.column.id}`"
-                  icon
-                  size="small"
-                  appearance="plain"
-                >
-                  <craft-icon name="circle-info"></craft-icon>
-                </craft-button>
+                }}</craft-info-icon>
               </template>
             </div>
           </th>
