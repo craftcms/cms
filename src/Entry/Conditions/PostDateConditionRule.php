@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Conditions;
 
 use craft\base\ElementInterface;
-use craft\elements\db\EntryQuery;
 use CraftCms\Cms\Condition\BaseDateRangeConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 
 use function CraftCms\Cms\t;

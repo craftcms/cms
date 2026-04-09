@@ -7,6 +7,7 @@ use CraftCms\Cms\Element\Events\RegisterDefaultTableAttributes;
 use CraftCms\Cms\Element\Events\RegisterSortOptions;
 use CraftCms\Cms\Element\Events\RegisterTableAttributes;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ExcludeDescendantIdsExpression;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use Illuminate\Support\Arr;
@@ -551,6 +552,22 @@ describe('indexElements', function () {
         $elements = TestEntryForDisplayedInIndex::exposeIndexElements($query, '*');
         expect($elements)->toBeArray();
         expect($elements)->toHaveCount(2);
+    });
+
+    test('removes exclude descendant ids expressions from subquery wheres', function () {
+        $query = entryQuery();
+        $excludeDescendantIdsExpression = new ExcludeDescendantIdsExpression([10, 11]);
+
+        $query
+            ->where($excludeDescendantIdsExpression)
+            ->where('elements.id', 1);
+
+        $method = new ReflectionMethod(Entry::class, 'elementQueryWithAllDescendants');
+
+        $result = $method->invoke(null, $query);
+
+        expect($result)->not->toBe($query);
+        expect($result->getSubQuery()->wheres)->not()->toContain($excludeDescendantIdsExpression);
     });
 });
 

@@ -139,3 +139,55 @@ test('isIndexed', function (bool $expected, array $array) {
     [false, [0, 1, 2, '3']],
     [false, [0, 1, 2, '3a']],
 ]);
+
+test('containsRecursive', function (bool $expected, array $array, string $key, mixed $value = true, bool $strict = false) {
+    expect(Arr::containsRecursive($array, $key, $value, $strict))->toBe($expected);
+})->with([
+    'matches nested key with default value' => [
+        true,
+        [
+            [
+                'rows' => [
+                    ['rowId' => '100'],
+                ],
+            ],
+        ],
+        'rowId',
+    ],
+    'matches nested key with loose comparison' => [
+        true,
+        [
+            [
+                'rows' => [
+                    ['enabled' => 1],
+                ],
+            ],
+        ],
+        'enabled',
+        true,
+    ],
+    'does not match nested key with strict comparison' => [
+        false,
+        [
+            [
+                'rows' => [
+                    ['enabled' => 1],
+                ],
+            ],
+        ],
+        'enabled',
+        true,
+        true,
+    ],
+    'returns false when key is missing recursively' => [
+        false,
+        [
+            [
+                'rows' => [
+                    ['label' => 'Row 1'],
+                ],
+            ],
+        ],
+        'rowId',
+    ],
+]);
