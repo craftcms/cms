@@ -3,7 +3,7 @@
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import {computed} from 'vue';
   import {useReorderableRows} from '@/composables/useReorderableRows';
-  import {TableSpacing} from '@/types';
+  import {TableSpacing, type TableSpacingValue} from '@/types';
   import ReorderButton from '@/components/ReorderButton.vue';
   import DropIndicator from '@/components/DropIndicator.vue';
   import Select from '@/components/form/Select.vue';
@@ -16,7 +16,7 @@
       selectable?: boolean;
       readOnly?: boolean;
       layout?: 'auto' | 'fixed';
-      spacing?: 'compact' | 'relaxed';
+      spacing?: TableSpacingValue;
       from?: number;
       to?: number;
       total?: number;
@@ -28,7 +28,6 @@
       reorderable: true,
       selectable: true,
       layout: 'auto',
-      spacing: 'compact',
       enableAdjustPageSize: false,
       pageSizeOptions: () => [50, 100, 250],
     }
@@ -101,6 +100,7 @@
         'cp-table': true,
         'cp-table--compact': spacing === TableSpacing.Compact,
         'cp-table--relaxed': spacing === TableSpacing.Relaxed,
+        'cp-table--spacious': spacing === TableSpacing.Spacious,
         'cp-table--auto': layout === 'auto',
       }"
     >
@@ -232,6 +232,7 @@
             @click="table.previousPage()"
             :disabled="!table.getCanPreviousPage()"
             icon
+            size="small"
           >
             <craft-icon
               name="chevron-left"
@@ -247,7 +248,7 @@
               :label="t('Current page')"
               label-sr-only
               center
-              small
+              size="small"
             >
             </craft-input>
             of
@@ -257,6 +258,7 @@
             type="button"
             @click="table.nextPage()"
             :disabled="!table.getCanNextPage()"
+            size="small"
             icon
           >
             <craft-icon
@@ -270,6 +272,7 @@
         <template v-if="showPageSize">
           {{ t('Items per page:') }}
           <Select
+            small
             :options="pageSizeOptions"
             v-model="pageSizeProxy"
             class="w-auto"

@@ -54,6 +54,11 @@ ul {
   border-radius: var(--c-radius-sm);
 }
 
+.cp-icon {
+  width: 1em;
+  height: 1em;
+}
+
 hr {
   display: block;
   width: 100%;
@@ -157,10 +162,9 @@ Modify with `cp-table--auto` to apply table-layout: auto
   }
 
   .cell {
-    padding: 0;
     vertical-align: middle;
+    padding-block: var(--_cell-spacing-block);
     padding-inline: var(--_cell-spacing-inline);
-    padding-block: 0;
     position: relative;
     height: var(--c-size-control-md);
 
@@ -173,12 +177,8 @@ Modify with `cp-table--auto` to apply table-layout: auto
   td,
   th,
   tr:not(:last-child) {
-    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
-  }
-
-  td:not(:first-child),
-  th:not(:first-child) {
-    border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
+    border-block-end: 1px solid
+      color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
   }
 
   textarea,
@@ -194,6 +194,13 @@ Modify with `cp-table--auto` to apply table-layout: auto
   textarea {
     resize: none;
     line-height: 1.2;
+  }
+}
+
+.cp-table--ruled {
+  td:not(:first-child),
+  th:not(:first-child) {
+    border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
   }
 }
 
@@ -219,6 +226,10 @@ Modify with `cp-table--auto` to apply table-layout: auto
 
 .cp-table--compact {
   --_cell-spacing-block: var(--c-spacing-sm);
+}
+
+.cp-table--spacious {
+  --_cell-spacing-block: var(--c-spacing-lg);
 }
 
 .cp-table-header,

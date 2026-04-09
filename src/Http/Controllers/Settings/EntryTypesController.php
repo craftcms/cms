@@ -32,11 +32,11 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlStack;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -70,9 +70,46 @@ class EntryTypesController
         }
     }
 
-    public function index(): View
+    public function index(Request $request)
     {
-        return view('settings.entry-types.index');
+        $page = (int) $request->input(Cms::config()->getPageTriggerParam(), 1);
+        $limit = (int) $request->input('per_page', 100);
+        $searchTerm = $request->input('search');
+
+        $sort = $request->array('sort') ?? [
+            ['field' => 'name', 'direction' => 'asc'],
+        ];
+
+        $orderBy = match (Arr::get($sort, '0.field')) {
+            'handle' => 'handle',
+            'type' => 'type',
+            default => 'name',
+        };
+
+        $sortDir = match (Arr::get($sort, '0.direction')) {
+            'desc' => SORT_DESC,
+            default => SORT_ASC,
+        };
+
+        [$pagination, $tableData] = $this->entryTypes->getTableData(page: $page,
+            limit: $limit,
+            searchTerm: $searchTerm,
+            orderBy: $orderBy,
+            sortDir: $sortDir,
+        );
+
+        return Inertia::render('SettingsEntryTypesIndexPage', [
+            'crumbs' => fn () => [
+                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
+                ['label' => t('Entry Types')],
+            ],
+            'title' => t('Entry Types'),
+            'dataEndpoint' => route('craft.actions.entry-types.table-data'),
+            'searchTerm' => $searchTerm,
+            'sort' => $sort,
+            'data' => fn () => $tableData,
+            'pagination' => fn () => $pagination,
+        ]);
     }
 
     public function create(): CpScreenResponse
@@ -205,6 +242,7 @@ class EntryTypesController
             );
     }
 
+    #[\Deprecated(message: 'in 6.0. Use `settings/entry-types` instead.')]
     public function tableData(Request $request): JsonResponse
     {
         $page = (int) $request->input(Cms::config()->getPageTriggerParam(), 1);

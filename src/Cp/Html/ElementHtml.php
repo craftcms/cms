@@ -82,6 +82,7 @@ readonly class ElementHtml
 
         $attributes = Arr::merge([
             'id' => $config['id'],
+            'size' => $config['size'],
             'class' => [
                 'cp-color-'.($color->value ?? 'white'),
                 $config['size'],

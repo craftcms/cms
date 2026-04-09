@@ -1,11 +1,13 @@
 import {css} from 'lit';
 
 export const baseInputStyles = css`
+  --_border-width: var(--c-input-border-width, var(--c-form-control-border-width));
+  --_min-height: var(--c-input-height, var(--c-size-control-md));
   font: inherit;
   color: var(--c-input-text, var(--c-text-default));
   position: relative;
-  min-height: var(--c-input-height, var(--c-size-control-md));
-  border-width: var(--c-input-border-width, var(--c-form-control-border-width));
+  min-height: calc(var(--_min-height) - 2 * var(--_border-width));
+  border-width: var(--_border-width);
   border-style: var(--c-input-border-style, var(--c-form-control-border-style));
   border-color: var(--c-input-border-color, var(--c-form-control-border-color));
   border-radius: var(--c-input-radius, var(--c-radius-sm));
