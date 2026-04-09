@@ -27,6 +27,8 @@ trait RespondsWithFlash
 
         Flash::fail($message);
 
+        request()->flash();
+
         return back()
             ->with('error', $message)
             ->with($data)->withErrors($data['errors'] ?? []);
