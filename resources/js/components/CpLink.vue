@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import {type InertiaLinkProps, Link} from '@inertiajs/vue3';
-  import type {Component} from 'vue';
+  import {type Component, computed, defineComponent} from 'vue';
 
-  withDefaults(
+  const props = withDefaults(
     defineProps<
       InertiaLinkProps & {
         as?: string | Component;
@@ -10,40 +10,53 @@
         size?: 'zero' | 'small' | 'medium' | 'large';
         appearance?: 'button' | 'inline';
         block?: boolean;
+        inertia?: boolean;
       }
     >(),
     {
-      as: 'a',
       variant: 'default',
       appearance: 'inline',
       block: false,
       size: 'medium',
+      inertia: true,
     }
   );
+
+  const classes = computed(() => {
+    return {
+      block: props.block,
+      'inline-flex': !props.block,
+      'cp-link': true,
+      'cp-link--zero': props.size === 'zero',
+      'cp-link--small': props.size === 'small',
+      'cp-link--medium': props.size === 'medium',
+      'cp-link--large': props.size === 'large',
+      'cp-link--inline': props.appearance === 'inline',
+      'cp-link--button': props.appearance === 'button',
+      'cp-link--default': props.variant === 'default',
+      'cp-link--primary': props.variant === 'primary',
+      'cp-link--danger': props.variant === 'danger',
+    };
+  });
+
+  const hrefString = computed(() => {
+    if (typeof props.href === 'string') {
+      return props.href;
+    }
+
+    return props.href?.url;
+  })
 </script>
 
 <template>
-  <Link
-    :as="as"
-    :href="href"
-    :class="{
-      block: block,
-      'inline-flex': !block,
-      'cp-link': true,
-      'cp-link--zero': size === 'zero',
-      'cp-link--small': size === 'small',
-      'cp-link--medium': size === 'medium',
-      'cp-link--large': size === 'large',
-      'cp-link--inline': appearance === 'inline',
-      'cp-link--button': appearance === 'button',
-      'cp-link--default': variant === 'default',
-      'cp-link--primary': variant === 'primary',
-      'cp-link--danger': variant === 'danger',
-    }"
-    v-bind="$attrs"
-  >
-    <slot></slot>
-  </Link>
+  <template v-if="inertia">
+    <Link :as="as" :href="href" :class="classes">
+      <slot></slot>
+    </Link>
+  </template>
+  <template v-else>
+    <a :href="hrefString" :class="classes"><slot></slot></a>
+  </template>
 </template>
 
 <style scoped lang="scss">

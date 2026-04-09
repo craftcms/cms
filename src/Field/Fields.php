@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
@@ -1258,7 +1257,8 @@ class Fields
         $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
         $pageParam = Cms::config()->getPageTriggerParam();
         $query = $this->_createFieldQuery()
-            ->where('context', 'global');
+            ->where('context', 'global')
+            ->reorder();
 
         $sortDir = $sortDir === SORT_ASC ? 'asc' : 'desc';
 
@@ -1315,7 +1315,7 @@ class Fields
                 'type' => [
                     'isMissing' => $field instanceof MissingField,
                     'label' => $field instanceof MissingField ? $field->expectedType : $field::displayName(),
-                    'icon' => Icons::svg($field instanceof Iconic ? $field->getIcon() : $field::icon()),
+                    'icon' => $field instanceof Iconic ? Icons::resolveIconData($field->getIcon()) : null,
                 ],
                 'usages' => isset($usages[$field->id])
                     ? t('{count, number} {count, plural, =1{layout} other{layouts}}', [

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+  import {t} from '@craftcms/cp';
+  import IndexLayout from '@/layout/IndexLayout.vue';
+  import AdminTable from '@/components/AdminTable/AdminTable.vue';
   import {
     createColumnHelper,
     getCoreRowModel,
@@ -6,78 +9,67 @@
     type SortingState,
     useVueTable,
   } from '@tanstack/vue-table';
-  import AdminTable from '@/components/AdminTable/AdminTable.vue';
-  import {computed, h, ref} from 'vue';
-  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import DeleteSectionButton from '@/components/sections/DeleteSectionButton.vue';
-  import {create, edit, index} from '@actions/Settings/SectionsController';
+  import {
+    type EntryType,
+    type PaginationData,
+    type SortItem,
+    TableSpacing,
+  } from '@/types';
+  import {computed, h, ref, watch} from 'vue';
+  import DynamicHtmlRenderer from '@/components/DynamicHtmlRenderer.vue';
   import {Form, router} from '@inertiajs/vue3';
+  import {index} from '@actions/Settings/EntryTypesController';
   import AppLayout from '@/layout/AppLayout.vue';
   import Pane from '@/components/Pane.vue';
-  import CpLink from '@/components/CpLink.vue';
-  import type {PaginationData, SortItem} from '@/types';
-
-  export interface SectionModel {
-    id: number;
-    title: string;
-    name: string;
-    url: string;
-    handle: string;
-    type: string;
-  }
+  import {useServerPagination} from '@/composables/useServerPagination';
 
   const props = defineProps<{
     title: string;
-    data: Array<SectionModel>;
     pagination: PaginationData;
-    sort?: Array<SortItem>;
+    sort: Array<SortItem>;
     searchTerm?: string;
-    emptyMessage: string;
-    readOnly: boolean;
+    data: Array<{
+      id: number;
+      title: string;
+      chip: string;
+      handle: string;
+      usages: string;
+    }>;
+    dataEndpoint: string;
   }>();
 
-  const columnHelper = createColumnHelper<SectionModel>();
-  const columns = ref([
-    columnHelper.accessor('name', {
-      header: t('Name'),
-      cell: ({row, getValue}) =>
-        h(
-          'a',
-          {
-            class: 'font-bold',
-            href: edit['/admin/settings/sections/{section}'](row.original.id)
-              .url,
-          },
-          getValue()
-        ),
+  const {paginationState, getNextQueryParams} =
+    useServerPagination({
+      initialState: props.pagination,
+    });
+  // const pageParam = Craft.pageTrigger ?? 'page';
+  const searchTerm = ref(props.searchTerm ?? '');
+  const entryTypes = computed(() => props.data);
+  const columnHelper = createColumnHelper<EntryType>();
+  const columns = computed(() => [
+    columnHelper.accessor('chip', {
+      header: t('Entry Type'),
+      cell: ({getValue}) => h(DynamicHtmlRenderer, {html: getValue()}),
     }),
     columnHelper.accessor('handle', {
       header: t('Handle'),
       cell: ({getValue}) =>
         h('craft-copy-attribute', {value: getValue()}, getValue()),
     }),
-    columnHelper.accessor('type', {
-      header: t('Type'),
-    }),
-    columnHelper.display({
-      id: 'actions',
-      cell: ({row}) =>
-        h(
-          'div',
-          {class: 'flex justify-end items-center gap-2'},
-          h(DeleteSectionButton, {section: row.original})
-        ),
+    columnHelper.accessor('usages', {
+      header: t('Usages'),
+      cell: ({getValue}) => h(DynamicHtmlRenderer, {html: getValue()}),
     }),
   ]);
 
-  const pageIndex = computed(() =>
-    props.pagination.current_page ? props.pagination.current_page - 1 : 0
-  );
-  const pageParam = window.Craft?.pageTrigger ?? 'page';
-  const tablePagination = ref<PaginationState>({
-    pageIndex: pageIndex.value,
-    pageSize: props.pagination.per_page,
-  });
+  // const pageIndex = computed(() =>
+  //   props.pagination.current_page ? props.pagination.current_page - 1 : 0
+  // );
+  // const tablePagination = ref<PaginationState>({
+  //   pageIndex: pageIndex.value,
+  //   pageSize: props.pagination.per_page,
+  // });
+
   const sorting = ref<SortingState>(
     props.sort
       ? props.sort.map((sort) => ({
@@ -86,27 +78,25 @@
         }))
       : []
   );
-  const sectionTable = useVueTable({
+
+  const table = useVueTable<EntryType>({
     get data() {
-      return props.data;
+      return entryTypes.value;
     },
     get columns() {
       return columns.value;
     },
-    getCoreRowModel: getCoreRowModel<SectionModel>(),
-    manualPagination: true,
-    manualSorting: true,
-    rowCount: props.pagination.total,
-    enableMultiSort: true,
-    enableSortingRemoval: false,
     state: {
       get pagination() {
-        return tablePagination.value;
+        return paginationState.value;
       },
       get sorting() {
         return sorting.value;
       },
     },
+    getCoreRowModel: getCoreRowModel<EntryType>(),
+    manualPagination: true,
+    rowCount: props.pagination.total,
 
     onSortingChange: (updater) => {
       const next =
@@ -140,20 +130,11 @@
     },
 
     onPaginationChange: (updater) => {
-      const next =
-        typeof updater === 'function'
-          ? updater(tablePagination.value)
-          : updater;
-
-      const currentQuery = new URLSearchParams(window.location.search);
+      const query = getNextQueryParams(updater);
 
       router.visit(
         index({
-          query: {
-            ...Object.fromEntries(currentQuery),
-            [pageParam]: next.pageIndex + 1,
-            per_page: next.pageSize,
-          },
+          query,
         }),
         {
           only: ['data', 'pagination'],
@@ -167,17 +148,15 @@
 <template>
   <AppLayout :title="title">
     <template #actions>
-      <CpLink as="craft-button" variant="primary" :href="create()">
-        <craft-icon name="plus" slot="prefix"></craft-icon>
-        {{ t('New section') }}
-      </CpLink>
+      <craft-button variant="primary" type="button" icon="plus">{{
+        t('New entry type')
+      }}</craft-button>
     </template>
 
     <Pane :padding="0" appearance="raised">
       <AdminTable
-        spacing="relaxed"
-        :title="title"
-        :table="sectionTable"
+        :spacing="TableSpacing.Relaxed"
+        :table="table"
         :reorderable="false"
         :from="pagination.from"
         :to="pagination.to"
@@ -188,13 +167,14 @@
           <Form :action="index()" v-slot="{processing}" class="w-full">
             <div class="flex gap-2 items-start">
               <craft-input
-                name="search"
                 class="flex-1"
+                name="search"
                 :label="t('Search term')"
                 :value="searchTerm"
                 label-sr-only
-              ></craft-input>
-              <craft-button type="submit" :loading="processing">{{
+              >
+              </craft-input>
+              <craft-button type="submit" :loading="processing" slot="suffix">{{
                 t('Search')
               }}</craft-button>
             </div>

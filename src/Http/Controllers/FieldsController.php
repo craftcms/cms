@@ -40,9 +40,9 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlStack;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use ReflectionException;
 use ReflectionProperty;
 use Symfony\Component\HttpFoundation\Response;
@@ -64,10 +64,39 @@ class FieldsController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(): View
+    public function index(Request $request)
     {
-        return view('settings/fields/index', [
+        $page = (int) $request->input(Cms::config()->getPageTriggerParam(), 1);
+        $limit = (int) $request->input('per_page', 100);
+        $searchTerm = $request->input('search');
+        $sort = $request->array('sort') ?? [
+            ['field' => 'name', 'direction' => 'asc'],
+        ];
+
+        $orderBy = match (Arr::get($sort, '0.field')) {
+            'handle' => 'handle',
+            'type' => 'type',
+            default => 'name',
+        };
+
+        $sortDir = match (Arr::get($sort, '0.direction')) {
+            'desc' => SORT_DESC,
+            default => SORT_ASC,
+        };
+
+        [$pagination, $tableData] = $this->fieldsService->getTableData($page, $limit, $searchTerm, $orderBy, $sortDir);
+
+        return Inertia::render('SettingsFieldsIndexPage', [
+            'crumbs' => fn () => [
+                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
+                ['label' => t('Fields')],
+            ],
+            'title' => t('Fields'),
+            'sort' => $sort,
             'readOnly' => $this->readOnly,
+            'data' => fn () => $tableData,
+            'pagination' => fn () => $pagination,
+            'searchTerm' => $searchTerm,
         ]);
     }
 
@@ -200,16 +229,10 @@ class FieldsController
         ], $redirect);
     }
 
-    public function destroy(Request $request): Response
+    public function destroy(Request $request, int $fieldId): Response
     {
-        $request->validate([
-            'fieldId' => ['nullable', 'int'],
-            'id' => ['nullable', 'int', 'required_without:fieldId'],
-        ]);
-
-        $fieldId = $request->input('fieldId') ?? $request->input('id');
         /** @var FieldInterface|Field|null $field */
-        $field = $this->fieldsService->getFieldById((int) $fieldId);
+        $field = $this->fieldsService->getFieldById($fieldId);
 
         abort_if(is_null($field), 400, 'Invalid field ID: '.$fieldId);
 

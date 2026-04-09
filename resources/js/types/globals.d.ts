@@ -103,6 +103,8 @@ interface CraftStatic {
     hasReservedJobs?: boolean;
   };
 
+  pageTrigger?: string;
+
   Slideout: {
     new (html: string, settings?: SlideoutSettings): SlideoutInstance;
     new (
