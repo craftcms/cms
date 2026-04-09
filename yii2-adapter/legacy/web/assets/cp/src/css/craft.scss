@@ -5,6 +5,7 @@
 @import 'menu';
 @import 'hud';
 @import 'icon-picker';
+@import 'login';
 
 .cp-legacy {
   @import 'main';
@@ -15,7 +16,6 @@
   @import 'craft-spinner';
   @import 'craft-tooltip';
   @import 'preview';
-  @import 'login';
   @import 'entry-type-select';
   @import 'fld';
   @import 'grouped-entry-type-select';
