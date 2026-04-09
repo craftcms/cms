@@ -39,6 +39,7 @@ use function CraftCms\Cms\t;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0
  */
 class TemplatesController extends Controller
 {
@@ -86,6 +87,7 @@ class TemplatesController extends Controller
      * @param array $variables
      * @return Response
      * @throws NotFoundHttpException if the requested template cannot be found
+     * @deprecated 6.0.0 in favor of {@see DynamicRoute::handle()}
      */
     public function actionRender(string $template, array $variables = []): Response
     {
@@ -105,6 +107,7 @@ class TemplatesController extends Controller
      * Shows the 'offline' template.
      *
      * @return Response
+     * @deprecated 6.0.0
      */
     public function actionOffline(): Response
     {
@@ -121,6 +124,7 @@ class TemplatesController extends Controller
      * Renders the Manual Update notification template.
      *
      * @return Response
+     * @deprecated 6.0.0 in favor of {@see \CraftCms\Cms\Http\Middleware\CheckForUpdates}
      */
     public function actionManualUpdateNotification(): Response
     {
@@ -131,6 +135,7 @@ class TemplatesController extends Controller
     /**
      * @return Response|null
      * @throws ServerErrorHttpException if it's an Ajax request and the server doesn’t meet Craft’s requirements
+     * @deprecated 6.0.0 in favor of {@see \CraftCms\Cms\Http\Middleware\CheckRequirements}
      */
     public function actionRequirementsCheck(): ?Response
     {
@@ -173,6 +178,7 @@ class TemplatesController extends Controller
      * Renders an error template.
      *
      * @return Response
+     * @deprecated 6.0.0 in favor of [Laravel's Error Handling](https://laravel.com/docs/13.x/errors#custom-http-error-pages)
      */
     public function actionRenderError(): Response
     {

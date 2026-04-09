@@ -273,6 +273,25 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     public mixed $userSessionDuration = 3600;
 
     /**
+     * @var string The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s template.
+     *
+     * If set to `'_'` your site’s 404 template would live at `templates/_404.twig`, for example.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->errorTemplatePrefix('_')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ERROR_TEMPLATE_PREFIX=_
+     * ```
+     * :::
+     *
+     * @group System
+     * @deprecated 6.0.0 in favor of [Laravel's custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages)
+     */
+    public string $errorTemplatePrefix = '';
+
+    /**
      * @inheritdoc
      * @throws InvalidConfigException
      */
@@ -1003,6 +1022,32 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         ));
 
         $this->testToEmailAddress = $value;
+
+        return $this;
+    }
+
+    /**
+     * The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s template.
+     *
+     * If set to `'_'` your site’s 404 template would live at `templates/_404.twig`, for example.
+     *
+     * ```php
+     * ->errorTemplatePrefix('_')
+     * ```
+     *
+     * @group System
+     *
+     * @see $errorTemplatePrefix
+     */
+    #[Deprecated(message: 'in 6.0.0. Configure [Laravel\'s custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages) instead.')]
+    public function errorTemplatePrefix(string $value): self
+    {
+        app()->booted(fn() => Deprecator::log(
+            'generalConfig.errorTemplatePrefix',
+            '`craft\\config\\GeneralConfig::$errorTemplatePrefix` and `craft\\config\\GeneralConfig::errorTemplatePrefix()` are deprecated. Configure [Laravel\'s custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages) instead.',
+        ));
+
+        $this->errorTemplatePrefix = $value;
 
         return $this;
     }
