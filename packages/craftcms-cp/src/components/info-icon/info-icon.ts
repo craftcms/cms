@@ -5,9 +5,12 @@ import {property, query, queryAssignedElements, state} from 'lit/decorators.js';
 import '../button/button';
 import '../icon/icon';
 import '../tooltip/tooltip';
+import type CraftTooltip from '../tooltip/tooltip';
 import '../visually-hidden/visually-hidden';
 
 export default class CraftInfoIcon extends LitElement {
+  static #openInstance: CraftInfoIcon | null = null;
+
   @property() label = t('More Info');
 
   @property() icon = 'circle-info';
@@ -37,6 +40,24 @@ export default class CraftInfoIcon extends LitElement {
     const {signal} = this.#eventController;
 
     this.addEventListener(
+      'wa-show',
+      () => {
+        if (
+          CraftInfoIcon.#openInstance &&
+          CraftInfoIcon.#openInstance !== this
+        ) {
+          const otherTooltip =
+            CraftInfoIcon.#openInstance.renderRoot.querySelector<CraftTooltip>(
+              'c-tooltip'
+            );
+          otherTooltip?.hide();
+        }
+        CraftInfoIcon.#openInstance = this;
+      },
+      {signal}
+    );
+
+    this.addEventListener(
       'wa-after-show',
       () => {
         this.status = '';
@@ -50,6 +71,9 @@ export default class CraftInfoIcon extends LitElement {
     this.addEventListener(
       'wa-after-hide',
       () => {
+        if (CraftInfoIcon.#openInstance === this) {
+          CraftInfoIcon.#openInstance = null;
+        }
         this.status = '';
       },
       {signal}
@@ -57,6 +81,9 @@ export default class CraftInfoIcon extends LitElement {
   }
 
   override disconnectedCallback() {
+    if (CraftInfoIcon.#openInstance === this) {
+      CraftInfoIcon.#openInstance = null;
+    }
     this.#eventController.abort();
     super.disconnectedCallback();
   }
@@ -67,7 +94,7 @@ export default class CraftInfoIcon extends LitElement {
         <craft-visually-hidden role="status">
           ${this.status}
         </craft-visually-hidden>
-        
+
         <craft-button
           type="button"
           icon
