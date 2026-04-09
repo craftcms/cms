@@ -1,0 +1,79 @@
+{% import '_includes/forms.twig' as forms %}
+
+{% set readOnly = readOnly ?? false %}
+{% set static = static ?? false %}
+
+{% if static == true %}
+    {% set readOnly = true %}
+{% endif %}
+
+{% set errors = errors ?? [] %}
+
+{{ forms.textField({
+    label: "Data File"|t('app'),
+    instructions: "The absolute path to the file containing the data you want to import."|t('app'),
+    id: 'file',
+    name: 'file',
+    class: 'code',
+    value: old('settings.file', import.file),
+    required: true,
+    errors: sessionErrors.get('settings.file'),
+    data: {'error-key': 'settings.file'},
+    disabled: readOnly,
+    placeholder: '@root/resources/my-data.json',
+    static: static,
+}) }}
+
+{{ forms.selectField({
+    id: 'site',
+    name: 'site',
+    label: 'Site'|t('app'),
+    instructions: 'The site you want to import the data into'|t('app'),
+    options: availableSites,
+    value: old('settings.site', import.site) ?? primarySite.handle,
+    errors: sessionErrors.get('settings.site'),
+    data: {'error-key': 'settings.site'},
+    disabled: readOnly,
+    static: static,
+}) }}
+
+{{ forms.selectField({
+    id: 'elementType',
+    name: 'elementType',
+    label: 'Element Type'|t('app'),
+    instructions: 'The element type this import is for.'|t('app'),
+    options: availableElementTypes,
+    value: old('settings.elementType') ?? defaultElementType,
+    errors: sessionErrors.get('settings.className'),
+    data: {'error-key': 'settings.elementType'},
+    disabled: readOnly,
+    static: static,
+}) }}
+
+{#{{ forms.textField({
+    label: "Transformer"|t('app'),
+    instructions: "The class name (with namespace) of the transformer you’d like to use."|t('app'),
+    id: 'transformer',
+    name: 'transformer',
+    class: 'code',
+    autocorrect: false,
+    autocapitalize: false,
+    maxlength: 255,
+    value:  import ? old('settings.transformer', import.transformer) : null,
+    required: false,
+    errors: sessionErrors.get('settings.transformer'),
+    data: {'error-key': 'settings.transformer'},
+    disabled: readOnly,
+    placeholder: 'CraftCms\\Cms\Import\\Transformers\\ElementTransformer',
+    static: static,
+}) }}#}
+
+<div>
+    <p>mapping stuff goes here, or maybe we want a separate screen?</p>
+    <p>
+        if we're editing something that already exists, this is prepopulated with what's already saved;<br />
+        if it's a new config (or the map in the config is empty), you use the UI to create your mapping;<br />
+        which means you can create a new config, leave mapping empty, then go edit the mapping in the php file,
+        if that's easier for you and then go back here to tweak
+    </p>
+</div>

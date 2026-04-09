@@ -54,6 +54,7 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\entries\EntryTitleField;
 use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
+use CraftCms\Cms\Import\Transformers\EntryTransformer;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
@@ -62,6 +63,7 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\ElementActions;
@@ -787,6 +789,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *               {{ entry.sectionId }}
      *               ```
      */
+    #[Importable('sectionId')]
     public ?int $sectionId = null;
 
     /**
@@ -807,6 +810,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *                    ```
      */
     #[AllowedInSandbox]
+    #[Importable('postDate')]
     public ?DateTime $postDate = null;
 
     /**
@@ -824,6 +828,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *                    ```
      */
     #[AllowedInSandbox]
+    #[Importable('expiryDate')]
     public ?DateTime $expiryDate = null;
 
     /**
@@ -834,6 +839,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     /**
      * @var self::STATUS_LIVE|self::STATUS_PENDING|self::STATUS_EXPIRED
      */
+    #[Importable('status')]
     private string $status;
 
     /**
@@ -859,6 +865,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *
      * @since 5.7.0
      */
+    #[Importable('placeInStructure')]
     public bool $placeInStructure = false;
 
     /**
@@ -867,6 +874,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * @see getAuthorIds()
      * @see setAuthorIds()
      */
+    #[Importable('authorIds')]
     private array $_authorIds;
 
     /**
@@ -890,6 +898,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *
      * @see getType()
      */
+    #[Importable('typeId')]
     private ?int $_typeId = null;
 
     private ?int $_oldTypeId = null;
@@ -2899,5 +2908,11 @@ JS;
         }
 
         return $templates;
+    }
+
+    #[Override]
+    public static function getDefaultTransformer(): ?string
+    {
+        return EntryTransformer::class;
     }
 }

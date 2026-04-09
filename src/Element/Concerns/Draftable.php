@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element\Concerns;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\AuthorizeCreateDrafts;
+use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use Illuminate\Support\Facades\DB;
 
@@ -23,6 +24,7 @@ trait Draftable
     /**
      * @var int|null The ID of the draft’s row in the `drafts` table
      */
+    #[Importable('draftId')]
     public ?int $draftId = null;
 
     /**
@@ -35,6 +37,7 @@ trait Draftable
     /**
      * @var bool Whether this is a provisional draft.
      */
+    #[Importable('isProvisionalDraft')]
     public bool $isProvisionalDraft = false;
 
     /**
@@ -45,16 +48,19 @@ trait Draftable
     /**
      * @var int|null The creator’s ID
      */
+    #[Importable('draftCreatorId')]
     public ?int $draftCreatorId = null;
 
     /**
      * @var string|null The draft name
      */
+    #[Importable('draftName')]
     public ?string $draftName = null;
 
     /**
      * @var string|null The draft notes
      */
+    #[Importable('draftNotes')]
     public ?string $draftNotes = null;
 
     /**

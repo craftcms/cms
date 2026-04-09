@@ -17,6 +17,8 @@ use CraftCms\Cms\Http\Controllers\Gql\GraphiqlController;
 use CraftCms\Cms\Http\Controllers\Gql\IndexController as GqlIndexController;
 use CraftCms\Cms\Http\Controllers\Gql\SchemasController;
 use CraftCms\Cms\Http\Controllers\Gql\TokensController;
+use CraftCms\Cms\Http\Controllers\Import\ImportConfigController;
+use CraftCms\Cms\Http\Controllers\Import\ImportRunController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
@@ -91,6 +93,20 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     Route::view('content/{page}/{sectionHandle}', 'entries.index')->where('page', '[^\/]+');
     Route::get('content/{section}/new', CreateEntryController::class);
 
+    /**
+     * Import
+     */
+    Route::view('import', 'craftcms::import/index');
+    Route::middleware('can:viewImportConfigs')->group(function () {
+        Route::get('import/configs', [ImportConfigController::class, 'index']);
+        Route::middleware('can:editImportConfigs')->get('import/configs/new', [ImportConfigController::class, 'create']);
+        Route::get('import/configs/{handle}', [ImportConfigController::class, 'edit']);
+    });
+    Route::middleware('can:viewImportRuns')->group(function () {
+        Route::get('import/runs', [ImportRunController::class, 'index']);
+        Route::middleware('can:editImportRuns')->get('import/runs/new', [ImportRunController::class, 'create']);
+        Route::get('import/runs/{handle}', [ImportRunController::class, 'edit']);
+    });
     /**
      * Users
      */

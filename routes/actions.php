@@ -35,6 +35,8 @@ use CraftCms\Cms\Http\Controllers\Gql\ApiController as GqlApiController;
 use CraftCms\Cms\Http\Controllers\Gql\SchemasController as GqlSchemasController;
 use CraftCms\Cms\Http\Controllers\Gql\TokensController as GqlTokensController;
 use CraftCms\Cms\Http\Controllers\IconController;
+use CraftCms\Cms\Http\Controllers\Import\ImportConfigController;
+use CraftCms\Cms\Http\Controllers\Import\ImportRunController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
@@ -268,6 +270,20 @@ Route::prefix(implode('/', [
                 Route::post('graphql/save-schema', [GqlSchemasController::class, 'save']);
                 Route::post('graphql/save-public-schema', [GqlSchemasController::class, 'savePublic']);
             });
+        });
+
+        // Import
+        Route::middleware('can:editImportConfigs')->group(function () {
+            Route::post('import/configs/render-settings', [ImportConfigController::class, 'renderSettings']);
+            Route::post('import/configs/save', [ImportConfigController::class, 'store']);
+        });
+        Route::middleware('can:deleteImportConfigs')->post('import/configs/delete', [ImportConfigController::class, 'destroy']);
+
+        Route::middleware('can:editImportRuns')->post('import/runs/save', [ImportRunController::class, 'store']);
+        Route::middleware('can:deleteImportRuns')->post('import/runs/delete', [ImportRunController::class, 'destroy']);
+        Route::middleware('can:triggerImportRuns')->group(function () {
+            Route::post('import/run', [ImportRunController::class, 'run']);
+            Route::post('import/configs/run', [ImportConfigController::class, 'run']);
         });
 
         // Migrations

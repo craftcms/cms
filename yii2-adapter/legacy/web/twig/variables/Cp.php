@@ -282,6 +282,31 @@ class Cp extends Component
             ];
         }
 
+        if (Gate::check('viewImportConfigs') || Gate::check('viewImportRuns')) {
+            $subNavItems = [];
+
+            if (Gate::check('viewImportConfigs')) {
+                $subNavItems['configs'] = [
+                    'label' => t('Configs'),
+                    'url' => 'import/configs',
+                ];
+            }
+
+            if (Gate::check('viewImportRuns')) {
+                $subNavItems['runs'] = [
+                    'label' => t('Runs'),
+                    'url' => 'import/runs',
+                ];
+            }
+
+            $navItems[] = [
+                'label' => t('Import'),
+                'url' => 'import',
+                'icon' => 'arrow-up-to-bracket',
+                'subnav' => $subNavItems,
+            ];
+        }
+
         // Add any Plugin nav items
         $plugins = app(Plugins::class)->getAllPlugins();
 

@@ -9,8 +9,10 @@ use BadMethodCallException;
 use craft\base\Component;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Contracts\Importable;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
+use CraftCms\Cms\Import\Transformers\ElementTransformer;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
@@ -34,7 +36,7 @@ use function CraftCms\Cms\t;
  * Element is the base class for classes representing elements in terms of objects.
  */
 #[Ruleset(ElementRules::class)]
-abstract class Element extends Component implements ElementInterface
+abstract class Element extends Component implements ElementInterface, Importable
 {
     use ArrayableTrait {
         toArray as traitToArray;
@@ -722,5 +724,11 @@ abstract class Element extends Component implements ElementInterface
     public function safeAttributes(): array
     {
         return array_keys($this->getRuleset()->rules());
+    }
+
+    #[Override]
+    public static function getDefaultTransformer(): ?string
+    {
+        return ElementTransformer::class;
     }
 }

@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element\Concerns;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\db\NestedElementQueryInterface;
+use CraftCms\Cms\Support\Attributes\Importable;
 use DateTime;
 use yii\base\NotSupportedException;
 
@@ -56,6 +57,7 @@ trait HasCanonical
      * @see getIsCanonical()
      * @see getIsDerivative()
      */
+    #[Importable('canonicalId')]
     private ?int $_canonicalId = null;
 
     /**
@@ -71,6 +73,7 @@ trait HasCanonical
     /**
      * @see getCanonicalUid()
      */
+    #[Importable('canonicalUid')]
     private ?string $_canonicalUid = null;
 
     public function getId(): ?int

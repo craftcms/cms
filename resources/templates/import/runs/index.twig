@@ -1,0 +1,79 @@
+{% extends "_layouts/cp" %}
+{% set title = "Import runs"|t('app') %}
+
+{% set crumbs = [
+    { label: "Import"|t('app'), url: url('import') }
+] %}
+
+{% block actionButton %}
+    {% if not readOnly and currentUser.can('editImportRuns') %}
+        {% set newImportUrl = url('import/runs/new') %}
+        <a href="{{ newImportUrl }}" class="submit btn add icon">{{ "New import run"|t('app') }}</a>
+    {% endif %}
+{% endblock %}
+
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
+
+{% block content %}
+    {% if runs is empty %}
+        <p class="zilch">{{ "No import runs exist yet."|t('app') }}</p>
+    {% else %}
+        <table>
+            <tr>
+                <th>{{ "Name"|t('app') }}</th>
+                <th>{{ "Actions"|t('app') }}</th>
+            </tr>
+            {% for run in runs %}
+                <tr>
+                    <td>
+                        <a href="{{ url('import/runs/' ~ run.handle) }}">{{ run.name }}</a>
+                    </td>
+                    <td class="nowrap thin" data-title="{{ 'Actions'|t('app') }}">
+                        {% set actionItems = [
+                            {
+                                label: 'Edit'|t('app'),
+                                url: url('import/runs/' ~ run.handle),
+                            },
+                        ] %}
+
+                        {% if currentUser.can('triggerImportRuns') %}
+                            {% set actionItems = actionItems|merge([
+                                {
+                                    label: 'Start this run'|t('app'),
+                                    action: 'import/run',
+                                    params: {uid: run.uid},
+                                    confirm: 'Are you sure you want to start “{name}” run?'|t('app', {
+                                        name: run.name,
+                                    }),
+                                },
+                            ]) %}
+                        {% endif %}
+
+                        {% if not readOnly and currentUser.can('deleteImportRuns') %}
+                            {% set actionItems = actionItems|merge([
+                                {
+                                    label: 'Delete'|t('app'),
+                                    action: 'import/runs/delete',
+                                    params: {uid: run.uid},
+                                    destructive: true,
+                                    confirm: 'Are you sure you want to delete “{name}”?'|t('app', {
+                                        name: run.name,
+                                    }),
+                                }
+                            ]) %}
+                        {% endif %}
+
+                        {{ disclosureMenu(actionItems, {
+                            buttonAttributes: {
+                                class: ['action-btn', 'hairline'],
+                                hiddenLabel: 'Actions'|t('app'),
+                            },
+                        }) }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+{% endblock %}

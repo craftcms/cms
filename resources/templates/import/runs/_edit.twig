@@ -1,0 +1,130 @@
+{% import '_includes/forms.twig' as forms %}
+
+{% set readOnly = readOnly ?? false %}
+{% set static = static ?? false %}
+
+{% set errors = errors ?? [] %}
+
+{% if not readOnly and run.uid %}
+    {{ hiddenInput('uid', run.uid ) }}
+{% endif %}
+
+{{ forms.textField({
+    first: true,
+    label: "Name"|t('app'),
+    id: 'name',
+    name: 'name',
+    value: old('name', run.name),
+    required: true,
+    errors: sessionErrors.get('name'),
+    autofocus: true,
+    data: {'error-key': 'name'},
+    disabled: readOnly,
+    static: static,
+}) }}
+
+{{ forms.textField({
+    label: "Handle"|t('app'),
+    id: 'handle',
+    name: 'handle',
+    class: 'code',
+    autocorrect: false,
+    autocapitalize: false,
+    maxlength: 64,
+    value: old('handle', run.handle),
+    required: true,
+    errors: sessionErrors.get('handle'),
+    data: {'error-key': 'handle'},
+    disabled: readOnly,
+    static: static,
+}) }}
+
+{{ forms.textareaField({
+    label: 'Description'|t('app'),
+    instructions: 'A description of what this import run is for.'|t('app'),
+    id: 'description',
+    class: 'nicetext',
+    name: 'description',
+    value: old('description', run.description ?? null),
+    errors: sessionErrors.get('description'),
+    data: {'error-key': 'description'},
+    disabled: readOnly,
+    static: static,
+}) }}
+
+{{ forms.editableTableField({
+    label: "Steps"|t('app'),
+    instructions: "Define steps for your import."|t('app'),
+    id: 'steps',
+    name: 'steps',
+    cols: {
+        config: {
+            type: 'select',
+            heading: "Config"|t('app'),
+            options: configs ?? [],
+            class: ['config-cell'],
+        },
+        file: {
+            heading: "File"|t('app'),
+            type: 'singleline',
+            class: ['file-cell'],
+        },
+        batchSize: {
+            type: 'number',
+            heading: "Custom batch size"|t('app'),
+            info: "By default, each step will be run in batches containing up to 100 items. You can provide a different size, if you wish. Set to 0 to disable batching."|t('app'),
+        }
+    }|filter,
+    rows: run.steps,
+    fullWidth: true,
+    allowAdd: true,
+    allowDelete: true,
+    allowReorder: true,
+    errors: sessionErrors.get('steps'),
+    data: {'error-key': 'steps'},
+    static: readOnly or static,
+}) }}
+
+
+{% if not (run.handle ?? false) %}
+    {% js %}
+        new Craft.HandleGenerator('#{{ 'name'|namespaceInputId|e('js') }}', '#{{ 'handle'|namespaceInputId|e('js') }}');
+    {% endjs %}
+{% endif %}
+
+{% js %}
+    let stepsTable = $('#steps').data('editable-table');
+
+    if (stepsTable) {
+        stepsTable.on('addRow', function(event) {
+            updateRow(event.$tr);
+        });
+    }
+
+    let $stepRows = $('#steps').children('tbody').children();
+
+    $stepRows.each(function () {
+        updateRow($(this));
+    });
+
+    function updateRow($row) {
+        let $configSelect = $row.children('.config-cell').find('select');
+        let $fileCell = $row.children('.file-cell');
+
+        toggleFile($configSelect, $fileCell);
+
+        $configSelect.on('change', function() {
+            toggleFile($(this), $fileCell);
+        });
+    }
+
+    function toggleFile($select, $fileCell) {
+        let $selectedOption = $select.find(":selected");
+
+        if (Garnish.hasAttr($selectedOption, 'data-editable') || $selectedOption.data('editable') == 'true') {
+            $fileCell.addClass('disabled').find('textarea').attr({'tabindex': '-1', 'readonly': 'readonly'});
+        } else {
+            $fileCell.removeClass('disabled').find('textarea').attr('tabindex', '0').removeAttr('readonly');
+        }
+    }
+{% endjs %}

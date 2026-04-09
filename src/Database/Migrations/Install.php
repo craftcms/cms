@@ -474,6 +474,31 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
+        Schema::create('import_configs', function (Blueprint $table) {
+            $table->integer('id', true);
+            $table->string('type');
+            $table->string('name');
+            $table->string('handle');
+            $table->text('description')->nullable();
+            $table->mediumText('settings')->nullable();
+            $table->dateTime('dateCreated');
+            $table->dateTime('dateUpdated');
+            $table->dateTime('dateDeleted')->nullable()->default(null);
+            $table->char('uid', 36)->default('0');
+        });
+
+        Schema::create('import_runs', function (Blueprint $table) {
+            $table->integer('id', true);
+            $table->string('name');
+            $table->string('handle');
+            $table->text('description')->nullable();
+            $table->text('steps');
+            $table->dateTime('dateCreated');
+            $table->dateTime('dateUpdated');
+            $table->dateTime('dateDeleted')->nullable()->default(null);
+            $table->char('uid', 36)->default('0');
+        });
+
         /** @todo Change when Larastan is updated */
         Schema::create('info', function (Blueprint $table) {
             $table->integer('id', true);

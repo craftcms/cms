@@ -93,6 +93,31 @@ readonly class Navigation
             ];
         }
 
+        if ($user?->can('viewImportConfigs') || $user?->can('viewImportRuns')) {
+            $subNavItems = [];
+
+            if ($user?->can('viewImportConfigs')) {
+                $subNavItems['configs'] = [
+                    'label' => t('Configs'),
+                    'url' => 'import/configs',
+                ];
+            }
+
+            if ($user?->can('viewImportRuns')) {
+                $subNavItems['runs'] = [
+                    'label' => t('Runs'),
+                    'url' => 'import/runs',
+                ];
+            }
+
+            $navItems[] = [
+                'label' => t('Import'),
+                'url' => 'import',
+                'icon' => 'arrow-up-to-bracket',
+                'subnav' => $subNavItems,
+            ];
+        }
+
         // Add any Plugin nav items
         $plugins = $this->plugins->getAllPlugins();
 

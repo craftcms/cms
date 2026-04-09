@@ -1,0 +1,114 @@
+{% import '_includes/forms.twig' as forms %}
+
+{% set readOnly = readOnly ?? false %}
+{% set static = static ?? false %}
+
+{% if import is null %}
+    {{ forms.selectField({
+        id: 'type',
+        name: 'type',
+        label: 'Importer Type'|t('app'),
+        options: importerTypes,
+        value: old('type'),
+        errors: sessionErrors.get('type'),
+        data: {'error-key': 'type'},
+        disabled: readOnly,
+        static: static,
+    }) }}
+
+    <div id="settings"></div>
+{% else %}
+    {% if static == true %}
+        {% set readOnly = true %}
+    {% endif %}
+
+    {% set errors = errors ?? [] %}
+
+    {% if not readOnly and import.uid is defined %}
+        {{ hiddenInput('uid', import.uid ) }}
+    {% endif %}
+
+    {{ hiddenInput('type', className(import) ) }}
+
+    {{ forms.textField({
+        first: true,
+        label: "Name"|t('app'),
+        instructions: "What this import config will be called in the control panel."|t('app'),
+        id: 'name',
+        name: 'name',
+        value: old('name', import.name),
+        required: true,
+        errors: sessionErrors.get('name'),
+        autofocus: true,
+        data: {'error-key': 'name'},
+        disabled: readOnly,
+        static: static,
+    }) }}
+
+    {{ forms.textField({
+        label: "Handle"|t('app'),
+        instructions: "How you’ll refer to this import config in the code."|t('app'),
+        id: 'handle',
+        name: 'handle',
+        class: 'code',
+        autocorrect: false,
+        autocapitalize: false,
+        maxlength: 64,
+        value: old('handle', import.handle),
+        required: true,
+        errors: sessionErrors.get('handle'),
+        data: {'error-key': 'handle'},
+        disabled: readOnly,
+        static: static,
+    }) }}
+
+    {{ forms.textareaField({
+        label: 'Description'|t('app'),
+        instructions: 'A description of what this import config is for.'|t('app'),
+        id: 'description',
+        class: 'nicetext',
+        name: 'description',
+        value: old('description', import.description ?? null),
+        errors: sessionErrors.get('description'),
+        data: {'error-key': 'description'},
+        disabled: readOnly,
+        static: static,
+    }) }}
+
+    <div>
+        {% namespace 'settings' %}
+            {% autoescape false %}
+                {{ readOnly ? import.getReadOnlySettingsHtml() : import.getSettingsHtml() }}
+            {% endautoescape %}
+        {% endnamespace %}
+    </div>
+
+    {% if not (import.handle ?? false) %}
+      {% js %}
+        new Craft.HandleGenerator('#{{ 'name'|namespaceInputId|e('js') }}', '#{{ 'handle'|namespaceInputId|e('js') }}');
+      {% endjs %}
+    {% endif %}
+{% endif %}
+
+{% js %}
+    $('#type').on('change', function() {
+        let data = {
+            type: $(this).val(),
+        };
+        let $container = $('#settings');
+
+        Craft.sendActionRequest('POST', 'import/configs/render-settings', {
+            data: data,
+        })
+        .then(async (response) => {
+            let $settings = $(response.data.settingsHtml || '');
+            $container.html('').append($settings);
+            Craft.initUiElements($container);
+            await Craft.appendHeadHtml(response.data.headHtml);
+            await Craft.appendBodyHtml(response.data.bodyHtml);
+        })
+        .catch((e) => {
+            Craft.cp.displayError(e?.response?.data?.message);
+        });
+    });
+{% endjs %}

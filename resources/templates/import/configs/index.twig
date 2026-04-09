@@ -1,0 +1,140 @@
+{% extends "_layouts/cp" %}
+{% set title = "Import configs"|t('app') %}
+
+{% set crumbs = [
+    { label: "Import"|t('app'), url: url('import') }
+] %}
+
+{% block actionButton %}
+    {% if not readOnly and currentUser.can('editImportConfigs') %}
+        {% set newImportUrl = url('import/configs/new') %}
+        <a href="{{ newImportUrl }}" class="submit btn add icon">{{ "New import config"|t('app') }}</a>
+    {% endif %}
+{% endblock %}
+
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
+
+{% block content %}
+    {% if editableImportConfigs is empty %}
+        <p class="zilch">{{ "No editable import configs yet."|t('app') }}</p>
+    {% else %}
+        <table>
+            <tr>
+                <th>{{ "Name"|t('app') }}</th>
+                <th>{{ "File"|t('app') }}</th>
+                <th>{{ "Site"|t('app') }}</th>
+                <th>{{ "Element import?"|t('app') }}</th>
+                <th>{{ "Class name"|t('app') }}</th>
+                <th>{{ "Map"|t('app') }}</th>
+                <th>{{ "Actions"|t('app') }}</th>
+            </tr>
+            {% for config in editableImportConfigs %}
+                {#{% set config = importConfig.getConfig() %}#}
+                <tr>
+                    <td>
+                        <a href="{{ url('import/configs/' ~ config.handle) }}">{{ config.name }}</a>
+                        <br /><code>{{ config.handle }}</code>
+                    </td>
+                    <td>{{ config.file }}</td>
+                    <td>{{ config.site }}</td>
+                    <td>
+                        {% if config.isElementImport() %}
+                            <span class="cp-icon">{{ iconSvg('check', altText: 'yes') }}</span>
+                        {% else %}
+                            <span class="cp-icon">{{ iconSvg('xmark', altText: 'no') }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ config.className ?? '' }}</td>
+                    <td>
+                        {{ dump(config.map) }}
+                    </td>
+                    <td class="nowrap thin" data-title="{{ 'Actions'|t('app') }}">
+                        {% set actionItems = [
+                            {
+                                label: 'Edit'|t('app'),
+                                url: url('import/configs/' ~ config.handle),
+                            },
+                        ] %}
+
+                        {% if not readOnly and currentUser.can('deleteImportConfigs') %}
+                            {% set actionItems = actionItems|merge([
+                                {
+                                    label: 'Delete'|t('app'),
+                                    action: 'import/configs/delete',
+                                    params: {uid: config.uid},
+                                    destructive: true,
+                                    confirm: 'Are you sure you want to delete “{name}”?'|t('app', {
+                                        name: config.name,
+                                    }),
+                                },
+                            ]) %}
+                        {% endif %}
+
+                        {{ disclosureMenu(actionItems, {
+                            buttonAttributes: {
+                                class: ['action-btn', 'hairline'],
+                                hiddenLabel: 'Actions'|t('app'),
+                            },
+                        }) }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+    <hr />
+
+    {% if nonEditableImportConfigs is empty %}
+        <p class="zilch">{{ "No non-editable import configs yet."|t('app') }}</p>
+    {% else %}
+        <table>
+            <tr>
+                <th>{{ "Name"|t('app') }}</th>
+                <th>{{ "Site"|t('app') }}</th>
+                <th>{{ "Element import?"|t('app') }}</th>
+                <th>{{ "Class name"|t('app') }}</th>
+                <th>{{ "Transformer"|t('app') }}</th>
+                <th>{{ "Map"|t('app') }}</th>
+                <th>{{ "Actions"|t('app') }}</th>
+            </tr>
+            {% for config in nonEditableImportConfigs %}
+                {#{% set config = importConfig.getConfig() %}#}
+                <tr>
+                    <td>
+                        {{ config.name }}
+                        <br /><code>{{ config.handle }}</code>
+                    </td>
+                    <td>{{ config.site }}</td>
+                    <td>
+                        {% if config.isElementImport() %}
+                            <span class="cp-icon">{{ iconSvg('check', altText: 'yes') }}</span>
+                        {% else %}
+                            <span class="cp-icon">{{ iconSvg('xmark', altText: 'no') }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ config.className ?? '' }}</td>
+                    <td>{{ className(config.transformer) }}</td>
+                    <td>{{ dump(config.map) }}</td>
+                    <td class="nowrap thin" data-title="{{ 'Actions'|t('app') }}">
+                        {% set actionItems = [
+                            {
+                                label: 'Run'|t('app'),
+                                action: 'import/configs/run',
+                                params: {handle: config.handle},
+                            },
+                        ] %}
+
+                        {{ disclosureMenu(actionItems, {
+                            buttonAttributes: {
+                                class: ['action-btn', 'hairline'],
+                                hiddenLabel: 'Actions'|t('app'),
+                            },
+                        }) }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+{% endblock %}

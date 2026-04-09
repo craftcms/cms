@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
+use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 
 use function CraftCms\Cms\t;
@@ -48,6 +49,7 @@ trait HasStatuses
      * @see getEnabledForSite()
      * @see setEnabledForSite()
      */
+    #[Importable('enabledForSite')]
     private array|bool $_enabledForSite = true;
 
     /**

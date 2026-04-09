@@ -1,0 +1,28 @@
+{% extends "_layouts/cp" %}
+{% set title = "Import"|t('app') %}
+
+{% block content %}
+    {% if not currentUser.can('viewImportConfigs') and not currentUser.can('viewImportRuns') %}
+        <p>{{ 'You don’t have access to view import configs or runs.'|t('app') }}</p>
+    {% endif %}
+    <nav>
+        <ul>
+            {% if currentUser.can('viewImportConfigs') %}
+                <li>
+                    <a href="import/configs">
+                        <span class="cp-icon" slot="icon">{{ iconSvg('gear') }}</span>
+                        Configs
+                    </a>
+                </li>
+            {% endif %}
+            {% if currentUser.can('viewImportRuns') %}
+                <li>
+                    <a href="import/runs">
+                        <span class="cp-icon" slot="icon">{{ iconSvg('upload') }}</span>
+                        Runs
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endblock %}

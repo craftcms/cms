@@ -102,6 +102,7 @@ class UserPermissions
         $this->entryPermissions($this->allPermissions);
         $this->volumePermissions($this->allPermissions);
         $this->utilityPermissions($this->allPermissions);
+        $this->importPermissions($this->allPermissions);
 
         event($event = new RegisterUserPermissions($this->allPermissions));
 
@@ -740,6 +741,50 @@ class UserPermissions
                     label: $class::displayName(),
                 );
             })->filter(),
+        ));
+    }
+
+    private function importPermissions(Collection $permissions): void
+    {
+        $permissions->add(new PermissionGroup(
+            heading: t('Import'),
+            permissions: collect([
+                new Permission(
+                    key: 'accessImports',
+                    label: t('Access imports'),
+                    nested: collect([
+                        new Permission(
+                            key: 'viewImportConfigs',
+                            label: t('View import configs'),
+                            nested: collect([
+                                new Permission(
+                                    key: 'editImportConfigs',
+                                    label: t('Edit import configs'),
+                                    info: t('Users with this permission can potentially create import config for items or sites that they don’t have permissions to. Take care when granting this permission.'),
+                                ),
+                                new Permission(key: 'deleteImportConfigs', label: t('Delete import configs')),
+                            ])
+                        ),
+                        new Permission(
+                            key: 'viewImportRuns',
+                            label: t('View import runs'),
+                            nested: collect([
+                                new Permission(
+                                    key: 'editImportRuns',
+                                    label: t('Edit import runs'),
+                                    info: t('Users with this permission can create import runs that imports items that user doesn’t have permissions to. Take care when granting this permission.'),
+                                ),
+                                new Permission(key: 'deleteImportRuns', label: t('Delete import runs')),
+                                new Permission(
+                                    key: 'triggerImportRuns',
+                                    label: t('Trigger import runs'),
+                                    warning: t('Users with this permission can manipulate content they don’t have access to. Take care when granting this permission.'),
+                                ),
+                            ])
+                        ),
+                    ])
+                ),
+            ])
         ));
     }
 
