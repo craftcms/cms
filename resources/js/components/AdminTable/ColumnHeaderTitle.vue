@@ -2,6 +2,7 @@
   withDefaults(
     defineProps<{
       isSortable?: boolean;
+      sortInstructionsId: string;
     }>(),
     {
       isSortable: false,
@@ -14,7 +15,11 @@
 </script>
 
 <template>
-  <button v-if="isSortable" @click="$emit('sortColumn', $event)">
+  <button
+    v-if="isSortable"
+    @click="$emit('sortColumn', $event)"
+    :aria-describedby="sortInstructionsId"
+  >
     <slot />
   </button>
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {FlexRender, type Column} from '@tanstack/vue-table';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import {computed} from 'vue';
+  import {computed, useId} from 'vue';
   import {useReorderableRows} from '@/composables/useReorderableRows';
   import {TableSpacing} from '@/types';
   import ColumnHeaderTitle from '@/components/AdminTable/ColumnHeaderTitle.vue';
@@ -46,6 +46,9 @@
     },
     enabled: () => !props.readOnly && props.reorderable,
   });
+
+  const id = useId();
+  const columnSortInstructionId = `column-sort-instructions-${id}`;
 
   const pageIndexProxy = computed({
     get() {
@@ -116,6 +119,11 @@
         'cp-table--auto': layout === 'auto',
       }"
     >
+      <caption>
+        <span :id="columnSortInstructionId">{{
+          t('Column headers with buttons are sortable')
+        }}</span>
+      </caption>
       <thead>
         <tr
           v-for="headerGroup in table.getHeaderGroups()"
@@ -154,6 +162,7 @@
             >
               <ColumnHeaderTitle
                 :isSortable="header.column.getCanSort()"
+                :sortInstructionsId="columnSortInstructionId"
                 @sort-column="header.column.getToggleSortingHandler()?.($event)"
               >
                 <FlexRender
@@ -321,6 +330,14 @@
 
   :deep(.cell--header) {
     white-space: nowrap;
+  }
+
+  :deep(.cell--header[aria-sort]) {
+    &:hover,
+    &:focus-within {
+      background-color: var(--c-color-neutral-fill-loud);
+      color: var(--c-color-neutral-on-loud);
+    }
   }
 
   :deep(.cell--wrap) {
