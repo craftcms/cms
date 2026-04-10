@@ -94,7 +94,6 @@ class FieldsController
             ],
             'title' => t('Fields'),
             'sort' => $sort,
-            'readOnly' => $this->readOnly,
             'data' => fn () => $tableData,
             'pagination' => fn () => $pagination,
             'searchTerm' => $searchTerm,
