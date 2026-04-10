@@ -1911,7 +1911,7 @@ JS,
      *   - should have the custom field values nested under a "fields" key
      * (just as per the first paragraph here: https://craftcms.com/docs/5.x/reference/field-types/matrix.html#entry-data).
      *
-     * If you want to update existing nested entries, you can find them via an optional "matchCriteria" key. ??????
+     * If you want to update existing nested entries, you can find them via an optional "matchCriteria" key.
      *
      * Returned should be an array containing 'sortOrder' and 'entries' keys.
      * The 'entries' array should be keyed by the entry ID if we're updating an existing entry,

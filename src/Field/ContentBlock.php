@@ -17,6 +17,7 @@ use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
@@ -49,7 +50,7 @@ use function CraftCms\Cms\template;
 /**
  * Content Block field type
  */
-class ContentBlock extends Field implements ElementContainerFieldInterface, FieldLayoutProviderInterface
+class ContentBlock extends Field implements ElementContainerFieldInterface, FieldLayoutProviderInterface, ImportableElementContainerFieldInterface
 {
     private const string VIEW_MODE_GROUPED = 'grouped';
 
@@ -830,5 +831,39 @@ JS, [
         }
 
         return $contentBlock;
+    }
+
+    /**
+     * Normalizes value so that it can be imported into a Content Block-type field.
+     * The custom field values can be nested under a "fields" key or straight in the top-level array.
+     *
+     * The value has to be an array; each item in the array represents a field inside this singular nested entry.
+     */
+    public function normalizeValueForImport(mixed $value): array
+    {
+        return $this->normalizeNestedEntryForImport($value);
+    }
+
+    private function normalizeNestedEntryForImport(array $entry): array
+    {
+        $fieldLayout = $this->getFieldLayout();
+        $fields = $entry['fields'] ?? $entry;
+
+        foreach ($fields as $handle => $value) {
+            if (! is_array($value)) {
+                continue;
+            }
+            $field = $fieldLayout->getFieldByHandle($handle);
+
+            // if we don't have a field, or it's not an importable nested elements type field,
+            // we don't have to worry about extra normalization, so carry on
+            if (! $field instanceof ImportableElementContainerFieldInterface) {
+                continue;
+            }
+
+            $fields[$handle] = $field->normalizeValueForImport($value);
+        }
+
+        return ['fields' => $fields];
     }
 }
