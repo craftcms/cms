@@ -71,6 +71,9 @@
     }),
     columnHelper.accessor('handle', {
       header: t('Handle'),
+      meta: {
+        cellClass: 'justify-center',
+      },
       cell: ({getValue}) =>
         h('craft-copy-attribute', {value: getValue()}, getValue()),
     }),
