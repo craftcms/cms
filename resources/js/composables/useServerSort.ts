@@ -1,11 +1,9 @@
 import {ref} from 'vue';
-import type {PaginationState, SortingState, Updater} from '@tanstack/vue-table';
-import type {PaginationData, SortItem} from '@/types';
-import {router} from '@inertiajs/vue3';
-import {index} from '@actions/FieldsController';
+import type {SortingState, Updater} from '@tanstack/vue-table';
+import type {SortItem} from '@/types';
 
 interface OnChangeArgs {
-  state: SortingState,
+  state: SortingState;
   query: Record<string, any>;
 }
 
@@ -14,7 +12,10 @@ interface UseServerSortParams {
   onChange: (args: OnChangeArgs) => void;
 }
 
-export function useServerSort({initialState, onChange}: UseServerSortParams) {
+export function useServerSort({
+  initialState,
+  onChange,
+}: UseServerSortParams) {
   const pageParam = Craft.pageTrigger ?? 'page';
   const sortingState = ref<SortingState>(
     initialState
@@ -55,6 +56,8 @@ export function useServerSort({initialState, onChange}: UseServerSortParams) {
 
   const sortingConfig = {
     manualSorting: true,
+    enableMultiSort: true,
+    enableSortingRemoval: false,
     onSortingChange,
   };
 

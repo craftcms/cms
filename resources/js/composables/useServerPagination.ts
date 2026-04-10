@@ -1,8 +1,10 @@
 import {ref} from 'vue';
-import type {PaginationState, Updater} from '@tanstack/vue-table';
+import type {
+  PaginationState,
+  TableOptionsWithReactiveData,
+  Updater,
+} from '@tanstack/vue-table';
 import type {PaginationData} from '@/types';
-import {router} from '@inertiajs/vue3';
-import {index} from '@actions/FieldsController';
 
 interface OnChangeArgs {
   state: PaginationState;

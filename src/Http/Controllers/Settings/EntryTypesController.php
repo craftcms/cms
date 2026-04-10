@@ -76,7 +76,7 @@ class EntryTypesController
         $limit = (int) $request->input('per_page', 100);
         $searchTerm = $request->input('search');
 
-        $sort = $request->array('sort') ?? [
+        $sort = ! empty($request->array('sort')) ? $request->array('sort') : [
             ['field' => 'name', 'direction' => 'asc'],
         ];
 

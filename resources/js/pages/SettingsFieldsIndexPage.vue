@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
   import AppLayout from '@/layout/AppLayout.vue';
-  import VarDump from '@/components/VarDump.vue';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
   import {
     createColumnHelper,
@@ -9,15 +8,17 @@
     useVueTable,
   } from '@tanstack/vue-table';
   import {computed, h, ref} from 'vue';
-  import type {EntryType, PaginationData, SortItem} from '@/types';
+  import type {PaginationData, SortItem} from '@/types';
   import {useServerPagination} from '@/composables/useServerPagination';
-  import DynamicHtmlRenderer from '@/components/DynamicHtmlRenderer.vue';
   import Pane from '@/components/Pane.vue';
-  import {Form, router, usePage} from '@inertiajs/vue3';
+  import {Form, router} from '@inertiajs/vue3';
   import {create, destroy, index} from '@actions/FieldsController';
   import DeleteButton from '@/components/AdminTable/DeleteButton.vue';
   import CpLink from '@/components/CpLink.vue';
   import {useServerSort} from '@/composables/useServerSort';
+  import {useDebounceFn} from '@vueuse/core';
+  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import SearchForm from '@/components/AdminTable/SearchForm.vue';
 
   type FieldRow = {
     id: number;
@@ -176,21 +177,7 @@
         :enable-adjust-page-size="true"
       >
         <template #search-form>
-          <Form :action="index()" v-slot="{processing}" class="w-full">
-            <div class="flex gap-2 items-start">
-              <craft-input
-                class="flex-1"
-                name="search"
-                :label="t('Search term')"
-                :value="searchTerm"
-                label-sr-only
-              >
-              </craft-input>
-              <craft-button type="submit" :loading="processing" slot="suffix">{{
-                t('Search')
-              }}</craft-button>
-            </div>
-          </Form>
+          <SearchForm v-model="searchTerm" />
         </template>
       </AdminTable>
     </Pane>
