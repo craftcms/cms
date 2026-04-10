@@ -9,6 +9,7 @@
   import DropIndicator from '@/components/DropIndicator.vue';
   import Select from '@/components/form/Select.vue';
   import Text from '@/components/Text.vue';
+  import Empty from '@/components/Empty.vue';
 
   const props = withDefaults(
     defineProps<{
@@ -204,51 +205,62 @@
         </tr>
       </thead>
       <tbody>
-        <tr
-          v-for="row in table.getRowModel().rows"
-          :key="row.id"
-          :ref="(el) => setRowRef(el as HTMLTableRowElement, row.id)"
-          :class="{
-            row: true,
-            'row--dragging':
-              !readOnly && getDragState(row.id).type === 'dragging',
-          }"
-        >
-          <template v-if="reorderable && !readOnly">
-            <td class="cell cell--drag-handle">
-              <div class="flex justify-center">
-                <ReorderButton></ReorderButton>
-              </div>
-
-              <!-- Drop indicator spans entire row, positioned from this cell -->
-              <DropIndicator :edge="getDropState(row.id).edge" />
-
-              <Teleport
-                v-if="getDragState(row.id).type === 'dragging'"
-                :to="getDragState(row.id).container"
-              >
-                <slot name="drag-preview" :row="row"></slot>
-              </Teleport>
-            </td>
-          </template>
-          <component
-            v-for="cell in row.getVisibleCells()"
-            :is="cell.column.columnDef.meta?.cellTag ?? 'td'"
-            :key="cell.id"
-            :style="{width: `${cell.column.getSize()}px`}"
+        <template v-if="table.getRowModel().rows.length > 0">
+          <tr
+            v-for="row in table.getRowModel().rows"
+            :key="row.id"
+            :ref="(el) => setRowRef(el as HTMLTableRowElement, row.id)"
             :class="{
-              cell: true,
-              'cell--wrap': cell.column.columnDef.meta?.wrap,
-              ...resolveMetaClasses(cell.column.columnDef.meta?.columnClass),
-              ...resolveMetaClasses(cell.column.columnDef.meta?.cellClass),
+              row: true,
+              'row--dragging':
+                !readOnly && getDragState(row.id).type === 'dragging',
             }"
           >
-            <FlexRender
-              :render="cell.column.columnDef.cell"
-              :props="cell.getContext()"
-            />
-          </component>
-        </tr>
+            <template v-if="reorderable && !readOnly">
+              <td class="cell cell--drag-handle">
+                <div class="flex justify-center">
+                  <ReorderButton></ReorderButton>
+                </div>
+
+                <!-- Drop indicator spans entire row, positioned from this cell -->
+                <DropIndicator :edge="getDropState(row.id).edge" />
+
+                <Teleport
+                  v-if="getDragState(row.id).type === 'dragging'"
+                  :to="getDragState(row.id).container"
+                >
+                  <slot name="drag-preview" :row="row"></slot>
+                </Teleport>
+              </td>
+            </template>
+            <component
+              v-for="cell in row.getVisibleCells()"
+              :is="cell.column.columnDef.meta?.cellTag ?? 'td'"
+              :key="cell.id"
+              :style="{width: `${cell.column.getSize()}px`}"
+              :class="{
+                cell: true,
+                'cell--wrap': cell.column.columnDef.meta?.wrap,
+                ...resolveMetaClasses(cell.column.columnDef.meta?.columnClass),
+                ...resolveMetaClasses(cell.column.columnDef.meta?.cellClass),
+              }"
+            >
+              <FlexRender
+                :render="cell.column.columnDef.cell"
+                :props="cell.getContext()"
+              />
+            </component>
+          </tr>
+        </template>
+        <template v-else>
+          <tr>
+            <td :colspan="table.getAllColumns().length" class="cell">
+              <slot name="empty-row">
+                <Empty :label="t('No results')" icon="empty-set" />
+              </slot>
+            </td>
+          </tr>
+        </template>
       </tbody>
     </table>
 
