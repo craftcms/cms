@@ -104,7 +104,6 @@ class EntryTypesController
                 ['label' => t('Entry Types')],
             ],
             'title' => t('Entry Types'),
-            'dataEndpoint' => route('craft.actions.entry-types.table-data'),
             'searchTerm' => $searchTerm,
             'sort' => $sort,
             'data' => fn () => $tableData,
