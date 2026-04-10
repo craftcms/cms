@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Database\Factories;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Address\Elements\Address as AddressElement;
 use CraftCms\Cms\Address\Models\Address;
+use CraftCms\Cms\Database\Factories\Concerns\CreatesElement;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -15,6 +16,8 @@ use Override;
 
 class AddressFactory extends Factory
 {
+    use CreatesElement;
+
     #[Override]
     protected $model = Address::class;
 
