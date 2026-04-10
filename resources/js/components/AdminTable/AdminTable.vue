@@ -28,7 +28,7 @@
     }>(),
 
     {
-      reorderable: true,
+      reorderable: false,
       selectable: true,
       layout: 'auto',
       enableAdjustPageSize: false,
@@ -278,8 +278,8 @@
           </tr>
         </template>
         <template v-else>
-          <tr>
-            <td :colspan="table.getAllColumns().length" class="cell">
+          <tr style="--table-template-columns: 1fr; --_cell-spacing-inline: 0; --_cell-spacing-block: 0;">
+            <td>
               <slot name="empty-row">
                 <Empty :label="t('No results')" icon="empty-set" />
               </slot>

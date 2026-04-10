@@ -74,7 +74,7 @@ interface AutocompleteColumnOptions<
   ) => void;
 }
 
-type AccessorParam<T extends Record<string, any>> = Parameters<
+export type AccessorParam<T extends Record<string, any>> = Parameters<
   ColumnHelper<T>['accessor']
 >[0];
 
