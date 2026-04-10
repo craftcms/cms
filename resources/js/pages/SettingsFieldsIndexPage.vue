@@ -23,6 +23,7 @@
     id: number;
     title: string;
     translatable: boolean;
+    searchable: boolean;
     url: string;
     handle: string;
     type: {
@@ -40,6 +41,7 @@
     sort: Array<SortItem>;
     searchTerm: string | null;
     pagination: PaginationData;
+    isMultiSite: boolean;
   }>();
 
   function deleteField(field: FieldRow) {
@@ -59,6 +61,8 @@
   const columnVisibility = computed(() => {
     return {
       name: true,
+      searchable: true,
+      translatable: props.isMultiSite,
       handle: true,
       type: true,
       usages: true,
@@ -68,8 +72,49 @@
   const columns = ref([
     columnHelper.accessor('title', {
       header: t('Name'),
+      meta: {
+        trackSize: '1.5fr',
+      },
       cell: ({row, getValue}) =>
-        h(CpLink, {href: row.original.url, inertia: false}, getValue),
+        h(
+          CpLink,
+          {href: row.original.url, inertia: false, class: 'font-bold'},
+          getValue
+        ),
+    }),
+    columnHelper.accessor('searchable', {
+      header: t('Searchable'),
+      meta: {
+        trackSize: '34px',
+        headerSrOnly: true,
+      },
+      enableSorting: false,
+      cell: ({row}) => {
+        if (row.original.searchable) {
+          return h('craft-icon', {
+            appearance: 'badge',
+            name: 'magnifying-glass',
+            label: t('This field’s values are used as search keywords.'),
+          });
+        }
+      },
+    }),
+    columnHelper.accessor('translatable', {
+      header: t('Translatable'),
+      meta: {
+        trackSize: '34px',
+        headerSrOnly: true,
+      },
+      enableSorting: false,
+      cell: ({getValue}) => {
+        if (getValue()) {
+          return h('craft-icon', {
+            appearance: 'badge',
+            name: 'custom-icons/language',
+            label: getValue(),
+          });
+        }
+      },
     }),
     columnHelper.accessor('handle', {
       header: t('Handle'),
@@ -95,8 +140,11 @@
     }),
     columnHelper.display({
       id: 'actions',
+      meta: {
+        trackSize: '60px',
+      },
       cell: ({row}) =>
-        h('div', {class: 'flex justify-end'}, [
+        h('div', {class: 'self-end flex justify-end'}, [
           h(DeleteButton, {
             onClick: () => deleteField(row.original),
           }),
