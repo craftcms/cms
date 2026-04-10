@@ -594,9 +594,7 @@ class EntryTypes
             $label = Html::encode($entryType->getUiLabel());
             $chipCellContent = Html::beginTag('div', ['class' => 'flex gap-1 items-center row-wrap']).
                 app(ElementHtml::class)->chipHtml($entryType, [
-                    'labelHtml' => Html::a($label, $entryType->getCpEditUrl(), [
-                        'class' => ['chip-label', 'cell-bold'],
-                    ]),
+                    'labelHtml' => Html::a($label, $entryType->getCpEditUrl()),
                 ]);
             if ($entryType->description) {
                 $chipCellContent .= Html::tag('craft-info-icon',
