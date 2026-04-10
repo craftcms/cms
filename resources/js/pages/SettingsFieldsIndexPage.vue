@@ -162,7 +162,7 @@
 <template>
   <AppLayout :title="title">
     <template #actions>
-      <CpLink :inertia="false" variant="primary" :href="create()" icon="plus">
+      <CpLink :inertia="false" appearance="button" variant="primary" :href="create()" icon="plus">
         {{ t('New field') }}
       </CpLink>
     </template>

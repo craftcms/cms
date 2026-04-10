@@ -1,30 +1,22 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
-  import IndexLayout from '@/layout/IndexLayout.vue';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
   import {
     createColumnHelper,
     getCoreRowModel,
-    type PaginationState,
-    type SortingState,
     useVueTable,
   } from '@tanstack/vue-table';
-  import {
-    type EntryType,
-    type PaginationData,
-    type SortItem,
-    TableSpacing,
-  } from '@/types';
-  import {computed, h, ref, watch} from 'vue';
+  import {type PaginationData, type SortItem, TableSpacing} from '@/types';
+  import {computed, h, ref} from 'vue';
   import DynamicHtmlRenderer from '@/components/DynamicHtmlRenderer.vue';
-  import {Form, router} from '@inertiajs/vue3';
-  import {index} from '@actions/Settings/EntryTypesController';
+  import {router} from '@inertiajs/vue3';
+  import {create, index} from '@actions/Settings/EntryTypesController';
   import AppLayout from '@/layout/AppLayout.vue';
   import Pane from '@/components/Pane.vue';
   import {useServerPagination} from '@/composables/useServerPagination';
   import SearchForm from '@/components/AdminTable/SearchForm.vue';
   import {useServerSort} from '@/composables/useServerSort';
-  import VarDump from '@/components/VarDump.vue';
+  import CpLink from '@/components/CpLink.vue';
 
   type EntryTypeRow = {
     id: number;
@@ -40,7 +32,6 @@
     sort: Array<SortItem>;
     searchTerm?: string;
     data: Array<EntryTypeRow>;
-    dataEndpoint: string;
   }>();
 
   const searchTerm = ref(props.searchTerm ?? '');
@@ -117,9 +108,15 @@
 <template>
   <AppLayout :title="title">
     <template #actions>
-      <craft-button variant="primary" type="button" icon="plus">{{
-        t('New entry type')
-      }}</craft-button>
+      <CpLink
+        appearance="button"
+        :href="create['/admin/settings/entry-types/new']().url"
+        variant="primary"
+        :inertia="false"
+        icon="plus"
+      >
+        {{ t('New entry type') }}
+      </CpLink>
     </template>
 
     <Pane :padding="0" appearance="raised">

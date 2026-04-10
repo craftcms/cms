@@ -9,6 +9,7 @@
         variant?: 'default' | 'primary' | 'danger';
         size?: 'zero' | 'small' | 'medium' | 'large';
         appearance?: 'button' | 'inline';
+        icon?: string;
         block?: boolean;
         inertia?: boolean;
       }
@@ -45,17 +46,25 @@
     }
 
     return props.href?.url;
-  })
+  });
 </script>
 
 <template>
   <template v-if="inertia">
     <Link :as="as" :href="href" :class="classes">
-      <slot></slot>
+      <div class="flex gap-1 items-center">
+        <template v-if="icon"><craft-icon :name="icon"></craft-icon></template>
+        <slot></slot>
+      </div>
     </Link>
   </template>
   <template v-else>
-    <a :href="hrefString" :class="classes"><slot></slot></a>
+    <a :href="hrefString" :class="classes">
+      <div class="flex gap-1 items-center">
+        <template v-if="icon"><craft-icon :name="icon"></craft-icon></template>
+        <slot></slot>
+      </div>
+    </a>
   </template>
 </template>
 
