@@ -245,6 +245,7 @@ readonly class SectionsController
         ]));
     }
 
+    #[\Deprecated(message: 'in 6.0. Use `settings/sections` instead.')]
     public function tableData(Request $request, Sections $sections): Response
     {
         $pageParam = Cms::config()->getPageTriggerParam();

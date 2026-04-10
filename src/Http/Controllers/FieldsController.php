@@ -327,6 +327,7 @@ class FieldsController
         ]);
     }
 
+    #[\Deprecated(message: 'in 6.0. Use `settings/fields` instead.')]
     public function tableData(Request $request): Response
     {
         $page = (int) $request->input(Cms::config()->getPageTriggerParam(), 1);
