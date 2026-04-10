@@ -156,6 +156,21 @@ Modify with `cp-table--auto` to apply table-layout: auto
     table-layout: fixed;
   }
 
+  tr {
+    display: grid;
+    grid-template-columns: var(
+      --table-template-columns,
+      repeat(var(--table-column-count, auto-fill), 1fr)
+    );
+  }
+
+  td {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: start;
+  }
+
   thead,
   th {
     background-color: var(--c-color-neutral-fill-quiet);

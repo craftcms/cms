@@ -13,6 +13,7 @@ declare module '@tanstack/vue-table' {
     headerClass?: string | Record<string, boolean>;
     // Applies classes to both the header and cell at once
     columnClass?: string | Record<string, boolean>;
+    trackSize?: string;
   }
 }
 
