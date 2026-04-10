@@ -500,9 +500,10 @@ class Import
             return $element;
         }
 
-        $query = $element::find();
         if (is_array($config->matchCriteria)) {
+            $query = $element::find();
             $criteria = [];
+
             foreach ($config->matchCriteria as $key => $value) {
                 if (array_key_exists((string) $value, $data)) {
                     $criteria[$key] = $data[$value];

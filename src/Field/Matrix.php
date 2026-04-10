@@ -1902,7 +1902,7 @@ JS,
      * The value has to be an array; there are 2 options for this:
      *   option 1:
      *     each item in the array represents a nested entry (matrix "block");
-     *     in this case the sort order will follow the order from this array
+     *     in this case the sort order will follow the order of items this array
      *   option 2:
      *     it can contain 'sortOrder' and 'entries' keys (as per https://craftcms.com/docs/5.x/reference/field-types/matrix.html#saving-matrix-fields)
      *
@@ -1934,7 +1934,7 @@ JS,
         $arrayIsList = array_is_list($entries);
         $i = 0;
 
-        foreach ($entries as $key => $entry) {
+        foreach ($entries as $entry) {
             $newKey = null;
             // if there's no type or type is not allowed - bail
             if (! isset($entry['type'])) {
@@ -1947,29 +1947,37 @@ JS,
             $entryType = $allowedEntryTypes[$entry['type']];
 
             // try to match existing matrix entries
-            // TODO: think about this!
-            if (isset($entry['matchCriteria'])) {
+            if (isset($entry['matchCriteria']) && is_array($entry['matchCriteria'])) {
                 // try to find an existing entry
                 $query = Entry::find()
                     ->type($entry['type'])
                     ->fieldId($this->id);
+                $criteria = [];
+                $entryElement = null;
 
-                Typecast::configure($query, $entry['matchCriteria']);
-                $entry = $query->one();
+                foreach ($entry['matchCriteria'] as $dbKey => $dataKey) {
+                    if (array_key_exists((string) $dataKey, $entry)) {
+                        $criteria[$dbKey] = $entry[$dataKey];
+                    } elseif (array_key_exists((string) $dbKey, $entry['fields'])) {
+                        $criteria[$dbKey] = $entry['fields'][$dbKey];
+                    }
+                }
 
-                if ($entry) {
-                    $newKey = $entry->id;
+                if (! empty($criteria)) {
+                    Typecast::configure($query, $criteria);
+                    $entryElement = $query->one();
+                }
+
+                if ($entryElement) {
+                    $newKey = $entryElement->id;
                 } else {
-                    $newKey = 'new:'.$i++;
+                    $newKey = 'new:'.++$i;
                 }
             }
 
             // if we still don't have a key, generate a new one
-            // otherwise use the one from this loop
-            if ($arrayIsList && $newKey === null) {
+            if ($newKey === null) {
                 $newKey = 'new:'.++$i;
-            } else {
-                $newKey = $key;
             }
 
             Arr::forget($entry, [/* 'type', */ 'matchCriteria']);
