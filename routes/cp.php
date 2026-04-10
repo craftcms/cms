@@ -199,6 +199,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         Route::get('settings/assets', [VolumesController::class, 'index']);
         Route::middleware(RequireAdminChanges::class)->get('settings/assets/volumes/new', [VolumesController::class, 'create']);
         Route::get('settings/assets/volumes/{volumeId}', [VolumesController::class, 'edit'])->whereNumber('volumeId');
+        Route::middleware(RequireAdminChanges::class)->delete('settings/assets/volumes/{volumeId}', [VolumesController::class, 'destroy'])->whereNumber('volumeId');
         Route::get('settings/assets/transforms', [ImageTransformsController::class, 'index']);
         Route::middleware(RequireAdminChanges::class)->get('settings/assets/transforms/new', [ImageTransformsController::class, 'create']);
         Route::get('settings/assets/transforms/{transformHandle}', [ImageTransformsController::class, 'edit']);

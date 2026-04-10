@@ -14,11 +14,14 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -34,12 +37,34 @@ class VolumesController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(Volumes $volumes): View
+    public function index(Request $request, Volumes $volumes)
     {
-        return view('settings/assets/volumes/_index', [
-            'volumes' => $volumes->getAllVolumes(),
-            'readOnly' => $this->readOnly,
+        $sort = ! empty($request->array('sort')) ? $request->array('sort') : [
+            ['field' => 'name', 'direction' => 'asc'],
+        ];
+
+        match (Arr::get($sort, '0.field')) {
+            'handle' => 'handle',
+            'type' => 'type',
+            default => 'name',
+        };
+
+        match (Arr::get($sort, '0.direction')) {
+            'desc' => SORT_DESC,
+            default => SORT_ASC,
+        };
+
+        return Inertia::render('SettingsVolumesIndexPage', [
+            'crumbs' => fn () => [
+                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
+                ['label' => t('Assets')],
+            ],
+            'sort' => $sort,
+            'title' => t('Asset Settings'),
+            'volumes' => $volumes->getAllVolumes(...),
         ]);
+        // return view('settings/assets/volumes/_index', [
+        // ]);
     }
 
     public function create(Volumes $volumes): CpScreenResponse
@@ -179,11 +204,9 @@ class VolumesController
         return $this->asSuccess();
     }
 
-    public function delete(Request $request, Volumes $volumes): Response
+    public function destroy(Request $request, Volumes $volumes, int $volumeId): Response
     {
-        $request->validate(['id' => ['required', 'integer']]);
-
-        $volumes->deleteVolumeById($request->integer('id'));
+        $volumes->deleteVolumeById($volumeId);
 
         return $this->asSuccess();
     }

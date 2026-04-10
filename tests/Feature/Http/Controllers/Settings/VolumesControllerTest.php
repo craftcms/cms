@@ -51,7 +51,7 @@ it('requires authentication', function () {
     get(action([VolumesController::class, 'index']))->assertRedirect();
     get(action([VolumesController::class, 'create']))->assertRedirect();
     postJson(action([VolumesController::class, 'save']))->assertUnauthorized();
-    postJson(action([VolumesController::class, 'delete']))->assertUnauthorized();
+    postJson(action([VolumesController::class, 'destroy']))->assertUnauthorized();
     postJson(action([VolumesController::class, 'reorder']))->assertUnauthorized();
 });
 
@@ -75,7 +75,7 @@ it('requires admin changes', function () {
         'handle' => 'test',
         'fsHandle' => 'disk:test-disk',
     ])->assertForbidden();
-    postJson(action([VolumesController::class, 'delete']), [
+    postJson(action([VolumesController::class, 'destroy']), [
         'id' => 1,
     ])->assertForbidden();
 });
@@ -156,7 +156,7 @@ describe('delete', function () {
 
         expect(Volume::count())->toBe(1);
 
-        postJson(action([VolumesController::class, 'delete']), [
+        postJson(action([VolumesController::class, 'destroy']), [
             'id' => $volume->id,
         ])->assertOk();
 
@@ -164,7 +164,7 @@ describe('delete', function () {
     });
 
     test('delete validates required id field', function () {
-        postJson(action([VolumesController::class, 'delete']), [])
+        postJson(action([VolumesController::class, 'destroy']), [])
             ->assertJsonValidationErrors(['id']);
     });
 });
