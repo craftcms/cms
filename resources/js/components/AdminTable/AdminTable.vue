@@ -120,7 +120,6 @@
     };
 
     const columns = props.table.getAllColumns();
-    console.log({columns});
     const gridDef = columns.reduce(
       (acc: Array<string>, column: Column<any>) => {
         acc.push(column.columnDef.meta?.trackSize ?? `1fr`);
@@ -128,8 +127,6 @@
       },
       []
     );
-
-    console.log({gridDef});
 
     styles['--table-template-columns'] = gridDef.join(' ');
 
@@ -177,8 +174,8 @@
             :colSpan="header.colSpan"
             :id="`header-${header.id}`"
             :class="{
-              cell: true,
-              'cell--header': true,
+              'cp-table-cell': true,
+              'cp-table-cell--header': true,
               'cursor-pointer select-none': header.column.getCanSort(),
             }"
             scope="col"
@@ -240,6 +237,7 @@
             :ref="(el) => setRowRef(el as HTMLTableRowElement, row.id)"
             :class="{
               row: true,
+              'cp-table-row': true,
               'row--dragging':
                 !readOnly && getDragState(row.id).type === 'dragging',
             }"
@@ -266,8 +264,8 @@
               :is="cell.column.columnDef.meta?.cellTag ?? 'td'"
               :key="cell.id"
               :class="{
-                cell: true,
-                'cell--wrap': cell.column.columnDef.meta?.wrap,
+                'cp-table-cell': true,
+                'cp-table-cell--wrap': cell.column.columnDef.meta?.wrap,
                 ...resolveMetaClasses(cell.column.columnDef.meta?.columnClass),
                 ...resolveMetaClasses(cell.column.columnDef.meta?.cellClass),
               }"
