@@ -132,12 +132,13 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         Route::get('settings/entry-types', [EntryTypesController::class, 'index']);
         Route::middleware(RequireAdminChanges::class)->get('settings/entry-types/new', [EntryTypesController::class, 'create']);
         Route::get('settings/entry-types/{entryType}', [EntryTypesController::class, 'edit']);
+        Route::middleware(RequireAdminChanges::class)->delete('settings/entry-types/{entryType}', [EntryTypesController::class, 'destroy']);
 
         // Fields
         Route::get('settings/fields', [FieldsController::class, 'index']);
-        Route::delete('settings/fields/{fieldId}', [FieldsController::class, 'destroy']);
         Route::middleware(RequireAdminChanges::class)->get('settings/fields/new', [FieldsController::class, 'create']);
         Route::get('settings/fields/edit/{fieldId}', [FieldsController::class, 'edit']);
+        Route::middleware(RequireAdminChanges::class)->delete('settings/fields/{fieldId}', [FieldsController::class, 'destroy']);
 
         // General
         Route::get('settings/general', [GeneralSettingsController::class, 'index'])

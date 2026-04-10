@@ -227,7 +227,6 @@ Route::prefix(implode('/', [
         ])->group(function () {
             Route::get('entry-types/new', [EntryTypesController::class, 'create']);
             Route::post('entry-types/save', [EntryTypesController::class, 'store']);
-            Route::post('entry-types/delete', [EntryTypesController::class, 'destroy']);
             Route::post('entry-types/render-override-settings', [EntryTypesController::class, 'renderOverrideSettings']);
             Route::post('entry-types/apply-override-settings', [EntryTypesController::class, 'applyOverrideSettings']);
         });
@@ -237,7 +236,6 @@ Route::prefix(implode('/', [
             Route::get('fields/edit-field', [FieldsController::class, 'edit']);
             Route::post('fields/render-settings', [FieldsController::class, 'renderSettings']);
             Route::post('fields/save-field', [FieldsController::class, 'store']);
-            Route::post('fields/delete-field', [FieldsController::class, 'destroy']);
             Route::post('fields/render-layout-component-settings', [FieldsController::class, 'renderLayoutComponentSettings']);
             Route::post('fields/apply-layout-tab-settings', [FieldsController::class, 'applyLayoutTabSettings']);
             Route::post('fields/apply-layout-element-settings', [FieldsController::class, 'applyLayoutElementSettings']);

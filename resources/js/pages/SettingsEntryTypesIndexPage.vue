@@ -10,7 +10,7 @@
   import {computed, h, ref} from 'vue';
   import DynamicHtmlRenderer from '@/components/DynamicHtmlRenderer.vue';
   import {router} from '@inertiajs/vue3';
-  import {create, index} from '@actions/Settings/EntryTypesController';
+  import {create, destroy, index} from '@actions/Settings/EntryTypesController';
   import AppLayout from '@/layout/AppLayout.vue';
   import Pane from '@/components/Pane.vue';
   import {useServerPagination} from '@/composables/useServerPagination';
@@ -34,11 +34,35 @@
     sort: Array<SortItem>;
     searchTerm?: string;
     data: Array<EntryTypeRow>;
+    readOnly: boolean;
   }>();
+
+  function deleteEntryType(entryType: EntryTypeRow) {
+    if (
+      confirm(
+        t(
+          'Are you sure you want to delete “{name}” and all entries of that type?',
+          {
+            name: entryType.title,
+          }
+        )
+      )
+    ) {
+      router.delete(destroy(entryType.id));
+    }
+  }
 
   const searchTerm = ref(props.searchTerm ?? '');
   const entryTypes = computed(() => props.data);
   const columnHelper = createColumnHelper<EntryTypeRow>();
+  const columnVisibility = computed(() => {
+    return {
+      name: true,
+      handle: true,
+      usages: true,
+      actions: !props.readOnly,
+    };
+  });
   const columns = computed(() => [
     columnHelper.display({
       id: 'name',
@@ -53,6 +77,15 @@
     columnHelper.accessor('usages', {
       header: t('Usages'),
       cell: ({getValue}) => h(DynamicHtmlRenderer, {html: getValue()}),
+    }),
+    columnHelper.display({
+      id: 'actions',
+      cell: ({row}) =>
+        h('div', {class: 'flex justify-end'}, [
+          h(DeleteButton, {
+            onClick: () => deleteEntryType(row.original),
+          }),
+        ]),
     }),
   ]);
 
@@ -99,6 +132,10 @@
       },
       get sorting() {
         return sortingState.value;
+      },
+
+      get columnVisibility() {
+        return columnVisibility.value;
       },
     },
     getCoreRowModel: getCoreRowModel<EntryTypeRow>(),
