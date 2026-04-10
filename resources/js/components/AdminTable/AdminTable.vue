@@ -13,6 +13,7 @@
   const props = withDefaults(
     defineProps<{
       table: any;
+      title?: string;
       reorderable?: boolean;
       selectable?: boolean;
       readOnly?: boolean;
@@ -49,6 +50,9 @@
 
   const id = useId();
   const columnSortInstructionId = `column-sort-instructions-${id}`;
+  const titleString = computed(() => {
+    return props.title ? `${props.title}, ` : null;
+  });
 
   const pageIndexProxy = computed({
     get() {
@@ -119,7 +123,10 @@
         'cp-table--auto': layout === 'auto',
       }"
     >
-      <caption>
+      <caption class="sr-only">
+        {{
+          titleString
+        }}
         <span :id="columnSortInstructionId">{{
           t('Column headers with buttons are sortable')
         }}</span>
