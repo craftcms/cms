@@ -17,6 +17,7 @@
 <template>
   <button
     v-if="isSortable"
+    type="button"
     @click="$emit('sortColumn', $event)"
     :aria-describedby="sortInstructionsId"
   >
