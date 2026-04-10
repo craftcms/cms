@@ -17,10 +17,12 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Field\Concerns\ImportableElementContainerField;
 use CraftCms\Cms\Field\Conditions\EmptyFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -30,8 +32,10 @@ use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Interfaces\Elements\Address as AddressGqlInterface;
 use CraftCms\Cms\Gql\Resolvers\Elements\Address as AddressResolver;
 use CraftCms\Cms\Gql\Types\Input\Addresses as AddressesInput;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Elements\User;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
@@ -52,8 +56,10 @@ use function CraftCms\Cms\template;
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
-class Addresses extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, MergeableFieldInterface
+class Addresses extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, ImportableElementContainerFieldInterface, MergeableFieldInterface
 {
+    use ImportableElementContainerField;
+
     public const string VIEW_MODE_CARDS = 'cards';
 
     public const string VIEW_MODE_INDEX = 'index';
@@ -816,5 +822,63 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         $this->addressManager()->restoreNestedElements($element);
 
         parent::afterElementRestore($element);
+    }
+
+    /**
+     * Normalizes value so that it can be imported into an Addresses-type field.
+     * The custom field values must be nested under a "fields" key.
+     *
+     * The value has to be an array; each item in the array represents an address.
+     */
+    public function normalizeValueForImport(mixed $value, ?ElementInterface $owner = null): array
+    {
+        $normalizedValue = [];
+        $fieldLayout = app(\CraftCms\Cms\Address\Addresses::class)->getFieldLayout();
+        $addressElement = null;
+        $i = 0;
+
+        foreach ($value as $address) {
+            $newKey = null;
+
+            // try to match existing address entries,
+            // but only if owner already has an ID; no point trying to match nested entry for a brand new owner element
+            if ($owner->id && isset($address['matchCriteria']) && is_array($address['matchCriteria'])) {
+                // try to find an existing entry
+                $query = Address::find()
+                    ->fieldId($this->id)
+                    ->ownerId($owner->id);
+                $criteria = [];
+
+                foreach ($address['matchCriteria'] as $dbKey => $dataKey) {
+                    if (array_key_exists((string) $dataKey, $address)) {
+                        $criteria[$dbKey] = $address[$dataKey];
+                    } elseif (array_key_exists((string) $dbKey, $address['fields'])) {
+                        $criteria[$dbKey] = $address['fields'][$dbKey];
+                    }
+                }
+
+                if (! empty($criteria)) {
+                    Typecast::configure($query, $criteria);
+                    $addressElement = $query->one();
+                }
+
+                if ($addressElement) {
+                    $newKey = $addressElement->id;
+                } else {
+                    $newKey = 'new:'.++$i;
+                }
+            }
+
+            // if we still don't have a key, generate a new one
+            if ($newKey === null) {
+                $newKey = 'new:'.++$i;
+            }
+
+            Arr::forget($address, ['matchCriteria']);
+
+            $normalizedValue[$newKey] = $this->normalizeNestedEntryForImport($address, $fieldLayout, $addressElement);
+        }
+
+        return $normalizedValue;
     }
 }
