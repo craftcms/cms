@@ -7,10 +7,16 @@
       isSortable: false,
     }
   );
+
+  defineEmits<{
+    sortColumn: [event: MouseEvent];
+  }>();
 </script>
 
 <template>
-  <button v-if="isSortable"><slot /></button>
+  <button v-if="isSortable" @click="$emit('sortColumn', $event)">
+    <slot />
+  </button>
 
   <slot v-else />
 </template>

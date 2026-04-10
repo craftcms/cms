@@ -137,7 +137,6 @@
               'cell--header': true,
               'cursor-pointer select-none': header.column.getCanSort(),
             }"
-            @click="header.column.getToggleSortingHandler()?.($event)"
             scope="col"
             :aria-sort="getAriaSortAttribute(header.column)"
           >
@@ -153,7 +152,10 @@
                 ),
               }"
             >
-              <ColumnHeaderTitle :isSortable="header.column.getCanSort()">
+              <ColumnHeaderTitle
+                :isSortable="header.column.getCanSort()"
+                @sort-column="header.column.getToggleSortingHandler()?.($event)"
+              >
                 <FlexRender
                   v-if="!header.isPlaceholder"
                   :render="header.column.columnDef.header"
