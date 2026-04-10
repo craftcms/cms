@@ -140,6 +140,9 @@ CP Table
 
 Applies some basic styling to table elements.
 
+The idea here is that you can just apply `cp-table` to the parent table and have
+most of the element display correctly which is why we don't do BEM or anything here
+
 Modify with `cp-table--compact` to reduce the vertical cell padding
 Modify with `cp-table--borderless` to remove the inline cell padding
 Modify with `cp-table--auto` to apply table-layout: auto
@@ -147,6 +150,8 @@ Modify with `cp-table--auto` to apply table-layout: auto
 .cp-table {
   --_cell-spacing-inline: var(--c-spacing-md);
   --_cell-spacing-block: var(--c-spacing-md);
+  --table-column-count: auto-fill;
+  --table-template-columns: repeat(var(--table-column-count), 1fr);
   text-align: left;
   width: 100%;
   border-spacing: 0;
@@ -158,17 +163,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
 
   tr {
     display: grid;
-    grid-template-columns: var(
-      --table-template-columns,
-      repeat(var(--table-column-count, auto-fill), 1fr)
-    );
-  }
-
-  td {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: start;
+    grid-template-columns: var(--table-template-columns);
   }
 
   thead,
@@ -176,8 +171,11 @@ Modify with `cp-table--auto` to apply table-layout: auto
     background-color: var(--c-color-neutral-fill-quiet);
   }
 
-  .cell {
-    vertical-align: middle;
+  th,
+  td {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     padding-block: var(--_cell-spacing-block);
     padding-inline: var(--_cell-spacing-inline);
     position: relative;
@@ -190,8 +188,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
   }
 
   td,
-  th,
-  tr:not(:last-child) {
+  th {
     border-block-end: 1px solid
       color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
   }
