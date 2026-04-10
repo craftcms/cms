@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {FlexRender} from '@tanstack/vue-table';
+  import {type Column, FlexRender} from '@tanstack/vue-table';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import {computed} from 'vue';
   import {useReorderableRows} from '@/composables/useReorderableRows';
@@ -88,6 +88,34 @@
 
     return value;
   }
+
+  function getColumnSize(column: any) {
+    if (column.columnDef.meta?.columnSize) {
+      return column.columnDef.meta.columnSize;
+    }
+  }
+
+  const tableStyles = computed(() => {
+    const styles: {[key: string]: number} = {
+      '--table-column-count': props.table.getAllColumns().length,
+    };
+
+    const columns = props.table.getAllColumns();
+    console.log({columns});
+    const gridDef = columns.reduce(
+      (acc: Array<string>, column: Column<any>) => {
+        acc.push(column.columnDef.meta?.trackSize ?? `1fr`);
+        return acc;
+      },
+      []
+    );
+
+    console.log({gridDef});
+
+    styles['--table-template-columns'] = gridDef.join(' ');
+
+    return styles;
+  });
 </script>
 
 <template>
@@ -104,6 +132,7 @@
         'cp-table--spacious': spacing === TableSpacing.Spacious,
         'cp-table--auto': layout === 'auto',
       }"
+      :style="tableStyles"
     >
       <thead>
         <tr
@@ -119,7 +148,6 @@
             v-for="header in headerGroup.headers"
             :key="header.id"
             :colSpan="header.colSpan"
-            :style="{width: `${header.getSize()}px`}"
             :id="`header-${header.id}`"
             :class="{
               cell: true,
@@ -202,7 +230,6 @@
               v-for="cell in row.getVisibleCells()"
               :is="cell.column.columnDef.meta?.cellTag ?? 'td'"
               :key="cell.id"
-              :style="{width: `${cell.column.getSize()}px`}"
               :class="{
                 cell: true,
                 'cell--wrap': cell.column.columnDef.meta?.wrap,
