@@ -29,6 +29,7 @@ use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Import\Models\ImportConfig as ImportConfigModel;
 use CraftCms\Cms\Import\Models\ImportRun as ImportRunModel;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Json as JsonSupport;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
@@ -457,7 +458,7 @@ class Import
 
         $element->setFieldValues($fields);
 
-        \Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         event(new DataImported($config, $data));
     }
@@ -482,7 +483,7 @@ class Import
                 continue;
             }
 
-            $fields[$handle] = $field->normalizeValueForImport($value);
+            $fields[$handle] = $field->normalizeValueForImport($value, $element);
         }
 
         return $fields;

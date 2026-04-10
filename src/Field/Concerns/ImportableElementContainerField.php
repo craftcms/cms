@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Concerns;
 
+use craft\base\ElementInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 
@@ -15,7 +16,7 @@ trait ImportableElementContainerField
     /**
      * @see ImportableElementContainerFieldInterface::normalizeNestedEntryForImport()
      */
-    public function normalizeNestedEntryForImport(array $dataItem, FieldLayout $fieldLayout): array
+    public function normalizeNestedEntryForImport(array $dataItem, FieldLayout $fieldLayout, ?ElementInterface $owner = null): array
     {
         $fields = $dataItem['fields'] ?? [];
 
@@ -31,7 +32,7 @@ trait ImportableElementContainerField
                 continue;
             }
 
-            $dataItem['fields'][$handle] = $field->normalizeValueForImport($value);
+            $dataItem['fields'][$handle] = $field->normalizeValueForImport($value, $owner);
         }
 
         return $dataItem;

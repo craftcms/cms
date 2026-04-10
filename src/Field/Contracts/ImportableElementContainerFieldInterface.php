@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Contracts;
 
+use craft\base\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 
 /**
@@ -15,7 +16,7 @@ interface ImportableElementContainerFieldInterface extends FieldInterface
     /**
      * Normalizes field's value for import.
      */
-    public function normalizeValueForImport(mixed $value): array;
+    public function normalizeValueForImport(mixed $value, ?ElementInterface $owner = null): array;
 
     /**
      * Normalize the nested entry data for import, applying the specified field layout configuration.
@@ -24,5 +25,5 @@ interface ImportableElementContainerFieldInterface extends FieldInterface
      * @param  FieldLayout  $fieldLayout  The field layout to apply to the data item.
      * @return array The normalized data item.
      */
-    public function normalizeNestedEntryForImport(array $dataItem, FieldLayout $fieldLayout): array;
+    public function normalizeNestedEntryForImport(array $dataItem, FieldLayout $fieldLayout, ?ElementInterface $owner = null): array;
 }

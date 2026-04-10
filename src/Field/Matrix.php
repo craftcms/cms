@@ -1920,7 +1920,7 @@ JS,
      * The 'entries' array should be keyed by the entry ID if we're updating an existing entry,
      * or by "new:X" key where X is an incremented integer
      */
-    public function normalizeValueForImport(mixed $value): array
+    public function normalizeValueForImport(mixed $value, ?ElementInterface $owner = null): array
     {
         $normalizedValue = [
             'sortOrder' => [],
@@ -1938,7 +1938,9 @@ JS,
         $i = 0;
 
         foreach ($entries as $entry) {
+            $entryElement = null;
             $newKey = null;
+
             // if there's no type or type is not allowed - bail
             if (! isset($entry['type'])) {
                 continue;
@@ -1949,14 +1951,16 @@ JS,
 
             $entryType = $allowedEntryTypes[$entry['type']];
 
-            // try to match existing matrix entries
-            if (isset($entry['matchCriteria']) && is_array($entry['matchCriteria'])) {
+            // try to match existing matrix entries,
+            // but only if owner already has an ID; no point trying to match nested entry for a brand new owner element
+            if ($owner->id && isset($entry['matchCriteria']) && is_array($entry['matchCriteria'])) {
                 // try to find an existing entry
                 $query = Entry::find()
                     ->type($entry['type'])
-                    ->fieldId($this->id);
+                    ->fieldId($this->id)
+                    ->ownerId($owner->id);
+
                 $criteria = [];
-                $entryElement = null;
 
                 foreach ($entry['matchCriteria'] as $dbKey => $dataKey) {
                     if (array_key_exists((string) $dataKey, $entry)) {
@@ -1986,7 +1990,7 @@ JS,
             Arr::forget($entry, [/* 'type', */ 'matchCriteria']);
 
             $normalizedValue['sortOrder'][] = $newKey;
-            $normalizedValue['entries'][$newKey] = $this->normalizeNestedEntryForImport($entry, $entryType->getFieldLayout());
+            $normalizedValue['entries'][$newKey] = $this->normalizeNestedEntryForImport($entry, $entryType->getFieldLayout(), $entryElement);
         }
 
         // if we have a predefined sort order and entries were not a list - use that prefefined sortOrder
