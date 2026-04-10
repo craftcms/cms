@@ -82,7 +82,7 @@ readonly class PreviewHtml
         }
 
         $first = array_shift($components);
-        $html = Html::beginTag('div', ['class' => 'inline-chips']).
+        $html = Html::beginTag('div', ['class' => 'flex flex-wrap items-center gap-1']).
             $this->elementHtml->chipHtml($first, $chipConfig);
 
         if (! empty($components)) {
@@ -90,11 +90,11 @@ readonly class PreviewHtml
             foreach ($components as $other) {
                 $otherHtml .= $this->elementHtml->chipHtml($other, $chipConfig);
             }
-            $html .= Html::tag('span', '+'.$this->i18N->getFormatter()->asInteger(count($components)), [
-                'title' => implode(', ', array_map(fn (Chippable $component) => $component->getId(), $components)),
-                'class' => 'btn small',
-                'role' => 'button',
-                'tabindex' => '0',
+            $html .= Html::tag('craft-button', '+'.$this->i18N->getFormatter()->asInteger(count($components)), [
+                'type' => 'button',
+                'label' => implode(', ', array_map(fn (Chippable $component) => $component->getId(), $components)),
+                'size' => 'small',
+                'appearance' => 'filled',
                 'data' => [
                     'other' => Json::encode($otherHtml),
                 ],

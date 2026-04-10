@@ -164,6 +164,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
   tr {
     display: grid;
     grid-template-columns: var(--table-template-columns);
+    grid-template-rows: minmax(var(--c-size-control-md), auto);
   }
 
   thead,
@@ -175,11 +176,9 @@ Modify with `cp-table--auto` to apply table-layout: auto
   td {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     padding-block: var(--_cell-spacing-block);
     padding-inline: var(--_cell-spacing-inline);
     position: relative;
-    height: var(--c-size-control-md);
 
     &:has(textarea),
     &:has(input:not([type='checkbox']):not([type='radio'])) {
