@@ -16,6 +16,7 @@ use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Field\Concerns\ImportableElementContainerField;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
@@ -52,6 +53,8 @@ use function CraftCms\Cms\template;
  */
 class ContentBlock extends Field implements ElementContainerFieldInterface, FieldLayoutProviderInterface, ImportableElementContainerFieldInterface
 {
+    use ImportableElementContainerField;
+
     private const string VIEW_MODE_GROUPED = 'grouped';
 
     private const string VIEW_MODE_PANE = 'pane';
@@ -841,29 +844,6 @@ JS, [
      */
     public function normalizeValueForImport(mixed $value): array
     {
-        return $this->normalizeNestedEntryForImport($value);
-    }
-
-    private function normalizeNestedEntryForImport(array $entry): array
-    {
-        $fieldLayout = $this->getFieldLayout();
-        $fields = $entry['fields'] ?? $entry;
-
-        foreach ($fields as $handle => $value) {
-            if (! is_array($value)) {
-                continue;
-            }
-            $field = $fieldLayout->getFieldByHandle($handle);
-
-            // if we don't have a field, or it's not an importable nested elements type field,
-            // we don't have to worry about extra normalization, so carry on
-            if (! $field instanceof ImportableElementContainerFieldInterface) {
-                continue;
-            }
-
-            $fields[$handle] = $field->normalizeValueForImport($value);
-        }
-
-        return ['fields' => $fields];
+        return $this->normalizeNestedEntryForImport($value, $this->getFieldLayout());
     }
 }

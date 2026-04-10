@@ -28,6 +28,7 @@ use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
+use CraftCms\Cms\Field\Concerns\ImportableElementContainerField;
 use CraftCms\Cms\Field\Conditions\EmptyFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -85,6 +86,8 @@ use function CraftCms\Cms\template;
  */
 class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, ImportableElementContainerFieldInterface, MergeableFieldInterface
 {
+    use ImportableElementContainerField;
+
     /**
      * @event DefineEntryTypesForFieldEvent The event that is triggered when defining the available entry types.
      */
@@ -1983,7 +1986,7 @@ JS,
             Arr::forget($entry, [/* 'type', */ 'matchCriteria']);
 
             $normalizedValue['sortOrder'][] = $newKey;
-            $normalizedValue['entries'][$newKey] = $this->normalizeNestedEntryForImport($entry, $entryType);
+            $normalizedValue['entries'][$newKey] = $this->normalizeNestedEntryForImport($entry, $entryType->getFieldLayout());
         }
 
         // if we have a predefined sort order and entries were not a list - use that prefefined sortOrder
@@ -1995,28 +1998,5 @@ JS,
         }
 
         return $normalizedValue;
-    }
-
-    private function normalizeNestedEntryForImport(array $entry, EntryType $entryType): array
-    {
-        $fieldLayout = $entryType->getFieldLayout();
-        $fields = $entry['fields'] ?? [];
-
-        foreach ($fields as $handle => $value) {
-            if (! is_array($value)) {
-                continue;
-            }
-            $field = $fieldLayout->getFieldByHandle($handle);
-
-            // if we don't have a field, or it's not an importable nested elements type field,
-            // we don't have to worry about extra normalization, so carry on
-            if (! $field instanceof ImportableElementContainerFieldInterface) {
-                continue;
-            }
-
-            $entry['fields'][$handle] = $field->normalizeValueForImport($value);
-        }
-
-        return $entry;
     }
 }

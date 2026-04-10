@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Contracts;
 
+use CraftCms\Cms\FieldLayout\FieldLayout;
+
 /**
  * ImportableElementContainerFieldInterface defines the common interface to be implemented by field classes
  * that contain nested elements and wish to support importing content via the import mechanism.
@@ -11,7 +13,16 @@ namespace CraftCms\Cms\Field\Contracts;
 interface ImportableElementContainerFieldInterface extends FieldInterface
 {
     /**
-     * Copies the field’s value from one site to another.
+     * Normalizes field's value for import.
      */
     public function normalizeValueForImport(mixed $value): array;
+
+    /**
+     * Normalize the nested entry data for import, applying the specified field layout configuration.
+     *
+     * @param  array  $dataItem  The data item to be normalized.
+     * @param  FieldLayout  $fieldLayout  The field layout to apply to the data item.
+     * @return array The normalized data item.
+     */
+    public function normalizeNestedEntryForImport(array $dataItem, FieldLayout $fieldLayout): array;
 }
