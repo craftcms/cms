@@ -22,34 +22,35 @@
   import AppLayout from '@/layout/AppLayout.vue';
   import Pane from '@/components/Pane.vue';
   import {useServerPagination} from '@/composables/useServerPagination';
+  import SearchForm from '@/components/AdminTable/SearchForm.vue';
+  import {useServerSort} from '@/composables/useServerSort';
+  import VarDump from '@/components/VarDump.vue';
+
+  type EntryTypeRow = {
+    id: number;
+    title: string;
+    chip: string;
+    handle: string;
+    usages: string;
+  };
 
   const props = defineProps<{
     title: string;
     pagination: PaginationData;
     sort: Array<SortItem>;
     searchTerm?: string;
-    data: Array<{
-      id: number;
-      title: string;
-      chip: string;
-      handle: string;
-      usages: string;
-    }>;
+    data: Array<EntryTypeRow>;
     dataEndpoint: string;
   }>();
 
-  const {paginationState, getNextQueryParams} =
-    useServerPagination({
-      initialState: props.pagination,
-    });
-  // const pageParam = Craft.pageTrigger ?? 'page';
   const searchTerm = ref(props.searchTerm ?? '');
   const entryTypes = computed(() => props.data);
-  const columnHelper = createColumnHelper<EntryType>();
+  const columnHelper = createColumnHelper<EntryTypeRow>();
   const columns = computed(() => [
-    columnHelper.accessor('chip', {
+    columnHelper.display({
+      id: 'name',
       header: t('Entry Type'),
-      cell: ({getValue}) => h(DynamicHtmlRenderer, {html: getValue()}),
+      cell: ({row}) => h(DynamicHtmlRenderer, {html: row.original.chip}),
     }),
     columnHelper.accessor('handle', {
       header: t('Handle'),
@@ -62,24 +63,37 @@
     }),
   ]);
 
-  // const pageIndex = computed(() =>
-  //   props.pagination.current_page ? props.pagination.current_page - 1 : 0
-  // );
-  // const tablePagination = ref<PaginationState>({
-  //   pageIndex: pageIndex.value,
-  //   pageSize: props.pagination.per_page,
-  // });
+  const {paginationState, paginationConfig} = useServerPagination({
+    initialState: props.pagination,
+    onChange: ({query}) => {
+      router.visit(
+        index({
+          query,
+        }),
+        {
+          only: ['data', 'pagination'],
+          preserveScroll: true,
+        }
+      );
+    },
+  });
 
-  const sorting = ref<SortingState>(
-    props.sort
-      ? props.sort.map((sort) => ({
-          id: sort.field,
-          desc: sort.direction === 'desc',
-        }))
-      : []
-  );
+  const {sortingState, sortingConfig} = useServerSort({
+    initialState: props.sort,
+    onChange: ({query}) => {
+      router.visit(
+        index({
+          query,
+        }),
+        {
+          only: ['data', 'sort'],
+          preserveScroll: true,
+        }
+      );
+    },
+  });
 
-  const table = useVueTable<EntryType>({
+  const table = useVueTable<EntryTypeRow>({
     get data() {
       return entryTypes.value;
     },
@@ -91,57 +105,12 @@
         return paginationState.value;
       },
       get sorting() {
-        return sorting.value;
+        return sortingState.value;
       },
     },
-    getCoreRowModel: getCoreRowModel<EntryType>(),
-    manualPagination: true,
-    rowCount: props.pagination.total,
-
-    onSortingChange: (updater) => {
-      const next =
-        typeof updater === 'function' ? updater(sorting.value) : updater;
-
-      // Convert array of objects to indexed object format
-      const sortQueryParams = next.reduce<
-        Record<number, {field: string; direction: string}>
-      >((acc, sortCol, index) => {
-        acc[index] = {
-          field: sortCol.id,
-          direction: sortCol.desc ? 'desc' : 'asc',
-        };
-        return acc;
-      }, {});
-
-      const currentQuery = new URLSearchParams(window.location.search);
-      router.visit(
-        index({
-          query: {
-            ...Object.fromEntries(currentQuery),
-            sort: sortQueryParams,
-            [pageParam]: 1,
-          },
-        }),
-        {
-          only: ['data', 'sort'],
-          preserveScroll: true,
-        }
-      );
-    },
-
-    onPaginationChange: (updater) => {
-      const query = getNextQueryParams(updater);
-
-      router.visit(
-        index({
-          query,
-        }),
-        {
-          only: ['data', 'pagination'],
-          preserveScroll: true,
-        }
-      );
-    },
+    getCoreRowModel: getCoreRowModel<EntryTypeRow>(),
+    ...paginationConfig,
+    ...sortingConfig,
   });
 </script>
 
@@ -164,21 +133,7 @@
         :enable-adjust-page-size="true"
       >
         <template #search-form>
-          <Form :action="index()" v-slot="{processing}" class="w-full">
-            <div class="flex gap-2 items-start">
-              <craft-input
-                class="flex-1"
-                name="search"
-                :label="t('Search term')"
-                :value="searchTerm"
-                label-sr-only
-              >
-              </craft-input>
-              <craft-button type="submit" :loading="processing" slot="suffix">{{
-                t('Search')
-              }}</craft-button>
-            </div>
-          </Form>
+          <SearchForm :action="index()" v-model="searchTerm" />
         </template>
       </AdminTable>
     </Pane>
