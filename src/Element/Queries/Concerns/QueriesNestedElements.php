@@ -102,7 +102,7 @@ trait QueriesNestedElements
                     ->when(
                         $elementQuery->ownerId,
                         function (JoinClause $join) use ($elementQuery) {
-                            $join->where('elements_owners.ownerId', $elementQuery->ownerId);
+                            $join->whereIn('elements_owners.ownerId', $this->normalizeOwnerId($elementQuery->ownerId));
                         },
                         function (JoinClause $join) {
                             $join->whereColumn('elements_owners.ownerId', $this->getPrimaryOwnerIdColumn());
@@ -115,11 +115,11 @@ trait QueriesNestedElements
             $elementQuery->subQuery->join(new Alias(Table::ELEMENTS_OWNERS, 'elements_owners'), $joinClause);
 
             if ($elementQuery->fieldId) {
-                $elementQuery->subQuery->where($this->getFieldIdColumn(), $elementQuery->fieldId);
+                $elementQuery->subQuery->whereIn($this->getFieldIdColumn(), $elementQuery->fieldId);
             }
 
             if ($elementQuery->primaryOwnerId) {
-                $this->subQuery->where($this->getPrimaryOwnerIdColumn(), $elementQuery->primaryOwnerId);
+                $this->subQuery->whereIn($this->getPrimaryOwnerIdColumn(), $elementQuery->primaryOwnerId);
             }
 
             // Ignore revision/draft blocks by default
