@@ -12,6 +12,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use http\Exception\InvalidArgumentException;
 use Illuminate\Validation\Validator;
+use League\Fractal\TransformerAbstract;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -155,7 +156,7 @@ class ElementImporter extends BaseImporter
     }
 
     #[Override]
-    public function transformer(?string $transformer): self
+    public function transformer(string|null|TransformerAbstract $transformer): self
     {
         if ($transformer === null) {
             // use the default for this element type

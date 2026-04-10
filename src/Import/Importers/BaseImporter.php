@@ -167,7 +167,7 @@ abstract class BaseImporter
         return $this;
     }
 
-    public function transformer(?string $transformer): self
+    public function transformer(string|null|TransformerAbstract $transformer): self
     {
         $this->transformer = $this->normalizeTransformer($transformer);
 

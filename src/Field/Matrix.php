@@ -32,6 +32,7 @@ use CraftCms\Cms\Field\Conditions\EmptyFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -57,6 +58,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Elements\User;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
@@ -81,7 +83,7 @@ use function CraftCms\Cms\template;
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
-class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, MergeableFieldInterface
+class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, ImportableElementContainerFieldInterface, MergeableFieldInterface
 {
     /**
      * @event DefineEntryTypesForFieldEvent The event that is triggered when defining the available entry types.
@@ -1892,5 +1894,121 @@ JS,
 
         /** @var Entry[] $entries */
         return $entries;
+    }
+
+    /**
+     * Normalizes value so that it can be imported into a Matrix-type field.
+     *
+     * The value has to be an array; there are 2 options for this:
+     *   option 1:
+     *     each item in the array represents a nested entry (matrix "block");
+     *     in this case the sort order will follow the order from this array
+     *   option 2:
+     *     it can contain 'sortOrder' and 'entries' keys (as per https://craftcms.com/docs/5.x/reference/field-types/matrix.html#saving-matrix-fields)
+     *
+     * In either case, each item represents a nested entry:
+     *   - must contain the "type" key, with a value containing the handle of the entry type it uses,
+     *   - should have the custom field values nested under a "fields" key
+     * (just as per the first paragraph here: https://craftcms.com/docs/5.x/reference/field-types/matrix.html#entry-data).
+     *
+     * If you want to update existing nested entries, you can find them via an optional "matchCriteria" key. ??????
+     *
+     * Returned should be an array containing 'sortOrder' and 'entries' keys.
+     * The 'entries' array should be keyed by the entry ID if we're updating an existing entry,
+     * or by "new:X" key where X is an incremented integer
+     */
+    public function normalizeValueForImport(mixed $value): array
+    {
+        $normalizedValue = [
+            'sortOrder' => [],
+            'entries' => [],
+        ];
+        $allowedEntryTypes = Arr::keyBy($this->getEntryTypes(), 'handle');
+
+        if (array_key_exists('entries', $value)) {
+            $entries = $value['entries'];
+        } else {
+            $entries = $value;
+        }
+
+        $arrayIsList = array_is_list($entries);
+        $i = 0;
+
+        foreach ($entries as $key => $entry) {
+            $newKey = null;
+            // if there's no type or type is not allowed - bail
+            if (! isset($entry['type'])) {
+                continue;
+            }
+            if (! isset($allowedEntryTypes[$entry['type']])) {
+                continue;
+            }
+
+            $entryType = $allowedEntryTypes[$entry['type']];
+
+            // try to match existing matrix entries
+            // TODO: think about this!
+            if (isset($entry['matchCriteria'])) {
+                // try to find an existing entry
+                $query = Entry::find()
+                    ->type($entry['type'])
+                    ->fieldId($this->id);
+
+                Typecast::configure($query, $entry['matchCriteria']);
+                $entry = $query->one();
+
+                if ($entry) {
+                    $newKey = $entry->id;
+                } else {
+                    $newKey = 'new:'.$i++;
+                }
+            }
+
+            // if we still don't have a key, generate a new one
+            // otherwise use the one from this loop
+            if ($arrayIsList && $newKey === null) {
+                $newKey = 'new:'.++$i;
+            } else {
+                $newKey = $key;
+            }
+
+            Arr::forget($entry, [/* 'type', */ 'matchCriteria']);
+
+            $normalizedValue['sortOrder'][] = $newKey;
+            $normalizedValue['entries'][$newKey] = $this->normalizeNestedEntryForImport($entry, $entryType);
+        }
+
+        // if we have a predefined sort order and entries were not a list - use that prefefined sortOrder
+        if (! empty($value['sortOrder']) && ! $arrayIsList) {
+            $normalizedValue['sortOrder'] = $value['sortOrder'];
+            // TODO: this doesn't seem needed;
+            // if we were to use it we should also array_intersect($normalizedValue['sortOrder'], $normalizedValue['entries']) or something like that
+            // $normalizedValue['entries'] = array_replace(array_flip($normalizedValue['sortOrder']), $value['entries']);
+        }
+
+        return $normalizedValue;
+    }
+
+    private function normalizeNestedEntryForImport(array $entry, EntryType $entryType): array
+    {
+        $fieldLayout = $entryType->getFieldLayout();
+        $fields = $entry['fields'] ?? [];
+
+        foreach ($fields as $handle => $value) {
+            if (! is_array($value)) {
+                continue;
+            }
+            $field = $fieldLayout->getFieldByHandle($handle);
+
+            // if we don't have a field, or it's not an importable nested elements type field,
+            // we don't have to worry about extra normalization, so carry on
+            if (! $field instanceof ImportableElementContainerFieldInterface) {
+                continue;
+            }
+
+            $entry['fields'][$handle] = $field->normalizeValueForImport($value);
+        }
+
+        return $entry;
     }
 }

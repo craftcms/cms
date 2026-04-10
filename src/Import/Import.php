@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Import;
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
+use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Import\Data\ImportRun;
 use CraftCms\Cms\Import\DataTypes\Csv;
 use CraftCms\Cms\Import\DataTypes\Json;
@@ -29,6 +31,7 @@ use CraftCms\Cms\Import\Models\ImportRun as ImportRunModel;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Json as JsonSupport;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
@@ -449,11 +452,40 @@ class Import
         $fields = array_filter($item, fn ($value, $key) => in_array($key, $fieldHandles), ARRAY_FILTER_USE_BOTH);
 
         $element->setAttributesFromRequest($attributes);
+
+        $fields = $this->normalizeNestedFields($element, $fields);
+
         $element->setFieldValues($fields);
 
         \Craft::$app->getElements()->saveElement($element);
 
         event(new DataImported($config, $data));
+    }
+
+    private function normalizeNestedFields(ElementInterface $element, array $fields): array
+    {
+        $fieldLayout = $element->getFieldLayout();
+
+        if (! $fieldLayout) {
+            return $fields;
+        }
+
+        foreach ($fields as $handle => $value) {
+            if (! is_array($value)) {
+                continue;
+            }
+
+            $field = $fieldLayout->getFieldByHandle($handle);
+            // if we don't have a field, or it's not an importable nested elements type field,
+            // we don't have to worry about extra normalization, so carry on
+            if (! $field instanceof ImportableElementContainerFieldInterface) {
+                continue;
+            }
+
+            $fields[$handle] = $field->normalizeValueForImport($value);
+        }
+
+        return $fields;
     }
 
     private function getElement(BaseImporter $config, array $data): ElementInterface
@@ -483,7 +515,7 @@ class Import
                 return $element;
             }
 
-            \Craft::configure($query, $criteria);
+            Typecast::configure($query, $criteria);
             // force the selected siteId
             $query->siteId = $config->site?->id;
 
