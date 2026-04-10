@@ -11,14 +11,13 @@
   import type {PaginationData, SortItem} from '@/types';
   import {useServerPagination} from '@/composables/useServerPagination';
   import Pane from '@/components/Pane.vue';
-  import {Form, router} from '@inertiajs/vue3';
+  import {router} from '@inertiajs/vue3';
   import {create, destroy, index} from '@actions/FieldsController';
   import DeleteButton from '@/components/AdminTable/DeleteButton.vue';
   import CpLink from '@/components/CpLink.vue';
   import {useServerSort} from '@/composables/useServerSort';
-  import {useDebounceFn} from '@vueuse/core';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import SearchForm from '@/components/AdminTable/SearchForm.vue';
+  import Empty from '@/components/Empty.vue';
 
   type FieldRow = {
     id: number;
@@ -162,7 +161,13 @@
 <template>
   <AppLayout :title="title">
     <template #actions>
-      <CpLink :inertia="false" appearance="button" variant="primary" :href="create()" icon="plus">
+      <CpLink
+        :inertia="false"
+        appearance="button"
+        variant="primary"
+        :href="create()"
+        icon="plus"
+      >
         {{ t('New field') }}
       </CpLink>
     </template>
@@ -176,6 +181,12 @@
         :total="pagination.total"
         :enable-adjust-page-size="true"
       >
+        <template #empty-row>
+          <Empty
+            icon="light/pen-to-square"
+            :label="t('No fields exist yet.')"
+          />
+        </template>
         <template #search-form>
           <SearchForm v-model="searchTerm" />
         </template>

@@ -17,6 +17,8 @@
   import SearchForm from '@/components/AdminTable/SearchForm.vue';
   import {useServerSort} from '@/composables/useServerSort';
   import CpLink from '@/components/CpLink.vue';
+  import Empty from '@/components/Empty.vue';
+  import DeleteButton from '@/components/AdminTable/DeleteButton.vue';
 
   type EntryTypeRow = {
     id: number;
@@ -129,6 +131,9 @@
         :total="pagination.total"
         :enable-adjust-page-size="true"
       >
+        <template #empty-row>
+          <Empty icon="light/files" :label="t('No entry types exist yet.')" />
+        </template>
         <template #search-form>
           <SearchForm :action="index()" v-model="searchTerm" />
         </template>
