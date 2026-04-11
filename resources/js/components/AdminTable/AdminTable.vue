@@ -9,6 +9,7 @@
   import Select from '@/components/form/Select.vue';
   import Text from '@/components/Text.vue';
   import Empty from '@/components/Empty.vue';
+  import {usePage} from '@inertiajs/vue3';
 
   const props = withDefaults(
     defineProps<{
@@ -38,13 +39,14 @@
     reorder: [startIndex: number, finishIndex: number];
   }>();
 
-  const {setRowRef, getDragState, getDropState} = useReorderableRows({
-    getRowIds: () => props.table.getRowModel().rows.map((row: any) => row.id),
-    onReorder: (startIndex, finishIndex) => {
-      emit('reorder', startIndex, finishIndex);
-    },
-    enabled: () => !props.readOnly && props.reorderable,
-  });
+  const {setRowRef, setHandleRef, getDragState, getDropState} =
+    useReorderableRows({
+      getRowIds: () => props.table.getRowModel().rows.map((row: any) => row.id),
+      onReorder: (startIndex, finishIndex) => {
+        emit('reorder', startIndex, finishIndex);
+      },
+      enabled: () => !props.readOnly && props.reorderable,
+    });
 
   const pageIndexProxy = computed({
     get() {
@@ -89,18 +91,18 @@
     return value;
   }
 
-  function getColumnSize(column: any) {
-    if (column.columnDef.meta?.columnSize) {
-      return column.columnDef.meta.columnSize;
-    }
-  }
-
   const tableStyles = computed(() => {
+    const columns = props.table.getAllColumns();
+    let columnCount = columns.length;
+
+    if (props.reorderable) {
+      columnCount += 1;
+    }
+
     const styles: {[key: string]: number} = {
-      '--table-column-count': props.table.getAllColumns().length,
+      '--table-column-count': columnCount,
     };
 
-    const columns = props.table.getAllColumns();
     const gridDef = columns.reduce(
       (acc: Array<string>, column: Column<any>) => {
         acc.push(column.columnDef.meta?.trackSize ?? `1fr`);
@@ -109,10 +111,26 @@
       []
     );
 
+    if (props.reorderable) {
+      gridDef.unshift('44px');
+    }
+
     styles['--table-template-columns'] = gridDef.join(' ');
 
     return styles;
   });
+
+  function getRowPosition(index: number) {
+    if (index === 0) {
+      return 'first';
+    }
+
+    if (index === props.table.getRowModel().rows.length - 1) {
+      return 'last';
+    }
+
+    return 'middle';
+  }
 </script>
 
 <template>
@@ -204,24 +222,22 @@
               row: true,
               'cp-table-row': true,
               'row--dragging':
-                !readOnly && getDragState(row.id).type === 'dragging',
+                !readOnly && getDragState(row.id).type === 'is-dragging',
             }"
           >
             <template v-if="reorderable && !readOnly">
-              <td class="cell cell--drag-handle">
-                <div class="flex justify-center">
-                  <ReorderButton></ReorderButton>
+              <td>
+                <div>
+                  <ReorderButton
+                    @click:up="emit('reorder', row.index, row.index - 1)"
+                    @click:down="emit('reorder', row.index, row.index + 1)"
+                    :position="getRowPosition(row.index)"
+                    :ref="(el: any) => setHandleRef(el?.$el, row.id)"
+                  />
                 </div>
 
                 <!-- Drop indicator spans entire row, positioned from this cell -->
-                <DropIndicator :edge="getDropState(row.id).edge" />
-
-                <Teleport
-                  v-if="getDragState(row.id).type === 'dragging'"
-                  :to="getDragState(row.id).container"
-                >
-                  <slot name="drag-preview" :row="row"></slot>
-                </Teleport>
+                <DropIndicator :edge="getDropState(row.id).closestEdge" />
               </td>
             </template>
             <component
@@ -243,7 +259,13 @@
           </tr>
         </template>
         <template v-else>
-          <tr style="--table-template-columns: 1fr; --_cell-spacing-inline: 0; --_cell-spacing-block: 0;">
+          <tr
+            style="
+              --table-template-columns: 1fr;
+              --_cell-spacing-inline: 0;
+              --_cell-spacing-block: 0;
+            "
+          >
             <td>
               <slot name="empty-row">
                 <Empty :label="t('No results')" icon="empty-set" />

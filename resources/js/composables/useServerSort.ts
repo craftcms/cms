@@ -12,10 +12,7 @@ interface UseServerSortParams {
   onChange: (args: OnChangeArgs) => void;
 }
 
-export function useServerSort({
-  initialState,
-  onChange,
-}: UseServerSortParams) {
+export function useServerSort({initialState, onChange}: UseServerSortParams) {
   const pageParam = Craft.pageTrigger ?? 'page';
   const sortingState = ref<SortingState>(
     initialState
@@ -38,6 +35,7 @@ export function useServerSort({
         field: sortCol.id,
         direction: sortCol.desc ? 'desc' : 'asc',
       };
+
       return acc;
     }, {});
 

@@ -70,7 +70,6 @@
 
 <style scoped lang="scss">
   .cp-link {
-    justify-content: center;
     gap: var(--c-spacing-sm);
     align-items: center;
     text-decoration: none;
