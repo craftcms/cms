@@ -293,10 +293,9 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     #[AllowedInSandbox]
     public ?string $longitude = null;
 
-    #[Override]
-    public function init(): void
+    public function __construct($config = [])
     {
-        parent::init();
+        parent::__construct($config);
 
         if (! isset($this->countryCode)) {
             $this->countryCode = Cms::config()->defaultCountryCode;

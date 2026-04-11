@@ -36,6 +36,7 @@ use CraftCms\Cms\Asset\Exceptions\VolumeException;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Database\Table;
@@ -50,7 +51,6 @@ use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
@@ -101,7 +101,6 @@ use yii\base\Exception;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
-use yii\base\UnknownPropertyException;
 
 use function CraftCms\Cms\t;
 
@@ -1154,6 +1153,12 @@ class Asset extends Element
         }
 
         parent::__construct($config);
+
+        if (isset($this->alt)) {
+            $this->alt = trim($this->alt);
+        }
+
+        $this->_oldVolumeId = $this->_volumeId;
     }
 
     #[Override]
@@ -1214,8 +1219,7 @@ class Asset extends Element
 
         try {
             return parent::__get($name);
-            /** @phpstan-ignore catch.neverThrown */
-        } catch (UnknownPropertyException|\CraftCms\Cms\Component\Exceptions\UnknownPropertyException $e) {
+        } catch (UnknownPropertyException $e) {
             // Is $name a transform handle?
             if (($transform = app(ImageTransforms::class)->getTransformByHandle($name)) !== null) {
                 return $this->copyWithTransform($transform);
@@ -1223,18 +1227,6 @@ class Asset extends Element
 
             throw $e;
         }
-    }
-
-    #[Override]
-    public function init(): void
-    {
-        parent::init();
-
-        if (isset($this->alt)) {
-            $this->alt = trim($this->alt);
-        }
-
-        $this->_oldVolumeId = $this->_volumeId;
     }
 
     #[Override]

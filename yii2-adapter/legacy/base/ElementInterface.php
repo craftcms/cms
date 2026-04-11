@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use ArrayAccess;
 use craft\behaviors\CustomFieldBehavior;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
@@ -44,8 +45,8 @@ use yii\web\Response;
  */
 #[AllowedInSandbox]
 interface ElementInterface extends
+    ArrayAccess,
     ComponentInterface,
-    ModelInterface,
     \CraftCms\Cms\Component\Contracts\Chippable,
     \CraftCms\Cms\Component\Contracts\CpEditable,
     \CraftCms\Cms\Component\Contracts\Thumbable,

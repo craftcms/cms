@@ -107,7 +107,7 @@ readonly class OAuthController extends AuthenticationController
 
             return $this->failedResponse(
                 $isCpRequest,
-                implode(', ', $user->getErrorSummary(true)) ?: t('Unable to save the user.'),
+                implode(', ', $user->errors()->all()) ?: t('Unable to save the user.'),
                 previous: $e,
             );
         } catch (Throwable $e) {

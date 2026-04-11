@@ -2,9 +2,24 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Address\Addresses;
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Address\Validation\AddressRules;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
+use CraftCms\Cms\Validation\Attributes\Ruleset;
+
+#[Ruleset(AddressRules::class)]
+class TestAddressForFormFields extends Address
+{
+    #[Override]
+    public function getFieldLayout(): FieldLayout
+    {
+        return app(Addresses::class)->getFieldLayout();
+    }
+}
 
 describe('fieldHtml', function () {
     it('renders the field container and optional label', function () {
@@ -81,4 +96,17 @@ describe('field helper methods', function () {
         ['<div class="label light" aria-hidden="true">Test unit</div>', 'textFieldHtml', ['unit' => 'Test unit']],
         ['<textarea', 'textareaFieldHtml'],
     ]);
+});
+
+describe('addressFieldsHtml', function () {
+    it('renders required markers from the live address ruleset', function () {
+        $address = new TestAddressForFormFields(['countryCode' => 'US']);
+        $originalScenario = $address->getScenario();
+
+        $html = FormFields::addressFieldsHtml($address);
+
+        expect((bool) preg_match('/id="addressLine1-label".*?<span class="visually-hidden">Required<\/span>.*?<span class="required"/s', $html))->toBeTrue()
+            ->and((bool) preg_match('/id="sortingCode-label".*?<span class="visually-hidden">Required<\/span>/s', $html))->toBeFalse()
+            ->and($address->getScenario())->toBe($originalScenario);
+    });
 });

@@ -64,7 +64,7 @@ class CreateCommand extends Command
 
         if (! empty($attributes) && ! $user->validate(array_keys($attributes))) {
             $this->error('Invalid arguments:');
-            $this->error(implode(PHP_EOL, $user->getErrorSummary(true)));
+            $this->error(implode(PHP_EOL, $user->errors()->all()));
 
             return self::FAILURE;
         }
@@ -126,7 +126,7 @@ class CreateCommand extends Command
 
         if ($failed) {
             $this->components->error('Failed to save the user.');
-            $this->components->error(implode(PHP_EOL, $user->getErrorSummary(true)));
+            $this->components->error(implode(PHP_EOL, $user->errors()->all()));
 
             return self::FAILURE;
         }

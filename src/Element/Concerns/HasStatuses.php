@@ -73,11 +73,16 @@ trait HasStatuses
     /**
      * Sets whether the element is enabled for the current site.
      *
-     * @param  array|bool  $enabledForSite  Whether the element is enabled for the current site,
-     *                                      or an array of site ID => enabled status pairs.
+     * @param  array|bool|int  $enabledForSite  Whether the element is enabled for the current site,
+     *                                          or an array of site ID => enabled status pairs.
      */
-    public function setEnabledForSite(array|bool $enabledForSite): void
+    public function setEnabledForSite(array|bool|int $enabledForSite): void
     {
+        /** This gets retrieved as an int from the database in some cases */
+        if (is_int($enabledForSite)) {
+            $enabledForSite = (bool) $enabledForSite;
+        }
+
         $this->_enabledForSite = is_array($enabledForSite)
             ? array_map(boolval(...), $enabledForSite)
             : $enabledForSite;

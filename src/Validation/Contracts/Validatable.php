@@ -87,6 +87,13 @@ interface Validatable
     public function attributes(): array;
 
     /**
+     * Returns the attribute names that are safe to be massively assigned in the current scenario.
+     *
+     * @return string[] safe attribute names
+     */
+    public function safeAttributes(): array;
+
+    /**
      * Returns human-readable labels for attributes.
      * These labels are used in validation error messages. For example, given an attribute
      * `firstName`, a label `First Name` can be declared for display to end users.
@@ -95,6 +102,20 @@ interface Validatable
      * @return array<string, string>
      */
     public function attributeLabels(): array;
+
+    /**
+     * Returns the text label for the specified attribute.
+     */
+    public function getAttributeLabel(string $attribute): string;
+
+    /**
+     * Generates a user-friendly attribute label based on the give attribute name.
+     * This is done by replacing underscores, dashes and dots with blanks and
+     * changing the first letter of each word to uppercase.
+     *
+     * For example, 'department_name' or 'DepartmentName' will generate 'Department Name'.
+     */
+    public function generateAttributeLabel(string $name): string;
 
     /**
      * Sets the current validation scenario.

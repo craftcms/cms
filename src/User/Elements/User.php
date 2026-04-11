@@ -172,6 +172,38 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
 
     public const string SCENARIO_PASSWORD = 'password';
 
+    public function __construct($config = [])
+    {
+        parent::__construct($config);
+
+        // Is this user in cooldown mode, and are they past their window?
+        if (
+            $this->locked &&
+            Cms::config()->cooldownDuration &&
+            ! $this->getRemainingCooldownTime()
+        ) {
+            Users::unlockUser($this);
+        }
+
+        // Convert IDNA ASCII to Unicode
+        if ($this->username) {
+            $this->username = Str::idnToUtf8Email($this->username);
+        }
+        if ($this->email) {
+            $this->email = Str::idnToUtf8Email($this->email);
+        }
+
+        if (empty($this->username) && Cms::config()->useEmailAsUsername) {
+            $this->username = $this->email;
+        }
+
+        if ($this->password === '') {
+            $this->password = null;
+        }
+
+        $this->normalizeNames();
+    }
+
     #[Override]
     public function scenarios(): array
     {
@@ -798,39 +830,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public function getEmailForVerification(): string
     {
         return $this->unverifiedEmail ?? $this->email;
-    }
-
-    #[Override]
-    public function init(): void
-    {
-        parent::init();
-
-        // Is this user in cooldown mode, and are they past their window?
-        if (
-            $this->locked &&
-            Cms::config()->cooldownDuration &&
-            ! $this->getRemainingCooldownTime()
-        ) {
-            Users::unlockUser($this);
-        }
-
-        // Convert IDNA ASCII to Unicode
-        if ($this->username) {
-            $this->username = Str::idnToUtf8Email($this->username);
-        }
-        if ($this->email) {
-            $this->email = Str::idnToUtf8Email($this->email);
-        }
-
-        if (empty($this->username) && Cms::config()->useEmailAsUsername) {
-            $this->username = $this->email;
-        }
-
-        if ($this->password === '') {
-            $this->password = null;
-        }
-
-        $this->normalizeNames();
     }
 
     /**

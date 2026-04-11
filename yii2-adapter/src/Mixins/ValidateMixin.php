@@ -133,6 +133,15 @@ readonly class ValidateMixin
         };
     }
 
+    public function getErrorSummary($showAllErrors = false): Closure
+    {
+        return function($showAllErrors = false) {
+            Deprecator::log($this::class . '->getErrorSummary', 'Calling `->getErrorSummary` is deprecated. Use `->errors()->all()` instead.');
+
+            return $this->errors()->all();
+        };
+    }
+
     public function rulesClass(): Closure
     {
         return function(): string {

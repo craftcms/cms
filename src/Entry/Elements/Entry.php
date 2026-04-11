@@ -901,16 +901,14 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      */
     private ?EntryType $_type = null;
 
-    /**
-     * @since 3.5.0
-     */
-    #[Override]
-    public function init(): void
+    public function __construct($config = [])
     {
-        parent::init();
+        parent::__construct($config);
+
         if (isset($this->id)) {
             $this->oldStatus = $this->getStatus();
         }
+
         $this->_oldTypeId = $this->_typeId;
     }
 
@@ -2526,7 +2524,7 @@ JS;
         if (
             ! $this->_userPostDate() &&
             (
-                in_array($this->scenario, [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]) ||
+                $this->inScenarios(self::SCENARIO_LIVE, self::SCENARIO_DEFAULT) ||
                 ! $this->getIsDraft()
             )
         ) {

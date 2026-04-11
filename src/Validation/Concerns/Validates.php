@@ -8,6 +8,7 @@ use BadMethodCallException;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Validation\Attributes\Ruleset as RulesetAttribute;
@@ -60,9 +61,32 @@ trait Validates
         return Utils::getPublicAttributes($this);
     }
 
+    public function safeAttributes(): array
+    {
+        return array_keys($this->getRules());
+    }
+
     public function attributeLabels(): array
     {
         return [];
+    }
+
+    public function getAttributeLabel(string $attribute): string
+    {
+        $labels = $this->attributeLabels();
+
+        return $labels[$attribute] ?? $this->generateAttributeLabel($attribute);
+    }
+
+    /**
+     * Generates a user friendly attribute label based on the give attribute name.
+     * This is done by replacing underscores, dashes and dots with blanks and
+     * changing the first letter of each word to upper case.
+     * For example, 'department_name' or 'DepartmentName' will generate 'Department Name'.
+     */
+    public function generateAttributeLabel(string $name): string
+    {
+        return Str::camel2words($name);
     }
 
     public function getRuleset(): Ruleset|false
