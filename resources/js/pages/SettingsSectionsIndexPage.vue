@@ -1,17 +1,11 @@
 <script setup lang="ts">
-  import {
-    createColumnHelper,
-    getCoreRowModel,
-    type PaginationState,
-    type SortingState,
-    useVueTable,
-  } from '@tanstack/vue-table';
+  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
-  import {computed, h, ref} from 'vue';
+  import {h, ref} from 'vue';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import DeleteSectionButton from '@/components/sections/DeleteSectionButton.vue';
   import {create, edit, index} from '@actions/Settings/SectionsController';
-  import {Form, router} from '@inertiajs/vue3';
+  import {router} from '@inertiajs/vue3';
   import AppLayout from '@/layout/AppLayout.vue';
   import Pane from '@/components/Pane.vue';
   import CpLink from '@/components/CpLink.vue';
@@ -19,6 +13,7 @@
   import SearchForm from '@/components/AdminTable/SearchForm.vue';
   import {useServerPagination} from '@/composables/useServerPagination';
   import {useServerSort} from '@/composables/useServerSort';
+  import {createCraftColumnHelper} from '@/components/AdminTable/createCraftColumnHelper';
 
   export interface SectionModel {
     id: number;
@@ -40,7 +35,7 @@
   }>();
 
   const searchTerm = ref(props.searchTerm ?? '');
-  const columnHelper = createColumnHelper<SectionModel>();
+  const columnHelper = createCraftColumnHelper<SectionModel>();
   const columns = ref([
     columnHelper.accessor('name', {
       header: t('Name'),
@@ -63,15 +58,9 @@
     columnHelper.accessor('type', {
       header: t('Type'),
     }),
-    columnHelper.display({
-      id: 'actions',
-      cell: ({row}) =>
-        h(
-          'div',
-          {class: 'flex justify-end items-center gap-2'},
-          h(DeleteSectionButton, {section: row.original})
-        ),
-    }),
+    columnHelper.actions(({row}) => [
+      h(DeleteSectionButton, {section: row.original}),
+    ]),
   ]);
 
   const {paginationState, paginationConfig} = useServerPagination({

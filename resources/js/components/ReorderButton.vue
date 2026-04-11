@@ -46,6 +46,6 @@
 
 <style scoped lang="scss">
   craft-button {
-    cursor: grab;
+    cursor: move;
   }
 </style>

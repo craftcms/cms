@@ -1,11 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
-  import {
-    createColumnHelper,
-    getCoreRowModel,
-    useVueTable,
-  } from '@tanstack/vue-table';
+  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {type PaginationData, type SortItem, TableSpacing} from '@/types';
   import {computed, h, ref} from 'vue';
   import DynamicHtmlRenderer from '@/components/DynamicHtmlRenderer.vue';
@@ -19,6 +15,7 @@
   import CpLink from '@/components/CpLink.vue';
   import Empty from '@/components/Empty.vue';
   import DeleteButton from '@/components/AdminTable/DeleteButton.vue';
+  import {createCraftColumnHelper} from '@/components/AdminTable/createCraftColumnHelper';
 
   type EntryTypeRow = {
     id: number;
@@ -54,7 +51,7 @@
 
   const searchTerm = ref(props.searchTerm ?? '');
   const entryTypes = computed(() => props.data);
-  const columnHelper = createColumnHelper<EntryTypeRow>();
+  const columnHelper = createCraftColumnHelper<EntryTypeRow>();
   const columnVisibility = computed(() => {
     return {
       name: true,
@@ -81,15 +78,11 @@
       header: t('Usages'),
       cell: ({getValue}) => h(DynamicHtmlRenderer, {html: getValue()}),
     }),
-    columnHelper.display({
-      id: 'actions',
-      cell: ({row}) =>
-        h('div', {class: 'flex justify-end'}, [
-          h(DeleteButton, {
-            onClick: () => deleteEntryType(row.original),
-          }),
-        ]),
-    }),
+    columnHelper.actions(({row}) => [
+      h(DeleteButton, {
+        onClick: () => deleteEntryType(row.original),
+      }),
+    ]),
   ]);
 
   const {paginationState, paginationConfig} = useServerPagination({
