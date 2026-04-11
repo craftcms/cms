@@ -204,6 +204,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         Route::get('settings/assets/transforms', [ImageTransformsController::class, 'index']);
         Route::middleware(RequireAdminChanges::class)->get('settings/assets/transforms/new', [ImageTransformsController::class, 'create']);
         Route::get('settings/assets/transforms/{transformHandle}', [ImageTransformsController::class, 'edit']);
+        Route::middleware(RequireAdminChanges::class)->delete('settings/assets/transforms/{transformId}', [ImageTransformsController::class, 'destroy']);
 
         // Sites
         Route::get('settings/sites', [SitesController::class, 'index'])

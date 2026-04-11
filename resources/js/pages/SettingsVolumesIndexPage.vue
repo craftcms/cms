@@ -3,7 +3,6 @@
   import IndexLayout from '@/layout/IndexLayout.vue';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
-  import VarDump from '@/components/VarDump.vue';
   import {computed, h, nextTick, ref, watch} from 'vue';
   import {createCraftColumnHelper} from '@/components/AdminTable/createCraftColumnHelper';
   import DeleteButton from '@/components/AdminTable/DeleteButton.vue';
@@ -18,7 +17,6 @@
     reorder,
   } from '@actions/Settings/VolumesController';
   import {index as imageTransformsIndex} from '@actions/Settings/ImageTransformsController';
-  import {useServerSort} from '@/composables/useServerSort';
   import type {SortItem} from '@/types';
 
   interface VolumeData {
@@ -137,11 +135,10 @@
 
   const navItems = computed(() => {
     return {
-      volumes: {label: t('Volumes'), url: index().url},
+      volumes: {label: t('Volumes'), url: index().url, active: true},
       transforms: {
         label: t('Image Transforms'),
         url: imageTransformsIndex().url,
-        inertia: false,
       },
     };
   });
@@ -166,7 +163,7 @@
         <template v-for="(item, id) in navItems" :key="id">
           <CpLink
             as="craft-nav-item"
-            :active="true"
+            :active="item.active ?? false"
             :href="item.url"
             block
             flush

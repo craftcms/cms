@@ -360,7 +360,6 @@ Route::prefix(implode('/', [
             Route::post('volumes/save-volume', [VolumesController::class, 'save']);
             Route::post('volumes/reorder-volumes', [VolumesController::class, 'reorder']);
             Route::post('image-transforms/save', [ImageTransformsController::class, 'save']);
-            Route::post('image-transforms/delete', [ImageTransformsController::class, 'delete']);
         });
 
         // Plugins
