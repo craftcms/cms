@@ -9,9 +9,11 @@ use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
 
@@ -68,7 +70,7 @@ it('requires authentication', function () {
     get(action([ImageTransformsController::class, 'create']))->assertRedirect();
     get(action([ImageTransformsController::class, 'edit'], ['transformHandle' => $transform->handle]))->assertRedirect();
     postJson(action([ImageTransformsController::class, 'save']))->assertUnauthorized();
-    postJson(action([ImageTransformsController::class, 'delete']))->assertUnauthorized();
+    deleteJson(action([ImageTransformsController::class, 'destroy'], [$transform->id]))->assertUnauthorized();
 });
 
 it('requires admin changes', function () {
@@ -76,21 +78,19 @@ it('requires admin changes', function () {
     Cms::config()->allowAdminChanges = false;
 
     get(action([ImageTransformsController::class, 'index']))
-        ->assertOk()
-        ->assertSee(t("Changes to these settings aren\u{2019}t permitted in this environment."));
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('readOnly', true));
     get(action([ImageTransformsController::class, 'edit'], ['transformHandle' => $transform->handle]))
         ->assertOk()
         ->assertSee(t("Changes to these settings aren\u{2019}t permitted in this environment."));
 
     get(action([ImageTransformsController::class, 'create']))->assertForbidden();
     postJson(action([ImageTransformsController::class, 'save']), validTransformData())->assertForbidden();
-    postJson(action([ImageTransformsController::class, 'delete']), ['id' => $transform->id])->assertForbidden();
+    deleteJson(action([ImageTransformsController::class, 'destroy'], [$transform->id]))->assertForbidden();
 });
 
 it('renders index', function () {
     get(action([ImageTransformsController::class, 'index']))
-        ->assertOk()
-        ->assertSee(t('New image transform'));
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('SettingsImageTransformsIndexPage'));
 });
 
 it('renders create', function () {
@@ -188,18 +188,11 @@ it('deletes a transform', function () {
 
     expect(ImageTransformModel::count())->toBe(1);
 
-    postJson(action([ImageTransformsController::class, 'delete']), [
-        'id' => $transform->id,
-    ])->assertOk();
+    deleteJson(action([ImageTransformsController::class, 'destroy'], [$transform->id]))->assertOk();
 
     expect(ImageTransformModel::count())->toBe(0);
 
     $service = app(ImageTransforms::class);
     $service->reset();
     expect($service->getTransformByHandle($transform->handle))->toBeNull();
-});
-
-it('validates required id on delete', function () {
-    postJson(action([ImageTransformsController::class, 'delete']), [])
-        ->assertJsonValidationErrors(['id']);
 });
