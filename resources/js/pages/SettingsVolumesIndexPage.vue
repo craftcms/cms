@@ -4,7 +4,7 @@
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import VarDump from '@/components/VarDump.vue';
-  import {computed, h} from 'vue';
+  import {computed, h, nextTick, ref, watch} from 'vue';
   import {createCraftColumnHelper} from '@/components/AdminTable/createCraftColumnHelper';
   import DeleteButton from '@/components/AdminTable/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
@@ -15,6 +15,7 @@
     destroy,
     edit,
     index,
+    reorder,
   } from '@actions/Settings/VolumesController';
   import {index as imageTransformsIndex} from '@actions/Settings/ImageTransformsController';
   import {useServerSort} from '@/composables/useServerSort';
@@ -48,6 +49,7 @@
     title: string;
     volumes: Array<VolumeData>;
     sort: Array<SortItem>;
+    readOnly: boolean;
   }>();
 
   function deleteVolume(volume: VolumeData) {
@@ -62,7 +64,47 @@
     }
   }
 
+  const volumeIds = ref(props.volumes.map((volume) => volume.id));
+  const volumes = computed(() => {
+    return (volumeIds.value ?? [])
+      .map((id) => props.volumes.find((volume) => volume.id === id))
+      .filter(Boolean);
+  });
+
+  function handleReorder(startIndex: number, finishIndex: number) {
+    const newIds = [...volumeIds.value];
+    const [id] = newIds.splice(startIndex, 1);
+    newIds.splice(finishIndex, 0, id);
+    volumeIds.value = newIds;
+  }
+
+  watch(volumeIds, (newValue, oldValue) => {
+    // Defer to next tick to avoid issues during drag-and-drop event handling
+    nextTick(() => {
+      router.post(
+        reorder(),
+        {
+          ids: [...newValue], // Copy to ensure we have the current value
+        },
+        {
+          preserveScroll: true,
+          preserveState: true,
+          onError: () => {
+            volumeIds.value = oldValue;
+          },
+        }
+      );
+    });
+  });
+
   const columnHelper = createCraftColumnHelper<VolumeData>();
+  const columnVisibility = computed(() => {
+    return {
+      name: true,
+      handle: true,
+      actions: !props.readOnly,
+    };
+  });
   const columns = computed(() => [
     columnHelper.link('name', {
       header: t('Name'),
@@ -77,34 +119,19 @@
     ]),
   ]);
 
-  const {sortingState, sortingConfig} = useServerSort({
-    initialState: props.sort,
-    onChange: ({query}) => {
-      router.visit(
-        index({
-          query,
-        }),
-        {
-          only: ['data', 'sort'],
-          preserveScroll: true,
-        }
-      );
-    },
-  });
-
   const table = useVueTable<VolumeData>({
     get data() {
-      return props.volumes;
+      return volumes.value;
     },
     get columns() {
       return columns.value;
     },
     state: {
-      get sorting() {
-        return sortingState.value;
+      get columnVisibility() {
+        return columnVisibility.value;
       },
     },
-    ...sortingConfig,
+    enableSorting: false,
     getCoreRowModel: getCoreRowModel<VolumeData>(),
   });
 
@@ -150,7 +177,12 @@
         </template>
       </craft-nav-list>
     </template>
-    <AdminTable :table="table" :reorderable="false">
+    <AdminTable
+      :table="table"
+      :reorderable="true"
+      :read-only="readOnly"
+      @reorder="handleReorder"
+    >
       <template #empty-row>
         <Empty :label="t('No volumes exist yet.')" icon="light/files" />
       </template>

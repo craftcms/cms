@@ -16,7 +16,6 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\File;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -40,7 +39,7 @@ class VolumesController
     public function index(Request $request, Volumes $volumes)
     {
         $sort = ! empty($request->array('sort')) ? $request->array('sort') : [
-            ['field' => 'name', 'direction' => 'asc'],
+            ['field' => 'sortOrder', 'direction' => 'asc'],
         ];
 
         match (Arr::get($sort, '0.field')) {
@@ -198,10 +197,10 @@ class VolumesController
 
     public function reorder(Request $request, Volumes $volumes): Response
     {
-        $volumeIds = Json::decode($request->input('ids'));
+        $volumeIds = $request->input('ids', []);
         $volumes->reorderVolumes($volumeIds);
 
-        return $this->asSuccess();
+        return $this->asSuccess(t('Order updated.'));
     }
 
     public function destroy(Request $request, Volumes $volumes, int $volumeId): Response

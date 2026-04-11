@@ -295,13 +295,7 @@
           :reorderable="!!group?.id"
           spacing="relaxed"
           @reorder="handleReorder"
-        >
-          <template #drag-preview="{row}">
-            <div class="border-neutral-border-quiet rounded p-2 bg-white">
-              {{ row.original.name }}
-            </div>
-          </template>
-        </AdminTable>
+        />
       </template>
       <template v-else>
         <div class="py-20">

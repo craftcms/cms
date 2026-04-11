@@ -32,7 +32,7 @@ export function createCraftColumnHelper<T extends Record<string, any>>() {
           h(
             'div',
             {
-              class: 'flex gap-2 items-center justify-end',
+              class: 'flex gap-2 items-center justify-end self-end',
             },
             actions(cellContext)
           ),

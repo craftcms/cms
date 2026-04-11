@@ -175,7 +175,9 @@ Modify with `cp-table--auto` to apply table-layout: auto
   th,
   td {
     display: flex;
+    align-items: start;
     flex-direction: column;
+    justify-content: center;
     padding-block: var(--_cell-spacing-block);
     padding-inline: var(--_cell-spacing-inline);
     position: relative;
