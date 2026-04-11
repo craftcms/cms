@@ -2,11 +2,7 @@
   import {t} from '@craftcms/cp';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
-  import {
-    createColumnHelper,
-    getCoreRowModel,
-    useVueTable,
-  } from '@tanstack/vue-table';
+  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {computed, h, nextTick, ref, watch} from 'vue';
   import type {SelectItem, Site, SiteGroup} from '@/types';
   import ModalForm from '@/components/ModalForm.vue';
@@ -19,6 +15,8 @@
   import {index} from '@routes/cp/settings/sites';
   import InputCombobox from '@/components/form/InputCombobox.vue';
   import IndexLayout from '@/layout/IndexLayout.vue';
+  import {createCraftColumnHelper} from '@/components/AdminTable/createCraftColumnHelper';
+  import Empty from '@/components/Empty.vue';
 
   const props = defineProps<{
     readOnly: boolean;
@@ -33,7 +31,7 @@
   }>();
 
   const modalActive = ref(false);
-  const columnHelper = createColumnHelper<Site>();
+  const columnHelper = createCraftColumnHelper<Site>();
 
   const form = useForm({
     id: props.group?.id ?? null,
@@ -154,26 +152,13 @@
       id: 'group',
       header: () => t('Group'),
     }),
-    columnHelper.display({
-      id: 'actions',
-      cell: ({row}) =>
-        h(
-          'div',
-          {
-            class: 'flex justify-end',
-          },
-          [
-            h(DeleteSiteButton, {
-              site: row.original,
-              disabled: row.original.primary,
-              class: 'whitespace-normal',
-            }),
-          ]
-        ),
-      meta: {
-        wrap: true,
-      },
-    }),
+    columnHelper.actions(({row}) => [
+      h(DeleteSiteButton, {
+        site: row.original,
+        disabled: row.original.primary,
+        class: 'whitespace-normal',
+      }),
+    ]),
   ]);
 
   const sitesTable = useVueTable({
@@ -288,25 +273,15 @@
         <CalloutReadOnly />
       </template>
 
-      <template v-if="sites.length">
-        <AdminTable
-          :table="sitesTable"
-          :read-only="readOnly"
-          :reorderable="!!group?.id"
-          spacing="relaxed"
-          @reorder="handleReorder"
-        />
-      </template>
-      <template v-else>
-        <div class="py-20">
-          <div
-            class="w-[60ch] mx-auto text-center grid gap-3 justify-items-center text-gray-500"
-          >
-            <craft-icon
-              name="light/earth-americas"
-              style="font-size: calc(48rem / 16)"
-            ></craft-icon>
-            <p>{{ t('No sites exist for this group yet.') }}</p>
+      <AdminTable
+        :table="sitesTable"
+        :read-only="readOnly"
+        :reorderable="!!group?.id"
+        spacing="relaxed"
+        @reorder="handleReorder"
+      >
+        <template #empty-row>
+          <Empty icon="light/earth-americas" :label="t('No sites exist yet.')">
             <CpLink
               as="craft-button"
               :href="create({query: {groupId: group?.id}}).url"
@@ -315,9 +290,9 @@
               <craft-icon name="plus" slot="prefix"></craft-icon>
               {{ t('New Site') }}
             </CpLink>
-          </div>
-        </div>
-      </template>
+          </Empty>
+        </template>
+      </AdminTable>
     </div>
   </IndexLayout>
 

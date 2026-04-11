@@ -6,7 +6,7 @@
 </script>
 
 <template>
-  <div class="py-20">
+  <div class="py-20 w-full">
     <div
       class="w-[60ch] mx-auto text-center grid gap-3 justify-items-center text-gray-500"
     >
@@ -20,6 +20,8 @@
       <slot name="content">
         <p class="text-lg">{{ label }}</p>
       </slot>
+
+      <slot></slot>
     </div>
   </div>
 </template>
