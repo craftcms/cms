@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\NestedElementInterface;
 use craft\events\DefineElementEditorHtmlEvent;
 use craft\services\Drafts;
 use craft\web\Controller;
@@ -22,6 +21,7 @@ use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\ElementActivity;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;

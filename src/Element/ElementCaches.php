@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use craft\base\NestedElementInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Events\InvalidateElementCaches;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use CraftCms\Cms\View\Data\TemplateCacheContext;

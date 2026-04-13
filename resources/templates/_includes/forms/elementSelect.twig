@@ -114,7 +114,7 @@
         sources: sources,
         condition: condition ? condition.getConfig() : null,
         referenceElementId: referenceElement.id ?? null,
-        referenceElementOwnerId: (referenceElement ?? null) is instance of('craft\\base\\NestedElementInterface')
+        referenceElementOwnerId: (referenceElement ?? null) is instance of('CraftCms\\Cms\\Element\\Contracts\\NestedElementInterface')
             ? referenceElement.getOwnerId()
             : null,
         referenceElementSiteId: referenceElement.siteId ?? null,

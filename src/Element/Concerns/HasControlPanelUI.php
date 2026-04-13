@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use Craft;
-use craft\base\NestedElementInterface;
 use craft\controllers\ElementsController;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\MenuHtml;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\DefineActionMenuItems;

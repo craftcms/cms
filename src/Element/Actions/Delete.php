@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Actions;
 
-use craft\base\NestedElementInterface;
 use craft\services\Elements;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\DeleteActionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Html;

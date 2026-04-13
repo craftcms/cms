@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Elements;
 
-use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
 use CraftCms\Cms\Field\ContentBlock as ContentBlockField;

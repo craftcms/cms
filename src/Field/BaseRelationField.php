@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use Craft;
-use craft\base\NestedElementInterface;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\FormFields;
@@ -19,6 +18,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;

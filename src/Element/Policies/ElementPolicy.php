@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Policies;
 
 use BadMethodCallException;
-use craft\base\NestedElementInterface;
 use CraftCms\Cms\Auth\Events\AuthorizingElement;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\User\Elements\User;

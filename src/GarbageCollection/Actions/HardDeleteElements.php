@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\GarbageCollection\Actions;
 
-use craft\base\NestedElementInterface;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;

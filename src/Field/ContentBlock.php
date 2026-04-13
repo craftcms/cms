@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Craft;
-use craft\base\NestedElementInterface;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
