@@ -2,40 +2,22 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Element\Contracts;
 
-use craft\base\Component;
-use craft\base\ElementTrait;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 /**
  * NestedElementInterface defines the common interface to be implemented by elements that can be
  * nested within other elements via a custom field.
- *
- * [[NestedElementTrait]] provides a base implementation.
- *
- * @mixin ElementTrait
- * @mixin Component
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 5.0.0
  */
 interface NestedElementInterface extends ElementInterface
 {
     /**
      * Returns the primary owner element’s ID, if the element has one.
      *
-     * @throws InvalidConfigException if the element is misconfigured
+     * @throws RuntimeException if the element is misconfigured
      */
     #[AllowedInSandbox]
     public function getPrimaryOwnerId(): ?int;
@@ -48,7 +30,7 @@ interface NestedElementInterface extends ElementInterface
     /**
      * Returns the primary owner element, if the element has one.
      *
-     * @throws InvalidConfigException if the element is misconfigured
+     * @throws RuntimeException if the element is misconfigured
      */
     public function getPrimaryOwner(): ?ElementInterface;
 
@@ -60,7 +42,7 @@ interface NestedElementInterface extends ElementInterface
     /**
      * Returns the owner element’s ID, if the element has one.
      *
-     * @throws InvalidConfigException if the element is misconfigured
+     * @throws RuntimeException if the element is misconfigured
      */
     #[AllowedInSandbox]
     public function getOwnerId(): ?int;
@@ -73,7 +55,7 @@ interface NestedElementInterface extends ElementInterface
     /**
      * Returns the owner element, if the element has one.
      *
-     * @throws InvalidConfigException if the element is misconfigured
+     * @throws RuntimeException if the element is misconfigured
      */
     public function getOwner(): ?ElementInterface;
 
@@ -87,16 +69,14 @@ interface NestedElementInterface extends ElementInterface
      *
      * @return ElementInterface[]
      *
-     * @throws InvalidConfigException if the element is misconfigured
-     *
-     * @since 5.8.17
+     * @throws RuntimeException if the element is misconfigured
      */
     public function getOwners(array $criteria = []): array;
 
     /**
      * Returns the field that contains the element.
      *
-     * @throws InvalidConfigException if the element is misconfigured
+     * @throws RuntimeException if the element is misconfigured
      */
     public function getField(): ?ElementContainerFieldInterface;
 

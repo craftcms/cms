@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Elements;
 
 use Craft;
-use craft\base\NestedElementInterface;
-use craft\base\NestedElementTrait;
 use craft\controllers\ElementIndexesController;
 use craft\controllers\ElementsController;
 use CraftCms\Cms\Cms;
@@ -23,9 +21,11 @@ use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\DeleteForSite;
 use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Actions\Restore;
+use CraftCms\Cms\Element\Concerns\NestedElement;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
@@ -108,7 +108,7 @@ use function CraftCms\Cms\t;
 #[Ruleset(EntryRules::class)]
 class Entry extends Element implements Colorable, ExpirableElementInterface, Iconic, NestedElementInterface
 {
-    use NestedElementTrait {
+    use NestedElement {
         eagerLoadingMap as traitEagerLoadingMap;
         attributes as traitAttributes;
         extraFields as traitExtraFields;
@@ -1842,7 +1842,7 @@ JS, [
                 $actions[] = [
                     'id' => $fieldEditId,
                     'icon' => 'gear',
-                    'label' => Craft::t('app', 'Field settings'),
+                    'label' => t('Field settings'),
                 ];
 
                 HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
