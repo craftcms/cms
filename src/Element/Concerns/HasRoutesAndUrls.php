@@ -11,9 +11,9 @@ use CraftCms\Cms\Element\Events\BeforeDefineUrl;
 use CraftCms\Cms\Element\Events\DefineUrl;
 use CraftCms\Cms\Element\Events\SetRoute;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
+use Illuminate\Support\HtmlString;
 use Twig\Markup;
 
 /**
@@ -132,7 +132,7 @@ trait HasRoutesAndUrls
         return null;
     }
 
-    public function getLink(): ?Markup
+    public function getLink(): ?HtmlString
     {
         if (($url = $this->getUrl()) === null) {
             return null;
@@ -140,6 +140,6 @@ trait HasRoutesAndUrls
 
         $a = Html::a(Html::encode($this->getUiLabel()), $url);
 
-        return Template::raw($a);
+        return new HtmlString($a);
     }
 }

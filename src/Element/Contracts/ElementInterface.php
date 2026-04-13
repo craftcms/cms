@@ -18,7 +18,6 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -28,15 +27,12 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\HtmlString;
+use RuntimeException;
 use Stringable;
-use Twig\Markup;
-use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
-use yii\web\Response;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * ElementInterface defines the common interface to be implemented by element classes.
- * A class implementing this interface should also use [[ElementTrait]].
  *
  * @phpstan-require-extends Element
  *
@@ -48,22 +44,16 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
 {
     /**
      * Returns the lowercase version of [[displayName()]].
-     *
-     * @since 3.3.17
      */
     public static function lowerDisplayName(): string;
 
     /**
      * Returns the plural version of [[displayName()]].
-     *
-     * @since 3.2.0
      */
     public static function pluralDisplayName(): string;
 
     /**
      * Returns the plural, lowercase version of [[displayName()]].
-     *
-     * @since 3.3.17
      */
     public static function pluralLowerDisplayName(): string;
 
@@ -76,8 +66,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
 
     /**
      * Returns whether element indexes should show the “Drafts” status option.
-     *
-     * @since 5.0.0
      */
     public static function hasDrafts(): bool;
 
@@ -89,7 +77,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * @see getDirtyAttributes()
      * @see getDirtyFields()
-     * @since 3.4.0
      */
     public static function trackChanges(): bool;
 
@@ -102,8 +89,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
 
     /**
      * Returns whether element indexes should include a thumbnail view by default.
-     *
-     * @since 5.0.0
      */
     public static function hasThumbs(): bool;
 
@@ -255,15 +240,11 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
 
     /**
      * Returns an element condition for the element type.
-     *
-     * @since 4.0.0
      */
     public static function createCondition(): ElementConditionInterface;
 
     /**
      * Returns whether the element type’s sources can be split into multiple pages.
-     *
-     * @since 5.9.0
      */
     public static function multiPageSources(): bool;
 
@@ -313,8 +294,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
 
     /**
      * Returns a source definition by a given source key/path and context.
-     *
-     * @since 4.4.0
      */
     public static function findSource(string $sourceKey, ?string $context): ?array;
 
@@ -322,8 +301,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns the source path for a given source key, step key, and context.
      *
      * @return array[]|null
-     *
-     * @since 4.4.12
      */
     public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array;
 
@@ -335,15 +312,11 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * @param  string|null  $source  The selected source’s key, or `null` if all known field layouts should be returned
      * @return FieldLayout[]
-     *
-     * @since 3.5.0
      */
     public static function fieldLayouts(?string $source): array;
 
     /**
      * Modifies a custom source’s config, before it’s returned by [[craft\services\ElementSources::getSources()]]
-     *
-     * @since 4.5.0
      */
     public static function modifyCustomSource(array $config): array;
 
@@ -379,8 +352,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * @param  string  $source  The selected source’s key.
      * @return array The available element exporters.
-     *
-     * @since 3.4.0
      */
     public static function exporters(string $source): array;
 
@@ -415,8 +386,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
 
     /**
      * Returns the base attributes that should be applied when bulk-duplicating elements of this type.
-     *
-     * @since 5.7.0
      */
     public static function baseBulkDuplicateAttributes(): array;
 
@@ -424,7 +393,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns the element index HTML.
      *
      * @param  int[]|null  $disabledElementIds
-     * @return string The element index HTML
+     * @return string|Stringable The element index HTML
      */
     public static function indexHtml(
         ElementQueryInterface $elementQuery,
@@ -439,8 +408,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
 
     /**
      * Returns the total number of elements that will be shown on an element index, for the given element query.
-     *
-     * @since 4.4.0
      */
     public static function indexElementCount(ElementQueryInterface $elementQuery, ?string $sourceKey): int;
 
@@ -508,8 +475,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *  ```
      *
      * @return array The view modes.
-     *
-     * @since 5.5.0
      */
     public static function indexViewModes(): array;
 
@@ -540,11 +505,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * This method should return an array whose keys represent element attribute names, and whose values make
      * up the table’s column headers.
      *
-     *
      * @return array The card attributes.
-     *
-     * @since 5.9.0
-     * @since 5.5.0
      */
     public static function cardAttributes(?FieldLayout $fieldLayout = null): array;
 
@@ -555,15 +516,11 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * by [[cardAttributes()]].
      *
      * @return string[] The card attribute keys
-     *
-     * @since 5.5.0
      */
     public static function defaultCardAttributes(): array;
 
     /**
      * Return HTML for the attribute in the card preview.
-     *
-     * @since 5.5.0
      */
     public static function attributePreviewHtml(array $attribute): mixed;
 
@@ -633,8 +590,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
 
     /**
      * Returns the base GraphQL type name that represents elements of this type.
-     *
-     * @since 5.7.0
      */
     public static function baseGqlType(): Type;
 
@@ -642,36 +597,26 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns the GraphQL scopes required by element’s context.
      *
      * @param  mixed  $context  The element’s context, such as a volume, entry type or Matrix block type.
-     *
-     * @since 3.3.0
      */
     public static function gqlScopesByContext(mixed $context): array;
 
     /**
      * Returns whether this is a draft.
-     *
-     * @since 3.2.0
      */
     public function getIsDraft(): bool;
 
     /**
      * Returns whether this is a revision.
-     *
-     * @since 3.2.0
      */
     public function getIsRevision(): bool;
 
     /**
      * Returns whether this is the canonical element.
-     *
-     * @since 3.7.0
      */
     public function getIsCanonical(): bool;
 
     /**
      * Returns whether this is a derivative element, such as a draft or revision.
-     *
-     * @since 3.7.0
      */
     public function getIsDerivative(): bool;
 
@@ -681,15 +626,11 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * If this is a draft or revision, the canonical element will be returned.
      *
      * @param  bool  $anySite  Whether the canonical element can be retrieved in any site
-     *
-     * @since 3.7.0
      */
     public function getCanonical(bool $anySite = false): self;
 
     /**
      * Sets the canonical version of the element.
-     *
-     * @since 3.7.0
      */
     public function setCanonical(self $element): void;
 
@@ -697,15 +638,11 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns the element’s canonical ID.
      *
      * If this is a draft or revision, the canonical element’s ID will be returned.
-     *
-     * @since 3.7.0
      */
     public function getCanonicalId(): ?int;
 
     /**
      * Sets the element’s canonical ID.
-     *
-     * @since 3.7.0
      */
     public function setCanonicalId(?int $canonicalId): void;
 
@@ -713,15 +650,11 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns the element’s canonical UUID.
      *
      * If this is a draft or revision, the canonical element’s UUID will be returned.
-     *
-     * @since 3.7.11
      */
     public function getCanonicalUid(): ?string;
 
     /**
      * Returns whether the element is an unpublished draft.
-     *
-     * @since 3.6.0
      */
     public function getIsUnpublishedDraft(): bool;
 
@@ -729,7 +662,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Merges changes from the canonical element into this one.
      *
      * @see Elements::mergeCanonicalChanges()
-     * @since 3.7.0
      */
     public function mergeCanonicalChanges(): void;
 
@@ -745,8 +677,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
 
     /**
      * Returns the language of the element.
-     *
-     * @since 3.5.0
      */
     public function getLanguage(): string;
 
@@ -792,8 +722,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
 
     /**
      * Returns whether this element represents the site homepage.
-     *
-     * @since 3.3.6
      */
     public function getIsHomepage(): bool;
 
@@ -805,19 +733,15 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Returns an anchor pre-filled with this element’s URL and title.
      */
-    public function getLink(): ?Markup;
+    public function getLink(): ?HtmlString;
 
     /**
      * Returns the breadcrumbs that lead up to the element.
-     *
-     * @since 5.0.0
      */
     public function getCrumbs(): array;
 
     /**
      * Defines what the element should be called within the control panel.
-     *
-     * @since 3.6.3
      */
     public function setUiLabel(?string $label): void;
 
@@ -825,8 +749,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns any path segment labels that should be prepended to the element’s UI label.
      *
      * @return string[]
-     *
-     * @since 4.4.0
      */
     public function getUiLabelPath(): array;
 
@@ -834,38 +756,26 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Defines any path segment labels that should be prepended to the element’s UI label.
      *
      * @param  string[]  $path
-     *
-     * @since 4.4.0
      */
     public function setUiLabelPath(array $path): void;
 
     /**
      * Returns the label HTML for element chips.
-     *
-     * @return string
-     *
-     * @since 5.0.0
      */
     public function getChipLabelHtml(): string|Stringable;
 
     /**
      * Returns whether chips and cards for this element should include a status indicator.
-     *
-     * @since 5.4.0
      */
     public function showStatusIndicator(): bool;
 
     /**
      * Returns the titlebar label for element cards.
-     *
-     * @since 5.7.0
      */
     public function getCardTitle(): ?string;
 
     /**
      * Returns the body HTML for element cards.
-     *
-     * @since 5.0.0
      */
     public function getCardBodyHtml(): ?string;
 
@@ -888,8 +798,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * If they can view but not [[canSave()|save]], the edit form will either render statically,
      * or be restricted to only saving changes as a draft, depending on [[canCreateDrafts()]].
-     *
-     * @since 4.0.0
      */
     public function canView(User $user): bool;
 
@@ -897,8 +805,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns whether the given user is authorized to save this element in its current form.
      *
      * This will only be called if the element can be [[canView()|viewed]].
-     *
-     * @since 4.0.0
      */
     public function canSave(User $user): bool;
 
@@ -906,22 +812,16 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns whether the given user is authorized to duplicate this element.
      *
      * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
-     *
-     * @since 4.0.0
      */
     public function canDuplicate(User $user): bool;
 
     /**
      * Returns whether the given user is authorized to duplicate this element as an unpublished draft.
-     *
-     * @since 5.0.0
      */
     public function canDuplicateAsDraft(User $user): bool;
 
     /**
      * Returns whether the given user is authorized to copy this element, to be duplicated elsewhere.
-     *
-     * @since 5.7.0
      */
     public function canCopy(User $user): bool;
 
@@ -929,8 +829,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns whether the given user is authorized to delete this element.
      *
      * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
-     *
-     * @since 4.0.0
      */
     public function canDelete(User $user): bool;
 
@@ -938,8 +836,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns whether the given user is authorized to delete this element for its current site.
      *
      * This will only be called if the element can be [[canView()|viewed]] and/or [[canSave()|saved]].
-     *
-     * @since 4.0.0
      */
     public function canDeleteForSite(User $user): bool;
 
@@ -952,15 +848,11 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * If this is going to return `true` under any circumstances, make sure [[trackChanges()]] is returning `true`,
      * so drafts can be automatically updated with upstream content changes.
      * :::
-     *
-     * @since 4.0.0
      */
     public function canCreateDrafts(User $user): bool;
 
     /**
      * Returns whether revisions should be created when this element is saved.
-     *
-     * @since 4.0.0
      */
     public function hasRevisions(): bool;
 
@@ -969,40 +861,28 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * @param  Response  $response  The response being prepared
      * @param  string  $containerId  The ID of the element editor’s container element
-     *
-     * @since 4.0.0
      */
     public function prepareEditScreen(Response|CpScreenResponse $response, string $containerId): void;
 
     /**
      * Returns the URL that users should be redirected to after editing the element.
-     *
-     * @since 4.0.0
      */
     public function getPostEditUrl(): ?string;
 
     /**
      * Returns the element’s revisions index URL in the control panel.
-     *
-     * @since 4.4.0
      */
     public function getCpRevisionsUrl(): ?string;
 
     /**
      * Returns additional buttons that should be shown at the top of the element’s edit page.
-     *
-     * @return string
-     *
-     * @since 4.0.0
      */
     public function getAdditionalButtons(): string|Stringable;
 
     /**
      * Returns alternative form actions for the element.
      *
-     * See [[\craft\web\CpScreenResponseBehavior::altActions()]] for documentation on supported action properties.
-     *
-     * @since 5.6.0
+     * {@see CpScreenResponse::altActions()} for documentation on supported action properties.
      */
     public function getAltActions(): array;
 
@@ -1019,8 +899,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::previewTargets()]]
      * instead of this method.
      * :::
-     *
-     * @since 3.2.0
      */
     public function getPreviewTargets(): array;
 
@@ -1032,8 +910,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * @param  int|null  $siteId  The ID of the site to return for. If `null`, the current site status will be returned.
      * @return bool|null Whether the element is enabled for the given site. `null` will be returned if a `$siteId` was
      *                   passed, but that site’s status wasn’t provided via [[setEnabledForSite()]].
-     *
-     * @since 3.4.0
      */
     public function getEnabledForSite(?int $siteId = null): ?bool;
 
@@ -1043,22 +919,18 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * This can also be set to an array of site ID/site-enabled mappings.
      *
      * @param  bool|bool[]  $enabledForSite
-     *
-     * @since 3.4.0
      */
     public function setEnabledForSite(array|bool $enabledForSite): void;
 
     /**
      * Returns the root owner element.
-     *
-     * @since 5.4.0
      */
     public function getRootOwner(): self;
 
     /**
      * Returns the same element in other locales.
      */
-    public function getLocalized(): ElementQueryInterface|ElementQuery|ElementCollection;
+    public function getLocalized(): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns a query for the same element in other locales.
@@ -1105,22 +977,22 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Returns the element’s ancestors.
      */
-    public function getAncestors(?int $dist = null): ElementQueryInterface|ElementQuery|ElementCollection;
+    public function getAncestors(?int $dist = null): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns the element’s descendants.
      */
-    public function getDescendants(?int $dist = null): ElementQueryInterface|ElementQuery|ElementCollection;
+    public function getDescendants(?int $dist = null): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns the element’s children.
      */
-    public function getChildren(): ElementQueryInterface|ElementQuery|ElementCollection;
+    public function getChildren(): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns all of the element’s siblings.
      */
-    public function getSiblings(): ElementQueryInterface|ElementQuery|ElementCollection;
+    public function getSiblings(): ElementQueryInterface|ElementCollection;
 
     /**
      * Returns the element’s previous sibling.
@@ -1188,8 +1060,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Sets the element’s attributes from an element editor submission.
      *
      * @param  array  $values  The attribute values
-     *
-     * @since 5.0.0
      */
     public function setAttributesFromRequest(array $values): void;
 
@@ -1197,8 +1067,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns the status of a given attribute.
      *
      * @return array{0:AttributeStatus|value-of<AttributeStatus>,1:string}|null
-     *
-     * @since 3.4.0
      */
     public function getAttributeStatus(string $attribute): ?array;
 
@@ -1207,15 +1075,11 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * merged into this element.
      *
      * @return string[]
-     *
-     * @since 3.7.0
      */
     public function getOutdatedAttributes(): array;
 
     /**
      * Returns whether an attribute value has fallen behind the canonical element’s value.
-     *
-     * @since 3.7.0
      */
     public function isAttributeOutdated(string $name): bool;
 
@@ -1223,22 +1087,16 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns the attribute names that have changed for this element.
      *
      * @return string[]
-     *
-     * @since 3.7.0
      */
     public function getModifiedAttributes(): array;
 
     /**
      * Returns whether an attribute value has changed for this element.
-     *
-     * @since 3.7.0
      */
     public function isAttributeModified(string $name): bool;
 
     /**
      * Returns whether an attribute has changed since the element was first loaded.
-     *
-     * @since 3.5.0
      */
     public function isAttributeDirty(string $name): bool;
 
@@ -1246,8 +1104,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns a list of attribute names that have changed since the element was first loaded.
      *
      * @return string[]
-     *
-     * @since 3.4.0
      */
     public function getDirtyAttributes(): array;
 
@@ -1258,7 +1114,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * @param  bool  $merge  Whether these attributes should be merged with existing dirty attributes
      *
      * @see getDirtyAttributes()
-     * @since 3.5.0
      */
     public function setDirtyAttributes(array $names, bool $merge = true): void;
 
@@ -1267,15 +1122,11 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * Note this method has no effect on whether titles will get copied over to other
      * sites when the element is actually getting saved. That is determined by [[getTitleTranslationKey()]].
-     *
-     * @since 3.5.0
      */
     public function getIsTitleTranslatable(): bool;
 
     /**
      * Returns the description of the Title field’s translation support.
-     *
-     * @since 3.5.0
      */
     public function getTitleTranslationDescription(): ?string;
 
@@ -1288,8 +1139,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * to the target site.
      *
      * @return string The translation key
-     *
-     * @since 3.5.0
      */
     public function getTitleTranslationKey(): string;
 
@@ -1298,15 +1147,11 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * Note this method has no effect on whether slugs will get copied over to other
      * sites when the element is actually getting saved. That is determined by [[getSlugTranslationKey()]].
-     *
-     * @since 4.5.0
      */
     public function getIsSlugTranslatable(): bool;
 
     /**
      * Returns the description of the Slug field’s translation support.
-     *
-     * @since 4.5.0
      */
     public function getSlugTranslationDescription(): ?string;
 
@@ -1319,8 +1164,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * to the target site.
      *
      * @return string The translation key
-     *
-     * @since 4.5.0
      */
     public function getSlugTranslationKey(): string;
 
@@ -1355,8 +1198,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * @param  string[]|null  $fieldHandles  The list of field handles whose values
      *                                       need to be returned. Defaults to null, meaning all fields’ values will be
      *                                       returned. If it is an array, only the fields in the array will be returned.
-     *
-     * @since 5.7.0
      */
     public function getSerializedFieldValuesForDb(?array $fieldHandles = null): array;
 
@@ -1392,8 +1233,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * @param  mixed  $value  The value to set on the field
      *
      * @throws InvalidFieldException if `$fieldHandle` is an invalid field handle
-     *
-     * @since 4.5.0
      */
     public function setFieldValueFromRequest(string $fieldHandle, mixed $value): void;
 
@@ -1402,15 +1241,11 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * merged into this element.
      *
      * @return string[]
-     *
-     * @since 3.7.0
      */
     public function getOutdatedFields(): array;
 
     /**
      * Returns whether a field value has fallen behind the canonical element’s value.
-     *
-     * @since 3.7.0
      */
     public function isFieldOutdated(string $fieldHandle): bool;
 
@@ -1419,8 +1254,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * @param  bool  $anySite  Whether to check for fields that have changed across any site
      * @return string[]
-     *
-     * @since 3.7.0
      */
     public function getModifiedFields(bool $anySite = false): array;
 
@@ -1428,15 +1261,11 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns whether a field value has changed for this element.
      *
      * @param  bool  $anySite  Whether to check if the field has changed across any site
-     *
-     * @since 3.7.0
      */
     public function isFieldModified(string $fieldHandle, bool $anySite = false): bool;
 
     /**
      * Returns whether a custom field value has changed since the element was first loaded.
-     *
-     * @since 3.4.0
      */
     public function isFieldDirty(string $fieldHandle): bool;
 
@@ -1444,8 +1273,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns a list of custom field handles that have changed since the element was first loaded.
      *
      * @return string[]
-     *
-     * @since 3.4.0
      */
     public function getDirtyFields(): array;
 
@@ -1456,21 +1283,16 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * @param  bool  $merge  Whether these fields should be merged with existing dirty fields
      *
      * @see getDirtyFields()
-     * @since 4.5.0
      */
     public function setDirtyFields(array $fieldHandles, bool $merge = true): void;
 
     /**
      * Marks all fields and attributes as dirty.
-     *
-     * @since 3.4.10
      */
     public function markAsDirty(): void;
 
     /**
      * Resets the record of dirty attributes and fields.
-     *
-     * @since 3.4.0
      */
     public function markAsClean(): void;
 
@@ -1478,8 +1300,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns the cache tags that should be cleared when this element is saved.
      *
      * @return string[]
-     *
-     * @since 3.5.0
      */
     public function getCacheTags(): array;
 
@@ -1513,8 +1333,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns the generated field values for the element, indexed by handle.
      *
      * @return array<string,string>
-     *
-     * @since 5.8.0
      */
     public function getGeneratedFieldValues(): array;
 
@@ -1522,8 +1340,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Sets the generated field values for the element, indexed by handle.
      *
      * @param  array<string,string|null>  $values
-     *
-     * @since 5.8.0
      */
     public function setGeneratedFieldValues(array $values): void;
 
@@ -1531,8 +1347,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns the element’s invalid nested element IDs.
      *
      * @return int[]
-     *
-     * @since 5.3.0
      */
     public function getInvalidNestedElementIds(): array;
 
@@ -1540,8 +1354,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Registers invalid nested element IDs with the element, so an `error` class can be added on their cards.
      *
      * @param  int[]  $ids
-     *
-     * @since 5.3.0
      */
     public function addInvalidNestedElementIds(array $ids): void;
 
@@ -1582,8 +1394,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * @param  string  $handle  The handle of the eager-loaded elements
      * @return int|null The eager-loaded element count, or null if it hadn't been eager-loaded
-     *
-     * @since 3.4.0
      */
     public function getEagerLoadedElementCount(string $handle): ?int;
 
@@ -1592,43 +1402,31 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * @param  string  $handle  The handle to load the elements with in the future
      * @param  int  $count  The eager-loaded element count
-     *
-     * @since 3.4.0
      */
     public function setEagerLoadedElementCount(string $handle, int $count): void;
 
     /**
      * Returns whether the element is "fresh" (not yet explicitly saved, and without validation errors).
-     *
-     * @since 3.7.14
      */
     public function getIsFresh(): bool;
 
     /**
      * Sets whether the element is "fresh" (not yet explicitly saved, and without validation errors).
-     *
-     * @since 3.7.14
      */
     public function setIsFresh(bool $isFresh = true): void;
 
     /**
      * Sets the revision creator ID to be saved.
-     *
-     * @since 3.2.0
      */
     public function setRevisionCreatorId(?int $creatorId): void;
 
     /**
      * Sets the revision notes to be saved.
-     *
-     * @since 3.2.0
      */
     public function setRevisionNotes(?string $notes): void;
 
     /**
      * Returns the element’s current revision, if one exists.
-     *
-     * @since 3.2.0
      */
     public function getCurrentRevision(): ?self;
 
@@ -1636,8 +1434,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Return if the element is copyable between sites.
      * Checks if it's a multisite installation, if user can edit the element in other sites,
      * and if the element actually exists in other sites.
-     *
-     * @since 5.6.0
      */
     public function getIsCrossSiteCopyable(): bool;
 
@@ -1666,9 +1462,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * :::
      *
      * @param  string  $attribute  The attribute name.
-     * @return string The HTML that should be shown for a given attribute in table and card views.
-     *
-     * @since 5.0.0
+     * @return string|Stringable The HTML that should be shown for a given attribute in table and card views.
      */
     public function getAttributeHtml(string $attribute): string|Stringable;
 
@@ -1676,9 +1470,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns the HTML that should be shown for a given attribute's inline editing input.
      *
      * @param  string  $attribute  The attribute name.
-     * @return string The HTML that should be shown for the element input.
-     *
-     * @since 5.0.0
+     * @return string|Stringable The HTML that should be shown for the element input.
      */
     public function getInlineAttributeInputHtml(string $attribute): string|Stringable;
 
@@ -1686,9 +1478,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns the HTML for any fields/info that should be shown within the editor sidebar.
      *
      * @param  bool  $static  Whether any fields within the sidebar should be static (non-interactive)
-     * @return string
-     *
-     * @since 3.7.0
      */
     public function getSidebarHtml(bool $static): string|Stringable;
 
@@ -1697,15 +1486,11 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * @return array The data, with keys representing the labels. The values can either be strings or callables.
      *               If a value is `false`, it will be omitted.
-     *
-     * @since 3.7.0
      */
     public function getMetadata(): array;
 
     /**
      * Returns the GraphQL type name for this element type.
-     *
-     * @since 3.3.0
      */
     public function getGqlTypeName(): string;
 
@@ -1735,8 +1520,6 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * :::
      *
      * @param  bool  $isNew  Whether the element is brand new
-     *
-     * @since 3.2.0
      */
     public function afterPropagate(bool $isNew): void;
 
@@ -1756,15 +1539,11 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Performs actions before an element is deleted for a site.
      *
      * @return bool Whether the element should be deleted
-     *
-     * @since 4.7.0
      */
     public function beforeDeleteForSite(): bool;
 
     /**
      * Performs actions after an element is deleted for a site.
-     *
-     * @since 4.7.0
      */
     public function afterDeleteForSite(): void;
 
@@ -1772,15 +1551,11 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Performs actions before an element is restored.
      *
      * @return bool Whether the element should be restored
-     *
-     * @since 3.1.0
      */
     public function beforeRestore(): bool;
 
     /**
      * Performs actions after an element is restored.
-     *
-     * @since 3.1.0
      */
     public function afterRestore(): void;
 
@@ -1809,10 +1584,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * If no partial template exists for the element, its string representation will be output instead.
      *
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     *
-     * @since 5.8.0
+     * @throws RuntimeException
      */
     public function render(array $variables = []): HtmlString;
 }

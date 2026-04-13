@@ -32,7 +32,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Translation\Formatter;
 use Illuminate\Support\Facades\Gate;
 use Stringable;
-use yii\web\Response;
+use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
