@@ -13,8 +13,8 @@ use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\helpers\Db;
 use craft\test\TestCase;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use yii\base\Exception;
-use yii\base\NotSupportedException;
 
 /**
  * Unit tests for the DB Helper class where its output may need to be mysql specific. Will be skipped if db isn't mysql.

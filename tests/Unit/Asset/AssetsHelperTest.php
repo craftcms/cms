@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\AssetsHelper;
-use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\SetAssetFilename;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Path;
@@ -116,60 +116,60 @@ describe('getFileKindByExtension', function () {
     test('returns correct kind for known extensions', function (string $file, string $expectedKind) {
         expect(AssetsHelper::getFileKindByExtension($file))->toBe($expectedKind);
     })->with([
-        'jpg image' => ['photo.jpg', Asset::KIND_IMAGE],
-        'jpeg image' => ['photo.jpeg', Asset::KIND_IMAGE],
-        'png image' => ['photo.png', Asset::KIND_IMAGE],
-        'gif image' => ['photo.gif', Asset::KIND_IMAGE],
-        'webp image' => ['photo.webp', Asset::KIND_IMAGE],
-        'svg image' => ['photo.svg', Asset::KIND_IMAGE],
-        'avif image' => ['photo.avif', Asset::KIND_IMAGE],
-        'mp3 audio' => ['song.mp3', Asset::KIND_AUDIO],
-        'wav audio' => ['song.wav', Asset::KIND_AUDIO],
-        'flac audio' => ['song.flac', Asset::KIND_AUDIO],
-        'mp4 video' => ['movie.mp4', Asset::KIND_VIDEO],
-        'mov video' => ['movie.mov', Asset::KIND_VIDEO],
-        'webm video' => ['movie.webm', Asset::KIND_VIDEO],
-        'pdf document' => ['doc.pdf', Asset::KIND_PDF],
-        'json file' => ['data.json', Asset::KIND_JSON],
-        'xml file' => ['data.xml', Asset::KIND_XML],
-        'html file' => ['page.html', Asset::KIND_HTML],
-        'htm file' => ['page.htm', Asset::KIND_HTML],
-        'js file' => ['script.js', Asset::KIND_JAVASCRIPT],
-        'php file' => ['script.php', Asset::KIND_PHP],
-        'txt file' => ['readme.txt', Asset::KIND_TEXT],
-        'zip compressed' => ['archive.zip', Asset::KIND_COMPRESSED],
-        'doc word' => ['document.doc', Asset::KIND_WORD],
-        'docx word' => ['document.docx', Asset::KIND_WORD],
-        'xls excel' => ['sheet.xls', Asset::KIND_EXCEL],
-        'xlsx excel' => ['sheet.xlsx', Asset::KIND_EXCEL],
-        'ppt powerpoint' => ['slides.ppt', Asset::KIND_POWERPOINT],
-        'pptx powerpoint' => ['slides.pptx', Asset::KIND_POWERPOINT],
-        'psd photoshop' => ['design.psd', Asset::KIND_PHOTOSHOP],
-        'ai illustrator' => ['design.ai', Asset::KIND_ILLUSTRATOR],
-        'srt subtitles' => ['subtitles.srt', Asset::KIND_CAPTIONS_SUBTITLES],
-        'vtt subtitles' => ['subtitles.vtt', Asset::KIND_CAPTIONS_SUBTITLES],
-        'accdb access' => ['file.accdb', Asset::KIND_ACCESS],
+        'jpg image' => ['photo.jpg', FileKind::Image->value],
+        'jpeg image' => ['photo.jpeg', FileKind::Image->value],
+        'png image' => ['photo.png', FileKind::Image->value],
+        'gif image' => ['photo.gif', FileKind::Image->value],
+        'webp image' => ['photo.webp', FileKind::Image->value],
+        'svg image' => ['photo.svg', FileKind::Image->value],
+        'avif image' => ['photo.avif', FileKind::Image->value],
+        'mp3 audio' => ['song.mp3', FileKind::Audio->value],
+        'wav audio' => ['song.wav', FileKind::Audio->value],
+        'flac audio' => ['song.flac', FileKind::Audio->value],
+        'mp4 video' => ['movie.mp4', FileKind::Video->value],
+        'mov video' => ['movie.mov', FileKind::Video->value],
+        'webm video' => ['movie.webm', FileKind::Video->value],
+        'pdf document' => ['doc.pdf', FileKind::Pdf->value],
+        'json file' => ['data.json', FileKind::Json->value],
+        'xml file' => ['data.xml', FileKind::Xml->value],
+        'html file' => ['page.html', FileKind::Html->value],
+        'htm file' => ['page.htm', FileKind::Html->value],
+        'js file' => ['script.js', FileKind::Javascript->value],
+        'php file' => ['script.php', FileKind::Php->value],
+        'txt file' => ['readme.txt', FileKind::Text->value],
+        'zip compressed' => ['archive.zip', FileKind::Compressed->value],
+        'doc word' => ['document.doc', FileKind::Word->value],
+        'docx word' => ['document.docx', FileKind::Word->value],
+        'xls excel' => ['sheet.xls', FileKind::Excel->value],
+        'xlsx excel' => ['sheet.xlsx', FileKind::Excel->value],
+        'ppt powerpoint' => ['slides.ppt', FileKind::Powerpoint->value],
+        'pptx powerpoint' => ['slides.pptx', FileKind::Powerpoint->value],
+        'psd photoshop' => ['design.psd', FileKind::Photoshop->value],
+        'ai illustrator' => ['design.ai', FileKind::Illustrator->value],
+        'srt subtitles' => ['subtitles.srt', FileKind::CaptionsSubstitles->value],
+        'vtt subtitles' => ['subtitles.vtt', FileKind::CaptionsSubstitles->value],
+        'accdb access' => ['file.accdb', FileKind::Access->value],
     ]);
 
     test('returns unknown for unrecognized extensions', function () {
-        expect(AssetsHelper::getFileKindByExtension('file.xyz123'))->toBe(Asset::KIND_UNKNOWN);
+        expect(AssetsHelper::getFileKindByExtension('file.xyz123'))->toBe(FileKind::Unknown->value);
     });
 
     test('returns unknown for files without extension', function () {
-        expect(AssetsHelper::getFileKindByExtension('README'))->toBe(Asset::KIND_UNKNOWN);
+        expect(AssetsHelper::getFileKindByExtension('README'))->toBe(FileKind::Unknown->value);
     });
 
     test('returns unknown for bare extension name without dot', function () {
-        expect(AssetsHelper::getFileKindByExtension('html'))->toBe(Asset::KIND_UNKNOWN);
+        expect(AssetsHelper::getFileKindByExtension('html'))->toBe(FileKind::Unknown->value);
     });
 
     test('is case insensitive', function () {
-        expect(AssetsHelper::getFileKindByExtension('photo.JPG'))->toBe(Asset::KIND_IMAGE);
-        expect(AssetsHelper::getFileKindByExtension('photo.Png'))->toBe(Asset::KIND_IMAGE);
+        expect(AssetsHelper::getFileKindByExtension('photo.JPG'))->toBe(FileKind::Image->value);
+        expect(AssetsHelper::getFileKindByExtension('photo.Png'))->toBe(FileKind::Image->value);
     });
 
     test('handles full paths', function () {
-        expect(AssetsHelper::getFileKindByExtension('/path/to/photo.jpg'))->toBe(Asset::KIND_IMAGE);
+        expect(AssetsHelper::getFileKindByExtension('/path/to/photo.jpg'))->toBe(FileKind::Image->value);
     });
 });
 
@@ -188,8 +188,8 @@ describe('getFileKindLabel', function () {
     ]);
 
     test('returns unknown for unrecognized kind', function () {
-        expect(AssetsHelper::getFileKindLabel('Raaa'))->toBe(Asset::KIND_UNKNOWN);
-        expect(AssetsHelper::getFileKindLabel('nonexistent_kind'))->toBe(Asset::KIND_UNKNOWN);
+        expect(AssetsHelper::getFileKindLabel('Raaa'))->toBe(FileKind::Unknown->value);
+        expect(AssetsHelper::getFileKindLabel('nonexistent_kind'))->toBe(FileKind::Unknown->value);
     });
 });
 
@@ -372,16 +372,16 @@ describe('getFileKinds', function () {
 
         expect($kinds)->toHaveKey($kind);
     })->with([
-        'image' => [Asset::KIND_IMAGE],
-        'audio' => [Asset::KIND_AUDIO],
-        'video' => [Asset::KIND_VIDEO],
-        'pdf' => [Asset::KIND_PDF],
-        'json' => [Asset::KIND_JSON],
-        'xml' => [Asset::KIND_XML],
-        'compressed' => [Asset::KIND_COMPRESSED],
-        'excel' => [Asset::KIND_EXCEL],
-        'word' => [Asset::KIND_WORD],
-        'powerpoint' => [Asset::KIND_POWERPOINT],
+        'image' => [FileKind::Image->value],
+        'audio' => [FileKind::Audio->value],
+        'video' => [FileKind::Video->value],
+        'pdf' => [FileKind::Pdf->value],
+        'json' => [FileKind::Json->value],
+        'xml' => [FileKind::Xml->value],
+        'compressed' => [FileKind::Compressed->value],
+        'excel' => [FileKind::Excel->value],
+        'word' => [FileKind::Word->value],
+        'powerpoint' => [FileKind::Powerpoint->value],
     ]);
 
     test('results are sorted by label', function () {
@@ -392,6 +392,19 @@ describe('getFileKinds', function () {
         sort($sorted);
 
         expect($labels)->toBe($sorted);
+    });
+
+    test('it merges in extraFileKinds', function () {
+        AssetsHelper::clear();
+
+        Cms::config()->extraFileKinds = [
+            'stylesheet' => [
+                'label' => 'Stylesheet',
+                'extensions' => ['css', 'less', 'pcss', 'sass', 'scss', 'styl'],
+            ],
+        ];
+
+        expect(AssetsHelper::getFileKinds())->toHaveKey('stylesheet');
     });
 });
 
@@ -427,7 +440,7 @@ describe('getAllowedFileKinds', function () {
     test('image kind is allowed by default', function () {
         $allowed = AssetsHelper::getAllowedFileKinds();
 
-        expect($allowed)->toHaveKey(Asset::KIND_IMAGE);
+        expect($allowed)->toHaveKey(FileKind::Image->value);
     });
 });
 

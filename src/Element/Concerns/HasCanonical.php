@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Element\Concerns;
 use craft\base\NestedElementInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use DateTime;
-use yii\base\NotSupportedException;
 
 /**
  * HasCanonical provides support for canonical elements and their derivatives.

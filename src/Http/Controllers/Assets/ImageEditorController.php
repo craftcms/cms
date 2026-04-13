@@ -13,10 +13,10 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Image\ImageTransforms;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use yii\base\NotSupportedException;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;

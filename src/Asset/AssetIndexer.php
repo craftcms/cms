@@ -9,6 +9,7 @@ use CraftCms\Cms\Asset\Data\IndexingSession;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\AssetNotIndexableException;
@@ -637,7 +638,7 @@ class AssetIndexer
                 $asset->setMimeType($asset->getMimeType());
             }
 
-            if ($asset->kind === Asset::KIND_IMAGE) {
+            if ($asset->kind === FileKind::Image->value) {
                 $dimensions = null;
                 $tempPath = null;
 

@@ -6,8 +6,8 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Html as HtmlHelper;
-use yii\base\NotSupportedException;
 
 class Html extends FieldLayoutElement
 {

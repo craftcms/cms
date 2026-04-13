@@ -8,8 +8,8 @@ use craft\base\conditions\BaseConditionRule;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
 
 class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditionRuleInterface
 {

@@ -7,8 +7,6 @@ namespace CraftCms\Cms\Asset\Elements;
 use Craft;
 use craft\controllers\ElementIndexesController;
 use craft\controllers\ElementSelectorModalsController;
-use craft\elements\conditions\assets\AssetCondition;
-use craft\validators\AssetLocationValidator;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Actions\CopyReferenceTag;
 use CraftCms\Cms\Asset\Actions\CopyUrl;
@@ -21,8 +19,10 @@ use CraftCms\Cms\Asset\Actions\RenameFile;
 use CraftCms\Cms\Asset\Actions\ReplaceFile;
 use CraftCms\Cms\Asset\Actions\ShowInFolder;
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Asset\Conditions\AssetCondition;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
 use CraftCms\Cms\Asset\Events\BeforeDefineAssetUrl;
 use CraftCms\Cms\Asset\Events\BeforeGenerateTransform;
@@ -34,6 +34,7 @@ use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Validation\AssetRules;
+use CraftCms\Cms\Asset\Validation\Rules\AssetLocationRule;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Cp\FormFields;
@@ -62,6 +63,7 @@ use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Search\SearchQuery;
 use CraftCms\Cms\Search\SearchQueryTerm;
 use CraftCms\Cms\Search\SearchQueryTermGroup;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\ElementSources;
@@ -85,22 +87,21 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
 use DateInterval;
 use DateTime;
+use Exception;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB as DbFacade;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use League\Flysystem\UnableToDeleteFile;
 use Override;
+use RuntimeException;
 use Stringable;
 use Twig\Markup;
-use yii\base\Exception;
-use yii\base\InvalidCallException;
-use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
 
 use function CraftCms\Cms\t;
 
@@ -162,6 +163,182 @@ class Asset extends Element
 
     public const string SCENARIO_REPLACE = 'replace';
 
+    private static string $_displayName;
+
+    /**
+     * @var bool Whether this asset represents a folder.
+     *
+     * @internal
+     */
+    public bool $isFolder = false;
+
+    /**
+     * @var array|null The source path, if this represents a folder.
+     *
+     * @internal
+     */
+    public ?array $sourcePath = null;
+
+    /**
+     * @var int|null Folder ID
+     */
+    public ?int $folderId = null;
+
+    /**
+     * @var int|null The ID of the user who first added this asset (if known)
+     */
+    public ?int $uploaderId = null;
+
+    /**
+     * @var string|null Folder path
+     */
+    public ?string $folderPath = null;
+
+    /**
+     * @var string|null Kind
+     */
+    #[AllowedInSandbox]
+    public ?string $kind = null;
+
+    /**
+     * @var string|null Alternative text
+     */
+    #[AllowedInSandbox]
+    public ?string $alt = null;
+
+    /**
+     * @var int|null Size
+     */
+    #[AllowedInSandbox]
+    public ?int $size = null;
+
+    /**
+     * @var bool|null Whether the file was kept around when the asset was deleted
+     */
+    public ?bool $keptFile = null;
+
+    /**
+     * @var DateTime|null Date modified
+     */
+    public ?DateTime $dateModified = null;
+
+    /**
+     * @var string|null New file location
+     */
+    public ?string $newLocation = null;
+
+    /**
+     * @var string|null Location error code
+     *
+     * @see AssetLocationRule
+     */
+    public ?string $locationError = null;
+
+    /**
+     * @var string|null New filename
+     */
+    public ?string $newFilename = null;
+
+    /**
+     * @var int|null New folder ID
+     */
+    public ?int $newFolderId = null;
+
+    /**
+     * @var string|null The temp file path
+     */
+    public ?string $tempFilePath = null;
+
+    /**
+     * @var bool Whether the asset should avoid filename conflicts when saved.
+     */
+    public bool $avoidFilenameConflicts = false;
+
+    /**
+     * @var string|null The suggested filename in case of a conflict.
+     */
+    public ?string $suggestedFilename = null;
+
+    /**
+     * @var string|null The filename that was used that caused a conflict.
+     */
+    public ?string $conflictingFilename = null;
+
+    /**
+     * @var bool Whether the asset was deleted along with its volume
+     *
+     * @see beforeDelete()
+     */
+    public bool $deletedWithVolume = false;
+
+    /**
+     * @var bool Whether the associated file should be preserved if the asset record is deleted.
+     *
+     * @see beforeDelete()
+     * @see afterDelete()
+     */
+    public bool $keepFileOnDelete = false;
+
+    /**
+     * @var bool|null Whether the associated file should be sanitized on upload, if it's an image. Defaults to `true`,
+     *                unless it’s a control panel request and <config4:sanitizeCpImageUploads> is disabled.
+     *
+     * @see afterSave()
+     */
+    public ?bool $sanitizeOnUpload = null;
+
+    /**
+     * @var int|null Volume ID
+     */
+    private ?int $_volumeId = null;
+
+    /**
+     * @var string Filename
+     */
+    private string $_filename;
+
+    private ?string $_mimeType = null;
+
+    /**
+     * @var int|null Width
+     */
+    private ?int $_width = null;
+
+    /**
+     * @var int|null Height
+     */
+    private ?int $_height = null;
+
+    /**
+     * @var array|null Focal point
+     */
+    private ?array $_focalPoint = null;
+
+    private ?ImageTransform $_transform = null;
+
+    private ?Volume $_volume = null;
+
+    private ?User $_uploader = null;
+
+    private ?int $_oldVolumeId = null;
+
+    public function __construct($config = [])
+    {
+        // alt='' actually means something, so we should preserve it.
+        $alt = Arr::pull($config, 'alt');
+        if ($alt !== null) {
+            $this->alt = $alt;
+        }
+
+        parent::__construct($config);
+
+        if (isset($this->alt)) {
+            $this->alt = trim($this->alt);
+        }
+
+        $this->_oldVolumeId = $this->_volumeId;
+    }
+
     #[Override]
     public function scenarios(): array
     {
@@ -174,63 +351,12 @@ class Asset extends Element
         ]);
     }
 
-    // File kinds
-    // -------------------------------------------------------------------------
-
-    public const string KIND_ACCESS = 'access';
-
-    public const string KIND_AUDIO = 'audio';
-
-    public const string KIND_CAPTIONS_SUBTITLES = 'captionsSubtitles';
-
-    public const string KIND_COMPRESSED = 'compressed';
-
-    public const string KIND_EXCEL = 'excel';
-
-    public const string KIND_FLASH = 'flash';
-
-    public const string KIND_HTML = 'html';
-
-    public const string KIND_ILLUSTRATOR = 'illustrator';
-
-    public const string KIND_IMAGE = 'image';
-
-    public const string KIND_JAVASCRIPT = 'javascript';
-
-    public const string KIND_JSON = 'json';
-
-    public const string KIND_PDF = 'pdf';
-
-    public const string KIND_PHOTOSHOP = 'photoshop';
-
-    public const string KIND_PHP = 'php';
-
-    public const string KIND_POWERPOINT = 'powerpoint';
-
-    public const string KIND_TEXT = 'text';
-
-    public const string KIND_VIDEO = 'video';
-
-    public const string KIND_WORD = 'word';
-
-    public const string KIND_XML = 'xml';
-
-    public const string KIND_UNKNOWN = 'unknown';
-
-    private static string $_displayName;
-
     #[Override]
     public static function displayName(): string
     {
-        if (! isset(self::$_displayName)) {
-            if (self::isFolderIndex()) {
-                self::$_displayName = t('Folder');
-            } else {
-                self::$_displayName = t('Asset');
-            }
-        }
-
-        return self::$_displayName;
+        return self::$_displayName ??= self::isFolderIndex()
+            ? t('Folder')
+            : t('Asset');
     }
 
     #[Override]
@@ -299,7 +425,7 @@ class Asset extends Element
             // Get the source element IDs
             $sourceElementIds = array_map(fn (ElementInterface $element) => $element->id, $sourceElements);
 
-            $map = DbFacade::table(Table::ASSETS)
+            $map = DB::table(Table::ASSETS)
                 ->select(['id as source', 'uploaderId as target'])
                 ->whereIn('id', $sourceElementIds)
                 ->whereNotNull('uploaderId')
@@ -352,14 +478,10 @@ class Asset extends Element
     protected static function defineSources(string $context): array
     {
         $sources = [];
-
-        if ($context === ElementSources::CONTEXT_INDEX) {
-            $volumeIds = Volumes::getViewableVolumeIds();
-        } else {
-            $volumeIds = Volumes::getAllVolumeIds();
-        }
-
         $user = Auth::user();
+        $volumeIds = $context === ElementSources::CONTEXT_INDEX
+            ? Volumes::getViewableVolumeIds()
+            : Volumes::getAllVolumeIds();
 
         foreach ($volumeIds as $volumeId) {
             $folder = Folders::getRootFolderByVolumeId($volumeId);
@@ -702,7 +824,7 @@ class Asset extends Element
             $folderQuery = self::_createFolderQueryForIndex($elementQuery, $queryFolder);
             $totalFolders = $folderQuery->count();
 
-            if ((int) $totalFolders > (int) $elementQuery->offset) {
+            if ($totalFolders > (int) $elementQuery->offset) {
                 $source = ElementSources::findSource(self::class, $sourceKey);
                 if (isset($source['criteria']['folderId'])) {
                     $baseFolder = Folders::getFolderById($source['criteria']['folderId']);
@@ -907,7 +1029,7 @@ class Asset extends Element
             return;
         }
 
-        $isPgsql = DbFacade::getDriverName() === 'pgsql';
+        $isPgsql = DB::getDriverName() === 'pgsql';
 
         /** @var SearchQueryTerm $token */
         if ($token->subLeft || $token->subRight) {
@@ -984,191 +1106,14 @@ class Asset extends Element
         return (
             Craft::$app->controller instanceof ElementIndexesController ||
             Craft::$app->controller instanceof ElementSelectorModalsController
-        ) && (bool) request()->input('foldersOnly');
-    }
-
-    /**
-     * @var bool Whether this asset represents a folder.
-     *
-     * @internal
-     */
-    public bool $isFolder = false;
-
-    /**
-     * @var array|null The source path, if this represents a folder.
-     *
-     * @internal
-     */
-    public ?array $sourcePath = null;
-
-    /**
-     * @var int|null Folder ID
-     */
-    public ?int $folderId = null;
-
-    /**
-     * @var int|null The ID of the user who first added this asset (if known)
-     */
-    public ?int $uploaderId = null;
-
-    /**
-     * @var string|null Folder path
-     */
-    public ?string $folderPath = null;
-
-    /**
-     * @var string|null Kind
-     */
-    #[AllowedInSandbox]
-    public ?string $kind = null;
-
-    /**
-     * @var string|null Alternative text
-     */
-    #[AllowedInSandbox]
-    public ?string $alt = null;
-
-    /**
-     * @var int|null Size
-     */
-    #[AllowedInSandbox]
-    public ?int $size = null;
-
-    /**
-     * @var bool|null Whether the file was kept around when the asset was deleted
-     */
-    public ?bool $keptFile = null;
-
-    /**
-     * @var DateTime|null Date modified
-     */
-    public ?DateTime $dateModified = null;
-
-    /**
-     * @var string|null New file location
-     */
-    public ?string $newLocation = null;
-
-    /**
-     * @var string|null Location error code
-     *
-     * @see AssetLocationValidator::validateAttribute()
-     */
-    public ?string $locationError = null;
-
-    /**
-     * @var string|null New filename
-     */
-    public ?string $newFilename = null;
-
-    /**
-     * @var int|null New folder ID
-     */
-    public ?int $newFolderId = null;
-
-    /**
-     * @var string|null The temp file path
-     */
-    public ?string $tempFilePath = null;
-
-    /**
-     * @var bool Whether the asset should avoid filename conflicts when saved.
-     */
-    public bool $avoidFilenameConflicts = false;
-
-    /**
-     * @var string|null The suggested filename in case of a conflict.
-     */
-    public ?string $suggestedFilename = null;
-
-    /**
-     * @var string|null The filename that was used that caused a conflict.
-     */
-    public ?string $conflictingFilename = null;
-
-    /**
-     * @var bool Whether the asset was deleted along with its volume
-     *
-     * @see beforeDelete()
-     */
-    public bool $deletedWithVolume = false;
-
-    /**
-     * @var bool Whether the associated file should be preserved if the asset record is deleted.
-     *
-     * @see beforeDelete()
-     * @see afterDelete()
-     */
-    public bool $keepFileOnDelete = false;
-
-    /**
-     * @var bool|null Whether the associated file should be sanitized on upload, if it's an image. Defaults to `true`,
-     *                unless it’s a control panel request and <config4:sanitizeCpImageUploads> is disabled.
-     *
-     * @see afterSave()
-     */
-    public ?bool $sanitizeOnUpload = null;
-
-    /**
-     * @var int|null Volume ID
-     */
-    private ?int $_volumeId = null;
-
-    /**
-     * @var string Filename
-     */
-    private string $_filename;
-
-    private ?string $_mimeType = null;
-
-    /**
-     * @var int|null Width
-     */
-    private ?int $_width = null;
-
-    /**
-     * @var int|null Height
-     */
-    private ?int $_height = null;
-
-    /**
-     * @var array|null Focal point
-     */
-    private ?array $_focalPoint = null;
-
-    private ?ImageTransform $_transform = null;
-
-    private ?Volume $_volume = null;
-
-    private ?User $_uploader = null;
-
-    private ?int $_oldVolumeId = null;
-
-    public function __construct($config = [])
-    {
-        // alt='' actually means something, so we should preserve it.
-        $alt = Arr::pull($config, 'alt');
-        if ($alt !== null) {
-            $this->alt = $alt;
-        }
-
-        parent::__construct($config);
-
-        if (isset($this->alt)) {
-            $this->alt = trim($this->alt);
-        }
-
-        $this->_oldVolumeId = $this->_volumeId;
+        ) && request()->boolean('foldersOnly');
     }
 
     #[Override]
     public function __toString(): string
     {
-        if (isset($this->_transform)) {
-            $url = $this->getUrl();
-            if ($url) {
-                return $url;
-            }
+        if (isset($this->_transform) && $url = $this->getUrl()) {
+            return $url;
         }
 
         return parent::__toString();
@@ -1190,6 +1135,7 @@ class Asset extends Element
         if (parent::__isset($name)) {
             return true;
         }
+
         if (str_starts_with($name, 'transform:')) {
             return true;
         }
@@ -1206,9 +1152,6 @@ class Asset extends Element
      *
      * @param  string  $name  The property name
      * @return mixed The property value
-     *
-     * @throws UnknownPropertyException if the property is not defined
-     * @throws InvalidCallException if the property is write-only.
      */
     #[Override]
     public function __get($name)
@@ -1234,6 +1177,7 @@ class Asset extends Element
     {
         // alt='' actually means something, so we should preserve it.
         $alt = Arr::pull($values, 'alt');
+
         if ($alt !== null) {
             $this->alt = $alt;
         }
@@ -1268,7 +1212,7 @@ class Asset extends Element
         ];
 
         // Did the volume just change?
-        if ($this->_volumeId != $this->_oldVolumeId) {
+        if ($this->_volumeId !== $this->_oldVolumeId) {
             $tags[] = "volume:$this->_oldVolumeId";
         }
 
@@ -1591,7 +1535,7 @@ JS, [
         if (
             $this->getSupportsImageEditor() &&
             Gate::check("editImages:$volume->uid") &&
-            (Auth::id() == $this->uploaderId || Gate::check("editPeerImages:$volume->uid"))
+            (Auth::id() === $this->uploaderId || Gate::check("editPeerImages:$volume->uid"))
         ) {
             $editImageId = sprintf('action-image-edit-%s', mt_rand());
             $items[] = [
@@ -1633,7 +1577,7 @@ JS, [
     #[AllowedInSandbox]
     public function getImg(mixed $transform = null, ?array $sizes = null): ?Markup
     {
-        if ($this->kind !== self::KIND_IMAGE) {
+        if ($this->kind !== FileKind::Image->value) {
             return null;
         }
 
@@ -1642,9 +1586,7 @@ JS, [
             $this->setTransform($transform);
         }
 
-        $url = $this->getUrl();
-
-        if ($url) {
+        if ($url = $this->getUrl()) {
             $img = Html::tag('img', '', [
                 'src' => $url,
                 'width' => $this->getWidth(),
@@ -1737,7 +1679,7 @@ JS, [
     #[AllowedInSandbox]
     public function getUrlsBySize(array $sizes, mixed $transform = null): array
     {
-        if ($this->kind !== self::KIND_IMAGE) {
+        if ($this->kind !== FileKind::Image->value) {
             return [];
         }
 
@@ -1831,7 +1773,7 @@ JS, [
     {
         try {
             return $this->getVolume()->getFieldLayout();
-        } catch (InvalidConfigException) {
+        } catch (RuntimeException) {
             return null;
         }
     }
@@ -1839,16 +1781,16 @@ JS, [
     /**
      * Returns the asset’s volume folder.
      *
-     * @throws InvalidConfigException if [[folderId]] is missing or invalid
+     * @throws RuntimeException if [[folderId]] is missing or invalid
      */
     public function getFolder(): VolumeFolder
     {
         if (! isset($this->folderId)) {
-            throw new InvalidConfigException('Asset is missing its folder ID');
+            throw new RuntimeException('Asset is missing its folder ID');
         }
 
         if (($folder = Folders::getFolderById($this->folderId)) === null) {
-            throw new InvalidConfigException('Invalid folder ID: '.$this->folderId);
+            throw new RuntimeException('Invalid folder ID: '.$this->folderId);
         }
 
         return $folder;
@@ -1857,7 +1799,7 @@ JS, [
     /**
      * Returns the asset’s volume.
      *
-     * @throws InvalidConfigException if [[volumeId]] is missing or invalid
+     * @throws RuntimeException if [[volumeId]] is missing or invalid
      */
     public function getVolume(): Volume
     {
@@ -1870,7 +1812,7 @@ JS, [
         }
 
         if (($volume = Volumes::getVolumeById($this->_volumeId)) === null) {
-            throw new InvalidConfigException('Invalid volume ID: '.$this->_volumeId);
+            throw new RuntimeException('Invalid volume ID: '.$this->_volumeId);
         }
 
         return $this->_volume = $volume;
@@ -1929,7 +1871,7 @@ JS, [
      *                                                       which the rest of the settings should be applied to.
      * @param  bool|null  $immediately  Whether the image should be transformed immediately
      *
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     #[Override]
     public function getUrl(mixed $transform = null, ?bool $immediately = null): ?string
@@ -2113,7 +2055,7 @@ JS, [
     /**
      * Returns the filename, with or without the extension.
      *
-     * @throws InvalidConfigException if the filename isn’t set yet
+     * @throws RuntimeException if the filename isn’t set yet
      */
     #[AllowedInSandbox]
     public function getFilename(bool $withExtension = true): string
@@ -2123,7 +2065,7 @@ JS, [
         }
 
         if (! isset($this->_filename)) {
-            throw new InvalidConfigException('Asset not configured with its filename');
+            throw new RuntimeException('Asset not configured with its filename');
         }
 
         if ($withExtension) {
@@ -2341,7 +2283,7 @@ JS, [
      * Get a temporary copy of the actual file.
      *
      * @throws VolumeException If unable to fetch file from volume.
-     * @throws InvalidConfigException If no volume can be found.
+     * @throws RuntimeException If no volume can be found.
      */
     public function getCopyOfFile(): string
     {
@@ -2357,7 +2299,7 @@ JS, [
      *
      * @return resource
      *
-     * @throws InvalidConfigException if [[volumeId]] is missing or invalid
+     * @throws RuntimeException if [[volumeId]] is missing or invalid
      * @throws FilesystemException if a stream cannot be created
      */
     public function getStream()
@@ -2374,7 +2316,7 @@ JS, [
     /**
      * Returns the file’s contents.
      *
-     * @throws InvalidConfigException if [[volumeId]] is missing or invalid
+     * @throws RuntimeException if [[volumeId]] is missing or invalid
      * @throws AssetException if a stream could not be created
      */
     public function getContents(): string
@@ -2385,7 +2327,7 @@ JS, [
     /**
      * Generates a base64-encoded [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) for the asset.
      *
-     * @throws InvalidConfigException if [[volumeId]] is missing or invalid
+     * @throws RuntimeException if [[volumeId]] is missing or invalid
      * @throws AssetException if a stream could not be created
      */
     #[AllowedInSandbox]
@@ -2419,7 +2361,7 @@ JS, [
      */
     public function getFocalPoint(bool $asCss = false): array|string|null
     {
-        if (! in_array($this->kind, [self::KIND_IMAGE, self::KIND_VIDEO], true)) {
+        if (! in_array($this->kind, [FileKind::Image->value, FileKind::Video->value], true)) {
             return null;
         }
 
@@ -2550,7 +2492,7 @@ JS, [
     /**
      * Returns the HTML for asset previews.
      *
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     public function getPreviewHtml(): string
     {
@@ -2564,11 +2506,11 @@ JS, [
             $editable = (
                 $this->getSupportsImageEditor() &&
                 Gate::check("editImages:$volume->uid") &&
-                (Auth::id() == $this->uploaderId || Gate::check("editPeerImages:$volume->uid"))
+                (Auth::id() === $this->uploaderId || Gate::check("editPeerImages:$volume->uid"))
             );
 
             $previewInner = match ($this->kind) {
-                Asset::KIND_VIDEO => Html::tag('video', Html::tag('source', '', [
+                FileKind::Video->value => Html::tag('video', Html::tag('source', '', [
                     'type' => $this->getMimeType(),
                     'src' => $this->url,
                 ]), [
@@ -2576,7 +2518,7 @@ JS, [
                     'controls' => true,
                     'preload' => 'metadata',
                 ]),
-                Asset::KIND_AUDIO => Html::tag('audio', Html::tag('source', '', [
+                FileKind::Audio->value => Html::tag('audio', Html::tag('source', '', [
                     'src' => $this->url,
                     'type' => $this->getMimeType(),
                 ]), [
@@ -2675,7 +2617,7 @@ JS;
             }
 
             $html .= $previewThumbHtml;
-        } catch (NotSupportedException) {
+        } catch (RuntimeException) {
             // NBD
         }
 
@@ -2926,7 +2868,7 @@ JS;
     }
 
     /**
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     #[Override]
     public function afterSave(bool $isNew): void
@@ -2936,7 +2878,7 @@ JS;
             if (
                 isset($this->tempFilePath) &&
                 in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
-                AssetsHelper::getFileKindByExtension($this->tempFilePath) === self::KIND_IMAGE &&
+                AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value &&
                 ($this->sanitizeOnUpload ?? (
                     ! request()->isCpRequest() ||
                     Cms::config()->sanitizeCpImageUploads
@@ -2952,7 +2894,7 @@ JS;
             if (
                 isset($this->tempFilePath) &&
                 in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
-                AssetsHelper::getFileKindByExtension($this->tempFilePath) === self::KIND_IMAGE
+                AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value
             ) {
                 $imageSize = getimagesize($this->tempFilePath);
                 if (isset($imageSize[0])) {
@@ -3020,7 +2962,7 @@ JS;
             }
         }
 
-        DbFacade::table(Table::ASSETS_SITES)
+        DB::table(Table::ASSETS_SITES)
             ->upsert([
                 'assetId' => $this->id,
                 'siteId' => $this->siteId,
@@ -3038,7 +2980,7 @@ JS;
         }
 
         // Update the asset record
-        DbFacade::table(Table::ASSETS)
+        DB::table(Table::ASSETS)
             ->where('id', $this->id)
             ->update([
                 'deletedWithVolume' => $this->deletedWithVolume,
@@ -3054,7 +2996,7 @@ JS;
         if (! $this->keepFileOnDelete) {
             try {
                 $this->getVolume()->sourceDisk()->delete($this->getPath());
-            } catch (InvalidConfigException|NotSupportedException) {
+            } catch (UnableToDeleteFile) {
                 // NBD
             }
         }
@@ -3111,7 +3053,7 @@ JS;
             ],
         ];
 
-        if ($this->kind === self::KIND_IMAGE) {
+        if ($this->kind === FileKind::Image->value) {
             $attributes['data']['image-width'] = $this->getWidth();
             $attributes['data']['image-height'] = $this->getHeight();
         }
@@ -3161,13 +3103,13 @@ JS;
      */
     private function _dimensions(mixed $transform = null): array
     {
-        if (! in_array($this->kind, [self::KIND_IMAGE, self::KIND_VIDEO], true)) {
+        if (! in_array($this->kind, [FileKind::Image->value, FileKind::Video->value], true)) {
             return [null, null];
         }
 
         if (! $this->_width || ! $this->_height) {
             if (
-                $this->kind === self::KIND_IMAGE &&
+                $this->kind === FileKind::Image->value &&
                 $this->getScenario() !== self::SCENARIO_CREATE
             ) {
                 Log::warning("Asset $this->id is missing its width or height", [__METHOD__]);
@@ -3210,7 +3152,7 @@ JS;
             $filename = $this->_filename;
         }
 
-        $hasNewFolder = $folderId != $this->folderId;
+        $hasNewFolder = $folderId !== $this->folderId;
 
         $tempPath = null;
 
@@ -3224,7 +3166,7 @@ JS;
         $newPath = ($newFolder->path ? rtrim((string) $newFolder->path, '/').'/' : '').$filename;
 
         // Is this just a simple move/rename within the same volume?
-        if (! isset($this->tempFilePath) && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
+        if (! isset($this->tempFilePath) && $oldFolder !== null && $oldFolder->volumeId === $newFolder->volumeId) {
             if (! $oldVolume->sourceDisk()->move($oldPath, $newPath)) {
                 throw new FilesystemException("Unable to move $oldPath to $newPath");
             }
@@ -3296,7 +3238,7 @@ JS;
         if ($tempPath && file_exists($tempPath)) {
             $this->kind = AssetsHelper::getFileKindByExtension($filename);
 
-            if ($this->kind === self::KIND_IMAGE) {
+            if ($this->kind === FileKind::Image->value) {
                 [$this->_width, $this->_height] = ImageHelper::imageSize($tempPath);
             } else {
                 $this->_width = null;

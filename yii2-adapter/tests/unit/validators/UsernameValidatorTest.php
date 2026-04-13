@@ -9,7 +9,7 @@ namespace crafttests\unit\validators;
 
 use craft\test\TestCase;
 use craft\validators\UsernameValidator;
-use yii\base\NotSupportedException;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 
 /**
  * Class UsernameValidatorTest.

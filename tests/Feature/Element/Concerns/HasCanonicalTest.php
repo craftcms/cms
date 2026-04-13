@@ -5,8 +5,8 @@ declare(strict_types=1);
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\User\Elements\User;
-use yii\base\NotSupportedException;
 
 use function Pest\Laravel\actingAs;
 

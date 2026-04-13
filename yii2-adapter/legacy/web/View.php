@@ -16,6 +16,7 @@ use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\Cp;
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -48,7 +49,6 @@ use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Extension\ExtensionInterface;
 use yii\base\Exception;
-use yii\base\NotSupportedException;
 use yii\web\AssetBundle as YiiAssetBundle;
 
 use function CraftCms\Cms\t;

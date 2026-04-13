@@ -16,6 +16,7 @@ use craft\db\TableSchema;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
@@ -23,7 +24,6 @@ use mikehaertl\shellcommand\Command as ShellCommand;
 use PDO;
 use PDOException;
 use yii\base\ErrorException;
-use yii\base\NotSupportedException;
 use yii\db\Exception;
 use function CraftCms\Cms\normalizeVersion;
 

@@ -8,6 +8,7 @@ use Craft;
 use CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AfterReplaceAsset;
 use CraftCms\Cms\Asset\Events\BeforeReplaceAsset;
 use CraftCms\Cms\Asset\Events\DefineThumbUrl;
@@ -293,10 +294,10 @@ class Assets
         }
 
         return match ($asset->kind) {
-            Asset::KIND_IMAGE => new ImagePreview($asset),
-            Asset::KIND_PDF => new Pdf($asset),
-            Asset::KIND_VIDEO => new Video($asset),
-            Asset::KIND_HTML, Asset::KIND_JAVASCRIPT, Asset::KIND_JSON, Asset::KIND_PHP, Asset::KIND_TEXT, Asset::KIND_XML => new Text($asset),
+            FileKind::Image->value => new ImagePreview($asset),
+            FileKind::Pdf->value => new Pdf($asset),
+            FileKind::Video->value => new Video($asset),
+            FileKind::Html->value, FileKind::Javascript->value, FileKind::Json->value, FileKind::Php->value, FileKind::Text->value, FileKind::Xml->value => new Text($asset),
             default => null,
         };
     }

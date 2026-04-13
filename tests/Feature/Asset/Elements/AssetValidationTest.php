@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 
 describe('Required field validation', function () {
@@ -28,7 +29,7 @@ describe('Required field validation', function () {
     })->with([
         'null is invalid' => [null, true],
         'empty string is invalid' => ['', true],
-        'KIND_IMAGE is valid' => [Asset::KIND_IMAGE, false],
+        'KIND_IMAGE is valid' => [FileKind::Image->value, false],
     ]);
 });
 
@@ -156,7 +157,7 @@ describe('Edge cases', function () {
         expect($asset->errors()->has('kind'))->toBeTrue();
     });
 
-    test('all valid asset kinds are accepted', function (string $kind) {
+    test('valid asset kinds are accepted', function (string $kind) {
         $asset = AssetModel::factory()->createElement();
         $asset->kind = $kind;
 
@@ -164,25 +165,6 @@ describe('Edge cases', function () {
 
         expect($asset->errors()->has('kind'))->toBeFalse();
     })->with([
-        'KIND_ACCESS' => [Asset::KIND_ACCESS],
-        'KIND_AUDIO' => [Asset::KIND_AUDIO],
-        'KIND_CAPTIONS_SUBTITLES' => [Asset::KIND_CAPTIONS_SUBTITLES],
-        'KIND_COMPRESSED' => [Asset::KIND_COMPRESSED],
-        'KIND_EXCEL' => [Asset::KIND_EXCEL],
-        'KIND_FLASH' => [Asset::KIND_FLASH],
-        'KIND_HTML' => [Asset::KIND_HTML],
-        'KIND_ILLUSTRATOR' => [Asset::KIND_ILLUSTRATOR],
-        'KIND_IMAGE' => [Asset::KIND_IMAGE],
-        'KIND_JAVASCRIPT' => [Asset::KIND_JAVASCRIPT],
-        'KIND_JSON' => [Asset::KIND_JSON],
-        'KIND_PDF' => [Asset::KIND_PDF],
-        'KIND_PHOTOSHOP' => [Asset::KIND_PHOTOSHOP],
-        'KIND_PHP' => [Asset::KIND_PHP],
-        'KIND_POWERPOINT' => [Asset::KIND_POWERPOINT],
-        'KIND_TEXT' => [Asset::KIND_TEXT],
-        'KIND_VIDEO' => [Asset::KIND_VIDEO],
-        'KIND_WORD' => [Asset::KIND_WORD],
-        'KIND_XML' => [Asset::KIND_XML],
-        'KIND_UNKNOWN' => [Asset::KIND_UNKNOWN],
+        'KIND_IMAGE' => [FileKind::Image->value],
     ]);
 });

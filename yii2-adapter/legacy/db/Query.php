@@ -11,6 +11,7 @@ use ArrayAccess;
 use ArrayIterator;
 use craft\base\ClonefixTrait;
 use craft\events\DefineBehaviorsEvent;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Pagination\AbstractPaginator;
@@ -18,7 +19,6 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use IteratorAggregate;
 use yii\base\Exception;
-use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
 use yii\db\Connection as YiiConnection;
 

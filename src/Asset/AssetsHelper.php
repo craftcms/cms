@@ -8,6 +8,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\RegisterFileKinds;
 use CraftCms\Cms\Asset\Events\SetAssetFilename;
 use CraftCms\Cms\Cms;
@@ -44,18 +45,18 @@ class AssetsHelper
     public const string INDEX_SKIP_ITEMS_PATTERN = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
 
     /**
-     * @var array Supported file kinds
+     * @var array|null Supported file kinds
      *
      * @see getFileKinds()
      */
-    private static array $_fileKinds;
+    private static ?array $_fileKinds;
 
     /**
-     * @var array Allowed file kinds
+     * @var array|null Allowed file kinds
      *
      * @see getAllowedFileKinds()
      */
-    private static array $_allowedFileKinds;
+    private static ?array $_allowedFileKinds;
 
     /**
      * Get a temporary file path.
@@ -350,7 +351,7 @@ class AssetsHelper
      */
     public static function getFileKindLabel(string $kind): string
     {
-        return self::fileKinds()[$kind]['label'] ?? Asset::KIND_UNKNOWN;
+        return self::fileKinds()[$kind]['label'] ?? FileKind::Unknown->value;
     }
 
     /**
@@ -371,7 +372,7 @@ class AssetsHelper
             }
         }
 
-        return Asset::KIND_UNKNOWN;
+        return FileKind::Unknown->value;
     }
 
     /**
@@ -399,241 +400,10 @@ class AssetsHelper
             return self::$_fileKinds;
         }
 
-        self::$_fileKinds = [
-            Asset::KIND_ACCESS => [
-                'label' => 'Access',
-                'extensions' => [
-                    'accdb',
-                    'accde',
-                    'accdr',
-                    'accdt',
-                    'adp',
-                    'mdb',
-                ],
-            ],
-            Asset::KIND_AUDIO => [
-                'label' => t('Audio'),
-                'extensions' => [
-                    '3gp',
-                    'aac',
-                    'act',
-                    'aif',
-                    'aifc',
-                    'aiff',
-                    'alac',
-                    'amr',
-                    'au',
-                    'dct',
-                    'dss',
-                    'dvf',
-                    'flac',
-                    'gsm',
-                    'iklax',
-                    'ivs',
-                    'm4a',
-                    'm4p',
-                    'mmf',
-                    'mp3',
-                    'mpc',
-                    'msv',
-                    'oga',
-                    'ogg',
-                    'opus',
-                    'ra',
-                    'tta',
-                    'vox',
-                    'wav',
-                    'wma',
-                    'wv',
-                ],
-            ],
-            Asset::KIND_CAPTIONS_SUBTITLES => [
-                'label' => t('Captions/Subtitles'),
-                'extensions' => [
-                    'asc',
-                    'cap',
-                    'cin',
-                    'dfxp',
-                    'itt',
-                    'lrc',
-                    'mcc',
-                    'mpsub',
-                    'rt',
-                    'sami',
-                    'sbv',
-                    'scc',
-                    'smi',
-                    'srt',
-                    'stl',
-                    'sub',
-                    'tds',
-                    'ttml',
-                    'vtt',
-                ],
-            ],
-            Asset::KIND_COMPRESSED => [
-                'label' => t('Compressed'),
-                'extensions' => [
-                    '7z',
-                    'bz2',
-                    'dmg',
-                    'gz',
-                    'rar',
-                    's7z',
-                    'tar',
-                    'tgz',
-                    'zip',
-                    'zipx',
-                ],
-            ],
-            Asset::KIND_EXCEL => [
-                'label' => 'Excel',
-                'extensions' => [
-                    'xls',
-                    'xlsm',
-                    'xlsx',
-                    'xltm',
-                    'xltx',
-                ],
-            ],
-            Asset::KIND_HTML => [
-                'label' => 'HTML',
-                'extensions' => [
-                    'htm',
-                    'html',
-                ],
-            ],
-            Asset::KIND_ILLUSTRATOR => [
-                'label' => 'Illustrator',
-                'extensions' => [
-                    'ai',
-                ],
-            ],
-            Asset::KIND_IMAGE => [
-                'label' => t('Image'),
-                'extensions' => [
-                    'avif',
-                    'bmp',
-                    'gif',
-                    'heic',
-                    'heif',
-                    'jfif',
-                    'jp2',
-                    'jpe',
-                    'jpeg',
-                    'jpg',
-                    'jpx',
-                    'pam',
-                    'pfm',
-                    'pgm',
-                    'png',
-                    'pnm',
-                    'ppm',
-                    'svg',
-                    'tif',
-                    'tiff',
-                    'webp',
-                ],
-            ],
-            Asset::KIND_JAVASCRIPT => [
-                'label' => 'JavaScript',
-                'extensions' => [
-                    'js',
-                ],
-            ],
-            Asset::KIND_JSON => [
-                'label' => 'JSON',
-                'extensions' => [
-                    'json',
-                ],
-            ],
-            Asset::KIND_PDF => [
-                'label' => 'PDF',
-                'extensions' => [
-                    'pdf',
-                ],
-            ],
-            Asset::KIND_PHOTOSHOP => [
-                'label' => 'Photoshop',
-                'extensions' => [
-                    'psb',
-                    'psd',
-                ],
-            ],
-            Asset::KIND_PHP => [
-                'label' => 'PHP',
-                'extensions' => [
-                    'php',
-                ],
-            ],
-            Asset::KIND_POWERPOINT => [
-                'label' => 'PowerPoint',
-                'extensions' => [
-                    'potx',
-                    'pps',
-                    'ppsm',
-                    'ppsx',
-                    'ppt',
-                    'pptm',
-                    'pptx',
-                ],
-            ],
-            Asset::KIND_TEXT => [
-                'label' => t('Text'),
-                'extensions' => [
-                    'text',
-                    'txt',
-                ],
-            ],
-            Asset::KIND_VIDEO => [
-                'label' => t('Video'),
-                'extensions' => [
-                    'asf',
-                    'asx',
-                    'avchd',
-                    'avi',
-                    'fla',
-                    'flv',
-                    'hevc',
-                    'm1s',
-                    'm2s',
-                    'm2t',
-                    'm2v',
-                    'm4v',
-                    'mkv',
-                    'mng',
-                    'mov',
-                    'mp2v',
-                    'mp4',
-                    'mpeg',
-                    'mpg',
-                    'ogg',
-                    'ogv',
-                    'qt',
-                    'rm',
-                    'vob',
-                    'webm',
-                    'wmv',
-                ],
-            ],
-            Asset::KIND_WORD => [
-                'label' => 'Word',
-                'extensions' => [
-                    'doc',
-                    'docm',
-                    'docx',
-                    'dot',
-                    'dotm',
-                    'dotx',
-                ],
-            ],
-            Asset::KIND_XML => [
-                'label' => 'XML',
-                'extensions' => [
-                    'xml',
-                ],
-            ],
-        ];
+        self::$_fileKinds = collect(FileKind::cases())
+            ->filter(fn (FileKind $kind) => $kind !== FileKind::Unknown)
+            ->mapWithKeys(fn (FileKind $kind) => [$kind->value => $kind->toArray()])
+            ->all();
 
         // Merge with the extraFileKinds setting
         self::$_fileKinds = Arr::merge(self::$_fileKinds, Cms::config()->extraFileKinds);
@@ -641,6 +411,12 @@ class AssetsHelper
         event($event = new RegisterFileKinds(self::$_fileKinds));
 
         return self::$_fileKinds = Arr::sort($event->fileKinds, 'label');
+    }
+
+    public static function clear(): void
+    {
+        self::$_fileKinds = null;
+        self::$_allowedFileKinds = null;
     }
 
     /**

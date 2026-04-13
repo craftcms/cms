@@ -5,6 +5,7 @@ declare(strict_types=1);
 use craft\assetpreviews\Text;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\BeforeReplaceAsset;
 use CraftCms\Cms\Asset\Events\DefineThumbUrl;
 use CraftCms\Cms\Asset\Events\RegisterPreviewHandler;
@@ -124,7 +125,7 @@ it('returns default preview handler for known asset kinds', function () {
         'volumeId' => $volume->id,
         'folderId' => $folder->id,
         'filename' => 'test.txt',
-        'kind' => Asset::KIND_TEXT,
+        'kind' => FileKind::Text->value,
     ]);
 
     $handler = $this->assets->getAssetPreviewHandler($textAsset);

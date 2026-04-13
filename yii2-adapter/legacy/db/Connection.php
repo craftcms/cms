@@ -23,6 +23,7 @@ use CraftCms\Cms\Database\Events\AfterRestoreBackup;
 use CraftCms\Cms\Database\Events\BeforeCreateBackup;
 use CraftCms\Cms\Database\Events\BeforeRestoreBackup;
 use CraftCms\Cms\Database\Exceptions\CommandFailedException;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Yii2Adapter\DatabaseConnection;
@@ -34,7 +35,6 @@ use RuntimeException;
 use Throwable;
 use yii\base\Event;
 use yii\base\Exception;
-use yii\base\NotSupportedException;
 use yii\db\Exception as DbException;
 use yii\db\Transaction;
 

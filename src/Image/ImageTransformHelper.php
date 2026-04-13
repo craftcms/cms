@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Image;
 
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
 use CraftCms\Cms\Asset\Exceptions\ImageException;
@@ -82,7 +83,7 @@ class ImageTransformHelper
             return $ext;
         }
 
-        if ($asset->kind !== Asset::KIND_IMAGE) {
+        if ($asset->kind !== FileKind::Image->value) {
             throw new AssetOperationException(t('Tried to detect the appropriate image format for a non-image!'));
         }
 

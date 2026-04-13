@@ -7,7 +7,7 @@
 
 namespace craft\db;
 
-use yii\base\NotSupportedException;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use yii\db\ExpressionBuilderInterface;
 use yii\db\ExpressionBuilderTrait;
 use yii\db\ExpressionInterface as BaseExpressionInterface;

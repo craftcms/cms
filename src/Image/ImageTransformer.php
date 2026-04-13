@@ -20,6 +20,7 @@ use CraftCms\Cms\Image\Data\ImageTransformIndex;
 use CraftCms\Cms\Image\Events\DeletingTransformedImage;
 use CraftCms\Cms\Image\Events\TransformingImage;
 use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -34,7 +35,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Sleep;
 use Throwable;
 use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
 
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\t;
