@@ -30,6 +30,7 @@ use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\NewUsersController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\EditionController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
 use CraftCms\Cms\Http\Controllers\Elements\ExportElementIndexController;
 use CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController;
 use CraftCms\Cms\Http\Controllers\Elements\SearchController as ElementSearchController;
@@ -239,6 +240,7 @@ Route::prefix(implode('/', [
         Route::post('element-indexes/export', ExportElementIndexController::class);
         Route::post('element-indexes/perform-action', PerformElementActionController::class);
         Route::post('element-search/search', ElementSearchController::class);
+        Route::post('element-selector-modals/body', ElementSelectorModalController::class);
 
         // Entries
         Route::post('entries/create', CreateEntryController::class);

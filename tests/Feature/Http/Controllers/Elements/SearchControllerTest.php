@@ -54,7 +54,7 @@ it('requires authentication', function () {
 it('validates the required payload', function () {
     postJson(action(SearchController::class), [])
         ->assertUnprocessable()
-        ->assertJsonValidationErrors(['elementType', 'search']);
+        ->assertJsonValidationErrors(['search']);
 });
 
 it('validates invalid request payloads', function (array $payload, array $errors) {

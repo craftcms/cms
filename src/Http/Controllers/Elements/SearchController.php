@@ -4,56 +4,20 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
-use Closure;
-use CraftCms\Cms\Component\ComponentHelper;
-use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Cp\Html\ElementHtml;
-use CraftCms\Cms\Element\Conditions\ElementCondition;
-use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Element\Elements as ElementElements;
-use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Search;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
-use function CraftCms\Cms\t;
-
-readonly class SearchController
+readonly class SearchController extends BaseElementsController
 {
-    public function __construct(
-        private Request $request,
-        private Conditions $conditions,
-        private ElementElements $elements,
-    ) {}
-
-    public function __invoke()
+    public function __invoke(): JsonResponse
     {
         $this->request->validate([
-            'elementType' => ['required', 'string', function (string $attribute, mixed $value, Closure $fail): void {
-                if (! ComponentHelper::validateComponentClass($value, ElementInterface::class)) {
-                    $fail(new InvalidTypeException((string) $value, ElementInterface::class)->getMessage());
-                }
-            }],
             'siteId' => ['nullable'],
             'criteria' => ['nullable', 'array'],
-            'condition' => ['nullable', function (string $attribute, mixed $value, Closure $fail): void {
-                if (! is_array($value) && ! is_string($value)) {
-                    $fail(t('The {attribute} field must be a string or array.', ['attribute' => $attribute]));
-
-                    return;
-                }
-
-                if (is_array($value)) {
-                    $class = $value['class'] ?? null;
-
-                    if (! is_string($class) || trim($class) === '') {
-                        $fail(t('The {attribute} field must contain a `class` value.', ['attribute' => $attribute]));
-                    }
-                }
-            }],
             'excludeIds' => ['nullable', 'array'],
             'excludeIds.*' => ['integer'],
             'referenceElementId' => ['nullable', 'integer'],
@@ -62,10 +26,7 @@ readonly class SearchController
             'search' => ['required', 'string', 'max:255'],
         ]);
 
-        /** @var class-string<ElementInterface> $elementType */
-        $elementType = $this->request->input('elementType');
-
-        $query = $elementType::find()
+        $query = $this->elementType()::find()
             ->siteId($this->request->input('siteId'))
             ->search($this->request->input('search'))
             ->orderByDesc('score')
@@ -135,13 +96,7 @@ readonly class SearchController
 
     private function applyCondition(ElementQueryInterface $query): void
     {
-        if (! $this->request->has('condition')) {
-            return;
-        }
-
-        $condition = $this->conditions->createCondition($this->request->input('condition'));
-
-        if (! $condition instanceof ElementCondition) {
+        if (! $condition = $this->condition()) {
             return;
         }
 
