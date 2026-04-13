@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;

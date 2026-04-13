@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\EagerloadsTransforms;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAlt;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAssetLocation;

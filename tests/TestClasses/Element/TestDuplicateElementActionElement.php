@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Tests\TestClasses\Element;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Site\Models\Site;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Conditions;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Condition\BaseNumberConditionRule;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Html;

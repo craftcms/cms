@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Elements;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\controllers\ElementIndexesController;
 use craft\controllers\ElementSelectorModalsController;
 use craft\elements\conditions\assets\AssetCondition;
@@ -43,6 +42,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementAttributeRenderer;

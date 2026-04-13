@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements\addresses;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;

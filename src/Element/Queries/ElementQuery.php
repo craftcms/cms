@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries;
 
 use Closure;
-use craft\base\ElementInterface;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;

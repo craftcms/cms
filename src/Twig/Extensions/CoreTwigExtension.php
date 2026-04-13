@@ -6,11 +6,11 @@ namespace CraftCms\Cms\Twig\Extensions;
 
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use Craft;
-use craft\base\ElementInterface;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Component\Contracts\MissingComponentInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\AssetQuery;

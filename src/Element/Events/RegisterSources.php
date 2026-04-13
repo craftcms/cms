@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Events;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Concerns\HasSources;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * @event RegisterSources The event that is triggered when registering the available sources for the element type.

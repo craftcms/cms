@@ -9,7 +9,6 @@
 
 namespace craft\helpers;
 
-use craft\base\ElementInterface;
 use craft\base\Event as YiiEvent;
 use craft\events\DefineElementHtmlEvent;
 use craft\events\DefineElementInnerHtmlEvent;
@@ -32,6 +31,7 @@ use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\RequestedSite;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;

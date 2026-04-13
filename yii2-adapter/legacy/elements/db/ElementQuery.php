@@ -9,7 +9,6 @@ namespace craft\elements\db;
 
 use Closure;
 use Craft;
-use craft\base\ElementInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\cache\ElementQueryTagDependency;
 use craft\db\CoalesceColumnsExpression;
@@ -25,6 +24,7 @@ use craft\events\PopulateElementsEvent;
 use craft\helpers\Db;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\QueryParam;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;

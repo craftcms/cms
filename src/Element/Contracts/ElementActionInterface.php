@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Contracts;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace craft\fields;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\base\LegacyEventConstants;
 use craft\elements\db\TagQuery;
 use craft\elements\Tag;
@@ -16,6 +15,7 @@ use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\TagGroup;
 use craft\services\Gql as GqlService;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Gql\Data\GqlSchema;

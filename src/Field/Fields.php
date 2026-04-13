@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Craft;
-use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Iconic;
@@ -13,6 +12,7 @@ use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Field\Addresses as AddressesField;
 use CraftCms\Cms\Field\Assets as AssetsField;

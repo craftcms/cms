@@ -8,8 +8,8 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\events\MoveElementEvent;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Structure\Data\Structure;
 use CraftCms\Cms\Structure\Enums\Action;
 use CraftCms\Cms\Structure\Enums\Mode;

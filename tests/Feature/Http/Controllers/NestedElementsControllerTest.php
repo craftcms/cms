@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Events\BeforeDelete;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Commands;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sections;

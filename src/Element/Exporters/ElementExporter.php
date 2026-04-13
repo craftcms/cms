@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Exporters;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Element\Contracts\ElementExporterInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 abstract class ElementExporter extends Component implements ElementExporterInterface
 {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Data;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
 use CraftCms\Cms\User\Elements\User;
 use DateTime;

@@ -8,7 +8,7 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedNestedElements;

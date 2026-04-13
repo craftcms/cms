@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use BadMethodCallException;
-use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Support\Facades\Sites;

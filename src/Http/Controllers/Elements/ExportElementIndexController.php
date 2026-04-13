@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
 use Closure;
-use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Contracts\ElementExporterInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementExporters;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Exceptions\InvalidTypeException;

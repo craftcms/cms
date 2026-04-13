@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Policies;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Policies\ElementPolicy;
 use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\User\Elements\User;

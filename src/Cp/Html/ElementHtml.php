@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Html;
 
-use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
@@ -20,6 +19,7 @@ use CraftCms\Cms\Cp\Events\DefineElementCardHtml;
 use CraftCms\Cms\Cp\Events\DefineElementChipHtml;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Shared\Enums\Color;

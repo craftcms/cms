@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter\Tests\Legacy;
 
-use craft\base\ElementInterface;
 use craft\base\Event as YiiEvent;
 use craft\elements\NestedElementManager as LegacyNestedElementManager;
 use craft\events\BulkElementsEvent as LegacyBulkElementsEvent;
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\AfterSaveNestedElements;
 use CraftCms\Yii2Adapter\Tests\TestCase;
 use Illuminate\Support\Facades\Event;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements\Concerns;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;

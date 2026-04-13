@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements\users;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\FullNameField as BaseFullNameField;
 use CraftCms\Cms\User\Elements\User;
 use InvalidArgumentException;

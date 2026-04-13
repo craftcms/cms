@@ -8,11 +8,11 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\services\ElementSources;
 use craft\web\Controller;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Elements;

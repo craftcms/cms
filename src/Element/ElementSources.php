@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use craft\base\ElementInterface;
 use craft\db\CoalesceColumnsExpression;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\DefineSourceSortOptions;
 use CraftCms\Cms\Element\Events\DefineSourceTableAttributes;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;

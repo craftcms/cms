@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\GarbageCollection\Actions;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;

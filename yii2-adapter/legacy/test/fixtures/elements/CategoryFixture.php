@@ -8,8 +8,8 @@
 namespace craft\test\fixtures\elements;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\elements\Category;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * Class CategoryFixture.

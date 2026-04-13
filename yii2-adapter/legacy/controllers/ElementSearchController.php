@@ -7,12 +7,12 @@
 
 namespace craft\controllers;
 
-use craft\base\ElementInterface;
 use craft\web\Controller;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
 use CraftCms\Cms\Support\Facades\Conditions;

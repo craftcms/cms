@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use DateTime;
 use Override;
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements\users;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;

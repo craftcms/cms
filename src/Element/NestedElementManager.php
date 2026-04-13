@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use Closure;
-use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Component\Component;
@@ -16,6 +15,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\ChangeSortOrder;
 use CraftCms\Cms\Element\Actions\MoveDown;
 use CraftCms\Cms\Element\Actions\MoveUp;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Events\AfterSaveNestedElements;
 use CraftCms\Cms\Element\Events\CreateNestedElementRevisions;

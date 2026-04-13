@@ -8,9 +8,9 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\ElementInterface;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Fields;

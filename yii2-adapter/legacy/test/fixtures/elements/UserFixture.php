@@ -7,7 +7,7 @@
 
 namespace craft\test\fixtures\elements;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\User\Elements\User;
 
 /**

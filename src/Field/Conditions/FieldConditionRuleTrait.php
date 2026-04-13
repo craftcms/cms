@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Conditions;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\Auth;

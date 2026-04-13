@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Gql;
 
 use Craft;
-use craft\base\ElementInterface as BaseElementInterface;
 use craft\behaviors\FieldLayoutBehavior;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Contracts\ElementInterface as BaseElementInterface;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;

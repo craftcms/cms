@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Resolvers\Elements;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Resolvers\Resolver;
 use GraphQL\Type\Definition\ResolveInfo;

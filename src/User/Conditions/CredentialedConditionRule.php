@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Conditions;
 
-use craft\base\ElementInterface;
 use craft\elements\db\UserQuery;
 use CraftCms\Cms\Condition\BaseLightswitchConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\User\Elements\User;
 

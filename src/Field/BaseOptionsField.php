@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\QueryParam;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Conditions\OptionsFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements\users;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;

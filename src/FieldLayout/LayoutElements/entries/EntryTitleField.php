@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements\entries;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;

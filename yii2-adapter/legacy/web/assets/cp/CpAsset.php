@@ -8,7 +8,6 @@
 namespace craft\web\assets\cp;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\helpers\Assets;
 use craft\helpers\DateTimeHelper;
 use craft\validators\UserPasswordValidator;
@@ -38,6 +37,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;

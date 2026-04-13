@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementActionInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;

@@ -8,11 +8,11 @@
 namespace craft\test\fixtures\elements;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * Class AssetFixture.

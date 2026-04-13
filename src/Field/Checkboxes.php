@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use Illuminate\Support\Collection;

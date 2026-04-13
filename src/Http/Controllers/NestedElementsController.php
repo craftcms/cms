@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Entries;

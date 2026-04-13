@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Jobs;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\I18N;

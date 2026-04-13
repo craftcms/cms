@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
-use craft\base\ElementInterface;
 use craft\base\Event;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * LocateUploadedFilesEvent event class.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Events;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * RegisterDefaultTableAttributes event is triggered when registering the default table attributes for an element type.

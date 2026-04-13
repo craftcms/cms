@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\App;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\MenuHtml;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Support\Arr;

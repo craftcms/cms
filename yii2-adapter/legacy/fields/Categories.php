@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace craft\fields;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\base\LegacyEventConstants;
 use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
@@ -15,6 +14,7 @@ use craft\gql\resolvers\elements\Category as CategoryResolver;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\services\Gql as GqlService;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Gql\Data\GqlSchema;

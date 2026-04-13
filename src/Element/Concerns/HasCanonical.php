@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use DateTime;
 use yii\base\NotSupportedException;

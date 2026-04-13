@@ -6,9 +6,9 @@ namespace CraftCms\Cms\Field;
 
 use CommerceGuys\Addressing\Country\Country as CountryModel;
 use CommerceGuys\Addressing\Exception\UnknownCountryException;
-use craft\base\ElementInterface;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Conditions\CountryFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;

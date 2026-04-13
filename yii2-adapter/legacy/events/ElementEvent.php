@@ -7,7 +7,7 @@
 
 namespace craft\events;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * Element event class.

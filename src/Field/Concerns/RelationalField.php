@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Concerns;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * RelationalFieldTrait provides a base implementation for {@see \CraftCms\Cms\Field\Contracts\RelationalFieldInterface}.

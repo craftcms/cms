@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Conditions;
 
 use craft\base\conditions\BaseConditionRule;
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use yii\base\InvalidConfigException;

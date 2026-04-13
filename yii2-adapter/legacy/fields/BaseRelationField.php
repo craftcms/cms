@@ -8,13 +8,13 @@
 namespace craft\fields;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\behaviors\EventBehavior;
 use craft\db\FixedOrderExpression;
 use craft\db\Table as DbTable;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\OrderByPlaceholderExpression;
 use craft\events\CancelableEvent;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;

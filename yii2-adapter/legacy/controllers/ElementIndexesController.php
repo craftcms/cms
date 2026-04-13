@@ -10,11 +10,11 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\helpers\Component;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementExporterInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\ElementSources;

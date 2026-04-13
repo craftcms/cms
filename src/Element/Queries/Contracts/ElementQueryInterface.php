@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Contracts;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use Illuminate\Contracts\Database\Query\Builder;

@@ -8,12 +8,12 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\events\ApplyFieldSaveEvent;
 use craft\events\DefineCompatibleFieldTypesEvent;
 use craft\events\FieldEvent;
 use craft\events\LocateUploadedFilesEvent;
 use craft\events\RegisterComponentTypesEvent;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;

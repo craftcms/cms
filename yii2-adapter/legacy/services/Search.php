@@ -8,12 +8,12 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\events\IndexKeywordsEvent;
 use craft\events\SearchEvent;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;

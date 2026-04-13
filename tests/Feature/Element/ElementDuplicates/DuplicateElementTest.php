@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Events\AfterPropagate;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;

@@ -9,6 +9,7 @@ namespace craft\base;
 
 use Closure;
 use Craft;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Support\Arr;

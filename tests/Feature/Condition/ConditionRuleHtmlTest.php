@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Condition\BaseSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\DateCreatedConditionRule;
@@ -11,6 +10,7 @@ use CraftCms\Cms\Element\Conditions\HasUrlConditionRule;
 use CraftCms\Cms\Element\Conditions\IdConditionRule;
 use CraftCms\Cms\Element\Conditions\StatusConditionRule;
 use CraftCms\Cms\Element\Conditions\TitleConditionRule;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Shared\Enums\DateRangeType;

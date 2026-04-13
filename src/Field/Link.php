@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
-use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Concerns\RelationalField;

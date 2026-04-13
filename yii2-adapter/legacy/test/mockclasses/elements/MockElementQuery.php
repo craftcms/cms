@@ -8,8 +8,8 @@
 namespace craft\test\mockclasses\elements;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Str;
 
 /**

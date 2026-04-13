@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\BulkOp;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
 use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Scoped;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;

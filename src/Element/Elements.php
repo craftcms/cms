@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Events\RegisterElementTypes;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use Override;

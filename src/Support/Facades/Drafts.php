@@ -8,16 +8,16 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static \Illuminate\Support\Collection<\craft\base\ElementInterface> getEditableDrafts(\craft\base\ElementInterface $element, string|null $permission = null)
- * @method static \craft\base\ElementInterface createDraft(\craft\base\ElementInterface $canonical, int|null $creatorId = null, string|null $name = null, string|null $notes = null, array $newAttributes = [], bool $provisional = false)
+ * @method static \Illuminate\Support\Collection<\CraftCms\Cms\Element\Contracts\ElementInterface> getEditableDrafts(\CraftCms\Cms\Element\Contracts\ElementInterface $element, string|null $permission = null)
+ * @method static \CraftCms\Cms\Element\Contracts\ElementInterface createDraft(\CraftCms\Cms\Element\Contracts\ElementInterface $canonical, int|null $creatorId = null, string|null $name = null, string|null $notes = null, array $newAttributes = [], bool $provisional = false)
  * @method static string generateDraftName(int $canonicalId)
- * @method static bool saveElementAsDraft(\craft\base\ElementInterface $element, int|null $creatorId = null, string|null $name = null, string|null $notes = null, bool $markAsSaved = true)
- * @method static \craft\base\ElementInterface applyDraft(\craft\base\ElementInterface $draft, array $newAttributes = [])
- * @method static void removeDraftData(\craft\base\ElementInterface $draft)
+ * @method static bool saveElementAsDraft(\CraftCms\Cms\Element\Contracts\ElementInterface $element, int|null $creatorId = null, string|null $name = null, string|null $notes = null, bool $markAsSaved = true)
+ * @method static \CraftCms\Cms\Element\Contracts\ElementInterface applyDraft(\CraftCms\Cms\Element\Contracts\ElementInterface $draft, array $newAttributes = [])
+ * @method static void removeDraftData(\CraftCms\Cms\Element\Contracts\ElementInterface $draft)
  * @method static void purgeUnsavedDrafts()
  * @method static int insertDraftRow(string|null $name, string|null $notes = null, int|null $creatorId = null, int|null $canonicalId = null, bool $trackChanges = false, bool $provisional = false)
- * @method static \craft\base\ElementInterface[] withProvisionalDrafts(\craft\base\ElementInterface[] $elements, \CraftCms\Cms\User\Elements\User|null $user = null)
- * @method static void loadProvisionalChanges(\craft\base\ElementInterface[] $elements, \CraftCms\Cms\User\Elements\User|null $user = null)
+ * @method static \CraftCms\Cms\Element\Contracts\ElementInterface[] withProvisionalDrafts(\CraftCms\Cms\Element\Contracts\ElementInterface[] $elements, \CraftCms\Cms\User\Elements\User|null $user = null)
+ * @method static void loadProvisionalChanges(\CraftCms\Cms\Element\Contracts\ElementInterface[] $elements, \CraftCms\Cms\User\Elements\User|null $user = null)
  *
  * @see \CraftCms\Cms\Element\Drafts
  */

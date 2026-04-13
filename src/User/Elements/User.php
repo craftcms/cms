@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User\Elements;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\elements\conditions\users\UserCondition;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -18,6 +17,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\Events;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 class DefineActionMenuItems extends \CraftCms\Cms\Element\Events\DefineActionMenuItems
 {

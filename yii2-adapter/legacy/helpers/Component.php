@@ -7,12 +7,12 @@
 
 namespace craft\helpers;
 
-use craft\base\ElementInterface;
 use craft\base\Model;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use DateTime;
 use RuntimeException;
 use yii\base\InvalidConfigException;

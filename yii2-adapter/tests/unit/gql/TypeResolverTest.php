@@ -9,7 +9,6 @@ namespace crafttests\unit\gql;
 
 use ArrayObject;
 use Craft;
-use craft\base\ElementInterface;
 use craft\elements\GlobalSet;
 use craft\gql\base\Resolver;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
@@ -19,6 +18,7 @@ use craft\gql\resolvers\elements\User as UserResolver;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\TestCase;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Str;

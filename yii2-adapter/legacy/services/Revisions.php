@@ -8,8 +8,8 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\events\RevisionEvent;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\CreatingRevision;
 use CraftCms\Cms\Element\Events\RevertedToRevision;
 use CraftCms\Cms\Element\Events\RevertingToRevision;

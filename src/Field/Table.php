@@ -6,10 +6,10 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use Craft;
-use craft\base\ElementInterface;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
 use CraftCms\Cms\Gql\GqlEntityRegistry;

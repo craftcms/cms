@@ -8,7 +8,6 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\base\Event as YiiEvent;
 use craft\console\Controller;
 use craft\elements\Category;
@@ -23,6 +22,7 @@ use craft\services\Elements;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Element\Commands\Resave\ResaveCommand;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\DefineResaveCommands;

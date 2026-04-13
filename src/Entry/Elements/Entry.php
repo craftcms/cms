@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Elements;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use craft\controllers\ElementIndexesController;
@@ -25,6 +24,7 @@ use CraftCms\Cms\Element\Actions\DeleteForSite;
 use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;

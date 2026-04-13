@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements\assets;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
 use InvalidArgumentException;

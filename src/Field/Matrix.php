@@ -6,13 +6,13 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use Craft;
-use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;

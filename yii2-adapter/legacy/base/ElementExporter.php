@@ -7,6 +7,8 @@
 
 namespace craft\base;
 
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+
 /**
  * ElementExporter is the base class for classes representing element exporters in terms of objects.
  *

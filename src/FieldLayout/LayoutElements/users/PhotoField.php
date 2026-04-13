@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements\users;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\web\assets\userphoto\UserPhotoAsset;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Enums;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;

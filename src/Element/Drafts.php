@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\ApplyingDraft;
 use CraftCms\Cms\Element\Events\CreatingDraft;
 use CraftCms\Cms\Element\Events\DraftApplied;

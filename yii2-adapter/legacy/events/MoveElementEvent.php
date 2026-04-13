@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
-use craft\base\ElementInterface;
 use craft\services\Structures;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use yii\base\InvalidConfigException;
 
 /**

@@ -6,8 +6,8 @@ namespace CraftCms\Cms\FieldLayout;
 
 use Closure;
 use Craft;
-use craft\base\ElementInterface;
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
