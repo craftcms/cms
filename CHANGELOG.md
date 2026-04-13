@@ -83,6 +83,7 @@
 - Fixed a bug where SVG files missing their `width` and `height` attributes weren’t getting them set as expected.
 - Fixed an error that occurred if a template referenced a preloaded Single entry followed by a null coalescing operator. ([#18503](https://github.com/craftcms/cms/issues/18503))
 - Fixed a bug where links within Redactor fields were getting `target="_blank"` added to them. ([#18500](https://github.com/craftcms/cms/issues/18500))
+<<<<<<< HEAD
 - Fixed an error that could occur when applying project config changes, or editing entries with an invalid entry type. ([#18477](https://github.com/craftcms/cms/issues/18477), [#18505](https://github.com/craftcms/cms/issues/18505))
 - Fixed a bug where Content Block fields’ nested values weren’t always getting set correctly via `resave` commands. ([#18453](https://github.com/craftcms/cms/issues/18453))
 - Fixed a bug where addresses without labels weren’t getting chip labels. ([#18481](https://github.com/craftcms/cms/issues/18481))
@@ -91,8 +92,8 @@
 - Fixed a bug where failure messages when pasting elements weren’t getting displayed properly.
 - Fixed a bug where `craft\helpers\UrlHelper::cpReferralUrl()` was returning the referrer URL even if it had the same URI as the current page. ([#18483](https://github.com/craftcms/cms/pull/18483))
 - Fixed a bug where Matrix field’ grouped entry type menu labels weren’t translatable. ([#18528](https://github.com/craftcms/cms/issues/18528))
-- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerabilities. (GHSA-3m9m-24vh-39wx, GHSA-95wr-3f2v-v2wh)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-jq2f-59pj-p3m3)
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerabilities. ([GHSA-3m9m-24vh-39wx](https://github.com/craftcms/cms/security/advisories/GHSA-3m9m-24vh-39wx), [GHSA-95wr-3f2v-v2wh](https://github.com/craftcms/cms/security/advisories/GHSA-95wr-3f2v-v2wh))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. ([GHSA-jq2f-59pj-p3m3](https://github.com/craftcms/cms/security/advisories/GHSA-jq2f-59pj-p3m3))
 
 ## 5.9.14 - 2026-02-25
 
