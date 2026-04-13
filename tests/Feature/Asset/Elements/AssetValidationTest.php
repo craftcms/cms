@@ -109,7 +109,7 @@ describe('SCENARIO_INDEX validation', function () {
         $asset = AssetModel::factory()->createElement();
         $asset->setScenario(Asset::SCENARIO_INDEX);
 
-        $activeAttributes = $asset->activeAttributes();
+        $activeAttributes = array_keys($asset->getRules());
 
         expect($activeAttributes)->toBe([]);
     });

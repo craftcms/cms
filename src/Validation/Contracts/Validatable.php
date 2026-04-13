@@ -64,6 +64,11 @@ interface Validatable
     public function errors(): MessageBag;
 
     /**
+     * Adds errors from another model, with a given attribute name prefix.
+     */
+    public function addModelErrors(Validatable $model, string $attrPrefix = ''): void;
+
+    /**
      * Sets attribute values.
      *
      * @param  array<string, mixed>  $values  attribute values to set (attribute name => value).

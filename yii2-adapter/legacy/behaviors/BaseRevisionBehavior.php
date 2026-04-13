@@ -16,7 +16,7 @@ use yii\base\Behavior;
 /**
  * BaseRevisionBehavior is the base implementation of draft & revision behaviors.
  *
- * @template T of Element
+ * @template T of \CraftCms\Cms\Element\Contracts\ElementInterface&\craft\base\Component
  * @extends Behavior<T>
  * @property User|null $creator
  * @property-read int $sourceId

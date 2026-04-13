@@ -8,6 +8,7 @@
 namespace craft\elements;
 
 use Craft;
+use craft\base\LegacyEventConstants;
 use craft\controllers\ElementIndexesController;
 use craft\db\Table;
 use craft\elements\actions\Delete;
@@ -35,6 +36,8 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\Yii2Adapter\Validation\LegacyElementRules;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -51,8 +54,11 @@ use function CraftCms\Cms\t;
  * @since 3.0.0
  * @deprecated in 6.0.0
  */
+#[Ruleset(LegacyElementRules::class)]
 class Category extends Element
 {
+    use LegacyEventConstants;
+
     /**
      * @inheritdoc
      */
@@ -408,7 +414,7 @@ class Category extends Element
      */
     protected function defineRules(): array
     {
-        $rules = parent::defineRules();
+        $rules = [];
         $rules[] = [['groupId'], 'number', 'integerOnly' => true];
         return $rules;
     }

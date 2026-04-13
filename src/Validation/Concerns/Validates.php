@@ -38,6 +38,19 @@ trait Validates
         return [];
     }
 
+    public function addModelErrors(Validatable $model, string $attrPrefix = ''): void
+    {
+        if ($attrPrefix !== '') {
+            $attrPrefix = rtrim($attrPrefix, '.').'.';
+        }
+
+        foreach ($model->errors()->getMessages() as $attribute => $errors) {
+            foreach ($errors as $error) {
+                $this->errors()->add($attrPrefix.$attribute, $error);
+            }
+        }
+    }
+
     public function setAttributes($values, $safeOnly = true): void
     {
         Typecast::properties(static::class, $values);

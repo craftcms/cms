@@ -38,6 +38,17 @@ trait InteractsWithValidator
         return $this->errors ??= new MessageBag;
     }
 
+    public function clearErrors($attribute = null): void
+    {
+        if (is_null($attribute)) {
+            $this->errors = new MessageBag;
+
+            return;
+        }
+
+        $this->errors->forget($attribute);
+    }
+
     /**
      * TODO: Add types to method signature once components no longer rely
      * on craft/base/Model

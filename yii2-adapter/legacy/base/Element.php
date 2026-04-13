@@ -108,8 +108,6 @@ abstract class Element extends \CraftCms\Cms\Element\Element implements Iterator
 
     public function init(): void
     {
-        parent::init();
-
         // Stop allowing setting custom field values directly on the behavior
         /** @var CustomFieldBehavior $behavior */
         $behavior = $this->getBehavior('customFields');

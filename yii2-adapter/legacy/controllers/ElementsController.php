@@ -2172,7 +2172,7 @@ JS, [
             $element->setScenario(Element::SCENARIO_ESSENTIALS);
             Elements::saveElement($element, saveContent: $saveContent);
             $element->clearErrors();
-            $element->addErrors($errors);
+            $element->errors()->merge($errors);
             return $this->_asAppyDraftFailure($element);
         }
 

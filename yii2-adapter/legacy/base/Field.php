@@ -77,6 +77,10 @@ abstract class Field extends \CraftCms\Cms\Field\Field
 
     public function getElementRules(ElementInterface $element): array
     {
+        if (!$element instanceof Model) {
+            return [];
+        }
+
         return [
             function(string $attribute, mixed $value, Closure $fail) use ($element) {
                 $scenario = $element->getScenario();
@@ -105,7 +109,7 @@ abstract class Field extends \CraftCms\Cms\Field\Field
     private function _normalizeFieldValidator(
         string $attribute,
         mixed $rule,
-        ElementInterface $element,
+        Model $element,
         callable $isEmpty,
     ): Validator {
         if ($rule instanceof Validator) {
