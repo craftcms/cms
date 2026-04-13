@@ -29,15 +29,11 @@ trait HasCanonical
 {
     /**
      * @var DateTime|null The date that the canonical element was last merged into this one
-     *
-     * @since 3.7.0
      */
     public ?DateTime $dateLastMerged = null;
 
     /**
      * @var bool Whether recent changes to the canonical element are being merged into this element.
-     *
-     * @since 3.7.0
      */
     public bool $mergingCanonicalChanges = false;
 
@@ -45,8 +41,6 @@ trait HasCanonical
      * @var bool Whether the element is being updated from a derivative element, such as a draft or revision.
      *
      * If this is true, the derivative element can be accessed via [[duplicateOf]].
-     *
-     * @since 3.7.0
      */
     public bool $updatingFromDerivative = false;
 

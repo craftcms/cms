@@ -358,7 +358,6 @@ trait Structurable
 
     public function beforeMoveInStructure(int $structureId): bool
     {
-        // Fire a 'beforeMoveInStructure' event
         event($event = new BeforeMoveInStructure($this, $structureId));
 
         return $event->isValid;
@@ -366,10 +365,8 @@ trait Structurable
 
     public function afterMoveInStructure(int $structureId): void
     {
-        // Fire an 'afterMoveInStructure' event
         event(new AfterMoveInStructure($this, $structureId));
 
-        // Invalidate caches for this element
         ElementCaches::invalidateForElement($this);
     }
 
@@ -382,8 +379,7 @@ trait Structurable
         if ($criteria instanceof ElementQueryInterface) {
             $query = clone $criteria;
         } else {
-            $query = static::find()
-                ->siteId($this->siteId);
+            $query = static::find()->siteId($this->siteId);
 
             if ($criteria) {
                 Typecast::configure($query, $criteria);
@@ -392,7 +388,7 @@ trait Structurable
 
         /** @var ElementQuery $query */
         $elementIds = $query->cache()->ids();
-        $key = array_search($this->getCanonicalId(), $elementIds, false);
+        $key = array_search($this->getCanonicalId(), $elementIds);
 
         if ($key === false || ! isset($elementIds[$key + $direction])) {
             return null;

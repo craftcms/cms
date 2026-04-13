@@ -20,8 +20,6 @@ trait Cacheable
      * Returns the cache tags that should be cleared when this element is saved.
      *
      * @return string[]
-     *
-     * @since 3.5.0
      */
     public function getCacheTags(): array
     {
@@ -34,8 +32,6 @@ trait Cacheable
      * Returns the cache tags that should be cleared when this element is saved.
      *
      * @return string[]
-     *
-     * @since 4.1.0
      */
     protected function cacheTags(): array
     {

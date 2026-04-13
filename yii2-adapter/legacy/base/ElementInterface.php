@@ -24,6 +24,7 @@ use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\HtmlString;
 use Stringable;
 use Twig\Markup;
 use yii\base\InvalidConfigException;
@@ -1952,10 +1953,9 @@ interface ElementInterface extends
      * If no partial template exists for the element, its string representation will be output instead.
      *
      * @param array $variables
-     * @return Markup
      * @throws InvalidConfigException
      * @throws NotSupportedException
      * @since 5.8.0
      */
-    public function render(array $variables = []): Markup;
+    public function render(array $variables = []): HtmlString;
 }

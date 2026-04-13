@@ -33,15 +33,11 @@ trait Eagerloadable
 {
     /**
      * @var ElementInterface[]|null All elements that the element was queried with.
-     *
-     * @since 5.0.0
      */
     public ?array $elementQueryResult = null;
 
     /**
      * @var EagerLoadInfo|null Info about the eager loading setup used to query this element.
-     *
-     * @since 5.0.0
      */
     public ?EagerLoadInfo $eagerLoadInfo = null;
 
@@ -82,8 +78,6 @@ trait Eagerloadable
      *                          but still used elsewhere.
      *
      * @phpstan-return EagerLoadingMap|null|false
-     *
-     * @since 3.1.0
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
@@ -218,10 +212,10 @@ trait Eagerloadable
         $map = [];
         foreach ($elementStructureData as $elementStructureDatum) {
             foreach ($descendantStructureData as $descendantStructureDatum) {
-                if (! ($descendantStructureDatum['structureId'] == $elementStructureDatum['structureId'] && $descendantStructureDatum['lft'] > $elementStructureDatum['lft'] && $descendantStructureDatum['rgt'] < $elementStructureDatum['rgt'])) {
+                if (! ($descendantStructureDatum['structureId'] === $elementStructureDatum['structureId'] && $descendantStructureDatum['lft'] > $elementStructureDatum['lft'] && $descendantStructureDatum['rgt'] < $elementStructureDatum['rgt'])) {
                     continue;
                 }
-                if (! (! $children || $descendantStructureDatum['level'] == $elementStructureDatum['level'] + 1)) {
+                if (! (! $children || $descendantStructureDatum['level'] === $elementStructureDatum['level'] + 1)) {
                     continue;
                 }
                 if (! $descendantStructureDatum['elementId']) {
@@ -282,10 +276,10 @@ trait Eagerloadable
         foreach ($elementStructureData as $elementStructureDatum) {
             foreach ($ancestorStructureData as $ancestorStructureDatum) {
                 if (
-                    $ancestorStructureDatum['structureId'] == $elementStructureDatum['structureId'] &&
+                    $ancestorStructureDatum['structureId'] === $elementStructureDatum['structureId'] &&
                     $ancestorStructureDatum['lft'] < $elementStructureDatum['lft'] &&
                     $ancestorStructureDatum['rgt'] > $elementStructureDatum['rgt'] &&
-                    (! $parents || $ancestorStructureDatum['level'] == $elementStructureDatum['level'] - 1)
+                    (! $parents || $ancestorStructureDatum['level'] === $elementStructureDatum['level'] - 1)
                 ) {
                     if ($ancestorStructureDatum['elementId']) {
                         $map[] = [
@@ -533,7 +527,6 @@ trait Eagerloadable
      * @return bool Whether the eager-loaded elements exist
      *
      * @see SetEagerLoadedElements()
-     * @since 3.5.0
      */
     public function hasEagerLoadedElements(string $handle): bool
     {
@@ -555,7 +548,6 @@ trait Eagerloadable
      * @return ElementCollection|null The eager-loaded elements, or null if they don't exist
      *
      * @see SetEagerLoadedElements()
-     * @since 3.5.0
      */
     public function getEagerLoadedElements(string $handle): ?ElementCollection
     {
@@ -570,6 +562,7 @@ trait Eagerloadable
         }
 
         $elements = $this->_eagerLoadedElements[$handle];
+
         ElementHelper::setNextPrevOnElements($elements);
 
         return $elements;
@@ -583,7 +576,6 @@ trait Eagerloadable
      * @param  EagerLoadPlan  $plan  The eager-load plan that was used to load the elements
      *
      * @see getEagerLoadedElements()
-     * @since 3.5.0
      */
     public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
@@ -625,8 +617,6 @@ trait Eagerloadable
      *
      * @param  string  $handle  The handle to mark as lazy-loaded
      * @param  bool  $value  Whether the elements should be lazy-loaded
-     *
-     * @since 5.0.0
      */
     public function setLazyEagerLoadedElements(string $handle, bool $value = true): void
     {
@@ -640,7 +630,6 @@ trait Eagerloadable
      * @return int|null The number of eager-loaded elements, or null if they don't exist
      *
      * @see setEagerLoadedElementCount()
-     * @since 3.5.0
      */
     public function getEagerLoadedElementCount(string $handle): ?int
     {
@@ -662,7 +651,6 @@ trait Eagerloadable
      * @param  int  $count  The number of eager-loaded elements
      *
      * @see getEagerLoadedElementCount()
-     * @since 3.5.0
      */
     public function setEagerLoadedElementCount(string $handle, int $count): void
     {

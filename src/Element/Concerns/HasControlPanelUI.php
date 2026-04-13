@@ -156,7 +156,6 @@ trait HasControlPanelUI
      *
      * @see getActionMenuItems()
      * @see MenuHtml::disclosureMenu()
-     * @since 5.0.0
      */
     protected function safeActionMenuItems(): array
     {
@@ -292,7 +291,6 @@ JS, [
      *
      * @see getActionMenuItems()
      * @see MenuHtml::disclosureMenu()
-     * @since 5.0.0
      */
     protected function destructiveActionMenuItems(): array
     {
@@ -472,7 +470,6 @@ JS, [
      * @return string The HTML that should be shown for a given attribute in table and card views.
      *
      * @see getAttributeHtml()
-     * @since 5.0.0
      */
     protected function attributeHtml(string $attribute): string|Stringable
     {
@@ -486,7 +483,6 @@ JS, [
      * @return string The HTML that should be shown for a given attribute's inline input.
      *
      * @see getInlineAttributeInputHtml()
-     * @since 5.0.0
      */
     protected function inlineAttributeInputHtml(string $attribute): string|Stringable
     {
@@ -522,8 +518,6 @@ JS, [
      * Returns the HTML for any meta fields that should be shown within the editor sidebar.
      *
      * @param  bool  $static  Whether the fields should be static (non-interactive)
-     *
-     * @since 3.7.0
      */
     protected function metaFieldsHtml(bool $static): string|Stringable
     {
@@ -536,8 +530,6 @@ JS, [
      * Returns the HTML for the element's Slug field.
      *
      * @param  bool  $static  Whether the fields should be static (non-interactive)
-     *
-     * @since 3.7.0
      */
     protected function slugFieldHtml(bool $static): string|Stringable
     {
@@ -562,9 +554,7 @@ JS, [
     /**
      * Returns whether the Status field should be shown for this element.
      *
-     *  If set to `false`, the element's status can't be updated via edit forms, the Set Status action, or `resave/*` commands.
-     *
-     * @since 4.5.0
+     * If set to `false`, the element's status can't be updated via edit forms, the Set Status action, or `resave/*` commands.
      */
     protected function showStatusField(): bool
     {
@@ -573,8 +563,6 @@ JS, [
 
     /**
      * Returns the status field HTML for the sidebar.
-     *
-     * @since 4.0.0
      */
     protected function statusFieldHtml(): string|Stringable
     {
@@ -628,8 +616,6 @@ JS, [
 
     /**
      * Returns the notes field HTML for the sidebar.
-     *
-     * @since 4.0.0
      */
     protected function notesFieldHtml(): string|Stringable
     {
@@ -653,8 +639,6 @@ JS, [
      * Returns whether the element has a field layout with at least one tab.
      *
      * @return bool Returns whether the element has a field layout with at least one tab.
-     *
-     * @since 3.7.0
      */
     protected function hasFieldLayout(): bool
     {
@@ -725,8 +709,6 @@ JS, [
      *
      * @return array The data, with keys representing the labels. The values can either be strings or callables.
      *               If a value is `false`, it will be omitted.
-     *
-     * @since 3.7.0
      */
     protected function metadata(): array
     {
@@ -761,7 +743,6 @@ JS, [
     /**
      * Returns the breadcrumbs that lead up to the element.
      *
-     * @since 5.0.0
      * @see getCrumbs()
      */
     protected function crumbs(): array
@@ -791,8 +772,6 @@ JS, [
 
     /**
      * Returns what the element should be called within the control panel.
-     *
-     * @since 3.6.4
      */
     protected function uiLabel(): ?string
     {

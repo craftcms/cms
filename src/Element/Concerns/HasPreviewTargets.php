@@ -24,8 +24,6 @@ trait HasPreviewTargets
 {
     /**
      * @var bool Whether the element is currently being previewed.
-     *
-     * @since 3.2.0
      */
     public bool $previewing = false;
 
@@ -73,7 +71,6 @@ trait HasPreviewTargets
      * Each target should be represented by a sub-array with `'label'` and `'url'` keys.
      *
      * @see getPreviewTargets()
-     * @since 3.2.0
      */
     protected function previewTargets(): array
     {

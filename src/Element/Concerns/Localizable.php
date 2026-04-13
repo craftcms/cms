@@ -9,7 +9,6 @@ use craft\base\NestedElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -46,45 +45,33 @@ trait Localizable
 
     /**
      * @var ElementInterface|null The element that this element is being propagated from.
-     *
-     * @since 5.0.0
      */
     public ?ElementInterface $propagatingFrom = null;
 
     /**
      * @var bool Whether all element attributes should be propagated across all its supported sites, even if that means
      *           overwriting existing site-specific values.
-     *
-     * @since 3.2.0
      */
     public bool $propagateAll = false;
 
     /**
      * @var bool Whether all required element attributes should be propagated across all its supported sites, but only if otherwise
      *           they wouldn’t validate.
-     *
-     * @since 5.9.0
      */
     public bool $propagateRequired = false;
 
     /**
      * @var int[] The site IDs that the element was just propagated to for the first time.
-     *
-     * @since 3.2.9
      */
     public array $newSiteIds = [];
 
     /**
      * @var bool Whether the element is being saved to the current site for the first time.
-     *
-     * @since 3.7.15
      */
     public bool $isNewForSite = false;
 
     /**
      * @var bool Whether this is for a newly-created site.
-     *
-     * @since 5.6.10
      */
     public bool $isNewSite = false;
 
@@ -104,10 +91,7 @@ trait Localizable
             : $this;
     }
 
-    /**
-     * @since 3.5.0
-     */
-    public function getLocalized(): ElementQueryInterface|ElementQuery|ElementCollection
+    public function getLocalized(): ElementQueryInterface|ElementCollection
     {
         // Eager-loaded?
         if ($localized = $this->getEagerLoadedElements('localized')) {
@@ -177,9 +161,6 @@ trait Localizable
         throw new InvalidConfigException("Invalid site ID: {$this->siteId}");
     }
 
-    /**
-     * @since 3.5.0
-     */
     public function getLanguage(): string
     {
         return $this->getSite()->getLanguage();

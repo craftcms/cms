@@ -29,8 +29,6 @@ trait Searchable
      * @var bool Whether the element's search keywords should be indexed immediately.
      *
      * If `null`, the search index will only be updated immediately for console requests.
-     *
-     * @since 5.8.0
      */
     public ?bool $updateSearchIndexImmediately = null;
 
@@ -53,8 +51,6 @@ trait Searchable
 
     /**
      * Returns the search keywords for a given search attribute.
-     *
-     * @since 3.5.0
      */
     protected function searchKeywords(string $attribute): string
     {

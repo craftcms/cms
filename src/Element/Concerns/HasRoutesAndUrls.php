@@ -51,17 +51,14 @@ trait HasRoutesAndUrls
 
     public function getRoute(): mixed
     {
-        // Fire a 'setRoute' event
         event($event = new SetRoute($this));
+
         if ($event->handled || $event->route !== null) {
             return $event->route ?: null;
         }
 
-        if ($this instanceof NestedElementInterface) {
-            $field = $this->getField();
-            if ($field) {
-                return $field->getRouteForElement($this);
-            }
+        if ($this instanceof NestedElementInterface && $field = $this->getField()) {
+            return $field->getRouteForElement($this);
         }
 
         return $this->route();
@@ -86,8 +83,8 @@ trait HasRoutesAndUrls
 
     public function getUrl(): ?string
     {
-        // Fire a 'beforeDefineUrl' event
         event($beforeEvent = new BeforeDefineUrl($this));
+
         $url = $beforeEvent->url;
         $handled = $beforeEvent->handled;
 
@@ -97,8 +94,8 @@ trait HasRoutesAndUrls
             $url = Url::siteUrl($path, null, null, $this->siteId);
         }
 
-        // Fire a 'defineUrl' event
         event($event = new DefineUrl($this, $url));
+
         // If DefineUrl::$url is set to null, only respect that if $handled is true
         if ($event->url !== null || $event->handled) {
             $url = $event->url;
@@ -124,8 +121,6 @@ trait HasRoutesAndUrls
 
     /**
      * Returns the element's edit URL in the control panel.
-     *
-     * @since 3.7.0
      */
     protected function cpEditUrl(): ?string
     {

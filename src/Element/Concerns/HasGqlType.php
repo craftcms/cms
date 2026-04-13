@@ -23,18 +23,12 @@ trait HasGqlType
         return ElementGqlType::getType();
     }
 
-    /**
-     * @since 3.3.0
-     */
     public static function gqlScopesByContext(mixed $context): array
     {
         // Default to no scopes required
         return [];
     }
 
-    /**
-     * @since 3.3.0
-     */
     public function getGqlTypeName(): string
     {
         // Default to the short class name

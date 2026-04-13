@@ -40,9 +40,6 @@ trait Queryable
         return static::findByCondition($criteria, false);
     }
 
-    /**
-     * @interitdoc
-     */
     public static function get(int|string $id): ?static
     {
         return static::find()
@@ -78,6 +75,7 @@ trait Queryable
             if (! is_array($criteria) || Arr::isList($criteria)) {
                 $criteria = ['id' => $criteria];
             }
+
             Typecast::configure($query, $criteria);
         }
 
