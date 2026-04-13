@@ -14,6 +14,7 @@ use craft\base\Event as YiiEvent;
 use craft\events\AuthenticateUserEvent;
 use craft\events\DefineValueEvent;
 use CraftCms\Cms\Auth\Events\Authenticating;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Events\DefineFriendlyName;
 use CraftCms\Cms\User\Events\DefineName;
@@ -47,6 +48,16 @@ class User extends UserElement
      * something if there is an authentication error.
      */
     public const string EVENT_BEFORE_AUTHENTICATE = 'beforeAuthenticate';
+
+    /**
+     * Returns the user’s full name.
+     */
+    #[Deprecated(message: 'in 4.0.0. [[fullName]] should be used instead.')]
+    #[AllowedInSandbox]
+    public function getFullName(): ?string
+    {
+        return $this->fullName;
+    }
 
     public static function registerEvents(): void
     {
