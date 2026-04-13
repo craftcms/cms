@@ -9,12 +9,14 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems;
+use CraftCms\Cms\Filesystem\Resources\FsResource;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
-use Illuminate\Contracts\View\View;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -32,11 +34,15 @@ class FilesystemsController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(): View
+    public function index(): \Inertia\Response
     {
-        return view('settings/filesystems/_index', [
-            'filesystems' => $this->filesystems->getAllFilesystems(),
-            'readOnly' => $this->readOnly,
+        return Inertia::render('SettingsFilesystemsIndexPage', [
+            'crumbs' => fn () => [
+                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
+                ['label' => t('Filesystems')],
+            ],
+            'title' => t('Filesystems'),
+            'filesystems' => FsResource::collection($this->filesystems->getAllFilesystems()),
         ]);
     }
 
@@ -138,11 +144,9 @@ class FilesystemsController
         return $this->asModelSuccess($fs, t('Filesystem saved.'), 'filesystem');
     }
 
-    public function delete(Request $request): Response
+    public function destroy(Request $request, string $handle): Response
     {
-        $request->validate(['id' => ['required', 'string']]);
-
-        $fs = $this->filesystems->getFilesystemByHandle($request->input('id'));
+        $fs = $this->filesystems->getFilesystemByHandle($handle);
 
         if ($fs) {
             $this->filesystems->removeFilesystem($fs);

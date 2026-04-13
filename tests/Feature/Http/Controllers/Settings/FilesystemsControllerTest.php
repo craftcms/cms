@@ -7,9 +7,11 @@ use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
 
@@ -41,7 +43,7 @@ test('requires authentication for save', function () {
 test('requires authentication for delete', function () {
     Auth::logout();
 
-    postJson(action([FilesystemsController::class, 'delete']))
+    deleteJson(action([FilesystemsController::class, 'destroy'], ['handle']))
         ->assertUnauthorized();
 });
 
@@ -55,8 +57,7 @@ test('index shows read-only flag when allowAdminChanges is false', function () {
     Cms::config()->allowAdminChanges = false;
 
     get(action([FilesystemsController::class, 'index']))
-        ->assertOk()
-        ->assertSee(t('Changes to these settings aren’t permitted in this environment.'));
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('readOnly', true));
 });
 
 test('create delegates to edit method', function () {
@@ -203,11 +204,6 @@ test('save returns failure on invalid data', function () {
     $response->assertStatus(400);
 });
 
-test('delete validates required id field', function () {
-    postJson(action([FilesystemsController::class, 'delete']), [])
-        ->assertJsonValidationErrors(['id']);
-});
-
 test('delete removes filesystem successfully', function () {
     // Create a filesystem to delete
     $fs = Filesystems::createFilesystem([
@@ -222,9 +218,7 @@ test('delete removes filesystem successfully', function () {
     Filesystems::saveFilesystem($fs);
 
     // Delete it
-    $response = postJson(action([FilesystemsController::class, 'delete']), [
-        'id' => 'toDelete',
-    ]);
+    $response = deleteJson(action([FilesystemsController::class, 'destroy'], [$fs->handle]));
 
     $response->assertOk();
 
@@ -234,9 +228,7 @@ test('delete removes filesystem successfully', function () {
 });
 
 test('delete handles non-existent filesystem gracefully', function () {
-    $response = postJson(action([FilesystemsController::class, 'delete']), [
-        'id' => 'non-existent-filesystem',
-    ]);
+    $response = deleteJson(action([FilesystemsController::class, 'destroy'], ['non-existent-filesystem']));
 
     $response->assertOk();
 });
@@ -256,8 +248,6 @@ test('respects read-only mode for save operation', function () {
 test('respects read-only mode for delete operation', function () {
     Cms::config()->allowAdminChanges = false;
 
-    postJson(action([FilesystemsController::class, 'delete']), [
-        'id' => 'test',
-    ])
+    postJson(action([FilesystemsController::class, 'destroy'], ['test']))
         ->assertForbidden();
 });
