@@ -16,6 +16,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Search;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Override;
 
@@ -94,6 +95,13 @@ class EntryFactory extends Factory
             $this->attachFieldLayoutToModel($entry, $fieldLayout);
             EntryTypes::refreshEntryTypes();
             Fields::refreshFields();
+        });
+    }
+
+    public function indexed(): static
+    {
+        return $this->afterCreating(function (Entry $entry) {
+            Search::indexElementAttributes($this->queryElement($entry->id));
         });
     }
 

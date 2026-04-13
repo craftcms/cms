@@ -166,7 +166,7 @@ class Search
             elementId: $element->id,
             siteId: $element->siteId,
             queued: true,
-        ))->onQueue(Cms::config()->lowPriorityQueueName);
+        ))->onQueue(Cms::config()->lowPriorityQueueName)->afterCommit();
     }
 
     /**
@@ -324,8 +324,8 @@ class Search
         if ($elementQuery instanceof ElementQuery) {
             $elementQuery->reorder();
             $elementQuery->select('elements.id as id');
-            $elementQuery->getSubQuery()->offset = null;
-            $elementQuery->getSubQuery()->limit = null;
+            $elementQuery->offset(null);
+            $elementQuery->limit(null);
             $ids = $elementQuery->pluck('id')->all();
         } else {
             $ids = $elementQuery;
