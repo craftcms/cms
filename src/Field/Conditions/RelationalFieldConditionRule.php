@@ -14,7 +14,7 @@ use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use Illuminate\Database\Query\Builder;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 use function CraftCms\Cms\t;
 
@@ -93,7 +93,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
     protected function inputHtml(): string
     {
         if (! $this->field() instanceof BaseRelationField) {
-            throw new InvalidConfigException;
+            throw new RuntimeException;
         }
 
         return match ($this->operator) {

@@ -6,12 +6,12 @@ namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
 use craft\helpers\App;
-use craft\services\ElementSources;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
@@ -61,6 +61,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use RuntimeException;
 use SplFileInfo;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
@@ -68,7 +69,6 @@ use Throwable;
 use yii\base\Application;
 use yii\base\ErrorException;
 use yii\base\Exception;
-use yii\base\InvalidConfigException;
 use yii\web\ServerErrorHttpException;
 
 use function Illuminate\Filesystem\join_paths;
@@ -446,7 +446,7 @@ class ProjectConfig
      * @throws Exception
      * @throws NotSupportedException if the service is set to read-only mode
      * @throws ServerErrorHttpException
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      * @throws BusyResourceException if a lock could not be acquired
      * @throws StaleResourceException if the loaded project config is out-of-date
      */
@@ -1759,7 +1759,7 @@ class ProjectConfig
                 if ($config['type'] === ElementSources::TYPE_CUSTOM && isset($config['condition'])) {
                     try {
                         $config['condition'] = Conditions::createCondition($config['condition'])->getConfig();
-                    } catch (InvalidArgumentException|InvalidConfigException) {
+                    } catch (InvalidArgumentException|RuntimeException) {
                         // Ignore it
                     }
                 }

@@ -18,6 +18,7 @@ use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Events\DefineFriendlyName;
 use CraftCms\Cms\User\Events\DefineName;
+use Deprecated;
 use Illuminate\Support\Facades\Event;
 
 /**

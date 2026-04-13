@@ -11,7 +11,7 @@ use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use Illuminate\Support\Collection;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements FieldConditionRuleInterface
 {
@@ -43,7 +43,7 @@ class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements 
     protected function inputHtml(): string
     {
         if (! $this->field() instanceof BaseOptionsField) {
-            throw new InvalidConfigException;
+            throw new RuntimeException;
         }
 
         return parent::inputHtml();

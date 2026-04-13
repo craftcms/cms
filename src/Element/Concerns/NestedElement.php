@@ -210,7 +210,7 @@ trait NestedElement
             }
         }
 
-        return $this->_primaryOwner ?: null;
+        return $this->_primaryOwner;
     }
 
     public function setPrimaryOwner(?ElementInterface $owner): void

@@ -20,10 +20,10 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use RuntimeException;
 use Stringable;
 use Symfony\Component\DomCrawler\Crawler;
 use Throwable;
-use yii\base\InvalidConfigException;
 use Yiisoft\Html\Html as YiiHtml;
 use Yiisoft\Html\NoEncode;
 use Yiisoft\Html\Tag\Button;
@@ -224,7 +224,7 @@ class Html
      * @return string The generated hidden input tag
      *
      * @throws \yii\base\Exception if the validation key could not be written
-     * @throws InvalidConfigException when HMAC generation fails
+     * @throws RuntimeException when HMAC generation fails
      */
     public static function redirectInput(string $url, array $options = []): string
     {
@@ -242,7 +242,7 @@ class Html
      * @return string The generated hidden input tag
      *
      * @throws Exception if the validation key could not be written
-     * @throws InvalidConfigException when HMAC generation fails
+     * @throws RuntimeException when HMAC generation fails
      */
     public static function failMessageInput(string $message, array $options = []): string
     {
@@ -260,7 +260,7 @@ class Html
      * @return string The generated hidden input tag
      *
      * @throws Exception if the validation key could not be written
-     * @throws InvalidConfigException when HMAC generation fails
+     * @throws RuntimeException when HMAC generation fails
      */
     public static function successMessageInput(string $message, array $options = []): string
     {

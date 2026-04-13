@@ -12,7 +12,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\User\Elements\User;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 use function CraftCms\Cms\t;
 
@@ -46,7 +46,7 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
     }
 
     /**
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     public function matchElement(ElementInterface $element): bool
     {

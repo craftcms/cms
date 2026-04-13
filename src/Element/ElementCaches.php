@@ -12,8 +12,8 @@ use CraftCms\Cms\View\Data\TemplateCacheContext;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
 use Illuminate\Container\Attributes\Singleton;
+use RuntimeException;
 use Throwable;
-use yii\base\InvalidConfigException;
 
 #[Singleton]
 readonly class ElementCaches
@@ -113,7 +113,7 @@ readonly class ElementCaches
         if ($element instanceof NestedElementInterface) {
             try {
                 $owner = $element->getOwner();
-            } catch (InvalidConfigException) {
+            } catch (RuntimeException) {
                 $owner = null;
             }
 

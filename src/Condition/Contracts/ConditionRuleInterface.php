@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Condition\Contracts;
 
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Condition\BaseConditionRule;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 /**
  * ConditionRuleInterface defines the common interface to be implemented by condition rule classes.
@@ -51,7 +51,7 @@ interface ConditionRuleInterface extends ComponentInterface
     /**
      * Returns the rule’s portable config.
      *
-     * @throws InvalidConfigException if the rule is misconfigured
+     * @throws RuntimeException if the rule is misconfigured
      */
     public function getConfig(): array;
 

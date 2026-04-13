@@ -40,7 +40,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use InvalidArgumentException;
 use Override;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 use function CraftCms\Cms\t;
 
@@ -457,7 +457,7 @@ class FieldLayout extends Component
             }
 
             if (! $field instanceof BaseField) {
-                throw new InvalidConfigException('Invalid standard field config');
+                throw new RuntimeException('Invalid standard field config');
             }
 
             $field->setLayout($this);
@@ -496,7 +496,7 @@ class FieldLayout extends Component
             }
 
             if (! $element instanceof FieldLayoutElement) {
-                throw new InvalidConfigException('Invalid UI element config');
+                throw new RuntimeException('Invalid UI element config');
             }
         }
 

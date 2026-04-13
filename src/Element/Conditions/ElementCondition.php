@@ -19,7 +19,7 @@ use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use Override;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 class ElementCondition extends BaseCondition implements ElementConditionInterface
 {
@@ -82,7 +82,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             $elementType !== null &&
             (! class_exists($elementType) || ! is_subclass_of($elementType, ElementInterface::class))
         ) {
-            throw new InvalidConfigException("Invalid element type: $elementType");
+            throw new RuntimeException("Invalid element type: $elementType");
         }
 
         if ($elementType !== null) {

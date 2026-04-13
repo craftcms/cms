@@ -26,7 +26,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Override;
 use RuntimeException;
-use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
 
@@ -174,6 +173,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
         ];
     }
 
+    #[Override]
     public function getAttributeLabel(string $attribute): string
     {
         return $this->attributeLabels()[$attribute] ?? $attribute;
@@ -346,7 +346,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
     {
         if (! isset($this->_fs)) {
             if (! $this->getFsHandle()) {
-                throw new InvalidConfigException('Volume is missing its filesystem handle.');
+                throw new RuntimeException('Volume is missing its filesystem handle.');
             }
 
             $target = $this->resolveStorageTargetKey($this->_fsHandle);
@@ -534,7 +534,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
     {
         $target = $this->resolveStorageTargetKey($handle ?? $this->_fsHandle);
         if ($target === null) {
-            throw new InvalidConfigException('Volume is missing or has an invalid filesystem handle.');
+            throw new RuntimeException('Volume is missing or has an invalid filesystem handle.');
         }
 
         if (str_starts_with($target, self::STORAGE_DISK_PREFIX)) {
@@ -544,13 +544,13 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
         if (str_starts_with($target, self::STORAGE_FS_PREFIX)) {
             $handle = substr($target, strlen(self::STORAGE_FS_PREFIX));
             if ($handle === '') {
-                throw new InvalidConfigException('Volume has an invalid filesystem handle.');
+                throw new RuntimeException('Volume has an invalid filesystem handle.');
             }
 
             return Filesystems::toDiskName($handle);
         }
 
-        throw new InvalidConfigException('Volume has an invalid filesystem handle.');
+        throw new RuntimeException('Volume has an invalid filesystem handle.');
     }
 
     private function storageDiskFor(string $diskName, ?string $prefix): FilesystemAdapter
@@ -566,7 +566,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
         ]);
 
         if (! $disk instanceof FilesystemAdapter) {
-            throw new InvalidConfigException('Invalid filesystem disk configuration.');
+            throw new RuntimeException('Invalid filesystem disk configuration.');
         }
 
         return $disk;

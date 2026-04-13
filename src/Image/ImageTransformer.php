@@ -33,8 +33,8 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Sleep;
+use RuntimeException;
 use Throwable;
-use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\t;
@@ -184,7 +184,7 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
 
         try {
             $asset->getVolume()->transformDisk()->delete($path);
-        } catch (InvalidConfigException|NotSupportedException) {
+        } catch (RuntimeException|NotSupportedException) {
             // NBD
         }
     }

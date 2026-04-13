@@ -60,8 +60,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;
 use Override;
+use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidConfigException;
 use yii\db\Schema;
 
 use function CraftCms\Cms\t;
@@ -1480,7 +1480,7 @@ JS, [
                         if ($el) {
                             $disabledElementIds[] = $el->getCanonicalId();
                         }
-                    } catch (InvalidConfigException) {
+                    } catch (RuntimeException) {
                         break;
                     }
                 } while ($el instanceof NestedElementInterface);

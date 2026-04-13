@@ -19,7 +19,7 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Override;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 use function CraftCms\Cms\t;
 
@@ -205,7 +205,7 @@ class FieldLayoutTab extends FieldLayoutComponent
      *
      * @return FieldLayout The tab’s layout.
      *
-     * @throws InvalidConfigException if [[layoutId]] is set but invalid
+     * @throws RuntimeException if [[layoutId]] is set but invalid
      */
     #[Override]
     public function getLayout(): FieldLayout
@@ -215,11 +215,11 @@ class FieldLayoutTab extends FieldLayoutComponent
         }
 
         if (! $this->layoutId) {
-            throw new InvalidConfigException('Field layout tab is missing its field layout.');
+            throw new RuntimeException('Field layout tab is missing its field layout.');
         }
 
         if (($this->_layout = app(Fields::class)->getLayoutById($this->layoutId)) === null) {
-            throw new InvalidConfigException('Invalid layout ID: '.$this->layoutId);
+            throw new RuntimeException('Invalid layout ID: '.$this->layoutId);
         }
 
         return $this->_layout;

@@ -27,8 +27,8 @@ use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Override;
+use RuntimeException;
 use Throwable;
-use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -335,7 +335,7 @@ class CustomField extends BaseField
     /**
      * Returns the custom field this layout field is based on.
      *
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      * @throws FieldNotFoundException
      */
     public function getField(): FieldInterface
@@ -345,7 +345,7 @@ class CustomField extends BaseField
         }
 
         if (! isset($this->_fieldUid)) {
-            throw new InvalidConfigException('No field UUID set.');
+            throw new RuntimeException('No field UUID set.');
         }
 
         if (($field = Fields::getFieldByUid($this->_fieldUid)) === null) {

@@ -10,7 +10,7 @@ enum FileKind: string
 {
     case Access = 'access';
     case Audio = 'audio';
-    case CaptionsSubstitles = 'captionsSubtitles';
+    case CaptionsSubtitles = 'captionsSubtitles';
     case Compressed = 'compressed';
     case Excel = 'excel';
     case Flash = 'flash';
@@ -34,7 +34,7 @@ enum FileKind: string
         return match ($this) {
             self::Access => 'Access',
             self::Audio => t('Audio'),
-            self::CaptionsSubstitles => t('Captions/Subtitles'),
+            self::CaptionsSubtitles => t('Captions/Subtitles'),
             self::Compressed => t('Compressed'),
             self::Excel => 'Excel',
             self::Flash => 'Flash',
@@ -60,7 +60,7 @@ enum FileKind: string
         return match ($this) {
             self::Access => ['accdb', 'accde', 'accdr', 'accdt', 'adp', 'mdb'],
             self::Audio => ['3gp', 'aac', 'act', 'aif', 'aifc', 'aiff', 'alac', 'amr', 'au', 'dct', 'dss', 'dvf', 'flac', 'gsm', 'iklax', 'ivs', 'm4a', 'm4p', 'mmf', 'mp3', 'mpc', 'msv', 'oga', 'ogg', 'opus', 'ra', 'tta', 'vox', 'wav', 'wma', 'wv'],
-            self::CaptionsSubstitles => ['asc', 'cap', 'cin', 'dfxp', 'itt', 'lrc', 'mcc', 'mpsub', 'rt', 'sami', 'sbv', 'scc', 'smi', 'srt', 'stl', 'sub', 'tds', 'ttml', 'vtt'],
+            self::CaptionsSubtitles => ['asc', 'cap', 'cin', 'dfxp', 'itt', 'lrc', 'mcc', 'mpsub', 'rt', 'sami', 'sbv', 'scc', 'smi', 'srt', 'stl', 'sub', 'tds', 'ttml', 'vtt'],
             self::Compressed => ['7z', 'bz2', 'dmg', 'gz', 'rar', 's7z', 'tar', 'tgz', 'zip', 'zipx'],
             self::Excel => ['xls', 'xlsm', 'xlsx', 'xltm', 'xltx'],
             self::Flash => [],

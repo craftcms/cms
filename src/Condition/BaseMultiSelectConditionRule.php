@@ -10,7 +10,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use Override;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 /**
  * BaseMultiSelectConditionRule provides a base implementation for condition rules that are composed of a multi-select input.
@@ -162,7 +162,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
         return match ($this->operator) {
             self::OPERATOR_IN => $values,
             self::OPERATOR_NOT_IN => array_merge(['not'], $values),
-            default => throw new InvalidConfigException("Invalid operator: $this->operator"),
+            default => throw new RuntimeException("Invalid operator: $this->operator"),
         };
     }
 
@@ -193,7 +193,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
         return match ($this->operator) {
             self::OPERATOR_IN => ! empty(array_intersect($value, $this->_values)),
             self::OPERATOR_NOT_IN => empty(array_intersect($value, $this->_values)),
-            default => throw new InvalidConfigException("Invalid operator: $this->operator"),
+            default => throw new RuntimeException("Invalid operator: $this->operator"),
         };
     }
 }

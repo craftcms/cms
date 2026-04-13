@@ -9,7 +9,7 @@ use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use Override;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 /**
  * BaseTextConditionRule provides a base implementation for condition rules that are composed of an operator menu and text input.
@@ -147,7 +147,7 @@ abstract class BaseTextConditionRule extends BaseConditionRule
             self::OPERATOR_BEGINS_WITH => is_string($value) && str_starts_with(mb_strtolower($value), mb_strtolower($this->value)),
             self::OPERATOR_ENDS_WITH => is_string($value) && str_ends_with(mb_strtolower($value), mb_strtolower($this->value)),
             self::OPERATOR_CONTAINS => is_string($value) && str_contains(mb_strtolower($value), mb_strtolower($this->value)),
-            default => throw new InvalidConfigException("Invalid operator: $this->operator"),
+            default => throw new RuntimeException("Invalid operator: $this->operator"),
         };
     }
 

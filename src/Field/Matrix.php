@@ -68,8 +68,8 @@ use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use Override;
+use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -403,7 +403,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ));
 
         if (empty($event->entryTypes)) {
-            throw new InvalidConfigException('At least one entry type is required.');
+            throw new RuntimeException('At least one entry type is required.');
         }
 
         return array_values($event->entryTypes);
@@ -453,7 +453,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         try {
             $owner = $element->getOwner();
-        } catch (InvalidConfigException) {
+        } catch (RuntimeException) {
             $owner = $element->duplicateOf;
         }
 
@@ -1028,7 +1028,7 @@ JS, [
     }
 
     /**
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string

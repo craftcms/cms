@@ -27,7 +27,7 @@ use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
 use Override;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 use yii\helpers\Html;
 
 use function CraftCms\Cms\t;
@@ -523,7 +523,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     /**
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     #[Override]
     public function afterSave(bool $isNew): void
@@ -532,7 +532,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             $model = AddressModel::find($this->id);
 
             if (! $model) {
-                throw new InvalidConfigException("Invalid address ID: $this->id");
+                throw new RuntimeException("Invalid address ID: $this->id");
             }
         } else {
             $model = new AddressModel;

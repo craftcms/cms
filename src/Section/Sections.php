@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section;
 
-use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
@@ -53,9 +52,9 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidConfigException;
 
 #[Scoped]
 class Sections
@@ -751,7 +750,7 @@ class Sections
                     });
 
                     $this->elements->restoreElements($typeEntries);
-                } catch (InvalidConfigException) {
+                } catch (RuntimeException) {
                     // the entry type probably wasn't restored
                 }
             }

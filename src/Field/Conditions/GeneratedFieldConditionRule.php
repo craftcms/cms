@@ -10,7 +10,7 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 use yii\db\Schema;
 
 use function CraftCms\Cms\t;
@@ -41,7 +41,7 @@ class GeneratedFieldConditionRule extends BaseTextConditionRule implements Eleme
     {
         $field = $this->getFieldConfig();
         if (! $field) {
-            throw new InvalidConfigException("Invalid generated field UUID: $this->fieldUid");
+            throw new RuntimeException("Invalid generated field UUID: $this->fieldUid");
         }
 
         return $field['name'];

@@ -30,7 +30,7 @@ use CraftCms\Cms\Support\Html;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 use function CraftCms\Cms\t;
 
@@ -573,7 +573,7 @@ JS, [
             $owner = null;
             try {
                 $owner = $element instanceof NestedElementInterface ? $element->getPrimaryOwner() : null;
-            } catch (InvalidConfigException) {
+            } catch (RuntimeException) {
             }
             if (! $owner) {
                 break;

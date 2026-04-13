@@ -1000,8 +1000,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         }
 
         if (! $this->id) {
-            /** @var ElementCollection<Address> */
-            return Elementcollect();
+            return new ElementCollection;
         }
 
         return $this->_addresses = $this->createAddressQuery()
@@ -2009,7 +2008,7 @@ JS, [
 
         if ($changePassword = (isset($this->newPassword))) {
             $hash = Hash::make($this->newPassword);
-            $this->lastPasswordChangeDate = now()->toDateTime();
+            $this->lastPasswordChangeDate = now();
 
             $model->password = $this->password = $hash;
             $model->invalidLoginWindowStart = null;

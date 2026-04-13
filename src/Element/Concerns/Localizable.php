@@ -13,7 +13,7 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 /**
  * Localizable provides localization functionality for elements.
@@ -150,7 +150,7 @@ trait Localizable
     }
 
     /**
-     * @throws InvalidConfigException if [[siteId]] is invalid
+     * @throws RuntimeException if [[siteId]] is invalid
      */
     public function getSite(): Site
     {
@@ -158,7 +158,7 @@ trait Localizable
             return $site;
         }
 
-        throw new InvalidConfigException("Invalid site ID: {$this->siteId}");
+        throw new RuntimeException("Invalid site ID: {$this->siteId}");
     }
 
     public function getLanguage(): string

@@ -18,8 +18,8 @@ use CraftCms\Cms\Validation\Rules\SiteIdRule;
 use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Validation\Rule;
 use Override;
+use RuntimeException;
 use Throwable;
-use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
 
@@ -97,7 +97,7 @@ abstract class ElementRules extends Ruleset
             } else {
                 array_unshift($rules['title'], 'nullable');
             }
-        } catch (InvalidConfigException) {
+        } catch (RuntimeException) {
             // Related to sectionId, fieldId and ownerId being missing
             // Which will be caught by the other validation rules.
         }

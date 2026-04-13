@@ -12,8 +12,8 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 use UnitEnum;
-use yii\base\InvalidConfigException;
 
 /**
  * HasCustomFields provides custom field handling for elements.
@@ -393,7 +393,7 @@ trait HasCustomFields
     {
         try {
             $fieldLayout = $this->getFieldLayout();
-        } catch (InvalidConfigException) {
+        } catch (RuntimeException) {
             return [];
         }
 

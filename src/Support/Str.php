@@ -13,9 +13,9 @@ use LitEmoji\LitEmoji;
 use Override;
 use Ramsey\Uuid\Validator\GenericValidator;
 use ReflectionClass;
+use RuntimeException;
 use voku\helper\ASCII;
 use yii\base\Exception;
-use yii\base\InvalidConfigException;
 
 class Str extends \Illuminate\Support\Str
 {
@@ -136,7 +136,7 @@ class Str extends \Illuminate\Support\Str
      *
      * @param  string  $str  The string.
      *
-     * @throws InvalidConfigException on OpenSSL not loaded
+     * @throws RuntimeException on OpenSSL not loaded
      * @throws Exception on OpenSSL error
      */
     public static function decdec(string $str): string
@@ -175,7 +175,7 @@ class Str extends \Illuminate\Support\Str
      *
      * @param  string  $str  the string
      *
-     * @throws InvalidConfigException on OpenSSL not loaded
+     * @throws RuntimeException on OpenSSL not loaded
      * @throws Exception on OpenSSL error
      *
      * @see decdec()

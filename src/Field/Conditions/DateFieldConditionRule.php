@@ -8,7 +8,7 @@ use CraftCms\Cms\Condition\BaseDateRangeConditionRule;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Date;
 use DateTime;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 class DateFieldConditionRule extends BaseDateRangeConditionRule implements FieldConditionRuleInterface
 {
@@ -18,7 +18,7 @@ class DateFieldConditionRule extends BaseDateRangeConditionRule implements Field
     protected function inputHtml(): string
     {
         if (! $this->field() instanceof Date) {
-            throw new InvalidConfigException;
+            throw new RuntimeException;
         }
 
         return parent::inputHtml();

@@ -9,7 +9,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditionRuleInterface
 {
@@ -31,7 +31,7 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
     {
         try {
             $field = $this->field();
-        } catch (InvalidConfigException) {
+        } catch (RuntimeException) {
             // The field doesn't exist
             return true;
         }
@@ -57,7 +57,7 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
         return match ($this->operator) {
             self::OPERATOR_EMPTY => ':empty:',
             self::OPERATOR_NOT_EMPTY => 'not :empty:',
-            default => throw new InvalidConfigException("Invalid operator: $this->operator"),
+            default => throw new RuntimeException("Invalid operator: $this->operator"),
         };
     }
 

@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
 use Override;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 use function CraftCms\Cms\t;
 
@@ -3872,7 +3872,7 @@ class GeneralConfig extends BaseConfig
     public function defaultCountryCode(string $value): self
     {
         if (empty($value)) {
-            throw new InvalidConfigException('`defaultCountryCode` cannot be empty', 0);
+            throw new RuntimeException('`defaultCountryCode` cannot be empty', 0);
         }
 
         $this->defaultCountryCode = $value;
@@ -3889,7 +3889,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      *
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      *
      * @see $defaultCpLanguage
      */
@@ -3900,7 +3900,7 @@ class GeneralConfig extends BaseConfig
                 $value = I18N::normalizeLanguage($value);
                 /** @phpstan-ignore catch.neverThrown */
             } catch (InvalidArgumentException $e) {
-                throw new InvalidConfigException($e->getMessage(), 0, $e);
+                throw new RuntimeException($e->getMessage(), 0, $e);
             }
         }
 
@@ -4375,7 +4375,7 @@ class GeneralConfig extends BaseConfig
      *
      * @param  string[]  $value
      *
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      *
      * @see $extraAppLocales
      */
@@ -4386,7 +4386,7 @@ class GeneralConfig extends BaseConfig
                 $localeId = I18N::normalizeLanguage($localeId);
                 /** @phpstan-ignore catch.neverThrown */
             } catch (InvalidArgumentException $e) {
-                throw new InvalidConfigException($e->getMessage(), 0, $e);
+                throw new RuntimeException($e->getMessage(), 0, $e);
             }
         }
 
@@ -5573,7 +5573,7 @@ class GeneralConfig extends BaseConfig
      *
      * @defaultAlt 14 days
      *
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      *
      * @see $rememberedUserSessionDuration
      * @since 4.2.0
@@ -5584,7 +5584,7 @@ class GeneralConfig extends BaseConfig
         try {
             $interval = DateTimeHelper::toDateInterval($value);
         } catch (InvalidArgumentException $e) {
-            throw new InvalidConfigException($e->getMessage(), 0, $e);
+            throw new RuntimeException($e->getMessage(), 0, $e);
         }
 
         $this->rememberedUserSessionDuration = $interval ? ConfigHelper::durationInSeconds($interval) : 0;

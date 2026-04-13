@@ -41,8 +41,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Override;
+use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -216,7 +216,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     {
         try {
             $owner = $element->getOwner();
-        } catch (InvalidConfigException) {
+        } catch (RuntimeException) {
             $owner = $element->duplicateOf;
         }
 
@@ -572,7 +572,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     }
 
     /**
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string

@@ -14,6 +14,7 @@ use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Twig\Variables\Paginate;
 use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Database\Query\Builder;
+use RuntimeException;
 use Stringable;
 use Twig\Environment;
 use Twig\Error\RuntimeError;
@@ -24,7 +25,6 @@ use Twig\Source;
 use Twig\Template as TwigTemplate;
 use Twig\TemplateWrapper;
 use yii\base\BaseObject;
-use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
 
 class Template
@@ -145,7 +145,7 @@ class Template
         HtmlStack::html($html, $position);
     }
 
-    /** @throws InvalidConfigException */
+    /** @throws RuntimeException */
     public static function js(string $js, array $options = [], ?string $key = null): void
     {
         if (preg_match('/^[^\r\n]+\.js(\.gz)?$/i', $js) || Url::isAbsoluteUrl($js)) {

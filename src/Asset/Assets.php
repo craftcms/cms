@@ -44,9 +44,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
+use RuntimeException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
 
@@ -207,7 +207,7 @@ class Assets
 
     /**
      * @throws AssetOperationException
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     public function getNameReplacementInFolder(string $originalFilename, int $folderId): string
     {
@@ -303,7 +303,7 @@ class Assets
     }
 
     /**
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     public function getTempAssetUploadFs(): FsInterface
     {
@@ -314,11 +314,11 @@ class Assets
         }
 
         return Filesystems::resolve($handle)
-            ?? throw new InvalidConfigException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle");
+            ?? throw new RuntimeException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle");
     }
 
     /**
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     public function getTempAssetUploadDisk(): FilesystemAdapter
     {
@@ -333,7 +333,7 @@ class Assets
 
         return Storage::disk(
             Filesystems::resolveDiskName($handle)
-                ?? throw new InvalidConfigException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle")
+                ?? throw new RuntimeException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle")
         );
     }
 

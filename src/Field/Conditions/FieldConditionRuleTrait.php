@@ -9,7 +9,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\Auth;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 use function CraftCms\Cms\t;
 
@@ -66,7 +66,7 @@ trait FieldConditionRuleTrait
      *
      * @return FieldInterface[]
      *
-     * @throws InvalidConfigException if [[fieldUid]] or [[layoutElementUid]] are invalid
+     * @throws RuntimeException if [[fieldUid]] or [[layoutElementUid]] are invalid
      */
     protected function fieldInstances(): array
     {
@@ -75,7 +75,7 @@ trait FieldConditionRuleTrait
         }
 
         if (! isset($this->_fieldUid)) {
-            throw new InvalidConfigException('No field UUID set on the field condition rule yet.');
+            throw new RuntimeException('No field UUID set on the field condition rule yet.');
         }
 
         // Loop through all the layout's fields, and look for the selected field instance
@@ -117,11 +117,11 @@ trait FieldConditionRuleTrait
 
         if (empty($this->_fieldInstances)) {
             if (! isset($this->_layoutElementUid)) {
-                throw new InvalidConfigException("Field $this->_fieldUid is not included in the available field layouts.");
+                throw new RuntimeException("Field $this->_fieldUid is not included in the available field layouts.");
             }
 
             if (empty($potentialInstances)) {
-                throw new InvalidConfigException("Invalid field layout element UUID: $this->_layoutElementUid");
+                throw new RuntimeException("Invalid field layout element UUID: $this->_layoutElementUid");
             }
 
             // Just go with the first one
@@ -146,7 +146,7 @@ trait FieldConditionRuleTrait
     /**
      * Returns the first custom field instance associated with this rule.
      *
-     * @throws InvalidConfigException if [[fieldUid]] or [[layoutElementUid]] are invalid
+     * @throws RuntimeException if [[fieldUid]] or [[layoutElementUid]] are invalid
      */
     protected function field(): FieldInterface
     {
@@ -165,7 +165,7 @@ trait FieldConditionRuleTrait
     {
         $instances = $this->fieldInstances();
         if (empty($instances)) {
-            throw new InvalidConfigException('No field instances for this condition rule.');
+            throw new RuntimeException('No field instances for this condition rule.');
         }
 
         return $instances[0]->layoutElement->label();
@@ -185,7 +185,7 @@ trait FieldConditionRuleTrait
     {
         try {
             $instances = $this->fieldInstances();
-        } catch (InvalidConfigException) {
+        } catch (RuntimeException) {
             return [];
         }
 
@@ -219,7 +219,7 @@ trait FieldConditionRuleTrait
     {
         try {
             $fieldInstances = $this->fieldInstances();
-        } catch (InvalidConfigException) {
+        } catch (RuntimeException) {
             // The field doesn't exist
             return true;
         }

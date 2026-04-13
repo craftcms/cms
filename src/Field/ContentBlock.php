@@ -41,7 +41,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -259,7 +259,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     {
         try {
             $owner = $element->getOwner();
-        } catch (InvalidConfigException) {
+        } catch (RuntimeException) {
             $owner = $element->duplicateOf;
         }
 

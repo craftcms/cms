@@ -9,7 +9,6 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Support\Facades\Sites;
-use yii\base\InvalidConfigException;
 
 class TestLocalizableElement extends Element
 {
@@ -160,7 +159,7 @@ describe('getSite', function () {
         $element = new TestLocalizableElement;
         $element->siteId = 99999;
 
-        expect(fn () => $element->getSite())->toThrow(InvalidConfigException::class);
+        expect(fn () => $element->getSite())->toThrow(RuntimeException::class);
     });
 });
 

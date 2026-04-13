@@ -146,8 +146,8 @@ describe('getFileKindByExtension', function () {
         'pptx powerpoint' => ['slides.pptx', FileKind::Powerpoint->value],
         'psd photoshop' => ['design.psd', FileKind::Photoshop->value],
         'ai illustrator' => ['design.ai', FileKind::Illustrator->value],
-        'srt subtitles' => ['subtitles.srt', FileKind::CaptionsSubstitles->value],
-        'vtt subtitles' => ['subtitles.vtt', FileKind::CaptionsSubstitles->value],
+        'srt subtitles' => ['subtitles.srt', FileKind::CaptionsSubtitles->value],
+        'vtt subtitles' => ['subtitles.vtt', FileKind::CaptionsSubtitles->value],
         'accdb access' => ['file.accdb', FileKind::Access->value],
     ]);
 
