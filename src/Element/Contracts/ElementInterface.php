@@ -2,20 +2,9 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Element\Contracts;
 
 use ArrayAccess;
-use craft\base\Component;
-use craft\base\ElementActionInterface;
-use craft\base\ElementTrait;
-use craft\behaviors\CustomFieldBehavior;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
@@ -49,18 +38,10 @@ use yii\web\Response;
  * ElementInterface defines the common interface to be implemented by element classes.
  * A class implementing this interface should also use [[ElementTrait]].
  *
- * @mixin ElementTrait
- * @mixin CustomFieldBehavior
- * @mixin Component
- *
  * @phpstan-require-extends Element
  *
  * @phpstan-type EagerLoadingMapItem array{elementType?:class-string<ElementInterface>,source:int,target:int}
  * @phpstan-type EagerLoadingMap array{elementType?:class-string<ElementInterface>,map:EagerLoadingMapItem[],criteria?:array,createElement?:callable}
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.0.0
  */
 #[AllowedInSandbox]
 interface ElementInterface extends Actionable, ArrayAccess, Chippable, ComponentInterface, CpEditable, Statusable, Thumbable, Validatable
