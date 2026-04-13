@@ -9,7 +9,7 @@
 {% set isMobile = craft.app.request.isMobileBrowser %}
 {% set isDateTime = isDateTime ?? false %}
 
-{% do view.registerAssetBundle('craft\\web\\assets\\timepicker\\TimepickerAsset') -%}
+{% do registerAsset('timepicker') -%}
 
 {% set containerAttributes = {
     class: ['timewrapper']|merge((class ?? [])|explodeClass),

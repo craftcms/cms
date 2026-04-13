@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\PluginStore;
 
-use Craft;
-use craft\web\assets\pluginstore\PluginStoreAsset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
@@ -14,6 +12,7 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\InternalAssets;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Contracts\View\View;
@@ -50,7 +49,7 @@ readonly class PluginStoreController
             Position::Head,
         );
 
-        Craft::$app->getView()->registerAssetBundle(PluginStoreAsset::class);
+        InternalAssets::register('plugin-store');
 
         return view('plugin-store/_index');
     }
@@ -72,11 +71,7 @@ readonly class PluginStoreController
         $data['CraftEnterprise'] = Edition::Enterprise->value;
 
         // Logos
-        $data['craftLogo'] = Craft::$app->getAssetManager()->getPublishedUrl(
-            path: '@app/web/assets/pluginstore/dist/',
-            publish: true,
-            filePath: 'images/craft.svg',
-        );
+        $data['craftLogo'] = InternalAssets::url('plugin-store', 'images/craft.svg');
 
         return new JsonResponse($data);
     }

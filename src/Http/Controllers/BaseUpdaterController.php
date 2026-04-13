@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use Craft;
-use craft\web\assets\updater\UpdaterAsset;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Exceptions\MigrateException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\InternalAssets;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Update\Updates;
@@ -77,7 +76,7 @@ abstract class BaseUpdaterController
     public function index(): Response|View
     {
         // Load the updater JS
-        Craft::$app->getView()->registerAssetBundle(UpdaterAsset::class);
+        InternalAssets::register('updater');
 
         $this->data = $this->initialData();
         $state = $this->realInitialState();

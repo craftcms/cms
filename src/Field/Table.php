@@ -7,8 +7,6 @@ namespace CraftCms\Cms\Field;
 use Closure;
 use Craft;
 use craft\base\ElementInterface;
-use craft\web\assets\tablesettings\TableSettingsAsset;
-use craft\web\assets\timepicker\TimepickerAsset;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
@@ -19,6 +17,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\InternalAssets;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
@@ -338,8 +337,8 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
             return $column;
         }, $this->columns);
 
-        Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
-        Craft::$app->getView()->registerAssetBundle(TableSettingsAsset::class);
+        InternalAssets::register('timepicker');
+        InternalAssets::register('table-settings');
         HtmlStack::js('new Craft.TableFieldSettings('.
             Json::encode(InputNamespace::namespaceInputName('columns')).', '.
             Json::encode(InputNamespace::namespaceInputName('defaults')).', '.
@@ -412,7 +411,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
+        InternalAssets::register('timepicker');
 
         return $this->_getInputHtml($value, $element, false);
     }

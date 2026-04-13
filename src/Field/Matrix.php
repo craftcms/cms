@@ -8,8 +8,6 @@ use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\web\assets\cp\CpAsset;
-use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Database\Table;
@@ -51,6 +49,7 @@ use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\InternalAssets;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -585,8 +584,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $entryTypeSelectJs = HtmlStack::clearJsBuffer();
         }
 
-        $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
-
         return template('_components/fieldtypes/Matrix/settings', [
             'field' => $this,
             'entryTypes' => $entryTypes,
@@ -599,7 +596,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 Entry::indexViewModes(),
                 fn (array $viewMode) => ! ($viewMode['structuresOnly'] ?? false),
             ),
-            'baseIconsUrl' => "$bundle->baseUrl/images/view-modes",
+            'baseIconsUrl' => InternalAssets::url('cp', 'images/view-modes'),
             'readOnly' => $readOnly,
         ]);
     }
@@ -1104,7 +1101,7 @@ JS, [
             )
         );
 
-        Craft::$app->getView()->registerAssetBundle(MatrixAsset::class);
+        InternalAssets::register('matrix');
 
         $settings = [
             'fieldId' => $this->id,

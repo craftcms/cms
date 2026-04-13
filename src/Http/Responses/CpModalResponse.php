@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Responses;
 
-use Craft;
-use craft\web\assets\htmx\HtmxAsset;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\InternalAssets;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\TemplateMode;
@@ -152,7 +151,7 @@ class CpModalResponse implements Responsable
 
     public function toResponse($request): JsonResponse
     {
-        Craft::$app->getView()->registerAssetBundle(HtmxAsset::class);
+        InternalAssets::register('htmx');
 
         $namespace = Str::random(10);
 

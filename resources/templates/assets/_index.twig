@@ -2,5 +2,5 @@
 {% set title = "Assets"|t('app') %}
 {% set elementType = 'CraftCms\\Cms\\Asset\\Elements\\Asset' %}
 
-{% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
-{% do view.registerAssetBundle("craft\\web\\assets\\prismjs\\PrismJsAsset") %}
+{% do registerAsset('file-upload') %}
+{% do registerAsset('prism') %}

@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
-use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
@@ -45,6 +43,7 @@ use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\InternalAssets;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
@@ -1358,8 +1357,7 @@ JS, [
             self::VIEW_MODE_CARDS_GRID,
         ]))) {
             $html = Html::beginTag('div', ['class' => ['flex', 'items-start', 'gap-l']]);
-            $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
-            $baseIconsUrl = "$bundle->baseUrl/images/view-modes";
+            $baseIconsUrl = InternalAssets::url('cp', 'images/view-modes');
 
             foreach ($supportedViewModes as $key => $label) {
                 $html .= Html::beginTag('label', ['class' => 'nowrap']).

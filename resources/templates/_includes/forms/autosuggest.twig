@@ -1,6 +1,6 @@
 {% import '_includes/forms.twig' as forms %}
 
-{% do view.registerAssetBundle("craft\\web\\assets\\vue\\VueAsset") %}
+{% do registerAsset('vue') %}
 
 {% set suggestions = (suggestions ?? [])
     |merge((suggestTemplates ?? false) ? craft.cp.getTemplateSuggestions() : [])

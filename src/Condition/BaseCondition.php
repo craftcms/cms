@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use Craft;
-use craft\web\assets\conditionbuilder\ConditionBuilderAsset;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
@@ -15,6 +13,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\InternalAssets;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
@@ -258,7 +257,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
 
     public function getBuilderInnerHtml(bool $autofocusAddButton = false): string
     {
-        Craft::$app->getView()->registerAssetBundle(ConditionBuilderAsset::class);
+        InternalAssets::register('condition-builder');
         $namespacedId = InputNamespace::namespaceId($this->id);
 
         return InputNamespace::namespaceInputs(function () use ($namespacedId, $autofocusAddButton) {

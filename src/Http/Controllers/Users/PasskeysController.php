@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Craft;
-use craft\web\assets\passkeysetup\PasskeySetupAsset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Support\Facades\InternalAssets;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateMode;
@@ -36,7 +35,7 @@ readonly class PasskeysController
 
         $response = $this->asEditUserScreen($user, self::SCREEN_PASSKEYS);
 
-        Craft::$app->getView()->registerAssetBundle(PasskeySetupAsset::class);
+        InternalAssets::register('passkey-setup');
         $HtmlStack->js(<<<'JS'
 new Craft.PasskeySetup();
 JS);

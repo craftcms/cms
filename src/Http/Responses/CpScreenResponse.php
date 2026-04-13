@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Responses;
 
-use Craft;
-use craft\web\assets\iframeresizer\ContentWindowAsset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Cp\Icons;
@@ -13,6 +11,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\InternalAssets;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -866,7 +865,7 @@ class CpScreenResponse implements Responsable
             $request->input('x-craft-live-preview') !== null &&
             Cms::config()->useIframeResizer
         ) {
-            Craft::$app->getView()->registerAssetBundle(ContentWindowAsset::class);
+            InternalAssets::register('content-window');
         }
 
         // Render and return the template

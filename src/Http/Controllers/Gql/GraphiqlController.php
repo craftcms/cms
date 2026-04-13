@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Gql;
 
-use Craft;
-use craft\web\assets\graphiql\GraphiqlAsset;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Support\Facades\InternalAssets;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -26,7 +25,7 @@ readonly class GraphiqlController extends GqlController
 
     public function __invoke(Request $request): View
     {
-        Craft::$app->getView()->registerAssetBundle(GraphiqlAsset::class);
+        InternalAssets::register('graphiql');
 
         // Ensure the public schema exists
         $this->gql->getPublicSchema();

@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use Craft;
-use craft\web\assets\routes\RoutesAsset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Route\Routes;
+use CraftCms\Cms\Support\Facades\InternalAssets;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,7 +23,7 @@ readonly class RoutesController
 
     public function index(): View
     {
-        Craft::$app->getView()->registerAssetBundle(RoutesAsset::class);
+        InternalAssets::register('routes');
 
         return view('settings.routes', [
             'tokens' => $this->routes->tokens,

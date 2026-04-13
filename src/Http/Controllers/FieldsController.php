@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use Craft;
 use craft\base\ElementInterface;
-use craft\web\assets\fieldsettings\FieldSettingsAsset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Chippable;
@@ -34,6 +32,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\InternalAssets;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -514,7 +513,7 @@ class FieldsController
 
         $response
             ->prepareScreen(function () {
-                Craft::$app->getView()->registerAssetBundle(FieldSettingsAsset::class);
+                InternalAssets::register('field-settings');
                 $this->HtmlStack->jsWithVars(fn ($typeId, $settingsId, $namespace) => <<<JS
 new Craft.FieldSettingsToggle('#' + $typeId, '#' + $settingsId, $namespace, {
   wrapWithTypeClassDiv: true

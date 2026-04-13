@@ -5,7 +5,7 @@
 {% set selectedNavItem = 'groups' %}
 {% set readOnly = not app.config.craft.general.allowAdminChanges %}
 
-{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+{% do registerAsset('admin-table') -%}
 
 
 {% set groups = craft.userGroups.getAllGroups() %}

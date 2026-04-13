@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use Craft;
-use craft\web\assets\edittransform\EditTransformAsset;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransforms;
+use CraftCms\Cms\Support\Facades\InternalAssets;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -113,7 +112,7 @@ class ImageTransformsController
     private function editView(?string $transformHandle = null, ?ImageTransform $transform = null): View
     {
         $transform ??= new ImageTransform;
-        $bundle = Craft::$app->getView()->registerAssetBundle(EditTransformAsset::class);
+        InternalAssets::register('edit-transform');
 
         $title = $transform->id
             ? (trim((string) $transform->name) ?: t('Edit Image Transform'))
@@ -128,7 +127,7 @@ class ImageTransformsController
             'qualityPickerOptions' => $qualityPickerOptions,
             'qualityPickerValue' => $qualityPickerValue,
             'readOnly' => $this->readOnly,
-            'baseIconsUrl' => $bundle->baseUrl,
+            'baseIconsUrl' => InternalAssets::url('edit-transform'),
         ]);
     }
 

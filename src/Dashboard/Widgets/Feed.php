@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use Craft;
-use craft\web\assets\feed\FeedAsset;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\InternalAssets;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Facades\Cache;
 use Override;
@@ -79,7 +78,7 @@ class Feed extends Widget
             $data['items'][] = [];
         }
 
-        Craft::$app->getView()->registerAssetBundle(FeedAsset::class);
+        InternalAssets::register('feed');
         HtmlStack::js(
             "new Craft.FeedWidget($this->id, ".
             Json::encode($this->url).', '.

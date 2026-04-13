@@ -1,7 +1,7 @@
 {% requireEdition CraftTeam %}
 
 
-{% do view.registerAssetBundle("craft\\web\\assets\\userpermissions\\UserPermissionsAsset") %}
+{% do registerAsset('user-permissions') %}
 
 {% set wrapperClass = "user-permissions-#{random()}" %}
 

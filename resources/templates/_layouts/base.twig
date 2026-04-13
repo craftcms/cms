@@ -17,8 +17,7 @@
     dir: orientation,
 }|merge(bodyAttributes ?? {}, recursive=true) -%}
 
-{% do view.registerAssetBundle('craft\\web\\assets\\cp\\CpAsset') -%}
-{% set cpAssetUrl = view.getAssetManager().getPublishedUrl('@app/web/assets/cp/dist', true) -%}
+{% do registerAsset('cp') -%}
 
 {% hook "cp.layouts.base" -%}
 
@@ -41,10 +40,10 @@
         {% endif %}
     {% endfor %}
     {% if not hasCustomIcon %}
-        <link rel="icon" href="{{ cpAssetUrl }}/images/icons/favicon.ico">
-        <link rel="icon" type="image/svg+xml" sizes="any" href="{{ cpAssetUrl }}/images/icons/icon.svg">
-        <link rel="apple-touch-icon" sizes="180x180" href="{{ cpAssetUrl }}/images/icons/apple-touch-icon.png">
-        <link rel="mask-icon" href="{{ cpAssetUrl }}/images/icons/safari-pinned-tab.svg" color="#e5422b">
+        <link rel="icon" href="{{ assetUrl('cp', 'images/icons/favicon.ico') }}">
+        <link rel="icon" type="image/svg+xml" sizes="any" href="{{ assetUrl('cp', 'images/icons/icon.svg') }}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ assetUrl('cp', 'images/icons/apple-touch-icon.png') }}">
+        <link rel="mask-icon" href="{{ assetUrl('cp', 'images/icons/safari-pinned-tab.svg') }}" color="#e5422b">
     {% endif %}
 
     <script type="text/javascript">

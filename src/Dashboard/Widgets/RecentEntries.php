@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use Craft;
-use craft\web\assets\recententries\RecentEntriesAsset;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\InternalAssets;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
@@ -112,7 +111,7 @@ class RecentEntries extends Widget
             $params['sectionId'] = (int) $this->section;
         }
 
-        Craft::$app->getView()->registerAssetBundle(RecentEntriesAsset::class);
+        InternalAssets::register('recent-entries');
         $js = 'new Craft.RecentEntriesWidget('.$this->id.', '.Json::encode($params).');';
         HtmlStack::js($js);
 

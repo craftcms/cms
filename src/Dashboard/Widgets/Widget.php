@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use Craft;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
@@ -13,6 +12,7 @@ use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\InternalAssets;
 use Override;
 
 /**
@@ -116,7 +116,7 @@ abstract class Widget extends Component implements WidgetInterface
     #[Override]
     public function getBodyHtml(): ?string
     {
-        $url = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/prg.jpg');
+        $url = InternalAssets::url('cp', 'images/prg.jpg');
 
         return <<<EOD
 <div style="margin: 0 -24px -24px;">

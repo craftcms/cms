@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2c6fc4f0684a0080927ddac26949c945",
+    "content-hash": "4f5d03659896c0eef9b22105f430707c",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -9606,6 +9606,91 @@
                 }
             ],
             "time": "2025-11-26T12:25:21+00:00"
+        },
+        {
+            "name": "yiisoft/assets",
+            "version": "5.1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/yiisoft/assets.git",
+                "reference": "b79c9cef61c24c9b17dd8b1e7d2a692b7f98e370"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/yiisoft/assets/zipball/b79c9cef61c24c9b17dd8b1e7d2a692b7f98e370",
+                "reference": "b79c9cef61c24c9b17dd8b1e7d2a692b7f98e370",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "php": "8.1 - 8.5",
+                "psr/log": "^1.1 || ^2.0 || ^3.0",
+                "yiisoft/aliases": "^1.1 || ^2.0 || ^3.0",
+                "yiisoft/files": "^2.0",
+                "yiisoft/json": "^1.0"
+            },
+            "require-dev": {
+                "bamarni/composer-bin-plugin": "^1.8.2",
+                "infection/infection": "^0.29.8",
+                "phpstan/phpstan": "^2.1.22",
+                "phpunit/phpunit": "^10.5.52",
+                "rector/rector": "^2.1.4",
+                "spatie/phpunit-watcher": "^1.24",
+                "vimeo/psalm": "^6.13.1",
+                "yiisoft/di": "^1.4",
+                "yiisoft/test-support": "^3.0.2",
+                "yiisoft/yii-debug": "dev-master"
+            },
+            "type": "library",
+            "extra": {
+                "bamarni-bin": {
+                    "bin-links": true,
+                    "forward-command": true,
+                    "target-directory": "tools"
+                },
+                "config-plugin": {
+                    "di": "di.php",
+                    "params": "params.php"
+                },
+                "config-plugin-options": {
+                    "source-directory": "config"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Yiisoft\\Assets\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Asset bundles and asset manager",
+            "homepage": "https://www.yiiframework.com/",
+            "keywords": [
+                "assets",
+                "library",
+                "yii"
+            ],
+            "support": {
+                "chat": "https://t.me/yii3en",
+                "forum": "https://www.yiiframework.com/forum/",
+                "irc": "ircs://irc.libera.chat:6697/yii",
+                "issues": "https://github.com/yiisoft/assets/issues?state=open",
+                "source": "https://github.com/yiisoft/assets",
+                "wiki": "https://www.yiiframework.com/wiki/"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/sponsors/yiisoft",
+                    "type": "github"
+                },
+                {
+                    "url": "https://opencollective.com/yiisoft",
+                    "type": "opencollective"
+                }
+            ],
+            "time": "2025-12-13T10:04:14+00:00"
         },
         {
             "name": "yiisoft/files",

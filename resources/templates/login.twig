@@ -32,7 +32,7 @@
 
     {% if craft.app.request.isCpRequest %}
       <a id="poweredby" href="http://craftcms.com/" title="{{ 'Powered by Craft CMS'|t('app') }}" aria-label="Craft CMS">
-        {{ svg('@app/web/assets/cp/dist/images/craftcms.svg') }}
+        {{ svg(assetUrl('cp', 'images/craftcms.svg')) }}
       </a>
     {% endif %}
   </main>

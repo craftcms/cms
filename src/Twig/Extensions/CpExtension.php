@@ -18,6 +18,7 @@ use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\InternalAssets;
 use Illuminate\Foundation\ViteException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Vite;
@@ -56,7 +57,9 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('findCrumb', fn (array $items) => $this->findCrumb($items)),
             new TwigFunction('generatedFieldsTable', app(FieldLayoutDesigner::class)->generatedFieldsTableHtml(...), ['is_safe' => ['html']]),
             new TwigFunction('iconSvg', Icons::svg(...), ['is_safe' => ['html']]),
+            new TwigFunction('assetUrl', InternalAssets::url(...)),
             new TwigFunction('siteMenuItems', app(MenuHtml::class)->siteMenuItems(...)),
+            new TwigFunction('registerAsset', InternalAssets::register(...)),
             new TwigFunction('statusIndicator', app(StatusHtml::class)->statusIndicatorHtml(...), ['is_safe' => ['html']]),
             new TwigFunction('readOnlyNotice', app(ContentHtml::class)->readOnlyNoticeHtml(...), ['is_safe' => ['html']]),
             new TwigFunction('vite', $this->vite(...), ['is_safe' => ['html']]),

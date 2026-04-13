@@ -61,7 +61,7 @@
 {% from _self import permissionList %}
 
 
-{% do view.registerAssetBundle("craft\\web\\assets\\userpermissions\\UserPermissionsAsset") %}
+{% do registerAsset('user-permissions') %}
 
 {% block content %}
     {{ actionInput(schema.isPublic ? 'graphql/save-public-schema' : 'graphql/save-schema') }}
