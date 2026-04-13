@@ -254,6 +254,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
             RequireAdminChanges::class,
         ])->group(function () {
             Route::post('{handle}', [FilesystemsController::class, 'save']);
+            Route::delete('{handle}', [FilesystemsController::class, 'destroy']);
         });
     });
 

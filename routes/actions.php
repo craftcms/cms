@@ -315,7 +315,6 @@ Route::prefix(implode('/', [
         Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::get('fs/edit', [FilesystemsController::class, 'edit']);
             Route::post('fs/save', [FilesystemsController::class, 'save']);
-            Route::post('fs/remove', [FilesystemsController::class, 'delete']);
         });
 
         // Volumes
