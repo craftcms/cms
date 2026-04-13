@@ -1389,7 +1389,7 @@ JS,
             'defaultViewMode' => $this->defaultIndexViewMode,
             'defaultTableColumns' => array_map(fn(string $attribute) => [$attribute], $this->defaultTableColumns),
             // field layouts are needed in the read-only (static) mode
-            // so that you can adjust the table columns when using index view mode with table view
+            // so that you can choose to show columns representing the custom fields when using index view mode with table view
             'fieldLayouts' => array_map(fn(EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
         ];
 
