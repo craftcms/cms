@@ -53,7 +53,7 @@ class ElementActions
     }
 
     /**
-     * @param  ElementActionInterface|class-string<ElementActionInterface>|array{type:class-string<ElementActionInterface>}  $action
+     * @param  ElementActionInterface|class-string<ElementActionInterface>|array{type:class-string<ElementActionInterface>, ...}  $action
      * @param  class-string<ElementInterface>  $elementType
      */
     public function createAction(mixed $action, string $elementType): ElementActionInterface
