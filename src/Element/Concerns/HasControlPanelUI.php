@@ -66,7 +66,7 @@ trait HasControlPanelUI
     /**
      * Performs any action after the element's editor is fully ready.
      */
-    public function prepareEditScreen(Response|CpScreenResponse $response, string $containerId): void {}
+    public function prepareEditScreen(Response|CpScreenResponse|\yii\web\Response $response, string $containerId): void {}
 
     public function getAdditionalButtons(): string|Stringable
     {

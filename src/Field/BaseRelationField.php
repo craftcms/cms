@@ -453,12 +453,15 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         ]);
     }
 
+    public function afterValidate(?Validator $validator = null): void
+    {
+        $this->validateSources();
+    }
+
     /**
      * Ensure only one structured source is selected when maintainHierarchy is true.
-     *
-     * @todo This needs to be called from somewhere
      */
-    public function validateSources(string $attribute): void
+    public function validateSources(): void
     {
         if (! $this->maintainHierarchy) {
             return;
@@ -1368,8 +1371,9 @@ JS, [
                         'width' => $key === self::VIEW_MODE_LIST ? 48 : 80,
                         'height' => 60,
                     ]).
-                    Html::radio('viewMode', $key === $this->viewMode, [
+                    Html::radio('viewMode', $key, [
                         'value' => $key,
+                        'checked' => $this->viewMode === $key,
                     ]).
                     ' '.$label.
                     Html::endTag('label');

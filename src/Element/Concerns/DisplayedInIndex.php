@@ -342,7 +342,7 @@ trait DisplayedInIndex
      */
     public static function indexViewModes(): array
     {
-        return array_filter([
+        return array_values(array_filter([
             array_merge(ElementIndexViewMode::Structure->toArray(), [
                 'structuresOnly' => true,
             ]),
@@ -351,7 +351,7 @@ trait DisplayedInIndex
             ]),
             static::hasThumbs() ? ElementIndexViewMode::Thumbs->toArray() : null,
             ElementIndexViewMode::Cards->toArray(),
-        ]);
+        ]));
     }
 
     public static function sortOptions(): array
