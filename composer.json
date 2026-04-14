@@ -55,7 +55,7 @@
     "theiconic/name-parser": "^1.2",
     "twig/twig": "~3.19.0",
     "voku/stringy": "^6.4.0",
-    "webonyx/graphql-php": "~14.11.10",
+    "webonyx/graphql-php": "~15.31.5",
     "yiisoft/yii2": "~2.0.54.0",
     "yiisoft/yii2-debug": "~2.1.27.0",
     "yiisoft/yii2-queue": "~2.3.2",
