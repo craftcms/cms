@@ -3493,8 +3493,8 @@ class Elements extends Component
                         $query->limit = null;
 
                         $criteria = array_merge(
+                            $plan->criteria,
                             $map['criteria'] ?? [],
-                            $plan->criteria
                         );
 
                         // Save the offset & limit params for later
