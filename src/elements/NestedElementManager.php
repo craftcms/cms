@@ -1225,12 +1225,36 @@ JS, [
         );
 
         /** @var NestedElementInterface[] $elements */
-        $elements = $this->nestedElementQuery($canonical)
-            ->siteId($siteIds)
-            ->preferSites([$canonical->siteId])
-            ->unique()
-            ->status(null)
-            ->all();
+        $elements = [];
+        $processedElementIds = [];
+
+        foreach ($siteIds as $siteId) {
+            if ($siteId === $canonical->siteId) {
+                $owner = $canonical;
+            } else {
+                $owner = $canonical::find()
+                    ->id($canonical->id)
+                    ->siteId($siteId)
+                    ->status(null)
+                    ->one();
+
+                if ($owner === null) {
+                    continue;
+                }
+            }
+
+            $siteElements = $this->nestedElementQuery($owner)
+                ->status(null)
+                ->all();
+
+            /** @var NestedElementInterface $element */
+            foreach ($siteElements as $element) {
+                if (!isset($processedElementIds[$element->id])) {
+                    $processedElementIds[$element->id] = true;
+                    $elements[] = $element;
+                }
+            }
+        }
 
         $revisionsService = Craft::$app->getRevisions();
         $elementRevisionIds = [];
