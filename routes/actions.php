@@ -275,7 +275,6 @@ Route::prefix(implode('/', [
 
         // GraphQL
         Route::middleware([RequireAdmin::class])->group(function () {
-            Route::post('graphql/delete-token', [GqlTokensController::class, 'destroy']);
             Route::post('graphql/generate-token', [GqlTokensController::class, 'generate']);
 
             Route::middleware('password.confirm')->group(function () {

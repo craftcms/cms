@@ -6,12 +6,14 @@ namespace CraftCms\Cms\Http\Controllers\Gql;
 
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\Gql;
+use CraftCms\Cms\Gql\Resources\GqlTokenResource;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Flash;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -27,9 +29,11 @@ readonly class TokensController extends GqlController
         $this->ensureGqlEnabled();
     }
 
-    public function index(): View
+    public function index()
     {
-        return view('graphql.tokens._index');
+        return Inertia::render('GraphQlTokensPage', [
+            'tokens' => GqlTokenResource::collection($this->gql->getTokens()),
+        ]);
     }
 
     public function create(): View
@@ -86,15 +90,11 @@ readonly class TokensController extends GqlController
         return $this->asModelSuccess($token, t('Schema saved.'), 'token');
     }
 
-    public function destroy(Request $request): JsonResponse
+    public function destroy(Request $request, int $tokenId): Response
     {
-        $request->validate([
-            'id' => ['required', 'integer'],
-        ]);
+        $this->gql->deleteTokenById($tokenId);
 
-        $this->gql->deleteTokenById($request->integer('id'));
-
-        return $this->asJsonSuccess();
+        return $this->asSuccess(t('Token deleted.'));
     }
 
     public function fetch(Request $request): JsonResponse

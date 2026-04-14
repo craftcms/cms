@@ -112,6 +112,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'isMultiSite' => fn () => Sites::isMultiSite(),
             'readOnly' => fn () => ! $generalConfig->allowAdminChanges,
+            'locale' => fn () => app()->getLocale(),
             'craft' => fn () => [
                 'system' => [
                     'name' => Cms::systemName(),

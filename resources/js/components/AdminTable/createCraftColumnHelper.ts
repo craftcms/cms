@@ -1,6 +1,7 @@
 import {t} from '@craftcms/cp';
 import {h} from 'vue';
 import {
+  type AccessorColumnDef,
   type CellContext,
   type ColumnDef,
   type ColumnHelper,
@@ -9,9 +10,14 @@ import {
 } from '@tanstack/vue-table';
 import type {AccessorParam} from '@/composables/useEditableTable';
 import CpLink from '@/components/CpLink.vue';
+import Date from '@/components/Date.vue';
 
 type LinkColumnDef<T extends Record<string, any>> = DisplayColumnDef<T> & {
   props: (cellContext: CellContext<T, any>) => Record<string, any>;
+};
+
+type DateColumnDef<T extends Record<string, any>> = DisplayColumnDef<T> & {
+  format?: string;
 };
 
 export type CraftColumnHelper<T extends Record<string, any>> =
@@ -19,15 +25,19 @@ export type CraftColumnHelper<T extends Record<string, any>> =
     handle: (
       accessor: AccessorParam<T>,
       config?: Partial<DisplayColumnDef<T>>
-    ) => ColumnDef<T, any>;
+    ) => AccessorColumnDef<T, any>;
     link: (
       accessor: AccessorParam<T>,
       config?: Partial<LinkColumnDef<T>>
-    ) => ColumnDef<T, any>;
+    ) => AccessorColumnDef<T, any>;
     actions: (
       actions: (cellContext: CellContext<T, any>) => Array<any>,
       config?: Partial<DisplayColumnDef<T>>
     ) => ColumnDef<T, any>;
+    date: (
+      accessor: AccessorParam<T>,
+      config?: Partial<DateColumnDef<T>>
+    ) => AccessorColumnDef<T, any>;
   };
 
 export function createCraftColumnHelper<T extends Record<string, any>>() {
@@ -37,6 +47,27 @@ export function createCraftColumnHelper<T extends Record<string, any>>() {
     accessor: baseHelper.accessor,
     display: baseHelper.display,
     group: baseHelper.group,
+
+    date(accessor, config = {}) {
+      const {format, ...rest} = config;
+      return baseHelper.accessor(accessor, {
+        cell: (cellContext: CellContext<T, any>) => {
+          if (cellContext.getValue()) {
+            if (typeof cellContext.getValue() === 'string') {
+              return h(Date, {value: cellContext.getValue()});
+            } else if (
+              typeof cellContext.getValue() === 'object' &&
+              Object.keys(cellContext.getValue()).includes('date')
+            ) {
+              return h(Date, {value: cellContext.getValue().date});
+            }
+          }
+
+          return 'Never';
+        },
+        ...rest,
+      } as any);
+    },
 
     actions(actions = () => [], config = {}) {
       return baseHelper.display({
