@@ -248,6 +248,6 @@ test('respects read-only mode for save operation', function () {
 test('respects read-only mode for delete operation', function () {
     Cms::config()->allowAdminChanges = false;
 
-    postJson(action([FilesystemsController::class, 'destroy'], ['test']))
+    deleteJson(action([FilesystemsController::class, 'destroy'], ['test']))
         ->assertForbidden();
 });
