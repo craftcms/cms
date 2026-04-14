@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where nested element cards weren’t showing validation errors. ([#18690](https://github.com/craftcms/cms/pull/18690))
+- Fixed a bug where read-only Matrix fields in Index mode weren’t respecting the Default Table Columns setting. ([#18684](https://github.com/craftcms/cms/issues/18684))
 
 ## 5.9.19 - 2026-04-07
 
