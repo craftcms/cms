@@ -60,20 +60,21 @@
         cell: ({getValue}) => getValue(),
         meta: {
           cellTag: 'th',
+          trackSize: '0.25fr',
         },
       }),
       columnHelper.lightswitch('enabled', {
         header: t('Enabled'),
-        size: 80,
         meta: {
+          trackSize: '80px',
           cellClass: 'bg-[var(--c-color-neutral-fill-quiet)]',
         },
         label: t('Enabled'),
       }),
       columnHelper.checkbox('singleHomepage', {
         header: () => h('craft-icon', {name: 'home', label: t('Homepage')}),
-        size: 44,
         meta: {
+          trackSize: '44px',
           cellClass: 'text-center',
           headerClass: 'justify-center',
         },
@@ -117,7 +118,7 @@
       }),
       columnHelper.autocomplete('template', {
         header: t('Template'),
-        class: 'font-mono text-xs !px-[var(--_cell-spacing)]',
+        class: 'w-full flex-1 font-mono text-xs !px-[var(--_cell-spacing)]',
         options: templateOptions.value,
         disabled: (row) => !row.original.enabled,
         meta: {
@@ -128,7 +129,9 @@
       }),
       columnHelper.lightswitch('enabledByDefault', {
         header: t('Default Status'),
-        size: 40,
+        meta: {
+          trackSize: '120px',
+        },
         disabled: (row) => !row.original.enabled,
       }),
     ],

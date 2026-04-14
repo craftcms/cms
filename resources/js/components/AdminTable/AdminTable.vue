@@ -112,7 +112,8 @@
 
   const tableStyles = computed(() => {
     const columns = props.table.getAllColumns();
-    let columnCount = columns.length;
+    const visibleColumns = columns.filter((column: Column<any>) => column.getIsVisible());
+    let columnCount = visibleColumns.length;
 
     if (props.reorderable) {
       columnCount += 1;
@@ -122,9 +123,9 @@
       '--table-column-count': columnCount,
     };
 
-    const gridDef = columns.reduce(
+    const gridDef = visibleColumns.reduce(
       (acc: Array<string>, column: Column<any>) => {
-        acc.push(column.columnDef.meta?.trackSize ?? `1fr`);
+        acc.push(column.columnDef.meta?.trackSize ?? `minmax(0, 1fr)`);
         return acc;
       },
       []
