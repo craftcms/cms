@@ -1,4 +1,4 @@
-import{f as e,n as t,t as n}from"./Queue-CNawcJlD.js";import{c as r,f as i,r as a,t as o}from"./lit.js";import{a as s,o as c}from"./decorators.js";import{t as l}from"./queue.js";import{t as u}from"./decorate.js";var d=e({default:()=>p}),f=class extends o{constructor(...e){super(...e),this.displayedJob=null,this.hasReservedJobs=!1,this.hasWaitingJobs=!1}static{this.styles=i`
+import{f as e,n as t,t as n}from"./Queue-C2kVe8rA.js";import{c as r,f as i,r as a,t as o}from"./lit.js";import{a as s,o as c}from"./decorators.js";import{t as l}from"./queue.js";import{t as u}from"./decorate.js";var d=e({default:()=>p}),f=class extends o{constructor(...e){super(...e),this.displayedJob=null,this.hasReservedJobs=!1,this.hasWaitingJobs=!1}static{this.styles=i`
     :host {
       display: contents;
     }
