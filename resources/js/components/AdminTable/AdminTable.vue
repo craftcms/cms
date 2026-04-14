@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {type Column, FlexRender, type Column} from '@tanstack/vue-table';
+  import {FlexRender, type Column} from '@tanstack/vue-table';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import {computed, useId} from 'vue';
   import {useReorderableRows} from '@/composables/useReorderableRows';
@@ -99,7 +99,6 @@
     return value;
   }
 
-<<<<<<< HEAD
   function getAriaSortAttribute(
     column: Column<any>
   ): 'ascending' | 'descending' | 'none' | undefined {
@@ -111,21 +110,6 @@
     }
   }
 
-  function getColumnSize(column: any) {
-    if (column.columnDef.meta?.columnSize) {
-      return column.columnDef.meta.columnSize;
-    }
-  }
-
-||||||| parent of bc13aa30b8 (Reorder volumes)
-  function getColumnSize(column: any) {
-    if (column.columnDef.meta?.columnSize) {
-      return column.columnDef.meta.columnSize;
-    }
-  }
-
-=======
->>>>>>> bc13aa30b8 (Reorder volumes)
   const tableStyles = computed(() => {
     const columns = props.table.getAllColumns();
     let columnCount = columns.length;

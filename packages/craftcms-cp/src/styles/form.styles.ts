@@ -1,7 +1,10 @@
 import {css} from 'lit';
 
 export const baseInputStyles = css`
-  --_border-width: var(--c-input-border-width, var(--c-form-control-border-width));
+  --_border-width: var(
+    --c-input-border-width,
+    var(--c-form-control-border-width)
+  );
   --_min-height: var(--c-input-height, var(--c-size-control-md));
   font: inherit;
   color: var(--c-input-text, var(--c-text-default));
