@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\fieldsettings;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
@@ -15,7 +15,7 @@ use craft\web\assets\cp\CpAsset;
  *
  * @since 3.4.22
  */
-class FieldSettingsAsset extends AssetBundle
+class FieldSettingsAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

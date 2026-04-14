@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\dashboard;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
  * Asset bundle for the Dashboard
  */
-class DashboardAsset extends AssetBundle
+class DashboardAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

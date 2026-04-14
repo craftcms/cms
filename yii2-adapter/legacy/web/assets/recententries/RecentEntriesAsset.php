@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\recententries;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
  * Asset bundle for Recent Entries widgets
  */
-class RecentEntriesAsset extends AssetBundle
+class RecentEntriesAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\conditionbuilder;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\htmx\HtmxAsset;
 
 /**
  * Condition Builder asset bundle.
  */
-class ConditionBuilderAsset extends AssetBundle
+class ConditionBuilderAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

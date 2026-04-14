@@ -7,12 +7,12 @@
 
 namespace craft\web\assets\jquerytouchevents;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 
 /**
  * JqueryTouchEvents asset bundle.
  */
-class JqueryTouchEventsAsset extends AssetBundle
+class JqueryTouchEventsAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

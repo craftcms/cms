@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\routes;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
  * Asset bundle for the Routes page
  */
-class RoutesAsset extends AssetBundle
+class RoutesAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

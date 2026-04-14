@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\authmethodsetup;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
@@ -15,7 +15,7 @@ use craft\web\assets\cp\CpAsset;
  *
  * @since 5.0.0
  */
-class AuthMethodSetupAsset extends AssetBundle
+class AuthMethodSetupAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

@@ -7,12 +7,12 @@
 
 namespace craft\web\assets\fabric;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 
 /**
  * Fabric asset bundle.
  */
-class FabricAsset extends AssetBundle
+class FabricAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

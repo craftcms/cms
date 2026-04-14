@@ -7,12 +7,12 @@
 
 namespace craft\web\assets\vue;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 
 /**
  * Vue asset bundle.
  */
-class VueAsset extends AssetBundle
+class VueAsset extends InternalAssetBundle
 {
     /** @inheritdoc */
     public $sourcePath = __DIR__ . '/dist';

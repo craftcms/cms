@@ -7,12 +7,12 @@
 
 namespace craft\web\assets\velocity;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 
 /**
  * Velocity asset bundle.
  */
-class VelocityAsset extends AssetBundle
+class VelocityAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

@@ -7,14 +7,14 @@
 
 namespace craft\web\assets\focusvisible;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 
 /**
  * Focus visible asset bundle.
  *
  * @deprecated in 4.2.6.
  */
-class FocusVisibleAsset extends AssetBundle
+class FocusVisibleAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

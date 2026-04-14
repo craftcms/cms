@@ -9,13 +9,13 @@ namespace craft\web\assets\installer;
 
 use Craft;
 use craft\helpers\Json;
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
  * Asset bundle for the Installer
  */
-class InstallerAsset extends AssetBundle
+class InstallerAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

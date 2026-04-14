@@ -7,16 +7,16 @@
 
 namespace craft\web\assets\garnish;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\elementresizedetector\ElementResizeDetectorAsset;
 use craft\web\assets\jquerytouchevents\JqueryTouchEventsAsset;
 use craft\web\assets\velocity\VelocityAsset;
-use yii\web\JqueryAsset;
+use craft\web\assets\jquery\JqueryAsset;
 
 /**
  * Garnish asset bundle.
  */
-class GarnishAsset extends AssetBundle
+class GarnishAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

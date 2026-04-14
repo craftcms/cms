@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\updateswidget;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
  * Asset bundle for Updates widgets
  */
-class UpdatesWidgetAsset extends AssetBundle
+class UpdatesWidgetAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

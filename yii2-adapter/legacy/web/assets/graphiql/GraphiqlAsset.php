@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\graphiql;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
@@ -16,7 +16,7 @@ use craft\web\assets\cp\CpAsset;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class GraphiqlAsset extends AssetBundle
+class GraphiqlAsset extends InternalAssetBundle
 {
     /** @inheritdoc */
     public $depends = [

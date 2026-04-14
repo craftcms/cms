@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Override;
 
+use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\normalizeVersion;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -135,7 +136,7 @@ JS, [
         return template('_components/widgets/CraftSupport/body', [
             'widget' => $this,
             'showBackupOption' => $showBackupOption,
-            'bundleUrl' => $assetBundle->baseUrl,
+            'bundleUrl' => craftAsset('legacy/craftsupport/dist'),
         ]);
     }
 }

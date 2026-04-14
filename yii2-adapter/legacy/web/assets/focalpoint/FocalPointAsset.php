@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\focalpoint;
 
-use craft\web\AssetBundle;
-use yii\web\JqueryAsset;
+use craft\web\InternalAssetBundle;
+use craft\web\assets\jquery\JqueryAsset;
 
 /**
  * Asset bundle for the Focal Point class.
  */
-class FocalPointAsset extends AssetBundle
+class FocalPointAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

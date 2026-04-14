@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\dbbackup;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
  * Asset bundle for the DB Backup utility
  */
-class DbBackupAsset extends AssetBundle
+class DbBackupAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

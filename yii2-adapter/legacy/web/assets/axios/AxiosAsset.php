@@ -7,12 +7,12 @@
 
 namespace craft\web\assets\axios;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 
 /**
  * Vue asset bundle.
  */
-class AxiosAsset extends AssetBundle
+class AxiosAsset extends InternalAssetBundle
 {
     /** @inheritdoc */
     public $sourcePath = __DIR__ . '/dist';

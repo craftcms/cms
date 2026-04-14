@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\generalsettings;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
  * Asset bundle for the General Settings page
  */
-class GeneralSettingsAsset extends AssetBundle
+class GeneralSettingsAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

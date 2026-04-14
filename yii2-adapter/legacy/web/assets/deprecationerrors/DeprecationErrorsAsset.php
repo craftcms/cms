@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\deprecationerrors;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
  * Asset bundle for the Deprecation Warnings utility
  */
-class DeprecationErrorsAsset extends AssetBundle
+class DeprecationErrorsAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

@@ -7,14 +7,14 @@
 
 namespace craft\web\assets\iframeresizer;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 
 /**
  * Iframe Resizer asset bundle.
  *
  * @since 3.5.0
  */
-class IframeResizerAsset extends AssetBundle
+class IframeResizerAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

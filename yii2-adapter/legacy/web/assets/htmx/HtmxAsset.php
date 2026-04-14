@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\htmx;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
  * Htmx asset bundle.
  */
-class HtmxAsset extends AssetBundle
+class HtmxAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

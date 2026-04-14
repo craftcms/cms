@@ -7,14 +7,14 @@
 
 namespace craft\web\assets\inputmask;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 
 /**
  * Inputmask asset bundle
  *
  * @since 4.5.7
  */
-class InputmaskAsset extends AssetBundle
+class InputmaskAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

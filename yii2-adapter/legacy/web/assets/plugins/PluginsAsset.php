@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\plugins;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
  * Asset bundle for the Plugins page
  */
-class PluginsAsset extends AssetBundle
+class PluginsAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

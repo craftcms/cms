@@ -12,7 +12,7 @@ use craft\base\ElementInterface;
 use craft\helpers\Assets;
 use craft\helpers\DateTimeHelper;
 use craft\validators\UserPasswordValidator;
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\animationblocker\AnimationBlockerAsset;
 use craft\web\assets\axios\AxiosAsset;
 use craft\web\assets\d3\D3Asset;
@@ -61,13 +61,13 @@ use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Yii2Adapter\DeprecatedConcepts;
 use Illuminate\Support\Facades\Auth;
 use stdClass;
-use yii\web\JqueryAsset;
+use craft\web\assets\jquery\JqueryAsset;
 use function CraftCms\Cms\t;
 
 /**
  * Asset bundle for the control panel
  */
-class CpAsset extends AssetBundle
+class CpAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

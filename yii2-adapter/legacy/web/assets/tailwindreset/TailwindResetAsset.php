@@ -7,12 +7,12 @@
 
 namespace craft\web\assets\tailwindreset;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 
 /**
  * Asset bundle for the Tailwind reset
  */
-class TailwindResetAsset extends AssetBundle
+class TailwindResetAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

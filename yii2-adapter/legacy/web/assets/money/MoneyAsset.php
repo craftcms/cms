@@ -9,7 +9,7 @@ namespace craft\web\assets\money;
 
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\inputmask\InputmaskAsset;
 use craft\web\View;
@@ -22,7 +22,7 @@ use Money\Currency;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class MoneyAsset extends AssetBundle
+class MoneyAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

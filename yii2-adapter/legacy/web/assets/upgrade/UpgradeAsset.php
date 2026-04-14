@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\upgrade;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
@@ -15,7 +15,7 @@ use craft\web\assets\cp\CpAsset;
  *
  * @since 3.7.40
  */
-class UpgradeAsset extends AssetBundle
+class UpgradeAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

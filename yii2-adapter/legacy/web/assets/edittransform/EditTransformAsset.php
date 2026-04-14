@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\edittransform;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
  * Asset bundle for the Edit Transform page
  */
-class EditTransformAsset extends AssetBundle
+class EditTransformAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

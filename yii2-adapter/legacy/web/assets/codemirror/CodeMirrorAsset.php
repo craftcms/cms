@@ -7,12 +7,12 @@
 
 namespace craft\web\assets\codemirror;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 
 /**
  * CodeMirror asset bundle.
  */
-class CodeMirrorAsset extends AssetBundle
+class CodeMirrorAsset extends InternalAssetBundle
 {
     /** @inheritdoc */
     public $sourcePath = __DIR__ . '/dist';

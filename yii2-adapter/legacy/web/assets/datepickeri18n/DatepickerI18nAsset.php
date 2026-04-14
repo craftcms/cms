@@ -8,14 +8,14 @@
 namespace craft\web\assets\datepickeri18n;
 
 use Craft;
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\jqueryui\JqueryUiAsset;
 use CraftCms\Cms\Support\Facades\I18N;
 
 /**
  * Datepicker I18n asset bundle.
  */
-class DatepickerI18nAsset extends AssetBundle
+class DatepickerI18nAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

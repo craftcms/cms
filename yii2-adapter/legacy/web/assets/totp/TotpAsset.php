@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\totp;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
  * TOTP asset bundle
  */
-class TotpAsset extends AssetBundle
+class TotpAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\timepicker;
 
-use craft\web\AssetBundle;
-use yii\web\JqueryAsset;
+use craft\web\InternalAssetBundle;
+use craft\web\assets\jquery\JqueryAsset;
 
 /**
  * Timepicker asset bundle.
  */
-class TimepickerAsset extends AssetBundle
+class TimepickerAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

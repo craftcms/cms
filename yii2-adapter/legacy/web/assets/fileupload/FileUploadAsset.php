@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\fileupload;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\jqueryui\JqueryUiAsset;
 
 /**
  * File Upload asset bundle.
  */
-class FileUploadAsset extends AssetBundle
+class FileUploadAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

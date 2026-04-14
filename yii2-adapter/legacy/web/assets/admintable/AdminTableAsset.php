@@ -7,14 +7,14 @@
 
 namespace craft\web\assets\admintable;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\vue\VueAsset;
 
 /**
  * Asset bundle for admin tables
  */
-class AdminTableAsset extends AssetBundle
+class AdminTableAsset extends InternalAssetBundle
 {
     /**
      * @var bool

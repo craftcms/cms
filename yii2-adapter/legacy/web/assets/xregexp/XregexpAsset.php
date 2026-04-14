@@ -7,12 +7,12 @@
 
 namespace craft\web\assets\xregexp;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 
 /**
  * Xregexp asset bundle.
  */
-class XregexpAsset extends AssetBundle
+class XregexpAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

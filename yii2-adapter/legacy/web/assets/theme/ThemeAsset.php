@@ -8,12 +8,12 @@
 namespace craft\web\assets\theme;
 
 use Craft;
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 
 /**
  * Asset bundle for the control panel
  */
-class ThemeAsset extends AssetBundle
+class ThemeAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

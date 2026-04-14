@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\editsection;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
  * Asset bundle for Edit Section pages
  */
-class EditSectionAsset extends AssetBundle
+class EditSectionAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

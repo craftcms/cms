@@ -7,14 +7,14 @@
 
 namespace craft\web\assets\userphoto;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\fileupload\FileUploadAsset;
 
 /**
  * Asset bundle for user photo fields
  */
-class UserPhotoAsset extends AssetBundle
+class UserPhotoAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

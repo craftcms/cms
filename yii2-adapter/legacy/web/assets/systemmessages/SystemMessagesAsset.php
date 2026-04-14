@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\systemmessages;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
  * Asset bundle for the Email Messages page
  */
-class SystemMessagesAsset extends AssetBundle
+class SystemMessagesAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

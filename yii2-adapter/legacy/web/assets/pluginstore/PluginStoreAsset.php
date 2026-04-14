@@ -7,14 +7,14 @@
 
 namespace craft\web\assets\pluginstore;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\vue\VueAsset;
 
 /**
  * Asset bundle for the Plugin Store page
  */
-class PluginStoreAsset extends AssetBundle
+class PluginStoreAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

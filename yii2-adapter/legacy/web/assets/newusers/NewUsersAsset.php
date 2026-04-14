@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\newusers;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
  * Asset bundle for New Users widgets
  */
-class NewUsersAsset extends AssetBundle
+class NewUsersAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\recoverycodes;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
  * TOTP asset bundle
  */
-class RecoveryCodesAsset extends AssetBundle
+class RecoveryCodesAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

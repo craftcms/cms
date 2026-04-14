@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\jqueryui;
 
-use craft\web\AssetBundle;
-use yii\web\JqueryAsset;
+use craft\web\InternalAssetBundle;
+use craft\web\assets\jquery\JqueryAsset;
 
 /**
  * jQuery UI asset bundle.
  */
-class JqueryUiAsset extends AssetBundle
+class JqueryUiAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

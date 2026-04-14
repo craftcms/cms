@@ -7,14 +7,14 @@
 
 namespace craft\web\assets\picturefill;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 
 /**
  * Picturefill asset bundle.
  *
  * @deprecated in 5.8.0
  */
-class PicturefillAsset extends AssetBundle
+class PicturefillAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

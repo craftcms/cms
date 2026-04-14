@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\userpermissions;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
  * Asset bundle for user permissions
  */
-class UserPermissionsAsset extends AssetBundle
+class UserPermissionsAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\matrix;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
  * Asset bundle for Matrix fields
  */
-class MatrixAsset extends AssetBundle
+class MatrixAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

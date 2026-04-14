@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\tablesettings;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
  * Asset bundle for Table field settings
  */
-class TableSettingsAsset extends AssetBundle
+class TableSettingsAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

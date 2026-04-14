@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\feed;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
  * Asset bundle for Feed widgets
  */
-class FeedAsset extends AssetBundle
+class FeedAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

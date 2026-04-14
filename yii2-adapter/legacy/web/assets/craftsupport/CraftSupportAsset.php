@@ -7,13 +7,13 @@
 
 namespace craft\web\assets\craftsupport;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
  * Asset bundle for the Craft Support widget
  */
-class CraftSupportAsset extends AssetBundle
+class CraftSupportAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

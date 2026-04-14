@@ -7,12 +7,12 @@
 
 namespace craft\web\assets\selectize;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 
 /**
  * Selectize asset bundle.
  */
-class SelectizeAsset extends AssetBundle
+class SelectizeAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

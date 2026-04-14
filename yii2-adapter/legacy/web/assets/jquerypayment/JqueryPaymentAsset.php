@@ -7,12 +7,12 @@
 
 namespace craft\web\assets\jquerypayment;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 
 /**
  * JqueryPayment asset bundle.
  */
-class JqueryPaymentAsset extends AssetBundle
+class JqueryPaymentAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc

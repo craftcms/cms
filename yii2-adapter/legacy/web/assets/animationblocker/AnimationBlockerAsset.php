@@ -7,12 +7,12 @@
 
 namespace craft\web\assets\animationblocker;
 
-use craft\web\AssetBundle;
+use craft\web\InternalAssetBundle;
 
 /**
  * Asset bundle for the Animation Blocker class.
  */
-class AnimationBlockerAsset extends AssetBundle
+class AnimationBlockerAsset extends InternalAssetBundle
 {
     /**
      * @inheritdoc
