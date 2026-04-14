@@ -7,7 +7,6 @@ import '../icon/icon.js';
 import {computeAccessibleName} from 'dom-accessibility-api';
 import {classMap} from 'lit/directives/class-map.js';
 
-
 /**
  * @summary Interactive element that triggers an action or event.
  * @since 1.0
