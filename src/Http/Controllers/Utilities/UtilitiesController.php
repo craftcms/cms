@@ -8,9 +8,9 @@ use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Updates;
-use CraftCms\Cms\Utility\Utilities\Upgrade;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use InvalidArgumentException;
@@ -31,7 +31,7 @@ readonly class UtilitiesController
         ]);
     }
 
-    public function index()
+    public function index(): RedirectResponse
     {
         $utilities = $this->utilitiesService->getAuthorizedUtilityTypes();
 
@@ -40,7 +40,7 @@ readonly class UtilitiesController
         }
 
         // Don’t go to the Updates or Upgrade utilities by default if there are any others
-        $firstUtility = $utilities->first(fn (string $utility) => ! in_array($utility, [Updates::class, Upgrade::class])) ?? $utilities->first();
+        $firstUtility = $utilities->first(fn (string $utility) => $utility !== Updates::class) ?? $utilities->first();
 
         /** @var class-string<Utility> $firstUtility */
         return cp_redirect('utilities/'.$firstUtility::id());

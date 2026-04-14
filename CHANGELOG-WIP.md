@@ -285,6 +285,10 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 
 - Added `CraftCms\Cms\Support\Facades\Conditions`.
 
+### Controllers
+
+- Removed `craft\controllers\ConditionsController`. `CraftCms\Cms\Http\Controllers\ConditionsController` should be used instead.
+
 ### Deprecations
 
 #### Service
@@ -501,6 +505,10 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 
 ## Element Queries
 
+- Deprecated `craft\elements\db\ElementRelationParamParser`. `CraftCms\Cms\Database\ElementRelationParamFilter` should be used instead.
+- Deprecated `craft\elements\db\NestedElementQueryInterface`. `CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface` should be used instead.
+- Deprecated `craft\elements\db\NestedElementQueryTrait`. `CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements` should be used instead.
+- Deprecated `craft\elements\db\OrderByPlaceholderExpression`. `CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression` should be used instead.
 - Deprecated `\craft\elements\db\AddressQuery`. `\CraftCms\Cms\Element\Queries\AddressQuery` should be used instead.
 - Deprecated `\craft\elements\db\AssetQuery` `\CraftCms\Cms\Element\Queries\AssetQuery` should be used instead.
 - Deprecated `\craft\elements\db\ContentBlockQuery` `\CraftCms\Cms\Element\Queries\ContentBlockQuery` should be used instead.
@@ -595,6 +603,8 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 
 - Updated field index pagination to return Laravel-style pagination metadata and use the configured `GeneralConfig::$pageTrigger` query parameter.
 - Removed `craft\controllers\FieldsController` in favor of `CraftCms\Cms\Http\Controllers\FieldsController`.
+- Removed `craft\controllers\MatrixController`. `CraftCms\Cms\Http\Controllers\MatrixController` should be used instead.
+- Removed `craft\controllers\RelationalFieldsController`. `CraftCms\Cms\Http\Controllers\RelationalFieldsController` should be used instead.
 - Deprecated `craft\errors\InvalidFieldException`. `CraftCms\Cms\Field\Exceptions\InvalidFieldException` should be used instead.
 - Deprecated `craft\fields\data\ColorData`. `CraftCms\Cms\Field\Data\ColorData` should be used instead.
 - Deprecated `craft\fields\data\IconData`. `CraftCms\Cms\Field\Data\IconData` should be used instead.
@@ -657,6 +667,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 
 ## HTTP
 
+- Deprecated `craft\config\GeneralConfig::$errorTemplatePrefix` and `craft\config\GeneralConfig::errorTemplatePrefix()`. Configure [Laravel's custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages) instead.
 - Deprecated `craft\filters\BasicHttpAuthLogin`. Use the `auth.basic` middleware instead. (see https://laravel.com/docs/12.x/authentication#http-basic-authentication)
 - Deprecated `craft\filters\BasicHttpAuthStatic`. Use the `auth.basic` middleware instead. (see https://laravel.com/docs/12.x/authentication#http-basic-authentication)
 - Deprecated `craft\filters\BasicHttpAuthTrait`. Use the `auth.basic` middleware instead. (see https://laravel.com/docs/12.x/authentication#http-basic-authentication)
@@ -666,7 +677,14 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Deprecated `craft\filters\SiteFilterTrait`.
 - Deprecated `craft\filters\UtilityAccess`.
 - Deprecated `craft\controllers\AppController::actionLicensingIssues()`. `CraftCms\Cms\Http\Middleware\EnforceLicenses` should be used instead.
+- Removed `craft\controllers\AppController::actionHealthCheck()`. `CraftCms\Cms\Http\Controllers\App\HealthCheckController` should be used instead.
+- Removed `craft\controllers\AppController::actionGetCpAlerts()` and `actionShunCpAlert()`. `CraftCms\Cms\Http\Controllers\App\CpAlertsController` should be used instead.
 - Removed `craft\controllers\AppController::actionIconPickerOptions()`. Use `CraftCms\Cms\Http\Controllers\IconController::pickerOptions()` instead.
+- Removed `craft\controllers\AppController::actionSetLicenseShunCookie()`. `CraftCms\Cms\Http\Controllers\App\LicensesController::setShunCookie()` should be used instead.
+- Removed `craft\controllers\AppController::actionGetPluginLicenseInfo()` and `actionUpdatePluginLicense()`. `CraftCms\Cms\Http\Controllers\App\PluginsController` should be used instead.
+- Removed `craft\controllers\AppController::actionBrokenImage()`. `CraftCms\Cms\Http\Middleware\ShowBrokenImage` should be used instead.
+- Removed `craft\controllers\AppController::actionRenderElements()` and `actionRenderComponents()`. `CraftCms\Cms\Http\Controllers\App\RenderController` should be used instead.
+- Removed `craft\controllers\NotFoundController`. Laravel's exception handling should be used instead.
 - Removed the header-setting logic in `yii2-adapter\legacy\web\Application`. The new `\CraftCms\Cms\Http\Middleware\SetHeaders` middleware handles this functionality.
 - Removed the licensing issues screen logic in `yii2-adapter\legacy\web\Application`. The new `\CraftCms\Cms\Http\Middleware\EnforceLicenses` middleware handles this functionality.
 - Removed `craft\controllers\AppController::actionTryEdition()` and `actionSwitchToLicensedEdition()` in favor of `CraftCms\Cms\Http\Controllers\EditionController`.

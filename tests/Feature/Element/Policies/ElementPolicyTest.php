@@ -250,6 +250,16 @@ it('delegates nested duplicate checks to the field', function () {
     expect($result)->toBeTrue();
 });
 
+it('delegates nested duplicate as draft checks to the field', function () {
+    $user = UserModel::factory()->createElement();
+    $field = createElementPolicyField(duplicate: true);
+    $element = createElementPolicyNestedElement(field: $field);
+
+    $result = $this->policy->before($user, 'duplicateAsDraft', $element);
+
+    expect($result)->toBeTrue();
+});
+
 it('delegates nested delete for site checks to the field', function () {
     $user = UserModel::factory()->createElement();
     $field = createElementPolicyField(deleteForSite: true);

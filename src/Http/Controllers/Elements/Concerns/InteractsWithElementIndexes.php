@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Elements\Concerns;
 
 use craft\base\ElementInterface;
-use craft\db\ExcludeDescendantIdsExpression;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Element\Queries\ExcludeDescendantIdsExpression;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources as ElementSourcesFacade;
@@ -202,9 +201,7 @@ trait InteractsWithElementIndexes
             return $query;
         }
 
-        return $query instanceof ElementQuery
-            ? $query->whereNotIn('elements.id', $descendantIds)
-            : $query->andWhere(new ExcludeDescendantIdsExpression($descendantIds));
+        return $query->where(new ExcludeDescendantIdsExpression($descendantIds));
     }
 
     protected function isAdministrative(string $context): bool

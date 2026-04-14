@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use craft\web\UploadedFile;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Elements\ContentBlock;
@@ -306,7 +305,7 @@ trait HasCustomFields
         }
 
         return $this->_fieldParamNamePrefix
-            && UploadedFile::getInstancesByName("{$this->_fieldParamNamePrefix}.{$field->handle}");
+            && request()->hasFile("{$this->_fieldParamNamePrefix}.{$field->handle}");
     }
 
     public function getFieldParamNamespace(): ?string

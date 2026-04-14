@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
-use craft\helpers\Assets;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Support\Arr;

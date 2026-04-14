@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Conditions;
 
 use craft\base\ElementInterface;
-use craft\elements\db\EntryQuery;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -34,7 +35,7 @@ class AuthorGroupConditionRule extends BaseMultiSelectConditionRule implements E
         return ['authorGroup', 'authorGroupId'];
     }
 
-    #[\Override]
+    #[Override]
     public static function isSelectable(): bool
     {
         return UserGroups::getAllGroups()->isNotEmpty();

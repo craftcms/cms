@@ -7,12 +7,10 @@ namespace CraftCms\Cms\Twig\Extensions;
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\MissingComponentInterface;
-use craft\web\twig\variables\CraftVariable;
-use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Component\Contracts\MissingComponentInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\AssetQuery;
@@ -153,7 +151,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
                 'allowTagPair' => true,
                 'allowPosition' => true,
                 'allowOptions' => true,
-                'defaultPosition' => View::POS_END,
+                'defaultPosition' => Position::BodyEnd->value,
             ]),
             new NamespaceTokenParser,
             new NavTokenParser,

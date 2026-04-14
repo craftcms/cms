@@ -112,7 +112,7 @@ class ElementPolicy
             'view' => $field->canViewElement($element, $user),
             'save' => $this->checkNestedSaveAuthorization($element, $user, $field),
             'delete' => $field->canDeleteElement($element, $user),
-            'duplicate' => $field->canDuplicateElement($element, $user),
+            'duplicate', 'duplicateAsDraft' => $field->canDuplicateElement($element, $user),
             'deleteForSite' => $field->canDeleteElementForSite($element, $user),
             default => null,
         };

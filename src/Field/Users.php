@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use craft\elements\db\UserQuery;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Gql\Arguments\Elements\User as UserArguments;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Gql as GqlService;

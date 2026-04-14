@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
-use craft\web\UploadedFile;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
@@ -250,9 +249,9 @@ readonly class SaveUserController
         // Validate and save!
         // ---------------------------------------------------------------------
 
-        $photo = UploadedFile::getInstanceByName('photo');
+        $photo = $request->file('photo');
 
-        if ($photo && ! ImageHelper::canManipulateAsImage($photo->getExtension())) {
+        if ($photo && ! ImageHelper::canManipulateAsImage($photo->extension())) {
             $user->errors()->add('photo', t('The user photo provided is not an image.'));
         }
 

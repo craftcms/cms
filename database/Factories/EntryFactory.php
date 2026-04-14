@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Factories;
 
+use CraftCms\Cms\Database\Factories\Concerns\CreatesElement;
 use CraftCms\Cms\Database\Factories\Concerns\HasFieldFactory;
 use CraftCms\Cms\Element\Element as BaseElement;
 use CraftCms\Cms\Element\Models\Element;
@@ -20,6 +21,7 @@ use Override;
 
 class EntryFactory extends Factory
 {
+    use CreatesElement;
     use HasFieldFactory;
 
     #[Override]
@@ -54,34 +56,6 @@ class EntryFactory extends Factory
         });
     }
 
-    public function trashed(bool $trashed = true): self
-    {
-        return $this->state(fn (array $attributes) => [
-            'id' => $attributes['id']->trashed($trashed),
-        ]);
-    }
-
-    public function archived(bool $archived = true): self
-    {
-        return $this->state(fn (array $attributes) => [
-            'id' => $attributes['id']->set('archived', $archived),
-        ]);
-    }
-
-    public function enabled(bool $enabled = true): self
-    {
-        return $this->state(fn (array $attributes) => [
-            'id' => $attributes['id']->set('enabled', $enabled),
-        ]);
-    }
-
-    public function disabled(bool $disabled = true): self
-    {
-        return $this->state(fn (array $attributes) => [
-            'id' => $attributes['id']->set('enabled', ! $disabled),
-        ]);
-    }
-
     public function pending(bool $pending = true): self
     {
         return $this->state(fn (array $attributes) => [
@@ -97,20 +71,6 @@ class EntryFactory extends Factory
             'expiryDate' => $expired
                 ? fake()->dateTime()
                 : fake()->dateTimeBetween('+1 day', '+1 year'),
-        ]);
-    }
-
-    public function title(string $title): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'id' => $attributes['id']->title($title),
-        ]);
-    }
-
-    public function slug(string $slug): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'id' => $attributes['id']->slug($slug),
         ]);
     }
 

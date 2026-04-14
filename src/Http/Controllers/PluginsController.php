@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use craft\web\Application;
+use Craft;
 use craft\web\assets\plugins\PluginsAsset;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
-use Illuminate\Container\Attributes\Give;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,13 +23,11 @@ readonly class PluginsController
     public function __construct(
         private Plugins $plugins,
         private GeneralConfig $generalConfig,
-        #[Give('Craft')] private Application $craft,
     ) {}
 
     public function index(): View
     {
-        $view = $this->craft->getView();
-        $view->registerAssetBundle(PluginsAsset::class);
+        Craft::$app->getView()->registerAssetBundle(PluginsAsset::class);
 
         $info = $this->plugins
             ->getAllPluginInfo()

@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User;
 
-use Craft;
-use craft\web\Request;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
+use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -281,7 +280,7 @@ class Users
     {
         $fePath = Cms::config()->getVerifyEmailPath();
 
-        return $this->getUserUrl($user, $fePath, Request::CP_PATH_VERIFY_EMAIL, $token);
+        return $this->getUserUrl($user, $fePath, CpAuthPath::VerifyEmail->value, $token);
     }
 
     /**
@@ -297,7 +296,7 @@ class Users
     {
         $fePath = Cms::config()->getSetPasswordPath();
 
-        return $this->getUserUrl($user, $fePath, Request::CP_PATH_SET_PASSWORD, $token);
+        return $this->getUserUrl($user, $fePath, CpAuthPath::SetPassword->value, $token);
     }
 
     /**

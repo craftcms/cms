@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use craft\web\Application;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
@@ -16,7 +15,6 @@ use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
-use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Inertia\Inertia;
@@ -56,7 +54,7 @@ class ConfigSyncController extends BaseUpdaterController
      * Renders the Config Sync page via Inertia.
      */
     #[Override]
-    public function index(#[Give('Craft')] Application $craft): Response
+    public function index(): Response
     {
         $this->data = $this->initialData();
         $state = $this->realInitialState();

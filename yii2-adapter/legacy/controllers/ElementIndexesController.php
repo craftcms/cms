@@ -11,7 +11,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\db\ExcludeDescendantIdsExpression;
 use craft\helpers\Component;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
@@ -21,6 +20,7 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Element\Queries\ExcludeDescendantIdsExpression;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
@@ -612,11 +612,7 @@ class ElementIndexesController extends BaseElementsController
                 }
 
                 if (!empty($descendantIds)) {
-                    if ($query instanceof ElementQuery) {
-                        $query->whereNotIn('elements.id', $descendantIds);
-                    } else {
-                        $query->andWhere(new ExcludeDescendantIdsExpression($descendantIds));
-                    }
+                    $query->where(new ExcludeDescendantIdsExpression($descendantIds));
 
                     $hasFilters = true;
                 }

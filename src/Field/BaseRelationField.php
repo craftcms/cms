@@ -8,12 +8,12 @@ use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\elements\db\ElementRelationParamParser;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
+use CraftCms\Cms\Database\ElementRelationParamFilter;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
 use CraftCms\Cms\Database\Table;
@@ -176,25 +176,28 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
 
         if (! empty($value)) {
-            /** @TODO Port to Laravel */
-            $parser = new ElementRelationParamParser([
-                'fields' => [
-                    $field->handle => $field,
-                ],
+            $filter = new ElementRelationParamFilter(fields: [
+                $field->handle => $field,
             ]);
-            $condition = $parser->parse([
+
+            $relationCriteria = [
                 'targetElement' => $value,
                 'field' => $field->handle,
-            ]);
-            if ($condition !== false) {
-                $params = [];
-                $sql = Craft::$app->getDb()->getQueryBuilder()->buildCondition($condition, $params);
+            ];
 
-                // Yii uses named parameters, Laravel uses positional
-                $sql = preg_replace('/:qp\d+/', '?', (string) $sql);
+            if ($query instanceof ElementQuery) {
+                $filter->apply($query->getSubQuery(), $relationCriteria);
 
-                $query->whereRaw($sql, $params);
+                return $query;
             }
+
+            if ($query instanceof Builder) {
+                $filter->apply($query, $relationCriteria);
+
+                return $query;
+            }
+
+            $query->where(fn (Builder $query) => $filter->apply($query, $relationCriteria));
         }
 
         return $query;

@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Element\Concerns;
 
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\db\ExcludeDescendantIdsExpression;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
@@ -20,6 +19,7 @@ use CraftCms\Cms\Element\Events\RegisterSortOptions;
 use CraftCms\Cms\Element\Events\RegisterTableAttributes;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Element\Queries\ExcludeDescendantIdsExpression;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ElementSources;
@@ -262,19 +262,14 @@ trait DisplayedInIndex
     {
         $wheres = $elementQuery->getSubQuery()->wheres;
 
-        if ($wheres instanceof ExcludeDescendantIdsExpression) {
-            $elementQuery = clone $elementQuery;
-            $elementQuery->getSubQuery()->wheres = [];
-
-            return $elementQuery;
-        }
-
         if (! is_array($wheres)) {
             return $elementQuery;
         }
 
-        foreach ($wheres as $key => $condition) {
-            if (! $condition instanceof ExcludeDescendantIdsExpression) {
+        foreach ($wheres as $key => $where) {
+            $column = $where['column'] ?? null;
+
+            if (! $column instanceof ExcludeDescendantIdsExpression) {
                 continue;
             }
 
