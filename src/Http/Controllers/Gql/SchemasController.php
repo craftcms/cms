@@ -10,9 +10,10 @@ use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Flash;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Contracts\View\View;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -27,12 +28,19 @@ readonly class SchemasController extends GqlController
         $this->ensureGqlEnabled();
     }
 
-    public function index(): View
+    public function index()
     {
         // Ensure the public schema exists so the table stays aligned with the legacy UI.
         $this->gql->getPublicSchema();
 
-        return view('graphql.schemas._index');
+        return Inertia::render('GraphQlSchemasPage', [
+            'crumbs' => fn () => [
+                ['label' => t('GraphQL'), 'url' => Url::cpUrl('graphql/schemas')],
+                ['label' => t('Schemas')],
+            ],
+            'title' => t('GraphQL Schemas'),
+            'schemas' => $this->gql->getSchemas(),
+        ]);
     }
 
     public function create(): View
@@ -110,15 +118,11 @@ readonly class SchemasController extends GqlController
         return $this->asSuccess(t('Schema saved.'));
     }
 
-    public function destroy(Request $request): JsonResponse
+    public function destroy(Request $request, int $schemaId): Response
     {
-        $request->validate([
-            'id' => ['required', 'integer'],
-        ]);
+        $this->gql->deleteSchemaById($schemaId);
 
-        $this->gql->deleteSchemaById($request->integer('id'));
-
-        return $this->asJsonSuccess();
+        return $this->asSuccess(t('Schema deleted.'));
     }
 
     private function invalidSchemaResponse(Request $request, GqlSchema $schema, string $message): Response

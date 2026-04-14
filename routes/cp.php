@@ -169,6 +169,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
             Route::get('graphql/schemas/new', [SchemasController::class, 'create']);
             Route::get('graphql/schemas/public', [SchemasController::class, 'editPublic']);
             Route::get('graphql/schemas/{schemaId}', [SchemasController::class, 'edit'])->whereNumber('schemaId');
+            Route::delete('graphql/schemas/{schemaId}', [SchemasController::class, 'destroy'])->whereNumber('schemaId');
         });
 
         // Plugins

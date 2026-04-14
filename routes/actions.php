@@ -285,7 +285,6 @@ Route::prefix(implode('/', [
         });
 
         Route::middleware([RequireAdminChanges::class])->group(function () {
-            Route::post('graphql/delete-schema', [GqlSchemasController::class, 'destroy']);
 
             Route::middleware('password.confirm')->group(function () {
                 Route::post('graphql/save-schema', [GqlSchemasController::class, 'save']);
