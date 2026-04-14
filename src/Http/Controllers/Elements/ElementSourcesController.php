@@ -1,67 +1,39 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\controllers;
+declare(strict_types=1);
 
-use Craft;
+namespace CraftCms\Cms\Http\Controllers\Elements;
+
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\User\Data\UserGroup;
-use Illuminate\Support\Collection;
-use yii\web\Response;
+use CraftCms\Cms\User\UserGroups;
+use Illuminate\Http\JsonResponse;
+
 use function CraftCms\Cms\t;
 
-/**
- * The ElementIndexSettingsController class is a controller that handles various element index settings-related actions.
- * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-class ElementIndexSettingsController extends BaseElementsController
+readonly class ElementSourcesController extends BaseElementsController
 {
-    /**
-     * @inheritdoc
-     */
-    public function beforeAction($action): bool
-    {
-        if (!parent::beforeAction($action)) {
-            return false;
-        }
+    use RespondsWithFlash;
 
-        $this->requireAcceptsJson();
-        $this->requireAdmin();
-
-        return true;
-    }
-
-    /**
-     * Returns all the info needed by the Customize Sources modal.
-     *
-     * @return Response
-     */
-    public function actionGetCustomizeSourcesModalData(): Response
+    public function show(ElementSources $elementSources, Fields $fields, UserGroups $userGroups): JsonResponse
     {
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $this->elementType();
 
         // Global sort options
-        $baseSortOptions = Collection::make($elementType::sortOptions())
-            ->map(fn($option, $key) => [
+        $baseSortOptions = collect($elementType::sortOptions())
+            ->map(fn ($option, $key) => [
                 'label' => $option['label'] ?? $option,
                 'attr' => $option['attribute'] ?? $option['orderBy'] ?? $key,
                 'defaultDir' => $option['defaultDir'] ?? 'asc',
@@ -70,17 +42,16 @@ class ElementIndexSettingsController extends BaseElementsController
             ->all();
 
         // Get the source info
-        $sourcesService = app(ElementSources::class);
-        $sources = $sourcesService->getSources($elementType, ElementSources::CONTEXT_INDEX, true)->all();
+        $sources = $elementSources->getSources($elementType, ElementSources::CONTEXT_INDEX, true)->all();
         $multiPage = $elementType::multiPageSources();
 
         foreach ($sources as &$source) {
             if ($multiPage) {
                 // ensure we're using the EN translation here
-                $language = Craft::$app->language;
-                Craft::$app->language = Craft::$app->sourceLanguage;
+                $language = app()->getLocale();
+                app()->setLocale('en');
                 $source['page'] ??= $elementType::pluralDisplayName();
-                Craft::$app->language = $language;
+                app()->setLocale($language);
             }
 
             if ($source['type'] === ElementSources::TYPE_HEADING) {
@@ -99,8 +70,8 @@ class ElementIndexSettingsController extends BaseElementsController
                         : null,
                 ]),
                 $baseSortOptions,
-                $sourcesService->getSourceSortOptions($elementType, $source['key'])
-                    ->map(fn($option) => [
+                $elementSources->getSourceSortOptions($elementType, $source['key'])
+                    ->map(fn ($option) => [
                         'label' => $option['label'],
                         'attr' => $option['attribute'] ?? $option['orderBy'],
                         'defaultDir' => $option['defaultDir'] ?? 'asc',
@@ -114,16 +85,16 @@ class ElementIndexSettingsController extends BaseElementsController
 
             if (isset($source['defaultSort'])) {
                 if (is_string($source['defaultSort'])) {
-                    $defaultSortOption = Collection::make($source['sortOptions'])->firstWhere('attr', $source['defaultSort']);
+                    $defaultSortOption = collect($source['sortOptions'])->firstWhere('attr', $source['defaultSort']);
                 } elseif (is_array($source['defaultSort']) && isset($source['defaultSort'][0])) {
-                    $defaultSortOption = Collection::make($source['sortOptions'])->firstWhere('attr', $source['defaultSort'][0]);
+                    $defaultSortOption = collect($source['sortOptions'])->firstWhere('attr', $source['defaultSort'][0]);
                     if ($defaultSortOption && isset($source['defaultSort'][1])) {
                         $defaultSortDir = $source['defaultSort'][1];
                     }
                 }
             }
 
-            if (!$defaultSortOption) {
+            if (! $defaultSortOption) {
                 $defaultSortOption = reset($source['sortOptions']);
             }
 
@@ -134,14 +105,14 @@ class ElementIndexSettingsController extends BaseElementsController
 
             // Available custom field attributes
             $source['availableTableAttributes'] = [];
-            foreach ($sourcesService->getSourceTableAttributes($elementType, $source['key']) as $key => $labelInfo) {
+            foreach ($elementSources->getSourceTableAttributes($elementType, $source['key']) as $key => $labelInfo) {
                 $source['availableTableAttributes'][] = [$key, $labelInfo['label']];
             }
 
             // Selected table attributes
-            $tableAttributes = $sourcesService->getTableAttributes($elementType, $source['key'])->all();
+            $tableAttributes = $elementSources->getTableAttributes($elementType, $source['key'])->all();
             array_shift($tableAttributes);
-            $source['tableAttributes'] = array_map(fn($a) => [$a[0], $a[1]['label']], $tableAttributes);
+            $source['tableAttributes'] = array_map(fn ($a) => [$a[0], $a[1]['label']], $tableAttributes);
 
             if ($source['type'] === ElementSources::TYPE_CUSTOM) {
                 if (isset($source['condition'])) {
@@ -161,7 +132,7 @@ class ElementIndexSettingsController extends BaseElementsController
 
                 if (isset($source['sites'])) {
                     $source['sites'] = array_values(array_filter(array_map(
-                        fn(int $siteId) => Sites::getSiteById($siteId)?->uid,
+                        fn (int $siteId) => Sites::getSiteById($siteId)?->uid,
                         $source['sites'] ?: [],
                     )));
                 }
@@ -176,13 +147,13 @@ class ElementIndexSettingsController extends BaseElementsController
         }
         unset($source);
 
-        $viewModes = array_map(fn(array $viewMode) => array_merge($viewMode, [
+        $viewModes = array_map(fn (array $viewMode) => array_merge($viewMode, [
             'iconSvg' => Icons::svg($viewMode['icon'] ?? 'table'),
         ]), $elementType::indexViewModes());
 
         // Get the default sort options for custom sources
-        $defaultSortOptions = $sourcesService->getSourceSortOptions($elementType, 'custom:x')
-            ->map(fn(array $option) => [
+        $defaultSortOptions = $elementSources->getSourceSortOptions($elementType, 'custom:x')
+            ->map(fn (array $option) => [
                 'label' => $option['label'],
                 'attr' => $option['attribute'] ?? $option['orderBy'],
                 'defaultDir' => $option['defaultDir'] ?? 'asc',
@@ -193,14 +164,14 @@ class ElementIndexSettingsController extends BaseElementsController
         // Get the available table attributes
         $availableTableAttributes = [];
 
-        foreach ($sourcesService->getAvailableTableAttributes($elementType) as $key => $labelInfo) {
+        foreach ($elementSources->getAvailableTableAttributes($elementType) as $key => $labelInfo) {
             $availableTableAttributes[] = [$key, $labelInfo['label']];
         }
 
         // Get previewable custom fields that should be available for all custom sources
         $customFieldAttributes = [];
 
-        foreach (app(Fields::class)->getLayoutsByType($elementType) as $fieldLayout) {
+        foreach ($fields->getLayoutsByType($elementType) as $fieldLayout) {
             foreach ($fieldLayout->getCustomFields() as $field) {
                 if ($field instanceof PreviewableFieldInterface) {
                     $customFieldAttributes[] = ["field:$field->uid", t($field->name, category: 'site')];
@@ -220,19 +191,17 @@ class ElementIndexSettingsController extends BaseElementsController
         $conditionBuilderHtml = $condition->getBuilderHtml();
         $conditionBuilderJs = HtmlStack::clearJsBuffer();
 
-        $userGroups = UserGroups::getAllGroups()
-            ->map(fn(UserGroup $group) => [
+        $userGroups = $userGroups->getAllGroups()
+            ->map(fn (UserGroup $group) => [
                 'label' => t($group->name, category: 'site'),
                 'value' => $group->uid,
             ])
             ->all();
 
-        $pageSettings = $sourcesService->getPageSettings($elementType);
-
-        return $this->asJson([
+        return new JsonResponse([
             'multiPage' => $multiPage,
             'sources' => $sources,
-            'pageSettings' => $pageSettings,
+            'pageSettings' => $elementSources->getPageSettings($elementType),
             'viewModes' => $viewModes,
             'baseSortOptions' => $baseSortOptions,
             'defaultSortOptions' => $defaultSortOptions,
@@ -247,39 +216,33 @@ class ElementIndexSettingsController extends BaseElementsController
         ]);
     }
 
-    /**
-     * Saves the Customize Sources modal settings.
-     *
-     * @return Response
-     */
-    public function actionSaveCustomizeSourcesModalSettings(): Response
+    public function store(ElementSources $elementSources, ProjectConfig $projectConfig)
     {
         $elementType = $this->elementType();
         $multiPage = $elementType::multiPageSources();
 
         // Get the old source configs
-        $projectConfig = app(ProjectConfig::class);
-        $oldSourceConfigs = $projectConfig->get(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType") ?? [];
-        $oldSourceConfigs = Collection::make($oldSourceConfigs)
+        $oldSourceConfigs = $projectConfig->get(ProjectConfig::PATH_ELEMENT_SOURCES.".$elementType") ?? [];
+        $oldSourceConfigs = collect($oldSourceConfigs)
             ->keyBy('key')
             ->all();
 
-        $sourceOrder = $this->request->getBodyParam('sourceOrder', []);
-        $sourceSettings = $this->request->getBodyParam('sources', []);
+        $sourceOrder = $this->request->array('sourceOrder');
+        $sourceSettings = $this->request->array('sources');
         $newSourceConfigs = [];
         $disabledSourceKeys = [];
 
         if ($multiPage) {
-            $sourcePages = $this->request->getBodyParam('sourcePages', []);
-            $pageSettings = $this->request->getBodyParam('pageSettings', []);
+            $sourcePages = $this->request->array('sourcePages');
+            $pageSettings = $this->request->array('pageSettings');
             $sourcePageIndexes = [];
         }
 
         // Normalize to the way it's stored in the DB
         foreach ($sourceOrder as $key) {
             $type = match (true) {
-                str_starts_with($key, 'custom:') => ElementSources::TYPE_CUSTOM,
-                str_starts_with($key, 'heading:') => ElementSources::TYPE_HEADING,
+                str_starts_with((string) $key, 'custom:') => ElementSources::TYPE_CUSTOM,
+                str_starts_with((string) $key, 'heading:') => ElementSources::TYPE_HEADING,
                 default => ElementSources::TYPE_NATIVE,
             };
 
@@ -325,14 +288,14 @@ class ElementIndexSettingsController extends BaseElementsController
                 } elseif ($type === ElementSources::TYPE_HEADING) {
                     $sourceConfig['heading'] = $postedSettings['heading'];
                 } elseif (isset($postedSettings['enabled'])) {
-                    $sourceConfig['disabled'] = !$postedSettings['enabled'];
+                    $sourceConfig['disabled'] = ! $postedSettings['enabled'];
                     if ($sourceConfig['disabled']) {
                         $disabledSourceKeys[] = $key;
                     }
                 }
             } elseif (isset($oldSourceConfigs[$key])) {
                 $sourceConfig += $oldSourceConfigs[$key];
-                if (!empty($sourceConfig['disabled'])) {
+                if (! empty($sourceConfig['disabled'])) {
                     $disabledSourceKeys[] = $key;
                 }
             } elseif ($isCustom) {
@@ -352,18 +315,16 @@ class ElementIndexSettingsController extends BaseElementsController
             array_multisort($sourcePageIndexes, SORT_NUMERIC, range(1, count($newSourceConfigs)), SORT_NUMERIC, $newSourceConfigs);
         }
 
-        $sourcesService = app(ElementSources::class);
-        $sourcesService->saveSources($elementType, $newSourceConfigs);
+        $elementSources->saveSources($elementType, $newSourceConfigs);
+
         if ($multiPage) {
-            $sourcesService->savePageSettings($elementType, array_map(
-                fn(array $settings) => array_filter($settings, fn($setting) => $setting !== null && $setting !== ''),
+            $elementSources->savePageSettings($elementType, array_map(
+                fn (array $settings) => array_filter($settings, fn ($setting) => $setting !== null && $setting !== ''),
                 $pageSettings,
             ));
         }
 
-        Craft::$app->getSession()->setSuccess(t('Source settings saved'));
-
-        return $this->asSuccess(data: [
+        return $this->asSuccess(t('Source settings saved'), data: [
             'disabledSourceKeys' => $disabledSourceKeys,
         ]);
     }
