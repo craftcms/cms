@@ -17,7 +17,6 @@ use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Url;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
@@ -62,8 +61,6 @@ class VolumesController
             'title' => t('Asset Settings'),
             'volumes' => $volumes->getAllVolumes(...),
         ]);
-        // return view('settings/assets/volumes/_index', [
-        // ]);
     }
 
     public function create(Volumes $volumes): CpScreenResponse
