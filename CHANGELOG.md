@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.9.20 - 2026-04-14
 
 - Fixed an issue that prevented Craft from being installed. ([#18700](https://github.com/craftcms/cms/issues/18700))
 - Fixed a bug where nested element cards weren’t showing validation errors. ([#18690](https://github.com/craftcms/cms/pull/18690))
