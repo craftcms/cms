@@ -1,5 +1,5 @@
 import {t} from '@src/utilities/translate';
-import {html, LitElement} from 'lit';
+import {css, html, LitElement} from 'lit';
 import {property, query, queryAssignedElements, state} from 'lit/decorators.js';
 
 import '../button/button';
@@ -9,6 +9,12 @@ import type CraftTooltip from '../tooltip/tooltip';
 import '../visually-hidden/visually-hidden';
 
 export default class CraftInfoIcon extends LitElement {
+  static override styles = css`
+    :host {
+      display: inline-flex;
+    }
+  `;
+
   static #openInstance: CraftInfoIcon | null = null;
 
   @property() label = t('More Info');
