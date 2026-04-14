@@ -126,7 +126,7 @@ class CpAsset extends AssetBundle
         // Define the Craft object
         $craftJson = Json::encode($this->_craftData());
         $js = <<<JS
-window.Craft = $craftJson;
+window.Craft = Object.assign(window.Craft || {}, $craftJson);
 JS;
         HtmlStack::js($js, Position::Head);
     }
