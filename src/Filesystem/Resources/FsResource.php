@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Filesystem\Resources;
 
+use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin Filesystem
+ */
 class FsResource extends JsonResource
 {
     #[\Override]
@@ -18,7 +22,7 @@ class FsResource extends JsonResource
 
         return Arr::merge(parent::toArray($request), [
             'missing' => $missing,
-            'type' => $missing ? $this->expectedType : $this::displayName(),
+            'type' => $missing ? $this->resource->expectedType : $this::displayName(),
         ]);
     }
 }
