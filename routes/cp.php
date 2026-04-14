@@ -237,6 +237,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
                 RequireAdminChanges::class,
             ])->group(function () {
                 Route::get('settings/users/groups/new', [UserGroupsController::class, 'create']);
+                Route::delete('settings/users/groups/{groupId}', [UserGroupsController::class, 'destroy'])->whereNumber('groupId');
             });
             Route::get('settings/users/groups/{userGroup}', [UserGroupsController::class, 'edit']);
         });

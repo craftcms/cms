@@ -461,7 +461,6 @@ Route::prefix(implode('/', [
             RequireEdition::class.':'.Edition::Team->value,
         ])->group(function () {
             Route::post('user-settings/save-group', [UserGroupsController::class, 'store']);
-            Route::post('user-settings/delete-group', [UserGroupsController::class, 'destroy']);
         });
 
         // User settings

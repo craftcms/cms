@@ -18,8 +18,10 @@ use CraftCms\Cms\User\UserGroups;
 use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 
 readonly class UserGroupsController
@@ -37,13 +39,25 @@ readonly class UserGroupsController
         $this->readOnly = ! $this->generalConfig->allowAdminChanges;
     }
 
-    public function index(): Response|View
+    public function index()
     {
         if (Edition::get() === Edition::Team) {
             return redirect()->action([self::class, 'edit'], $this->userGroups->getTeamGroup()->id);
         }
 
-        return view('settings/users/groups/_index');
+        return Inertia::render('SettingsUserGroupsIndexPage', [
+            'crumbs' => [
+                ['label' => t('Settings'), 'url' => 'settings'],
+                ['label' => t('User Groups')],
+            ],
+            'subnav' => [
+                ['label' => t('User Groups'), 'url' => cp_url('settings/users'), 'active' => true, 'inertia' => true],
+                ['label' => t('User Profile Fields'), 'url' => cp_url('settings/users/fields')],
+                ['label' => t('Settings'), 'url' => cp_url('settings/users/settings')],
+            ],
+            'title' => t('User Settings'),
+            'groups' => $this->userGroups->getAllGroups(),
+        ]);
     }
 
     public function create(): CpScreenResponse
@@ -184,14 +198,10 @@ readonly class UserGroupsController
         return $this->asModelSuccess($group, $message, 'group');
     }
 
-    public function destroy(Request $request): Response
+    public function destroy(Request $request, int $groupId): Response
     {
-        $groupId = $request->validate([
-            'id' => ['required', 'integer'],
-        ])['id'];
-
         $this->userGroups->deleteGroupById($groupId);
 
-        return $this->asSuccess();
+        return $this->asSuccess(t('Group deleted.'));
     }
 }
