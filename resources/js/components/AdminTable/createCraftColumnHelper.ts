@@ -1,5 +1,5 @@
 import {t} from '@craftcms/cp';
-import {h} from 'vue';
+import {h, type InputHTMLAttributes} from 'vue';
 import {
   type AccessorColumnDef,
   type CellContext,

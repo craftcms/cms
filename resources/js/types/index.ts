@@ -1,4 +1,4 @@
-import type {ActionItem} from '@/components/ActionMenu.vue';
+import type {VariantKey} from '@craftcms/cp';
 
 export interface CheckboxOption {
   label: string;
@@ -43,6 +43,14 @@ export interface ChipIndicator {
   label?: string;
   iconColor?: string;
   icon?: string;
+}
+
+export interface ActionItem {
+  id?: string;
+  label: string;
+  variant?: VariantKey;
+  icon?: string;
+  onClick?: () => void;
 }
 
 export interface EntryType {
