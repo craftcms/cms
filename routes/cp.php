@@ -139,7 +139,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         Route::get('settings/fields', [FieldsController::class, 'index']);
         Route::middleware(RequireAdminChanges::class)->get('settings/fields/new', [FieldsController::class, 'create']);
         Route::get('settings/fields/edit/{fieldId}', [FieldsController::class, 'edit']);
-        Route::middleware(RequireAdminChanges::class)->delete('settings/fields/{fieldId}', [FieldsController::class, 'destroy']);
+        Route::middleware(RequireAdminChanges::class)->delete('settings/fields/{fieldId}', [FieldsController::class, 'destroy'])->whereNumber('fieldId');
 
         // General
         Route::get('settings/general', [GeneralSettingsController::class, 'index'])
