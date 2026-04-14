@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Dashboard\Widgets;
 
-use craft\web\Application;
 use CraftCms\Cms\Database\Backups;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -17,7 +16,6 @@ use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use Exception;
 use GuzzleHttp\RequestOptions;
-use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
@@ -40,10 +38,8 @@ readonly class CraftSupportController
         private Backups $backups,
     ) {}
 
-    public function __invoke(Request $request, #[Give('Craft')] Application $craft): string
+    public function __invoke(Request $request): string
     {
-        $craft->getView();
-
         $request->validate([
             'widgetId' => ['required', 'integer'],
             'namespace' => ['nullable', 'string'],

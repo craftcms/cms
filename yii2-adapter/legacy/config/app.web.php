@@ -39,7 +39,6 @@ return [
         },
         'errorHandler' => [
             'class' => ErrorHandler::class,
-            'errorAction' => 'templates/render-error',
         ],
     ],
     'controllerNamespace' => 'craft\\controllers',

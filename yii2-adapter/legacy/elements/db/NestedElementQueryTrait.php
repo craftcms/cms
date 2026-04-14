@@ -22,6 +22,7 @@ use CraftCms\Cms\Support\Arr;
  * @mixin ElementQuery
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.5.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements} instead.
  */
 trait NestedElementQueryTrait
 {

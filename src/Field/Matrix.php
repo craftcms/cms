@@ -8,8 +8,6 @@ use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\validators\StringValidator;
-use craft\validators\UriFormatValidator;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
@@ -58,6 +56,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Validation\Rules\UriFormatRule;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
@@ -67,7 +66,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -336,6 +334,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         return array_merge(parent::getRules(), [
             'entryTypes' => ['array', 'min:1'],
             'siteSettings' => ['array'],
+            'siteSettings.*.uriFormat' => ['nullable', new UriFormatRule],
+            'siteSettings.*.template' => ['nullable', 'string', 'max:500'],
             'minEntries' => ['nullable', 'integer', 'min:0'],
             'maxEntries' => ['nullable', 'integer', 'min:0'],
             'viewMode' => Rule::in([
@@ -345,34 +345,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 self::VIEW_MODE_BLOCKS,
             ]),
         ]);
-    }
-
-    public function afterValidate(?Validator $validator = null): void
-    {
-        foreach ($this->siteSettings as $uid => &$siteSettings) {
-            unset($siteSettings['errors']);
-
-            if (isset($siteSettings['uriFormat'])) {
-                // Remove any leading or trailing slashes/spaces
-                $siteSettings['uriFormat'] = trim($siteSettings['uriFormat'], '/ ');
-
-                if (! (new UriFormatValidator)->validate($siteSettings['uriFormat'], $error)) {
-                    $error = str_replace(t('the input value'), t('Entry URI Format'), $error);
-                    $siteSettings['errors']['uriFormat'][] = $error;
-
-                    $validator?->errors()->add("siteSettings[$uid].uriFormat", $error);
-                }
-            }
-
-            if (isset($siteSettings['template'])) {
-                if (! new StringValidator(['max' => 500])->validate($siteSettings['template'], $error)) {
-                    $error = str_replace(t('the input value'), t('Template'), $error);
-                    $siteSettings['errors']['template'][] = $error;
-
-                    $validator->errors()->add("siteSettings[$uid].template", $error);
-                }
-            }
-        }
     }
 
     private function entryManager(): NestedElementManager

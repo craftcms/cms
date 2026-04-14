@@ -115,8 +115,9 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     /**
      * Assets
      */
+    // Route::get('assets/edit/{id}-{filename}', EditElementController::class); - TODO
     Route::get('assets/{defaultSource?}', AssetsIndexController::class)
-        ->where('defaultSource', '.*');
+        ->where('defaultSource', '(?!edit(?:/|$)).*');
 
     /**
      * Routes that require admin, but do not require admin changes
@@ -243,6 +244,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         ])->group(function () {
             Route::get('/', [FilesystemsController::class, 'index']);
             Route::get('new', [FilesystemsController::class, 'create']);
+            Route::get('{handle}', [FilesystemsController::class, 'edit']);
             Route::get('{handle}/edit', [FilesystemsController::class, 'edit']);
         });
 

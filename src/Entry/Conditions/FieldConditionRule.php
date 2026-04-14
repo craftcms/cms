@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Conditions;
 
 use craft\base\ElementInterface;
-use craft\elements\conditions\HintableConditionRuleTrait;
-use craft\elements\db\EntryQuery;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\HintableConditionRuleTrait;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use Illuminate\Support\Collection;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -28,7 +29,7 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
 {
     use HintableConditionRuleTrait;
 
-    #[\Override]
+    #[Override]
     protected bool $includeEmptyOperators = true;
 
     public function getLabel(): string

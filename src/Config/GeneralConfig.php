@@ -1150,24 +1150,6 @@ class GeneralConfig extends BaseConfig
     public bool $enableTwigSandbox = false;
 
     /**
-     * @var string The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s template.
-     *
-     * If set to `'_'` your site’s 404 template would live at `templates/_404.twig`, for example.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->errorTemplatePrefix('_')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ERROR_TEMPLATE_PREFIX=_
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public string $errorTemplatePrefix = '';
-
-    /**
      * @var string[]|null List of file extensions that will be merged into the <config5:allowedFileExtensions> config setting.
      *
      * ::: code
@@ -4354,26 +4336,6 @@ class GeneralConfig extends BaseConfig
     public function enableTemplateCaching(bool $value = true): self
     {
         $this->enableTemplateCaching = $value;
-
-        return $this;
-    }
-
-    /**
-     * The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s template.
-     *
-     * If set to `'_'` your site’s 404 template would live at `templates/_404.twig`, for example.
-     *
-     * ```php
-     * ->errorTemplatePrefix('_')
-     * ```
-     *
-     * @group System
-     *
-     * @see $errorTemplatePrefix
-     */
-    public function errorTemplatePrefix(string $value): self
-    {
-        $this->errorTemplatePrefix = $value;
 
         return $this;
     }

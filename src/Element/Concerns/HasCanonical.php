@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Element\Concerns;
 
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\elements\db\NestedElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use DateTime;
 use yii\base\NotSupportedException;
 
@@ -108,8 +108,7 @@ trait HasCanonical
                 ->ignorePlaceholders();
 
             if ($this instanceof NestedElementInterface && $query instanceof NestedElementQueryInterface) {
-                $query
-                    ->fieldId($this->getField()?->id);
+                $query->fieldId($this->getField()?->id);
             }
 
             $this->$prop = $query->one();

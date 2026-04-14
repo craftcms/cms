@@ -10,15 +10,12 @@ namespace craft\elements\db;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\Table;
+use CraftCms\Cms\Database\ElementRelationParamFilter;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
-use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\Sites;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use yii\base\BaseObject;
@@ -28,6 +25,7 @@ use yii\base\BaseObject;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\ElementRelationParamFilter} instead.
  */
 class ElementRelationParamParser extends BaseObject
 {
@@ -70,61 +68,7 @@ class ElementRelationParamParser extends BaseObject
      */
     public static function normalizeRelatedToParam(mixed $relatedToParam, array|int|string|null $siteId = null): array
     {
-        // Ensure it's an array
-        if (!is_array($relatedToParam)) {
-            if (is_string($relatedToParam)) {
-                $relatedToParam = str($relatedToParam)->explode(',')->all();
-            } elseif ($relatedToParam instanceof Collection) {
-                $relatedToParam = $relatedToParam->all();
-            } else {
-                $relatedToParam = [$relatedToParam];
-            }
-        }
-
-        if (
-            isset($relatedToParam[0]) &&
-            is_string($relatedToParam[0]) &&
-            in_array($relatedToParam[0], ['and', 'or'])
-        ) {
-            $glue = array_shift($relatedToParam);
-            if ($glue === 'and' && count($relatedToParam) < 2) {
-                $glue = 'or';
-            }
-        } else {
-            $glue = 'or';
-        }
-
-        if (isset($relatedToParam['element']) || isset($relatedToParam['sourceElement']) || isset($relatedToParam['targetElement'])) {
-            $relatedToParam = [$relatedToParam];
-        }
-
-        $relatedToParam = Collection::make($relatedToParam)->map(
-            fn($relatedToParam) => static::normalizeRelatedToCriteria($relatedToParam, $siteId)
-        )->all();
-
-        if ($glue === 'or') {
-            // Group all of the OR elements, so we avoid adding massive JOINs to the query
-            $orElements = [];
-
-            foreach ($relatedToParam as $i => $relCriteria) {
-                if (
-                    isset($relCriteria['element']) &&
-                    $relCriteria['element'][0] === 'or'
-                    && $relCriteria['field'] === null &&
-                    $relCriteria['sourceSite'] === $siteId
-                ) {
-                    array_push($orElements, ...array_slice($relCriteria['element'], 1));
-                    unset($relatedToParam[$i]);
-                }
-            }
-
-            if (!empty($orElements)) {
-                $relatedToParam[] = static::normalizeRelatedToCriteria($orElements, $siteId);
-            }
-        }
-
-        array_unshift($relatedToParam, $glue);
-        return $relatedToParam;
+        return ElementRelationParamFilter::normalizeRelatedToParam($relatedToParam, $siteId);
     }
 
     /**
@@ -138,74 +82,7 @@ class ElementRelationParamParser extends BaseObject
      */
     public static function normalizeRelatedToCriteria(mixed $relCriteria, array|int|string|null $siteId = null): array
     {
-        if (
-            !is_array($relCriteria) ||
-            (!isset($relCriteria['element']) && !isset($relCriteria['sourceElement']) && !isset($relCriteria['targetElement']))
-        ) {
-            $relCriteria = ['element' => $relCriteria];
-        }
-
-        // Merge in default criteria params
-        $relCriteria += [
-            'field' => null,
-            'sourceSite' => $siteId,
-        ];
-
-        // Normalize the sourceSite param (should be an ID)
-        if ($relCriteria['sourceSite']) {
-            if (
-                !is_numeric($relCriteria['sourceSite']) &&
-                (!is_array($relCriteria['sourceSite']) || !Arr::isNumeric($relCriteria['sourceSite']))
-            ) {
-                if ($relCriteria['sourceSite'] instanceof Site) {
-                    $relCriteria['sourceSite'] = $relCriteria['sourceSite']->id;
-                } else {
-                    $site = Sites::getSiteByHandle($relCriteria['sourceSite']);
-                    if (!$site) {
-                        // Invalid handle
-                        throw new InvalidArgumentException("Invalid site: {$relCriteria['sourceSite']}");
-                    }
-                    $relCriteria['sourceSite'] = $site->id;
-                }
-            }
-        }
-
-        // Normalize the elements
-        foreach (['element', 'sourceElement', 'targetElement'] as $elementParam) {
-            if (isset($relCriteria[$elementParam])) {
-                $elements = &$relCriteria[$elementParam];
-
-                if (!is_array($elements)) {
-                    if (is_string($elements)) {
-                        $elements = str($elements)->explode(',');
-                    }
-
-                    if ($elements instanceof Collection) {
-                        $elements = $elements->all();
-                    } else {
-                        $elements = [$elements];
-                    }
-                }
-
-                if (
-                    isset($elements[0]) &&
-                    is_string($elements[0]) &&
-                    in_array($elements[0], ['and', 'or'])
-                ) {
-                    $glue = array_shift($elements);
-                    if ($glue === 'and' && count($elements) < 2) {
-                        $glue = 'or';
-                    }
-                } else {
-                    $glue = 'or';
-                }
-
-                array_unshift($elements, $glue);
-                break;
-            }
-        }
-
-        return $relCriteria;
+        return ElementRelationParamFilter::normalizeRelatedToCriteria($relCriteria, $siteId);
     }
 
     /**

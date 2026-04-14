@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use craft\base\ElementInterface;
-use craft\helpers\Localization;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\NumberFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -204,7 +203,7 @@ class Number extends Field implements CrossSiteCopyableFieldInterface, InlineEdi
     {
         // Was this submitted with a locale ID?
         if (isset($value['locale'], $value['value'])) {
-            $value = Localization::normalizeNumber($value['value'], $value['locale']);
+            $value = I18N::normalizeNumber($value['value'], $value['locale']);
         }
 
         if (is_int($value) || is_float($value) || (is_string($value) && $value !== '')) {

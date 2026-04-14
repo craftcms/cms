@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
-use craft\errors\UploadFailedException;
-use craft\web\UploadedFile;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
+use CraftCms\Cms\Asset\Exceptions\UploadFailedException;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
@@ -24,6 +23,7 @@ use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Formatter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -43,7 +43,9 @@ readonly class UploadController
 
     public function upload(Request $request): Response
     {
-        $uploadedFile = UploadedFile::getInstanceByName('assets-upload');
+        $uploadedFile = $request->file('assets-upload');
+
+        abort_if(is_array($uploadedFile), 400, 'Exactly one file must be uploaded');
 
         abort_if(! $uploadedFile, 400, 'No file was uploaded');
 
@@ -85,7 +87,7 @@ readonly class UploadController
         // Check the permissions to upload in the resolved folder.
         $this->requireVolumePermissionByFolder('saveAssets', $folder);
 
-        $filename = AssetsHelper::prepareAssetName($uploadedFile->name);
+        $filename = AssetsHelper::prepareAssetName($uploadedFile->getClientOriginalName());
 
         if ($selectionCondition) {
             $tempFolder = $this->assets->getUserTemporaryUploadFolder();
@@ -102,7 +104,7 @@ readonly class UploadController
         $asset = new Asset;
         $asset->tempFilePath = $tempPath;
         $asset->setFilename($filename);
-        $asset->setMimeType(File::getMimeType($tempPath, checkExtension: false) ?? $uploadedFile->type);
+        $asset->setMimeType(File::getMimeType($tempPath, checkExtension: false) ?? $uploadedFile->getClientMimeType());
         $asset->newFolderId = $folder->id;
         $asset->setVolumeId($folder->volumeId);
         $asset->uploaderId = $request->user()->id;
@@ -126,7 +128,7 @@ readonly class UploadController
                 $this->elements->deleteElement($asset, true);
 
                 return $this->asFailure(t('{filename} isn’t selectable for this field.', [
-                    'filename' => $uploadedFile->name,
+                    'filename' => $uploadedFile->getClientOriginalName(),
                 ]));
             }
 
@@ -184,7 +186,11 @@ readonly class UploadController
             abort(400, 'Invalid filename: $targetFilename');
         }
 
-        $uploadedFile = UploadedFile::getInstanceByName('replaceFile');
+        $uploadedFile = $request->file('replaceFile');
+
+        if (is_array($uploadedFile)) {
+            abort(400, 'Exactly one file must be uploaded.');
+        }
 
         // Must have at least one existing asset (source or target).
         // Must have either target asset or target filename.
@@ -213,8 +219,8 @@ readonly class UploadController
         // Handle the Element Action
         if ($assetToReplace !== null && $uploadedFile) {
             $tempPath = $this->getUploadedFileTempPath($uploadedFile);
-            $filename = AssetsHelper::prepareAssetName($uploadedFile->name);
-            $this->assets->replaceAssetFile($assetToReplace, $tempPath, $filename, $uploadedFile->type);
+            $filename = AssetsHelper::prepareAssetName($uploadedFile->getClientOriginalName());
+            $this->assets->replaceAssetFile($assetToReplace, $tempPath, $filename, $uploadedFile->getClientMimeType());
         } elseif ($sourceAsset !== null) {
             // Or replace using an existing Asset
             if ($assetToReplace === null) {
@@ -263,13 +269,13 @@ readonly class UploadController
      */
     private function getUploadedFileTempPath(UploadedFile $uploadedFile): string
     {
-        if ($uploadedFile->getHasError()) {
-            throw new UploadFailedException($uploadedFile->error);
+        if ($uploadedFile->getError() !== UPLOAD_ERR_OK) {
+            throw new UploadFailedException($uploadedFile->getError());
         }
 
         // Make sure the file extension is allowed
         $allowedExtensions = Cms::config()->allowedFileExtensions;
-        $extension = strtolower(pathinfo($uploadedFile->name, PATHINFO_EXTENSION));
+        $extension = strtolower(pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_EXTENSION));
 
         if (! in_array($extension, $allowedExtensions, true)) {
             throw new AssetDisallowedExtensionException(t('"{extension}" is not an allowed file extension.', [
@@ -278,10 +284,29 @@ readonly class UploadController
         }
 
         // Move the uploaded file to the temp folder
-        $tempPath = $uploadedFile->saveAsTempFile();
+        $tempPath = $this->saveAsTempFile($uploadedFile);
 
         if ($tempPath === false) {
             throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
+        }
+
+        return $tempPath;
+    }
+
+    private function saveAsTempFile(UploadedFile $uploadedFile): string|false
+    {
+        $tempPath = tempnam(sys_get_temp_dir(), 'craft-upload-');
+
+        if ($tempPath === false) {
+            return false;
+        }
+
+        try {
+            $uploadedFile->move(dirname($tempPath), basename($tempPath));
+        } catch (Throwable) {
+            File::delete($tempPath);
+
+            return false;
         }
 
         return $tempPath;

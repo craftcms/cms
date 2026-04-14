@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Conditions;
 
 use craft\base\ElementInterface;
-use craft\elements\conditions\HintableConditionRuleTrait;
-use craft\elements\db\EntryQuery;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\HintableConditionRuleTrait;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Support\Facades\Sections;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -27,7 +28,7 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
 {
     use HintableConditionRuleTrait;
 
-    #[\Override]
+    #[Override]
     protected bool $reloadOnOperatorChange = true;
 
     public function getLabel(): string
@@ -40,7 +41,7 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
         return ['section', 'sectionId'];
     }
 
-    #[\Override]
+    #[Override]
     protected function operators(): array
     {
         return [

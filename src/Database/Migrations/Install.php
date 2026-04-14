@@ -6,8 +6,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Migrations;
 
-use Craft;
-use craft\web\Response;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Migration;
@@ -1178,20 +1176,10 @@ class Install extends Migration
         $pluginsService = app(Plugins::class);
         $pluginConfigs = app(ProjectConfig::class)->get(ProjectConfig::PATH_PLUGINS, true) ?? [];
 
-        // Prevent the plugin from sending any headers, etc.
-        $realResponse = Craft::$app->getResponse();
-        $tempResponse = new Response(['isSent' => true]);
-        Craft::$app->set('response', $tempResponse);
-
-        try {
-            foreach ($pluginConfigs as $handle => $pluginConfig) {
-                $this->components->task("Installing $handle", function () use ($handle, $pluginsService) {
-                    $pluginsService->installPlugin($handle);
-                });
-            }
-        } finally {
-            // Put the real response back
-            Craft::$app->set('response', $realResponse);
+        foreach ($pluginConfigs as $handle => $pluginConfig) {
+            $this->components->task("Installing $handle", function () use ($handle, $pluginsService) {
+                $pluginsService->installPlugin($handle);
+            });
         }
     }
 

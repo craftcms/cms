@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout;
 
 use craft\base\ElementInterface;
-use craft\elements\conditions\users\UserCondition;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\FormFields;
@@ -13,8 +12,10 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\FieldLayout\Events\DefineShowInForm;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -179,7 +180,7 @@ abstract class FieldLayoutComponent extends Component
         return $condition;
     }
 
-    #[\Override]
+    #[Override]
     public function fields(): array
     {
         $fields = parent::fields();

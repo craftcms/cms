@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use craft\base\ConfigurableComponent;
+use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
+use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Field\Link;
 
-/**
- * Base link type.
- */
-abstract class BaseLinkType extends ConfigurableComponent
+abstract class BaseLinkType extends Component implements ConfigurableComponentInterface
 {
+    use ConfigurableComponent;
+
     /**
      * Returns the link type’s unique identifier, which will be stored within
      * Link fields’ [[\craft\fields\Link::types]] settings.
