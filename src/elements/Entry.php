@@ -2797,10 +2797,6 @@ JS;
 
         $section = $this->getSection();
 
-        if (!$user->can("viewPeerEntries:$section->uid")) {
-            return false;
-        }
-
         $authorIds = $this->getAuthorIds();
 
         return (
