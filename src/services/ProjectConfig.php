@@ -1486,8 +1486,16 @@ class ProjectConfig extends Component
 
         unset($removedItem);
 
-        // Sort by number of dots to ensure deepest paths listed first
+        // Sort by top-level key first, then deepest paths first within each group.
         $sorter = function($a, $b) {
+            $aTop = explode('.', $a, 2)[0];
+            $bTop = explode('.', $b, 2)[0];
+            $topCmp = strcmp($aTop, $bTop);
+
+            if ($topCmp !== 0) {
+                return $topCmp;
+            }
+
             $aDepth = ProjectConfigHelper::pathDepth($a);
             $bDepth = ProjectConfigHelper::pathDepth($b);
             return $bDepth <=> $aDepth;
