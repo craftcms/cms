@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Conditions\StatusConditionRule;
@@ -30,6 +33,7 @@ beforeEach(function () {
         {
             $this->state->elementType = $elementType;
             $this->state->config = $config;
+            $this->state->sortOptions = $elementType::sortOptions();
 
             return '<div class="element-index">Modal body</div>';
         }
@@ -183,4 +187,27 @@ it('leaves statuses unchanged when the condition has no status rule', function (
     ])->assertOk();
 
     expect(array_keys($this->elementIndexHtmlState->config['statuses']))->toBe(array_keys(Entry::statuses()));
+});
+
+it('activates element index context for folder-only asset selector requests', function () {
+    config()->set('filesystems.disks.test-disk', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/element-selector-modal-controller-test/test-disk'),
+    ]);
+
+    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    VolumeFolderModel::factory()->create([
+        'volumeId' => $volume->id,
+        'name' => 'Docs',
+        'path' => 'docs/',
+    ]);
+
+    postJson(action(ElementSelectorModalController::class), [
+        'elementType' => Asset::class,
+        'foldersOnly' => true,
+    ])->assertOk();
+
+    expect($this->elementIndexHtmlState->sortOptions)->toBe([
+        'title' => 'Folder',
+    ]);
 });

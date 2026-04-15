@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Elements\Concerns;
 
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ExcludeDescendantIdsExpression;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\Conditions;
+use CraftCms\Cms\Support\Facades\ElementExporters;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources as ElementSourcesFacade;
 use CraftCms\Cms\Support\Typecast;
@@ -20,7 +23,7 @@ use function CraftCms\Cms\t;
 
 trait InteractsWithElementIndexes
 {
-    protected function condition(): ?ElementConditionInterface
+    protected function resolveElementIndexCondition(): ?ElementConditionInterface
     {
         /** @var array|null $conditionConfig */
         /** @phpstan-var array{class:class-string<ElementConditionInterface>}|null $conditionConfig */
@@ -58,7 +61,7 @@ trait InteractsWithElementIndexes
      * @param  class-string<ElementInterface>  $elementType
      * @return array{0:?string,1:?array}
      */
-    protected function source(string $elementType, ?string $sourceKey, string $context): array
+    protected function resolveSource(string $elementType, ?string $sourceKey, string $context): array
     {
         if (! isset($sourceKey)) {
             return [$sourceKey, null];
@@ -82,7 +85,24 @@ trait InteractsWithElementIndexes
         return [$sourceKey, $source];
     }
 
-    protected function viewState(): array
+    /**
+     * @return FieldLayout[]|null
+     */
+    protected function resolveFieldLayouts(): ?array
+    {
+        $fieldLayouts = request()->input('fieldLayouts');
+
+        if (empty($fieldLayouts) || ! is_array($fieldLayouts)) {
+            return null;
+        }
+
+        return array_map(
+            FieldLayout::createFromConfig(...),
+            $fieldLayouts,
+        );
+    }
+
+    protected function resolveViewState(): array
     {
         $viewState = request()->input('viewState', []);
 
@@ -95,18 +115,22 @@ trait InteractsWithElementIndexes
 
     /**
      * @param  class-string<ElementInterface>  $elementType
+     * @return array{query:ElementQueryInterface,unfilteredQuery:ElementQueryInterface|null}
      */
-    protected function elementQuery(
+    protected function buildElementQueryState(
         string $elementType,
         ?array $source,
         ?ElementConditionInterface $condition,
-    ): ElementQueryInterface {
+    ): array {
         $query = $elementType::find();
 
         if (! $source) {
             $query->id(false);
 
-            return $query;
+            return [
+                'query' => $query,
+                'unfilteredQuery' => null,
+            ];
         }
 
         if ($source['type'] === ElementSources::TYPE_CUSTOM) {
@@ -115,9 +139,9 @@ trait InteractsWithElementIndexes
             $sourceCondition->modifyQuery($query);
         }
 
-        $applyCriteria = function (array $criteria) use ($query): void {
+        $applyCriteria = function (array $criteria) use ($query): bool {
             if (! $criteria) {
-                return;
+                return false;
             }
 
             if (isset($criteria['trashed'])) {
@@ -137,15 +161,24 @@ trait InteractsWithElementIndexes
             }
 
             Typecast::configure($query, ElementHelper::cleanseQueryCriteria($criteria));
+
+            return true;
         };
 
         $applyCriteria(request()->input('baseCriteria') ?? []);
 
+        $unfilteredQuery = clone $query;
+        $hasFilters = false;
+
         if ($condition) {
             $condition->modifyQuery($query);
+
+            $hasFilters = true;
         }
 
-        $applyCriteria(request()->input('criteria') ?? []);
+        if ($applyCriteria(request()->input('criteria') ?? [])) {
+            $hasFilters = true;
+        }
 
         $filterConditionConfig = request()->input('filterConfig');
 
@@ -158,12 +191,17 @@ trait InteractsWithElementIndexes
             /** @var ElementConditionInterface $filterCondition */
             $filterCondition = Conditions::createCondition($filterConditionConfig);
             $filterCondition->modifyQuery($query);
+
+            $hasFilters = true;
         }
 
         $collapsedElementIds = request()->input('collapsedElementIds');
 
         if (! $collapsedElementIds) {
-            return $query;
+            return [
+                'query' => $query,
+                'unfilteredQuery' => $hasFilters ? $unfilteredQuery : null,
+            ];
         }
 
         $descendantQuery = (clone $query)
@@ -180,7 +218,10 @@ trait InteractsWithElementIndexes
             ->all();
 
         if (empty($collapsedElements)) {
-            return $query;
+            return [
+                'query' => $query,
+                'unfilteredQuery' => $hasFilters ? $unfilteredQuery : null,
+            ];
         }
 
         $descendantIds = [];
@@ -198,14 +239,63 @@ trait InteractsWithElementIndexes
         }
 
         if (empty($descendantIds)) {
-            return $query;
+            return [
+                'query' => $query,
+                'unfilteredQuery' => $hasFilters ? $unfilteredQuery : null,
+            ];
         }
 
-        return $query->where(new ExcludeDescendantIdsExpression($descendantIds));
+        $query->where(new ExcludeDescendantIdsExpression($descendantIds));
+
+        return [
+            'query' => $query,
+            'unfilteredQuery' => $unfilteredQuery,
+        ];
     }
 
-    protected function isAdministrative(string $context): bool
+    /**
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    protected function availableExporters(string $elementType, string $sourceKey): ?array
     {
-        return in_array($context, ['index', 'embedded-index'], true);
+        if (request()->isMobileBrowser()) {
+            return null;
+        }
+
+        return ElementExporters::availableExporters($elementType, $sourceKey);
+    }
+
+    protected function populateFilterHudQueryParams(
+        ElementConditionInterface $condition,
+        ?array $source,
+        ?string $sourceKey,
+        ?ElementConditionInterface $currentCondition,
+    ): void {
+        if ($source !== null) {
+            if ($source['type'] === ElementSources::TYPE_NATIVE) {
+                $condition->queryParams = array_keys($source['criteria'] ?? []);
+                $condition->sourceKey = $sourceKey;
+            } else {
+                /** @var ElementConditionInterface $sourceCondition */
+                $sourceCondition = Conditions::createCondition($source['condition']);
+                $condition->queryParams = [];
+
+                foreach ($sourceCondition->getConditionRules() as $rule) {
+                    /** @var ElementConditionRuleInterface $rule */
+                    array_push($condition->queryParams, ...$rule->getExclusiveQueryParams());
+                }
+            }
+        }
+
+        if ($currentCondition) {
+            foreach ($currentCondition->getConditionRules() as $rule) {
+                /** @var ElementConditionRuleInterface $rule */
+                array_push($condition->queryParams, ...$rule->getExclusiveQueryParams());
+            }
+        }
+
+        $condition->queryParams[] = 'site';
+        $condition->queryParams[] = 'status';
+        $condition->queryParams = array_values(array_unique($condition->queryParams));
     }
 }

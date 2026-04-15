@@ -8,11 +8,10 @@ use Closure;
 use CraftCms\Cms\Element\Contracts\ElementExporterInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementExporters;
-use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
 use CraftCms\Cms\Element\Exporters\Raw;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
-use Illuminate\Http\Request;
+use CraftCms\Cms\Http\Requests\ElementRequest;
 use Symfony\Component\HttpFoundation\Response;
 
 readonly class ExportElementIndexController
@@ -20,7 +19,7 @@ readonly class ExportElementIndexController
     use InteractsWithElementIndexes;
 
     public function __construct(
-        private Request $request,
+        private ElementRequest $request,
         private ElementExporters $elementExporters,
     ) {}
 
@@ -42,11 +41,11 @@ readonly class ExportElementIndexController
 
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $validated['elementType'];
-        $context = $this->request->input('context', ElementSources::CONTEXT_INDEX);
+        $context = $this->request->context();
 
-        [$sourceKey, $source] = $this->source($elementType, $this->request->input('source'), $context);
+        [$sourceKey, $source] = $this->resolveSource($elementType, $this->request->input('source'), $context);
         abort_if(! isset($sourceKey), 400, 'Request missing required body param');
-        abort_if(! $this->isAdministrative($context), 400, 'Request missing index context');
+        abort_if(! $this->request->isAdministrative(), 400, 'Request missing index context');
 
         $exporters = $this->availableExporters($elementType, $sourceKey);
         $exporter = $this->elementExporters->resolveExporter(
@@ -58,7 +57,11 @@ readonly class ExportElementIndexController
 
         return $this->elementExporters->export(
             exporter: $exporter,
-            query: $this->elementQuery($elementType, $source, $this->condition()),
+            query: $this->buildElementQueryState(
+                elementType: $elementType,
+                source: $source,
+                condition: $this->request->condition()
+            )['query'],
             format: $this->request->input('format', 'csv'),
         );
     }

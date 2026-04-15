@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
@@ -22,14 +23,14 @@ use Illuminate\Http\JsonResponse;
 
 use function CraftCms\Cms\t;
 
-readonly class ElementSourcesController extends BaseElementsController
+readonly class ElementSourcesController
 {
     use RespondsWithFlash;
 
-    public function show(ElementSources $elementSources, Fields $fields, UserGroups $userGroups): JsonResponse
+    public function show(ElementRequest $request, ElementSources $elementSources, Fields $fields, UserGroups $userGroups): JsonResponse
     {
         /** @var class-string<ElementInterface> $elementType */
-        $elementType = $this->elementType();
+        $elementType = $request->elementType();
 
         // Global sort options
         $baseSortOptions = collect($elementType::sortOptions())
@@ -216,9 +217,9 @@ readonly class ElementSourcesController extends BaseElementsController
         ]);
     }
 
-    public function store(ElementSources $elementSources, ProjectConfig $projectConfig)
+    public function store(ElementRequest $request, ElementSources $elementSources, ProjectConfig $projectConfig)
     {
-        $elementType = $this->elementType();
+        $elementType = $request->elementType();
         $multiPage = $elementType::multiPageSources();
 
         // Get the old source configs
@@ -227,14 +228,14 @@ readonly class ElementSourcesController extends BaseElementsController
             ->keyBy('key')
             ->all();
 
-        $sourceOrder = $this->request->array('sourceOrder');
-        $sourceSettings = $this->request->array('sources');
+        $sourceOrder = $request->array('sourceOrder');
+        $sourceSettings = $request->array('sources');
         $newSourceConfigs = [];
         $disabledSourceKeys = [];
 
         if ($multiPage) {
-            $sourcePages = $this->request->array('sourcePages');
-            $pageSettings = $this->request->array('pageSettings');
+            $sourcePages = $request->array('sourcePages');
+            $pageSettings = $request->array('pageSettings');
             $sourcePageIndexes = [];
         }
 

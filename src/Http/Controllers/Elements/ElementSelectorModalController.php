@@ -6,20 +6,23 @@ namespace CraftCms\Cms\Http\Controllers\Elements;
 
 use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Element\Conditions\StatusConditionRule;
+use CraftCms\Cms\Element\CurrentElementIndex;
+use CraftCms\Cms\Http\Requests\ElementRequest;
 use Illuminate\Http\JsonResponse;
 
-readonly class ElementSelectorModalController extends BaseElementsController
+readonly class ElementSelectorModalController
 {
-    public function __invoke(ElementIndexHtml $elementIndexHtml): JsonResponse
+    public function __invoke(ElementRequest $request, ElementIndexHtml $elementIndexHtml, CurrentElementIndex $currentElementIndex): JsonResponse
     {
-        $this->request->validate([
+        $request->validate([
             'showSiteMenu' => ['nullable', 'in:0,1'],
             'sources' => ['nullable', 'array'],
             'sources.*' => ['string'],
         ]);
 
-        $elementType = $this->elementType();
-        $condition = $this->condition();
+        $elementType = $request->elementType();
+        $currentElementIndex->activate();
+        $condition = $request->condition();
         $hasStatuses = $elementType::hasStatuses();
 
         if ($hasStatuses) {
@@ -45,11 +48,11 @@ readonly class ElementSelectorModalController extends BaseElementsController
         return new JsonResponse([
             'html' => $elementIndexHtml->html($elementType, [
                 'class' => 'content',
-                'context' => $this->context(),
+                'context' => $request->context(),
                 'registerJs' => false,
-                'showSiteMenu' => $this->request->input('showSiteMenu', 'auto'),
+                'showSiteMenu' => $request->input('showSiteMenu', 'auto'),
                 'showStatusMenu' => $hasStatuses,
-                'sources' => $this->request->input('sources'),
+                'sources' => $request->input('sources'),
                 'statuses' => $statuses ?? null,
             ]),
         ]);
