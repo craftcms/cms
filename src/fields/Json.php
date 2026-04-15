@@ -72,6 +72,18 @@ class Json extends Field implements MergeableFieldInterface, CrossSiteCopyableFi
             return $value;
         }
 
+        return new JsonData($value);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
         if (is_string($value)) {
             try {
                 $value = JsonHelper::decode($value);
