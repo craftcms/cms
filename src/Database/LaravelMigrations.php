@@ -72,7 +72,7 @@ class LaravelMigrations
                 throw new RuntimeException("Could not create the [$command] migration.");
             }
 
-            $migrationWasCreated = ! empty($existingMigrations) || ! empty($this->migrationFiles($pattern));
+            $migrationWasCreated = ! empty($this->migrationFiles($pattern));
 
             if (! $migrationWasCreated) {
                 throw new RuntimeException("Could not create the [$command] migration.");
