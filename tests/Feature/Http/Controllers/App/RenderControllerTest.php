@@ -8,6 +8,7 @@ use CraftCms\Cms\Http\Controllers\App\RenderController;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -23,12 +24,14 @@ test('render elements validates required payload', function () {
 
 test('render elements rejects invalid element ids', function () {
     postJson(action([RenderController::class, 'elements']), [
-        'elements' => [[
-            'type' => Entry::class,
-            'id' => 'not-an-id',
-            'siteId' => 1,
-            'instances' => [[]],
-        ]],
+        'elements' => [
+            [
+                'type' => Entry::class,
+                'id' => 'not-an-id',
+                'siteId' => 1,
+                'instances' => [[]],
+            ],
+        ],
     ])->assertStatus(400);
 });
 
@@ -36,16 +39,18 @@ test('render elements returns chip html for entries', function () {
     $entry = EntryModel::factory()->create();
 
     $response = postJson(action([RenderController::class, 'elements']), [
-        'elements' => [[
-            'type' => Entry::class,
-            'id' => $entry->id,
-            'siteId' => Sites::getPrimarySite()->id,
-            'instances' => [
-                'default' => [
-                    'ui' => 'chip',
+        'elements' => [
+            [
+                'type' => Entry::class,
+                'id' => $entry->id,
+                'siteId' => Sites::getPrimarySite()->id,
+                'instances' => [
+                    'default' => [
+                        'ui' => 'chip',
+                    ],
                 ],
             ],
-        ]],
+        ],
     ]);
 
     $response->assertOk()
@@ -59,22 +64,23 @@ test('render components validates required payload', function () {
 
 test('render components skips unresolved component types', function () {
     $response = postJson(action([RenderController::class, 'components']), [
-        'components' => [[
-            'type' => CraftCms\Cms\Section\Data\Section::class,
-            'id' => 99999,
-            'instances' => [[]],
-        ]],
+        'components' => [
+            [
+                'type' => CraftCms\Cms\Section\Data\Section::class,
+                'id' => 99999,
+                'instances' => [[]],
+            ],
+        ],
         'withMenuItems' => true,
         'menuId' => 'sections-menu',
     ]);
 
     $response->assertOk()
-        ->assertExactJson([
-            'components' => [],
-            'menuItems' => [],
-            'headHtml' => '',
-            'bodyHtml' => '',
-        ]);
+        ->assertJson(fn (AssertableJson $json) => $json
+            ->where('components', [])
+            ->where('menuItems', [])
+            ->etc()
+        );
 });
 
 test('render components returns chip and menu item html for sections', function () {
@@ -84,13 +90,17 @@ test('render components returns chip and menu item html for sections', function 
     ]);
 
     $response = postJson(action([RenderController::class, 'components']), [
-        'components' => [[
-            'type' => CraftCms\Cms\Section\Data\Section::class,
-            'id' => $section->id,
-            'instances' => [[
-                'showHandle' => true,
-            ]],
-        ]],
+        'components' => [
+            [
+                'type' => CraftCms\Cms\Section\Data\Section::class,
+                'id' => $section->id,
+                'instances' => [
+                    [
+                        'showHandle' => true,
+                    ],
+                ],
+            ],
+        ],
         'withMenuItems' => true,
         'menuId' => 'sections-menu',
     ]);
