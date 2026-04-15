@@ -8,12 +8,12 @@
 namespace craft\web;
 
 use Craft;
-use craft\web\assets\htmx\HtmxAsset;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -46,7 +46,7 @@ class CpModalResponseFormatter extends Component implements ResponseFormatterInt
         }
 
         $request = Craft::$app->getRequest();
-        Craft::$app->getView()->registerAssetBundle(HtmxAsset::class);
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\HtmxAsset::class);
 
         $this->_formatJson($request, $response, $behavior);
     }

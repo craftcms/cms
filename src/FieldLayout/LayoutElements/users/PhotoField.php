@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements\users;
 
-use Craft;
 use craft\base\ElementInterface;
-use craft\web\assets\userphoto\UserPhotoAsset;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -14,6 +12,7 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 use Override;
@@ -75,7 +74,7 @@ class PhotoField extends BaseNativeField
             return null;
         }
 
-        Craft::$app->getView()->registerAssetBundle(UserPhotoAsset::class);
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\UserPhotoAsset::class);
         $inputId = sprintf('user-photo-%s', mt_rand());
 
         HtmlStack::jsWithVars(fn ($userId, $inputId, $isCurrentUser) => <<<JS

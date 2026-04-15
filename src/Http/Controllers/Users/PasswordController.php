@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Craft;
-use craft\web\assets\authmethodsetup\AuthMethodSetupAsset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -15,6 +13,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -39,7 +38,7 @@ readonly class PasswordController
 
         $response = $this->asEditUserScreen($user, self::SCREEN_PASSWORD);
 
-        Craft::$app->getView()->registerAssetBundle(AuthMethodSetupAsset::class);
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\AuthMethodSetupAsset::class);
 
         $response->action('users/save-password');
         $response->contentTemplate('users/_password', compact('user'));

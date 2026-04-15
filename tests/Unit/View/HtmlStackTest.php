@@ -4,6 +4,106 @@ declare(strict_types=1);
 
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\HtmlStack;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\LegacyAssetInterface;
+
+class TestBufferedDependencyAsset implements LegacyAssetInterface
+{
+    public array $depends = [];
+
+    public function register(HtmlStack $htmlStack): void
+    {
+        $htmlStack->js('window.testBufferedDependency = true;', Position::Head);
+    }
+}
+
+class TestBufferedBundleAsset implements LegacyAssetInterface
+{
+    public array $depends = [TestBufferedDependencyAsset::class];
+
+    public function register(HtmlStack $htmlStack): void
+    {
+        $htmlStack->jsFile('/test-buffered-bundle.js', ['position' => Position::Head->value]);
+    }
+}
+
+function assertLatestRegistrationOrder(string $output): void
+{
+    $firstPos = strpos($output, 'first');
+    $middlePos = strpos($output, 'middle');
+    $updatedPos = strpos($output, 'updated');
+
+    expect($output)
+        ->not->toContain('initial')
+        ->and($firstPos)->toBeLessThan($middlePos)
+        ->and($middlePos)->toBeLessThan($updatedPos);
+}
+
+dataset('ordered asset cases', [
+    'inline JS' => [[
+        'bufferKey' => 'js',
+        'register' => function (HtmlStack $registry, string $value, string $key): void {
+            $registry->js($value, key: $key);
+        },
+        'render' => fn (HtmlStack $registry): string => $registry->bodyEndHtml(),
+    ]],
+    'JS file' => [[
+        'bufferKey' => 'jsFiles',
+        'register' => function (HtmlStack $registry, string $value, string $key): void {
+            $registry->jsFile($value, key: $key);
+        },
+        'render' => fn (HtmlStack $registry): string => $registry->bodyEndHtml(),
+    ]],
+    'inline CSS' => [[
+        'bufferKey' => 'css',
+        'register' => function (HtmlStack $registry, string $value, string $key): void {
+            $registry->css($value, key: $key);
+        },
+        'render' => fn (HtmlStack $registry): string => $registry->headHtml(),
+    ]],
+    'CSS file' => [[
+        'bufferKey' => 'cssFiles',
+        'register' => function (HtmlStack $registry, string $value, string $key): void {
+            $registry->cssFile($value, key: $key);
+        },
+        'render' => fn (HtmlStack $registry): string => $registry->headHtml(),
+    ]],
+    'script tag' => [[
+        'bufferKey' => 'scripts',
+        'register' => function (HtmlStack $registry, string $value, string $key): void {
+            $registry->script($value, key: $key);
+        },
+        'render' => fn (HtmlStack $registry): string => $registry->bodyEndHtml(),
+    ]],
+    'HTML' => [[
+        'bufferKey' => 'html',
+        'register' => function (HtmlStack $registry, string $value, string $key): void {
+            $registry->html($value, key: $key);
+        },
+        'render' => fn (HtmlStack $registry): string => $registry->bodyEndHtml(),
+    ]],
+    'import map entry' => [[
+        'bufferKey' => 'jsImports',
+        'register' => function (HtmlStack $registry, string $value, string $key): void {
+            $registry->jsImport($key, $value);
+        },
+        'render' => fn (HtmlStack $registry): string => $registry->headHtml(),
+    ]],
+    'meta tag' => [[
+        'bufferKey' => 'metaTags',
+        'register' => function (HtmlStack $registry, string $value, string $key): void {
+            $registry->metaTag(['name' => $value, 'content' => 'yes'], $key);
+        },
+        'render' => fn (HtmlStack $registry): string => $registry->headHtml(),
+    ]],
+    'link tag' => [[
+        'bufferKey' => 'linkTags',
+        'register' => function (HtmlStack $registry, string $value, string $key): void {
+            $registry->linkTag(['rel' => 'preload', 'href' => $value], $key);
+        },
+        'render' => fn (HtmlStack $registry): string => $registry->headHtml(),
+    ]],
+]);
 
 beforeEach(function () {
     $this->registry = app(HtmlStack::class);
@@ -163,6 +263,7 @@ describe('css registration', function () {
             ->not->toContain('color: red')
             ->toContain('color: blue');
     });
+
 });
 
 describe('content-hash deduplication', function () {
@@ -197,6 +298,7 @@ describe('cssFile registration', function () {
 
         expect(substr_count($head, '/style.css'))->toBe(1);
     });
+
 });
 
 describe('script registration', function () {
@@ -223,6 +325,7 @@ describe('script registration', function () {
 
         expect($body)->toContain('type="module"');
     });
+
 });
 
 describe('scriptWithVars', function () {
@@ -277,6 +380,7 @@ describe('jsImport registration', function () {
             ->and($head)->toContain('"lodash"')
             ->toContain('"vue"');
     });
+
 });
 
 describe('metaTag registration', function () {
@@ -298,6 +402,7 @@ describe('metaTag registration', function () {
             ->not->toContain('Old')
             ->toContain('New');
     });
+
 });
 
 describe('linkTag registration', function () {
@@ -319,6 +424,20 @@ describe('linkTag registration', function () {
             ->not->toContain('/old.ico')
             ->toContain('/new.ico');
     });
+
+});
+
+describe('latest registration order', function () {
+    it('moves keyed registrations to their latest registration order', function (array $case) {
+        $case['register']($this->registry, 'first', 'first');
+        $case['register']($this->registry, 'initial', 'target');
+        $case['register']($this->registry, 'middle', 'middle');
+        $case['register']($this->registry, 'updated', 'target');
+
+        $output = $case['render']($this->registry);
+
+        assertLatestRegistrationOrder($output);
+    })->with('ordered asset cases');
 });
 
 describe('headHtml output order', function () {
@@ -623,6 +742,22 @@ describe('applyBuffer', function () {
             ->toContain('.buffered');
     });
 
+    it('preserves latest keyed registration order when applying a buffer', function (array $case) {
+        $case['register']($this->registry, 'first', 'first');
+        $case['register']($this->registry, 'initial', 'target');
+
+        $this->registry->startBuffer($case['bufferKey']);
+        $case['register']($this->registry, 'updated', 'target');
+        $captured = $this->registry->clearBuffer($case['bufferKey']);
+
+        $case['register']($this->registry, 'middle', 'middle');
+        $this->registry->applyBuffer([$case['bufferKey'] => $captured]);
+
+        $output = $case['render']($this->registry);
+
+        assertLatestRegistrationOrder($output);
+    })->with('ordered asset cases');
+
     it('handles partial buffer state', function () {
         // applyBuffer with only some keys should not error
         $this->registry->applyBuffer(['css' => ['mykey' => '<style>.applied {}</style>']]);
@@ -669,6 +804,23 @@ describe('applyBuffer', function () {
         expect($head)
             ->toContain('name="existing"')
             ->toContain('name="buffered"');
+    });
+});
+
+describe('legacy asset registry', function () {
+    it('does not capture queued dependency JS in an active JS buffer', function () {
+        $assets = app(InternalAssetRegistry::class);
+
+        $this->registry->startJsBuffer();
+        $assets->register(TestBufferedBundleAsset::class);
+        $capturedJs = $this->registry->clearJsBuffer(scriptTag: false);
+
+        $head = $this->registry->headHtml(clear: false);
+
+        expect($capturedJs)
+            ->not->toContain('window.testBufferedDependency = true;')
+            ->and($head)->toContain('window.testBufferedDependency = true;')
+            ->and($head)->toContain('/test-buffered-bundle.js');
     });
 });
 

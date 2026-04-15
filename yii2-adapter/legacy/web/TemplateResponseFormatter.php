@@ -9,11 +9,11 @@ namespace craft\web;
 
 use Craft;
 use craft\errors\ExitException;
-use craft\web\assets\iframeresizer\ContentWindowAsset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\TemplateResolver;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\TemplateMode;
 use Throwable;
 use yii\base\Component;
@@ -52,7 +52,7 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
             Craft::$app->getRequest()->getQueryParam('x-craft-live-preview') !== null &&
             $generalConfig->useIframeResizer
         ) {
-            Craft::$app->getView()->registerAssetBundle(ContentWindowAsset::class);
+            app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\ContentWindowAsset::class);
         }
 
         // Render and return the template
