@@ -130,6 +130,10 @@ readonly class JobProgress
      */
     public function getActive(): Collection
     {
+        if (! Cms::isInstalled()) {
+            return collect();
+        }
+
         return JobProgressModel::query()
             ->whereIn('status', [
                 JobStatus::Pending,
