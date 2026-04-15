@@ -12,6 +12,7 @@ use CraftCms\Cms\Route\Events\RouteDeleted;
 use CraftCms\Cms\Route\Events\RouteSaved;
 use CraftCms\Cms\Route\Events\SavingRoute;
 use CraftCms\Cms\Site\Events\SiteDeleted;
+use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Scoped;
@@ -65,7 +66,12 @@ class Routes
             ->filter(fn (array $route) => array_key_exists('siteUid', $route))
             ->all();
 
-        $currentSiteUid = $this->sites->getCurrentSite()->uid;
+        try {
+            $currentSiteUid = $this->sites->getCurrentSite()->uid;
+        } catch (SiteNotFoundException) {
+            return collect($this->projectConfigRoutes = []);
+        }
+
         $this->projectConfigRoutes = [];
 
         foreach ($routes as $uid => $route) {

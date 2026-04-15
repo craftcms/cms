@@ -127,7 +127,7 @@ it('is idempotent when the Laravel optional migrations already exist', function 
 
     $artisan = Artisan::getFacadeRoot();
 
-    expect($artisan->calls)->toHaveCount(6)
+    expect($artisan->calls)->toBe([])
         ->and($migrator->tracked)->toBe('craft')
         ->and($migrator->runArguments)->toBe([])
         ->and($migrator->loggedMigrations)->toHaveCount(6);

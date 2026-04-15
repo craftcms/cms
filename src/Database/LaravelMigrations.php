@@ -61,6 +61,11 @@ class LaravelMigrations
     {
         foreach ($this->migrationPatterns() as $command => $pattern) {
             $existingMigrations = $this->migrationFiles($pattern);
+
+            if (! empty($existingMigrations)) {
+                continue;
+            }
+
             $exitCode = Artisan::call($command);
 
             if (! in_array($exitCode, [0, 1], true)) {

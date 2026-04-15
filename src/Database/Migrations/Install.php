@@ -483,10 +483,15 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::dropIfExists(Table::MIGRATIONS);
-        app(Migrator::class)
-            ->getRepository()
-            ->createRepository();
+        if (! Schema::hasTable(Table::MIGRATIONS)) {
+            app(Migrator::class)
+                ->getRepository()
+                ->createRepository();
+        } elseif (! Schema::hasColumn(Table::MIGRATIONS, 'track')) {
+            Schema::table(Table::MIGRATIONS, function (Blueprint $table) {
+                $table->string('track')->nullable()->after('id');
+            });
+        }
 
         Schema::create('plugins', function (Blueprint $table) {
             $table->integer('id', true);

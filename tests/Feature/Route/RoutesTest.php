@@ -5,7 +5,9 @@ declare(strict_types=1);
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Route\Routes;
+use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Site\Sites;
 
 beforeEach(function () {
     $this->routes = app(Routes::class);
@@ -113,4 +115,13 @@ it('can delete a route by uid', function () {
     $this->routes->deleteRouteByUid($uid);
 
     expect($this->routes->getProjectConfigRoutes())->toBeEmpty();
+});
+
+it('returns no project config routes when no current site exists yet', function () {
+    $sites = mock(Sites::class);
+    $sites->shouldReceive('getCurrentSite')->andThrow(new SiteNotFoundException('No primary site exists'));
+
+    $routes = new Routes($this->projectConfig, $sites);
+
+    expect($routes->getProjectConfigRoutes())->toBeEmpty();
 });
