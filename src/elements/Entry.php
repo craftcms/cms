@@ -2485,7 +2485,7 @@ JS, [
                     ],
                     'single' => false,
                     'elements' => $authors ?: null,
-                    'disabled' => false,
+                    'disabled' => !$this->canChangeAuthor(),
                     'errors' => $this->getErrors('authorIds'),
                     'limit' => $section->maxAuthors,
                 ]);
