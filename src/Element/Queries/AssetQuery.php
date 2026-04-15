@@ -33,6 +33,15 @@ class AssetQuery extends ElementQuery
     use QueriesAssetProperties;
     use QueriesSizes;
 
+    #[Override]
+    protected string $table = Table::ASSETS;
+
+    #[Override]
+    protected array $defaultOrderBy = [
+        'assets.dateCreated' => SORT_DESC,
+        'assets.id' => SORT_DESC,
+    ];
+
     /**
      * @var bool|null Whether to only return assets that the user has permission to view.
      *
@@ -50,8 +59,6 @@ class AssetQuery extends ElementQuery
     public function __construct(array $config = [])
     {
         parent::__construct(Asset::class, $config);
-
-        $this->joinElementTable(Table::ASSETS);
 
         $this->query->addSelect([
             'assets.volumeId as volumeId',

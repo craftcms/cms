@@ -28,7 +28,6 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\RecordsNotFoundException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Traits\ForwardsCalls;
 use InvalidArgumentException;
@@ -91,6 +90,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     use Concerns\QueriesUniqueElements;
     use Concerns\SearchesElements;
     use ForwardsCalls;
+
+    protected string $table = Table::ELEMENTS;
 
     /**
      * The base query builder instance.
@@ -188,19 +189,17 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * @var array<string,string> Column alias => name mapping
      *
-     * @see joinElementTable()
      * @see applyOrderByParams()
      * @see applySelectParam()
      */
     private array $columnMap;
 
     /**
-     * @var bool Whether an element table has been joined for the query
+     * @var bool Whether the query is sourcing rows from a concrete element table
      *
-     * @see prepare()
-     * @see joinElementTable()
+     * @see configureSourceTable()
      */
-    private bool $joinedElementTable = false;
+    private bool $hasElementSourceTable = false;
 
     /**
      * @var bool Whether the element query before query callback has been called
@@ -221,10 +220,19 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     ) {
         parent::__construct($config);
 
-        $this->query = DB::query()
-            ->from(Table::ELEMENTS, 'elements')
-            ->join(new Alias(Table::ELEMENTS_SITES, 'elements_sites'), 'elements_sites.elementId', 'elements.id')
-            ->select('**');
+        $this->query = DB::table($this->table)->select('**');
+
+        if ($this->table !== Table::ELEMENTS) {
+            $this->when(
+                DB::isMysql(),
+                fn (self $query) => $this->straightJoin(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', '=', "{$this->table}.id"),
+                fn (self $query) => $this->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', '=', "{$this->table}.id"),
+            );
+
+            $this->hasElementSourceTable = true;
+        }
+
+        $this->query->join(new Alias(Table::ELEMENTS_SITES, 'elements_sites'), 'elements_sites.elementId', '=', 'elements.id');
 
         // Prepare a new column mapping
         // (for use in SELECT and ORDER BY clauses)
@@ -1039,8 +1047,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
         $this->applySelectParams();
 
-        // If an element table was never joined in, explicitly filter based on the element type
-        if (! $this->joinedElementTable && $this->elementType !== Element::class) {
+        // If the query isn't sourced from a concrete element table, explicitly filter by element type.
+        if (! $this->hasElementSourceTable && $this->elementType !== Element::class) {
             try {
                 $ref = new ReflectionClass($this->elementType);
             } catch (ReflectionException) {
@@ -1062,29 +1070,6 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         $this->elementQueryBeforeQueryCalled = true;
-    }
-
-    /**
-     * Joins in a table with an `id` column that has a foreign key pointing to `elements.id`.
-     *
-     * The table will be joined with an alias based on the unprefixed table name. For example,
-     * if `{{%entries}}` is passed, the table will be aliased to `entries`.
-     *
-     * @param  string  $table  The table name, e.g. `entries` or `{{%entries}}`
-     */
-    public function joinElementTable(string $table, ?string $alias = null): void
-    {
-        $alias ??= $table;
-
-        $this->query->join(new Alias($table, $alias), "$alias.id", 'elements.id');
-        $this->joinedElementTable = true;
-
-        // Add element table cols to the column map
-        foreach (Schema::getColumnListing($table) as $column) {
-            if (! isset($this->columnMap[$column])) {
-                $this->columnMap[$column] = "$alias.$column";
-            }
-        }
     }
 
     /**

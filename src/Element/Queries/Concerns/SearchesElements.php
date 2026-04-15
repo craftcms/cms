@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
-use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Search;
 use Illuminate\Database\Query\Builder;
 
 /**
@@ -53,13 +53,11 @@ trait SearchesElements
             return;
         }
 
-        $searchService = app(Search::class);
+        $scoreOrder = Arr::first($elementQuery->query->orders ?? [], fn ($order) => ($order['column'] ?? '') === 'score');
 
-        $scoreOrder = Arr::first($elementQuery->query->orders ?? [], fn ($order) => $order['column'] === 'score');
-
-        if ($scoreOrder || $searchService->shouldCallSearchElements($elementQuery)) {
+        if ($scoreOrder || Search::shouldCallSearchElements($elementQuery)) {
             // Get the scored results up front
-            $searchResults = $searchService->searchElements($elementQuery);
+            $searchResults = Search::searchElements($elementQuery);
 
             if ($scoreOrder['direction'] === 'asc') {
                 $searchResults = array_reverse($searchResults, true);
@@ -105,7 +103,7 @@ trait SearchesElements
         }
 
         // Just filter the main query by the search query
-        $searchQuery = $searchService->createDbQuery($elementQuery->search, $elementQuery);
+        $searchQuery = Search::createDbQuery($elementQuery->search, $elementQuery);
 
         if ($searchQuery === false) {
             throw new QueryAbortedException;

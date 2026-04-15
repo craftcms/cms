@@ -20,6 +20,15 @@ class AddressQuery extends ElementQuery
 {
     use QueriesNestedElements;
 
+    #[Override]
+    protected string $table = Table::ADDRESSES;
+
+    #[Override]
+    protected array $defaultOrderBy = [
+        'addresses.dateCreated' => SORT_DESC,
+        'addresses.id' => SORT_DESC,
+    ];
+
     /**
      * @var mixed The address countryCode(s) that the resulting address must be in.
      *            ---
@@ -318,8 +327,6 @@ class AddressQuery extends ElementQuery
     public function __construct(array $config = [])
     {
         parent::__construct(Address::class, $config);
-
-        $this->joinElementTable(Table::ADDRESSES);
 
         $this->query->addSelect([
             'addresses.id as id',

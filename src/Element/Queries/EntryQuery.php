@@ -44,6 +44,9 @@ class EntryQuery extends ElementQuery
     use QueriesSections;
 
     #[Override]
+    protected string $table = Table::ENTRIES;
+
+    #[Override]
     protected array $defaultOrderBy = [
         'entries.postDate' => SORT_DESC,
         'entries.id' => SORT_DESC,
@@ -83,8 +86,6 @@ class EntryQuery extends ElementQuery
         }
 
         parent::__construct(Entry::class, $config);
-
-        $this->joinElementTable(Table::ENTRIES);
 
         $this->query->addSelect([
             'entries.sectionId as sectionId',

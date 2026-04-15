@@ -66,23 +66,33 @@ trait QueriesUniqueElements
 
         $caseGroup = new CaseGroup($cases, new Value($preferSites->count()));
 
-        $subSelectSql = $elementQuery->getQuery()->clone()
+        $subQuery = $elementQuery->getQuery()->clone()
             ->select(['elements_sites.id'])
-            ->from(Table::ELEMENTS, 'subElements')
-            ->whereColumn('subElements.id', 'tmpElements.id')
             ->orderBy($caseGroup)
             ->orderBy('elements_sites.id')
             ->offset(0)
-            ->limit(1)
-            ->toRawSql();
+            ->limit(1);
+
+        if ($elementQuery->from === Table::ELEMENTS) {
+            $subQuery
+                ->from(Table::ELEMENTS, 'subElements')
+                ->whereColumn('subElements.id', 'tmpElements.id');
+        } else {
+            $subQuery->whereColumn('elements.id', 'tmpElements.id');
+        }
+
+        $subSelectSql = $subQuery->toRawSql();
 
         $qElements = DB::getQueryGrammar()->wrapTable('elements');
         $qSubElements = DB::getQueryGrammar()->wrapTable('subElements');
         $qTmpElements = DB::getQueryGrammar()->wrapTable('tmpElements');
         $q = $qElements[0];
 
-        $subSelectSql = str_replace("$qElements.", "$qSubElements.", $subSelectSql);
-        $subSelectSql = str_replace("{$q}{$qElements}", "{$q}{$qSubElements}", $subSelectSql);
+        if ($elementQuery->from === Table::ELEMENTS) {
+            $subSelectSql = str_replace("$qElements.", "$qSubElements.", $subSelectSql);
+            $subSelectSql = str_replace("{$q}{$qElements}", "{$q}{$qSubElements}", $subSelectSql);
+        }
+
         $subSelectSql = str_replace($qTmpElements, $qElements, $subSelectSql);
 
         $elementQuery->whereRaw('elements_sites.id = ('.$subSelectSql.')');
