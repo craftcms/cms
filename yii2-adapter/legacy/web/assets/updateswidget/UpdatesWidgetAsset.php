@@ -7,30 +7,17 @@
 
 namespace craft\web\assets\updateswidget;
 
-use craft\web\InternalAssetBundle;
-use craft\web\assets\cp\CpAsset;
+use craft\web\AssetBundle;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Asset bundle for Updates widgets
+ * @deprecated 6.0.0
  */
-class UpdatesWidgetAsset extends InternalAssetBundle
+class UpdatesWidgetAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public $depends = [
-        CpAsset::class,
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $js = [
-        'UpdatesWidget.js',
-    ];
+    public function registerAssetFiles($view)
+    {
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\UpdatesWidgetAsset::class);
+    }
 }

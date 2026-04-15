@@ -43,6 +43,7 @@ use CraftCms\Cms\Twig\Variables\Rebrand;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserGroups;
 use CraftCms\Cms\User\UserPermissions;
+use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Support\Facades\Config;
 use yii\di\ServiceLocator;
 
@@ -244,6 +245,11 @@ class CraftVariable extends ServiceLocator
         $query = GlobalSet::find();
         Typecast::configure($query, $criteria);
         return $query;
+    }
+
+    public function htmlStack(): HtmlStack
+    {
+        return app(HtmlStack::class);
     }
 
     public function i18n(): I18N

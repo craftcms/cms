@@ -7,37 +7,17 @@
 
 namespace craft\web\assets\userpermissions;
 
-use craft\web\InternalAssetBundle;
-use craft\web\assets\cp\CpAsset;
+use craft\web\AssetBundle;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Asset bundle for user permissions
+ * @deprecated 6.0.0
  */
-class UserPermissionsAsset extends InternalAssetBundle
+class UserPermissionsAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public $depends = [
-        CpAsset::class,
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $css = [
-        'css/UserPermissions.css',
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $js = [
-        'UserPermissions.js',
-    ];
+    public function registerAssetFiles($view)
+    {
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\UserPermissionsAsset::class);
+    }
 }

@@ -7,30 +7,17 @@
 
 namespace craft\web\assets\htmx;
 
-use craft\web\InternalAssetBundle;
-use craft\web\assets\cp\CpAsset;
+use craft\web\AssetBundle;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Htmx asset bundle.
+ * @deprecated 6.0.0
  */
-class HtmxAsset extends InternalAssetBundle
+class HtmxAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public $depends = [
-        CpAsset::class,
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $js = [
-        'htmx.min.js',
-    ];
+    public function registerAssetFiles($view)
+    {
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\HtmxAsset::class);
+    }
 }

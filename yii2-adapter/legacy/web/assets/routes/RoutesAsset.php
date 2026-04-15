@@ -7,37 +7,17 @@
 
 namespace craft\web\assets\routes;
 
-use craft\web\InternalAssetBundle;
-use craft\web\assets\cp\CpAsset;
+use craft\web\AssetBundle;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Asset bundle for the Routes page
+ * @deprecated 6.0.0
  */
-class RoutesAsset extends InternalAssetBundle
+class RoutesAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public $depends = [
-        CpAsset::class,
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $css = [
-        'css/routes.css',
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $js = [
-        'routes.js',
-    ];
+    public function registerAssetFiles($view)
+    {
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\RoutesAsset::class);
+    }
 }

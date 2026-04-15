@@ -7,26 +7,18 @@
 
 namespace craft\web\assets\picturefill;
 
-use craft\web\InternalAssetBundle;
+use craft\web\AssetBundle;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Picturefill asset bundle.
  *
  * @deprecated in 5.8.0
  */
-class PicturefillAsset extends InternalAssetBundle
+class PicturefillAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
+    public function registerAssetFiles($view)
     {
-        $this->sourcePath = __DIR__ . '/dist';
-
-        $this->js = [
-            'picturefill.js',
-        ];
-
-        parent::init();
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\PicturefillAsset::class);
     }
 }

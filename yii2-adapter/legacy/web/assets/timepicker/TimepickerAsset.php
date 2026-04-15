@@ -7,29 +7,17 @@
 
 namespace craft\web\assets\timepicker;
 
-use craft\web\InternalAssetBundle;
-use craft\web\assets\jquery\JqueryAsset;
+use craft\web\AssetBundle;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Timepicker asset bundle.
+ * @deprecated 6.0.0
  */
-class TimepickerAsset extends InternalAssetBundle
+class TimepickerAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
+    public function registerAssetFiles($view)
     {
-        $this->sourcePath = __DIR__ . '/dist';
-
-        $this->depends = [
-            JqueryAsset::class,
-        ];
-
-        $this->js = [
-            'jquery.timepicker.js',
-        ];
-
-        parent::init();
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\TimepickerAsset::class);
     }
 }

@@ -7,32 +7,19 @@
 
 namespace craft\web\assets\passkeysetup;
 
-use craft\web\InternalAssetBundle;
-use craft\web\assets\cp\CpAsset;
+use craft\web\AssetBundle;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Passkey setup asset bundle.
  *
  * @since 5.0.0
+ * @deprecated 6.0.0
  */
-class PasskeySetupAsset extends InternalAssetBundle
+class PasskeySetupAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public $depends = [
-        CpAsset::class,
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $js = [
-        'PasskeySetup.js',
-    ];
+    public function registerAssetFiles($view)
+    {
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\PasskeySetupAsset::class);
+    }
 }

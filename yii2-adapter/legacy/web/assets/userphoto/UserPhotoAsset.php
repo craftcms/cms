@@ -7,39 +7,17 @@
 
 namespace craft\web\assets\userphoto;
 
-use craft\web\InternalAssetBundle;
-use craft\web\assets\cp\CpAsset;
-use craft\web\assets\fileupload\FileUploadAsset;
+use craft\web\AssetBundle;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Asset bundle for user photo fields
+ * @deprecated 6.0.0
  */
-class UserPhotoAsset extends InternalAssetBundle
+class UserPhotoAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public $depends = [
-        CpAsset::class,
-        FileUploadAsset::class,
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $css = [
-        'css/UserPhotoInput.css',
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $js = [
-        'UserPhotoInput.js',
-    ];
+    public function registerAssetFiles($view)
+    {
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\UserPhotoAsset::class);
+    }
 }

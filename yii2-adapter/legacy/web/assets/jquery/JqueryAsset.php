@@ -3,13 +3,14 @@
 declare(strict_types=1);
 namespace craft\web\assets\jquery;
 
-use craft\web\InternalAssetBundle;
+use craft\web\AssetBundle;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
-class JqueryAsset extends InternalAssetBundle
+/** @deprecated 6.0.0 */
+class JqueryAsset extends AssetBundle
 {
-    public $sourcePath = __DIR__ . '/dist/';
-
-    public $js = [
-        'jquery.js',
-    ];
+    public function registerAssetFiles($view)
+    {
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\JqueryAsset::class);
+    }
 }
