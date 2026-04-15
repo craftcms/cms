@@ -186,7 +186,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             ];
 
             if ($query instanceof ElementQuery) {
-                $filter->apply($query->getSubQuery(), $relationCriteria);
+                $filter->apply($query->getQuery(), $relationCriteria);
 
                 return $query;
             }
@@ -776,29 +776,28 @@ JS, [
                 // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
                 // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied
                 // to the eager-loading query and cause a SQL error.
-                /** @var Builder $q */
-                foreach ([$elementQuery->getQuery(), $elementQuery->getSubQuery()] as $q) {
-                    $q->join(
-                        new Alias(Table::RELATIONS, $relationsAlias),
-                        function (JoinClause $join) use ($element, $relationsAlias) {
-                            $join->whereColumn("$relationsAlias.targetId", 'elements.id')
-                                ->where("$relationsAlias.sourceId", $element->id)
-                                ->where("$relationsAlias.fieldId", $this->id)
-                                ->where(function (JoinClause $join) use ($element, $relationsAlias) {
-                                    $join->whereNull("$relationsAlias.sourceSiteId")
-                                        ->orWhere("$relationsAlias.sourceSiteId", $element->siteId);
-                                });
-                        },
-                    );
+                $query = $elementQuery->getQuery();
 
-                    if (
-                        $this->sortable &&
-                        ! $this->maintainHierarchy &&
-                        count($q->orderBy ?? []) === 1 &&
-                        ($q->orderBy[0]['column'] ?? null) instanceof OrderByPlaceholderExpression
-                    ) {
-                        $q->orderBy("$relationsAlias.sortOrder");
-                    }
+                $query->join(
+                    new Alias(Table::RELATIONS, $relationsAlias),
+                    function (JoinClause $join) use ($element, $relationsAlias) {
+                        $join->whereColumn("$relationsAlias.targetId", 'elements.id')
+                            ->where("$relationsAlias.sourceId", $element->id)
+                            ->where("$relationsAlias.fieldId", $this->id)
+                            ->where(function (JoinClause $join) use ($element, $relationsAlias) {
+                                $join->whereNull("$relationsAlias.sourceSiteId")
+                                    ->orWhere("$relationsAlias.sourceSiteId", $element->siteId);
+                            });
+                    },
+                );
+
+                if (
+                    $this->sortable &&
+                    ! $this->maintainHierarchy &&
+                    count($query->orderBy ?? []) === 1 &&
+                    ($query->orderBy[0]['column'] ?? null) instanceof OrderByPlaceholderExpression
+                ) {
+                    $query->orderBy("$relationsAlias.sortOrder");
                 }
             });
         } else {
@@ -1044,7 +1043,7 @@ JS, [
                 $rawValue = $rawValue->where['elements.id'] ?? null;
             }
             if ($rawValue instanceof ElementQuery) {
-                $where = Arr::first($rawValue->getSubQuery()->wheres, fn ($where) => ($where['column'] ?? '') === 'elements.id');
+                $where = Arr::first($rawValue->getQuery()->wheres, fn ($where) => ($where['column'] ?? '') === 'elements.id');
                 $rawValue = $where['value'] ?? null;
             }
             if (is_array($rawValue)) {

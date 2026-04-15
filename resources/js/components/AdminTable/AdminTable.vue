@@ -1,9 +1,10 @@
 <script setup lang="ts">
-  import {FlexRender} from '@tanstack/vue-table';
+  import {FlexRender, type Column} from '@tanstack/vue-table';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import {computed} from 'vue';
+  import {computed, useId} from 'vue';
   import {useReorderableRows} from '@/composables/useReorderableRows';
   import {TableSpacing} from '@/types';
+  import ColumnHeaderTitle from '@/components/AdminTable/ColumnHeaderTitle.vue';
   import ReorderButton from '@/components/ReorderButton.vue';
   import DropIndicator from '@/components/DropIndicator.vue';
   import Select from '@/components/form/Select.vue';
@@ -12,6 +13,7 @@
   const props = withDefaults(
     defineProps<{
       table: any;
+      title?: string;
       reorderable?: boolean;
       selectable?: boolean;
       readOnly?: boolean;
@@ -44,6 +46,12 @@
       emit('reorder', startIndex, finishIndex);
     },
     enabled: () => !props.readOnly && props.reorderable,
+  });
+
+  const id = useId();
+  const columnSortInstructionId = `column-sort-instructions-${id}`;
+  const titleString = computed(() => {
+    return props.title ? `${props.title}, ` : null;
   });
 
   const pageIndexProxy = computed({
@@ -88,6 +96,17 @@
 
     return value;
   }
+
+  function getAriaSortAttribute(
+    column: Column<any>
+  ): 'ascending' | 'descending' | 'none' | undefined {
+    if (column.getCanSort()) {
+      if (column.getIsSorted()) {
+        return column.getIsSorted() === 'asc' ? 'ascending' : 'descending';
+      }
+      return 'none';
+    }
+  }
 </script>
 
 <template>
@@ -104,6 +123,14 @@
         'cp-table--auto': layout === 'auto',
       }"
     >
+      <caption class="sr-only">
+        {{
+          titleString
+        }}
+        <span :id="columnSortInstructionId">{{
+          t('Column headers with buttons are sortable')
+        }}</span>
+      </caption>
       <thead>
         <tr
           v-for="headerGroup in table.getHeaderGroups()"
@@ -125,7 +152,8 @@
               'cell--header': true,
               'cursor-pointer select-none': header.column.getCanSort(),
             }"
-            @click="header.column.getToggleSortingHandler()?.($event)"
+            scope="col"
+            :aria-sort="getAriaSortAttribute(header.column)"
           >
             <div
               class="flex gap-1 items-center"
@@ -139,25 +167,32 @@
                 ),
               }"
             >
-              <FlexRender
-                v-if="!header.isPlaceholder"
-                :render="header.column.columnDef.header"
-                :props="header.getContext()"
-              />
-              <craft-icon
-                v-if="
-                  header.column.getCanSort() && !header.column.getIsSorted()
-                "
-                name="arrow-up-arrow-down"
-              ></craft-icon>
-              <craft-icon
-                v-else-if="header.column.getIsSorted() === 'asc'"
-                name="arrow-down"
-              ></craft-icon>
-              <craft-icon
-                v-else-if="header.column.getIsSorted() === 'desc'"
-                name="arrow-up"
-              ></craft-icon>
+              <ColumnHeaderTitle
+                :isSortable="header.column.getCanSort()"
+                :sortInstructionsId="columnSortInstructionId"
+                @sort-column="header.column.getToggleSortingHandler()?.($event)"
+              >
+                <FlexRender
+                  v-if="!header.isPlaceholder"
+                  :render="header.column.columnDef.header"
+                  :props="header.getContext()"
+                />
+
+                <craft-icon
+                  v-if="
+                    header.column.getCanSort() && !header.column.getIsSorted()
+                  "
+                  name="arrow-up-arrow-down"
+                ></craft-icon>
+                <craft-icon
+                  v-else-if="header.column.getIsSorted() === 'asc'"
+                  name="arrow-down"
+                ></craft-icon>
+                <craft-icon
+                  v-else-if="header.column.getIsSorted() === 'desc'"
+                  name="arrow-up"
+                ></craft-icon>
+              </ColumnHeaderTitle>
 
               <template v-if="header.column.columnDef.meta?.headerTip">
                 <c-tooltip :for="`header-info-${header.column.id}`">{{
@@ -302,6 +337,14 @@
 
   :deep(.cell--header) {
     white-space: nowrap;
+  }
+
+  :deep(.cell--header[aria-sort]) {
+    &:hover,
+    &:focus-within {
+      background-color: var(--c-color-neutral-fill-loud);
+      color: var(--c-color-neutral-on-loud);
+    }
   }
 
   :deep(.cell--wrap) {

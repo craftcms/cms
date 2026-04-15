@@ -567,7 +567,7 @@ describe('indexElements', function () {
         $result = $method->invoke(null, $query);
 
         expect($result)->not->toBe($query);
-        expect($result->getSubQuery()->wheres)->not()->toContain($excludeDescendantIdsExpression);
+        expect($result->getQuery()->wheres)->not()->toContain($excludeDescendantIdsExpression);
     });
 });
 

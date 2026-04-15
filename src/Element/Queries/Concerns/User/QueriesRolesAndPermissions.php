@@ -70,7 +70,7 @@ trait QueriesRolesAndPermissions
     {
         $this->beforeQuery(function (UserQuery $userQuery) {
             if (is_bool($userQuery->admin)) {
-                $userQuery->subQuery->whereBool('users.admin', $userQuery->admin);
+                $userQuery->whereBool('users.admin', $userQuery->admin);
             }
 
             if ($this->admin !== true) {
@@ -177,8 +177,8 @@ trait QueriesRolesAndPermissions
 
         $userQuery->when(
             $permittedUserIds->isEmpty(),
-            fn (UserQuery $userQuery) => $userQuery->subQuery->whereBool('users.admin', true),
-            fn (UserQuery $userQuery) => $userQuery->subQuery->where(function (Builder $query) use ($permittedUserIds) {
+            fn (UserQuery $userQuery) => $userQuery->whereBool('users.admin', true),
+            fn (UserQuery $userQuery) => $userQuery->where(function (Builder $query) use ($permittedUserIds) {
                 $query->whereBool('users.admin', true)
                     ->orWhereIn('users.id', $permittedUserIds);
             }),

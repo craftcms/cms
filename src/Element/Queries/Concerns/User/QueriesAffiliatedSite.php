@@ -33,7 +33,7 @@ trait QueriesAffiliatedSite
                 return;
             }
 
-            $userQuery->subQuery->whereIn('users.affiliatedSiteId', Arr::wrap($this->affiliatedSiteId));
+            $userQuery->whereIn('users.affiliatedSiteId', Arr::wrap($this->affiliatedSiteId));
         });
     }
 

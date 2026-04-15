@@ -9,9 +9,11 @@ use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Support\Concerns\MacroableMagicMethods;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Contracts\Validatable;
+use DateTimeInterface;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Traits\Macroable;
 use Yiisoft\Arrays\ArrayableInterface;
@@ -19,7 +21,9 @@ use Yiisoft\Arrays\ArrayableTrait;
 
 abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, ComponentInterface, Validatable
 {
-    use ArrayableTrait;
+    use ArrayableTrait {
+        fields as private traitFields;
+    }
     use Macroable;
     use MacroableMagicMethods;
     use Validates;
@@ -60,6 +64,38 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
     public static function isSelectable(): bool
     {
         return true;
+    }
+
+    public function fields(): array
+    {
+        $fields = $this->traitFields();
+
+        foreach ($fields as $field => $definition) {
+            if (! is_string($definition)) {
+                continue;
+            }
+
+            // Only rewrite default field-to-property mappings, not aliases or custom definitions.
+            if ($definition !== $field) {
+                continue;
+            }
+
+            if (! Typecast::isDateTimeProperty(static::class, $field)) {
+                continue;
+            }
+
+            $fields[$field] = static function (self $component, string $field): mixed {
+                $value = $component->$field;
+
+                if (! $value instanceof DateTimeInterface) {
+                    return $value;
+                }
+
+                return DateTimeHelper::toIso8601($value, true) ?: null;
+            };
+        }
+
+        return $fields;
     }
 
     public function __get(string $name)

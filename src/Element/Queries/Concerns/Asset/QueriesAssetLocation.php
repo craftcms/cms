@@ -73,14 +73,13 @@ trait QueriesAssetLocation
                 throw new QueryAbortedException;
             }
 
-            $assetQuery->subQuery->join(new Alias(Table::VOLUMEFOLDERS, 'volumeFolders'), 'volumeFolders.id', '=', 'assets.folderId');
-            $assetQuery->query->join(new Alias(Table::VOLUMEFOLDERS, 'volumeFolders'), 'volumeFolders.id', '=', 'assets.folderId');
+            $assetQuery->join(new Alias(Table::VOLUMEFOLDERS, 'volumeFolders'), 'volumeFolders.id', '=', 'assets.folderId');
 
             if ($assetQuery->volumeId) {
                 if ($assetQuery->volumeId === ':empty:') {
-                    $assetQuery->subQuery->whereNull('assets.volumeId');
+                    $assetQuery->whereNull('assets.volumeId');
                 } else {
-                    $assetQuery->subQuery->whereIn('assets.volumeId', Arr::wrap($this->volumeId));
+                    $assetQuery->whereIn('assets.volumeId', Arr::wrap($this->volumeId));
                 }
             }
 
@@ -91,7 +90,7 @@ trait QueriesAssetLocation
                     $assetQuery->folderId = reset($assetQuery->folderId);
                 }
 
-                $assetQuery->subQuery->where(function (Builder $query) use ($assetQuery) {
+                $assetQuery->where(function (Builder $query) use ($assetQuery) {
                     $query->whereNumericParam('assets.folderId', $assetQuery->folderId)
                         ->when(
                             is_numeric($assetQuery->folderId) && $assetQuery->includeSubfolders,
@@ -117,7 +116,7 @@ trait QueriesAssetLocation
                     }
                 }
 
-                $assetQuery->subQuery->whereParam('volumeFolders.path', $folderPath);
+                $assetQuery->whereParam('volumeFolders.path', $folderPath);
             }
         });
     }

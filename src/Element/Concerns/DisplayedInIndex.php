@@ -257,7 +257,7 @@ trait DisplayedInIndex
      */
     private static function elementQueryWithAllDescendants(ElementQueryInterface $elementQuery): ElementQueryInterface
     {
-        $wheres = $elementQuery->getSubQuery()->wheres;
+        $wheres = $elementQuery->getQuery()->wheres;
 
         if (! is_array($wheres)) {
             return $elementQuery;
@@ -272,7 +272,7 @@ trait DisplayedInIndex
 
             $elementQuery = clone $elementQuery;
             unset($wheres[$key]);
-            $elementQuery->getSubQuery()->wheres = $wheres;
+            $elementQuery->getQuery()->wheres = $wheres;
 
             return $elementQuery;
         }

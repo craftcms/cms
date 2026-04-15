@@ -19,6 +19,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Override;
 use Tpetry\QueryExpressions\Language\Alias;
 
 /**
@@ -31,6 +32,15 @@ class AssetQuery extends ElementQuery
     use QueriesAssetLocation;
     use QueriesAssetProperties;
     use QueriesSizes;
+
+    #[Override]
+    protected string $table = Table::ASSETS;
+
+    #[Override]
+    protected array $defaultOrderBy = [
+        'assets.dateCreated' => SORT_DESC,
+        'assets.id' => SORT_DESC,
+    ];
 
     /**
      * @var bool|null Whether to only return assets that the user has permission to view.
@@ -49,8 +59,6 @@ class AssetQuery extends ElementQuery
     public function __construct(array $config = [])
     {
         parent::__construct(Asset::class, $config);
-
-        $this->joinElementTable(Table::ASSETS);
 
         $this->query->addSelect([
             'assets.volumeId as volumeId',
@@ -136,7 +144,7 @@ class AssetQuery extends ElementQuery
                 throw new QueryAbortedException;
             }
 
-            $this->subQuery->where(function (Builder $query) use ($user, $fullyAuthorizedVolumeIds, $partiallyAuthorizedVolumeIds) {
+            $this->where(function (Builder $query) use ($user, $fullyAuthorizedVolumeIds, $partiallyAuthorizedVolumeIds) {
                 if ($fullyAuthorizedVolumeIds) {
                     $query->orWhereIn('assets.volumeId', $fullyAuthorizedVolumeIds);
                 }
@@ -156,7 +164,7 @@ class AssetQuery extends ElementQuery
             throw new QueryAbortedException;
         }
 
-        $this->subQuery->where(function (Builder $query) use ($user, $unauthorizedVolumeIds, $partiallyAuthorizedVolumeIds) {
+        $this->where(function (Builder $query) use ($user, $unauthorizedVolumeIds, $partiallyAuthorizedVolumeIds) {
             if ($unauthorizedVolumeIds) {
                 $query->orWhereIn('assets.volumeId', $unauthorizedVolumeIds);
             }
@@ -173,7 +181,7 @@ class AssetQuery extends ElementQuery
         });
     }
 
-    #[\Override]
+    #[Override]
     public function createElement(array $row): ElementInterface
     {
         // Use the site-specific alt text, if set
@@ -186,7 +194,7 @@ class AssetQuery extends ElementQuery
         return parent::createElement($row);
     }
 
-    #[\Override]
+    #[Override]
     protected function cacheTags(): array
     {
         $tags = [];
@@ -200,7 +208,7 @@ class AssetQuery extends ElementQuery
         return $tags;
     }
 
-    #[\Override]
+    #[Override]
     protected function fieldLayouts(): Collection
     {
         if (! $this->volumeId) {
