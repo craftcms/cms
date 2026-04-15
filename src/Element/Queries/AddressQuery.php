@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
+use Override;
 
 /**
  * @extends ElementQuery<Address>
@@ -351,7 +352,7 @@ class AddressQuery extends ElementQuery
                     throw new QueryAbortedException;
                 }
 
-                $addressQuery->subQuery->whereIn('addresses.primaryOwnerId', Arr::wrap($addressQuery->primaryOwnerId ?? $addressQuery->ownerId));
+                $addressQuery->whereIn('addresses.primaryOwnerId', Arr::wrap($addressQuery->primaryOwnerId ?? $addressQuery->ownerId));
             }
 
             foreach ([
@@ -374,7 +375,7 @@ class AddressQuery extends ElementQuery
                     continue;
                 }
 
-                $addressQuery->subQuery->whereParam("addresses.$property", $addressQuery->$property);
+                $addressQuery->whereParam("addresses.$property", $addressQuery->$property);
             }
         });
     }
@@ -885,7 +886,7 @@ class AddressQuery extends ElementQuery
         return $this;
     }
 
-    #[\Override]
+    #[Override]
     protected function fieldLayouts(): Collection
     {
         return new Collection([

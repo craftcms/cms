@@ -69,14 +69,14 @@ trait SearchesElements
                 // Only use the portion we're actually querying for
                 if (is_int($elementQuery->query->getOffset()) && $elementQuery->query->getOffset() !== 0) {
                     $searchResults = array_slice($searchResults, $elementQuery->query->getOffset(), null, true);
-                    $elementQuery->subQuery->offset = null;
-                    $elementQuery->subQuery->unionOffset = null;
+                    $elementQuery->query->offset = null;
+                    $elementQuery->query->unionOffset = null;
                 }
 
                 if (is_int($elementQuery->query->getLimit()) && $elementQuery->query->getLimit() !== 0) {
                     $searchResults = array_slice($searchResults, 0, $elementQuery->query->getLimit(), true);
-                    $elementQuery->subQuery->limit = null;
-                    $elementQuery->subQuery->unionLimit = null;
+                    $elementQuery->query->limit = null;
+                    $elementQuery->query->unionLimit = null;
                 }
             }
 
@@ -92,7 +92,7 @@ trait SearchesElements
                 $elementIdsBySiteId[$siteId][] = $elementId;
             }
 
-            $elementQuery->subQuery->where(function (Builder $query) use ($elementIdsBySiteId) {
+            $elementQuery->where(function (Builder $query) use ($elementIdsBySiteId) {
                 foreach ($elementIdsBySiteId as $siteId => $elementIds) {
                     $query->orWhere(function (Builder $query) use ($siteId, $elementIds) {
                         $query->where('elements_sites.siteId', $siteId)
@@ -111,7 +111,7 @@ trait SearchesElements
             throw new QueryAbortedException;
         }
 
-        $elementQuery->subQuery->whereIn('elements.id', $searchQuery->pluck('elementId'));
+        $elementQuery->whereIn('elements.id', $searchQuery->pluck('elementId'));
     }
 
     /**

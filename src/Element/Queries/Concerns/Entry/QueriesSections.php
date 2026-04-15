@@ -162,7 +162,7 @@ trait QueriesSections
             return;
         }
 
-        $entryQuery->subQuery->whereIn('entries.sectionId', $entryQuery->sectionId);
+        $entryQuery->whereIn('entries.sectionId', $entryQuery->sectionId);
 
         // Should we set the structureId param?
         if (

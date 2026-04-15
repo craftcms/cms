@@ -85,15 +85,15 @@ trait QueriesAssetProperties
     {
         $this->beforeQuery(function (AssetQuery $assetQuery) {
             if ($assetQuery->uploaderId) {
-                $assetQuery->subQuery->whereIn('uploaderId', Arr::wrap($assetQuery->uploaderId));
+                $assetQuery->whereIn('uploaderId', Arr::wrap($assetQuery->uploaderId));
             }
 
             if ($assetQuery->filename) {
-                $assetQuery->subQuery->whereParam('assets.filename', $assetQuery->filename);
+                $assetQuery->whereParam('assets.filename', $assetQuery->filename);
             }
 
             if ($assetQuery->kind) {
-                $assetQuery->subQuery->where(function (Builder $query) use ($assetQuery) {
+                $assetQuery->where(function (Builder $query) use ($assetQuery) {
                     $query->whereParam('assets.kind', $assetQuery->kind);
 
                     $kinds = AssetsHelper::getFileKinds();
@@ -111,7 +111,7 @@ trait QueriesAssetProperties
             }
 
             if ($assetQuery->dateModified) {
-                $assetQuery->subQuery->whereDateParam('assets.dateModified', $assetQuery->dateModified);
+                $assetQuery->whereDateParam('assets.dateModified', $assetQuery->dateModified);
             }
         });
     }

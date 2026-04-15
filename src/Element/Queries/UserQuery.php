@@ -95,7 +95,6 @@ class UserQuery extends ElementQuery
 
             // If there's a custom orderBy, make sure we're showing active, non-pending accounts first
             $userQuery->query->orders = $orders;
-            $userQuery->subQuery->orders = $orders;
         });
     }
 

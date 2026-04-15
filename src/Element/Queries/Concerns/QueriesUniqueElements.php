@@ -66,7 +66,7 @@ trait QueriesUniqueElements
 
         $caseGroup = new CaseGroup($cases, new Value($preferSites->count()));
 
-        $subSelectSql = $elementQuery->subQuery->clone()
+        $subSelectSql = $elementQuery->getQuery()->clone()
             ->select(['elements_sites.id'])
             ->from(Table::ELEMENTS, 'subElements')
             ->whereColumn('subElements.id', 'tmpElements.id')
@@ -85,7 +85,7 @@ trait QueriesUniqueElements
         $subSelectSql = str_replace("{$q}{$qElements}", "{$q}{$qSubElements}", $subSelectSql);
         $subSelectSql = str_replace($qTmpElements, $qElements, $subSelectSql);
 
-        $elementQuery->subQuery->whereRaw('elements_sites.id = ('.$subSelectSql.')');
+        $elementQuery->whereRaw('elements_sites.id = ('.$subSelectSql.')');
     }
 
     /**

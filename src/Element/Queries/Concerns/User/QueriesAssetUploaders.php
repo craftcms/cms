@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Element\Queries\Concerns\User;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\UserQuery;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -44,10 +43,10 @@ trait QueriesAssetUploaders
             $exists = DB::table(Table::ASSETS)
                 ->whereColumn('uploaderId', 'elements.id');
 
-            $userQuery->subQuery->when(
+            $userQuery->when(
                 $userQuery->assetUploaders,
-                fn (Builder $query) => $query->whereExists($exists),
-                fn (Builder $query) => $query->whereNotExists($exists),
+                fn (UserQuery $query) => $query->whereExists($exists),
+                fn (UserQuery $query) => $query->whereNotExists($exists),
             );
         });
     }

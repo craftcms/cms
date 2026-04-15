@@ -46,7 +46,7 @@ class EntryQuery extends ElementQuery
     #[Override]
     protected array $defaultOrderBy = [
         'entries.postDate' => SORT_DESC,
-        'elements.id' => SORT_DESC,
+        'entries.id' => SORT_DESC,
     ];
 
     public function getFieldIdColumn(): string
@@ -237,7 +237,7 @@ class EntryQuery extends ElementQuery
             return;
         }
 
-        $query->subQuery->where(function (Builder $query) use ($value, $peerDraftPermissionPrefix, $peerPermissionPrefix, $permissionPrefix, $user, $sections) {
+        $query->where(function (Builder $query) use ($value, $peerDraftPermissionPrefix, $peerPermissionPrefix, $permissionPrefix, $user, $sections) {
             $partialAccessSections = [];
 
             foreach ($sections as $section) {

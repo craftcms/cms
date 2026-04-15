@@ -42,7 +42,7 @@ test('it applies a default order when no orderBy is specified', function () {
 
     expect(
         collect($query->getQuery()->orders)
-            ->where('column', 'elements.id')
+            ->where('column', 'entries.id')
             ->where('direction', 'desc')
             ->first()
     )->not()->toBeNull();

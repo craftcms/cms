@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
-use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Database\Query\JoinClause;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @internal
@@ -49,12 +46,7 @@ trait QueriesAlt
                     });
             };
 
-            $this->subQuery
-                ->leftJoin(new Alias(Table::ASSETS_SITES, 'assets_sites'), function (JoinClause $join) {
-                    $join->on('assets_sites.assetId', '=', 'assets.id')
-                        ->whereColumn('assets_sites.siteId', '=', 'elements_sites.siteId');
-                })
-                ->where($this->hasAlt ? $hasAltCondition : $withoutAltCondition);
+            $assetQuery->where($this->hasAlt ? $hasAltCondition : $withoutAltCondition);
         });
     }
 

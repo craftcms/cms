@@ -10,6 +10,7 @@ use craft\base\NestedElementInterface;
 use CraftCms\Cms\Auth\Events\AuthorizingElement;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
 
@@ -87,7 +88,7 @@ class ElementPolicy
             return null;
         }
 
-        if (! $site = Site::find($siteId)) {
+        if (! $site = Sites::getSiteById($siteId)) {
             return false;
         }
 
