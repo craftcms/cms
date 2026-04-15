@@ -3,7 +3,7 @@
 
 {% set readOnly = not app.config.craft.general.allowAdminChanges %}
 
-{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+{% do registerLegacyAsset('CraftCms\\Cms\\View\\LegacyAssets\\AdminTableAsset') -%}
 
 
 

@@ -1,5 +1,5 @@
 {% import '_includes/forms' as forms %}
-{% do view.registerAssetBundle("craft\\web\\assets\\money\\MoneyAsset") %}
+{% do registerLegacyAsset("CraftCms\\Cms\\View\\LegacyAssets\\MoneyAsset") %}
 
 {% set id = id ?? "money#{random()}" -%}
 {% set decimals = decimals ?? 2 %}

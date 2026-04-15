@@ -8,7 +8,7 @@
   <fieldset class="first">
     <h2>{{ 'User Groups'|t('app') }}</h2>
 
-    {% do view.registerDeltaName('groups') %}
+    {% do deltaRegistry.registerName('groups') %}
 
     {% embed '_includes/forms/field.twig' with {
       fieldId: 'user-groups',
@@ -46,7 +46,7 @@
       }) }}
     {% endif %}
 
-    {% do view.registerDeltaName('permissions') %}
+    {% do deltaRegistry.registerName('permissions') %}
     {{ hiddenInput('permissions', '') }}
 
     <div id="permissions" class="field{% if user.admin %} hidden{% endif %}">

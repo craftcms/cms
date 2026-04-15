@@ -17,7 +17,7 @@
     dir: orientation,
 }|merge(bodyAttributes ?? {}, recursive=true) -%}
 
-{% do view.registerAssetBundle('craft\\web\\assets\\cp\\CpAsset') -%}
+{% do registerLegacyAsset('CraftCms\\Cms\\View\\LegacyAssets\\CpAsset') -%}
 {% set cpAssetUrl = asset('vendor/craft/legacy/cp/dist') -%}
 
 {% hook "cp.layouts.base" -%}
