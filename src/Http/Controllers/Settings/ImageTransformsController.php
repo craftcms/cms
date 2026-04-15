@@ -9,6 +9,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Validation\Rules\ColorRule;
+use CraftCms\Cms\View\LegacyAssets\EditTransformAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -113,7 +114,7 @@ class ImageTransformsController
     private function editView(?string $transformHandle = null, ?ImageTransform $transform = null): View
     {
         $transform ??= new ImageTransform;
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\EditTransformAsset::class);
+        app(InternalAssetRegistry::class)->register(EditTransformAsset::class);
 
         $title = $transform->id
             ? (trim((string) $transform->name) ?: t('Edit Image Transform'))

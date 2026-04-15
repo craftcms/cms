@@ -12,6 +12,7 @@ use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\NewUsersAsset;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -78,7 +79,7 @@ class NewUsers extends Widget
         $options = $this->getSettings();
         $options['orientation'] = I18N::getLocale()->getOrientation();
 
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\NewUsersAsset::class);
+        app(InternalAssetRegistry::class)->register(NewUsersAsset::class);
         HtmlStack::js('new Craft.NewUsersWidget('.$this->id.', '.Json::encode($options).');');
 
         return '';

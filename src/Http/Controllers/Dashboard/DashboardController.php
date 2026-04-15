@@ -11,6 +11,7 @@ use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\HtmlStack;
+use CraftCms\Cms\View\LegacyAssets\DashboardAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
@@ -89,7 +90,7 @@ readonly class DashboardController
             });
 
         // Include all the JS and CSS stuff
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\DashboardAsset::class);
+        app(InternalAssetRegistry::class)->register(DashboardAsset::class);
         $this->HtmlStack->jsWithVars(
             fn ($widgetTypeInfo) => "window.dashboard = new Craft.Dashboard($widgetTypeInfo)",
             [$widgetTypeInfo]

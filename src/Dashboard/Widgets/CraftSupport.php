@@ -73,7 +73,7 @@ class CraftSupport extends Widget
         }
 
         $view = Craft::$app->getView();
-        $assetBundle = $view->registerAssetBundle(CraftSupportAsset::class);
+        $view->registerAssetBundle(CraftSupportAsset::class);
 
         $cmsVersion = Cms::VERSION;
         $cmsMajorVersion = (int) $cmsVersion;

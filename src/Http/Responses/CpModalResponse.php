@@ -9,6 +9,7 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\LegacyAssets\HtmxAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Support\Responsable;
@@ -151,7 +152,7 @@ class CpModalResponse implements Responsable
 
     public function toResponse($request): JsonResponse
     {
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\HtmxAsset::class);
+        app(InternalAssetRegistry::class)->register(HtmxAsset::class);
 
         $namespace = Str::random(10);
 

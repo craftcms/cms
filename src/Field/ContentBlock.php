@@ -32,6 +32,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use DateTime;
 use GraphQL\Type\Definition\Type;
@@ -329,7 +330,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
 
     private function settingsHtml(bool $readOnly): string
     {
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\CpAsset::class);
+        app(InternalAssetRegistry::class)->register(CpAsset::class);
 
         return template('_components/fieldtypes/ContentBlock/settings', [
             'field' => $this,

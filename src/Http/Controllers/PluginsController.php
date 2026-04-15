@@ -9,6 +9,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\PluginsAsset;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,7 +27,7 @@ readonly class PluginsController
 
     public function index(): View
     {
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\PluginsAsset::class);
+        app(InternalAssetRegistry::class)->register(PluginsAsset::class);
 
         $info = $this->plugins
             ->getAllPluginInfo()

@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\UpdaterAsset;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -76,7 +77,7 @@ abstract class BaseUpdaterController
     public function index(): Response|View
     {
         // Load the updater JS
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\UpdaterAsset::class);
+        app(InternalAssetRegistry::class)->register(UpdaterAsset::class);
 
         $this->data = $this->initialData();
         $state = $this->realInitialState();

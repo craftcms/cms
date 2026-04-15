@@ -13,6 +13,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
+use CraftCms\Cms\View\LegacyAssets\AuthMethodSetupAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -38,7 +39,7 @@ readonly class PasswordController
 
         $response = $this->asEditUserScreen($user, self::SCREEN_PASSWORD);
 
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\AuthMethodSetupAsset::class);
+        app(InternalAssetRegistry::class)->register(AuthMethodSetupAsset::class);
 
         $response->action('users/save-password');
         $response->contentTemplate('users/_password', compact('user'));

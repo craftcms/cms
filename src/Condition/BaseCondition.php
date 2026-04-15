@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\View\LegacyAssets\ConditionBuilderAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -257,7 +258,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
 
     public function getBuilderInnerHtml(bool $autofocusAddButton = false): string
     {
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\ConditionBuilderAsset::class);
+        app(InternalAssetRegistry::class)->register(ConditionBuilderAsset::class);
         $namespacedId = InputNamespace::namespaceId($this->id);
 
         return InputNamespace::namespaceInputs(function () use ($namespacedId, $autofocusAddButton) {

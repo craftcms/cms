@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\UserPhotoAsset;
 use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 use Override;
@@ -74,7 +75,7 @@ class PhotoField extends BaseNativeField
             return null;
         }
 
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\UserPhotoAsset::class);
+        app(InternalAssetRegistry::class)->register(UserPhotoAsset::class);
         $inputId = sprintf('user-photo-%s', mt_rand());
 
         HtmlStack::jsWithVars(fn ($userId, $inputId, $isCurrentUser) => <<<JS

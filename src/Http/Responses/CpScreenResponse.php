@@ -15,6 +15,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\View\LegacyAssets\ContentWindowAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Support\Responsable;
@@ -865,7 +866,7 @@ class CpScreenResponse implements Responsable
             $request->input('x-craft-live-preview') !== null &&
             Cms::config()->useIframeResizer
         ) {
-            app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\ContentWindowAsset::class);
+            app(InternalAssetRegistry::class)->register(ContentWindowAsset::class);
         }
 
         // Render and return the template

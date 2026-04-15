@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\PluginStoreAsset;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -50,7 +51,7 @@ readonly class PluginStoreController
             Position::Head,
         );
 
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\PluginStoreAsset::class);
+        app(InternalAssetRegistry::class)->register(PluginStoreAsset::class);
 
         return view('plugin-store/_index');
     }

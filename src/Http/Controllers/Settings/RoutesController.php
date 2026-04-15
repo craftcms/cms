@@ -9,6 +9,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Route\Routes;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\RoutesAsset;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,7 +24,7 @@ readonly class RoutesController
 
     public function index(): View
     {
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\RoutesAsset::class);
+        app(InternalAssetRegistry::class)->register(RoutesAsset::class);
 
         return view('settings.routes', [
             'tokens' => $this->routes->tokens,

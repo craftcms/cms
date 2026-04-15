@@ -12,6 +12,7 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\RecentEntriesAsset;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -111,7 +112,7 @@ class RecentEntries extends Widget
             $params['sectionId'] = (int) $this->section;
         }
 
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\RecentEntriesAsset::class);
+        app(InternalAssetRegistry::class)->register(RecentEntriesAsset::class);
         $js = 'new Craft.RecentEntriesWidget('.$this->id.', '.Json::encode($params).');';
         HtmlStack::js($js);
 

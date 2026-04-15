@@ -38,6 +38,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlStack;
+use CraftCms\Cms\View\LegacyAssets\FieldSettingsAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -513,7 +514,7 @@ class FieldsController
 
         $response
             ->prepareScreen(function () {
-                app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\FieldSettingsAsset::class);
+                app(InternalAssetRegistry::class)->register(FieldSettingsAsset::class);
                 $this->HtmlStack->jsWithVars(fn ($typeId, $settingsId, $namespace) => <<<JS
 new Craft.FieldSettingsToggle('#' + $typeId, '#' + $settingsId, $namespace, {
   wrapWithTypeClassDiv: true

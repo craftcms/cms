@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
+use CraftCms\Cms\View\LegacyAssets\CodeMirrorAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use InvalidArgumentException;
 use Override;
@@ -98,7 +99,7 @@ class Json extends Field implements CrossSiteCopyableFieldInterface, MergeableFi
     {
         $id = $this->getInputId();
 
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\CodeMirrorAsset::class);
+        app(InternalAssetRegistry::class)->register(CodeMirrorAsset::class);
         HtmlStack::jsWithVars(fn ($id, $static) => <<<JS
 (() => {
   const textarea = document.getElementById($id)
