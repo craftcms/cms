@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Elements;
 
 use Craft;
-use craft\controllers\ElementIndexesController;
 use craft\controllers\ElementsController;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Colorable;
@@ -26,6 +25,7 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
@@ -511,8 +511,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     protected static function defineActions(string $source): array
     {
         // Get the selected site
-        $elementQuery = Craft::$app->controller instanceof ElementIndexesController
-            ? Craft::$app->controller->getElementQuery()
+        $elementQuery = app(CurrentElementIndex::class)->isActive()
+            ? app(CurrentElementIndex::class)->query()
             : null;
         $site = $elementQuery && $elementQuery->siteId
             ? Sites::getSiteById($elementQuery->siteId)

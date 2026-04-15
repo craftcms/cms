@@ -30,6 +30,7 @@ use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\NewUsersController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\EditionController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementIndexSourcesController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSourcesController;
 use CraftCms\Cms\Http\Controllers\Elements\ExportElementIndexController;
@@ -238,6 +239,9 @@ Route::prefix(implode('/', [
         });
 
         // Elements
+        Route::post('element-indexes/source-path', [ElementIndexSourcesController::class, 'sourcePath']);
+        Route::post('element-indexes/source-attribute-info', [ElementIndexSourcesController::class, 'sourceAttributeInfo']);
+        Route::post('element-indexes/get-source-tree-html', [ElementIndexSourcesController::class, 'getSourceTreeHtml']);
         Route::post('element-indexes/export', ExportElementIndexController::class);
         Route::post('element-indexes/perform-action', PerformElementActionController::class);
         Route::post('element-search/search', ElementSearchController::class);

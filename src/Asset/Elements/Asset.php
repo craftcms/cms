@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Elements;
 
 use Craft;
-use craft\controllers\ElementIndexesController;
-use craft\controllers\ElementSelectorModalsController;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Actions\CopyReferenceTag;
 use CraftCms\Cms\Asset\Actions\CopyUrl;
@@ -44,6 +42,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
@@ -603,8 +602,8 @@ class Asset extends Element
             }
 
             // Show in folder
-            $query = Craft::$app->controller instanceof ElementIndexesController
-                ? Craft::$app->controller->getElementQuery()
+            $query = app(CurrentElementIndex::class)->isActive()
+                ? app(CurrentElementIndex::class)->query()
                 : null;
             if (
                 $query instanceof AssetQuery &&
@@ -1103,10 +1102,7 @@ class Asset extends Element
 
     private static function isFolderIndex(): bool
     {
-        return (
-            Craft::$app->controller instanceof ElementIndexesController ||
-            Craft::$app->controller instanceof ElementSelectorModalsController
-        ) && request()->boolean('foldersOnly');
+        return app(CurrentElementIndex::class)->isActive() && request()->boolean('foldersOnly');
     }
 
     #[Override]

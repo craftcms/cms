@@ -20,6 +20,7 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\TestClasses\TestEntryWithAfterValidate;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
@@ -305,6 +306,8 @@ it('queues search index updates for searchable dirty fields', function () {
             $beforeUpdateTriggered = true;
         }
     });
+
+    Config::set('queue.default', 'null');
 
     expect($this->writes->saveElement($entry))->toBeTrue()
         ->and($beforeUpdateTriggered)->toBeTrue()

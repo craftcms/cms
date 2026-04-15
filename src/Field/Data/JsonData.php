@@ -13,11 +13,12 @@ use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use IteratorAggregate;
+use Override;
 use Stringable;
 use Traversable;
 
 #[AllowedInSandbox]
-class JsonData extends Component implements ArrayAccess, IteratorAggregate, Serializable, Stringable
+class JsonData extends Component implements IteratorAggregate, Serializable, Stringable
 {
     public function __construct(
         private mixed $value,
@@ -31,7 +32,7 @@ class JsonData extends Component implements ArrayAccess, IteratorAggregate, Seri
         return $this->getJson();
     }
 
-    #[\Override]
+    #[Override]
     public function __call($method, $parameters)
     {
         try {
@@ -81,16 +82,19 @@ class JsonData extends Component implements ArrayAccess, IteratorAggregate, Seri
         return $json;
     }
 
+    #[Override]
     public function offsetGet(mixed $offset): mixed
     {
         return $this->value[$offset];
     }
 
+    #[Override]
     public function offsetSet(mixed $offset, mixed $value): void
     {
         $this->value[$offset] = $value;
     }
 
+    #[Override]
     public function offsetExists(mixed $offset): bool
     {
         if (is_string($this->value)) {
@@ -108,6 +112,7 @@ class JsonData extends Component implements ArrayAccess, IteratorAggregate, Seri
         return false;
     }
 
+    #[Override]
     public function offsetUnset(mixed $offset): void
     {
         unset($this->value[$offset]);
