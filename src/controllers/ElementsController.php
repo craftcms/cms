@@ -104,6 +104,7 @@ class ElementsController extends Controller
     private bool $_applyParams;
     private bool $_prevalidate;
     private bool $_asUnpublishedDraft;
+    private bool $_asNewDraft;
     private bool $_deleteProvisionalDraft;
     private ?bool $_updateSearchIndexImmediately = null;
 
@@ -148,6 +149,7 @@ class ElementsController extends Controller
         $this->_applyParams = $this->_param('applyParams', true) || !$this->request->getIsPost();
         $this->_prevalidate = (bool)$this->_param('prevalidate');
         $this->_asUnpublishedDraft = (bool)$this->_param('asUnpublishedDraft');
+        $this->_asNewDraft = (bool)$this->_param('asNewDraft');
         $this->_deleteProvisionalDraft = (bool)$this->_param('deleteProvisionalDraft');
         $this->_updateSearchIndexImmediately = $this->_param('updateSearchIndexImmediately');
 
@@ -1642,7 +1644,8 @@ JS, [
 
         // save as a new is now available to people who can create drafts
         $asUnpublishedDraft = $this->_asUnpublishedDraft && $element::hasDrafts();
-        if ($asUnpublishedDraft) {
+        $asNewDraft = $this->_asNewDraft && $element::hasDrafts();
+        if ($asUnpublishedDraft || $asNewDraft) {
             $authorized = $elementsService->canDuplicateAsDraft($element, $user);
         } else {
             $authorized = $elementsService->canDuplicate($element, $user);
@@ -1654,7 +1657,7 @@ JS, [
 
         $newAttributes = [
             'isProvisionalDraft' => false,
-            'draftId' => null,
+            'draftId' => $asNewDraft ? $element->draftId : null,
         ];
 
         if ($asUnpublishedDraft &&
