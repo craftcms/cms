@@ -10,7 +10,7 @@
 
 {% set formHtml %}
   <main>
-    {% if hasLogo %}
+    {% if logo ?? false %}
       <h1>
         {{ tag('img', {
           id: 'login-logo',
