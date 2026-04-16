@@ -1,9 +1,12 @@
 /* jshint esversion: 6 */
 /* globals module, require, __dirname */
-const {getConfig} = require('@craftcms/webpack');
+const {getConfig, resolvePackageFile} = require('@craftcms/webpack');
 const MergeIntoSingleFilePlugin = require('webpack-merge-and-include-globally');
-const pkgDir = require('pkg-dir');
 const path = require('path');
+
+// Vue 2 is in legacy node_modules (root has Vue 3)
+const legacyNodeModules = path.resolve(__dirname, '../node_modules');
+const resolveLegacyPackage = (pkg, file) => path.join(legacyNodeModules, pkg, file);
 
 module.exports = getConfig({
   context: __dirname,
@@ -12,16 +15,12 @@ module.exports = getConfig({
       new MergeIntoSingleFilePlugin({
         files: {
           'vue.js': [
-            path.resolve(pkgDir.sync(), 'node_modules/vue/dist/vue.min.js'),
-            path.resolve(
-              pkgDir.sync(),
-              'node_modules/vue-router/dist/vue-router.min.js'
-            ),
-            path.resolve(pkgDir.sync(), 'node_modules/vuex/dist/vuex.min.js'),
-            path.resolve(
-              pkgDir.sync(),
-              'node_modules/vue-autosuggest/dist/vue-autosuggest.js'
-            ),
+            // Vue 2 from legacy node_modules (root has Vue 3)
+            resolveLegacyPackage('vue', 'dist/vue.min.js'),
+            // vue-router, vuex, vue-autosuggest from root (Vue 2 compatible versions)
+            resolvePackageFile('vue-router', 'dist/vue-router.min.js'),
+            resolvePackageFile('vuex', 'dist/vuex.min.js'),
+            resolvePackageFile('vue-autosuggest', 'dist/vue-autosuggest.js'),
           ],
         },
       }),

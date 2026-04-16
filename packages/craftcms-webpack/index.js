@@ -4,10 +4,48 @@ const _require = (id) =>
   require(require.resolve(id, {paths: [require.main.path]}));
 
 const path = require('path');
+const fs = require('fs');
+
+/**
+ * Resolves the root directory of a package in a monorepo.
+ * Works around Node.js exports restrictions that prevent using require.resolve
+ * to get package internal files.
+ *
+ * @param {string} pkg - Package name (e.g., 'vue', 'vue-router')
+ * @returns {string} - Absolute path to package root directory
+ */
+const resolvePackageDir = (pkg) => {
+  try {
+    const mainPath = require.resolve(pkg);
+    const searchString = `node_modules/${pkg}`;
+    const pkgIndex = mainPath.lastIndexOf(searchString);
+    if (pkgIndex !== -1) {
+      return mainPath.substring(0, pkgIndex + searchString.length);
+    }
+  } catch (e) {
+    // Fall through to alternative resolution
+  }
+  const nodeModulesPath = path.resolve(process.cwd(), 'node_modules', pkg);
+  if (fs.existsSync(path.join(nodeModulesPath, 'package.json'))) {
+    return nodeModulesPath;
+  }
+  throw new Error(`Could not find package root for ${pkg}`);
+};
+
+/**
+ * Resolves a specific file within a package.
+ *
+ * @param {string} pkg - Package name (e.g., 'vue')
+ * @param {string} file - Relative path to file within package (e.g., 'dist/vue.min.js')
+ * @returns {string} - Absolute path to the file
+ */
+const resolvePackageFile = (pkg, file) => {
+  return path.join(resolvePackageDir(pkg), file);
+};
+
 const glob = require('glob');
 const {merge} = require('webpack-merge');
 const dotenv = require('dotenv');
-const fs = require('fs');
 const yargs = require('yargs/yargs');
 const {hideBin} = require('yargs/helpers');
 const argv = yargs(hideBin(process.argv)).argv;
@@ -422,4 +460,6 @@ const getConfig = ({context, type, watchPaths, postcssConfig, config = {}}) => {
 module.exports = {
   getConfig,
   getConfigs,
+  resolvePackageDir,
+  resolvePackageFile,
 };
