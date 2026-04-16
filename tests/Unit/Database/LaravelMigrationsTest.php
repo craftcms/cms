@@ -72,14 +72,17 @@ it('publishes and applies Laravel optional migrations during install', function 
             $this->databasePath.'/migrations/2026_01_01_000001_create_jobs_table.php',
             $this->databasePath.'/migrations/2026_01_01_000002_create_failed_jobs_table.php',
             $this->databasePath.'/migrations/2026_01_01_000003_create_job_batches_table.php',
+            $this->databasePath.'/migrations/2026_01_01_000004_create_sessions_table.php',
             $this->databasePath.'/migrations/2026_01_01_000005_create_notifications_table.php',
         ])
-        ->and($migrator->loggedMigrations)->toContain(['2026_01_01_000004_create_sessions_table', 1])
-        ->and($migrator->loggedMigrations)->toContain(['2026_01_01_000000_create_cache_table', 2])
-        ->and($migrator->loggedMigrations)->toContain(['2026_01_01_000001_create_jobs_table', 2])
-        ->and($migrator->loggedMigrations)->toContain(['2026_01_01_000002_create_failed_jobs_table', 2])
-        ->and($migrator->loggedMigrations)->toContain(['2026_01_01_000003_create_job_batches_table', 2])
-        ->and($migrator->loggedMigrations)->toContain(['2026_01_01_000005_create_notifications_table', 2]);
+        ->and($migrator->loggedMigrations)->toBe([
+            ['2026_01_01_000000_create_cache_table', 1],
+            ['2026_01_01_000001_create_jobs_table', 1],
+            ['2026_01_01_000002_create_failed_jobs_table', 1],
+            ['2026_01_01_000003_create_job_batches_table', 1],
+            ['2026_01_01_000004_create_sessions_table', 1],
+            ['2026_01_01_000005_create_notifications_table', 1],
+        ]);
 });
 
 it('is idempotent when the Laravel optional migrations already exist', function () {
