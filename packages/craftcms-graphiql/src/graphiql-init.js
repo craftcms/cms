@@ -2,7 +2,7 @@ import 'graphiql/graphiql.css';
 import './graphiql.scss';
 import React from 'react';
 import {createRoot} from 'react-dom/client';
-import GraphiQL from 'graphiql';
+import {GraphiQL} from 'graphiql';
 
 const CraftGraphiQL = ({endpoint, selectedSchema}) => {
   function graphQLFetcher(graphQLParams) {

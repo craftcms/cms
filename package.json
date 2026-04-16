@@ -10,9 +10,9 @@
     "prebuild": "npm run fix-prettier",
     "build": "vite build",
     "dev": "vite",
-    "build:bundles": "cd ./yii2-adapter && npm run build",
-    "dev:bundles": "cd ./yii2-adapter && npm run dev",
-    "serve:bundles": "cd ./yii2-adapter && npm run serve",
+    "build:bundles": "cd ./resources/legacy && npm run build",
+    "dev:bundles": "cd ./resources/legacy && npm run dev",
+    "serve:bundles": "cd ./resources/legacy && npm run serve",
     "dev:cp": "cd ./packages/craftcms-cp && npm run dev",
     "build:cp": "cd ./packages/craftcms-cp && npm run build",
     "test:cp": "cd ./packages/craftcms-cp && npm run test",
@@ -20,7 +20,8 @@
     "build:all": "npm run build:bundles && npm run build:cp && npm run build"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "resources/legacy"
   ],
   "engines": {
     "node": ">=22"
@@ -33,6 +34,7 @@
     "@tailwindcss/vite": "^4.2.2",
     "@total-typescript/tsconfig": "^1.0.4",
     "@vitejs/plugin-vue": "^6.0.5",
+    "baseline-browser-mapping": "^2.10.19",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "npm-run-all": "^4.1.5",

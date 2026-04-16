@@ -12,12 +12,12 @@ module.exports = getConfig({
       new CopyWebpackPlugin({
         patterns: [
           {
-            context: path.resolve(pkgDir.sync(), 'node_modules/d3-format'),
+            context: pkgDir.sync(require.resolve('d3-format')),
             from: 'locale/*.json',
             to: 'd3-format/',
           },
           {
-            context: path.resolve(pkgDir.sync(), 'node_modules/d3-time-format'),
+            context: pkgDir.sync(require.resolve('d3-time-format')),
             from: 'locale/*.json',
             to: 'd3-time-format/',
           },

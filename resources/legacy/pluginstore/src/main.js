@@ -5,21 +5,15 @@
 import Vue from 'vue';
 import axios from 'axios';
 import {currency} from './js/filters/currency';
-import {
-  escapeHtml,
-  uppercaseFirst,
-  formatDate,
-  formatNumber,
-  t,
-} from './js/filters/craft';
+import {escapeHtml, formatDate, formatNumber, t, uppercaseFirst,} from './js/filters/craft';
 import router from './js/router';
 import store from './js/store';
 import {mapState} from 'vuex';
 import Modal from './js/components/modal/Modal';
 import StatusMessage from './js/components/StatusMessage';
 import App from './App';
-import './js/plugins/vue-awesome-swiper';
-import './js/plugins/vue-apex-charts';
+import './js/plugins/vue-awesome-swiper.js';
+import './js/plugins/vue-apex-charts.js';
 import CBtn from './js/components/ui/CBtn';
 import CDropdown from './js/components/ui/CDropdown';
 import CIcon from './js/components/ui/CIcon';

@@ -19,6 +19,15 @@ const config = getConfig({
             },
           },
         },
+        {
+          // Treat graphiql CSS as having side effects so it won't be tree-shaken
+          test: /node_modules\/graphiql\/.*\.css$/,
+          sideEffects: true,
+        },
+        {
+          test: /node_modules\/@graphiql\/.*\.css$/,
+          sideEffects: true,
+        },
       ],
     },
   },

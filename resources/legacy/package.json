@@ -3,14 +3,13 @@
   "private": true,
   "main": "webpack.config.js",
   "scripts": {
-    "prebuild": "npm run fix-prettier",
-    "build": "webpack --node-env=production --progress",
+    "build": "webpack --node-env=production",
     "dev": "webpack --node-env=dev --mode=development -w",
     "serve": "webpack-dev-server --node-env=development",
-    "check-prettier": "prettier --check ./legacy/web/assets",
-    "fix-prettier": "prettier --write ./legacy/web/assets",
+    "check-prettier": "prettier --check ./",
+    "fix-prettier": "prettier --write ./",
     "prepare": "husky",
-    "lint:styles": "stylelint \"legacy/**/*.scss\""
+    "lint:styles": "stylelint \"./**/*.scss\""
   },
   "engines": {
     "node": ">=20"
@@ -19,8 +18,8 @@
     "extends @craftcms/browserslist-config"
   ],
   "devDependencies": {
-    "@craftcms/playwright": "file:../packages/craftcms-playwright",
-    "@craftcms/webpack": "file:../packages/craftcms-webpack",
+    "@craftcms/playwright": "file:../../packages/craftcms-playwright",
+    "@craftcms/webpack": "file:../../packages/craftcms-webpack",
     "@playwright/test": "^1.58.2",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
@@ -36,15 +35,16 @@
   },
   "dependencies": {
     "@benmajor/jquery-touch-events": "^2.0.3",
-    "@craftcms/graphiql": "file:../packages/craftcms-graphiql",
-    "@craftcms/sass": "file:../packages/craftcms-sass",
-    "@craftcms/vue": "file:../packages/craftcms-vue",
-    "@craftcms/cp": "file:../packages/craftcms-cp",
+    "@craftcms/cp": "file:../../packages/craftcms-cp",
+    "@craftcms/graphiql": "file:../../packages/craftcms-graphiql",
+    "@craftcms/sass": "file:../../packages/craftcms-sass",
+    "@craftcms/vue": "file:../../packages/craftcms-vue",
     "@floating-ui/dom": "^1.7.6",
     "@selectize/selectize": "selectize/selectize.js#master",
     "@simplewebauthn/browser": "^13.3.0",
     "@types/jquery": "^3.5.34",
     "accounting": "^0.4.1",
+    "apexcharts": "^5.10.6",
     "axios": "^1.13.6",
     "blueimp-file-upload": "^10.32.0",
     "codemirror": "^5.65.21",
@@ -58,6 +58,7 @@
     "jquery.payment": "^3.0.0",
     "picturefill": "^3.0.3",
     "punycode": "^2.3.1",
+    "swiper": "^8.4.7",
     "timepicker": "^1.14.1",
     "ttf2woff2": "^5.0.0",
     "typescript": "^5.9.3",

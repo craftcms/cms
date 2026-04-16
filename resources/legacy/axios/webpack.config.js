@@ -1,8 +1,10 @@
 /* jshint esversion: 6 */
 /* globals module, require, __dirname */
 const {getConfig} = require('@craftcms/webpack');
-const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const pkgDir = require('pkg-dir');
+const path = require('path');
+
 
 module.exports = getConfig({
   context: __dirname,
@@ -11,9 +13,9 @@ module.exports = getConfig({
       new CopyWebpackPlugin({
         patterns: [
           {
-            from: path.resolve(
-              process.cwd(),
-              'node_modules/axios/dist/axios.js'
+            from: path.join(
+              pkgDir.sync(require.resolve('axios')),
+              'dist/axios.js'
             ),
           },
         ],

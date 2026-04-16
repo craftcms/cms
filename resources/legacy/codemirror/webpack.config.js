@@ -3,6 +3,7 @@
 const {getConfig} = require('@craftcms/webpack');
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const pkgDir = require('pkg-dir');
 
 module.exports = getConfig({
   context: __dirname,
@@ -11,21 +12,21 @@ module.exports = getConfig({
       new CopyWebpackPlugin({
         patterns: [
           {
-            from: path.resolve(
-              process.cwd(),
-              'node_modules/codemirror/lib/codemirror.js'
+            from: path.join(
+              pkgDir.sync(require.resolve('codemirror')),
+              'lib/codemirror.js'
             ),
           },
           {
-            from: path.resolve(
-              process.cwd(),
-              'node_modules/codemirror/mode/javascript/javascript.js'
+            from: path.join(
+              pkgDir.sync(require.resolve('codemirror')),
+              'mode/javascript/javascript.js'
             ),
           },
           {
-            from: path.resolve(
-              process.cwd(),
-              'node_modules/codemirror/lib/codemirror.css'
+            from: path.join(
+              pkgDir.sync(require.resolve('codemirror')),
+              'lib/codemirror.css'
             ),
           },
         ],

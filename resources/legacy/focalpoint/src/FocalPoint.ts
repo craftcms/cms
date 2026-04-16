@@ -1,6 +1,7 @@
+// @ts-ignore
 import './focal.scss';
 
-import JQEvent = JQuery.Event;
+type JQEvent = any;
 
 export class FocalPoint {
   private readonly $target: JQuery;
