@@ -22,6 +22,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\craftAsset;
+
 /**
  * @internal
  */
@@ -73,11 +75,7 @@ readonly class PluginStoreController
         $data['CraftEnterprise'] = Edition::Enterprise->value;
 
         // Logos
-        $data['craftLogo'] = Craft::$app->getAssetManager()->getPublishedUrl(
-            path: '@app/web/assets/pluginstore/dist/',
-            publish: true,
-            filePath: 'images/craft.svg',
-        );
+        $data['craftLogo'] = craftAsset('legacy/pluginstore/dist/images/craft.svg');
 
         return new JsonResponse($data);
     }
