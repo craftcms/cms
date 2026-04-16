@@ -1059,10 +1059,8 @@ JS, [
         if (! empty($missingSourceElementIds)) {
             $missingMappingsQuery = DB::table(Table::RELATIONS)
                 ->select(['sourceId as source', 'targetId as target'])
-                ->where([
-                    'fieldId' => $this->id,
-                    'sourceId' => $missingSourceElementIds,
-                ])
+                ->where('fieldId', $this->id)
+                ->whereIn('sourceId', $missingSourceElementIds)
                 ->where(fn (Builder $query) => $query
                     ->where('sourceSiteId', $sourceSiteId)
                     ->orWhereNull('sourceSiteId'),
