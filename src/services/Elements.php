@@ -4692,13 +4692,14 @@ SQL;
             return $fallback;
         }
 
-        if (empty($attribute) || !isset($element->$attribute)) {
+        $generatedFields = $element->getGeneratedFieldValues();
+        if (empty($attribute) || (!isset($element->$attribute)) && !isset($generatedFields[$attribute])) {
             // Default to the URL
             return (string)$element->getUrl();
         }
 
         try {
-            $value = $element->$attribute;
+            $value = $element->$attribute ?? $generatedFields[$attribute];
 
             if (is_object($value) && !method_exists($value, '__toString')) {
                 throw new Exception('Object of class ' . get_class($value) . ' could not be converted to string');
