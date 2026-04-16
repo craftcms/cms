@@ -10,6 +10,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\HtmlStack;
+use Throwable;
 
 /**
  * @deprecated
@@ -93,7 +94,12 @@ class D3Asset implements LegacyAssetInterface
         }
 
         // Find the first file in the directory that starts with the language ID
-        $handle = opendir($dir);
+        try {
+            $handle = opendir($dir);
+        } catch (Throwable) {
+            return '{}';
+        }
+
         while (($file = readdir($handle)) !== false) {
             if (strncmp($file, $language, 2) === 0) {
                 closedir($handle);
