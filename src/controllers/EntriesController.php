@@ -625,6 +625,9 @@ class EntriesController extends BaseEntriesController
         $entry->setRevisionNotes($this->request->getBodyParam('notes'));
     }
 
+    /**
+     * @since 5.10.0
+     */
     public function actionReassignModal(): Response
     {
         $this->requireCpRequest();
@@ -650,6 +653,9 @@ class EntriesController extends BaseEntriesController
             ->submitButtonLabel(Craft::t('app', 'Reassign'));
     }
 
+    /**
+     * @since 5.10.0
+     */
     public function actionReassign(): Response
     {
         $this->requireCpRequest();

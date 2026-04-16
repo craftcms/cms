@@ -4284,16 +4284,6 @@ JS, [
                     'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type}', [
                         'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
                     ])),
-//                    'action' => $isUnpublishedDraft ? 'elements/delete-draft' : 'elements/delete',
-//                    'params' => [
-//                        'elementId' => $this->getCanonicalId(),
-//                        'siteId' => $this->siteId,
-//                    ],
-//                    'redirect' => "$redirectUrl#",
-//                    'confirm' => Craft::t('app', 'Are you sure you want to delete this {type}?', [
-//                        'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
-//                    ]),
-//                    'destructive' => true,
                 ];
 
                 $view->registerJsWithVars(fn(

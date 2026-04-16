@@ -175,24 +175,12 @@ class QueueController extends Controller
     /**
      * Returns info about all the jobs in the queue.
      *
-     * @param string|null $jobId
      * @return Response
      */
-    public function actionGetJobInfo(string $jobId = null): Response
+    public function actionGetJobInfo(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePermission('accessCp');
-
-        if ($jobId) {
-            try {
-                $details = $this->queue->getJobDetails($jobId);
-            } catch (InvalidArgumentException) {
-                $details = null;
-            }
-            return $this->asJson([
-                'job' => $details,
-            ]);
-        }
 
         $limit = $this->request->getParam('limit');
 

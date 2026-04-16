@@ -2220,32 +2220,6 @@ JS, [
                         'confirm' => Craft::t('app', 'Deactivating a user revokes their ability to sign in. Are you sure you want to continue?'),
                     ];
                 }
-
-//                if ($isCurrentUser || $currentUser->can('deleteUsers')) {
-//                    $view = Craft::$app->getView();
-//                    $deleteId = sprintf('action-delete-%s', mt_rand());
-//                    $items[] = [
-//                        'id' => $deleteId,
-//                        'icon' => 'trash',
-//                        'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type}', [
-//                            'type' => static::lowerDisplayName(),
-//                        ])),
-//                    ];
-//
-//                    $view->registerJsWithVars(fn($id, $userId, $redirect) => <<<JS
-//$('#' + $id).on('activate', async () => {
-//  const success = await (new Craft.UserDeletionManager([$userId])).deleteUsers();
-//  if (success) {
-//    document.location.href = $redirect;
-//  }
-//});
-//JS,
-//                    [
-//                        $view->namespaceInputId($deleteId),
-//                        $this->id,
-//                        UrlHelper::cpUrl(Craft::$app->edition === CmsEdition::Solo ? 'dashboard' : 'users'),
-//                    ]);
-//                }
             }
         }
 

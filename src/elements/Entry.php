@@ -2423,14 +2423,7 @@ JS, [
     {
         switch ($attribute) {
             case 'authors':
-                $authors = $this->getAuthors();
-                $html = '';
-                if (!empty($authors)) {
-                    foreach ($authors as $author) {
-                        $html .= Cp::elementChipHtml($author);
-                    }
-                }
-                return $html;
+                return Cp::elementPreviewHtml($this->getAuthors());
             case 'section':
                 $section = $this->getSection();
                 if (!$section) {
