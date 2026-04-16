@@ -46,7 +46,7 @@ export const Default: Story = {
                     .value="var(${s.name})"
                   ></craft-copy-attribute>
                 </td>
-                <td style="opacity:.5;"><code>${s.px}</code></td>
+                <td><code>${s.px}</code></td>
               </tr>
             `
           )}
