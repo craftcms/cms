@@ -72,7 +72,7 @@ class CraftSupport extends Widget
             return null;
         }
 
-        app(InternalAssetRegistry::class)->regiser(CraftSupportAsset::class);
+        app(InternalAssetRegistry::class)->register(CraftSupportAsset::class);
 
         $cmsVersion = Cms::VERSION;
         $cmsMajorVersion = (int) $cmsVersion;
