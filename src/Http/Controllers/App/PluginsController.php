@@ -14,6 +14,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
 
 readonly class PluginsController
@@ -64,7 +65,7 @@ readonly class PluginsController
 
         // Update our records & use all licensed plugins as a starting point
         if (! empty($pluginLicenses)) {
-            $defaultIconUrl = Craft::$app->getAssetManager()->getPublishedUrl('@appicons/default-plugin.svg', true);
+            $defaultIconUrl = craftAsset('icons/custom-icons/default-plugin.svg');
             $formatter = I18N::getFormatter();
             foreach ($pluginLicenses as $pluginLicenseInfo) {
                 if (isset($pluginLicenseInfo['plugin'])) {

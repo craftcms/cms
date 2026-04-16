@@ -7,8 +7,8 @@
 
 namespace craft\base;
 
-use Craft;
 use CraftCms\Cms\Dashboard\Dashboard;
+use function CraftCms\Cms\craftAsset;
 
 /**
  * Widget is the base class for classes representing dashboard widgets in terms of objects.
@@ -108,7 +108,7 @@ abstract class Widget extends SavableComponent implements \CraftCms\Cms\Dashboar
      */
     public function getBodyHtml(): ?string
     {
-        $url = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/prg.jpg');
+        $url = craftAsset('legacy/cp/dist/images/prg.jpg');
 
         return <<<EOD
 <div style="margin: 0 -24px -24px;">
