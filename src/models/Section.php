@@ -488,7 +488,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
             'maxAuthors' => $this->maxAuthors,
             'propagationMethod' => $this->propagationMethod->value,
             'siteSettings' => [],
-            'defaultPlacement' => $this->defaultPlacement ?? self::DEFAULT_PLACEMENT_END,
+            'defaultPlacement' => $this->defaultPlacement,
         ];
 
         if (!empty($this->previewTargets)) {

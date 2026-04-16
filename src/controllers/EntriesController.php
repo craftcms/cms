@@ -312,7 +312,6 @@ class EntriesController extends BaseEntriesController
             $success = false;
         } finally {
             if ($isNotNew) {
-                /** @phpstan-ignore-next-line  */
                 $mutex->release($lockKey);
             }
         }
