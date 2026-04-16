@@ -21,6 +21,7 @@
 - Element indexes now automatically refresh after duplicating elements and the queue is completed, if there’s an active search term. ([#18636](https://github.com/craftcms/cms/issues/18636))
 - Timestamps in the control panel now include their time zone abbreviation. ([#18639](https://github.com/craftcms/cms/pull/18639))
 - Generated field values are no longer truncated within element cards. ([#18646](https://github.com/craftcms/cms/discussions/18646))
+- Improved the user deletion workflow. ([#18728](https://github.com/craftcms/cms/pull/18728))
 
 ### Administration
 - Sections now have a “Min Authors” setting. ([#18662](https://github.com/craftcms/cms/pull/18662))
