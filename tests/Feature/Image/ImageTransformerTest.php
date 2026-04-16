@@ -112,7 +112,7 @@ it('invalidates stale eager-loaded indexes when dateModified is a string', funct
         [$transform],
         [[
             'id' => $asset->id,
-            'dateModified' => now()->addMinute()->toDateTimeString(),
+            'dateModified' => now()->utc()->addMinute()->toDateTimeString(),
         ]]
     );
 

@@ -9,7 +9,6 @@ use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
-use function Pest\Laravel\getJson;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
@@ -56,7 +55,7 @@ test('get plugin license info validates and sorts plugin results', function () {
         ]);
     app()->instance(Api::class, $api);
 
-    getJson(action([PluginsController::class, 'getLicenseInfo']))
+    postJson(action([PluginsController::class, 'getLicenseInfo']))
         ->assertOk()
         ->assertJsonPath('alpha-plugin.name', 'Alpha Plugin')
         ->assertJsonPath('alpha-plugin.expired', true)

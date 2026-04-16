@@ -6,6 +6,7 @@ use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\Tests\FakeMigrator;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 
 afterEach(function () {
     if (! isset($this->databasePath)) {
@@ -131,4 +132,23 @@ it('is idempotent when the Laravel optional migrations already exist', function 
         ->and($migrator->tracked)->toBe('craft')
         ->and($migrator->runArguments)->toBe([])
         ->and($migrator->loggedMigrations)->toHaveCount(6);
+});
+
+it('marks optional migrations as applied when their tables already exist', function () {
+    $this->databasePath = sys_get_temp_dir().'/craft-optional-migrations-'.uniqid();
+    app()->useDatabasePath($this->databasePath);
+    File::ensureDirectoryExists($this->databasePath.'/migrations');
+
+    File::put($this->databasePath.'/migrations/2026_01_01_000004_create_sessions_table.php', '<?php');
+
+    Schema::dropIfExists('sessions');
+    app(LaravelMigrations::class)->ensureSessionsTable();
+
+    $migrator = new FakeMigrator;
+    $migrator->tracked = 'craft';
+
+    app(LaravelMigrations::class)->install($migrator);
+
+    expect($migrator->runArguments[0])->not->toContain($this->databasePath.'/migrations/2026_01_01_000004_create_sessions_table.php')
+        ->and($migrator->loggedMigrations)->toContain(['2026_01_01_000004_create_sessions_table', 1]);
 });

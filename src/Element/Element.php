@@ -10,6 +10,7 @@ use craft\base\Component;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
@@ -297,7 +298,7 @@ abstract class Element extends Component implements ElementInterface
     {
         // Is this the "field:handle" syntax?
         if (str_starts_with($name, 'field:')) {
-            return $this->fieldByHandle(substr($name, 6)) !== null;
+            return app(Fields::class)->isKnownFieldHandle(substr($name, 6));
         }
         if ($name === 'title') {
             return true;
@@ -309,7 +310,7 @@ abstract class Element extends Component implements ElementInterface
             return true;
         }
 
-        return (bool) $this->fieldByHandle($name);
+        return app(Fields::class)->isKnownFieldHandle($name);
     }
 
     #[Override]
@@ -330,8 +331,16 @@ abstract class Element extends Component implements ElementInterface
             return $this->clonedFieldValue($name);
         }
 
+        if (app(Fields::class)->isFieldHandle($name)) {
+            return $this->getCustomFieldRawValue($name);
+        }
+
         if (isset($this->_generatedFieldValues) && array_key_exists($name, $this->_generatedFieldValues)) {
             return $this->_generatedFieldValues[$name];
+        }
+
+        if (app(Fields::class)->isGeneratedFieldHandle($name)) {
+            return $this->getGeneratedFieldRawValue($name);
         }
 
         return parent::__get($name);
@@ -710,7 +719,7 @@ abstract class Element extends Component implements ElementInterface
             return true;
         }
 
-        return (bool) $this->fieldByHandle($offset);
+        return is_string($offset) && app(Fields::class)->isKnownFieldHandle($offset);
     }
 
     public function setAttributesFromRequest(array $values): void

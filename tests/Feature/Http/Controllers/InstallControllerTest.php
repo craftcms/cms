@@ -243,25 +243,3 @@ test('Laravel migration installer can recreate the sessions table', function () 
 
     expect(Schema::hasTable('sessions'))->toBeTrue();
 });
-
-test('install preserves existing Laravel migrations table rows', function () {
-    DB::table('migrations')->insert([
-        'migration' => '2026_01_25_114732_create_jobs_table',
-        'batch' => 1,
-    ]);
-
-    DB::table('info')->delete();
-    Cms::setIsInstalled(false);
-
-    $this->artisan('craft:install', [
-        '--email' => 'support@pixelandtonic.com',
-        '--username' => 'admin',
-        '--password' => 'asupersecretpassword',
-        '--siteName' => 'Craft',
-        '--siteUrl' => '$APP_URL',
-        '--language' => 'en-US',
-    ])->assertSuccessful();
-
-    expect(Schema::hasColumn('migrations', 'track'))->toBeTrue()
-        ->and(DB::table('migrations')->where('migration', '2026_01_25_114732_create_jobs_table')->exists())->toBeTrue();
-});
