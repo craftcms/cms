@@ -96,13 +96,13 @@
   --c-color-warning-on-quiet: var(--color-yellow-800);
 
   /* Semantic colors — danger */
-  --c-color-danger-fill-loud: var(--color-red-700);
+  --c-color-danger-fill-loud: var(--color-red-600);
   --c-color-danger-fill-normal: var(--color-red-100);
   --c-color-danger-fill-quiet: var(--color-red-50);
   --c-color-danger-border-loud: var(--color-red-800);
   --c-color-danger-border-normal: var(--color-red-600);
   --c-color-danger-border-quiet: var(--color-red-400);
-  --c-color-danger-on-loud: var(--c-text-white);
+  --c-color-danger-on-loud: var(--color-red-50);
   --c-color-danger-on-normal: var(--color-red-700);
   --c-color-danger-on-quiet: var(--color-red-800);
 
