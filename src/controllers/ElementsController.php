@@ -1644,7 +1644,7 @@ JS, [
 
         // save as a new is now available to people who can create drafts
         $asUnpublishedDraft = $this->_asUnpublishedDraft && $element::hasDrafts();
-        $asNewDraft = $this->_asNewDraft && $element::hasDrafts();
+        $asNewDraft = $this->_asNewDraft && $element::hasDrafts() && $element->getIsDraft();
         if ($asUnpublishedDraft || $asNewDraft) {
             $authorized = $elementsService->canDuplicateAsDraft($element, $user);
         } else {
