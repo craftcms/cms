@@ -20,6 +20,7 @@ Craft.CpModal = Garnish.Modal.extend(
 
     $body: null,
     $content: null,
+    resizeObserver: null,
 
     $sidebar: null,
 
@@ -33,6 +34,8 @@ Craft.CpModal = Garnish.Modal.extend(
     cancelToken: null,
     ignoreFailedRequest: false,
     fieldsWithErrors: null,
+
+    succeeded: false,
 
     init: function (action, settings) {
       this.action = action;
@@ -124,6 +127,12 @@ Craft.CpModal = Garnish.Modal.extend(
         }
       });
       this.addListener(this.$container, 'submit', 'handleSubmit');
+
+      this.resizeObserver = new ResizeObserver((entries) => {
+        if (this.visible) {
+          this.updateSizeAndPosition();
+        }
+      });
 
       this.load();
     },
@@ -297,10 +306,15 @@ Craft.CpModal = Garnish.Modal.extend(
       if (data.modelClass && data.modelId) {
         Craft.refreshComponentInstances(data.modelClass, data.modelId);
       }
-      this.trigger('submit', {
+      this.succeeded = true;
+      const ev = {
         response: response,
         data: (data.modelName && data[data.modelName]) || {},
-      });
+      };
+      this.trigger('submit', ev);
+      if (this.settings.onSubmit) {
+        this.settings.onSubmit(ev);
+      }
       if (this.settings.closeOnSubmit) {
         this.close();
       }
@@ -385,6 +399,22 @@ Craft.CpModal = Garnish.Modal.extend(
       this.trigger('close');
       this.destroy();
     },
+
+    onShow: function () {
+      this.base();
+      this.resizeObserver.observe(this.$body[0]);
+    },
+
+    onHide: function () {
+      this.base();
+      this.resizeObserver.disconnect();
+      if (!this.succeeded) {
+        this.trigger('cancel');
+        if (this.settings.onCancel) {
+          this.settings.onCancel();
+        }
+      }
+    },
   },
   {
     defaults: {
@@ -400,6 +430,8 @@ Craft.CpModal = Garnish.Modal.extend(
       requestOptions: {},
       closeOnSubmit: true,
       showSubmitButton: true,
+      onSubmit: $.noop,
+      onCancel: $.noop,
     },
   }
 );

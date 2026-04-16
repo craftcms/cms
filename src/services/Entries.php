@@ -2339,4 +2339,37 @@ SQL)->execute();
 
         return true;
     }
+
+    /**
+     * Reassigns entries to a new author.
+     *
+     * @param int|int[] $oldUserId
+     * @param int $newUserId
+     * @return int The number of affected entries
+     * @since 5.10.0
+     */
+    public function reassignEntries(int|array $oldUserId, int $newUserId): int
+    {
+        $count = Db::update(Table::ENTRIES_AUTHORS, [
+            'authorId' => $newUserId,
+        ], [
+            'and',
+            ['authorId' => $oldUserId],
+            [
+                'not exists',
+                (new Query())
+                    ->from(
+                        (new Query())
+                            ->from(['ea2' => Table::ENTRIES_AUTHORS])
+                            ->where(sprintf('[[ea2.entryId]] = %s.[[entryId]]', Table::ENTRIES_AUTHORS))
+                            ->andWhere(['ea2.authorId' => $newUserId])
+                    ),
+            ],
+        ], [], false);
+
+        // Invalidate all entry caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+
+        return $count;
+    }
 }

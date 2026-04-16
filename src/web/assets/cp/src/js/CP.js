@@ -1772,7 +1772,7 @@ Craft.CP = Garnish.Base.extend(
 
         this.setJobData(data);
 
-        if (this.jobInfo.length) {
+        if (this.jobInfo?.length) {
           // Check again after a delay
           this.trackJobProgress(true);
         } else {
@@ -1824,6 +1824,23 @@ Craft.CP = Garnish.Base.extend(
 
       // Fire a setJobInfo event
       this.trigger('setJobInfo');
+    },
+
+    getJobInfo: async function (jobId) {
+      let info = this.jobInfo
+        ? this.jobInfo.find((job) => job.id === jobId)
+        : null;
+      if (!info && this.enableQueue) {
+        const {data} = await Craft.sendActionRequest(
+          'POST',
+          'queue/get-job-info',
+          {
+            params: {jobId},
+          }
+        );
+        info = data.job;
+      }
+      return info;
     },
 
     cancelJobTracking: function () {

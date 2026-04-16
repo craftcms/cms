@@ -7,7 +7,7 @@
 {% set hasStatusCol = attributes|contains(0, 'status') %}
 {% set showHeaderColumn = showHeaderColumn ?? false %}
 {% set context = context ?? 'index' %}
-{% set hyperlink = hyperlink ?? (context in ['index', 'embedded-index']) %}
+{% set hyperlink = hyperlink ?? (context in ['index', 'embedded-index', 'pane']) %}
 
 {% for element in elements %}
     {% set totalDescendants = structure

@@ -13,7 +13,6 @@ use craft\base\ElementInterface;
 use craft\base\NameTrait;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\actions\DeleteUsers;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SuspendUsers;
 use craft\elements\actions\UnsuspendUsers;
@@ -56,7 +55,6 @@ use craft\web\View;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
-use Throwable;
 use Webauthn\Exception\InvalidUserHandleException;
 use Webauthn\PublicKeyCredentialRequestOptions;
 use yii\base\Exception;
@@ -380,11 +378,6 @@ class User extends Element implements IdentityInterface
 
             // Unsuspend
             $actions[] = UnsuspendUsers::class;
-        }
-
-        if (Craft::$app->getUser()->checkPermission('deleteUsers')) {
-            // Delete
-            $actions[] = DeleteUsers::class;
         }
 
         // Restore
@@ -789,6 +782,7 @@ class User extends Element implements IdentityInterface
 
     /**
      * @var self|null The user who should take over the user’s content if the user is deleted.
+     * @deprecated in 5.10.0
      */
     public ?User $inheritorOnDelete = null;
 
@@ -1820,14 +1814,17 @@ XML;
      */
     public function canDelete(User $user): bool
     {
+        if (Craft::$app->edition === CmsEdition::Solo) {
+            return false;
+        }
+
         if (parent::canDelete($user)) {
             return true;
         }
 
         return (
-            $user->id !== $this->id &&
-            $user->can('deleteUsers') &&
-            (!$this->admin || $user->admin)
+            $user->id === $this->id ||
+            ($user->can('deleteUsers') && (!$this->admin || $user->admin))
         );
     }
 
@@ -2187,9 +2184,6 @@ JS, [
             return parent::destructiveActionMenuItems();
         }
 
-        // Intentionally not calling parent::destructiveActionMenuItems() here,
-        // because we want to override the user deletion UX.
-
         $currentUser = Craft::$app->getUser()->getIdentity();
         $usersService = Craft::$app->getUsers();
 
@@ -2227,40 +2221,38 @@ JS, [
                     ];
                 }
 
-                if ($isCurrentUser || $currentUser->can('deleteUsers')) {
-                    $view = Craft::$app->getView();
-                    $deleteId = sprintf('action-delete-%s', mt_rand());
-                    $items[] = [
-                        'id' => $deleteId,
-                        'icon' => 'trash',
-                        'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type}', [
-                            'type' => static::lowerDisplayName(),
-                        ])),
-                    ];
-
-                    $view->registerJsWithVars(fn($id, $userId, $redirect) => <<<JS
-$('#' + $id).on('activate', () => {
-  Craft.sendActionRequest('POST', 'users/user-content-summary', {
-    data: {userId: $userId}
-  }).then((response) => {
-    new Craft.DeleteUserModal($userId, {
-      contentSummary: response.data,
-      redirect: $redirect,
-    });
-  });
-});
-JS,
-                    [
-                        $view->namespaceInputId($deleteId),
-                        $this->id,
-                        /** @phpstan-ignore-next-line */
-                        Craft::$app->getSecurity()->hashData(Craft::$app->edition === CmsEdition::Solo ? 'dashboard' : 'users'),
-                    ]);
-                }
+//                if ($isCurrentUser || $currentUser->can('deleteUsers')) {
+//                    $view = Craft::$app->getView();
+//                    $deleteId = sprintf('action-delete-%s', mt_rand());
+//                    $items[] = [
+//                        'id' => $deleteId,
+//                        'icon' => 'trash',
+//                        'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type}', [
+//                            'type' => static::lowerDisplayName(),
+//                        ])),
+//                    ];
+//
+//                    $view->registerJsWithVars(fn($id, $userId, $redirect) => <<<JS
+//$('#' + $id).on('activate', async () => {
+//  const success = await (new Craft.UserDeletionManager([$userId])).deleteUsers();
+//  if (success) {
+//    document.location.href = $redirect;
+//  }
+//});
+//JS,
+//                    [
+//                        $view->namespaceInputId($deleteId),
+//                        $this->id,
+//                        UrlHelper::cpUrl(Craft::$app->edition === CmsEdition::Solo ? 'dashboard' : 'users'),
+//                    ]);
+//                }
             }
         }
 
-        return $items;
+        return [
+            ...$items,
+            ...parent::destructiveActionMenuItems(),
+        ];
     }
 
     private function _copyPasswordResetUrlActionItem(string $label, View $view): array
@@ -2549,6 +2541,113 @@ JS, [
 
     /**
      * @inheritdoc
+     */
+    public static function deletionBlockers(array $elements, bool $hardDelete): array
+    {
+        $blockers = [];
+        $numUsers = count($elements);
+        /** @var self[] $elements */
+        $userIds = array_map(fn(self $user) => $user->id, $elements);
+
+        // Entries
+        $entryIds = Entry::find()
+            ->authorId($userIds)
+            ->site('*')
+            ->unique()
+            ->status(null)
+            ->ids();
+        $numEntries = count($entryIds);
+
+        if ($numEntries) {
+            $blockers[] = [
+                'key' => 'entries',
+                'summary' => Craft::t('app', '{numEntries, number} {numEntries, plural, =1{entry has} other{entries have}} the {numUsers, plural, =1{user} other{users}} assigned as an author.', [
+                    'numEntries' => $numEntries,
+                    'numUsers' => $numUsers,
+                ]),
+                'details' => Cp::elementIndexHtml(Entry::class, [
+                    'context' => 'pane',
+                    'defaultTableColumns' => [
+                        ['authors'],
+                        ['section'],
+                    ],
+                    'defaultSort' => ['section', 'asc'],
+                    'sources' => false,
+                    'jsSettings' => [
+                        'criteria' => [
+                            'authorId' => $userIds,
+                            'status' => null,
+                        ],
+                    ],
+                ]),
+                'actions' => [
+                    [
+                        'icon' => 'user-plus',
+                        'label' => Craft::t('app', 'Reassign {numEntries, plural, =1{entry} other{entries}}', [
+                            'numEntries' => $numEntries,
+                        ]),
+                        'callback' => Html::jsWithVars(fn($userIds) => <<<JS
+new Craft.CpModal('entries/reassign-modal', {
+  params: {
+    oldUserIds: $userIds,
+  },
+  onSubmit: (ev) => {
+    resolve(ev.response.data.message);
+  },
+  onCancel: () => {
+    reject();
+  },
+});
+JS, [
+                            $userIds,
+                        ]),
+                    ],
+                    [
+                        'icon' => 'user-minus',
+                        'label' => Craft::t('app', 'Remove {numUsers, plural, =1{author} other {authors}} from {numEntries, plural, =1{entry} other{entries}}', [
+                            'numUsers' => $numUsers,
+                            'numEntries' => $numEntries,
+                        ]),
+                        'callback' => Html::jsWithVars(fn($message) => "resolve($message);", [
+                            Craft::t('app', 'The {numEntries, plural, =1{entry} other {entries}} will be updated once the {numUsers, plural, =1{user is} other{users are}} deleted.', [
+                                'numEntries' => $numEntries,
+                                'numUsers' => $numUsers,
+                            ]),
+                        ]),
+                    ],
+                    [
+                        'icon' => 'trash',
+                        'label' => Craft::t('app', 'Delete {numEntries, plural, =1{entry} other{entries}}', [
+                            'numEntries' => $numEntries,
+                        ]),
+                        'destructive' => true,
+                        'callback' => Html::jsWithVars(fn($elementType, $entryIds, $message) => <<<JS
+new Craft.ElementDeletionManager($elementType, $entryIds, {
+  onSuccess: () => {
+    resolve($message);
+  },
+  onCancel: () => {
+    reject();
+  },
+});
+JS, [
+                            Entry::class,
+                            $entryIds,
+                            Craft::t('app', '{type} deleted.', [
+                                'type' => count($entryIds) === 1 ? Entry::displayName() : Entry::pluralDisplayName(),
+                            ]),
+                        ]),
+                    ],
+                ],
+            ];
+        }
+
+        array_push($blockers, ...parent::deletionBlockers($elements, $hardDelete));
+        return $blockers;
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.3.0
      */
     public function getGqlTypeName(): string
@@ -2718,52 +2817,9 @@ JS, [
             return false;
         }
 
-        $elementsService = Craft::$app->getElements();
-
-        // Do all this stuff within a transaction
-        $transaction = Craft::$app->getDb()->beginTransaction();
-
-        try {
-            // Should we transfer the content to a new user?
-            if ($this->inheritorOnDelete) {
-                // Invalidate all entry caches
-                $elementsService->invalidateCachesForElementType(Entry::class);
-
-                // Update the entry/version/draft tables to point to the new user
-                $userRefs = [
-                    Table::DRAFTS => 'creatorId',
-                    Table::REVISIONS => 'creatorId',
-                    Table::ENTRIES_AUTHORS => 'authorId',
-                ];
-
-                foreach ($userRefs as $table => $column) {
-                    Db::update($table, [
-                        $column => $this->inheritorOnDelete->id,
-                    ], [
-                        $column => $this->id,
-                    ], [], false);
-                }
-            } else {
-                // Delete the entries
-                $entryQuery = Entry::find()
-                    ->authorId($this->id)
-                    ->status(null)
-                    ->site('*')
-                    ->unique();
-
-                foreach (Db::each($entryQuery) as $entry) {
-                    /** @var Entry $entry */
-                    // only delete their entry if they're the sole author
-                    if ($entry->getAuthorIds() === [$this->id]) {
-                        $elementsService->deleteElement($entry);
-                    }
-                }
-            }
-
-            $transaction->commit();
-        } catch (Throwable $e) {
-            $transaction->rollBack();
-            throw $e;
+        // Reassign the user's entries?
+        if ($this->inheritorOnDelete) {
+            Craft::$app->getEntries()->reassignEntries($this->id, $this->inheritorOnDelete->id);
         }
 
         $this->getAddressManager()->deleteNestedElements($this, $this->hardDelete);

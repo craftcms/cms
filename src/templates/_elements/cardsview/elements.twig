@@ -1,5 +1,5 @@
 {% set context = context ?? 'index' %}
-{% set hyperlink = hyperlink ?? (context in ['index', 'embedded-index']) %}
+{% set hyperlink = hyperlink ?? (context in ['index', 'embedded-index', 'pane']) %}
 
 {% apply spaceless %}
   {% for element in elements %}

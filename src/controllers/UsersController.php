@@ -154,6 +154,7 @@ class UsersController extends Controller
      * ```
      *
      * @since 3.0.13
+     * @deprecated in 5.10.0
      */
     public const EVENT_DEFINE_CONTENT_SUMMARY = 'defineContentSummary';
 
@@ -2199,6 +2200,7 @@ JS);
      * Deletes a user.
      *
      * @return Response|null
+     * @deprecated in 5.10.0
      */
     public function actionDeleteUser(): ?Response
     {
