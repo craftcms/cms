@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use Craft;
-use craft\web\assets\craftsupport\CraftSupportAsset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
@@ -13,6 +11,8 @@ use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\PHP;
+use CraftCms\Cms\View\LegacyAssets\CraftSupportAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Override;
@@ -72,8 +72,7 @@ class CraftSupport extends Widget
             return null;
         }
 
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(CraftSupportAsset::class);
+        app(InternalAssetRegistry::class)->regiser(CraftSupportAsset::class);
 
         $cmsVersion = Cms::VERSION;
         $cmsMajorVersion = (int) $cmsVersion;
