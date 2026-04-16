@@ -2,10 +2,8 @@
 {% set title = "Sign In"|t('app') %}
 {% set bodyClass = 'login' %}
 
-{% set hasLogo = CraftEdition >= CraftPro and craft.rebrand.isLogoUploaded %}
-
-{% if hasLogo %}
-  {% set logo = craft.rebrand.logo %}
+{% if app.config.craft.general.cpLogoUrl %}
+  {% set logo = app.config.craft.general.cpLogoUrl %}
 {% endif %}
 
 {% set loginError = craft.app.session.getError() ?? craft.app.session.getFlash('error') %}
@@ -16,10 +14,9 @@
       <h1>
         {{ tag('img', {
           id: 'login-logo',
-          src: logo.url,
+          src: alias(logo),
           alt: systemName,
-          width: logo.width,
-          height: logo.height,
+          width: 288,
         }) }}
       </h1>
     {% endif %}

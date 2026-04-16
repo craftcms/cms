@@ -89,22 +89,6 @@ class AppServiceProvider extends ServiceProvider
             "{$this->root}/resources/icons/" => public_path('vendor/craft/icons'),
             "{$this->root}/resources/legacy/" => public_path('vendor/craft/legacy'),
         ], ['craftcms', 'craftcms-assets']);
-
-        // @TODO Remove when rebrand assets are refactored
-        config([
-            'filesystems.disks.rebrand' => [
-                'driver' => 'local',
-                'root' => Path::rebrand(create: false),
-                'url' => implode('/', [
-                    config('app.url'),
-                    Cms::config()->cpTrigger,
-                    'rebrand',
-                ]),
-                'visibility' => 'public',
-                'throw' => false,
-                'report' => false,
-            ],
-        ]);
     }
 
     private function registerMacros(): void

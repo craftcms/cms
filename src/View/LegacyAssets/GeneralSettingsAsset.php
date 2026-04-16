@@ -21,7 +21,7 @@ class GeneralSettingsAsset implements LegacyAssetInterface
 
     public function register(HtmlStack $htmlStack): void
     {
-        $htmlStack->jsFile(craftAsset('legacy/generalsettings/dist/rebrand.js'));
-        $htmlStack->cssFile(craftAsset('legacy/generalsettings/dist/css/rebrand.css'));
+        // $htmlStack->jsFile(craftAsset('legacy/generalsettings/dist/rebrand.js'));
+        // $htmlStack->cssFile(craftAsset('legacy/generalsettings/dist/css/rebrand.css'));
     }
 }

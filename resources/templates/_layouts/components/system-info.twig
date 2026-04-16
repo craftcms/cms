@@ -1,5 +1,3 @@
-{% set hasSystemIcon = CraftEdition >= CraftPro and craft.rebrand.isIconUploaded %}
-
 {% tag siteUrl ? 'a' : 'div' with {
     id: 'system-info',
     href: siteUrl ?? false,
@@ -8,8 +6,8 @@
     title: siteUrl ? 'View site'|t('app') : false,
 } %}
     <div id="site-icon">
-        {% if hasSystemIcon %}
-            <img src="{{ craft.rebrand.icon.url }}" alt="">
+        {% if app.config.craft.general.cpIconUrl %}
+            <img src="{{ alias(app.config.craft.general.cpIconUrl) }}" alt="">
         {% else %}
             {{ iconSvg('c-outline') }}
         {% endif %}

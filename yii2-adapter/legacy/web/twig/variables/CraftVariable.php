@@ -39,7 +39,6 @@ use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Translation\I18N;
 use CraftCms\Cms\Twig\Variables\Io;
-use CraftCms\Cms\Twig\Variables\Rebrand;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserGroups;
 use CraftCms\Cms\User\UserPermissions;

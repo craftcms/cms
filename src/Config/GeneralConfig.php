@@ -579,6 +579,24 @@ class GeneralConfig extends BaseConfig
     public array $cpHeadTags = [];
 
     /**
+     * @var string|null Site icon
+     *
+     * Square SVG file recommended. The logo will be displayed at 32px by 32px.
+     *
+     * @group System
+     */
+    public ?string $cpIconUrl = null;
+
+    /**
+     * @var string|null Login page logo
+     *
+     * SVG file recommended. The logo will be displayed at 288px wide.
+     *
+     * @group System
+     */
+    public ?string $cpLogoUrl = null;
+
+    /**
      * @var string|null The URI segment Craft should look for when determining if the current request should route to the control panel rather than
      *                  the front-end website.
      *
@@ -3794,6 +3812,38 @@ class GeneralConfig extends BaseConfig
     public function cpHeadTags(array $value): self
     {
         $this->cpHeadTags = $value;
+
+        return $this;
+    }
+
+    /**
+     * Site icon
+     *
+     * Square SVG file recommended. The logo will be displayed at 32px by 32px.
+     *
+     * @group System
+     *
+     * @see $cpIconUrl
+     */
+    public function cpIconUrl(?string $value): self
+    {
+        $this->cpIconUrl = $value;
+
+        return $this;
+    }
+
+    /**
+     * Login page logo
+     *
+     * SVG file recommended. The logo will be displayed at 288px wide.
+     *
+     * @group System
+     *
+     * @see $cpLogoUrl
+     */
+    public function cpLogoUrl(?string $value): self
+    {
+        $this->cpLogoUrl = $value;
 
         return $this;
     }
