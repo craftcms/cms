@@ -42,16 +42,27 @@
 
 ### Extensibility
 - Added `craft\base\DefaultableFieldInterface`. ([#18522](https://github.com/craftcms/cms/pull/18522))
+- Added `craft\base\Element::EVENT_DEFINE_DELETION_BLOCKERS`. ([#18728](https://github.com/craftcms/cms/pull/18728))
+- Added `craft\base\ElementInterface::deletionBlockers()`. ([#18728](https://github.com/craftcms/cms/pull/18728))
 - Added `craft\base\ElementInterface::setDirtyFieldTracking()`.
 - Added `craft\elements\PopulateElementEvent::$content`.
+- Added `craft\events\DefineElementDeletionBlockersEvent`. ([#18728](https://github.com/craftcms/cms/pull/18728))
+- Added `craft\helpers\Html::jsWithVars()`.
+- Added `craft\helpers\Markdown`. ([#18671](https://github.com/craftcms/cms/issues/18671))
 - Added `craft\models\Section::$minAuthors`. ([#18662](https://github.com/craftcms/cms/pull/18662))
+- Added `craft\services\Entries::reassignEntries()`.
 - Added `craft\validators\TimeValidator::$outOfRange`. ([#18575](https://github.com/craftcms/cms/pull/18575))
 - Added `Craft.CpScreenSlideout::reload()`. ([#18625](https://github.com/craftcms/cms/pull/18625))
-- Added `craft\helpers\Markdown`. ([#18671](https://github.com/craftcms/cms/issues/18671))
+- Added `Craft.ElementDeletionManager`.
 - `craft\elements\PopulateElementEvent::$row` no longer includes `fieldValues` or `generatedFieldValues` keys.
 - `craft\helpers\DateTimeHelper::timeZoneAbbreviation()` is no longer deprecated, and now has a `$date` argument.
 - `craft\i18n\Formatter::asTime()` and `asDatetime()` now have `$withTimeZone` arguments. ([#18639](https://github.com/craftcms/cms/pull/18639))
 - `Craft.CP` now triggers a `queueCompleted` event when the last queue job is completed.
+- Deprecated `craft\controllers\UsersController::EVENT_DEFINE_CONTENT_SUMMARY`. ([#18728](https://github.com/craftcms/cms/pull/18728))
+- Deprecated `craft\elements\User::$inheritorOnDelete`. ([#18728](https://github.com/craftcms/cms/pull/18728))
+- Deprecated `craft\elements\actions\DeleteUsers`. ([#18728](https://github.com/craftcms/cms/pull/18728))
+- Deprecated `craft\events\DefineUserContentSummaryEvent`. ([#18728](https://github.com/craftcms/cms/pull/18728))
+- Deprecated `Craft.DeleteUserModal`. ([#18728](https://github.com/craftcms/cms/pull/18728))
 
 ### System
 - Improve the image quality of WEBP transforms, when `optimizeImageFilesize` is disabled. ([#18635](https://github.com/craftcms/cms/pull/18635))
