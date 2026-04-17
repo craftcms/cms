@@ -5,10 +5,6 @@ use Symfony\Component\VarDumper\Dumper\HtmlDumper;
 return [
     'class' => craft\web\Application::class,
     'components' => [
-        'assetManager' => function() {
-            $config = craft\helpers\App::assetManagerConfig();
-            return Craft::createObject($config);
-        },
         'dumper' => function() {
             $dumper = new HtmlDumper();
             $dumper->setTheme('light');
