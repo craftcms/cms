@@ -14,6 +14,7 @@ use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Utility\Utility;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Console\Command;
+use Illuminate\Http\Request;
 use Override;
 
 class TestPlugin extends Plugin
@@ -23,6 +24,9 @@ class TestPlugin extends Plugin
     public static bool $beforeSaveSettings = true;
 
     public static ?Closure $onAfterSaveSettings = null;
+
+    /** @var class-string<Request> */
+    public static string $settingsRequestClass = Request::class;
 
     public ?string $basePathOverride = null;
 
@@ -189,6 +193,12 @@ class TestPlugin extends Plugin
     protected function settingsHtml(): ?string
     {
         return $this->customSettingsHtml ?? '<input id="settings-foo" name="foo" value="'.e($this->getSettings()?->foo).'">';
+    }
+
+    #[Override]
+    public function getSettingsRequestClass(): string
+    {
+        return self::$settingsRequestClass;
     }
 
     #[Override]
