@@ -366,12 +366,12 @@ class ResaveController extends Controller
             }
         }
 
-        if (isset($this->set) && !isset($this->to) && !isset($this->toDefault)) {
+        if (isset($this->set) && !isset($this->to) && !$this->toDefault) {
             $this->stderr('--to or --to-default is required when using --set.' . PHP_EOL, Console::FG_RED);
             return false;
         }
 
-        if (isset($this->withFields)) {
+        if (!empty($this->withFields)) {
             $fieldsService = Craft::$app->getFields();
 
             foreach ($this->withFields as $i => $field) {
@@ -387,8 +387,8 @@ class ResaveController extends Controller
             }
         }
 
-        if (isset($this->toDefault)) {
-            if (!isset($this->withFields) && !isset($this->set)) {
+        if ($this->toDefault) {
+            if (empty($this->withFields) && !isset($this->set)) {
                 $this->stderr('--with-fields or --set is required when using --to-default.' . PHP_EOL, Console::FG_RED);
                 return false;
             }

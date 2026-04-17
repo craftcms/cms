@@ -3425,7 +3425,7 @@ abstract class Element extends Component implements ElementInterface
             $event = new DefineAttributeKeywordsEvent(['attribute' => $attribute]);
             $this->trigger(self::EVENT_DEFINE_KEYWORDS, $event);
             if ($event->handled) {
-                return $event->keywords ?? '';
+                return $event->keywords;
             }
         }
 
