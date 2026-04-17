@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where entries weren’t redirecting back to their section’s page’s URL by default.
+
 ## 5.9.20 - 2026-04-14
 
 - Fixed an issue that prevented Craft from being installed. ([#18700](https://github.com/craftcms/cms/issues/18700))
