@@ -970,7 +970,7 @@ class Gql
             }
 
             // Log it.
-            Craft::$app->getErrorHandler()->logException($originException);
+            report($originException);
         }
 
         return array_map($formatter, $errors);
@@ -1023,7 +1023,7 @@ class Gql
                 '::'.serialize($variables).
                 ($operationName ? "::$operationName" : '');
         } catch (Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
+            report($e);
             $cacheKey = null;
         }
 
@@ -1118,10 +1118,7 @@ class Gql
                 $directiveClasses[] = ParseRefs::class;
             }
 
-            if (
-                ! Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective &&
-                in_array('directive:transform', $schema->scope)
-            ) {
+            if (in_array('directive:transform', $schema->scope)) {
                 $directiveClasses[] = Transform::class;
             }
         }
