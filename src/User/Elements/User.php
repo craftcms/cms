@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Elements;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\elements\conditions\users\UserCondition;
 use CraftCms\Cms\Address\Elements\Address;
@@ -276,7 +275,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[Override]
     public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(UserCondition::class, [self::class]);
+        return new UserCondition(self::class);
     }
 
     #[Override]

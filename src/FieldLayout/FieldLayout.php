@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout;
 
 use Closure;
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Field\ContentBlock;
@@ -421,10 +420,9 @@ class FieldLayout extends Component
             return $this->_availableCustomFields;
         }
 
-        $customFields = Fields::getAllFields()->map(fn (FieldInterface $field) => Craft::createObject([
-            'class' => CustomField::class,
+        $customFields = Fields::getAllFields()->map(fn (FieldInterface $field) => new CustomField($field, [
             'layout' => $this,
-        ], [$field]))->all();
+        ]))->all();
 
         $this->_availableCustomFields = [
             t('Custom Fields') => $customFields,
@@ -452,9 +450,11 @@ class FieldLayout extends Component
 
         // Instantiate them
         foreach ($event->fields as $field) {
-            if (is_string($field) || is_array($field)) {
-                $field = Craft::createObject($field);
-            }
+            $field = match (true) {
+                is_string($field) => app()->make($field),
+                is_array($field) => app()->make(Arr::pull($field, 'class'), ['config' => $field]),
+                default => null,
+            };
 
             if (! $field instanceof BaseField) {
                 throw new InvalidConfigException('Invalid standard field config');
@@ -491,9 +491,11 @@ class FieldLayout extends Component
 
         // Instantiate them
         foreach ($elements as &$element) {
-            if (is_string($element) || is_array($element)) {
-                $element = Craft::createObject($element);
-            }
+            $element = match (true) {
+                is_string($element) => app()->make($element),
+                is_array($element) => app()->make(Arr::pull($element, 'class'), ['config' => $element]),
+                default => null,
+            };
 
             if (! $element instanceof FieldLayoutElement) {
                 throw new InvalidConfigException('Invalid UI element config');

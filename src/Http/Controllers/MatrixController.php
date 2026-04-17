@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use Craft;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
@@ -129,8 +128,7 @@ readonly class MatrixController
             }
         } else {
             /** @var Entry $entry */
-            $entry = Craft::createObject([
-                'class' => Entry::class,
+            $entry = new Entry([
                 ...$attributes,
             ]);
 

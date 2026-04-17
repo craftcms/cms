@@ -451,7 +451,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             throw new InvalidArgumentException(sprintf('create() can only be used to create instances of %s.', BaseObject::class));
         }
 
-        return Craft::createObject($type, $params);
+        return app()->make($class, ['config' => $params]);
     }
 
     public function dumpFunction(array $context, ...$vars): string

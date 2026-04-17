@@ -8,7 +8,6 @@ use CommerceGuys\Addressing\AddressFormat\AddressField;
 use CommerceGuys\Addressing\AddressInterface;
 use CommerceGuys\Addressing\Country\Country;
 use CommerceGuys\Addressing\Subdivision\SubdivisionUpdater;
-use Craft;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use CraftCms\Cms\Address\Addresses;
@@ -89,7 +88,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     #[Override]
     public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(AddressCondition::class, [self::class]);
+        return new AddressCondition(self::class);
     }
 
     #[Override]

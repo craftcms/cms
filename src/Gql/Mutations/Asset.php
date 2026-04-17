@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Mutations;
 
-use Craft;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Gql\Arguments\Mutations\Asset as AssetMutationArguments;
 use CraftCms\Cms\Gql\GqlHelper;
@@ -45,7 +44,7 @@ class Asset extends Mutation
             $mutationList['deleteAsset'] = [
                 'name' => 'deleteAsset',
                 'args' => ['id' => Type::nonNull(Type::int())],
-                'resolve' => [Craft::createObject(AssetResolver::class), 'deleteAsset'],
+                'resolve' => [new AssetResolver, 'deleteAsset'],
                 'description' => 'Delete an asset.',
                 'type' => Type::boolean(),
             ];
@@ -59,7 +58,7 @@ class Asset extends Mutation
         $mutationArguments = AssetMutationArguments::getArguments();
         $generatedType = AssetType::generateType($volume);
 
-        $resolver = Craft::createObject(AssetResolver::class);
+        $resolver = new AssetResolver;
         $resolver->setResolutionData('volume', $volume);
 
         static::prepareResolver($resolver, $volume->getCustomFields());

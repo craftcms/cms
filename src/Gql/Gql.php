@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql;
 
-use Craft;
 use craft\base\ElementInterface as BaseElementInterface;
 use craft\behaviors\FieldLayoutBehavior;
 use CraftCms\Cms\Asset\Volumes;
@@ -288,12 +287,8 @@ class Gql
         bool $debugMode = false,
     ): array {
         $context = [
-            'conditionBuilder' => Craft::createObject([
-                'class' => ElementQueryConditionBuilder::class,
-            ]),
-            'argumentManager' => Craft::createObject([
-                'class' => ArgumentManager::class,
-            ]),
+            'conditionBuilder' => new ElementQueryConditionBuilder,
+            'argumentManager' => new ArgumentManager,
         ];
         $result = $rootValue = null;
         $dep = null;
@@ -985,7 +980,7 @@ class Gql
     {
         if (! array_key_exists($typeName, $this->_typeDefinitions)) {
             if ($this->_typeManager === null) {
-                $this->_typeManager = Craft::createObject(TypeManager::class);
+                $this->_typeManager = new TypeManager;
             }
 
             $this->_typeDefinitions[$typeName] = $this->_typeManager->registerFieldDefinitions($fields, $typeName);
