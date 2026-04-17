@@ -8,5 +8,8 @@ module.exports = getConfig({
     entry: {
       ConditionBuilder: './ConditionBuilder.js',
     },
+    output: {
+      path: __dirname + '/../../../resources/legacy/conditionbuilder/dist',
+    },
   },
 });

@@ -6,5 +6,8 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {UpdatesWidget: './UpdatesWidget.js'},
+    output: {
+      path: __dirname + '/../../../resources/legacy/updateswidget/dist',
+    },
   },
 });

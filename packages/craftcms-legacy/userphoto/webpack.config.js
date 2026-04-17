@@ -8,5 +8,8 @@ module.exports = getConfig({
     entry: {
       UserPhotoInput: './UserPhotoInput.js',
     },
+    output: {
+      path: __dirname + '/../../../resources/legacy/userphoto/dist',
+    },
   },
 });

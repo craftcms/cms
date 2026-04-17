@@ -6,5 +6,8 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {FeedWidget: './FeedWidget.js'},
+    output: {
+      path: __dirname + '/../../../resources/legacy/feed/dist',
+    },
   },
 });

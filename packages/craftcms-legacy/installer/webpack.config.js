@@ -6,5 +6,8 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {install: './install.js'},
+    output: {
+      path: __dirname + '/../../../resources/legacy/installer/dist',
+    },
   },
 });

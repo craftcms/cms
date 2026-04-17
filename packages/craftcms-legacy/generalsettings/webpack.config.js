@@ -6,5 +6,8 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {rebrand: './rebrand.js'},
+    output: {
+      path: __dirname + '/../../../resources/legacy/generalsettings/dist',
+    },
   },
 });

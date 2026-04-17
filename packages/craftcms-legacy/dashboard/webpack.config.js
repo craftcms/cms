@@ -8,5 +8,8 @@ module.exports = getConfig({
     entry: {
       Dashboard: './Dashboard.js',
     },
+    output: {
+      path: __dirname + '/../../../resources/legacy/dashboard/dist',
+    },
   },
 });

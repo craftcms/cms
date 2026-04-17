@@ -7,6 +7,9 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {},
+    output: {
+      path: __dirname + '/../../../resources/legacy/selectize/dist',
+    },
     plugins: [
       new MergeIntoSingleFilePlugin({
         files: {

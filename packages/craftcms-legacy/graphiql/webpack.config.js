@@ -7,6 +7,9 @@ const config = getConfig({
   context: __dirname,
   config: {
     entry: {graphiql: './graphiql.js'},
+    output: {
+      path: __dirname + '/../../../resources/legacy/graphiql/dist',
+    },
     module: {
       rules: [
         {

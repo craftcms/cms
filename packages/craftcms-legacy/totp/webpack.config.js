@@ -6,5 +6,8 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {totp: './TotpForm.js'},
+    output: {
+      path: __dirname + '/../../../resources/legacy/totp/dist',
+    },
   },
 });

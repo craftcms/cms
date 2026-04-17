@@ -6,5 +6,8 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {fieldsettings: './fieldsettings.js'},
+    output: {
+      path: __dirname + '/../../../resources/legacy/fieldsettings/dist',
+    },
   },
 });

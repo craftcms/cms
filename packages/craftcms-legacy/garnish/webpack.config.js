@@ -10,6 +10,9 @@ module.exports = getConfig({
     entry: {
       garnish: './index.js',
     },
+    output: {
+      path: __dirname + '/../../../resources/legacy/garnish/dist',
+    },
     module: {
       rules: [
         {

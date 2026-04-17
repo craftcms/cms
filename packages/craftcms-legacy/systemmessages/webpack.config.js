@@ -6,5 +6,8 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {system_messages: './system_messages.js'},
+    output: {
+      path: __dirname + '/../../../resources/legacy/systemmessages/dist',
+    },
   },
 });

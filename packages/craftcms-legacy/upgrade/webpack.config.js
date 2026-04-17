@@ -6,5 +6,8 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {UpgradeUtility: './UpgradeUtility.js'},
+    output: {
+      path: __dirname + '/../../../resources/legacy/upgrade/dist',
+    },
   },
 });

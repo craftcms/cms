@@ -6,5 +6,8 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {routes: './routes.js'},
+    output: {
+      path: __dirname + '/../../../resources/legacy/routes/dist',
+    },
   },
 });

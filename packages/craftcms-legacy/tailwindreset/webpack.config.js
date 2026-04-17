@@ -6,5 +6,8 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {tailwind_reset: './tailwind_reset.js'},
+    output: {
+      path: __dirname + '/../../../resources/legacy/tailwindreset/dist',
+    },
   },
 });

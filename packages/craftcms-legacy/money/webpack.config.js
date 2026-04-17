@@ -6,5 +6,8 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {Money: './Money.js'},
+    output: {
+      path: __dirname + '/../../../resources/legacy/money/dist',
+    },
   },
 });

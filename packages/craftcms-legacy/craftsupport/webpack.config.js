@@ -9,6 +9,9 @@ module.exports = getConfig({
     entry: {
       CraftSupportWidget: './CraftSupportWidget.js',
     },
+    output: {
+      path: __dirname + '/../../../resources/legacy/craftsupport/dist',
+    },
     plugins: [
       new CopyWebpackPlugin({
         patterns: [

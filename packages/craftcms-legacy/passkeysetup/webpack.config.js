@@ -6,5 +6,8 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {PasskeySetup: './PasskeySetup.js'},
+    output: {
+      path: __dirname + '/../../../resources/legacy/passkeysetup/dist',
+    },
   },
 });

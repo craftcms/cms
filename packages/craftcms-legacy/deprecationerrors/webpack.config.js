@@ -6,5 +6,8 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {deprecator: './deprecator.js'},
+    output: {
+      path: __dirname + '/../../../resources/legacy/deprecationerrors/dist',
+    },
   },
 });

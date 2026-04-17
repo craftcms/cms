@@ -8,6 +8,9 @@ const pkgDir = require('pkg-dir');
 module.exports = getConfig({
   context: __dirname,
   config: {
+    output: {
+      path: __dirname + '/../../../resources/legacy/codemirror/dist',
+    },
     plugins: [
       new CopyWebpackPlugin({
         patterns: [

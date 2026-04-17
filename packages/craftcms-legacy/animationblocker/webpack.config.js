@@ -13,6 +13,7 @@ module.exports = getConfig({
         name: 'Craft',
         type: 'assign-properties',
       },
+      path: __dirname + '/../../../resources/legacy/animationblocker/dist',
     },
   },
 });

@@ -6,5 +6,8 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {transforms: './transforms.js'},
+    output: {
+      path: __dirname + '/../../../resources/legacy/edittransform/dist',
+    },
   },
 });

@@ -11,6 +11,9 @@ const resolveLegacyPackage = (pkg, file) => path.join(legacyNodeModules, pkg, fi
 module.exports = getConfig({
   context: __dirname,
   config: {
+    output: {
+      path: __dirname + '/../../../resources/legacy/vue/dist',
+    },
     plugins: [
       new MergeIntoSingleFilePlugin({
         files: {

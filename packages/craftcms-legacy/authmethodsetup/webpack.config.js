@@ -6,5 +6,8 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {auth: './auth.js'},
+    output: {
+      path: __dirname + '/../../../resources/legacy/authmethodsetup/dist',
+    }
   },
 });

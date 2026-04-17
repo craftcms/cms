@@ -6,5 +6,8 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {MatrixInput: './MatrixInput.js'},
+    output: {
+      path: __dirname + '/../../../resources/legacy/matrix/dist',
+    },
   },
 });

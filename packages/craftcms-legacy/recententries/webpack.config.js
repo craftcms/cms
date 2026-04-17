@@ -6,5 +6,8 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {RecentEntriesWidget: './RecentEntriesWidget.js'},
+    output: {
+      path: __dirname + '/../../../resources/legacy/recententries/dist',
+    },
   },
 });

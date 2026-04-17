@@ -9,6 +9,9 @@ const path = require('path');
 module.exports = getConfig({
   context: __dirname,
   config: {
+    output: {
+      path: __dirname + '/../../../resources/legacy/axios/dist',
+    },
     plugins: [
       new CopyWebpackPlugin({
         patterns: [

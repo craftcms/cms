@@ -6,5 +6,8 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {PluginManager: './PluginManager.js'},
+    output: {
+      path: __dirname + '/../../../resources/legacy/plugins/dist',
+    },
   },
 });

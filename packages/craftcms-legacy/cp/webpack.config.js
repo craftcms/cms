@@ -10,6 +10,9 @@ module.exports = getConfig({
     entry: {
       cp: './Craft.js',
     },
+    output: {
+      path: __dirname + '/../../../resources/legacy/cp/dist',
+    },
     plugins: [
       new Ttf2Woff2Plugin(),
       new CopyWebpackPlugin({
