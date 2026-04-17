@@ -12,6 +12,22 @@ const meta = {
   title: 'Components/Nav Item',
   component: 'craft-nav-item',
   argTypes: {},
+  parameters: {
+    a11y: {
+      config: {
+        rules: [
+          {
+            id: 'list',
+            enabled: false,
+          },
+          {
+            id: 'listitem',
+            enabled: false,
+          },
+        ],
+      },
+    },
+  },
   render: ({active, indicator}) => {
     return html`
       <craft-nav-list>

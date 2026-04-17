@@ -4,6 +4,7 @@ import {LionInput} from '@lion/ui/input.js';
 import {inputStyles} from '../../styles/form.styles.js';
 import '../icon/icon.js';
 import '../button/button.js';
+import {t} from '../../utilities/translate.js';
 
 export default class CraftInputPassword extends LionInput {
   @state()
@@ -50,8 +51,11 @@ export default class CraftInputPassword extends LionInput {
       >
         <span class="icon"
           >${this._visible
-            ? html`<craft-icon name="eye-slash"></craft-icon>`
-            : html`<craft-icon name="eye"></craft-icon>`}
+            ? html`<craft-icon
+                name="eye-slash"
+                label="${t('Hide')}"
+              ></craft-icon>`
+            : html`<craft-icon name="eye" label="${t('Show')}"></craft-icon>`}
         </span>
       </craft-button>
     `;
