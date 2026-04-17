@@ -453,7 +453,7 @@ class FieldLayout extends Component
             $field = match (true) {
                 is_string($field) => app()->make($field),
                 is_array($field) => app()->make(Arr::pull($field, 'class'), ['config' => $field]),
-                default => null,
+                default => $field,
             };
 
             if (! $field instanceof BaseField) {
@@ -494,7 +494,7 @@ class FieldLayout extends Component
             $element = match (true) {
                 is_string($element) => app()->make($element),
                 is_array($element) => app()->make(Arr::pull($element, 'class'), ['config' => $element]),
-                default => null,
+                default => $element,
             };
 
             if (! $element instanceof FieldLayoutElement) {
