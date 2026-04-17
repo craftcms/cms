@@ -4,6 +4,7 @@
 
 - Fixed a bug where entries weren’t redirecting back to their section’s page’s URL by default.
 - Fixed a bug where the `resourceBasePath` and `resourceBaseUrl` config settings weren’t being respected for console requests. ([#18685](https://github.com/craftcms/cms/issues/18685))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability. ([GHSA-qq2c-2q8j-jh27](https://github.com/craftcms/cms/security/advisories/GHSA-qq2c-2q8j-jh27))
 
 ## 5.9.20 - 2026-04-14
 

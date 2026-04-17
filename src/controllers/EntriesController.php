@@ -295,6 +295,8 @@ class EntriesController extends BaseEntriesController
         // Populate the entry with post data
         $this->_populateEntryModel($entry);
 
+        $this->enforceEditEntryPermissions($entry, $duplicate);
+
         if ($forceDisabled) {
             $entry->enabled = false;
         }
