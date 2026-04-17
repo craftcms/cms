@@ -4000,6 +4000,7 @@ abstract class Element extends Component implements ElementInterface
                     'params' => [
                         'asUnpublishedDraft' => true,
                         'deleteProvisionalDraft' => true,
+                        'redirectParams' => !empty($redirectParams) ? Json::encode($redirectParams) : null,
                     ],
                 ];
             }
