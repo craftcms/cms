@@ -2275,7 +2275,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function getPostEditUrl(): ?string
     {
-        return UrlHelper::cpUrl('entries');
+        $page = $this->getSection()?->getPage();
+        return UrlHelper::cpUrl(sprintf('content/%s', $page ? StringHelper::toKebabCase($page) : 'entries'));
     }
 
     /**
@@ -3011,14 +3012,15 @@ JS;
     private function maybeSetDefaultAttributes(): void
     {
         // if we're resaving, we shouldn't be setting the defaults
-        if ($this->resaving) {
+        if ($this->resaving || $this->getIsRevision()) {
             return;
         }
 
+        $section = $this->getSection();
         if (
-            empty($this->getAuthors()) &&
-            !isset($this->fieldId) &&
-            $this->getSection()->type !== Section::TYPE_SINGLE
+            $section?->type !== Section::TYPE_SINGLE &&
+            $section?->maxAuthors !== 0 &&
+            empty($this->getAuthors())
         ) {
             $user = Craft::$app->getUser()->getIdentity();
             if ($user) {
@@ -3030,7 +3032,7 @@ JS;
             !$this->_userPostDate() &&
             (
                 in_array($this->scenario, [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]) ||
-                (!$this->getIsDraft() && !$this->getIsRevision())
+                !$this->getIsDraft()
             )
         ) {
             // Default the post date to the current date/time

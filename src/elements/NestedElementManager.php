@@ -966,7 +966,7 @@ JS, [
                         } else {
                             // Duplicate the elements, but **don't track** the duplications, so the edit page doesn’t think
                             // its elements have been replaced by the other sites’ nested elements
-                            if ($owner->propagateAll || $this->propagateRequired($owner, $localizedOwner) || !empty($owner->newSiteIds)) {
+                            if ($owner->propagateAll || $this->propagateRequired($owner, $localizedOwner) || in_array($localizedOwner->siteId, $owner->newSiteIds)) {
                                 $this->duplicateNestedElements($owner, $localizedOwner, force: true);
                             }
                         }
@@ -1085,6 +1085,7 @@ JS, [
                     'primaryOwner' => $target,
                     'owner' => $target,
                     'propagating' => false,
+                    'resaving' => false,
                     'sortOrder' => $element->getSortOrder(),
                 ];
 
@@ -1224,12 +1225,36 @@ JS, [
         );
 
         /** @var NestedElementInterface[] $elements */
-        $elements = $this->nestedElementQuery($canonical)
-            ->siteId($siteIds)
-            ->preferSites([$canonical->siteId])
-            ->unique()
-            ->status(null)
-            ->all();
+        $elements = [];
+        $processedElementIds = [];
+
+        foreach ($siteIds as $siteId) {
+            if ($siteId === $canonical->siteId) {
+                $owner = $canonical;
+            } else {
+                $owner = $canonical::find()
+                    ->id($canonical->id)
+                    ->siteId($siteId)
+                    ->status(null)
+                    ->one();
+
+                if ($owner === null) {
+                    continue;
+                }
+            }
+
+            $siteElements = $this->nestedElementQuery($owner)
+                ->status(null)
+                ->all();
+
+            /** @var NestedElementInterface $element */
+            foreach ($siteElements as $element) {
+                if (!isset($processedElementIds[$element->id])) {
+                    $processedElementIds[$element->id] = true;
+                    $elements[] = $element;
+                }
+            }
+        }
 
         $revisionsService = Craft::$app->getRevisions();
         $elementRevisionIds = [];

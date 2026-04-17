@@ -980,12 +980,16 @@ JS, [
             $entrySelector = ' > .blocks > .matrixblock';
 
             $items[] = $this->copyAction($type, $entrySelector);
-            $items[] = $this->duplicateAction($type, $entrySelector, <<<JS
+            if (!$this->static) {
+                $items[] = $this->duplicateAction($type, $entrySelector, <<<JS
 field.data('matrix').duplicateSelectedEntries();
-JS);
-            $items[] = $this->deleteAction($type, $entrySelector, <<<JS
+JS
+                );
+                $items[] = $this->deleteAction($type, $entrySelector, <<<JS
 field.data('matrix').deleteSelectedEntries();
-JS);
+JS
+                );
+            }
         }
 
         return $items;
@@ -1003,10 +1007,12 @@ JS);
             $items[] = $this->copyAction($type, $entrySelector);
             $items[] = $this->duplicateAction($type, $entrySelector, <<<JS
 field.children('.nested-element-cards').data('nestedElementManager').duplicateElements(getEntries());
-JS);
+JS
+            );
             $items[] = $this->deleteAction($type, $entrySelector, <<<JS
 field.children('.nested-element-cards').data('nestedElementManager').deleteElements(getEntries());
-JS);
+JS
+            );
         }
 
         return $items;
@@ -1381,14 +1387,11 @@ JS,
             'pageSize' => $this->pageSize ?? 50,
             'storageKey' => sprintf('field:%s', $this->uid),
             'defaultViewMode' => $this->defaultIndexViewMode,
+            'defaultTableColumns' => array_map(fn(string $attribute) => [$attribute], $this->defaultTableColumns),
+            // field layouts are needed in the read-only (static) mode
+            // so that you can choose to show columns representing the custom fields when using index view mode with table view
+            'fieldLayouts' => array_map(fn(EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
         ];
-
-        if (!$static) {
-            $config += [
-                'fieldLayouts' => array_map(fn(EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
-                'defaultTableColumns' => array_map(fn(string $attribute) => [$attribute], $this->defaultTableColumns),
-            ];
-        }
 
         return $this->entryManager()->getIndexHtml($owner, $config);
     }

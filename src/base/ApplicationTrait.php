@@ -109,7 +109,6 @@ use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
 use craft\web\UrlManager;
-use craft\web\User as UserSession;
 use craft\web\View;
 use Illuminate\Support\Collection;
 use Symfony\Component\VarDumper\Caster\ReflectionCaster;
@@ -390,9 +389,7 @@ trait ApplicationTrait
         if ($useUserLanguage) {
             // If the user is logged in *and* has a primary language set, use that
             // (don't actually try to fetch the user, as plugins haven't been loaded yet)
-            /** @var UserSession $user */
-            $user = $this->getUser();
-            $id = Session::get($user->idParam);
+            $id = Session::get($this->getUser()->idParam);
             if (
                 $id &&
                 ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null &&

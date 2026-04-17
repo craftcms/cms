@@ -2,6 +2,41 @@
 
 ## Unreleased
 
+- Fixed a bug where entries weren’t redirecting back to their section’s page’s URL by default.
+- Fixed a bug where the `resourceBasePath` and `resourceBaseUrl` config settings weren’t being respected for console requests. ([#18685](https://github.com/craftcms/cms/issues/18685))
+
+## 5.9.20 - 2026-04-14
+
+- Fixed an issue that prevented Craft from being installed. ([#18700](https://github.com/craftcms/cms/issues/18700))
+- Fixed a bug where nested element cards weren’t showing validation errors. ([#18690](https://github.com/craftcms/cms/pull/18690))
+- Fixed a bug where read-only Matrix fields in Index mode weren’t respecting the Default Table Columns setting. ([#18684](https://github.com/craftcms/cms/issues/18684))
+- Fixed a bug where nested entries could be lost when reverting content from a revision. ([#18691](https://github.com/craftcms/cms/issues/18691))
+- Fixed a bug where nested entries weren’t getting loaded when previewing a revision, if queried with `eagerly()`. ([#18693](https://github.com/craftcms/cms/issues/18693))
+
+## 5.9.19 - 2026-04-07
+
+- Most classes can now be instantiated via the `create()` Twig function. ([#18376](https://github.com/craftcms/cms/discussions/18376))
+- Added `craft\helpers\ProjectConfig::pathDepth()`.
+- `craft\services\Fields::deleteLayout()` and `deleteLayoutById()` now have `$hardDelete` arguments.
+- Deprecated `craft\services\ProjectConfig::getPendingChangeSummary()`.
+- Fixed a bug where element search query caches weren’t getting invalidated when elements’ search keywords were indexed. ([#18275](https://github.com/craftcms/cms/issues/18275))
+- Fixed a bug where disabled sites weren’t getting loaded when running Codeception tests. ([#18638](https://github.com/craftcms/cms/issues/18638))
+- Fixed a bug where custom entry index page icons weren’t getting stored properly if the source name contained periods. ([#18631](https://github.com/craftcms/cms/issues/18631))
+- Fixed a bug where copying nested entries on a revision wasn’t working. ([#18648](https://github.com/craftcms/cms/issues/18648))
+- Fixed a bug where Matrix fields in Blocks view could have “Duplicate selected blocks” and “Delete selected blocks” field-level actions. ([#18652](https://github.com/craftcms/cms/pull/18652))
+- Fixed a bug where the submit button within Live Preview was labelled “Save” rather than “Create entry” when editing an unpublished draft. ([#18579](https://github.com/craftcms/cms/discussions/18579))
+- Fixed a bug where recent changes could be lost when creating an element or applying a draft, if there were validation errors. ([#18657](https://github.com/craftcms/cms/issues/18657))
+- Fixed a bug where nested elements would get soft-deleted after running the `entrify/global-set` command. ([#18650](https://github.com/craftcms/cms/issues/18650))
+- Fixed a bug where the “Max Authors” section setting was visible for Single sections.
+- Fixed an exception that would be thrown when attempting to access undefined keys within `craft\fields\data\JsonData` objects from Twig. ([#18656](https://github.com/craftcms/cms/issues/18656))
+- Fixed a bug where address cards could be missing their address preview. ([#18632](https://github.com/craftcms/cms/issues/18632))
+- Fixed a bug where the Save button’s spinner wouldn’t appear right away when saving a nested element in a slideout. ([#18664](https://github.com/craftcms/cms/discussions/18664))
+- Fixed a bug where the server check script wasn’t treating GD as a requirement. ([craftcms/server-check#30](https://github.com/craftcms/server-check/issues/30))
+- Fixed a bug where tooltips could be instantiated multiple times within Link fields. ([#18666](https://github.com/craftcms/cms/issues/18666))
+- Fixed a bug where localized nested element content could be overwritten when the owner element was propagated to a new site. ([#18659](https://github.com/craftcms/cms/issues/18659))
+
+## 5.9.18 - 2026-03-26
+
 - Improved error logging when logging in with passkeys. ([#18627](https://github.com/craftcms/cms/pull/18627))
 - Added `craft\controllers\ElementIndexesController::$fieldLayouts`.
 - `craft\services\ElementSources::getTableAttributes()` now has a `$fieldLayouts` argument.
@@ -69,8 +104,8 @@
 - Fixed a bug where failure messages when pasting elements weren’t getting displayed properly.
 - Fixed a bug where `craft\helpers\UrlHelper::cpReferralUrl()` was returning the referrer URL even if it had the same URI as the current page. ([#18483](https://github.com/craftcms/cms/pull/18483))
 - Fixed a bug where Matrix field’ grouped entry type menu labels weren’t translatable. ([#18528](https://github.com/craftcms/cms/issues/18528))
-- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerabilities. (GHSA-3m9m-24vh-39wx, GHSA-95wr-3f2v-v2wh)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-jq2f-59pj-p3m3)
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerabilities. ([GHSA-3m9m-24vh-39wx](https://github.com/craftcms/cms/security/advisories/GHSA-3m9m-24vh-39wx), [GHSA-95wr-3f2v-v2wh](https://github.com/craftcms/cms/security/advisories/GHSA-95wr-3f2v-v2wh))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. ([GHSA-jq2f-59pj-p3m3](https://github.com/craftcms/cms/security/advisories/GHSA-jq2f-59pj-p3m3))
 
 ## 5.9.14 - 2026-02-25
 

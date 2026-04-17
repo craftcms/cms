@@ -3,7 +3,7 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '5.9.17',
+    'version' => '5.9.20',
     'schemaVersion' => '5.9.0.8',
     'minVersionRequired' => '4.5.0',
     'basePath' => dirname(__DIR__), // Defines the @app alias
@@ -26,6 +26,10 @@ return [
         'assetIndexer' => [
             'class' => craft\services\AssetIndexer::class,
         ],
+        'assetManager' => function() {
+            $config = craft\helpers\App::assetManagerConfig();
+            return Craft::createObject($config);
+        },
         'auth' => [
             'class' => craft\services\Auth::class,
         ],
