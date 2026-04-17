@@ -364,7 +364,19 @@ class ElementsController extends Controller
         [$docTitle, $title] = $this->_editElementTitles($element);
         $enabledForSite = $element->getEnabledForSite();
         $hasRoute = $element->getRoute() !== null;
-        $redirectUrl = $this->request->getValidatedQueryParam('returnUrl') ?? UrlHelper::cpReferralUrl() ?? ElementHelper::postEditUrl($element);
+
+        $redirectUrl = $this->request->getQueryParam('returnUrl');
+        if ($redirectUrl) {
+            // only require the URL to be hashed if it contains Twig code
+            $validated = Craft::$app->getSecurity()->validateData($redirectUrl);
+            if ($validated !== false) {
+                $redirectUrl = $validated;
+            } elseif (str_contains($redirectUrl, '{')) {
+                throw new BadRequestHttpException("Invalid returnUrl param: $redirectUrl");
+            }
+        } else {
+            $redirectUrl = ElementHelper::postEditUrl($element);
+        }
 
         // Site statuses
         if ($canEditMultipleSites) {
@@ -1040,9 +1052,16 @@ JS, [
 
         // Revert content from this revision
         if ($isRevision && $canSaveCanonical && $element->hasRevisions()) {
+            $returnUrl = $this->request->getQueryParam('returnUrl');
             $components[] = Html::beginForm() .
                 Html::actionInput('elements/revert') .
                 Html::redirectInput('{cpEditUrl}') .
+                ($returnUrl
+                    ? Html::hiddenInput('redirectParams', Json::encode([
+                        'returnUrl' => $returnUrl,
+                    ]))
+                    : ''
+                ) .
                 Html::hiddenInput('elementId', (string)$canonical->id) .
                 Html::hiddenInput('revisionId', (string)$element->revisionId) .
                 Html::button(Craft::t('app', 'Revert content from this revision'), [
@@ -3010,6 +3029,11 @@ JS, [
                     'siteId' => $newElement->siteId,
                     'fresh' => 1,
                 ]);
+            }
+
+            $returnUrl = $this->request->getParam('returnUrl');
+            if ($returnUrl) {
+                $url = UrlHelper::urlWithParams($url, ['returnUrl' => $returnUrl]);
             }
 
             $response->redirect($url);

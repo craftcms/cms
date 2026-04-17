@@ -526,6 +526,7 @@ class Cp
      * - `class` – Class name(s) that should be added to the container element
      * - `context` – The context the chip is going to be shown in (`index`, `field`, etc.)
      * - `hyperlink` – Whether the chip label should be hyperlinked to the element’s URL
+     * - `returnUrl` – The `returnUrl` param that should be added to the hyperlink URL
      * - `id` – The chip’s `id` attribute
      * - `inputName` – The `name` attribute that should be set on a hidden input, if set
      * - `inputValue` – The `value` attribute that should be set on the hidden input, if `inputName` is set. Defaults to [[\craft\base\Identifiable::getId()`]].
@@ -555,6 +556,7 @@ class Cp
             'attributes' => [],
             'autoReload' => true,
             'context' => 'index',
+            'returnUrl' => null,
             'id' => sprintf('chip-%s', mt_rand()),
             'inputName' => null,
             'selectable' => false,
@@ -574,6 +576,7 @@ class Cp
                 'data' => array_filter([
                     'settings' => $config['autoReload'] ? [
                         'context' => $config['context'],
+                        'returnUrl' => $config['returnUrl'],
                         'showDraftName' => $config['showDraftName'],
                         'showProvisionalDraftLabel' => $config['showProvisionalDraftLabel'],
                     ] : false,
@@ -629,6 +632,7 @@ class Cp
      * - `autoReload` – Whether the card should auto-reload itself when it’s saved
      * - `context` – The context the card is going to be shown in (`index`, `field`, etc.)
      * - `hyperlink` – Whether the card label should be hyperlinked to the element’s URL
+     * - `returnUrl` – The `returnUrl` param that should be added to the hyperlink URL
      * - `id` – The card’s `id` attribute
      * - `inputName` – The `name` attribute that should be set on the hidden input, if `context` is set to `field`
      * - `selectable` – Whether the card should include a checkbox input
@@ -648,6 +652,7 @@ class Cp
             'autoReload' => true,
             'context' => 'index',
             'hyperlink' => false,
+            'returnUrl' => null,
             'id' => sprintf('card-%s', mt_rand()),
             'inputName' => null,
             'selectable' => false,
@@ -728,6 +733,7 @@ JS, [
                 'data' => array_filter([
                     'settings' => $config['autoReload'] ? [
                         'hyperlink' => $config['hyperlink'],
+                        'returnUrl' => $config['returnUrl'],
                         'selectable' => $config['selectable'],
                         'context' => $config['context'],
                         'id' => Craft::$app->getView()->namespaceInputId($config['id']),
@@ -1154,6 +1160,16 @@ JS, [
                 $config['context'] !== 'modal' &&
                 ($url = $attributes['data']['cp-url'] ?? null)
             ) {
+                $returnUrl = $config['returnUrl'] ?? null;
+                if ($returnUrl) {
+                    if (str_contains($returnUrl, '{')) {
+                        $returnUrl = Craft::$app->getSecurity()->hashData($returnUrl);
+                    }
+                    $url = UrlHelper::urlWithParams($url, [
+                        'returnUrl' => $returnUrl,
+                    ]);
+                }
+
                 $content = Html::tag('a', Html::tag('span', $content), [
                     'class' => ['label-link'],
                     'href' => $url,

@@ -884,6 +884,7 @@ class ElementIndexesController extends BaseElementsController
                 [
                     ...$this->viewState,
                     'fieldLayouts' => $this->fieldLayouts,
+                    'returnUrl' => $this->request->getParam('returnUrl'),
                 ],
                 $this->sourceKey,
                 $this->context,
