@@ -1,5 +1,6 @@
 {% set context = context ?? 'index' %}
 {% set hyperlink = hyperlink ?? (context in ['index', 'embedded-index', 'pane']) %}
+{% set returnUrl = returnUrl ?? null %}
 
 {% apply spaceless %}
   {% for element in elements %}
@@ -14,6 +15,7 @@
         selectable,
         sortable,
         hyperlink,
+        returnUrl,
       }) }}
     {% endtag %}
   {% endfor %}

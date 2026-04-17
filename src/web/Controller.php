@@ -14,6 +14,8 @@ use craft\base\ModelInterface;
 use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\Cp;
+use craft\helpers\Json;
+use craft\helpers\UrlHelper;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -648,6 +650,17 @@ abstract class Controller extends \yii\web\Controller
 
         if ($url && $object) {
             $url = $this->getView()->renderObjectTemplate($url, $object);
+        }
+
+        $params = $this->request->getBodyParam('redirectParams');
+        if ($params) {
+            try {
+                $params = Json::decode($params);
+            } catch (InvalidArgumentException $e) {
+                throw new BadRequestHttpException($e->getMessage(), previous: $e);
+            }
+
+            $url = UrlHelper::urlWithParams($url, $params);
         }
 
         return $url;

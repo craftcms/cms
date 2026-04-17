@@ -579,6 +579,7 @@ class UrlHelper
      *
      * @return string|null
      * @since 5.9.0
+     * @deprecated in 5.10.0
      */
     public static function cpReferralUrl(): ?string
     {

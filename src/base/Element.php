@@ -81,6 +81,7 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
@@ -1304,6 +1305,7 @@ abstract class Element extends Component implements ElementInterface
             'nestedInputNamespace' => $viewState['nestedInputNamespace'] ?? null,
             'tableName' => static::pluralDisplayName(),
             'elementQuery' => self::elementQueryWithAllDescendants($elementQuery),
+            'returnUrl' => $viewState['returnUrl'] ?? null,
         ];
 
         $db = Craft::$app->getDb();
@@ -3980,12 +3982,20 @@ abstract class Element extends Component implements ElementInterface
         $elementsService = Craft::$app->getElements();
         $canSaveCanonical = $elementsService->canSaveCanonical($this);
 
+        $returnUrl = Craft::$app->getRequest()->getQueryParam('returnUrl');
+        $redirectParams = array_filter([
+            'returnUrl' => $returnUrl,
+        ]);
+
         $altActions = [
             [
                 'label' => $isUnpublishedDraft && $canSaveCanonical
                     ? Craft::t('app', 'Create and continue editing')
                     : Craft::t('app', 'Save and continue editing'),
                 'redirect' => '{cpEditUrl}',
+                'params' => array_filter([
+                    'redirectParams' => !empty($redirectParams) ? Json::encode($redirectParams) : null,
+                ]),
                 'shortcut' => true,
                 'retainScroll' => true,
                 'eventData' => ['autosave' => false],
@@ -4002,7 +4012,10 @@ abstract class Element extends Component implements ElementInterface
                     'shortcut' => true,
                     'shift' => true,
                     'eventData' => ['autosave' => false],
-                    'params' => ['addAnother' => 1],
+                    'params' => [
+                        'addAnother' => 1,
+                        'returnUrl' => $returnUrl,
+                    ],
                 ];
             }
 
@@ -4027,6 +4040,7 @@ abstract class Element extends Component implements ElementInterface
                     'params' => [
                         'asUnpublishedDraft' => true,
                         'deleteProvisionalDraft' => true,
+                        'redirectParams' => !empty($redirectParams) ? Json::encode($redirectParams) : null,
                     ],
                 ];
             }
