@@ -1,5 +1,5 @@
 {
-  "name": "@craftcms/asset-bundles",
+  "name": "@craftcms/legacy",
   "private": true,
   "main": "webpack.config.js",
   "scripts": {
@@ -18,8 +18,8 @@
     "extends @craftcms/browserslist-config"
   ],
   "devDependencies": {
-    "@craftcms/playwright": "file:../../packages/craftcms-playwright",
-    "@craftcms/webpack": "file:../../packages/craftcms-webpack",
+    "@craftcms/playwright": "file:../craftcms-playwright",
+    "@craftcms/webpack": "file:../craftcms-webpack",
     "@playwright/test": "^1.58.2",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
@@ -35,10 +35,10 @@
   },
   "dependencies": {
     "@benmajor/jquery-touch-events": "^2.0.3",
-    "@craftcms/cp": "file:../../packages/craftcms-cp",
-    "@craftcms/graphiql": "file:../../packages/craftcms-graphiql",
-    "@craftcms/sass": "file:../../packages/craftcms-sass",
-    "@craftcms/vue": "file:../../packages/craftcms-vue",
+    "@craftcms/cp": "file:../craftcms-cp",
+    "@craftcms/graphiql": "file:../craftcms-graphiql",
+    "@craftcms/sass": "file:../craftcms-sass",
+    "@craftcms/vue": "file:../craftcms-vue",
     "@floating-ui/dom": "^1.7.6",
     "@selectize/selectize": "selectize/selectize.js#master",
     "@simplewebauthn/browser": "^13.3.0",
