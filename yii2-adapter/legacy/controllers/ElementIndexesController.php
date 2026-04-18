@@ -22,26 +22,17 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\ExcludeDescendantIdsExpression;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\ElementExporters;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
-use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
-use yii\web\ServerErrorHttpException;
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * The ElementIndexesController class is a controller that handles various element index related actions.
@@ -145,70 +136,6 @@ class ElementIndexesController extends BaseElementsController
     }
 
     /**
-     * Returns the source path for the given source key, step key, and context.
-     *
-     * @since 4.4.12
-     */
-    public function actionSourcePath(): Response
-    {
-        $stepKey = $this->request->getRequiredBodyParam('stepKey');
-        $sourcePath = $this->elementType::sourcePath($this->sourceKey, $stepKey, $this->context);
-
-        return $this->asJson([
-            'sourcePath' => $sourcePath,
-        ]);
-    }
-
-    /**
-     * Returns attribute info for the current source.
-     *
-     * @since 5.9.0
-     */
-    public function actionSourceAttributeInfo(): Response
-    {
-        $elementSources = app(ElementSources::class);
-
-        if ($this->sourceKey) {
-            $sortOptions = $elementSources->getSourceSortOptions($this->elementType, $this->sourceKey)
-                ->map(fn(array $option) => [
-                    'label' => $option['label'],
-                    'attr' => $option['attribute'] ?? $option['orderBy'],
-                    'defaultDir' => $option['defaultDir'] ?? 'asc',
-                ])
-                ->values()
-                ->all();
-
-            $tableColumns = $elementSources->getSourceTableAttributes($this->elementType, $this->sourceKey)
-                ->map(fn(array $attribute, string $key) => [
-                    ...$attribute,
-                    'attr' => $key,
-                ])
-                ->values()
-                ->all();
-
-            $defaultTableColumns = Collection::make($elementSources->getTableAttributes(
-                elementType: $this->elementType,
-                sourceKey: $this->sourceKey,
-                fieldLayouts: $this->fieldLayouts
-            ))
-                ->map(fn(array $attribute) => $attribute[0])
-                ->filter(fn(string $attribute) => $attribute !== 'title')
-                ->values()
-                ->all();
-        } else {
-            $sortOptions = [];
-            $tableColumns = [];
-            $defaultTableColumns = [];
-        }
-
-        return $this->asJson(compact(
-            'sortOptions',
-            'tableColumns',
-            'defaultTableColumns',
-        ));
-    }
-
-    /**
      * Renders and returns an element index container, plus its first batch of elements.
      */
     public function actionGetElements(): Response
@@ -247,23 +174,6 @@ class ElementIndexesController extends BaseElementsController
             'resultSet' => $this->request->getParam('resultSet'),
             'total' => $total,
             'unfilteredTotal' => $unfilteredTotal,
-        ]);
-    }
-
-    /**
-     * Returns the source tree HTML for an element index.
-     */
-    public function actionGetSourceTreeHtml(): Response
-    {
-        $this->requireAcceptsJson();
-
-        $sources = app(ElementSources::class)->getSources($this->elementType, $this->context);
-
-        return $this->asJson([
-            'html' => template('_elements/sources', [
-                'elementType' => $this->elementType,
-                'sources' => $sources->all(),
-            ]),
         ]);
     }
 
@@ -335,98 +245,6 @@ class ElementIndexesController extends BaseElementsController
             'headHtml' => HtmlStack::headHtml(),
             'bodyHtml' => HtmlStack::bodyHtml(),
         ]);
-    }
-
-    /**
-     * Saves inline-edited elements.
-     *
-     * @since 5.0.0
-     */
-    public function actionSaveElements(): Response
-    {
-        $siteId = $this->request->getRequiredBodyParam('siteId');
-        $namespace = $this->request->getRequiredBodyParam('namespace');
-        $data = $this->request->getRequiredBodyParam($namespace);
-
-        if (empty($data)) {
-            throw new BadRequestHttpException('No element data provided.');
-        }
-
-        // get all the elements
-        $elementIds = array_map(
-            fn(string $key) => (int) Str::chopStart($key, 'element-'),
-            array_keys($data),
-        );
-        $elements = $this->elementType()::find()
-            ->id($elementIds)
-            ->status(null)
-            ->drafts(null)
-            ->provisionalDrafts(null)
-            ->siteId($siteId)
-            ->all();
-
-        if (empty($elements)) {
-            throw new BadRequestHttpException('No valid element IDs provided.');
-        }
-
-        // make sure they're editable
-        foreach ($elements as $element) {
-            Gate::authorize('save', $element);
-        }
-
-        // set attributes and validate everything
-        $errors = [];
-        foreach ($elements as $element) {
-            $attributes = Arr::except($data["element-$element->id"], 'fields');
-            if (!empty($attributes)) {
-                $scenario = $element->getScenario();
-                $element->setScenario(Element::SCENARIO_LIVE);
-                $element->setAttributesFromRequest($attributes);
-                $element->setScenario($scenario);
-            }
-
-            $element->setFieldValuesFromRequest("$namespace.element-$element->id.fields");
-
-            if ($element->getIsUnpublishedDraft()) {
-                $element->setScenario(Element::SCENARIO_ESSENTIALS);
-            } elseif ($element->enabled && $element->getEnabledForSite()) {
-                $element->setScenario(Element::SCENARIO_LIVE);
-            }
-
-            $names = array_merge(
-                array_keys($attributes),
-                array_map(fn(string $handle) => "field:$handle", array_keys($data["element-$element->id"]['fields'] ?? [])),
-            );
-
-            if (!$element->validate($names)) {
-                $errors[$element->getCanonicalId()] = $element->errors()->getMessages();
-            }
-        }
-
-        if (!empty($errors)) {
-            return $this->asJson([
-                'errors' => $errors,
-            ]);
-        }
-
-        // now save everything
-        DB::beginTransaction();
-
-        try {
-            foreach ($elements as $element) {
-                if (!Elements::saveElement($element)) {
-                    Log::error("Couldn’t save element $element->id: " . implode(', ', $element->getFirstErrors()));
-                    throw new ServerErrorHttpException("Couldn’t save element $element->id");
-                }
-            }
-
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
-
-        return $this->asSuccess();
     }
 
     /**

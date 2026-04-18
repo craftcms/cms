@@ -35,6 +35,7 @@ use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSourcesController;
 use CraftCms\Cms\Http\Controllers\Elements\ExportElementIndexController;
 use CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController;
+use CraftCms\Cms\Http\Controllers\Elements\SaveElementIndexElementsController;
 use CraftCms\Cms\Http\Controllers\Elements\SearchController as ElementSearchController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController;
@@ -242,6 +243,7 @@ Route::prefix(implode('/', [
         Route::post('element-indexes/source-path', [ElementIndexSourcesController::class, 'sourcePath']);
         Route::post('element-indexes/source-attribute-info', [ElementIndexSourcesController::class, 'sourceAttributeInfo']);
         Route::post('element-indexes/get-source-tree-html', [ElementIndexSourcesController::class, 'getSourceTreeHtml']);
+        Route::post('element-indexes/save-elements', SaveElementIndexElementsController::class);
         Route::post('element-indexes/export', ExportElementIndexController::class);
         Route::post('element-indexes/perform-action', PerformElementActionController::class);
         Route::post('element-search/search', ElementSearchController::class);
