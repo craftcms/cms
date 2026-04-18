@@ -11,6 +11,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use Illuminate\Contracts\View\View;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -146,6 +147,12 @@ readonly class PluginsController
         $plugin = $this->plugins->getPlugin($request->input('pluginHandle'));
 
         abort_if(is_null($plugin), 404, 'Plugin not found.');
+
+        $requestClass = $plugin->getSettingsRequestClass();
+
+        if (is_subclass_of($requestClass, FormRequest::class)) {
+            $request = app($requestClass);
+        }
 
         $success = $this->plugins->savePluginSettings($plugin, $request->input('settings', []));
 

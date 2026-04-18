@@ -30,6 +30,18 @@ class LaravelMigrations
             $migrator->track('content');
 
             $pendingMigrations = $migrator->getPendingMigrations($migrationPaths);
+            $batch = $migrator->getRepository()->getNextBatchNumber();
+
+            foreach ($pendingMigrations as $key => $path) {
+                if (! $this->migrationTableExists($path)) {
+                    continue;
+                }
+
+                $migrator->getRepository()->log($migrator->getMigrationName($path), $batch);
+                unset($pendingMigrations[$key]);
+            }
+
+            $pendingMigrations = array_values($pendingMigrations);
 
             if (empty($pendingMigrations)) {
                 return;
@@ -57,17 +69,33 @@ class LaravelMigrations
         });
     }
 
+    public function ensureMigrationTableTrackColumn(): void
+    {
+        if (! Schema::hasTable(Table::MIGRATIONS) || Schema::hasColumn(Table::MIGRATIONS, 'track')) {
+            return;
+        }
+
+        Schema::table(Table::MIGRATIONS, function (Blueprint $table) {
+            $table->string('track')->nullable()->after('id');
+        });
+    }
+
     private function publishMigrationFiles(): void
     {
         foreach ($this->migrationPatterns() as $command => $pattern) {
             $existingMigrations = $this->migrationFiles($pattern);
+
+            if (! empty($existingMigrations)) {
+                continue;
+            }
+
             $exitCode = Artisan::call($command);
 
             if (! in_array($exitCode, [0, 1], true)) {
                 throw new RuntimeException("Could not create the [$command] migration.");
             }
 
-            $migrationWasCreated = ! empty($existingMigrations) || ! empty($this->migrationFiles($pattern));
+            $migrationWasCreated = ! empty($this->migrationFiles($pattern));
 
             if (! $migrationWasCreated) {
                 throw new RuntimeException("Could not create the [$command] migration.");
@@ -105,5 +133,20 @@ class LaravelMigrations
     private function migrationFiles(string $pattern): array
     {
         return File::glob(app()->databasePath("migrations/$pattern")) ?: [];
+    }
+
+    private function migrationTableExists(string $path): bool
+    {
+        $migrationName = pathinfo($path, PATHINFO_FILENAME);
+
+        return match (true) {
+            str_ends_with($migrationName, '_create_cache_table') => Schema::hasTable('cache'),
+            str_ends_with($migrationName, '_create_'.config('queue.connections.database.table', 'jobs').'_table') => Schema::hasTable(config('queue.connections.database.table', 'jobs')),
+            str_ends_with($migrationName, '_create_'.config('queue.failed.table', 'failed_jobs').'_table') => Schema::hasTable(config('queue.failed.table', 'failed_jobs')),
+            str_ends_with($migrationName, '_create_'.config('queue.batching.table', 'job_batches').'_table') => Schema::hasTable(config('queue.batching.table', 'job_batches')),
+            str_ends_with($migrationName, '_create_sessions_table') => Schema::hasTable(Table::SESSIONS),
+            str_ends_with($migrationName, '_create_notifications_table') => Schema::hasTable('notifications'),
+            default => false,
+        };
     }
 }

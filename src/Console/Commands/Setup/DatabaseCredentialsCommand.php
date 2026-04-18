@@ -235,7 +235,9 @@ class DatabaseCredentialsCommand extends Command
 
         $this->components->success('Database credentials saved successfully.');
 
+        Config::set('database.default', $this->driver);
         Config::set("database.connections.{$this->driver}", $config);
+        DB::setDefaultConnection($this->driver);
         Config::set('database.connections.db2', $config);
 
         return self::SUCCESS;

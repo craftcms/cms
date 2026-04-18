@@ -835,8 +835,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
                 $map = DB::table(Table::ENTRIES_AUTHORS)
                     ->select([
-                        'source' => 'entryId',
-                        'target' => 'authorId',
+                        'entryId as source',
+                        'authorId as target',
                     ])
                     ->whereIn('entryId', $entryIds)
                     ->orderBy('sortOrder')
