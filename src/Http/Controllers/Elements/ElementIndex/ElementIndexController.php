@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Http\Controllers\Elements;
+namespace CraftCms\Cms\Http\Controllers\Elements\ElementIndex;
 
 use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;

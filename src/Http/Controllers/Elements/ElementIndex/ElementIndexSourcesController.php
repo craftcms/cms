@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Http\Controllers\Elements;
+namespace CraftCms\Cms\Http\Controllers\Elements\ElementIndex;
 
 use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\ElementSources;

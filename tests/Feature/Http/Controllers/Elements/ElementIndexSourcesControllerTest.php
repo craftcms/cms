@@ -7,7 +7,7 @@ use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Http\Controllers\Elements\ElementIndexSourcesController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexSourcesController;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
