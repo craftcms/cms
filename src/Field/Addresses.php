@@ -620,7 +620,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
+        if (! $element->ruleset->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
             return [];
         }
 
@@ -647,7 +647,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 ->all();
 
             $invalidAddressIds = [];
-            $scenario = $element->getScenario();
+            $scenario = $element->ruleset->getScenario();
 
             foreach ($addresses as $address) {
                 /** @var Address $address */
@@ -655,7 +655,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                     $scenario === Element::SCENARIO_ESSENTIALS ||
                     ($address->enabled && $scenario === Element::SCENARIO_LIVE)
                 ) {
-                    $address->setScenario($scenario);
+                    $address->ruleset->useScenario($scenario);
                 }
 
                 if (! $address->validate()) {
@@ -679,7 +679,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         }
 
         if (
-            $element->inScenarios(Element::SCENARIO_LIVE) &&
+            $element->ruleset->inScenarios(Element::SCENARIO_LIVE) &&
             ($this->minAddresses || $this->maxAddresses)
         ) {
             $rules = [

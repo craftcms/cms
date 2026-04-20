@@ -220,7 +220,7 @@ readonly class ImageEditorController
 
         $newAsset = new Asset;
         $newAsset->avoidFilenameConflicts = true;
-        $newAsset->setScenario(Asset::SCENARIO_CREATE);
+        $newAsset->ruleset->useScenario(Asset::SCENARIO_CREATE);
 
         $newAsset->tempFilePath = $finalImage;
         $newAsset->setFilename($asset->getFilename());

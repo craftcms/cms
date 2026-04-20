@@ -25,7 +25,7 @@ describe('Site ID validation', function () {
 
     test('siteId is validated on SCENARIO_LIVE', function () {
         $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_LIVE);
+        $entry->ruleset->useScenario(Element::SCENARIO_LIVE);
         $site = Sites::getPrimarySite();
         $entry->siteId = $site->id;
 
@@ -36,7 +36,7 @@ describe('Site ID validation', function () {
 
     test('siteId is validated on SCENARIO_ESSENTIALS', function () {
         $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        $entry->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
         $site = Sites::getPrimarySite();
         $entry->siteId = $site->id;
 
@@ -90,7 +90,7 @@ describe('Title validation', function () {
 
     test('title is required on SCENARIO_LIVE for elements with titles', function () {
         $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_LIVE);
+        $entry->ruleset->useScenario(Element::SCENARIO_LIVE);
         $entry->title = '';
 
         $entry->validate(['title']);
@@ -139,7 +139,7 @@ describe('Slug validation', function () {
 
     test('slug is validated on SCENARIO_ESSENTIALS', function () {
         $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        $entry->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
         $entry->slug = str_repeat('a', 256);
 
         $entry->validate(['slug']);
@@ -159,7 +159,7 @@ describe('URI validation', function () {
 
     test('uri is validated on SCENARIO_ESSENTIALS', function () {
         $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        $entry->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
 
         $entry->validate(['uri']);
 
@@ -170,7 +170,7 @@ describe('URI validation', function () {
 describe('Scenario validation', function () {
     test('SCENARIO_LIVE validates title when required', function () {
         $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_LIVE);
+        $entry->ruleset->useScenario(Element::SCENARIO_LIVE);
         $entry->title = '';
 
         $entry->validate(['title']);

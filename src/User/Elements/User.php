@@ -171,16 +171,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
 
     public const string SCENARIO_PASSWORD = 'password';
 
-    #[Override]
-    public function scenarios(): array
-    {
-        return array_merge(parent::scenarios(), [
-            self::SCENARIO_PASSWORD => ['newPassword'],
-            self::SCENARIO_REGISTRATION => ['username', 'email', 'newPassword'],
-            self::SCENARIO_ACTIVATION => ['username', 'email'],
-        ]);
-    }
-
     public function getAuthIdentifierName(): string
     {
         return 'id';

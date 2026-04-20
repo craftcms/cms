@@ -1265,7 +1265,7 @@ JS,
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
+        if (! $element->ruleset->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
             return [];
         }
 
@@ -1299,15 +1299,15 @@ JS,
                 ->all();
 
             $invalidEntryIds = [];
-            $scenario = $element->getScenario();
+            $scenario = $element->ruleset->getScenario();
 
             foreach ($entries as $entry) {
                 $entry->setOwner($element);
 
                 if (! $entry->enabled) {
-                    $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+                    $entry->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
                 } else {
-                    $entry->setScenario($scenario);
+                    $entry->ruleset->useScenario($scenario);
                 }
 
                 if (! $entry->validate()) {
@@ -1339,7 +1339,7 @@ JS,
         }
 
         if (
-            $element->inScenarios(Element::SCENARIO_LIVE) &&
+            $element->ruleset->inScenarios(Element::SCENARIO_LIVE) &&
             ($this->minEntries || $this->maxEntries)
         ) {
             $rules = array_filter([

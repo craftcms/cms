@@ -648,7 +648,7 @@ JS, [
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
+        if (! $element->ruleset->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
             return [];
         }
 
@@ -661,8 +661,8 @@ JS, [
     {
         $value->setOwner($element);
 
-        if ($element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_LIVE)) {
-            $value->setScenario($element->getScenario());
+        if ($element->ruleset->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_LIVE)) {
+            $value->ruleset->useScenario($element->ruleset->getScenario());
         }
 
         if (! $value->validate()) {

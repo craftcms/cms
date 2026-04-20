@@ -364,7 +364,7 @@ abstract class ResaveCommand extends Command
                                 $shouldSet = false;
                             }
                         } elseif ($ifInvalid) {
-                            $element->setScenario(Element::SCENARIO_LIVE);
+                            $element->ruleset->useScenario(Element::SCENARIO_LIVE);
 
                             if ($element->validate($set) && $element->validate("field:$set")) {
                                 $shouldSet = false;

@@ -59,7 +59,7 @@ readonly class UsersController
 
         $this->authorize('save', $user);
 
-        $user->setScenario(Element::SCENARIO_ESSENTIALS);
+        $user->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
         if (! $drafts->saveElementAsDraft($user, $request->user()->id, markAsSaved: false)) {
             return $this->asModelFailure($user, mb_ucfirst(t('Couldn’t create {type}.', [
                 'type' => User::lowerDisplayName(),

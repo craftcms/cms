@@ -68,7 +68,7 @@ readonly class AddressesController
         Gate::authorize('save', $address);
 
         // Addresses have no status, and the default element save controller also sets the address scenario to live
-        $address->setScenario(Element::SCENARIO_LIVE);
+        $address->ruleset->useScenario(Element::SCENARIO_LIVE);
 
         // Name attributes
         $this->populateNameAttributes($request, $address);

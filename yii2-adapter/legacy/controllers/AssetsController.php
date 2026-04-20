@@ -83,7 +83,7 @@ class AssetsController extends Controller
         $asset->setFieldValuesFromRequest($fieldsLocation);
 
         // Save the asset
-        $asset->setScenario(Element::SCENARIO_LIVE);
+        $asset->ruleset->useScenario(Element::SCENARIO_LIVE);
 
         if (!Elements::saveElement($asset)) {
             return $this->asModelFailure(

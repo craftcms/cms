@@ -628,7 +628,7 @@ abstract class Element extends Component implements ElementInterface
             return;
         }
 
-        $scenario = $this->getScenario();
+        $scenario = $this->ruleset->getScenario();
         $layoutElements = $fieldLayout->getEditableCustomFieldElements($this);
 
         foreach ($layoutElements as $layoutElement) {

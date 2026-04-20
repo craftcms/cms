@@ -319,7 +319,7 @@ class NestedElementManager extends Component
                 if ($this->hasErrors($owner)) {
                     foreach ($elements as $element) {
                         if ($element->enabled && $element->getEnabledForSite()) {
-                            $element->setScenario(Element::SCENARIO_LIVE);
+                            $element->ruleset->useScenario(Element::SCENARIO_LIVE);
                         }
                         $element->validate();
                     }

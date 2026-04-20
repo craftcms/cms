@@ -160,7 +160,7 @@ class Item extends ActiveRecord
 }
 
 $item = Item::findOne($id);
-$item->setScenario('some');
+$item->ruleset->useScenario('some');
 $item->delete(); // nothing happens!
 ```
 

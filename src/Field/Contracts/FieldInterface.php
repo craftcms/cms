@@ -377,7 +377,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      * [
      *       'string',
      *       'min:3',
-     *       Rule::when($element->inScenarios(self::SCENARIO_LIVE), ['max:12']),
+     *       Rule::when($element->ruleset->inScenarios(self::SCENARIO_LIVE), ['max:12']),
      *  ]
      * ```
      */

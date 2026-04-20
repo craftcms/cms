@@ -78,14 +78,14 @@ abstract class Field extends \CraftCms\Cms\Field\Field
     {
         return [
             function(string $attribute, mixed $value, Closure $fail) use ($element) {
-                $scenario = $element->getScenario();
+                $scenario = $element->ruleset->getScenario();
                 $isEmpty = fn() => $this->isValueEmpty($element->getFieldValue($this->handle), $element);
 
                 foreach ($this->getElementValidationRules() as $rule) {
                     $validator = $this->_normalizeFieldValidator($attribute, $rule, $element, $isEmpty);
 
                     if (
-                        in_array($element->getScenario(), $validator->on) ||
+                        in_array($element->ruleset->getScenario(), $validator->on) ||
                         (empty($validator->on) && !in_array($scenario, $validator->except))
                     ) {
                         $validator->validateAttributes($element);

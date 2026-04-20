@@ -292,7 +292,7 @@ class CategoriesController extends Controller
         }
 
         // Save it
-        $category->setScenario(Element::SCENARIO_ESSENTIALS);
+        $category->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
         if (!app(Drafts::class)->saveElementAsDraft($category, Craft::$app->getUser()->getId(), null, null, false)) {
             return $this->asModelFailure($category, mb_ucfirst(t('Couldn’t create {type}.', [
                 'type' => Category::lowerDisplayName(),
@@ -378,7 +378,7 @@ class CategoriesController extends Controller
 
         // Save the category
         if ($category->enabled && $category->getEnabledForSite()) {
-            $category->setScenario(Element::SCENARIO_LIVE);
+            $category->ruleset->useScenario(Element::SCENARIO_LIVE);
         }
 
         if (!Elements::saveElement($category)) {

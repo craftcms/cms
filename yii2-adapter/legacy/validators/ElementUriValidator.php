@@ -50,7 +50,7 @@ class ElementUriValidator extends UriValidator
         // Ignore published drafts if the scenario isn't "live",
         // or if the canonical element is enabled and the URI hasn't changed on the draft
         if ($model->getIsDraft() && !$model->getIsUnpublishedDraft()) {
-            if ($model->getScenario() !== Element::SCENARIO_LIVE) {
+            if ($model->ruleset->getScenario() !== Element::SCENARIO_LIVE) {
                 return;
             }
 
@@ -72,7 +72,7 @@ class ElementUriValidator extends UriValidator
             if (
                 $model->enabled &&
                 $model->getEnabledForSite() &&
-                (!$model->getIsUnpublishedDraft() || $model->getScenario() === Element::SCENARIO_LIVE)
+                (!$model->getIsUnpublishedDraft() || $model->ruleset->getScenario() === Element::SCENARIO_LIVE)
             ) {
                 $this->addError($model, $attribute, t('Could not generate a unique URI based on the URI format.'));
                 return;

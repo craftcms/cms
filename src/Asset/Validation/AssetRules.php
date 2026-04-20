@@ -22,11 +22,15 @@ class AssetRules extends ElementRules
     #[Override]
     public function rules(): array
     {
+        if ($this->inScenarios(Asset::SCENARIO_INDEX)) {
+            return [];
+        }
+
         $rules = parent::rules();
 
         $rules['title'] = [
             'nullable',
-            Rule::when($this->subject->inScenarios(Asset::SCENARIO_CREATE), [
+            Rule::when($this->inScenarios(Asset::SCENARIO_CREATE), [
                 'string',
                 'max:255',
                 new DisallowMb4,
@@ -43,7 +47,7 @@ class AssetRules extends ElementRules
         $rules['newFilename'] = ['nullable'];
         $rules['kind'] = ['required', 'string', 'max:50'];
         $rules['alt'] = ['nullable', Rule::requiredIf(function () {
-            if (! $this->subject->inScenarios(Asset::SCENARIO_LIVE)) {
+            if (! $this->inScenarios(Asset::SCENARIO_LIVE)) {
                 return false;
             }
 
@@ -55,18 +59,18 @@ class AssetRules extends ElementRules
 
         $rules['newLocation'] = [
             'nullable',
-            Rule::requiredIf($this->subject->inScenarios(Asset::SCENARIO_CREATE, Asset::SCENARIO_MOVE, Asset::SCENARIO_FILEOPS)),
-            Rule::when(! $this->subject->inScenarios(Asset::SCENARIO_MOVE), [
+            Rule::requiredIf($this->inScenarios(Asset::SCENARIO_CREATE, Asset::SCENARIO_MOVE, Asset::SCENARIO_FILEOPS)),
+            Rule::when(! $this->inScenarios(Asset::SCENARIO_MOVE), [
                 new AssetLocationRule($this->subject),
             ]),
-            Rule::when($this->subject->inScenarios(Asset::SCENARIO_MOVE), [
+            Rule::when($this->inScenarios(Asset::SCENARIO_MOVE), [
                 new AssetLocationRule($this->subject, allowedExtensions: '*'),
             ]),
         ];
 
         $rules['tempFilePath'] = [
             'nullable',
-            Rule::requiredIf($this->subject->inScenarios(Asset::SCENARIO_CREATE, Asset::SCENARIO_REPLACE)),
+            Rule::requiredIf($this->inScenarios(Asset::SCENARIO_CREATE, Asset::SCENARIO_REPLACE)),
         ];
 
         return $rules;

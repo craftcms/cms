@@ -561,7 +561,7 @@ JS, [
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $element->inScenarios(Element::SCENARIO_LIVE)) {
+        if (! $element->ruleset->inScenarios(Element::SCENARIO_LIVE)) {
             return [];
         }
 
@@ -690,7 +690,7 @@ JS, [
         // Prevent relational fields on this element from enforcing related element validation
         self::$validatingRelatedElements = true;
 
-        $target->setScenario(Element::SCENARIO_LIVE);
+        $target->ruleset->useScenario(Element::SCENARIO_LIVE);
         $validates = $target->validate();
 
         self::$validatingRelatedElements = false;

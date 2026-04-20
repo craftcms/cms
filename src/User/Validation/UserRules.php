@@ -58,7 +58,7 @@ class UserRules extends ElementRules
     {
         $rules = parent::rules();
 
-        $treatAsActive = $this->subject->getIsCredentialed() || $this->subject->inScenarios(
+        $treatAsActive = $this->subject->getIsCredentialed() || $this->inScenarios(
             User::SCENARIO_REGISTRATION,
             User::SCENARIO_ACTIVATION,
         );
@@ -111,7 +111,7 @@ class UserRules extends ElementRules
                 ->getFirstVisibleElementByType(FullNameField::class, $this->subject)
                 ->required ?? false));
 
-        if ($this->subject->inScenarios(User::SCENARIO_LIVE)) {
+        if ($this->inScenarios(User::SCENARIO_LIVE)) {
             $rules['firstName'][] = Rule::requiredIf($requiredNameField(true));
             $rules['lastName'][] = Rule::requiredIf($requiredNameField(true));
             $rules['fullName'][] = Rule::requiredIf($requiredNameField(false));
@@ -144,7 +144,7 @@ class UserRules extends ElementRules
         $rules['newPassword'] = [
             Rule::requiredIf(
                 ! Cms::config()->deferPublicRegistrationPassword
-                && $this->subject->inScenarios(User::SCENARIO_PASSWORD, User::SCENARIO_REGISTRATION)
+                && $this->inScenarios(User::SCENARIO_PASSWORD, User::SCENARIO_REGISTRATION)
             ),
             new UserPasswordRule(
                 forceDifferent: $this->subject->passwordResetRequired,

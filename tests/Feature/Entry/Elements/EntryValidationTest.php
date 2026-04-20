@@ -112,7 +112,7 @@ describe('Date comparison validation', function () {
         bool $expectError
     ) {
         $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_LIVE);
+        $entry->ruleset->useScenario(Element::SCENARIO_LIVE);
         $entry->postDate = $postDate;
         $entry->expiryDate = $expiryDate;
 
@@ -158,7 +158,7 @@ describe('Author required validation', function () {
             ->createElement();
 
         if ($isLiveScenario) {
-            $entry->setScenario(Element::SCENARIO_LIVE);
+            $entry->ruleset->useScenario(Element::SCENARIO_LIVE);
         }
 
         $entry->setAuthorIds([]);
@@ -306,7 +306,7 @@ describe('Author permission validation', function () {
 describe('Scenario-specific validation', function () {
     test('SCENARIO_LIVE validates date comparison', function () {
         $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_LIVE);
+        $entry->ruleset->useScenario(Element::SCENARIO_LIVE);
         $entry->postDate = new DateTime('2025-01-01');
         $entry->expiryDate = new DateTime('2024-01-01');
 
@@ -338,7 +338,7 @@ describe('Scenario-specific validation', function () {
             ->forSection($section)
             ->forEntryType($entryType)
             ->createElement();
-        $entry->setScenario(Element::SCENARIO_LIVE);
+        $entry->ruleset->useScenario(Element::SCENARIO_LIVE);
         $entry->setAuthorIds([]);
 
         $entry->validate(['authorIds']);

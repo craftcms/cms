@@ -447,6 +447,6 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
 
     public function inScenarios(string ...$scenarios): bool
     {
-        return in_array($this->getScenario(), $scenarios, true);
+        return in_array($this->ruleset->getScenario(), $scenarios, true);
     }
 }

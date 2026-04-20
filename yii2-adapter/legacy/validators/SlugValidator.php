@@ -64,7 +64,7 @@ class SlugValidator extends Validator
         $isDraft = $model instanceof ElementInterface && $model->getIsDraft();
 
         // If this is a draft with a temp slug, leave it alone
-        if ($isDraft && !in_array($model->getScenario(), [Element::SCENARIO_LIVE, Element::SCENARIO_DEFAULT])) {
+        if ($isDraft && !in_array($model->ruleset->getScenario(), [Element::SCENARIO_LIVE, Element::SCENARIO_DEFAULT])) {
             if ($isTemp) {
                 // Leave it alone
                 return;

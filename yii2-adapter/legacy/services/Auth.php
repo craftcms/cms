@@ -332,7 +332,7 @@ class Auth extends Component
 
             $user = $event->user;
             $user->newPassword = $event->newPassword;
-            $user->setScenario(User::SCENARIO_PASSWORD);
+            $user->ruleset->useScenario(User::SCENARIO_PASSWORD);
 
             if (!Elements::saveElement($user)) {
                 $event->status = 'password.save_failed';

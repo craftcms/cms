@@ -72,7 +72,7 @@ readonly class SetPasswordController extends AuthenticationController
                 ],
                 function (User $user, string $password) use ($elements) {
                     $user->newPassword = $password;
-                    $user->setScenario(User::SCENARIO_PASSWORD);
+                    $user->ruleset->useScenario(User::SCENARIO_PASSWORD);
 
                     if (! $elements->saveElement($user)) {
                         throw new RuntimeException('Couldn’t update password.');

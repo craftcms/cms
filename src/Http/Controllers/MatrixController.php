@@ -134,7 +134,7 @@ readonly class MatrixController
 
             Gate::authorize('save', $entry);
 
-            $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+            $entry->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
 
             if (! $this->drafts->saveElementAsDraft($entry, $request->user()->id, markAsSaved: false)) {
                 return $this->asFailure(mb_ucfirst(t('Couldn’t create {type}.', [

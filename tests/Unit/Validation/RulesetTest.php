@@ -164,7 +164,7 @@ describe('rules', function () {
                 'body' => ['nullable'],
             ],
         );
-        $component->setScenario('essentials');
+        $component->ruleset->useScenario('essentials');
 
         $rules = $ruleset->rules();
 
@@ -187,7 +187,7 @@ describe('rules', function () {
                 'body' => ['nullable'],
             ],
         );
-        $component->setScenario('default');
+        $component->ruleset->useScenario('default');
 
         $rules = $ruleset->rules();
 
@@ -272,13 +272,13 @@ describe('scenarios', function () {
             ],
         );
 
-        $component->setScenario('login');
+        $component->ruleset->useScenario('login');
         $loginRules = $ruleset->rules();
 
         expect($loginRules)->toHaveKeys(['email', 'password']);
         expect($loginRules)->not->toHaveKey('title');
 
-        $component->setScenario('profile');
+        $component->ruleset->useScenario('profile');
         $profileRules = $ruleset->rules();
 
         expect($profileRules)->toHaveKeys(['title', 'email']);
@@ -298,7 +298,7 @@ describe('scenarios', function () {
                 'email' => ['required'],
             ],
         );
-        $component->setScenario('undefined-scenario');
+        $component->ruleset->useScenario('undefined-scenario');
 
         $rules = $ruleset->rules();
 

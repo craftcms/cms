@@ -53,7 +53,7 @@ class ResaveElements extends BatchedElementJob
                     $set = false;
                 }
             } elseif ($this->ifInvalid) {
-                $element->setScenario(Element::SCENARIO_LIVE);
+                $element->ruleset->useScenario(Element::SCENARIO_LIVE);
 
                 if ($element->validate($this->set) && $element->validate("field:$this->set")) {
                     $set = false;
@@ -66,7 +66,7 @@ class ResaveElements extends BatchedElementJob
             }
         }
 
-        $element->setScenario(Element::SCENARIO_ESSENTIALS);
+        $element->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
         $element->resaving = true;
 
         try {

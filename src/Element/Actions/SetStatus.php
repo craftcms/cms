@@ -87,7 +87,7 @@ JS, [static::class]);
 
                     $element->enabled = true;
                     $element->setEnabledForSite(true);
-                    $element->setScenario(Element::SCENARIO_LIVE);
+                    $element->ruleset->useScenario(Element::SCENARIO_LIVE);
                     break;
 
                 case self::DISABLED:

@@ -495,7 +495,7 @@ class Assets extends BaseRelationField
                         $asset->setVolumeId($uploadFolder->volumeId);
                         $asset->uploaderId = Auth::id();
                         $asset->avoidFilenameConflicts = true;
-                        $asset->setScenario(Asset::SCENARIO_CREATE);
+                        $asset->ruleset->useScenario(Asset::SCENARIO_CREATE);
 
                         if (Elements::saveElement($asset)) {
                             $assetIds[] = $asset->id;

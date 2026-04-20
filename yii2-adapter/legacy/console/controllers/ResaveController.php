@@ -613,7 +613,7 @@ class ResaveController extends Controller
                                     $set = false;
                                 }
                             } elseif ($this->ifInvalid) {
-                                $element->setScenario(Element::SCENARIO_LIVE);
+                                $element->ruleset->useScenario(Element::SCENARIO_LIVE);
                                 if ($element->validate($this->set) && $element->validate("field:$this->set")) {
                                     $set = false;
                                 }

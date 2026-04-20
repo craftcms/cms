@@ -71,7 +71,7 @@ class Entry extends ElementMutationResolver
 
         // TODO refactor saving draft to its own method in 4.0
         if (array_key_exists('draftId', $arguments)) {
-            $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+            $entry->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
         }
 
         $canIdentify = ! empty($arguments['id']) || ! empty($arguments['uid']) || ! empty($arguments['draftId']);
@@ -79,7 +79,7 @@ class Entry extends ElementMutationResolver
         $entry = $this->populateElementWithData($entry, $arguments, $resolveInfo);
 
         if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
-            $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+            $entry->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
             Drafts::saveElementAsDraft(
                 $entry,
                 creatorId: Auth::id(),

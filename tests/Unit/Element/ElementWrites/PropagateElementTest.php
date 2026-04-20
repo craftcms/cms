@@ -110,7 +110,7 @@ it('clones a new site element and saves it with propagated state', function () {
         ->and($siteElement->getEnabledForSite())->toBeFalse()
         ->and($siteElement->propagating)->toBeTrue()
         ->and($siteElement->propagatingFrom)->toBe($element)
-        ->and($siteElement->getScenario())->toBe(Element::SCENARIO_ESSENTIALS)
+        ->and($siteElement->ruleset->getScenario())->toBe(Element::SCENARIO_ESSENTIALS)
         ->and($siteElement->getDirtyAttributes())->toContain('enabled')
         ->and($element->newSiteIds)->toBe([2]);
 
@@ -232,7 +232,7 @@ it('propagates required empty fields when propagateRequired is enabled', functio
 
     expect($siteElement->getFieldValue('plainText'))->toBe('fallback value')
         ->and($field->propagateCalls)->toHaveCount(1)
-        ->and($siteElement->getScenario())->toBe(Element::SCENARIO_LIVE);
+        ->and($siteElement->ruleset->getScenario())->toBe(Element::SCENARIO_LIVE);
 });
 
 it('uses the live scenario when cross-site validation applies to enabled site elements', function () {
@@ -248,7 +248,7 @@ it('uses the live scenario when cross-site validation applies to enabled site el
 
     $this->executor->propagate($element, supportedSites(enabledByDefault: true), 2, $siteElement, crossSiteValidate: true);
 
-    expect($siteElement->getScenario())->toBe(Element::SCENARIO_LIVE);
+    expect($siteElement->ruleset->getScenario())->toBe(Element::SCENARIO_LIVE);
 });
 
 it('continues when uri generation is aborted', function () {

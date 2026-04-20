@@ -35,12 +35,12 @@ class EntryRules extends ElementRules
         $rules['primaryOwnerId'] = ['nullable', 'integer'];
         $rules['sortOrder'] = ['nullable', 'integer'];
         $rules['placeInStructure'] = ['bool'];
-        $rules['postDate'] = ['nullable', 'date', Rule::when($this->subject->inScenarios(Entry::SCENARIO_LIVE) && ! is_null($this->subject->expiryDate), ['before:expiryDate'])];
+        $rules['postDate'] = ['nullable', 'date', Rule::when($this->inScenarios(Entry::SCENARIO_LIVE) && ! is_null($this->subject->expiryDate), ['before:expiryDate'])];
         $rules['expiryDate'] = ['nullable', 'date'];
         $rules['typeId'] = [
             'required',
             'integer',
-            Rule::when($this->subject->inScenarios(Entry::SCENARIO_DEFAULT, Entry::SCENARIO_LIVE), [
+            Rule::when($this->inScenarios(Entry::SCENARIO_DEFAULT, Entry::SCENARIO_LIVE), [
                 function (string $attribute, int $value, Closure $fail) {
                     $typeId = $this->subject->getType()->id;
 
@@ -53,7 +53,7 @@ class EntryRules extends ElementRules
                     ]));
                 },
             ]),
-            Rule::when($this->subject->inScenarios(Entry::SCENARIO_LIVE), [
+            Rule::when($this->inScenarios(Entry::SCENARIO_LIVE), [
                 function (string $attribute, int $value, Closure $fail) {
                     if (! $this->subject->getIsCanonical()) {
                         return;
@@ -73,7 +73,7 @@ class EntryRules extends ElementRules
             'nullable',
             'array',
             Rule::when(function () {
-                if (! $this->subject->inScenarios(Entry::SCENARIO_DEFAULT, Entry::SCENARIO_LIVE)) {
+                if (! $this->inScenarios(Entry::SCENARIO_DEFAULT, Entry::SCENARIO_LIVE)) {
                     return false;
                 }
 
@@ -113,7 +113,7 @@ class EntryRules extends ElementRules
                 },
             ]),
             Rule::requiredIf(function () {
-                if (! $this->subject->inScenarios(Entry::SCENARIO_LIVE)) {
+                if (! $this->inScenarios(Entry::SCENARIO_LIVE)) {
                     return false;
                 }
 

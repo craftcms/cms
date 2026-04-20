@@ -31,7 +31,7 @@ class SetPasswordCommand extends Command implements PromptsForMissingInput
             return self::FAILURE;
         }
 
-        $user->setScenario(User::SCENARIO_PASSWORD);
+        $user->ruleset->useScenario(User::SCENARIO_PASSWORD);
         $user->newPassword = $this->argument('password');
 
         $this->components->task(

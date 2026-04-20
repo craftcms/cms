@@ -41,7 +41,7 @@ test('afterValidate merges field errors onto the element', function () {
 
     $entry = new TestEntryWithAfterValidate;
     $entry->title = 'Test entry';
-    $entry->setScenario(Element::SCENARIO_DEFAULT);
+    $entry->ruleset->useScenario(Element::SCENARIO_DEFAULT);
     $entry->setMockFieldLayout($layout);
     $entry->setFieldValue($field->handle, 'not-an-email');
 

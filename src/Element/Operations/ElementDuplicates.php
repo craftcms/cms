@@ -129,7 +129,7 @@ readonly class ElementDuplicates
             );
         }
 
-        $mainClone->setScenario(Element::SCENARIO_ESSENTIALS);
+        $mainClone->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
         $mainClone->validate();
 
         if ($mainClone->errors()->has('uri') && $mainClone->enabled) {

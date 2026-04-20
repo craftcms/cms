@@ -163,18 +163,6 @@ class Asset extends Element
 
     public const string SCENARIO_REPLACE = 'replace';
 
-    #[Override]
-    public function scenarios(): array
-    {
-        return array_merge(parent::scenarios(), [
-            self::SCENARIO_MOVE => null,
-            self::SCENARIO_FILEOPS => null,
-            self::SCENARIO_INDEX => [],
-            self::SCENARIO_CREATE => null,
-            self::SCENARIO_REPLACE => null,
-        ]);
-    }
-
     // File kinds
     // -------------------------------------------------------------------------
 
@@ -2943,7 +2931,7 @@ JS;
             // Are we uploading an image that needs to be sanitized?
             if (
                 isset($this->tempFilePath) &&
-                in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
+                in_array($this->ruleset->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
                 AssetsHelper::getFileKindByExtension($this->tempFilePath) === self::KIND_IMAGE &&
                 ($this->sanitizeOnUpload ?? (
                     ! request()->isCpRequest() ||
@@ -2959,7 +2947,7 @@ JS;
             $fallbackHeight = null;
             if (
                 isset($this->tempFilePath) &&
-                in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
+                in_array($this->ruleset->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
                 AssetsHelper::getFileKindByExtension($this->tempFilePath) === self::KIND_IMAGE
             ) {
                 $imageSize = getimagesize($this->tempFilePath);
@@ -3176,7 +3164,7 @@ JS;
         if (! $this->_width || ! $this->_height) {
             if (
                 $this->kind === self::KIND_IMAGE &&
-                $this->getScenario() !== self::SCENARIO_CREATE
+                $this->ruleset->getScenario() !== self::SCENARIO_CREATE
             ) {
                 Log::warning("Asset $this->id is missing its width or height", [__METHOD__]);
             }

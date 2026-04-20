@@ -99,7 +99,7 @@ class Asset extends ElementMutationResolver
 
         $asset = $this->populateElementWithData($asset, $arguments, $resolveInfo);
 
-        $triggerReplaceEvents = $asset->getScenario() === AssetElement::SCENARIO_REPLACE;
+        $triggerReplaceEvents = $asset->ruleset->getScenario() === AssetElement::SCENARIO_REPLACE;
 
         if ($triggerReplaceEvents) {
             event($event = new BeforeReplaceAsset(
@@ -152,7 +152,7 @@ class Asset extends ElementMutationResolver
         $element = parent::populateElementWithData($element, $arguments, $resolveInfo);
 
         if (! empty($fileInformation) && $this->handleUpload($element, $fileInformation)) {
-            $element->setScenario($element->id
+            $element->ruleset->useScenario($element->id
                 ? AssetElement::SCENARIO_REPLACE
                 : AssetElement::SCENARIO_CREATE
             );

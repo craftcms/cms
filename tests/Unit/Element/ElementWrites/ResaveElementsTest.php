@@ -234,7 +234,7 @@ readonly class TestResaveElementWrites extends ElementWrites
             'updateSearchIndex' => $updateSearchIndex,
             'forceTouch' => $forceTouch,
             'saveContent' => $saveContent,
-            'scenario' => $element->getScenario(),
+            'scenario' => $element->ruleset->getScenario(),
             'resaving' => $element->resaving,
         ];
 

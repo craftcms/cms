@@ -216,7 +216,7 @@ it('propagates elements to supported target sites and dispatches lifecycle event
 
     $this->action->propagateElements($query);
 
-    expect($element->getScenario())->toBe(Element::SCENARIO_ESSENTIALS)
+    expect($element->ruleset->getScenario())->toBe(Element::SCENARIO_ESSENTIALS)
         ->and($element->newSiteIds)->toBe([])
         ->and($element->afterPropagateCalled)->toBeTrue();
 

@@ -95,7 +95,7 @@ readonly class CreateEntryController
         }
 
         // Save it
-        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        $entry->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
         $success = $drafts->saveElementAsDraft($entry, $user->id, markAsSaved: false);
 
         // Resume time

@@ -94,7 +94,7 @@ class Assets
         $asset->setMimeType(File::getMimeType($pathOnServer, checkExtension: false) ?? $mimeType);
         $asset->uploaderId = Auth::user()?->id;
         $asset->avoidFilenameConflicts = true;
-        $asset->setScenario(Asset::SCENARIO_REPLACE);
+        $asset->ruleset->useScenario(Asset::SCENARIO_REPLACE);
         $this->elements->saveElement($asset);
 
         event(new AfterReplaceAsset(
@@ -118,9 +118,9 @@ class Assets
 
         if ($filenameChanging) {
             $asset->newFilename = $filename;
-            $asset->setScenario(Asset::SCENARIO_FILEOPS);
+            $asset->ruleset->useScenario(Asset::SCENARIO_FILEOPS);
         } else {
-            $asset->setScenario(Asset::SCENARIO_MOVE);
+            $asset->ruleset->useScenario(Asset::SCENARIO_MOVE);
         }
 
         return $this->elements->saveElement($asset);

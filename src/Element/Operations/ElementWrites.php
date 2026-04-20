@@ -142,7 +142,7 @@ readonly class ElementWrites
                 $query->each(function (ElementInterface $element) use ($continueOnError, $query, &$position, $skipRevisions, $touch, $updateSearchIndex) {
                     $position++;
 
-                    $element->setScenario(Element::SCENARIO_ESSENTIALS);
+                    $element->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
                     $element->resaving = true;
 
                     $throwable = null;
@@ -207,7 +207,7 @@ readonly class ElementWrites
 
                     event(new BeforePropagateElement($query, $element, $position));
 
-                    $element->setScenario(Element::SCENARIO_ESSENTIALS);
+                    $element->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
                     $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
                     $supportedSiteIds = array_keys($supportedSites);
                     $elementSiteIds = $siteIds !== null ? array_intersect($siteIds,
@@ -799,14 +799,14 @@ readonly class ElementWrites
             }
         }
 
-        $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
+        $siteElement->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
 
         if (
             ($crossSiteValidate || $element->propagateRequired) &&
             $siteElement->enabled &&
             $siteElement->getEnabledForSite()
         ) {
-            $siteElement->setScenario(Element::SCENARIO_LIVE);
+            $siteElement->ruleset->useScenario(Element::SCENARIO_LIVE);
         }
 
         $siteElement->setDirtyAttributes(array_filter($element->getDirtyAttributes(),

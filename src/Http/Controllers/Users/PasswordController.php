@@ -65,7 +65,7 @@ readonly class PasswordController
         }
 
         $user->newPassword = $validated['newPassword'];
-        $user->setScenario(User::SCENARIO_PASSWORD);
+        $user->ruleset->useScenario(User::SCENARIO_PASSWORD);
 
         if (! $elements->saveElement($user)) {
             return $this->asFailure(

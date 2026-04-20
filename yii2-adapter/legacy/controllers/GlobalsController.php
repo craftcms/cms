@@ -224,7 +224,7 @@ class GlobalsController extends Controller
 
         $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
         $globalSet->setFieldValuesFromRequest($fieldsLocation);
-        $globalSet->setScenario(Element::SCENARIO_LIVE);
+        $globalSet->ruleset->useScenario(Element::SCENARIO_LIVE);
 
         if (!Elements::saveElement($globalSet)) {
             $this->setFailFlash(mb_ucfirst(t('Couldn’t save {type}.', [

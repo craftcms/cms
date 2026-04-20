@@ -364,7 +364,7 @@ class Users
             $filename = AssetsService::getNameReplacementInFolder($filename, $folderId);
 
             $photo = new Asset;
-            $photo->setScenario(Asset::SCENARIO_CREATE);
+            $photo->ruleset->useScenario(Asset::SCENARIO_CREATE);
             $photo->tempFilePath = $fileLocation;
             $photo->setFilename($filename);
             $photo->setMimeType(File::getMimeType($fileLocation, checkExtension: false) ?? $mimeType);
@@ -397,7 +397,7 @@ class Users
             return;
         }
 
-        $photo->setScenario(Asset::SCENARIO_MOVE);
+        $photo->ruleset->useScenario(Asset::SCENARIO_MOVE);
         $photo->avoidFilenameConflicts = true;
         $photo->newFolderId = $folderId;
         $this->elements->saveElement($photo);
@@ -576,7 +576,7 @@ class Users
         }
 
         $originalUser = clone $user;
-        $user->setScenario(User::SCENARIO_ACTIVATION);
+        $user->ruleset->useScenario(User::SCENARIO_ACTIVATION);
         $user->active = true;
         $user->pending = false;
         $user->locked = false;
@@ -927,7 +927,7 @@ class Users
         $userModel->save();
 
         $originalUser = clone $user;
-        $user->setScenario(User::SCENARIO_ACTIVATION);
+        $user->ruleset->useScenario(User::SCENARIO_ACTIVATION);
         $user->pending = $userModel->pending;
 
         if (! $user->validate()) {

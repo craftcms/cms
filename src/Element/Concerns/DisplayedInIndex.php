@@ -236,7 +236,7 @@ trait DisplayedInIndex
         if (request()->boolean('prevalidate')) {
             foreach ($elements as $element) {
                 if ($element->enabled && $element->getEnabledForSite()) {
-                    $element->setScenario(Element::SCENARIO_LIVE);
+                    $element->ruleset->useScenario(Element::SCENARIO_LIVE);
                 }
                 $element->validate();
             }

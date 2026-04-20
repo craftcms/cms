@@ -379,18 +379,18 @@ class ElementIndexesController extends BaseElementsController
         foreach ($elements as $element) {
             $attributes = Arr::except($data["element-$element->id"], 'fields');
             if (!empty($attributes)) {
-                $scenario = $element->getScenario();
-                $element->setScenario(Element::SCENARIO_LIVE);
+                $scenario = $element->ruleset->getScenario();
+                $element->ruleset->useScenario(Element::SCENARIO_LIVE);
                 $element->setAttributesFromRequest($attributes);
-                $element->setScenario($scenario);
+                $element->ruleset->useScenario($scenario);
             }
 
             $element->setFieldValuesFromRequest("$namespace.element-$element->id.fields");
 
             if ($element->getIsUnpublishedDraft()) {
-                $element->setScenario(Element::SCENARIO_ESSENTIALS);
+                $element->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
             } elseif ($element->enabled && $element->getEnabledForSite()) {
-                $element->setScenario(Element::SCENARIO_LIVE);
+                $element->ruleset->useScenario(Element::SCENARIO_LIVE);
             }
 
             $names = array_merge(

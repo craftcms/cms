@@ -630,7 +630,7 @@ class AssetIndexer
         $asset->size = $indexEntry->size;
         $timeModified = $indexEntry->timestamp;
 
-        $asset->setScenario(Asset::SCENARIO_INDEX);
+        $asset->ruleset->useScenario(Asset::SCENARIO_INDEX);
 
         try {
             if ($isLocalFs) {

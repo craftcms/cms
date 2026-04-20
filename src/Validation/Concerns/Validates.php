@@ -20,7 +20,6 @@ use Illuminate\Validation\Validator;
 trait Validates
 {
     use HasRuleset;
-    use HasScenarios;
     use InteractsWithValidator;
 
     public function getRules(): array

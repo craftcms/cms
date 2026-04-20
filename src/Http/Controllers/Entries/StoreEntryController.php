@@ -63,7 +63,7 @@ readonly class StoreEntryController
 
         // Save the entry (finally!)
         if ($entry->enabled && $entry->getEnabledForSite()) {
-            $entry->setScenario(Element::SCENARIO_LIVE);
+            $entry->ruleset->useScenario(Element::SCENARIO_LIVE);
         }
 
         $isNotNew = (bool) $entry->id;

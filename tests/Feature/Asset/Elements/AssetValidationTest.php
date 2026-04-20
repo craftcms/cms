@@ -50,7 +50,7 @@ describe('Title validation on SCENARIO_CREATE', function () {
     test('title length validation on create scenario', function (int $length, bool $expectError) {
         $asset = AssetModel::factory()->createElement();
         $asset->title = str_repeat('a', $length);
-        $asset->setScenario(Asset::SCENARIO_CREATE);
+        $asset->ruleset->useScenario(Asset::SCENARIO_CREATE);
 
         $asset->validate(['title']);
 
@@ -75,7 +75,7 @@ describe('Safe attribute validation', function () {
 describe('Scenario-specific required validation', function () {
     test('newLocation is required on specific scenarios', function (string $scenario, bool $expectError) {
         $asset = AssetModel::factory()->createElement();
-        $asset->setScenario($scenario);
+        $asset->ruleset->useScenario($scenario);
         $asset->newLocation = null;
 
         $asset->validate(['newLocation']);
@@ -90,7 +90,7 @@ describe('Scenario-specific required validation', function () {
 
     test('tempFilePath is required on specific scenarios', function (string $scenario, bool $expectError) {
         $asset = AssetModel::factory()->createElement();
-        $asset->setScenario($scenario);
+        $asset->ruleset->useScenario($scenario);
         $asset->tempFilePath = null;
 
         $asset->validate(['tempFilePath']);
@@ -107,7 +107,7 @@ describe('Scenario-specific required validation', function () {
 describe('SCENARIO_INDEX validation', function () {
     test('SCENARIO_INDEX has empty validation attributes', function () {
         $asset = AssetModel::factory()->createElement();
-        $asset->setScenario(Asset::SCENARIO_INDEX);
+        $asset->ruleset->useScenario(Asset::SCENARIO_INDEX);
 
         $activeAttributes = $asset->activeAttributes();
 
@@ -118,7 +118,7 @@ describe('SCENARIO_INDEX validation', function () {
         $asset = AssetModel::factory()->createElement();
         $asset->kind = '';
         $asset->filename = '';
-        $asset->setScenario(Asset::SCENARIO_INDEX);
+        $asset->ruleset->useScenario(Asset::SCENARIO_INDEX);
 
         $asset->validate();
 

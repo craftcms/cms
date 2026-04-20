@@ -563,10 +563,10 @@ readonly class FormFields
     public static function addressFieldsHtml(Address $address, bool $static = false): string
     {
         $requiredFields = [];
-        $scenario = $address->getScenario();
-        $address->setScenario(Element::SCENARIO_LIVE);
+        $scenario = $address->ruleset->getScenario();
+        $address->ruleset->useScenario(Element::SCENARIO_LIVE);
         $activeValidators = $address->getActiveValidators();
-        $address->setScenario($scenario);
+        $address->ruleset->useScenario($scenario);
         $belongsToCurrentUser = $address->getBelongsToCurrentUser();
 
         foreach ($activeValidators as $validator) {
