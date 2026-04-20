@@ -870,6 +870,7 @@ class CpScreenResponse implements Responsable
             'fullPageForm' => $isForm,
             'mainAttributes' => $this->mainAttributes,
             'mainFormAttributes' => $this->formAttributes,
+            'redirectUrl' => Crypt::encrypt($this->redirectUrl),
             'formActions' => array_map(function (array $action): array {
                 if (isset($action['redirect'])) {
                     $action['redirect'] = Crypt::encrypt($action['redirect']);

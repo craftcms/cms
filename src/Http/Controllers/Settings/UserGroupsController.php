@@ -107,12 +107,6 @@ readonly class UserGroupsController
             ->editUrl($group->getCpEditUrl())
             ->title(trim($group->name) ?: t('Edit User Group'))
             ->crumbs($crumbs)
-            ->addAltAction(t('Save and continue editing'), [
-                'redirect' => 'settings/users/groups/{id}',
-                'shortcut' => true,
-                'retainScroll' => true,
-            ])
-            ->action('user-settings/save-group')
             ->redirectUrl('settings/users')
             ->inertiaPage('SettingsUserGroupsEditPage', [
                 'group' => [
@@ -136,10 +130,11 @@ readonly class UserGroupsController
             });
     }
 
-    public function store(Request $request, UserPermissions $userPermissions, int $groupId): Response
+    public function store(Request $request, UserPermissions $userPermissions): Response
     {
         $userGroupData = new UserGroup;
-        $userGroupData->id = $groupId;
+        $userGroupData->id = $request->integer('id', $request->input('groupId'));
+        ;
         $userGroupData->name = $request->input('name');
         $userGroupData->handle = $request->input('handle');
         $userGroupData->description = $request->input('description');
@@ -198,13 +193,13 @@ readonly class UserGroupsController
             ? t('Permissions saved.')
             : t('Group saved.');
 
-        return $this->asModelSuccess($group, $message, 'group');
+        return $this->asSuccess($message);
     }
 
     public function destroy(Request $request, int $groupId): Response
     {
         $this->userGroups->deleteGroupById($groupId);
 
-        return $this->asSuccess(t('Group deleted.'));
+        return $this->asSuccess(t('Group deleted.'), redirect: route('craft.cp.settings.users.index'));
     }
 }

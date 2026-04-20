@@ -48,9 +48,10 @@ export interface ChipIndicator {
 export interface ActionItem {
   id?: string;
   label: string;
-  variant?: VariantKey;
+  variant?: VariantKey | string;
   icon?: string;
   onClick?: () => void;
+  shortcut?: string;
 }
 
 export interface EntryType {
@@ -174,7 +175,7 @@ export interface UserGroup {
   id: number;
   name: string;
   handle: string;
-  description: string | null;
+  description?: string | null;
   uid: string;
   permissions?: Array<string>;
 }
