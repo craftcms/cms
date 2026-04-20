@@ -12,7 +12,6 @@ use craft\events\DefineElementEditorHtmlEvent;
 use craft\services\Drafts;
 use craft\web\Controller;
 use craft\web\CpScreenResponseBehavior;
-use craft\web\UrlManager;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
@@ -189,46 +188,6 @@ class ElementsController extends Controller
             return $default;
         }
         return $value;
-    }
-
-    /**
-     * Redirects to an element’s edit page.
-     *
-     * @param int|null $elementId
-     * @param string|null $elementUid
-     * @return Response
-     * @throws BadRequestHttpException
-     * @throws ForbiddenHttpException
-     * @throws ServerErrorHttpException
-     * @since 4.0.0
-     */
-    public function actionRedirect(?int $elementId = null, ?string $elementUid = null): Response
-    {
-        $this->_elementId = $elementId ?? $this->_elementId;
-        $this->_elementUid = $elementUid ?? $this->_elementUid;
-        $element = $this->_element();
-
-        if ($element instanceof Response) {
-            return $element;
-        }
-
-        $this->element = $element;
-        $url = $element->getCpEditUrl();
-
-        if (!$url) {
-            throw new ServerErrorHttpException('The element doesn’t have an edit page.');
-        }
-
-        $editUrl = Url::removeParam(Url::cpUrl('edit'), 'site');
-        if (str_starts_with($url, $editUrl)) {
-            /** @var UrlManager $urlManager */
-            $urlManager = Craft::$app->getUrlManager();
-            return $this->runAction('edit', array_merge($urlManager->getRouteParams(), [
-                'elementId' => $element->id,
-            ]));
-        }
-
-        return $this->redirect($url);
     }
 
     /**

@@ -45,7 +45,7 @@ class ElementRequest extends FormRequest
         $this->strictSite = $strictSite;
         $this->elementType = $this->elementType();
 
-        $this->validateElementType();
+        $this->validateElementType($this->elementType);
 
         $elementId = Arr::get($overrides, 'id', $this->input('elementId'));
         $elementUid = Arr::get($overrides, 'uid', $this->input('elementUid'));
@@ -81,14 +81,14 @@ class ElementRequest extends FormRequest
     /**
      * @return class-string<ElementInterface>
      */
-    private function elementType(): string
+    public function elementType(): string
     {
         $elementType = Arr::get($this->overrides, 'type', $this->input('elementType'));
         $elementId = Arr::get($this->overrides, 'id', $this->input('elementId'));
         $elementUid = Arr::get($this->overrides, 'uid', $this->input('elementUid'));
 
         if ($elementType) {
-            return $elementType;
+            return $this->elementType = $elementType;
         }
 
         if ($elementId) {
@@ -98,7 +98,7 @@ class ElementRequest extends FormRequest
                 "Invalid element ID: $elementId",
             );
 
-            return $elementType;
+            return $this->elementType = $elementType;
         }
 
         if ($elementUid) {
@@ -108,7 +108,7 @@ class ElementRequest extends FormRequest
                 "Invalid element UUID: $elementUid",
             );
 
-            return $elementType;
+            return $this->elementType = $elementType;
         }
 
         abort(400, 'Request missing required param.');
@@ -130,19 +130,19 @@ class ElementRequest extends FormRequest
         return $query;
     }
 
-    private function validateElementType(): void
+    public function validateElementType(string $elementType): void
     {
-        if (ComponentHelper::validateComponentClass($this->elementType, ElementInterface::class)) {
+        if (ComponentHelper::validateComponentClass($elementType, ElementInterface::class)) {
             return;
         }
 
-        abort(400, new InvalidTypeException($this->elementType, ElementInterface::class)->getMessage());
+        abort(400, new InvalidTypeException($elementType, ElementInterface::class)->getMessage());
     }
 
     /**
      * @return array{0: int|int[]|null, 1: int[]|null}
      */
-    private function site(): array
+    public function site(): array
     {
         if (! $this->elementType::isLocalized()) {
             return [null, null];
