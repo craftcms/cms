@@ -100,8 +100,10 @@
     content: '';
     position: absolute;
     // Position the indicator halfway from the top of the checkbox
-    top: calc(1lh / 2);
-    left: calc(var(--c-size-control-2xs) + (var(--c-spacing) * 2));
+    inset-block-start: calc(1lh / 2);
+    inset-inline-start: calc(
+      var(--c-size-control-2xs) + (var(--c-spacing) * 2)
+    );
     width: calc(var(--gap-x) - (var(--c-spacing) * 3.5));
     height: 1px;
     background-color: var(--c-color-neutral-border-quiet);
