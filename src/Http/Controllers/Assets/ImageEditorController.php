@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers\Assets;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -220,7 +221,7 @@ readonly class ImageEditorController
 
         $newAsset = new Asset;
         $newAsset->avoidFilenameConflicts = true;
-        $newAsset->ruleset->useScenario(Asset::SCENARIO_CREATE);
+        $newAsset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
 
         $newAsset->tempFilePath = $finalImage;
         $newAsset->setFilename($asset->getFilename());

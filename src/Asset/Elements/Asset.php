@@ -147,22 +147,6 @@ class Asset extends Element
 
     public const string ERROR_FILENAME_CONFLICT = 'filename_conflict';
 
-    // Validation scenarios
-    // -------------------------------------------------------------------------
-
-    /**
-     * Validation scenario that should be used when the asset is only getting *moved*; not renamed.
-     */
-    public const string SCENARIO_MOVE = 'move';
-
-    public const string SCENARIO_FILEOPS = 'fileOperations';
-
-    public const string SCENARIO_INDEX = 'index';
-
-    public const string SCENARIO_CREATE = 'create';
-
-    public const string SCENARIO_REPLACE = 'replace';
-
     // File kinds
     // -------------------------------------------------------------------------
 
@@ -2931,7 +2915,7 @@ JS;
             // Are we uploading an image that needs to be sanitized?
             if (
                 isset($this->tempFilePath) &&
-                in_array($this->ruleset->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
+                in_array($this->ruleset->getScenario(), [AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE], true) &&
                 AssetsHelper::getFileKindByExtension($this->tempFilePath) === self::KIND_IMAGE &&
                 ($this->sanitizeOnUpload ?? (
                     ! request()->isCpRequest() ||
@@ -2947,7 +2931,7 @@ JS;
             $fallbackHeight = null;
             if (
                 isset($this->tempFilePath) &&
-                in_array($this->ruleset->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
+                in_array($this->ruleset->getScenario(), [AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE], true) &&
                 AssetsHelper::getFileKindByExtension($this->tempFilePath) === self::KIND_IMAGE
             ) {
                 $imageSize = getimagesize($this->tempFilePath);
@@ -3164,7 +3148,7 @@ JS;
         if (! $this->_width || ! $this->_height) {
             if (
                 $this->kind === self::KIND_IMAGE &&
-                $this->ruleset->getScenario() !== self::SCENARIO_CREATE
+                $this->ruleset->getScenario() !== AssetRules::SCENARIO_CREATE
             ) {
                 Log::warning("Asset $this->id is missing its width or height", [__METHOD__]);
             }

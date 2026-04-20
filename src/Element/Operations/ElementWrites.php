@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Element\Operations;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
@@ -30,6 +29,7 @@ use CraftCms\Cms\Element\Models\ElementSiteSettings;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
@@ -142,7 +142,7 @@ readonly class ElementWrites
                 $query->each(function (ElementInterface $element) use ($continueOnError, $query, &$position, $skipRevisions, $touch, $updateSearchIndex) {
                     $position++;
 
-                    $element->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
+                    $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
                     $element->resaving = true;
 
                     $throwable = null;
@@ -207,7 +207,7 @@ readonly class ElementWrites
 
                     event(new BeforePropagateElement($query, $element, $position));
 
-                    $element->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
+                    $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
                     $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
                     $supportedSiteIds = array_keys($supportedSites);
                     $elementSiteIds = $siteIds !== null ? array_intersect($siteIds,
@@ -799,14 +799,14 @@ readonly class ElementWrites
             }
         }
 
-        $siteElement->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
+        $siteElement->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
 
         if (
             ($crossSiteValidate || $element->propagateRequired) &&
             $siteElement->enabled &&
             $siteElement->getEnabledForSite()
         ) {
-            $siteElement->ruleset->useScenario(Element::SCENARIO_LIVE);
+            $siteElement->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         }
 
         $siteElement->setDirtyAttributes(array_filter($element->getDirtyAttributes(),

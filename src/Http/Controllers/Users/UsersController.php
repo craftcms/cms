@@ -9,8 +9,8 @@ use craft\web\CpScreenResponseBehavior;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -59,7 +59,7 @@ readonly class UsersController
 
         $this->authorize('save', $user);
 
-        $user->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
+        $user->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         if (! $drafts->saveElementAsDraft($user, $request->user()->id, markAsSaved: false)) {
             return $this->asModelFailure($user, mb_ucfirst(t('Couldn’t create {type}.', [
                 'type' => User::lowerDisplayName(),

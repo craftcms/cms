@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Gql\Resolvers\Mutations;
 
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -71,7 +72,7 @@ class Entry extends ElementMutationResolver
 
         // TODO refactor saving draft to its own method in 4.0
         if (array_key_exists('draftId', $arguments)) {
-            $entry->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
+            $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         }
 
         $canIdentify = ! empty($arguments['id']) || ! empty($arguments['uid']) || ! empty($arguments['draftId']);
@@ -79,7 +80,7 @@ class Entry extends ElementMutationResolver
         $entry = $this->populateElementWithData($entry, $arguments, $resolveInfo);
 
         if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
-            $entry->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
+            $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
             Drafts::saveElementAsDraft(
                 $entry,
                 creatorId: Auth::id(),

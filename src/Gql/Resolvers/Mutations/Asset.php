@@ -11,6 +11,7 @@ use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Events\AfterReplaceAsset;
 use CraftCms\Cms\Asset\Events\BeforeReplaceAsset;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Gql\Resolvers\ElementMutationResolver;
@@ -99,7 +100,7 @@ class Asset extends ElementMutationResolver
 
         $asset = $this->populateElementWithData($asset, $arguments, $resolveInfo);
 
-        $triggerReplaceEvents = $asset->ruleset->getScenario() === AssetElement::SCENARIO_REPLACE;
+        $triggerReplaceEvents = $asset->ruleset->getScenario() === AssetRules::SCENARIO_REPLACE;
 
         if ($triggerReplaceEvents) {
             event($event = new BeforeReplaceAsset(
@@ -153,8 +154,8 @@ class Asset extends ElementMutationResolver
 
         if (! empty($fileInformation) && $this->handleUpload($element, $fileInformation)) {
             $element->ruleset->useScenario($element->id
-                ? AssetElement::SCENARIO_REPLACE
-                : AssetElement::SCENARIO_CREATE
+                ? AssetRules::SCENARIO_REPLACE
+                : AssetRules::SCENARIO_CREATE
             );
         }
 

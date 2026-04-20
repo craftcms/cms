@@ -16,6 +16,7 @@ use CraftCms\Cms\Element\Operations\ElementUris;
 use CraftCms\Cms\Element\Operations\ElementWrites;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites as SitesService;
@@ -216,7 +217,7 @@ it('propagates elements to supported target sites and dispatches lifecycle event
 
     $this->action->propagateElements($query);
 
-    expect($element->ruleset->getScenario())->toBe(Element::SCENARIO_ESSENTIALS)
+    expect($element->ruleset->getScenario())->toBe(ElementRules::SCENARIO_ESSENTIALS)
         ->and($element->newSiteIds)->toBe([])
         ->and($element->afterPropagateCalled)->toBeTrue();
 

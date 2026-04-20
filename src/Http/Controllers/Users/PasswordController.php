@@ -15,6 +15,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
+use CraftCms\Cms\User\Validation\UserRules;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -65,7 +66,7 @@ readonly class PasswordController
         }
 
         $user->newPassword = $validated['newPassword'];
-        $user->ruleset->useScenario(User::SCENARIO_PASSWORD);
+        $user->ruleset->useScenario(UserRules::SCENARIO_PASSWORD);
 
         if (! $elements->saveElement($user)) {
             return $this->asFailure(

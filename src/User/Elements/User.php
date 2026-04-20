@@ -159,18 +159,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
 
     public const string STATUS_LOCKED = 'locked';
 
-    // Validation scenarios
-    // -------------------------------------------------------------------------
-
-    /**
-     * @since 4.4.8
-     */
-    public const string SCENARIO_ACTIVATION = 'activation';
-
-    public const string SCENARIO_REGISTRATION = 'registration';
-
-    public const string SCENARIO_PASSWORD = 'password';
-
     public function getAuthIdentifierName(): string
     {
         return 'id';

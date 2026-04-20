@@ -26,6 +26,15 @@ use function CraftCms\Cms\t;
  */
 class UserRules extends ElementRules
 {
+    /**
+     * @since 4.4.8
+     */
+    public const string SCENARIO_ACTIVATION = 'activation';
+
+    public const string SCENARIO_REGISTRATION = 'registration';
+
+    public const string SCENARIO_PASSWORD = 'password';
+
     private const array TRIMMABLE_ATTRIBUTES = [
         'email',
         'unverifiedEmail',
@@ -59,8 +68,8 @@ class UserRules extends ElementRules
         $rules = parent::rules();
 
         $treatAsActive = $this->subject->getIsCredentialed() || $this->inScenarios(
-            User::SCENARIO_REGISTRATION,
-            User::SCENARIO_ACTIVATION,
+            self::SCENARIO_REGISTRATION,
+            self::SCENARIO_ACTIVATION,
         );
 
         $unique = fn (string $column) => new UniqueCaseInsensitiveRule(Table::USERS, $column)
@@ -111,7 +120,7 @@ class UserRules extends ElementRules
                 ->getFirstVisibleElementByType(FullNameField::class, $this->subject)
                 ->required ?? false));
 
-        if ($this->inScenarios(User::SCENARIO_LIVE)) {
+        if ($this->inScenarios(self::SCENARIO_LIVE)) {
             $rules['firstName'][] = Rule::requiredIf($requiredNameField(true));
             $rules['lastName'][] = Rule::requiredIf($requiredNameField(true));
             $rules['fullName'][] = Rule::requiredIf($requiredNameField(false));
@@ -144,7 +153,7 @@ class UserRules extends ElementRules
         $rules['newPassword'] = [
             Rule::requiredIf(
                 ! Cms::config()->deferPublicRegistrationPassword
-                && $this->inScenarios(User::SCENARIO_PASSWORD, User::SCENARIO_REGISTRATION)
+                && $this->inScenarios(self::SCENARIO_PASSWORD, self::SCENARIO_REGISTRATION)
             ),
             new UserPasswordRule(
                 forceDifferent: $this->subject->passwordResetRequired,

@@ -84,6 +84,7 @@ use CraftCms\Cms\Element\Events\RegisterTableAttributes;
 use CraftCms\Cms\Element\Events\Render;
 use CraftCms\Cms\Element\Events\SetEagerLoadedElements;
 use CraftCms\Cms\Element\Events\SetRoute;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use Illuminate\Support\Facades\Event;
 use Override;
 
@@ -96,6 +97,12 @@ use Override;
 abstract class Element extends \CraftCms\Cms\Element\Element
 {
     use ElementEventConstants;
+
+    public const string SCENARIO_DEFAULT = ElementRules::SCENARIO_DEFAULT;
+
+    public const string SCENARIO_ESSENTIALS = ElementRules::SCENARIO_ESSENTIALS;
+
+    public const string SCENARIO_LIVE = ElementRules::SCENARIO_LIVE;
 
     public function init(): void
     {

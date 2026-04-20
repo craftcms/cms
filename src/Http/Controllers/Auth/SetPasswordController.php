@@ -13,6 +13,7 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
+use CraftCms\Cms\User\Validation\UserRules;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password as PasswordFacade;
@@ -72,7 +73,7 @@ readonly class SetPasswordController extends AuthenticationController
                 ],
                 function (User $user, string $password) use ($elements) {
                     $user->newPassword = $password;
-                    $user->ruleset->useScenario(User::SCENARIO_PASSWORD);
+                    $user->ruleset->useScenario(UserRules::SCENARIO_PASSWORD);
 
                     if (! $elements->saveElement($user)) {
                         throw new RuntimeException('Couldn’t update password.');

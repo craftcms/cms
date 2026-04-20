@@ -9,7 +9,7 @@ use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\MenuHtml;
-use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Markdown;
@@ -564,7 +564,7 @@ readonly class FormFields
     {
         $requiredFields = [];
         $scenario = $address->ruleset->getScenario();
-        $address->ruleset->useScenario(Element::SCENARIO_LIVE);
+        $address->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         $activeValidators = $address->getActiveValidators();
         $address->ruleset->useScenario($scenario);
         $belongsToCurrentUser = $address->getBelongsToCurrentUser();

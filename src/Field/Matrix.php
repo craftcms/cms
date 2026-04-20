@@ -23,6 +23,7 @@ use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
@@ -1265,7 +1266,7 @@ JS,
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $element->ruleset->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
+        if (! $element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_DEFAULT, ElementRules::SCENARIO_LIVE)) {
             return [];
         }
 
@@ -1305,7 +1306,7 @@ JS,
                 $entry->setOwner($element);
 
                 if (! $entry->enabled) {
-                    $entry->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
+                    $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
                 } else {
                     $entry->ruleset->useScenario($scenario);
                 }
@@ -1339,7 +1340,7 @@ JS,
         }
 
         if (
-            $element->ruleset->inScenarios(Element::SCENARIO_LIVE) &&
+            $element->ruleset->inScenarios(ElementRules::SCENARIO_LIVE) &&
             ($this->minEntries || $this->maxEntries)
         ) {
             $rules = array_filter([

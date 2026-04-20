@@ -19,10 +19,23 @@ use Override;
  */
 class AssetRules extends ElementRules
 {
+    /**
+     * Validation scenario that should be used when the asset is only getting *moved*; not renamed.
+     */
+    public const string SCENARIO_MOVE = 'move';
+
+    public const string SCENARIO_FILEOPS = 'fileOperations';
+
+    public const string SCENARIO_INDEX = 'index';
+
+    public const string SCENARIO_CREATE = 'create';
+
+    public const string SCENARIO_REPLACE = 'replace';
+
     #[Override]
     public function rules(): array
     {
-        if ($this->inScenarios(Asset::SCENARIO_INDEX)) {
+        if ($this->inScenarios(self::SCENARIO_INDEX)) {
             return [];
         }
 
@@ -30,7 +43,7 @@ class AssetRules extends ElementRules
 
         $rules['title'] = [
             'nullable',
-            Rule::when($this->inScenarios(Asset::SCENARIO_CREATE), [
+            Rule::when($this->inScenarios(self::SCENARIO_CREATE), [
                 'string',
                 'max:255',
                 new DisallowMb4,
@@ -47,7 +60,7 @@ class AssetRules extends ElementRules
         $rules['newFilename'] = ['nullable'];
         $rules['kind'] = ['required', 'string', 'max:50'];
         $rules['alt'] = ['nullable', Rule::requiredIf(function () {
-            if (! $this->inScenarios(Asset::SCENARIO_LIVE)) {
+            if (! $this->inScenarios(self::SCENARIO_LIVE)) {
                 return false;
             }
 
@@ -59,18 +72,18 @@ class AssetRules extends ElementRules
 
         $rules['newLocation'] = [
             'nullable',
-            Rule::requiredIf($this->inScenarios(Asset::SCENARIO_CREATE, Asset::SCENARIO_MOVE, Asset::SCENARIO_FILEOPS)),
-            Rule::when(! $this->inScenarios(Asset::SCENARIO_MOVE), [
+            Rule::requiredIf($this->inScenarios(self::SCENARIO_CREATE, self::SCENARIO_MOVE, self::SCENARIO_FILEOPS)),
+            Rule::when(! $this->inScenarios(self::SCENARIO_MOVE), [
                 new AssetLocationRule($this->subject),
             ]),
-            Rule::when($this->inScenarios(Asset::SCENARIO_MOVE), [
+            Rule::when($this->inScenarios(self::SCENARIO_MOVE), [
                 new AssetLocationRule($this->subject, allowedExtensions: '*'),
             ]),
         ];
 
         $rules['tempFilePath'] = [
             'nullable',
-            Rule::requiredIf($this->inScenarios(Asset::SCENARIO_CREATE, Asset::SCENARIO_REPLACE)),
+            Rule::requiredIf($this->inScenarios(self::SCENARIO_CREATE, self::SCENARIO_REPLACE)),
         ];
 
         return $rules;

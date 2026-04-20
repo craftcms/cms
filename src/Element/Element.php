@@ -74,15 +74,6 @@ abstract class Element extends Component implements ElementInterface
      */
     public const string HOMEPAGE_URI = '__home__';
 
-    // Validation scenarios
-    // -------------------------------------------------------------------------
-
-    public const string SCENARIO_DEFAULT = 'default';
-
-    public const string SCENARIO_ESSENTIALS = 'essentials';
-
-    public const string SCENARIO_LIVE = 'live';
-
     /**
      * @var int|null The element's ID
      */
@@ -185,19 +176,6 @@ abstract class Element extends Component implements ElementInterface
      * @since 3.2.0
      */
     public bool $hardDelete = false;
-
-    /**
-     * @return array<string, array<string>|null>
-     */
-    #[Override]
-    public function scenarios(): array
-    {
-        return [
-            self::SCENARIO_DEFAULT => null,
-            self::SCENARIO_LIVE => null,
-            self::SCENARIO_ESSENTIALS => null,
-        ];
-    }
 
     #[Override]
     public static function displayName(): string
@@ -642,7 +620,7 @@ abstract class Element extends Component implements ElementInterface
             $isEmpty = fn () => $field->isValueEmpty($this->getFieldValue($field->handle), $this);
 
             $rules = [];
-            if ($scenario === self::SCENARIO_LIVE && $layoutElement->required) {
+            if ($scenario === ElementRules::SCENARIO_LIVE && $layoutElement->required) {
                 $rules[] = function ($attribute, $value, $fail) use ($isEmpty) {
                     if ($isEmpty()) {
                         $fail(t('validation.required'));

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Email;
 use CraftCms\Cms\Field\Models\Field;
@@ -41,7 +41,7 @@ test('afterValidate merges field errors onto the element', function () {
 
     $entry = new TestEntryWithAfterValidate;
     $entry->title = 'Test entry';
-    $entry->ruleset->useScenario(Element::SCENARIO_DEFAULT);
+    $entry->ruleset->useScenario(ElementRules::SCENARIO_DEFAULT);
     $entry->setMockFieldLayout($layout);
     $entry->setFieldValue($field->handle, 'not-an-email');
 

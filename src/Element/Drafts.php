@@ -14,6 +14,7 @@ use CraftCms\Cms\Element\Events\DraftApplied;
 use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\User\Elements\User;
@@ -317,7 +318,7 @@ readonly class Drafts
         $draft->firstSave = true;
 
         // We still need to validate so the SlugValidator gets run
-        $draft->ruleset->useScenario(Element::SCENARIO_ESSENTIALS);
+        $draft->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $draft->validate();
 
         // If there are any errors on the URI, re-validate as disabled

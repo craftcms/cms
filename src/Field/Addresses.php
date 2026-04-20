@@ -17,6 +17,7 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Conditions\EmptyFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -620,7 +621,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $element->ruleset->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
+        if (! $element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_DEFAULT, ElementRules::SCENARIO_LIVE)) {
             return [];
         }
 
@@ -652,8 +653,8 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             foreach ($addresses as $address) {
                 /** @var Address $address */
                 if (
-                    $scenario === Element::SCENARIO_ESSENTIALS ||
-                    ($address->enabled && $scenario === Element::SCENARIO_LIVE)
+                    $scenario === ElementRules::SCENARIO_ESSENTIALS ||
+                    ($address->enabled && $scenario === ElementRules::SCENARIO_LIVE)
                 ) {
                     $address->ruleset->useScenario($scenario);
                 }
@@ -679,7 +680,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         }
 
         if (
-            $element->ruleset->inScenarios(Element::SCENARIO_LIVE) &&
+            $element->ruleset->inScenarios(ElementRules::SCENARIO_LIVE) &&
             ($this->minAddresses || $this->maxAddresses)
         ) {
             $rules = [
