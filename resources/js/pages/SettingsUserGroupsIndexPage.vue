@@ -40,7 +40,6 @@
         columnHelper.link('name', {
           header: t('Name'),
           props: ({row}) => ({
-            inertia: false,
             href: edit(row.original.id).url,
           }),
         }),
