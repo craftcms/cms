@@ -57,6 +57,8 @@
         return {};
       },
     },
+    manualPagination: true,
+    pageCount: 1,
     getCoreRowModel: getCoreRowModel<UserGroup>(),
   });
 </script>
