@@ -61,6 +61,7 @@
     "lit": "3.x"
   },
   "devDependencies": {
+    "@adobe/leonardo-contrast-colors": "^1.1.0",
     "@arethetypeswrong/cli": "^0.18.2",
     "@awesome.me/webawesome": "^3.0.0",
     "@chromatic-com/storybook": "^4.0.1",
