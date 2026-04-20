@@ -10,6 +10,7 @@ use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementRedirectController;
 use CraftCms\Cms\Http\Controllers\Elements\PreviewElementController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController;
@@ -87,6 +88,11 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         'id' => '\d+',
         'slug' => '(?:-[^\/]*)',
     ]);
+    Route::get('edit/{id}{slug}', ElementRedirectController::class)->where([
+        'id' => '\d+',
+        'slug' => '(?:-[^\/]*)',
+    ]);
+    Route::get('edit/{uid}', ElementRedirectController::class);
 
     /**
      * Entries & Content

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Elements\Concerns;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Facades\Sites;
+use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
@@ -39,5 +40,10 @@ trait EditsElement
         }
 
         return [$docTitle, $title];
+    }
+
+    protected function editResponse(ElementInterface $element): Response
+    {
+        // TODO
     }
 }
