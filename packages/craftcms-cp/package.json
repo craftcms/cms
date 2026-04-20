@@ -29,7 +29,8 @@
     "build:storybook": "storybook build",
     "build:manifest": "custom-elements-manifest analyze --litelement --outdir dist",
     "generate:vue-wrappers": "node ./scripts/generate-vue-wrappers.js",
-    "generate:colors": "node ./scripts/generate-colors.js"
+    "generate:colors": "node ./scripts/generate-colors.js",
+    "generate:accessible-colors": "node scripts/generate-accessible-colors.js"
   },
   "exports": {
     "./package.json": "./package.json",
