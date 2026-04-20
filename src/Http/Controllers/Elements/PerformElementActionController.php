@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Http\Controllers\Elements;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\ElementActions;
-use CraftCms\Cms\Element\ElementExporters;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
 use CraftCms\Cms\Http\Requests\ElementRequest;
@@ -26,7 +25,6 @@ readonly class PerformElementActionController
         private ElementActions $elementActions,
         private ElementSources $elementSources,
         private TranslationI18N $i18N,
-        private ElementExporters $elementExporters,
     ) {}
 
     public function __invoke(CurrentElementIndex $currentElementIndex): SymfonyResponse
@@ -43,20 +41,15 @@ readonly class PerformElementActionController
         $context = $this->request->context();
 
         [$sourceKey, $source] = $this->resolveSource($elementType, $this->request->input('source'), $context);
-        $fieldLayouts = $this->resolveFieldLayouts();
-        $condition = $this->resolveElementIndexCondition();
-        $viewState = $this->resolveViewState();
-        $queryState = $this->buildElementQueryState($elementType, $source, $condition);
+        $queryState = $this->buildElementQueryState($elementType, $source, $this->request->condition());
         $elementQuery = $queryState['query'];
 
         $currentElementIndex->activate($elementQuery);
 
         $actions = null;
-        $exporters = null;
 
         if ($this->request->isAdministrative($context) && isset($sourceKey)) {
             $actions = $this->elementActions->availableActions($elementType, $sourceKey, $elementQuery);
-            $exporters = $this->availableExporters($elementType, $sourceKey);
         }
 
         $action = $this->elementActions->resolveAction($actions ?? [], $actionClass);
@@ -91,18 +84,7 @@ readonly class PerformElementActionController
             return $this->asFailure($result['message']);
         }
 
-        $responseData = new ElementIndexResource(
-            elementType: $elementType,
-            elementQuery: $elementQuery,
-            viewState: $viewState,
-            fieldLayouts: $fieldLayouts,
-            sourceKey: $sourceKey,
-            context: $context,
-            actions: $actions,
-            exporters: $exporters,
-            includeContainer: true,
-            includeActions: true,
-        )->toArray($this->request);
+        $responseData = new ElementIndexResource()->toArray($this->request);
 
         $formatter = $this->i18N->getFormatter();
 
