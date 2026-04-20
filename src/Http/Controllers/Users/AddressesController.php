@@ -76,7 +76,7 @@ readonly class AddressesController
 
         // All safe attributes
         $safeAttributes = [];
-        foreach ($address->safeAttributes() as $name) {
+        foreach (array_keys($address->ruleset->rules()) as $name) {
             if (in_array($name, ['id', 'uid', 'ownerId'])) {
                 continue;
             }

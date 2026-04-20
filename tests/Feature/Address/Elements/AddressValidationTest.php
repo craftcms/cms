@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Address\Models\Address as AddressModel;
+use CraftCms\Cms\Address\Validation\AddressRules;
 use CraftCms\Cms\Cms;
 
 describe('Country code format validation', function () {
@@ -134,7 +134,7 @@ describe('Longitude validation', function () {
 describe('Country-specific required fields (SCENARIO_LIVE)', function () {
     test('US address required fields on SCENARIO_LIVE', function (string $field, bool $expectError) {
         $address = AddressModel::factory()->createElement(['countryCode' => 'US']);
-        $address->ruleset->useScenario(Address::SCENARIO_LIVE);
+        $address->ruleset->useScenario(AddressRules::SCENARIO_LIVE);
         $address->{$field} = null;
 
         $address->validate([$field]);
@@ -149,7 +149,7 @@ describe('Country-specific required fields (SCENARIO_LIVE)', function () {
 
     test('BE address required fields on SCENARIO_LIVE', function (string $field, bool $expectError) {
         $address = AddressModel::factory()->createElement(['countryCode' => 'BE']);
-        $address->ruleset->useScenario(Address::SCENARIO_LIVE);
+        $address->ruleset->useScenario(AddressRules::SCENARIO_LIVE);
         $address->{$field} = null;
 
         $address->validate([$field]);
@@ -163,7 +163,7 @@ describe('Country-specific required fields (SCENARIO_LIVE)', function () {
 
     test('fields not required by country pass validation on SCENARIO_LIVE', function () {
         $address = AddressModel::factory()->createElement(['countryCode' => 'US']);
-        $address->ruleset->useScenario(Address::SCENARIO_LIVE);
+        $address->ruleset->useScenario(AddressRules::SCENARIO_LIVE);
         $address->dependentLocality = null;
         $address->sortingCode = null;
 

@@ -49,7 +49,7 @@ function createValidatableComponent(array $attributes, ?string $rulesetClass = n
             return array_keys($this->testAttributes);
         }
 
-        public function rulesClass(): string
+        public function ruleset(): string
         {
             return $this->rulesetClass;
         }
@@ -82,10 +82,10 @@ class TestRuleset extends Ruleset
     }
 
     #[Override]
-    public function prepareForValidation(?array $attributeNames = null): void
+    public function prepareForValidation(): void
     {
         $this->prepareForValidationCalled = true;
-        $this->prepareForValidationAttributes = $attributeNames;
+        $this->prepareForValidationAttributes = $this->validationAttributes;
     }
 
     public function rules(): array
@@ -104,61 +104,6 @@ class EmptyRuleset extends Ruleset
         return [];
     }
 }
-
-describe('getRuleset', function () {
-    test('resolves ruleset via rulesClass method', function () {
-        $component = createValidatableComponent(['title' => 'Test']);
-
-        $ruleset = $component->getRuleset();
-
-        expect($ruleset)->toBeInstanceOf(TestRuleset::class);
-    });
-
-    test('caches ruleset instance', function () {
-        $component = createValidatableComponent(['title' => 'Test']);
-
-        $ruleset1 = $component->getRuleset();
-        $ruleset2 = $component->getRuleset();
-
-        expect($ruleset1)->toBe($ruleset2);
-    });
-
-    test('returns false when no ruleset configured', function () {
-        $component = new class implements Validatable
-        {
-            use Validates;
-
-            public function getRules(): array
-            {
-                return [];
-            }
-
-            public function getMessages(): array
-            {
-                return [];
-            }
-
-            public function setAttributes(array $values, bool $safeOnly = true): void {}
-
-            public function getAttributes(): array
-            {
-                return [];
-            }
-
-            public function attributes(): array
-            {
-                return [];
-            }
-
-            public function attributeLabels(): array
-            {
-                return [];
-            }
-        };
-
-        expect($component->getRuleset())->toBeFalse();
-    });
-});
 
 describe('validate', function () {
     test('returns true when validation passes', function () {
@@ -187,7 +132,7 @@ describe('validate', function () {
 
         $component->validate();
 
-        expect($component->getRuleset()->prepareForValidationCalled)->toBeTrue();
+        expect($component->ruleset->prepareForValidationCalled)->toBeTrue();
     });
 
     test('passes attribute names to prepareForValidation', function () {
@@ -195,7 +140,7 @@ describe('validate', function () {
 
         $component->validate(['title']);
 
-        expect($component->getRuleset()->prepareForValidationAttributes)->toBe(['title']);
+        expect($component->ruleset->prepareForValidationAttributes)->toBe(['title']);
     });
 
     test('validates only specified attributes', function () {

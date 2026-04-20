@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Component;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Concerns\MacroableMagicMethods;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Typecast;
@@ -67,7 +68,7 @@ abstract class Component implements Arrayable, ArrayableInterface, ComponentInte
 
     public function fields(): array
     {
-        $fields = $this->traitFields();
+        $fields = Arr::except($this->traitFields(), ['ruleset']);
 
         foreach ($fields as $field => $definition) {
             if (! is_string($definition)) {

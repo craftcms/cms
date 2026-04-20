@@ -30,7 +30,7 @@ use function CraftCms\Cms\t;
  *
  * @extends Ruleset<T>
  */
-abstract class ElementRules extends Ruleset
+class ElementRules extends Ruleset
 {
     public const string SCENARIO_DEFAULT = 'default';
 
@@ -41,9 +41,9 @@ abstract class ElementRules extends Ruleset
     private ?string $uriPreparationError = null;
 
     #[Override]
-    public function prepareForValidation(?array $attributeNames = null): void
+    public function prepareForValidation(): void
     {
-        $shouldPrepare = fn (string $attribute) => is_null($attributeNames) || in_array($attribute, $attributeNames, true);
+        $shouldPrepare = fn (string $attribute) => is_null($this->validationAttributes) || in_array($attribute, $this->validationAttributes, true);
 
         if ($shouldPrepare('title')) {
             $this->prepareTitle();

@@ -236,7 +236,7 @@ describe('Author permission validation', function () {
 
         $entry->setAuthorIds([$user->id]);
 
-        $entry->validate(['authorIds']);
+        expect($entry->validate(['authorIds']))->toBeFalse();
 
         expect($entry->errors()->has('authorIds'))->toBeTrue();
         expect($entry->errors()->first('authorIds'))->toContain('permission');

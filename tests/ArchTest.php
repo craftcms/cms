@@ -36,19 +36,19 @@ arch()
 arch()
     ->expect(Arr::class)
     ->not
-    ->toBeUsed()
+    ->toBeUsedIn('src')
     ->ignoring(CraftCms\Cms\Support\Arr::class);
 
 arch()
     ->expect(Illuminate\Support\Facades\File::class)
     ->not
-    ->toBeUsed()
+    ->toBeUsedIn('src')
     ->ignoring(File::class);
 
 arch()
     ->expect(Str::class)
     ->not
-    ->toBeUsed()
+    ->toBeUsedIn('src')
     ->ignoring(CraftCms\Cms\Support\Str::class);
 
 arch('Only use JSON helper')

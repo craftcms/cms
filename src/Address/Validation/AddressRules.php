@@ -55,13 +55,13 @@ class AddressRules extends ElementRules
     ];
 
     #[Override]
-    public function prepareForValidation(?array $attributeNames = null): void
+    public function prepareForValidation(): void
     {
-        parent::prepareForValidation($attributeNames);
+        parent::prepareForValidation();
 
-        $attributesToTrim = is_null($attributeNames)
+        $attributesToTrim = is_null($this->validationAttributes)
             ? self::TRIMMABLE_ATTRIBUTES
-            : array_intersect(self::TRIMMABLE_ATTRIBUTES, $attributeNames);
+            : array_intersect(self::TRIMMABLE_ATTRIBUTES, $this->validationAttributes);
 
         foreach ($attributesToTrim as $attribute) {
             $value = $this->subject->{$attribute};

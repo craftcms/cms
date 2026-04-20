@@ -56,11 +56,11 @@ trait InteractsWithValidator
         }
 
         if ($ruleset = $this->ruleset) {
-            $ruleset->getValidator()->after(fn ($validator) => $this->afterValidate($validator));
-
             if (! is_null($attributeNames)) {
                 $ruleset->only($attributeNames);
             }
+
+            $ruleset->getValidator()->after(fn ($validator) => $this->afterValidate($validator));
 
             if ($throw) {
                 $ruleset->validate();
