@@ -12,6 +12,4 @@ return [
 
     'content/<page:{slug}>/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
     'content/<page:{slug}>/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>/revisions' => 'elements/revisions',
-
-    'preview/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/preview',
 ];

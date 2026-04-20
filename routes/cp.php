@@ -10,6 +10,7 @@ use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
+use CraftCms\Cms\Http\Controllers\Elements\PreviewElementController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
@@ -78,6 +79,14 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     Route::middleware(RequireAdminChanges::class)->group(function () {
         Route::view('settings/addresses', 'settings/addresses/_fields');
     });
+
+    /**
+     * Elements
+     */
+    Route::get('preview/{id}{slug}', PreviewElementController::class)->where([
+        'id' => '\d+',
+        'slug' => '(?:-[^\/]*)',
+    ]);
 
     /**
      * Entries & Content

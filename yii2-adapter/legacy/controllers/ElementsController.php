@@ -55,7 +55,6 @@ use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -525,72 +524,6 @@ class ElementsController extends Controller
         }
 
         return $response;
-    }
-
-    /**
-     * Displays a standalone Live Preview editor for an element.
-     *
-     * @param int $elementId
-     * @since 5.6.0
-     */
-    public function actionPreview(int $elementId): Response
-    {
-        $this->requireCpRequest();
-
-        $this->_elementId = $elementId;
-        /**
-         * @var Element|Response|null $element
-         */
-        $element = $this->_element(checkForProvisionalDraft: true);
-
-        if ($element instanceof Response) {
-            return $element;
-        }
-
-        if (!$element) {
-            throw new BadRequestHttpException('No element was identified by the request.');
-        }
-
-        $this->element = $element;
-
-        // Screen prep
-        $redirectUrl = $this->request->getValidatedQueryParam('returnUrl') ?? ElementHelper::postEditUrl($element);
-
-        HtmlStack::jsWithVars(fn(
-            $elementType,
-            $elementId,
-            $draftId,
-            $revisionId,
-            $siteId,
-            $redirectUrl,
-        ) => <<<JS
-(() => {
-  const preview = new Craft.Preview({
-    elementType: $elementType,
-    elementId: $elementId,
-    draftId: $draftId,
-    revisionId: $revisionId,
-    siteId: $siteId,
-    standaloneMode: true,
-    redirectUrl: $redirectUrl,
-  })
-  preview.open();
-})();
-JS, [
-            $element::class,
-            $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
-            !$element->isProvisionalDraft ? $element->draftId : null,
-            $element->revisionId,
-            $element->siteId,
-            $redirectUrl,
-        ], Position::BodyEnd);
-
-        [$docTitle, $title] = $this->_editElementTitles($element);
-
-        return $this->rendertemplate('_layouts/base', [
-            'docTitle' => $docTitle,
-            'title' => $title,
-        ]);
     }
 
     /**
