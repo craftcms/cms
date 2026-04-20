@@ -230,6 +230,10 @@ function generateValueWrapper(component) {
   });
 
   const model = defineModel<${component.modelType}>();
+  
+  defineProps<{
+    error?: null | string
+  }>()
 </script>
 
 <template>
@@ -237,8 +241,15 @@ function generateValueWrapper(component) {
     v-bind="$attrs"
     .modelValue="model"
     @model-value-changed="model = ($event.target as ${component.className})?.modelValue"
+    :has-feedback-for="error ? 'error' : ''"
   >
     <slot></slot>
+    
+    <div slot="feedback">
+      <ul class="error-list" v-if="error">
+        <li>{{ error }}</li>
+      </ul>
+    </div>
   </${component.tagName}>
 </template>
 `;

@@ -60,12 +60,12 @@ readonly class UserGroupsController
         ]);
     }
 
-    public function create(): CpScreenResponse
+    public function create(UserPermissions $userPermissions): CpScreenResponse
     {
         $crumbs = [
             ['label' => t('Settings'), 'url' => 'settings'],
             ['label' => t('Users'), 'url' => 'settings/users'],
-            ['label' => t('User Groups'), 'url' => 'settings/users'],
+            ['label' => t('User Groups')],
         ];
 
         return new CpScreenResponse()
@@ -78,13 +78,13 @@ readonly class UserGroupsController
             ])
             ->action('user-settings/save-group')
             ->redirectUrl('settings/users')
-            ->contentTemplate('settings/users/groups/_edit.twig', [
+            ->inertiaPage('SettingsUserGroupsEditPage', [
                 'group' => new UserGroup,
-                'readOnly' => $this->readOnly,
+                'permissions' => $userPermissions->getAllPermissions(),
             ]);
     }
 
-    public function edit(UserGroupModel $userGroup): CpScreenResponse|View
+    public function edit(UserGroupModel $userGroup, UserPermissions $userPermissions): CpScreenResponse|View
     {
         if (Edition::get() === Edition::Team) {
             $group = $this->userGroups->getTeamGroup();
@@ -114,9 +114,12 @@ readonly class UserGroupsController
             ])
             ->action('user-settings/save-group')
             ->redirectUrl('settings/users')
-            ->contentTemplate('settings/users/groups/_edit.twig', [
-                'group' => $group,
-                'readOnly' => $this->readOnly,
+            ->inertiaPage('SettingsUserGroupsEditPage', [
+                'group' => [
+                    'id' => $group->id,
+                    ...$group->getConfig(true),
+                ],
+                'permissions' => $userPermissions->getAllPermissions(),
             ])
             ->prepareScreen(function (CpScreenResponse $response, string $containerId) {
                 HtmlStack::jsWithVars(
@@ -133,10 +136,10 @@ readonly class UserGroupsController
             });
     }
 
-    public function store(Request $request, UserPermissions $userPermissions): Response
+    public function store(Request $request, UserPermissions $userPermissions, int $groupId): Response
     {
         $userGroupData = new UserGroup;
-        $userGroupData->id = $request->integer('id', $request->input('groupId'));
+        $userGroupData->id = $groupId;
         $userGroupData->name = $request->input('name');
         $userGroupData->handle = $request->input('handle');
         $userGroupData->description = $request->input('description');

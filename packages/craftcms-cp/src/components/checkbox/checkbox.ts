@@ -8,9 +8,10 @@ export default class CraftCheckbox extends LionCheckbox {
       css`
         /* same as radio, potentially consolidate */
         :host {
+          --_gap-x: var(--gap-x, --c-spacing-md);
           display: grid;
           align-items: center;
-          gap: 0 var(--c-spacing-md);
+          gap: 0 var(--_gap-x);
           grid-template-areas: 'input label' '. help-text';
           grid-template-columns: auto 1fr;
           grid-template-rows: repeat(2, auto);
@@ -36,6 +37,8 @@ export default class CraftCheckbox extends LionCheckbox {
             var(--c-form-control-border-color)
           );
           border-radius: var(--c-input-radius, var(--c-radius-sm));
+          width: var(--c-size-control-2xs);
+          height: var(--c-size-control-2xs);
         }
 
         .choice-field__help-text {

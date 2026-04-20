@@ -169,3 +169,12 @@ export interface PaginationData {
   from: number;
   to: number;
 }
+
+export interface UserGroup {
+  id: number;
+  name: string;
+  handle: string;
+  description: string | null;
+  uid: string;
+  permissions?: Array<string>;
+}
