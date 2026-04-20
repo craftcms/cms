@@ -1,0 +1,16 @@
+import { Meta, ColorPalette, ColorItem } from '@storybook/addon-docs/blocks';
+import {stops, lightTheme} from '../../styles/color-definitions.js';
+
+<Meta title="Colors" />
+
+<ColorPalette>
+  {lightTheme.contrastColors
+    .filter((scale) => scale.values)
+    .map((scale) => (
+      <ColorItem
+        key={scale.name}
+        title={scale.name}
+        colors={Object.fromEntries(scale.values.map((val, i) => [`${stops[i]}`, val.value]))}
+      />
+    ))}
+</ColorPalette>
