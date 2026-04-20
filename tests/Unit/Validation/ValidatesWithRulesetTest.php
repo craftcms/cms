@@ -81,14 +81,14 @@ class TestRuleset extends Ruleset
         ];
     }
 
+    #[Override]
     public function prepareForValidation(?array $attributeNames = null): void
     {
         $this->prepareForValidationCalled = true;
         $this->prepareForValidationAttributes = $attributeNames;
     }
 
-    #[Override]
-    protected function defineRules(): array
+    public function rules(): array
     {
         return [
             'title' => ['required', 'string', 'max:255'],
@@ -99,8 +99,7 @@ class TestRuleset extends Ruleset
 
 class EmptyRuleset extends Ruleset
 {
-    #[Override]
-    protected function defineRules(): array
+    public function rules(): array
     {
         return [];
     }

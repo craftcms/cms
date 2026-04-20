@@ -39,7 +39,7 @@ function createTestRuleset(
             $this->prepareForValidationAttributes = $attributeNames;
         }
 
-        protected function defineRules(): array
+        public function rules(): array
         {
             return $this->testRules;
         }
@@ -221,7 +221,7 @@ describe('prepareForValidation', function () {
 
         expect($ruleset->prepareForValidationCalled)->toBeFalse();
 
-        $ruleset->prepareForValidation(['title']);
+        $ruleset->prepareForValidation();
 
         expect($ruleset->prepareForValidationCalled)->toBeTrue();
         expect($ruleset->prepareForValidationAttributes)->toBe(['title']);

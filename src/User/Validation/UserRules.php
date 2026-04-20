@@ -22,7 +22,7 @@ use function CraftCms\Cms\t;
 /**
  * @extends ElementRules<User>
  *
- * @property User $component
+ * @property User $subject
  */
 class UserRules extends ElementRules
 {
@@ -45,20 +45,20 @@ class UserRules extends ElementRules
             : array_intersect(self::TRIMMABLE_ATTRIBUTES, $attributeNames);
 
         foreach ($attributesToTrim as $attribute) {
-            $value = $this->component->{$attribute};
+            $value = $this->subject->{$attribute};
 
             if (is_string($value)) {
-                $this->component->{$attribute} = trim($value);
+                $this->subject->{$attribute} = trim($value);
             }
         }
     }
 
     #[Override]
-    protected function defineRules(): array
+    public function rules(): array
     {
-        $rules = parent::defineRules();
+        $rules = parent::rules();
 
-        $treatAsActive = $this->component->getIsCredentialed() || $this->component->inScenarios(
+        $treatAsActive = $this->subject->getIsCredentialed() || $this->subject->inScenarios(
             User::SCENARIO_REGISTRATION,
             User::SCENARIO_ACTIVATION,
         );
@@ -68,7 +68,7 @@ class UserRules extends ElementRules
                 ->where('active', true)
                 ->orWhere('pending', true)
             )
-            ->ignore($this->component->id);
+            ->ignore($this->subject->id);
 
         $noProtocol = function ($attribute, $value, $fail) {
             if (str_contains($value, '://')) {
@@ -88,7 +88,7 @@ class UserRules extends ElementRules
                 'nullable',
                 'string',
                 'max:255',
-                Rule::requiredIf(fn () => ! $this->component->getIsDraft()),
+                Rule::requiredIf(fn () => ! $this->subject->getIsDraft()),
                 'email',
             ],
             'unverifiedEmail' => [
@@ -106,12 +106,12 @@ class UserRules extends ElementRules
         ]);
 
         $requiredNameField = (fn (bool $requiredWhenFirstAndLastNameFields) => Cms::config()->showFirstAndLastNameFields === $requiredWhenFirstAndLastNameFields
-            && ($this->component
+            && ($this->subject
                 ->getFieldLayout()
-                ->getFirstVisibleElementByType(FullNameField::class, $this->component)
+                ->getFirstVisibleElementByType(FullNameField::class, $this->subject)
                 ->required ?? false));
 
-        if ($this->component->inScenarios(User::SCENARIO_LIVE)) {
+        if ($this->subject->inScenarios(User::SCENARIO_LIVE)) {
             $rules['firstName'][] = Rule::requiredIf($requiredNameField(true));
             $rules['lastName'][] = Rule::requiredIf($requiredNameField(true));
             $rules['fullName'][] = Rule::requiredIf($requiredNameField(false));
@@ -135,19 +135,19 @@ class UserRules extends ElementRules
 
         $currentPassword = null;
 
-        if (isset($this->component->id) && $this->component->passwordResetRequired) {
+        if (isset($this->subject->id) && $this->subject->passwordResetRequired) {
             $currentPassword = DB::table(Table::USERS)
-                ->where('id', $this->component->id)
+                ->where('id', $this->subject->id)
                 ->value('password');
         }
 
         $rules['newPassword'] = [
             Rule::requiredIf(
                 ! Cms::config()->deferPublicRegistrationPassword
-                && $this->component->inScenarios(User::SCENARIO_PASSWORD, User::SCENARIO_REGISTRATION)
+                && $this->subject->inScenarios(User::SCENARIO_PASSWORD, User::SCENARIO_REGISTRATION)
             ),
             new UserPasswordRule(
-                forceDifferent: $this->component->passwordResetRequired,
+                forceDifferent: $this->subject->passwordResetRequired,
                 currentPassword: $currentPassword,
             ),
         ];

@@ -39,6 +39,7 @@
     "composer/semver": "^3.3.2",
     "craftcms/laravel-aliases": "^2.0",
     "craftcms/laravel-dependency-aware-cache": "^1.1",
+    "craftcms/laravel-ruleset-validation": "dev-main",
     "craftcms/plugin-installer": "~1.6.0",
     "craftcms/server-check": "~5.1.0",
     "craftcms/yii2-adapter": "self.version",
@@ -94,6 +95,10 @@
     {
       "type": "path",
       "url": "./yii2-adapter"
+    },
+    {
+      "type": "path",
+      "url": "../laravel-ruleset-validation"
     }
   ],
   "suggest": {

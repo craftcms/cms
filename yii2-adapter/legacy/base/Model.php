@@ -17,6 +17,7 @@ use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Validation\Contracts\Validatable;
+use CraftCms\RulesetValidation\Ruleset;
 use Illuminate\Contracts\Support\MessageBag;
 use yii\validators\Validator;
 
@@ -30,6 +31,8 @@ use yii\validators\Validator;
 abstract class Model extends \yii\base\Model implements ModelInterface, Validatable
 {
     use ClonefixTrait;
+
+    public false|Ruleset $ruleset = false;
 
     /**
      * @event \yii\base\Event The event that is triggered after the model's init cycle
@@ -430,6 +433,11 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
     public function getValidationData(): array
     {
         return [];
+    }
+
+    public function validationData($names = null, $except = []): array
+    {
+        return parent::validationData($names, $except);
     }
 
     public function attributeLabels(): array

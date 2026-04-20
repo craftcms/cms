@@ -9,7 +9,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\users\FullNameField;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Validation\UserRules;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use Illuminate\Support\Facades\Hash;
 
 #[Ruleset(UserRules::class)]

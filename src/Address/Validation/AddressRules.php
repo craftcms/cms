@@ -22,7 +22,7 @@ use Override;
 /**
  * @extends ElementRules<Address>
  *
- * @property Address $component
+ * @property Address $subject
  */
 class AddressRules extends ElementRules
 {
@@ -65,18 +65,18 @@ class AddressRules extends ElementRules
             : array_intersect(self::TRIMMABLE_ATTRIBUTES, $attributeNames);
 
         foreach ($attributesToTrim as $attribute) {
-            $value = $this->component->{$attribute};
+            $value = $this->subject->{$attribute};
 
             if (is_string($value)) {
-                $this->component->{$attribute} = trim($value);
+                $this->subject->{$attribute} = trim($value);
             }
         }
     }
 
     #[Override]
-    protected function defineRules(): array
+    public function rules(): array
     {
-        $rules = parent::defineRules();
+        $rules = parent::rules();
 
         $rules = $this->addAddressAttributeRules($rules);
         $rules = $this->addCountryCodeValidation($rules);
@@ -135,24 +135,24 @@ class AddressRules extends ElementRules
 
     private function isRequiredByAddressFormat(string $attribute): bool
     {
-        if (! $this->component->inScenarios(Element::SCENARIO_LIVE)) {
+        if (! $this->subject->inScenarios(Element::SCENARIO_LIVE)) {
             return false;
         }
 
         $formatter = app(Addresses::class)
             ->getAddressFormatRepository()
-            ->get($this->component->countryCode);
+            ->get($this->subject->countryCode);
 
         return in_array($attribute, $formatter->getRequiredFields());
     }
 
     private function addFieldLayoutRequirements(array $rules): array
     {
-        $fieldLayout = $this->component->getFieldLayout();
+        $fieldLayout = $this->subject->getFieldLayout();
 
         foreach (self::REQUIRABLE_NATIVE_FIELDS as $fieldClass) {
             /** @var BaseNativeField|null $field */
-            $field = $fieldLayout->getFirstVisibleElementByType($fieldClass, $this->component);
+            $field = $fieldLayout->getFirstVisibleElementByType($fieldClass, $this->subject);
 
             if (! $field?->required) {
                 continue;
@@ -160,7 +160,7 @@ class AddressRules extends ElementRules
 
             foreach ($this->resolveFieldAttributes($field) as $attribute) {
                 $rules[$attribute] ??= [];
-                $rules[$attribute][] = Rule::requiredIf($this->component->inScenarios(Element::SCENARIO_LIVE));
+                $rules[$attribute][] = Rule::requiredIf($this->subject->inScenarios(Element::SCENARIO_LIVE));
             }
         }
 
@@ -185,7 +185,7 @@ class AddressRules extends ElementRules
 
     private function addCoordinateValidation(array $rules): array
     {
-        $coordinateScenarios = $this->component->inScenarios(Element::SCENARIO_LIVE, Element::SCENARIO_DEFAULT);
+        $coordinateScenarios = $this->subject->inScenarios(Element::SCENARIO_LIVE, Element::SCENARIO_DEFAULT);
 
         $rules['latitude'][] = Rule::when($coordinateScenarios, [
             'numeric',

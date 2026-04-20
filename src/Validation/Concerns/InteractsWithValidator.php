@@ -55,8 +55,22 @@ trait InteractsWithValidator
             $attributeNames = [$attributeNames];
         }
 
-        if ($ruleset = $this->getRuleset()) {
-            $ruleset->prepareForValidation($attributeNames);
+        if ($ruleset = $this->ruleset) {
+            $ruleset->getValidator()->after(fn ($validator) => $this->afterValidate($validator));
+
+            if (! is_null($attributeNames)) {
+                $ruleset->only($attributeNames);
+            }
+
+            if ($throw) {
+                $ruleset->validate();
+            }
+
+            $result = $ruleset->passes();
+
+            $this->errors()->merge($ruleset->getValidator()->errors());
+
+            return $result && $this->errors()->isEmpty();
         }
 
         $validator = $this->getValidator($attributeNames)

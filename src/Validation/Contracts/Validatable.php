@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Validation\Contracts;
 
+use CraftCms\RulesetValidation\Contracts\ValidatesWithRuleset;
 use Illuminate\Contracts\Support\MessageBag;
 use Illuminate\Validation\Validator;
 
-interface Validatable
+interface Validatable extends ValidatesWithRuleset
 {
     /**
      * Returns the validation rules or ruleset for attributes.

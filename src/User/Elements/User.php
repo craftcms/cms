@@ -60,7 +60,7 @@ use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Notifications\ResetPasswordNotification;
 use CraftCms\Cms\User\Notifications\VerifyEmailNotification;
 use CraftCms\Cms\User\Validation\UserRules;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateInterval;
 use DateTime;
 use DateTimeZone;

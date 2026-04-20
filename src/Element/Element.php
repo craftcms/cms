@@ -16,8 +16,8 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
 use CraftCms\Cms\Validation\Concerns\Validates;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTime;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\Traits\Macroable;
@@ -730,6 +730,15 @@ abstract class Element extends Component implements ElementInterface
     #[Override]
     public function safeAttributes(): array
     {
-        return array_keys($this->getRuleset()->rules());
+        return array_keys($this->ruleset->safe());
+    }
+
+    /**
+     * @TODO: Temporary, remove when Element no longer extends Model
+     */
+    #[Override]
+    public function validationData($names = null, $except = []): array
+    {
+        return $this->getAttributes();
     }
 }

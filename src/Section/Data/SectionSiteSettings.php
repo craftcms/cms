@@ -9,7 +9,7 @@ use CraftCms\Cms\Section\Validation\SectionSiteSettingsRules;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use RuntimeException;
 
 #[Ruleset(SectionSiteSettingsRules::class)]
