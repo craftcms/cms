@@ -146,11 +146,12 @@ class Formatter extends \yii\i18n\Formatter
      * @inheritdoc
      * @param int|string|DateTime $value
      * @param string|null $format
+     * @param bool $withTimeZone Whether the time zone abbreviation should be appended to the formatted time
      * @return string
      * @throws InvalidArgumentException
      * @throws InvalidConfigException
      */
-    public function asTime($value, $format = null): string
+    public function asTime($value, $format = null, bool $withTimeZone = false): string
     {
         if ($format === null) {
             $format = $this->timeFormat;
@@ -161,22 +162,31 @@ class Formatter extends \yii\i18n\Formatter
         }
 
         if (str_starts_with($format, 'php:')) {
-            return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'time');
+            $result = $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'time');
+        } else {
+            $result = parent::asTime($value, $format);
         }
 
-        return parent::asTime($value, $format);
+        if ($withTimeZone && $result && $result !== $this->nullDisplay) {
+            $result .= ' ' . DateTimeHelper::timeZoneAbbreviation($value->getTimezone());
+        }
+
+        return $result;
     }
 
     /**
      * @inheritdoc
      * @param int|string|DateTime $value
      * @param string|null $format
+     * @param bool $withTimeZone Whether the time zone abbreviation should be appended to the formatted time
      * @return string
      * @throws InvalidArgumentException
      * @throws InvalidConfigException
      */
-    public function asDatetime($value, $format = null): string
+    public function asDatetime($value, $format = null, bool $withTimeZone = false): string
     {
+        $value = DateTimeHelper::toDateTime($value, false, false);
+
         if ($format === null) {
             $format = $this->datetimeFormat;
         }
@@ -186,10 +196,16 @@ class Formatter extends \yii\i18n\Formatter
         }
 
         if (str_starts_with($format, 'php:')) {
-            return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'datetime');
+            $result = $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'datetime');
+        } else {
+            $result = parent::asDatetime($value, $format);
         }
 
-        return parent::asDatetime($value, $format);
+        if ($withTimeZone && $result && $result !== $this->nullDisplay) {
+            $result .= ' ' . DateTimeHelper::timeZoneAbbreviation($value->getTimezone());
+        }
+
+        return $result;
     }
 
     /**

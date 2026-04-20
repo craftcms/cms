@@ -1775,6 +1775,8 @@ Craft.CP = Garnish.Base.extend(
         if (this.jobInfo.length) {
           // Check again after a delay
           this.trackJobProgress(true);
+        } else {
+          this.trigger('queueCompleted');
         }
 
         // Notify the other browser tabs about the jobs

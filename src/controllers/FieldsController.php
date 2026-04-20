@@ -205,7 +205,7 @@ class FieldsController extends Controller
         if (!$this->readOnly) {
             $response
                 ->action('fields/save-field')
-                ->redirectUrl(UrlHelper::cpReferralUrl() ?? 'settings/fields')
+                ->redirectUrl('settings/fields')
                 ->addAltAction(Craft::t('app', 'Save and continue editing'), [
                     'redirect' => 'settings/fields/edit/{id}',
                     'shortcut' => true,
