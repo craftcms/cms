@@ -11,7 +11,7 @@ use CraftCms\Cms\Element\ElementExporters;
 use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
 use CraftCms\Cms\Element\Exporters\Raw;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
-use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use Symfony\Component\HttpFoundation\Response;
 
 readonly class ExportElementIndexController
@@ -19,7 +19,7 @@ readonly class ExportElementIndexController
     use InteractsWithElementIndexes;
 
     public function __construct(
-        private ElementRequest $request,
+        private ElementIndexRequest $request,
         private ElementExporters $elementExporters,
     ) {}
 

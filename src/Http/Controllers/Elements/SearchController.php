@@ -8,7 +8,7 @@ use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Support\Search;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Http\JsonResponse;
@@ -17,7 +17,7 @@ readonly class SearchController
 {
     public function __construct(
         private Elements $elements,
-        private ElementRequest $request,
+        private ElementIndexRequest $request,
     ) {}
 
     public function __invoke(): JsonResponse

@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Http\Controllers\Elements\ElementIndex;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
@@ -24,7 +24,7 @@ readonly class SaveElementIndexElementsController
     use RespondsWithFlash;
 
     public function __construct(
-        private ElementRequest $request,
+        private ElementIndexRequest $request,
         private Elements $elements,
     ) {}
 

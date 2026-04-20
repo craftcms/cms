@@ -9,7 +9,7 @@ use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\ElementActions;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
-use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\Resources\ElementIndexResource;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Translation\I18N as TranslationI18N;
@@ -21,7 +21,7 @@ readonly class PerformElementActionController
     use RespondsWithFlash;
 
     public function __construct(
-        private ElementRequest $request,
+        private ElementIndexRequest $request,
         private ElementActions $elementActions,
         private ElementSources $elementSources,
         private TranslationI18N $i18N,

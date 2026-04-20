@@ -389,7 +389,7 @@ class ElementsController extends Controller
             ];
         }
 
-        $previewToken = $previewTargets ? Str::random(extendedChars: true) : null;
+        $previewToken = $previewTargets ? Str::random(32, extendedChars: true) : null;
 
         $notice = null;
         if ($element->isProvisionalDraft) {

@@ -10,7 +10,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
@@ -27,7 +27,7 @@ readonly class ElementSourcesController
 {
     use RespondsWithFlash;
 
-    public function show(ElementRequest $request, ElementSources $elementSources, Fields $fields, UserGroups $userGroups): JsonResponse
+    public function show(ElementIndexRequest $request, ElementSources $elementSources, Fields $fields, UserGroups $userGroups): JsonResponse
     {
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $request->elementType();
@@ -217,7 +217,7 @@ readonly class ElementSourcesController
         ]);
     }
 
-    public function store(ElementRequest $request, ElementSources $elementSources, ProjectConfig $projectConfig)
+    public function store(ElementIndexRequest $request, ElementSources $elementSources, ProjectConfig $projectConfig)
     {
         $elementType = $request->elementType();
         $multiPage = $elementType::multiPageSources();

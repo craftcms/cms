@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Http\Resources;
 
 use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
-use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\ElementExporters;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -34,7 +34,7 @@ class ElementIndexResource extends JsonResource
     #[Override]
     public function toArray(Request $_): array
     {
-        $request = app(ElementRequest::class);
+        $request = app(ElementIndexRequest::class);
 
         $elementType = $request->elementType();
         [$sourceKey, $source] = $this->resolveSource($elementType, $request->input('source'), $request->context());

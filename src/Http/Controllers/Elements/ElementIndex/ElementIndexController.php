@@ -11,7 +11,7 @@ use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
-use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\Resources\ElementIndexResource;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use Illuminate\Http\JsonResponse;
@@ -25,7 +25,7 @@ readonly class ElementIndexController
     public function __construct(
         private Elements $elements,
         private Conditions $conditions,
-        private ElementRequest $request,
+        private ElementIndexRequest $request,
         private ElementSources $elementSources,
     ) {}
 

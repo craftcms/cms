@@ -7,12 +7,12 @@ namespace CraftCms\Cms\Http\Controllers\Elements;
 use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Element\Conditions\StatusConditionRule;
 use CraftCms\Cms\Element\CurrentElementIndex;
-use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use Illuminate\Http\JsonResponse;
 
 readonly class ElementSelectorModalController
 {
-    public function __invoke(ElementRequest $request, ElementIndexHtml $elementIndexHtml, CurrentElementIndex $currentElementIndex): JsonResponse
+    public function __invoke(ElementIndexRequest $request, ElementIndexHtml $elementIndexHtml, CurrentElementIndex $currentElementIndex): JsonResponse
     {
         $request->validate([
             'showSiteMenu' => ['nullable', 'in:0,1'],
