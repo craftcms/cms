@@ -26,6 +26,10 @@ return [
         'assetIndexer' => [
             'class' => craft\services\AssetIndexer::class,
         ],
+        'assetManager' => function() {
+            $config = craft\helpers\App::assetManagerConfig();
+            return Craft::createObject($config);
+        },
         'auth' => [
             'class' => craft\services\Auth::class,
         ],
