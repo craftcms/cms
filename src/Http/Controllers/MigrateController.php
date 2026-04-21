@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Backups;
+use CraftCms\Cms\Database\LaravelMigrations;
+use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -28,8 +30,10 @@ class MigrateController
      * services (like [DeployBot](https://deploybot.com/) or [DeployPlace](https://deployplace.com/)) to minimize site
      * downtime after a deployment.
      */
-    public function __invoke(Request $request, GeneralConfig $generalConfig, Updates $updates, ProjectConfig $projectConfig, MaintenanceModeManager $maintenance, Backups $backups)
+    public function __invoke(Request $request, GeneralConfig $generalConfig, Updates $updates, ProjectConfig $projectConfig, MaintenanceModeManager $maintenance, Backups $backups, Migrator $migrator, LaravelMigrations $laravelMigrations)
     {
+        $laravelMigrations->reconcile($migrator);
+
         $handles = $updates->pendingMigrationHandles(true);
         $runMigrations = ! empty($handles);
 
