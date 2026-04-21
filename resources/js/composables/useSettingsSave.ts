@@ -20,7 +20,6 @@ export function useSettingsSave<T extends Record<string, any>>(
   });
 
   function save({redirect = true} = {}) {
-    console.log({redirect});
     let options = {};
     if (redirect) {
       options = {
@@ -34,7 +33,8 @@ export function useSettingsSave<T extends Record<string, any>>(
       .transform((data: T) => {
         return {
           ...data,
-          redirect: redirect ? redirectUrl.value : undefined,
+          redirect:
+            redirect && redirectUrl.value ? redirectUrl.value : undefined,
         };
       })
       .submit(action(), options);

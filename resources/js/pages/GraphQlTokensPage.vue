@@ -97,7 +97,7 @@
         >{{ t('New token') }}</CpLink
       >
     </template>
-    <Pane :padding="0">
+    <Pane :padding="0" appearance="raised">
       <AdminTable :table="table">
         <template #empty-row>
           <Empty :label="t('No GraphQL tokens exist yet.')">

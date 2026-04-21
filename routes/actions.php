@@ -403,7 +403,7 @@ Route::prefix(implode('/', [
         Route::middleware([
             RequireAdminChanges::class,
         ])->group(function () {
-            Route::post('sections/save-section', [SectionsController::class, 'store']);
+            // Route::post('sections/save-section', [SectionsController::class, 'store']);
             Route::post('sections/delete-section', [SectionsController::class, 'destroy']);
         });
 

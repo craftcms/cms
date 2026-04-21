@@ -130,6 +130,11 @@ trait RespondsWithFlash
             abort(400, 'Request contained an invalid body param');
         }
 
+        // I'm not sure why, but decrypt ac
+        if (! $url) {
+            return null;
+        }
+
         if ($object) {
             $url = renderObjectTemplate($url, $object);
         }

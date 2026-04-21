@@ -195,9 +195,11 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         Route::get('settings/routes', [RoutesController::class, 'index']);
 
         // Sections
-        Route::get('settings/sections', [SectionsController::class, 'index']);
+        Route::get('settings/sections', [SectionsController::class, 'index'])
+            ->name('settings.sections.index');
         Route::middleware(RequireAdminChanges::class)->get('settings/sections/new', [SectionsController::class, 'create']);
         Route::get('settings/sections/{section}', [SectionsController::class, 'edit']);
+        Route::middleware(RequireAdminChanges::class)->post('sections/sections', [SectionsController::class, 'store']);
 
         // Volumes
         Route::get('settings/assets', [VolumesController::class, 'index']);

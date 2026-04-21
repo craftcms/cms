@@ -189,11 +189,15 @@
             <template v-if="item.type === 'optgroup'">
               <div class="group-label">{{ item.label }}</div>
               <template v-for="(option, idx) in item.options" :key="idx">
-                <InputComboboxOption :option="option" />
+                <slot name="option" :option="option">
+                  <InputComboboxOption :option="option" />
+                </slot>
               </template>
             </template>
             <template v-else>
-              <InputComboboxOption :option="item" />
+              <slot name="option" :option="item">
+                <InputComboboxOption :option="item" />
+              </slot>
             </template>
           </template>
         </ComboboxOptions>
