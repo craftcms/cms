@@ -17,6 +17,7 @@ use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Facades\Elements;
 use GraphQL\Type\Definition\ResolveInfo;
+use ReflectionClass;
 use Throwable;
 
 class EntryMutationResolverTest extends TestCase
@@ -31,10 +32,13 @@ class EntryMutationResolverTest extends TestCase
      */
     public function testSavingDraftOrEntrySetsRelevantScenario(array $arguments, string $scenario): void
     {
-        $entry = $this->make(Entry::class, [
+        $entry = new Entry([
             'title' => 'Test title',
-            'getType' => new EntryType(),
         ]);
+
+        $reflection = new ReflectionClass($entry);
+        $property = $reflection->getProperty('_type');
+        $property->setValue($entry, new EntryType());
 
         $identifyQuery = $this->make(EntryQuery::class, [
             'first' => $entry,
@@ -75,7 +79,7 @@ class EntryMutationResolverTest extends TestCase
             ->shouldReceive('createElementQuery')->andReturn($createQuery);
 
         $resolver->saveEntry(null, $arguments, null, $this->make(ResolveInfo::class));
-        self::assertSame($scenario, $entry->scenario);
+        self::assertSame($scenario, $entry->ruleset->getScenario());
     }
 
     /**
@@ -88,10 +92,13 @@ class EntryMutationResolverTest extends TestCase
      */
     public function testSavingNewEntryDoesNotSearchForIt(array $arguments, bool $identifyCalled): void
     {
-        $entry = $this->make(Entry::class, [
+        $entry = new Entry([
             'title' => 'Test title',
-            'getType' => new EntryType(),
         ]);
+
+        $reflection = new ReflectionClass($entry);
+        $property = $reflection->getProperty('_type');
+        $property->setValue($entry, new EntryType());
 
         $query = $this->make(EntryQuery::class, [
             'first' => $entry,

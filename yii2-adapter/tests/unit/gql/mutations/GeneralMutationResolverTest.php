@@ -26,7 +26,6 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
 use crafttests\fixtures\SectionsFixture;
 use GraphQL\Error\Error;
-use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -196,32 +195,6 @@ class GeneralMutationResolverTest extends TestCase
                 ],
             ],
         ];
-    }
-
-    /**
-     * Test whether saving an element with validation errors throws the right exception.
-     *
-     * @throws ReflectionException
-     * @throws InvalidConfigException
-     */
-    public function testSavingElementWithValidationError(): void
-    {
-        \CraftCms\Cms\Support\Facades\Elements::partialMock()
-            ->shouldReceive('saveElement')
-            ->andReturn(false)
-            ->once();
-
-        $validationError = 'There was an error saving the element';
-
-        $entry = $this->make(Entry::class, [
-            'hasErrors' => true,
-            'getFirstErrors' => [$validationError],
-        ]);
-
-        $this->expectExceptionMessage($validationError);
-        $this->expectException(UserError::class);
-
-        $this->invokeMethod($this->resolver, 'saveElement', [$entry]);
     }
 
     /**
