@@ -889,7 +889,7 @@ class CpScreenResponse implements Responsable
         if ($this->inertiaPage) {
             return Inertia::render($this->inertiaPage, [
                 ...$templateProps,
-                ...($this->inertiaProps ?? []),
+                ...$this->inertiaProps,
             ])->toResponse($request);
         }
 
