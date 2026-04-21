@@ -483,7 +483,11 @@ class AssetsController extends Controller
             'filename' => $resultingAsset->getFilename(),
             'formattedSize' => $resultingAsset->getFormattedSize(0),
             'formattedSizeInBytes' => $resultingAsset->getFormattedSizeInBytes(false),
-            'formattedDateUpdated' => Craft::$app->getFormatter()->asDatetime($resultingAsset->dateUpdated, Formatter::FORMAT_WIDTH_SHORT),
+            'formattedDateUpdated' => Craft::$app->getFormatter()->asDatetime(
+                $resultingAsset->dateUpdated,
+                Formatter::FORMAT_WIDTH_SHORT,
+                true,
+            ),
             'dimensions' => $resultingAsset->getDimensions(),
             'updatedTimestamp' => $resultingAsset->dateUpdated->getTimestamp(),
             'resultingUrl' => $resultingAsset->getUrl(),

@@ -1852,11 +1852,9 @@ class ProjectConfig extends Component
                 $segments = ProjectConfigHelper::pathSegments($path);
                 foreach ($segments as $segment) {
                     // If we're still traversing, enforce array to avoid errors.
-                    /** @phpstan-ignore-next-line */
                     if (!is_array($current)) {
                         $current = [];
                     }
-                    /** @phpstan-ignore-next-line */
                     if (!array_key_exists($segment, $current)) {
                         $current[$segment] = [];
                     }

@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Fixed a bug where entries weren’t redirecting back to their section’s page’s URL by default.
+- Fixed a bug where the `resourceBasePath` and `resourceBaseUrl` config settings weren’t being respected for console requests. ([#18685](https://github.com/craftcms/cms/issues/18685))
+
+## 5.9.20 - 2026-04-14
+
+- Fixed an issue that prevented Craft from being installed. ([#18700](https://github.com/craftcms/cms/issues/18700))
 - Fixed a bug where nested element cards weren’t showing validation errors. ([#18690](https://github.com/craftcms/cms/pull/18690))
 - Fixed a bug where read-only Matrix fields in Index mode weren’t respecting the Default Table Columns setting. ([#18684](https://github.com/craftcms/cms/issues/18684))
 - Fixed a bug where nested entries could be lost when reverting content from a revision. ([#18691](https://github.com/craftcms/cms/issues/18691))

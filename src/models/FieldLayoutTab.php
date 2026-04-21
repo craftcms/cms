@@ -261,7 +261,7 @@ class FieldLayoutTab extends FieldLayoutComponent
      */
     public function getElements(): array
     {
-        return $this->_elements ?? [];
+        return $this->_elements;
     }
 
     /**
