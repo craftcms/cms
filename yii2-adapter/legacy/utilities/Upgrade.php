@@ -7,12 +7,11 @@
 
 namespace craft\utilities;
 
-use Craft;
 use craft\base\Utility;
-use craft\web\assets\upgrade\UpgradeAsset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -56,7 +55,7 @@ class Upgrade extends Utility
      */
     public static function contentHtml(): string
     {
-        Craft::$app->getView()->registerAssetBundle(UpgradeAsset::class);
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\UpgradeAsset::class);
 
         $pluginsService = app(Plugins::class);
         $allPlugins = [];

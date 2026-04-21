@@ -8,50 +8,16 @@
 namespace craft\web\assets\admintable;
 
 use craft\web\AssetBundle;
-use craft\web\assets\cp\CpAsset;
-use craft\web\assets\vue\VueAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Asset bundle for admin tables
+ * @deprecated 6.0.0
  */
 class AdminTableAsset extends AssetBundle
 {
-    /**
-     * @var bool
-     */
-    private bool $useDevServer = false;
-
-    /**
-     * @var string
-     */
-    private string $devServerBaseUrl = 'http://localhost:8082/';
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
+    public function registerAssetFiles($view): void
     {
-        $this->sourcePath = __DIR__ . '/dist/';
-
-        $this->depends = [
-            CpAsset::class,
-            VueAsset::class,
-        ];
-
-        if ($this->useDevServer) {
-            $this->js = [
-                $this->devServerBaseUrl . 'app.js',
-            ];
-        } else {
-            $this->css = [
-                'css/app.css',
-            ];
-
-            $this->js = [
-                'js/app.js',
-            ];
-        }
-
-        parent::init();
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\AdminTableAsset::class);
     }
 }

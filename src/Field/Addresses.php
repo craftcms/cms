@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
-use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Database\Table as DbTable;
 use CraftCms\Cms\Element\Drafts;
@@ -34,6 +32,8 @@ use CraftCms\Cms\Gql\Types\Input\Addresses as AddressesInput;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\LegacyAssets\CpAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
@@ -45,6 +45,7 @@ use Override;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
 
+use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -319,12 +320,12 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
     private function settingsHtml(bool $readOnly): string
     {
-        $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
+        app(InternalAssetRegistry::class)->register(CpAsset::class);
 
         return template('_components/fieldtypes/Addresses/settings', [
             'field' => $this,
             'readOnly' => $readOnly,
-            'baseIconsUrl' => "$bundle->baseUrl/images/view-modes",
+            'baseIconsUrl' => craftAsset('legacy/cp/dist/images/view-modes'),
         ]);
     }
 

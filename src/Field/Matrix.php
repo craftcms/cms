@@ -8,7 +8,6 @@ use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\web\assets\cp\CpAsset;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
 use CraftCms\Cms\Cp\FormFields;
@@ -58,6 +57,8 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Rules\UriFormatRule;
+use CraftCms\Cms\View\LegacyAssets\CpAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
@@ -72,6 +73,7 @@ use Override;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
 
+use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -586,7 +588,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $entryTypeSelectJs = HtmlStack::clearJsBuffer();
         }
 
-        $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
+        app(InternalAssetRegistry::class)->register(CpAsset::class);
 
         return template('_components/fieldtypes/Matrix/settings', [
             'field' => $this,
@@ -600,7 +602,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 Entry::indexViewModes(),
                 fn (array $viewMode) => ! ($viewMode['structuresOnly'] ?? false),
             ),
-            'baseIconsUrl' => "$bundle->baseUrl/images/view-modes",
+            'baseIconsUrl' => craftAsset('legacy/cp/dist/images/view-modes'),
             'readOnly' => $readOnly,
         ]);
     }
@@ -1105,7 +1107,7 @@ JS, [
             )
         );
 
-        Craft::$app->getView()->registerAssetBundle(MatrixAsset::class);
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\MatrixAsset::class);
 
         $settings = [
             'fieldId' => $this->id,

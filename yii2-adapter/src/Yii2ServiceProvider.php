@@ -146,6 +146,8 @@ class Yii2ServiceProvider extends ServiceProvider
          */
         app('Craft');
 
+        new RebrandCompatibility()->boot();
+
         /**
          * Keep legacy CustomFieldBehavior statics in sync when field caches are invalidated.
          */

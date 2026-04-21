@@ -8,21 +8,16 @@
 namespace craft\web\assets\animationblocker;
 
 use craft\web\AssetBundle;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Asset bundle for the Animation Blocker class.
+ * @deprecated 6.0.0
  */
 class AnimationBlockerAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public $js = [
-        'AnimationBlocker.js',
-    ];
+    public function registerAssetFiles($view): void
+    {
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\AnimationBlockerAsset::class);
+    }
 }

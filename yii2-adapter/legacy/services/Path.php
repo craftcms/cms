@@ -7,6 +7,8 @@
 
 namespace craft\services;
 
+use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Path as LaravelPath;
 use yii\base\Component;
 
@@ -86,11 +88,19 @@ class Path extends Component
     }
 
     /**
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::rebrand()} instead.
+     * @deprecated 6.0.0
      */
     public function getRebrandPath(bool $create = true): string
     {
-        return $this->service()->rebrand(create: $create);
+        $path = Env::get('CRAFT_REBRAND_PATH')
+            ? Env::parse('$CRAFT_REBRAND_PATH')
+            : $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'rebrand';
+
+        if ($create) {
+            File::ensureDirectoryExists($path);
+        }
+
+        return $path;
     }
 
     /**

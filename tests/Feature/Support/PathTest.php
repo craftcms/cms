@@ -33,10 +33,6 @@ beforeEach(function () {
     $this->originalProjectConfigFolderName = app(ProjectConfig::class)->folderName;
     app(ProjectConfig::class)->folderName = 'project';
 
-    $this->originalRebrandPath = getenv('CRAFT_REBRAND_PATH');
-    putenv('CRAFT_REBRAND_PATH');
-    unset($_SERVER['CRAFT_REBRAND_PATH']);
-
     $this->laravelPath = function (): CraftCms\Cms\Support\Path {
         $laravelPathClass = CraftCms\Cms\Support\Path::class;
 
@@ -52,14 +48,6 @@ afterEach(function () {
 
     foreach ($this->originalAliases as $alias => $path) {
         Aliases::set($alias, $path);
-    }
-
-    if ($this->originalRebrandPath === false) {
-        putenv('CRAFT_REBRAND_PATH');
-        unset($_SERVER['CRAFT_REBRAND_PATH']);
-    } else {
-        putenv("CRAFT_REBRAND_PATH={$this->originalRebrandPath}");
-        $_SERVER['CRAFT_REBRAND_PATH'] = $this->originalRebrandPath;
     }
 
     File::deleteDirectory($this->sandboxPath);
@@ -92,25 +80,6 @@ test('project config path respects folder name and create flag', function () {
     expect($path->projectConfig())->toBe($expectedPath)
         ->and(File::isDirectory($expectedPath))->toBeTrue()
         ->and($path->projectConfigFile())->toBe($expectedPath.'/'.ProjectConfig::CONFIG_FILENAME);
-});
-
-test('rebrand path uses storage by default and env override when present', function () {
-    $defaultPathService = ($this->laravelPath)();
-    $defaultPath = $this->aliases['@storage'].'/rebrand';
-
-    expect($defaultPathService->rebrand(create: false))->toBe($defaultPath)
-        ->and(File::exists($defaultPath))->toBeFalse();
-
-    $customPath = $this->sandboxPath.'/custom-rebrand';
-    putenv("CRAFT_REBRAND_PATH={$customPath}");
-    $_SERVER['CRAFT_REBRAND_PATH'] = $customPath;
-
-    $overridePathService = ($this->laravelPath)();
-
-    expect($overridePathService->rebrand(create: false))->toBe($customPath)
-        ->and(File::exists($customPath))->toBeFalse()
-        ->and($overridePathService->rebrand())->toBe($customPath)
-        ->and(File::isDirectory($customPath))->toBeTrue();
 });
 
 test('directory getters return the expected path and creation side effects', function (
@@ -165,7 +134,6 @@ test('system paths return the expected ordered list', function () {
         config_path('craft'),
         $storagePath.'/backups',
         $storagePath.'/logs',
-        $storagePath.'/rebrand',
         $storagePath.'/runtime',
         $this->aliases['@templates'],
         $this->aliases['@translations'],
@@ -206,8 +174,7 @@ test('laravel path service accepts subpaths for representative roots', function 
     expect($path->temp('foo.zip', create: false))->toBe($this->aliases['@storage'].'/runtime/temp/foo.zip')
         ->and($path->assetSources('123.jpg', create: false))->toBe($this->aliases['@storage'].'/runtime/assets/sources/123.jpg')
         ->and($path->vendor('composer/InstalledVersions.php'))->toBe($this->aliases['@vendor'].'/composer/InstalledVersions.php')
-        ->and($path->projectConfig('foo/bar.yaml', create: false))->toBe(config_path('craft/project/foo/bar.yaml'))
-        ->and($path->rebrand('icons/logo.svg', create: false))->toBe($this->aliases['@storage'].'/rebrand/icons/logo.svg');
+        ->and($path->projectConfig('foo/bar.yaml', create: false))->toBe(config_path('craft/project/foo/bar.yaml'));
 });
 
 test('laravel path service only creates the base directory when a subpath is provided', function () {

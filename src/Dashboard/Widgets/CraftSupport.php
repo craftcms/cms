@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use Craft;
-use craft\web\assets\craftsupport\CraftSupportAsset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
@@ -13,10 +11,13 @@ use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\PHP;
+use CraftCms\Cms\View\LegacyAssets\CraftSupportAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Override;
 
+use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\normalizeVersion;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -71,8 +72,7 @@ class CraftSupport extends Widget
             return null;
         }
 
-        $view = Craft::$app->getView();
-        $assetBundle = $view->registerAssetBundle(CraftSupportAsset::class);
+        app(InternalAssetRegistry::class)->register(CraftSupportAsset::class);
 
         $cmsVersion = Cms::VERSION;
         $cmsMajorVersion = (int) $cmsVersion;
@@ -135,7 +135,7 @@ JS, [
         return template('_components/widgets/CraftSupport/body', [
             'widget' => $this,
             'showBackupOption' => $showBackupOption,
-            'bundleUrl' => $assetBundle->baseUrl,
+            'bundleUrl' => craftAsset('legacy/craftsupport/dist'),
         ]);
     }
 }
