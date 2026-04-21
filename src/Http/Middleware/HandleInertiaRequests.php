@@ -9,6 +9,7 @@ use Craft;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Edition;
@@ -83,6 +84,7 @@ class HandleInertiaRequests extends Middleware
         }
 
         $currentSite = Sites::getCurrentSite();
+        $generalConfig = app(GeneralConfig::class);
         $updates = app(Updates::class);
         $nav = app(Navigation::class);
         $progressService = app(JobProgress::class);
@@ -106,6 +108,9 @@ class HandleInertiaRequests extends Middleware
                 'hasReservedJobs' => $progressService->getByStatus(JobStatus::Reserved)->count() > 0,
                 'hasWaitingJobs' => $progressService->getByStatus(JobStatus::Pending)->count() > 0,
             ],
+            'isMultiSite' => fn () => Sites::isMultiSite(),
+            'readOnly' => fn () => ! $generalConfig->allowAdminChanges,
+            'locale' => fn () => app()->getLocale(),
             'craft' => fn () => [
                 'system' => [
                     'name' => Cms::systemName(),

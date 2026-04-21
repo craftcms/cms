@@ -46,7 +46,6 @@ readonly class Settings
 
         $settings[$label]['users'] = [
             'icon' => 'light/user-group',
-            // 'iconMask' => '@craftcms/resources/icons/light/user-group.svg',
             'label' => t('Users'),
         ];
 

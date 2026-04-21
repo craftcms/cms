@@ -1,4 +1,4 @@
-import type {ActionItem} from '@/components/ActionMenu.vue';
+import type {VariantKey} from '@craftcms/cp';
 
 export interface CheckboxOption {
   label: string;
@@ -43,6 +43,14 @@ export interface ChipIndicator {
   label?: string;
   iconColor?: string;
   icon?: string;
+}
+
+export interface ActionItem {
+  id?: string;
+  label: string;
+  variant?: VariantKey;
+  icon?: string;
+  onClick?: () => void;
 }
 
 export interface EntryType {
@@ -118,6 +126,7 @@ export type EditableTableCellType =
 export const TableSpacing = {
   Relaxed: 'relaxed',
   Compact: 'compact',
+  Spacious: 'spacious',
 } as const;
 
 export type TableSpacingValue =
@@ -143,4 +152,20 @@ export interface Site {
   uid: string;
   dateCreated: string;
   dateUpdated: string;
+}
+
+export interface SortItem {
+  field: string;
+  direction: 'desc' | 'asc';
+}
+
+export interface PaginationData {
+  total: number;
+  per_page: number;
+  current_page: number;
+  last_page: number;
+  next_page_url: string | null;
+  prev_page_url: string | null;
+  from: number;
+  to: number;
 }

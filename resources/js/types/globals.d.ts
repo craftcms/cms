@@ -13,6 +13,7 @@ declare module '@tanstack/vue-table' {
     headerClass?: string | Record<string, boolean>;
     // Applies classes to both the header and cell at once
     columnClass?: string | Record<string, boolean>;
+    trackSize?: string;
   }
 }
 
@@ -102,6 +103,8 @@ interface CraftStatic {
     hasWaitingJobs?: boolean;
     hasReservedJobs?: boolean;
   };
+
+  pageTrigger?: string;
 
   Slideout: {
     new (html: string, settings?: SlideoutSettings): SlideoutInstance;

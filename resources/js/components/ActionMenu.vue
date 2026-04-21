@@ -1,15 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import type {VariantKey} from '@craftcms/cp/types/index.ts';
   import {computed} from 'vue';
-
-  export interface ActionItem {
-    id?: string;
-    label: string;
-    variant?: VariantKey;
-    icon?: string;
-    onClick?: () => void;
-  }
+  import type {ActionItem} from '@/types';
 
   const props = withDefaults(
     defineProps<{

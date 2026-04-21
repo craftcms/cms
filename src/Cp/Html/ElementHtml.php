@@ -82,6 +82,7 @@ readonly class ElementHtml
 
         $attributes = Arr::merge([
             'id' => $config['id'],
+            'size' => $config['size'],
             'class' => [
                 'cp-color-'.($color->value ?? 'white'),
                 $config['size'],
@@ -153,9 +154,8 @@ readonly class ElementHtml
                 /** @var Chippable&Describable $component */
                 $description = $component->getDescription();
                 if ($description) {
-                    $labelHtml .= Html::tag('span',
-                        $this->contentHtml->parseMarkdown(Html::encode($description)),
-                        ['class' => 'info']);
+                    $labelHtml .= Html::tag('craft-info-icon',
+                        $this->contentHtml->parseMarkdown(Html::encode($description)));
                 }
             }
 

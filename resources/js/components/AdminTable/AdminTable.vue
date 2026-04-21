@@ -3,12 +3,14 @@
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import {computed, useId} from 'vue';
   import {useReorderableRows} from '@/composables/useReorderableRows';
-  import {TableSpacing} from '@/types';
+  import {TableSpacing, type TableSpacingValue} from '@/types';
   import ColumnHeaderTitle from '@/components/AdminTable/ColumnHeaderTitle.vue';
   import ReorderButton from '@/components/ReorderButton.vue';
   import DropIndicator from '@/components/DropIndicator.vue';
   import Select from '@/components/form/Select.vue';
   import Text from '@/components/Text.vue';
+  import Empty from '@/components/Empty.vue';
+  import {usePage} from '@inertiajs/vue3';
 
   const props = withDefaults(
     defineProps<{
@@ -18,7 +20,7 @@
       selectable?: boolean;
       readOnly?: boolean;
       layout?: 'auto' | 'fixed';
-      spacing?: 'compact' | 'relaxed';
+      spacing?: TableSpacingValue;
       from?: number;
       to?: number;
       total?: number;
@@ -27,10 +29,9 @@
     }>(),
 
     {
-      reorderable: true,
+      reorderable: false,
       selectable: true,
       layout: 'auto',
-      spacing: 'compact',
       enableAdjustPageSize: false,
       pageSizeOptions: () => [50, 100, 250],
     }
@@ -40,13 +41,14 @@
     reorder: [startIndex: number, finishIndex: number];
   }>();
 
-  const {setRowRef, getDragState, getDropState} = useReorderableRows({
-    getRowIds: () => props.table.getRowModel().rows.map((row: any) => row.id),
-    onReorder: (startIndex, finishIndex) => {
-      emit('reorder', startIndex, finishIndex);
-    },
-    enabled: () => !props.readOnly && props.reorderable,
-  });
+  const {setRowRef, setHandleRef, getDragState, getDropState} =
+    useReorderableRows({
+      getRowIds: () => props.table.getRowModel().rows.map((row: any) => row.id),
+      onReorder: (startIndex, finishIndex) => {
+        emit('reorder', startIndex, finishIndex);
+      },
+      enabled: () => !props.readOnly && props.reorderable,
+    });
 
   const id = useId();
   const columnSortInstructionId = `column-sort-instructions-${id}`;
@@ -107,6 +109,50 @@
       return 'none';
     }
   }
+
+  const tableStyles = computed(() => {
+    const columns = props.table.getAllColumns();
+    const visibleColumns = columns.filter((column: Column<any>) =>
+      column.getIsVisible()
+    );
+    let columnCount = visibleColumns.length;
+
+    if (props.reorderable) {
+      columnCount += 1;
+    }
+
+    const styles: {[key: string]: number} = {
+      '--table-column-count': columnCount,
+    };
+
+    const gridDef = visibleColumns.reduce(
+      (acc: Array<string>, column: Column<any>) => {
+        acc.push(column.columnDef.meta?.trackSize ?? `minmax(0, 1fr)`);
+        return acc;
+      },
+      []
+    );
+
+    if (props.reorderable) {
+      gridDef.unshift('44px');
+    }
+
+    styles['--table-template-columns'] = gridDef.join(' ');
+
+    return styles;
+  });
+
+  function getRowPosition(index: number) {
+    if (index === 0) {
+      return 'first';
+    }
+
+    if (index === props.table.getRowModel().rows.length - 1) {
+      return 'last';
+    }
+
+    return 'middle';
+  }
 </script>
 
 <template>
@@ -120,8 +166,10 @@
         'cp-table': true,
         'cp-table--compact': spacing === TableSpacing.Compact,
         'cp-table--relaxed': spacing === TableSpacing.Relaxed,
+        'cp-table--spacious': spacing === TableSpacing.Spacious,
         'cp-table--auto': layout === 'auto',
       }"
+      :style="tableStyles"
     >
       <caption class="sr-only">
         {{
@@ -145,11 +193,10 @@
             v-for="header in headerGroup.headers"
             :key="header.id"
             :colSpan="header.colSpan"
-            :style="{width: `${header.getSize()}px`}"
             :id="`header-${header.id}`"
             :class="{
-              cell: true,
-              'cell--header': true,
+              'cp-table-cell': true,
+              'cp-table-cell--header': true,
               'cursor-pointer select-none': header.column.getCanSort(),
             }"
             scope="col"
@@ -195,70 +242,75 @@
               </ColumnHeaderTitle>
 
               <template v-if="header.column.columnDef.meta?.headerTip">
-                <c-tooltip :for="`header-info-${header.column.id}`">{{
+                <craft-info-icon>{{
                   header.column.columnDef.meta.headerTip
-                }}</c-tooltip>
-
-                <craft-button
-                  type="button"
-                  :id="`header-info-${header.column.id}`"
-                  icon
-                  size="small"
-                  appearance="plain"
-                >
-                  <craft-icon name="circle-info"></craft-icon>
-                </craft-button>
+                }}</craft-info-icon>
               </template>
             </div>
           </th>
         </tr>
       </thead>
       <tbody>
-        <tr
-          v-for="row in table.getRowModel().rows"
-          :key="row.id"
-          :ref="(el) => setRowRef(el as HTMLTableRowElement, row.id)"
-          :class="{
-            row: true,
-            'row--dragging':
-              !readOnly && getDragState(row.id).type === 'dragging',
-          }"
-        >
-          <template v-if="reorderable && !readOnly">
-            <td class="cell cell--drag-handle">
-              <div class="flex justify-center">
-                <ReorderButton></ReorderButton>
-              </div>
-
-              <!-- Drop indicator spans entire row, positioned from this cell -->
-              <DropIndicator :edge="getDropState(row.id).edge" />
-
-              <Teleport
-                v-if="getDragState(row.id).type === 'dragging'"
-                :to="getDragState(row.id).container"
-              >
-                <slot name="drag-preview" :row="row"></slot>
-              </Teleport>
-            </td>
-          </template>
-          <component
-            v-for="cell in row.getVisibleCells()"
-            :is="cell.column.columnDef.meta?.cellTag ?? 'td'"
-            :key="cell.id"
-            :style="{width: `${cell.column.getSize()}px`}"
+        <template v-if="table.getRowModel().rows.length > 0">
+          <tr
+            v-for="row in table.getRowModel().rows"
+            :key="row.id"
+            :ref="(el) => setRowRef(el as HTMLTableRowElement, row.id)"
             :class="{
-              cell: true,
-              'cell--wrap': cell.column.columnDef.meta?.wrap,
-              ...resolveMetaClasses(cell.column.columnDef.meta?.columnClass),
-              ...resolveMetaClasses(cell.column.columnDef.meta?.cellClass),
+              row: true,
+              'cp-table-row': true,
+              'row--dragging':
+                !readOnly && getDragState(row.id).type === 'is-dragging',
             }"
           >
-            <FlexRender
-              :render="cell.column.columnDef.cell"
-              :props="cell.getContext()"
-            />
-          </component>
-        </tr>
+            <template v-if="reorderable && !readOnly">
+              <td>
+                <div>
+                  <ReorderButton
+                    @click:up="emit('reorder', row.index, row.index - 1)"
+                    @click:down="emit('reorder', row.index, row.index + 1)"
+                    :position="getRowPosition(row.index)"
+                    :ref="(el: any) => setHandleRef(el?.$el, row.id)"
+                  />
+                </div>
+
+                <!-- Drop indicator spans entire row, positioned from this cell -->
+                <DropIndicator :edge="getDropState(row.id).closestEdge" />
+              </td>
+            </template>
+            <component
+              v-for="cell in row.getVisibleCells()"
+              :is="cell.column.columnDef.meta?.cellTag ?? 'td'"
+              :key="cell.id"
+              :class="{
+                'cp-table-cell': true,
+                'cp-table-cell--wrap': cell.column.columnDef.meta?.wrap,
+                ...resolveMetaClasses(cell.column.columnDef.meta?.columnClass),
+                ...resolveMetaClasses(cell.column.columnDef.meta?.cellClass),
+              }"
+            >
+              <FlexRender
+                :render="cell.column.columnDef.cell"
+                :props="cell.getContext()"
+              />
+            </component>
+          </tr>
+        </template>
+        <template v-else>
+          <tr
+            style="
+              --table-template-columns: 1fr;
+              --_cell-spacing-inline: 0;
+              --_cell-spacing-block: 0;
+            "
+          >
+            <td>
+              <slot name="empty-row">
+                <Empty :label="t('No results')" icon="empty-set" />
+              </slot>
+            </td>
+          </tr>
+        </template>
       </tbody>
     </table>
 
@@ -277,6 +329,7 @@
             @click="table.previousPage()"
             :disabled="!table.getCanPreviousPage()"
             icon
+            size="small"
           >
             <craft-icon
               name="chevron-left"
@@ -292,7 +345,7 @@
               :label="t('Current page')"
               label-sr-only
               center
-              small
+              size="small"
             >
             </craft-input>
             of
@@ -302,6 +355,7 @@
             type="button"
             @click="table.nextPage()"
             :disabled="!table.getCanNextPage()"
+            size="small"
             icon
           >
             <craft-icon
@@ -315,6 +369,7 @@
         <template v-if="showPageSize">
           {{ t('Items per page:') }}
           <Select
+            small
             :options="pageSizeOptions"
             v-model="pageSizeProxy"
             class="w-auto"

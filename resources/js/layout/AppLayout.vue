@@ -11,7 +11,7 @@
   import LiveRegion from '@/components/LiveRegion.vue';
   import {useAppendHtml} from '@/composables/useAppendHtml';
 
-  withDefaults(
+  const props = withDefaults(
     defineProps<{
       title?: string;
       debug?: any;
@@ -21,6 +21,7 @@
   );
 
   const page = usePage<{
+    title: string;
     flash: {
       success: string | null;
       error: string | null;
@@ -55,6 +56,7 @@
 
   const isLargeScreen = useMediaQuery('(min-width: 1024px)');
   const debugOpen = ref(false);
+  const pageTitle = computed(() => props.title ?? page.props.title);
 
   watch(
     isLargeScreen,
@@ -98,7 +100,7 @@
 </script>
 
 <template>
-  <Head :title="title" />
+  <Head :title="pageTitle" />
   <LiveRegion :debug="true"></LiveRegion>
   <div class="cp">
     <div class="cp__header">
@@ -158,7 +160,7 @@
               <div class="index-grid index-grid--header">
                 <div class="index-grid__aside">
                   <slot name="title">
-                    <h1 class="text-xl">{{ title }}</h1>
+                    <h1 class="text-xl">{{ pageTitle }}</h1>
                   </slot>
                   <slot name="title-badge"></slot>
                 </div>

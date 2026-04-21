@@ -3,6 +3,8 @@ import {property, query} from 'lit/decorators.js';
 import componentStyles from './spinner.styles.js';
 import {classMap} from 'lit/directives/class-map.js';
 
+import '../visually-hidden/visually-hidden';
+
 export default class CraftSpinner extends LitElement {
   static override styles = [componentStyles];
 
@@ -36,7 +38,7 @@ export default class CraftSpinner extends LitElement {
         })}"
       >
         <div class="spinner"></div>
-        <span class="message visually-hidden"><slot /></span>
+        <visually-hidden class="message"><slot></slot></span>
       </div>
     `;
   }

@@ -68,13 +68,14 @@ interface AutocompleteColumnOptions<
   requireOptionMatch?: boolean;
   transformModelValue?: (newValue: SelectOption | null) => string;
   class?: HTMLAttributes['class'];
+  label?: string;
   onChange?: (
     value: string,
     ctx: Pick<CellContext<T, any>, 'row' | 'column'>
   ) => void;
 }
 
-type AccessorParam<T extends Record<string, any>> = Parameters<
+export type AccessorParam<T extends Record<string, any>> = Parameters<
   ColumnHelper<T>['accessor']
 >[0];
 
@@ -263,8 +264,13 @@ export function useEditableTable<T extends Record<string, any>>(
         options: opts,
         class: cellOptions?.class,
         placeholder: cellOptions?.placeholder,
-        requireOptionMatch: cellOptions?.requireOptionMatch,
-        transformModelValue: cellOptions?.transformModelValue,
+        label: cellOptions?.label ?? column.id,
+        ...(cellOptions?.requireOptionMatch !== undefined && {
+          requireOptionMatch: cellOptions.requireOptionMatch,
+        }),
+        ...(cellOptions?.transformModelValue !== undefined && {
+          transformModelValue: cellOptions.transformModelValue,
+        }),
         'onUpdate:modelValue': (value: string) => {
           if (typeof cellOptions?.onChange === 'function') {
             cellOptions.onChange(value, {row, column});

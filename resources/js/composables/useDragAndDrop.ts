@@ -142,7 +142,6 @@ export function useDragAndDrop(
               const preview = element.cloneNode(true) as HTMLElement;
               preview.style.width = `${rect.width}px`;
               preview.style.height = `${rect.height}px`;
-              preview.style.transform = 'rotate(2deg)';
               container.appendChild(preview);
 
               return () => preview.remove();

@@ -16,8 +16,9 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Session;
 
 beforeEach(function () {
-    $this->auth = app(Auth::class);
     Event::fake();
+    app()->forgetScopedInstances();
+    $this->auth = app(Auth::class);
     Session::flush();
 });
 

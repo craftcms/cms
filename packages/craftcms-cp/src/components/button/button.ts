@@ -80,6 +80,8 @@ export default class CraftButton extends LionButtonSubmit {
   /** Set align-items for the content */
   @property() align: 'start' | 'end' | 'center' = 'center';
 
+  @property() icon: string | null = null;
+
   @state()
   private _hasAccessibilityError: boolean = false;
 
@@ -96,7 +98,11 @@ export default class CraftButton extends LionButtonSubmit {
         })}"
         part="content"
       >
-        <slot name="prefix" class="prefix" part="prefix"></slot>
+        <slot name="prefix" class="prefix" part="prefix">
+          ${this.icon
+            ? html`<craft-icon name="${this.icon}"></craft-icon>`
+            : nothing}
+        </slot>
         <slot class="label" part="label"></slot>
         <slot name="suffix" class="suffix" part="suffix"></slot>
       </div>

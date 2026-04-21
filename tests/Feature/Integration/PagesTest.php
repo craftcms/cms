@@ -37,16 +37,6 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
     ['url' => '/users', 'title' => 'Users'],
 
     [
-        'url' => '/settings/users',
-        'title' => 'User Settings',
-        'extraContent' => [
-            ['rendered' => 'User Groups'],
-            ['rendered' => 'Fields'],
-            ['rendered' => 'Settings'],
-            ['rendered' => 'New user group'],
-        ],
-    ],
-    [
         'url' => '/settings/users/settings',
         'title' => 'User Settings',
         'extraContent' => [
@@ -72,29 +62,7 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
             ['rendered' => 'No routes exist yet.'],
         ],
     ],
-    [
-        'url' => '/settings/fields',
-        'title' => 'Fields',
-        'extraContent' => [
-            ['rendered' => 'New field'],
-        ],
-    ],
 
-    [
-        'url' => '/settings/assets',
-        'title' => 'Volumes - Asset Settings',
-        'extraContent' => [
-            ['rendered' => 'New volume'],
-            ['rendered' => 'Image Transforms'],
-        ],
-    ],
-    [
-        'url' => '/settings/assets/transforms',
-        'title' => 'Image Transforms - Asset Settings',
-        'extraContent' => [
-            ['rendered' => 'New image transform'],
-        ],
-    ],
 ]);
 
 it('renders inertia pages', function (string $url, string $component, string $title) {
@@ -112,6 +80,26 @@ it('renders inertia pages', function (string $url, string $component, string $ti
         'url' => '/settings/sections',
         'component' => 'SettingsSectionsIndexPage',
         'title' => 'Sections',
+    ],
+    [
+        'url' => '/settings/users',
+        'title' => 'User Settings',
+        'component' => 'SettingsUserGroupsIndexPage',
+    ],
+    [
+        'url' => '/settings/fields',
+        'title' => 'Fields',
+        'component' => 'SettingsFieldsIndexPage',
+    ],
+    [
+        'url' => '/settings/assets',
+        'title' => 'Asset Settings',
+        'component' => 'SettingsVolumesIndexPage',
+    ],
+    [
+        'url' => '/settings/assets/transforms',
+        'title' => 'Image Transforms',
+        'component' => 'SettingsImageTransformsIndexPage',
     ],
 ]);
 

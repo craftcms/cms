@@ -6,11 +6,11 @@ export default css`
   }
 
   .cp-chip {
+    --_min-height: var(--c-chip-height, var(--c-size-control-sm));
     display: inline-flex;
-    min-height: var(--c-chip-height, var(--c-size-control-sm));
     min-width: auto;
     border-radius: var(--c-chip-radius, var(--c-radius-md));
-    padding-inline: var(--c-chip-spacing-inline, var(--c-spacing-md));
+    padding-inline: var(--c-chip-spacing-inline, 0);
     padding-block: var(--c-chip-spacing-block, var(--c-spacing-sm));
     align-items: start;
     box-shadow: var(--c-chip-shadow, var(--c-shadow-sm));
@@ -26,6 +26,12 @@ export default css`
     background-color: var(--c-color-fill-quiet, var(--c-surface-raised));
   }
 
+  .cp-chip__body ::slotted(a) {
+    text-decoration: none;
+    font-weight: bold;
+    display: flex;
+  }
+
   .cp-chip[appearance='plain'],
   .cp-chip--plain {
     padding-block: 0;
@@ -37,8 +43,8 @@ export default css`
 
   .cp-chip[size='small'],
   .cp-chip--small {
-    padding-block: 0;
-    min-height: var(--c-size-control-sm);
+    --_min-height: var(--c-size-control-sm);
+    padding-block: calc(var(--c-spacing-xs) / 2);
   }
 
   .cp-chip[size='medium'],
@@ -52,6 +58,7 @@ export default css`
   .cp-chip__suffix {
     display: inline-flex;
     flex-direction: column;
+    min-height: var(--_min-height);
   }
 
   .cp-chip__body {
@@ -62,14 +69,10 @@ export default css`
   }
 
   .cp-chip__prefix {
-    padding-inline-end: var(--c-spacing-md);
+    padding-inline: calc(var(--c-spacing-md) / 2);
   }
 
   .cp-chip__suffix {
     padding-inline-start: var(--c-spacing-md);
-  }
-
-  :host(:not([variant='plain'])) .cp-chip__suffix {
-    margin-inline-end: calc(var(--c-spacing-sm) * -1);
   }
 `;

@@ -50,7 +50,7 @@ readonly class SectionsController
         $limit = $request->integer('per_page', 50);
         $searchTerm = $request->input('search');
 
-        $sort = $request->array('sort') ?? [
+        $sort = ! empty($request->array('sort')) ? $request->array('sort') : [
             ['field' => 'name', 'direction' => 'asc'],
         ];
 
@@ -245,6 +245,7 @@ readonly class SectionsController
         ]));
     }
 
+    #[\Deprecated(message: 'in 6.0. Use `settings/sections` instead.')]
     public function tableData(Request $request, Sections $sections): Response
     {
         $pageParam = Cms::config()->getPageTriggerParam();
