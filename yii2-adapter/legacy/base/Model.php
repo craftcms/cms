@@ -17,6 +17,7 @@ use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Validation\ComponentRules;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
@@ -449,7 +450,7 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
 
     public function validationData($names = null, $except = []): array
     {
-        return parent::validationData($names, $except);
+        return Arr::except(Utils::getPublicProperties($this), ['ruleset']);
     }
 
     public function attributeLabels(): array
