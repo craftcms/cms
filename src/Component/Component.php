@@ -170,4 +170,14 @@ abstract class Component implements Arrayable, ArrayableInterface, ComponentInte
 
         throw new InvalidCallException('Unsetting an unknown or read-only property: '.static::class.'::'.$name);
     }
+
+    public function __serialize(): array
+    {
+        return $this->toArray();
+    }
+
+    public function __unserialize(array $data): void
+    {
+        self::configure($this, $data);
+    }
 }
