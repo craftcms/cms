@@ -55,6 +55,11 @@ class TestFlashController extends Controller
             {
                 return new MessageBag(['name' => ['Name is required']]);
             }
+
+            public function setAttributes(array $values): void
+            {
+                $this->name = $values['name'] ?? '';
+            }
         };
 
         return $this->asModelFailure($model, 'Model save failed', 'testModel');
