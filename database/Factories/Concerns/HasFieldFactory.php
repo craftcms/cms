@@ -108,7 +108,7 @@ trait HasFieldFactory
         $factory->refreshFieldCaches();
 
         $element = $factory->queryElement($model->id);
-        $element->setScenario($factory->elementScenario ?? Element::SCENARIO_DEFAULT);
+        $element->ruleset->useScenario($factory->elementScenario ?? Element::SCENARIO_DEFAULT);
         $element->title = $element->title ?: 'Test entry';
 
         foreach ($factory->fieldConfigs as $config) {

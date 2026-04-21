@@ -13,7 +13,7 @@ use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTimeInterface;
 use Override;
 use RuntimeException;

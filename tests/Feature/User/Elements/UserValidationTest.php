@@ -9,7 +9,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\users\FullNameField;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Validation\UserRules;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use Illuminate\Support\Facades\Hash;
 
 #[Ruleset(UserRules::class)]
@@ -440,7 +440,7 @@ describe('URL injection prevention', function () {
 describe('Scenario validation', function () {
     test('SCENARIO_PASSWORD only validates newPassword', function () {
         $user = UserModel::factory()->createElement();
-        $user->setScenario(User::SCENARIO_PASSWORD);
+        $user->ruleset->useScenario(UserRules::SCENARIO_PASSWORD);
         $user->username = str_repeat('a', 256); // Invalid
         $user->newPassword = 'p'; // too short
 
@@ -452,7 +452,7 @@ describe('Scenario validation', function () {
 
     test('SCENARIO_REGISTRATION validates username email and newPassword', function () {
         $user = UserModel::factory()->createElement();
-        $user->setScenario(User::SCENARIO_REGISTRATION);
+        $user->ruleset->useScenario(UserRules::SCENARIO_REGISTRATION);
         $user->username = str_repeat('a', 256); // Invalid
         $user->email = 'invalid-email'; // Invalid
         $user->newPassword = 'p'; // too short
@@ -468,7 +468,7 @@ describe('Scenario validation', function () {
 
     test('SCENARIO_ACTIVATION validates username and email', function () {
         $user = UserModel::factory()->createElement();
-        $user->setScenario(User::SCENARIO_ACTIVATION);
+        $user->ruleset->useScenario(UserRules::SCENARIO_ACTIVATION);
 
         $user->username = str_repeat('a', 256); // Invalid
         $user->email = 'invalid-email'; // Invalid
@@ -511,7 +511,7 @@ describe('Name field validation with field layout', function () {
 
         $user = new TestUserWithFieldLayout;
         $user->setMockFieldLayout($fieldLayout);
-        $user->setScenario(User::SCENARIO_LIVE);
+        $user->ruleset->useScenario(UserRules::SCENARIO_LIVE);
         $user->email = 'test@example.com';
         $user->firstName = '';
         $user->lastName = '';
@@ -539,7 +539,7 @@ describe('Name field validation with field layout', function () {
 
         $user = new TestUserWithFieldLayout;
         $user->setMockFieldLayout($fieldLayout);
-        $user->setScenario(User::SCENARIO_LIVE);
+        $user->ruleset->useScenario(UserRules::SCENARIO_LIVE);
         $user->email = 'test@example.com';
         $user->firstName = '';
         $user->lastName = '';
@@ -564,7 +564,7 @@ describe('Name field validation with field layout', function () {
 
         $user = new TestUserWithFieldLayout;
         $user->setMockFieldLayout($fieldLayout);
-        $user->setScenario(User::SCENARIO_LIVE);
+        $user->ruleset->useScenario(UserRules::SCENARIO_LIVE);
         $user->email = 'test@example.com';
         $user->fullName = '';
 
@@ -588,7 +588,7 @@ describe('Name field validation with field layout', function () {
 
         $user = new TestUserWithFieldLayout;
         $user->setMockFieldLayout($fieldLayout);
-        $user->setScenario(User::SCENARIO_LIVE);
+        $user->ruleset->useScenario(UserRules::SCENARIO_LIVE);
         $user->email = 'test@example.com';
         $user->fullName = '';
 
@@ -611,7 +611,7 @@ describe('Name field validation with field layout', function () {
 
         $user = new TestUserWithFieldLayout;
         $user->setMockFieldLayout($fieldLayout);
-        $user->setScenario(User::SCENARIO_DEFAULT);
+        $user->ruleset->useScenario(UserRules::SCENARIO_DEFAULT);
         $user->email = 'test@example.com';
         $user->firstName = '';
         $user->lastName = '';
@@ -633,7 +633,7 @@ describe('Name field validation with field layout', function () {
 
         $user = new TestUserWithFieldLayout;
         $user->setMockFieldLayout($fieldLayout);
-        $user->setScenario(User::SCENARIO_LIVE);
+        $user->ruleset->useScenario(UserRules::SCENARIO_LIVE);
         $user->email = 'test@example.com';
         $user->firstName = '';
         $user->lastName = '';

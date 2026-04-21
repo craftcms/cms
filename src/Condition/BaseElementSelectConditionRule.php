@@ -51,7 +51,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
             $values['elementIds'] = Arr::pull($values, 'elementId');
         }
 
-        parent::setAttributes($values, $safeOnly);
+        parent::setAttributes($values);
     }
 
     /**

@@ -8,7 +8,6 @@ use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
@@ -27,6 +26,7 @@ use CraftCms\Cms\Element\Events\DefineElementCriteria;
 use CraftCms\Cms\Element\Jobs\LocalizeRelations;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Conditions\RelationalFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
@@ -50,6 +50,8 @@ use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\View\LegacyAssets\CpAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
@@ -64,6 +66,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
 use yii\db\Schema;
 
+use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -186,7 +189,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             ];
 
             if ($query instanceof ElementQuery) {
-                $filter->apply($query->getSubQuery(), $relationCriteria);
+                $filter->apply($query->getQuery(), $relationCriteria);
 
                 return $query;
             }
@@ -561,7 +564,7 @@ JS, [
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $element->inScenarios(Element::SCENARIO_LIVE)) {
+        if (! $element->ruleset->inScenarios(ElementRules::SCENARIO_LIVE)) {
             return [];
         }
 
@@ -690,7 +693,7 @@ JS, [
         // Prevent relational fields on this element from enforcing related element validation
         self::$validatingRelatedElements = true;
 
-        $target->setScenario(Element::SCENARIO_LIVE);
+        $target->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         $validates = $target->validate();
 
         self::$validatingRelatedElements = false;
@@ -773,29 +776,28 @@ JS, [
                 // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
                 // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied
                 // to the eager-loading query and cause a SQL error.
-                /** @var Builder $q */
-                foreach ([$elementQuery->getQuery(), $elementQuery->getSubQuery()] as $q) {
-                    $q->join(
-                        new Alias(Table::RELATIONS, $relationsAlias),
-                        function (JoinClause $join) use ($element, $relationsAlias) {
-                            $join->whereColumn("$relationsAlias.targetId", 'elements.id')
-                                ->where("$relationsAlias.sourceId", $element->id)
-                                ->where("$relationsAlias.fieldId", $this->id)
-                                ->where(function (JoinClause $join) use ($element, $relationsAlias) {
-                                    $join->whereNull("$relationsAlias.sourceSiteId")
-                                        ->orWhere("$relationsAlias.sourceSiteId", $element->siteId);
-                                });
-                        },
-                    );
+                $query = $elementQuery->getQuery();
 
-                    if (
-                        $this->sortable &&
-                        ! $this->maintainHierarchy &&
-                        count($q->orderBy ?? []) === 1 &&
-                        ($q->orderBy[0]['column'] ?? null) instanceof OrderByPlaceholderExpression
-                    ) {
-                        $q->orderBy("$relationsAlias.sortOrder");
-                    }
+                $query->join(
+                    new Alias(Table::RELATIONS, $relationsAlias),
+                    function (JoinClause $join) use ($element, $relationsAlias) {
+                        $join->whereColumn("$relationsAlias.targetId", 'elements.id')
+                            ->where("$relationsAlias.sourceId", $element->id)
+                            ->where("$relationsAlias.fieldId", $this->id)
+                            ->where(function (JoinClause $join) use ($element, $relationsAlias) {
+                                $join->whereNull("$relationsAlias.sourceSiteId")
+                                    ->orWhere("$relationsAlias.sourceSiteId", $element->siteId);
+                            });
+                    },
+                );
+
+                if (
+                    $this->sortable &&
+                    ! $this->maintainHierarchy &&
+                    count($query->orderBy ?? []) === 1 &&
+                    ($query->orderBy[0]['column'] ?? null) instanceof OrderByPlaceholderExpression
+                ) {
+                    $query->orderBy("$relationsAlias.sortOrder");
                 }
             });
         } else {
@@ -1041,7 +1043,7 @@ JS, [
                 $rawValue = $rawValue->where['elements.id'] ?? null;
             }
             if ($rawValue instanceof ElementQuery) {
-                $where = Arr::first($rawValue->getSubQuery()->wheres, fn ($where) => ($where['column'] ?? '') === 'elements.id');
+                $where = Arr::first($rawValue->getQuery()->wheres, fn ($where) => ($where['column'] ?? '') === 'elements.id');
                 $rawValue = $where['value'] ?? null;
             }
             if (is_array($rawValue)) {
@@ -1060,10 +1062,8 @@ JS, [
         if (! empty($missingSourceElementIds)) {
             $missingMappingsQuery = DB::table(Table::RELATIONS)
                 ->select(['sourceId as source', 'targetId as target'])
-                ->where([
-                    'fieldId' => $this->id,
-                    'sourceId' => $missingSourceElementIds,
-                ])
+                ->where('fieldId', $this->id)
+                ->whereIn('sourceId', $missingSourceElementIds)
                 ->where(fn (Builder $query) => $query
                     ->where('sourceSiteId', $sourceSiteId)
                     ->orWhereNull('sourceSiteId'),
@@ -1358,8 +1358,8 @@ JS, [
             self::VIEW_MODE_CARDS_GRID,
         ]))) {
             $html = Html::beginTag('div', ['class' => ['flex', 'items-start', 'gap-l']]);
-            $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
-            $baseIconsUrl = "$bundle->baseUrl/images/view-modes";
+            app(InternalAssetRegistry::class)->register(CpAsset::class);
+            $baseIconsUrl = craftAsset('legacy/cp/dist/images/view-modes');
 
             foreach ($supportedViewModes as $key => $label) {
                 $html .= Html::beginTag('label', ['class' => 'nowrap']).

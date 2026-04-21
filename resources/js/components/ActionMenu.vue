@@ -3,7 +3,6 @@
   import {computed} from 'vue';
   import type {ActionItem} from '@/types';
 
-
   const props = withDefaults(
     defineProps<{
       icon?: string;

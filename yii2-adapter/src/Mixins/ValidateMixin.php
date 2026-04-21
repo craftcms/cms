@@ -139,4 +139,32 @@ readonly class ValidateMixin
             return LegacyElementRules::class;
         };
     }
+
+    public function setScenario(): Closure
+    {
+        return function(string $scenario) {
+            Deprecator::log($this::class . '->setScenario', 'Calling `->setScenario` is deprecated. Use `->ruleset->useScenario()` instead.');
+
+            /**
+             * @var \CraftCms\RulesetValidation\Contracts\ValidatesWithRuleset $this
+             *
+             * @phpstan-ignore-next-line
+             */
+            return $this->ruleset->useScenario($scenario);
+        };
+    }
+
+    public function getScenario(): Closure
+    {
+        return function() {
+            Deprecator::log($this::class . '->getScenario', 'Calling `->getScenario` is deprecated. Use `->ruleset->getScenario()` instead.');
+
+            /**
+             * @var \CraftCms\RulesetValidation\Contracts\ValidatesWithRuleset $this
+             *
+             * @phpstan-ignore-next-line
+             */
+            return $this->ruleset->getScenario();
+        };
+    }
 }

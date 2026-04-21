@@ -33,6 +33,7 @@ use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Revisions;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Actions\MoveToSection;
 use CraftCms\Cms\Entry\Actions\NewChild;
 use CraftCms\Cms\Entry\Actions\NewSiblingAfter;
@@ -81,7 +82,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateInterval;
 use DateTime;
 use GraphQL\Type\Definition\Type;
@@ -215,7 +216,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     #[Override]
     public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(EntryCondition::class, [self::class]);
+        return new EntryCondition(self::class);
     }
 
     #[Override]
@@ -716,8 +717,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
                 $map = DB::table(Table::ENTRIES_AUTHORS)
                     ->select([
-                        'source' => 'entryId',
-                        'target' => 'authorId',
+                        'entryId as source',
+                        'authorId as target',
                     ])
                     ->whereIn('entryId', $entryIds)
                     ->orderBy('sortOrder')
@@ -1764,9 +1765,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
     public function createAnother(): self
     {
-        /** @var self $entry */
-        $entry = Craft::createObject([
-            'class' => self::class,
+        $entry = new self([
             'sectionId' => $this->sectionId,
             'fieldId' => $this->fieldId,
             'primaryOwnerId' => $this->getPrimaryOwnerId(),
@@ -1837,7 +1836,9 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
     public function getPostEditUrl(): string
     {
-        return Url::cpUrl('entries');
+        $page = $this->getSection()?->getPage();
+
+        return Url::cpUrl(sprintf('content/%s', $page ? Str::slug($page) : 'entries'));
     }
 
     protected function cpRevisionsUrl(): string
@@ -2526,7 +2527,7 @@ JS;
         if (
             ! $this->_userPostDate() &&
             (
-                in_array($this->scenario, [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]) ||
+                in_array($this->scenario, [ElementRules::SCENARIO_LIVE, ElementRules::SCENARIO_DEFAULT]) ||
                 ! $this->getIsDraft()
             )
         ) {

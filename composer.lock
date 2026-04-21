@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2c6fc4f0684a0080927ddac26949c945",
+    "content-hash": "f021fb13ae5803c1ef5aa53145b4e877",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -614,6 +614,70 @@
                 "source": "https://github.com/craftcms/laravel-dependency-aware-cache/tree/1.2.0"
             },
             "time": "2026-03-17T14:55:31+00:00"
+        },
+        {
+            "name": "craftcms/laravel-ruleset-validation",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/craftcms/laravel-ruleset-validation.git",
+                "reference": "66867ade9c09c6c8165bd62c0ebb7e4843399aab"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/craftcms/laravel-ruleset-validation/zipball/66867ade9c09c6c8165bd62c0ebb7e4843399aab",
+                "reference": "66867ade9c09c6c8165bd62c0ebb7e4843399aab",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/contracts": "^13.0",
+                "illuminate/support": "^13.0",
+                "illuminate/validation": "^13.0",
+                "php": "^8.4"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^v1.29",
+                "nunomaduro/collision": "^8.1.1",
+                "orchestra/testbench": "^11.0",
+                "pestphp/pest": "^4.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "CraftCms\\RulesetValidation\\RulesetValidationServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "CraftCms\\RulesetValidation\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Pixel & Tonic",
+                    "homepage": "https://pixelandtonic.com/"
+                }
+            ],
+            "description": "Validate requests and objects with reusable Laravel rulesets.",
+            "homepage": "https://github.com/craftcms/laravel-ruleset-validation",
+            "keywords": [
+                "craftcms",
+                "laravel",
+                "rulesets",
+                "validation"
+            ],
+            "support": {
+                "issues": "https://github.com/craftcms/laravel-ruleset-validation/issues",
+                "source": "https://github.com/craftcms/laravel-ruleset-validation/tree/1.0.1"
+            },
+            "time": "2026-04-21T07:56:55+00:00"
         },
         {
             "name": "craftcms/plugin-installer",

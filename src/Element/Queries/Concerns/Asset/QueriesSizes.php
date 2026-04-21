@@ -67,15 +67,15 @@ trait QueriesSizes
     {
         $this->beforeQuery(function (AssetQuery $assetQuery) {
             if ($assetQuery->width) {
-                $assetQuery->subQuery->whereNumericParam('assets.width', $assetQuery->width);
+                $assetQuery->whereNumericParam('assets.width', $assetQuery->width);
             }
 
             if ($assetQuery->height) {
-                $assetQuery->subQuery->whereNumericParam('assets.height', $assetQuery->height);
+                $assetQuery->whereNumericParam('assets.height', $assetQuery->height);
             }
 
             if ($assetQuery->size) {
-                $assetQuery->subQuery->whereNumericParam('assets.size', $assetQuery->size, '=', Query::TYPE_BIGINT);
+                $assetQuery->whereNumericParam('assets.size', $assetQuery->size, '=', Query::TYPE_BIGINT);
             }
         });
     }

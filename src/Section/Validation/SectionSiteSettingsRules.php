@@ -10,18 +10,16 @@ use CraftCms\Cms\Section\Validation\Rules\SingleSectionUriRule;
 use CraftCms\Cms\Validation\Rules\SiteIdRule;
 use CraftCms\Cms\Validation\Rules\UriFormatRule;
 use CraftCms\Cms\Validation\Ruleset;
-use Override;
 use Throwable;
 
 /** @extends Ruleset<SectionSiteSettings> */
 class SectionSiteSettingsRules extends Ruleset
 {
-    #[Override]
-    public function defineRules(): array
+    public function rules(): array
     {
         $section = null;
         try {
-            $section = $this->component->getSection();
+            $section = $this->subject->getSection();
         } catch (Throwable) {
         }
 

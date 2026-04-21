@@ -379,12 +379,8 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             return null;
         }
 
-        if (! $this->showTimeZone) {
-            return $date;
-        }
-
         /** @phpstan-ignore-next-line */
-        if (isset($timeZone) || (is_array($value) && ! empty($value['timezone']))) {
+        if ($this->showTimeZone && (isset($timeZone) || (is_array($value) && ! empty($value['timezone'])))) {
             /** @phpstan-ignore-next-line */
             $date->setTimezone(new DateTimeZone($timeZone ?? $value['timezone']));
         }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Elements;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\elements\conditions\users\UserCondition;
 use CraftCms\Cms\Address\Elements\Address;
@@ -61,7 +60,7 @@ use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Notifications\ResetPasswordNotification;
 use CraftCms\Cms\User\Notifications\VerifyEmailNotification;
 use CraftCms\Cms\User\Validation\UserRules;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -160,28 +159,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
 
     public const string STATUS_LOCKED = 'locked';
 
-    // Validation scenarios
-    // -------------------------------------------------------------------------
-
-    /**
-     * @since 4.4.8
-     */
-    public const string SCENARIO_ACTIVATION = 'activation';
-
-    public const string SCENARIO_REGISTRATION = 'registration';
-
-    public const string SCENARIO_PASSWORD = 'password';
-
-    #[Override]
-    public function scenarios(): array
-    {
-        return array_merge(parent::scenarios(), [
-            self::SCENARIO_PASSWORD => ['newPassword'],
-            self::SCENARIO_REGISTRATION => ['username', 'email', 'newPassword'],
-            self::SCENARIO_ACTIVATION => ['username', 'email'],
-        ]);
-    }
-
     public function getAuthIdentifierName(): string
     {
         return 'id';
@@ -276,7 +253,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[Override]
     public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(UserCondition::class, [self::class]);
+        return new UserCondition(self::class);
     }
 
     #[Override]

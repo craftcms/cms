@@ -8,36 +8,16 @@
 namespace craft\web\assets\dashboard;
 
 use craft\web\AssetBundle;
-use craft\web\assets\cp\CpAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Asset bundle for the Dashboard
+ * @deprecated 6.0.0
  */
 class DashboardAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public $depends = [
-        CpAsset::class,
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $css = [
-        'css/Dashboard.css',
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $js = [
-        'Dashboard.js',
-    ];
+    public function registerAssetFiles($view)
+    {
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\DashboardAsset::class);
+    }
 }

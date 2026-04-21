@@ -92,31 +92,31 @@ trait QueriesFields
             if (! is_null($elementQuery->id)) {
                 throw_if(empty($elementQuery->id), QueryAbortedException::class);
 
-                $elementQuery->subQuery->whereNumericParam('elements.id', $elementQuery->id);
+                $elementQuery->whereNumericParam('elements.id', $elementQuery->id);
             }
 
             if (! is_null($elementQuery->uid)) {
                 throw_if(empty($elementQuery->uid), QueryAbortedException::class);
 
-                $elementQuery->subQuery->whereParam('elements.uid', $elementQuery->uid);
+                $elementQuery->whereParam('elements.uid', $elementQuery->uid);
             }
 
             if ($elementQuery->siteSettingsId) {
-                $elementQuery->subQuery->whereNumericParam('elements_sites.id', $elementQuery->siteSettingsId);
+                $elementQuery->whereNumericParam('elements_sites.id', $elementQuery->siteSettingsId);
             }
 
             match ($elementQuery->trashed) {
-                true => $elementQuery->subQuery->whereNotNull('elements.dateDeleted'),
-                false => $elementQuery->subQuery->whereNull('elements.dateDeleted'),
+                true => $elementQuery->whereNotNull('elements.dateDeleted'),
+                false => $elementQuery->whereNull('elements.dateDeleted'),
                 default => null,
             };
 
             if ($elementQuery->dateCreated) {
-                $elementQuery->subQuery->whereDateParam('elements.dateCreated', $elementQuery->dateCreated);
+                $elementQuery->whereDateParam('elements.dateCreated', $elementQuery->dateCreated);
             }
 
             if ($elementQuery->dateUpdated) {
-                $elementQuery->subQuery->whereDateParam('elements.dateUpdated', $elementQuery->dateUpdated);
+                $elementQuery->whereDateParam('elements.dateUpdated', $elementQuery->dateUpdated);
             }
 
             if (isset($elementQuery->title) && $elementQuery->title !== '' && $elementQuery->elementType::hasTitles()) {
@@ -124,19 +124,19 @@ trait QueriesFields
                     $elementQuery->title = Query::escapeCommas($elementQuery->title);
                 }
 
-                $elementQuery->subQuery->whereParam('elements_sites.title', $elementQuery->title, caseInsensitive: true);
+                $elementQuery->whereParam('elements_sites.title', $elementQuery->title, caseInsensitive: true);
             }
 
             if ($elementQuery->slug) {
-                $elementQuery->subQuery->whereParam('elements_sites.slug', $elementQuery->slug);
+                $elementQuery->whereParam('elements_sites.slug', $elementQuery->slug);
             }
 
             if ($elementQuery->uri) {
-                $elementQuery->subQuery->whereParam('elements_sites.uri', $elementQuery->uri, caseInsensitive: true);
+                $elementQuery->whereParam('elements_sites.uri', $elementQuery->uri, caseInsensitive: true);
             }
 
             if ($elementQuery->inBulkOp) {
-                $elementQuery->subQuery
+                $elementQuery
                     ->join(new Alias(Table::ELEMENTS_BULKOPS, 'elements_bulkops'), 'elements_bulkops.elementId', 'elements.id')
                     ->where('elements_bulkops.key', $elementQuery->inBulkOp);
             }

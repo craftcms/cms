@@ -8,28 +8,16 @@
 namespace craft\web\assets\edittransform;
 
 use craft\web\AssetBundle;
-use craft\web\assets\cp\CpAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Asset bundle for the Edit Transform page
+ * @deprecated 6.0.0
  */
 class EditTransformAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
+    public function registerAssetFiles($view)
     {
-        $this->sourcePath = __DIR__ . '/dist';
-
-        $this->depends = [
-            CpAsset::class,
-        ];
-
-        $this->css = [
-            'css/transforms.css',
-        ];
-
-        parent::init();
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\EditTransformAsset::class);
     }
 }

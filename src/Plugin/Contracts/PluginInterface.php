@@ -8,6 +8,8 @@ use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Validation\Contracts\Validatable;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Request;
 use InvalidArgumentException;
 
 /**
@@ -164,6 +166,55 @@ interface PluginInterface
      * @internal
      */
     public function getSettings(): ?Validatable;
+
+    /**
+     * Returns the request class used when saving plugin settings. Return a
+     * custom FormRequest class when your plugin settings need request
+     * level validation before the settings model is hydrated.
+     *
+     * The request will be resolved from the current control panel request, so you
+     * can validate nested `settings.*` input just like in any other FormRequest.
+     * After the request passes validation, Craft will continue saving the plugin
+     * settings model as usual.
+     *
+     * Usage:
+     *
+     * ```php
+     * use CraftCms\Cms\Plugin\Plugin;
+     * use CraftCms\Cms\Plugin\PluginSettings;
+     * use Illuminate\Foundation\Http\FormRequest;
+     *
+     * class MyPlugin extends Plugin
+     * {
+     *     protected function createSettingsModel(): ?PluginSettings
+     *     {
+     *         return new MyPluginSettings();
+     *     }
+     *
+     *     public function getSettingsRequestClass(): ?string
+     *     {
+     *         return MyPluginSettingsRequest::class;
+     *     }
+     * }
+     *
+     * class MyPluginSettingsRequest extends FormRequest
+     * {
+     *     public function rules(): array
+     *     {
+     *         return [
+     *             'settings.apiKey' => ['required', 'string'],
+     *             'settings.endpoint' => ['nullable', 'url'],
+     *         ];
+     *     }
+     * }
+     * ```
+     *
+     * Return `null` to use the default behavior and rely only on the plugin
+     * settings model's validation rules.
+     *
+     * @return class-string<FormRequest>|null
+     */
+    public function getSettingsRequestClass(): ?string;
 
     /**
      * Sets the plugin settings

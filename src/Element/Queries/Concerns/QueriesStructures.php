@@ -582,7 +582,7 @@ trait QueriesStructures
             return;
         }
 
-        $elementQuery->query->addSelect([
+        $elementQuery->addSelect([
             'structureelements.root as root',
             'structureelements.lft as lft',
             'structureelements.rgt as rgt',
@@ -590,20 +590,10 @@ trait QueriesStructures
         ]);
 
         if ($elementQuery->structureId) {
-            $elementQuery->query->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
-                ->on('structureelements.elementId', '=', 'subquery.elementsId')
-                ->where('structureelements.structureId', $elementQuery->structureId));
-
-            $elementQuery->subQuery->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
+            $elementQuery->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
                 ->on('structureelements.elementId', '=', 'elements.id')
                 ->where('structureelements.structureId', $elementQuery->structureId));
         } else {
-            $elementQuery->query
-                ->addSelect('structureelements.structureId as structureId')
-                ->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
-                    ->on('structureelements.elementId', '=', 'subquery.elementsId')
-                    ->where('structureelements.structureId', '=', 'subquery.structureId'));
-
             $existsQuery = DB::table(Table::STRUCTURES)
                 // Use index hints to specify index so Mysql does not select the less
                 // performant one (dateDeleted).
@@ -614,45 +604,44 @@ trait QueriesStructures
                 ->whereColumn('id', 'structureelements.structureId')
                 ->whereNull('dateDeleted');
 
-            $elementQuery->subQuery
+            $elementQuery
                 ->addSelect('structureelements.structureId as structureId')
                 ->leftJoin(new Alias(Table::STRUCTUREELEMENTS, 'structureelements'), fn (JoinClause $join) => $join
                     ->on('structureelements.elementId', '=', 'elements.id')
-                    ->whereExists($existsQuery)
-                );
+                    ->whereExists($existsQuery));
         }
 
         if (isset($elementQuery->hasDescendants)) {
-            $elementQuery->subQuery->when(
+            $elementQuery->when(
                 $elementQuery->hasDescendants,
-                fn (Builder $query) => $elementQuery->where('structureelements.rgt', '>', DB::raw('structureelements.lft + 1')),
-                fn (Builder $query) => $elementQuery->where('structureelements.rgt', '=', DB::raw('structureelements.lft + 1')),
+                fn (ElementQuery $query) => $elementQuery->where('structureelements.rgt', '>', DB::raw('structureelements.lft + 1')),
+                fn (ElementQuery $query) => $elementQuery->where('structureelements.rgt', '=', DB::raw('structureelements.lft + 1')),
             );
         }
 
         if ($elementQuery->ancestorOf) {
             $ancestorOf = $elementQuery->normalizeStructureParamValue('ancestorOf');
 
-            $elementQuery->subQuery
+            $elementQuery
                 ->where('structureelements.lft', '<', $ancestorOf->lft)
                 ->where('structureelements.rgt', '>', $ancestorOf->rgt)
                 ->where('structureelements.root', $ancestorOf->root)
                 ->when(
                     $elementQuery->ancestorDist,
-                    fn (Builder $q) => $q->where('structureelements.level', '>=', $ancestorOf->level - $elementQuery->ancestorDist)
+                    fn (ElementQuery $q) => $q->where('structureelements.level', '>=', $ancestorOf->level - $elementQuery->ancestorDist)
                 );
         }
 
         if ($elementQuery->descendantOf) {
             $descendantOf = $elementQuery->normalizeStructureParamValue('descendantOf');
 
-            $elementQuery->subQuery
+            $elementQuery
                 ->where('structureelements.lft', '>', $descendantOf->lft)
                 ->where('structureelements.rgt', '<', $descendantOf->rgt)
                 ->where('structureelements.root', $descendantOf->root)
                 ->when(
                     $elementQuery->descendantDist,
-                    fn (Builder $q) => $q->where('structureelements.level', '<=', $descendantOf->level + $elementQuery->descendantDist)
+                    fn (ElementQuery $q) => $q->where('structureelements.level', '<=', $descendantOf->level + $elementQuery->descendantDist)
                 );
         }
 
@@ -663,7 +652,7 @@ trait QueriesStructures
 
             $siblingOf = $elementQuery->normalizeStructureParamValue($param);
 
-            $elementQuery->subQuery
+            $elementQuery
                 ->where('structureelements.level', $siblingOf->level)
                 ->where('structureelements.root', $siblingOf->root)
                 ->whereNot('structureelements.elementId', $siblingOf->id);
@@ -675,7 +664,7 @@ trait QueriesStructures
                     throw new QueryAbortedException;
                 }
 
-                $elementQuery->subQuery
+                $elementQuery
                     ->where('structureelements.lft', '>', $parent->lft)
                     ->where('structureelements.rgt', '>', $parent->rgt);
             }
@@ -683,14 +672,14 @@ trait QueriesStructures
             switch ($param) {
                 case 'prevSiblingOf':
                     $elementQuery->orderByDesc('structureelements.lft');
-                    $elementQuery->subQuery
+                    $elementQuery
                         ->where('structureelements.lft', '<', $siblingOf->lft)
                         ->orderByDesc('structureelements.lft')
                         ->limit(1);
                     break;
                 case 'nextSiblingOf':
                     $elementQuery->orderBy('structureelements.lft');
-                    $elementQuery->subQuery
+                    $elementQuery
                         ->where('structureelements.lft', '>', $siblingOf->lft)
                         ->orderBy('structureelements.lft')
                         ->limit(1);
@@ -701,7 +690,7 @@ trait QueriesStructures
         if ($elementQuery->positionedBefore) {
             $positionedBefore = $elementQuery->normalizeStructureParamValue('positionedBefore');
 
-            $elementQuery->subQuery
+            $elementQuery
                 ->where('structureelements.lft', '<', $positionedBefore->lft)
                 ->where('structureelements.root', $positionedBefore->root);
         }
@@ -709,7 +698,7 @@ trait QueriesStructures
         if ($elementQuery->positionedAfter) {
             $positionedAfter = $elementQuery->normalizeStructureParamValue('positionedAfter');
 
-            $elementQuery->subQuery
+            $elementQuery
                 ->where('structureelements.lft', '>', $positionedAfter->rgt)
                 ->where('structureelements.root', $positionedAfter->root);
         }
@@ -717,18 +706,18 @@ trait QueriesStructures
         if (isset($elementQuery->level)) {
             $allowNull = is_array($elementQuery->level) && in_array(null, $elementQuery->level, true);
 
-            $elementQuery->subQuery->when(
+            $elementQuery->when(
                 value: $allowNull,
-                callback: fn (Builder $q) => $q->where(function (Builder $q) use ($elementQuery) {
+                callback: fn (ElementQuery $q) => $q->where(function (Builder $q) use ($elementQuery) {
                     $q->whereNumericParam('structureelements.level', array_filter($elementQuery->level, fn ($v) => $v !== null))
                         ->orWhereNull('structureelements.level');
                 }),
-                default: fn (Builder $q) => $q->whereNumericParam('structureelements.level', $elementQuery->level),
+                default: fn (ElementQuery $q) => $q->whereNumericParam('structureelements.level', $elementQuery->level),
             );
         }
 
         if ($elementQuery->leaves) {
-            $elementQuery->subQuery->where('structureelements.rgt', DB::raw('structureelements.lft + 1'));
+            $elementQuery->where('structureelements.rgt', DB::raw('structureelements.lft + 1'));
         }
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 
 describe('Required field validation', function () {
     test('filename validation', function (string $value, bool $expectError) {
@@ -50,7 +51,7 @@ describe('Title validation on SCENARIO_CREATE', function () {
     test('title length validation on create scenario', function (int $length, bool $expectError) {
         $asset = AssetModel::factory()->createElement();
         $asset->title = str_repeat('a', $length);
-        $asset->setScenario(Asset::SCENARIO_CREATE);
+        $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
 
         $asset->validate(['title']);
 
@@ -75,39 +76,39 @@ describe('Safe attribute validation', function () {
 describe('Scenario-specific required validation', function () {
     test('newLocation is required on specific scenarios', function (string $scenario, bool $expectError) {
         $asset = AssetModel::factory()->createElement();
-        $asset->setScenario($scenario);
+        $asset->ruleset->useScenario($scenario);
         $asset->newLocation = null;
 
         $asset->validate(['newLocation']);
 
         expect($asset->errors()->has('newLocation'))->toBe($expectError);
     })->with([
-        'SCENARIO_CREATE requires newLocation' => [Asset::SCENARIO_CREATE, true],
-        'SCENARIO_MOVE requires newLocation' => [Asset::SCENARIO_MOVE, true],
-        'SCENARIO_FILEOPS requires newLocation' => [Asset::SCENARIO_FILEOPS, true],
-        'default scenario does not require newLocation' => [Asset::SCENARIO_DEFAULT, false],
+        'SCENARIO_CREATE requires newLocation' => [AssetRules::SCENARIO_CREATE, true],
+        'SCENARIO_MOVE requires newLocation' => [AssetRules::SCENARIO_MOVE, true],
+        'SCENARIO_FILEOPS requires newLocation' => [AssetRules::SCENARIO_FILEOPS, true],
+        'default scenario does not require newLocation' => [AssetRules::SCENARIO_DEFAULT, false],
     ]);
 
     test('tempFilePath is required on specific scenarios', function (string $scenario, bool $expectError) {
         $asset = AssetModel::factory()->createElement();
-        $asset->setScenario($scenario);
+        $asset->ruleset->useScenario($scenario);
         $asset->tempFilePath = null;
 
         $asset->validate(['tempFilePath']);
 
         expect($asset->errors()->has('tempFilePath'))->toBe($expectError);
     })->with([
-        'SCENARIO_CREATE requires tempFilePath' => [Asset::SCENARIO_CREATE, true],
-        'SCENARIO_REPLACE requires tempFilePath' => [Asset::SCENARIO_REPLACE, true],
-        'default scenario does not require tempFilePath' => [Asset::SCENARIO_DEFAULT, false],
-        'SCENARIO_MOVE does not require tempFilePath' => [Asset::SCENARIO_MOVE, false],
+        'SCENARIO_CREATE requires tempFilePath' => [AssetRules::SCENARIO_CREATE, true],
+        'SCENARIO_REPLACE requires tempFilePath' => [AssetRules::SCENARIO_REPLACE, true],
+        'default scenario does not require tempFilePath' => [AssetRules::SCENARIO_DEFAULT, false],
+        'SCENARIO_MOVE does not require tempFilePath' => [AssetRules::SCENARIO_MOVE, false],
     ]);
 });
 
 describe('SCENARIO_INDEX validation', function () {
     test('SCENARIO_INDEX has empty validation attributes', function () {
         $asset = AssetModel::factory()->createElement();
-        $asset->setScenario(Asset::SCENARIO_INDEX);
+        $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
 
         $activeAttributes = $asset->activeAttributes();
 
@@ -118,7 +119,7 @@ describe('SCENARIO_INDEX validation', function () {
         $asset = AssetModel::factory()->createElement();
         $asset->kind = '';
         $asset->filename = '';
-        $asset->setScenario(Asset::SCENARIO_INDEX);
+        $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
 
         $asset->validate();
 

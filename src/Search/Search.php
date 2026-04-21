@@ -324,8 +324,8 @@ class Search
         if ($elementQuery instanceof ElementQuery) {
             $elementQuery->reorder();
             $elementQuery->select('elements.id as id');
-            $elementQuery->getSubQuery()->offset = null;
-            $elementQuery->getSubQuery()->limit = null;
+            $elementQuery->getQuery()->offset = null;
+            $elementQuery->getQuery()->limit = null;
             $ids = $elementQuery->pluck('id')->all();
         } else {
             $ids = $elementQuery;

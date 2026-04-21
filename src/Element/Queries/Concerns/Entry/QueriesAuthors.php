@@ -95,7 +95,7 @@ trait QueriesAuthors
                 $authorIdOperator = 'whereExists';
             }
 
-            $query->subQuery->$authorIdOperator(
+            $query->$authorIdOperator(
                 DB::table(Table::ENTRIES_AUTHORS, 'entries_authors')
                     ->whereColumn('entries.id', 'entries_authors.entryId')
                     ->whereNumericParam('authorId', $authorIdCheck),
@@ -135,7 +135,7 @@ trait QueriesAuthors
                 $groupIdOperator = 'whereExists';
             }
 
-            $query->subQuery->$groupIdOperator(
+            $query->$groupIdOperator(
                 DB::table(Table::ENTRIES_AUTHORS, "entries_authors$i")
                     ->join(new Alias(Table::USERGROUPS_USERS, "usergroups_users$i"), "usergroups_users$i.userId", '=', "entries_authors$i.authorId")
                     ->whereColumn('entries.id', "entries_authors$i.entryId")

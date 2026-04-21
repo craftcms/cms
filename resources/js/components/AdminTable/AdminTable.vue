@@ -112,7 +112,9 @@
 
   const tableStyles = computed(() => {
     const columns = props.table.getAllColumns();
-    const visibleColumns = columns.filter((column: Column<any>) => column.getIsVisible());
+    const visibleColumns = columns.filter((column: Column<any>) =>
+      column.getIsVisible()
+    );
     let columnCount = visibleColumns.length;
 
     if (props.reorderable) {

@@ -27,7 +27,7 @@
     }) }}
 </div>
 
-{% do view.registerAssetBundle("craft\\web\\assets\\focalpoint\\FocalPointAsset") %}
+{% do registerLegacyAsset("CraftCms\\Cms\\View\\LegacyAssets\\FocalPointAsset") %}
 
 {% if enableFocalPoint %}
   {% js %}

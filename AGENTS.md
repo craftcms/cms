@@ -133,7 +133,7 @@ Element queries (`src/Database/Queries/`) are the primary way to query content:
 - Uses `RefreshDatabase` trait - tables are migrated fresh via the `Install` migration
 - **Classes marked `final` have this keyword stripped during testing** - you can create custom test classes that extend production classes (e.g., extending `User` element) to override methods like `getFieldLayout()` for easier testing without complex mocks
 
-**Important**: When creating or adjusting tests, take a look at @docs/TESTING.md for patterns and best practices.
+**Important**: When creating or adjusting tests, use the `testing-guidelines` skill for patterns and best practices.
 
 ### Service Providers Pattern
 

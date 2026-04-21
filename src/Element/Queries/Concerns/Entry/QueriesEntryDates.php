@@ -82,18 +82,18 @@ trait QueriesEntryDates
     {
         $this->beforeQuery(function (EntryQuery $query) {
             if ($query->postDate) {
-                $query->subQuery->whereDateParam('entries.postDate', $query->postDate);
+                $query->whereDateParam('entries.postDate', $query->postDate);
             } else {
                 if ($query->before) {
-                    $query->subQuery->whereDateParam('entries.postDate', $query->before, '<');
+                    $query->whereDateParam('entries.postDate', $query->before, '<');
                 }
                 if ($query->after) {
-                    $query->subQuery->whereDateParam('entries.postDate', $query->after, '>=');
+                    $query->whereDateParam('entries.postDate', $query->after, '>=');
                 }
             }
 
             if ($query->expiryDate) {
-                $query->subQuery->whereDateParam('entries.expiryDate', $query->expiryDate);
+                $query->whereDateParam('entries.expiryDate', $query->expiryDate);
             }
         });
     }

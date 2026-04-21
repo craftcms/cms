@@ -15,11 +15,12 @@ class ContentBlockQuery extends ElementQuery
 {
     use QueriesNestedElements;
 
+    #[\Override]
+    protected string $table = Table::CONTENTBLOCKS;
+
     public function __construct(array $config = [])
     {
         parent::__construct(ContentBlock::class, $config);
-
-        $this->joinElementTable(Table::CONTENTBLOCKS);
 
         $this->query->addSelect([
             'contentblocks.fieldId as fieldId',
