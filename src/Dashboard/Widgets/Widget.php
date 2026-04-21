@@ -127,15 +127,9 @@ EOD;
     }
 
     #[Override]
-    public function getAttributes(): array
+    public function validationData(): array
     {
         return $this->getSettings();
-    }
-
-    #[Override]
-    public function attributes(): array
-    {
-        return array_keys($this->getSettings());
     }
 
     public static function fromConfig(array|WidgetModel $config): WidgetInterface

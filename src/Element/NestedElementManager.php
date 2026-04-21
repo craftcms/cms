@@ -21,6 +21,7 @@ use CraftCms\Cms\Element\Events\AfterSaveNestedElements;
 use CraftCms\Cms\Element\Events\CreateNestedElementRevisions;
 use CraftCms\Cms\Element\Events\DuplicateNestedElementsEvent;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
@@ -319,7 +320,7 @@ class NestedElementManager extends Component
                 if ($this->hasErrors($owner)) {
                     foreach ($elements as $element) {
                         if ($element->enabled && $element->getEnabledForSite()) {
-                            $element->setScenario(Element::SCENARIO_LIVE);
+                            $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
                         }
                         $element->validate();
                     }

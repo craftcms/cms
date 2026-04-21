@@ -20,6 +20,7 @@ use CraftCms\Cms\Element\Events\RegisterTableAttributes;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\ExcludeDescendantIdsExpression;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ElementSources;
@@ -236,7 +237,7 @@ trait DisplayedInIndex
         if (request()->boolean('prevalidate')) {
             foreach ($elements as $element) {
                 if ($element->enabled && $element->getEnabledForSite()) {
-                    $element->setScenario(Element::SCENARIO_LIVE);
+                    $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
                 }
                 $element->validate();
             }

@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Element\Operations;
 use craft\base\ElementInterface;
 use craft\behaviors\CustomFieldBehavior;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
@@ -21,6 +20,7 @@ use CraftCms\Cms\Element\Events\BeforeDeleteForSite;
 use CraftCms\Cms\Element\Events\BeforeRestoreElement;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Search\Jobs\FindAndReplace;
 use CraftCms\Cms\Search\Search;
@@ -402,7 +402,7 @@ readonly class ElementDeletions
                     $siteElements = [];
                 }
 
-                $element->setScenario(Element::SCENARIO_ESSENTIALS);
+                $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
                 if (! $element->validate()) {
                     Log::warning("Unable to restore element $element->id: doesn't pass essential validation: ".print_r($element->errors, true), [__METHOD__]);
                     DB::rollBack();
@@ -415,7 +415,7 @@ readonly class ElementDeletions
                         continue;
                     }
 
-                    $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
+                    $siteElement->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
 
                     if (! $siteElement->validate()) {
                         Log::warning("Unable to restore element $element->id: doesn't pass essential validation for site $element->siteId: ".print_r($element->errors, true), [__METHOD__]);

@@ -16,6 +16,7 @@ use CraftCms\Cms\Asset\Exceptions\MissingAssetException;
 use CraftCms\Cms\Asset\Exceptions\MissingVolumeFolderException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
 use CraftCms\Cms\Asset\Models\AssetIndexingSession as AssetIndexingSessionModel;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements;
@@ -630,7 +631,7 @@ class AssetIndexer
         $asset->size = $indexEntry->size;
         $timeModified = $indexEntry->timestamp;
 
-        $asset->setScenario(Asset::SCENARIO_INDEX);
+        $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
 
         try {
             if ($isLocalFs) {

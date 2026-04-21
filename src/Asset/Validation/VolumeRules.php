@@ -16,21 +16,21 @@ use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
+use Override;
 
 use function CraftCms\Cms\t;
 
 /** @extends Ruleset<Volume> */
 class VolumeRules extends Ruleset
 {
-    #[\Override]
-    public function defineRules(): array
+    public function rules(): array
     {
         $rules = [
             'id' => ['nullable', 'integer'],
             'fieldLayoutId' => ['nullable', 'integer'],
             'name' => [
                 'required',
-                Rule::unique(Table::VOLUMES, 'name')->ignore($this->component->id)->withoutTrashed('dateDeleted'),
+                Rule::unique(Table::VOLUMES, 'name')->ignore($this->subject->id)->withoutTrashed('dateDeleted'),
             ],
             'handle' => [
                 'required',
@@ -43,9 +43,9 @@ class VolumeRules extends Ruleset
                     'title',
                     'uid',
                 ]),
-                Rule::unique(Table::VOLUMES, 'handle')->ignore($this->component->id)->withoutTrashed('dateDeleted'),
+                Rule::unique(Table::VOLUMES, 'handle')->ignore($this->subject->id)->withoutTrashed('dateDeleted'),
             ],
-            'fieldLayout' => [fn (string $attribute, mixed $value, Closure $fail) => $this->component->validateFieldLayout()],
+            'fieldLayout' => [fn (string $attribute, mixed $value, Closure $fail) => $this->subject->validateFieldLayout()],
             'fsHandle' => [fn (string $attribute, mixed $value, Closure $fail) => $this->validateFilesystemHandle($attribute, $fail)],
             'transformFsHandle' => ['nullable', fn (string $attribute, mixed $value, Closure $fail) => $this->validateFilesystemHandle($attribute, $fail)],
             'subpath' => [
@@ -54,7 +54,7 @@ class VolumeRules extends Ruleset
             ],
         ];
 
-        $tempAssetUploadTarget = $this->component->resolveStorageTargetKey(Cms::config()->tempAssetUploadFs);
+        $tempAssetUploadTarget = $this->subject->resolveStorageTargetKey(Cms::config()->tempAssetUploadFs);
 
         if ($tempAssetUploadTarget !== null) {
             $rules['fsHandle'][] = fn (string $attribute, mixed $value, Closure $fail) => $this->validateReservedTempUploadFilesystem($attribute, $tempAssetUploadTarget, $fail);
@@ -64,7 +64,7 @@ class VolumeRules extends Ruleset
         return $rules;
     }
 
-    #[\Override]
+    #[Override]
     public function messages(): array
     {
         return [
@@ -79,7 +79,7 @@ class VolumeRules extends Ruleset
             return;
         }
 
-        $subpath = $this->component->getSubpath(ensureTrailing: false, parse: false);
+        $subpath = $this->subject->getSubpath(ensureTrailing: false, parse: false);
         if ($subpath === '') {
             return;
         }
@@ -108,15 +108,15 @@ class VolumeRules extends Ruleset
      */
     private function volumesSharingStorageTarget(): Collection
     {
-        $storageTarget = $this->component->resolveStorageTargetKey($this->component->getFsHandle(false));
+        $storageTarget = $this->subject->resolveStorageTargetKey($this->subject->getFsHandle(false));
         if ($storageTarget === null) {
             return collect();
         }
 
         return VolumeModel::query()
-            ->when($this->component->id !== null, fn (Builder $query) => $query->whereNot('id', $this->component->id))
+            ->when($this->subject->id !== null, fn (Builder $query) => $query->whereNot('id', $this->subject->id))
             ->get()
-            ->filter(fn (VolumeModel $record): bool => $this->component->resolveStorageTargetKey($record->fs) === $storageTarget)
+            ->filter(fn (VolumeModel $record): bool => $this->subject->resolveStorageTargetKey($record->fs) === $storageTarget)
             ->values();
     }
 
@@ -127,7 +127,7 @@ class VolumeRules extends Ruleset
         if ($handle === null || $handle === '') {
             if ($attribute === 'fsHandle') {
                 $this->pushValidationError($attribute, t('{attribute} cannot be blank.', [
-                    'attribute' => $this->component->getAttributeLabel($attribute),
+                    'attribute' => $this->subject->getAttributeLabel($attribute),
                 ]), $fail);
             }
 
@@ -144,7 +144,7 @@ class VolumeRules extends Ruleset
             return;
         }
 
-        if ($this->component->resolveStorageTargetKey($handle) === null) {
+        if ($this->subject->resolveStorageTargetKey($handle) === null) {
             $this->pushValidationError($attribute, t('This filesystem reference is invalid.'), $fail);
         }
     }
@@ -157,7 +157,7 @@ class VolumeRules extends Ruleset
             return;
         }
 
-        $target = $this->component->resolveStorageTargetKey($handle);
+        $target = $this->subject->resolveStorageTargetKey($handle);
         if ($target !== null && $target === $tempUploadTarget) {
             $this->pushValidationError(
                 $attribute,
@@ -170,8 +170,8 @@ class VolumeRules extends Ruleset
     private function storageHandleForAttribute(string $attribute): ?string
     {
         return match ($attribute) {
-            'fsHandle' => $this->component->getFsHandle(false),
-            'transformFsHandle' => $this->component->getTransformFsHandle(false),
+            'fsHandle' => $this->subject->getFsHandle(false),
+            'transformFsHandle' => $this->subject->getTransformFsHandle(false),
             default => null,
         };
     }
@@ -184,7 +184,7 @@ class VolumeRules extends Ruleset
             return;
         }
 
-        $this->component->errors()->add($attribute, $message);
+        $this->subject->errors()->add($attribute, $message);
     }
 
     private function isInternalDiskReference(string $value): bool

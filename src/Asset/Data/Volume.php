@@ -19,7 +19,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Url;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -123,19 +123,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
     }
 
     #[Override]
-    public function attributes(): array
-    {
-        return array_values(array_unique(array_merge(parent::attributes(), [
-            'fieldLayout',
-            'fsHandle',
-            'subpath',
-            'transformFsHandle',
-            'transformSubpath',
-        ])));
-    }
-
-    #[Override]
-    public function getAttributes(): array
+    public function validationData(): array
     {
         if (is_string($this->name)) {
             $this->name = trim($this->name);
@@ -151,7 +139,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
             $fieldLayout = null;
         }
 
-        return array_merge(parent::getAttributes(), [
+        return array_merge(parent::validationData(), [
             'fieldLayout' => $fieldLayout,
             'fsHandle' => $this->getFsHandle(false),
             'subpath' => $this->getSubpath(ensureTrailing: false, parse: false),

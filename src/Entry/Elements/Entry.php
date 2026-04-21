@@ -33,6 +33,7 @@ use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Revisions;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Actions\MoveToSection;
 use CraftCms\Cms\Entry\Actions\NewChild;
 use CraftCms\Cms\Entry\Actions\NewSiblingAfter;
@@ -81,7 +82,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateInterval;
 use DateTime;
 use GraphQL\Type\Definition\Type;
@@ -2524,7 +2525,7 @@ JS;
         if (
             ! $this->_userPostDate() &&
             (
-                in_array($this->scenario, [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]) ||
+                in_array($this->scenario, [ElementRules::SCENARIO_LIVE, ElementRules::SCENARIO_DEFAULT]) ||
                 ! $this->getIsDraft()
             )
         ) {

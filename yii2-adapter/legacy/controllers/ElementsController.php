@@ -34,6 +34,7 @@ use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Element\Revisions;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\FieldLayoutForm;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -247,7 +248,7 @@ class ElementsController extends Controller
         $user = static::currentUser();
 
         // Save it
-        $element->setScenario(Element::SCENARIO_ESSENTIALS);
+        $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         if (!app(Drafts::class)->saveElementAsDraft($element, $user->id, null, null, false)) {
             return $this->_asFailure($element, mb_ucfirst(t('Couldn’t create {type}.', [
                 'type' => $element::lowerDisplayName(),
@@ -319,7 +320,7 @@ class ElementsController extends Controller
 
             // Prevalidate?
             if ($this->_prevalidate && $element->enabled && $element->getEnabledForSite()) {
-                $element->setScenario(Element::SCENARIO_LIVE);
+                $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
                 $element->validate();
             }
         } else {
@@ -1439,7 +1440,7 @@ JS, [
         Gate::authorize('save', $element);
 
         if ($element->enabled && $element->getEnabledForSite()) {
-            $element->setScenario(Element::SCENARIO_LIVE);
+            $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         }
 
         $isNotNew = $element->id;
@@ -1593,7 +1594,7 @@ JS, [
             Gate::authorize('save', $element);
 
             if ($element->enabled && $element->getEnabledForSite()) {
-                $element->setScenario(Element::SCENARIO_LIVE);
+                $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
             }
 
             try {
@@ -1882,7 +1883,7 @@ JS, [
             throw new BadRequestHttpException('No element was identified by the request.');
         }
 
-        $element->setScenario(Element::SCENARIO_LIVE);
+        $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
 
         if (!$element->validate()) {
             return $this->_asFailure($element, t('{type} validation failed.', [
@@ -1984,7 +1985,7 @@ JS, [
                 $element->isProvisionalDraft = false;
             }
 
-            $element->setScenario(Element::SCENARIO_ESSENTIALS);
+            $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
 
             // If the field layout ID changed, save all content
             $saveContent = $element->getFieldLayout()?->id !== $oldFieldLayoutId;
@@ -2145,7 +2146,7 @@ JS, [
 
         // Validate and save the draft
         if ($element->enabled && $element->getEnabledForSite()) {
-            $element->setScenario(Element::SCENARIO_LIVE);
+            $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         }
 
         // if we're about to apply an unpublished draft, set propagateRequired to true
@@ -2169,7 +2170,7 @@ JS, [
             // save the draft anyway, so we don’t lose the latest changes
             // (see https://github.com/craftcms/cms/issues/18657)
             $errors = $element->getErrors();
-            $element->setScenario(Element::SCENARIO_ESSENTIALS);
+            $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
             Elements::saveElement($element, saveContent: $saveContent);
             $element->clearErrors();
             $element->addErrors($errors);
@@ -2361,7 +2362,7 @@ JS, [
 
         // Prevalidate?
         if ($this->_prevalidate && $element->enabled && $element->getEnabledForSite()) {
-            $element->setScenario(Element::SCENARIO_LIVE);
+            $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
             $element->validate();
         }
 
@@ -2837,15 +2838,15 @@ JS, [
             $element->updateSearchIndexImmediately = $this->_updateSearchIndexImmediately;
         }
 
-        $scenario = $element->getScenario();
-        $element->setScenario(Element::SCENARIO_LIVE);
+        $scenario = $element->ruleset->getScenario();
+        $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         $element->setAttributesFromRequest($this->_attributes + array_filter(['fieldId' => $this->_fieldId]));
 
         if ($this->_slug !== null) {
             $element->slug = $this->_slug;
         }
 
-        $element->setScenario($scenario);
+        $element->ruleset->useScenario($scenario);
 
         // Now that the element is fully configured, make sure the user can actually view it
         if (!Gate::check('view', $element)) {
@@ -2912,7 +2913,7 @@ JS, [
                 $newElement->slug = ElementHelper::tempSlug();
             }
 
-            $newElement->setScenario(Element::SCENARIO_ESSENTIALS);
+            $newElement->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
 
             if (!app(\CraftCms\Cms\Element\Drafts::class)->saveElementAsDraft($newElement, $user->id, null, null, false)) {
                 throw new ServerErrorHttpException(sprintf('Unable to create a new element: %s', implode(', ', $element->getErrorSummary(true))));

@@ -24,7 +24,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use Deprecated;
 use Override;
 use yii\base\InvalidConfigException;
@@ -32,6 +32,9 @@ use yii\helpers\Html;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @property AddressRules $ruleset
+ */
 #[Ruleset(AddressRules::class)]
 class Address extends Element implements AddressInterface, NestedElementInterface
 {
@@ -471,7 +474,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     #[Override]
-    public function beforeValidate(): bool
+    public function prepareForValidation(): void
     {
         $usedFields = array_unique([
             ...app(Addresses::class)->getUsedFields($this->countryCode),
@@ -490,7 +493,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             $this->$field = null;
         }
 
-        return parent::beforeValidate();
+        parent::prepareForValidation();
     }
 
     #[Override]

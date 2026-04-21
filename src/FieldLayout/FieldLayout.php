@@ -46,7 +46,7 @@ use function CraftCms\Cms\t;
 class FieldLayout extends Component
 {
     use Validates {
-        getAttributes as traitGetAttributes;
+        validationData as traitValidationData;
     }
 
     public ?int $id = null;
@@ -188,9 +188,9 @@ class FieldLayout extends Component
     }
 
     #[Override]
-    public function getAttributes(): array
+    public function validationData(): array
     {
-        return array_merge($this->traitGetAttributes(), [
+        return array_merge($this->traitValidationData(), [
             'customFields' => $this->getCustomFields(),
         ]);
     }

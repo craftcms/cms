@@ -17,8 +17,7 @@ use function CraftCms\Cms\t;
 /** @extends Ruleset<EntryType> */
 class EntryTypeRules extends Ruleset
 {
-    #[\Override]
-    public function defineRules(): array
+    public function rules(): array
     {
         $rules = [
             'id' => ['nullable', 'integer'],
@@ -52,8 +51,8 @@ class EntryTypeRules extends Ruleset
             ],
         ];
 
-        if ($this->component->validateHandleUniqueness) {
-            $rules['handle'][] = Rule::unique(Table::ENTRYTYPES, 'handle')->ignore($this->component->id)->withoutTrashed('dateDeleted');
+        if ($this->subject->validateHandleUniqueness) {
+            $rules['handle'][] = Rule::unique(Table::ENTRYTYPES, 'handle')->ignore($this->subject->id)->withoutTrashed('dateDeleted');
         }
 
         return $rules;

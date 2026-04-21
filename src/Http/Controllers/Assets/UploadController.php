@@ -11,6 +11,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Exceptions\UploadFailedException;
 use CraftCms\Cms\Asset\Folders;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Elements;
@@ -114,7 +115,7 @@ readonly class UploadController
             $asset->title = AssetsHelper::filename2Title(pathinfo($originalFilename, PATHINFO_FILENAME));
         }
 
-        $asset->setScenario(Asset::SCENARIO_CREATE);
+        $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
         $result = $this->elements->saveElement($asset);
 
         // In case of error, let user know about it.
@@ -136,7 +137,7 @@ readonly class UploadController
                 // move it into the original target destination
                 $asset->newFilename = $originalFilename;
                 $asset->newFolderId = $originalFolder->id;
-                $asset->setScenario(Asset::SCENARIO_MOVE);
+                $asset->ruleset->useScenario(AssetRules::SCENARIO_MOVE);
 
                 if (! $this->elements->saveElement($asset)) {
                     return $this->asModelFailure($asset);

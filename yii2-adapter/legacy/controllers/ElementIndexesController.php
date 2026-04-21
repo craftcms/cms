@@ -21,6 +21,7 @@ use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\ExcludeDescendantIdsExpression;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
@@ -379,18 +380,18 @@ class ElementIndexesController extends BaseElementsController
         foreach ($elements as $element) {
             $attributes = Arr::except($data["element-$element->id"], 'fields');
             if (!empty($attributes)) {
-                $scenario = $element->getScenario();
-                $element->setScenario(Element::SCENARIO_LIVE);
+                $scenario = $element->ruleset->getScenario();
+                $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
                 $element->setAttributesFromRequest($attributes);
-                $element->setScenario($scenario);
+                $element->ruleset->useScenario($scenario);
             }
 
             $element->setFieldValuesFromRequest("$namespace.element-$element->id.fields");
 
             if ($element->getIsUnpublishedDraft()) {
-                $element->setScenario(Element::SCENARIO_ESSENTIALS);
+                $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
             } elseif ($element->enabled && $element->getEnabledForSite()) {
-                $element->setScenario(Element::SCENARIO_LIVE);
+                $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
             }
 
             $names = array_merge(
