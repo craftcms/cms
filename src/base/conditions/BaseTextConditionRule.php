@@ -48,7 +48,8 @@ abstract class BaseTextConditionRule extends BaseConditionRule
         if (
             $name === 'attributes' &&
             isset($value['operator'], $value['value']) &&
-            in_array($value['operator'], [self::OPERATOR_IN, self::OPERATOR_NOT_IN])
+            in_array($value['operator'], [self::OPERATOR_IN, self::OPERATOR_NOT_IN]) &&
+            is_array($value['value'])
         ) {
             $value['value'] = Json::encode($value['value']);
         }
