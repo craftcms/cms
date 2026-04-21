@@ -261,7 +261,7 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
 
     public function getAttributes($names = null, $except = []): array
     {
-        $attributes = parent::validationData();
+        $attributes = $this->validationData($names, $except);
 
         if ($names !== null) {
             $attributes = Arr::only($attributes, $names);

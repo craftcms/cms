@@ -479,7 +479,7 @@
             "dist": {
                 "type": "path",
                 "url": "..",
-                "reference": "236d8ab836e9bce623b4401702638df2e6d3ab31"
+                "reference": "897e980ca4751c82d305e7f66e6e2fec93322d06"
             },
             "require": {
                 "bacon/bacon-qr-code": "^2.0",
@@ -487,7 +487,7 @@
                 "composer/semver": "^3.3.2",
                 "craftcms/laravel-aliases": "^2.0",
                 "craftcms/laravel-dependency-aware-cache": "^1.1",
-                "craftcms/laravel-ruleset-validation": "dev-main",
+                "craftcms/laravel-ruleset-validation": "^1.0.1",
                 "craftcms/plugin-installer": "~1.6.0",
                 "craftcms/server-check": "~5.1.0",
                 "craftcms/yii2-adapter": "self.version",
@@ -801,16 +801,16 @@
         },
         {
             "name": "craftcms/laravel-ruleset-validation",
-            "version": "dev-main",
+            "version": "1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/craftcms/laravel-ruleset-validation.git",
-                "reference": "02c1fbc1483fe79043dd3ff2adb801a669679097"
+                "reference": "66867ade9c09c6c8165bd62c0ebb7e4843399aab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/laravel-ruleset-validation/zipball/02c1fbc1483fe79043dd3ff2adb801a669679097",
-                "reference": "02c1fbc1483fe79043dd3ff2adb801a669679097",
+                "url": "https://api.github.com/repos/craftcms/laravel-ruleset-validation/zipball/66867ade9c09c6c8165bd62c0ebb7e4843399aab",
+                "reference": "66867ade9c09c6c8165bd62c0ebb7e4843399aab",
                 "shasum": ""
             },
             "require": {
@@ -826,7 +826,6 @@
                 "orchestra/testbench": "^11.0",
                 "pestphp/pest": "^4.0"
             },
-            "default-branch": true,
             "type": "library",
             "extra": {
                 "laravel": {
@@ -860,9 +859,9 @@
             ],
             "support": {
                 "issues": "https://github.com/craftcms/laravel-ruleset-validation/issues",
-                "source": "https://github.com/craftcms/laravel-ruleset-validation/tree/main"
+                "source": "https://github.com/craftcms/laravel-ruleset-validation/tree/1.0.1"
             },
-            "time": "2026-04-20T13:49:06+00:00"
+            "time": "2026-04-21T07:56:55+00:00"
         },
         {
             "name": "craftcms/plugin-installer",
