@@ -22,7 +22,7 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Stringable;
@@ -261,7 +261,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
             'maxAuthors' => $this->maxAuthors,
             'propagationMethod' => $this->propagationMethod->value,
             'siteSettings' => [],
-            'defaultPlacement' => $this->defaultPlacement->value ?? DefaultPlacement::End->value,
+            'defaultPlacement' => $this->defaultPlacement->value,
         ];
 
         if (! empty($this->previewTargets)) {

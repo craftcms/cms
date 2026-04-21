@@ -14,15 +14,13 @@ use CraftCms\Cms\Validation\Rules\HandleRule;
 use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
-use Override;
 
 use function CraftCms\Cms\t;
 
 /** @extends Ruleset<Section> */
 class SectionRules extends Ruleset
 {
-    #[Override]
-    public function defineRules(): array
+    public function rules(): array
     {
         return [
             'id' => ['nullable', 'integer'],
@@ -35,7 +33,7 @@ class SectionRules extends Ruleset
                 'string',
                 'max:255',
                 new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
-                Rule::unique(Table::SECTIONS)->ignore($this->component->id)->withoutTrashed('dateDeleted'),
+                Rule::unique(Table::SECTIONS)->ignore($this->subject->id)->withoutTrashed('dateDeleted'),
             ],
             'entryTypes' => ['required'],
             'type' => ['required', Rule::enum(SectionType::class)],
@@ -62,25 +60,25 @@ class SectionRules extends Ruleset
     {
         // If this is an existing section, make sure they aren't moving it to a
         // completely different set of sites in one fell swoop
-        if ($this->component->id) {
+        if ($this->subject->id) {
             $currentSiteIds = DB::table(Table::SECTIONS_SITES)
-                ->where('sectionId', $this->component->id)
+                ->where('sectionId', $this->subject->id)
                 ->pluck('siteId')
                 ->all();
 
-            if (empty(array_intersect($currentSiteIds, array_keys($this->component->getSiteSettings())))) {
+            if (empty(array_intersect($currentSiteIds, array_keys($this->subject->getSiteSettings())))) {
                 $fail(t('At least one currently-enabled site must remain enabled.'));
             }
         }
 
-        foreach ($this->component->getSiteSettings() as $i => $siteSettings) {
+        foreach ($this->subject->getSiteSettings() as $i => $siteSettings) {
             if ($siteSettings->validate()) {
                 continue;
             }
 
             foreach ($siteSettings->errors()->getMessages() as $a => $errors) {
                 foreach ($errors as $error) {
-                    $this->component->errors()->add("siteSettings[$i].$a", $error);
+                    $this->subject->errors()->add("siteSettings[$i].$a", $error);
                 }
             }
         }

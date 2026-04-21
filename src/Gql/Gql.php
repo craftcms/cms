@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql;
 
-use Craft;
 use craft\behaviors\FieldLayoutBehavior;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
@@ -288,12 +287,8 @@ class Gql
         bool $debugMode = false,
     ): array {
         $context = [
-            'conditionBuilder' => Craft::createObject([
-                'class' => ElementQueryConditionBuilder::class,
-            ]),
-            'argumentManager' => Craft::createObject([
-                'class' => ArgumentManager::class,
-            ]),
+            'conditionBuilder' => new ElementQueryConditionBuilder,
+            'argumentManager' => new ArgumentManager,
         ];
         $result = $rootValue = null;
         $dep = null;
@@ -975,7 +970,7 @@ class Gql
             }
 
             // Log it.
-            Craft::$app->getErrorHandler()->logException($originException);
+            report($originException);
         }
 
         return array_map($formatter, $errors);
@@ -985,7 +980,7 @@ class Gql
     {
         if (! array_key_exists($typeName, $this->_typeDefinitions)) {
             if ($this->_typeManager === null) {
-                $this->_typeManager = Craft::createObject(TypeManager::class);
+                $this->_typeManager = new TypeManager;
             }
 
             $this->_typeDefinitions[$typeName] = $this->_typeManager->registerFieldDefinitions($fields, $typeName);
@@ -1028,7 +1023,7 @@ class Gql
                 '::'.serialize($variables).
                 ($operationName ? "::$operationName" : '');
         } catch (Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
+            report($e);
             $cacheKey = null;
         }
 
@@ -1123,10 +1118,7 @@ class Gql
                 $directiveClasses[] = ParseRefs::class;
             }
 
-            if (
-                ! Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective &&
-                in_array('directive:transform', $schema->scope)
-            ) {
+            if (in_array('directive:transform', $schema->scope)) {
                 $directiveClasses[] = Transform::class;
             }
         }

@@ -16,8 +16,7 @@ use Illuminate\Validation\Rules\Unique;
 /** @extends Ruleset<Site> */
 class SiteRules extends Ruleset
 {
-    #[\Override]
-    public function defineRules(): array
+    public function rules(): array
     {
         return [
             'language' => [
@@ -30,7 +29,7 @@ class SiteRules extends Ruleset
                 new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
                 Rule::when(
                     Cms::isInstalled(),
-                    [new Unique(Table::SITES, 'handle')->ignore($this->component->id)->withoutTrashed('dateDeleted')],
+                    [new Unique(Table::SITES, 'handle')->ignore($this->subject->id)->withoutTrashed('dateDeleted')],
                 ),
             ],
             'name' => [
@@ -38,7 +37,7 @@ class SiteRules extends Ruleset
                 'string',
                 Rule::when(
                     Cms::isInstalled(),
-                    [new Unique(Table::SITES, 'name')->ignore($this->component->id)->withoutTrashed('dateDeleted')],
+                    [new Unique(Table::SITES, 'name')->ignore($this->subject->id)->withoutTrashed('dateDeleted')],
                 ),
             ],
         ];

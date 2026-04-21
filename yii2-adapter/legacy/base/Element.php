@@ -85,6 +85,7 @@ use CraftCms\Cms\Element\Events\RegisterTableAttributes;
 use CraftCms\Cms\Element\Events\Render;
 use CraftCms\Cms\Element\Events\SetEagerLoadedElements;
 use CraftCms\Cms\Element\Events\SetRoute;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use Illuminate\Support\Facades\Event;
 use IteratorAggregate;
 use Traversable;
@@ -98,6 +99,12 @@ use Traversable;
 abstract class Element extends \CraftCms\Cms\Element\Element implements IteratorAggregate
 {
     use ElementEventConstants;
+
+    public const string SCENARIO_DEFAULT = ElementRules::SCENARIO_DEFAULT;
+
+    public const string SCENARIO_ESSENTIALS = ElementRules::SCENARIO_ESSENTIALS;
+
+    public const string SCENARIO_LIVE = ElementRules::SCENARIO_LIVE;
 
     public function __construct($config = [])
     {

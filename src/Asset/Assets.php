@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
-use Craft;
 use CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -20,6 +19,7 @@ use CraftCms\Cms\Asset\PreviewHandlers\Image as ImagePreview;
 use CraftCms\Cms\Asset\PreviewHandlers\Pdf;
 use CraftCms\Cms\Asset\PreviewHandlers\Text;
 use CraftCms\Cms\Asset\PreviewHandlers\Video;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements;
@@ -96,7 +96,7 @@ class Assets
         $asset->setMimeType(File::getMimeType($pathOnServer, checkExtension: false) ?? $mimeType);
         $asset->uploaderId = Auth::user()?->id;
         $asset->avoidFilenameConflicts = true;
-        $asset->setScenario(Asset::SCENARIO_REPLACE);
+        $asset->ruleset->useScenario(AssetRules::SCENARIO_REPLACE);
         $this->elements->saveElement($asset);
 
         event(new AfterReplaceAsset(
@@ -120,9 +120,9 @@ class Assets
 
         if ($filenameChanging) {
             $asset->newFilename = $filename;
-            $asset->setScenario(Asset::SCENARIO_FILEOPS);
+            $asset->ruleset->useScenario(AssetRules::SCENARIO_FILEOPS);
         } else {
-            $asset->setScenario(Asset::SCENARIO_MOVE);
+            $asset->ruleset->useScenario(AssetRules::SCENARIO_MOVE);
         }
 
         return $this->elements->saveElement($asset);
@@ -150,7 +150,7 @@ class Assets
             ]) : null;
         }
 
-        $transform = Craft::createObject(ImageTransform::class, [
+        $transform = new ImageTransform([
             'width' => $width,
             'height' => $height,
             'mode' => 'crop',
@@ -188,8 +188,7 @@ class Assets
             $originalWidth > $width ||
             $originalHeight > $height
         ) {
-            $transform = Craft::createObject([
-                'class' => ImageTransform::class,
+            $transform = new ImageTransform([
                 'width' => $width,
                 'height' => $height,
                 'mode' => 'crop',

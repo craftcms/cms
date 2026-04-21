@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Entries;
@@ -11,7 +11,7 @@ use CraftCms\Cms\Field\Entries;
 test('relation fields enforce min relations', function () {
     $result = EntryModel::factory()
         ->withField('relatedEntries', Entries::class, ['allowLimit' => true, 'minRelations' => 1], value: [])
-        ->withScenario(Element::SCENARIO_LIVE)
+        ->withScenario(ElementRules::SCENARIO_LIVE)
         ->createElementWithFields(save: false);
 
     $result->element->validate();
@@ -26,7 +26,7 @@ test('relation fields validate related elements when enabled', function () {
 
     $result = EntryModel::factory()
         ->withField('relatedEntries', Entries::class, ['validateRelatedElements' => true], value: new ElementCollection([$relatedEntry]))
-        ->withScenario(Element::SCENARIO_LIVE)
+        ->withScenario(ElementRules::SCENARIO_LIVE)
         ->createElementWithFields(save: false);
 
     $result->element->validate();

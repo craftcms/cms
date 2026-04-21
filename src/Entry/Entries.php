@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Events\EntryMovedToSection;
 use CraftCms\Cms\Entry\Events\MovingEntryToSection;
@@ -172,7 +173,7 @@ class Entries
         $entry->sectionId = $section->id;
 
         // Validate
-        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $entry->validate();
 
         // If there are any errors on the URI, re-validate as disabled

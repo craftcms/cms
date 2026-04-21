@@ -107,7 +107,7 @@ abstract class BaseElementFixture extends DbFixture
             $this->populateElement($element, $data);
 
             if ($element->enabled && $element->getIsCanonical() && !$element->isProvisionalDraft) {
-                $element->setScenario(Element::SCENARIO_LIVE);
+                $element->ruleset->useScenario(Element::SCENARIO_LIVE);
             }
 
             if (!$this->saveElement($element)) {

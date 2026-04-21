@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Gql\Resolvers;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Gql\Events\AfterPopulateElement;
 use CraftCms\Cms\Gql\Events\BeforePopulateElement;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
@@ -95,8 +96,8 @@ abstract class ElementMutationResolver extends MutationResolver
     protected function saveElement(ElementInterface $element): ElementInterface
     {
         /** @var Element $element */
-        if ($element->enabled && $element->inScenarios(Element::SCENARIO_DEFAULT)) {
-            $element->setScenario(Element::SCENARIO_LIVE);
+        if ($element->enabled && $element->ruleset->inScenarios(ElementRules::SCENARIO_DEFAULT)) {
+            $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         }
 
         $isNotNew = $element->id;

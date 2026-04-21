@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element\Jobs;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Queue\BatchedElementJob;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -70,7 +71,7 @@ class PropagateElements extends BatchedElementJob
 
     protected function processElement(ElementInterface $element): void
     {
-        $element->setScenario(Element::SCENARIO_ESSENTIALS);
+        $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $element->newSiteIds = [];
         $element->isNewSite = $this->isNewSite;
         $supportedSiteIds = array_map(fn ($siteInfo) => $siteInfo['siteId'], ElementHelper::supportedSitesForElement($element));

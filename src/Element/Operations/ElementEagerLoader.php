@@ -244,9 +244,11 @@ readonly class ElementEagerLoader
                         $query->offset(null);
                         $query->limit(null);
 
+                        // The mapping criteria should take precedence here
+                        // (see https://github.com/craftcms/cms/pull/18704)
                         $criteria = array_merge(
-                            $map['criteria'] ?? [],
                             $plan->criteria,
+                            $map['criteria'] ?? [],
                         );
 
                         // Save the offset & limit params for later

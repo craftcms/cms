@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Resolvers;
 
-use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
@@ -48,7 +47,7 @@ abstract class ElementResolver extends Resolver
     protected static function prepareElementQuery(mixed $source, array $arguments, ?array $context, ResolveInfo $resolveInfo): ElementQueryInterface|ElementCollection
     {
         /** @var ArgumentManager $argumentManager */
-        $argumentManager = empty($context['argumentManager']) ? Craft::createObject(['class' => ArgumentManager::class]) : $context['argumentManager'];
+        $argumentManager = empty($context['argumentManager']) ? new ArgumentManager : $context['argumentManager'];
         $arguments = $argumentManager->prepareArguments($arguments);
 
         $fieldName = GqlHelper::getFieldNameWithAlias($resolveInfo, $source, $context);
@@ -92,7 +91,7 @@ abstract class ElementResolver extends Resolver
         }
 
         /** @var ElementQueryConditionBuilder $conditionBuilder */
-        $conditionBuilder = empty($context['conditionBuilder']) ? Craft::createObject(['class' => ElementQueryConditionBuilder::class]) : $context['conditionBuilder'];
+        $conditionBuilder = empty($context['conditionBuilder']) ? new ElementQueryConditionBuilder : $context['conditionBuilder'];
         $conditionBuilder->setResolveInfo($resolveInfo);
         $conditionBuilder->setArgumentManager($argumentManager);
 

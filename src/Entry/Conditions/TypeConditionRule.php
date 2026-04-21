@@ -43,7 +43,7 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
             unset($values['entryTypeUid'], $values['sectionUid']);
         }
 
-        parent::setAttributes($values, $safeOnly);
+        parent::setAttributes($values);
     }
 
     protected function options(): array

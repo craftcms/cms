@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
-use Craft;
-use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Database\Table as DbTable;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -18,6 +16,7 @@ use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Conditions\EmptyFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -33,6 +32,8 @@ use CraftCms\Cms\Gql\Types\Input\Addresses as AddressesInput;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\LegacyAssets\CpAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
@@ -44,6 +45,7 @@ use Override;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
+use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -318,12 +320,12 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
     private function settingsHtml(bool $readOnly): string
     {
-        $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
+        app(InternalAssetRegistry::class)->register(CpAsset::class);
 
         return template('_components/fieldtypes/Addresses/settings', [
             'field' => $this,
             'readOnly' => $readOnly,
-            'baseIconsUrl' => "$bundle->baseUrl/images/view-modes",
+            'baseIconsUrl' => craftAsset('legacy/cp/dist/images/view-modes'),
         ]);
     }
 
@@ -620,7 +622,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
+        if (! $element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_DEFAULT, ElementRules::SCENARIO_LIVE)) {
             return [];
         }
 
@@ -647,15 +649,15 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 ->all();
 
             $invalidAddressIds = [];
-            $scenario = $element->getScenario();
+            $scenario = $element->ruleset->getScenario();
 
             foreach ($addresses as $address) {
                 /** @var Address $address */
                 if (
-                    $scenario === Element::SCENARIO_ESSENTIALS ||
-                    ($address->enabled && $scenario === Element::SCENARIO_LIVE)
+                    $scenario === ElementRules::SCENARIO_ESSENTIALS ||
+                    ($address->enabled && $scenario === ElementRules::SCENARIO_LIVE)
                 ) {
-                    $address->setScenario($scenario);
+                    $address->ruleset->useScenario($scenario);
                 }
 
                 if (! $address->validate()) {
@@ -679,7 +681,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         }
 
         if (
-            $element->inScenarios(Element::SCENARIO_LIVE) &&
+            $element->ruleset->inScenarios(ElementRules::SCENARIO_LIVE) &&
             ($this->minAddresses || $this->maxAddresses)
         ) {
             $rules = [

@@ -17,8 +17,8 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
 use CraftCms\Cms\Validation\Concerns\Validates;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTime;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\Traits\Macroable;
@@ -31,6 +31,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Element is the base class for classes representing elements in terms of objects.
+ *
+ * @property ElementRules $ruleset
  */
 #[Ruleset(ElementRules::class)]
 abstract class Element extends Component implements ElementInterface
@@ -71,15 +73,6 @@ abstract class Element extends Component implements ElementInterface
      * @since 3.3.6
      */
     public const string HOMEPAGE_URI = '__home__';
-
-    // Validation scenarios
-    // -------------------------------------------------------------------------
-
-    public const string SCENARIO_DEFAULT = 'default';
-
-    public const string SCENARIO_ESSENTIALS = 'essentials';
-
-    public const string SCENARIO_LIVE = 'live';
 
     /**
      * @var int|null The element's ID
@@ -183,19 +176,6 @@ abstract class Element extends Component implements ElementInterface
      * @since 3.2.0
      */
     public bool $hardDelete = false;
-
-    /**
-     * @return array<string, array<string>|null>
-     */
-    #[Override]
-    public function scenarios(): array
-    {
-        return [
-            self::SCENARIO_DEFAULT => null,
-            self::SCENARIO_LIVE => null,
-            self::SCENARIO_ESSENTIALS => null,
-        ];
-    }
 
     #[Override]
     public static function displayName(): string
@@ -391,7 +371,7 @@ abstract class Element extends Component implements ElementInterface
      * @TODO: Remove parameters once Element no longer extends Yii Model
      */
     #[Override]
-    public function getAttributes($names = null, $except = []): array
+    public function validationData($names = null, $except = []): array
     {
         $attributes = $this->attributes();
         $values = [];
@@ -408,7 +388,6 @@ abstract class Element extends Component implements ElementInterface
         return $values;
     }
 
-    #[Override]
     public function attributes(): array
     {
         $names = array_flip(Utils::getPublicAttributes($this));
@@ -591,7 +570,7 @@ abstract class Element extends Component implements ElementInterface
             return;
         }
 
-        $scenario = $this->getScenario();
+        $scenario = $this->ruleset->getScenario();
         $layoutElements = $fieldLayout->getEditableCustomFieldElements($this);
 
         foreach ($layoutElements as $layoutElement) {
@@ -605,7 +584,7 @@ abstract class Element extends Component implements ElementInterface
             $isEmpty = fn () => $field->isValueEmpty($this->getFieldValue($field->handle), $this);
 
             $rules = [];
-            if ($scenario === self::SCENARIO_LIVE && $layoutElement->required) {
+            if ($scenario === ElementRules::SCENARIO_LIVE && $layoutElement->required) {
                 $rules[] = function ($attribute, $value, $fail) use ($isEmpty) {
                     if ($isEmpty()) {
                         $fail(t('validation.required'));
@@ -690,9 +669,8 @@ abstract class Element extends Component implements ElementInterface
         $this->setAttributes($values);
     }
 
-    #[Override]
     public function safeAttributes(): array
     {
-        return array_keys($this->getRuleset()->rules());
+        return array_keys($this->ruleset->rules());
     }
 }

@@ -11,6 +11,7 @@ use Closure;
 use Craft;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Contracts\Database\Query\Builder;
@@ -83,14 +84,14 @@ abstract class Field extends \CraftCms\Cms\Field\Field
 
         return [
             function(string $attribute, mixed $value, Closure $fail) use ($element) {
-                $scenario = $element->getScenario();
+                $scenario = $element->ruleset->getScenario();
                 $isEmpty = fn() => $this->isValueEmpty($element->getFieldValue($this->handle), $element);
 
                 foreach ($this->getElementValidationRules() as $rule) {
                     $validator = $this->_normalizeFieldValidator($attribute, $rule, $element, $isEmpty);
 
                     if (
-                        in_array($element->getScenario(), $validator->on) ||
+                        in_array($element->ruleset->getScenario(), $validator->on) ||
                         (empty($validator->on) && !in_array($scenario, $validator->except))
                     ) {
                         $validator->validateAttributes($element);
@@ -118,7 +119,7 @@ abstract class Field extends \CraftCms\Cms\Field\Field
 
         if (is_string($rule)) {
             // "Validator" syntax
-            $rule = [$attribute, $rule, 'on' => [Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE]];
+            $rule = [$attribute, $rule, 'on' => [ElementRules::SCENARIO_DEFAULT, ElementRules::SCENARIO_LIVE]];
         }
 
         if (!is_array($rule) || !isset($rule[0])) {
@@ -156,7 +157,7 @@ abstract class Field extends \CraftCms\Cms\Field\Field
 
         // Set 'on' to the main scenarios by default
         if (!array_key_exists('on', $rule)) {
-            $rule['on'] = [Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE];
+            $rule['on'] = [ElementRules::SCENARIO_DEFAULT, ElementRules::SCENARIO_LIVE];
         }
 
         return Validator::createValidator($rule[1], $element, (array) $rule[0], array_slice($rule, 2));

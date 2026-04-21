@@ -17,7 +17,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
-use RuntimeException;
+use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
 /**
@@ -666,7 +666,7 @@ trait Eagerloadable
     {
         try {
             return $this->getFieldLayout()?->provider?->getHandle();
-        } catch (RuntimeException) {
+        } catch (Throwable) {
             return null;
         }
     }

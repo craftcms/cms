@@ -247,19 +247,19 @@ class GeneralMutationResolverTest extends TestCase
         $entry->sectionId = Section::find()->one()->id;
 
         $scenario = Element::SCENARIO_DEFAULT;
-        $entry->setScenario($scenario);
+        $entry->ruleset->useScenario($scenario);
         $entry->enabled = false;
 
         $this->invokeMethod($this->resolver, 'saveElement', [$entry]);
 
         // Ensure scenario unchanged for disabled elements
-        self::assertSame($scenario, $entry->getScenario());
+        self::assertSame($scenario, $entry->ruleset->getScenario());
 
         $entry->enabled = true;
         $this->invokeMethod($this->resolver, 'saveElement', [$entry]);
 
         // Ensure scenario changed for enabled elements with the default scenario
-        self::assertNotSame($scenario, $entry->getScenario());
+        self::assertNotSame($scenario, $entry->ruleset->getScenario());
     }
 
     public function testNestedNormalizers(): void

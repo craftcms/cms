@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element\Actions;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -87,7 +88,7 @@ JS, [static::class]);
 
                     $element->enabled = true;
                     $element->setEnabledForSite(true);
-                    $element->setScenario(Element::SCENARIO_LIVE);
+                    $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
                     break;
 
                 case self::DISABLED:

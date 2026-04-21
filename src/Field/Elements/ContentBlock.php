@@ -14,7 +14,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\ContentBlock as ContentBlockModel;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Gql\Interfaces\Elements\ContentBlock as ContentBlockInterface;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use GraphQL\Type\Definition\Type;
 use Override;
 

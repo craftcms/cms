@@ -7,10 +7,10 @@ namespace CraftCms\Cms\Element\Operations;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Structure\Structures;
@@ -129,7 +129,7 @@ readonly class ElementDuplicates
             );
         }
 
-        $mainClone->setScenario(Element::SCENARIO_ESSENTIALS);
+        $mainClone->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $mainClone->validate();
 
         if ($mainClone->errors()->has('uri') && $mainClone->enabled) {

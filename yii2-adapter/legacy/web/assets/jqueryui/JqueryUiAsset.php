@@ -8,29 +8,16 @@
 namespace craft\web\assets\jqueryui;
 
 use craft\web\AssetBundle;
-use yii\web\JqueryAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * jQuery UI asset bundle.
+ * @deprecated 6.0.0
  */
 class JqueryUiAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public $depends = [
-        JqueryAsset::class,
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $js = [
-        'jquery-ui.js',
-    ];
+    public function registerAssetFiles($view)
+    {
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\JqueryUiAsset::class);
+    }
 }

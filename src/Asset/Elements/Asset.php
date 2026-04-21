@@ -83,7 +83,7 @@ use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateInterval;
 use DateTime;
 use Exception;
@@ -145,22 +145,6 @@ class Asset extends Element
     public const string ERROR_DISALLOWED_EXTENSION = 'disallowed_extension';
 
     public const string ERROR_FILENAME_CONFLICT = 'filename_conflict';
-
-    // Validation scenarios
-    // -------------------------------------------------------------------------
-
-    /**
-     * Validation scenario that should be used when the asset is only getting *moved*; not renamed.
-     */
-    public const string SCENARIO_MOVE = 'move';
-
-    public const string SCENARIO_FILEOPS = 'fileOperations';
-
-    public const string SCENARIO_INDEX = 'index';
-
-    public const string SCENARIO_CREATE = 'create';
-
-    public const string SCENARIO_REPLACE = 'replace';
 
     private static string $_displayName;
 
@@ -414,7 +398,7 @@ class Asset extends Element
     #[Override]
     public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(AssetCondition::class, [self::class]);
+        return new AssetCondition(self::class);
     }
 
     #[Override]
@@ -2873,7 +2857,7 @@ JS;
             // Are we uploading an image that needs to be sanitized?
             if (
                 isset($this->tempFilePath) &&
-                in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
+                $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE) &&
                 AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value &&
                 ($this->sanitizeOnUpload ?? (
                     ! request()->isCpRequest() ||
@@ -2889,7 +2873,7 @@ JS;
             $fallbackHeight = null;
             if (
                 isset($this->tempFilePath) &&
-                in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
+                $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE) &&
                 AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value
             ) {
                 $imageSize = getimagesize($this->tempFilePath);
@@ -3106,7 +3090,7 @@ JS;
         if (! $this->_width || ! $this->_height) {
             if (
                 $this->kind === FileKind::Image->value &&
-                $this->getScenario() !== self::SCENARIO_CREATE
+                $this->ruleset->getScenario() !== AssetRules::SCENARIO_CREATE
             ) {
                 Log::warning("Asset $this->id is missing its width or height", [__METHOD__]);
             }

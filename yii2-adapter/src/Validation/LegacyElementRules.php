@@ -9,22 +9,22 @@ use ReflectionClass;
 
 class LegacyElementRules extends ElementRules
 {
-    protected function defineRules(): array
+    public function rules(): array
     {
-        $rules = parent::defineRules();
+        $rules = parent::rules();
 
-        $reflectionClass = new ReflectionClass($this->component);
+        $reflectionClass = new ReflectionClass($this->subject);
 
         if (!$reflectionClass->hasMethod('defineRules')) {
             return $rules;
         }
 
         $method = $reflectionClass->getMethod('defineRules');
-        $yiiRules = $method->invoke($this->component);
+        $yiiRules = $method->invoke($this->subject);
 
         return LegacyYiiRules::mergeWildcardRules(
             rules: $rules,
-            target: $this->component,
+            target: $this->subject,
             yiiRules: $yiiRules,
         );
     }

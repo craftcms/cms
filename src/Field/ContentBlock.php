@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
-use craft\web\assets\cp\CpAsset;
-use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
@@ -16,6 +12,7 @@ use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -34,6 +31,8 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\LegacyAssets\CpAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -43,6 +42,7 @@ use InvalidArgumentException;
 use Override;
 use RuntimeException;
 
+use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -329,12 +329,12 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
 
     private function settingsHtml(bool $readOnly): string
     {
-        $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
+        app(InternalAssetRegistry::class)->register(CpAsset::class);
 
         return template('_components/fieldtypes/ContentBlock/settings', [
             'field' => $this,
             'readOnly' => $readOnly,
-            'baseIconsUrl' => "$bundle->baseUrl/images/content-block",
+            'baseIconsUrl' => craftAsset('legacy/cp/dist/images/content-block'),
         ]);
     }
 
@@ -648,7 +648,7 @@ JS, [
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
+        if (! $element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_DEFAULT, ElementRules::SCENARIO_LIVE)) {
             return [];
         }
 
@@ -661,8 +661,8 @@ JS, [
     {
         $value->setOwner($element);
 
-        if ($element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_LIVE)) {
-            $value->setScenario($element->getScenario());
+        if ($element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_LIVE)) {
+            $value->ruleset->useScenario($element->ruleset->getScenario());
         }
 
         if (! $value->validate()) {

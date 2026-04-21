@@ -9,6 +9,8 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
@@ -28,6 +30,21 @@ class UnitTestCase extends Orchestra
     protected function setUp(): void
     {
         parent::setUp();
+
+        tap(app(ConfigRepository::class), function (ConfigRepository $config) {
+            $config->set('database.default', 'sqlite');
+            $config->set('database.connections.sqlite', array_merge(
+                $config->get('database.connections.sqlite', []),
+                [
+                    'driver' => 'sqlite',
+                    'database' => ':memory:',
+                    'prefix' => '',
+                ],
+            ));
+        });
+
+        DB::purge('sqlite');
+        DB::setDefaultConnection('sqlite');
 
         Edition::set(Edition::Pro);
         TemplateMode::set(TemplateMode::Cp);

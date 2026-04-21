@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use Craft;
-use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
@@ -27,6 +26,7 @@ use CraftCms\Cms\Element\Events\DefineElementCriteria;
 use CraftCms\Cms\Element\Jobs\LocalizeRelations;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Conditions\RelationalFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
@@ -50,6 +50,8 @@ use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\View\LegacyAssets\CpAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
@@ -64,6 +66,7 @@ use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\db\Schema;
 
+use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -564,7 +567,7 @@ JS, [
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $element->inScenarios(Element::SCENARIO_LIVE)) {
+        if (! $element->ruleset->inScenarios(ElementRules::SCENARIO_LIVE)) {
             return [];
         }
 
@@ -693,7 +696,7 @@ JS, [
         // Prevent relational fields on this element from enforcing related element validation
         self::$validatingRelatedElements = true;
 
-        $target->setScenario(Element::SCENARIO_LIVE);
+        $target->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         $validates = $target->validate();
 
         self::$validatingRelatedElements = false;
@@ -1358,8 +1361,8 @@ JS, [
             self::VIEW_MODE_CARDS_GRID,
         ]))) {
             $html = Html::beginTag('div', ['class' => ['flex', 'items-start', 'gap-l']]);
-            $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
-            $baseIconsUrl = "$bundle->baseUrl/images/view-modes";
+            app(InternalAssetRegistry::class)->register(CpAsset::class);
+            $baseIconsUrl = craftAsset('legacy/cp/dist/images/view-modes');
 
             foreach ($supportedViewModes as $key => $label) {
                 $html .= Html::beginTag('label', ['class' => 'nowrap']).

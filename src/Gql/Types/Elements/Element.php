@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Types\Elements;
 
-use Craft;
 use CraftCms\Cms\Element\Contracts\ElementInterface as BaseElementInterface;
 use CraftCms\Cms\Gql\ArgumentManager;
 use CraftCms\Cms\Gql\Gql;
@@ -39,7 +38,7 @@ class Element extends ObjectType
         if (in_array($fieldName, ['prev', 'next'])) {
             // we need to prepare arguments for prev/next - otherwise registered argument handlers won't kick in for them
             /** @var ArgumentManager $argumentManager */
-            $argumentManager = $context['argumentManager'] ?? Craft::createObject(['class' => ArgumentManager::class]);
+            $argumentManager = $context['argumentManager'] ?? new ArgumentManager;
             $arguments = $argumentManager->prepareArguments($arguments);
 
             return $source->{'get'.ucfirst($fieldName)}(empty($arguments) ? false : $arguments);

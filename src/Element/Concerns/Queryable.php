@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use Craft;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -54,7 +53,7 @@ trait Queryable
 
     public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(ElementCondition::class, [static::class]);
+        return new ElementCondition(static::class);
     }
 
     /**

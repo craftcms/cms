@@ -17,6 +17,7 @@ use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
@@ -219,7 +220,7 @@ class Tag extends Element
             ['title'],
             'validateTitle',
             'when' => fn(): bool => !$this->errors()->has('groupId') && !$this->errors()->has('title'),
-            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
+            'on' => [ElementRules::SCENARIO_DEFAULT, ElementRules::SCENARIO_LIVE],
         ];
         return $rules;
     }

@@ -2,7 +2,7 @@
 
 {% set registerJs = false %}
 
-{% do view.registerAssetBundle("craft\\web\\assets\\prismjs\\PrismJsAsset") %}
+{% do registerLegacyAsset("CraftCms\\Cms\\View\\LegacyAssets\\PrismJsAsset") %}
 
 {% set jsSettings = {
     id: id|namespaceInputId,

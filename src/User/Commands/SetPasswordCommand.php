@@ -6,7 +6,7 @@ namespace CraftCms\Cms\User\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Validation\UserRules;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Override;
@@ -31,7 +31,7 @@ class SetPasswordCommand extends Command implements PromptsForMissingInput
             return self::FAILURE;
         }
 
-        $user->setScenario(User::SCENARIO_PASSWORD);
+        $user->ruleset->useScenario(UserRules::SCENARIO_PASSWORD);
         $user->newPassword = $this->argument('password');
 
         $this->components->task(
