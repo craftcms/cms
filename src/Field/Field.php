@@ -48,7 +48,6 @@ use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -486,18 +485,6 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     public function __toString(): string
     {
         return t($this->name, category: 'site') ?: static::class;
-    }
-
-    #[Override]
-    public function validationData(): array
-    {
-        return Collection::make($this->settingsAttributes())
-            ->reject(fn ($name): bool => in_array($name, [
-                'validateHandleUniqueness',
-                'layoutElement',
-                'static',
-            ]))
-            ->all();
     }
 
     #[Override]

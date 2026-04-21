@@ -389,7 +389,7 @@ abstract class Element extends Component implements ElementInterface
      * @TODO: Remove parameters once Element no longer extends Yii Model
      */
     #[Override]
-    public function getAttributes($names = null, $except = []): array
+    public function validationData($names = null, $except = []): array
     {
         $attributes = $this->attributes();
         $values = [];
@@ -710,15 +710,6 @@ abstract class Element extends Component implements ElementInterface
     #[Override]
     public function safeAttributes(): array
     {
-        return array_keys($this->ruleset->safe());
-    }
-
-    /**
-     * @TODO: Temporary, remove when Element no longer extends Model
-     */
-    #[Override]
-    public function validationData($names = null, $except = []): array
-    {
-        return $this->getAttributes();
+        return array_keys($this->ruleset->rules());
     }
 }
