@@ -8,38 +8,18 @@
 namespace craft\web\assets\authmethodsetup;
 
 use craft\web\AssetBundle;
-use craft\web\assets\cp\CpAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Authentication method setup asset bundle.
  *
  * @since 5.0.0
+ * @deprecated 6.0.0
  */
 class AuthMethodSetupAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public $depends = [
-        CpAsset::class,
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $js = [
-        'auth.js',
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $css = [
-        'css/auth.css',
-    ];
+    public function registerAssetFiles($view): void
+    {
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\AuthMethodSetupAsset::class);
+    }
 }

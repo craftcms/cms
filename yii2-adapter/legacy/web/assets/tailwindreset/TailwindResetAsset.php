@@ -8,28 +8,16 @@
 namespace craft\web\assets\tailwindreset;
 
 use craft\web\AssetBundle;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Asset bundle for the Tailwind reset
+ * @deprecated 6.0.0
  */
 class TailwindResetAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public $css = [
-        'css/tailwind_reset.css',
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $js = [
-        'tailwind_reset.js',
-    ];
+    public function registerAssetFiles($view): void
+    {
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\TailwindResetAsset::class);
+    }
 }
