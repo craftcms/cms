@@ -12,10 +12,12 @@ use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
 use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
@@ -58,9 +60,9 @@ it('requires admin access for token pages and actions', function () {
 
     postJson(cp_url('actions/graphql/generate-token'))->assertForbidden();
 
-    postJson(cp_url('actions/graphql/delete-token'), [
-        'id' => $token->id,
-    ])->assertForbidden();
+    deleteJson(action([TokensController::class, 'destroy'], [
+        'tokenId' => $token->id,
+    ]))->assertForbidden();
 });
 
 it('allows token pages and actions without admin changes', function () {
@@ -86,8 +88,7 @@ it('renders the token index, create, and edit screens', function () {
     $publicSchema = Gql::getPublicSchema();
 
     get(action([TokensController::class, 'index']))
-        ->assertOk()
-        ->assertViewIs('graphql.tokens._index');
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('GraphQlTokensPage'));
 
     get(action([TokensController::class, 'create']))
         ->assertOk()
