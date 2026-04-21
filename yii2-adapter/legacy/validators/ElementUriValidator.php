@@ -73,7 +73,7 @@ class ElementUriValidator extends UriValidator
             if (
                 $model->enabled &&
                 $model->getEnabledForSite() &&
-                (!$model->getIsUnpublishedDraft() || $model->ruleset->getScenario() === Element::SCENARIO_LIVE)
+                (!$model->getIsUnpublishedDraft() || $model->ruleset->getScenario() === ElementRules::SCENARIO_LIVE)
             ) {
                 $this->addError($model, $attribute, t('Could not generate a unique URI based on the URI format.'));
                 return;

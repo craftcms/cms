@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Database\Factories\Concerns;
 
 use CraftCms\Cms\Database\Factories\ElementFactoryResult;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
@@ -108,7 +109,7 @@ trait HasFieldFactory
         $factory->refreshFieldCaches();
 
         $element = $factory->queryElement($model->id);
-        $element->ruleset->useScenario($factory->elementScenario ?? Element::SCENARIO_DEFAULT);
+        $element->ruleset->useScenario($factory->elementScenario ?? ElementRules::SCENARIO_DEFAULT);
         $element->title = $element->title ?: 'Test entry';
 
         foreach ($factory->fieldConfigs as $config) {
