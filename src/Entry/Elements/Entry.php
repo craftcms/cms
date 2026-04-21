@@ -215,7 +215,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     #[Override]
     public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(EntryCondition::class, [self::class]);
+        return new EntryCondition(self::class);
     }
 
     #[Override]
@@ -1764,9 +1764,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
     public function createAnother(): self
     {
-        /** @var self $entry */
-        $entry = Craft::createObject([
-            'class' => self::class,
+        $entry = new self([
             'sectionId' => $this->sectionId,
             'fieldId' => $this->fieldId,
             'primaryOwnerId' => $this->getPrimaryOwnerId(),

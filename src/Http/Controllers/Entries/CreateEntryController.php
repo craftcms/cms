@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
-use Craft;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
@@ -52,7 +51,7 @@ readonly class CreateEntryController
         $user = $this->request->user();
 
         // Create & populate the draft
-        $entry = Craft::createObject(Entry::class);
+        $entry = new Entry;
         $entry->siteId = $site->id;
         $entry->sectionId = $section->id;
 

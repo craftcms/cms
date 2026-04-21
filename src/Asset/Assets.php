@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
-use Craft;
 use CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -149,7 +148,7 @@ class Assets
             ]) : null;
         }
 
-        $transform = Craft::createObject(ImageTransform::class, [
+        $transform = new ImageTransform([
             'width' => $width,
             'height' => $height,
             'mode' => 'crop',
@@ -187,8 +186,7 @@ class Assets
             $originalWidth > $width ||
             $originalHeight > $height
         ) {
-            $transform = Craft::createObject([
-                'class' => ImageTransform::class,
+            $transform = new ImageTransform([
                 'width' => $width,
                 'height' => $height,
                 'mode' => 'crop',

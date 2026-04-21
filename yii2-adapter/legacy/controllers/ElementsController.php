@@ -2752,7 +2752,7 @@ JS, [
         $this->_validateElementType($this->_elementType);
 
         /** @var ElementInterface $element */
-        $element = $this->element = Craft::createObject($this->_elementType);
+        $element = $this->element = app()->make($this->_elementType);
         if (isset($this->_siteId) && $element::isLocalized()) {
             $element->siteId = $this->_siteId;
         }

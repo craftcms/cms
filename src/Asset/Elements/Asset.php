@@ -290,7 +290,7 @@ class Asset extends Element
     #[Override]
     public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(AssetCondition::class, [self::class]);
+        return new AssetCondition(self::class);
     }
 
     #[Override]
