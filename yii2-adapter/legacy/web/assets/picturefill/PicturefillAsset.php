@@ -8,6 +8,7 @@
 namespace craft\web\assets\picturefill;
 
 use craft\web\AssetBundle;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Picturefill asset bundle.
@@ -16,17 +17,8 @@ use craft\web\AssetBundle;
  */
 class PicturefillAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
+    public function registerAssetFiles($view)
     {
-        $this->sourcePath = __DIR__ . '/dist';
-
-        $this->js = [
-            'picturefill.js',
-        ];
-
-        parent::init();
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\PicturefillAsset::class);
     }
 }

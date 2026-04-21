@@ -8,36 +8,16 @@
 namespace craft\web\assets\craftsupport;
 
 use craft\web\AssetBundle;
-use craft\web\assets\cp\CpAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Asset bundle for the Craft Support widget
+ * @deprecated 6.0.0
  */
 class CraftSupportAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public $depends = [
-        CpAsset::class,
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $css = [
-        'css/CraftSupportWidget.css',
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $js = [
-        'CraftSupportWidget.js',
-    ];
+    public function registerAssetFiles($view)
+    {
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\CraftSupportAsset::class);
+    }
 }

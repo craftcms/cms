@@ -68,20 +68,7 @@ class VolumeFolder extends Component implements Stringable
     }
 
     #[Override]
-    public function attributes(): array
-    {
-        return [
-            'id',
-            'parentId',
-            'volumeId',
-            'name',
-            'path',
-            'uid',
-        ];
-    }
-
-    #[Override]
-    public function getAttributes(): array
+    public function validationData(): array
     {
         return [
             'id' => $this->id,

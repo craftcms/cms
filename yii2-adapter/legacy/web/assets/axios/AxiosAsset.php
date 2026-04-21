@@ -8,17 +8,16 @@
 namespace craft\web\assets\axios;
 
 use craft\web\AssetBundle;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Vue asset bundle.
+ * @deprecated 6.0.0
  */
 class AxiosAsset extends AssetBundle
 {
-    /** @inheritdoc */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /** @inheritdoc */
-    public $js = [
-        'axios.js',
-    ];
+    public function registerAssetFiles($view): void
+    {
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\AxiosAsset::class);
+    }
 }

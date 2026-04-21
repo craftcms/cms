@@ -29,6 +29,7 @@ use CraftCms\Cms\Element\Events\DefineResaveCommands;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -613,7 +614,7 @@ class ResaveController extends Controller
                                     $set = false;
                                 }
                             } elseif ($this->ifInvalid) {
-                                $element->setScenario(Element::SCENARIO_LIVE);
+                                $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
                                 if ($element->validate($this->set) && $element->validate("field:$this->set")) {
                                     $set = false;
                                 }

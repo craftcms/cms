@@ -10,6 +10,7 @@ use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
@@ -495,7 +496,7 @@ class Assets extends BaseRelationField
                         $asset->setVolumeId($uploadFolder->volumeId);
                         $asset->uploaderId = Auth::id();
                         $asset->avoidFilenameConflicts = true;
-                        $asset->setScenario(Asset::SCENARIO_CREATE);
+                        $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
 
                         if (Elements::saveElement($asset)) {
                             $assetIds[] = $asset->id;

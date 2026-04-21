@@ -187,7 +187,7 @@
     {{ hiddenInput("#{name}[sortOrder][]", entry.uid) }}
     {# only register a delta name for this entry if it’s not new #}
     {% if entry.id and not entry.getIsUnpublishedDraft() %}
-      {% do view.registerDeltaName(baseInputName) %}
+      {% do deltaRegistry.registerName(baseInputName) %}
     {% endif %}
     {{ hiddenInput("#{baseInputName}[type]", entryType.handle) }}
     {{ hiddenInput("#{baseInputName}[enabled]", entry.enabled ? '1' : '') }}

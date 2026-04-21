@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use Craft;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Matrix;
@@ -129,14 +128,13 @@ readonly class MatrixController
             }
         } else {
             /** @var Entry $entry */
-            $entry = Craft::createObject([
-                'class' => Entry::class,
+            $entry = new Entry([
                 ...$attributes,
             ]);
 
             Gate::authorize('save', $entry);
 
-            $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+            $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
 
             if (! $this->drafts->saveElementAsDraft($entry, $request->user()->id, markAsSaved: false)) {
                 return $this->asFailure(mb_ucfirst(t('Couldn’t create {type}.', [

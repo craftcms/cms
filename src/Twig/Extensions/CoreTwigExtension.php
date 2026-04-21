@@ -252,6 +252,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('app', $this->appFunction(...)),
             new TwigFunction('actionUrl', Url::actionUrl(...)),
             new TwigFunction('alias', Aliases::get(...)),
+            new TwigFunction('asset', asset(...)),
             new TwigFunction('ceil', 'ceil'),
             new TwigFunction('className', 'get_class'),
             new TwigFunction('clone', $this->cloneFunction(...)),
@@ -426,6 +427,10 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
 
     public function createFunction(string|array $type, array $params = []): object
     {
+        if (is_array($type) && isset($type['__class']) && isset($type['class'])) {
+            throw new InvalidArgumentException('`__class` and `class` cannot both be specified.');
+        }
+
         $class = is_string($type) ? $type : ($type['__class'] ?? $type['class'] ?? null);
 
         if (! $class) {
@@ -451,7 +456,15 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             throw new InvalidArgumentException(sprintf('create() can only be used to create instances of %s.', BaseObject::class));
         }
 
-        return Craft::createObject($type, $params);
+        $object = app()->make($class, $params);
+
+        if (! is_array($type)) {
+            return $object;
+        }
+
+        unset($type['__class'], $type['class']);
+
+        return Typecast::configure($object, $type);
     }
 
     public function dumpFunction(array $context, ...$vars): string

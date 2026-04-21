@@ -8,7 +8,6 @@ use CommerceGuys\Addressing\AddressFormat\AddressField;
 use CommerceGuys\Addressing\AddressInterface;
 use CommerceGuys\Addressing\Country\Country;
 use CommerceGuys\Addressing\Subdivision\SubdivisionUpdater;
-use Craft;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use CraftCms\Cms\Address\Addresses;
@@ -25,7 +24,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use Deprecated;
 use Override;
 use yii\base\InvalidConfigException;
@@ -33,6 +32,9 @@ use yii\helpers\Html;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @property AddressRules $ruleset
+ */
 #[Ruleset(AddressRules::class)]
 class Address extends Element implements AddressInterface, NestedElementInterface
 {
@@ -89,7 +91,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     #[Override]
     public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(AddressCondition::class, [self::class]);
+        return new AddressCondition(self::class);
     }
 
     #[Override]
@@ -472,7 +474,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     #[Override]
-    public function beforeValidate(): bool
+    public function prepareForValidation(): void
     {
         $usedFields = array_unique([
             ...app(Addresses::class)->getUsedFields($this->countryCode),
@@ -491,7 +493,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             $this->$field = null;
         }
 
-        return parent::beforeValidate();
+        parent::prepareForValidation();
     }
 
     #[Override]

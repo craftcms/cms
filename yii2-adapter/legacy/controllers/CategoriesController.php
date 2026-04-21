@@ -15,9 +15,9 @@ use craft\web\Controller;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -292,7 +292,7 @@ class CategoriesController extends Controller
         }
 
         // Save it
-        $category->setScenario(Element::SCENARIO_ESSENTIALS);
+        $category->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         if (!app(Drafts::class)->saveElementAsDraft($category, Craft::$app->getUser()->getId(), null, null, false)) {
             return $this->asModelFailure($category, mb_ucfirst(t('Couldn’t create {type}.', [
                 'type' => Category::lowerDisplayName(),
@@ -378,7 +378,7 @@ class CategoriesController extends Controller
 
         // Save the category
         if ($category->enabled && $category->getEnabledForSite()) {
-            $category->setScenario(Element::SCENARIO_LIVE);
+            $category->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         }
 
         if (!Elements::saveElement($category)) {

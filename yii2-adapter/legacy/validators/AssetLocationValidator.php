@@ -153,9 +153,6 @@ class AssetLocationValidator extends Validator
     public function addLocationError(Model $model, string $attribute, string $errorCode, string $message, array $params = []): void
     {
         $this->addError($model, $attribute, $message, $params);
-
-        if (isset($this->errorCodeAttribute)) {
-            $model->{$this->errorCodeAttribute} = $errorCode;
-        }
+        $model->{$this->errorCodeAttribute} = $errorCode;
     }
 }

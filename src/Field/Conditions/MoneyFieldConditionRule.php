@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Money as MoneyHelper;
 use Money\Currency;
 use Money\Money as MoneyLibrary;
+use Override;
 use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
@@ -21,7 +22,7 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
 {
     use FieldConditionRuleTrait;
 
-    #[\Override]
+    #[Override]
     public function setAttributes($values, $safeOnly = true): void
     {
         // Hold setting of the value attribute until we have all the info we need
@@ -35,7 +36,7 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
             $maxValue = Arr::pull($values, 'maxValue');
         }
 
-        parent::setAttributes($values, $safeOnly);
+        parent::setAttributes($values);
 
         $field = $this->field();
 
@@ -59,7 +60,7 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
         }
     }
 
-    #[\Override]
+    #[Override]
     protected function inputHtml(): string
     {
         $field = $this->field();
@@ -95,7 +96,7 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
         return FormFields::moneyInputHtml($this->inputOptions());
     }
 
-    #[\Override]
+    #[Override]
     protected function inputOptions(): array
     {
         /** @var Money $field */

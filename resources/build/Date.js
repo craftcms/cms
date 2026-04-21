@@ -1,0 +1,1 @@
+import{Q as e,T as t,_ as n}from"./_plugin-vue_export-helper.js";var r=t({__name:`Date`,props:{value:{},locale:{}},setup(t){let r=t,i=n(()=>`en-US`),a=n(()=>({year:`numeric`,month:`long`,day:`numeric`})),o=n(()=>new Date(r.value).toLocaleString(i.value,a.value));return(t,n)=>e(o.value)}});export{r as t};

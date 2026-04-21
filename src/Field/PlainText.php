@@ -204,7 +204,7 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
                 }
             };
         } elseif ($this->charLimit) {
-            $rules[] = ["max:$this->charLimit"];
+            $rules[] = "max:$this->charLimit";
         }
 
         return $rules;

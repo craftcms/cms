@@ -59,8 +59,14 @@ class InstallCommand extends Command
         }
 
         try {
-            DB::clearResolvedInstances();
-            DB::reconnect()->getPdo();
+            $connection = DB::connection();
+
+            if ($connection->transactionLevel() === 0) {
+                DB::clearResolvedInstances();
+                DB::reconnect($connection->getName())->getPdo();
+            } else {
+                $connection->getPdo();
+            }
         } catch (PDOException) {
             return $this->call('craft:setup:welcome');
         }

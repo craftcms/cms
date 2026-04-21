@@ -10,6 +10,7 @@ use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Validation\Contracts\Validatable;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 
@@ -70,6 +71,19 @@ trait HasSettings
         }
 
         $model->setAttributes($settings);
+    }
+
+    /**
+     * Override this to return a custom FormRequest class for plugin settings saves.
+     *
+     * Returning `null` keeps the default behavior, where only the settings model's
+     * validation rules are applied.
+     *
+     * @return class-string<FormRequest>
+     */
+    public function getSettingsRequestClass(): ?string
+    {
+        return null;
     }
 
     public function getSettingsResponse(): mixed

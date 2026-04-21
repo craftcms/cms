@@ -9,6 +9,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -56,6 +57,7 @@ use CraftCms\Cms\User\Events\UserSuspended;
 use CraftCms\Cms\User\Events\UserUnlocked;
 use CraftCms\Cms\User\Events\UserUnsuspended;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Validation\UserRules;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
 use Illuminate\Auth\Passwords\PasswordBroker;
@@ -364,7 +366,7 @@ class Users
             $filename = AssetsService::getNameReplacementInFolder($filename, $folderId);
 
             $photo = new Asset;
-            $photo->setScenario(Asset::SCENARIO_CREATE);
+            $photo->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
             $photo->tempFilePath = $fileLocation;
             $photo->setFilename($filename);
             $photo->setMimeType(File::getMimeType($fileLocation, checkExtension: false) ?? $mimeType);
@@ -397,7 +399,7 @@ class Users
             return;
         }
 
-        $photo->setScenario(Asset::SCENARIO_MOVE);
+        $photo->ruleset->useScenario(AssetRules::SCENARIO_MOVE);
         $photo->avoidFilenameConflicts = true;
         $photo->newFolderId = $folderId;
         $this->elements->saveElement($photo);
@@ -576,7 +578,7 @@ class Users
         }
 
         $originalUser = clone $user;
-        $user->setScenario(User::SCENARIO_ACTIVATION);
+        $user->ruleset->useScenario(UserRules::SCENARIO_ACTIVATION);
         $user->active = true;
         $user->pending = false;
         $user->locked = false;
@@ -927,7 +929,7 @@ class Users
         $userModel->save();
 
         $originalUser = clone $user;
-        $user->setScenario(User::SCENARIO_ACTIVATION);
+        $user->ruleset->useScenario(UserRules::SCENARIO_ACTIVATION);
         $user->pending = $userModel->pending;
 
         if (! $user->validate()) {

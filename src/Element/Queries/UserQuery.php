@@ -30,6 +30,9 @@ class UserQuery extends ElementQuery
     use QueriesUserGroups;
     use QueriesUserProperties;
 
+    #[Override]
+    protected string $table = Table::USERS;
+
     public const string STATUS_CREDENTIALED = 'credentialed';
 
     #[Override]
@@ -42,8 +45,6 @@ class UserQuery extends ElementQuery
     public function __construct(array $config = [])
     {
         parent::__construct(User::class, $config);
-
-        $this->joinElementTable(Table::USERS);
 
         $this->query->addSelect([
             'users.photoId',
@@ -95,7 +96,6 @@ class UserQuery extends ElementQuery
 
             // If there's a custom orderBy, make sure we're showing active, non-pending accounts first
             $userQuery->query->orders = $orders;
-            $userQuery->subQuery->orders = $orders;
         });
     }
 

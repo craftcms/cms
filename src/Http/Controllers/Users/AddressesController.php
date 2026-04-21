@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers\Users;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Html;
@@ -68,14 +69,14 @@ readonly class AddressesController
         Gate::authorize('save', $address);
 
         // Addresses have no status, and the default element save controller also sets the address scenario to live
-        $address->setScenario(Element::SCENARIO_LIVE);
+        $address->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
 
         // Name attributes
         $this->populateNameAttributes($request, $address);
 
         // All safe attributes
         $safeAttributes = [];
-        foreach ($address->safeAttributes() as $name) {
+        foreach (array_keys($address->ruleset->rules()) as $name) {
             if (in_array($name, ['id', 'uid', 'ownerId'])) {
                 continue;
             }
