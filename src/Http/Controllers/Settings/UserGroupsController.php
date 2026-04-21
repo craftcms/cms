@@ -71,12 +71,6 @@ readonly class UserGroupsController
         return new CpScreenResponse()
             ->title(t('Create a new user group'))
             ->crumbs($crumbs)
-            ->addAltAction(t('Save and continue editing'), [
-                'redirect' => 'settings/users/groups/{id}',
-                'shortcut' => true,
-                'retainScroll' => true,
-            ])
-            ->action('user-settings/save-group')
             ->redirectUrl('settings/users')
             ->inertiaPage('SettingsUserGroupsEditPage', [
                 'group' => new UserGroup,

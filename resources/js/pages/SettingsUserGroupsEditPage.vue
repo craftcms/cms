@@ -11,7 +11,7 @@
   import {hasNested, type PermissionItem} from '@/utils/permissions';
   import {destroy, store} from '@actions/Settings/UserGroupsController';
   import {computed} from 'vue';
-  import {useEventListener} from '@vueuse/core';
+  import {useSettingsSave} from '@/composables/useSettingsSave';
 
   const props = defineProps<{
     group: UserGroup;
@@ -83,31 +83,7 @@
     }
   }
 
-  // Handle cmd + s events
-  useEventListener('keydown', (event) => {
-    if ((event.metaKey || event.ctrlKey) && event.key === 's') {
-      event.preventDefault();
-      save({redirect: false});
-    }
-  });
-
-  function save({redirect = true} = {}) {
-    form
-      .transform((data) => {
-        return {
-          ...data,
-          redirect: redirect ? props.redirectUrl : undefined,
-        };
-      })
-      .clearErrors()
-      .defaults()
-      .submit(store(), {
-        onSuccess: (page) => {
-          // @ts-ignore
-          form.defaults({...page.props.group}).reset();
-        },
-      });
-  }
+  const {save} = useSettingsSave(form, store);
 
   const actions = computed(() => {
     if (props.readOnly || !props.group.id) {

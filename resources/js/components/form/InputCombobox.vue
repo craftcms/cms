@@ -142,7 +142,7 @@
 </script>
 
 <template>
-  <div class="relative" ref="reference">
+  <div class="relative w-full" ref="reference">
     <Combobox v-model="selectedOption">
       <ComboboxInput
         @change="query = $event.target.value"

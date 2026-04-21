@@ -15,22 +15,25 @@
 <template>
   <TransitionFade>
     <template v-if="isActive && successFlash">
-      <div class="flex gap-1 items-center text-sm">
-        <craft-icon
-          name="circle-check"
-          style="color: var(--c-color-success-fill-loud)"
-        ></craft-icon>
-        {{ successFlash }}
-      </div>
+      <craft-callout
+        variant="success"
+        appearance="plain"
+        icon="circle-check"
+        inline
+        class="p-0"
+        >{{ successFlash }}</craft-callout
+      >
     </template>
     <template v-if="isActive && errorFlash">
-      <div class="tw:flex tw:gap-1 tw:items-center tw:text-sm">
-        <craft-icon
-          name="triangle-exclamation"
-          style="color: var(--c-color-danger-fill-loud)"
-        ></craft-icon>
+      <craft-callout
+        variant="danger"
+        appearance="plain"
+        icon="triangle-exclamation"
+        inline
+        class="p-0"
+      >
         {{ errorFlash }}
-      </div>
+      </craft-callout>
     </template>
   </TransitionFade>
 </template>

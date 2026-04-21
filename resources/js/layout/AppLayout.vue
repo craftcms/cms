@@ -15,6 +15,7 @@
   import {useFlash} from '@/composables/useFlash';
   import InlineFlash from '@/components/InlineFlash.vue';
   import ErrorSummary from '@/components/form/ErrorSummary.vue';
+  import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
 
   interface SaveOptions {
     redirect?: boolean;
@@ -234,6 +235,9 @@
                 v-if="form && form.hasErrors"
                 :errors="form.errors"
               />
+              <template v-if="readOnly">
+                <CalloutReadOnly />
+              </template>
               <slot></slot>
             </div>
           </component>
