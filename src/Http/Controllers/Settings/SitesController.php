@@ -156,7 +156,7 @@ readonly class SitesController
             ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): \Symfony\Component\HttpFoundation\Response
     {
         $request->validate([
             'siteId' => ['nullable', Rule::exists(Table::SITES, 'id')],
