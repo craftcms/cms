@@ -83,6 +83,6 @@ trait Validates
 
     public function validationData(): array
     {
-        return Utils::getPublicProperties($this);
+        return Arr::except(Utils::getPublicProperties($this), ['ruleset']);
     }
 }
