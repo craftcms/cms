@@ -1,47 +1,20 @@
 import {Theme, Color, BackgroundColor} from '@adobe/leonardo-contrast-colors';
 
-const lightContrastRatios = [
-  1, 1.2, 1.4, 2, 3, 4.5, 5, 7.46, 10.21, 13.58, 17.04,
-];
-
-const colorDefaults = {
-  ratios: lightContrastRatios,
+const contrastRatios = {
+  light: [1.08, 1.33, 1.58, 2.39, 3.01, 3.87, 5.07, 6.72, 8.84, 11.31, 13.94],
+  dark: [1.12, 1.58, 1.96, 2.45, 3.09, 3.9, 4.85, 6.02, 7.34, 8.77, 10.18],
+  base: [-1.2, 1, 1.2, 1.4, 2, 4, 5, 6.5, 10.21, 13.58, 17.04],
 };
 
-const gray = new Color({
-  ...colorDefaults,
-  name: 'gray',
-  colorKeys: ['#e4e6ea', '#f9fafb', '#9aa0ad', '#4c5463', '#6b7180', '#101727'],
-});
+const slateColorKeys = ['#f2f5f8', '#cbd5e0', '#64728b', '#48546a', '#1f283a'];
 
-const red = new Color({
-  ...colorDefaults,
-  name: 'red',
-  colorKeys: ['#fcf2f2', '#f6cbca', '#ec6e6b', '#d32d22', '#77221f', '#3f0d0b'],
-});
-
-const orange = new Color({
-  ...colorDefaults,
-  name: 'orange',
-  colorKeys: ['#fdf7ed', '#3e160a', '#f8d7ac', '#923615', '#ef8f35', '#e15627'],
-});
-
-const amber = new Color({
-  ...colorDefaults,
-  name: 'amber',
-  colorKeys: ['#fefaec', '#401b06', '#fae692', '#8b4217', '#f4bb40', '#f09e38'],
-});
-
-const emerald = new Color({
-  ...colorDefaults,
-  name: 'emerald',
-  colorKeys: ['#effcf5', '#b5f1d0', '#5fd096', '#439669', '#1e4d3c', '#347857'],
-});
-
-const blue = new Color({
-  ...colorDefaults,
-  name: 'blue',
-  colorKeys: [
+const colorKeys = {
+  gray: ['#e4e6ea', '#f9fafb', '#9aa0ad', '#4c5463', '#6b7180', '#101727'],
+  red: ['#fcf2f2', '#f6cbca', '#ec6e6b', '#d32d22', '#77221f', '#3f0d0b'],
+  orange: ['#fdf7ed', '#3e160a', '#f8d7ac', '#923615', '#ef8f35', '#e15627'],
+  amber: ['#fefaec', '#401b06', '#fae692', '#8b4217', '#f4bb40', '#f09e38'],
+  emerald: ['#effcf5', '#b5f1d0', '#5fd096', '#439669', '#1e4d3c', '#347857'],
+  blue: [
     '#f0f6fe',
     '#437df6',
     '#223bb1',
@@ -50,12 +23,7 @@ const blue = new Color({
     '#65a0f7',
     '#192352',
   ],
-});
-
-const yellow = new Color({
-  ...colorDefaults,
-  name: 'yellow',
-  colorKeys: [
+  yellow: [
     '#fefce9',
     '#fcf093',
     '#f5c843',
@@ -64,24 +32,9 @@ const yellow = new Color({
     '#804e17',
     '#9c611f',
   ],
-});
-
-const slate = new Color({
-  ...colorDefaults,
-  name: 'slate',
-  colorKeys: ['#f2f5f8', '#cbd5e0', '#64728b', '#48546a', '#1f283a'],
-});
-
-const lime = new Color({
-  ...colorDefaults,
-  name: 'lime',
-  colorKeys: ['#f8fde8', '#def7a3', '#aae346', '#6ea32f', '#456119', '#1d2d0a'],
-});
-
-const green = new Color({
-  ...colorDefaults,
-  name: 'green',
-  colorKeys: [
+  slate: slateColorKeys,
+  lime: ['#f8fde8', '#def7a3', '#aae346', '#6ea32f', '#456119', '#1d2d0a'],
+  green: [
     '#f2fcf4',
     '#c5f6d1',
     '#65db7d',
@@ -90,12 +43,7 @@ const green = new Color({
     '#25522e',
     '#49a34b',
   ],
-});
-
-const teal = new Color({
-  ...colorDefaults,
-  name: 'teal',
-  colorKeys: [
+  teal: [
     '#f2fcf9',
     '#acf4e4',
     '#60d1be',
@@ -104,12 +52,7 @@ const teal = new Color({
     '#265d59',
     '#102d2d',
   ],
-});
-
-const cyan = new Color({
-  ...colorDefaults,
-  name: 'cyan',
-  colorKeys: [
+  cyan: [
     '#effdfe',
     '#b4f1fb',
     '#80e6fa',
@@ -119,12 +62,7 @@ const cyan = new Color({
     '#265d75',
     '#143243',
   ],
-});
-
-const sky = new Color({
-  ...colorDefaults,
-  name: 'sky',
-  colorKeys: [
+  sky: [
     '#f1f8fe',
     '#e2f1fc',
     '#8bd1fa',
@@ -133,12 +71,7 @@ const sky = new Color({
     '#245786',
     '#122d47',
   ],
-});
-
-const zinc = new Color({
-  ...colorDefaults,
-  name: 'zinc',
-  colorKeys: [
+  zinc: [
     '#f9f9f9',
     '#f3f3f4',
     '#d3d3d7',
@@ -147,12 +80,7 @@ const zinc = new Color({
     '#08080b',
     '#3e3e45',
   ],
-});
-
-const violet = new Color({
-  ...colorDefaults,
-  name: 'violet',
-  colorKeys: [
+  violet: [
     '#f4f2fe',
     '#dbd6fb',
     '#a085f7',
@@ -162,12 +90,7 @@ const violet = new Color({
     '#2a0e63',
     '#8553f5',
   ],
-});
-
-const purple = new Color({
-  ...colorDefaults,
-  name: 'purple',
-  colorKeys: [
+  purple: [
     '#f8f4fe',
     '#f0e7fd',
     '#d3b3f9',
@@ -177,12 +100,7 @@ const purple = new Color({
     '#511b85',
     '#360861',
   ],
-});
-
-const fuchsia = new Color({
-  ...colorDefaults,
-  name: 'fuchsia',
-  colorKeys: [
+  fuchsia: [
     '#fbf4fe',
     '#efd0fb',
     '#e8abf9',
@@ -191,12 +109,7 @@ const fuchsia = new Color({
     '#991eb0',
     '#681c73',
   ],
-});
-
-const pink = new Color({
-  ...colorDefaults,
-  name: 'pink',
-  colorKeys: [
+  pink: [
     '#fbf2f7',
     '#f4cfe6',
     '#e96db3',
@@ -205,12 +118,7 @@ const pink = new Color({
     '#951c4b',
     '#7a1d42',
   ],
-});
-
-const rose = new Color({
-  ...colorDefaults,
-  name: 'rose',
-  colorKeys: [
+  rose: [
     '#fcf1f2',
     '#fae4e6',
     '#f1a5ad',
@@ -220,12 +128,7 @@ const rose = new Color({
     '#971d37',
     '#460918',
   ],
-});
-
-const neutral = new Color({
-  ...colorDefaults,
-  name: 'neutral',
-  colorKeys: [
+  neutral: [
     '#f9f9f9',
     '#f4f4f4',
     '#d3d3d3',
@@ -234,47 +137,39 @@ const neutral = new Color({
     '#3f3f3f',
     '#161616',
   ],
-});
+  stone: ['#fafaf9', '#e6e5e4', '#77716b', '#a4a09b', '#43403b', '#1b1917'],
+  indigo: ['#f7f8fe', '#dde3fc', '#7d85f7', '#4334d3', '#25215f', '#141234'],
+  base: slateColorKeys,
+};
 
-const stone = new Color({
-  ...colorDefaults,
-  name: 'stone',
-  colorKeys: ['#fafaf9', '#e6e5e4', '#77716b', '#a4a09b', '#43403b', '#1b1917'],
-});
-
-const lightBackground = new BackgroundColor({
+const backgroundColor = new BackgroundColor({
   name: 'background',
-  colorKeys: ['#F8FAFC'],
+  colorKeys: colorKeys.slate,
   ratios: [1],
 });
 
+function makeColors(ratios) {
+  return Object.entries(colorKeys).map(
+    ([name, keys]) =>
+      new Color({
+        name,
+        colorKeys: keys,
+        ratios: name === 'base' ? contrastRatios.base : ratios,
+      })
+  );
+}
+
 // Light theme: background is white
 export const lightTheme = new Theme({
-  colors: [
-    gray,
-    red,
-    orange,
-    amber,
-    emerald,
-    blue,
-    yellow,
-    slate,
-    lime,
-    green,
-    teal,
-    cyan,
-    sky,
-    zinc,
-    violet,
-    purple,
-    fuchsia,
-    pink,
-    rose,
-    neutral,
-    stone,
-  ],
-  backgroundColor: lightBackground,
+  colors: makeColors(contrastRatios.light),
+  backgroundColor: backgroundColor,
   lightness: 97,
+});
+
+export const darkTheme = new Theme({
+  colors: makeColors(contrastRatios.dark),
+  backgroundColor: backgroundColor,
+  lightness: 26,
 });
 
 export const stops = [
