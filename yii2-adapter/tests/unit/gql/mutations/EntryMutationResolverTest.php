@@ -12,8 +12,10 @@ use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\test\TestCase;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Support\Facades\Elements;
 use GraphQL\Type\Definition\ResolveInfo;
 use Throwable;
 
@@ -68,7 +70,7 @@ class EntryMutationResolverTest extends TestCase
             'recursivelyNormalizeArgumentValues' => $arguments,
         ]);
 
-        \CraftCms\Cms\Support\Facades\Elements::partialMock()
+        Elements::partialMock()
             ->shouldReceive('saveElement')->andReturn(true)
             ->shouldReceive('createElementQuery')->andReturn($createQuery);
 
@@ -116,7 +118,7 @@ class EntryMutationResolverTest extends TestCase
             'identifyEntry' => $identifyCalled ? Expected::atLeastOnce($query) : Expected::never($query),
         ]);
 
-        \CraftCms\Cms\Support\Facades\Elements::partialMock()
+        Elements::partialMock()
             ->shouldReceive('saveElement')->andReturn(true)
             ->shouldReceive('createElementQuery')->andReturn($query);
 
@@ -126,9 +128,9 @@ class EntryMutationResolverTest extends TestCase
     public static function saveEntryDataProvider(): array
     {
         return [
-            [['draftId' => 5], Element::SCENARIO_ESSENTIALS],
-            [['id' => 5, 'enabled' => true], Element::SCENARIO_LIVE],
-            [['id' => 5, 'enabled' => false], Element::SCENARIO_DEFAULT],
+            [['draftId' => 5], ElementRules::SCENARIO_ESSENTIALS],
+            [['id' => 5, 'enabled' => true], ElementRules::SCENARIO_LIVE],
+            [['id' => 5, 'enabled' => false], ElementRules::SCENARIO_DEFAULT],
         ];
     }
 

@@ -13,6 +13,7 @@ use craft\test\DbFixtureTrait;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -107,7 +108,7 @@ abstract class BaseElementFixture extends DbFixture
             $this->populateElement($element, $data);
 
             if ($element->enabled && $element->getIsCanonical() && !$element->isProvisionalDraft) {
-                $element->ruleset->useScenario(Element::SCENARIO_LIVE);
+                $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
             }
 
             if (!$this->saveElement($element)) {

@@ -18,6 +18,7 @@ use craft\records\Section;
 use craft\services\Elements;
 use craft\test\TestCase;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Gql\Resolvers\MutationResolver;
@@ -246,7 +247,7 @@ class GeneralMutationResolverTest extends TestCase
         $entry->title = 'Entry title';
         $entry->sectionId = Section::find()->one()->id;
 
-        $scenario = Element::SCENARIO_DEFAULT;
+        $scenario = ElementRules::SCENARIO_DEFAULT;
         $entry->ruleset->useScenario($scenario);
         $entry->enabled = false;
 
