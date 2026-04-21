@@ -202,14 +202,16 @@ class TestCase extends Orchestra
 
             Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
 
-            $migration->up();
-            app(LaravelMigrations::class)->ensureSessionsTable();
-
-            // Mark all existing migrations as applied
             $migrator = app(Migrator::class)->track('craft');
+            $migrator->runMigration($migration, 'up');
+            $migrator->getRepository()->log('Install', 1);
+
+            // Mark all existing Craft migrations as applied
             foreach ($migrator->getPendingMigrations() as $file) {
                 $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
             }
+
+            app(LaravelMigrations::class)->install($migrator);
 
             RefreshDatabaseState::$migrated = true;
         }

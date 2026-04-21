@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Database\Commands;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Commands\Concerns\BackupTrait;
 use CraftCms\Cms\Database\Events\RegisterMigrators;
+use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Str;
@@ -53,12 +54,14 @@ class MigrateCommand extends Command implements Isolatable
 
     private Plugins $plugins;
 
+    private LaravelMigrations $laravelMigrations;
+
     /**
      * @var array<string, Migrator>
      */
     private array $migrators = [];
 
-    public function handle(Updates $updates, Plugins $plugins): int
+    public function handle(Updates $updates, Plugins $plugins, LaravelMigrations $laravelMigrations): int
     {
         if (! $this->confirmToProceed()) {
             return self::SUCCESS;
@@ -66,6 +69,7 @@ class MigrateCommand extends Command implements Isolatable
 
         $this->updates = $updates;
         $this->plugins = $plugins;
+        $this->laravelMigrations = $laravelMigrations;
 
         try {
             $this->runMigrations();
@@ -197,6 +201,7 @@ class MigrateCommand extends Command implements Isolatable
 
         $noContent = $this->option('no-content') ?? $this->option('noContent');
         if (! $noContent && (! $this->option('track') || $this->option('track') === 'content')) {
+            $this->laravelMigrations->reconcile($this->getMigrator('content'));
             $contentMigrations = $this->getMigrator('content')->getPendingMigrations();
             if (! empty($contentMigrations)) {
                 $migrationsByTrack['content'] = $contentMigrations;

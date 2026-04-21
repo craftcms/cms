@@ -16,12 +16,30 @@ class LaravelMigrations
 {
     public function install(Migrator $migrator): void
     {
+        $pendingMigrations = $this->reconcile($migrator);
+
+        if (empty($pendingMigrations)) {
+            return;
+        }
+
+        $migrator->run($pendingMigrations);
+    }
+
+    /**
+     * Reconciles already-existing optional Laravel tables with the content
+     * migration track and returns any optional Laravel migrations that still
+     * need to run.
+     *
+     * @return string[]
+     */
+    public function reconcile(Migrator $migrator): array
+    {
         $this->publishMigrationFiles();
 
         $migrationPaths = $this->migrationPaths();
 
         if (empty($migrationPaths)) {
-            return;
+            return [];
         }
 
         $originalTrack = $migrator->getTrack();
@@ -29,25 +47,10 @@ class LaravelMigrations
         try {
             $migrator->track('content');
 
-            $pendingMigrations = $migrator->getPendingMigrations($migrationPaths);
-            $batch = $migrator->getRepository()->getNextBatchNumber();
-
-            foreach ($pendingMigrations as $key => $path) {
-                if (! $this->migrationTableExists($path)) {
-                    continue;
-                }
-
-                $migrator->getRepository()->log($migrator->getMigrationName($path), $batch);
-                unset($pendingMigrations[$key]);
-            }
-
-            $pendingMigrations = array_values($pendingMigrations);
-
-            if (empty($pendingMigrations)) {
-                return;
-            }
-
-            $migrator->run($pendingMigrations);
+            return $this->reconcilePendingMigrations(
+                $migrator,
+                $migrator->getPendingMigrations($migrationPaths),
+            );
         } finally {
             $migrator->track($originalTrack ?? 'content');
         }
@@ -133,6 +136,26 @@ class LaravelMigrations
     private function migrationFiles(string $pattern): array
     {
         return File::glob(app()->databasePath("migrations/$pattern")) ?: [];
+    }
+
+    /**
+     * @param  string[]  $pendingMigrations
+     * @return string[]
+     */
+    private function reconcilePendingMigrations(Migrator $migrator, array $pendingMigrations): array
+    {
+        $batch = $migrator->getRepository()->getNextBatchNumber();
+
+        foreach ($pendingMigrations as $key => $path) {
+            if (! $this->migrationTableExists($path)) {
+                continue;
+            }
+
+            $migrator->getRepository()->log($migrator->getMigrationName($path), $batch);
+            unset($pendingMigrations[$key]);
+        }
+
+        return array_values($pendingMigrations);
     }
 
     private function migrationTableExists(string $path): bool
