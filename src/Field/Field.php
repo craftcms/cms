@@ -489,7 +489,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     }
 
     #[Override]
-    public function attributes(): array
+    public function validationData(): array
     {
         return Collection::make($this->settingsAttributes())
             ->reject(fn ($name): bool => in_array($name, [

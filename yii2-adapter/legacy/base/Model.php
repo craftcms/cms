@@ -14,9 +14,12 @@ use craft\events\DefineRulesEvent;
 use craft\helpers\App;
 use craft\helpers\Component;
 use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Validation\ComponentRules;
 use CraftCms\Cms\Validation\Contracts\Validatable;
+use CraftCms\RulesetValidation\Concerns\HasRuleset;
 use CraftCms\RulesetValidation\Ruleset;
 use Illuminate\Contracts\Support\MessageBag;
 use yii\validators\Validator;
@@ -28,11 +31,11 @@ use yii\validators\Validator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
+#[Ruleset(ComponentRules::class)]
 abstract class Model extends \yii\base\Model implements ModelInterface, Validatable
 {
     use ClonefixTrait;
-
-    public false|Ruleset $ruleset = false;
+    use HasRuleset;
 
     /**
      * @event \yii\base\Event The event that is triggered after the model's init cycle
@@ -258,7 +261,17 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
 
     public function getAttributes($names = null, $except = []): array
     {
-        return parent::getAttributes($names, $except);
+        $attributes = parent::validationData();
+
+        if ($names !== null) {
+            $attributes = Arr::only($attributes, $names);
+        }
+
+        if ($except !== []) {
+            $attributes = Arr::except($attributes, $except);
+        }
+
+        return $attributes;
     }
 
     public function attributes(): array
@@ -367,9 +380,8 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
         return parent::getErrorSummary($showAllErrors);
     }
 
-    public function beforeValidate(): bool
+    public function prepareForValidation(): void
     {
-        return true;
     }
 
     public function afterValidate(?\Illuminate\Validation\Validator $validator = null): void

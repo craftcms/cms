@@ -686,7 +686,7 @@ class Plugins
         }
 
         // Update the plugin’s settings in the project config
-        $pluginSettings = ProjectConfigHelper::packAssociativeArrays($pluginSettings->getAttributes());
+        $pluginSettings = ProjectConfigHelper::packAssociativeArrays($pluginSettings->validationData());
         app(ProjectConfig::class)->set(
             path: ProjectConfig::PATH_PLUGINS.'.'.$plugin->handle.'.settings',
             value: $pluginSettings,

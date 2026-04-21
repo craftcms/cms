@@ -25,13 +25,27 @@ interface Validatable extends ValidatesWithRuleset
     public function getMessages(): array;
 
     /**
-     * This method is invoked before validation starts.
-     * The default implementation returns true, allowing validation to proceed.
-     * Override this method to perform pre-validation logic or to conditionally skip validation.
+     * Returns human-readable labels for attributes.
+     * These labels are used in validation error messages. For example, given an attribute
+     * `firstName`, a label `First Name` can be declared for display to end users.
+     * The default implementation returns an empty array.
      *
-     * @return bool whether the validation should be executed.
+     * @return array<string, string>
      */
-    public function beforeValidate(): bool;
+    public function attributeLabels(): array;
+
+    /**
+     * Sets attribute values.
+     *
+     * @param  array<string, mixed>  $values  attribute values to set (attribute name => value).
+     */
+    public function setAttributes(array $values): void;
+
+    /**
+     * This method is invoked before validation starts.
+     * Override this method to perform pre-validation logic.
+     */
+    public function prepareForValidation(): void;
 
     /**
      * Validates the attributes.
@@ -63,37 +77,4 @@ interface Validatable extends ValidatesWithRuleset
      * Returns the validation error messages.
      */
     public function errors(): MessageBag;
-
-    /**
-     * Sets attribute values.
-     *
-     * @param  array<string, mixed>  $values  attribute values to set (attribute name => value).
-     */
-    public function setAttributes(array $values): void;
-
-    /**
-     * Returns all attribute values.
-     * By default, this returns all public non-static properties of the class.
-     *
-     * @return array<string, mixed>
-     */
-    public function getAttributes(): array;
-
-    /**
-     * Returns the list of attribute names.
-     * By default, this returns all public non-static property names of the class.
-     *
-     * @return string[] list of attribute names.
-     */
-    public function attributes(): array;
-
-    /**
-     * Returns human-readable labels for attributes.
-     * These labels are used in validation error messages. For example, given an attribute
-     * `firstName`, a label `First Name` can be declared for display to end users.
-     * The default implementation returns an empty array.
-     *
-     * @return array<string, string>
-     */
-    public function attributeLabels(): array;
 }

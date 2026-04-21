@@ -13,6 +13,7 @@ use craft\records\GlobalSet as GlobalSetRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -221,14 +222,14 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
             ['name', 'handle'],
             UniqueValidator::class,
             'targetClass' => GlobalSetRecord::class,
-            'except' => [self::SCENARIO_ESSENTIALS],
+            'except' => [ElementRules::SCENARIO_ESSENTIALS],
         ];
 
         $rules[] = [
             ['handle'],
             HandleValidator::class,
             'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title'],
-            'except' => [self::SCENARIO_ESSENTIALS],
+            'except' => [ElementRules::SCENARIO_ESSENTIALS],
         ];
 
         $rules[] = [['fieldLayout'], function() {

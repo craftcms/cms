@@ -33,6 +33,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Element is the base class for classes representing elements in terms of objects.
+ *
+ * @property \CraftCms\RulesetValidation\Ruleset $ruleset
  */
 #[Ruleset(ElementRules::class)]
 abstract class Element extends Component implements ElementInterface

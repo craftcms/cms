@@ -4,23 +4,61 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Validation\Concerns;
 
-use CraftCms\Cms\Component\Exceptions\InvalidCallException;
-use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Utils;
-use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\RulesetValidation\Concerns\HasRuleset;
-use Illuminate\Support\Facades\Validator as ValidatorFacade;
+use Illuminate\Support\MessageBag;
 use Illuminate\Validation\Validator;
 
-/**
- * @mixin Validatable
- */
 trait Validates
 {
     use HasRuleset;
-    use InteractsWithValidator;
+
+    private ?MessageBag $errors = null;
+
+    public function getFirstErrors(): array
+    {
+        return array_map(fn (array $messages) => Arr::first($messages), $this->errors()->getMessages());
+    }
+
+    public function errors(): MessageBag
+    {
+        return $this->errors ??= new MessageBag;
+    }
+
+    /**
+     * TODO: Add types to method signature once components no longer rely
+     * on craft/base/Model
+     *
+     * @param  array|string|null  $attributeNames
+     * @param  bool  $clearErrors
+     */
+    public function validate($attributeNames = null, $clearErrors = true, bool $throw = false): bool
+    {
+        if ($clearErrors) {
+            $this->errors = new MessageBag;
+        }
+
+        if (is_string($attributeNames)) {
+            $attributeNames = [$attributeNames];
+        }
+
+        $ruleset = $this->ruleset;
+
+        if (! is_null($attributeNames)) {
+            $ruleset->only($attributeNames);
+        }
+
+        if ($throw) {
+            $ruleset->validate();
+        }
+
+        $result = $ruleset->passes();
+
+        $this->errors()->merge($ruleset->getValidator()->errors());
+
+        return $result && $this->errors()->isEmpty();
+    }
 
     public function getRules(): array
     {
@@ -32,55 +70,19 @@ trait Validates
         return [];
     }
 
-    public function setAttributes($values, $safeOnly = true): void
-    {
-        Typecast::properties(static::class, $values);
-
-        foreach ($values as $name => $value) {
-            try {
-                $this->$name = $value;
-            } catch (UnknownPropertyException|InvalidCallException|\yii\base\UnknownPropertyException) {
-                // Property or setter doesn't exist
-            }
-        }
-    }
-
-    public function validationData(): array
-    {
-        return $this->getAttributes();
-    }
-
-    public function getAttributes(): array
-    {
-        return Utils::getPublicProperties($this);
-    }
-
-    public function attributes(): array
-    {
-        return Utils::getPublicAttributes($this);
-    }
-
     public function attributeLabels(): array
     {
         return [];
     }
 
-    protected function getValidator(?array $attributeNames = null): Validator
+    public function prepareForValidation(): void {}
+
+    public function passedValidation(): void {}
+
+    public function afterValidate(?Validator $validator = null): void {}
+
+    public function validationData(): array
     {
-        if ($ruleset = $this->ruleset) {
-            return $ruleset
-                ->when(! is_null($attributeNames), fn ($ruleset) => $ruleset->only($attributeNames))
-                ->getValidator();
-        }
-
-        $rules = is_null($attributeNames)
-            ? $this->getRules()
-            : Arr::only($this->getRules(), $attributeNames);
-
-        return ValidatorFacade::make([], [])
-            ->setData($this->validationData())
-            ->setCustomMessages($this->getMessages())
-            ->setAttributeNames($this->attributeLabels())
-            ->setRules($rules);
+        return Utils::getPublicProperties($this);
     }
 }

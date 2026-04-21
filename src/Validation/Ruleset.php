@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Validation;
 
 use CraftCms\Cms\Element\Validation\Events\DefineValidationRules;
 use CraftCms\Cms\Validation\Contracts\Validatable;
+use Illuminate\Validation\Validator;
+use Override;
 
 /**
  * @template T of Validatable
@@ -14,7 +16,7 @@ use CraftCms\Cms\Validation\Contracts\Validatable;
  */
 abstract class Ruleset extends \CraftCms\RulesetValidation\Ruleset
 {
-    #[\Override]
+    #[Override]
     protected function validationRules(): array
     {
         $rules = parent::validationRules();
@@ -22,5 +24,18 @@ abstract class Ruleset extends \CraftCms\RulesetValidation\Ruleset
         event($event = new DefineValidationRules($this->subject, $rules));
 
         return $event->rules;
+    }
+
+    public function after(): array
+    {
+        if (! method_exists($this->subject, 'afterValidate')) {
+            return [];
+        }
+
+        return [
+            function (Validator $validator) {
+                $this->subject->afterValidate($validator);
+            },
+        ];
     }
 }

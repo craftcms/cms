@@ -9,6 +9,7 @@ namespace craft\validators;
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Facades\Elements;
 use yii\base\InvalidConfigException;
@@ -50,7 +51,7 @@ class ElementUriValidator extends UriValidator
         // Ignore published drafts if the scenario isn't "live",
         // or if the canonical element is enabled and the URI hasn't changed on the draft
         if ($model->getIsDraft() && !$model->getIsUnpublishedDraft()) {
-            if ($model->ruleset->getScenario() !== Element::SCENARIO_LIVE) {
+            if ($model->ruleset->getScenario() !== ElementRules::SCENARIO_LIVE) {
                 return;
             }
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ec2bc081360e943079af44aca215831f",
+    "content-hash": "f021fb13ae5803c1ef5aa53145b4e877",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -617,11 +617,17 @@
         },
         {
             "name": "craftcms/laravel-ruleset-validation",
-            "version": "dev-main",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/craftcms/laravel-ruleset-validation.git",
+                "reference": "66867ade9c09c6c8165bd62c0ebb7e4843399aab"
+            },
             "dist": {
-                "type": "path",
-                "url": "../laravel-ruleset-validation",
-                "reference": "cf1ca39421a8b05714a4bb8bc9093be5f866436e"
+                "type": "zip",
+                "url": "https://api.github.com/repos/craftcms/laravel-ruleset-validation/zipball/66867ade9c09c6c8165bd62c0ebb7e4843399aab",
+                "reference": "66867ade9c09c6c8165bd62c0ebb7e4843399aab",
+                "shasum": ""
             },
             "require": {
                 "illuminate/contracts": "^13.0",
@@ -634,9 +640,7 @@
                 "laravel/pint": "^v1.29",
                 "nunomaduro/collision": "^8.1.1",
                 "orchestra/testbench": "^11.0",
-                "pestphp/pest": "^4.0",
-                "pestphp/pest-plugin-arch": "^4.0",
-                "pestphp/pest-plugin-laravel": "^4.0"
+                "pestphp/pest": "^4.0"
             },
             "type": "library",
             "extra": {
@@ -651,31 +655,7 @@
                     "CraftCms\\RulesetValidation\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "CraftCms\\RulesetValidation\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "post-autoload-dump": [
-                    "@composer run prepare"
-                ],
-                "prepare": [
-                    "@php vendor/bin/testbench package:discover --ansi"
-                ],
-                "analyse": [
-                    "vendor/bin/phpstan analyse"
-                ],
-                "test": [
-                    "vendor/bin/pest"
-                ],
-                "test-coverage": [
-                    "vendor/bin/pest --coverage"
-                ],
-                "format": [
-                    "vendor/bin/pint"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -685,7 +665,7 @@
                     "homepage": "https://pixelandtonic.com/"
                 }
             ],
-            "description": "A Laravel wrapper around yiisoft/aliases",
+            "description": "Validate requests and objects with reusable Laravel rulesets.",
             "homepage": "https://github.com/craftcms/laravel-ruleset-validation",
             "keywords": [
                 "craftcms",
@@ -693,9 +673,11 @@
                 "rulesets",
                 "validation"
             ],
-            "transport-options": {
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/craftcms/laravel-ruleset-validation/issues",
+                "source": "https://github.com/craftcms/laravel-ruleset-validation/tree/1.0.1"
+            },
+            "time": "2026-04-21T07:56:55+00:00"
         },
         {
             "name": "craftcms/plugin-installer",
@@ -14855,7 +14837,6 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "craftcms/laravel-ruleset-validation": 20,
         "craftcms/yii2-adapter": 20
     },
     "prefer-stable": true,

@@ -11,14 +11,17 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Concerns\MacroableMagicMethods;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Validation\ComponentRules;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Contracts\Validatable;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTimeInterface;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Traits\Macroable;
 use Yiisoft\Arrays\ArrayableInterface;
 use Yiisoft\Arrays\ArrayableTrait;
 
+#[Ruleset(ComponentRules::class)]
 abstract class Component implements Arrayable, ArrayableInterface, ComponentInterface, Validatable
 {
     use ArrayableTrait {
@@ -96,6 +99,19 @@ abstract class Component implements Arrayable, ArrayableInterface, ComponentInte
         }
 
         return $fields;
+    }
+
+    public function setAttributes($values): void
+    {
+        Typecast::properties(static::class, $values);
+
+        foreach ($values as $name => $value) {
+            try {
+                $this->$name = $value;
+            } catch (UnknownPropertyException|InvalidCallException|\yii\base\UnknownPropertyException) {
+                // Property or setter doesn't exist
+            }
+        }
     }
 
     public function __get(string $name)

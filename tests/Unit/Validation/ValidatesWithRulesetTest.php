@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Validation\ComponentRules;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\Cms\Validation\Ruleset;
@@ -24,29 +25,14 @@ function createValidatableComponent(array $attributes, ?string $rulesetClass = n
             $this->rulesetClass = $rulesetClass ?? TestRuleset::class;
         }
 
-        public function getRules(): array
-        {
-            return [];
-        }
-
-        public function getMessages(): array
-        {
-            return [];
-        }
-
         public function setAttributes(array $values, bool $safeOnly = true): void
         {
             $this->testAttributes = array_merge($this->testAttributes, $values);
         }
 
-        public function getAttributes(): array
+        public function validationData(): array
         {
             return $this->testAttributes;
-        }
-
-        public function attributes(): array
-        {
-            return array_keys($this->testAttributes);
         }
 
         public function ruleset(): string
@@ -58,15 +44,10 @@ function createValidatableComponent(array $attributes, ?string $rulesetClass = n
         {
             $this->afterValidateCalled = true;
         }
-
-        public function attributeLabels(): array
-        {
-            return [];
-        }
     };
 }
 
-class TestRuleset extends Ruleset
+class TestRuleset extends ComponentRules
 {
     public bool $prepareForValidationCalled = false;
 
@@ -88,6 +69,7 @@ class TestRuleset extends Ruleset
         $this->prepareForValidationAttributes = $this->validationAttributes;
     }
 
+    #[Override]
     public function rules(): array
     {
         return [
