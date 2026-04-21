@@ -19,8 +19,8 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Validation\ComponentRules;
 use CraftCms\Cms\Validation\Contracts\Validatable;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use CraftCms\RulesetValidation\Concerns\HasRuleset;
-use CraftCms\RulesetValidation\Ruleset;
 use Illuminate\Contracts\Support\MessageBag;
 use yii\validators\Validator;
 
