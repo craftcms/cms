@@ -2170,10 +2170,12 @@ JS, [
             // save the draft anyway, so we don’t lose the latest changes
             // (see https://github.com/craftcms/cms/issues/18657)
             $errors = $element->getErrors();
+            $invalidNestedElementIds = $element->getInvalidNestedElementIds();
             $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-            Elements::saveElement($element, saveContent: $saveContent);
+            Elements::saveElement(element: $element, saveContent: $saveContent);
             $element->clearErrors();
             $element->addErrors($errors);
+            $element->addInvalidNestedElementIds($invalidNestedElementIds);
             return $this->_asAppyDraftFailure($element);
         }
 

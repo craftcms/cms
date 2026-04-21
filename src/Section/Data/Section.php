@@ -261,7 +261,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
             'maxAuthors' => $this->maxAuthors,
             'propagationMethod' => $this->propagationMethod->value,
             'siteSettings' => [],
-            'defaultPlacement' => $this->defaultPlacement->value ?? DefaultPlacement::End->value,
+            'defaultPlacement' => $this->defaultPlacement->value,
         ];
 
         if (! empty($this->previewTargets)) {

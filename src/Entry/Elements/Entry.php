@@ -1836,7 +1836,9 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
     public function getPostEditUrl(): string
     {
-        return Url::cpUrl('entries');
+        $page = $this->getSection()?->getPage();
+
+        return Url::cpUrl(sprintf('content/%s', $page ? Str::slug($page) : 'entries'));
     }
 
     protected function cpRevisionsUrl(): string
