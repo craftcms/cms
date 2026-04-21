@@ -1,6 +1,10 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.17.13.1 - 2026-04-14
+
+- Fixed an issue that prevented Craft from being installed. ([#18700](https://github.com/craftcms/cms/issues/18700))
+
+## 4.17.13 - 2026-04-07
 
 - Most classes can now be instantiated via the `create()` Twig function. ([#18376](https://github.com/craftcms/cms/discussions/18376))
 - Fixed a bug where element search query caches weren’t getting invalidated when elements’ search keywords were indexed. ([#18275](https://github.com/craftcms/cms/issues/18275))
