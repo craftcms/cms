@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\LayoutElements\users\FullNameField;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Validation\Rules\UsernameRule;
 use CraftCms\Cms\User\Validation\Rules\UserPasswordRule;
@@ -22,10 +23,19 @@ use function CraftCms\Cms\t;
 /**
  * @extends ElementRules<User>
  *
- * @property User $component
+ * @property User $subject
  */
 class UserRules extends ElementRules
 {
+    /**
+     * @since 4.4.8
+     */
+    public const string SCENARIO_ACTIVATION = 'activation';
+
+    public const string SCENARIO_REGISTRATION = 'registration';
+
+    public const string SCENARIO_PASSWORD = 'password';
+
     private const array TRIMMABLE_ATTRIBUTES = [
         'email',
         'unverifiedEmail',
@@ -36,31 +46,31 @@ class UserRules extends ElementRules
     ];
 
     #[Override]
-    public function prepareForValidation(?array $attributeNames = null): void
+    public function prepareForValidation(): void
     {
-        parent::prepareForValidation($attributeNames);
+        parent::prepareForValidation();
 
-        $attributesToTrim = is_null($attributeNames)
+        $attributesToTrim = is_null($this->validationAttributes)
             ? self::TRIMMABLE_ATTRIBUTES
-            : array_intersect(self::TRIMMABLE_ATTRIBUTES, $attributeNames);
+            : array_intersect(self::TRIMMABLE_ATTRIBUTES, $this->validationAttributes);
 
         foreach ($attributesToTrim as $attribute) {
-            $value = $this->component->{$attribute};
+            $value = $this->subject->{$attribute};
 
             if (is_string($value)) {
-                $this->component->{$attribute} = trim($value);
+                $this->subject->{$attribute} = trim($value);
             }
         }
     }
 
     #[Override]
-    protected function defineRules(): array
+    public function rules(): array
     {
-        $rules = parent::defineRules();
+        $rules = parent::rules();
 
-        $treatAsActive = $this->component->getIsCredentialed() || $this->component->inScenarios(
-            User::SCENARIO_REGISTRATION,
-            User::SCENARIO_ACTIVATION,
+        $treatAsActive = $this->subject->getIsCredentialed() || $this->inScenarios(
+            self::SCENARIO_REGISTRATION,
+            self::SCENARIO_ACTIVATION,
         );
 
         $unique = fn (string $column) => new UniqueCaseInsensitiveRule(Table::USERS, $column)
@@ -68,7 +78,7 @@ class UserRules extends ElementRules
                 ->where('active', true)
                 ->orWhere('pending', true)
             )
-            ->ignore($this->component->id);
+            ->ignore($this->subject->id);
 
         $noProtocol = function ($attribute, $value, $fail) {
             if (str_contains($value, '://')) {
@@ -88,7 +98,7 @@ class UserRules extends ElementRules
                 'nullable',
                 'string',
                 'max:255',
-                Rule::requiredIf(fn () => ! $this->component->getIsDraft()),
+                Rule::requiredIf(fn () => ! $this->subject->getIsDraft()),
                 'email',
             ],
             'unverifiedEmail' => [
@@ -106,12 +116,12 @@ class UserRules extends ElementRules
         ]);
 
         $requiredNameField = (fn (bool $requiredWhenFirstAndLastNameFields) => Cms::config()->showFirstAndLastNameFields === $requiredWhenFirstAndLastNameFields
-            && ($this->component
+            && ($this->subject
                 ->getFieldLayout()
-                ->getFirstVisibleElementByType(FullNameField::class, $this->component)
+                ->getFirstVisibleElementByType(FullNameField::class, $this->subject)
                 ->required ?? false));
 
-        if ($this->component->inScenarios(User::SCENARIO_LIVE)) {
+        if ($this->inScenarios(self::SCENARIO_LIVE)) {
             $rules['firstName'][] = Rule::requiredIf($requiredNameField(true));
             $rules['lastName'][] = Rule::requiredIf($requiredNameField(true));
             $rules['fullName'][] = Rule::requiredIf($requiredNameField(false));
@@ -135,22 +145,42 @@ class UserRules extends ElementRules
 
         $currentPassword = null;
 
-        if (isset($this->component->id) && $this->component->passwordResetRequired) {
+        if (isset($this->subject->id) && $this->subject->passwordResetRequired) {
             $currentPassword = DB::table(Table::USERS)
-                ->where('id', $this->component->id)
+                ->where('id', $this->subject->id)
                 ->value('password');
         }
 
         $rules['newPassword'] = [
             Rule::requiredIf(
                 ! Cms::config()->deferPublicRegistrationPassword
-                && $this->component->inScenarios(User::SCENARIO_PASSWORD, User::SCENARIO_REGISTRATION)
+                && $this->inScenarios(self::SCENARIO_PASSWORD, self::SCENARIO_REGISTRATION)
             ),
             new UserPasswordRule(
-                forceDifferent: $this->component->passwordResetRequired,
+                forceDifferent: $this->subject->passwordResetRequired,
                 currentPassword: $currentPassword,
             ),
         ];
+
+        return $rules;
+    }
+
+    #[Override]
+    protected function validationRules(): array
+    {
+        $rules = parent::validationRules();
+
+        if ($this->inScenarios(self::SCENARIO_PASSWORD)) {
+            return Arr::only($rules, ['newPassword']);
+        }
+
+        if ($this->inScenarios(self::SCENARIO_REGISTRATION)) {
+            return Arr::only($rules, ['username', 'email', 'newPassword']);
+        }
+
+        if ($this->inScenarios(self::SCENARIO_ACTIVATION)) {
+            return Arr::only($rules, ['username', 'email']);
+        }
 
         return $rules;
     }

@@ -10,7 +10,7 @@ use craft\base\ElementInterface;
  * InlineEditableFieldInterface defines the common interface to be implemented by field classes
  * that wish to be editable via inline edit forms.
  */
-interface InlineEditableFieldInterface extends FieldInterface
+interface InlineEditableFieldInterface extends PreviewableFieldInterface
 {
     /**
      * Returns the HTML that should be shown for this field’s inline inputs.

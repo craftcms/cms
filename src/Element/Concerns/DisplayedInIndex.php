@@ -20,6 +20,7 @@ use CraftCms\Cms\Element\Events\RegisterTableAttributes;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\ExcludeDescendantIdsExpression;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ElementSources;
@@ -236,7 +237,7 @@ trait DisplayedInIndex
         if (request()->boolean('prevalidate')) {
             foreach ($elements as $element) {
                 if ($element->enabled && $element->getEnabledForSite()) {
-                    $element->setScenario(Element::SCENARIO_LIVE);
+                    $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
                 }
                 $element->validate();
             }
@@ -260,7 +261,7 @@ trait DisplayedInIndex
      */
     private static function elementQueryWithAllDescendants(ElementQueryInterface $elementQuery): ElementQueryInterface|ElementQuery
     {
-        $wheres = $elementQuery->getSubQuery()->wheres;
+        $wheres = $elementQuery->getQuery()->wheres;
 
         if (! is_array($wheres)) {
             return $elementQuery;
@@ -275,7 +276,7 @@ trait DisplayedInIndex
 
             $elementQuery = clone $elementQuery;
             unset($wheres[$key]);
-            $elementQuery->getSubQuery()->wheres = $wheres;
+            $elementQuery->getQuery()->wheres = $wheres;
 
             return $elementQuery;
         }

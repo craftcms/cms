@@ -19,6 +19,8 @@ use CraftCms\Cms\Asset\Events\BeforeDefineAssetUrl;
 use CraftCms\Cms\Asset\Events\BeforeGenerateTransform;
 use CraftCms\Cms\Asset\Events\BeforeHandleFile;
 use CraftCms\Cms\Asset\Events\DefineAssetUrl;
+use CraftCms\Cms\Asset\Validation\AssetRules;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use Illuminate\Support\Facades\Event;
 
 /**
@@ -28,6 +30,22 @@ use Illuminate\Support\Facades\Event;
 class Asset extends \CraftCms\Cms\Asset\Elements\Asset
 {
     use ElementEventConstants;
+
+    public const string SCENARIO_DEFAULT = ElementRules::SCENARIO_DEFAULT;
+
+    public const string SCENARIO_ESSENTIALS = ElementRules::SCENARIO_ESSENTIALS;
+
+    public const string SCENARIO_LIVE = ElementRules::SCENARIO_LIVE;
+
+    public const string SCENARIO_MOVE = AssetRules::SCENARIO_MOVE;
+
+    public const string SCENARIO_FILEOPS = AssetRules::SCENARIO_FILEOPS;
+
+    public const string SCENARIO_INDEX = AssetRules::SCENARIO_INDEX;
+
+    public const string SCENARIO_CREATE = AssetRules::SCENARIO_CREATE;
+
+    public const string SCENARIO_REPLACE = AssetRules::SCENARIO_REPLACE;
 
     // Events
     // -------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\ContentBlock;
@@ -48,7 +48,7 @@ test('content block field merges nested field errors onto the element', function
 
     $result = EntryModel::factory()
         ->withField('contentBlock', ContentBlock::class, $contentBlockSettings, value: ['fields' => ['innerText' => null]])
-        ->withScenario(Element::SCENARIO_LIVE)
+        ->withScenario(ElementRules::SCENARIO_LIVE)
         ->createElementWithFields(save: false);
 
     $result->element->validate();
@@ -95,7 +95,7 @@ test('content block field preserves nested values through element validation', f
 
     $result = EntryModel::factory()
         ->withField('contentBlock', ContentBlock::class, $contentBlockField->getSettings())
-        ->withScenario(Element::SCENARIO_LIVE)
+        ->withScenario(ElementRules::SCENARIO_LIVE)
         ->createElementWithFields(save: false);
 
     $result->element->setFieldValueFromRequest('contentBlock', [
@@ -141,7 +141,7 @@ test('matrix field preserves nested values through element validation', function
 
     $result = EntryModel::factory()
         ->withField('matrixField', Matrix::class, ['entryTypes' => [$matrixEntryType->id]])
-        ->withScenario(Element::SCENARIO_LIVE)
+        ->withScenario(ElementRules::SCENARIO_LIVE)
         ->createElementWithFields(save: false);
 
     $blockUid = Str::uuid()->toString();

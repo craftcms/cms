@@ -4,28 +4,61 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Validation\Concerns;
 
-use BadMethodCallException;
-use CraftCms\Cms\Component\Exceptions\InvalidCallException;
-use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Utils;
-use CraftCms\Cms\Validation\Attributes\Ruleset as RulesetAttribute;
-use CraftCms\Cms\Validation\Contracts\Validatable;
-use CraftCms\Cms\Validation\Ruleset;
-use Illuminate\Support\Facades\Validator as ValidatorFacade;
+use CraftCms\RulesetValidation\Concerns\HasRuleset;
+use Illuminate\Support\MessageBag;
 use Illuminate\Validation\Validator;
-use ReflectionClass;
 
-/**
- * @mixin Validatable
- */
 trait Validates
 {
-    use HasScenarios;
-    use InteractsWithValidator;
+    use HasRuleset;
 
-    private Ruleset|false|null $ruleset = null;
+    private ?MessageBag $errors = null;
+
+    public function getFirstErrors(): array
+    {
+        return array_map(fn (array $messages) => Arr::first($messages), $this->errors()->getMessages());
+    }
+
+    public function errors(): MessageBag
+    {
+        return $this->errors ??= new MessageBag;
+    }
+
+    /**
+     * TODO: Add types to method signature once components no longer rely
+     * on craft/base/Model
+     *
+     * @param  array|string|null  $attributeNames
+     * @param  bool  $clearErrors
+     */
+    public function validate($attributeNames = null, $clearErrors = true, bool $throw = false): bool
+    {
+        if ($clearErrors) {
+            $this->errors = new MessageBag;
+        }
+
+        if (is_string($attributeNames)) {
+            $attributeNames = [$attributeNames];
+        }
+
+        $ruleset = $this->ruleset;
+
+        if (! is_null($attributeNames)) {
+            $ruleset->only($attributeNames);
+        }
+
+        if ($throw) {
+            $ruleset->validate();
+        }
+
+        $result = $ruleset->passes();
+
+        $this->errors()->merge($ruleset->getValidator()->errors());
+
+        return $result && $this->errors()->isEmpty();
+    }
 
     public function getRules(): array
     {
@@ -37,74 +70,19 @@ trait Validates
         return [];
     }
 
-    public function setAttributes($values, $safeOnly = true): void
-    {
-        Typecast::properties(static::class, $values);
-
-        foreach ($values as $name => $value) {
-            try {
-                $this->$name = $value;
-            } catch (UnknownPropertyException|InvalidCallException|\yii\base\UnknownPropertyException) {
-                // Property or setter doesn't exist
-            }
-        }
-    }
-
-    public function getAttributes(): array
-    {
-        return Utils::getPublicProperties($this);
-    }
-
-    public function attributes(): array
-    {
-        return Utils::getPublicAttributes($this);
-    }
-
     public function attributeLabels(): array
     {
         return [];
     }
 
-    public function getRuleset(): Ruleset|false
+    public function prepareForValidation(): void {}
+
+    public function passedValidation(): void {}
+
+    public function afterValidate(?Validator $validator = null): void {}
+
+    public function validationData(): array
     {
-        if (isset($this->ruleset)) {
-            return $this->ruleset;
-        }
-
-        $attributes = new ReflectionClass($this)->getAttributes(RulesetAttribute::class);
-
-        $class = null;
-        if (isset($attributes[0])) {
-            $class = $attributes[0]->getArguments()[0];
-        } elseif (method_exists($this, 'rulesClass')) {
-            $class = $this->rulesClass();
-        }
-
-        if (is_null($class)) {
-            return $this->ruleset = false;
-        }
-
-        if (! is_subclass_of($class, Ruleset::class)) {
-            throw new BadMethodCallException('The rules class must be an instance of '.Ruleset::class);
-        }
-
-        return $this->ruleset = app()->make($class, ['component' => $this]);
-    }
-
-    protected function getValidator(?array $attributeNames = null): Validator
-    {
-        $ruleset = $this->getRuleset();
-        $rules = $ruleset ? $ruleset->rules() : $this->getRules();
-        $attributes = $ruleset ? $ruleset->attributes() : $this->attributeLabels();
-        $messages = $ruleset ? $ruleset->messages() : $this->getMessages();
-
-        return ValidatorFacade::make([], [])
-            ->setData($this->getAttributes())
-            ->setCustomMessages($messages)
-            ->setAttributeNames($attributes)
-            ->setRules(is_null($attributeNames)
-                ? $rules
-                : Arr::only($rules, $attributeNames)
-            );
+        return Arr::except(Utils::getPublicProperties($this), ['ruleset']);
     }
 }

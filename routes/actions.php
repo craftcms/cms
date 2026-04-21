@@ -189,7 +189,7 @@ Route::prefix(implode('/', [
         Route::any('app/get-cp-alerts', [CpAlertsController::class, 'index']);
         Route::any('app/shun-cp-alert', [CpAlertsController::class, 'destroy']);
         Route::any('app/set-license-shun-cookie', [LicensesController::class, 'setShunCookie']);
-        Route::middleware(RequireAdmin::class)->get('app/get-plugin-license-info', [CraftCms\Cms\Http\Controllers\App\PluginsController::class, 'getLicenseInfo']);
+        Route::middleware(RequireAdmin::class)->post('app/get-plugin-license-info', [CraftCms\Cms\Http\Controllers\App\PluginsController::class, 'getLicenseInfo']);
         Route::middleware(RequireAdminChanges::class)->post('app/update-plugin-license', [CraftCms\Cms\Http\Controllers\App\PluginsController::class, 'updateLicense']);
         Route::any('app/render-elements', [RenderController::class, 'elements']);
         Route::any('app/render-components', [RenderController::class, 'components']);

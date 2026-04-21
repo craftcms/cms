@@ -8,23 +8,18 @@
 namespace craft\web\assets\inputmask;
 
 use craft\web\AssetBundle;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Inputmask asset bundle
  *
  * @since 4.5.7
+ * @deprecated 6.0.0
  */
 class InputmaskAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public $js = [
-        'jquery.inputmask.bundle.js',
-    ];
+    public function registerAssetFiles($view)
+    {
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\InputmaskAsset::class);
+    }
 }

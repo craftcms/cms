@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Validation\Contracts;
 
+use CraftCms\RulesetValidation\Contracts\ValidatesWithRuleset;
 use Illuminate\Contracts\Support\MessageBag;
 use Illuminate\Validation\Validator;
 
-interface Validatable
+interface Validatable extends ValidatesWithRuleset
 {
     /**
      * Returns the validation rules or ruleset for attributes.
@@ -24,13 +25,27 @@ interface Validatable
     public function getMessages(): array;
 
     /**
-     * This method is invoked before validation starts.
-     * The default implementation returns true, allowing validation to proceed.
-     * Override this method to perform pre-validation logic or to conditionally skip validation.
+     * Returns human-readable labels for attributes.
+     * These labels are used in validation error messages. For example, given an attribute
+     * `firstName`, a label `First Name` can be declared for display to end users.
+     * The default implementation returns an empty array.
      *
-     * @return bool whether the validation should be executed.
+     * @return array<string, string>
      */
-    public function beforeValidate(): bool;
+    public function attributeLabels(): array;
+
+    /**
+     * Sets attribute values.
+     *
+     * @param  array<string, mixed>  $values  attribute values to set (attribute name => value).
+     */
+    public function setAttributes(array $values): void;
+
+    /**
+     * This method is invoked before validation starts.
+     * Override this method to perform pre-validation logic.
+     */
+    public function prepareForValidation(): void;
 
     /**
      * Validates the attributes.
@@ -62,84 +77,4 @@ interface Validatable
      * Returns the validation error messages.
      */
     public function errors(): MessageBag;
-
-    /**
-     * Sets attribute values.
-     *
-     * @param  array<string, mixed>  $values  attribute values to set (attribute name => value).
-     */
-    public function setAttributes(array $values): void;
-
-    /**
-     * Returns all attribute values.
-     * By default, this returns all public non-static properties of the class.
-     *
-     * @return array<string, mixed>
-     */
-    public function getAttributes(): array;
-
-    /**
-     * Returns the list of attribute names.
-     * By default, this returns all public non-static property names of the class.
-     *
-     * @return string[] list of attribute names.
-     */
-    public function attributes(): array;
-
-    /**
-     * Returns human-readable labels for attributes.
-     * These labels are used in validation error messages. For example, given an attribute
-     * `firstName`, a label `First Name` can be declared for display to end users.
-     * The default implementation returns an empty array.
-     *
-     * @return array<string, string>
-     */
-    public function attributeLabels(): array;
-
-    /**
-     * Sets the current validation scenario.
-     *
-     * Scenarios allow components to use different validation rules based on context.
-     * For example, a 'create' scenario might require certain fields, while an 'update'
-     * scenario might have different requirements.
-     *
-     * @param  string  $scenario  The scenario name to set
-     */
-    public function setScenario(string $scenario): void;
-
-    /**
-     * Returns the current validation scenario.
-     *
-     * @return string The active scenario name
-     */
-    public function getScenario(): string;
-
-    /**
-     * Returns a mapping of scenario names to their active attributes.
-     *
-     * Each scenario defines which attributes should be validated. The returned array
-     * maps scenario names (keys) to either:
-     * - An array of attribute names that should be validated in that scenario
-     * - null to indicate all attributes should be validated
-     *
-     * Example:
-     * ```php
-     * [
-     *     'create' => ['title', 'slug', 'body'],
-     *     'update' => ['title', 'body'],
-     *     'default' => null, // All attributes
-     * ]
-     * ```
-     *
-     * @return array<string, array<string>|null>
-     */
-    public function scenarios(): array;
-
-    /**
-     * Checks if the current scenario matches any of the provided scenarios.
-     *
-     * @param  string  ...$scenarios  One or more scenario names to check against
-     * @return bool True if the current scenario matches any provided scenario
-     */
-    public function inScenarios(string ...$scenarios): bool;
 }

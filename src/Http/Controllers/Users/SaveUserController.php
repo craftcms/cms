@@ -10,8 +10,8 @@ use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -23,6 +23,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
+use CraftCms\Cms\User\Validation\UserRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -257,9 +258,9 @@ readonly class SaveUserController
 
         // Don't validate required custom fields if it's public registration
         if (! $isPublicRegistration || ($userSettings['validateOnPublicRegistration'] ?? false)) {
-            $user->setScenario(Element::SCENARIO_LIVE);
+            $user->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         } else {
-            $user->setScenario(User::SCENARIO_REGISTRATION);
+            $user->ruleset->useScenario(UserRules::SCENARIO_REGISTRATION);
         }
 
         // Manually validate the user so we can pass $clearErrors=false

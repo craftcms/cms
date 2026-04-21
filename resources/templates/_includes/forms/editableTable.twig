@@ -72,9 +72,9 @@
 {% for col in cols %}
     {%- switch col.type %}
         {%- case 'time' %}
-            {%- do view.registerAssetBundle('craft\\web\\assets\\timepicker\\TimepickerAsset') %}
+            {%- do registerLegacyAsset('CraftCms\\Cms\\View\\LegacyAssets\\TimepickerAsset') %}
         {%- case 'template' %}
-            {%- do view.registerAssetBundle("craft\\web\\assets\\vue\\VueAsset") %}
+            {%- do registerLegacyAsset("CraftCms\\Cms\\View\\LegacyAssets\\VueAsset") %}
     {%- endswitch %}
 {% endfor %}
 

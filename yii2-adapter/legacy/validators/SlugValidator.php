@@ -11,6 +11,7 @@ use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use yii\validators\Validator;
 use function CraftCms\Cms\t;
 
@@ -64,7 +65,7 @@ class SlugValidator extends Validator
         $isDraft = $model instanceof ElementInterface && $model->getIsDraft();
 
         // If this is a draft with a temp slug, leave it alone
-        if ($isDraft && !in_array($model->getScenario(), [Element::SCENARIO_LIVE, Element::SCENARIO_DEFAULT])) {
+        if ($isDraft && !in_array($model->ruleset->getScenario(), [ElementRules::SCENARIO_LIVE, ElementRules::SCENARIO_DEFAULT])) {
             if ($isTemp) {
                 // Leave it alone
                 return;

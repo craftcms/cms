@@ -311,16 +311,11 @@ describe('getFsOptions', function () {
             'driver' => 'local',
             'root' => storage_path('framework/testing/select-options/craft-tmp'),
         ]);
-        config()->set('filesystems.disks.rebrand', [
-            'driver' => 'local',
-            'root' => storage_path('framework/testing/select-options/rebrand'),
-        ]);
 
         $values = array_column(SelectOptions::getFsOptions(), 'value');
 
         expect($values)->not->toContain('disk:craft-fs-internal-test')
-            ->and($values)->not->toContain('disk:craft-tmp')
-            ->and($values)->not->toContain('disk:rebrand');
+            ->and($values)->not->toContain('disk:craft-tmp');
     });
 });
 

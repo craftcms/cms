@@ -81,15 +81,6 @@ class Path
         return $this->subdirectory($this->storage(create: $create), 'config-deltas', $path, $create, true);
     }
 
-    public function rebrand(string $path = '', bool $create = true): string
-    {
-        $basePath = Env::get('CRAFT_REBRAND_PATH')
-            ? Env::parse('$CRAFT_REBRAND_PATH')
-            : $this->storage('rebrand', create: $create);
-
-        return $this->directory($basePath, $path, $create);
-    }
-
     public function vendor(string $path = ''): string
     {
         $this->vendorPath ??= $this->aliasOrDefault('@vendor', $this->app->basePath('vendor'));
@@ -210,7 +201,6 @@ class Path
             $this->config(),
             $this->dbBackup(create: false),
             $this->logs(create: false),
-            $this->rebrand(create: false),
             $this->runtime(create: false),
             $this->siteTemplates(),
             $this->siteTranslations(),
