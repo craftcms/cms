@@ -154,7 +154,7 @@ class RequestMixin
                 return array_slice($request->segments(), $segmentIndex);
             }
 
-            $actionParam = $request->get('action');
+            $actionParam = $request->input('action');
 
             if ($actionParam !== null) {
                 if (! is_string($actionParam)) {
