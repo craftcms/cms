@@ -48,7 +48,6 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Url;
@@ -557,61 +556,6 @@ class ElementsController extends Controller
             'headHtml' => $view->getHeadHtml(),
             'bodyHtml' => $view->getBodyHtml(),
         ]);
-    }
-
-    /**
-     * Returns an element revisions index screen.
-     *
-     * @param int $elementId
-     * @return Response
-     * @throws BadRequestHttpException
-     * @throws ForbiddenHttpException
-     * @since 4.4.0
-     */
-    public function actionRevisions(int $elementId): Response
-    {
-        $this->requireCpRequest();
-
-        $this->_elementId = $elementId;
-        /**
-         * @var Element|Response|null $element
-         */
-        $element = $this->_element();
-
-        if (!$element) {
-            throw new BadRequestHttpException('No element was identified by the request.');
-        }
-
-        if ($element->getIsUnpublishedDraft()) {
-            throw new BadRequestHttpException('Unpublished drafts don\'t have revisions');
-        }
-
-        if (!$element->hasRevisions()) {
-            throw new BadRequestHttpException('Element doesn\'t have revisions');
-        }
-
-        return $this->asCpScreen()
-            ->title(t('Revisions for “{title}”', [
-                'title' => $element->getUiLabel(),
-            ]))
-            ->crumbs([
-                ...$this->_crumbs($element, false),
-                [
-                    'label' => t('Revisions'),
-                    'current' => true,
-                ],
-            ])
-            ->contentTemplate('_elements/revisions', [
-                'element' => $element,
-                'revisionsQuery' => $element::find()
-                    ->revisionOf($element)
-                    ->site('*')
-                    ->preferSites([$element->siteId])
-                    ->unique()
-                    ->status(null)
-                    ->where('elements.dateCreated', '!=', Query::prepareDateForDb($element->dateUpdated))
-                    ->with(['revisionCreator']),
-            ]);
     }
 
     /**

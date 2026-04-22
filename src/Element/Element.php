@@ -17,6 +17,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTime;
@@ -206,6 +207,19 @@ abstract class Element extends Component implements ElementInterface
     public static function hasTitles(): bool
     {
         return false;
+    }
+
+    public function getCreator(): ?User
+    {
+        if ($this->getIsDraft()) {
+            return $this->getDraftCreator();
+        }
+
+        if ($this->getIsRevision()) {
+            return $this->getRevisionCreator();
+        }
+
+        return null;
     }
 
     /**
