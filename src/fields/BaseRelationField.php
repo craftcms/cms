@@ -807,37 +807,35 @@ JS, [
                     CancelableEvent $event,
                     ElementQuery $query,
                 ) use ($element, $relationsAlias) {
-                    if ($query->id === null) {
-                        // Make these changes directly on the prepared queries, so `sortOrder` doesn't ever make it into
-                        // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
-                        // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied
-                        // to the eager-loading query and cause a SQL error.
-                        foreach ([$query->query, $query->subQuery] as $q) {
-                            $q->innerJoin(
-                                [$relationsAlias => DbTable::RELATIONS],
+                    // Make these changes directly on the prepared queries, so `sortOrder` doesn't ever make it into
+                    // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
+                    // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied
+                    // to the eager-loading query and cause a SQL error.
+                    foreach ([$query->query, $query->subQuery] as $q) {
+                        $q->innerJoin(
+                            [$relationsAlias => DbTable::RELATIONS],
+                            [
+                                'and',
+                                "[[$relationsAlias.targetId]] = [[elements.id]]",
                                 [
-                                    'and',
-                                    "[[$relationsAlias.targetId]] = [[elements.id]]",
-                                    [
-                                        "$relationsAlias.sourceId" => $element->id,
-                                        "$relationsAlias.fieldId" => $this->id,
-                                    ],
-                                    [
-                                        'or',
-                                        ["$relationsAlias.sourceSiteId" => null],
-                                        ["$relationsAlias.sourceSiteId" => $element->siteId],
-                                    ],
-                                ]
-                            );
+                                    "$relationsAlias.sourceId" => $element->id,
+                                    "$relationsAlias.fieldId" => $this->id,
+                                ],
+                                [
+                                    'or',
+                                    ["$relationsAlias.sourceSiteId" => null],
+                                    ["$relationsAlias.sourceSiteId" => $element->siteId],
+                                ],
+                            ]
+                        );
 
-                            if (
-                                $this->sortable &&
-                                !$this->maintainHierarchy &&
-                                count($query->orderBy ?? []) === 1 &&
-                                ($query->orderBy[0] ?? null) instanceof OrderByPlaceholderExpression
-                            ) {
-                                $q->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
-                            }
+                        if (
+                            $this->sortable &&
+                            !$this->maintainHierarchy &&
+                            count($query->orderBy ?? []) === 1 &&
+                            ($query->orderBy[0] ?? null) instanceof OrderByPlaceholderExpression
+                        ) {
+                            $q->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
                         }
                     }
                 },
