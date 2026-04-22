@@ -247,6 +247,7 @@ Route::prefix(implode('/', [
         Route::post('elements/delete-for-site', [DeleteElementController::class, 'destroyForSite']);
         Route::post('elements/save-draft', [ElementDraftsController::class, 'store']);
         Route::post('elements/ensure-draft', [ElementDraftsController::class, 'ensure']);
+        Route::post('elements/apply-draft', [ElementDraftsController::class, 'apply']);
 
         // Element Indexes
         Route::post('element-indexes/source-path', [ElementIndexSourcesController::class, 'sourcePath']);

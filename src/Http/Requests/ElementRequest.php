@@ -220,8 +220,8 @@ class ElementRequest extends FormRequest
         [$siteId, $preferSites] = $this->site();
 
         $query = $this->elementQuery()
-            ->draftId($draftId)
-            ->revisionId($revisionId)
+            ->draftId($draftId ? (int) $draftId : null)
+            ->revisionId($revisionId ? (int) $revisionId : null)
             ->provisionalDrafts($provisional)
             ->siteId($siteId)
             ->preferSites($preferSites)

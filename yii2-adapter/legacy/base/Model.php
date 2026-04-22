@@ -300,6 +300,11 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
         return new \Illuminate\Support\MessageBag($this->getErrors());
     }
 
+    public function clearErrors($attribute = null): void
+    {
+        parent::clearErrors($attribute);
+    }
+
     /**
      * @inheritdoc
      */

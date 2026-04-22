@@ -496,3 +496,141 @@ describe('store', function () {
             ->toThrow(HttpException::class, 'User not authorized to save this element.');
     });
 });
+
+describe('apply', function () {
+    it('requires authentication', function () {
+        auth()->logout();
+
+        postJson(action([ElementDraftsController::class, 'apply']))->assertUnauthorized();
+    });
+
+    it('returns 400 when no draft is identified by the request', function () {
+        $entry = EntryModel::factory()->createElement([
+            'title' => 'Canonical Title',
+        ]);
+
+        postJson(action([ElementDraftsController::class, 'apply']), [
+            'elementType' => Entry::class,
+            'elementId' => $entry->id,
+            'siteId' => $entry->siteId,
+        ])->assertBadRequest();
+    });
+
+    it('returns any response resolved by the element request', function () {
+        $entry = EntryModel::factory()->createElement([
+            'title' => 'Canonical Title',
+            'slug' => 'canonical-title',
+        ]);
+
+        post(action([ElementDraftsController::class, 'apply']), [
+            'elementId' => $entry->id,
+            'draftId' => 999999,
+            'siteId' => $entry->siteId,
+        ])->assertRedirect($entry->getCpEditUrl());
+    });
+
+    it('applies a draft to its canonical element', function () {
+        $entry = EntryModel::factory()->createElement([
+            'title' => 'Canonical Title',
+            'slug' => 'canonical-title',
+        ]);
+        /** @var Entry $draft */
+        $draft = app(Drafts::class)->createDraft($entry, auth()->id(), name: 'Existing Draft');
+
+        postJson(action([ElementDraftsController::class, 'apply']), [
+            'elementType' => Entry::class,
+            'draftId' => $draft->draftId,
+            'siteId' => $draft->siteId,
+            'title' => 'Applied Draft Title',
+            'slug' => 'applied-draft-title',
+        ])->assertOk()
+            ->assertJsonPath('message', t('Draft applied.'));
+
+        /** @var Entry $canonical */
+        $canonical = Entry::find()
+            ->id($entry->id)
+            ->status(null)
+            ->one();
+
+        expect($canonical->title)->toBe('Applied Draft Title')
+            ->and($canonical->slug)->toBe('applied-draft-title')
+            ->and(Entry::find()->draftId($draft->draftId)->status(null)->one())->toBeNull();
+    });
+
+    it('forbids applying a draft when the user cannot save the canonical element', function () {
+        $entryType = EntryType::factory()->create();
+        $section = Section::factory()->withEntryTypes($entryType)->create();
+        $entry = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($entryType)
+            ->createElement([
+                'title' => 'Canonical Title',
+            ]);
+
+        $viewer = UserModel::factory()
+            ->withPermissions([
+                'accessCp',
+                sprintf('editSite:%s', Sites::getPrimarySite()->uid),
+                sprintf('viewEntries:%s', $section->uid),
+            ])
+            ->createElement();
+
+        /** @var Entry $draft */
+        $draft = app(Drafts::class)->createDraft($entry, $viewer->id, name: 'Viewer Draft');
+
+        actingAs($viewer);
+
+        postJson(action([ElementDraftsController::class, 'apply']), [
+            'elementType' => Entry::class,
+            'draftId' => $draft->draftId,
+            'siteId' => $draft->siteId,
+            'title' => 'Unauthorized Apply',
+        ])->assertForbidden();
+    });
+
+    it('returns a failure response and preserves the draft when applying fails validation', function () {
+        $entry = EntryModel::factory()->createElement([
+            'title' => 'Canonical Title',
+            'slug' => 'canonical-title',
+        ]);
+        /** @var Entry $draft */
+        $draft = app(Drafts::class)->createDraft($entry, auth()->id(), name: 'Failing Draft');
+
+        $failedSave = false;
+
+        Event::listen(BeforeSave::class, function (BeforeSave $event) use ($draft, &$failedSave) {
+            if ($event->element->id === $draft->id && ! $failedSave) {
+                $event->isValid = false;
+                $failedSave = true;
+            }
+        });
+
+        postJson(action([ElementDraftsController::class, 'apply']), [
+            'elementType' => Entry::class,
+            'draftId' => $draft->draftId,
+            'siteId' => $draft->siteId,
+            'title' => 'Failed Apply Title',
+            'slug' => 'failed-apply-title',
+        ])->assertBadRequest()
+            ->assertJsonPath('message', t('Couldn’t apply draft.'));
+
+        /** @var Entry $savedDraft */
+        $savedDraft = Entry::find()
+            ->draftId($draft->draftId)
+            ->siteId($draft->siteId)
+            ->status(null)
+            ->one();
+
+        /** @var Entry $canonical */
+        $canonical = Entry::find()
+            ->id($entry->id)
+            ->status(null)
+            ->one();
+
+        expect($savedDraft)->not->toBeNull()
+            ->and($savedDraft->title)->toBe('Failed Apply Title')
+            ->and($savedDraft->slug)->toBe('failed-apply-title')
+            ->and($canonical->title)->toBe('Canonical Title')
+            ->and($canonical->slug)->toBe('canonical-title');
+    });
+});

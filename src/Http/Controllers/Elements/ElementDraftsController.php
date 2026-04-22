@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
 use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementActivity;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
 use CraftCms\Cms\Element\Events\DraftCreated;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\SavesElement;
@@ -20,7 +22,9 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\ElementResponse;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -226,7 +230,127 @@ class ElementDraftsController
         ]);
     }
 
-    public function apply() {}
+    public function apply(): Response
+    {
+        $element = $this->request->element();
+
+        // this can happen if creating element via slideout, and we hit "create entry" before the autosave kicks in
+        if ($element instanceof Response) {
+            return $element;
+        }
+
+        if (! $element || ! $element->getIsDraft()) {
+            abort(400, 'No draft was identified by the request.');
+        }
+
+        // keep track of the original field layout ID, in case it changes here
+        $oldFieldLayoutId = $element->getFieldLayout()?->id;
+
+        $this->applyParamsToElement($element);
+
+        Gate::authorize('save', $element);
+
+        $isUnpublishedDraft = $element->getIsUnpublishedDraft();
+
+        if (! Gate::check('saveCanonical', $element)) {
+            abort(403, $isUnpublishedDraft
+                ? 'User not authorized to create this element.'
+                : 'User not authorized to save this element.'
+            );
+        }
+
+        // Validate and save the draft
+        if ($element->enabled && $element->getEnabledForSite()) {
+            $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+        }
+
+        // if we're about to apply an unpublished draft, set propagateRequired to true
+        if ($isUnpublishedDraft) {
+            $element->propagateRequired = true;
+        }
+
+        $element->applyingDraft = true;
+
+        // If the field layout ID changed, save all content
+        $saveContent = $element->getFieldLayout()?->id !== $oldFieldLayoutId;
+
+        $namespace = $this->request->header('X-Craft-Namespace');
+        $crossSiteValidate = $namespace === null && Sites::isMultiSite();
+
+        if (! $this->elements->saveElement(
+            element: $element,
+            crossSiteValidate: $crossSiteValidate,
+            saveContent: $saveContent,
+        )) {
+            // save the draft anyway, so we don’t lose the latest changes
+            // (see https://github.com/craftcms/cms/issues/18657)
+            $errors = $element->getErrors();
+            $invalidNestedElementIds = $element->getInvalidNestedElementIds();
+            $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+            $this->elements->saveElement(element: $element, saveContent: $saveContent);
+            $element->clearErrors();
+            $element->errors()->merge($errors);
+            $element->addInvalidNestedElementIds($invalidNestedElementIds);
+
+            return new ElementResponse()->applyDraftFailure($element);
+        }
+
+        $element->applyingDraft = false;
+
+        if (! $isUnpublishedDraft) {
+            $mutex = Cache::lock("element:$element->canonicalId", 15);
+            if (! $mutex->get()) {
+                abort(500, 'Could not acquire a lock to save the element.');
+            }
+        }
+
+        $attributes = [];
+
+        if ($element instanceof NestedElementInterface) {
+            $attributes['updateSearchIndexForOwner'] = true;
+        }
+
+        try {
+            $element->propagateRequired = false;
+            $canonical = $this->drafts->applyDraft($element, $attributes);
+        } catch (InvalidElementException) {
+            return new ElementResponse()->applyDraftFailure($element);
+        } finally {
+            if (! $isUnpublishedDraft) {
+                $mutex->release();
+            }
+        }
+
+        $this->elementActivity->trackActivity($canonical, ElementActivityType::Save);
+
+        if (! $this->request->expectsJson()) {
+            // Tell all browser windows about the element save
+            session()->broadcastToJs([
+                'event' => 'saveElement',
+                'id' => $canonical->id,
+            ]);
+
+            if (! $isUnpublishedDraft) {
+                session()->broadcastToJs([
+                    'event' => 'deleteDraft',
+                    'canonicalId' => $element->getCanonicalId(),
+                    'draftId' => $element->draftId,
+                ]);
+            }
+        }
+
+        $message = match (true) {
+            $isUnpublishedDraft => t('{type} created.', [
+                'type' => $element::displayName(),
+            ]),
+            $element->isProvisionalDraft => t('{type} saved.', [
+                'type' => $element::displayName(),
+            ]),
+            default => t('Draft applied.'),
+        };
+
+        return new ElementResponse()->success($canonical, $message, supportsAddAnother: true);
+    }
 
     public function destroy() {}
 }

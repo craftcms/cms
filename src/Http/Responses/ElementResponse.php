@@ -87,6 +87,21 @@ class ElementResponse
         return $this->asFailure($message, $data);
     }
 
+    public function applyDraftFailure(ElementInterface $element): Response
+    {
+        $message = match (true) {
+            $element->getIsUnpublishedDraft() => mb_ucfirst(t('Couldn’t create {type}.', [
+                'type' => $element::lowerDisplayName(),
+            ])),
+            $element->isProvisionalDraft => mb_ucfirst(t('Couldn’t save {type}.', [
+                'type' => $element::lowerDisplayName(),
+            ])),
+            default => t('Couldn’t apply draft.'),
+        };
+
+        return $this->failure($element, $message);
+    }
+
     private function errorSummary(ElementInterface $element): string
     {
         $html = '';

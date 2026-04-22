@@ -91,4 +91,9 @@ interface Validatable extends ValidatesWithRuleset
      * Returns the validation error messages.
      */
     public function errors(): MessageBag;
+
+    /**
+     * Clears validation errors for the specified attribute or all attributes.
+     */
+    public function clearErrors(?string $attribute = null): void;
 }

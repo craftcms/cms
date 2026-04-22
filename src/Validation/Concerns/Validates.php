@@ -27,6 +27,17 @@ trait Validates
         return $this->errors ??= new MessageBag;
     }
 
+    public function clearErrors(?string $attribute = null): void
+    {
+        if ($attribute) {
+            $this->errors()->forget($attribute);
+
+            return;
+        }
+
+        $this->errors = new MessageBag;
+    }
+
     public function addModelErrors(Validatable $model, string $attrPrefix = ''): void
     {
         if ($attrPrefix !== '') {
@@ -50,7 +61,7 @@ trait Validates
     public function validate($attributeNames = null, $clearErrors = true, bool $throw = false): bool
     {
         if ($clearErrors) {
-            $this->errors = new MessageBag;
+            $this->clearErrors();
         }
 
         if (is_string($attributeNames)) {
