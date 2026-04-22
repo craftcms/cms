@@ -31,6 +31,7 @@ use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\NewUsersController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\EditionController;
 use CraftCms\Cms\Http\Controllers\Elements\DeleteElementController;
+use CraftCms\Cms\Http\Controllers\Elements\DuplicateElementController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementActivityController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementDraftsController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
@@ -257,6 +258,8 @@ Route::prefix(implode('/', [
         Route::post('elements/validate', ValidateElementController::class);
         Route::post('elements/recent-activity', ElementActivityController::class);
         Route::post('elements/update-field-layout', UpdateFieldLayoutController::class);
+        Route::post('elements/duplicate', [DuplicateElementController::class, 'duplicate']);
+        Route::post('elements/bulk-duplicate', [DuplicateElementController::class, 'bulkDuplicate']);
 
         // Element Indexes
         Route::post('element-indexes/source-path', [ElementIndexSourcesController::class, 'sourcePath']);

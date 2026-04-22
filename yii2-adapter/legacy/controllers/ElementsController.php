@@ -25,7 +25,6 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
 use CraftCms\Cms\Element\Enums\MenuItemType;
-use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -36,7 +35,6 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Facades\ElementActivity as ElementActivityFacade;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -44,7 +42,6 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Url;
@@ -57,7 +54,6 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\helpers\Markdown;
 use yii\web\BadRequestHttpException;
@@ -1457,159 +1453,6 @@ JS, [
         ]), $element);
     }
 
-    /**
-     * Duplicates an element.
-     *
-     * @return Response|null
-     * @throws BadRequestHttpException
-     * @throws ForbiddenHttpException
-     * @throws ServerErrorHttpException
-     * @since 4.0.0
-     */
-    public function actionDuplicate(): ?Response
-    {
-        $this->requirePostRequest();
-
-        /** @var (ElementInterface)|null $element */
-        $element = $this->_element();
-
-        if (!$element || $element->getIsRevision()) {
-            throw new BadRequestHttpException('No element was identified by the request.');
-        }
-
-        $this->element = $element;
-
-        // save as a new is now available to people who can create drafts
-        $asUnpublishedDraft = $this->_asUnpublishedDraft && $element::hasDrafts();
-        if ($asUnpublishedDraft) {
-            Gate::authorize('duplicateAsDraft', $element);
-        } else {
-            Gate::authorize('duplicate', $element);
-        }
-
-        $newAttributes = [
-            'isProvisionalDraft' => false,
-            'draftId' => null,
-        ];
-
-        if ($asUnpublishedDraft &&
-            ($element->getIsCanonical() || $element->isProvisionalDraft) &&
-            $element->slug === $element->getCanonical()->slug
-        ) {
-            $newAttributes += [
-                'slug' => null,
-            ];
-        }
-
-        if ($element instanceof NestedElementInterface) {
-            $newAttributes += [
-                'primaryOwnerId' => $element->getOwnerId(),
-                'ownerId' => $element->getOwnerId(),
-                'sortOrder' => null,
-            ];
-        }
-
-        try {
-            $newElement = Elements::duplicateElement(
-                $element,
-                $newAttributes,
-                asUnpublishedDraft: $asUnpublishedDraft,
-            );
-        } catch (InvalidElementException $e) {
-            return $this->_asFailure($e->element, t('Couldn’t duplicate {type}.', [
-                'type' => $element::lowerDisplayName(),
-            ]));
-        } catch (Throwable $e) {
-            throw new ServerErrorHttpException('An error occurred when duplicating the element.', 0, $e);
-        }
-
-        // If the original element is a provisional draft,
-        // delete the draft as the changes are likely no longer wanted.
-        if ($this->_deleteProvisionalDraft && $element->isProvisionalDraft) {
-            Elements::deleteElement($element);
-        }
-
-        return $this->_asSuccess(t('{type} duplicated.', [
-            'type' => $element::displayName(),
-        ]), $newElement);
-    }
-
-    /**
-     * Duplicates multiple elements with the given new attributes.
-     *
-     * @return Response|null
-     * @since 5.7.0
-     */
-    public function actionBulkDuplicate(): ?Response
-    {
-        $this->requirePostRequest();
-
-        $elementInfo = $this->request->getRequiredBodyParam('elements');
-        $newAttributes = $this->request->getRequiredBodyParam('newAttributes');
-
-        $newElementInfo = [];
-
-        $result = DbFacade::transaction(function() use ($elementInfo, $newAttributes, &$newElementInfo) {
-            return BulkOps::ensure(function() use ($elementInfo, $newAttributes, &$newElementInfo) {
-                foreach ($elementInfo as $info) {
-                    $element = $this->_element($info);
-
-                    if (!$element instanceof ElementInterface) {
-                        Log::warning(sprintf('Unable to duplicate element: %s', Json::encode($info)), [__METHOD__]);
-                        continue;
-                    }
-
-                    $safeNewAttributes = Collection::make($newAttributes)
-                        ->only($element->safeAttributes())
-                        ->all();
-
-                    // if element is a revision, we need to nullify some additional attributes
-                    if ($element->getIsRevision()) {
-                        $safeNewAttributes['revisionId'] = null;
-
-                        if ($element->dateDeleted !== null) {
-                            $safeNewAttributes['dateDeleted'] = null;
-                            $safeNewAttributes['deletedWithOwner'] = null;
-                            $safeNewAttributes['trashed'] = false;
-                        }
-                    }
-
-                    try {
-                        $newElement = Elements::duplicateElement(
-                            $element,
-                            $safeNewAttributes + $element::baseBulkDuplicateAttributes(),
-                            false,
-                            checkAuthorization: true,
-                        );
-                    } catch (InvalidElementException $e) {
-                        return $this->_asFailure($e->element, t('Couldn’t duplicate {type}.', [
-                            'type' => $element::lowerDisplayName(),
-                        ]));
-                    } catch (ForbiddenHttpException $e) {
-                        throw $e;
-                    } catch (Throwable $e) {
-                        throw new ServerErrorHttpException('An error occurred when duplicating the element.', 0, $e);
-                    }
-
-                    $newElementInfo[] = $newElement->toArray($newElement->attributes());
-                }
-
-                return null;
-            });
-        });
-
-        if ($result !== null) {
-            return $result;
-        }
-
-        /** @var class-string<ElementInterface> $elementType */
-        $elementType = $elementInfo[0]['type'];
-        return $this->asSuccess(mb_ucfirst(t('{type} duplicated.', [
-            'type' => count($elementInfo) === 1 ? $elementType::displayName() : $elementType::pluralDisplayName(),
-        ])), [
-            'newElements' => $newElementInfo,
-        ]);
-    }
 
     /**
      * Returns the requested element, populated with any posted attributes.
