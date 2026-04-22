@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\FieldLayout\LayoutElements\addresses;
+namespace CraftCms\Cms\FieldLayout\LayoutElements\Addresses;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;

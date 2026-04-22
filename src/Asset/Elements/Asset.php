@@ -323,18 +323,6 @@ class Asset extends Element
     }
 
     #[Override]
-    public function scenarios(): array
-    {
-        return array_merge(parent::scenarios(), [
-            self::SCENARIO_MOVE => null,
-            self::SCENARIO_FILEOPS => null,
-            self::SCENARIO_INDEX => [],
-            self::SCENARIO_CREATE => null,
-            self::SCENARIO_REPLACE => null,
-        ]);
-    }
-
-    #[Override]
     public static function displayName(): string
     {
         return self::$_displayName ??= self::isFolderIndex()

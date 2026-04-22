@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\FieldLayout\LayoutElements\entries;
+namespace CraftCms\Cms\FieldLayout\LayoutElements\Entries;
 
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;

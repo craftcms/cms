@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\FieldLayout\LayoutElements\users;
+namespace CraftCms\Cms\FieldLayout\LayoutElements\Users;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;

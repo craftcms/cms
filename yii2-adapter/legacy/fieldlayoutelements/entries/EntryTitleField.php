@@ -11,15 +11,17 @@ declare(strict_types=1);
 
 namespace craft\fieldlayoutelements\entries;
 
+use craft\base\LegacyEventConstants;
+
 /**
  * EntryTitleField represents a Title field that can be included within an entry type's field layout designer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 3.5.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\entries\EntryTitleField} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField} instead.
  */
-class EntryTitleField extends \CraftCms\Cms\FieldLayout\LayoutElements\entries\EntryTitleField
+class EntryTitleField extends \CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField
 {
-    use \craft\base\LegacyEventConstants;
+    use LegacyEventConstants;
 }

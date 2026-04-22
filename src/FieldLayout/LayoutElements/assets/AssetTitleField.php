@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\FieldLayout\LayoutElements\assets;
+namespace CraftCms\Cms\FieldLayout\LayoutElements\Assets;
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
