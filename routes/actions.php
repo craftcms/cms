@@ -36,6 +36,7 @@ use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexSourcesController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ExportElementIndexController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\SaveElementIndexElementsController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementRevisionsController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSourcesController;
 use CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController;
@@ -249,6 +250,7 @@ Route::prefix(implode('/', [
         Route::post('elements/ensure-draft', [ElementDraftsController::class, 'ensure']);
         Route::post('elements/apply-draft', [ElementDraftsController::class, 'apply']);
         Route::post('elements/delete-draft', [ElementDraftsController::class, 'destroy']);
+        Route::post('elements/revert', [ElementRevisionsController::class, 'revert']);
 
         // Element Indexes
         Route::post('element-indexes/source-path', [ElementIndexSourcesController::class, 'sourcePath']);

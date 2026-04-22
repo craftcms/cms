@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
+use CraftCms\Cms\Element\ElementActivity;
+use CraftCms\Cms\Element\Enums\ElementActivityType;
+use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\ElementCrumbs;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\Responses\ElementResponse;
 use CraftCms\Cms\Support\Query;
+use Illuminate\Support\Facades\Gate;
+use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
@@ -55,5 +61,24 @@ class ElementRevisionsController
                     ->whereNot('elements.dateCreated', Query::prepareDateForDb($element->dateUpdated))
                     ->with(['revisionCreator']),
             ]);
+    }
+
+    public function revert(Revisions $revisions, ElementActivity $elementActivity): Response
+    {
+        $element = $this->request->element();
+
+        if (! $element || ! $element->getIsRevision()) {
+            abort(400, 'No revision was identified by the request.');
+        }
+
+        Gate::authorize('save', $element->getCanonical(true));
+
+        $canonical = $revisions->revertToRevision($element, $this->request->user()->id);
+
+        $elementActivity->trackActivity($canonical, ElementActivityType::Save);
+
+        return new ElementResponse()->success($canonical, t('{type} reverted to past revision.', [
+            'type' => $element::displayName(),
+        ]));
     }
 }

@@ -31,7 +31,6 @@ use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
-use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\FieldLayoutForm;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
@@ -1651,42 +1650,6 @@ JS, [
         return $this->_asSuccess(t('{type} validation successful.', [
             'type' => $element::displayName(),
         ]), $element);
-    }
-
-    /**
-     * Reverts an element’s content to a revision.
-     *
-     * @return Response
-     * @throws BadRequestHttpException
-     * @throws ForbiddenHttpException
-     * @since 4.0.0
-     */
-    public function actionRevert(): Response
-    {
-        $this->requirePostRequest();
-
-        /**
-         * @var Element|null $element
-         */
-        $element = $this->_element();
-
-        if (!$element || !$element->getIsRevision()) {
-            throw new BadRequestHttpException('No revision was identified by the request.');
-        }
-
-        $this->element = $element;
-
-        $user = static::currentUser();
-
-        Gate::authorize('save', $element->getCanonical(true));
-
-        $canonical = app(Revisions::class)->revertToRevision($element, $user->id);
-
-        ElementActivityFacade::trackActivity($canonical, ElementActivityType::Save);
-
-        return $this->_asSuccess(t('{type} reverted to past revision.', [
-            'type' => $element::displayName(),
-        ]), $canonical);
     }
 
     /**
