@@ -13,7 +13,9 @@ use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Search;
@@ -83,6 +85,21 @@ class EntryFactory extends Factory
     public function forEntryType(EntryType $type): static
     {
         return $this->state(fn () => ['typeId' => $type->id]);
+    }
+
+    public function enabledForSites(int|Site ...$sites): static
+    {
+        return $this->afterCreating(function (Entry $entry) use ($sites) {
+            $element = EntryElement::find()->id($entry->id)->one();
+            $enabledForSite = [$element->siteId => true];
+
+            foreach ($sites as $site) {
+                $enabledForSite[$site instanceof Site ? $site->id : $site] = true;
+            }
+
+            $element->setEnabledForSite($enabledForSite);
+            Elements::saveElement($element);
+        });
     }
 
     public function withFieldLayout(FieldLayout|FieldLayoutFactory $fieldLayout): static

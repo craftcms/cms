@@ -30,6 +30,7 @@ use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\NewUsersController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\EditionController;
+use CraftCms\Cms\Http\Controllers\Elements\DeleteElementController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexSourcesController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ExportElementIndexController;
@@ -241,6 +242,8 @@ Route::prefix(implode('/', [
         });
 
         // Elements
+        Route::post('elements/delete', [DeleteElementController::class, 'destroy']);
+        Route::post('elements/delete-for-site', [DeleteElementController::class, 'destroyForSite']);
         Route::post('element-indexes/source-path', [ElementIndexSourcesController::class, 'sourcePath']);
         Route::post('element-indexes/source-attribute-info', [ElementIndexSourcesController::class, 'sourceAttributeInfo']);
         Route::post('element-indexes/get-elements', [ElementIndexController::class, 'getElements']);

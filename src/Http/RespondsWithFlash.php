@@ -41,13 +41,13 @@ trait RespondsWithFlash
         ]), 400);
     }
 
-    public function asSuccess(?string $message = null, array $data = [], ?string $redirect = null): Response
+    public function asSuccess(?string $message = null, array $data = [], ?string $redirect = null, array $notificationSettings = []): Response
     {
         if (request()->expectsJson()) {
             return $this->asJsonSuccess($message, $data);
         }
 
-        Flash::success($message);
+        Flash::success($message, $notificationSettings);
 
         $redirect ??= $this->getPostedRedirectUrl();
 
