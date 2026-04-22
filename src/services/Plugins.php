@@ -243,7 +243,6 @@ class Plugins extends Component
                 // If the plugin’s version just changed, make sure the old version is >= the min allowed version
                 if (
                     $hasVersionChanged &&
-                    isset($plugin->minVersionRequired) &&
                     $plugin->minVersionRequired &&
                     !str_starts_with($row['version'], 'dev-') &&
                     !str_ends_with($row['version'], '-dev') &&
