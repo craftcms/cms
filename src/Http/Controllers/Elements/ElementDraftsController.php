@@ -16,6 +16,7 @@ use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\SavesElement;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\UpdatesFieldLayout;
 use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\ElementResponse;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -33,6 +34,7 @@ use function CraftCms\Cms\t;
 class ElementDraftsController
 {
     use EditsElement;
+    use RespondsWithFlash;
     use SavesElement;
     use UpdatesFieldLayout;
 
@@ -42,11 +44,6 @@ class ElementDraftsController
         private readonly Elements $elements,
         private readonly ElementActivity $elementActivity,
     ) {}
-
-    protected function request(): ElementRequest
-    {
-        return $this->request;
-    }
 
     public function store(): Response
     {
@@ -187,7 +184,47 @@ class ElementDraftsController
         ]), $data, true);
     }
 
-    public function ensure() {}
+    public function ensure(): Response
+    {
+        $element = $this->request->element(checkForProvisionalDraft: true);
+
+        if (! $element || $element->getIsRevision()) {
+            abort(400, 'No element was identified by the request.');
+        }
+
+        if ($element->getIsDraft()) {
+            return $this->asSuccess(data: [
+                'elementId' => $element->id,
+            ]);
+        }
+
+        Gate::authorize('createDrafts', $element);
+
+        // Make sure a provisional draft doesn't already exist for this element/user combo
+        $provisionalId = $element::find()
+            ->provisionalDrafts()
+            ->draftOf($element->id)
+            ->draftCreator($this->request->user()->id)
+            ->site('*')
+            ->status(null)
+            ->ids()[0] ?? null;
+
+        if ($provisionalId) {
+            return $this->asSuccess(data: [
+                'elementId' => $provisionalId,
+            ]);
+        }
+
+        $draft = $this->drafts->createDraft(
+            canonical: $element,
+            creatorId: $this->request->user()->id,
+            provisional: true,
+        );
+
+        return $this->asSuccess(data: [
+            'elementId' => $draft->id,
+        ]);
+    }
 
     public function apply() {}
 

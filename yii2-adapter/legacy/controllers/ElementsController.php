@@ -1710,60 +1710,6 @@ JS, [
     }
 
     /**
-     * Ensures that a provisional draft exists for the element, unless it’s already a draft.
-     *
-     * @return Response
-     * @since 5.0.0
-     */
-    public function actionEnsureDraft(): Response
-    {
-        $this->requirePostRequest();
-
-        /**
-         * @var Element|null $element
-         */
-        $element = $this->_element(checkForProvisionalDraft: true);
-
-        if (!$element || $element->getIsRevision()) {
-            throw new BadRequestHttpException('No element was identified by the request.');
-        }
-
-        if ($element->getIsDraft()) {
-            return $this->asSuccess(data: [
-                'elementId' => $element->id,
-            ]);
-        }
-
-        $user = static::currentUser();
-
-        Gate::authorize('createDrafts', $element);
-
-        $this->element = $element;
-
-        // Make sure a provisional draft doesn't already exist for this element/user combo
-        $provisionalId = $element::find()
-            ->provisionalDrafts()
-            ->draftOf($element->id)
-            ->draftCreator($user->id)
-            ->site('*')
-            ->status(null)
-            ->ids()[0] ?? null;
-
-        if ($provisionalId) {
-            return $this->asSuccess(data: [
-                'elementId' => $provisionalId,
-            ]);
-        }
-
-        /** @var Element $element */
-        $draft = app(Drafts::class)->createDraft($element, $user->id, provisional: true);
-
-        return $this->asSuccess(data: [
-            'elementId' => $draft->id,
-        ]);
-    }
-
-    /**
      * Applies a draft to its canonical element.
      *
      * @return Response|null
