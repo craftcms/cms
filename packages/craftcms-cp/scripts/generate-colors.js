@@ -74,47 +74,6 @@ function lightScale(color) {
   }
 }
 
-function darkScale(color) {
-  switch (color) {
-    case 'white':
-      return {
-        fillQuiet: 'var(--color-gray-800)',
-        fillNormal: 'var(--color-gray-800)',
-        fillLoud: 'var(--color-gray-800)',
-        borderQuiet: 'var(--color-gray-700)',
-        borderNormal: 'var(--color-gray-700)',
-        borderLoud: 'var(--color-gray-700)',
-        onQuiet: 'var(--color-gray-200)',
-        onNormal: 'var(--color-gray-200)',
-        onLoud: 'var(--color-gray-200)',
-      };
-    case 'black':
-      return {
-        fillQuiet: 'var(--color-gray-950)',
-        fillNormal: 'var(--color-gray-950)',
-        fillLoud: 'var(--color-gray-950)',
-        borderQuiet: 'var(--color-gray-800)',
-        borderNormal: 'var(--color-gray-800)',
-        borderLoud: 'var(--color-gray-800)',
-        onQuiet: 'var(--color-gray-300)',
-        onNormal: 'var(--color-gray-300)',
-        onLoud: 'var(--color-gray-300)',
-      };
-    default:
-      return {
-        fillQuiet: `var(--color-${color}-950)`,
-        fillNormal: `var(--color-${color}-600)`,
-        fillLoud: `var(--color-${color}-500)`,
-        borderQuiet: `var(--color-${color}-900)`,
-        borderNormal: `var(--color-${color}-900)`,
-        borderLoud: `var(--color-${color}-600)`,
-        onQuiet: `var(--color-${color}-400)`,
-        onNormal: `var(--color-${color}-200)`,
-        onLoud: `var(--color-${color}-50)`,
-      };
-  }
-}
-
 function buildTokens(colors, scaleFn) {
   return colors
     .map((color) => {
@@ -155,10 +114,6 @@ function generateStyles(colors) {
 
 :root {
 ${buildTokens(colors, lightScale)}
-}
-
-[data-theme='dark'] {
-${buildTokens(colors, darkScale)}
 }
 
 .c-colorable,
