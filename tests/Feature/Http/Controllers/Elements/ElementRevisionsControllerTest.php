@@ -51,16 +51,12 @@ dataset('elementRevisionRoutes', [
         )),
     ],
     'content revisions route' => [
-        fn (Entry $entry) => (function () use ($entry) {
-            [, $page, $section] = explode('/', $entry->getSection()->getCpIndexUri());
-
-            return action([ElementRevisionsController::class, 'index'], [
-                'page' => $page,
-                'section' => $section,
-                'id' => $entry->id,
-                'slug' => "-$entry->slug",
-            ]);
-        })(),
+        fn (Entry $entry) => cp_url(sprintf(
+            '%s/%d-%s/revisions',
+            $entry->getSection()->getCpIndexUri(),
+            $entry->id,
+            $entry->slug,
+        )),
     ],
 ]);
 

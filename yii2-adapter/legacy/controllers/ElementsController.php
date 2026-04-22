@@ -674,11 +674,11 @@ class ElementsController extends Controller
                 ->orderByDesc('dateCreated')
                 ->with(['revisionCreator']);
 
-            $revisions = $revisionsQuery->all();
+            $revisions = (clone $revisionsQuery)->all();
             $revisionsPageUrl = $element->getCpRevisionsUrl();
 
             if ($revisionsPageUrl) {
-                $hasMoreRevisions = ($revisionsQuery->count() - 1) > 0;
+                $hasMoreRevisions = ($revisionsQuery->getCountForPagination() - 1) > 0;
             }
         } else {
             $revisions = [];

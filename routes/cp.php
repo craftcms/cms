@@ -95,7 +95,10 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     Route::get('edit/{uid}', ElementRedirectController::class);
     Route::get('revisions/{id}{slug}', [ElementRevisionsController::class, 'index'])->where($idSlugParams);
     Route::get('entries/{section}/{id}{slug}/revisions', [ElementRevisionsController::class, 'index'])->where($idSlugParams);
-    Route::get('content/{page}/{section}/{id}{slug}/revisions', [ElementRevisionsController::class, 'index'])->where($idSlugParams);
+    Route::get('content/{page}/{section}/{id}{slug}/revisions', [ElementRevisionsController::class, 'index'])->where([
+        ...$idSlugParams,
+        'page' => '[^\/]+',
+    ]);
 
     /**
      * Entries & Content
