@@ -2626,7 +2626,13 @@ abstract class Element extends Component implements ElementInterface
             return $this->fieldByHandle(substr($name, 6)) !== null;
         }
 
-        return $name === 'title' || $this->hasEagerLoadedElements($name) || parent::__isset($name) || $this->fieldByHandle($name);
+        return (
+            $name === 'title' ||
+            isset($this->_generatedFieldValues[$name]) ||
+            $this->hasEagerLoadedElements($name) ||
+            parent::__isset($name) ||
+            $this->fieldByHandle($name)
+        );
     }
 
     /**
