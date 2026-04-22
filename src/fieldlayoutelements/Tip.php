@@ -11,7 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
-use yii\helpers\Markdown;
+use craft\helpers\Markdown;
 
 /**
  * Tip represents an author tip UI element that can be included in field layouts.

@@ -80,6 +80,7 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
@@ -1285,6 +1286,7 @@ abstract class Element extends Component implements ElementInterface
             'nestedInputNamespace' => $viewState['nestedInputNamespace'] ?? null,
             'tableName' => static::pluralDisplayName(),
             'elementQuery' => self::elementQueryWithAllDescendants($elementQuery),
+            'returnUrl' => $viewState['returnUrl'] ?? null,
         ];
 
         $db = Craft::$app->getDb();
@@ -2399,7 +2401,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @var bool
      */
-    private bool $_initialized = false;
+    private bool $_trackDirtyFields = false;
 
     /**
      * @var string|null
@@ -2716,7 +2718,7 @@ abstract class Element extends Component implements ElementInterface
             $this->_savedTitle = $this->title;
         }
 
-        $this->_initialized = true;
+        $this->_trackDirtyFields = true;
 
         // Stop allowing setting custom field values directly on the behavior
         /** @var CustomFieldBehavior $behavior */
@@ -3423,7 +3425,7 @@ abstract class Element extends Component implements ElementInterface
             $event = new DefineAttributeKeywordsEvent(['attribute' => $attribute]);
             $this->trigger(self::EVENT_DEFINE_KEYWORDS, $event);
             if ($event->handled) {
-                return $event->keywords ?? '';
+                return $event->keywords;
             }
         }
 
@@ -3940,12 +3942,20 @@ abstract class Element extends Component implements ElementInterface
         $elementsService = Craft::$app->getElements();
         $canSaveCanonical = $elementsService->canSaveCanonical($this);
 
+        $returnUrl = Craft::$app->getRequest()->getQueryParam('returnUrl');
+        $redirectParams = array_filter([
+            'returnUrl' => $returnUrl,
+        ]);
+
         $altActions = [
             [
                 'label' => $isUnpublishedDraft && $canSaveCanonical
                     ? Craft::t('app', 'Create and continue editing')
                     : Craft::t('app', 'Save and continue editing'),
                 'redirect' => '{cpEditUrl}',
+                'params' => array_filter([
+                    'redirectParams' => !empty($redirectParams) ? Json::encode($redirectParams) : null,
+                ]),
                 'shortcut' => true,
                 'retainScroll' => true,
                 'eventData' => ['autosave' => false],
@@ -3962,7 +3972,10 @@ abstract class Element extends Component implements ElementInterface
                     'shortcut' => true,
                     'shift' => true,
                     'eventData' => ['autosave' => false],
-                    'params' => ['addAnother' => 1],
+                    'params' => [
+                        'addAnother' => 1,
+                        'returnUrl' => $returnUrl,
+                    ],
                 ];
             }
 
@@ -3987,6 +4000,7 @@ abstract class Element extends Component implements ElementInterface
                     'params' => [
                         'asUnpublishedDraft' => true,
                         'deleteProvisionalDraft' => true,
+                        'redirectParams' => !empty($redirectParams) ? Json::encode($redirectParams) : null,
                     ],
                 ];
             }
@@ -5308,7 +5322,7 @@ JS, [
         unset($this->_normalizedFieldValues[$fieldHandle]);
 
         // If the element is fully initialized, mark the value as dirty
-        if ($this->_initialized) {
+        if ($this->_trackDirtyFields) {
             $this->_dirtyFields[$fieldHandle] = true;
         }
 
@@ -5336,6 +5350,14 @@ JS, [
         $value = $field->normalizeValueFromRequest($value, $this);
         $this->setFieldValue($field->handle, $value);
         $this->_normalizedFieldValues[$field->handle] = true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDirtyFieldTracking(bool $enabled = true): void
+    {
+        $this->_trackDirtyFields = $enabled;
     }
 
     /**
@@ -6457,10 +6479,10 @@ JS, [
             },
         ], $metadata, [
             Craft::t('app', 'Created at') => $this->dateCreated && !$this->getIsUnpublishedDraft()
-                ? $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT)
+                ? $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT, true)
                 : false,
             Craft::t('app', 'Updated at') => $this->dateUpdated && !$this->getIsUnpublishedDraft()
-                ? $formatter->asDatetime($this->dateUpdated, Formatter::FORMAT_WIDTH_SHORT)
+                ? $formatter->asDatetime($this->dateUpdated, Formatter::FORMAT_WIDTH_SHORT, true)
                 : false,
             Craft::t('app', 'Notes') => function() {
                 if ($this->getIsRevision()) {

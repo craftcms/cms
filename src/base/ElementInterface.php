@@ -1524,6 +1524,15 @@ interface ElementInterface extends
     public function setFieldValueFromRequest(string $fieldHandle, mixed $value): void;
 
     /**
+     * Enables or disables dirty field tracking.
+     *
+     * @param bool $enabled
+     * @see getDirtyFields()
+     * @since 5.10.0
+     */
+    public function setDirtyFieldTracking(bool $enabled = true): void;
+
+    /**
      * Returns the field handles that have been updated on the canonical element since the last time it was
      * merged into this element.
      *
