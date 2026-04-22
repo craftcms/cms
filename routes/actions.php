@@ -122,6 +122,9 @@ foreach ([
         // Asset Transforms (anonymous access)
         Route::any('assets/generate-transform', [TransformController::class, 'generate']);
         Route::get('assets/generate-fallback-transform', [TransformController::class, 'generateFallback']);
+
+        // GQL API
+        Route::any('graphql/api', GqlApiController::class);
     });
 }
 
@@ -129,7 +132,6 @@ foreach ([
  * Actions that are accessible without CP can be registered here.
  */
 Route::prefix(Cms::config()->actionTrigger)->group(function () {
-    Route::any('graphql/api', GqlApiController::class);
     Route::post('migrate', MigrateController::class);
 
     Route::middleware(['auth:craft'])->group(function () {
