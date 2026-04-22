@@ -1659,9 +1659,11 @@ JS, [
         $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
 
+        $isExplicitDraft = $element->getIsDraft() && !$element->getIsUnpublishedDraft() && !$element->isProvisionalDraft;
+
         // save as a new is now available to people who can create drafts
         $asUnpublishedDraft = $this->_asUnpublishedDraft && $element::hasDrafts();
-        if ($asUnpublishedDraft || $element->getIsDraft()) {
+        if ($asUnpublishedDraft || $isExplicitDraft) {
             $authorized = $elementsService->canDuplicateAsDraft($element, $user);
         } else {
             $authorized = $elementsService->canDuplicate($element, $user);
@@ -1673,7 +1675,7 @@ JS, [
 
         $newAttributes = [
             'isProvisionalDraft' => false,
-            'draftId' => $element->draftId,
+            'draftId' => $isExplicitDraft ? $element->draftId : null,
         ];
 
         if ($asUnpublishedDraft &&
