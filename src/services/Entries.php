@@ -31,6 +31,7 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\Markdown;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
@@ -54,7 +55,6 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\caching\TagDependency;
-use yii\helpers\Markdown;
 
 /**
  * The Entries service provides APIs for managing entries in Craft.
@@ -273,7 +273,7 @@ class Entries extends Component
      */
     private function _createSectionQuery(): Query
     {
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'sections.id',
                 'sections.structureId',
@@ -296,6 +296,13 @@ class Entries extends Component
             ->from(['sections' => Table::SECTIONS])
             ->where(['sections.dateDeleted' => null])
             ->orderBy(['name' => SORT_ASC]);
+
+        // todo: remove this after the next breakpoint
+        if (Craft::$app->getDb()->columnExists(Table::SECTIONS, 'minAuthors')) {
+            $query->addSelect('sections.minAuthors');
+        }
+
+        return $query;
     }
 
     /**
@@ -649,6 +656,7 @@ class Entries extends Component
             $sectionRecord->handle = $data['handle'];
             $sectionRecord->type = $data['type'];
             $sectionRecord->enableVersioning = (bool)$data['enableVersioning'];
+            $sectionRecord->minAuthors = $data['minAuthors'] ?? 0;
             $sectionRecord->maxAuthors = $data['maxAuthors'] ?? null;
             $sectionRecord->propagationMethod = $data['propagationMethod'] ?? PropagationMethod::All->value;
             $sectionRecord->defaultPlacement = $data['defaultPlacement'] ?? Section::DEFAULT_PLACEMENT_END;

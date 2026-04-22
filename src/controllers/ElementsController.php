@@ -35,6 +35,7 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\Markdown;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
@@ -48,7 +49,6 @@ use craft\web\UrlManager;
 use craft\web\View;
 use Illuminate\Support\Collection;
 use Throwable;
-use yii\helpers\Markdown;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -364,7 +364,19 @@ class ElementsController extends Controller
         [$docTitle, $title] = $this->_editElementTitles($element);
         $enabledForSite = $element->getEnabledForSite();
         $hasRoute = $element->getRoute() !== null;
-        $redirectUrl = $this->request->getValidatedQueryParam('returnUrl') ?? UrlHelper::cpReferralUrl() ?? ElementHelper::postEditUrl($element);
+
+        $redirectUrl = $this->request->getQueryParam('returnUrl');
+        if ($redirectUrl) {
+            // only require the URL to be hashed if it contains Twig code
+            $validated = Craft::$app->getSecurity()->validateData($redirectUrl);
+            if ($validated !== false) {
+                $redirectUrl = $validated;
+            } elseif (str_contains($redirectUrl, '{')) {
+                throw new BadRequestHttpException("Invalid returnUrl param: $redirectUrl");
+            }
+        } else {
+            $redirectUrl = ElementHelper::postEditUrl($element);
+        }
 
         // Site statuses
         if ($canEditMultipleSites) {
@@ -890,7 +902,7 @@ JS, [
                     /** @var ElementInterface&DraftBehavior $draft */
                     $creator = $draft->getCreator();
                     $timestamp = $formatter->asTimestamp($draft->dateUpdated, Locale::LENGTH_SHORT, true);
-                    $timestampWithDate = $formatter->asDatetime($draft->dateUpdated, Locale::LENGTH_SHORT);
+                    $timestampWithDate = $formatter->asDatetime($draft->dateUpdated, Locale::LENGTH_SHORT, true);
 
                     return [
                         'label' => $draft->draftName,
@@ -921,7 +933,7 @@ JS, [
                     /** @var ElementInterface&RevisionBehavior $revision */
                     $creator = $revision->getCreator();
                     $timestamp = $formatter->asTimestamp($revision->dateCreated, Locale::LENGTH_SHORT, true);
-                    $timestampWithDate = $formatter->asDatetime($revision->dateCreated, Locale::LENGTH_SHORT);
+                    $timestampWithDate = $formatter->asDatetime($revision->dateCreated, Locale::LENGTH_SHORT, true);
 
                     return [
                         'label' => $revision->getRevisionLabel(),
@@ -1040,9 +1052,16 @@ JS, [
 
         // Revert content from this revision
         if ($isRevision && $canSaveCanonical && $element->hasRevisions()) {
+            $returnUrl = $this->request->getQueryParam('returnUrl');
             $components[] = Html::beginForm() .
                 Html::actionInput('elements/revert') .
                 Html::redirectInput('{cpEditUrl}') .
+                ($returnUrl
+                    ? Html::hiddenInput('redirectParams', Json::encode([
+                        'returnUrl' => $returnUrl,
+                    ]))
+                    : ''
+                ) .
                 Html::hiddenInput('elementId', (string)$canonical->id) .
                 Html::hiddenInput('revisionId', (string)$element->revisionId) .
                 Html::button(Craft::t('app', 'Revert content from this revision'), [
@@ -1640,9 +1659,11 @@ JS, [
         $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
 
+        $isExplicitDraft = $element->getIsDraft() && !$element->getIsUnpublishedDraft() && !$element->isProvisionalDraft;
+
         // save as a new is now available to people who can create drafts
         $asUnpublishedDraft = $this->_asUnpublishedDraft && $element::hasDrafts();
-        if ($asUnpublishedDraft) {
+        if ($asUnpublishedDraft || $isExplicitDraft) {
             $authorized = $elementsService->canDuplicateAsDraft($element, $user);
         } else {
             $authorized = $elementsService->canDuplicate($element, $user);
@@ -1654,7 +1675,7 @@ JS, [
 
         $newAttributes = [
             'isProvisionalDraft' => false,
-            'draftId' => null,
+            'draftId' => $isExplicitDraft ? $element->draftId : null,
         ];
 
         if ($asUnpublishedDraft &&
@@ -2429,6 +2450,7 @@ JS, [
 
         $data += [
             'initialDeltaValues' => Craft::$app->getView()->getInitialDeltaValues(),
+            'uiLabel' => $this->element->getUiLabel(),
         ];
 
         return $this->_asSuccess('Field layout updated.', $element, $data, true);
@@ -3009,6 +3031,11 @@ JS, [
                     'siteId' => $newElement->siteId,
                     'fresh' => 1,
                 ]);
+            }
+
+            $returnUrl = $this->request->getParam('returnUrl');
+            if ($returnUrl) {
+                $url = UrlHelper::urlWithParams($url, ['returnUrl' => $returnUrl]);
             }
 
             $response->redirect($url);

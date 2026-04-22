@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\CrossSiteCopyableFieldInterface;
+use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
@@ -20,12 +21,12 @@ use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Localization;
+use craft\helpers\Markdown;
 use craft\i18n\Locale;
 use GraphQL\Type\Definition\Type;
 use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\db\Schema;
-use yii\helpers\Markdown;
 
 /**
  * Number represents a Number field.
@@ -33,7 +34,12 @@ use yii\helpers\Markdown;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Number extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
+class Number extends Field implements
+    InlineEditableFieldInterface,
+    SortableFieldInterface,
+    MergeableFieldInterface,
+    CrossSiteCopyableFieldInterface,
+    DefaultableFieldInterface
 {
     /**
      * @since 3.5.11
@@ -219,6 +225,14 @@ class Number extends Field implements InlineEditableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
+    public function getDefaultValue(): int|null|float
+    {
+        return $this->defaultValue;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value === null) {
@@ -325,6 +339,15 @@ JS;
             'field' => $this,
             'value' => $value,
             'formatNumber' => $formatNumber,
+            'currencyLabel' => $this->previewFormat === self::FORMAT_CURRENCY ? $this->currencyLabel() : false,
+        ]);
+    }
+
+    private function currencyLabel(): string
+    {
+        return Craft::t('app', '({currencyCode}) {currencySymbol}', [
+            'currencyCode' => $this->previewCurrency,
+            'currencySymbol' => Craft::$app->getFormattingLocale()->getCurrencySymbol($this->previewCurrency),
         ]);
     }
 

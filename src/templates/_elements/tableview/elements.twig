@@ -8,6 +8,7 @@
 {% set showHeaderColumn = showHeaderColumn ?? false %}
 {% set context = context ?? 'index' %}
 {% set hyperlink = hyperlink ?? (context in ['index', 'embedded-index']) %}
+{% set returnUrl = returnUrl ?? null %}
 
 {% for element in elements %}
     {% set totalDescendants = structure
@@ -90,6 +91,7 @@
                                 class: ['chromeless'],
                             },
                             hyperlink,
+                            returnUrl,
                         }) %}
                         {% if not showHeaderColumn %}
                             {% set chip = chip|attr({class: 'hide-label'}) %}

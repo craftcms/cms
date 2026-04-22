@@ -7,9 +7,11 @@
 
 namespace craft\fields\data;
 
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Serializable;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\Entry;
 use craft\fields\linktypes\BaseElementLinkType;
 use craft\fields\linktypes\BaseLinkType;
 use craft\helpers\Html;
@@ -125,14 +127,22 @@ class LinkData extends BaseObject implements Serializable
     /**
      * Returns the full link URL.
      *
+     * @param bool $anyStatus Whether to return a value regardless of the linked element’s status
      * @since 5.6.0
      */
-    public function getUrl(): string
+    public function getUrl(bool $anyStatus = true): string
     {
         $url = $this->getValue();
 
         if ($url === '') {
             return $url;
+        }
+
+        if (!$anyStatus) {
+            $status = $this->getElement()?->getStatus();
+            if ($status && !in_array($status, [Element::STATUS_ENABLED, Entry::STATUS_LIVE])) {
+                return '';
+            }
         }
 
         return sprintf('%s%s', $url, $this->urlSuffix ?? '');

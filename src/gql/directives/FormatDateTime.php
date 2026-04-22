@@ -60,6 +60,12 @@ class FormatDateTime extends Directive
                     'type' => Type::string(),
                     'description' => 'The locale to use when formatting the date. (E.g., en-US)',
                 ]),
+                new FieldArgument([
+                    'name' => 'withTimeZone',
+                    'type' => Type::boolean(),
+                    'description' => 'Whether the time zone abbreviation should be appended to the formatted time.',
+                    'defaultValue' => false,
+                ]),
             ],
             'description' => 'Formats a date in the desired format. Can be applied to all fields, only changes output of DateTime fields.',
         ]));
@@ -108,7 +114,7 @@ class FormatDateTime extends Directive
 
             $formatter->timeZone = $timezone;
 
-            $value = $formatter->asDatetime($value, $format);
+            $value = $formatter->asDatetime($value, $format, $arguments['withTimeZone'] ?? false);
         }
 
         return $value;
