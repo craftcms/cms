@@ -1710,58 +1710,6 @@ JS, [
     }
 
     /**
-     * Deletes a draft.
-     *
-     * @return Response|null
-     * @throws BadRequestHttpException
-     * @throws ForbiddenHttpException
-     * @since 4.0.0
-     */
-    public function actionDeleteDraft(): ?Response
-    {
-        $this->requirePostRequest();
-
-        $element = $this->_element();
-
-        if ($element instanceof Response) {
-            return $element;
-        }
-
-        if (!$element || !$element->getIsDraft()) {
-            throw new BadRequestHttpException('No draft was identified by the request.');
-        }
-
-        $this->element = $element;
-
-        Gate::authorize('delete', $element);
-
-        if (!Elements::deleteElement($element, true)) {
-            return $this->_asFailure($element, t('Couldn’t delete {type}.', [
-                'type' => t('draft'),
-            ]));
-        }
-
-        if ($element->isProvisionalDraft) {
-            $message = t('Changes discarded.');
-        } else {
-            $message = t('{type} deleted.', [
-                'type' => t('Draft'),
-            ]);
-        }
-
-        if (!$this->request->getAcceptsJson()) {
-            // Tell all browser windows about the draft deletion
-            Craft::$app->getSession()->broadcastToJs([
-                'event' => 'deleteDraft',
-                'canonicalId' => $element->getCanonicalId(),
-                'draftId' => $element->draftId,
-            ]);
-        }
-
-        return $this->_asSuccess($message, $element);
-    }
-
-    /**
      * Reverts an element’s content to a revision.
      *
      * @return Response

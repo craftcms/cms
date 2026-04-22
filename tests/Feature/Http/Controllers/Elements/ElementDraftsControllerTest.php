@@ -7,6 +7,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementActivity;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\Events\BeforeDelete;
 use CraftCms\Cms\Element\Events\BeforeSave;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -128,12 +129,9 @@ describe('ensure', function () {
             'HTTP_ACCEPT' => 'application/json',
         ]));
 
-        $response = new ElementDraftsController(
-            $request,
-            app(Drafts::class),
-            app(Elements::class),
-            app(ElementActivity::class),
-        )->ensure();
+        $response = app()->make(ElementDraftsController::class, [
+            'request' => $request,
+        ])->ensure();
 
         $payload = json_decode($response->getContent(), true, flags: JSON_THROW_ON_ERROR);
 
@@ -431,38 +429,18 @@ describe('store', function () {
         /** @var Entry $draft */
         $draft = app(Drafts::class)->createDraft($entry, auth()->id(), name: 'Failing Draft');
 
-        $request = ElementRequest::create('/actions/elements/save-draft', 'POST', [
-            'elementType' => Entry::class,
-            'draftId' => $draft->draftId,
-            'siteId' => $draft->siteId,
-        ], [], [], [
-            'HTTP_ACCEPT' => 'application/json',
-        ]);
-        $request->setUserResolver(fn () => auth()->user());
-        app()->instance('request', $request);
-
         Event::listen(BeforeSave::class, function (BeforeSave $event) use ($draft) {
             if ($event->element->id === $draft->id) {
                 $event->isValid = false;
             }
         });
 
-        $controller = new class($request, app(Drafts::class), app(Elements::class), app(ElementActivity::class)) extends ElementDraftsController
-        {
-            protected function applyParamsToElement(ElementInterface $element): void {}
-
-            protected function canSave(ElementInterface $element, User $user): bool
-            {
-                return true;
-            }
-        };
-
-        $response = $controller->store();
-
-        $payload = json_decode($response->getContent(), true, flags: JSON_THROW_ON_ERROR);
-
-        expect($response->getStatusCode())->toBe(400)
-            ->and($payload['message'])->toBe(t('Couldn’t save {type}.', ['type' => t('draft')]));
+        postJson(action([ElementDraftsController::class, 'store']), [
+            'elementType' => Entry::class,
+            'draftId' => $draft->draftId,
+            'siteId' => $draft->siteId,
+        ])->assertStatus(400)
+            ->assertJsonPath('message', t('Couldn’t save {type}.', ['type' => t('draft')]));
     });
 
     it('rechecks save authorization after applying request params', function () {
@@ -632,5 +610,100 @@ describe('apply', function () {
             ->and($savedDraft->slug)->toBe('failed-apply-title')
             ->and($canonical->title)->toBe('Canonical Title')
             ->and($canonical->slug)->toBe('canonical-title');
+    });
+});
+
+describe('destroy', function () {
+    it('returns any response resolved by the element request', function () {
+        $entry = EntryModel::factory()->createElement([
+            'title' => 'Canonical Title',
+            'slug' => 'canonical-title',
+        ]);
+
+        post(action([ElementDraftsController::class, 'destroy']), [
+            'elementId' => $entry->id,
+            'draftId' => 999999,
+            'siteId' => $entry->siteId,
+        ])->assertRedirect($entry->getCpEditUrl());
+    });
+
+    it('returns 400 when no draft is identified by the request', function () {
+        $entry = EntryModel::factory()->createElement([
+            'title' => 'Canonical Title',
+        ]);
+
+        postJson(action([ElementDraftsController::class, 'destroy']), [
+            'elementId' => $entry->id,
+            'siteId' => $entry->siteId,
+        ])->assertBadRequest();
+    });
+
+    it('deletes a draft', function () {
+        $entry = EntryModel::factory()->createElement([
+            'title' => 'Canonical Title',
+        ]);
+        /** @var Entry $draft */
+        $draft = app(Drafts::class)->createDraft($entry, auth()->id(), name: 'Disposable Draft');
+
+        $response = postJson(action([ElementDraftsController::class, 'destroy']), [
+            'elementType' => Entry::class,
+            'draftId' => $draft->draftId,
+            'siteId' => $draft->siteId,
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('message', t('{type} deleted.', ['type' => t('Draft')]));
+
+        expect(Entry::find()->draftId($draft->draftId)->status(null)->one())->toBeNull();
+    });
+
+    it('discards provisional draft changes', function () {
+        $entry = EntryModel::factory()->createElement([
+            'title' => 'Canonical Title',
+        ]);
+        /** @var Entry $draft */
+        $draft = app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
+
+        $response = postJson(action([ElementDraftsController::class, 'destroy']), [
+            'elementType' => Entry::class,
+            'draftId' => $draft->draftId,
+            'siteId' => $draft->siteId,
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('message', t('Changes discarded.'));
+
+        expect(
+            Entry::find()
+                ->drafts()
+                ->provisionalDrafts()
+                ->draftOf($entry->id)
+                ->draftCreator(auth()->id())
+                ->status(null)
+                ->one()
+        )->toBeNull();
+    });
+
+    it('returns a failure response when deleting the draft fails', function () {
+        $entry = EntryModel::factory()->createElement([
+            'title' => 'Canonical Title',
+        ]);
+        /** @var Entry $draft */
+        $draft = app(Drafts::class)->createDraft($entry, auth()->id(), name: 'Undeletable Draft');
+
+        Event::listen(BeforeDelete::class, function (BeforeDelete $event) use ($draft) {
+            if ($event->element->id === $draft->id) {
+                $event->isValid = false;
+            }
+        });
+
+        postJson(action([ElementDraftsController::class, 'destroy']), [
+            'elementType' => Entry::class,
+            'draftId' => $draft->draftId,
+            'siteId' => $draft->siteId,
+        ])->assertStatus(400)
+            ->assertJsonPath('message', t('Couldn’t delete {type}.', ['type' => t('draft')]));
+
+        expect(Entry::find()->draftId($draft->draftId)->status(null)->one())->not->toBeNull();
     });
 });

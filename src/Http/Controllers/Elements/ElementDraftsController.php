@@ -352,5 +352,41 @@ class ElementDraftsController
         return new ElementResponse()->success($canonical, $message, supportsAddAnother: true);
     }
 
-    public function destroy() {}
+    public function destroy(): Response
+    {
+        $element = $this->request->element();
+
+        if ($element instanceof Response) {
+            return $element;
+        }
+
+        if (! $element || ! $element->getIsDraft()) {
+            abort(400, 'No draft was identified by the request.');
+        }
+
+        Gate::authorize('delete', $element);
+
+        if (! $this->elements->deleteElement($element, true)) {
+            return new ElementResponse()->failure($element, t('Couldn’t delete {type}.', [
+                'type' => t('draft'),
+            ]));
+        }
+
+        $message = $element->isProvisionalDraft
+            ? t('Changes discarded.')
+            : t('{type} deleted.', [
+                'type' => t('Draft'),
+            ]);
+
+        if (! $this->request->acceptsJson()) {
+            // Tell all browser windows about the draft deletion
+            session()->broadcastToJs([
+                'event' => 'deleteDraft',
+                'canonicalId' => $element->getCanonicalId(),
+                'draftId' => $element->draftId,
+            ]);
+        }
+
+        return new ElementResponse()->success($element, $message);
+    }
 }
