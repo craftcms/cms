@@ -22,6 +22,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Testing\Fluent\AssertableJson;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 use function CraftCms\Cms\cp_url;
@@ -219,11 +220,14 @@ describe('store', function () {
         );
 
         $response->assertOk()
-            ->assertJsonPath('message', t('{type} saved.', ['type' => t('Draft')]))
-            ->assertJsonPath('canonicalId', $entry->id)
-            ->assertJsonPath('draftName', 'Ported Draft')
-            ->assertJsonPath('draftNotes', 'Ported draft notes')
-            ->assertJsonPath('creator', auth()->user()->getName());
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->where('message', t('{type} saved.', ['type' => t('Draft')]))
+                ->where('canonicalId', $entry->id)
+                ->where('draftName', 'Ported Draft')
+                ->where('draftNotes', 'Ported draft notes')
+                ->where('creator', auth()->user()->getName())
+                ->etc()
+            );
 
         /** @var Entry $draft */
         $draft = Entry::find()
@@ -264,10 +268,13 @@ describe('store', function () {
             'draftName' => 'Renamed Draft',
             'notes' => 'Updated draft notes',
         ])->assertOk()
-            ->assertJsonPath('elementId', $draft->id)
-            ->assertJsonPath('draftId', $draft->draftId)
-            ->assertJsonPath('draftName', 'Renamed Draft')
-            ->assertJsonPath('draftNotes', 'Updated draft notes');
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->where('elementId', $draft->id)
+                ->where('draftId', $draft->draftId)
+                ->where('draftName', 'Renamed Draft')
+                ->where('draftNotes', 'Updated draft notes')
+                ->etc()
+            );
 
         /** @var Entry $updatedDraft */
         $updatedDraft = Entry::find()

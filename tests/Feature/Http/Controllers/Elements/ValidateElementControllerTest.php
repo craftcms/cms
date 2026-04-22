@@ -9,6 +9,7 @@ use CraftCms\Cms\Http\Controllers\Elements\ValidateElementController;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -75,10 +76,13 @@ it('returns a failure response for invalid elements', function () {
         'siteId' => $entry->siteId,
     ])
         ->assertBadRequest()
-        ->assertJsonPath('message', t('{type} validation failed.', ['type' => Entry::displayName()]))
-        ->assertJsonPath('modelName', 'element')
-        ->assertJsonPath('element.title', 'Valid Title')
-        ->assertJsonPath('errors.authorIds.0', 'The author ids field is required.');
+        ->assertJson(fn (AssertableJson $json) => $json
+            ->where('message', t('{type} validation failed.', ['type' => Entry::displayName()]))
+            ->where('modelName', 'element')
+            ->where('element.title', 'Valid Title')
+            ->where('errors.authorIds.0', 'The author ids field is required.')
+            ->etc()
+        );
 
     expect($response->json('errorSummary'))->toContain('field-error-key');
 });
@@ -97,8 +101,11 @@ it('returns a success response for valid elements', function () {
         'siteId' => $entry->siteId,
     ])
         ->assertOk()
-        ->assertJsonPath('message', t('{type} validation successful.', ['type' => Entry::displayName()]))
-        ->assertJsonPath('modelName', 'element')
-        ->assertJsonPath('element.title', 'Valid Title')
-        ->assertJsonMissingPath('errors');
+        ->assertJson(fn (AssertableJson $json) => $json
+            ->where('message', t('{type} validation successful.', ['type' => Entry::displayName()]))
+            ->where('modelName', 'element')
+            ->where('element.title', 'Valid Title')
+            ->missing('errors')
+            ->etc()
+        );
 });

@@ -15,6 +15,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\UserGroup;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -99,31 +100,34 @@ it('returns fully normalized source customization data', function () {
     ]);
 
     $response->assertOk()
-        ->assertJsonPath('multiPage', true)
-        ->assertJsonPath('sources.0.type', ElementSources::TYPE_HEADING)
-        ->assertJsonPath('sources.0.page', 'Test Elements')
-        ->assertJsonPath('sources.1.page', 'Test Elements')
-        ->assertJsonPath('sources.1.sortOptions.0.attr', 'structure')
-        ->assertJsonPath('sources.1.defaultSort.0', 'slug')
-        ->assertJsonPath('sources.1.defaultSort.1', 'asc')
-        ->assertJsonPath('sources.1.tableAttributes.0.0', 'slug')
-        ->assertJsonPath('sources.1.tableAttributes.0.1', 'Slug')
-        ->assertJsonPath('sources.2.defaultSort.0', 'id')
-        ->assertJsonPath('sources.2.defaultSort.1', 'asc')
-        ->assertJsonPath('sources.3.defaultSort.0', 'field:'.$field->uid)
-        ->assertJsonPath('sources.3.defaultSort.1', 'desc')
-        ->assertJsonPath('sources.3.sites.0', $primarySite->uid)
-        ->assertJsonPath('sources.3.userGroups', [])
-        ->assertJsonMissingPath('sources.3.condition')
-        ->assertJsonPath('sources.4.sites', [])
-        ->assertJsonPath('pageSettings.entries.label', 'Entries')
-        ->assertJsonPath('defaultSortOptions.0.attr', 'field:'.$field->uid)
-        ->assertJsonPath('availableTableAttributes.0.0', 'title')
-        ->assertJsonPath('customFieldAttributes.0.0', 'field:'.$field->uid)
-        ->assertJsonPath('customFieldAttributes.0.1', 'Preview Field')
-        ->assertJsonPath('elementTypeName', 'Test Element')
-        ->assertJsonPath('userGroups.0.label', t($userGroup->name, category: 'site'))
-        ->assertJsonPath('userGroups.0.value', $userGroup->uid);
+        ->assertJson(fn (AssertableJson $json) => $json
+            ->where('multiPage', true)
+            ->where('sources.0.type', ElementSources::TYPE_HEADING)
+            ->where('sources.0.page', 'Test Elements')
+            ->where('sources.1.page', 'Test Elements')
+            ->where('sources.1.sortOptions.0.attr', 'structure')
+            ->where('sources.1.defaultSort.0', 'slug')
+            ->where('sources.1.defaultSort.1', 'asc')
+            ->where('sources.1.tableAttributes.0.0', 'slug')
+            ->where('sources.1.tableAttributes.0.1', 'Slug')
+            ->where('sources.2.defaultSort.0', 'id')
+            ->where('sources.2.defaultSort.1', 'asc')
+            ->where('sources.3.defaultSort.0', 'field:'.$field->uid)
+            ->where('sources.3.defaultSort.1', 'desc')
+            ->where('sources.3.sites.0', $primarySite->uid)
+            ->where('sources.3.userGroups', [])
+            ->missing('sources.3.condition')
+            ->where('sources.4.sites', [])
+            ->where('pageSettings.entries.label', 'Entries')
+            ->where('defaultSortOptions.0.attr', 'field:'.$field->uid)
+            ->where('availableTableAttributes.0.0', 'title')
+            ->where('customFieldAttributes.0.0', 'field:'.$field->uid)
+            ->where('customFieldAttributes.0.1', 'Preview Field')
+            ->where('elementTypeName', 'Test Element')
+            ->where('userGroups.0.label', t($userGroup->name, category: 'site'))
+            ->where('userGroups.0.value', $userGroup->uid)
+            ->etc()
+        );
 
     $payload = $response->json();
     $structuredSortAttrs = array_column($payload['sources'][1]['sortOptions'], 'attr');

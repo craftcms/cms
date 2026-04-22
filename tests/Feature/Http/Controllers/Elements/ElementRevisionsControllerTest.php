@@ -18,6 +18,7 @@ use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
@@ -209,9 +210,12 @@ describe('revert', function () {
             'revisionId' => $revision->revisionId,
             'siteId' => $revision->siteId,
         ])->assertOk()
-            ->assertJsonPath('message', t('{type} reverted to past revision.', ['type' => Entry::displayName()]))
-            ->assertJsonPath('element.title', 'Original Title')
-            ->assertJsonPath('element.slug', 'original-title');
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->where('message', t('{type} reverted to past revision.', ['type' => Entry::displayName()]))
+                ->where('element.title', 'Original Title')
+                ->where('element.slug', 'original-title')
+                ->etc()
+            );
 
         /** @var Entry $canonical */
         $canonical = Entry::find()
