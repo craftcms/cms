@@ -101,7 +101,7 @@ class UsersController extends Controller
      * @var string|null The name of the two-step verification method you would like to remove for user, e.g. Authenticator App, Recovery Codes. Use "all" to remove all 2FA methods.
      * @since 5.9.21
      */
-    public ?string $authMethod = null;
+    public ?string $method = null;
 
     /**
      * @inheritdoc
@@ -129,7 +129,7 @@ class UsersController extends Controller
                 $options[] = 'password';
                 break;
             case 'remove-2fa':
-                $options[] = 'authMethod';
+                $options[] = 'method';
                 break;
         }
 
@@ -558,13 +558,13 @@ class UsersController extends Controller
             return ExitCode::OK;
         }
 
-        // if authMethod was provided, check if it's in the active methods; if so - use it
-        if ($this->authMethod) {
-            if ($this->authMethod !== 'all' && !isset($activeMethods[$this->authMethod])) {
-                $this->stdout("User “{$user->username}” doesn’t have the “{$this->authMethod}” two-step verification method." . PHP_EOL);
+        // if method was provided, check if it's in the active methods; if so - use it
+        if ($this->method) {
+            if ($this->method !== 'all' && !isset($activeMethods[$this->method])) {
+                $this->stdout("User “{$user->username}” doesn’t have the “{$this->method}” two-step verification method." . PHP_EOL);
                 return ExitCode::OK;
             }
-            $methodToRemove = $this->authMethod;
+            $methodToRemove = $this->method;
         } else {
             $methodToRemove = $this->select(
                 "Which two-step verification method would you like to remove for user “{$user->username}”",
