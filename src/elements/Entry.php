@@ -2493,7 +2493,7 @@ JS, [
                     ],
                     'single' => false,
                     'elements' => $authors ?: null,
-                    'disabled' => false,
+                    'disabled' => !$this->canChangeAuthor(),
                     'errors' => $this->getErrors('authorIds'),
                     'limit' => $section->maxAuthors,
                 ]);
@@ -2804,10 +2804,6 @@ JS;
         }
 
         $section = $this->getSection();
-
-        if (!$user->can("viewPeerEntries:$section->uid")) {
-            return false;
-        }
 
         $authorIds = $this->getAuthorIds();
 
