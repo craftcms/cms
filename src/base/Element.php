@@ -2624,7 +2624,13 @@ abstract class Element extends Component implements ElementInterface
             return $this->fieldByHandle(substr($name, 6)) !== null;
         }
 
-        return $name === 'title' || $this->hasEagerLoadedElements($name) || parent::__isset($name) || $this->fieldByHandle($name);
+        return (
+            $name === 'title' ||
+            isset($this->_generatedFieldValues[$name]) ||
+            $this->hasEagerLoadedElements($name) ||
+            parent::__isset($name) ||
+            $this->fieldByHandle($name)
+        );
     }
 
     /**
@@ -3423,7 +3429,7 @@ abstract class Element extends Component implements ElementInterface
             $event = new DefineAttributeKeywordsEvent(['attribute' => $attribute]);
             $this->trigger(self::EVENT_DEFINE_KEYWORDS, $event);
             if ($event->handled) {
-                return $event->keywords ?? '';
+                return $event->keywords;
             }
         }
 

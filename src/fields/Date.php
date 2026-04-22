@@ -422,7 +422,9 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
             return null;
         }
 
+        /** @phpstan-ignore-next-line */
         if ($this->showTimeZone && (isset($timeZone) || (is_array($value) && !empty($value['timezone'])))) {
+            /** @phpstan-ignore-next-line */
             $date->setTimezone(new DateTimeZone($timeZone ?? $value['timezone']));
         }
 

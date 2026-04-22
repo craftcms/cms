@@ -2275,7 +2275,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public function getPostEditUrl(): ?string
     {
-        return UrlHelper::cpUrl('entries');
+        $page = $this->getSection()?->getPage();
+        return UrlHelper::cpUrl(sprintf('content/%s', $page ? StringHelper::toKebabCase($page) : 'entries'));
     }
 
     /**
@@ -2485,7 +2486,7 @@ JS, [
                     ],
                     'single' => false,
                     'elements' => $authors ?: null,
-                    'disabled' => false,
+                    'disabled' => !$this->canChangeAuthor(),
                     'errors' => $this->getErrors('authorIds'),
                     'limit' => $section->maxAuthors,
                 ]);
@@ -2796,10 +2797,6 @@ JS;
         }
 
         $section = $this->getSection();
-
-        if (!$user->can("viewPeerEntries:$section->uid")) {
-            return false;
-        }
 
         $authorIds = $this->getAuthorIds();
 
