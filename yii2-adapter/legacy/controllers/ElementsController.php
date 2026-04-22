@@ -21,7 +21,6 @@ use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
-use CraftCms\Cms\Element\Data\ElementActivity;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
@@ -1721,35 +1720,6 @@ JS, [
             'headHtml' => HtmlStack::headHtml(),
             'bodyHtml' => HtmlStack::bodyHtml(),
         ];
-    }
-
-    /**
-     * Returns any recent activity for an element, and records that the user is viewing the element.
-     *
-     * @return Response
-     * @since 4.5.0
-     */
-    public function actionRecentActivity(): Response
-    {
-        $element = $this->_element();
-
-        if ($element instanceof Response) {
-            return $element;
-        }
-
-        if (!$element || $element->getIsRevision()) {
-            throw new BadRequestHttpException('No element was identified by the request.');
-        }
-
-        $currentUser = Auth::user();
-        $activity = ElementActivityFacade::getRecentActivity($element, $currentUser->id);
-        ElementActivityFacade::trackActivity($element, ElementActivityType::View, $currentUser);
-
-        return $this->asJson([
-            'activity' => $activity->map(fn(ElementActivity $record) => $record->toActivityRow($element))->all(),
-            'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
-            'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated->getTimestamp(),
-        ]);
     }
 
     /**
