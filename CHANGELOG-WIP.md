@@ -10,7 +10,8 @@
 - Matrix fields no longer have “Duplicate” and “Delete” field-level actions. ([#18561](https://github.com/craftcms/cms/pull/18561))
 - Number fields now show their selected currency beside their input, if their Preview Format setting is set to “As currency values”. ([#18498](https://github.com/craftcms/cms/pull/18498))
 - Color field previews are now blank for fields without a value. ([#18614](https://github.com/craftcms/cms/issues/18614))
-- Text condition rules now have “does not equal” operators.
+- Text condition rules now have “does not equal”, “is one of” and “is not one of” operators.
+- Numeric condition rules now have “is one of” and “is not one of” operators. ([#18734](https://github.com/craftcms/cms/pull/18734))
 - Editable table columns now set `min-width` styles based on their configured widths, if set. ([#18534](https://github.com/craftcms/cms/issues/18534))
 - Entry post dates are no longer automatically set until the entry is fully saved as enabled. ([#18642](https://github.com/craftcms/cms/pull/18642))
 - Element edit screens now have a “Save as a new draft” action when editing an explicitly-created draft. ([#18722](https://github.com/craftcms/cms/pull/18722))
