@@ -4,205 +4,108 @@
   import {store} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/GeneralSettingsController';
   import {type SystemData, type TimezoneOption} from '@/types/settings';
   import {useForm} from '@inertiajs/vue3';
-  import useCraftData from '@/composables/useCraftData';
-  import TransitionFade from '@/components/TransitionFade.vue';
   import {computed} from 'vue';
-  import {useEventListener} from '@vueuse/core';
-  import type {SelectOption, SuggestionGroup} from '@/types';
-  import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
+  import type {SelectItem} from '@/types';
+  import {useSettingsSave} from '@/composables/useSettingsSave';
+  import Pane from '@/components/Pane.vue';
+  import CraftCombobox from '@/components/form/CraftCombobox.vue';
+  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import {transformBooleanOptions} from '@/utils/transformBooleanOptions';
 
-  const props = defineProps<{
-    readOnly?: boolean;
-    system: SystemData;
-    nameSuggestions?: Array<SuggestionGroup>;
-    timezoneOptions?: Array<TimezoneOption>;
-    systemStatusOptions?: Array<SelectOption>;
-    saveUrl: string;
-    flash?: Record<any, any>;
-    errors: Record<any, any>;
-  }>();
-
-  const flash = computed(() => props.flash);
-  const errors = computed(() => props.errors);
+  const props = withDefaults(
+    defineProps<{
+      readOnly?: boolean;
+      system: SystemData;
+      nameSuggestions?: Array<any>;
+      timezoneOptions?: Array<TimezoneOption>;
+      systemStatusOptions?: Array<SelectItem>;
+      saveUrl: string;
+      errors: Record<any, any>;
+    }>(),
+    {systemStatusOptions: () => []}
+  );
 
   const form = useForm({
-    name: props.system.name,
+    name: props.system.name ?? '',
     live: props.system.live,
     retryDuration: props.system.retryDuration,
     timeZone: props.system.timeZone,
   });
 
-  function handleUpdate(event: CustomEvent) {
-    const target = event.target as HTMLSelectElement & {modelValue: string};
-    if (target) {
-      // @ts-ignore we're just going to trust that `name` is a key of `form` for now
-      form[target.name] = target.modelValue;
-    }
-  }
+  const {save} = useSettingsSave(form, store);
 
-  // Handle cmd + s events
-  useEventListener('keydown', (event) => {
-    if ((event.metaKey || event.ctrlKey) && event.key === 's') {
-      event.preventDefault();
-      save();
-    }
+  const systemStatusOptions = computed(() => {
+    return transformBooleanOptions(props.systemStatusOptions, {
+      trueLabel: t('Online'),
+      falseLabel: t('Offline'),
+    });
   });
 
-  function save() {
-    form.clearErrors().submit(store());
-  }
+  const liveOptions = computed(() => {
+    return [
+      {
+        value: '1',
+        label: t('Online'),
+        data: {
+          indicator: {variant: 'success'},
+        },
+      },
+      {
+        value: '0',
+        label: t('Offline'),
+        data: {
+          indicator: {variant: 'empty'},
+        },
+      },
+      ...systemStatusOptions.value,
+    ];
+  });
 </script>
 
 <template>
-  <form @submit.prevent="save">
-    <AppLayout :title="t('General Settings')">
-      <template #actions>
-        <TransitionFade>
-          <template v-if="form.recentlySuccessful && flash?.success">
-            <div class="flex gap-1 items-center text-sm">
-              <craft-icon
-                name="circle-check"
-                style="color: var(--c-color-success-fill-loud)"
-              ></craft-icon>
-              {{ flash.success }}
-            </div>
-          </template>
-          <template v-if="form.hasErrors">
-            <div class="tw:flex tw:gap-1 tw:items-center tw:text-sm">
-              <craft-icon
-                name="triangle-exclamation"
-                style="color: var(--c-color-danger-fill-loud)"
-              ></craft-icon>
-              {{ t('Could not save settings') }}
-            </div>
-          </template>
-        </TransitionFade>
-
-        <craft-button-group v-if="!readOnly">
-          <craft-button
-            type="submit"
-            variant="primary"
-            :loading="form.processing"
-          >
-            {{ t('Save') }}
-          </craft-button>
-          <craft-action-menu>
-            <craft-button slot="invoker" variant="primary" type="button" icon>
-              <craft-icon
-                name="chevron-down"
-                :label="t('More actions')"
-              ></craft-icon>
-            </craft-button>
-
-            <div slot="content">
-              <craft-action-item @click="save">
-                {{ t('Save and continue editing') }}
-                <craft-shortcut slot="suffix" class="ml-2">S</craft-shortcut>
-              </craft-action-item>
-            </div>
-          </craft-action-menu>
-        </craft-button-group>
-      </template>
-
-      <div
-        class="bg-white border border-neutral-border-quiet rounded-sm shadow-sm"
-      >
-        <template v-if="readOnly">
-          <CalloutReadOnly />
-        </template>
-        <div class="grid gap-3 p-5">
-          <template v-if="form.hasErrors">
-            <craft-callout variant="danger" icon="triangle-exclamation">
-              <div slot="title" class="tw:font-bold">
-                {{ t('Could not save settings') }}
-              </div>
-              <ul>
-                <li v-for="(error, key) in errors">
-                  {{ error }}
-                </li>
-              </ul>
+  <AppLayout :title="t('General Settings')" :form="form" @save="save">
+    <Pane appearance="raised">
+      <div class="grid gap-3">
+        <CraftCombobox
+          :label="t('System Name')"
+          id="name"
+          name="name"
+          v-model="form.name"
+          :has-feedback-for="errors?.name ? 'error' : ''"
+          :disabled="readOnly"
+          :require-option-match="false"
+          show-all-on-empty
+          :options="nameSuggestions"
+          :error="errors?.name"
+        >
+          <template #after>
+            <craft-callout
+              variant="info"
+              appearance="plain"
+              class="p-0"
+              icon="lightbulb"
+            >
+              {{ t('This can begin with an environment variable.') }}
+              <a
+                href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
+                >{{ t('Learn more') }}</a
+              >
             </craft-callout>
           </template>
-          <craft-combobox
-            :label="t('System Name')"
-            id="name"
-            name="name"
-            v-model="form.name"
-            :has-feedback-for="errors?.name ? 'error' : ''"
-            :disabled="readOnly"
-            :require-option-match="false"
-            show-all-on-empty
-          >
-            <template v-for="(group, idx) in nameSuggestions" :key="idx">
-              <craft-option
-                v-for="suggestion in group.data"
-                :key="suggestion.name"
-                .choiceValue="suggestion.name"
-                .hint="suggestion.hint"
-                >{{ suggestion.name }}</craft-option
-              >
-            </template>
-            <div slot="after">
-              <craft-callout
-                variant="info"
-                appearance="plain"
-                class="p-0"
-                icon="lightbulb"
-              >
-                {{ t('This can begin with an environment variable.') }}
-                <a
-                  href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
-                  >{{ t('Learn more') }}</a
-                >
-              </craft-callout>
-            </div>
+        </CraftCombobox>
 
-            <div slot="feedback">
-              <ul class="error-list" v-if="errors?.name">
-                <li>{{ errors.name }}</li>
-              </ul>
-            </div>
-          </craft-combobox>
-
-          <craft-combobox
-            :label="t('System Status')"
-            id="live"
-            name="live"
-            .modelValue="system.live ? '1' : '0'"
-            :has-feedback-for="errors?.live ? 'error' : ''"
-            @model-value-changed="handleUpdate"
-            :disabled="readOnly"
-            show-all-on-empty
-          >
-            <craft-option .choiceValue="'1'">
-              <div class="tw:flex tw:items-center tw:gap-1">
-                <craft-indicator variant="success"></craft-indicator>
-                <span>{{ t('Online') }}</span>
-              </div>
-            </craft-option>
-            <craft-option .choiceValue="'0'">
-              <div class="tw:flex tw:items-center tw:gap-1">
-                <craft-indicator variant="danger"></craft-indicator>
-                <span>{{ t('Offline') }}</span>
-              </div>
-            </craft-option>
-
-            <template v-for="option in systemStatusOptions" :key="option.label">
-              <template v-if="option.optgroup"></template>
-              <template v-else>
-                <craft-option .choiceValue="option.value">
-                  <div class="tw:flex tw:items-center tw:gap-1">
-                    <craft-indicator
-                      :variant="Boolean(option.value) ? 'success' : 'error'"
-                    ></craft-indicator>
-                    <span class="tw:font-mono">{{ option.label }}</span>
-                  </div>
-                </craft-option>
-              </template>
-            </template>
-
+        <CraftCombobox
+          :label="t('System Status')"
+          id="live"
+          name="live"
+          v-model="form.live"
+          :error="errors?.live"
+          :disabled="readOnly"
+          show-all-on-empty
+          :options="liveOptions"
+        >
+          <template #after>
             <craft-callout
-              slot="after"
               variant="info"
               appearance="plain"
               class="p-0"
@@ -218,57 +121,45 @@
               "
             >
             </craft-callout>
+          </template>
+        </CraftCombobox>
 
-            <div slot="feedback">
-              <ul class="error-list" v-if="errors.live">
-                <li>{{ errors.live }}</li>
-              </ul>
-            </div>
-          </craft-combobox>
+        <CraftInput
+          :label="t('Retry Duration')"
+          id="retry-duration"
+          name="retryDuration"
+          v-model="form.retryDuration"
+          :has-feedback-for="errors?.retryDuration ? 'error' : ''"
+          inputmode="numeric"
+          maxlength="4"
+          :disabled="readOnly"
+          :error="errors?.retryDuration"
+        >
+          <div
+            slot="help-text"
+            v-html="
+              t(
+                'The number of seconds that the <code>Retry-After</code> HTTP header should be set to for 503 responses when the system is offline.'
+              )
+            "
+          ></div>
+        </CraftInput>
 
-          <craft-input
-            :label="t('Retry Duration')"
-            id="retry-duration"
-            name="retryDuration"
-            v-model="form.retryDuration"
-            :has-feedback-for="errors?.retryDuration ? 'error' : ''"
-            inputmode="numeric"
-            maxlength="4"
-            :disabled="readOnly"
-          >
-            <div
-              slot="help-text"
-              v-html="
-                t(
-                  'The number of seconds that the <code>Retry-After</code> HTTP header should be set to for 503 responses when the system is offline.'
-                )
-              "
-            ></div>
-            <ul class="error-list" v-if="errors?.retryDuration" slot="feedback">
-              <li>{{ errors.retryDuration }}</li>
-            </ul>
-          </craft-input>
-
-          <craft-combobox
-            :label="t('Time Zone')"
-            id="time-zone"
-            name="timeZone"
-            .modelValue="form.timeZone"
-            @model-value-changed="handleUpdate"
-            :has-feedback-for="errors?.timeZone ? 'error' : ''"
-            :disabled="readOnly"
-            show-all-on-empty
-          >
-            <craft-option
-              v-for="timezone in timezoneOptions"
-              :key="timezone.value"
-              .choiceValue="timezone.value"
-            >
-              {{ timezone.label
-              }}{{ timezone.data?.hint ? ` — ${timezone.data.hint}` : '' }}
-            </craft-option>
+        <CraftCombobox
+          :label="t('Time Zone')"
+          id="time-zone"
+          name="timeZone"
+          v-model="form.timeZone"
+          :error="errors?.timeZone"
+          :disabled="readOnly"
+          show-all-on-empty
+          :options="timezoneOptions"
+        >
+          <template #item="{item}">
+            {{ item.label }}{{ item.data?.hint ? ` — ${item.data.hint}` : '' }}
+          </template>
+          <template #after>
             <craft-callout
-              slot="after"
               variant="info"
               appearance="plain"
               class="p-0"
@@ -282,14 +173,11 @@
                 >supported time zone</a
               >.
             </craft-callout>
-            <ul class="error-list" v-if="errors?.timeZone" slot="feedback">
-              <li>{{ errors.timeZone }}</li>
-            </ul>
-          </craft-combobox>
-        </div>
+          </template>
+        </CraftCombobox>
       </div>
-    </AppLayout>
-  </form>
+    </Pane>
+  </AppLayout>
 </template>
 
 <style scoped lang="scss">

@@ -10,6 +10,7 @@ use CraftCms\Cms\User\Data\UserGroup as UserGroupData;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\UserGroup;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -36,7 +37,10 @@ it('requires admin changes', function () {
     Edition::set(Edition::Pro);
 
     // Read only
-    get(action([UserGroupsController::class, 'edit'], [UserGroup::factory()->create()->id]))->assertSee(t('Changes to these settings aren’t permitted in this environment.'));
+    get(action([UserGroupsController::class, 'edit'], [UserGroup::factory()->create()->id]))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('SettingsUserGroupsEditPage')
+            ->where('readOnly', true));
 
     // Not allowed
     get(action([UserGroupsController::class, 'create']))->assertForbidden();

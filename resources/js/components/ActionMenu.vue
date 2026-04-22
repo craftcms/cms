@@ -30,16 +30,18 @@
 
 <template>
   <craft-action-menu>
-    <craft-button
-      type="button"
-      slot="invoker"
-      icon
-      size="small"
-      variant="inherit"
-      appearance="plain"
-    >
-      <craft-icon :name="icon" :label="label"></craft-icon>
-    </craft-button>
+    <slot name="invoker" :label="label">
+      <craft-button
+        type="button"
+        slot="invoker"
+        icon
+        size="small"
+        variant="inherit"
+        appearance="plain"
+      >
+        <craft-icon :name="icon" :label="label"></craft-icon>
+      </craft-button>
+    </slot>
 
     <div slot="content" class="m-sm">
       <craft-action-item
@@ -48,18 +50,27 @@
         :key="`safe-${idx}`"
         :icon="action.icon"
         @click="action.onClick"
-        >{{ action.label }}</craft-action-item
-      >
-      <hr class="m-0" />
-      <craft-action-item
-        v-for="(action, idx) in dangerousActions"
-        :id="action.id"
-        :key="`dangerous-${idx}`"
-        :icon="action.icon"
-        :variant="action.variant"
-        @click="action.onClick"
-        >{{ action.label }}</craft-action-item
-      >
+        >{{ action.label }}
+        <craft-shortcut slot="suffix" class="ml-2" v-if="action.shortcut">{{
+          action.shortcut
+        }}</craft-shortcut>
+      </craft-action-item>
+
+      <template v-if="dangerousActions.length">
+        <hr class="m-0" />
+        <craft-action-item
+          v-for="(action, idx) in dangerousActions"
+          :id="action.id"
+          :key="`dangerous-${idx}`"
+          :icon="action.icon"
+          :variant="action.variant"
+          @click="action.onClick"
+          >{{ action.label }}
+          <craft-shortcut slot="suffix" class="ml-2" v-if="action.shortcut">{{
+            action.shortcut
+          }}</craft-shortcut>
+        </craft-action-item>
+      </template>
     </div>
   </craft-action-menu>
 </template>

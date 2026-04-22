@@ -2,8 +2,8 @@
   import {t} from '@craftcms/cp/utilities/translate.ts';
   import findAndReplaceController from '@actions/Utilities/FindAndReplaceController.ts';
   import {useForm} from '@inertiajs/vue3';
-  import TransitionFade from '@/components/TransitionFade.vue';
-  import Input from '@/components/form/Input.vue';
+  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import InlineFlash from '@/components/InlineFlash.vue';
 
   const form = useForm({
     find: '',
@@ -24,13 +24,13 @@
   <div class="p-4">
     <form @submit.prevent="submit" method="post">
       <div class="grid gap-3">
-        <Input
+        <CraftInput
           :label="t('Find Text')"
           v-model="form.find"
           name="find"
           :error="form.errors.find"
         />
-        <Input
+        <CraftInput
           :label="t('Replace Text')"
           v-model="form.replace"
           name="replace"
@@ -46,18 +46,7 @@
           >
             {{ t('Find and Replace') }}
           </craft-button>
-          <TransitionFade>
-            <template v-if="form.recentlySuccessful">
-              <craft-callout
-                variant="success"
-                icon="circle-check"
-                appearance="plain"
-                class="p-0"
-              >
-                {{ t('Replace job dispatched.') }}
-              </craft-callout>
-            </template>
-          </TransitionFade>
+          <InlineFlash :is-active="form.recentlySuccessful" />
         </div>
       </div>
     </form>

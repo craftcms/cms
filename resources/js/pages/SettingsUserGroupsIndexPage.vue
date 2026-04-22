@@ -10,14 +10,7 @@
   import {createCraftColumnHelper} from '@/components/AdminTable/createCraftColumnHelper';
   import DeleteButton from '@/components/AdminTable/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
-
-  interface UserGroup {
-    id: number;
-    name: string;
-    handle: string;
-    description: string | null;
-    uid: string;
-  }
+  import type {UserGroup} from '@/types';
 
   const props = defineProps<{
     groups: Array<UserGroup>;
@@ -47,7 +40,6 @@
         columnHelper.link('name', {
           header: t('Name'),
           props: ({row}) => ({
-            inertia: false,
             href: edit(row.original.id).url,
           }),
         }),
@@ -65,6 +57,8 @@
         return {};
       },
     },
+    manualPagination: true,
+    pageCount: 1,
     getCoreRowModel: getCoreRowModel<UserGroup>(),
   });
 </script>

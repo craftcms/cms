@@ -60,31 +60,25 @@ readonly class UserGroupsController
         ]);
     }
 
-    public function create(): CpScreenResponse
+    public function create(UserPermissions $userPermissions): CpScreenResponse
     {
         $crumbs = [
             ['label' => t('Settings'), 'url' => 'settings'],
             ['label' => t('Users'), 'url' => 'settings/users'],
-            ['label' => t('User Groups'), 'url' => 'settings/users'],
+            ['label' => t('User Groups')],
         ];
 
         return new CpScreenResponse()
             ->title(t('Create a new user group'))
             ->crumbs($crumbs)
-            ->addAltAction(t('Save and continue editing'), [
-                'redirect' => 'settings/users/groups/{id}',
-                'shortcut' => true,
-                'retainScroll' => true,
-            ])
-            ->action('user-settings/save-group')
             ->redirectUrl('settings/users')
-            ->contentTemplate('settings/users/groups/_edit.twig', [
+            ->inertiaPage('SettingsUserGroupsEditPage', [
                 'group' => new UserGroup,
-                'readOnly' => $this->readOnly,
+                'permissions' => $userPermissions->getAllPermissions(),
             ]);
     }
 
-    public function edit(UserGroupModel $userGroup): CpScreenResponse|View
+    public function edit(UserGroupModel $userGroup, UserPermissions $userPermissions): CpScreenResponse|View
     {
         if (Edition::get() === Edition::Team) {
             $group = $this->userGroups->getTeamGroup();
@@ -107,16 +101,13 @@ readonly class UserGroupsController
             ->editUrl($group->getCpEditUrl())
             ->title(trim($group->name) ?: t('Edit User Group'))
             ->crumbs($crumbs)
-            ->addAltAction(t('Save and continue editing'), [
-                'redirect' => 'settings/users/groups/{id}',
-                'shortcut' => true,
-                'retainScroll' => true,
-            ])
-            ->action('user-settings/save-group')
             ->redirectUrl('settings/users')
-            ->contentTemplate('settings/users/groups/_edit.twig', [
-                'group' => $group,
-                'readOnly' => $this->readOnly,
+            ->inertiaPage('SettingsUserGroupsEditPage', [
+                'group' => [
+                    'id' => $group->id,
+                    ...$group->getConfig(true),
+                ],
+                'permissions' => $userPermissions->getAllPermissions(),
             ])
             ->prepareScreen(function (CpScreenResponse $response, string $containerId) {
                 HtmlStack::jsWithVars(
@@ -137,6 +128,7 @@ readonly class UserGroupsController
     {
         $userGroupData = new UserGroup;
         $userGroupData->id = $request->integer('id', $request->input('groupId'));
+        ;
         $userGroupData->name = $request->input('name');
         $userGroupData->handle = $request->input('handle');
         $userGroupData->description = $request->input('description');
@@ -195,13 +187,13 @@ readonly class UserGroupsController
             ? t('Permissions saved.')
             : t('Group saved.');
 
-        return $this->asModelSuccess($group, $message, 'group');
+        return $this->asSuccess($message);
     }
 
     public function destroy(Request $request, int $groupId): Response
     {
         $this->userGroups->deleteGroupById($groupId);
 
-        return $this->asSuccess(t('Group deleted.'));
+        return $this->asSuccess(t('Group deleted.'), redirect: route('craft.cp.settings.users.index'));
     }
 }

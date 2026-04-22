@@ -15,16 +15,21 @@
         :checked="selected"
         :hint="option.data?.hint"
       >
-        <template
-          v-if="option.label.startsWith('$') || option.label.startsWith('@')"
-        >
-          <code>
+        <div class="flex gap-2 items-center">
+          <template v-if="option.data?.indicator">
+            <craft-indicator v-bind="option.data.indicator"></craft-indicator>
+          </template>
+          <template
+            v-if="option.label.startsWith('$') || option.label.startsWith('@')"
+          >
+            <code>
+              {{ option.label }}
+            </code>
+          </template>
+          <template v-else>
             {{ option.label }}
-          </code>
-        </template>
-        <template v-else>
-          {{ option.label }}
-        </template>
+          </template>
+        </div>
       </craft-option>
     </slot>
   </ComboboxOption>

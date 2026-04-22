@@ -55,7 +55,6 @@ use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
 use CraftCms\Cms\Http\Controllers\Settings\RoutesController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
-use CraftCms\Cms\Http\Controllers\Settings\UserGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
@@ -404,7 +403,7 @@ Route::prefix(implode('/', [
         Route::middleware([
             RequireAdminChanges::class,
         ])->group(function () {
-            Route::post('sections/save-section', [SectionsController::class, 'store']);
+            // Route::post('sections/save-section', [SectionsController::class, 'store']);
             Route::post('sections/delete-section', [SectionsController::class, 'destroy']);
         });
 
@@ -454,14 +453,6 @@ Route::prefix(implode('/', [
         Route::post('users/remove-password-reset-requirement', [PasswordController::class, 'removeResetRequirement']);
         Route::post('users/verify-password', [PasswordController::class, 'verifyPassword']);
         Route::post('users/save-field-layout', SaveUsersFieldLayoutController::class);
-
-        // User groups
-        Route::middleware([
-            RequireAdminChanges::class,
-            RequireEdition::class.':'.Edition::Team->value,
-        ])->group(function () {
-            Route::post('user-settings/save-group', [UserGroupsController::class, 'store']);
-        });
 
         // User settings
         Route::middleware([

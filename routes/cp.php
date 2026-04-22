@@ -195,9 +195,11 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         Route::get('settings/routes', [RoutesController::class, 'index']);
 
         // Sections
-        Route::get('settings/sections', [SectionsController::class, 'index']);
+        Route::get('settings/sections', [SectionsController::class, 'index'])
+            ->name('settings.sections.index');
         Route::middleware(RequireAdminChanges::class)->get('settings/sections/new', [SectionsController::class, 'create']);
         Route::get('settings/sections/{section}', [SectionsController::class, 'edit']);
+        Route::middleware(RequireAdminChanges::class)->post('sections/sections', [SectionsController::class, 'store']);
 
         // Volumes
         Route::get('settings/assets', [VolumesController::class, 'index']);
@@ -231,15 +233,18 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
 
         // User groups
         Route::middleware([RequireEdition::class.':'.Edition::Team->value])->group(function () {
-            Route::get('settings/users', [UserGroupsController::class, 'index']);
+            Route::get('settings/users', [UserGroupsController::class, 'index'])
+                ->name('settings.users.index');
             Route::middleware([
                 RequireEdition::class.':'.Edition::Pro->value,
                 RequireAdminChanges::class,
             ])->group(function () {
                 Route::get('settings/users/groups/new', [UserGroupsController::class, 'create']);
+                Route::post('settings/users/groups', [UserGroupsController::class, 'store'])->whereNumber('groupId');
                 Route::delete('settings/users/groups/{groupId}', [UserGroupsController::class, 'destroy'])->whereNumber('groupId');
             });
-            Route::get('settings/users/groups/{userGroup}', [UserGroupsController::class, 'edit']);
+            Route::get('settings/users/groups/{userGroup}', [UserGroupsController::class, 'edit'])
+                ->name('settings.users.groups.edit');
         });
 
         // User settings

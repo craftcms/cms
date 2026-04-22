@@ -100,7 +100,7 @@
         >{{ t('New schema') }}</CpLink
       >
     </template>
-    <Pane :padding="0">
+    <Pane :padding="0" appearance="raised">
       <AdminTable :table="table" />
     </Pane>
   </AppLayout>

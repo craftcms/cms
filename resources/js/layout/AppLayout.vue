@@ -4,36 +4,49 @@
   import {computed, reactive, ref, useTemplateRef, watch} from 'vue';
   import CpSidebar from '@/components/CpSidebar.vue';
   import {useMediaQuery} from '@vueuse/core';
-  import {Head, usePage} from '@inertiajs/vue3';
+  import {Head, type InertiaForm, usePage} from '@inertiajs/vue3';
   import VarDump from '@/components/VarDump.vue';
   import Breadcrumbs from '@/components/Breadcrumbs.vue';
   import {useAnnouncer} from '@/composables/useAnnouncer';
   import LiveRegion from '@/components/LiveRegion.vue';
   import {useAppendHtml} from '@/composables/useAppendHtml';
+  import ActionMenu from '@/components/ActionMenu.vue';
+  import type {ActionItem} from '@/types';
+  import {useFlash} from '@/composables/useFlash';
+  import InlineFlash from '@/components/InlineFlash.vue';
+  import ErrorSummary from '@/components/form/ErrorSummary.vue';
+  import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
 
+  interface SaveOptions {
+    redirect?: boolean;
+  }
+
+  const emit = defineEmits<{
+    (e: 'save', options?: Partial<SaveOptions>): void;
+  }>();
   const props = withDefaults(
     defineProps<{
       title?: string;
       debug?: any;
       fullWidth?: boolean;
+      form?: InertiaForm<any> | null;
+      formActions?: Array<ActionItem>;
     }>(),
-    {fullWidth: false, crumbs: () => []}
+    {fullWidth: false, crumbs: () => [], form: null}
   );
 
   const page = usePage<{
     title: string;
-    flash: {
-      success: string | null;
-      error: string | null;
-    };
+    readOnly: boolean;
     crumbs?: Array<{
       url?: string;
       label: string;
     }> | null;
   }>();
-  const errorFlash = computed(() => page.props.flash?.error);
-  const successFlash = computed(() => page.props.flash?.success);
+
+  const {errorFlash, successFlash} = useFlash();
   const crumbs = computed(() => page.props.crumbs ?? null);
+  const readOnly = computed(() => page.props.readOnly);
   const sidebarToggle = useTemplateRef('sidebarToggle');
   const {announcement, announce} = useAnnouncer();
 
@@ -155,25 +168,79 @@
               <Breadcrumbs :items="crumbs" />
             </div>
           </slot>
-          <slot name="header">
-            <div :class="{container: true, 'container--full': fullWidth}">
-              <div class="index-grid index-grid--header">
-                <div class="index-grid__aside">
-                  <slot name="title">
-                    <h1 class="text-xl">{{ pageTitle }}</h1>
-                  </slot>
-                  <slot name="title-badge"></slot>
-                </div>
+          <component
+            :is="form ? 'form' : 'div'"
+            method="post"
+            @submit.prevent="emit('save')"
+          >
+            <slot name="header">
+              <div :class="{container: true, 'container--full': fullWidth}">
+                <div class="index-grid index-grid--header">
+                  <div class="index-grid__aside">
+                    <slot name="title">
+                      <h1 class="text-xl">{{ pageTitle }}</h1>
+                    </slot>
+                    <slot name="title-badge"></slot>
+                  </div>
 
-                <div class="index-grid__main">
-                  <slot name="actions"></slot>
+                  <div class="index-grid__main">
+                    <slot name="actions">
+                      <template v-if="form">
+                        <InlineFlash
+                          :is-active="form.recentlySuccessful || form.hasErrors"
+                        />
+
+                        <craft-button-group v-if="!readOnly">
+                          <craft-button
+                            type="submit"
+                            variant="primary"
+                            :loading="form.processing"
+                          >
+                            {{ t('Save') }}
+                          </craft-button>
+                          <ActionMenu
+                            icon="chevron-down"
+                            :actions="[
+                              {
+                                label: t('Save and continue editing'),
+                                onClick: () => emit('save', {redirect: false}),
+                                shortcut: 'S',
+                              },
+                              ...(formActions ?? []),
+                            ]"
+                          >
+                            <template #invoker="{label}">
+                              <craft-button
+                                slot="invoker"
+                                variant="primary"
+                                type="button"
+                                icon
+                              >
+                                <craft-icon
+                                  name="chevron-down"
+                                  :label="label"
+                                ></craft-icon>
+                              </craft-button>
+                            </template>
+                          </ActionMenu>
+                        </craft-button-group>
+                      </template>
+                    </slot>
+                  </div>
                 </div>
               </div>
+            </slot>
+            <div :class="{container: true, 'container--full': fullWidth}">
+              <ErrorSummary
+                v-if="form && form.hasErrors"
+                :errors="form.errors"
+              />
+              <template v-if="readOnly">
+                <CalloutReadOnly />
+              </template>
+              <slot></slot>
             </div>
-          </slot>
-          <div :class="{container: true, 'container--full': fullWidth}">
-            <slot></slot>
-          </div>
+          </component>
         </main>
       </slot>
     </div>
