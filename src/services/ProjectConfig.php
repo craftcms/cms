@@ -1486,11 +1486,33 @@ class ProjectConfig extends Component
 
         unset($removedItem);
 
-        // Sort by number of dots to ensure deepest paths listed first
+        // Group paths by similarity, sorted by depth (descending), e.g.:
+        // - foo1.bar.baz
+        // - foo1.bar
+        // - foo2.bar.baz
+        // - foo2.bar
         $sorter = function($a, $b) {
-            $aDepth = ProjectConfigHelper::pathDepth($a);
-            $bDepth = ProjectConfigHelper::pathDepth($b);
-            return $bDepth <=> $aDepth;
+            if (str_starts_with($a, "$b.")) {
+                // a is a subpath of b
+                return -1;
+            }
+            if (str_starts_with($b, "$a.")) {
+                // b is a subpath of a
+                return 1;
+            }
+
+            // find the first segment where they differ and sort based on that
+            $aSegs = ProjectConfigHelper::pathSegments($a);
+            $bSegs = ProjectConfigHelper::pathSegments($b);
+
+            foreach ($aSegs as $i => $aSeg) {
+                $result = $aSeg <=> $bSegs[$i];
+                if ($result !== 0) {
+                    return $result;
+                }
+            }
+
+            return 0;
         };
 
         $newItems = array_unique($newItems);
