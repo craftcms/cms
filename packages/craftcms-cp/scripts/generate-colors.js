@@ -122,6 +122,29 @@ function buildTokens(colors, scaleFn) {
     .join('\n\n');
 }
 
+function buildSemanticTokens() {
+  let declarations = [];
+  for (const [meaning, color] of Object.entries(semanticColors)) {
+    const s = lightScale(color);
+    const variables = [
+      `  /* Semantics colors - ${meaning} */`,
+      `  --c-color-${meaning}-fill-quiet: ${s.fillQuiet};`,
+      `  --c-color-${meaning}-fill-normal: ${s.fillNormal};`,
+      `  --c-color-${meaning}-fill-loud: ${s.fillLoud};`,
+      `  --c-color-${meaning}-border-quiet: ${s.borderQuiet};`,
+      `  --c-color-${meaning}-border-normal: ${s.borderNormal};`,
+      `  --c-color-${meaning}-border-loud: ${s.borderLoud};`,
+      `  --c-color-${meaning}-on-quiet: ${s.onQuiet};`,
+      `  --c-color-${meaning}-on-normal: ${s.onNormal};`,
+      `  --c-color-${meaning}-on-loud: ${s.onLoud};`,
+    ].join('\n');
+
+    declarations.push(variables);
+  }
+
+  return declarations.join('\n\n');
+}
+
 function buildStyleBlock(color) {
   return `.c-colorable--${color},
 [data-color='${color}'] {
@@ -142,6 +165,7 @@ function generateStyles(colors) {
 
 :root {
 ${buildTokens(colors, lightScale)}
+${buildSemanticTokens(semanticColors, lightScale)}
 }
 
 .c-colorable,
