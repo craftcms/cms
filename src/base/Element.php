@@ -4006,6 +4006,15 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
+        if ($this->getIsDraft() && !$this->getIsUnpublishedDraft() && !$this->isProvisionalDraft) {
+            $altActions[] = [
+                'label' => Craft::t('app', 'Save as a new {type}', [
+                    'type' => Craft::t('app', 'draft'),
+                ]),
+                'action' => 'elements/duplicate',
+            ];
+        }
+
         // Fire a 'defineAltActions' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_ALT_ACTIONS)) {
             $event = new DefineAltActionsEvent([
