@@ -7,6 +7,7 @@
 - Fixed a bug where eager-loadable GraphQL fields could be populated with the wrong field’s results, if they followed a fragment with a `*Interface` type condition. ([#18708](https://github.com/craftcms/cms/issues/18708))
 - Fixed a bug where users with permission to edit entries, but not view peer entries in a section, weren’t allowed to edit the authors for entries in the section. ([#18717](https://github.com/craftcms/cms/pull/18717))
 - Fixed a bug where reference tags weren’t working with generated fields. ([#18692](https://github.com/craftcms/cms/issues/18692))
+- Fixed errors that could occur when applying project config changes. ([#18720](https://github.com/craftcms/cms/issues/18720))
 
 ## 5.9.20 - 2026-04-14
 
