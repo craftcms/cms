@@ -119,7 +119,11 @@ class ElementsController extends Controller
         $this->_attributes = $this->request->getBodyParams();
 
         // No funny business
-        if (isset($this->_attributes['id']) || isset($this->_attributes['canonicalId'])) {
+        if (
+            isset($this->_attributes['id']) ||
+            isset($this->_attributes['uid']) ||
+            isset($this->_attributes['canonicalId'])
+        ) {
             throw new BadRequestHttpException('Changing an element’s ID is not allowed.');
         }
 
@@ -1711,6 +1715,15 @@ JS, [
 
         $elementInfo = $this->request->getRequiredBodyParam('elements');
         $newAttributes = $this->request->getRequiredBodyParam('newAttributes');
+
+        // No funny business
+        if (
+            isset($newAttributes['id']) ||
+            isset($newAttributes['uid']) ||
+            isset($newAttributes['canonicalId'])
+        ) {
+            throw new BadRequestHttpException('Setting an element’s ID is not allowed.');
+        }
 
         $newElementInfo = [];
 
