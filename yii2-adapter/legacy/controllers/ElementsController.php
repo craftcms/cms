@@ -37,7 +37,6 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\BulkOps;
-use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\ElementActivity as ElementActivityFacade;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -51,7 +50,6 @@ use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -1611,115 +1609,6 @@ JS, [
         ])), [
             'newElements' => $newElementInfo,
         ]);
-    }
-
-    /**
-     * Returns an element’s missing field layout components.
-     *
-     * @return Response|null
-     * @throws BadRequestHttpException
-     * @throws ForbiddenHttpException
-     * @throws ServerErrorHttpException
-     * @since 4.6.0
-     */
-    public function actionUpdateFieldLayout(): ?Response
-    {
-        $this->requirePostRequest();
-        $this->requireCpRequest();
-
-        if ($this->_elementId || $this->_elementUid) {
-            $element = $this->_element();
-        } else {
-            $element = $this->_createElement();
-        }
-
-        // Prevalidate?
-        if ($this->_prevalidate && $element->enabled && $element->getEnabledForSite()) {
-            $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-            $element->validate();
-        }
-
-        /**
-         * see https://github.com/craftcms/cms/issues/14635#issuecomment-2349006694 for details
-         * @var Element|Response|null $element
-         */
-        if ($element instanceof Response) {
-            return $element;
-        }
-
-        if (!$element || $element->getIsRevision()) {
-            throw new BadRequestHttpException('No element was identified by the request.');
-        }
-
-        Gate::authorize('view', $element);
-
-        $this->element = $element;
-        $this->_applyParamsToElement($element);
-
-        // Make sure nothing just changed that would prevent the user from saving
-        Gate::authorize('view', $element);
-
-        $data = $this->_fieldLayoutData($this->element);
-
-        $data += [
-            'initialDeltaValues' => DeltaRegistry::getInitialValues(),
-        ];
-
-        return $this->_asSuccess('Field layout updated.', $element, $data, true);
-    }
-
-    private function _fieldLayoutData(ElementInterface $element, array $formConfig = []): array
-    {
-        $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
-        $fieldLayout = $element->getFieldLayout();
-        $form = $fieldLayout->createForm($element, false, $formConfig + [
-            'namespace' => $namespace,
-            'registerDeltas' => false,
-            'visibleElements' => $this->_visibleLayoutElements,
-            'staticElements' => $this->_staticLayoutElements,
-        ]);
-        $missingElements = [];
-        foreach ($form->tabs as $tab) {
-            if (!$tab->getUid()) {
-                continue;
-            }
-
-            $elementInfo = [];
-
-            foreach ($tab->elements as $formElement) {
-                if ($formElement->isConditional) {
-                    $elementInfo[] = [
-                        'uid' => $formElement->layoutElement->uid,
-                        'html' => $formElement->html,
-                        'static' => $formElement->isStatic,
-                    ];
-                }
-            }
-
-            $missingElements[] = [
-                'uid' => $tab->getUid(),
-                'id' => $tab->getId(),
-                'elements' => $elementInfo,
-            ];
-        }
-
-        $tabs = $form->getTabMenu();
-        if (count($tabs) > 1) {
-            $selectedTab = isset($tabs[$this->_selectedTab]) ? $this->_selectedTab : null;
-            $tabHtml = InputNamespace::namespaceInputs(fn() => \CraftCms\Cms\template('_includes/tabs', [
-                'tabs' => $tabs,
-                'selectedTab' => $selectedTab,
-            ], templateMode: TemplateMode::Cp), $namespace);
-        } else {
-            $tabHtml = null;
-        }
-
-        return [
-            'tabs' => $tabHtml,
-            'missingElements' => $missingElements,
-            'headHtml' => HtmlStack::headHtml(),
-            'bodyHtml' => HtmlStack::bodyHtml(),
-        ];
     }
 
     /**

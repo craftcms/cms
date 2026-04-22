@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Mixins;
 use Closure;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\Enums\Position;
+use Illuminate\Session\SessionManager;
 
 class SessionMixin
 {
@@ -17,9 +18,12 @@ class SessionMixin
                 return;
             }
 
-            $jsonMessage = Json::encode($message);
-
-            $this->flashJs();
+            /**
+             * @var SessionManager $this
+             *
+             * @phpstan-ignore-next-line
+             */
+            $this->flashJs(Json::encode($message));
         };
     }
 
@@ -27,9 +31,19 @@ class SessionMixin
     {
         return function (bool $delete = true): array {
             if ($delete) {
+                /**
+                 * @var SessionManager $this
+                 *
+                 * @phpstan-ignore-next-line
+                 */
                 return $this->pull('__js', []);
             }
 
+            /**
+             * @var SessionManager $this
+             *
+             * @phpstan-ignore-next-line
+             */
             return $this->get('__js', []);
         };
     }
@@ -37,6 +51,11 @@ class SessionMixin
     public function flashJs(): Closure
     {
         return function (string $js, Position $position = Position::Head, ?string $key = null): void {
+            /**
+             * @var SessionManager $this
+             *
+             * @phpstan-ignore-next-line
+             */
             $scripts = $this->getJs();
             $scripts[] = [$js, $position->value, $key];
             $this->flash('__js', $scripts);

@@ -42,6 +42,7 @@ use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSourcesController;
 use CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController;
 use CraftCms\Cms\Http\Controllers\Elements\SearchController as ElementSearchController;
+use CraftCms\Cms\Http\Controllers\Elements\UpdateFieldLayoutController;
 use CraftCms\Cms\Http\Controllers\Elements\ValidateElementController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController;
@@ -255,6 +256,7 @@ Route::prefix(implode('/', [
         Route::post('elements/revert', [ElementRevisionsController::class, 'revert']);
         Route::post('elements/validate', ValidateElementController::class);
         Route::post('elements/recent-activity', ElementActivityController::class);
+        Route::post('elements/update-field-layout', UpdateFieldLayoutController::class);
 
         // Element Indexes
         Route::post('element-indexes/source-path', [ElementIndexSourcesController::class, 'sourcePath']);
