@@ -115,12 +115,27 @@ class ElementResponse
             // you should only see the top-level "Fix validation errors on the related asset" error
             // and not the details of what's wrong with the selected asset;
             foreach ($allKeys as $key) {
-                $lastNestedKey = substr_replace($key, '', strrpos((string) $key, '.'));
-                $lastNestedKey = substr_replace($lastNestedKey, '', strrpos($lastNestedKey, '['));
-                if (! empty($lastNestedKey)) {
-                    if (in_array($lastNestedKey, $allKeys)) {
-                        unset($allErrors[$key]);
-                    }
+                $dotPos = strrpos((string) $key, '.');
+                $bracketPos = strrpos((string) $key, '[');
+
+                if ($dotPos === false && $bracketPos === false) {
+                    continue;
+                }
+
+                $lastNestedKey = $key;
+
+                if ($dotPos !== false) {
+                    $lastNestedKey = substr_replace($lastNestedKey, '', $dotPos);
+                }
+
+                $bracketPos = strrpos((string) $lastNestedKey, '[');
+
+                if ($bracketPos !== false) {
+                    $lastNestedKey = substr_replace($lastNestedKey, '', $bracketPos);
+                }
+
+                if (! empty($lastNestedKey) && in_array($lastNestedKey, $allKeys)) {
+                    unset($allErrors[$key]);
                 }
             }
             $errorsList = [];

@@ -41,6 +41,7 @@ use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSourcesController;
 use CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController;
 use CraftCms\Cms\Http\Controllers\Elements\SearchController as ElementSearchController;
+use CraftCms\Cms\Http\Controllers\Elements\ValidateElementController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
@@ -251,6 +252,7 @@ Route::prefix(implode('/', [
         Route::post('elements/apply-draft', [ElementDraftsController::class, 'apply']);
         Route::post('elements/delete-draft', [ElementDraftsController::class, 'destroy']);
         Route::post('elements/revert', [ElementRevisionsController::class, 'revert']);
+        Route::post('elements/validate', ValidateElementController::class);
 
         // Element Indexes
         Route::post('element-indexes/source-path', [ElementIndexSourcesController::class, 'sourcePath']);
