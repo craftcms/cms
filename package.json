@@ -19,7 +19,7 @@
   ],
   "devDependencies": {
     "@craftcms/webpack": "file:packages/craftcms-webpack",
-    "@playwright/test": "^1.58.2",
+    "@playwright/test": "^1.59.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "prettier": "^2.8.8",
@@ -33,7 +33,7 @@
     "@selectize/selectize": "selectize/selectize.js#master",
     "@types/jquery": "^3.5.34",
     "accounting": "^0.4.1",
-    "axios": "^1.13.6",
+    "axios": "^1.15.1",
     "blueimp-file-upload": "^10.32.0",
     "d3": "^4.13.0",
     "d3-format": "^1.4.5",
