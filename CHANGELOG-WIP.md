@@ -13,6 +13,7 @@
 - Text condition rules now have “does not equal” operators.
 - Editable table columns now set `min-width` styles based on their configured widths, if set. ([#18534](https://github.com/craftcms/cms/issues/18534))
 - Entry post dates are no longer automatically set until the entry is fully saved as enabled. ([#18642](https://github.com/craftcms/cms/pull/18642))
+- Element edit screens now have a “Save as a new draft” action when editing an explicitly-created draft. ([#18722](https://github.com/craftcms/cms/pull/18722))
 - Address edit screens now have “Field settings” action menu items. ([#18544](https://github.com/craftcms/cms/discussions/18544))
 - Asset edit screens now have “Volume settings” and “Filesystem settings” action menu items. ([#18544](https://github.com/craftcms/cms/discussions/18544))
 - Entries’ “Entry type settings” and “Section settings” action menu items are now only shown for element edit screens’ primary action menus.
