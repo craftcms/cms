@@ -32,9 +32,49 @@ class ElementRequest extends FormRequest
 
     public function rules(): array
     {
+        $fieldsLocation = $this->input('fieldsLocation', 'fields');
+
         return [
+            '*' => [],
             'id' => ['missing'],
             'canonicalId' => ['missing'],
+
+            /**
+             * These need to be excluded from the ->validated() call
+             * which is passed to setAttributesFromRequest.
+             */
+            'elementType' => ['exclude'],
+            'elementId' => ['exclude'],
+            'elementUid' => ['exclude'],
+            'draftId' => ['exclude'],
+            'revisionId' => ['exclude'],
+            'fieldId' => ['exclude'],
+            'ownerId' => ['exclude'],
+            'newOwnerId' => ['exclude'],
+            'siteId' => ['exclude'],
+            'enabled' => ['exclude'],
+            'setEnabled' => ['exclude'],
+            'enabledForSite' => ['exclude'],
+            'slug' => ['exclude'],
+            'fresh' => ['exclude'],
+            'draftName' => ['exclude'],
+            'notes' => ['exclude'],
+            'fieldsLocation' => ['exclude'],
+            'provisional' => ['exclude'],
+            'dropProvisional' => ['exclude'],
+            'addAnother' => ['exclude'],
+            'visibleLayoutElements' => ['exclude'],
+            'staticLayoutElements' => ['exclude'],
+            'selectedTab' => ['exclude'],
+            'applyParams' => ['exclude'],
+            'prevalidate' => ['exclude'],
+            'asUnpublishedDraft' => ['exclude'],
+            'deleteProvisionalDraft' => ['exclude'],
+            'updateSearchIndexImmediately' => ['exclude'],
+            'failMessage' => ['exclude'],
+            'redirect' => ['exclude'],
+            'successMessage' => ['exclude'],
+            $fieldsLocation => ['exclude'],
         ];
     }
 
@@ -205,6 +245,10 @@ class ElementRequest extends FormRequest
 
                 return $element;
             }
+        }
+
+        if ($element) {
+            return $element;
         }
 
         abort(400, $draftId ? "Invalid draft ID: $draftId" : "Invalid revision ID: $revisionId");

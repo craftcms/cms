@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f021fb13ae5803c1ef5aa53145b4e877",
+    "content-hash": "a6c4f08c1188b01800e240ddb00392ca",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -617,16 +617,16 @@
         },
         {
             "name": "craftcms/laravel-ruleset-validation",
-            "version": "1.0.1",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/craftcms/laravel-ruleset-validation.git",
-                "reference": "66867ade9c09c6c8165bd62c0ebb7e4843399aab"
+                "reference": "5fd54f4643f4746d6ac662bbec13aa225f62edfb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/laravel-ruleset-validation/zipball/66867ade9c09c6c8165bd62c0ebb7e4843399aab",
-                "reference": "66867ade9c09c6c8165bd62c0ebb7e4843399aab",
+                "url": "https://api.github.com/repos/craftcms/laravel-ruleset-validation/zipball/5fd54f4643f4746d6ac662bbec13aa225f62edfb",
+                "reference": "5fd54f4643f4746d6ac662bbec13aa225f62edfb",
                 "shasum": ""
             },
             "require": {
@@ -675,9 +675,9 @@
             ],
             "support": {
                 "issues": "https://github.com/craftcms/laravel-ruleset-validation/issues",
-                "source": "https://github.com/craftcms/laravel-ruleset-validation/tree/1.0.1"
+                "source": "https://github.com/craftcms/laravel-ruleset-validation/tree/1.1.0"
             },
-            "time": "2026-04-21T07:56:55+00:00"
+            "time": "2026-04-22T11:01:37+00:00"
         },
         {
             "name": "craftcms/plugin-installer",
