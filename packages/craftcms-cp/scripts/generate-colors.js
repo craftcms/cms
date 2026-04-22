@@ -33,6 +33,34 @@ const availableColors = [
   'black',
 ];
 
+const semanticColors = {
+  neutral: 'slate',
+  brand: 'red',
+  accent: 'blue',
+  info: 'blue',
+  success: 'emerald',
+  warning: 'orange',
+  danger: 'danger',
+};
+
+const colorIncrements = {
+  fill: {
+    quiet: 50,
+    normal: 100,
+    loud: 600,
+  },
+  foreground: {
+    quiet: 800,
+    normal: 950,
+    loud: 50,
+  },
+  border: {
+    quiet: 400,
+    normal: 600,
+    loud: 800,
+  },
+};
+
 function lightScale(color) {
   switch (color) {
     case 'white':
@@ -40,36 +68,36 @@ function lightScale(color) {
         fillQuiet: 'var(--color-white)',
         fillNormal: 'var(--color-white)',
         fillLoud: 'var(--color-white)',
-        borderQuiet: 'var(--color-gray-200)',
-        borderNormal: 'var(--color-gray-200)',
-        borderLoud: 'var(--color-gray-200)',
-        onQuiet: 'var(--color-gray-800)',
-        onNormal: 'var(--color-gray-800)',
-        onLoud: 'var(--color-gray-800)',
+        borderQuiet: 'var(--color-static-gray-200)',
+        borderNormal: 'var(--color-static-gray-200)',
+        borderLoud: 'var(--color-static-gray-200)',
+        onQuiet: 'var(--color-static-gray-800)',
+        onNormal: 'var(--color-static-gray-800)',
+        onLoud: 'var(--color-static-gray-800)',
       };
     case 'black':
       return {
-        fillQuiet: 'var(--color-gray-900)',
-        fillNormal: 'var(--color-gray-900)',
-        fillLoud: 'var(--color-gray-900)',
-        borderQuiet: 'var(--color-gray-800)',
-        borderNormal: 'var(--color-gray-800)',
-        borderLoud: 'var(--color-gray-800)',
-        onQuiet: 'var(--color-gray-100)',
-        onNormal: 'var(--color-gray-100)',
-        onLoud: 'var(--color-gray-100)',
+        fillQuiet: 'var(--color-static-gray-900)',
+        fillNormal: 'var(--color-static-gray-900)',
+        fillLoud: 'var(--color-static-gray-900)',
+        borderQuiet: 'var(--color-static-gray-800)',
+        borderNormal: 'var(--color-static-gray-800)',
+        borderLoud: 'var(--color-static-gray-800)',
+        onQuiet: 'var(--color-static-gray-100)',
+        onNormal: 'var(--color-static-gray-100)',
+        onLoud: 'var(--color-static-gray-100)',
       };
     default:
       return {
-        fillQuiet: `var(--color-${color}-50)`,
-        fillNormal: `var(--color-${color}-200)`,
-        fillLoud: `var(--color-${color}-600)`,
-        borderQuiet: `var(--color-${color}-300)`,
-        borderNormal: `var(--color-${color}-600)`,
-        borderLoud: `var(--color-${color}-800)`,
-        onQuiet: `var(--color-${color}-800)`,
-        onNormal: `var(--color-${color}-700)`,
-        onLoud: `var(--color-${color}-50)`,
+        fillQuiet: `var(--color-${color}-${colorIncrements.fill.quiet})`,
+        fillNormal: `var(--color-${color}-${colorIncrements.fill.normal})`,
+        fillLoud: `var(--color-${color}-${colorIncrements.fill.loud})`,
+        borderQuiet: `var(--color-${color}-${colorIncrements.border.quiet})`,
+        borderNormal: `var(--color-${color}-${colorIncrements.border.normal})`,
+        borderLoud: `var(--color-${color}-${colorIncrements.border.loud})`,
+        onQuiet: `var(--color-${color}-${colorIncrements.foreground.quiet})`,
+        onNormal: `var(--color-${color}-${colorIncrements.foreground.normal})`,
+        onLoud: `var(--color-${color}-${colorIncrements.foreground.loud})`,
       };
   }
 }
