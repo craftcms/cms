@@ -549,11 +549,6 @@ class UsersController extends Controller
             return ExitCode::OK;
         }
 
-        $activeMethods = array_combine(
-            array_map(fn(AuthMethodInterface $method) => $method::displayName(), $activeMethods),
-            $activeMethods,
-        );
-
         $methodToRemove = $this->select(
             "Which two-step verification method would you like to remove for user “{$user->username}”",
             [
