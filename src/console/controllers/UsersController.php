@@ -19,6 +19,7 @@ use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use DateTime;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\console\ExitCode;
@@ -538,7 +539,9 @@ class UsersController extends Controller
         }
 
         $authService = Craft::$app->getAuth();
-        $activeMethods = $authService->getActiveMethods($user);
+        $activeMethods = Collection::make($authService->getActiveMethods($user))
+            ->keyBy(fn(AuthMethodInterface $method) => $method::displayName())
+            ->all();
 
         // if user doesn't have any, say so, and we're done
         if (empty($activeMethods)) {
@@ -551,22 +554,22 @@ class UsersController extends Controller
             $activeMethods,
         );
 
-        // allow removal of all options in one go
-        $activeMethods = array_merge(['all' => 'all'], $activeMethods);
-
         $methodToRemove = $this->select(
             "Which two-step verification method would you like to remove for user “{$user->username}”",
-            $activeMethods,
+            [
+                'all' => 'all',
+                ...array_combine(array_keys($activeMethods), array_keys($activeMethods)),
+            ],
         );
 
         if ($methodToRemove === 'all') {
             $this->stdout('Removing all two-step verification methods for the user ...' . PHP_EOL);
-            unset($activeMethods['all']);
-            // remove recovery codes as we'll remove those after the last 2sv method is removed
-            unset($activeMethods[RecoveryCodes::displayName()]);
 
             foreach ($activeMethods as $method) {
-                $this->_remove2faMethod($method, $user);
+                // Recovery Codes gets removed automatically after the last 2FA method is removed
+                if (!$method instanceof RecoveryCodes) {
+                    $this->_remove2faMethod($method, $user);
+                }
             }
         } else {
             $this->_remove2faMethod($activeMethods[$methodToRemove], $user);
