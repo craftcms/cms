@@ -287,6 +287,8 @@ class EntriesController extends BaseEntriesController
         // Populate the entry with post data
         $this->_populateEntryModel($entry);
 
+        $this->enforceEditEntryPermissions($entry, $duplicate);
+
         if ($forceDisabled) {
             $entry->enabled = false;
         }
@@ -419,7 +421,6 @@ class EntriesController extends BaseEntriesController
                     return false;
                 }
 
-
                 $sectionEntryTypes = array_map(fn($et) => $et->id, $section->entryTypes);
 
                 return !empty(array_intersect($entryTypes, $sectionEntryTypes));
@@ -468,7 +469,7 @@ class EntriesController extends BaseEntriesController
             throw new BadRequestHttpException('Cannot find the section to move the entries to.');
         }
 
-        $this->requirePermission("viewEntries:$section->uid");
+        $this->requirePermission("saveEntries:$section->uid");
 
         /** @var Entry[] $entries */
         $entries = Entry::find()

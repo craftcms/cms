@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.9.21 - 2026-04-23
 
 - Fixed a bug where entries weren’t redirecting back to their section’s page’s URL by default.
 - Fixed a bug where the `resourceBasePath` and `resourceBaseUrl` config settings weren’t being respected for console requests. ([#18685](https://github.com/craftcms/cms/issues/18685))
@@ -10,6 +10,9 @@
 - Fixed errors that could occur when applying project config changes. ([#18720](https://github.com/craftcms/cms/issues/18720))
 - Fixed a bug where it wasn’t always possible to sign into a user account that had the same email address as an inactive user. ([#18723](https://github.com/craftcms/cms/issues/18723))
 - Fixed a bug where relational fields’ element query results weren’t always limited to the selected relations if the `id` param was overridden. ([#15570](https://github.com/craftcms/cms/issues/15570))
+- Fixed an error that could occur when executing a queue job. ([#18739](https://github.com/craftcms/cms/issues/18739))
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. (GHSA-x5m4-g2cq-52pq, GHSA-3w32-23wj-rxg3, GHSA-qh45-9g5p-m2v4)
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerabilities. (GHSA-qq2c-2q8j-jh27, GHSA-43cq-c2gq-pfpw)
 
 ## 5.9.20 - 2026-04-14
 
