@@ -70,7 +70,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 .filter(
                   (source) =>
                     Garnish.hasAttr(source, 'data-folder-id') &&
-                    Garnish.hasAttr(source, 'data-can-move-peer-files-to')
+                    Garnish.hasAttr(source, 'data-can-move-to')
                 )
             );
             if (this.sourcePath.length <= 1) {
@@ -790,10 +790,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             },
           });
 
-          if (
-            currentFolder.canMove &&
-            this.getMoveTargetSourceKeys(true).length
-          ) {
+          if (currentFolder.canMove && this.getMoveTargetSourceKeys().length) {
             actions.push({
               label: Craft.t('app', 'Move folder'),
               onSelect: () => {
@@ -921,10 +918,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         });
     },
 
-    getMoveTargetSourceKeys: function (peerFiles) {
-      const attr = peerFiles
-        ? 'data-can-move-peer-files-to'
-        : 'data-can-move-to';
+    getMoveTargetSourceKeys: function () {
       return this.$sources
         .toArray()
         .filter((source) => {
@@ -932,7 +926,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           return (
             volumeHandle &&
             volumeHandle !== 'temp' &&
-            Garnish.hasAttr(source, attr)
+            Garnish.hasAttr(source, 'data-can-to')
           );
         })
         .map((source) => $(source).data('key'));
@@ -948,7 +942,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       }
 
       new Craft.VolumeFolderSelectorModal({
-        sources: this.getMoveTargetSourceKeys(true),
+        sources: this.getMoveTargetSourceKeys(),
         showTitle: true,
         modalTitle: Craft.t('app', 'Move to'),
         selectBtnLabel: Craft.t('app', 'Move'),
