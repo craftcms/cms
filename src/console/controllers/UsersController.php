@@ -23,6 +23,7 @@ use DateTime;
 use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\InvalidArgumentException;
+use yii\base\Model;
 use yii\console\ExitCode;
 
 /**
@@ -550,7 +551,10 @@ class UsersController extends Controller
         $authService = Craft::$app->getAuth();
         $activeMethodsByKey = Collection::make($authService->getActiveMethods($user))
             ->keyBy(function(AuthMethodInterface $authMethod) {
-                return StringHelper::toKebabCase($authMethod->formName());
+                $formName = $authMethod instanceof Model
+                    ? $authMethod->formName()
+                    : $authMethod::class;
+                return StringHelper::toKebabCase($formName);
             });
 
         // if user doesn't have any, say so, and we're done
