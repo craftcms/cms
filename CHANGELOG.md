@@ -1,6 +1,15 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.17.13.1 - 2026-04-14
+
+- Fixed an issue that prevented Craft from being installed. ([#18700](https://github.com/craftcms/cms/issues/18700))
+
+## 4.17.13 - 2026-04-07
+
+- Most classes can now be instantiated via the `create()` Twig function. ([#18376](https://github.com/craftcms/cms/discussions/18376))
+- Fixed a bug where element search query caches weren’t getting invalidated when elements’ search keywords were indexed. ([#18275](https://github.com/craftcms/cms/issues/18275))
+
+## 4.17.12 - 2026-03-26
 
 - Fixed a bug where GraphQL results were getting cached even if they contained transform generation URLs. ([#18581](https://github.com/craftcms/cms/issues/18581))
 - Fixed a bug where `aria-activedescendant`, `aria-flowto`, and `aria-owns` attributes weren’t getting namespaced by `{% namespace %}` tags. ([#18577](https://github.com/craftcms/cms/issues/18577))

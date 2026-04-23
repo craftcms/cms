@@ -201,7 +201,7 @@ class Search extends Component
 
         // Invalidate search query caches for this element type
         TagDependency::invalidate(Craft::$app->getCache(), [
-            sprintf('element-search-query:%s', get_class($element)),
+            sprintf('element-search-query::%s', get_class($element)),
         ]);
 
         return true;
