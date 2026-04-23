@@ -32,14 +32,12 @@ use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\FieldLayoutForm;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
-use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ElementActivity as ElementActivityFacade;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -474,80 +472,6 @@ class ElementsController extends Controller
         }
 
         return $response;
-    }
-
-    /**
-     * Copies field/attribute values on an element from one site to another.
-     *
-     * @return Response
-     * @since 5.6.0
-     */
-    public function actionCopyValuesFromSite(): Response
-    {
-        $this->requireCpRequest();
-
-        /** @var Element|Response|null $element */
-        $element = $this->_element(checkForProvisionalDraft: true);
-
-        if ($element instanceof Response) {
-            return $element;
-        }
-
-        if (!$element || $element->getIsRevision()) {
-            throw new BadRequestHttpException('No element was identified by the request.');
-        }
-
-        $copyFromSiteId = (int)$this->request->getRequiredBodyParam('fromSiteId');
-        $site = Sites::getSiteById($copyFromSiteId);
-        if (!$site) {
-            throw new BadRequestHttpException("Invalid site ID: $copyFromSiteId");
-        }
-        $this->requirePermission("editSite:$site->uid");
-
-        $layoutElementUid = $this->request->getRequiredBodyParam('layoutElementUid');
-        $namespace = $this->request->getBodyParam('namespace');
-
-        $fromElement = $element::find()
-            ->id($element->id)
-            ->structureId($element->structureId)
-            ->siteId($copyFromSiteId)
-            ->drafts(null)
-            ->provisionalDrafts(null)
-            ->one();
-
-        if (!$fromElement) {
-            throw new UnsupportedSiteException($element, $copyFromSiteId, 'Attempting to copy element content from an unsupported site.');
-        }
-
-        $layoutElement = $element->getFieldLayout()->getElementByUid($layoutElementUid);
-        if (!$layoutElement instanceof BaseField || !$layoutElement->isCrossSiteCopyable($element)) {
-            throw new BadRequestHttpException("Invalid layout element UUID: $layoutElementUid");
-        }
-        if ($layoutElement instanceof CustomField) {
-            /** @var \CraftCms\Cms\Field\Contracts\FieldInterface&\CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface $field */
-            $field = $layoutElement->getField();
-            $field->copyCrossSiteValue($fromElement, $element);
-        } else {
-            $attribute = $layoutElement->attribute();
-            $element->$attribute = $fromElement->$attribute;
-        }
-
-        $view = $this->getView();
-        $html = InputNamespace::namespaceInputs(fn() => $layoutElement->formHtml($element), $namespace);
-
-        if ($html) {
-            $html = Html::modifyTagAttributes($html, [
-                'data' => [
-                    'layout-element' => $layoutElement->uid,
-                ],
-            ]);
-        }
-
-        return $this->_asSuccess(t('Field value copied.'), $element, [
-            'fieldHtml' => $html,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
-        ]);
     }
 
     /**
