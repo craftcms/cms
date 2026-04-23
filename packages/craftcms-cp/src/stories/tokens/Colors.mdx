@@ -1,9 +1,35 @@
 import {Meta, ColorPalette, ColorItem} from '@storybook/addon-docs/blocks';
 import {stops, lightTheme, darkTheme} from '../../styles/color-definitions.js';
 
-<Meta title="Tokens/Colors" />
+<Meta title="Tokens/Color Palette" />
 
-## Light Theme
+## Overview
+
+The Craft color palette uses Leonardo to generate color palettes based on defined contrast ratios. The palette includes a wide range of colors, but not all of them are intended for direct use in the UI.
+
+Instead, colors should be used inside of **color tokens**. The palette is organized into two themes: light and dark. Each theme has a set of contrast colors that are used for text, borders, and backgrounds.
+
+For both themes, the general guideline is:
+- Colors **400** and above are suitable for UI elements, as they have a 3:1 contrast ratio against the theme background color.
+- Colors **600** and above are suitable for text, as they have a 4.5:1 contrast ratio against the theme background color.
+
+## Static Colors
+
+The palette also includes a set of static colors that are not affected by the active theme. These colors are used for elements that need to maintain a consistent color regardless of the theme, such as icons or logos.
+
+Static colors are based on the colors generated for the light theme, and can be used in both light and dark themes without modification.
+
+The color variables are used by prefixing the desired color with `--color-static-`. For example, the `blue-500` color can be used with the following variable: `--color-static-blue-500`.
+
+## Theme Colors
+
+The color palette adapts to the active theme, providing appropriate contrast for UI elements and text.
+
+Because of that, colors do not have to be overridden when the theme changes. Instead, components can use the same color variables, and they will automatically adapt to the active theme.
+
+Colors that adapt to the theme can be used by prefixing the desired color with `--color-`. For example, the `blue-500` color can be used with the following variable: `--color-blue-500`.
+
+### Light Theme
 
 <ColorPalette>
   {lightTheme.contrastColors
@@ -19,7 +45,7 @@ import {stops, lightTheme, darkTheme} from '../../styles/color-definitions.js';
     ))}
 </ColorPalette>
 
-## Dark Theme
+### Dark Theme
 
 <ColorPalette>
   {darkTheme.contrastColors
