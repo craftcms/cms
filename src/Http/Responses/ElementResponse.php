@@ -102,7 +102,7 @@ class ElementResponse
         return $this->failure($element, $message);
     }
 
-    private function errorSummary(ElementInterface $element): string
+    public function errorSummary(ElementInterface $element): string
     {
         $html = '';
 

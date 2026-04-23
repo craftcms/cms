@@ -4,20 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Craft;
-use craft\web\CpScreenResponseBehavior;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Support\Url;
-use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\DefineUserContentSummary;
 use CraftCms\Cms\User\Users;
@@ -25,8 +23,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use ReflectionClass;
-use ReflectionException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -84,34 +80,16 @@ readonly class UsersController
         $user = $this->editedUser($userId);
 
         /**
-         * @TODO: Refactor away the runAction
-         * let the elements/edit action do most of the work
+         * Let the elements/edit action do most of the work
          */
-        Craft::$app->request->setIsCpRequest(true);
-        $response = Craft::$app->runAction('elements/edit', [
-            'element' => $user,
-        ]);
+        $response = app(EditElementController::class)->setElement($user);
+        $response = $response();
 
-        /**
-         * This transforms the old Yii CpScreen to the new
-         *
-         * @var CpScreenResponseBehavior $cpScreen
-         */
-        $cpScreen = $response->getBehavior('cp-screen');
-        $response = $this->asEditUserScreen($user, self::SCREEN_PROFILE);
-        $reflection = new ReflectionClass($response);
-        foreach (Utils::getPublicProperties($cpScreen) as $property => $value) {
-            if (isset($response->{$property})) {
-                continue;
-            }
-
-            try {
-                $reflection->getProperty($property)->setValue($response, $value);
-            } catch (ReflectionException) {
-            }
+        if (! $response instanceof CpScreenResponse) {
+            return $response;
         }
 
-        return $response
+        return $this->asEditUserScreen($user, self::SCREEN_PROFILE, $response)
             ->when(
                 $user->getIsUnpublishedDraft() && $this->showPermissionsScreen(),
                 function (CpScreenResponse $response) use ($user) {

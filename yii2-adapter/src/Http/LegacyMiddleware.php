@@ -89,7 +89,7 @@ class LegacyMiddleware
      *@see DummyResponse
      * @see \CraftCms\Yii2Adapter\Web\Response
      */
-    public static function createResponse(): Response
+    public static function createResponse(): \Symfony\Component\HttpFoundation\Response
     {
         if (headers_sent()) {
             self::cleanup();
