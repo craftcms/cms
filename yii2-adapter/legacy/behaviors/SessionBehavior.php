@@ -10,6 +10,7 @@ namespace craft\behaviors;
 use craft\web\Session;
 use craft\web\View;
 use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\View\Enums\Position;
 use yii\base\Behavior;
 use yii\base\Exception;
 use yii\web\AssetBundle;
@@ -212,7 +213,7 @@ class SessionBehavior extends Behavior
      */
     public function addJsFlash(string $js, int $position = View::POS_READY, ?string $key = null): void
     {
-        session()->flashJs($js, $position, $key);
+        session()->flashJs($js, Position::tryFrom($position) ?? Position::Head, $key);
     }
 
     /**

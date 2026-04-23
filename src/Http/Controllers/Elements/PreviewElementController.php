@@ -15,7 +15,7 @@ class PreviewElementController
     use EditsElement;
 
     public function __construct(
-        private readonly ElementRequest $request,
+        protected readonly ElementRequest $request,
     ) {}
 
     public function __invoke(int $id, ?string $slug = null)

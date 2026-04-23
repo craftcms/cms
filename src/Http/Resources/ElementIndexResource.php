@@ -22,7 +22,7 @@ class ElementIndexResource extends JsonResource
     use InteractsWithElementIndexes;
 
     #[Override]
-    public static $wrap = false;
+    public static $wrap;
 
     public function __construct(
         private readonly bool $includeContainer = true,

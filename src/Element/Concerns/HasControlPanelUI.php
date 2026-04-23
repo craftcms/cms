@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use Craft;
-use craft\controllers\ElementsController;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\MenuHtml;
@@ -21,6 +19,7 @@ use CraftCms\Cms\Element\Events\DefineMetadata;
 use CraftCms\Cms\Element\Events\DefineMetaFieldsHtml;
 use CraftCms\Cms\Element\Events\DefineSidebarHtml;
 use CraftCms\Cms\Element\Events\RegisterHtmlAttributes;
+use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
@@ -165,8 +164,7 @@ trait HasControlPanelUI
         if (
             ! $this->getIsRevision() &&
             ! request()->headers->has('X-Craft-Container-Id') &&
-            Craft::$app->controller instanceof ElementsController &&
-            Craft::$app->controller->element === $this
+            app(ElementRequest::class)->element === $this
         ) {
             $validateId = sprintf('action-validate-%s', mt_rand());
             $items[] = [

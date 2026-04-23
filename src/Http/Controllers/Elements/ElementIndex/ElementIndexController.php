@@ -8,7 +8,6 @@ use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\CurrentElementIndex;
-use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
@@ -23,7 +22,6 @@ readonly class ElementIndexController
     use InteractsWithElementIndexes;
 
     public function __construct(
-        private Elements $elements,
         private Conditions $conditions,
         private ElementIndexRequest $request,
         private ElementSources $elementSources,

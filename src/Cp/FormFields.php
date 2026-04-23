@@ -567,8 +567,7 @@ readonly class FormFields
         $scenario = $address->ruleset->getScenario();
         $address->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
 
-        $ruleset = $address->getRuleset();
-        $activeRules = $ruleset ? $ruleset->rules() : $address->getRules();
+        $activeRules = $address->ruleset->rules();
 
         foreach ($activeRules as $attribute => $rules) {
             foreach (Arr::wrap($rules) as $rule) {

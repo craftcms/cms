@@ -2,8 +2,21 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
+use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\EntryTypes as EntryTypesFacade;
+use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
 use CraftCms\Cms\User\Elements\User;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -13,83 +26,162 @@ use function Pest\Laravel\get;
 
 beforeEach(function () {
     actingAs(User::findOne());
+
+    $this->edition = Edition::get();
+    $this->tempAssetUploadFs = Cms::config()->tempAssetUploadFs;
+    $this->entryType = EntryType::factory()->create();
+    $this->section = Section::factory()->withEntryTypes($this->entryType)->create([
+        'handle' => 'news',
+    ]);
 });
 
-function mockElementRequest(array $routeParams, mixed $element): ElementRequest
-{
-    $request = Mockery::mock(ElementRequest::class);
-    $request->shouldReceive('route')
-        ->once()
-        ->with('id')
-        ->andReturn($routeParams['id']);
-    $request->shouldReceive('route')
-        ->once()
-        ->with('uid')
-        ->andReturn($routeParams['uid']);
-    $request->shouldReceive('element')
-        ->once()
-        ->with($routeParams)
-        ->andReturn($element);
-
-    app()->instance(ElementRequest::class, $request);
-
-    return $request;
-}
-
-it('returns responses returned by the element request', function () {
-    mockElementRequest([
-        'id' => 123,
-        'uid' => null,
-    ], response('teapot', 418));
-
-    get(cp_url('edit/123-test'))
-        ->assertStatus(418)
-        ->assertSeeText('teapot');
+afterEach(function () {
+    Edition::set($this->edition);
+    Cms::config()->tempAssetUploadFs = $this->tempAssetUploadFs;
 });
 
-it('returns responses returned by the element request for uuid routes', function () {
-    $uuid = '6d4f8ad5-9bb1-4b79-9140-64d3d4e9f3b5';
+it('returns redirect responses returned by the element request for id routes', function () {
+    $entry = EntryModel::factory()
+        ->forSection($this->section)
+        ->forEntryType($this->entryType)
+        ->createElement([
+            'title' => 'Canonical Title',
+            'slug' => 'canonical-title',
+        ]);
 
-    mockElementRequest([
-        'id' => null,
-        'uid' => $uuid,
-    ], response('teapot', 418));
+    get(cp_url("edit/$entry->id-$entry->slug")."?draftId=999999&siteId=$entry->siteId")
+        ->assertRedirect($entry->getCpEditUrl());
+});
 
-    get(cp_url("edit/$uuid"))
-        ->assertStatus(418)
-        ->assertSeeText('teapot');
+it('returns redirect responses returned by the element request for uuid routes', function () {
+    $entry = EntryModel::factory()
+        ->forSection($this->section)
+        ->forEntryType($this->entryType)
+        ->createElement([
+            'title' => 'Canonical Title',
+            'slug' => 'canonical-title',
+        ]);
+
+    get(cp_url("edit/$entry->uid")."?draftId=999999&siteId=$entry->siteId")
+        ->assertRedirect($entry->getCpEditUrl());
 });
 
 it('redirects to non-standard control panel edit urls', function () {
-    $element = Mockery::mock(ElementInterface::class);
-    $element->shouldReceive('getCpEditUrl')
-        ->once()
-        ->andReturn('https://example.com/custom-edit');
+    $entry = EntryModel::factory()
+        ->forSection($this->section)
+        ->forEntryType($this->entryType)
+        ->createElement([
+            'title' => 'Canonical Title',
+            'slug' => 'canonical-title',
+        ]);
 
-    mockElementRequest([
-        'id' => 123,
-        'uid' => null,
-    ], $element);
-
-    get(cp_url('edit/123-test'))
-        ->assertRedirect('https://example.com/custom-edit');
+    get(cp_url("edit/$entry->id-$entry->slug"))
+        ->assertRedirect($entry->getCpEditUrl());
 });
 
 it('aborts when the element has no control panel edit url', function () {
-    $element = Mockery::mock(ElementInterface::class);
-    $element->shouldReceive('getCpEditUrl')
-        ->once()
-        ->andReturn(null);
+    config()->set('filesystems.disks.element-redirect-temp-disk', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/element-redirect-controller/temp-disk'),
+    ]);
+    Cms::config()->tempAssetUploadFs = 'disk:element-redirect-temp-disk';
 
-    mockElementRequest([
-        'id' => 456,
-        'uid' => null,
-    ], $element);
+    $volume = Volume::factory()->create(['fs' => 'disk:element-redirect-temp-disk']);
+    $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => $folder->id,
+        'filename' => 'temp-file.jpg',
+        'uploaderId' => auth()->id(),
+    ]);
 
     $this->withoutExceptionHandling();
 
-    expect(fn () => get(cp_url('edit/456-test')))
+    expect(fn () => get(cp_url("edit/$asset->id-test")))
         ->toThrow(HttpException::class, 'The element doesn’t have an edit page.');
 });
 
-it('returns inline edit responses for standard control panel edit urls', function () {})->todo();
+it('returns inline edit responses for standard control panel edit urls', function () {
+    $innerField = Field::factory()->create([
+        'name' => 'Inner Text',
+        'handle' => 'innerText',
+        'type' => PlainText::class,
+    ]);
+
+    $matrixEntryType = EntryType::factory()
+        ->withField($innerField)
+        ->create([
+            'name' => 'Matrix Block',
+            'handle' => 'matrixBlock',
+            'hasTitleField' => true,
+        ]);
+
+    $matrixField = Field::factory()->create([
+        'name' => 'Matrix Field',
+        'handle' => 'matrixField',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$matrixEntryType->id]],
+    ]);
+
+    $ownerType = EntryType::factory()
+        ->withField($matrixField)
+        ->create([
+            'name' => 'Owner',
+            'handle' => 'owner',
+            'hasTitleField' => true,
+        ]);
+
+    $section = Section::factory()
+        ->withEntryTypes($ownerType)
+        ->create([
+            'handle' => 'owners',
+        ]);
+
+    $owner = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($ownerType)
+        ->createElement([
+            'title' => 'Owner Entry',
+            'slug' => 'owner-entry',
+        ]);
+
+    EntryTypesFacade::refreshEntryTypes();
+    FieldsFacade::invalidateCaches();
+    FieldsFacade::refreshFields();
+
+    $matrixField = FieldsFacade::getFieldById($matrixField->id);
+    /** @var Entry $owner */
+    $owner = Entry::find()->id($owner->id)->status(null)->one();
+
+    $blockUid = fake()->uuid();
+    $owner->setFieldValueFromRequest('matrixField', [
+        'entries' => [
+            "uid:$blockUid" => [
+                'type' => $matrixEntryType->handle,
+                'title' => 'Inline Block',
+                'enabled' => true,
+                'fields' => [
+                    'innerText' => 'Inline block content',
+                ],
+            ],
+        ],
+        'sortOrder' => [$blockUid],
+    ]);
+
+    expect(Elements::saveElement($owner))->toBeTrue();
+
+    /** @var Entry $entry */
+    $entry = Entry::find()
+        ->fieldId($matrixField->id)
+        ->ownerId($owner->id)
+        ->siteId($owner->siteId)
+        ->status(null)
+        ->one();
+
+    expect($entry->getCpEditUrl())->toStartWith(cp_url('edit'));
+
+    get(cp_url("edit/$entry->id-$entry->slug"))
+        ->assertOk()
+        ->assertSeeText('Inline Block')
+        ->assertSee('elements/save', false);
+});

@@ -75,15 +75,14 @@ readonly class UsersController
         ]));
     }
 
-    public function edit(?int $userId = null): CpScreenResponse
+    public function edit(?int $userId = null): Response|CpScreenResponse
     {
         $user = $this->editedUser($userId);
 
         /**
          * Let the elements/edit action do most of the work
          */
-        $response = app(EditElementController::class)->setElement($user);
-        $response = $response();
+        $response = app(EditElementController::class)->setElement($user)();
 
         if (! $response instanceof CpScreenResponse) {
             return $response;

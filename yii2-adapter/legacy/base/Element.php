@@ -9,7 +9,6 @@
 
 namespace craft\base;
 
-use ArrayIterator;
 use craft\base\Event as YiiEvent;
 use craft\behaviors\CustomFieldBehavior;
 use craft\elements\Address;
@@ -87,8 +86,6 @@ use CraftCms\Cms\Element\Events\SetEagerLoadedElements;
 use CraftCms\Cms\Element\Events\SetRoute;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use Illuminate\Support\Facades\Event;
-use IteratorAggregate;
-use Traversable;
 
 /**
  * @since 3.0.0
@@ -96,7 +93,7 @@ use Traversable;
  *
  * @mixin CustomFieldBehavior
  */
-abstract class Element extends \CraftCms\Cms\Element\Element implements IteratorAggregate
+abstract class Element extends \CraftCms\Cms\Element\Element
 {
     use ElementEventConstants;
 
@@ -131,25 +128,6 @@ abstract class Element extends \CraftCms\Cms\Element\Element implements Iterator
                 'class' => CustomFieldBehavior::class,
             ],
         ];
-    }
-
-    public function getIterator(): Traversable
-    {
-        $attributes = $this->getAttributes();
-
-        // Include custom fields
-        $fieldLayout = $this->getFieldLayout();
-
-        if ($fieldLayout !== null) {
-            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
-                $field = $layoutElement->getField();
-                if (!isset($attributes[$field->handle])) {
-                    $attributes[$field->handle] = $this->getFieldValue($field->handle);
-                }
-            }
-        }
-
-        return new ArrayIterator($attributes);
     }
 
     public static function registerEvents(): void

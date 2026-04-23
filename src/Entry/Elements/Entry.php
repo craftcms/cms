@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Elements;
 
 use Craft;
-use craft\controllers\ElementsController;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
@@ -55,6 +54,7 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
+use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
@@ -1836,8 +1836,7 @@ JS, [
             // Field settings
             if (
                 ! empty($this->fieldId) &&
-                Craft::$app->controller instanceof ElementsController &&
-                Craft::$app->controller->element === $this
+                app(ElementRequest::class)->element === $this
             ) {
                 $fieldEditId = sprintf('edit-field-%s', mt_rand());
                 $actions[] = [

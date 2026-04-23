@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Elements\Concerns;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Support\Facades\Sites;
-use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
 trait EditsElement
 {
+    protected readonly ElementRequest $request;
+
     protected function editElementTitles(ElementInterface $element): array
     {
         $title = match (true) {
@@ -40,10 +42,5 @@ trait EditsElement
         }
 
         return [$docTitle, $title];
-    }
-
-    protected function editResponse(ElementInterface $element): Response
-    {
-        // TODO
     }
 }

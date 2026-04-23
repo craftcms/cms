@@ -9,7 +9,6 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\LegacyEventConstants;
-use craft\controllers\ElementIndexesController;
 use craft\db\Table;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
@@ -24,6 +23,7 @@ use craft\services\ElementSources;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -36,7 +36,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use CraftCms\Yii2Adapter\Validation\LegacyElementRules;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Facades\Auth;
@@ -242,13 +242,10 @@ class Category extends Element
     protected static function defineActions(string $source): array
     {
         // Get the selected site
-        $controller = Craft::$app->controller;
-        if ($controller instanceof ElementIndexesController) {
-            /** @var ElementQueryInterface $elementQuery */
-            $elementQuery = $controller->getElementQuery();
-        } else {
-            $elementQuery = null;
-        }
+        $elementQuery = app(CurrentElementIndex::class)->isActive()
+            ? app(CurrentElementIndex::class)->query()
+            : null;
+
         $site = $elementQuery && $elementQuery->siteId
             ? Sites::getSiteById($elementQuery->siteId)
             : Sites::getCurrentSite();

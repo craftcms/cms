@@ -27,6 +27,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\HtmlString;
+use IteratorAggregate;
 use RuntimeException;
 use Stringable;
 use Symfony\Component\HttpFoundation\Response;
@@ -40,7 +41,7 @@ use Symfony\Component\HttpFoundation\Response;
  * @phpstan-type EagerLoadingMap array{elementType?:class-string<ElementInterface>,map:EagerLoadingMapItem[],criteria?:array,createElement?:callable}
  */
 #[AllowedInSandbox]
-interface ElementInterface extends Actionable, ArrayAccess, Chippable, ComponentInterface, CpEditable, Statusable, Thumbable, Validatable
+interface ElementInterface extends Actionable, ArrayAccess, Chippable, ComponentInterface, CpEditable, IteratorAggregate, Statusable, Thumbable, Validatable
 {
     /**
      * Returns the lowercase version of [[displayName()]].

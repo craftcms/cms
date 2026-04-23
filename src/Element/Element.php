@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
+use ArrayIterator;
 use BadMethodCallException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
@@ -26,6 +27,7 @@ use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Validator as LaravelValidator;
 use Override;
 use Throwable;
+use Traversable;
 use Yiisoft\Arrays\ArrayableTrait;
 
 use function CraftCms\Cms\t;
@@ -686,5 +688,24 @@ abstract class Element extends Component implements ElementInterface
     public function safeAttributes(): array
     {
         return array_keys($this->ruleset->rules());
+    }
+
+    public function getIterator(): Traversable
+    {
+        $attributes = $this->validationData();
+
+        // Include custom fields
+        $fieldLayout = $this->getFieldLayout();
+
+        if ($fieldLayout !== null) {
+            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+                $field = $layoutElement->getField();
+                if (! isset($attributes[$field->handle])) {
+                    $attributes[$field->handle] = $this->getFieldValue($field->handle);
+                }
+            }
+        }
+
+        return new ArrayIterator($attributes);
     }
 }

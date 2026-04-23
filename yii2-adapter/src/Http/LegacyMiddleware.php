@@ -84,7 +84,7 @@ class LegacyMiddleware
     /**
      * Creates HTTP response for this middleware.
      *
-     * @return Response HTTP response instance.
+     * @return \Symfony\Component\HttpFoundation\Response HTTP response instance.
      *
      *@see DummyResponse
      * @see \CraftCms\Yii2Adapter\Web\Response

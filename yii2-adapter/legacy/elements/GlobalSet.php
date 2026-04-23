@@ -20,7 +20,7 @@ use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use CraftCms\Yii2Adapter\Validation\LegacyElementRules;
 use Illuminate\Support\Facades\Log;
 use yii\base\InvalidConfigException;
@@ -246,17 +246,6 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
         }];
 
         return $rules;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function scenarios(): array
-    {
-        $scenarios = parent::scenarios();
-        $scenarios[self::SCENARIO_SAVE_SET] = $scenarios[self::SCENARIO_DEFAULT];
-
-        return $scenarios;
     }
 
     /**

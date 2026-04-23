@@ -287,7 +287,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     #[Override]
-    public function setAttributes($values, $safeOnly = true): void
+    public function setAttributes($values): void
     {
         // Don't even allow setting a blank country code
         if (array_key_exists('countryCode', $values) && empty($values['countryCode'])) {
@@ -302,7 +302,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             $this->firstName = $this->lastName = null;
         }
 
-        parent::setAttributes($values, $safeOnly);
+        parent::setAttributes($values);
     }
 
     #[Override]

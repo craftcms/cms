@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Elements;
 
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
 use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Url;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -14,10 +15,10 @@ readonly class ElementRedirectController
     use EditsElement;
 
     public function __construct(
-        private ElementRequest $request
+        protected ElementRequest $request
     ) {}
 
-    public function __invoke(): Response
+    public function __invoke(): Response|CpScreenResponse
     {
         $id = $this->request->route('id');
         $uid = $this->request->route('uid');
@@ -44,7 +45,7 @@ readonly class ElementRedirectController
         $editUrl = Url::removeParam(Url::cpUrl('edit'), 'site');
 
         if (str_starts_with((string) $url, $editUrl)) {
-            return $this->editResponse($element);
+            return app(EditElementController::class)->setElement($element)();
         }
 
         return redirect($url);

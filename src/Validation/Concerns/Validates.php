@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Validation\Concerns;
 
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\RulesetValidation\Concerns\HasRuleset;

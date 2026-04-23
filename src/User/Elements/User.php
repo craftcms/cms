@@ -912,7 +912,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     }
 
     #[Override]
-    public function setAttributes($values, $safeOnly = true): void
+    public function setAttributes($values): void
     {
         if (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
             // Unset fullName so NameTrait::prepareNamesForSave() can set it
@@ -922,7 +922,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             $this->firstName = $this->lastName = null;
         }
 
-        parent::setAttributes($values, $safeOnly);
+        parent::setAttributes($values);
     }
 
     /**

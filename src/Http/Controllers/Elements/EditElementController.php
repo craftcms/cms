@@ -36,18 +36,18 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-readonly class EditElementController
+class EditElementController
 {
     use EditsElement;
     use ElementCrumbs;
     use SavesElement;
 
-    private ElementInterface $element;
+    private ?ElementInterface $element = null;
 
     public function __construct(
-        protected ElementRequest $request,
-        private Elements $elements,
-        private Sites $sites,
+        protected readonly ElementRequest $request,
+        private readonly Elements $elements,
+        private readonly Sites $sites,
     ) {}
 
     public function setElement(ElementInterface $element): self

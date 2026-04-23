@@ -14,9 +14,11 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Foundation\Http\FormRequest;
 use Symfony\Component\HttpFoundation\Response;
 
+#[Scoped]
 class ElementRequest extends FormRequest
 {
     private array $overrides = [];
@@ -29,6 +31,8 @@ class ElementRequest extends FormRequest
      * @var class-string<ElementInterface>
      */
     private string $elementType;
+
+    public ?ElementInterface $element = null;
 
     public function rules(): array
     {
@@ -102,6 +106,8 @@ class ElementRequest extends FormRequest
         };
 
         if (is_null($element)) {
+            $this->element = null;
+
             return null;
         }
 
@@ -113,6 +119,10 @@ class ElementRequest extends FormRequest
             ! $this->wantsJson()
         ) {
             return redirect($element->getCpEditUrl());
+        }
+
+        if ($element instanceof ElementInterface) {
+            $this->element = $element;
         }
 
         return $element;
@@ -132,8 +142,8 @@ class ElementRequest extends FormRequest
         }
 
         if ($elementId) {
-            abort_unless(
-                $elementType = Elements::getElementTypeById($elementId),
+            abort_if(
+                is_null($elementType = Elements::getElementTypeById($elementId)),
                 400,
                 "Invalid element ID: $elementId",
             );
@@ -142,8 +152,8 @@ class ElementRequest extends FormRequest
         }
 
         if ($elementUid) {
-            abort_unless(
-                $elementType = Elements::getElementTypeByUid($elementUid),
+            abort_if(
+                is_null($elementType = Elements::getElementTypeByUid($elementUid)),
                 400,
                 "Invalid element UUID: $elementUid",
             );
@@ -216,13 +226,14 @@ class ElementRequest extends FormRequest
 
     private function elementByDraftOrRevision(mixed $draftId, mixed $revisionId): ElementInterface|Response
     {
+        $hasExplicitProvisional = Arr::has($this->overrides, 'isProvisionalDraft') || $this->has('provisional');
         $provisional = Arr::get($this->overrides, 'isProvisionalDraft', $this->input('provisional'));
         [$siteId, $preferSites] = $this->site();
 
         $query = $this->elementQuery()
             ->draftId($draftId ? (int) $draftId : null)
             ->revisionId($revisionId ? (int) $revisionId : null)
-            ->provisionalDrafts($provisional)
+            ->provisionalDrafts($hasExplicitProvisional ? (bool) $provisional : null)
             ->siteId($siteId)
             ->preferSites($preferSites)
             ->unique()
