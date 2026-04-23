@@ -9,7 +9,7 @@ use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 
 #[Ruleset(AddressRules::class)]
 class TestAddressForFormFields extends Address
