@@ -180,47 +180,6 @@ class ElementsController extends Controller
     }
 
     /**
-     * Creates a new element and redirects to its edit page.
-     *
-     * @return Response
-     * @throws BadRequestHttpException
-     * @throws ForbiddenHttpException
-     * @throws ServerErrorHttpException
-     * @since 4.0.0
-     */
-    public function actionCreate(): Response
-    {
-        $element = $this->_createElement();
-        $user = static::currentUser();
-
-        // Save it
-        $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-        if (!app(Drafts::class)->saveElementAsDraft($element, $user->id, null, null, false)) {
-            return $this->_asFailure($element, mb_ucfirst(t('Couldn’t create {type}.', [
-                'type' => $element::lowerDisplayName(),
-            ])));
-        }
-
-        // Redirect to its edit page
-        $editUrl = $element->getCpEditUrl() ?? Url::actionUrl('elements/edit', [
-            'draftId' => $element->draftId,
-            'siteId' => $element->siteId,
-        ]);
-
-        $response = $this->_asSuccess(t('{type} created.', [
-            'type' => t('Draft'),
-        ]), $element, array_filter([
-            'cpEditUrl' => $this->request->isCpRequest ? $editUrl : null,
-        ]));
-
-        if (!$this->request->getAcceptsJson()) {
-            $response->redirect(Url::urlWithParams($editUrl, ['fresh' => '1']));
-        }
-
-        return $response;
-    }
-
-    /**
      * Returns an element edit screen.
      *
      * @param ElementInterface|null $element

@@ -31,6 +31,7 @@ use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\NewUsersController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\EditionController;
 use CraftCms\Cms\Http\Controllers\Elements\CopyElementValuesController;
+use CraftCms\Cms\Http\Controllers\Elements\CreateElementController;
 use CraftCms\Cms\Http\Controllers\Elements\DeleteElementController;
 use CraftCms\Cms\Http\Controllers\Elements\DuplicateElementController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementActivityController;
@@ -249,6 +250,7 @@ Route::prefix(implode('/', [
         });
 
         // Elements
+        Route::post('elements/create', CreateElementController::class);
         Route::post('elements/delete', [DeleteElementController::class, 'destroy']);
         Route::post('elements/delete-for-site', [DeleteElementController::class, 'destroyForSite']);
         Route::post('elements/save-draft', [ElementDraftsController::class, 'store']);
