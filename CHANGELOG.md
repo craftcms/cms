@@ -10,6 +10,7 @@
 - Fixed errors that could occur when applying project config changes. ([#18720](https://github.com/craftcms/cms/issues/18720))
 - Fixed a bug where it wasn’t always possible to sign into a user account that had the same email address as an inactive user. ([#18723](https://github.com/craftcms/cms/issues/18723))
 - Fixed a bug where relational fields’ element query results weren’t always limited to the selected relations if the `id` param was overridden. ([#15570](https://github.com/craftcms/cms/issues/15570))
+- Fixed an error that could occur when executing a queue job. ([#18739](https://github.com/craftcms/cms/issues/18739))
 
 ## 5.9.20 - 2026-04-14
 
