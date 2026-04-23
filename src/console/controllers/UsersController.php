@@ -549,7 +549,7 @@ class UsersController extends Controller
 
         $authService = Craft::$app->getAuth();
         $activeMethodsByKey = Collection::make($authService->getActiveMethods($user))
-            ->keyBy(function (AuthMethodInterface $authMethod) {
+            ->keyBy(function(AuthMethodInterface $authMethod) {
                 return StringHelper::toKebabCase($authMethod->formName());
             });
 
@@ -560,19 +560,22 @@ class UsersController extends Controller
         }
 
         $selectOptions = $activeMethodsByKey->map(fn(AuthMethodInterface $authMethod) => $authMethod->displayName())
-            ->prepend('All two-step verification methods', 'all')
-            ->all();
+            ->prepend('All two-step verification methods', 'all');
+
+        if (!$selectOptions->has($this->method)) {
+            $validSelections = $selectOptions->keys()->implode(', ');
+            $this->stderr("Invalid --method: $this->method. Must be one of: $validSelections." . PHP_EOL, Console::FG_RED);
+            return ExitCode::USAGE;
+        }
 
         $methodToRemove = $this->select(
             "Which two-step verification method would you like to remove for user “{$user->username}”",
-            $selectOptions,
+            $selectOptions->all(),
             $this->method,
         );
 
         if ($methodToRemove === 'all') {
-            $this->stdout('Removing all two-step verification methods for the user ...' . PHP_EOL);
-
-            $activeMethodsByKey->each(function (AuthMethodInterface $authMethod) use ($user) {
+            $activeMethodsByKey->each(function(AuthMethodInterface $authMethod) use ($user) {
                 // Recovery Codes gets removed automatically after the last 2FA method is removed
                 if (!$authMethod instanceof RecoveryCodes) {
                     $this->_remove2faMethod($authMethod, $user);
@@ -618,20 +621,22 @@ class UsersController extends Controller
      */
     private function _remove2faMethod(AuthMethodInterface $method, User $user): void
     {
-        $this->stdout("   > Removing “{$method::displayName()}” two-step verification method for the user ...");
-
         $auth = Craft::$app->getAuth();
-        $method->remove();
-
-        $this->stdout(" done" . PHP_EOL, Console::FG_GREEN);
+        $this->do(
+            "Removing “{$method::displayName()}” two-step verification method for the user",
+            fn() => $method->remove(),
+        );
 
         // if that was the last non-Recovery Codes method, remove Recovery Codes too
         if (empty($auth->getActiveMethods($user))) {
             $recoveryCodes = $auth->getMethod(RecoveryCodes::class, $user);
             if ($recoveryCodes->isActive()) {
-                $this->stdout("   > No further two-step verification methods left. Removing “{$recoveryCodes::displayName()}” for the user ...");
-                $recoveryCodes->remove();
-                $this->stdout(" done" . PHP_EOL, Console::FG_GREEN);
+                $this->stdout("No further two-step verification methods left. " , PHP_EOL);
+
+                $this->do(
+                    "Removing “{$recoveryCodes::displayName()}” for the user",
+                    fn() => $recoveryCodes->remove(),
+                );
             }
         }
     }
