@@ -59,18 +59,7 @@
             }),
         }),
         columnHelper.actions(
-          ({row}) => [
-            h(PluginActionMenu, {plugin: row.original}),
-            h(
-              'craft-button',
-              {
-                type: 'button',
-                size: 'small',
-                appearance: 'plain',
-              },
-              'Actions'
-            ),
-          ],
+          ({row}) => [h(PluginActionMenu, {plugin: row.original})],
           {
             meta: {
               trackSize: '60px',
