@@ -4027,4 +4027,9 @@ class ElementQuery extends Query implements ElementQueryInterface
             ->select(new Expression('1'))
             ->count();
     }
+
+    public function get(): Collection
+    {
+        return collect($this->all());
+    }
 }
