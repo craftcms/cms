@@ -1,13 +1,13 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import {computed} from 'vue';
-  import type {ActionItemData, ActionItemHr} from '@/types';
+  import type {ActionItem} from '@craftcms/cp/actions';
 
   const props = withDefaults(
     defineProps<{
       icon?: string;
       label?: string;
-      actions: Array<ActionItemData | ActionItemHr>;
+      actions: Array<ActionItem & {onClick?: (event: Event) => void}>;
     }>(),
     {
       icon: 'ellipsis',

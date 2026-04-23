@@ -11,6 +11,9 @@
   import PluginDetails from '@/components/Plugins/PluginDetails.vue';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
   import PluginActionMenu from '@/components/Plugins/PluginActionMenu.vue';
+  import CpLink from '@/components/CpLink.vue';
+  import {router} from '@inertiajs/vue3';
+  import {index} from '@actions/PluginsController';
 
   const props = withDefaults(
     defineProps<{
@@ -59,18 +62,7 @@
             }),
         }),
         columnHelper.actions(
-          ({row}) => [
-            h(PluginActionMenu, {plugin: row.original}),
-            h(
-              'craft-button',
-              {
-                type: 'button',
-                size: 'small',
-                appearance: 'plain',
-              },
-              'Actions'
-            ),
-          ],
+          ({row}) => [h(PluginActionMenu, {plugin: row.original})],
           {
             meta: {
               trackSize: '60px',
@@ -84,17 +76,33 @@
     },
     getCoreRowModel: getCoreRowModel<PluginInfo>(),
   });
+
+  /**
+   * Maybe a little heavy handed, this will reload the inertia pluginInfo whenever
+   * an http action is successful
+   */
+  function handleStateChange(event: CustomEvent) {
+    if (
+      event.detail?.state === 'success' &&
+      event.detail?.actionType === 'http'
+    ) {
+      router.visit(index(), {
+        only: ['pluginInfo'],
+      });
+    }
+  }
 </script>
 
 <template>
   <AppLayout>
     <Pane appearance="raised" :padding="0">
-      <AdminTable :table="table">
+      <AdminTable :table="table" @action:change-state="handleStateChange">
         <template #empty-row>
-          <Empty
-            icon="plugin"
-            :label="t('There are no available plugins.')"
-          ></Empty>
+          <Empty icon="plugin" :label="t('There are no available plugins.')">
+            <CpLink appearance="button" :inertia="false" :href="index().url">{{
+              t('Browse the store')
+            }}</CpLink>
+          </Empty>
         </template>
       </AdminTable>
     </Pane>

@@ -41,3 +41,5 @@ export interface CpServices {
   $queue: QueueService;
   $config: ConfigService;
 }
+
+export {};

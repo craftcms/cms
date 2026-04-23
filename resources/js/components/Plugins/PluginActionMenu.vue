@@ -2,60 +2,80 @@
   import {t} from '@craftcms/cp';
   import type {PluginInfo} from '@/types/plugins';
   import ActionMenu from '@/components/ActionMenu.vue';
-  import {computed} from 'vue';
-  import type {ActionItemData} from '@/types';
+  import {computed, onMounted} from 'vue';
+  import type {ActionItem} from '@craftcms/cp/actions.mjs';
+  import {
+    disable,
+    enable,
+    install,
+    uninstall,
+  } from '@actions/PluginsController';
+  import RemoveController, {index} from '@actions/PluginStore/RemoveController';
+  import {router} from '@inertiajs/vue3';
 
   const props = defineProps<{
     plugin: PluginInfo;
   }>();
 
   const actions = computed(() => {
-    const items: Array<ActionItemData> = [
+    const items: Array<ActionItem> = [
       {
+        type: 'button',
         icon: 'clipboard',
         label: t('Copy plugin handle'),
-        action: 'craft:copy-to-clipboard',
-        success: t('Copied!'),
-        params: {
+        action: {
+          type: 'clipboard',
           value: props.plugin.handle,
         },
-        onClick: (event) => {
-          navigator.clipboard.writeText(props.plugin.handle);
+        feedback: {
+          success: {
+            message: t('Copied!'),
+          },
         },
       },
     ];
 
     if (!props.plugin.isInstalled) {
       items.push({
+        type: 'button',
         icon: 'plus',
         label: t('Install'),
-        action: 'plugins/install-plugin',
-        disabled: props.plugin.isForceDisabled,
-        params: {
-          pluginHandle: props.plugin.handle,
+        action: {
+          type: 'http',
+          url: install().url,
+          body: {
+            pluginHandle: props.plugin.handle,
+          },
         },
+        disabled: props.plugin.isForceDisabled,
       });
 
       items.push({
         icon: 'minus',
         label: t('Remove'),
-        action: 'pluginstore/remove',
         variant: 'danger',
-        params: {
-          packageName: props.plugin.packageName,
+        action: {
+          type: 'event',
+          name: 'action:remove-plugin',
+          confirm: t('Are you sure you want to remove {plugin}?', {
+            plugin: props.plugin.name,
+          }),
+          detail: {
+            packageName: props.plugin.packageName,
+          },
         },
-        confirm: t('Are you sure you want to remove {plugin}?', {
-          plugin: props.plugin.name,
-        }),
       });
     } else {
       if (props.plugin.isEnabled) {
         items.push({
           icon: 'circle-dashed',
           label: t('Disable'),
-          action: 'plugins/disable-plugin',
-          params: {
-            pluginHandle: props.plugin.handle,
+          action: {
+            type: 'http',
+            url: disable().url,
+            body: {
+              pluginHandle: props.plugin.handle,
+            },
           },
         });
 
@@ -63,22 +83,29 @@
           icon: 'xmark',
           label: t('Uninstall'),
           variant: 'danger',
-          params: {
-            pluginHandle: props.plugin.handle,
+          action: {
+            type: 'http',
+            url: uninstall().url,
+            body: {
+              pluginHandle: props.plugin.handle,
+            },
+            confirm: t(
+              'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.',
+              {
+                plugin: props.plugin.name,
+              }
+            ),
           },
-          confirm: t(
-            'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.',
-            {
-              plugin: props.plugin.name,
-            }
-          ),
         });
       } else {
         items.push({
           icon: 'circle',
           label: t('Enable'),
-          action: 'plugins/enable-plugin',
-          params: {pluginHandle: props.plugin.handle},
+          action: {
+            type: 'http',
+            url: enable().url,
+            body: {pluginHandle: props.plugin.handle},
+          },
           disabled: props.plugin.isForceDisabled,
         });
       }
@@ -86,10 +113,22 @@
 
     return items;
   });
+
+  function handleRemove(event: CustomEvent) {
+    const {detail} = event;
+
+    router.post(RemoveController.index(), {
+      packageName: detail.packageName,
+    });
+  }
+
+  onMounted(() => {
+    window.addEventListener('action:remove-plugin', handleRemove);
+  });
 </script>
 
 <template>
-  <ActionMenu :actions="actions"></ActionMenu>
+  <ActionMenu :actions="actions" />
 </template>
 
 <style scoped lang="scss"></style>

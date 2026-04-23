@@ -51,6 +51,7 @@ use ReflectionException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 
+use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 
 #[Singleton]
@@ -939,6 +940,7 @@ class Plugins
 
         $info['isInstalled'] = $installed = $pluginInfo !== null;
         $info['isEnabled'] = $plugin !== null;
+        $info['isForceDisabled'] = ! ($this->forceDisabledPlugins === null) && ($this->forceDisabledPlugins === '*' || in_array($handle, $this->forceDisabledPlugins, true));
         $info['private'] = str_starts_with($handle, '_');
         $info['moduleId'] = $handle;
         $info['edition'] = $edition;
@@ -946,6 +948,7 @@ class Plugins
         $info['hasCpSettings'] = $plugin->hasCpSettings ?? false;
         $info['hasReadOnlyCpSettings'] = $plugin->hasReadOnlyCpSettings ?? false;
         $info['licenseKey'] = $pluginInfo['licenseKey'] ?? null;
+        $info['iconSvg'] = $this->getPluginIconSvg($handle);
 
         $licenseInfo = $this->cache->get(License::CACHE_KEY_LICENSE_INFO, []);
         $pluginCacheKey = Str::start($handle, 'plugin-');
@@ -953,6 +956,10 @@ class Plugins
         $info['licensedEdition'] = $licenseInfo[$pluginCacheKey]['edition'] ?? null;
         $info['licenseKeyStatus'] = $licenseInfo[$pluginCacheKey]['status'] ?? LicenseKeyStatus::Unknown->value;
         $info['licenseIssues'] = $installed ? $this->getLicenseIssues($handle) : [];
+
+        // Plugin store
+        $info['pluginStoreUrl'] = $info['private'] ? null : cp_url('plugin-store/'.$handle);
+        $info['buyUrl'] = $info['private'] ? null : cp_url('plugin-store/buy/'.$handle.'/'.$info['edition']);
 
         $info['isTrial'] = (
             $installed &&
@@ -977,6 +984,35 @@ class Plugins
                 )
             )
         );
+
+        $links = [];
+        if ($info['developer']) {
+            $links[] = [
+                'id' => 'developer',
+                'icon' => 'building',
+                'href' => $info['developerUrl'],
+                'text' => $info['developer'],
+            ];
+        }
+
+        if ($info['documentationUrl']) {
+            $links[] = [
+                'id' => 'documentation',
+                'icon' => 'book',
+                'href' => $info['documentationUrl'],
+                'text' => t('Documentation'),
+            ];
+        }
+
+        if ($info['hasCpSettings'] || $info['hasReadOnlyCpSettings']) {
+            $links[] = [
+                'id' => 'settings',
+                'icon' => 'gear',
+                'href' => cp_url('settings/plugins/'.$handle),
+                'text' => t('Settings'),
+            ];
+        }
+        $info['links'] = $links;
 
         return $info;
     }

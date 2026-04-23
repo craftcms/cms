@@ -127,7 +127,7 @@
   .cp-plugin {
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: var(--c-spacing-md);
+    gap: var(--c-spacing-lg);
     padding: var(--c-spacing-md);
   }
 
