@@ -189,7 +189,6 @@ readonly class Revisions
      */
     public function revertToRevision(ElementInterface $revision, int $creatorId): ElementInterface
     {
-        /** @var ElementInterface $revision */
         $canonical = $revision->getCanonical();
 
         event(new RevertingToRevision(

@@ -169,7 +169,6 @@ class Entry extends Mutation
         $draftMutationArguments = DraftMutationArguments::getArguments();
         $generatedType = EntryType::generateType($entryType);
 
-        /** @var EntryMutationResolver $resolver */
         $resolver = new EntryMutationResolver;
         $resolver->setResolutionData('entryType', $entryType);
         $resolver->setResolutionData('section', $section);
@@ -235,7 +234,6 @@ class Entry extends Mutation
         $draftMutationArguments = DraftMutationArguments::getArguments();
         $generatedType = EntryType::generateType($entryType);
 
-        /** @var EntryMutationResolver $resolver */
         $resolver = new EntryMutationResolver;
         $resolver->setResolutionData('entryType', $entryType);
         $resolver->setResolutionData('field', $field);

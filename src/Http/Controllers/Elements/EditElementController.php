@@ -398,7 +398,6 @@ class EditElementController
             'revisionId' => null,
         ]);
 
-        /** @var ElementInterface|null $revision */
         $revision = $element->getCurrentRevision();
         $creator = $revision?->getRevisionCreator();
         $timestamp = $formatter->asTimestamp($revision->dateCreated ?? $element->dateUpdated, Locale::LENGTH_SHORT, true);

@@ -13,6 +13,7 @@ use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use Illuminate\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -22,6 +23,10 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Override;
 
+#[Hidden([
+    'password',
+    'rememberToken',
+])]
 class User extends BaseModel
 {
     use HasFactory;
@@ -29,17 +34,6 @@ class User extends BaseModel
 
     #[Override]
     public $incrementing = false;
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    #[Override]
-    protected $hidden = [
-        'password',
-        'rememberToken',
-    ];
 
     private ?Collection $userGroupData = null;
 

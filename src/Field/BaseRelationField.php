@@ -1173,7 +1173,7 @@ JS, [
             is_array($value->id) &&
             Arr::isNumeric($value->id)
         ) {
-            $targetIds = $value->id ?: [];
+            $targetIds = $value->id;
         } elseif (
             $value instanceof ElementQuery &&
             ($where = $value->getWhereForColumn('elements.id')) !== null &&
