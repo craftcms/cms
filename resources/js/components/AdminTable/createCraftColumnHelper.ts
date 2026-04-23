@@ -85,7 +85,6 @@ export function createCraftColumnHelper<T extends Record<string, any>>() {
             },
             actions(cellContext)
           ),
-        ...config,
       });
     },
 
