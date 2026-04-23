@@ -11,7 +11,7 @@
   import LiveRegion from '@/components/LiveRegion.vue';
   import {useAppendHtml} from '@/composables/useAppendHtml';
   import ActionMenu from '@/components/ActionMenu.vue';
-  import type {ActionItem} from '@/types';
+  import type {ActionItemData} from '@/types';
   import {useFlash} from '@/composables/useFlash';
   import InlineFlash from '@/components/InlineFlash.vue';
   import ErrorSummary from '@/components/form/ErrorSummary.vue';
@@ -30,7 +30,7 @@
       debug?: any;
       fullWidth?: boolean;
       form?: InertiaForm<any> | null;
-      formActions?: Array<ActionItem>;
+      formActions?: Array<ActionItemData>;
     }>(),
     {fullWidth: false, crumbs: () => [], form: null}
   );

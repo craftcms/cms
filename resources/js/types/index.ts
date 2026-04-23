@@ -1,4 +1,5 @@
 import type {VariantKey} from '@craftcms/cp';
+import type {Component} from 'vue';
 
 export interface CheckboxOption {
   label: string;
@@ -45,13 +46,33 @@ export interface ChipIndicator {
   icon?: string;
 }
 
-export interface ActionItem {
+export interface ActionItemHr {
+  type: 'hr';
+}
+
+export type ShortcutProps =
+  | string
+  | {
+      alt?: boolean;
+      shift?: boolean;
+      key: string;
+    }
+  | null;
+
+export interface ActionItemData {
+  type?: 'link' | 'button';
   id?: string;
   label: string;
   variant?: VariantKey | string;
   icon?: string;
-  onClick?: () => void;
-  shortcut?: string;
+  onClick?: (event: PointerEvent) => void;
+  shortcut?: ShortcutProps;
+  action?: string;
+  disabled?: boolean;
+  params?: Record<string, any>;
+  confirm?: string;
+  success?: string;
+  error?: string;
 }
 
 export interface EntryType {
@@ -80,7 +101,7 @@ export interface EntryType {
   group: null;
   original: null;
   idAttribute: null;
-  actions?: Array<ActionItem>;
+  actions?: Array<ActionItemData>;
   indicators?: Array<ChipIndicator>;
 }
 

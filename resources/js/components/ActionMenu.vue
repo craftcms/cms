@@ -1,13 +1,13 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import {computed} from 'vue';
-  import type {ActionItem} from '@/types';
+  import type {ActionItemData, ActionItemHr} from '@/types';
 
   const props = withDefaults(
     defineProps<{
       icon?: string;
       label?: string;
-      actions: Array<ActionItem>;
+      actions: Array<ActionItemData | ActionItemHr>;
     }>(),
     {
       icon: 'ellipsis',
@@ -26,6 +26,17 @@
       (action) => !action.variant || action.variant !== 'danger'
     )
   );
+
+  const sortedActions = computed(() => {
+    const actions = safeActions.value;
+
+    if (dangerousActions.value.length) {
+      actions.push({type: 'hr'});
+      actions.push(...dangerousActions.value);
+    }
+
+    return actions;
+  });
 </script>
 
 <template>
@@ -44,32 +55,15 @@
     </slot>
 
     <div slot="content" class="m-sm">
-      <craft-action-item
-        v-for="(action, idx) in safeActions"
-        :id="action.id"
-        :key="`safe-${idx}`"
-        :icon="action.icon"
-        @click="action.onClick"
-        >{{ action.label }}
-        <craft-shortcut slot="suffix" class="ml-2" v-if="action.shortcut">{{
-          action.shortcut
-        }}</craft-shortcut>
-      </craft-action-item>
-
-      <template v-if="dangerousActions.length">
-        <hr class="m-0" />
-        <craft-action-item
-          v-for="(action, idx) in dangerousActions"
-          :id="action.id"
-          :key="`dangerous-${idx}`"
-          :icon="action.icon"
-          :variant="action.variant"
-          @click="action.onClick"
-          >{{ action.label }}
-          <craft-shortcut slot="suffix" class="ml-2" v-if="action.shortcut">{{
-            action.shortcut
-          }}</craft-shortcut>
-        </craft-action-item>
+      <template v-for="(action, idx) in sortedActions" :key="idx">
+        <template v-if="action.type && action.type === 'hr'">
+          <hr class="m-0" />
+        </template>
+        <template v-else>
+          <craft-action-item @click="action.onClick" v-bind="action">{{
+            action.label
+          }}</craft-action-item>
+        </template>
       </template>
     </div>
   </craft-action-menu>
