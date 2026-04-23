@@ -1059,7 +1059,7 @@ class Plugins
     {
         // If it's installed, let the plugin say where it lives
         if (($plugin = $this->getPlugin($handle)) !== null) {
-            $basePath = $plugin->getBasePath();
+            $basePath = $plugin->getResourcesPath();
         } else {
             if (($basePath = $this->composerPluginInfo[$handle]['basePath'] ?? false) !== false) {
                 $basePath = Aliases::get($basePath);

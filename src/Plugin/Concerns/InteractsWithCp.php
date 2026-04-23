@@ -37,7 +37,7 @@ trait InteractsWithCp
      */
     protected function cpNavIconPath(): ?string
     {
-        $path = $this->getBasePath().'/icon-mask.svg';
+        $path = $this->getResourcesPath().'/icon-mask.svg';
 
         return is_file($path) ? $path : null;
     }
