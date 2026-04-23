@@ -17,6 +17,7 @@ use craft\errors\InvalidElementException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use DateTime;
 use Illuminate\Support\Collection;
@@ -98,6 +99,11 @@ class UsersController extends Controller
     public bool $hard = false;
 
     /**
+     * @var string The two-step verification method to remove, or 'all'.
+     */
+    public string $method = 'all';
+
+    /**
      * @inheritdoc
      */
     public function options($actionID): array
@@ -121,6 +127,9 @@ class UsersController extends Controller
                 break;
             case 'set-password':
                 $options[] = 'password';
+                break;
+            case 'remove-2fa':
+                $options[] = 'method';
                 break;
         }
 
@@ -539,35 +548,38 @@ class UsersController extends Controller
         }
 
         $authService = Craft::$app->getAuth();
-        $activeMethods = Collection::make($authService->getActiveMethods($user))
-            ->keyBy(fn(AuthMethodInterface $method) => $method::displayName())
-            ->all();
+        $activeMethodsByKey = Collection::make($authService->getActiveMethods($user))
+            ->keyBy(function (AuthMethodInterface $authMethod) {
+                return StringHelper::toKebabCase($authMethod->formName());
+            });
 
         // if user doesn't have any, say so, and we're done
-        if (empty($activeMethods)) {
+        if ($activeMethodsByKey->isEmpty()) {
             $this->stdout("User “{$user->username}” doesn’t have any active two-step verification methods." . PHP_EOL);
             return ExitCode::OK;
         }
 
+        $selectOptions = $activeMethodsByKey->map(fn(AuthMethodInterface $authMethod) => $authMethod->displayName())
+            ->prepend('All two-step verification methods', 'all')
+            ->all();
+
         $methodToRemove = $this->select(
             "Which two-step verification method would you like to remove for user “{$user->username}”",
-            [
-                'all' => 'all',
-                ...array_combine(array_keys($activeMethods), array_keys($activeMethods)),
-            ],
+            $selectOptions,
+            $this->method,
         );
 
         if ($methodToRemove === 'all') {
             $this->stdout('Removing all two-step verification methods for the user ...' . PHP_EOL);
 
-            foreach ($activeMethods as $method) {
+            $activeMethodsByKey->each(function (AuthMethodInterface $authMethod) use ($user) {
                 // Recovery Codes gets removed automatically after the last 2FA method is removed
-                if (!$method instanceof RecoveryCodes) {
-                    $this->_remove2faMethod($method, $user);
+                if (!$authMethod instanceof RecoveryCodes) {
+                    $this->_remove2faMethod($authMethod, $user);
                 }
-            }
+            });
         } else {
-            $this->_remove2faMethod($activeMethods[$methodToRemove], $user);
+            $this->_remove2faMethod($activeMethodsByKey[$methodToRemove], $user);
         }
 
         return ExitCode::OK;
@@ -617,7 +629,7 @@ class UsersController extends Controller
         if (empty($auth->getActiveMethods($user))) {
             $recoveryCodes = $auth->getMethod(RecoveryCodes::class, $user);
             if ($recoveryCodes->isActive()) {
-                $this->stdout("No further two-step verification methods left. Removing “{$recoveryCodes::displayName()}” for the user ...");
+                $this->stdout("   > No further two-step verification methods left. Removing “{$recoveryCodes::displayName()}” for the user ...");
                 $recoveryCodes->remove();
                 $this->stdout(" done" . PHP_EOL, Console::FG_GREEN);
             }
