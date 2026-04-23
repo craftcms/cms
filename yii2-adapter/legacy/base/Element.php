@@ -86,7 +86,6 @@ use CraftCms\Cms\Element\Events\SetEagerLoadedElements;
 use CraftCms\Cms\Element\Events\SetRoute;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use Illuminate\Support\Facades\Event;
-use Override;
 
 /**
  * @since 3.0.0
@@ -104,10 +103,15 @@ abstract class Element extends \CraftCms\Cms\Element\Element
 
     public const string SCENARIO_LIVE = ElementRules::SCENARIO_LIVE;
 
+    public function __construct($config = [])
+    {
+        parent::__construct($config);
+
+        $this->init();
+    }
+
     public function init(): void
     {
-        parent::init();
-
         // Stop allowing setting custom field values directly on the behavior
         /** @var CustomFieldBehavior $behavior */
         $behavior = $this->getBehavior('customFields');
@@ -117,7 +121,6 @@ abstract class Element extends \CraftCms\Cms\Element\Element
     /**
      * {@inheritdoc}
      */
-    #[Override]
     protected function defineBehaviors(): array
     {
         return [

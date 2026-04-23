@@ -8,7 +8,7 @@
 namespace craft\elements;
 
 use Craft;
-use craft\controllers\ElementIndexesController;
+use craft\base\LegacyEventConstants;
 use craft\db\Table;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
@@ -23,6 +23,7 @@ use craft\services\ElementSources;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -35,6 +36,8 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
+use CraftCms\Yii2Adapter\Validation\LegacyElementRules;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -51,8 +54,11 @@ use function CraftCms\Cms\t;
  * @since 3.0.0
  * @deprecated in 6.0.0
  */
+#[Ruleset(LegacyElementRules::class)]
 class Category extends Element
 {
+    use LegacyEventConstants;
+
     /**
      * @inheritdoc
      */
@@ -236,13 +242,10 @@ class Category extends Element
     protected static function defineActions(string $source): array
     {
         // Get the selected site
-        $controller = Craft::$app->controller;
-        if ($controller instanceof ElementIndexesController) {
-            /** @var ElementQueryInterface $elementQuery */
-            $elementQuery = $controller->getElementQuery();
-        } else {
-            $elementQuery = null;
-        }
+        $elementQuery = app(CurrentElementIndex::class)->isActive()
+            ? app(CurrentElementIndex::class)->query()
+            : null;
+
         $site = $elementQuery && $elementQuery->siteId
             ? Sites::getSiteById($elementQuery->siteId)
             : Sites::getCurrentSite();
@@ -408,7 +411,7 @@ class Category extends Element
      */
     protected function defineRules(): array
     {
-        $rules = parent::defineRules();
+        $rules = [];
         $rules[] = [['groupId'], 'number', 'integerOnly' => true];
         return $rules;
     }

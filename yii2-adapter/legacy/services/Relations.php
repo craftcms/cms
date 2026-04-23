@@ -7,9 +7,9 @@
 
 namespace craft\services;
 
-use craft\base\ElementInterface;
 use craft\db\Command;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Arr;

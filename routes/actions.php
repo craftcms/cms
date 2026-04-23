@@ -30,8 +30,25 @@ use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\NewUsersController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\EditionController;
-use CraftCms\Cms\Http\Controllers\Elements\ExportElementIndexController;
+use CraftCms\Cms\Http\Controllers\Elements\CopyElementValuesController;
+use CraftCms\Cms\Http\Controllers\Elements\CreateElementController;
+use CraftCms\Cms\Http\Controllers\Elements\DeleteElementController;
+use CraftCms\Cms\Http\Controllers\Elements\DuplicateElementController;
+use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementActivityController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementDraftsController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexSourcesController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ExportElementIndexController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\SaveElementIndexElementsController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementRevisionsController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementSourcesController;
 use CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController;
+use CraftCms\Cms\Http\Controllers\Elements\SaveElementController;
+use CraftCms\Cms\Http\Controllers\Elements\SearchController as ElementSearchController;
+use CraftCms\Cms\Http\Controllers\Elements\UpdateFieldLayoutController;
+use CraftCms\Cms\Http\Controllers\Elements\ValidateElementController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
@@ -237,8 +254,42 @@ Route::prefix(implode('/', [
         });
 
         // Elements
+        Route::post('elements/create', CreateElementController::class);
+        Route::any('elements/edit', EditElementController::class);
+        Route::post('elements/save', [SaveElementController::class, 'store']);
+        Route::post('elements/save-nested-element-for-derivative', [SaveElementController::class, 'storeForDerivative']);
+        Route::post('elements/delete', [DeleteElementController::class, 'destroy']);
+        Route::post('elements/delete-for-site', [DeleteElementController::class, 'destroyForSite']);
+        Route::post('elements/save-draft', [ElementDraftsController::class, 'store']);
+        Route::post('elements/ensure-draft', [ElementDraftsController::class, 'ensure']);
+        Route::post('elements/apply-draft', [ElementDraftsController::class, 'apply']);
+        Route::post('elements/delete-draft', [ElementDraftsController::class, 'destroy']);
+        Route::post('elements/revert', [ElementRevisionsController::class, 'revert']);
+        Route::post('elements/validate', ValidateElementController::class);
+        Route::post('elements/recent-activity', ElementActivityController::class);
+        Route::post('elements/update-field-layout', UpdateFieldLayoutController::class);
+        Route::post('elements/duplicate', [DuplicateElementController::class, 'duplicate']);
+        Route::post('elements/bulk-duplicate', [DuplicateElementController::class, 'bulkDuplicate']);
+        Route::post('elements/copy-values-from-site', CopyElementValuesController::class);
+
+        // Element Indexes
+        Route::post('element-indexes/source-path', [ElementIndexSourcesController::class, 'sourcePath']);
+        Route::post('element-indexes/source-attribute-info', [ElementIndexSourcesController::class, 'sourceAttributeInfo']);
+        Route::post('element-indexes/get-elements', [ElementIndexController::class, 'getElements']);
+        Route::post('element-indexes/get-more-elements', [ElementIndexController::class, 'getMoreElements']);
+        Route::post('element-indexes/count-elements', [ElementIndexController::class, 'countElements']);
+        Route::post('element-indexes/get-source-tree-html', [ElementIndexSourcesController::class, 'getSourceTreeHtml']);
+        Route::post('element-indexes/filter-hud', [ElementIndexController::class, 'filterHud']);
+        Route::post('element-indexes/element-table-html', [ElementIndexController::class, 'elementTableHtml']);
+        Route::post('element-indexes/save-elements', SaveElementIndexElementsController::class);
         Route::post('element-indexes/export', ExportElementIndexController::class);
         Route::post('element-indexes/perform-action', PerformElementActionController::class);
+        Route::post('element-search/search', ElementSearchController::class);
+        Route::post('element-selector-modals/body', ElementSelectorModalController::class);
+        Route::middleware([RequireAdminChanges::class])->group(function () {
+            Route::post('element-index-settings/get-customize-sources-modal-data', [ElementSourcesController::class, 'show']);
+            Route::post('element-index-settings/save-customize-sources-modal-settings', [ElementSourcesController::class, 'store']);
+        });
 
         // Entries
         Route::post('entries/create', CreateEntryController::class);

@@ -88,8 +88,6 @@ trait HasActions
 
     /**
      * Returns whether the Set Status action should be included in [[actions()]] automatically.
-     *
-     * @since 4.3.2
      */
     protected static function includeSetStatusAction(): bool
     {

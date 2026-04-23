@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Contracts\DeleteActionInterface;
 use CraftCms\Cms\Element\Contracts\ElementActionInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\AfterPerformAction;
 use CraftCms\Cms\Element\Events\BeforePerformAction;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -53,7 +53,7 @@ class ElementActions
     }
 
     /**
-     * @param  ElementActionInterface|class-string<ElementActionInterface>|array{type:class-string<ElementActionInterface>}  $action
+     * @param  ElementActionInterface|class-string<ElementActionInterface>|array{type:class-string<ElementActionInterface>, ...}  $action
      * @param  class-string<ElementInterface>  $elementType
      */
     public function createAction(mixed $action, string $elementType): ElementActionInterface

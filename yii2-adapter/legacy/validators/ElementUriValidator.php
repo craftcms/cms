@@ -7,7 +7,7 @@
 
 namespace craft\validators;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;

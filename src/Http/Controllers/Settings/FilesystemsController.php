@@ -121,7 +121,6 @@ class FilesystemsController
     {
         $type = $request->input('type');
 
-        /** @var FsInterface $fs */
         $fs = $this->filesystems->createFilesystem([
             'type' => $type,
             'name' => $request->input('name'),

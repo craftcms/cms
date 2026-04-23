@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
@@ -25,8 +25,6 @@ trait Revisionable
 {
     /**
      * @var int|null The ID of the revision’s row in the `revisions` table
-     *
-     * @since 3.2.0
      */
     public ?int $revisionId = null;
 
@@ -69,7 +67,7 @@ trait Revisionable
             $creator = User::find()
                 ->id($this->revisionCreatorId)
                 ->status(null)
-                ->one();
+                ->first();
 
             $this->revisionCreator = $creator ?? false;
         }

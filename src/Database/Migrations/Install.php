@@ -6,7 +6,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Migrations;
 
-use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Migrations\Event\PostCreateTables;
@@ -157,7 +157,7 @@ class Install extends Migration
             $table->integer('uploaderId')->nullable();
             $table->string('filename');
             $table->string('mimeType')->nullable();
-            $table->string('kind', 50)->default(Asset::KIND_UNKNOWN);
+            $table->string('kind', 50)->default(FileKind::Unknown->value);
             $table->text('alt')->nullable();
             $table->unsignedInteger('width')->nullable();
             $table->unsignedInteger('height')->nullable();

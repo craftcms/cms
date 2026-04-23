@@ -8,9 +8,9 @@
 namespace craft\test\fixtures\elements;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\test\DbFixtureTrait;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Validation\ElementRules;

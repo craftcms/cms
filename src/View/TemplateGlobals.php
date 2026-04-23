@@ -64,6 +64,7 @@ readonly class TemplateGlobals
             'craft' => new CraftVariable,
             'sessionErrors' => $errors,
             'request' => $this->request,
+            'session' => $this->request->hasSession() ? $this->request->session() : null,
             'pluginAssets' => $this->plugins->getAssetsHtml(),
             'currentSite' => $currentSite,
             'currentUser' => $currentUser,

@@ -1,48 +1,18 @@
 <?php
 
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
-use CraftCms\Cms\Support\Facades\Elements;
-use CraftCms\Cms\Support\Facades\Search;
 
 test('search', function () {
-    $entry1 = EntryModel::factory()->create();
-    $entry1->element->siteSettings->first()->update([
-        'title' => 'Foo',
-    ]);
-
-    $entry2 = EntryModel::factory()->create();
-    $entry2->element->siteSettings->first()->update([
-        'title' => 'Bar',
-    ]);
-
-    $element1 = Elements::getElementById($entry1->id);
-    $element2 = Elements::getElementById($entry2->id);
-
-    Search::indexElementAttributes($element1);
-    Search::indexElementAttributes($element2);
+    $entry1 = EntryModel::factory()->title('Foo')->indexed()->create();
+    $entry2 = EntryModel::factory()->title('Bar')->indexed()->create();
 
     expect(entryQuery()->count())->toBe(2);
     expect(entryQuery()->search('Foo')->count())->toBe(1);
 });
 
 test('search with score', function () {
-    $entry1 = EntryModel::factory()->create();
-    $entry1->element->siteSettings->first()->update([
-        'title' => 'Foo',
-        'content' => '',
-    ]);
-
-    $entry2 = EntryModel::factory()->create();
-    $entry2->element->siteSettings->first()->update([
-        'title' => 'Bar',
-        'slug' => 'Foo',
-    ]);
-
-    $element1 = Elements::getElementById($entry1->id);
-    $element2 = Elements::getElementById($entry2->id);
-
-    Search::indexElementAttributes($element1);
-    Search::indexElementAttributes($element2);
+    $entry1 = EntryModel::factory()->title('Foo')->indexed()->create();
+    $entry2 = EntryModel::factory()->title('Bar')->slug('Foo')->indexed()->create();
 
     expect(entryQuery()->orderBy('score')->count())->toBe(2);
     expect(entryQuery()->search('Foo')->orderBy('score')->count())->toBe(2);

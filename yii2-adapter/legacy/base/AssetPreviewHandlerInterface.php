@@ -7,7 +7,7 @@
 
 namespace craft\base;
 
-use yii\base\NotSupportedException;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 
 /** @phpstan-ignore-next-line */
 if (false) {

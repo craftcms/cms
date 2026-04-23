@@ -9,8 +9,8 @@
 
 namespace craft\queue\jobs;
 
-use craft\base\ElementInterface;
 use craft\queue\BaseJob;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Facades\I18N;
 
 /**

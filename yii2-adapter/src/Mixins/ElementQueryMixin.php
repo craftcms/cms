@@ -6,9 +6,9 @@ namespace CraftCms\Yii2Adapter\Mixins;
 
 use Closure;
 use Craft;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
-use yii\base\NotSupportedException;
 
 class ElementQueryMixin
 {

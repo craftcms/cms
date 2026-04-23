@@ -77,34 +77,6 @@ readonly class ValidateMixin
         };
     }
 
-    public function clearErrors(): Closure
-    {
-        return function($attribute = null): void {
-            Deprecator::log($this::class . '->clearErrors', 'Calling `->clearErrors` is deprecated. Use `->errors()->forget()` instead.');
-
-            if ($attribute === null) {
-                /**
-                 * @var Element|Field $this
-                 *
-                 * @phpstan-ignore-next-line
-                 */
-                foreach ($this->errors()->getMessages() as $key => $messages) {
-                    /** @phpstan-ignore-next-line */
-                    $this->errors()->forget($key);
-                }
-
-                return;
-            }
-
-            /**
-             * @var Element|Field $this
-             *
-             * @phpstan-ignore-next-line
-             */
-            $this->errors()->forget($attribute);
-        };
-    }
-
     public function getFirstError(): Closure
     {
         return function(string $attribute): ?string {
@@ -119,17 +91,17 @@ readonly class ValidateMixin
         };
     }
 
-    public function getAttributeLabel(): Closure
+    public function getErrorSummary(): Closure
     {
-        return function(string $attribute): string {
-            Deprecator::log($this::class . '->getAttributeLabel', 'Calling `->getAttributeLabel` is deprecated. Use `->attributeLabels()` instead.');
+        return function($showAllErrors = false) {
+            Deprecator::log($this::class . '->getErrorSummary', 'Calling `->getErrorSummary` is deprecated. Use `->errors()->all()` instead.');
 
             /**
-             * @var Volume|Widget|Element|Field|FieldLayoutComponent|Filesystem $this
+             * @var \CraftCms\Cms\Validation\Contracts\Validatable $this
              *
              * @phpstan-ignore-next-line
              */
-            return $this->attributeLabels()[$attribute] ?? $attribute;
+            return $this->errors()->all();
         };
     }
 

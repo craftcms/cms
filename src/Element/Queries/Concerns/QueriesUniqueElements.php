@@ -44,13 +44,15 @@ trait QueriesUniqueElements
             return;
         }
 
-        if ($elementQuery->siteId &&
-            (! is_array($elementQuery->siteId) || count($elementQuery->siteId) === 1)
+        $siteIds = $elementQuery->appliedSiteId ?? $elementQuery->siteId;
+
+        if ($siteIds &&
+            (! is_array($siteIds) || count($siteIds) === 1)
         ) {
             return;
         }
 
-        $preferSites = collect($elementQuery->preferSites ?? Sites::getCurrentSite()->id)
+        $preferSites = collect($elementQuery->preferSites ?? [Sites::getCurrentSite()->id])
             ->map(fn (string|int $preferSite) => match (true) {
                 is_numeric($preferSite) => $preferSite,
                 ! is_null($site = Sites::getSiteByHandle($preferSite)) => $site->id,
