@@ -26,7 +26,7 @@ readonly class HandleMatchedElementRoute
             return $next($request);
         }
 
-        $path = trim($request->decodedPath(), '/');
+        $path = $this->sites->getRequestPath($request);
 
         if ($path === Element::HOMEPAGE_URI) {
             return $next($request);
