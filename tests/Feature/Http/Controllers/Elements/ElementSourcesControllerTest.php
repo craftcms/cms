@@ -125,7 +125,7 @@ it('returns fully normalized source customization data', function () {
             ->where('customFieldAttributes.0.1', 'Preview Field')
             ->where('elementTypeName', 'Test Element')
             ->whereContains('userGroups.0.label', t($userGroup->name, category: 'site'))
-            ->where('userGroups.0.value', $userGroup->uid)
+            ->whereContains('userGroups.0.value', $userGroup->uid)
             ->etc()
         );
 
