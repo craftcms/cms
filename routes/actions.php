@@ -45,6 +45,7 @@ use CraftCms\Cms\Http\Controllers\Elements\ElementRevisionsController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSourcesController;
 use CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController;
+use CraftCms\Cms\Http\Controllers\Elements\SaveElementController;
 use CraftCms\Cms\Http\Controllers\Elements\SearchController as ElementSearchController;
 use CraftCms\Cms\Http\Controllers\Elements\UpdateFieldLayoutController;
 use CraftCms\Cms\Http\Controllers\Elements\ValidateElementController;
@@ -255,6 +256,8 @@ Route::prefix(implode('/', [
         // Elements
         Route::post('elements/create', CreateElementController::class);
         Route::any('elements/edit', EditElementController::class);
+        Route::post('elements/save', [SaveElementController::class, 'store']);
+        Route::post('elements/save-nested-element-for-derivative', [SaveElementController::class, 'storeForDerivative']);
         Route::post('elements/delete', [DeleteElementController::class, 'destroy']);
         Route::post('elements/delete-for-site', [DeleteElementController::class, 'destroyForSite']);
         Route::post('elements/save-draft', [ElementDraftsController::class, 'store']);
