@@ -11,7 +11,7 @@
 - Fixed a bug where it wasn’t always possible to sign into a user account that had the same email address as an inactive user. ([#18723](https://github.com/craftcms/cms/issues/18723))
 - Fixed a bug where relational fields’ element query results weren’t always limited to the selected relations if the `id` param was overridden. ([#15570](https://github.com/craftcms/cms/issues/15570))
 - Fixed an error that could occur when executing a queue job. ([#18739](https://github.com/craftcms/cms/issues/18739))
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission bypass vulnerability. (GHSA-x5m4-g2cq-52pq)
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. (GHSA-x5m4-g2cq-52pq, GHSA-3w32-23wj-rxg3)
 - Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerabilities. (GHSA-qq2c-2q8j-jh27, GHSA-43cq-c2gq-pfpw)
 
 ## 5.9.20 - 2026-04-14

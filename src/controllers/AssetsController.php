@@ -746,11 +746,17 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('The destination folder does not exist');
         }
 
-        // Check if it's possible to delete objects in the source volume, create folders
-        // in the target volume, and save assets in the target volume.
-        $this->requireVolumePermissionByFolder('deleteAssets', $folderToMove);
-        $this->requireVolumePermissionByFolder('createFolders', $destinationFolder);
+        // Make sure the user has permission to move the source folder
+        // (same permissions checked for `data-movable`)
+        $this->requireVolumePermissionByFolder('savePeerAssets', $folderToMove);
+        $this->requireVolumePermissionByFolder('deletePeerAssets', $folderToMove);
+
+        // Make sure the user has permission to move folders into the target folder
+        // (same permissions checked for `data-can-move-to`)
         $this->requireVolumePermissionByFolder('saveAssets', $destinationFolder);
+        $this->requireVolumePermissionByFolder('deleteAssets', $destinationFolder);
+        $this->requireVolumePermissionByFolder('savePeerAssets', $destinationFolder);
+        $this->requireVolumePermissionByFolder('deletePeerAssets', $destinationFolder);
 
         $targetVolume = $destinationFolder->getVolume();
 
