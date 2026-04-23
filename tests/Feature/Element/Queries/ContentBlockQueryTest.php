@@ -11,7 +11,7 @@ it('queries content blocks', function () {
 
     DB::table(Table::CONTENTBLOCKS)
         ->insert([
-            'primaryOwnerId' => 1,
+            'primaryOwnerId' => DB::table(Table::ELEMENTS)->first()->id,
             'fieldId' => $field->id,
         ]);
 
