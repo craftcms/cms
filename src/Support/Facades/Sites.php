@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool getHasCurrentSite()
  * @method static \CraftCms\Cms\Site\Data\Site getCurrentSite()
  * @method static void setCurrentSite(\CraftCms\Cms\Site\Data\Site|string|int|null $site)
+ * @method static string getRequestPath(\Illuminate\Http\Request $request, \CraftCms\Cms\Site\Data\Site|null $site = null)
  * @method static \CraftCms\Cms\Site\Data\Site getPrimarySite()
  * @method static \Illuminate\Support\Collection<int> getEditableSiteIds()
  * @method static \Illuminate\Support\Collection<int> getEditableSiteIdsForSection(\CraftCms\Cms\Section\Data\Section $section)
