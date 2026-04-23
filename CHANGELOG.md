@@ -2,7 +2,6 @@
 
 ## Unreleased
 
-<<<<<<< HEAD
 - Fixed a bug where entries weren’t redirecting back to their section’s page’s URL by default.
 - Fixed a bug where the `resourceBasePath` and `resourceBaseUrl` config settings weren’t being respected for console requests. ([#18685](https://github.com/craftcms/cms/issues/18685))
 - Fixed a bug where eager-loadable GraphQL fields could be populated with the wrong field’s results, if they followed a fragment with a `*Interface` type condition. ([#18708](https://github.com/craftcms/cms/issues/18708))
