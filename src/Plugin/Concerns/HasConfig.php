@@ -16,7 +16,7 @@ trait HasConfig
         }
 
         $handle = self::getInstance()->handle;
-        $source = sprintf('%s/config/%s.php', $this->getBasePath(), $handle);
+        $source = sprintf('%s/config/%s.php', dirname($this->getBasePath()), $handle);
 
         if (! file_exists($source)) {
             return;
