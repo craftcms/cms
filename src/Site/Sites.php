@@ -33,6 +33,7 @@ use CraftCms\Cms\Update\Updates;
 use Exception;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
@@ -231,6 +232,19 @@ class Sites
         } else {
             unset($_SERVER['CRAFT_SITE'], $_SERVER['CRAFT_SITE_UPPER']);
         }
+    }
+
+    public function getRequestPath(Request $request, ?Site $site = null): string
+    {
+        $path = trim($request->decodedPath(), '/');
+        $site ??= $this->getCurrentSite();
+        $basePath = trim((string) parse_url((string) $site->getBaseUrl(), PHP_URL_PATH), '/');
+
+        if ($basePath !== '' && str_starts_with($path.'/', $basePath.'/')) {
+            return ltrim(substr($path, strlen($basePath)), '/');
+        }
+
+        return $path;
     }
 
     /**

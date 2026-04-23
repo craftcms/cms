@@ -148,6 +148,16 @@ describe('duplicateWithUri', function () {
             ->and($duplicate->server('REQUEST_URI'))->toBe('/entries')
             ->and($duplicate->server('HTTP_HOST'))->toBe('example.test');
     });
+
+    it('preserves the session on the duplicated request', function () {
+        $request = Request::create('/news?foo=bar');
+        $request->setLaravelSession(session()->driver());
+
+        $duplicate = $request->duplicateWithUri('/entries');
+
+        expect($duplicate->hasSession())->toBeTrue()
+            ->and($duplicate->session())->toBe($request->session());
+    });
 });
 
 describe('getSigned', function () {

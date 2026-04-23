@@ -23,6 +23,7 @@ use CraftCms\Cms\Http\Middleware\HandleMatchedElementRoute;
 use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
+use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\RunQueue;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
 use CraftCms\Cms\Http\Middleware\SetCraftGuard;
@@ -137,6 +138,7 @@ class RouteServiceProvider extends ServiceProvider
         collect([
             AddLogContext::class,
             SetCraftGuard::class,
+            ResolveSite::class,
             UpdateLocale::class,
             CheckSchemaVersion::class,
             CheckForUpdates::class,
