@@ -77,6 +77,8 @@ use craft\web\twig\AllowedInSandbox;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Imagick;
+use Throwable;
 use Twig\Markup;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -993,9 +995,9 @@ class Asset extends Element
 
         $userSession = Craft::$app->getUser();
         $canUpload = $userSession->checkPermission("saveAssets:$volume->uid");
-        $canMoveTo = $canUpload && $userSession->checkPermission("deleteAssets:$volume->uid");
-        $canMovePeerFilesTo = (
-            $canMoveTo &&
+        $canMoveTo = (
+            $canUpload &&
+            $userSession->checkPermission("deleteAssets:$volume->uid") &&
             $userSession->checkPermission("savePeerAssets:$volume->uid") &&
             $userSession->checkPermission("deletePeerAssets:$volume->uid")
         );
@@ -1014,7 +1016,6 @@ class Asset extends Element
                 'folder-id' => $folder->id,
                 'can-upload' => $folder->volumeId === null || $canUpload,
                 'can-move-to' => $canMoveTo,
-                'can-move-peer-files-to' => $canMovePeerFilesTo,
                 'fs-type' => $fs::class,
             ],
         ];
@@ -3313,6 +3314,15 @@ JS;
     public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
+            // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
+            if (
+                $this->alt === null &&
+                isset($this->tempFilePath) &&
+                in_array($this->getScenario(), [self::SCENARIO_CREATE, self::SCENARIO_REPLACE], true)
+            ) {
+                $this->alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
+            }
+
             // Are we uploading an image that needs to be sanitized?
             if (
                 isset($this->tempFilePath) &&
@@ -3806,5 +3816,135 @@ JS;
             'image/svg+xml' => Craft::$app->getConfig()->getGeneral()->transformSvgs,
             default => true,
         };
+    }
+
+    /**
+     * Attempts to extract alt text from XMP metadata embedded in an image file.
+     * Checks Iptc4xmpCore:AltTextAccessibility first, then dc:description.
+     *
+     * @param string $filePath
+     * @return string|null
+     */
+    private function _getAltFromXmpMetadata(string $filePath): ?string
+    {
+        try {
+            $xmp = null;
+
+            if (Craft::$app->getImages()->getIsImagick() && class_exists(Imagick::class)) {
+                $imagick = new Imagick($filePath);
+                $xmp = $imagick->getImageProfile('xmp') ?: null;
+                $imagick->clear();
+            }
+
+            if ($xmp === null) {
+                // Fall back to scanning the raw file for the XMP packet
+                $handle = fopen($filePath, 'rb');
+                if ($handle === false) {
+                    return null;
+                }
+                $chunk = fread($handle, 131072); // 128KB covers the XMP packet in most images
+                fclose($handle);
+
+                if ($chunk !== false) {
+                    $xmpStart = strpos($chunk, '<x:xmpmeta');
+                    if ($xmpStart !== false) {
+                        $xmpEnd = strpos($chunk, '</x:xmpmeta>', $xmpStart);
+                        if ($xmpEnd !== false) {
+                            $xmp = substr($chunk, $xmpStart, $xmpEnd - $xmpStart + strlen('</x:xmpmeta>'));
+                        }
+                    }
+                }
+            }
+
+            if (empty($xmp)) {
+                return null;
+            }
+
+            $dom = new \DOMDocument();
+            if (!@$dom->loadXML($xmp)) {
+                return null;
+            }
+
+            $xpath = new \DOMXPath($dom);
+            $xpath->registerNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
+            $xpath->registerNamespace('dc', 'http://purl.org/dc/elements/1.1/');
+            $xpath->registerNamespace('Iptc4xmpCore', 'http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/');
+            $xpath->registerNamespace('Iptc4xmpExt', 'http://iptc.org/std/Iptc4xmpExt/2008-02-29/');
+
+            // Try Iptc4xmpCore:AltTextAccessibility (LangAlt rdf:Alt/rdf:li structure)
+            foreach ([
+                '//Iptc4xmpCore:AltTextAccessibility/rdf:Alt/rdf:li',
+                '//Iptc4xmpExt:AltTextAccessibility/rdf:Alt/rdf:li',
+                '//Iptc4xmpCore:AltTextAccessibility[not(rdf:Alt)]',
+                '//Iptc4xmpExt:AltTextAccessibility[not(rdf:Alt)]',
+            ] as $query) {
+                $nodes = $xpath->query($query);
+                if ($nodes !== false) {
+                    foreach ($nodes as $node) {
+                        $value = trim($node->textContent);
+                        if ($value !== '') {
+                            return $value;
+                        }
+                    }
+                }
+            }
+
+            // Try dc:description as an rdf:Alt structure
+            $nodes = $xpath->query('//dc:description/rdf:Alt/rdf:li');
+            if ($nodes !== false) {
+                foreach ($nodes as $node) {
+                    $value = trim($node->textContent);
+                    if ($value !== '') {
+                        return $value;
+                    }
+                }
+            }
+
+            // Try dc:description as a plain string value
+            $nodes = $xpath->query('//dc:description[not(rdf:Alt)]');
+            if ($nodes !== false) {
+                foreach ($nodes as $node) {
+                    $value = trim($node->textContent);
+                    if ($value !== '') {
+                        return $value;
+                    }
+                }
+            }
+        } catch (Throwable) {
+            // Ignore errors and fall through to IPTC
+        }
+
+        return null;
+    }
+
+    /**
+     * Attempts to extract alt text from IPTC Caption/Abstract (Iptc.Application2.Caption, field 2:120).
+     *
+     * @param string $filePath
+     * @return string|null
+     */
+    private function _getAltFromIptcMetadata(string $filePath): ?string
+    {
+        try {
+            $imageInfo = [];
+            @getimagesize($filePath, $imageInfo);
+
+            if (!isset($imageInfo['APP13'])) {
+                return null;
+            }
+
+            $iptc = iptcparse($imageInfo['APP13']);
+
+            if (!empty($iptc['2#120'])) {
+                $value = trim(implode(' ', $iptc['2#120']));
+                if ($value !== '') {
+                    return $value;
+                }
+            }
+        } catch (Throwable) {
+            // Ignore errors
+        }
+
+        return null;
     }
 }
