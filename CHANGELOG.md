@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.17.14 - 2026-04-23
 
 - Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. (GHSA-3w32-23wj-rxg3, GHSA-qh45-9g5p-m2v4)
 
