@@ -163,7 +163,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
 
     public function getResourcesPath(): string
     {
-        return dirname($this->getBasePath()) . '/resources';
+        return dirname($this->getBasePath()).'/resources';
     }
 
     public function getMigrationsPath(): string
