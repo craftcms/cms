@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use Craft;
-use craft\base\ElementInterface;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\FieldLayout\Events\DefineActionMenuItems;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;

@@ -13,7 +13,6 @@ use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use yii\base\InvalidConfigException;
 
 it('resolves explicit disk targets to Laravel disk wrappers', function () {
     config()->set('filesystems.disks.explicit-disk', [
@@ -363,7 +362,7 @@ it('throws when getFs() is called without a filesystem handle', function () {
     ]);
 
     $volume->getFs();
-})->throws(InvalidConfigException::class, 'Volume is missing its filesystem handle.');
+})->throws(RuntimeException::class, 'Volume is missing its filesystem handle.');
 
 it('returns MissingFs when the filesystem handle cannot be resolved', function () {
     $volume = new Volume([

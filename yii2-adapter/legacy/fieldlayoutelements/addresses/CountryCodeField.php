@@ -9,15 +9,17 @@
 
 namespace craft\fieldlayoutelements\addresses;
 
+use craft\base\LegacyEventConstants;
+
 /**
  * Class CountryCodeField.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 4.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\addresses\CountryCodeField} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\Addresses\CountryCodeField} instead.
  */
-class CountryCodeField extends \CraftCms\Cms\FieldLayout\LayoutElements\addresses\CountryCodeField
+class CountryCodeField extends \CraftCms\Cms\FieldLayout\LayoutElements\Addresses\CountryCodeField
 {
-    use \craft\base\LegacyEventConstants;
+    use LegacyEventConstants;
 }

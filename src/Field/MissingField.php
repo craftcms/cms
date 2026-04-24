@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Component\Concerns\MissingComponentTrait;
 use CraftCms\Cms\Component\Contracts\MissingComponentInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use Override;
 

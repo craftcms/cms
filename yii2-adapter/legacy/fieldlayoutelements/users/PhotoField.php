@@ -15,9 +15,9 @@ namespace craft\fieldlayoutelements\users;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 5.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\users\PhotoField} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\Users\PhotoField} instead.
  */
-class PhotoField extends \CraftCms\Cms\FieldLayout\LayoutElements\users\PhotoField
+class PhotoField extends \CraftCms\Cms\FieldLayout\LayoutElements\Users\PhotoField
 {
     use \craft\base\LegacyEventConstants;
 }

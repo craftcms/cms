@@ -23,6 +23,9 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Yii2Adapter\Web\Response as IlluminateBridgeResponse;
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Http\Request as IlluminateRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
@@ -30,6 +33,7 @@ use Illuminate\Support\Facades\Log;
 use IntlDateFormatter;
 use IntlException;
 use ReflectionClass;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Throwable;
 use yii\base\Component;
 use yii\base\ErrorException;
@@ -237,7 +241,15 @@ class Application extends \yii\web\Application
      */
     public function runAction($route, $params = []): ?BaseResponse
     {
-        $result = parent::runAction($route, $params);
+        try {
+            $result = parent::runAction($route, $params);
+        } catch (InvalidRouteException $e) {
+            if (($response = $this->runLaravelAction($route, $params)) !== null) {
+                return $response;
+            }
+
+            throw $e;
+        }
 
         if ($result === null || $result instanceof BaseResponse) {
             return $result;
@@ -245,6 +257,55 @@ class Application extends \yii\web\Application
 
         $response = $this->getResponse();
         $response->data = $result;
+        return $response;
+    }
+
+    private function runLaravelAction(string $route, array $params = []): ?BaseResponse
+    {
+        $actionUri = request()->actionSegmentsToRoute(explode('/', $route));
+
+        if ($actionUri === null) {
+            return null;
+        }
+
+        /** @var IlluminateRequest $request */
+        $request = request();
+
+        if ($request->headers->has('X-Craft-Legacy-Action-Bridge')) {
+            return null;
+        }
+
+        $payload = $request->merge($params)->all();
+
+        unset($payload['action'], $payload['p']);
+
+        if ($request->hasSession()) {
+            $payload['_token'] ??= $request->session()->token();
+        }
+
+        $internalRequest = $request->duplicate(
+            query: [],
+            request: $payload,
+            server: array_merge($request->server->all(), [
+                'REQUEST_METHOD' => 'POST',
+                'REQUEST_URI' => $actionUri,
+                'HTTP_X_CRAFT_LEGACY_ACTION_BRIDGE' => '1',
+            ]),
+        );
+
+        if ($request->hasSession()) {
+            $internalRequest->setLaravelSession($request->session());
+        }
+
+        /** @var SymfonyResponse $laravelResponse */
+        $laravelResponse = app(Kernel::class)->handle($internalRequest);
+
+        $response = $this->getResponse();
+
+        if ($response instanceof IlluminateBridgeResponse) {
+            return $response->setIlluminateResponse($laravelResponse);
+        }
+
         return $response;
     }
 

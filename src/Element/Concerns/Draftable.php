@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Events\AuthorizeCreateDrafts;
-use CraftCms\Cms\User\Elements\User as UserElement;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -27,8 +26,6 @@ trait Draftable
 
     /**
      * @var bool Whether the element is a draft that is about to be applied to the canonical element.
-     *
-     * @since 5.9.0
      */
     public bool $applyingDraft = false;
 
@@ -68,36 +65,33 @@ trait Draftable
     public bool $markDraftAsSaved = true;
 
     /**
-     * @var UserElement|null|false The creator
+     * @var User|null|false The creator
      */
-    private UserElement|false|null $draftCreator = null;
+    private User|false|null $draftCreator = null;
 
     /**
      * Returns the draft’s creator.
      */
-    public function getDraftCreator(): ?UserElement
+    public function getDraftCreator(): ?User
     {
-        if (! isset($this->draftCreator)) {
-            if (! $this->draftCreatorId) {
-                return null;
-            }
-
-            /** @var UserElement|null $creator */
-            $creator = UserElement::find()
-                ->id($this->draftCreatorId)
-                ->status(null)
-                ->one();
-
-            $this->draftCreator = $creator ?? false;
+        if (isset($this->draftCreator)) {
+            return $this->draftCreator ?: null;
         }
 
-        return $this->draftCreator ?: null;
+        if (! $this->draftCreatorId) {
+            return null;
+        }
+
+        /** @var User|null $creator */
+        $creator = User::find()
+            ->id($this->draftCreatorId)
+            ->status(null)
+            ->first();
+
+        return $this->draftCreator = $creator ?? false;
     }
 
-    /**
-     * Sets the draft's creator.
-     */
-    public function setDraftCreator(?UserElement $creator = null): void
+    public function setDraftCreator(?User $creator = null): void
     {
         $this->draftCreator = $creator ?? false;
     }
@@ -137,14 +131,12 @@ trait Draftable
         DB::table(Table::DRAFTS)->delete($this->draftId);
     }
 
-    public function canCreateDrafts(UserElement $user): bool
+    public function canCreateDrafts(User $user): bool
     {
-        event($event = new AuthorizeCreateDrafts($this, $user));
-
-        return $event->authorized;
+        return $user->can('createDrafts', $this);
     }
 
-    public function canDuplicateAsDraft(UserElement $user): bool
+    public function canDuplicateAsDraft(User $user): bool
     {
         // if anything, this will be more lenient than canDuplicate()
         return $user->can('duplicate', $this);

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static string start()
  * @method static void resume(string $key)
  * @method static void end(string $key)
- * @method static void trackElement(\craft\base\ElementInterface $element)
+ * @method static void trackElement(\CraftCms\Cms\Element\Contracts\ElementInterface $element)
  * @method static mixed ensure(callable $callback)
  * @method static void defer(string $event, callable $handler, mixed $data = null, string|null $watchKey = null)
  *

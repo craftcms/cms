@@ -18,6 +18,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +26,6 @@ use InvalidArgumentException;
 use PDO;
 use Throwable;
 use yii\base\Exception as YiiBaseException;
-use yii\base\NotSupportedException;
 use yii\test\DbFixture;
 use yii\test\FileFixtureTrait;
 

@@ -17,6 +17,7 @@ use craft\events\SiteGroupEvent;
 use craft\models\Site as LegacySite;
 use craft\models\SiteGroup as LegacySiteGroup;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Data\SiteGroup;
 use CraftCms\Cms\Site\Events\ApplyingSiteDelete;
@@ -40,7 +41,6 @@ use Illuminate\Support\Facades\Event;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
-use yii\base\NotSupportedException;
 use yii\db\Exception as DbException;
 
 /**

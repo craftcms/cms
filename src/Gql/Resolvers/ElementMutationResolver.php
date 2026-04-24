@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Resolvers;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Gql\Events\AfterPopulateElement;
@@ -116,7 +116,7 @@ abstract class ElementMutationResolver extends MutationResolver
             }
         }
 
-        if ($element->hasErrors()) {
+        if ($element->errors()->count()) {
             $validationErrors = [];
 
             foreach ($element->getFirstErrors() as $errorMessage) {

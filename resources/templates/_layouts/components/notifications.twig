@@ -3,7 +3,7 @@
 </div>
 
 {% for type in ['notice', 'success', 'error'] %}
-  {% set notification = craft.app.session.getFlash("cp-notification-#{type}") %}
+  {% set notification = session.get("cp-notification-#{type}") %}
   {% if notification %}
     {% js %}
       Craft.cp.displayNotification({{ type|json_encode|raw }}, {{ notification[0]|json_encode|raw }}, {{ notification[1]|json_encode|raw }});

@@ -6,8 +6,6 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use Craft;
-use craft\base\ElementInterface;
-use craft\base\NestedElementInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
@@ -18,6 +16,8 @@ use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
@@ -62,8 +62,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;
 use Override;
+use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidConfigException;
 use yii\db\Schema;
 
 use function CraftCms\Cms\craftAsset;
@@ -456,12 +456,15 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         ]);
     }
 
+    public function afterValidate(?Validator $validator = null): void
+    {
+        $this->validateSources();
+    }
+
     /**
      * Ensure only one structured source is selected when maintainHierarchy is true.
-     *
-     * @todo This needs to be called from somewhere
      */
-    public function validateSources(string $attribute): void
+    public function validateSources(): void
     {
         if (! $this->maintainHierarchy) {
             return;
@@ -1170,7 +1173,7 @@ JS, [
             is_array($value->id) &&
             Arr::isNumeric($value->id)
         ) {
-            $targetIds = $value->id ?: [];
+            $targetIds = $value->id;
         } elseif (
             $value instanceof ElementQuery &&
             ($where = $value->getWhereForColumn('elements.id')) !== null &&
@@ -1368,8 +1371,9 @@ JS, [
                         'width' => $key === self::VIEW_MODE_LIST ? 48 : 80,
                         'height' => 60,
                     ]).
-                    Html::radio('viewMode', $key === $this->viewMode, [
+                    Html::radio('viewMode', $key, [
                         'value' => $key,
+                        'checked' => $this->viewMode === $key,
                     ]).
                     ' '.$label.
                     Html::endTag('label');
@@ -1480,7 +1484,7 @@ JS, [
                         if ($el) {
                             $disabledElementIds[] = $el->getCanonicalId();
                         }
-                    } catch (InvalidConfigException) {
+                    } catch (RuntimeException) {
                         break;
                     }
                 } while ($el instanceof NestedElementInterface);

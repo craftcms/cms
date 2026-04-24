@@ -8,7 +8,7 @@
 namespace craft\behaviors;
 
 use CraftCms\Cms\Element\Element;
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use yii\base\Behavior;
@@ -16,7 +16,7 @@ use yii\base\Behavior;
 /**
  * BaseRevisionBehavior is the base implementation of draft & revision behaviors.
  *
- * @template T of Element
+ * @template T of \CraftCms\Cms\Element\Contracts\ElementInterface&\craft\base\Component
  * @extends Behavior<T>
  * @property User|null $creator
  * @property-read int $sourceId

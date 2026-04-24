@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;

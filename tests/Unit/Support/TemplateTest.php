@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\View\HtmlStack;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Twig\Environment;
 use Twig\Error\RuntimeError;
 use Twig\Loader\ArrayLoader;
@@ -147,8 +148,5 @@ class TemplateAttributeTarget extends BaseObject
     }
 }
 
-class TemplateModelAttributeTarget extends BaseModel
-{
-    #[Override]
-    protected $table = 'template_test_models';
-}
+#[Table(name: 'template_test_models')]
+class TemplateModelAttributeTarget extends BaseModel {}

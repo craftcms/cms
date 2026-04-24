@@ -8,10 +8,10 @@
 namespace craft\web;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\events\RegisterUrlRulesEvent;
 use craft\web\UrlRule as CraftUrlRule;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Route\MatchedElement;
 use CraftCms\Cms\Support\Arr;

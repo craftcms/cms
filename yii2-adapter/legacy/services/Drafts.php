@@ -8,9 +8,9 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\events\DraftEvent;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Events\ApplyingDraft;
 use CraftCms\Cms\Element\Events\CreatingDraft;

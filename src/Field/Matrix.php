@@ -6,15 +6,16 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use Craft;
-use craft\base\ElementInterface;
-use craft\base\NestedElementInterface;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Events\AfterSaveNestedElements;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
@@ -31,7 +32,6 @@ use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
-use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\DefineEntryTypesForField;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
@@ -70,8 +70,8 @@ use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use Override;
+use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
@@ -406,7 +406,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ));
 
         if (empty($event->entryTypes)) {
-            throw new InvalidConfigException('At least one entry type is required.');
+            throw new RuntimeException('At least one entry type is required.');
         }
 
         return array_values($event->entryTypes);
@@ -456,7 +456,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         try {
             $owner = $element->getOwner();
-        } catch (InvalidConfigException) {
+        } catch (RuntimeException) {
             $owner = $element->duplicateOf;
         }
 
@@ -1031,7 +1031,7 @@ JS, [
     }
 
     /**
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string

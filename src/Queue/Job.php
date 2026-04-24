@@ -89,6 +89,14 @@ abstract class Job implements DescribableJob, ShouldQueue
      */
     public function shouldStillRun(): bool
     {
+        if (
+            $this->job !== null &&
+            method_exists($this->job, 'getConnectionName') &&
+            $this->job->getConnectionName() === 'sync'
+        ) {
+            return true;
+        }
+
         $uuid = $this->job?->uuid();
 
         if ($uuid === null) {

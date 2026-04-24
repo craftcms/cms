@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
-use craft\base\ElementInterface;
-use craft\base\NestedElementInterface;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Database\Table as DbTable;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -21,7 +22,6 @@ use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
-use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\Gql\Arguments\Elements\Address as AddressArguments;
@@ -42,8 +42,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Override;
+use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
@@ -218,7 +218,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     {
         try {
             $owner = $element->getOwner();
-        } catch (InvalidConfigException) {
+        } catch (RuntimeException) {
             $owner = $element->duplicateOf;
         }
 
@@ -574,7 +574,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     }
 
     /**
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string

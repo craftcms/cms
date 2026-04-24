@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use craft\base\ElementInterface;
-use craft\base\NestedElementInterface;
 use CraftCms\Cms\Auth\SessionAuth;
-use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
+use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Events\PrepQueryForTableAttribute;
 use CraftCms\Cms\Element\Events\RegisterCardAttributes;
 use CraftCms\Cms\Element\Events\RegisterDefaultCardAttributes;
@@ -18,14 +18,13 @@ use CraftCms\Cms\Element\Events\RegisterSearchableAttributes;
 use CraftCms\Cms\Element\Events\RegisterSortOptions;
 use CraftCms\Cms\Element\Events\RegisterTableAttributes;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\ExcludeDescendantIdsExpression;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Drafts;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Structures;
 use DateInterval;
 use DateTime;
@@ -49,8 +48,6 @@ trait DisplayedInIndex
 {
     /**
      * @var string|null The view mode used to show this element (e.g. `structure`, `table`, `thumbs`, `cards`).
-     *
-     * @since 5.6.0
      */
     public ?string $viewMode = null;
 
@@ -59,7 +56,7 @@ trait DisplayedInIndex
      *
      * @return string[] The searchable attributes
      */
-    public static function searchableAttributes(): array
+    final public static function searchableAttributes(): array
     {
         event($event = new RegisterSearchableAttributes(
             elementType: static::class,
@@ -232,7 +229,7 @@ trait DisplayedInIndex
         }
 
         // See if there are any provisional changes we should show
-        app(Drafts::class)->loadProvisionalChanges($elements);
+        Drafts::loadProvisionalChanges($elements);
 
         if (request()->boolean('prevalidate')) {
             foreach ($elements as $element) {
@@ -256,10 +253,10 @@ trait DisplayedInIndex
     /**
      * Returns an element query without descendant ID exclusions.
      *
-     * @param  ElementQueryInterface|ElementQuery  $elementQuery  The element query
-     * @return ElementQueryInterface|ElementQuery The modified element query
+     * @param  ElementQueryInterface  $elementQuery  The element query
+     * @return ElementQueryInterface The modified element query
      */
-    private static function elementQueryWithAllDescendants(ElementQueryInterface $elementQuery): ElementQueryInterface|ElementQuery
+    private static function elementQueryWithAllDescendants(ElementQueryInterface $elementQuery): ElementQueryInterface
     {
         $wheres = $elementQuery->getQuery()->wheres;
 
@@ -323,8 +320,6 @@ trait DisplayedInIndex
      * @param  ElementQueryInterface  $elementQuery  The element query
      * @param  string|null  $sourceKey  The source key
      * @return ElementInterface[] The elements
-     *
-     * @since 4.4.0
      */
     protected static function indexElements(ElementQueryInterface $elementQuery, ?string $sourceKey): array
     {
@@ -345,48 +340,21 @@ trait DisplayedInIndex
 
     /**
      * Returns the available view modes for the element index.
-     *
-     * @return array The view modes
      */
     public static function indexViewModes(): array
     {
-        $viewModes = [
-            [
-                'mode' => 'structure',
-                'title' => t('Display in a structured table'),
-                'icon' => I18N::getLocale()->getOrientation() === 'rtl' ? 'structurertl' : 'structure',
+        return array_values(array_filter([
+            array_merge(ElementIndexViewMode::Structure->toArray(), [
                 'structuresOnly' => true,
-            ],
-            [
-                'mode' => 'table',
-                'title' => t('Display in a table'),
-                'icon' => 'list',
+            ]),
+            array_merge(ElementIndexViewMode::Table->toArray(), [
                 'availableOnMobile' => false,
-            ],
-        ];
-
-        if (static::hasThumbs()) {
-            $viewModes[] = [
-                'mode' => 'thumbs',
-                'title' => t('Display as thumbnails'),
-                'icon' => 'grid',
-            ];
-        }
-
-        $viewModes[] = [
-            'mode' => 'cards',
-            'title' => t('Display as cards'),
-            'icon' => 'element-cards',
-        ];
-
-        return $viewModes;
+            ]),
+            static::hasThumbs() ? ElementIndexViewMode::Thumbs->toArray() : null,
+            ElementIndexViewMode::Cards->toArray(),
+        ]));
     }
 
-    /**
-     * Returns the sort options for the element type.
-     *
-     * @return array The sort options
-     */
     public static function sortOptions(): array
     {
         $sortOptions = static::defineSortOptions();
@@ -415,21 +383,11 @@ trait DisplayedInIndex
     protected static function defineSortOptions(): array
     {
         // Default to the available table attributes
-        $tableAttributes = ElementSources::getAvailableTableAttributes(static::class);
-        $sortOptions = [];
-
-        foreach ($tableAttributes as $key => $labelInfo) {
-            $sortOptions[$key] = $labelInfo['label'];
-        }
-
-        return $sortOptions;
+        return ElementSources::getAvailableTableAttributes(static::class)
+            ->map(fn (array $labelInfo) => $labelInfo['label'])
+            ->all();
     }
 
-    /**
-     * Returns the table attributes for the element type.
-     *
-     * @return array The table attributes
-     */
     public static function tableAttributes(): array
     {
         event($event = new RegisterTableAttributes(
@@ -500,9 +458,7 @@ trait DisplayedInIndex
     protected static function defineDefaultTableAttributes(string $source): array
     {
         // Return all of them by default
-        $availableTableAttributes = static::tableAttributes();
-
-        return array_keys($availableTableAttributes);
+        return array_keys(static::tableAttributes());
     }
 
     /**
@@ -510,8 +466,6 @@ trait DisplayedInIndex
      *
      * @param  FieldLayout|null  $fieldLayout  The field layout
      * @return array The card attributes
-     *
-     * @since 5.5.0
      */
     public static function cardAttributes(?FieldLayout $fieldLayout = null): array
     {
@@ -530,7 +484,6 @@ trait DisplayedInIndex
      * @return array The card attributes.
      *
      * @see cardAttributes()
-     * @since 5.5.0
      */
     protected static function defineCardAttributes(): array
     {
@@ -579,8 +532,6 @@ trait DisplayedInIndex
      *
      * @param  array  $attribute  The attribute configuration
      * @return mixed The preview HTML
-     *
-     * @since 5.5.0
      */
     public static function attributePreviewHtml(array $attribute): mixed
     {
@@ -597,8 +548,6 @@ trait DisplayedInIndex
      * Returns the default card attributes.
      *
      * @return string[] The default card attribute keys
-     *
-     * @since 5.5.0
      */
     public static function defaultCardAttributes(): array
     {
@@ -617,7 +566,6 @@ trait DisplayedInIndex
      *
      * @see defaultCardAttributes()
      * @see cardAttributes()
-     * @since 5.5.0
      */
     protected static function defineDefaultCardAttributes(): array
     {
@@ -759,7 +707,7 @@ trait DisplayedInIndex
             $orderBy = $sortOption['orderBy'];
 
             if ($orderBy instanceof Coalesce) {
-                $sql = $orderBy->getValue(DB::connection()->getQueryGrammar());
+                $sql = $orderBy->getValue(DB::getQueryGrammar());
             } elseif (is_string($orderBy)) {
                 $sql = $orderBy;
             } else {
