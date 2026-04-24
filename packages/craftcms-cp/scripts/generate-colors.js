@@ -61,7 +61,7 @@ const colorIncrements = {
   },
 };
 
-function lightScale(color) {
+function colorScale(color) {
   switch (color) {
     case 'white':
       return {
@@ -106,7 +106,7 @@ function lightScale(color) {
 function buildColorableTokens() {
   return availableColors
     .map((color) => {
-      const s = lightScale(color);
+      const s = colorScale(color);
       return [
         `  /* ${color} */`,
         `  --c-color-${color}-fill-quiet: ${s.fillQuiet};`,
@@ -126,7 +126,7 @@ function buildColorableTokens() {
 function buildSemanticTokens() {
   let declarations = [];
   for (const [meaning, color] of Object.entries(semanticColors)) {
-    const s = lightScale(color);
+    const s = colorScale(color);
     const variables = [
       `  /* Semantics colors - ${meaning} */`,
       `  --c-color-${meaning}-fill-quiet: ${s.fillQuiet};`,
