@@ -90,7 +90,7 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
         },
         () => {
           button.classList.remove('loading');
-        },
+        }
       );
     },
 
