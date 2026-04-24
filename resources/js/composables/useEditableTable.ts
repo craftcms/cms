@@ -21,6 +21,7 @@ function resolve<T>(value: MaybeGetter<T>): T {
 interface BaseColumnOptions<T extends Record<string, any>> {
   header?: string | ((...args: any[]) => any);
   size?: number;
+  class?: HTMLAttributes['class'];
   meta?: Record<string, any>;
   disabled?: MaybeGetter<boolean> | ((row: Row<T>) => boolean);
   placeholder?: string;
@@ -30,7 +31,6 @@ interface TextColumnOptions<
   T extends Record<string, any>,
 > extends BaseColumnOptions<T> {
   inputType?: 'text' | 'email' | 'url' | 'number';
-  class?: string;
   placeholder?: string;
   name?: (row: Row<T>, columnId: string) => string;
   onChange?: (
@@ -67,7 +67,6 @@ interface AutocompleteColumnOptions<
     | ((row: Row<T>) => Array<SelectItem>);
   requireOptionMatch?: boolean;
   transformModelValue?: (newValue: SelectOption | null) => string;
-  class?: HTMLAttributes['class'];
   label?: string;
   onChange?: (
     value: string,
@@ -182,7 +181,7 @@ export function useEditableTable<T extends Record<string, any>>(
         rows: 1,
         type: inputType,
         value: getValue(),
-        class: cellOptions?.class,
+        class: `cp-table-input cp-table-input--text ${cellOptions?.class ?? ''}`,
         autocomplete: 'off',
         autocorrect: 'off',
         autocapitalize: 'off',
@@ -219,6 +218,7 @@ export function useEditableTable<T extends Record<string, any>>(
         'label-sr-only': true,
         size: cellOptions?.switchSize ?? 'small',
         label: cellOptions?.label,
+        class: `cp-table-input cp-table-input--switch ${cellOptions?.class ?? ''}`,
         'aria-labelledby': cellOptions?.ariaLabelledBy ?? `header-${column.id}`,
         disabled: resolveDisabled(cellOptions?.disabled, row),
         'onUpdate:modelValue': (value: boolean | undefined) => {
@@ -237,6 +237,7 @@ export function useEditableTable<T extends Record<string, any>>(
       return h('input', {
         type: 'checkbox',
         checked: row.original[column.id],
+        class: `cp-table-input cp-table-input--switch ${cellOptions?.class ?? ''}`,
         'aria-labelledby': cellOptions?.ariaLabelledBy ?? `header-${column.id}`,
         disabled: resolveDisabled(cellOptions?.disabled, row),
         onChange: (event: Event) => {
@@ -262,7 +263,7 @@ export function useEditableTable<T extends Record<string, any>>(
       return h(InputCombobox, {
         modelValue: row.original[column.id],
         options: opts,
-        class: cellOptions?.class,
+        class: `cp-table-input cp-table-input--autocomplete ${cellOptions?.class ?? ''}`,
         placeholder: cellOptions?.placeholder,
         label: cellOptions?.label ?? column.id,
         ...(cellOptions?.requireOptionMatch !== undefined && {

@@ -182,8 +182,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
     padding-inline: var(--_cell-spacing-inline);
     position: relative;
 
-    &:has(textarea),
-    &:has(input:not([type='checkbox']):not([type='radio'])) {
+    &:has(.cp-table-input:not([type='checkbox']):not([type='radio'])) {
       padding: 0;
     }
   }

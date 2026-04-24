@@ -21,7 +21,7 @@ export default class CraftTooltip extends WaTooltip {
             calc(4rem / 16) calc(8rem / 16)
           );
           --wa-tooltip-arrow-size: var(--c-tooltip-arrow-size, 5px);
-          --wa-tooltip-font-family: inherit;
+          --wa-tooltip-font-family: var(--c-font-body);
           --wa-tooltip-font-size: var(--c-text-base);
           --wa-tooltip-font-weight: 400;
           --wa-tooltip-line-height: 1.3;
@@ -35,6 +35,7 @@ export default class CraftTooltip extends WaTooltip {
         .body {
           color: var(--wa-tooltip-content-color);
           font-weight: var(--wa-tooltip-font-weight);
+          font-family: var(--c-font-body);
         }
       `,
     ];

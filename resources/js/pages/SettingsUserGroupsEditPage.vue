@@ -2,7 +2,7 @@
   import {t} from '@craftcms/cp';
   import AppLayout from '@/layout/AppLayout.vue';
   import {router, useForm} from '@inertiajs/vue3';
-  import type {ActionItem, UserGroup} from '@/types';
+  import type {ActionItemData, UserGroup} from '@/types';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import CraftHandleInput from '@craftcms/cp/vue/CraftInputHandle.vue';
   import CraftTextarea from '@craftcms/cp/vue/CraftTextarea.vue';
@@ -20,7 +20,7 @@
       handle: string;
       permissions: Record<string, PermissionItem>;
     }>;
-    formActions?: Array<ActionItem>;
+    formActions?: Array<ActionItemData>;
     redirect?: string;
     toolbar?: string;
     errors: Record<any, any> | null;

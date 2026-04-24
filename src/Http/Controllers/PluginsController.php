@@ -6,11 +6,11 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\PluginsAsset;
-use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,7 +26,7 @@ readonly class PluginsController
         private GeneralConfig $generalConfig,
     ) {}
 
-    public function index(): View
+    public function index(): CpScreenResponse
     {
         app(InternalAssetRegistry::class)->register(PluginsAsset::class);
 
@@ -38,11 +38,15 @@ readonly class PluginsController
                 ['name', 'asc'],
             ]);
 
-        return view('settings/plugins/_index', [
-            'info' => $info,
-            'disabledPlugins' => $this->generalConfig->disabledPlugins,
-            'readOnly' => ! $this->generalConfig->allowAdminChanges,
-        ]);
+        return new CpScreenResponse()
+            ->title(t('Plugins'))
+            ->crumbs([
+                ['label' => t('Settings'), 'url' => 'settings'],
+                ['label' => t('Plugins')],
+            ])
+            ->inertiaPage('SettingsPluginsIndexPage', [
+                'pluginInfo' => fn () => $info,
+            ]);
     }
 
     public function install(Request $request): Response

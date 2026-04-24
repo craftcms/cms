@@ -16,6 +16,8 @@
     "dev:cp": "cd ./packages/craftcms-cp && npm run dev",
     "build:cp": "cd ./packages/craftcms-cp && npm run build",
     "test:cp": "cd ./packages/craftcms-cp && npm run test",
+    "storybook": "storybook dev -p 6007",
+    "build:storybook": "storybook build",
     "storybook:cp": "cd ./packages/craftcms-cp && npm run storybook",
     "build:all": "npm run build:bundles && npm run build:cp && npm run build"
   },
@@ -28,6 +30,11 @@
   "devDependencies": {
     "@craftcms/playwright": "file:packages/craftcms-playwright",
     "@craftcms/webpack": "file:packages/craftcms-webpack",
+    "@storybook/addon-a11y": "^9.1.5",
+    "@storybook/addon-docs": "^9.1.5",
+    "@storybook/addon-themes": "^9.1.5",
+    "@storybook/vue3-vite": "^9.1.5",
+    "storybook": "^9.1.5",
     "@laravel/vite-plugin-wayfinder": "^0.1.7",
     "@playwright/test": "^1.58.2",
     "@tailwindcss/vite": "^4.2.2",

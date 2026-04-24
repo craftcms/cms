@@ -5,6 +5,8 @@ import {Variant, type VariantKey} from '@src/types';
 import variantsStyles from '@src/styles/variants.styles';
 import {classMap} from 'lit/directives/class-map.js';
 
+import '../shortcut/shortcut.js';
+
 /**
  * @summary Either a link or button typically used in a menu.
  */
@@ -17,6 +19,49 @@ export default class CraftActionItem extends LitElement {
   @property({type: Boolean}) checked: boolean = false;
   @property({type: Boolean}) active: boolean = false;
   @property() type: 'normal' | 'checkbox' = 'normal';
+
+  @property({
+    converter: {
+      fromAttribute(value: string | null) {
+        if (value === null) return null;
+
+        // Try to parse as JSON object first
+        try {
+          const parsed = JSON.parse(value);
+          if (typeof parsed === 'object' && parsed !== null) {
+            return parsed;
+          }
+        } catch {
+          // Not JSON — treat as plain string shortcut
+        }
+
+        return value; // plain string like "k" or "ctrl+k"
+      },
+      toAttribute(value) {
+        if (value === null) return null;
+        if (typeof value === 'string') return value;
+        return JSON.stringify(value);
+      },
+    },
+  })
+  shortcut: string | {alt?: boolean; shift?: boolean; key: string} | null =
+    null;
+
+  renderShortcut() {
+    if (typeof this.shortcut === 'string') {
+      return html`<craft-shortcut>${this.shortcut}</craft-shortcut>`;
+    }
+
+    if (this.shortcut !== null) {
+      return html`<craft-shortcut
+        ?alt="${this.shortcut.alt ?? false}"
+        ?shift="${this.shortcut.shift ?? false}"
+        >${this.shortcut.key}</craft-shortcut
+      >`;
+    }
+
+    return nothing;
+  }
 
   renderBody() {
     const hasIcon = !!this.querySelector('[slot="icon"]') || !!this.icon;
@@ -47,6 +92,7 @@ export default class CraftActionItem extends LitElement {
 
       <span class="action-item__suffix">
         <slot name="suffix"></slot>
+        ${this.shortcut ? this.renderShortcut() : nothing}
       </span>
     `;
   }
