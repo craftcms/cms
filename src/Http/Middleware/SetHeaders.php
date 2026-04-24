@@ -89,8 +89,16 @@ class SetHeaders
             $response->header($header['header'], $header['value'], $header['replace'] ?? true);
         }
 
-        self::$headers = [];
+        self::reset();
 
         return $response;
+    }
+
+    public static function reset(): void
+    {
+        self::$noCache = false;
+        self::$duration = null;
+        self::$replace = true;
+        self::$headers = [];
     }
 }
