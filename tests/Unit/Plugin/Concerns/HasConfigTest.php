@@ -35,7 +35,7 @@ it('merges plugin config and registers publish paths', function () {
     ]);
 
     expect(ServiceProvider::pathsToPublish(TestPlugin::class, 'test-plugin'))->toBe([
-        PLUGIN_BASE_PATH.'/config/test-plugin.php' => config_path('craft/test-plugin.php'),
+        PLUGIN_BASE_PATH.'/../config/test-plugin.php' => config_path('craft/test-plugin.php'),
     ]);
 });
 
