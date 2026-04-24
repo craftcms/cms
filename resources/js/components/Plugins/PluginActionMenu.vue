@@ -20,7 +20,6 @@
   const actions = computed(() => {
     const items: Array<ActionItem> = [
       {
-        type: 'button',
         icon: 'clipboard',
         label: t('Copy plugin handle'),
         action: {
@@ -33,11 +32,24 @@
           },
         },
       },
+      {
+        icon: 'clipboard',
+        label: t('Copy package name'),
+        action: {
+          type: 'clipboard',
+          value: props.plugin.packageName,
+        },
+        feedback: {
+          success: {
+            message: t('Copied!'),
+          },
+        },
+      },
+      {type: 'hr'}
     ];
 
     if (!props.plugin.isInstalled) {
       items.push({
-        type: 'button',
         icon: 'plus',
         label: t('Install'),
         action: {
