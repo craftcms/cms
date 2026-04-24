@@ -3,11 +3,13 @@
 namespace CraftCms\Yii2Adapter;
 
 use Craft;
+use craft\web\twig\variables\CraftVariable;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\View\Events\RegisterTemplateGlobals;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
 use CraftCms\Yii2Adapter\Console\AddCategoriesSupportCommand;
 use CraftCms\Yii2Adapter\Console\AddGlobalSetsSupportCommand;
@@ -147,6 +149,10 @@ class Yii2ServiceProvider extends ServiceProvider
         app('Craft');
 
         new RebrandCompatibility()->boot();
+
+        Event::listen(function(RegisterTemplateGlobals $event) {
+            $event->globals['craft'] = new CraftVariable();
+        });
 
         /**
          * Keep legacy CustomFieldBehavior statics in sync when field caches are invalidated.

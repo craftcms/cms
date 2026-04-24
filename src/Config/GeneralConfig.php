@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Config;
 
 use Closure;
-use Craft;
 use CraftCms\Cms\Support\Attributes\EnvName;
 use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\DateTimeHelper;
@@ -14,15 +13,11 @@ use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use DateInterval;
-use Deprecated;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
 use Override;
 use RuntimeException;
-
-use function CraftCms\Cms\t;
 
 class GeneralConfig extends BaseConfig
 {

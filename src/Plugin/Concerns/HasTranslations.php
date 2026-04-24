@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Concerns;
 
-use Craft;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Support\Facades\I18N;
 use Yiisoft\Translator\CategorySource;

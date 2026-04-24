@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Nodes;
 
-use Craft;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL;
 use Override;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
@@ -21,6 +22,10 @@ class RequireGuestNode extends Node
     {
         $compiler
             ->addDebugInfo($this)
-            ->write(Craft::class."::\$app->controller->requireGuest();\n");
+            ->write('if ('.Auth::class."::check()) {\n")
+            ->indent()
+            ->write('redirect('.URL::class."::returnUrl())->throwResponse();\n")
+            ->outdent()
+            ->write("}\n");
     }
 }

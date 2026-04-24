@@ -9,7 +9,6 @@ namespace craft\web;
 
 use Craft;
 use craft\errors\DbConnectException;
-use craft\helpers\App;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
@@ -42,7 +41,7 @@ class AssetManager extends \yii\web\AssetManager
      */
     public function publish($path, $options = []): array
     {
-        if (App::isEphemeral()) {
+        if (app()->isEphemeral()) {
             return [$path, $this->getPublishedUrl($path)];
         }
 
@@ -59,7 +58,7 @@ class AssetManager extends \yii\web\AssetManager
      */
     public function getPublishedUrl($path, bool $publish = false, ?string $filePath = null): string|false
     {
-        if ($publish === true && !App::isEphemeral()) {
+        if ($publish === true && !app()->isEphemeral()) {
             [, $url] = $this->publish($path);
         } else {
             $url = parent::getPublishedUrl($path);

@@ -8,6 +8,26 @@ use function CraftCms\Cms\t;
 
 class Flash
 {
+    public static function notice(?string $default = null, array $settings = []): void
+    {
+        $message = request('notice', $default);
+
+        if (is_null($message)) {
+            return;
+        }
+
+        if (! request()->isCpRequest()) {
+            session()->flash('notice', $message);
+
+            return;
+        }
+
+        session()->flash('cp-notification-notice', [$message, $settings + [
+            'icon' => 'info',
+            'iconLabel' => t('Notice'),
+        ]]);
+    }
+
     public static function success(?string $default = null, array $settings = []): void
     {
         $message = request('successMessage', $default);

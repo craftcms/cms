@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\License;
 
-use craft\helpers\App;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\File;
 use Illuminate\Support\ServiceProvider;
@@ -22,7 +21,7 @@ class LicenseServiceProvider extends ServiceProvider
             return;
         }
 
-        if (App::isEphemeral()) {
+        if (app()->isEphemeral()) {
             return;
         }
 

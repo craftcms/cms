@@ -6,12 +6,19 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class SetHeaders
 {
     private static bool $noCache = false;
+
+    private static ?int $duration = null;
+
+    private static bool $replace = true;
+
+    private static array $headers = [];
 
     public function __construct(
         private readonly GeneralConfig $generalConfig,
@@ -20,6 +27,21 @@ class SetHeaders
     public static function noCache(): void
     {
         self::$noCache = true;
+    }
+
+    public static function setCache(int $duration = 31536000, bool $replace = true): void
+    {
+        self::$duration = $duration;
+        self::$replace = $replace;
+    }
+
+    public static function add(string $header, string $value, bool $replace = true): void
+    {
+        self::$headers[] = [
+            'header' => $header,
+            'value' => $value,
+            'replace' => $replace,
+        ];
     }
 
     public function handle(Request $request, Closure $next): mixed
@@ -32,6 +54,16 @@ class SetHeaders
 
         if ($request->isCpRequest() || $request->isActionRequest() || self::$noCache) {
             $response->setNoCacheHeaders();
+        } elseif (! is_null(self::$duration)) {
+            if (self::$duration <= 0) {
+                $response->setNoCacheHeaders();
+            } else {
+                $response
+                    ->setExpires(now()->addSeconds(self::$duration))
+                    ->header('Pragma', 'cache', self::$replace)
+                    ->setPublic()
+                    ->setMaxAge(self::$duration);
+            }
         }
 
         // Tell bots not to index/follow control panel and tokenized pages
@@ -41,7 +73,7 @@ class SetHeaders
             $request->has(HandleTokenRequest::TOKEN_KEY) ||
             $request->hasHeader(HandleTokenRequest::TOKEN_HEADER) ||
             $request->isPreview()
-            // @TODO: || ($request->isActionRequest() && !($request->route()?->getActionName() === \CraftCms\Cms\Http\Controllers\Auth\LoginController::class && $request->isMethod('GET')))
+            || ($request->isActionRequest() && ! ($request->route()?->getActionName() === LoginController::class && $request->isMethod('GET')))
         ) {
             $response->headers->set('X-Robots-Tag', 'none');
         }
@@ -52,6 +84,12 @@ class SetHeaders
             $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
             $response->headers->set('X-Content-Type-Options', 'nosniff');
         }
+
+        foreach (self::$headers as $header) {
+            $response->header($header['header'], $header['value'], $header['replace'] ?? true);
+        }
+
+        self::$headers = [];
 
         return $response;
     }

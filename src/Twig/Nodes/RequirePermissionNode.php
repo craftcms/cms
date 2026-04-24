@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Nodes;
 
-use Craft;
+use Illuminate\Support\Facades\Gate;
 use Override;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
@@ -18,7 +18,7 @@ class RequirePermissionNode extends Node
     {
         $compiler
             ->addDebugInfo($this)
-            ->write(Craft::class.'::$app->controller->requirePermission(')
+            ->write(Gate::class.'::authorize(')
             ->subcompile($this->getNode('permissionName'))
             ->raw(");\n");
     }

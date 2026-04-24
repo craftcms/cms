@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig\Extensions;
 
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
-use Craft;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
@@ -477,7 +476,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
 
         foreach ($vars as $var) {
             ob_start();
-            Craft::dump($var);
+            dump($var);
             $output .= str_replace('<code>', '<code style="display:block;">', ob_get_clean());
         }
 

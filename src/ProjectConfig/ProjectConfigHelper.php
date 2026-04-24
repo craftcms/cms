@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\ProjectConfig;
 
-use Craft;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Diff;

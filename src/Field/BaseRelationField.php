@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
-use Craft;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig;
 
-use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Twig\Contracts\SafeHtml;

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
-use Craft;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Events\RegisterCpNavItems;
 use CraftCms\Cms\Edition;

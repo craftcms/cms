@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Craft;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
@@ -357,7 +356,7 @@ readonly class SaveUserController
         }
 
         // Tell all browser windows about the draft deletion
-        Craft::$app->getSession()->broadcastToJs([
+        session()->broadcastToJs([
             'event' => 'saveElement',
             'id' => $user->id,
         ]);

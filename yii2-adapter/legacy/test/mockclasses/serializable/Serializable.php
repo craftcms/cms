@@ -7,7 +7,7 @@
 
 namespace craft\test\mockclasses\serializable;
 
-use craft\base\Serializable as SerializableInterface;
+use CraftCms\Cms\Shared\Contracts\Serializable as SerializableInterface;
 
 /**
  * Class Serializable.

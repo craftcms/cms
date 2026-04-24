@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Nodes;
 
-use Craft;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Support\Facades\Auth;
 use Override;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
@@ -21,6 +22,10 @@ class RequireLoginNode extends Node
     {
         $compiler
             ->addDebugInfo($this)
-            ->write(Craft::class."::\$app->controller->requireLogin();\n");
+            ->write('if ('.Auth::class."::guest()) {\n")
+            ->indent()
+            ->write('throw new '.AuthenticationException::class."('Unauthenticated.');\n")
+            ->outdent()
+            ->write("}\n");
     }
 }

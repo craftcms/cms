@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\ProjectConfig;
 
-use Craft;
-use craft\helpers\App;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Cms;
@@ -66,7 +64,6 @@ use SplFileInfo;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
-use yii\base\Application;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\web\ServerErrorHttpException;
@@ -338,7 +335,7 @@ class ProjectConfig
         Event::listen(ItemRemoved::class, $this->handleChangeEvent(...));
 
         $this->readOnly = Cms::isInstalled() && ! $generalConfig->allowAdminChanges;
-        $this->writeYamlAutomatically = ! App::isEphemeral();
+        $this->writeYamlAutomatically = ! app()->isEphemeral();
     }
 
     /**
@@ -1420,12 +1417,6 @@ class ProjectConfig
     private function _saveConfigAfterRequest(): void
     {
         $this->_updateYaml = true;
-
-        // @todo: Remove when all legacy tests are ported
-        // Are we too late for EVENT_AFTER_REQUEST?
-        if (Craft::$app->state >= Application::STATE_AFTER_REQUEST) {
-            $this->flush();
-        }
     }
 
     /**

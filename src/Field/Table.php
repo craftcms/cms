@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
-use Craft;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -29,6 +28,7 @@ use CraftCms\Cms\View\LegacyAssets\TimepickerAsset;
 use DateTime;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -592,7 +592,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
         }
 
         $serialized = [];
-        $supportsMb4 = Craft::$app->getDb()->getSupportsMb4();
+        $supportsMb4 = DB::supportsMb4();
 
         foreach ($value as $row) {
             $serializedRow = [];
@@ -626,7 +626,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
         }
 
         $serialized = [];
-        $supportsMb4 = Craft::$app->getDb()->getSupportsMb4();
+        $supportsMb4 = DB::supportsMb4();
 
         foreach ($value as $row) {
             $serializedRow = [];

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use Closure;
-use Craft;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;

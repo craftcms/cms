@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View\LegacyAssets;
 
-use Craft;
-use craft\base\ElementInterface;
-use craft\validators\UserPasswordValidator;
 use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Auth\Impersonation;
@@ -15,7 +12,9 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Providers\AppServiceProvider;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Api;
@@ -36,6 +35,7 @@ use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\QueueManager;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\HtmlStack;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use stdClass;
 
@@ -112,12 +112,10 @@ class CpAsset implements LegacyAssetInterface
     private function _craftData(): array
     {
         $upToDate = Cms::isInstalled() && ! app(Updates::class)->areMigrationsPending();
-        $request = Craft::$app->getRequest();
         $generalConfig = Cms::config();
         $formattingLocale = I18N::getFormattingLocale();
         $locale = I18N::getLocale();
         $orientation = $locale->getOrientation();
-        $userSession = Craft::$app->getUser();
         $currentUser = Auth::user();
         $primarySite = $upToDate ? Sites::getPrimarySite() : null;
 
@@ -132,25 +130,24 @@ class CpAsset implements LegacyAssetInterface
             'baseApiUrl' => Api::craftApiEndpoint(),
             'baseSiteUrl' => Url::siteUrl(),
             'baseUrl' => Url::url(),
-            'clientOs' => $request->getClientOs(),
+            'clientOs' => request()->clientOs(),
             'datepickerOptions' => $this->_datepickerOptions($formattingLocale, $locale),
             'defaultCookieOptions' => $this->_defaultCookieOptions(),
             'fileKinds' => AssetsHelper::getFileKinds(),
             'language' => app()->getLocale(),
             'left' => $orientation === 'ltr' ? 'left' : 'right',
-            'maxPasswordLength' => UserPasswordValidator::MAX_PASSWORD_LENGTH,
-            'minPasswordLength' => UserPasswordValidator::MIN_PASSWORD_LENGTH,
+            'maxPasswordLength' => AppServiceProvider::$maxPasswordLength,
+            'minPasswordLength' => AppServiceProvider::$minPasswordLength,
             'omitScriptNameInUrls' => $generalConfig->omitScriptNameInUrls,
             'orientation' => $orientation,
-            'pageNum' => $request->getPageNum(),
+            'pageNum' => Paginator::resolveCurrentPage(Cms::config()->getPageTriggerParam()),
             'pageTrigger' => Cms::config()->getPageTriggerParam(),
-            'path' => $request->getPathInfo(),
+            'path' => request()->decodedPath(),
             'pathParam' => $generalConfig->pathParam,
             'registeredAssetBundles' => [], // force encode as JS object
             'registeredJsFiles' => [], // force encode as JS object
             'right' => $orientation === 'ltr' ? 'right' : 'left',
-            'scriptName' => basename((string) $request->getScriptFile()),
-            'systemUid' => Craft::$app->getSystemUid(),
+            'systemUid' => Cms::systemUid(),
             'timepickerOptions' => $this->_timepickerOptions($formattingLocale, $orientation),
             'timezone' => Cms::timezone(),
             'tokenParam' => $generalConfig->tokenParam,
@@ -159,7 +156,7 @@ class CpAsset implements LegacyAssetInterface
             'usePathInfo' => $generalConfig->usePathInfo,
         ];
 
-        if ($request->getIsCpRequest()) {
+        if (request()->isCpRequest()) {
             $data += [
                 'announcements' => $upToDate ? app(Announcements::class)->get() : [],
                 'baseCpUrl' => Url::cpUrl(),
@@ -169,8 +166,8 @@ class CpAsset implements LegacyAssetInterface
 
         if ($generalConfig->enableCsrfProtection) {
             $data += [
-                'csrfTokenName' => $request->csrfParam,
-                'csrfTokenValue' => $request->getCsrfToken(),
+                'csrfTokenName' => '_token',
+                'csrfTokenValue' => csrf_token(),
             ];
         }
 
@@ -230,7 +227,6 @@ class CpAsset implements LegacyAssetInterface
             'primarySiteId' => $primarySite ? (int) $primarySite->id : null,
             'primarySiteLanguage' => $primarySite?->getLanguage(),
             'publishableSections' => $upToDate ? $this->_publishableSections($currentUser) : [],
-            'remainingSessionTime' => ! in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userSession->getRemainingSessionTime() : 0,
             'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
             'siteId' => $upToDate ? (app(RequestedSite::class)->get()->id ?? Sites::getCurrentSite()->id) : null,
             'sites' => $this->_sites(),
@@ -264,13 +260,11 @@ class CpAsset implements LegacyAssetInterface
 
     private function _defaultCookieOptions(): array
     {
-        $config = Craft::cookieConfig();
-
         return [
-            'path' => $config['path'] ?? '/',
-            'domain' => $config['domain'] ?? null,
-            'secure' => $config['secure'] ?? false,
-            'sameSite' => $config['sameSite'] ?? 'strict',
+            'path' => config('session.path', '/'),
+            'domain' => config('session.domain'),
+            'secure' => config('session.secure', false),
+            'sameSite' => config('session.same_site', 'strict'),
         ];
     }
 

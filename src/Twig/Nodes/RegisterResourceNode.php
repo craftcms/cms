@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Nodes;
 
-use craft\web\View;
+use CraftCms\Cms\View\Enums\Position;
 use InvalidArgumentException;
 use Override;
 use Twig\Attribute\YieldReady;
@@ -48,11 +48,11 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
         if ($position !== null) {
             // Figure out what the position's PHP value is
             $positionPhp = match ($position) {
-                'head', 'POS_HEAD' => View::POS_HEAD,
-                'beginBody', 'POS_BEGIN' => View::POS_BEGIN,
-                'endBody', 'POS_END' => View::POS_END,
-                'ready', 'POS_READY' => View::POS_READY,
-                'load', 'POS_LOAD' => View::POS_LOAD,
+                'head', 'POS_HEAD' => Position::Head->value,
+                'beginBody', 'POS_BEGIN' => Position::BodyBegin->value,
+                'endBody', 'POS_END' => Position::BodyEnd->value,
+                'ready', 'POS_READY' => Position::BodyEnd->value,
+                'load', 'POS_LOAD' => Position::BodyEnd->value,
                 default => throw new InvalidArgumentException($position.' is not a valid position'),
             };
         }

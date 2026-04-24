@@ -1,2 +1,4 @@
 // line 1
-Craft::$app->controller->requireLogin();
+if (Illuminate\Support\Facades\Auth::guest()) {
+    throw new Illuminate\Auth\AuthenticationException('Unauthenticated.');
+}

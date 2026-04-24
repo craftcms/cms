@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View;
 
-use craft\web\twig\variables\CraftVariable;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
+use CraftCms\Cms\View\Events\RegisterTemplateGlobals;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
@@ -60,8 +60,7 @@ readonly class TemplateGlobals
             $errors = new ViewErrorBag;
         }
 
-        return [
-            'craft' => new CraftVariable,
+        $globals = [
             'sessionErrors' => $errors,
             'request' => $this->request,
             'session' => $this->request->hasSession() ? $this->request->session() : null,
@@ -83,5 +82,9 @@ readonly class TemplateGlobals
             'tomorrow' => today()->addDay(),
             'yesterday' => today()->subDay(),
         ];
+
+        event($event = new RegisterTemplateGlobals($globals));
+
+        return $event->globals;
     }
 }

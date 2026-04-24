@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Nodes;
 
-use Craft;
+use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Url;
 use Override;
 use Twig\Attribute\YieldReady;
@@ -21,14 +21,14 @@ class RedirectNode extends Node
 
         if ($this->hasNode('error')) {
             $compiler
-                ->write(Craft::class.'::$app->getSession()->setError(')
+                ->write(Flash::class.'::fail(')
                 ->subcompile($this->getNode('error'))
                 ->raw(");\n");
         }
 
         if ($this->hasNode('notice')) {
             $compiler
-                ->write(Craft::class.'::$app->getSession()->setNotice(')
+                ->write(Flash::class.'::notice(')
                 ->subcompile($this->getNode('notice'))
                 ->raw(");\n");
         }

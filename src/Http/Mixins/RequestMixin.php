@@ -40,6 +40,47 @@ class RequestMixin
         };
     }
 
+    /**
+     * Returns whether the client is running "Windows", "Mac", "Linux" or "Other", based on the
+     * browser's UserAgent string.
+     *
+     * ---
+     *
+     * ```php
+     * $clientOs = request()->clientOs();
+     * ```
+     * ```twig
+     * {% set clientOs = request.clientOs %}
+     * ```
+     *
+     * @return string The OS the client is running.
+     */
+    public function clientOs(): Closure
+    {
+        return function (): string {
+            /**
+             * @var Request $this
+             *
+             * @phpstan-ignore-next-line
+             */
+            $userAgent = $this->userAgent();
+
+            if (str_contains($userAgent, 'Linux')) {
+                return 'Linux';
+            }
+
+            if (str_contains($userAgent, 'Win')) {
+                return 'Windows';
+            }
+
+            if (str_contains($userAgent, 'Mac')) {
+                return 'Mac';
+            }
+
+            return 'Other';
+        };
+    }
+
     public function isCpRequest(): Closure
     {
         return function (): bool {

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementActionInterface;
@@ -22,10 +21,10 @@ use CraftCms\Cms\Support\Url;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\HtmlString;
 use RuntimeException;
 use Tpetry\QueryExpressions\Function\String\Lower;
 use Tpetry\QueryExpressions\Language\Alias;
-use Twig\Markup;
 
 use function CraftCms\Cms\renderObjectTemplate;
 
@@ -515,11 +514,11 @@ class ElementHelper
      *
      * @param  ElementInterface[]  $elements
      */
-    public static function renderElements(array $elements, array $variables = []): Markup
+    public static function renderElements(array $elements, array $variables = []): HtmlString
     {
         $output = array_map(fn (ElementInterface $element) => (string) $element->render($variables), $elements);
 
-        return new Markup(implode("\n", $output), Craft::$app->charset);
+        return new HtmlString(implode("\n", $output));
     }
 
     /**

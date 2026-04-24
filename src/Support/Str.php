@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Support;
 
 use BackedEnum;
-use Craft;
 use CraftCms\Cms\Cms;
 use Illuminate\Support\Facades\Crypt;
 use InvalidArgumentException;

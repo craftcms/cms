@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql;
 
-use craft\behaviors\FieldLayoutBehavior;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -14,6 +13,7 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Gql\Contracts\GeneratorInterface;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
@@ -918,7 +918,7 @@ class Gql
      */
     public function getContentArguments(array $contexts, string $elementType): array
     {
-        /** @var FieldLayoutBehavior[] $contexts */
+        /** @var FieldLayoutProviderInterface[] $contexts */
         return $this->getOrSetContentArguments($elementType, function () use ($contexts, $elementType): array {
             $fields = [];
             $generatedFields = [];
