@@ -303,7 +303,7 @@ class Plugin extends Module implements PluginInterface
 
     public function getResourcesPath(): string
     {
-        return dirname($this->getBasePath()).'/resources';
+        return dirname($this->getBasePath()) . '/resources';
     }
 
     public function getMigrationsPath(): string
