@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries;
 
 use Closure;
-use craft\base\ElementInterface;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
@@ -26,6 +26,8 @@ use Illuminate\Database\Concerns\BuildsQueries;
 use Illuminate\Database\MultipleRecordsFoundException;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\RecordsNotFoundException;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
@@ -543,6 +545,59 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         return $this->query->pluck($column, $key);
+    }
+
+    /**
+     * Paginate the given query.
+     *
+     * @param  int|null|Closure  $perPage
+     * @param  array|string  $columns
+     * @param  string  $pageName
+     * @param  int|null  $page
+     * @param  Closure|int|null  $total
+     *
+     * @throws InvalidArgumentException
+     */
+    public function paginate($perPage = 15, $columns = ['*'], $pageName = 'page', $page = null, $total = null): LengthAwarePaginator
+    {
+        $page = $page ?: Paginator::resolveCurrentPage($pageName);
+
+        $total = value($total) ?? $this->getCountForPagination();
+
+        $perPage = value($perPage, $total);
+
+        $results = $total
+            ? $this->forPage($page, $perPage)->get($columns)
+            : new ElementCollection;
+
+        return $this->paginator($results, $total, $perPage, $page, [
+            'path' => Paginator::resolveCurrentPath(),
+            'pageName' => $pageName,
+        ]);
+    }
+
+    /**
+     * Paginate the given query into a simple paginator.
+     *
+     * @param  int|null  $perPage
+     * @param  array|string  $columns
+     * @param  string  $pageName
+     * @param  int|null  $page
+     * @return \Illuminate\Contracts\Pagination\Paginator
+     */
+    public function simplePaginate($perPage = 15, $columns = ['*'], $pageName = 'page', $page = null)
+    {
+        $page = $page ?: Paginator::resolveCurrentPage($pageName);
+
+        // Next we will set the limit and offset for this query so that when we get the
+        // results we get the proper section of results. Then, we'll create the full
+        // paginator instances for these results with the given page and per page.
+        $this->offset(($page - 1) * $perPage)->limit($perPage + 1);
+
+        return $this->simplePaginator($this->get($columns), $perPage, $page, [
+            'path' => Paginator::resolveCurrentPath(),
+            'pageName' => $pageName,
+        ]);
     }
 
     /** @TODO: Remove $_ variable after ElementQueryInterface is removed */

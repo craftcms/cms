@@ -280,9 +280,29 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
         return parent::attributes();
     }
 
+    public function safeAttributes(): array
+    {
+        return parent::safeAttributes();
+    }
+
+    public function getAttributeLabel($attribute): string
+    {
+        return parent::getAttributeLabel($attribute);
+    }
+
+    public function generateAttributeLabel($name): string
+    {
+        return parent::generateAttributeLabel($name);
+    }
+
     public function errors(): MessageBag
     {
         return new \Illuminate\Support\MessageBag($this->getErrors());
+    }
+
+    public function clearErrors($attribute = null): void
+    {
+        parent::clearErrors($attribute);
     }
 
     /**

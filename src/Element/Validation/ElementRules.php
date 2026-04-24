@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Validation;
 
 use Closure;
-use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Validation\Rules\ElementUriRule;
@@ -18,8 +18,8 @@ use CraftCms\Cms\Validation\Rules\SiteIdRule;
 use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Validation\Rule;
 use Override;
+use RuntimeException;
 use Throwable;
-use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
 
@@ -102,7 +102,7 @@ class ElementRules extends Ruleset
             } else {
                 array_unshift($rules['title'], 'nullable');
             }
-        } catch (InvalidConfigException) {
+        } catch (RuntimeException) {
             // Related to sectionId, fieldId and ownerId being missing
             // Which will be caught by the other validation rules.
         }

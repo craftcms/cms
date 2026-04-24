@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Component;
 
+use ArrayAccess;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
@@ -22,7 +23,7 @@ use Yiisoft\Arrays\ArrayableInterface;
 use Yiisoft\Arrays\ArrayableTrait;
 
 #[Ruleset(ComponentRules::class)]
-abstract class Component implements Arrayable, ArrayableInterface, ComponentInterface, Validatable
+abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, ComponentInterface, Validatable
 {
     use ArrayableTrait {
         fields as private traitFields;
@@ -169,6 +170,26 @@ abstract class Component implements Arrayable, ArrayableInterface, ComponentInte
         }
 
         throw new InvalidCallException('Unsetting an unknown or read-only property: '.static::class.'::'.$name);
+    }
+
+    public function offsetExists(mixed $offset): bool
+    {
+        return isset($this->$offset);
+    }
+
+    public function offsetGet(mixed $offset): mixed
+    {
+        return $this->$offset;
+    }
+
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        $this->$offset = $value;
+    }
+
+    public function offsetUnset(mixed $offset): void
+    {
+        $this->$offset = null;
     }
 
     public function __serialize(): array

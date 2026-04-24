@@ -127,7 +127,6 @@ readonly class MatrixController
                 ]));
             }
         } else {
-            /** @var Entry $entry */
             $entry = new Entry([
                 ...$attributes,
             ]);

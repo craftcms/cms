@@ -154,7 +154,7 @@ class RequestMixin
                 return array_slice($request->segments(), $segmentIndex);
             }
 
-            $actionParam = $request->get('action');
+            $actionParam = $request->input('action');
 
             if ($actionParam !== null) {
                 if (! is_string($actionParam)) {
@@ -199,12 +199,18 @@ class RequestMixin
              */
             $request = $this;
 
-            return $request->duplicate(
+            $duplicatedRequest = $request->duplicate(
                 query: $query ?? $request->query->all(),
                 server: array_merge($request->server->all(), $server, [
                     'REQUEST_URI' => $newUri,
                 ]),
             );
+
+            if ($request->hasSession()) {
+                $duplicatedRequest->setLaravelSession($request->session());
+            }
+
+            return $duplicatedRequest;
         };
     }
 

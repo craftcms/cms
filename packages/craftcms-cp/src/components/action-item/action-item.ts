@@ -94,6 +94,7 @@ export default class CraftActionItem extends LitElement {
   setState(state: AsyncState, detail: FeedbackData = {}) {
     this.state = state;
     this.feedbackMessage = detail.message ?? null;
+    console.log({state: this.state});
 
     this.dispatchEvent(
       new CustomEvent('action:change-state', {

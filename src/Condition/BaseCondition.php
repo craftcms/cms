@@ -22,8 +22,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Override;
+use RuntimeException;
 use Throwable;
-use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
 
@@ -594,7 +594,7 @@ JS,
                 ->map(function (ConditionRuleInterface $rule) {
                     try {
                         return $rule->getConfig();
-                    } catch (InvalidConfigException) {
+                    } catch (RuntimeException) {
                         // The rule is misconfigured
                         return null;
                     }

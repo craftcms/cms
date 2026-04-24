@@ -23,8 +23,6 @@ trait Exportable
      *
      * @param  string  $source  The selected source's key
      * @return array The available element exporters
-     *
-     * @since 3.4.0
      */
     public static function exporters(string $source): array
     {
@@ -44,7 +42,6 @@ trait Exportable
      * @return array The available element exporters
      *
      * @see exporters()
-     * @since 3.4.0
      */
     protected static function defineExporters(string $source): array
     {

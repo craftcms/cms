@@ -238,6 +238,7 @@ class TestCase extends Orchestra
 
             $config->set('database.default', $connection);
             $config->set("database.connections.{$connection}.database", env('DB_DATABASE', ':memory:'));
+            $config->set("database.connections.{$connection}.host", env('DB_HOST', '127.0.0.1'));
             $config->set("database.connections.{$connection}.username", env('DB_USERNAME', 'root'));
             $config->set("database.connections.{$connection}.password", env('DB_PASSWORD', ''));
             $config->set("database.connections.{$connection}.charset", env('DB_CHARSET', in_array($driver, ['mysql', 'mariadb']) ? 'utf8mb4' : 'utf8'));

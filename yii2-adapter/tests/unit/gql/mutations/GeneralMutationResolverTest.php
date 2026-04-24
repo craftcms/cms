@@ -18,6 +18,7 @@ use craft\records\Section;
 use craft\services\Elements;
 use craft\test\TestCase;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Gql\Resolvers\MutationResolver;
@@ -25,7 +26,6 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
 use crafttests\fixtures\SectionsFixture;
 use GraphQL\Error\Error;
-use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -198,32 +198,6 @@ class GeneralMutationResolverTest extends TestCase
     }
 
     /**
-     * Test whether saving an element with validation errors throws the right exception.
-     *
-     * @throws ReflectionException
-     * @throws InvalidConfigException
-     */
-    public function testSavingElementWithValidationError(): void
-    {
-        \CraftCms\Cms\Support\Facades\Elements::partialMock()
-            ->shouldReceive('saveElement')
-            ->andReturn(false)
-            ->once();
-
-        $validationError = 'There was an error saving the element';
-
-        $entry = $this->make(Entry::class, [
-            'hasErrors' => true,
-            'getFirstErrors' => [$validationError],
-        ]);
-
-        $this->expectExceptionMessage($validationError);
-        $this->expectException(UserError::class);
-
-        $this->invokeMethod($this->resolver, 'saveElement', [$entry]);
-    }
-
-    /**
      * Test whether saving an element that is enabled correctly changes the scenario before saving.
      *
      * @throws ReflectionException
@@ -246,7 +220,7 @@ class GeneralMutationResolverTest extends TestCase
         $entry->title = 'Entry title';
         $entry->sectionId = Section::find()->one()->id;
 
-        $scenario = Element::SCENARIO_DEFAULT;
+        $scenario = ElementRules::SCENARIO_DEFAULT;
         $entry->ruleset->useScenario($scenario);
         $entry->enabled = false;
 

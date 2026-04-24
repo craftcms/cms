@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Element;
 
 use Closure;
 use Craft;
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Contracts\Support\Arrayable;

@@ -9,7 +9,7 @@ use CraftCms\Cms\Element\Exporters\Raw;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
-use CraftCms\Cms\Http\Controllers\Elements\ExportElementIndexController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ExportElementIndexController;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
 

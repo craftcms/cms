@@ -63,7 +63,7 @@ trait EditUserTrait
         return $user;
     }
 
-    protected function asEditUserScreen(User $user, string $screen): CpScreenResponse
+    protected function asEditUserScreen(User $user, string $screen, ?CpScreenResponse $response = null): CpScreenResponse
     {
         $screens = [
             self::SCREEN_PROFILE => ['label' => t('Profile')],
@@ -93,7 +93,7 @@ trait EditUserTrait
         abort_if(! isset($screens[$screen]), 403, 'User not authorized to perform this action.');
 
         $pageName = $screens[$screen]['label'];
-        $response = new CpScreenResponse()
+        $response = ($response ?? new CpScreenResponse)
             ->when(
                 $user->getIsCurrent(),
                 fn (CpScreenResponse $response) => $response

@@ -15,11 +15,11 @@ trait FunctionalTesterActions
     public function expectEvent(string $class, string $eventName, callable $callback, string $eventInstance = "", array $eventValues = []): void {}
 
     /**
-     * @param class-string<\craft\base\ElementInterface> $elementType
+     * @param class-string<\CraftCms\Cms\Element\Contracts\ElementInterface> $elementType
      * @param array $searchProperties
      * @param int $amount
      * @param bool $searchAll
-     * @return \craft\base\ElementInterface[]
+     * @return \CraftCms\Cms\Element\Contracts\ElementInterface[]
      */
     public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array {}
 }
@@ -37,11 +37,11 @@ trait GqlTesterActions
     public function expectEvent(string $class, string $eventName, callable $callback, string $eventInstance = "", array $eventValues = []): void {}
 
     /**
-     * @param class-string<\craft\base\ElementInterface> $elementType
+     * @param class-string<\CraftCms\Cms\Element\Contracts\ElementInterface> $elementType
      * @param array $searchProperties
      * @param int $amount
      * @param bool $searchAll
-     * @return \craft\base\ElementInterface[]
+     * @return \CraftCms\Cms\Element\Contracts\ElementInterface[]
      */
     public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array {}
 }
@@ -59,11 +59,11 @@ trait UnitTesterActions
     public function expectEvent(string $class, string $eventName, callable $callback, string $eventInstance = "", array $eventValues = []): void {}
 
     /**
-     * @param class-string<\craft\base\ElementInterface> $elementType
+     * @param class-string<\CraftCms\Cms\Element\Contracts\ElementInterface> $elementType
      * @param array $searchProperties
      * @param int $amount
      * @param bool $searchAll
-     * @return \craft\base\ElementInterface[]
+     * @return \CraftCms\Cms\Element\Contracts\ElementInterface[]
      */
     public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array {}
 }

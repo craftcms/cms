@@ -6,6 +6,7 @@
   import PluginEdition from '@/components/Plugins/PluginEdition.vue';
   import CpLink from '@/components/CpLink.vue';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import PluginLicenseStatusIcon from '@/components/Plugins/PluginLicenseStatusIcon.vue';
 
   const props = defineProps<{
     plugin: PluginInfo;
@@ -53,7 +54,16 @@
 
 <template>
   <div class="cp-plugin">
-    <div class="cp-plugin__icon" v-html="plugin.iconSvg"></div>
+    <div class="cp-plugin__icon">
+      <div class="relative">
+        <span v-html="plugin.iconSvg"></span>
+        <PluginLicenseStatusIcon
+          v-if="plugin.licenseKeyStatus === 'valid' || licenseIssues.length > 0"
+          class="license-key-status"
+          :status="plugin.licenseIssues.length === 0 ? 'valid' : 'invalid'"
+        />
+      </div>
+    </div>
     <div>
       <div class="flex gap-2 items-baseline mb-1">
         <h2>{{ plugin.name }}</h2>
@@ -81,7 +91,12 @@
       <div>
         <ul v-if="plugin.links.length > 0" class="flex gap-3 items-base">
           <li v-for="link in plugin.links">
-            <a :href="link.href" target="_blank" rel="noopener" class="flex gap-1 items-center">
+            <a
+              :href="link.href"
+              target="_blank"
+              rel="noopener"
+              class="flex gap-1 items-center"
+            >
               <craft-icon v-if="link.icon" :name="link.icon"></craft-icon>
               {{ link.text }}
             </a>
@@ -89,36 +104,50 @@
         </ul>
       </div>
 
-      <div class="flex gap-2 items-center my-4" v-if="showLicenseKey">
-        <craft-input
-          :value="plugin.licenseKey"
-          class="font-mono"
-          readonly
-          :style="{
-            width: `${plugin.licenseKey.length + 6}ch`,
-          }"
-        >
-          <craft-copy-button
-            slot="suffix"
+      <div class="my-4" v-if="showLicenseKey">
+        <div class="flex gap-2 items-center mb-1 max-w-[20rem]">
+          <craft-input
             :value="plugin.licenseKey"
-          ></craft-copy-button>
-        </craft-input>
-
-        <template v-if="!page.props.readOnly && plugin.buyUrl">
-          <CpLink
-            appearance="button"
-            :inertia="false"
-            v-if="plugin.licenseKeyStatus === 'trial'"
-            :href="plugin.buyUrl"
-            :variant="plugin.licenseIssues.length > 0 ? 'primary' : 'default'"
-            >{{ t('Buy now') }}</CpLink
+            class="font-mono flex-1"
+            :label="t('License Key')"
+            label-sr-only
+            readonly
+            :style="{
+              width: `${plugin.licenseKey.length + 6}ch`,
+            }"
           >
+            <craft-copy-button
+              slot="suffix"
+              :value="plugin.licenseKey"
+            ></craft-copy-button>
+          </craft-input>
+
+          <template
+            v-if="
+              !page.props.readOnly &&
+              plugin.buyUrl &&
+              plugin.licenseKeyStatus === 'trial'
+            "
+          >
+            <CpLink
+              appearance="button"
+              :inertia="false"
+              :href="plugin.buyUrl"
+              :variant="plugin.licenseIssues.length > 0 ? 'primary' : 'default'"
+              >{{ t('Buy now') }}</CpLink
+            >
+          </template>
+        </div>
+
+        <template v-for="issue in licenseIssues">
+          <craft-callout
+            variant="danger"
+            appearance="plain"
+            class="p-0"
+            v-html="issue"
+          ></craft-callout>
         </template>
       </div>
-
-      <template v-for="issue in licenseIssues">
-        <div v-html="issue"></div>
-      </template>
     </div>
   </div>
 </template>
@@ -126,9 +155,18 @@
 <style scoped lang="scss">
   .cp-plugin {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: 56px 1fr;
     gap: var(--c-spacing-lg);
     padding: var(--c-spacing-md);
+  }
+
+  .license-key-status {
+    display: block;
+    position: absolute;
+    inset-inline-end: calc(2rem / 16 * -1);
+    inset-block-end: calc(5rem / 16);
+    width: calc(20rem / 16);
+    height: calc(20rem / 16);
   }
 
   .cp-plugin__icon :deep(svg) {

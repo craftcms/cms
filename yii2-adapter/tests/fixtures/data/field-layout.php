@@ -14,7 +14,7 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Number;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Field\Table;
-use CraftCms\Cms\FieldLayout\LayoutElements\entries\EntryTitleField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\User\Elements\User;
 
 return [

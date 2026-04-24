@@ -9,6 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\Http\Mixins\RequestMixin;
+use CraftCms\Cms\Http\Mixins\SessionMixin;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Path;
@@ -31,6 +32,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Override;
@@ -126,6 +128,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Request::mixin(new RequestMixin);
+        Session::mixin(new SessionMixin);
 
         Response::macro('setNoCacheHeaders', function (bool $replace = true) {
             $this->header('Expires', '0', $replace);

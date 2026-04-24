@@ -8,7 +8,7 @@ use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Country;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 class CountryFieldConditionRule extends BaseMultiSelectConditionRule implements FieldConditionRuleInterface
 {
@@ -23,7 +23,7 @@ class CountryFieldConditionRule extends BaseMultiSelectConditionRule implements 
     protected function inputHtml(): string
     {
         if (! $this->field() instanceof Country) {
-            throw new InvalidConfigException;
+            throw new RuntimeException;
         }
 
         return parent::inputHtml();

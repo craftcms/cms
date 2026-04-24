@@ -89,8 +89,6 @@ trait HasThumbnails
      * Returns the URL to the element's thumbnail, if it has one.
      *
      * @param  int  $size  The maximum width and height the thumbnail should have.
-     *
-     * @since 5.0.0
      */
     protected function thumbUrl(int $size): ?string
     {
@@ -100,8 +98,6 @@ trait HasThumbnails
     /**
      * Returns the element's thumbnail SVG contents, which should be used as a fallback when [[getThumbUrl()]]
      * returns `null`.
-     *
-     * @since 4.5.0
      */
     protected function thumbSvg(): ?string
     {
@@ -110,8 +106,6 @@ trait HasThumbnails
 
     /**
      * Returns alt text for the element's thumbnail.
-     *
-     * @since 5.0.0
      */
     protected function thumbAlt(): ?string
     {
@@ -120,8 +114,6 @@ trait HasThumbnails
 
     /**
      * Returns whether the element's thumbnail should have a checkered background.
-     *
-     * @since 5.0.0
      */
     protected function hasCheckeredThumb(): bool
     {
@@ -130,8 +122,6 @@ trait HasThumbnails
 
     /**
      * Returns whether the element's thumbnail should be rounded.
-     *
-     * @since 5.0.0
      */
     protected function hasRoundedThumb(): bool
     {
@@ -140,8 +130,6 @@ trait HasThumbnails
 
     /**
      * Returns whether the element's thumbnail is potentially animated.
-     *
-     * @since 5.7.0
      */
     protected function couldHaveAnimatedThumb(): bool
     {

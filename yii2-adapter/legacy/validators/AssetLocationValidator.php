@@ -7,12 +7,9 @@
 
 namespace craft\validators;
 
-use craft\helpers\Assets;
-use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Asset\Folders;
+use CraftCms\Cms\Asset\Validation\Rules\AssetLocationRule;
 use CraftCms\Cms\Cms;
-use yii\base\InvalidConfigException;
 use yii\base\Model;
 use yii\validators\Validator;
 use function CraftCms\Cms\t;
@@ -22,6 +19,7 @@ use function CraftCms\Cms\t;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Validation\AssetLocationRule} instead.
  */
 class AssetLocationValidator extends Validator
 {
@@ -96,63 +94,30 @@ class AssetLocationValidator extends Validator
     public function validateAttribute($model, $attribute): void
     {
         /** @var Asset $model */
-        [$folderId, $filename] = Assets::parseFileLocation($model->$attribute);
+        $rule = new AssetLocationRule(
+            asset: $model,
+            folderIdAttribute: $this->folderIdAttribute,
+            filenameAttribute: $this->filenameAttribute,
+            suggestedFilenameAttribute: $this->suggestedFilenameAttribute,
+            conflictingFilenameAttribute: $this->conflictingFilenameAttribute,
+            errorCodeAttribute: $this->errorCodeAttribute,
+            allowedExtensions: $this->allowedExtensions,
+            disallowedExtension: $this->disallowedExtension,
+            filenameConflict: $this->filenameConflict,
+        );
 
-        // Figure out which of them has changed
-        $hasNewFolderId = $folderId != $model->{$this->folderIdAttribute};
-        $hasNewFilename = $filename != $model->{$this->filenameAttribute};
+        $validator = \Illuminate\Support\Facades\Validator::make([
+            $attribute => $model->$attribute,
+        ], [
+            $attribute => $rule,
+        ]);
 
-        // If nothing has changed, just null-out the newLocation attribute
-        if (!$hasNewFolderId && !$hasNewFilename) {
-            $model->$attribute = null;
-
-            return;
-        }
-
-        // Get the folder
-        if (app(Folders::class)->getFolderById($folderId) === null) {
-            throw new InvalidConfigException('Invalid folder ID: ' . $folderId);
-        }
-
-        // Make sure the new filename has a valid extension
-        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-
-        if (is_array($this->allowedExtensions) && !in_array($extension, $this->allowedExtensions, true)) {
-            $this->addLocationError($model, $attribute, Asset::ERROR_DISALLOWED_EXTENSION, $this->disallowedExtension, ['extension' => $extension]);
-            return;
-        }
-
-        // Prepare the filename
-        $filename = AssetsHelper::prepareAssetName($filename);
-        $suggestedFilename = app(\CraftCms\Cms\Asset\Assets::class)->getNameReplacementInFolder($filename, $folderId);
-
-        if ($suggestedFilename !== $filename) {
-            $model->{$this->conflictingFilenameAttribute} = $filename;
-            $model->{$this->suggestedFilenameAttribute} = $suggestedFilename;
-
-            if (!$this->avoidFilenameConflicts) {
-                $this->addLocationError($model, $attribute, Asset::ERROR_FILENAME_CONFLICT, $this->filenameConflict, ['filename' => $filename]);
-
-                return;
+        if ($validator->fails()) {
+            foreach ($validator->errors()->get($attribute) as $messages) {
+                foreach ($messages as $message) {
+                    $model->addError($attribute, $message[0]);
+                }
             }
         }
-
-        // Update the newLocation attribute in case the filename changed
-        $model->$attribute = "{folder:$folderId}$suggestedFilename";
-    }
-
-    /**
-     * Adds a location error to the model.
-     *
-     * @param Model $model
-     * @param string $attribute
-     * @param string $errorCode
-     * @param string $message
-     * @param array $params
-     */
-    public function addLocationError(Model $model, string $attribute, string $errorCode, string $message, array $params = []): void
-    {
-        $this->addError($model, $attribute, $message, $params);
-        $model->{$this->errorCodeAttribute} = $errorCode;
     }
 }

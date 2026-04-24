@@ -2,7 +2,6 @@
 
 namespace craft\migrations;
 
-use craft\base\ElementInterface;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
@@ -10,6 +9,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;

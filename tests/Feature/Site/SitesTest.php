@@ -16,6 +16,7 @@ use CraftCms\Cms\Site\Models\SiteGroup;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Sites as SitesFacade;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
@@ -89,6 +90,19 @@ it('can set the current site by id', function () {
     $this->sites->setCurrentSite($otherSite->id);
 
     expect($this->sites->getCurrentSite()->id)->toBe($otherSite->id);
+});
+
+it('can normalize the request path for a path-based site', function () {
+    $site = Site::factory()->create([
+        'baseUrl' => 'https://localhost/fr',
+    ]);
+
+    $this->sites->refreshSites();
+    $this->sites->setCurrentSite($site->handle);
+
+    $request = Request::create('https://localhost/fr/news/story');
+
+    expect($this->sites->getRequestPath($request))->toBe('news/story');
 });
 
 it('can get the primary site', function () {

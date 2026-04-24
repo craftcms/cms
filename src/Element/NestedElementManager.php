@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use Closure;
-use craft\base\ElementInterface;
-use craft\base\NestedElementInterface;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Cp\Html\ElementHtml;
@@ -16,6 +14,8 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\ChangeSortOrder;
 use CraftCms\Cms\Element\Actions\MoveDown;
 use CraftCms\Cms\Element\Actions\MoveUp;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Events\AfterSaveNestedElements;
 use CraftCms\Cms\Element\Events\CreateNestedElementRevisions;
@@ -302,7 +302,6 @@ class NestedElementManager extends Component
                     'class' => 'nested-element-cards',
                 ]);
 
-                /** @var ElementQueryInterface|ElementCollection $value */
                 $value = $this->getValue($owner, true);
                 if ($value instanceof ElementCollection) {
                     /** @var NestedElementInterface[] $elements */

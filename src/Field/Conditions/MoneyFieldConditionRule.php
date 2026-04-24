@@ -14,7 +14,7 @@ use CraftCms\Cms\Support\Money as MoneyHelper;
 use Money\Currency;
 use Money\Money as MoneyLibrary;
 use Override;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 use function CraftCms\Cms\t;
 
@@ -41,7 +41,7 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
         $field = $this->field();
 
         if (! $field instanceof Money) {
-            throw new InvalidConfigException;
+            throw new RuntimeException;
         }
 
         if (isset($value, $this->_fieldUid)) {
@@ -66,7 +66,7 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
         $field = $this->field();
 
         if (! $field instanceof Money) {
-            throw new InvalidConfigException;
+            throw new RuntimeException;
         }
 
         // don't show the value input if the condition checks for empty/notempty
