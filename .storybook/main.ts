@@ -1,6 +1,5 @@
 import type {StorybookConfig} from '@storybook/vue3-vite';
 import {dirname, join} from 'path';
-import {mergeConfig} from 'vite';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 
@@ -21,28 +20,47 @@ const config: StorybookConfig = {
   ],
   framework: {
     name: getAbsolutePath('@storybook/vue3-vite') as '@storybook/vue3-vite',
-    options: {},
+    options: {
+      docgen: 'vue-component-meta',
+    },
   },
   viteFinal(config) {
-    return mergeConfig(config, {
+    // Storybook's vue3-vite framework adds its own Vue plugin with default options.
+    // We need to configure `isCustomElement` so Vue treats `craft-*` tags as web
+    // components (from @craftcms/cp) rather than trying to resolve them as Vue
+    // components. Since Vite's mergeConfig doesn't deep-merge plugin options,
+    // we remove Storybook's Vue plugin and add our own with the correct config.
+    const filteredPlugins = (config.plugins || []).flat().filter((plugin) => {
+      if (plugin && typeof plugin === 'object' && 'name' in plugin) {
+        return plugin.name !== 'vite:vue';
+      }
+      return true;
+    });
+
+    return {
+      ...config,
       plugins: [
+        ...filteredPlugins,
         tailwindcss(),
         vue({
           template: {
             compilerOptions: {
-              // Treat craft-* tags as custom elements (web components from @craftcms/cp)
               isCustomElement: (tag) => tag.startsWith('craft-'),
             },
           },
         }),
       ],
       resolve: {
+        ...config.resolve,
         alias: {
+          ...(config.resolve?.alias || {}),
           '@': join(__dirname, '../resources/js'),
           vue: 'vue/dist/vue.esm-bundler.js',
+          // Mock Inertia for Storybook
+          '@inertiajs/vue3': join(__dirname, 'inertia-mock.ts'),
         },
       },
-    });
+    };
   },
 };
 

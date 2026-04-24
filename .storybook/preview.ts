@@ -1,7 +1,22 @@
 import type {Preview} from '@storybook/vue3';
+import {setup} from '@storybook/vue3';
 import {withThemeByDataAttribute} from '@storybook/addon-themes';
+import '@craftcms/cp';
 import '../resources/css/cp.css';
 import './preview.css';
+import {installInertiaMock, type PageProps, setPageProps} from './inertia-mock';
+
+// Install the Inertia mock globally
+setup((app) => {
+  installInertiaMock(app);
+});
+
+// Declare module augmentation for Storybook parameters
+declare module '@storybook/vue3' {
+  interface Parameters {
+    inertia?: Partial<PageProps>;
+  }
+}
 
 const preview: Preview = {
   parameters: {
@@ -25,6 +40,13 @@ const preview: Preview = {
     },
   },
   decorators: [
+    // Inertia page props decorator - must come before theme decorator
+    (story, context) => {
+      // Reset and apply any story-specific page props
+      const inertiaProps = context.parameters.inertia || {};
+      setPageProps(inertiaProps);
+      return story();
+    },
     withThemeByDataAttribute({
       themes: {
         light: 'light',

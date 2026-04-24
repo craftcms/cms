@@ -1,3 +1,12 @@
+export type LicenseIssueKey =
+  | 'wrong_edition'
+  | 'no_trials'
+  | 'mismatched'
+  | 'astray'
+  | 'required'
+  | 'invalid';
+
+
 export interface PluginInfo {
   handle: string;
   developer: string;
@@ -24,7 +33,7 @@ export interface PluginInfo {
   licenseId: any;
   licensedEdition: any;
   licenseKeyStatus: string;
-  licenseIssues: any[];
+  licenseIssues: Array<LicenseIssueKey>;
   isTrial: boolean;
   upgradeAvailable: boolean;
   pluginStoreUrl: string | null;
