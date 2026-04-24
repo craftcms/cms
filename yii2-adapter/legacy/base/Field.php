@@ -9,6 +9,7 @@ namespace craft\base;
 
 use Closure;
 use Craft;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -77,6 +78,10 @@ abstract class Field extends \CraftCms\Cms\Field\Field
 
     public function getElementRules(ElementInterface $element): array
     {
+        if (!$element instanceof Model) {
+            return [];
+        }
+
         return [
             function(string $attribute, mixed $value, Closure $fail) use ($element) {
                 $scenario = $element->ruleset->getScenario();
@@ -105,7 +110,7 @@ abstract class Field extends \CraftCms\Cms\Field\Field
     private function _normalizeFieldValidator(
         string $attribute,
         mixed $rule,
-        ElementInterface $element,
+        Model $element,
         callable $isEmpty,
     ): Validator {
         if ($rule instanceof Validator) {

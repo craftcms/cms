@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static int createRevision(\craft\base\ElementInterface $canonical, int|null $creatorId = null, string|null $notes = null, array $newAttributes = [], bool $force = false)
- * @method static \craft\base\ElementInterface revertToRevision(\craft\base\ElementInterface $revision, int $creatorId)
+ * @method static int createRevision(\CraftCms\Cms\Element\Contracts\ElementInterface $canonical, int|null $creatorId = null, string|null $notes = null, array $newAttributes = [], bool $force = false)
+ * @method static \CraftCms\Cms\Element\Contracts\ElementInterface revertToRevision(\CraftCms\Cms\Element\Contracts\ElementInterface $revision, int $creatorId)
  *
  * @see \CraftCms\Cms\Element\Revisions
  */

@@ -29,16 +29,15 @@ beforeEach(function () {
 
 function createIndexedEntry(string $title, ?string $slug = null): EntryModel
 {
-    $entryModel = EntryModel::factory()->create();
-    $entryModel->element->siteSettings->first()->update(array_filter([
-        'title' => $title,
-        'slug' => $slug,
-    ]));
+    $factory = EntryModel::factory()
+        ->indexed()
+        ->title($title);
 
-    $element = Elements::getElementById($entryModel->id);
-    Search::indexElementAttributes($element);
+    if ($slug !== null) {
+        $factory = $factory->slug($slug);
+    }
 
-    return $entryModel;
+    return $factory->create();
 }
 
 describe('indexElementAttributes', function () {

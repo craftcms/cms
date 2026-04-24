@@ -15,9 +15,9 @@ namespace craft\fieldlayoutelements\users;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 5.6.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\users\AffiliatedSiteField} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\Users\AffiliatedSiteField} instead.
  */
-class AffiliatedSiteField extends \CraftCms\Cms\FieldLayout\LayoutElements\users\AffiliatedSiteField
+class AffiliatedSiteField extends \CraftCms\Cms\FieldLayout\LayoutElements\Users\AffiliatedSiteField
 {
     use \craft\base\LegacyEventConstants;
 }

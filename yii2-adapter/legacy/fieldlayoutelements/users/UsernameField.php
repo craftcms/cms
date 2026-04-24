@@ -15,9 +15,9 @@ namespace craft\fieldlayoutelements\users;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 5.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\users\UsernameField} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\Users\UsernameField} instead.
  */
-class UsernameField extends \CraftCms\Cms\FieldLayout\LayoutElements\users\UsernameField
+class UsernameField extends \CraftCms\Cms\FieldLayout\LayoutElements\Users\UsernameField
 {
     use \craft\base\LegacyEventConstants;
 }

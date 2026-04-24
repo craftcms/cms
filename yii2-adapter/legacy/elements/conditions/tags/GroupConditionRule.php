@@ -4,10 +4,10 @@ namespace craft\elements\conditions\tags;
 
 use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
-use craft\base\ElementInterface;
 use craft\elements\db\TagQuery;
 use craft\elements\Tag;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
 use function CraftCms\Cms\t;

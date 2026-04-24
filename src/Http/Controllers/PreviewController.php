@@ -27,10 +27,12 @@ readonly class PreviewController
 
     public function createToken(Request $request, RouteTokens $tokens): JsonResponse|RedirectResponse
     {
-        $tokenData = new RouteToken($request->all());
+        $tokenData = new RouteToken($request->post());
+
         if ($token = $request->input('previewToken')) {
             $tokenData->previewToken = Crypt::decrypt($token);
         }
+
         $tokenData->validate(throw: true);
 
         match (true) {

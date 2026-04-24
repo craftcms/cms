@@ -12,9 +12,12 @@ use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\test\TestCase;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Support\Facades\Elements;
 use GraphQL\Type\Definition\ResolveInfo;
+use ReflectionClass;
 use Throwable;
 
 class EntryMutationResolverTest extends TestCase
@@ -29,10 +32,13 @@ class EntryMutationResolverTest extends TestCase
      */
     public function testSavingDraftOrEntrySetsRelevantScenario(array $arguments, string $scenario): void
     {
-        $entry = $this->make(Entry::class, [
+        $entry = new Entry([
             'title' => 'Test title',
-            'getType' => new EntryType(),
         ]);
+
+        $reflection = new ReflectionClass($entry);
+        $property = $reflection->getProperty('_type');
+        $property->setValue($entry, new EntryType());
 
         $identifyQuery = $this->make(EntryQuery::class, [
             'first' => $entry,
@@ -68,12 +74,12 @@ class EntryMutationResolverTest extends TestCase
             'recursivelyNormalizeArgumentValues' => $arguments,
         ]);
 
-        \CraftCms\Cms\Support\Facades\Elements::partialMock()
+        Elements::partialMock()
             ->shouldReceive('saveElement')->andReturn(true)
             ->shouldReceive('createElementQuery')->andReturn($createQuery);
 
         $resolver->saveEntry(null, $arguments, null, $this->make(ResolveInfo::class));
-        self::assertSame($scenario, $entry->scenario);
+        self::assertSame($scenario, $entry->ruleset->getScenario());
     }
 
     /**
@@ -86,10 +92,13 @@ class EntryMutationResolverTest extends TestCase
      */
     public function testSavingNewEntryDoesNotSearchForIt(array $arguments, bool $identifyCalled): void
     {
-        $entry = $this->make(Entry::class, [
+        $entry = new Entry([
             'title' => 'Test title',
-            'getType' => new EntryType(),
         ]);
+
+        $reflection = new ReflectionClass($entry);
+        $property = $reflection->getProperty('_type');
+        $property->setValue($entry, new EntryType());
 
         $query = $this->make(EntryQuery::class, [
             'first' => $entry,
@@ -116,7 +125,7 @@ class EntryMutationResolverTest extends TestCase
             'identifyEntry' => $identifyCalled ? Expected::atLeastOnce($query) : Expected::never($query),
         ]);
 
-        \CraftCms\Cms\Support\Facades\Elements::partialMock()
+        Elements::partialMock()
             ->shouldReceive('saveElement')->andReturn(true)
             ->shouldReceive('createElementQuery')->andReturn($query);
 
@@ -126,9 +135,9 @@ class EntryMutationResolverTest extends TestCase
     public static function saveEntryDataProvider(): array
     {
         return [
-            [['draftId' => 5], Element::SCENARIO_ESSENTIALS],
-            [['id' => 5, 'enabled' => true], Element::SCENARIO_LIVE],
-            [['id' => 5, 'enabled' => false], Element::SCENARIO_DEFAULT],
+            [['draftId' => 5], ElementRules::SCENARIO_ESSENTIALS],
+            [['id' => 5, 'enabled' => true], ElementRules::SCENARIO_LIVE],
+            [['id' => 5, 'enabled' => false], ElementRules::SCENARIO_DEFAULT],
         ];
     }
 

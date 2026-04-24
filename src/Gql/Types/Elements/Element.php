@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Types\Elements;
 
-use craft\base\ElementInterface as BaseElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface as BaseElementInterface;
 use CraftCms\Cms\Gql\ArgumentManager;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\Interfaces\Element as ElementInterface;

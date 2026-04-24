@@ -6,9 +6,11 @@ namespace CraftCms\Cms\Element;
 
 use ArrayIterator;
 use BadMethodCallException;
-use craft\base\Component;
-use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Component\Exceptions\InvalidCallException;
+use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
@@ -16,6 +18,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTime;
@@ -25,9 +28,7 @@ use Illuminate\Validation\Validator as LaravelValidator;
 use Override;
 use Throwable;
 use Traversable;
-use yii\base\ArrayableTrait;
-use yii\base\InvalidCallException;
-use yii\base\UnknownPropertyException;
+use Yiisoft\Arrays\ArrayableTrait;
 
 use function CraftCms\Cms\t;
 
@@ -210,6 +211,19 @@ abstract class Element extends Component implements ElementInterface
         return false;
     }
 
+    public function getCreator(): ?User
+    {
+        if ($this->getIsDraft()) {
+            return $this->getDraftCreator();
+        }
+
+        if ($this->getIsRevision()) {
+            return $this->getRevisionCreator();
+        }
+
+        return null;
+    }
+
     /**
      * @var array<string,int>|null
      *
@@ -232,13 +246,20 @@ abstract class Element extends Component implements ElementInterface
         }
 
         parent::__construct($config);
+
+        if (! isset($this->siteId) && Cms::isInstalled()) {
+            $this->siteId = Sites::getPrimarySite()->id;
+        }
+
+        if (static::hasTitles()) {
+            $this->_savedTitle = $this->title;
+        }
+
+        $this->_initialized = true;
     }
 
-    #[Override]
     public function __clone()
     {
-        parent::__clone();
-
         // Mark all fields as dirty
         $this->_allDirty = true;
         $this->_hasNewParent = null;
@@ -302,8 +323,8 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Is this the "field:handle" syntax?
-        if (str_starts_with($name, 'field:')) {
-            return $this->getFieldValue(substr($name, 6));
+        if (str_starts_with((string) $name, 'field:')) {
+            return $this->getFieldValue(substr((string) $name, 6));
         }
 
         // If this is a field, make sure the value has been normalized before returning it
@@ -315,7 +336,7 @@ abstract class Element extends Component implements ElementInterface
             return $this->getCustomFieldRawValue($name);
         }
 
-        if (isset($this->_generatedFieldValues) && array_key_exists($name, $this->_generatedFieldValues)) {
+        if (isset($this->_generatedFieldValues) && array_key_exists((string) $name, $this->_generatedFieldValues)) {
             return $this->_generatedFieldValues[$name];
         }
 
@@ -327,7 +348,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     #[Override]
-    public function __set($name, $value)
+    public function __set(string $name, $value): void
     {
         // Is this the "field:handle" syntax?
         if (str_starts_with($name, 'field:')) {
@@ -338,8 +359,7 @@ abstract class Element extends Component implements ElementInterface
 
         try {
             parent::__set($name, $value);
-            /** @phpstan-ignore-next-line */
-        } catch (InvalidCallException|UnknownPropertyException|\CraftCms\Cms\Component\Exceptions\InvalidCallException|\CraftCms\Cms\Component\Exceptions\UnknownPropertyException $e) {
+        } catch (InvalidCallException|UnknownPropertyException $e) {
             // Is this is a field?
             if ($this->fieldByHandle($name) !== null) {
                 $this->setFieldValue($name, $value);
@@ -363,28 +383,6 @@ abstract class Element extends Component implements ElementInterface
         }
     }
 
-    #[Override]
-    protected function defineBehaviors(): array
-    {
-        return [];
-    }
-
-    #[Override]
-    public function init(): void
-    {
-        parent::init();
-
-        if (! isset($this->siteId) && Cms::isInstalled()) {
-            $this->siteId = Sites::getPrimarySite()->id;
-        }
-
-        if (static::hasTitles()) {
-            $this->_savedTitle = $this->title;
-        }
-
-        $this->_initialized = true;
-    }
-
     /**
      * @TODO: Remove parameters once Element no longer extends Yii Model
      */
@@ -406,7 +404,6 @@ abstract class Element extends Component implements ElementInterface
         return $values;
     }
 
-    #[Override]
     public function attributes(): array
     {
         $names = array_flip(Utils::getPublicAttributes($this));
@@ -464,7 +461,8 @@ abstract class Element extends Component implements ElementInterface
     #[Override]
     public function fields(): array
     {
-        $fields = parent::fields();
+        $attributes = $this->attributes();
+        $fields = array_combine($attributes, $attributes);
 
         foreach ($this->fieldLayoutFields() as $field) {
             if (! isset($fields[$field->handle])) {
@@ -522,27 +520,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     #[Override]
-    public function getIterator(): Traversable
-    {
-        $attributes = $this->getAttributes();
-
-        // Include custom fields
-        $fieldLayout = $this->getFieldLayout();
-
-        if ($fieldLayout !== null) {
-            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
-                $field = $layoutElement->getField();
-                if (! isset($attributes[$field->handle])) {
-                    $attributes[$field->handle] = $this->getFieldValue($field->handle);
-                }
-            }
-        }
-
-        return new ArrayIterator($attributes);
-    }
-
-    #[Override]
-    public function getAttributeLabel($attribute): string
+    public function getAttributeLabel(string $attribute): string
     {
         // Is this the "field:handle" syntax?
         if (str_starts_with($attribute, 'field:')) {
@@ -707,9 +685,27 @@ abstract class Element extends Component implements ElementInterface
         $this->setAttributes($values);
     }
 
-    #[Override]
     public function safeAttributes(): array
     {
         return array_keys($this->ruleset->rules());
+    }
+
+    public function getIterator(): Traversable
+    {
+        $attributes = $this->validationData();
+
+        // Include custom fields
+        $fieldLayout = $this->getFieldLayout();
+
+        if ($fieldLayout !== null) {
+            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+                $field = $layoutElement->getField();
+                if (! isset($attributes[$field->handle])) {
+                    $attributes[$field->handle] = $this->getFieldValue($field->handle);
+                }
+            }
+        }
+
+        return new ArrayIterator($attributes);
     }
 }

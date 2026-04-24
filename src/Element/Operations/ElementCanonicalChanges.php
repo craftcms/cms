@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Operations;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\AfterMergeCanonicalChanges;
 use CraftCms\Cms\Element\Events\BeforeMergeCanonicalChanges;

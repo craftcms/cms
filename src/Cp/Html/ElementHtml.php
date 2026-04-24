@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Html;
 
-use craft\base\ElementInterface;
-use craft\base\NestedElementInterface;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
@@ -20,6 +18,8 @@ use CraftCms\Cms\Cp\Events\DefineElementCardHtml;
 use CraftCms\Cms\Cp\Events\DefineElementChipHtml;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Shared\Enums\Color;
@@ -30,7 +30,7 @@ use CraftCms\Cms\Support\Html;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 use function CraftCms\Cms\t;
 
@@ -570,7 +570,7 @@ JS, [
             $owner = null;
             try {
                 $owner = $element instanceof NestedElementInterface ? $element->getPrimaryOwner() : null;
-            } catch (InvalidConfigException) {
+            } catch (RuntimeException) {
             }
             if (! $owner) {
                 break;

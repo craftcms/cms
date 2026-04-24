@@ -7,8 +7,8 @@
 
 namespace craft\behaviors;
 
-use craft\base\ElementInterface;
 use craft\models\EntryType;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;

@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Queue;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Queue\Jobs\SyncJob;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -127,6 +128,13 @@ abstract class BatchedJob extends Job
     {
         $nextJob = clone $this;
         $nextJob->batchIndex++;
+
+        if ($nextJob->job instanceof SyncJob) {
+            $nextJob->handle();
+
+            return;
+        }
+
         dispatch($nextJob);
     }
 

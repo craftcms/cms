@@ -35,6 +35,20 @@ interface Validatable extends ValidatesWithRuleset
     public function attributeLabels(): array;
 
     /**
+     * Returns the text label for the specified attribute.
+     */
+    public function getAttributeLabel(string $attribute): string;
+
+    /**
+     * Generates a user-friendly attribute label based on the give attribute name.
+     * This is done by replacing underscores, dashes and dots with blanks and
+     * changing the first letter of each word to uppercase.
+     *
+     * For example, 'department_name' or 'DepartmentName' will generate 'Department Name'.
+     */
+    public function generateAttributeLabel(string $name): string;
+
+    /**
      * Sets attribute values.
      *
      * @param  array<string, mixed>  $values  attribute values to set (attribute name => value).
@@ -77,4 +91,9 @@ interface Validatable extends ValidatesWithRuleset
      * Returns the validation error messages.
      */
     public function errors(): MessageBag;
+
+    /**
+     * Clears validation errors for the specified attribute or all attributes.
+     */
+    public function clearErrors(?string $attribute = null): void;
 }

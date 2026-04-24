@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Route\DynamicRoute;
+use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Path;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\TemplateResolver;
@@ -17,6 +18,7 @@ readonly class HandleTemplateRequest
 {
     public function __construct(
         private TemplateResolver $templateResolver,
+        private Sites $sites,
     ) {}
 
     public function handle(Request $request, Closure $next): mixed
@@ -39,7 +41,9 @@ readonly class HandleTemplateRequest
             return $response;
         }
 
-        $path = $request->decodedPath();
+        $path = $request->isSiteRequest()
+            ? $this->sites->getRequestPath($request)
+            : $request->decodedPath();
 
         if ($request->isCpRequest()) {
             $path = ltrim(Str::after($path, Cms::config()->cpTrigger), '/');
