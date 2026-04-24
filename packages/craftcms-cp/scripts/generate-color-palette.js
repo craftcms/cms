@@ -49,15 +49,6 @@ function printStyles() {
   lines.push(darkColors);
   lines.push('}\n');
 
-  // for (const color of lightTheme.contrastColors) {
-  //   if (!color.values) continue;
-  //
-  //   const lightThemeVariables = getVariableDeclarations(color);
-  //   const staticVariables = getVariableDeclarations(color, 'static');
-  //   lines.push(lightThemeVariables.join('\n'));
-  //   lines.push(staticVariables.join('\n'));
-  // }
-
   writeFileSync(OUT_FILE, lines.join('\n'));
   console.log(`Generated ${OUT_FILE}`);
 }
