@@ -91,8 +91,6 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
         () => {
           button.classList.remove('loading');
         },
-        // give them 5 minutes to complete setup
-        Math.min(Craft.elevatedSessionDuration, 300)
       );
     },
 
