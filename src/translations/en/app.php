@@ -153,6 +153,7 @@ return [
     'Are you sure you want to close the editor? Any changes will be lost.' => 'Are you sure you want to close the editor? Any changes will be lost.',
     'Are you sure you want to close this screen? Any changes will be lost.' => 'Are you sure you want to close this screen? Any changes will be lost.',
     'Are you sure you want to delete the logo?' => 'Are you sure you want to delete the logo?',
+    'Are you sure you want to delete the selected {type} along with their descendants?' => 'Are you sure you want to delete the selected {type} along with their descendants?',
     'Are you sure you want to delete the selected {type} for this site?' => 'Are you sure you want to delete the selected {type} for this site?',
     'Are you sure you want to delete the selected {type}?' => 'Are you sure you want to delete the selected {type}?',
     'Are you sure you want to delete the {type} for this site?' => 'Are you sure you want to delete the {type} for this site?',
