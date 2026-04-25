@@ -2236,7 +2236,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function deletionBlockers(array $elements, bool $hardDelete): array
+    public static function deletionBlockers(ElementCollection $elements, bool $hardDelete): array
     {
         $blockers = [];
 

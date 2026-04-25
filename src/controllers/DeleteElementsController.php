@@ -13,10 +13,13 @@ use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\db\Table;
 use craft\elements\db\NestedElementQueryInterface;
+use craft\elements\deletionblockers\DeletionBlockerInterface;
+use craft\elements\ElementCollection;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\web\Controller;
+use Illuminate\Support\Collection;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -33,9 +36,9 @@ class DeleteElementsController extends Controller
      */
     private string $elementType;
     /**
-     * @var ElementInterface[]
+     * @var ElementCollection
      */
-    private array $elements;
+    private ElementCollection $elements;
     private bool $hardDelete;
 
     /**
@@ -62,7 +65,7 @@ class DeleteElementsController extends Controller
         return true;
     }
 
-    private function elements(): array
+    private function elements(): ElementCollection
     {
         $elementIds = array_map(fn($id) => (int)$id, $this->request->getRequiredBodyParam('elementIds'));
         $siteId = $this->request->getBodyParam('siteId');
@@ -128,7 +131,7 @@ class DeleteElementsController extends Controller
             }
         }
 
-        return $elements;
+        return ElementCollection::make($elements);
     }
 
     /**
@@ -141,16 +144,21 @@ class DeleteElementsController extends Controller
         if (is_subclass_of($this->elementType, NestedElementInterface::class)) {
             // filter out elements that primarily belong to a different element,
             // as they won't actually be getting deleted
-            $elements = array_values(array_filter(
-                $elements,
-                /** @phpstan-ignore-next-line */
-                fn(NestedElementInterface $element) => $this->elementOwnedByPrimaryOwner($element),
-            ));
+            /** @phpstan-ignore-next-line */
+            $elements = $elements->filter(fn(NestedElementInterface $element) => $this->elementOwnedByPrimaryOwner($element));
         }
 
-        $blockers = $this->elementType::deletionBlockers($elements, $this->hardDelete);
+        $blockers = Collection::make($this->elementType::deletionBlockers($elements, $this->hardDelete))
+            ->filter(fn(DeletionBlockerInterface $blocker) => $blocker->isActive())
+            ->map(fn(DeletionBlockerInterface $blocker) => [
+                'summary' => $blocker->getSummary(),
+                'details' => $blocker->getDetails(),
+                'actions' => $blocker->getActions(),
+            ])
+            ->all();
+
         $elementPreview = Cp::elementPreviewHtml(
-            elements: $this->elements,
+            elements: $this->elements->all(),
             showStatus: false,
         );
 

@@ -22,6 +22,7 @@ use craft\elements\db\AddressQuery;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
+use craft\elements\deletionblockers\EntryAuthorsBlocker;
 use craft\enums\CmsEdition;
 use craft\enums\Color;
 use craft\enums\MenuItemType;
@@ -2516,108 +2517,12 @@ JS, [
     /**
      * @inheritdoc
      */
-    public static function deletionBlockers(array $elements, bool $hardDelete): array
+    public static function deletionBlockers(ElementCollection $elements, bool $hardDelete): array
     {
-        $blockers = [];
-        $numUsers = count($elements);
-        /** @var self[] $elements */
-        $userIds = array_map(fn(self $user) => $user->id, $elements);
-
-        // Entries
-        $entryIds = Entry::find()
-            ->authorId($userIds)
-            ->site('*')
-            ->unique()
-            ->status(null)
-            ->ids();
-        $numEntries = count($entryIds);
-
-        if ($numEntries) {
-            $blockers[] = [
-                'key' => 'entries',
-                'summary' => Craft::t('app', '{numEntries, number} {numEntries, plural, =1{entry has} other{entries have}} the {numUsers, plural, =1{user} other{users}} assigned as an author.', [
-                    'numEntries' => $numEntries,
-                    'numUsers' => $numUsers,
-                ]),
-                'details' => Cp::elementIndexHtml(Entry::class, [
-                    'context' => 'pane',
-                    'defaultTableColumns' => [
-                        ['authors'],
-                        ['section'],
-                    ],
-                    'defaultSort' => ['section', 'asc'],
-                    'sources' => false,
-                    'jsSettings' => [
-                        'criteria' => [
-                            'authorId' => $userIds,
-                            'status' => null,
-                        ],
-                    ],
-                ]),
-                'actions' => [
-                    [
-                        'icon' => 'user-plus',
-                        'label' => Craft::t('app', 'Reassign {numEntries, plural, =1{entry} other{entries}}', [
-                            'numEntries' => $numEntries,
-                        ]),
-                        'callback' => Html::jsWithVars(fn($userIds) => <<<JS
-new Craft.CpModal('entries/reassign-modal', {
-  params: {
-    oldUserIds: $userIds,
-  },
-  onSubmit: (ev) => {
-    resolve(ev.response.data.message);
-  },
-  onCancel: () => {
-    reject();
-  },
-});
-JS, [
-                            $userIds,
-                        ]),
-                    ],
-                    [
-                        'icon' => 'user-minus',
-                        'label' => Craft::t('app', 'Remove {numUsers, plural, =1{author} other {authors}} from {numEntries, plural, =1{entry} other{entries}}', [
-                            'numUsers' => $numUsers,
-                            'numEntries' => $numEntries,
-                        ]),
-                        'callback' => Html::jsWithVars(fn($message) => "resolve($message);", [
-                            Craft::t('app', 'The {numEntries, plural, =1{entry} other {entries}} will be updated once the {numUsers, plural, =1{user is} other{users are}} deleted.', [
-                                'numEntries' => $numEntries,
-                                'numUsers' => $numUsers,
-                            ]),
-                        ]),
-                    ],
-                    [
-                        'icon' => 'trash',
-                        'label' => Craft::t('app', 'Delete {numEntries, plural, =1{entry} other{entries}}', [
-                            'numEntries' => $numEntries,
-                        ]),
-                        'destructive' => true,
-                        'callback' => Html::jsWithVars(fn($elementType, $entryIds, $message) => <<<JS
-new Craft.ElementDeletionManager($elementType, $entryIds, {
-  onSuccess: () => {
-    resolve($message);
-  },
-  onCancel: () => {
-    reject();
-  },
-});
-JS, [
-                            Entry::class,
-                            $entryIds,
-                            Craft::t('app', '{type} deleted.', [
-                                'type' => count($entryIds) === 1 ? Entry::displayName() : Entry::pluralDisplayName(),
-                            ]),
-                        ]),
-                    ],
-                ],
-            ];
-        }
-
-        array_push($blockers, ...parent::deletionBlockers($elements, $hardDelete));
-        return $blockers;
+        return [
+            new EntryAuthorsBlocker($elements, $hardDelete),
+            ...parent::deletionBlockers($elements, $hardDelete),
+        ];
     }
 
     /**

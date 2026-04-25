@@ -7,8 +7,9 @@
 
 namespace craft\events;
 
-use craft\base\ElementInterface;
 use craft\base\Event;
+use craft\elements\deletionblockers\DeletionBlockerInterface;
+use craft\elements\ElementCollection;
 
 /**
  * DefineElementDeletionBlockersEvent class.
@@ -19,9 +20,9 @@ use craft\base\Event;
 class DefineElementDeletionBlockersEvent extends Event
 {
     /**
-     * @var ElementInterface[] The elements to be deleted.
+     * @var ElementCollection The elements to be deleted.
      */
-    public array $elements;
+    public ElementCollection $elements;
 
     /**
      * @var bool Whether the elements will be hard-deleted.
@@ -29,9 +30,7 @@ class DefineElementDeletionBlockersEvent extends Event
     public bool $hardDelete;
 
     /**
-     * @var array{key:string,summary:string,details?:string,actions:array[]}[] The defined blockers.
-     *
-     * See [[ElementInterface::deletionBlockers()]] for details.
+     * @var DeletionBlockerInterface[] The defined blockers.
      */
     public array $blockers = [];
 }
