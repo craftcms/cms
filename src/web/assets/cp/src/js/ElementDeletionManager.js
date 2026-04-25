@@ -193,6 +193,9 @@ Craft.ElementDeletionManager = Garnish.Base.extend(
 
       this.modal = new Garnish.Modal($container, {
         resizable: true,
+        onFadeIn: () => {
+          Craft.cp.elementThumbLoader.load($container);
+        },
         onHide: () => {
           if (!this.succeeded) {
             this.settings.onCancel();
