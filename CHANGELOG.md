@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where dependencies required by `composer.json` were getting updated when installing/updating plugins. ([#18755](https://github.com/craftcms/cms/issues/18755))
+
 ## 5.9.21 - 2026-04-23
 
 - Fixed a bug where entries weren’t redirecting back to their section’s page’s URL by default.
