@@ -162,7 +162,6 @@ return [
     'Are you sure you want to delete this image?' => 'از پاک کردن این تصویر مطمئن هستید؟',
     'Are you sure you want to delete this route?' => 'از پاک کردن این مسیر مطمئن هستید؟',
     'Are you sure you want to delete this {type}?' => 'از حذف {type} مطمئن هستید؟',
-    'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?',
     'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?',
     'Are you sure you want to delete “{name}” and all entries of that type?' => 'از اینکه می‌خواهید "{name}" و همه ورودی‌های آن نوع را حذف کنید، اطمینان دارید؟',
     'Are you sure you want to delete “{name}” and all its entries?' => 'از پاک کردن "{name}" و تمامی محتواهایش مطمئن هستید؟',
