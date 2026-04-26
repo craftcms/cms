@@ -4331,12 +4331,14 @@ JS, [
                     $elementId,
                     $siteId,
                     $ownerId,
+                    $confirmationMessage,
                     $redirect,
                 ) => <<<JS
 $('#' + $id).on('activate', async () => {
   new Craft.ElementDeletionManager($elementType, [$elementId], {
     siteId: $siteId,
     ownerId: $ownerId,
+    confirmationMessage: $confirmationMessage,
     onSuccess: () => {
       document.location.href = $redirect;
     },
@@ -4349,6 +4351,9 @@ JS,
                         $this->id,
                         $this->siteId,
                         $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
+                        Craft::t('app', 'Are you sure you want to delete this {type}?', [
+                            'type' => $isDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
+                        ]),
                         "$redirectUrl#",
                     ]);
             }
