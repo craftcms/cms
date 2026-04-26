@@ -583,7 +583,6 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'ลบแท็กจากกลุ่มแท็ก “{tagGroup}”',
     'Delete them' => 'ลบรายการเหล่านี้',
     'Delete users' => 'ลบผู้ใช้',
-    'Delete {numEntries, plural, =1{entry} other{entries}}' => 'Delete {numEntries, plural, =1{entry} other{entries}}',
     'Delete {site}' => 'ลบ {site}',
     'Delete {type} for site' => 'ลบ {type} สำหรับเว็บไซต์',
     'Delete {type} for this site' => 'ลบ {type} สำหรับเว็บไซต์นี้',
