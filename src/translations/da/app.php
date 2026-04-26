@@ -583,7 +583,6 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'Slet tags fra tag-gruppen “{tagGroup}”',
     'Delete them' => 'Slet dem',
     'Delete users' => 'Slet brugere',
-    'Delete {numEntries, plural, =1{entry} other{entries}}' => 'Delete {numEntries, plural, =1{entry} other{entries}}',
     'Delete {site}' => 'Slet {site}',
     'Delete {type} for site' => 'Slet {type} for site',
     'Delete {type} for this site' => 'Slet {type} for dette site',
