@@ -583,7 +583,6 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'Címkék törlése a “{tagGroup}” címkecsoportból',
     'Delete them' => 'Törlésük',
     'Delete users' => 'Felhasználók törlése',
-    'Delete {numEntries, plural, =1{entry} other{entries}}' => 'Delete {numEntries, plural, =1{entry} other{entries}}',
     'Delete {site}' => 'A(z) {site} törlése',
     'Delete {type} for site' => '{type} törlése a webhelyen',
     'Delete {type} for this site' => 'A webhely{type} törlése',
