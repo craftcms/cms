@@ -583,7 +583,6 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'Usuń tagi z grupy tagów „{tagGroup}”',
     'Delete them' => 'Usuń je',
     'Delete users' => 'Usuwanie użytkowników',
-    'Delete {numEntries, plural, =1{entry} other{entries}}' => 'Delete {numEntries, plural, =1{entry} other{entries}}',
     'Delete {site}' => 'Usuń witrynę {site}',
     'Delete {type} for site' => 'Usuń {type} dla witryny',
     'Delete {type} for this site' => 'Usuń {type} tej witryny',
