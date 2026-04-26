@@ -162,7 +162,6 @@ return [
     'Are you sure you want to delete this image?' => '确定要删除此图片吗？',
     'Are you sure you want to delete this route?' => '确定要删除该路由么？',
     'Are you sure you want to delete this {type}?' => '确定要删除此{type}吗？',
-    'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?',
     'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?',
     'Are you sure you want to delete “{name}” and all entries of that type?' => '确定要删除“{name}”及该类型的所有条目吗？',
     'Are you sure you want to delete “{name}” and all its entries?' => '确定要删除“{name}”及其条目吗？',
