@@ -162,7 +162,6 @@ return [
     'Are you sure you want to delete this image?' => 'คุณแน่ใจหรือไม่ว่าต้องการลบรูปภาพนี้',
     'Are you sure you want to delete this route?' => 'คุณแน่ใจหรือไม่ว่าต้องการลบการกำหนดเส้นทางนี้',
     'Are you sure you want to delete this {type}?' => 'คุณแน่ใจหรือไม่ว่าต้องการลบ {type} นี้',
-    'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?',
     'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?',
     'Are you sure you want to delete “{name}” and all entries of that type?' => 'คุณแน่ใจหรือไม่ว่าต้องการลบ “{name}” และรายการทั้งหมดของประเภทดังกล่าว',
     'Are you sure you want to delete “{name}” and all its entries?' => 'คุณแน่ใจหรือไม่ว่าต้องการลบ “{name}” และรายการทั้งหมดของกลุ่ม',
