@@ -50,6 +50,7 @@
 ### Extensibility
 - Added `craft\base\DefaultableFieldInterface`. ([#18522](https://github.com/craftcms/cms/pull/18522))
 - Added `craft\base\Element::EVENT_DEFINE_DELETION_BLOCKERS`. ([#18728](https://github.com/craftcms/cms/pull/18728))
+- Added `craft\base\ElementActionInterface::getTriggerId()`.
 - Added `craft\base\ElementInterface::deletionBlockers()`. ([#18728](https://github.com/craftcms/cms/pull/18728))
 - Added `craft\base\ElementInterface::setDirtyFieldTracking()`.
 - Added `craft\elements\PopulateElementEvent::$content`.

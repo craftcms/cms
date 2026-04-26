@@ -1009,6 +1009,7 @@ class ElementHelper
             'download' => $action->isDownload(),
             'name' => $action->getTriggerLabel(),
             'trigger' => $action->getTriggerHtml(),
+            'triggerId' => $action->getTriggerId(),
             'confirm' => $action->getConfirmationMessage(),
             'settings' => $action->getSettings() ?: null,
         ];
