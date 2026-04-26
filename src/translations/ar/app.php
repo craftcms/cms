@@ -583,7 +583,6 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'حذف العلامات من مجموعة علامات "{tagGroup}"',
     'Delete them' => 'حذفهم',
     'Delete users' => 'حذف المستخدمين',
-    'Delete {numEntries, plural, =1{entry} other{entries}}' => 'Delete {numEntries, plural, =1{entry} other{entries}}',
     'Delete {site}' => 'حذف {site}',
     'Delete {type} for site' => 'حذف {type} للموقع',
     'Delete {type} for this site' => 'حذف {type} لهذا الموقع',
