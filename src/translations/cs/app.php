@@ -162,7 +162,6 @@ return [
     'Are you sure you want to delete this image?' => 'Opravdu chcete tento obrázek odstranit?',
     'Are you sure you want to delete this route?' => 'Opravdu chcete tuto trasu vymazat?',
     'Are you sure you want to delete this {type}?' => 'Opravdu chcete tento {type} vymazat?',
-    'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?',
     'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?',
     'Are you sure you want to delete “{name}” and all entries of that type?' => 'Určitě si přejete smazat "{name}" a s tím i všechny záznamy tohoto typu?',
     'Are you sure you want to delete “{name}” and all its entries?' => 'Určitě si přejete smazat "{name}" a všechny vnořené záznamy?',
