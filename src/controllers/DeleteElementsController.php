@@ -212,9 +212,6 @@ class DeleteElementsController extends Controller
         return !$ownerId || $element->getPrimaryOwnerId() === $ownerId;
     }
 
-    /**
-     * @since 5.10.0
-     */
     public function actionReplaceRelationsModal(): Response
     {
         $this->requireAcceptsJson();
@@ -245,9 +242,6 @@ class DeleteElementsController extends Controller
             ->submitButtonLabel(Craft::t('app', 'Replace'));
     }
 
-    /**
-     * @since 5.10.0
-     */
     public function actionReplaceRelations(): Response
     {
         $this->requirePostRequest();
