@@ -583,7 +583,6 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'Smazat tagy ze skupiny tagů "{tagGroup}"',
     'Delete them' => 'Odstranit je',
     'Delete users' => 'Smazat uživatele',
-    'Delete {numEntries, plural, =1{entry} other{entries}}' => 'Delete {numEntries, plural, =1{entry} other{entries}}',
     'Delete {site}' => 'Odstranit {site}',
     'Delete {type} for site' => 'Smazat {type} pro web',
     'Delete {type} for this site' => 'Smazat {type} pro tuto stránku',
