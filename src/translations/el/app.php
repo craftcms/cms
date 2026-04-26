@@ -162,7 +162,6 @@ return [
     'Are you sure you want to delete this image?' => 'Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την εικόνα;',
     'Are you sure you want to delete this route?' => 'Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή τη διαδρομή;',
     'Are you sure you want to delete this {type}?' => 'Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το {type};',
-    'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?',
     'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?',
     'Are you sure you want to delete “{name}” and all entries of that type?' => 'Είστε σίγουροι ότι θέλετε να διαγράψετε το «{name}» και όλες τις καταχωρίσεις αυτού του τύπου;',
     'Are you sure you want to delete “{name}” and all its entries?' => 'Είστε σίγουροι ότι θέλετε να διαγράψετε το «{name}» και όλες τις καταχωρίσεις του;',
