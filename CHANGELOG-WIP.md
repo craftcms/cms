@@ -25,7 +25,7 @@
 - Timestamps in the control panel now include their time zone abbreviation. ([#18639](https://github.com/craftcms/cms/pull/18639))
 - Generated field values are no longer truncated within element cards. ([#18646](https://github.com/craftcms/cms/discussions/18646))
 - Assets’ Alternative Text values are now automatically set on upload, based on descriptive text data found in the uploaded file’s metadata. ([#18744](https://github.com/craftcms/cms/pull/18744))
-- Improved the user deletion workflow. ([#18728](https://github.com/craftcms/cms/pull/18728))
+- When deleting elements, a modal window is now shown alerting the user of any potential issues, such as existing relationships. ([#18728](https://github.com/craftcms/cms/pull/18728))
 
 ### Administration
 - Sections now have a “Min Authors” setting. ([#18662](https://github.com/craftcms/cms/pull/18662))
@@ -53,10 +53,16 @@
 - Added `craft\base\ElementInterface::deletionBlockers()`. ([#18728](https://github.com/craftcms/cms/pull/18728))
 - Added `craft\base\ElementInterface::setDirtyFieldTracking()`.
 - Added `craft\elements\PopulateElementEvent::$content`.
+- Added `craft\elements\db\ElementQueryInterface::collectIds()`.
+- Added `craft\elements\deletionblockers\BaseDeletionBlocker`. ([#18728](https://github.com/craftcms/cms/pull/18728))
+- Added `craft\elements\deletionblockers\DeletionBlockerInterface`. ([#18728](https://github.com/craftcms/cms/pull/18728))
+- Added `craft\elements\deletionblockers\EntryAuthorsBlocker`. ([#18728](https://github.com/craftcms/cms/pull/18728))
+- Added `craft\elements\deletionblockers\RelationDeletionBlocker`. ([#18728](https://github.com/craftcms/cms/pull/18728))
 - Added `craft\events\DefineElementDeletionBlockersEvent`. ([#18728](https://github.com/craftcms/cms/pull/18728))
 - Added `craft\helpers\Html::jsWithVars()`.
 - Added `craft\helpers\Markdown`. ([#18671](https://github.com/craftcms/cms/issues/18671))
 - Added `craft\models\Section::$minAuthors`. ([#18662](https://github.com/craftcms/cms/pull/18662))
+- Added `craft\queue\jobs\ReplaceRelations`. ([#18728](https://github.com/craftcms/cms/pull/18728))
 - Added `craft\services\Entries::reassignEntries()`.
 - Added `craft\validators\TimeValidator::$outOfRange`. ([#18575](https://github.com/craftcms/cms/pull/18575))
 - Added `Craft.CpScreenSlideout::reload()`. ([#18625](https://github.com/craftcms/cms/pull/18625))
