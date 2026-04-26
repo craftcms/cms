@@ -162,7 +162,6 @@ return [
     'Are you sure you want to delete this image?' => 'Vill du ta bort den här bilden?',
     'Are you sure you want to delete this route?' => 'Är du säker på att du vill ta bort denna route?',
     'Are you sure you want to delete this {type}?' => 'Är du säker på att du vill ta bort denna {type}?',
-    'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?',
     'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?',
     'Are you sure you want to delete “{name}” and all entries of that type?' => 'Är du säker på att du vill radera “{name}” och alla inlägg av den typen?',
     'Are you sure you want to delete “{name}” and all its entries?' => 'Är du säker på att du vill radera “{name}” och alla dess inlägg?',
