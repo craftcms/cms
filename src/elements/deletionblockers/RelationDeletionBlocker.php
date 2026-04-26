@@ -61,7 +61,7 @@ class RelationDeletionBlocker extends BaseDeletionBlocker
     public function getSummary(): string
     {
         /** @var class-string<ElementInterface> $targetElementType */
-        $targetElementType = get_class($this->elements->first());
+        $targetElementType = $this->elements->first()::class;
 
         return Craft::t('app', 'The {numTargets, plural, =1{{targetTypeSingular} is} other{{targetTypePlural} are}} related by {numRelations, number} other {numRelations, plural, =1{{sourceTypeSingular}} other{{sourceTypePlural}}}.', [
             'sourceTypeSingular' => $this->sourceElementType::lowerDisplayName(),
@@ -92,7 +92,7 @@ class RelationDeletionBlocker extends BaseDeletionBlocker
     public function getActions(): array
     {
         /** @var class-string<ElementInterface> $targetElementType */
-        $targetElementType = get_class($this->elements->first());
+        $targetElementType = $this->elements->first()::class;
         $numTargets = $this->elements->count();
 
         return [
