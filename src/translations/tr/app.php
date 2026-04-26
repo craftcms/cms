@@ -583,7 +583,6 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => '“{tagGroup}” etiket grubundaki etiketleri silin',
     'Delete them' => 'Öğeleri sil',
     'Delete users' => 'Kullanıcıları silme',
-    'Delete {numEntries, plural, =1{entry} other{entries}}' => 'Delete {numEntries, plural, =1{entry} other{entries}}',
     'Delete {site}' => 'Siteyi Sil: {site}',
     'Delete {type} for site' => 'Site için {type} öğesini sil',
     'Delete {type} for this site' => 'Bu site için {type} öğesini sil',
