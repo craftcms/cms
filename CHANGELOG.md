@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where dependencies required by `composer.json` were getting updated when installing/updating plugins. ([#18755](https://github.com/craftcms/cms/issues/18755))
+- Fixed a bug where element thumbnails weren’t always getting loaded when they became visible.
 
 ## 5.9.21 - 2026-04-23
 
