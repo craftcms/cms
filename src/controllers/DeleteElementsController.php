@@ -18,6 +18,9 @@ use craft\elements\ElementCollection;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Db;
+use craft\helpers\Html;
+use craft\helpers\Queue;
+use craft\queue\jobs\ReplaceRelations;
 use craft\web\Controller;
 use Illuminate\Support\Collection;
 use yii\web\BadRequestHttpException;
@@ -51,10 +54,9 @@ class DeleteElementsController extends Controller
         }
 
         $this->requireCpRequest();
-        $this->requirePostRequest();
 
-        $this->elementType = $this->request->getRequiredBodyParam('elementType');
-        $this->hardDelete = $this->request->getBodyParam('hardDelete') ?? false;
+        $this->elementType = $this->request->getRequiredParam('elementType');
+        $this->hardDelete = (bool)$this->request->getParam('hardDelete');
 
         if (!Component::validateComponentClass($this->elementType, ElementInterface::class)) {
             throw new BadRequestHttpException("Invalid element type: $this->elementType");
@@ -67,8 +69,8 @@ class DeleteElementsController extends Controller
 
     private function elements(): ElementCollection
     {
-        $elementIds = array_map(fn($id) => (int)$id, $this->request->getRequiredBodyParam('elementIds'));
-        $siteId = $this->request->getBodyParam('siteId');
+        $elementIds = array_map(fn($id) => (int)$id, $this->request->getRequiredParam('elementIds'));
+        $siteId = $this->request->getParam('siteId');
 
         $query = $this->elementType::find()
             ->id($elementIds)
@@ -78,7 +80,7 @@ class DeleteElementsController extends Controller
             ->drafts(null)
             ->savedDraftsOnly(false);
 
-        $withDescendants = !$this->hardDelete && $this->request->getBodyParam('withDescendants');
+        $withDescendants = !$this->hardDelete && $this->request->getParam('withDescendants');
         if ($withDescendants) {
             $query
                 ->with([
@@ -94,7 +96,7 @@ class DeleteElementsController extends Controller
         }
 
         if ($query instanceof NestedElementQueryInterface) {
-            $ownerId = $this->request->getBodyParam('ownerId');
+            $ownerId = $this->request->getParam('ownerId');
             $query->ownerId($ownerId);
         }
 
@@ -139,6 +141,8 @@ class DeleteElementsController extends Controller
      */
     public function actionDeletionBlockers(): Response
     {
+        $this->requirePostRequest();
+
         $elements = $this->elements;
 
         if (is_subclass_of($this->elementType, NestedElementInterface::class)) {
@@ -175,6 +179,8 @@ class DeleteElementsController extends Controller
      */
     public function actionDelete(): Response
     {
+        $this->requirePostRequest();
+
         $deleteOwnership = [];
         $elementsService = Craft::$app->getElements();
 
@@ -204,5 +210,80 @@ class DeleteElementsController extends Controller
     {
         $ownerId = $element->getOwnerId();
         return !$ownerId || $element->getPrimaryOwnerId() === $ownerId;
+    }
+
+    /**
+     * @since 5.10.0
+     */
+    public function actionReplaceRelationsModal(): Response
+    {
+        $this->requireAcceptsJson();
+
+        /** @var class-string<ElementInterface> $sourceElementType */
+        $sourceElementType = $this->request->getRequiredParam('sourceElementType');
+        $targetElementIds = $this->elements()->ids();
+
+        return $this->asCpModal()
+            ->action('delete-elements/replace-relations')
+            ->contentHtml(fn() =>
+                Cp::elementSelectFieldHtml([
+                    'label' => Craft::t('app', 'Choose a new {type}', [
+                        'type' => $this->elementType::lowerDisplayName(),
+                    ]),
+                    'name' => 'newTargetId',
+                    'elementType' => $this->elementType,
+                    'criteria' => [
+                        'id' => $targetElementIds->map(fn(int $id) => "not $id")->all(),
+                    ],
+                    'single' => true,
+                ]) .
+                Html::hiddenInput('elementType', $this->elementType) .
+                $targetElementIds->map(fn(int $id) => Html::hiddenInput('elementIds[]', (string)$id))->join('') .
+                Html::hiddenInput('hardDelete', $this->hardDelete ? '1' : '0') .
+                Html::hiddenInput('sourceElementType', $sourceElementType)
+            )
+            ->submitButtonLabel(Craft::t('app', 'Replace'));
+    }
+
+    /**
+     * @since 5.10.0
+     */
+    public function actionReplaceRelations(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        /** @var class-string<ElementInterface> $sourceElementType */
+        $sourceElementType = $this->request->getRequiredBodyParam('sourceElementType');
+        $newTargetId = $this->request->getRequiredBodyParam('newTargetId');
+
+        if (!$newTargetId) {
+            return $this->asFailure(Craft::t('app', 'No new {type} selected.', [
+                'type' => $this->elementType::lowerDisplayName(),
+            ]));
+        }
+
+        $oldTargetIds = $this->elements->ids()->all();
+        $sourceIds = $sourceElementType::find()
+            ->siteId('*')
+            ->unique()
+            ->relatedTo(['targetElement' => $oldTargetIds])
+            ->status(null)
+            ->drafts(null)
+            ->withProvisionalDrafts()
+            ->revisions(null)
+            ->ids();
+
+        Queue::push(new ReplaceRelations([
+            'sourceElementType' => $sourceElementType,
+            'targetElementType' => $this->elementType,
+            'sourceIds' => $sourceIds,
+            'oldTargetIds' => $oldTargetIds,
+            'newTargetId' => $newTargetId,
+        ]));
+
+        return $this->asSuccess(Craft::t('app', '{numRelations, plural, =1{Relation} other{Relations}} queued to be replaced.', [
+            'numRelations' => count($sourceIds),
+        ]));
     }
 }

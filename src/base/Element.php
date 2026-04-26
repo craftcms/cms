@@ -33,6 +33,7 @@ use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\NestedElementQueryInterface;
+use craft\elements\deletionblockers\RelationDeletionBlocker;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\elements\exporters\Expanded;
@@ -2238,7 +2239,16 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function deletionBlockers(ElementCollection $elements, bool $hardDelete): array
     {
-        $blockers = [];
+        $blockers = [
+            new RelationDeletionBlocker(Entry::class, $elements, $hardDelete, [
+                'elementIndexSettings' => [
+                    'defaultTableColumns' => [
+                        ['section'],
+                    ],
+                    'defaultSort' => ['section', 'asc'],
+                ],
+            ]),
+        ];
 
         // Fire a 'defineDeletionBlockers' event
         if (Event::hasHandlers(static::class, self::EVENT_DEFINE_DELETION_BLOCKERS)) {
