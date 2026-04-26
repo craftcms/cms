@@ -583,7 +583,6 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'Удалить теги из группы тегов «{tagGroup}»',
     'Delete them' => 'Удалить',
     'Delete users' => 'Удалить пользователей',
-    'Delete {numEntries, plural, =1{entry} other{entries}}' => 'Delete {numEntries, plural, =1{entry} other{entries}}',
     'Delete {site}' => 'Удалить {site}',
     'Delete {type} for site' => 'Удалить тип {type} для сайта',
     'Delete {type} for this site' => 'Удалить {type} для данного сайта',
