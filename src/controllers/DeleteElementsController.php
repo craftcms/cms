@@ -78,7 +78,8 @@ class DeleteElementsController extends Controller
             ->unique()
             ->status(null)
             ->drafts(null)
-            ->savedDraftsOnly(false);
+            ->savedDraftsOnly(false)
+            ->trashed($this->hardDelete);
 
         $withDescendants = !$this->hardDelete && $this->request->getParam('withDescendants');
         if ($withDescendants) {
