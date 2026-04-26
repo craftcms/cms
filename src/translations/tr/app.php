@@ -162,7 +162,6 @@ return [
     'Are you sure you want to delete this image?' => 'Bu resmi silmek istediğinizden emin misiniz?',
     'Are you sure you want to delete this route?' => 'Bu rotayı silmek istediğinizden emin misiniz?',
     'Are you sure you want to delete this {type}?' => 'Bu {type} öğesini silmek istediğinizden emin misiniz?',
-    'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?',
     'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?',
     'Are you sure you want to delete “{name}” and all entries of that type?' => '“{name}” ve bu türdeki tüm kayıtlarını silmek istediğinizden emin misiniz?',
     'Are you sure you want to delete “{name}” and all its entries?' => '“{name}” ve tüm kayıtlarını silmek istediğinize emin misiniz?',
