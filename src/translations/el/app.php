@@ -583,7 +583,6 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'Διαγραφή ετικετών από την ομάδα ετικετών "{tagGroup}"',
     'Delete them' => 'Διαγραφή τους',
     'Delete users' => 'Διαγραφή χρηστών',
-    'Delete {numEntries, plural, =1{entry} other{entries}}' => 'Delete {numEntries, plural, =1{entry} other{entries}}',
     'Delete {site}' => 'Διαγραφή {site}',
     'Delete {type} for site' => 'Διαγραφή {type} για τον ιστότοπο',
     'Delete {type} for this site' => 'Διαγραφή {type} για αυτόν τον ιστότοπο',
