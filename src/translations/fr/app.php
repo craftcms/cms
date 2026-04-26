@@ -162,7 +162,6 @@ return [
     'Are you sure you want to delete this image?' => 'Êtes-vous sûr de vouloir supprimer cette image ?',
     'Are you sure you want to delete this route?' => 'Êtes-vous sûr de vouloir supprimer cette route ?',
     'Are you sure you want to delete this {type}?' => 'Êtes-vous sûr de vouloir supprimer {type,select,entrée{cette} ressource{cette} catégorie{cette} utilisateur{cet} other{ce}} {type} ?',
-    'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?',
     'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?',
     'Are you sure you want to delete “{name}” and all entries of that type?' => 'Voulez-vous vraiment supprimer « {name} » et toutes les entrées de ce type ?',
     'Are you sure you want to delete “{name}” and all its entries?' => 'Êtes-vous sûr de vouloir supprimer « {name} » et toutes ses entrées ?',
