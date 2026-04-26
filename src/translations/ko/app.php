@@ -162,7 +162,6 @@ return [
     'Are you sure you want to delete this image?' => '이 이미지를 삭제하시겠습니까?',
     'Are you sure you want to delete this route?' => '이 경로를 삭제하시겠습니까?',
     'Are you sure you want to delete this {type}?' => '이 {type}을(를) 삭제하시겠습니까?',
-    'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?',
     'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?',
     'Are you sure you want to delete “{name}” and all entries of that type?' => '“{name}” 및 해당 유형의 모든 항목을 삭제하시겠습니까?',
     'Are you sure you want to delete “{name}” and all its entries?' => '“{name}”와(과) 모든 해당 항목을 삭제하시겠습니까?',
