@@ -583,7 +583,6 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'Radera taggar från taggruppen “{tagGroup}”',
     'Delete them' => 'Radera dem',
     'Delete users' => 'Radera användare',
-    'Delete {numEntries, plural, =1{entry} other{entries}}' => 'Delete {numEntries, plural, =1{entry} other{entries}}',
     'Delete {site}' => 'Ta bort {site}',
     'Delete {type} for site' => 'Ta bort {type} för webbplatsen',
     'Delete {type} for this site' => 'Ta bort {type} för den här webbplatsen',
