@@ -162,7 +162,6 @@ return [
     'Are you sure you want to delete this image?' => 'Вы уверены, что хотите удалить данное изображение?',
     'Are you sure you want to delete this route?' => 'Вы уверены, что хотите удалить этот маршрут?',
     'Are you sure you want to delete this {type}?' => 'Вы уверены, что хотите удалить этот {type}?',
-    'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?',
     'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?',
     'Are you sure you want to delete “{name}” and all entries of that type?' => 'Вы уверены, что хотите удалить «{name}» и все записи этого типа?',
     'Are you sure you want to delete “{name}” and all its entries?' => 'Вы уверены, что хотите удалить «{name}» и все его записи?',
