@@ -162,7 +162,6 @@ return [
     'Are you sure you want to delete this image?' => 'Er du sikker på, at du vil slette dette billede?',
     'Are you sure you want to delete this route?' => 'Er du sikker på du vil slette denne rute?',
     'Are you sure you want to delete this {type}?' => 'Er du sikker på, at du vil slette denne {type}?',
-    'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?',
     'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?',
     'Are you sure you want to delete “{name}” and all entries of that type?' => 'Er du sikker på du vil slette "{name}" og alle poster af denne type?',
     'Are you sure you want to delete “{name}” and all its entries?' => 'Er du sikker på du vil slette "{name}" og alle dets indtastninger?',
