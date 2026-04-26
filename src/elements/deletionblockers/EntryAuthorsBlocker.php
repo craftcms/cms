@@ -112,8 +112,8 @@ JS, [
             ],
             [
                 'icon' => 'trash',
-                'label' => Craft::t('app', 'Delete {numEntries, plural, =1{entry} other{entries}}', [
-                    'numEntries' => $numEntries,
+                'label' => Craft::t('app', 'Delete {type}', [
+                    'type' => $numEntries === 1 ? Entry::lowerDisplayName() : Entry::pluralLowerDisplayName(),
                 ]),
                 'destructive' => true,
                 'callback' => Html::jsWithVars(fn($elementType, $entryIds, $message) => <<<JS
