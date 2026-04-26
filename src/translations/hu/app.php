@@ -162,7 +162,6 @@ return [
     'Are you sure you want to delete this image?' => 'Biztosan törölni szeretné a képet?',
     'Are you sure you want to delete this route?' => 'Biztosan törölni szeretné ezt az útvonalat?',
     'Are you sure you want to delete this {type}?' => 'Biztosan törölni szeretné: {type}?',
-    'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?',
     'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?',
     'Are you sure you want to delete “{name}” and all entries of that type?' => 'Biztosan törli a „{name}” elemet és minden ilyen típusú bejegyzést?',
     'Are you sure you want to delete “{name}” and all its entries?' => 'Biztosan törlöd “{name}” és minden bejegyzését?',
