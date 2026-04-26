@@ -583,7 +583,6 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'מחק תגיות מקבוצת התגיות "{tagGroup}"',
     'Delete them' => 'מחק אותם',
     'Delete users' => 'מחק משתמשים',
-    'Delete {numEntries, plural, =1{entry} other{entries}}' => 'Delete {numEntries, plural, =1{entry} other{entries}}',
     'Delete {site}' => 'מחק את {site}',
     'Delete {type} for site' => 'מחק {type} לאתר',
     'Delete {type} for this site' => 'מחק {type} לאתר הזה',
