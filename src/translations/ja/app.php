@@ -583,7 +583,6 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => '“{tagGroup}” タググループからタグを削除',
     'Delete them' => 'これらを削除',
     'Delete users' => 'ユーザーを削除する',
-    'Delete {numEntries, plural, =1{entry} other{entries}}' => 'Delete {numEntries, plural, =1{entry} other{entries}}',
     'Delete {site}' => '{site} を削除',
     'Delete {type} for site' => 'このサイトの{type}を削除',
     'Delete {type} for this site' => 'このサイトの{type}を削除',
