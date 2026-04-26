@@ -583,7 +583,6 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'Eyða merkjum úr „{tagGroup}“ merkjahópnum',
     'Delete them' => 'Eyða þeim',
     'Delete users' => 'Eyða notendum',
-    'Delete {numEntries, plural, =1{entry} other{entries}}' => 'Delete {numEntries, plural, =1{entry} other{entries}}',
     'Delete {site}' => 'Eyða {site}',
     'Delete {type} for site' => 'Eyða {type} fyrir síðu',
     'Delete {type} for this site' => 'Eyða {type} fyrir þessa síðu',
