@@ -2060,6 +2060,14 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public function collectIds(?YiiConnection $db = null): Collection
+    {
+        return Collection::make($this->ids($db));
+    }
+
+    /**
      * Executes the query and renders the resulting elements using their partial templates.
      *
      * If no partial template exists for an element, its string representation will be output instead.

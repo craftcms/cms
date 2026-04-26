@@ -1584,7 +1584,7 @@ JS, [
                 'class' => array_merge(
                     ['element-index'],
                     ($showSidebar ? ['has-sidebar'] : []),
-                    ($config['context'] === 'embedded-index' ? ['pane', 'padding-s', 'hairline'] : []),
+                    (in_array($config['context'], ['embedded-index', 'pane']) ? ['pane', 'padding-s', 'hairline'] : []),
                     Html::explodeClass($config['class']),
                 ),
                 'data' => [

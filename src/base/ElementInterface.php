@@ -11,6 +11,7 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\deletionblockers\DeletionBlockerInterface;
 use craft\elements\ElementCollection;
 use craft\elements\User;
 use craft\enums\AttributeStatus;
@@ -649,6 +650,16 @@ interface ElementInterface extends
      * exist, or null if the result should be ignored
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false;
+
+    /**
+     * Returns any deletion blockers for the given elements.
+     *
+     * @param ElementCollection $elements The elements to be deleted
+     * @param bool $hardDelete Whether the elements will be hard-deleted
+     * @return DeletionBlockerInterface[]
+     * @since 5.10.0
+     */
+    public static function deletionBlockers(ElementCollection $elements, bool $hardDelete): array;
 
     /**
      * Returns the base GraphQL type name that represents elements of this type.

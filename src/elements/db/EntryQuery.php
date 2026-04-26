@@ -1072,10 +1072,12 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
                     ['entries.sectionId' => $section->id],
                 ];
                 if ($excludePeerEntries) {
-                    $sectionCondition[] = ['exists', (new Query())
-                        ->from(['entries_authors' => Table::ENTRIES_AUTHORS])
-                        ->where('[[entries_authors.entryId]] = [[entries.id]]')
-                        ->andWhere(['entries_authors.authorId' => $user->id]), ];
+                    $sectionCondition[] = [
+                        'exists', (new Query())
+                            ->from(['entries_authors' => Table::ENTRIES_AUTHORS])
+                            ->where('[[entries_authors.entryId]] = [[entries.id]]')
+                            ->andWhere(['entries_authors.authorId' => $user->id]),
+                    ];
                 }
                 if ($excludePeerDrafts) {
                     $sectionCondition[] = [
