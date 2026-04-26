@@ -4,7 +4,7 @@
 - Collapsed Matrix blocks now show their entries’ UI labels as preview text, whenever possible. ([#18484](https://github.com/craftcms/cms/discussions/18484))
 - Element-level actions within nested element management fields (Matrix, Addresses, etc.) now consistently affect all selected elements, when performed on a selected element. ([#18561](https://github.com/craftcms/cms/pull/18561))
 - Elements within Matrix and Addresses fields now have “Paste above” actions when a compatible element is copied. ([#17406](https://github.com/craftcms/cms/discussions/17406))
-- Elements now keep track of the index page’s URL their edit page was linked to from, and explicitly redirect back to that page after save, rather than always redirecting to the referrer. ([#18680](https://github.com/craftcms/cms/pull/18680), GHSA-f74w-488g-8x5r)
+- Elements now keep track of the index page’s URL their edit page was linked to from, and explicitly redirect back to that page after save, rather than always redirecting to the referrer. ([#18680](https://github.com/craftcms/cms/pull/18680))
 - Addresses fields now have a “Copy all addresses” field-level action. ([#18561](https://github.com/craftcms/cms/pull/18561))
 - Matrix fields’ “Expand”, “Collapse”, and “Copy” field-level actions now always affect all nested entries, regardless of whether any entries are selected. ([#18561](https://github.com/craftcms/cms/pull/18561))
 - Matrix fields no longer have “Duplicate” and “Delete” field-level actions. ([#18561](https://github.com/craftcms/cms/pull/18561))
@@ -87,3 +87,4 @@
 - Fixed a bug where nested entries weren’t getting loaded with their content, if they had an entry type that was no longer allowed by their Matrix field.
 - Fixed the wording of the validation error when saving a nested entry with an invalid entry type. ([#18506](https://github.com/craftcms/cms/issues/18506))
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) JavaScript injection vulnerability. (GHSA-c55v-343g-5xff)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) potential RCE vulnerability. (GHSA-f74w-488g-8x5r)
