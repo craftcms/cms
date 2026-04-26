@@ -583,7 +583,6 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'Slett stikkord i stikkordsgruppen «{tagGroup}»',
     'Delete them' => 'Slett disse',
     'Delete users' => 'Slett brukere',
-    'Delete {numEntries, plural, =1{entry} other{entries}}' => 'Delete {numEntries, plural, =1{entry} other{entries}}',
     'Delete {site}' => 'Slett {site}',
     'Delete {type} for site' => 'Slett {type} for nettstedet',
     'Delete {type} for this site' => 'Slett {type} for siden',
