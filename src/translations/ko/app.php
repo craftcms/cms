@@ -583,7 +583,6 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => '“{tagGroup}” 태그 그룹에서 태그 삭제',
     'Delete them' => '해당 항목 삭제',
     'Delete users' => '사용자 삭제',
-    'Delete {numEntries, plural, =1{entry} other{entries}}' => 'Delete {numEntries, plural, =1{entry} other{entries}}',
     'Delete {site}' => '{site} 삭제',
     'Delete {type} for site' => '사이트에서 {type} 삭제',
     'Delete {type} for this site' => '이 사이트의 {type} 삭제',
