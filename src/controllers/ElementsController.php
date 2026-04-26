@@ -119,7 +119,11 @@ class ElementsController extends Controller
         $this->_attributes = $this->request->getBodyParams();
 
         // No funny business
-        if (isset($this->_attributes['id']) || isset($this->_attributes['canonicalId'])) {
+        if (
+            isset($this->_attributes['id']) ||
+            isset($this->_attributes['uid']) ||
+            isset($this->_attributes['canonicalId'])
+        ) {
             throw new BadRequestHttpException('Changing an element’s ID is not allowed.');
         }
 
@@ -1659,9 +1663,11 @@ JS, [
         $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
 
+        $isExplicitDraft = $element->getIsDraft() && !$element->getIsUnpublishedDraft() && !$element->isProvisionalDraft;
+
         // save as a new is now available to people who can create drafts
         $asUnpublishedDraft = $this->_asUnpublishedDraft && $element::hasDrafts();
-        if ($asUnpublishedDraft) {
+        if ($asUnpublishedDraft || $isExplicitDraft) {
             $authorized = $elementsService->canDuplicateAsDraft($element, $user);
         } else {
             $authorized = $elementsService->canDuplicate($element, $user);
@@ -1673,7 +1679,7 @@ JS, [
 
         $newAttributes = [
             'isProvisionalDraft' => false,
-            'draftId' => null,
+            'draftId' => $isExplicitDraft ? $element->draftId : null,
         ];
 
         if ($asUnpublishedDraft &&
@@ -1730,6 +1736,15 @@ JS, [
 
         $elementInfo = $this->request->getRequiredBodyParam('elements');
         $newAttributes = $this->request->getRequiredBodyParam('newAttributes');
+
+        // No funny business
+        if (
+            isset($newAttributes['id']) ||
+            isset($newAttributes['uid']) ||
+            isset($newAttributes['canonicalId'])
+        ) {
+            throw new BadRequestHttpException('Setting an element’s ID is not allowed.');
+        }
 
         $newElementInfo = [];
 

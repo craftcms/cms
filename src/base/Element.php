@@ -33,6 +33,7 @@ use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\NestedElementQueryInterface;
+use craft\elements\deletionblockers\RelationDeletionBlocker;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\elements\exporters\Expanded;
@@ -47,6 +48,7 @@ use craft\events\DefineAltActionsEvent;
 use craft\events\DefineAttributeHtmlEvent;
 use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\DefineEagerLoadingMapEvent;
+use craft\events\DefineElementDeletionBlockersEvent;
 use craft\events\DefineHtmlEvent;
 use craft\events\DefineMenuItemsEvent;
 use craft\events\DefineMetadataEvent;
@@ -754,6 +756,24 @@ abstract class Element extends Component implements ElementInterface
      * @since 3.2.0
      */
     public const EVENT_AFTER_PROPAGATE = 'afterPropagate';
+
+    /**
+     * @event DefineElementDeletionBlockersEvent The event that is triggered when defining any blockers that should prevent a user from being deleted
+     *
+     * ---
+     * ```php
+     * use craft\elements\User;
+     * use craft\events\DefineUserDeletionBlockersEvent;
+     * use yii\base\Event;
+     *
+     * Event::on(User::class, User::EVENT_DEFINE_DELETION_BLOCKERS, function(DefineElementDeletionBlockersEvent $event) {
+     *     $event->blockers[] = // ...
+     * });
+     * ```
+     *
+     * @since 5.10.0
+     */
+    public const EVENT_DEFINE_DELETION_BLOCKERS = 'defineDeletionBlockers';
 
     /**
      * @event ModelEvent The event that is triggered before the element is deleted.
@@ -2217,6 +2237,36 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public static function deletionBlockers(ElementCollection $elements, bool $hardDelete): array
+    {
+        $blockers = [
+            new RelationDeletionBlocker(Entry::class, $elements, $hardDelete, [
+                'elementIndexSettings' => [
+                    'defaultTableColumns' => [
+                        ['section'],
+                    ],
+                    'defaultSort' => ['section', 'asc'],
+                ],
+            ]),
+        ];
+
+        // Fire a 'defineDeletionBlockers' event
+        if (Event::hasHandlers(static::class, self::EVENT_DEFINE_DELETION_BLOCKERS)) {
+            $event = new DefineElementDeletionBlockersEvent([
+                'elements' => $elements,
+                'hardDelete' => $hardDelete,
+                'blockers' => $blockers,
+            ]);
+            Event::trigger(static::class, self::EVENT_DEFINE_DELETION_BLOCKERS, $event);
+            $blockers = $event->blockers;
+        }
+
+        return $blockers;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function baseGqlType(): Type
     {
         return ElementGqlType::getType();
@@ -2626,7 +2676,13 @@ abstract class Element extends Component implements ElementInterface
             return $this->fieldByHandle(substr($name, 6)) !== null;
         }
 
-        return $name === 'title' || $this->hasEagerLoadedElements($name) || parent::__isset($name) || $this->fieldByHandle($name);
+        return (
+            $name === 'title' ||
+            isset($this->_generatedFieldValues[$name]) ||
+            $this->hasEagerLoadedElements($name) ||
+            parent::__isset($name) ||
+            $this->fieldByHandle($name)
+        );
     }
 
     /**
@@ -4006,6 +4062,15 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
+        if ($this->getIsDraft() && !$this->getIsUnpublishedDraft() && !$this->isProvisionalDraft) {
+            $altActions[] = [
+                'label' => Craft::t('app', 'Save as a new {type}', [
+                    'type' => Craft::t('app', 'draft'),
+                ]),
+                'action' => 'elements/duplicate',
+            ];
+        }
+
         // Fire a 'defineAltActions' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_ALT_ACTIONS)) {
             $event = new DefineAltActionsEvent([
@@ -4250,22 +4315,47 @@ JS, [
 
             // Delete
             if ($canDeleteCanonical) {
+                $view = Craft::$app->getView();
+                $deleteId = sprintf('action-delete-%s', mt_rand());
                 $items[] = [
+                    'id' => $deleteId,
                     'icon' => 'trash',
                     'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type}', [
                         'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
                     ])),
-                    'action' => $isUnpublishedDraft ? 'elements/delete-draft' : 'elements/delete',
-                    'params' => [
-                        'elementId' => $this->getCanonicalId(),
-                        'siteId' => $this->siteId,
-                    ],
-                    'redirect' => "$redirectUrl#",
-                    'confirm' => Craft::t('app', 'Are you sure you want to delete this {type}?', [
-                        'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
-                    ]),
-                    'destructive' => true,
                 ];
+
+                $view->registerJsWithVars(fn(
+                    $id,
+                    $elementType,
+                    $elementId,
+                    $siteId,
+                    $ownerId,
+                    $confirmationMessage,
+                    $redirect,
+                ) => <<<JS
+$('#' + $id).on('activate', async () => {
+  new Craft.ElementDeletionManager($elementType, [$elementId], {
+    siteId: $siteId,
+    ownerId: $ownerId,
+    confirmationMessage: $confirmationMessage,
+    onSuccess: () => {
+      document.location.href = $redirect;
+    },
+  });
+});
+JS,
+                    [
+                        $view->namespaceInputId($deleteId),
+                        static::class,
+                        $this->id,
+                        $this->siteId,
+                        $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
+                        Craft::t('app', 'Are you sure you want to delete this {type}?', [
+                            'type' => $isDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
+                        ]),
+                        "$redirectUrl#",
+                    ]);
             }
         } elseif ($isDraft && $canDeleteDraft) {
             // Delete draft for site

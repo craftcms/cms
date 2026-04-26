@@ -14,7 +14,6 @@ use craft\base\NestedElementInterface;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Db;
-use craft\helpers\Html;
 use craft\services\Elements;
 
 /**
@@ -73,7 +72,13 @@ class Delete extends ElementAction implements DeleteActionInterface
     public function getTriggerHtml(): ?string
     {
         // Only enable for deletable elements, per canDelete()
-        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
+        Craft::$app->getView()->registerJsWithVars(fn(
+            $type,
+            $elementType,
+            $withDescendants,
+            $hardDelete,
+            $confirmationMessage,
+        ) => <<<JS
 (() => {
   new Craft.ElementActionTrigger({
     type: $type,
@@ -86,21 +91,35 @@ class Delete extends ElementAction implements DeleteActionInterface
 
       return elementIndex.settings.canDeleteElements(selectedItems);
     },
-    beforeActivate: async (selectedItems, elementIndex) => {
+    activate: async (selectedItems, elementIndex) => {
       await elementIndex.onBeforeDeleteElements(selectedItems);
-    },
-    afterActivate: async (selectedItems, elementIndex) => {
-      await elementIndex.onDeleteElements(selectedItems);
+      elementIndex.setIndexBusy();
+      const elementIds = elementIndex.getSelectedElementIds();
+
+      new Craft.ElementDeletionManager($elementType, elementIds, {
+        siteId: elementIndex.siteId,
+        ownerId: elementIndex.settings.criteria?.ownerId,
+        withDescendants: $withDescendants,
+        hardDelete: $hardDelete,
+        confirmationMessage: $confirmationMessage,
+        onLoadBlockers: () => {
+          elementIndex.setIndexAvailable();
+        },
+        onSuccess: async () => {
+          elementIndex.updateElements(true, true);
+          await elementIndex.onDeleteElements(selectedItems);
+        },
+      });
     },
   });
 })();
-JS, [static::class]);
-
-        if ($this->hard) {
-            return Html::tag('div', $this->getTriggerLabel(), [
-                'class' => ['btn', 'formsubmit'],
-            ]);
-        }
+JS, [
+            static::class,
+            $this->elementType,
+            $this->withDescendants,
+            $this->hard,
+            $this->confirmationMessage,
+        ]);
 
         return null;
     }

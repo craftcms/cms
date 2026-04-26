@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
+use craft\elements\User;
 use craft\enums\PropagationMethod;
 use craft\errors\InvalidElementException;
 use craft\errors\MutexException;
@@ -287,6 +288,8 @@ class EntriesController extends BaseEntriesController
         // Populate the entry with post data
         $this->_populateEntryModel($entry);
 
+        $this->enforceEditEntryPermissions($entry, $duplicate);
+
         if ($forceDisabled) {
             $entry->enabled = false;
         }
@@ -419,7 +422,6 @@ class EntriesController extends BaseEntriesController
                     return false;
                 }
 
-
                 $sectionEntryTypes = array_map(fn($et) => $et->id, $section->entryTypes);
 
                 return !empty(array_intersect($entryTypes, $sectionEntryTypes));
@@ -468,7 +470,7 @@ class EntriesController extends BaseEntriesController
             throw new BadRequestHttpException('Cannot find the section to move the entries to.');
         }
 
-        $this->requirePermission("viewEntries:$section->uid");
+        $this->requirePermission("saveEntries:$section->uid");
 
         /** @var Entry[] $entries */
         $entries = Entry::find()
@@ -622,5 +624,56 @@ class EntriesController extends BaseEntriesController
 
         // Revision notes
         $entry->setRevisionNotes($this->request->getBodyParam('notes'));
+    }
+
+    /**
+     * @since 5.10.0
+     */
+    public function actionReassignModal(): Response
+    {
+        $this->requireCpRequest();
+        $this->requireAcceptsJson();
+        $this->requirePermission('deleteUsers');
+
+        $oldUserIds = $this->request->getRequiredParam('oldUserIds');
+
+        return $this->asCpModal()
+            ->action('entries/reassign')
+            ->contentHtml(fn() =>
+                Cp::elementSelectFieldHtml([
+                    'label' => Craft::t('app', 'Choose a new author'),
+                    'name' => 'newUserId',
+                    'elementType' => User::class,
+                    'criteria' => [
+                        'id' => array_map(fn($id) => "not $id", $oldUserIds),
+                    ],
+                    'single' => true,
+                ]) .
+                implode('', array_map(fn($id) => Html::hiddenInput('oldUserIds[]', $id), $oldUserIds))
+            )
+            ->submitButtonLabel(Craft::t('app', 'Reassign'));
+    }
+
+    /**
+     * @since 5.10.0
+     */
+    public function actionReassign(): Response
+    {
+        $this->requireCpRequest();
+        $this->requireAcceptsJson();
+        $this->requirePermission('deleteUsers');
+
+        $oldUserIds = array_map(fn($id) => (int)$id, $this->request->getRequiredParam('oldUserIds'));
+        $newUserId = (int)$this->request->getRequiredBodyParam('newUserId');
+
+        if (!$newUserId) {
+            return $this->asFailure(Craft::t('app', 'No new author selected.'));
+        }
+
+        $count = Craft::$app->getEntries()->reassignEntries($oldUserIds, $newUserId);
+
+        return $this->asSuccess(Craft::t('app', '{type} reassigned.', [
+            'type' => $count === 1 ? Entry::displayName() : Entry::pluralDisplayName(),
+        ]));
     }
 }

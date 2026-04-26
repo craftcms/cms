@@ -84,13 +84,15 @@ class Json extends Field implements MergeableFieldInterface, CrossSiteCopyableFi
             return null;
         }
 
-        try {
-            $value = JsonHelper::decode($value);
-        } catch (InvalidArgumentException $e) {
-            $value = [
-                '__ERROR__' => $e->getMessage(),
-                '__VALUE__' => $value,
-            ];
+        if (is_string($value)) {
+            try {
+                $value = JsonHelper::decode($value);
+            } catch (InvalidArgumentException $e) {
+                $value = [
+                    '__ERROR__' => $e->getMessage(),
+                    '__VALUE__' => $value,
+                ];
+            }
         }
 
         return new JsonData($value);
