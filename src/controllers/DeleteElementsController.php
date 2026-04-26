@@ -169,6 +169,7 @@ class DeleteElementsController extends Controller
         return $this->asJson([
             'blockers' => $blockers,
             'elementPreview' => $elementPreview,
+            'totalElements' => $elements->count(),
             'headHtml' => $this->view->getHeadHtml(),
             'bodyHtml' => $this->view->getBodyHtml(),
         ]);
