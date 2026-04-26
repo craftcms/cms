@@ -162,7 +162,6 @@ return [
     'Are you sure you want to delete this image?' => 'Möchten Sie dieses Bild wirklich löschen?',
     'Are you sure you want to delete this route?' => 'Sind Sie sicher, dass Sie diese Route löschen möchten?',
     'Are you sure you want to delete this {type}?' => 'Sind Sie sicher, dass Sie diesen {type} löschen möchten?',
-    'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?',
     'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?',
     'Are you sure you want to delete “{name}” and all entries of that type?' => 'Sind Sie sicher, dass Sie „{name}“ und alle Einträge dieses Typs löschen möchten?',
     'Are you sure you want to delete “{name}” and all its entries?' => 'Sind Sie sicher, dass Sie „{name}“ mit allen Einträgen wirklich löschen möchten?',
