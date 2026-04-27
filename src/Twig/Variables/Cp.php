@@ -104,7 +104,7 @@ class Cp extends Component
      */
     public function getAlerts(): array
     {
-        return app(Alerts::class)->get(request()->path());
+        return app(Alerts::class)->get(request()->craftPath());
     }
 
     /**

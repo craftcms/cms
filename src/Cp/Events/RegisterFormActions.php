@@ -13,7 +13,7 @@ namespace CraftCms\Cms\Cp\Events;
  * use Illuminate\Support\Facades\Event;
  *
  * Event::listen(function(RegisterFormActions $event) {
- *     if (request()->decodedPath() == 'entries/edit-entry') {
+ *     if (request()->craftPath() == 'entries/edit-entry') {
  *         $event->formActions[] = [
  *             'label' => 'Save and view entry',
  *             'redirect' => Crypt::encrypt('{url}'),

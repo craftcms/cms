@@ -154,6 +154,42 @@ class RequestMixin
         };
     }
 
+    public function craftPath(): Closure
+    {
+        return function (): string {
+            /**
+             * @var Request $request
+             *
+             * @phpstan-ignore-next-line
+             */
+            $request = $this;
+            $generalConfig = Cms::config();
+            $path = (string) preg_replace('/\/\/+/', '/', trim($request->decodedPath(), '/'));
+
+            if ($request->isCpRequest()) {
+                $cpTrigger = trim((string) $generalConfig->cpTrigger, '/');
+
+                if ($cpTrigger !== '' && $path === $cpTrigger) {
+                    $path = '';
+                } elseif ($cpTrigger !== '' && str_starts_with($path.'/', $cpTrigger.'/')) {
+                    $path = ltrim(substr($path, strlen($cpTrigger)), '/');
+                }
+            }
+
+            $actionTrigger = trim($generalConfig->actionTrigger, '/');
+
+            if ($actionTrigger !== '' && $path === $actionTrigger) {
+                return '';
+            }
+
+            if ($actionTrigger !== '' && str_starts_with($path.'/', $actionTrigger.'/')) {
+                return ltrim(substr($path, strlen($actionTrigger)), '/');
+            }
+
+            return $path;
+        };
+    }
+
     public function isPreview(): Closure
     {
         return function (): bool {

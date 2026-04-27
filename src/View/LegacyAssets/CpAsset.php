@@ -142,7 +142,7 @@ class CpAsset implements LegacyAssetInterface
             'orientation' => $orientation,
             'pageNum' => Paginator::resolveCurrentPage(Cms::config()->getPageTriggerParam()),
             'pageTrigger' => Cms::config()->getPageTriggerParam(),
-            'path' => request()->decodedPath(),
+            'path' => request()->craftPath(),
             'pathParam' => $generalConfig->pathParam,
             'registeredAssetBundles' => [], // force encode as JS object
             'registeredJsFiles' => [], // force encode as JS object

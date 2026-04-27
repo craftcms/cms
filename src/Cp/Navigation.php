@@ -254,7 +254,7 @@ readonly class Navigation
 
     private function currentCpPath(): string
     {
-        return $this->withoutCpTrigger($this->request->decodedPath());
+        return $this->request->craftPath();
     }
 
     private function navItemPath(string $url): string

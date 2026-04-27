@@ -96,8 +96,8 @@ abstract readonly class AuthenticationController
 
     protected function renderViewWithFallback(string $cpTemplate, array $data = []): View
     {
-        if (view()->exists(request()->path())) {
-            return view(request()->path(), $data);
+        if (view()->exists(request()->craftPath())) {
+            return view(request()->craftPath(), $data);
         }
 
         TemplateMode::set(TemplateMode::Cp);
