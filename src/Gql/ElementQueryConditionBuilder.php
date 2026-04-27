@@ -34,7 +34,7 @@ use GraphQL\Language\AST\ObjectFieldNode;
 use GraphQL\Language\AST\ObjectValueNode;
 use GraphQL\Language\AST\VariableNode;
 use GraphQL\Type\Definition\ResolveInfo;
-use GraphQL\Type\Definition\WrappingType;
+use GraphQL\Type\Definition\Type;
 use InvalidArgumentException;
 
 class ElementQueryConditionBuilder extends Component
@@ -265,11 +265,9 @@ class ElementQueryConditionBuilder extends Component
 
     private function _isInsideAssetQuery(): bool
     {
-        if ($this->_resolveInfo->returnType instanceof WrappingType) {
-            return $this->_resolveInfo->returnType->getWrappedType()->name === AssetInterface::getName();
-        }
+        $namedType = Type::getNamedType($this->_resolveInfo->returnType);
 
-        return $this->_resolveInfo->returnType->name === AssetInterface::getName();
+        return $namedType !== null && $namedType->name() === AssetInterface::getName();
     }
 
     /**

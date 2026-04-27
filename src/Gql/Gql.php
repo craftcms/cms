@@ -55,6 +55,7 @@ use CraftCms\Cms\Gql\Queries\User as UserQuery;
 use CraftCms\Cms\Gql\Types\DateTime;
 use CraftCms\Cms\Gql\Types\Mutation;
 use CraftCms\Cms\Gql\Types\Number;
+use CraftCms\Cms\Gql\Types\ObjectType;
 use CraftCms\Cms\Gql\Types\Query;
 use CraftCms\Cms\Gql\Types\QueryArgument;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -181,7 +182,7 @@ class Gql
             $this->_registerGqlMutations();
 
             $schemaConfig = [
-                'typeLoader' => TypeLoader::class.'::loadType',
+                'typeLoader' => TypeLoader::loadType(...),
                 'query' => TypeLoader::loadType('Query'),
                 'mutation' => TypeLoader::loadType('Mutation'),
                 'directives' => $this->_loadGqlDirectives($schema),
@@ -193,12 +194,14 @@ class Gql
                 $this->_schemaDef = new Schema($schemaConfig);
 
                 // but we always have to add the InputObjectType mutation args
-                foreach ($schemaConfig['mutation']->config['fields'] as $item) {
+                /** @var ObjectType $mutation */
+                $mutation = $schemaConfig['mutation'];
+                foreach ($mutation->config['fields'] as $item) {
                     if (isset($item['args'])) {
                         foreach ($item['args'] as $arg) {
-                            if ($arg instanceof InputObjectType) {
-                                $typeMap = [];
-                                TypeInfo::extractTypes($arg, $typeMap);
+                            $argType = Type::getNamedType($arg->getType());
+                            if ($argType instanceof InputObjectType) {
+                                TypeInfo::extractTypes($argType, $arg);
                             }
                         }
                     }
@@ -261,7 +264,7 @@ class Gql
         }
 
         if (! $generalConfig->enableGraphqlIntrospection && Auth::guest()) {
-            $validationRules[DisableIntrospection::class] = new DisableIntrospection;
+            $validationRules[DisableIntrospection::class] = new DisableIntrospection(0);
         }
 
         event($event = new DefineGqlValidationRules(
@@ -941,8 +944,9 @@ class Gql
     }
 
     /**
-     * @param  Error[]  $errors
-     * @return Error[]
+     * @param  list<Error>  $errors
+     * @param  callable(Throwable): array{message: string, locations?: array<int, array{line: int, column: int}>, path?: array<int, int|string>, extensions?: array<string, mixed>}  $formatter
+     * @return list<array{message: string, locations?: array<int, array{line: int, column: int}>, path?: array<int, int|string>, extensions?: array<string, mixed>}>
      */
     public function handleQueryErrors(array $errors, callable $formatter): array
     {
