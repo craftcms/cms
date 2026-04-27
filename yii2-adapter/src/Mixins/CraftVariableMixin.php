@@ -30,15 +30,15 @@ class CraftVariableMixin
         };
     }
 
-    /**
-     * Returns a new [category query](https://craftcms.com/docs/5.x/reference/element-types/categories.html#querying-categories).
-     *
-     * @param array $criteria
-     * @return CategoryQuery
-     * @deprecated in 6.0.0
-     */
     public function categories(): Closure
     {
+        /**
+         * Returns a new [category query](https://craftcms.com/docs/5.x/reference/element-types/categories.html#querying-categories).
+         *
+         * @param array $criteria
+         * @return CategoryQuery
+         * @deprecated in 6.0.0
+         */
         return function(array $criteria = []) {
             $query = Category::find();
             Typecast::configure($query, $criteria);
@@ -46,16 +46,16 @@ class CraftVariableMixin
         };
     }
 
-    /**
-     * Returns a new [global set query](https://craftcms.com/docs/5.x/reference/element-types/globals.html#querying-globals).
-     *
-     * @param array $criteria
-     * @return GlobalSetQuery
-     * @since 3.0.4
-     * @deprecated in 6.0.0
-     */
     public function globalSets(): Closure
     {
+        /**
+         * Returns a new [global set query](https://craftcms.com/docs/5.x/reference/element-types/globals.html#querying-globals).
+         *
+         * @param array $criteria
+         * @return GlobalSetQuery
+         * @since 3.0.4
+         * @deprecated in 6.0.0
+         */
         return function(array $criteria = []): GlobalSetQuery {
             $query = GlobalSet::find();
             Typecast::configure($query, $criteria);
@@ -63,15 +63,15 @@ class CraftVariableMixin
         };
     }
 
-    /**
-     * Returns a new [tag query](https://craftcms.com/docs/5.x/reference/element-types/tags.html#querying-tags).
-     *
-     * @param array $criteria
-     * @return TagQuery
-     * @deprecated in 6.0.0
-     */
     public function tags(): Closure
     {
+        /**
+         * Returns a new [tag query](https://craftcms.com/docs/5.x/reference/element-types/tags.html#querying-tags).
+         *
+         * @param array $criteria
+         * @return TagQuery
+         * @deprecated in 6.0.0
+         */
         return function(array $criteria = []): TagQuery {
             $query = Tag::find();
             Typecast::configure($query, $criteria);
