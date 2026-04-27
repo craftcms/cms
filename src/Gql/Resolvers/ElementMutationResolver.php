@@ -143,8 +143,8 @@ abstract class ElementMutationResolver extends MutationResolver
         foreach ($argumentDefinitions as $argumentDefinition) {
             $typeDef = $argumentDefinition->getType();
 
-            while ($typeDef instanceof WrappingType) {
-                $typeDef = $typeDef->getWrappedType();
+            if ($typeDef instanceof WrappingType) {
+                $typeDef = $typeDef->getInnermostType();
             }
 
             $this->argumentTypeDefsByName[$argumentDefinition->name] = $typeDef;
