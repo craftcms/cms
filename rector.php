@@ -38,7 +38,7 @@ return RectorConfig::configure()
             __DIR__.'/src/Utility/Utilities/PhpInfo.php',
         ],
         ArrowFunctionDelegatingCallToFirstClassCallableRector::class => [
-            __DIR__.'/src/Http/Mixins/SessionMixin.php'
+            __DIR__.'/src/Http/Mixins/SessionMixin.php',
         ],
         AppToResolveRector::class,
     ])
