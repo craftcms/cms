@@ -1,10 +1,10 @@
 <script setup lang="ts">
+  import {t} from '@craftcms/cp';
   import SystemInfo from '@/components/SystemInfo.vue';
   import MainNav from '@/components/MainNav.vue';
   import EditionInfo from '@/components/EditionInfo.vue';
   import DevModeIndicator from '@/components/DevModeIndicator.vue';
   import {computed, nextTick, watch} from 'vue';
-  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
 
   const emit = defineEmits<{
     (e: 'close'): void;
@@ -36,7 +36,12 @@
 </script>
 
 <template>
-  <nav class="cp-sidebar" :data-visibility="visibility" :data-mode="mode">
+  <nav
+    class="cp-sidebar"
+    :data-visibility="visibility"
+    :data-mode="mode"
+    :aria-label="t('Primary')"
+  >
     <template v-if="visibility === 'visible'">
       <div class="cp-sidebar__header">
         <div class="sidebar-header" v-if="mode !== 'docked'">
