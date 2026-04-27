@@ -260,7 +260,7 @@ class Sso extends Component
             return true;
         }
 
-        $authError = app(\CraftCms\Cms\Auth\Auth::class)->getAuthError($user);
+        $authError = app(\CraftCms\Cms\Auth\AuthMethods::class)->getAuthError($user);
 
         if ($authError !== null) {
             throw new SsoFailedException($provider, $user, $authError->value);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
-use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Events\InvalidUserToken;
@@ -31,7 +31,7 @@ abstract readonly class AuthenticationController
 
     public function __construct(
         protected GeneralConfig $generalConfig,
-        protected Auth $auth,
+        protected AuthMethods $auth,
     ) {}
 
     protected function completeLogin(Request $request, User $user, bool $remember): Response

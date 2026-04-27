@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Mixins;
 
 use Closure;
-use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Json;
@@ -20,7 +20,7 @@ class UserMixin
             Deprecator::log('User-authenticate', 'Calling ->authenticate on a User is deprecated. Use app(Auth::class)->authenticate() instead.');
 
             /** @phpstan-ignore-next-line */
-            return app(Auth::class)->authenticate($this, [
+            return app(AuthMethods::class)->authenticate($this, [
                 'password' => $password,
             ]);
         };
@@ -43,7 +43,7 @@ class UserMixin
             }
 
             /** @phpstan-ignore-next-line */
-            return app(Auth::class)->authenticateWithPasskey($this, $requestOptions, $response);
+            return app(AuthMethods::class)->authenticateWithPasskey($this, $requestOptions, $response);
         };
     }
 
@@ -53,7 +53,7 @@ class UserMixin
             Deprecator::log('User-handleInvalidLoginParam', 'Calling ->handleInvalidLoginParam on a User is deprecated. Use app(Auth::class)->handleInvalidLogin($user) instead.');
 
             /** @phpstan-ignore-next-line */
-            app(Auth::class)->handleInvalidLogin($this);
+            app(AuthMethods::class)->handleInvalidLogin($this);
         };
     }
 }

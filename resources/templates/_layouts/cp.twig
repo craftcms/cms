@@ -164,13 +164,13 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                         <ul>
                             <li>
                                 <a href="{{ url('myaccount') }}" class="flex flex-nowrap">
-                                    {% if currentUser.photoId %}
+                                    {% if Auth.user.photoId %}
                                         {{ userPhoto|raw }}
                                     {% endif %}
                                     <div class="flex-grow">
-                                        <div>{{ currentUser.username }}</div>
+                                        <div>{{ Auth.user.username }}</div>
                                         {% if not config('craft.general.useEmailAsUsername') %}
-                                            <div class="smalltext">{{ currentUser.email }}</div>
+                                            <div class="smalltext">{{ Auth.user.email }}</div>
                                         {% endif %}
                                     </div>
                                 </a>
@@ -393,7 +393,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
 {% endblock %}
 
 
-{% if currentUser.can('performUpdates') and not Updates.isUpdateInfoCached() %}
+{% if Auth.user.can('performUpdates') and not Updates.isUpdateInfoCached() %}
     {% js %}
     Craft.cp.checkForUpdates();
     {% endjs %}

@@ -87,7 +87,7 @@
         } %}
       </div>
 
-      {% if currentUser.admin and devMode %}
+      {% if Auth.user.admin and devMode %}
         {% set devModeText = 'Craft CMS is running in Dev Mode.'|t('app') %}
         <div id="devmode">
           {% tag 'span' with {

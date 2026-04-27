@@ -13,8 +13,6 @@ use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\Events\RegisterTemplateGlobals;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Foundation\Application;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\t;
 
@@ -24,7 +22,6 @@ readonly class TemplateGlobals
     public function __construct(
         private Application $app,
         private GeneralConfig $generalConfig,
-        private Request $request,
         private Sites $sites,
         private Updates $updates,
         private CraftVariable $craftVariable,
@@ -42,17 +39,15 @@ readonly class TemplateGlobals
 
         if ($isInstalled && ! $this->updates->isCraftUpdatePending()) {
             $currentSite = $this->sites->getCurrentSite();
-            $currentUser = Auth::user();
             $siteName = t($currentSite->getName(), category: 'site');
             $siteUrl = $currentSite->getBaseUrl();
             $systemName = Cms::systemName();
         } else {
-            $currentUser = $siteName = $siteUrl = $systemName = null;
+            $siteName = $siteUrl = $systemName = null;
         }
 
         $globals = [
             'craft' => $this->craftVariable,
-            'currentUser' => $currentUser,
             'siteName' => $siteName,
             'siteUrl' => $siteUrl,
             'systemName' => $systemName,

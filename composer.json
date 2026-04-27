@@ -173,7 +173,7 @@
         "Announcements": "CraftCms\\Cms\\Support\\Facades\\Announcements",
         "AssetIndexer": "CraftCms\\Cms\\Support\\Facades\\AssetIndexer",
         "Assets": "CraftCms\\Cms\\Support\\Facades\\Assets",
-        "Auth": "CraftCms\\Cms\\Support\\Facades\\Auth",
+        "AuthMethods": "CraftCms\\Cms\\Support\\Facades\\AuthMethods",
         "BulkOps": "CraftCms\\Cms\\Support\\Facades\\BulkOps",
         "Conditions": "CraftCms\\Cms\\Support\\Facades\\Conditions",
         "DeltaRegistry": "CraftCms\\Cms\\Support\\Facades\\DeltaRegistry",

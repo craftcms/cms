@@ -1,8 +1,8 @@
 {% import '_includes/forms.twig' as forms %}
 {{ hiddenInput('userId', user.id) }}
 
-{% set showUserGroups = currentUser.canAssignUserGroups() %}
-{% set showPermissions = currentUser.can('assignUserPermissions') %}
+{% set showUserGroups = Auth.user.canAssignUserGroups() %}
+{% set showPermissions = Auth.user.can('assignUserPermissions') %}
 
 {% if showUserGroups %}
   <fieldset class="first">
@@ -21,7 +21,7 @@
           values: user.getGroups(),
           showDescription: true,
           sortable: false,
-          createAction: currentUser.admin and config('craft.general.allowAdminChanges') ? 'user-settings/edit-group' : null,
+          createAction: Auth.user.admin and config('craft.general.allowAdminChanges') ? 'user-settings/edit-group' : null,
         } %}
       {% endblock %}
     {% endembed %}
@@ -36,7 +36,7 @@
   <div>
     <h2>{{ 'Permissions'|t('app') }}</h2>
 
-    {% if currentUser.admin %}
+    {% if Auth.user.admin %}
       {{ forms.lightswitchField({
         label: 'Admin'|t('app'),
         name: 'admin',
