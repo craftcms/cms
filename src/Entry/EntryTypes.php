@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry;
 
 use Craft;
-use craft\helpers\AdminTable;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -29,6 +30,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Markdown;
@@ -41,13 +43,13 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Http\Events\RequestHandled;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidConfigException;
 
 #[Singleton]
 class EntryTypes
@@ -71,6 +73,7 @@ class EntryTypes
 
     public function __construct(
         private readonly ProjectConfig $projectConfig,
+        private readonly ElementCaches $elementCaches,
     ) {}
 
     /**
@@ -395,11 +398,7 @@ class EntryTypes
                 /** @var Entry[][] $entriesBySection */
                 $entriesBySection = $entries->groupBy('sectionId')->all();
                 foreach ($entriesBySection as $sectionEntries) {
-                    try {
-                        Craft::$app->getElements()->restoreElements($sectionEntries);
-                    } catch (InvalidConfigException) {
-                        // the section probably wasn't restored
-                    }
+                    Elements::restoreElements($sectionEntries);
                 }
             });
         }
@@ -426,7 +425,7 @@ class EntryTypes
         event(new EntryTypeSaved($entryType, $isNewEntryType));
 
         // Invalidate entry caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+        $this->elementCaches->invalidateForElementType(Entry::class);
     }
 
     /**
@@ -549,7 +548,7 @@ class EntryTypes
         event(new EntryTypeDeleted($entryType));
 
         // Invalidate entry caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+        $this->elementCaches->invalidateForElementType(Entry::class);
     }
 
     /**
@@ -576,7 +575,7 @@ class EntryTypes
         string $orderBy = 'name',
         int $sortDir = SORT_ASC,
     ): array {
-        [$results, $total] = $this->prepTableData(
+        [$results, $paginator] = $this->prepTableData(
             query: $this->_createEntryTypeQuery(),
             page: $page,
             limit: $limit,
@@ -613,11 +612,20 @@ class EntryTypes
                 'title' => $label,
                 'chip' => $chipCellContent,
                 'handle' => $entryType->handle,
-                'usages' => app(PreviewHtml::class)->componentPreviewHtml($usages[$entryType->id] ?? []),
+                'usages' => app(PreviewHtml::class)->componentPreviewHtml($usages[$entryType->id] ?? [], ['hyperlink' => true]),
             ];
         }
 
-        $pagination = AdminTable::paginationLinks($page, $total, $limit);
+        $pagination = Arr::only($paginator->toArray(), [
+            'total',
+            'per_page',
+            'current_page',
+            'last_page',
+            'next_page_url',
+            'prev_page_url',
+            'from',
+            'to',
+        ]);
 
         return [$pagination, $tableData];
     }
@@ -626,7 +634,7 @@ class EntryTypes
      * Returns query results needed for the VueAdminTable accounting for the pagination, search terms and sorting options.
      *
      *
-     * @return array{0: Collection, 1: int}
+     * @return array{0: Collection, 1: LengthAwarePaginator}
      */
     private function prepTableData(
         Builder $query,
@@ -637,8 +645,8 @@ class EntryTypes
         int $sortDir = SORT_ASC,
     ): array {
         $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
+        $pageParam = Cms::config()->getPageTriggerParam();
 
-        $offset = ($page - 1) * $limit;
         $query = $query->orderBy($orderBy, $sortDir === SORT_DESC ? 'desc' : 'asc');
 
         if ($searchTerm !== null && $searchTerm !== '') {
@@ -652,12 +660,12 @@ class EntryTypes
             }
         }
 
-        $total = $query->count();
+        $paginator = $query->paginate($limit, ['*'], $pageParam, $page);
+        $results = $paginator->getCollection();
 
-        $query->limit($limit);
-        $query->offset($offset);
+        $paginator->appends(request()->except($pageParam));
 
-        return [$query->get(), $total];
+        return [$results, $paginator];
     }
 
     /**

@@ -1,9 +1,14 @@
 <?php
 
+use CraftCms\Cms\Element\Queries\AddressQuery;
+use CraftCms\Cms\Element\Queries\ContentBlockQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\MultipleRecordsFoundException;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\JoinClause;
+use Tpetry\QueryExpressions\Language\Alias;
 
 it('can run basic queries', function () {
     expect(entryQuery()->all())->toBeEmpty();
@@ -44,3 +49,55 @@ test('trashed', function () {
     expect(entryQuery()->trashed(true)->count())->toBe(2);
     expect(entryQuery()->trashed(null)->count())->toBe(4);
 });
+
+it('ignores inner query pagination when getting a pagination count', function () {
+    EntryModel::factory(5)->create();
+
+    $query = entryQuery()->offset(2)->limit(2);
+
+    expect($query->getCountForPagination())->toBe(5);
+    expect($query->get())->toHaveCount(2);
+});
+
+it('sources concrete element queries from their element tables first', function (callable $queryFactory, string $sourceTable) {
+    /** @var Builder $builder */
+    $builder = $queryFactory();
+
+    expect($builder->from)->toBe($sourceTable);
+
+    $joins = collect($builder->joins);
+
+    expect($joins)->toHaveCount(2);
+    expect(normalizeJoinAlias($joins[0]))->toBe('elements as elements');
+    expect($joins[0]->wheres[0])->toMatchArray([
+        'type' => 'Column',
+        'first' => 'elements.id',
+        'operator' => '=',
+        'second' => "$sourceTable.id",
+        'boolean' => 'and',
+    ]);
+
+    expect(normalizeJoinAlias($joins[1]))->toBe('elements_sites as elements_sites');
+    expect($joins[1]->wheres[0])->toMatchArray([
+        'type' => 'Column',
+        'first' => 'elements_sites.elementId',
+        'operator' => '=',
+        'second' => 'elements.id',
+        'boolean' => 'and',
+    ]);
+})->with([
+    'entries' => [fn () => entryQuery()->getQuery(), 'entries'],
+    'users' => [fn () => userQuery()->getQuery(), 'users'],
+    'assets' => [fn () => assetQuery()->getQuery(), 'assets'],
+    'addresses' => [fn () => new AddressQuery()->getQuery(), 'addresses'],
+    'contentblocks' => [fn () => new ContentBlockQuery()->getQuery(), 'contentblocks'],
+]);
+
+function normalizeJoinAlias(JoinClause $join): string
+{
+    $table = $join->table;
+
+    expect($table)->toBeInstanceOf(Alias::class);
+
+    return preg_replace('/[`"\[\]]/', '', $table->getValue($join->getGrammar()));
+}

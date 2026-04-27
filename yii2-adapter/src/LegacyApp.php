@@ -6,6 +6,7 @@ namespace CraftCms\Yii2Adapter;
 
 use Craft;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Cms;
 use CraftCms\Yii2Adapter\Event\EventCompatibility;
 use CraftCms\Yii2Adapter\Http\Controller;
 use Illuminate\Contracts\Foundation\Application;
@@ -47,7 +48,7 @@ readonly class LegacyApp
             }
 
             /** @var \craft\web\Application|\craft\console\Application $craftApp */
-            $craftApp->setTimeZone(app()->getTimezone());
+            $craftApp->setTimeZone(Cms::timezone());
             $craftApp->language = app()->getLocale();
 
             Craft::$app = $craftApp;

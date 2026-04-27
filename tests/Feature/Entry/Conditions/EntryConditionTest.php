@@ -21,6 +21,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Shared\Enums\DateRangeType;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -235,7 +236,7 @@ describe('matchElement', function () {
         $entry = EntryModel::factory()->forSection($section)->create();
         $element = Entry::find()->id($entry->id)->one();
         $element->setAuthorId($author->id);
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         $condition = new EntryCondition(Entry::class);
 

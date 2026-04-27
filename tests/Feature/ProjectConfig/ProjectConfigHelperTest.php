@@ -464,6 +464,8 @@ test('path segments', function (array|false $expected, string $path) {
     [['foo', 'bar'], 'foo.bar'],
     [['foo', 'bar', 'baz'], 'foo.bar.baz'],
     [['foo\\bar', 'baz'], 'foo\\bar.baz'],
+    [['foo.bar', 'baz'], 'foo\.bar.baz'],
+    [['foo.bar', 'baz.qux'], 'foo\.bar.baz\.qux'],
     [false, ''],
 ]);
 
@@ -498,5 +500,39 @@ test('path without last segment', function (string|null|false $expected, string 
     ['foo', 'foo.bar'],
     ['foo.bar', 'foo.bar.baz'],
     ['foo\\bar', 'foo\\bar.baz'],
+    ['foo\.bar', 'foo\.bar.baz'],
+    ['foo\.bar', 'foo\.bar.baz\.qux'],
     [false, ''],
 ]);
+
+test('flatten config array escapes periods in keys', function () {
+    $result = [];
+
+    ProjectConfigHelper::flattenConfigArray([
+        'foo.bar' => [
+            'baz.qux' => 'quux',
+        ],
+    ], '', $result);
+
+    expect($result)->toBe([
+        'foo\.bar.baz\.qux' => 'quux',
+    ]);
+});
+
+test('traverse data array supports escaped periods in paths', function () {
+    $data = [
+        'foo.bar' => [
+            'baz.qux' => 'quux',
+        ],
+    ];
+
+    expect(ProjectConfigHelper::traverseDataArray($data, 'foo\.bar.baz\.qux'))->toBe('quux');
+
+    ProjectConfigHelper::traverseDataArray($data, 'foo\.bar.baz\.qux', 'updated');
+
+    expect($data['foo.bar']['baz.qux'])->toBe('updated');
+
+    ProjectConfigHelper::traverseDataArray($data, 'foo\.bar.baz\.qux', delete: true);
+
+    expect($data['foo.bar'])->toBe([]);
+});

@@ -522,8 +522,6 @@ TWIG;
             ['@craftunittemplates/testSite3/index.twig', 'testSite3/'],
 
             // Cp Paths
-            ['@craftcms/resources/templates/index.twig', '', TemplateMode::Cp->value],
-            ['@craftcms/resources/templates/index.twig', 'index', TemplateMode::Cp->value],
             ['@craftcms/resources/templates/entries/index.twig', 'entries', TemplateMode::Cp->value],
         ];
     }

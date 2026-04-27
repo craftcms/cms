@@ -4,8 +4,10 @@ declare(strict_types=1);
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Elements\ContentBlock;
+use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedDraftsAndRevisions;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedNestedElements;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
@@ -17,6 +19,7 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Lottery;
+use Symfony\Component\Console\Output\NullOutput;
 
 arch('All actions extend GarbageCollectionAction')
     ->expect('CraftCms\Cms\GarbageCollection\Actions')
@@ -29,13 +32,15 @@ it('is not a singleton', function () {
 it('runs on a lottery', function () {
     Lottery::fix([false, true]);
 
-    $this->mock(GarbageCollection::class)
-        ->makePartial()
-        ->shouldReceive('runActions')
-        ->once();
+    $runActionsCalls = 0;
+    $garbageCollection = garbageCollectionForTest(function () use (&$runActionsCalls) {
+        $runActionsCalls++;
+    });
 
-    app(GarbageCollection::class)->run();
-    app(GarbageCollection::class)->run();
+    $garbageCollection->run();
+    $garbageCollection->run();
+
+    expect($runActionsCalls)->toBe(1);
 });
 
 it('uses every action at least once', function () {
@@ -44,33 +49,21 @@ it('uses every action at least once', function () {
             $file->getFilename()))
         ->filter(fn ($action) => $action !== GarbageCollectionAction::class);
 
-    $this->mock(GarbageCollection::class)
-        ->makePartial()
-        ->shouldReceive('runActions')
-        ->andReturnUsing(function ($input) use ($actions) {
-            foreach ($actions as $action) {
-                $found = findActionCall($input, $action)->count();
+    runGarbageCollectionForTest(function (array $input) use ($actions) {
+        foreach ($actions as $action) {
+            $found = findActionCall($input, $action)->count();
 
-                expect($found)->toBeGreaterThan(0, "Action {$action} was not run");
-            }
-        })
-        ->once();
-
-    app(GarbageCollection::class)->run(force: true);
+            expect($found)->toBeGreaterThan(0, "Action {$action} was not run");
+        }
+    });
 });
 
 test('it deletes partial elements', function (string $elementType, string $table) {
-    $this->mock(GarbageCollection::class)
-        ->makePartial()
-        ->shouldReceive('runActions')
-        ->andReturnUsing(function ($input) use ($table, $elementType) {
-            $found = findActionCall($input, DeletePartialElements::class)->first(fn ($call) => is_array($call) && $elementType === $call[1]['elementType'] && $table === $call[1]['table']);
+    runGarbageCollectionForTest(function (array $input) use ($table, $elementType) {
+        $found = findActionCall($input, DeletePartialElements::class)->first(fn ($call) => is_array($call) && $elementType === $call[1]['elementType'] && $table === $call[1]['table']);
 
-            expect($found)->not()->toBeNull("Action DeletePartialElements was not run for {$elementType} on {$table}");
-        })
-        ->once();
-
-    app(GarbageCollection::class)->run(force: true);
+        expect($found)->not()->toBeNull("Action DeletePartialElements was not run for {$elementType} on {$table}");
+    });
 })->with([
     [Address::class, Table::ADDRESSES],
     [Asset::class, Table::ASSETS],
@@ -80,34 +73,22 @@ test('it deletes partial elements', function (string $elementType, string $table
 ]);
 
 test('it deletes orphaned field layouts', function (string $elementType, string $table) {
-    $this->mock(GarbageCollection::class)
-        ->makePartial()
-        ->shouldReceive('runActions')
-        ->andReturnUsing(function ($input) use ($table, $elementType) {
-            $found = findActionCall($input, DeleteOrphanedFieldLayouts::class)->first(fn ($call) => is_array($call) && $elementType === $call[1]['elementType'] && $table === $call[1]['table']);
+    runGarbageCollectionForTest(function (array $input) use ($table, $elementType) {
+        $found = findActionCall($input, DeleteOrphanedFieldLayouts::class)->first(fn ($call) => is_array($call) && $elementType === $call[1]['elementType'] && $table === $call[1]['table']);
 
-            expect($found)->not()->toBeNull("Action DeleteOrphanedFieldLayouts was not run for {$elementType} on {$table}");
-        })
-        ->once();
-
-    app(GarbageCollection::class)->run(force: true);
+        expect($found)->not()->toBeNull("Action DeleteOrphanedFieldLayouts was not run for {$elementType} on {$table}");
+    });
 })->with([
     [Asset::class, Table::VOLUMES],
     [Entry::class, Table::ENTRYTYPES],
 ]);
 
 test('it deletes orphaned nested elements', function (string $elementType, string $table) {
-    $this->mock(GarbageCollection::class)
-        ->makePartial()
-        ->shouldReceive('runActions')
-        ->andReturnUsing(function ($input) use ($table, $elementType) {
-            $found = findActionCall($input, DeleteOrphanedNestedElements::class)->first(fn ($call) => is_array($call) && $elementType === $call[1]['elementType'] && $table === $call[1]['table']);
+    runGarbageCollectionForTest(function (array $input) use ($table, $elementType) {
+        $found = findActionCall($input, DeleteOrphanedNestedElements::class)->first(fn ($call) => is_array($call) && $elementType === $call[1]['elementType'] && $table === $call[1]['table']);
 
-            expect($found)->not()->toBeNull("Action DeleteOrphanedNestedElements was not run for {$elementType} on {$table}");
-        })
-        ->once();
-
-    app(GarbageCollection::class)->run(force: true);
+        expect($found)->not()->toBeNull("Action DeleteOrphanedNestedElements was not run for {$elementType} on {$table}");
+    });
 })->with([
     [Address::class, Table::ADDRESSES],
     [ContentBlock::class, Table::CONTENTBLOCKS],
@@ -115,17 +96,11 @@ test('it deletes orphaned nested elements', function (string $elementType, strin
 ]);
 
 it('calls hard delete', function (string|array $tables) {
-    $this->mock(GarbageCollection::class)
-        ->makePartial()
-        ->shouldReceive('runActions')
-        ->andReturnUsing(function ($input) use ($tables) {
-            $found = findActionCall($input, HardDelete::class)->first(fn ($call) => is_array($call) && $tables === $call[1]['tables']);
+    runGarbageCollectionForTest(function (array $input) use ($tables) {
+        $found = findActionCall($input, HardDelete::class)->first(fn ($call) => is_array($call) && $tables === $call[1]['tables']);
 
-            expect($found)->not()->toBeNull('Action HardDelete was not run with parameter: '.json_encode($tables));
-        })
-        ->once();
-
-    app(GarbageCollection::class)->run(force: true);
+        expect($found)->not()->toBeNull('Action HardDelete was not run with parameter: '.json_encode($tables));
+    });
 })->with([
     [[
         Table::ENTRYTYPES,
@@ -138,7 +113,45 @@ it('calls hard delete', function (string|array $tables) {
     ]],
 ]);
 
+it('uses null output by default for garbage collection actions', function () {
+    $action = app(DeleteOrphanedDraftsAndRevisions::class);
+    $output = new ReflectionProperty($action, 'output')->getValue($action);
+
+    expect($output->getOutput())->toBeInstanceOf(NullOutput::class);
+});
+
 function findActionCall(array $actions, string $action): Collection
 {
     return collect($actions)->where(fn ($inputAction) => $inputAction === $action || $inputAction[0] === $action);
+}
+
+function runGarbageCollectionForTest(callable $assertActions): void
+{
+    $runActionsWasCalled = false;
+    $garbageCollection = garbageCollectionForTest(function (array $actions) use ($assertActions, &$runActionsWasCalled) {
+        $runActionsWasCalled = true;
+        $assertActions($actions);
+    });
+
+    $garbageCollection->run(force: true);
+
+    expect($runActionsWasCalled)->toBeTrue();
+}
+
+function garbageCollectionForTest(callable $assertActions): GarbageCollection
+{
+    return new class(app(ElementCaches::class), Closure::fromCallable($assertActions)) extends GarbageCollection
+    {
+        public function __construct(
+            ElementCaches $elementCaches,
+            private readonly Closure $assertActions,
+        ) {
+            parent::__construct($elementCaches);
+        }
+
+        public function runActions(array $actions): void
+        {
+            ($this->assertActions)($actions);
+        }
+    };
 }

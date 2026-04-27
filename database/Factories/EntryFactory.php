@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Factories;
 
+use CraftCms\Cms\Database\Factories\Concerns\CreatesElement;
 use CraftCms\Cms\Database\Factories\Concerns\HasFieldFactory;
 use CraftCms\Cms\Element\Element as BaseElement;
 use CraftCms\Cms\Element\Models\Element;
@@ -12,12 +13,18 @@ use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Search;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Override;
 
 class EntryFactory extends Factory
 {
+    use CreatesElement;
     use HasFieldFactory;
 
     #[Override]
@@ -52,34 +59,6 @@ class EntryFactory extends Factory
         });
     }
 
-    public function trashed(bool $trashed = true): self
-    {
-        return $this->state(fn (array $attributes) => [
-            'id' => $attributes['id']->trashed($trashed),
-        ]);
-    }
-
-    public function archived(bool $archived = true): self
-    {
-        return $this->state(fn (array $attributes) => [
-            'id' => $attributes['id']->set('archived', $archived),
-        ]);
-    }
-
-    public function enabled(bool $enabled = true): self
-    {
-        return $this->state(fn (array $attributes) => [
-            'id' => $attributes['id']->set('enabled', $enabled),
-        ]);
-    }
-
-    public function disabled(bool $disabled = true): self
-    {
-        return $this->state(fn (array $attributes) => [
-            'id' => $attributes['id']->set('enabled', ! $disabled),
-        ]);
-    }
-
     public function pending(bool $pending = true): self
     {
         return $this->state(fn (array $attributes) => [
@@ -98,20 +77,6 @@ class EntryFactory extends Factory
         ]);
     }
 
-    public function title(string $title): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'id' => $attributes['id']->title($title),
-        ]);
-    }
-
-    public function slug(string $slug): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'id' => $attributes['id']->slug($slug),
-        ]);
-    }
-
     public function forSection(Section $section): static
     {
         return $this->state(fn () => ['sectionId' => $section->id]);
@@ -120,6 +85,41 @@ class EntryFactory extends Factory
     public function forEntryType(EntryType $type): static
     {
         return $this->state(fn () => ['typeId' => $type->id]);
+    }
+
+    public function enabledForSites(int|Site ...$sites): static
+    {
+        return $this->afterCreating(function (Entry $entry) use ($sites) {
+            $element = EntryElement::find()->id($entry->id)->one();
+            $enabledForSite = [$element->siteId => true];
+
+            foreach ($sites as $site) {
+                $enabledForSite[$site instanceof Site ? $site->id : $site] = true;
+            }
+
+            $element->setEnabledForSite($enabledForSite);
+            Elements::saveElement($element);
+        });
+    }
+
+    public function withFieldLayout(FieldLayout|FieldLayoutFactory $fieldLayout): static
+    {
+        if ($fieldLayout instanceof FieldLayoutFactory) {
+            $fieldLayout = $fieldLayout->create();
+        }
+
+        return $this->afterCreating(function (Entry $entry) use ($fieldLayout) {
+            $this->attachFieldLayoutToModel($entry, $fieldLayout);
+            EntryTypes::refreshEntryTypes();
+            Fields::refreshFields();
+        });
+    }
+
+    public function indexed(): static
+    {
+        return $this->afterCreating(function (Entry $entry) {
+            Search::indexElementAttributes($this->queryElement($entry->id));
+        });
     }
 
     public function createElement(array $attributes = []): EntryElement

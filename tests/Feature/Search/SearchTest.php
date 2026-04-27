@@ -11,6 +11,7 @@ use CraftCms\Cms\Search\Events\BeforeScoreResults;
 use CraftCms\Cms\Search\Events\BeforeSearch;
 use CraftCms\Cms\Search\Jobs\UpdateSearchIndex;
 use CraftCms\Cms\Search\SearchQuery;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\DB;
@@ -28,16 +29,15 @@ beforeEach(function () {
 
 function createIndexedEntry(string $title, ?string $slug = null): EntryModel
 {
-    $entryModel = EntryModel::factory()->create();
-    $entryModel->element->siteSettings->first()->update(array_filter([
-        'title' => $title,
-        'slug' => $slug,
-    ]));
+    $factory = EntryModel::factory()
+        ->indexed()
+        ->title($title);
 
-    $element = Craft::$app->getElements()->getElementById($entryModel->id);
-    Search::indexElementAttributes($element);
+    if ($slug !== null) {
+        $factory = $factory->slug($slug);
+    }
 
-    return $entryModel;
+    return $factory->create();
 }
 
 describe('indexElementAttributes', function () {
@@ -65,7 +65,7 @@ describe('indexElementAttributes', function () {
         $entry = createIndexedEntry('Original Title');
 
         $entry->element->siteSettings->first()->update(['title' => 'Updated Title']);
-        $element = Craft::$app->getElements()->getElementById($entry->id);
+        $element = Elements::getElementById($entry->id);
         Search::indexElementAttributes($element);
 
         $keywords = DB::table(Table::SEARCHINDEX)
@@ -121,7 +121,7 @@ describe('indexElementAttributes', function () {
     test('indexes with specific field handles', function () {
         $entry = createIndexedEntry('Test Entry');
 
-        $element = Craft::$app->getElements()->getElementById($entry->id);
+        $element = Elements::getElementById($entry->id);
         $result = Search::indexElementAttributes($element, ['nonExistentField']);
 
         expect($result)->toBeTrue();
@@ -289,7 +289,7 @@ describe('queueIndexElement', function () {
         Queue::fake();
 
         $entry = EntryModel::factory()->create();
-        $element = Craft::$app->getElements()->getElementById($entry->id);
+        $element = Elements::getElementById($entry->id);
 
         Search::queueIndexElement($element, ['title']);
 
@@ -300,7 +300,7 @@ describe('queueIndexElement', function () {
         Queue::fake();
 
         $entry = EntryModel::factory()->create();
-        $element = Craft::$app->getElements()->getElementById($entry->id);
+        $element = Elements::getElementById($entry->id);
 
         Search::queueIndexElement($element, ['title', 'slug']);
 

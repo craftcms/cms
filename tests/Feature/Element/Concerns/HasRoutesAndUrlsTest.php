@@ -11,7 +11,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
-use Twig\Markup;
+use Illuminate\Support\HtmlString;
 
 use function Pest\Laravel\actingAs;
 
@@ -187,7 +187,7 @@ describe('getLink', function () {
 
         $link = $element->getLink();
 
-        expect($link)->toBeInstanceOf(Markup::class);
+        expect($link)->toBeInstanceOf(HtmlString::class);
         expect((string) $link)->toContain('<a');
         expect((string) $link)->toContain('test-path');
     });

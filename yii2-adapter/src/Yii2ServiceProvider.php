@@ -21,8 +21,11 @@ use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
 use CraftCms\Yii2Adapter\HtmlPurifier\LegacyHtmlPurifierConfigRegistrar;
+use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
 use CraftCms\Yii2Adapter\I18N\I18NCompatibility;
 use CraftCms\Yii2Adapter\Mail\TestToEmailAddressCompatibility;
+use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
@@ -30,6 +33,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use PDOException;
 use RuntimeException;
+use yii\base\ExitException;
 
 class Yii2ServiceProvider extends ServiceProvider
 {
@@ -46,6 +50,7 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
 
         $this->setLaravelDefaults();
+        $this->registerExceptionHandling();
     }
 
     protected function registerConstants(): void
@@ -98,6 +103,18 @@ class Yii2ServiceProvider extends ServiceProvider
         }
     }
 
+    protected function registerExceptionHandling(): void
+    {
+        $handler = $this->app->make(ExceptionHandler::class);
+
+        if (!$handler instanceof Handler) {
+            return;
+        }
+
+        $handler->dontReport([ExitException::class]);
+        $handler->renderable(fn(ExitException $exception) => LegacyMiddleware::createResponse());
+    }
+
     public function boot(): void
     {
         $this->commands([
@@ -128,6 +145,8 @@ class Yii2ServiceProvider extends ServiceProvider
          * Load legacy Craft
          */
         app('Craft');
+
+        new RebrandCompatibility()->boot();
 
         /**
          * Keep legacy CustomFieldBehavior statics in sync when field caches are invalidated.

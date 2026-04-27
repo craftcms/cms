@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\EntryQuery;
@@ -102,7 +102,7 @@ trait QueriesNestedElements
                     ->when(
                         $elementQuery->ownerId,
                         function (JoinClause $join) use ($elementQuery) {
-                            $join->where('elements_owners.ownerId', $elementQuery->ownerId);
+                            $join->whereIn('elements_owners.ownerId', $this->normalizeOwnerId($elementQuery->ownerId));
                         },
                         function (JoinClause $join) {
                             $join->whereColumn('elements_owners.ownerId', $this->getPrimaryOwnerIdColumn());
@@ -112,14 +112,13 @@ trait QueriesNestedElements
 
             // Join in the elements_owners table
             $elementQuery->query->join(new Alias(Table::ELEMENTS_OWNERS, 'elements_owners'), $joinClause);
-            $elementQuery->subQuery->join(new Alias(Table::ELEMENTS_OWNERS, 'elements_owners'), $joinClause);
 
             if ($elementQuery->fieldId) {
-                $elementQuery->subQuery->where($this->getFieldIdColumn(), $elementQuery->fieldId);
+                $elementQuery->whereIn($this->getFieldIdColumn(), $elementQuery->fieldId);
             }
 
             if ($elementQuery->primaryOwnerId) {
-                $this->subQuery->where($this->getPrimaryOwnerIdColumn(), $elementQuery->primaryOwnerId);
+                $elementQuery->whereIn($this->getPrimaryOwnerIdColumn(), $elementQuery->primaryOwnerId);
             }
 
             // Ignore revision/draft blocks by default
@@ -127,7 +126,7 @@ trait QueriesNestedElements
             $allowOwnerRevisions = $elementQuery->allowOwnerRevisions ?? ($elementQuery->id || $elementQuery->primaryOwnerId || $elementQuery->ownerId);
 
             if (! $allowOwnerDrafts || ! $allowOwnerRevisions) {
-                $elementQuery->subQuery->join(
+                $elementQuery->join(
                     new Alias(Table::ELEMENTS, 'owners'),
                     fn (JoinClause $join) => $join->when(
                         $elementQuery->ownerId,
@@ -137,11 +136,11 @@ trait QueriesNestedElements
                 );
 
                 if (! $allowOwnerDrafts) {
-                    $elementQuery->subQuery->whereNull('owners.draftId');
+                    $elementQuery->whereNull('owners.draftId');
                 }
 
                 if (! $allowOwnerRevisions) {
-                    $elementQuery->subQuery->whereNull('owners.revisionId');
+                    $elementQuery->whereNull('owners.revisionId');
                 }
             }
 

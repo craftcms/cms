@@ -184,3 +184,22 @@ it('can get table data', function () {
     // Mostly a smoke test to check there are no exceptions
     expect($this->sections->getSectionTableData(1, 100))->not()->toBeEmpty();
 });
+
+it('returns laravel-style pagination metadata for table data', function () {
+    Section::factory()->count(3)->create();
+    $this->sections->refreshSections();
+
+    [$pagination] = $this->sections->getSectionTableData(2, 2);
+
+    expect($pagination)
+        ->toMatchArray([
+            'total' => 3,
+            'per_page' => 2,
+            'current_page' => 2,
+            'last_page' => 2,
+            'from' => 3,
+            'to' => 3,
+        ])
+        ->and($pagination['prev_page_url'])->toContain('page=1')
+        ->and($pagination['next_page_url'])->toBeNull();
+});

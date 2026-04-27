@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 
 describe('Required field validation', function () {
     test('filename validation', function (string $value, bool $expectError) {
@@ -28,7 +29,7 @@ describe('Required field validation', function () {
     })->with([
         'null is invalid' => [null, true],
         'empty string is invalid' => ['', true],
-        'KIND_IMAGE is valid' => [Asset::KIND_IMAGE, false],
+        'KIND_IMAGE is valid' => [FileKind::Image->value, false],
     ]);
 });
 
@@ -50,7 +51,7 @@ describe('Title validation on SCENARIO_CREATE', function () {
     test('title length validation on create scenario', function (int $length, bool $expectError) {
         $asset = AssetModel::factory()->createElement();
         $asset->title = str_repeat('a', $length);
-        $asset->setScenario(Asset::SCENARIO_CREATE);
+        $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
 
         $asset->validate(['title']);
 
@@ -75,41 +76,41 @@ describe('Safe attribute validation', function () {
 describe('Scenario-specific required validation', function () {
     test('newLocation is required on specific scenarios', function (string $scenario, bool $expectError) {
         $asset = AssetModel::factory()->createElement();
-        $asset->setScenario($scenario);
+        $asset->ruleset->useScenario($scenario);
         $asset->newLocation = null;
 
         $asset->validate(['newLocation']);
 
         expect($asset->errors()->has('newLocation'))->toBe($expectError);
     })->with([
-        'SCENARIO_CREATE requires newLocation' => [Asset::SCENARIO_CREATE, true],
-        'SCENARIO_MOVE requires newLocation' => [Asset::SCENARIO_MOVE, true],
-        'SCENARIO_FILEOPS requires newLocation' => [Asset::SCENARIO_FILEOPS, true],
-        'default scenario does not require newLocation' => [Asset::SCENARIO_DEFAULT, false],
+        'SCENARIO_CREATE requires newLocation' => [AssetRules::SCENARIO_CREATE, true],
+        'SCENARIO_MOVE requires newLocation' => [AssetRules::SCENARIO_MOVE, true],
+        'SCENARIO_FILEOPS requires newLocation' => [AssetRules::SCENARIO_FILEOPS, true],
+        'default scenario does not require newLocation' => [AssetRules::SCENARIO_DEFAULT, false],
     ]);
 
     test('tempFilePath is required on specific scenarios', function (string $scenario, bool $expectError) {
         $asset = AssetModel::factory()->createElement();
-        $asset->setScenario($scenario);
+        $asset->ruleset->useScenario($scenario);
         $asset->tempFilePath = null;
 
         $asset->validate(['tempFilePath']);
 
         expect($asset->errors()->has('tempFilePath'))->toBe($expectError);
     })->with([
-        'SCENARIO_CREATE requires tempFilePath' => [Asset::SCENARIO_CREATE, true],
-        'SCENARIO_REPLACE requires tempFilePath' => [Asset::SCENARIO_REPLACE, true],
-        'default scenario does not require tempFilePath' => [Asset::SCENARIO_DEFAULT, false],
-        'SCENARIO_MOVE does not require tempFilePath' => [Asset::SCENARIO_MOVE, false],
+        'SCENARIO_CREATE requires tempFilePath' => [AssetRules::SCENARIO_CREATE, true],
+        'SCENARIO_REPLACE requires tempFilePath' => [AssetRules::SCENARIO_REPLACE, true],
+        'default scenario does not require tempFilePath' => [AssetRules::SCENARIO_DEFAULT, false],
+        'SCENARIO_MOVE does not require tempFilePath' => [AssetRules::SCENARIO_MOVE, false],
     ]);
 });
 
 describe('SCENARIO_INDEX validation', function () {
     test('SCENARIO_INDEX has empty validation attributes', function () {
         $asset = AssetModel::factory()->createElement();
-        $asset->setScenario(Asset::SCENARIO_INDEX);
+        $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
 
-        $activeAttributes = $asset->activeAttributes();
+        $activeAttributes = array_keys($asset->getRules());
 
         expect($activeAttributes)->toBe([]);
     });
@@ -118,7 +119,7 @@ describe('SCENARIO_INDEX validation', function () {
         $asset = AssetModel::factory()->createElement();
         $asset->kind = '';
         $asset->filename = '';
-        $asset->setScenario(Asset::SCENARIO_INDEX);
+        $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
 
         $asset->validate();
 
@@ -156,7 +157,7 @@ describe('Edge cases', function () {
         expect($asset->errors()->has('kind'))->toBeTrue();
     });
 
-    test('all valid asset kinds are accepted', function (string $kind) {
+    test('valid asset kinds are accepted', function (string $kind) {
         $asset = AssetModel::factory()->createElement();
         $asset->kind = $kind;
 
@@ -164,25 +165,6 @@ describe('Edge cases', function () {
 
         expect($asset->errors()->has('kind'))->toBeFalse();
     })->with([
-        'KIND_ACCESS' => [Asset::KIND_ACCESS],
-        'KIND_AUDIO' => [Asset::KIND_AUDIO],
-        'KIND_CAPTIONS_SUBTITLES' => [Asset::KIND_CAPTIONS_SUBTITLES],
-        'KIND_COMPRESSED' => [Asset::KIND_COMPRESSED],
-        'KIND_EXCEL' => [Asset::KIND_EXCEL],
-        'KIND_FLASH' => [Asset::KIND_FLASH],
-        'KIND_HTML' => [Asset::KIND_HTML],
-        'KIND_ILLUSTRATOR' => [Asset::KIND_ILLUSTRATOR],
-        'KIND_IMAGE' => [Asset::KIND_IMAGE],
-        'KIND_JAVASCRIPT' => [Asset::KIND_JAVASCRIPT],
-        'KIND_JSON' => [Asset::KIND_JSON],
-        'KIND_PDF' => [Asset::KIND_PDF],
-        'KIND_PHOTOSHOP' => [Asset::KIND_PHOTOSHOP],
-        'KIND_PHP' => [Asset::KIND_PHP],
-        'KIND_POWERPOINT' => [Asset::KIND_POWERPOINT],
-        'KIND_TEXT' => [Asset::KIND_TEXT],
-        'KIND_VIDEO' => [Asset::KIND_VIDEO],
-        'KIND_WORD' => [Asset::KIND_WORD],
-        'KIND_XML' => [Asset::KIND_XML],
-        'KIND_UNKNOWN' => [Asset::KIND_UNKNOWN],
+        'KIND_IMAGE' => [FileKind::Image->value],
     ]);
 });

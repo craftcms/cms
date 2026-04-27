@@ -2,11 +2,11 @@
 
 ## Source And Scope
 
-- Official Laravel 12 docs: <https://laravel.com/docs/12.x/prompts>
+- Official Laravel 13 docs: <https://laravel.com/docs/13.x/prompts>
 - Prompt helper signatures: <https://github.com/laravel/prompts/blob/main/src/helpers.php>
 - Form builder signatures: <https://github.com/laravel/prompts/blob/main/src/FormBuilder.php>
 - Prompt test expectations in Artisan tests: `vendor/laravel/framework/src/Illuminate/Testing/PendingCommand.php`
-- Last synced: 2026-03-05
+- Last synced: 2026-03-24
 
 This reference is for authoring and reviewing interactive Artisan commands in Craft CMS.
 
@@ -44,6 +44,7 @@ use function Laravel\Prompts\{confirm, error, info, multiselect, search, text};
 | `search()` | `int|string` | `label`, `options` (closure), `placeholder`, `scroll`, `validate`, `hint`, `required`, `transform` | Search first, then select one option. |
 | `multisearch()` | `array<int|string>` | `label`, `options` (closure), `placeholder`, `scroll`, `required`, `validate`, `hint`, `transform` | Search first, then select multiple options. |
 | `pause()` | `bool` | `message` | Waits for enter/return confirmation. |
+| `autocomplete()` | `string` | `label`, `options` (array or closure), `placeholder`, `default`, `required`, `validate`, `hint` | Inline type-ahead completion via tab/right arrow. |
 
 ### Output And Utility Helpers
 
@@ -60,6 +61,9 @@ use function Laravel\Prompts\{confirm, error, info, multiselect, search, text};
 | `grid()` | `void` | Render items in a grid. |
 | `spin()` | `mixed` | Spinner while callback executes; returns callback result. |
 | `progress()` | `array|Progress` | Progress bar for iterable or fixed step count. |
+| `task()` | `mixed` | Spinner + scrolling live log area for long-running work. |
+| `stream()` | `Stream` | Stream incremental text into the terminal. |
+| `title()` | `void` | Update the terminal window/tab title. |
 | `clear()` | `void` | Clear terminal. |
 | `form()` | `FormBuilder` | Build a multi-step prompt flow with backtracking. |
 
@@ -91,6 +95,11 @@ use function Laravel\Prompts\{confirm, error, info, multiselect, search, text};
 ## Form Builder Reference
 
 Use `form()` when prompts are a sequence and users may need to go back (`CTRL + U` in supported terminals).
+
+- `submit()` returns indexed responses unless prompt steps are given `name:`.
+- Named steps return associative responses.
+- Use `add(...)` when later prompts depend on earlier responses.
+- `FormBuilder` also supports conditional chaining such as `when(...)` because it is conditionable.
 
 ### Core Methods
 
@@ -147,6 +156,31 @@ Prefer one style per command path and keep message noise low:
 
 Use one approach intentionally and avoid mixing styles in every line unless there is a reason.
 
+## Task And Stream Patterns
+
+Use `task()` when a command should show live status while work is running.
+
+- `task()` callback receives a logger.
+- Logger methods include `line()`, `success()`, `warning()`, `error()`, `label()`, `partial()`, and `commitPartial()`.
+- Use `limit:` to control how many scrolling log lines remain visible.
+- `task()` and `spin()` animate when `ext-pcntl` is available; otherwise they degrade to static output.
+
+Use `stream()` when output itself should arrive incrementally rather than as task log lines:
+
+```php
+use function Laravel\Prompts\stream;
+
+$stream = stream();
+
+foreach ($chunks as $chunk) {
+    $stream->append($chunk);
+}
+
+$stream->close();
+```
+
+Use `title()` for long-running commands where terminal/tab context helps, and reset with `title('')` when appropriate.
+
 ## Progress Patterns
 
 Map-style progress:
@@ -186,6 +220,7 @@ $progress->finish();
 ## Terminal Constraints
 
 - Keep labels/options/validation messages short enough for narrow terminals.
+- A safe target is about 74 characters for 80-column terminals.
 - Prompts with `scroll` automatically clamp to terminal height.
 
 ## Testing Prompt Output In Artisan Tests

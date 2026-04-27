@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\GarbageCollection;
 
-use Craft;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedDraftsAndRevisions;
@@ -36,6 +36,7 @@ use CraftCms\Cms\GarbageCollection\Actions\RemoveEmptyTempFolders;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Lottery;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class GarbageCollection
 {
@@ -63,6 +64,15 @@ class GarbageCollection
      * @var bool Whether CLI output should be muted.
      */
     public bool $silent = false;
+
+    /**
+     * @var ?OutputInterface The output to use when garbage collection is run from a console command.
+     */
+    public ?OutputInterface $output = null;
+
+    public function __construct(
+        private readonly ElementCaches $elementCaches,
+    ) {}
 
     /**
      * Possibly runs garbage collection.
@@ -127,7 +137,7 @@ class GarbageCollection
         ]);
 
         // Invalidate all element caches so any hard-deleted elements don't look like they still exist
-        Craft::$app->getElements()->invalidateAllCaches();
+        $this->elementCaches->invalidateAll();
     }
 
     /**

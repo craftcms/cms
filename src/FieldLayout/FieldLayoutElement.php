@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use DateTime;
 use Override;
 
@@ -85,7 +85,7 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
         $attributes = [];
 
         if ($this->hasCustomWidth()) {
-            $attributes['class'][] = 'width-'.($this->width ?? 100);
+            $attributes['class'][] = "width-$this->width";
         }
 
         return $attributes;

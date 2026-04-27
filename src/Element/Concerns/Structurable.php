@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use Craft;
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Events\AfterMoveInStructure;
 use CraftCms\Cms\Element\Events\BeforeMoveInStructure;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Typecast;
 
 /**
@@ -358,7 +358,6 @@ trait Structurable
 
     public function beforeMoveInStructure(int $structureId): bool
     {
-        // Fire a 'beforeMoveInStructure' event
         event($event = new BeforeMoveInStructure($this, $structureId));
 
         return $event->isValid;
@@ -366,11 +365,9 @@ trait Structurable
 
     public function afterMoveInStructure(int $structureId): void
     {
-        // Fire an 'afterMoveInStructure' event
         event(new AfterMoveInStructure($this, $structureId));
 
-        // Invalidate caches for this element
-        Craft::$app->getElements()->invalidateCachesForElement($this);
+        ElementCaches::invalidateForElement($this);
     }
 
     private function _getRelativeElement(mixed $criteria, int $direction): ?ElementInterface
@@ -382,8 +379,7 @@ trait Structurable
         if ($criteria instanceof ElementQueryInterface) {
             $query = clone $criteria;
         } else {
-            $query = static::find()
-                ->siteId($this->siteId);
+            $query = static::find()->siteId($this->siteId);
 
             if ($criteria) {
                 Typecast::configure($query, $criteria);
@@ -392,7 +388,7 @@ trait Structurable
 
         /** @var ElementQuery $query */
         $elementIds = $query->cache()->ids();
-        $key = array_search($this->getCanonicalId(), $elementIds, false);
+        $key = array_search($this->getCanonicalId(), $elementIds);
 
         if ($key === false || ! isset($elementIds[$key + $direction])) {
             return null;

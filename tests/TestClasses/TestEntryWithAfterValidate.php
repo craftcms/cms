@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Tests\TestClasses;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use Illuminate\Validation\Validator as LaravelValidator;
 use Override;
 

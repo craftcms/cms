@@ -14,6 +14,7 @@ use craft\models\TagGroup;
 use craft\web\Controller;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Search;
 use CraftCms\Cms\Support\Url;
 use yii\web\BadRequestHttpException;
@@ -264,7 +265,7 @@ class TagsController extends Controller
         $tag->title = trim($this->request->getRequiredBodyParam('title'));
 
         // Don't validate required custom fields
-        if (!Craft::$app->getElements()->saveElement($tag)) {
+        if (!Elements::saveElement($tag)) {
             return $this->asFailure();
         }
 

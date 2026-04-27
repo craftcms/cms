@@ -7,57 +7,18 @@
 
 namespace craft\web\assets\datepickeri18n;
 
-use Craft;
 use craft\web\AssetBundle;
-use craft\web\assets\jqueryui\JqueryUiAsset;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Datepicker I18n asset bundle.
+ * @deprecated 6.0.0
  */
 class DatepickerI18nAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
+    public function registerAssetFiles($view)
     {
-        // Figure out which Datepicker i18n script to load
-        $languageId = I18N::getLocale()->getLanguageID();
-
-        $languages = [
-            Craft::$app->language,
-            $languageId,
-        ];
-
-        $fallbacks = [
-            'cy' => 'cy-GB',
-            'zh' => 'zh-CN',
-        ];
-
-        if (isset($fallbacks[$languageId])) {
-            $languages[] = $fallbacks[$languageId];
-        }
-
-        $sourcePath = __DIR__ . '/dist';
-
-        foreach ($languages as $language) {
-            $filename = "datepicker-$language.js";
-            if (file_exists("$sourcePath/$filename")) {
-                $this->sourcePath = $sourcePath;
-
-                $this->depends = [
-                    JqueryUiAsset::class,
-                ];
-
-                $this->js = [
-                    $filename,
-                ];
-
-                break;
-            }
-        }
-
-        parent::init();
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\DatepickerI18nAsset::class);
     }
 }

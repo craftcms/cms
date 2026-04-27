@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Factories\Concerns;
 
-use Craft;
 use CraftCms\Cms\Database\Factories\ElementFactoryResult;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Str;
@@ -108,7 +109,7 @@ trait HasFieldFactory
         $factory->refreshFieldCaches();
 
         $element = $factory->queryElement($model->id);
-        $element->setScenario($factory->elementScenario ?? Element::SCENARIO_DEFAULT);
+        $element->ruleset->useScenario($factory->elementScenario ?? ElementRules::SCENARIO_DEFAULT);
         $element->title = $element->title ?: 'Test entry';
 
         foreach ($factory->fieldConfigs as $config) {
@@ -118,7 +119,7 @@ trait HasFieldFactory
         }
 
         if ($save) {
-            Craft::$app->getElements()->saveElement($element);
+            Elements::saveElement($element);
             $element = $factory->queryElement($model->id);
         }
 

@@ -8,14 +8,14 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static \Illuminate\Support\Collection getAllGroups()
- * @method static \Illuminate\Support\Collection getAssignableGroups(\CraftCms\Cms\User\Elements\User|null $user = null)
+ * @method static \Illuminate\Support\Collection<\CraftCms\Cms\User\Data\UserGroup> getAllGroups()
+ * @method static \Illuminate\Support\Collection<\CraftCms\Cms\User\Data\UserGroup> getAssignableGroups(\CraftCms\Cms\User\Elements\User|null $user = null)
  * @method static \CraftCms\Cms\User\Data\UserGroup|null getGroupById(int $groupId)
  * @method static \CraftCms\Cms\User\Data\UserGroup|null getGroupByUid(string $uid)
  * @method static \CraftCms\Cms\User\Data\UserGroup|null getGroupByHandle(string $groupHandle)
  * @method static \CraftCms\Cms\User\Data\UserGroup|null resolveGroup(mixed $group)
  * @method static \CraftCms\Cms\User\Data\UserGroup getTeamGroup()
- * @method static \Illuminate\Support\Collection getGroupsByUserId(int $userId)
+ * @method static \Illuminate\Support\Collection<\CraftCms\Cms\User\Data\UserGroup> getGroupsByUserId(int $userId)
  * @method static void eagerLoadGroups(\CraftCms\Cms\User\Elements\User[] $users)
  * @method static bool saveGroup(\CraftCms\Cms\User\Data\UserGroup $group)
  * @method static void handleChangedUserGroup(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event)

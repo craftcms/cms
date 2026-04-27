@@ -9,7 +9,7 @@
 
 namespace craft\queue;
 
-use Craft;
+use CraftCms\Cms\Support\Facades\BulkOps;
 
 /**
  * BaseBatchedElementJob is the base class for large jobs that may need to spawn
@@ -30,7 +30,7 @@ abstract class BaseBatchedElementJob extends BaseBatchedJob
      */
     protected function before(): void
     {
-        $this->bulkOpKey = Craft::$app->getElements()->beginBulkOp();
+        $this->bulkOpKey = BulkOps::start();
     }
 
     /**
@@ -38,7 +38,7 @@ abstract class BaseBatchedElementJob extends BaseBatchedJob
      */
     protected function beforeBatch(): void
     {
-        Craft::$app->getElements()->resumeBulkOp($this->bulkOpKey);
+        BulkOps::resume($this->bulkOpKey);
     }
 
     /**
@@ -46,6 +46,6 @@ abstract class BaseBatchedElementJob extends BaseBatchedJob
      */
     protected function after(): void
     {
-        Craft::$app->getElements()->endBulkOp($this->bulkOpKey);
+        BulkOps::end($this->bulkOpKey);
     }
 }

@@ -273,14 +273,19 @@
     instructions: 'The maximum number of authors that entries in this section can have.'|t('app'),
     id: 'maxAuthors',
     name: 'maxAuthors',
-    autocorrect: false,
-    autocapitalize: false,
-    default: 1,
+    type: 'number',
+    min: 0,
+    max: 32767,
     value: old('maxAuthors', section.maxAuthors),
     errors: sessionErrors.get('maxAuthors'),
     data: {'error-key': 'maxAuthors'},
     size: 5,
     disabled: readOnly,
+    fieldClass: {
+      'type-channel': true,
+      'type-structure': true,
+      'hidden': section.type == 'single',
+    }|filter|keys,
 }) }}
 
 {% if brandNewSection %}

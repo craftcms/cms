@@ -6,6 +6,7 @@ require_once __DIR__.'/GraphqlMutationTestHelpers.php';
 
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
@@ -41,7 +42,7 @@ it('publishes a draft with the publish draft mutation', function () {
     );
 
     $draft->title = 'Published Title';
-    expect(Craft::$app->getElements()->saveElement($draft))->toBeTrue();
+    expect(Elements::saveElement($draft))->toBeTrue();
 
     graphQL(<<<GRAPHQL
 mutation {

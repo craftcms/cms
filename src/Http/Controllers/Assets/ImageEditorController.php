@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
-use Craft;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Image\ImageTransforms;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use yii\base\NotSupportedException;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -87,7 +88,7 @@ readonly class ImageEditorController
         }
     }
 
-    public function save(Request $request): Response
+    public function save(Request $request, Elements $elements): Response
     {
         $request->validate([
             'assetId' => ['required'],
@@ -212,7 +213,7 @@ readonly class ImageEditorController
             if ($imageChanged) {
                 $this->assets->replaceAssetFile($asset, $finalImage, $asset->getFilename(), $asset->getMimeType());
             } elseif ($focalChanged) {
-                Craft::$app->getElements()->saveElement($asset);
+                $elements->saveElement($asset);
             }
 
             return $this->asSuccess(data: $output);
@@ -220,7 +221,7 @@ readonly class ImageEditorController
 
         $newAsset = new Asset;
         $newAsset->avoidFilenameConflicts = true;
-        $newAsset->setScenario(Asset::SCENARIO_CREATE);
+        $newAsset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
 
         $newAsset->tempFilePath = $finalImage;
         $newAsset->setFilename($asset->getFilename());
@@ -229,14 +230,14 @@ readonly class ImageEditorController
         $newAsset->setFocalPoint($focal);
 
         // Don't validate required custom fields
-        Craft::$app->getElements()->saveElement($newAsset);
+        $elements->saveElement($newAsset);
 
         $output['newAssetId'] = $newAsset->id;
 
         return $this->asSuccess(data: $output);
     }
 
-    public function updateFocalPoint(Request $request): Response
+    public function updateFocalPoint(Request $request, Elements $elements, ImageTransforms $imageTransforms): Response
     {
         $request->validate([
             'assetUid' => ['required', 'string'],
@@ -262,8 +263,8 @@ readonly class ImageEditorController
         $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
 
         $asset->setFocalPoint($focalData);
-        Craft::$app->getElements()->saveElement($asset);
-        app(ImageTransforms::class)->deleteCreatedTransformsForAsset($asset);
+        $elements->saveElement($asset);
+        $imageTransforms->deleteCreatedTransformsForAsset($asset);
 
         return $this->asSuccess();
     }

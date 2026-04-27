@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns\User;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use Illuminate\Support\Facades\DB;
@@ -48,7 +48,7 @@ trait QueriesAuthors
             if (is_bool($userQuery->authors)) {
                 $method = $userQuery->authors ? 'whereExists' : 'whereNotExists';
 
-                $userQuery->subQuery->$method(DB::table(Table::ENTRIES_AUTHORS)->whereColumn('authorId', 'elements.id'));
+                $userQuery->$method(DB::table(Table::ENTRIES_AUTHORS)->whereColumn('authorId', 'elements.id'));
             }
 
             if ($userQuery->authorOf) {
@@ -56,7 +56,7 @@ trait QueriesAuthors
                     throw new QueryAbortedException;
                 }
 
-                $userQuery->subQuery->whereExists(
+                $userQuery->whereExists(
                     DB::table(Table::ENTRIES_AUTHORS, 'entries_authors')
                         ->where('entryId', $this->authorOf->id)
                         ->whereColumn('entries_authors.authorId', 'users.id'),

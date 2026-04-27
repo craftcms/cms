@@ -11,10 +11,10 @@
     label: "Name"|t('app'),
     id: 'name',
     name: 'name',
-    value: (filesystem is defined ? filesystem.name : null),
+    value: old('name', (filesystem is defined ? filesystem.name : null)),
     autofocus: true,
     required: true,
-    errors: (filesystem is defined ? filesystem.getErrors('name') : null),
+    errors: (filesystem is defined ? sessionErrors.get('name') : null),
     data: {'error-key': 'name'},
     disabled: readOnly,
 }) }}
@@ -27,9 +27,9 @@
     class: 'code',
     autocorrect: false,
     autocapitalize: false,
-    value: (filesystem is defined ? filesystem.handle : null),
+    value: old('handle', (filesystem is defined ? filesystem.handle : null)),
     required: true,
-    errors: (filesystem is defined ? filesystem.getErrors('handle') : null),
+    errors: (filesystem is defined ? sessionErrors.get('handle') : null),
     data: {'error-key': 'handle'},
     disabled: readOnly,
 }) }}
@@ -43,14 +43,14 @@
         id: 'type',
         name: 'type',
         options: fsOptions,
-        value: className(filesystem),
+        value: old('type', className(filesystem)),
         toggle: true,
         disabled: readOnly,
     }) }}
 {% endif %}
 
 {% for fsType in fsTypes %}
-    {% set isCurrent = (fsType == className(filesystem)) %}
+    {% set isCurrent = (fsType == old('type', className(filesystem))) %}
     {% set fs = isCurrent ? filesystem : fsInstances[fsType] %}
     {% set classes = [] %}
     {% if not isCurrent %}
@@ -84,7 +84,7 @@
             label: 'Files in this filesystem have public URLs'|t('app'),
             name: 'hasUrls',
             id: 'has-urls',
-            on:   filesystem.hasUrls,
+            on:   old('hasUrls', filesystem.hasUrls),
             toggle: filesystem.getShowUrlSetting() ? "url-field-container" : null,
             disabled: disabled,
         }) }}
@@ -100,10 +100,10 @@
                 name: 'url',
                 suggestEnvVars: true,
                 suggestAliases: true,
-                value: (filesystem is defined ? filesystem.url : null),
+                value: old('url', (filesystem is defined ? filesystem.url : null)),
                 required: true,
                 placeholder: "//example.com/path/to/folder",
-                errors: (filesystem is defined ? filesystem.getErrors('url') : null),
+                errors: (filesystem is defined ? sessionErrors.get('url') : null),
                 data: {'error-key': 'url'},
                 disabled: disabled,
             }) }}

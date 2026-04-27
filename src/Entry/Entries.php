@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry;
 
-use Craft;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Events\EntryMovedToSection;
 use CraftCms\Cms\Entry\Events\MovingEntryToSection;
@@ -17,6 +18,7 @@ use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
@@ -34,6 +36,10 @@ class Entries
      * @var array<int,array<string,Entry|false>>
      */
     private array $singleEntries = [];
+
+    public function __construct(
+        private readonly Elements $elements,
+    ) {}
 
     /**
      * Returns an entry by its ID.
@@ -61,7 +67,7 @@ class Entries
                 ->value('sections.structureId');
         }
 
-        return Craft::$app->getElements()->getElementById($entryId, Entry::class, $siteId, $criteria);
+        return $this->elements->getElementById($entryId, Entry::class, $siteId, $criteria);
     }
 
     /**
@@ -167,7 +173,7 @@ class Entries
         $entry->sectionId = $section->id;
 
         // Validate
-        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $entry->validate();
 
         // If there are any errors on the URI, re-validate as disabled
@@ -190,17 +196,15 @@ class Entries
         // prevents revision from being created
         $entry->resaving = true;
 
-        $elementsService = Craft::$app->getElements();
-        $elementsService->ensureBulkOp(function () use (
+        BulkOps::ensure(function () use (
             $entry,
             $section,
             $oldSection,
-            $elementsService,
         ) {
             DB::beginTransaction();
             try {
                 // Start with $entry’s site
-                if (! $elementsService->saveElement($entry, false, false)) {
+                if (! $this->elements->saveElement($entry, false, false)) {
                     throw new InvalidElementException($entry,
                         'Element '.$entry->id.' could not be moved for site '.$entry->siteId);
                 }

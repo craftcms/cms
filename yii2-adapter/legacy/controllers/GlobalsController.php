@@ -11,8 +11,9 @@ use Craft;
 use craft\elements\GlobalSet;
 use craft\web\Controller;
 use CraftCms\Cms\Cp\RequestedSite;
-use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Facades\Gate;
@@ -223,9 +224,9 @@ class GlobalsController extends Controller
 
         $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
         $globalSet->setFieldValuesFromRequest($fieldsLocation);
-        $globalSet->setScenario(Element::SCENARIO_LIVE);
+        $globalSet->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
 
-        if (!Craft::$app->getElements()->saveElement($globalSet)) {
+        if (!Elements::saveElement($globalSet)) {
             $this->setFailFlash(mb_ucfirst(t('Couldn’t save {type}.', [
                 'type' => GlobalSet::lowerDisplayName(),
             ])));

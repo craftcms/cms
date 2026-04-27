@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Craft;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
@@ -58,7 +58,7 @@ readonly class PermissionsController
         return $response;
     }
 
-    public function store(Request $request): Response
+    public function store(Request $request, Elements $elements): Response
     {
         $request->validate([
             'userId' => ['required', 'integer', Rule::exists(Table::USERS, 'id')],
@@ -83,7 +83,7 @@ readonly class PermissionsController
                 }
 
                 $user->admin = $adminParam;
-                Craft::$app->getElements()->saveElement($user, false);
+                $elements->saveElement($user, false);
             }
         }
 

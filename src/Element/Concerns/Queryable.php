@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use Craft;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -40,9 +39,6 @@ trait Queryable
         return static::findByCondition($criteria, false);
     }
 
-    /**
-     * @interitdoc
-     */
     public static function get(int|string $id): ?static
     {
         return static::find()
@@ -57,7 +53,7 @@ trait Queryable
 
     public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(ElementCondition::class, [static::class]);
+        return new ElementCondition(static::class);
     }
 
     /**
@@ -78,6 +74,7 @@ trait Queryable
             if (! is_array($criteria) || Arr::isList($criteria)) {
                 $criteria = ['id' => $criteria];
             }
+
             Typecast::configure($query, $criteria);
         }
 

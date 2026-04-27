@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Events\RevisionCreated;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
 
@@ -36,7 +37,7 @@ it('can create a revision', function () {
         canonical: $element,
         notes: 'Some notes',
     );
-    $revision = Craft::$app->elements->getElementById($revisionId);
+    $revision = Elements::getElementById($revisionId);
 
     expect($revision)->toBeInstanceOf(EntryElement::class);
     expect($revision->getIsRevision())->toBeTrue();
@@ -62,7 +63,7 @@ it('can revert an element to a revision', function () {
         canonical: $element,
         notes: 'Some notes',
     );
-    $revision = Craft::$app->elements->getElementById($revisionId);
+    $revision = Elements::getElementById($revisionId);
 
     $element = $this->revisions->revertToRevision($revision, 1);
 

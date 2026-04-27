@@ -4,21 +4,30 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Component;
 
+use ArrayAccess;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Concerns\MacroableMagicMethods;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Validation\ComponentRules;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Contracts\Validatable;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
+use DateTimeInterface;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Traits\Macroable;
 use Yiisoft\Arrays\ArrayableInterface;
 use Yiisoft\Arrays\ArrayableTrait;
 
-abstract class Component implements Arrayable, ArrayableInterface, ComponentInterface, Validatable
+#[Ruleset(ComponentRules::class)]
+abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, ComponentInterface, Validatable
 {
-    use ArrayableTrait;
+    use ArrayableTrait {
+        fields as private traitFields;
+    }
     use Macroable;
     use MacroableMagicMethods;
     use Validates;
@@ -59,6 +68,51 @@ abstract class Component implements Arrayable, ArrayableInterface, ComponentInte
     public static function isSelectable(): bool
     {
         return true;
+    }
+
+    public function fields(): array
+    {
+        $fields = Arr::except($this->traitFields(), ['ruleset']);
+
+        foreach ($fields as $field => $definition) {
+            if (! is_string($definition)) {
+                continue;
+            }
+
+            // Only rewrite default field-to-property mappings, not aliases or custom definitions.
+            if ($definition !== $field) {
+                continue;
+            }
+
+            if (! Typecast::isDateTimeProperty(static::class, $field)) {
+                continue;
+            }
+
+            $fields[$field] = static function (self $component, string $field): mixed {
+                $value = $component->$field;
+
+                if (! $value instanceof DateTimeInterface) {
+                    return $value;
+                }
+
+                return DateTimeHelper::toIso8601($value, true) ?: null;
+            };
+        }
+
+        return $fields;
+    }
+
+    public function setAttributes($values): void
+    {
+        Typecast::properties(static::class, $values);
+
+        foreach ($values as $name => $value) {
+            try {
+                $this->$name = $value;
+            } catch (UnknownPropertyException|InvalidCallException|\yii\base\UnknownPropertyException) {
+                // Property or setter doesn't exist
+            }
+        }
     }
 
     public function __get(string $name)
@@ -116,5 +170,35 @@ abstract class Component implements Arrayable, ArrayableInterface, ComponentInte
         }
 
         throw new InvalidCallException('Unsetting an unknown or read-only property: '.static::class.'::'.$name);
+    }
+
+    public function offsetExists(mixed $offset): bool
+    {
+        return isset($this->$offset);
+    }
+
+    public function offsetGet(mixed $offset): mixed
+    {
+        return $this->$offset;
+    }
+
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        $this->$offset = $value;
+    }
+
+    public function offsetUnset(mixed $offset): void
+    {
+        $this->$offset = null;
+    }
+
+    public function __serialize(): array
+    {
+        return $this->toArray();
+    }
+
+    public function __unserialize(array $data): void
+    {
+        self::configure($this, $data);
     }
 }

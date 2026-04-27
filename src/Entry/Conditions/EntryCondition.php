@@ -4,20 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry\Conditions;
 
-use craft\elements\conditions\HasDescendantsRule;
-use craft\elements\conditions\LevelConditionRule;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\Conditions\HasDescendantsRule;
+use CraftCms\Cms\Element\Conditions\LevelConditionRule;
+use Override;
 
-/**
- * Entry query condition.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
- */
 class EntryCondition extends ElementCondition
 {
-    #[\Override]
+    #[Override]
     protected function selectableConditionRules(): array
     {
         return array_merge(parent::selectableConditionRules(), [

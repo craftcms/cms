@@ -66,7 +66,6 @@ use craft\services\Webpack;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\UrlManager;
-use craft\web\User as UserSession;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Announcement\Announcements;
@@ -322,9 +321,7 @@ trait ApplicationTrait
         if ($useUserLanguage) {
             // If the user is logged in *and* has a primary language set, use that
             // (don't actually try to fetch the user, as plugins haven't been loaded yet)
-            /** @var UserSession $user */
-            $user = $this->getUser();
-            $id = Session::get($user->idParam);
+            $id = Session::get($this->getUser()->idParam);
             if (
                 $id &&
                 ($language = \CraftCms\Cms\Support\Facades\Users::getUserPreference($id, 'language')) !== null &&
@@ -1344,8 +1341,7 @@ trait ApplicationTrait
         $this->getLog();
 
         $this->language = app()->getLocale();
-        $this->setTimeZone(app()->getTimezone());
-        date_default_timezone_set(app()->getTimezone());
+        $this->setTimeZone(Cms::timezone());
 
         // Use our own Markdown parser classes
         $flavors = [

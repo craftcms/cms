@@ -1,5 +1,6 @@
 import {defineConfig, loadEnv} from 'vite';
 import laravel from 'laravel-vite-plugin';
+import inertia from '@inertiajs/vite';
 import fs from 'fs';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
@@ -63,8 +64,8 @@ export default defineConfig(({mode}) => {
       }),
       laravel({
         input: [
-          'resources/js/cp.js',
-          'resources/js/legacy.js',
+          'resources/js/cp.ts',
+          'resources/js/legacy.ts',
           'resources/css/cp.css',
         ],
         publicDirectory: 'resources',
@@ -78,6 +79,9 @@ export default defineConfig(({mode}) => {
           'resources/templates/**',
         ],
         detectTls: env.VITE_DETECT_TLS ?? undefined,
+      }),
+      inertia({
+        ssr: false
       }),
     ],
   };

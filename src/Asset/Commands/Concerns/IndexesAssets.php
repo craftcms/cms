@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Commands\Concerns;
 
-use craft\console\Application;
 use CraftCms\Cms\Asset\Data\IndexingSession;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -17,6 +16,7 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Support\Facades\AssetIndexer;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
@@ -45,7 +45,7 @@ trait IndexesAssets
     /**
      * @param  Volume[]  $volumes
      */
-    protected function indexAssets(Application $craft, array $volumes, string $path = '', int $startAt = 0): void
+    protected function indexAssets(array $volumes, string $path = '', int $startAt = 0): void
     {
         $this->cacheRemoteImages = $this->hasOption('cacheRemoteImages') && $this->parseBooleanOption($this->option('cacheRemoteImages'));
         $this->deleteEmptyFolders = $this->parseBooleanOption($this->option('deleteEmptyFolders'));
@@ -108,14 +108,14 @@ trait IndexesAssets
 
             $this->components->task(
                 'Deleting the'.($totalMissingFiles > 1 ? ' '.$totalMissingFiles : '').' missing asset record'.Str::plural('record', $totalMissingFiles),
-                function () use ($craft, $assetIds) {
+                function () use ($assetIds) {
                     /** @var ElementCollection<Asset> $assets */
                     $assets = Asset::find()->id($assetIds)->get();
 
                     foreach ($assets as $asset) {
                         app(ImageTransforms::class)->deleteCreatedTransformsForAsset($asset);
                         $asset->keepFileOnDelete = true;
-                        $craft->getElements()->deleteElement($asset);
+                        Elements::deleteElement($asset);
                     }
                 }
             );

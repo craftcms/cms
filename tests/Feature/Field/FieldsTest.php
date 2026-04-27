@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Color;
 use CraftCms\Cms\Field\Entries;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
@@ -13,7 +15,9 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\Models\Field as FieldModel;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -125,6 +129,28 @@ it('can create a field with a config', function () {
     expect($this->fields->createField([
         'type' => PlainText::class,
     ]))->toBeInstanceOf(PlainText::class);
+});
+
+it('normalizes translation methods to enums for src fields', function () {
+    $field = $this->fields->createField([
+        'type' => PlainText::class,
+        'translationMethod' => 'site',
+    ]);
+
+    expect($field->translationMethod)->toBe('site')
+        ->and($field->translationMethodValue)->toBe('site')
+        ->and($field->getTranslationDescription(null))->toBe(TranslationMethod::Site->description());
+});
+
+it('falls back to the first supported translation method for invalid src field values', function () {
+    $field = $this->fields->createField([
+        'type' => PlainText::class,
+        'translationMethod' => 'invalid',
+    ]);
+
+    expect($field->translationMethod)->toBe(TranslationMethod::None->value)
+        ->and($field->translationMethodValue)->toBe(TranslationMethod::None->value)
+        ->and($field->getTranslationDescription(null))->toBeNull();
 });
 
 it('creates a missing field if the field isnt recognized', function () {
@@ -279,10 +305,68 @@ it('can delete a field', function () {
     expect(FieldModel::count())->toBe(0);
 });
 
+it('can hard delete a field layout by id', function () {
+    $field = FieldModel::factory()->create([
+        'name' => 'Plain Text',
+        'handle' => 'plainTextLayoutField',
+        'type' => PlainText::class,
+    ]);
+
+    $layout = $this->fields->createLayout([
+        'type' => EntryElement::class,
+        'tabs' => [
+            [
+                'uid' => Str::uuid()->toString(),
+                'name' => 'Content',
+                'elements' => [
+                    [
+                        'uid' => Str::uuid()->toString(),
+                        'type' => CraftCms\Cms\FieldLayout\LayoutElements\CustomField::class,
+                        'fieldUid' => $field->uid,
+                    ],
+                ],
+            ],
+        ],
+    ]);
+
+    expect($this->fields->saveLayout($layout))->toBeTrue();
+
+    expect($this->fields->getLayoutById($layout->id))->not()->toBeNull();
+
+    expect($this->fields->deleteLayoutById($layout->id, hardDelete: true))->toBeTrue();
+
+    expect(FieldLayoutModel::withTrashed()->find($layout->id))->toBeNull()
+        ->and($this->fields->getLayoutById($layout->id))->toBeNull();
+});
+
 it('can find field usages', function () {
     expect($this->fields->findFieldUsages(new PlainText))->toBeEmpty();
 
     $this->markTestIncomplete('Add test with field usage');
+});
+
+it('returns laravel-style pagination metadata for table data', function () {
+    foreach (range(1, 3) as $index) {
+        $this->fields->saveField($this->fields->createField([
+            'type' => PlainText::class,
+            'name' => "Plain Text {$index}",
+            'handle' => "plainText{$index}",
+        ]));
+    }
+
+    [$pagination] = $this->fields->getTableData(2, 2, null, 'name', SORT_ASC);
+
+    expect($pagination)
+        ->toMatchArray([
+            'total' => 3,
+            'per_page' => 2,
+            'current_page' => 2,
+            'last_page' => 2,
+            'from' => 3,
+            'to' => 3,
+        ])
+        ->and($pagination['prev_page_url'])->toContain('page=1')
+        ->and($pagination['next_page_url'])->toBeNull();
 });
 
 test('field layouts')->todo('Implement once field layouts are ported.');

@@ -8,34 +8,16 @@
 namespace craft\web\assets\pluginstore;
 
 use craft\web\AssetBundle;
-use craft\web\assets\cp\CpAsset;
-use craft\web\assets\vue\VueAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Asset bundle for the Plugin Store page
+ * @deprecated 6.0.0
  */
 class PluginStoreAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public function init()
+    public function registerAssetFiles($view)
     {
-        $this->sourcePath = __DIR__ . '/dist';
-
-        $this->css = [
-            'css/app.css',
-        ];
-
-        $this->js = [
-            'js/app.js',
-        ];
-
-        $this->depends = [
-            CpAsset::class,
-            VueAsset::class,
-        ];
-
-        parent::init();
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\PluginStoreAsset::class);
     }
 }

@@ -10,7 +10,7 @@ use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\SelectOptions;
-use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -154,9 +154,9 @@ class VolumesController
             'subpath' => $subpath ?? null,
             'transformFsHandle' => $request->input('transformFsHandle'),
             'transformSubpath' => $request->input('transformSubpath', ''),
-            'titleTranslationMethod' => $request->input('titleTranslationMethod', Field::TRANSLATION_METHOD_SITE),
+            'titleTranslationMethod' => $request->enum('titleTranslationMethod', TranslationMethod::class, TranslationMethod::Site),
             'titleTranslationKeyFormat' => $request->input('titleTranslationKeyFormat'),
-            'altTranslationMethod' => $request->input('altTranslationMethod', Field::TRANSLATION_METHOD_NONE),
+            'altTranslationMethod' => $request->enum('altTranslationMethod', TranslationMethod::class, TranslationMethod::None),
             'altTranslationKeyFormat' => $request->input('altTranslationKeyFormat'),
         ]);
 

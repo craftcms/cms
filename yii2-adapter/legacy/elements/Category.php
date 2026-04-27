@@ -8,7 +8,7 @@
 namespace craft\elements;
 
 use Craft;
-use craft\controllers\ElementIndexesController;
+use craft\base\LegacyEventConstants;
 use craft\db\Table;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
@@ -23,16 +23,21 @@ use craft\services\ElementSources;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Structure\Enums\Mode;
+use CraftCms\Cms\Support\Facades\ElementActions;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
+use CraftCms\Yii2Adapter\Validation\LegacyElementRules;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -49,8 +54,11 @@ use function CraftCms\Cms\t;
  * @since 3.0.0
  * @deprecated in 6.0.0
  */
+#[Ruleset(LegacyElementRules::class)]
 class Category extends Element
 {
+    use LegacyEventConstants;
+
     /**
      * @inheritdoc
      */
@@ -234,13 +242,10 @@ class Category extends Element
     protected static function defineActions(string $source): array
     {
         // Get the selected site
-        $controller = Craft::$app->controller;
-        if ($controller instanceof ElementIndexesController) {
-            /** @var ElementQueryInterface $elementQuery */
-            $elementQuery = $controller->getElementQuery();
-        } else {
-            $elementQuery = null;
-        }
+        $elementQuery = app(CurrentElementIndex::class)->isActive()
+            ? app(CurrentElementIndex::class)->query()
+            : null;
+
         $site = $elementQuery && $elementQuery->siteId
             ? Sites::getSiteById($elementQuery->siteId)
             : Sites::getCurrentSite();
@@ -256,7 +261,6 @@ class Category extends Element
 
         // Now figure out what we can do with it
         $actions = [];
-        $elementsService = Craft::$app->getElements();
 
         if ($group) {
             // New Child
@@ -267,11 +271,11 @@ class Category extends Element
                     $newChildUrl .= '?site=' . $site->handle;
                 }
 
-                $actions[] = $elementsService->createAction([
+                $actions[] = ElementActions::createAction([
                     'type' => NewChild::class,
                     'maxLevels' => $group->maxLevels,
                     'newChildUrl' => $newChildUrl,
-                ]);
+                ], static::class);
             }
 
             // Duplicate
@@ -407,7 +411,7 @@ class Category extends Element
      */
     protected function defineRules(): array
     {
-        $rules = parent::defineRules();
+        $rules = [];
         $rules[] = [['groupId'], 'number', 'integerOnly' => true];
         return $rules;
     }
@@ -496,7 +500,6 @@ class Category extends Element
             ],
         ];
 
-        $elementsService = Craft::$app->getElements();
         $user = Auth::user();
 
         $ancestors = $this->getAncestors();
@@ -505,7 +508,7 @@ class Category extends Element
         }
 
         foreach ($ancestors->all() as $ancestor) {
-            if ($elementsService->canView($ancestor, $user)) {
+            if ($user?->can('view', $ancestor)) {
                 $crumbs[] = [
                     'html' => app(ElementHtml::class)->elementChipHtml($ancestor, [
                         'class' => 'chromeless',
@@ -871,7 +874,7 @@ class Category extends Element
 
                 // Update the category's descendants, who may be using this category's URI in their own URIs
                 if (!$isNew && $this->getIsCanonical()) {
-                    Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+                    Elements::updateDescendantSlugsAndUris($this, true, true);
                 }
             }
         }
@@ -981,7 +984,7 @@ class Category extends Element
         // Was the category moved within its group's structure?
         if ($this->getGroup()->structureId == $structureId) {
             // Update its URI
-            Craft::$app->getElements()->updateElementSlugAndUri($this, true, true, true);
+            Elements::updateElementSlugAndUri($this, true, true, true);
 
             // Make sure that each of the category's ancestors are related wherever the category is related
             $newRelationValues = [];

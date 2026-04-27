@@ -11,6 +11,7 @@ use CraftCms\Cms\Support\Utils;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionObject;
+use ReflectionProperty;
 use Throwable;
 use WeakMap;
 use Yii;
@@ -391,7 +392,7 @@ class LegacyBehaviorCompatibility
         }
 
         if (!isset($state->legacyOwner) || $state->legacyOwnerClass !== $legacyClass) {
-            $state->legacyOwner = new $legacyClass(Utils::getPublicProperties($object));
+            $state->legacyOwner = new $legacyClass(self::publicWritableProperties($object));
             $state->legacyOwnerClass = $legacyClass;
         }
 
@@ -436,7 +437,7 @@ class LegacyBehaviorCompatibility
             return;
         }
 
-        foreach (Utils::getPublicProperties($object) as $name => $value) {
+        foreach (self::publicWritableProperties($object) as $name => $value) {
             try {
                 $owner->$name = $value;
             } catch (Throwable) {
@@ -451,13 +452,30 @@ class LegacyBehaviorCompatibility
             return;
         }
 
-        foreach (Utils::getPublicProperties($behavior->owner) as $name => $value) {
+        foreach (self::publicWritableProperties($behavior->owner) as $name => $value) {
             try {
                 $object->$name = $value;
             } catch (Throwable) {
                 // Read-only
             }
         }
+    }
+
+    private static function publicWritableProperties(object $object): array
+    {
+        return Utils::getPublicProperties(
+            $object,
+            fn(ReflectionProperty $property) => self::isWritablePublicProperty($property),
+        );
+    }
+
+    private static function isWritablePublicProperty(ReflectionProperty $property): bool
+    {
+        if ($property->isReadOnly()) {
+            return false;
+        }
+
+        return !$property->hasHook(\PropertyHookType::Get) || $property->hasHook(\PropertyHookType::Set);
     }
 
     private static function registerBehaviorMethods(string $targetClass, Behavior $behavior): void

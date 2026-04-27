@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Address\Conditions;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\HintableConditionRuleTrait;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Addresses;
+use CraftCms\Cms\Field\Fields as FieldsService;
 use CraftCms\Cms\Support\Facades\Fields;
 use Illuminate\Support\Collection;
 
@@ -71,6 +72,6 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
      */
     private function addressFields(): Collection
     {
-        return Fields::getFieldsByType(Addresses::class);
+        return app(FieldsService::class)->getFieldsByType(Addresses::class);
     }
 }

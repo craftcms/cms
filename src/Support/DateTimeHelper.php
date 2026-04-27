@@ -144,7 +144,7 @@ class DateTimeHelper
             return false;
         }
 
-        $defaultTimeZone = $assumeSystemTimeZone ? app()->getTimezone() : 'UTC';
+        $defaultTimeZone = $assumeSystemTimeZone ? Cms::timezone() : 'UTC';
 
         if (is_array($value)) {
             if (empty($value['datetime']) && empty($value['date']) && empty($value['time'])) {
@@ -201,7 +201,7 @@ class DateTimeHelper
         }
 
         if ($setToSystemTimeZone) {
-            $dateTime->setTimezone(new DateTimeZone(app()->getTimezone()));
+            $dateTime->setTimezone(new DateTimeZone(Cms::timezone()));
         }
 
         return $dateTime;
@@ -316,7 +316,7 @@ class DateTimeHelper
     {
         if (! empty(self::$_now)) {
             $date = clone self::$_now[0];
-            $date->setTimezone($timeZone ?? new DateTimeZone(app()->getTimezone()));
+            $date->setTimezone($timeZone ?? new DateTimeZone(Cms::timezone()));
 
             return $date;
         }

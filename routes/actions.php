@@ -7,6 +7,10 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\AddressesController;
 use CraftCms\Cms\Http\Controllers\AnnouncementsController;
 use CraftCms\Cms\Http\Controllers\ApiController;
+use CraftCms\Cms\Http\Controllers\App\CpAlertsController;
+use CraftCms\Cms\Http\Controllers\App\HealthCheckController;
+use CraftCms\Cms\Http\Controllers\App\LicensesController;
+use CraftCms\Cms\Http\Controllers\App\RenderController;
 use CraftCms\Cms\Http\Controllers\Assets\ActionController as AssetsActionController;
 use CraftCms\Cms\Http\Controllers\Assets\FolderController as AssetsFolderController;
 use CraftCms\Cms\Http\Controllers\Assets\IconController as AssetsIconController;
@@ -19,12 +23,32 @@ use CraftCms\Cms\Http\Controllers\Auth\PasskeyController;
 use CraftCms\Cms\Http\Controllers\Auth\SessionInfoController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
+use CraftCms\Cms\Http\Controllers\ConditionsController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\NewUsersController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\EditionController;
+use CraftCms\Cms\Http\Controllers\Elements\CopyElementValuesController;
+use CraftCms\Cms\Http\Controllers\Elements\CreateElementController;
+use CraftCms\Cms\Http\Controllers\Elements\DeleteElementController;
+use CraftCms\Cms\Http\Controllers\Elements\DuplicateElementController;
+use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementActivityController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementDraftsController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexSourcesController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ExportElementIndexController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\SaveElementIndexElementsController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementRevisionsController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementSourcesController;
+use CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController;
+use CraftCms\Cms\Http\Controllers\Elements\SaveElementController;
+use CraftCms\Cms\Http\Controllers\Elements\SearchController as ElementSearchController;
+use CraftCms\Cms\Http\Controllers\Elements\UpdateFieldLayoutController;
+use CraftCms\Cms\Http\Controllers\Elements\ValidateElementController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
@@ -34,12 +58,15 @@ use CraftCms\Cms\Http\Controllers\Gql\SchemasController as GqlSchemasController;
 use CraftCms\Cms\Http\Controllers\Gql\TokensController as GqlTokensController;
 use CraftCms\Cms\Http\Controllers\IconController;
 use CraftCms\Cms\Http\Controllers\InstallController;
+use CraftCms\Cms\Http\Controllers\MatrixController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
+use CraftCms\Cms\Http\Controllers\NestedElementsController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\InstallController as PluginStoreInstallController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\PreviewController;
+use CraftCms\Cms\Http\Controllers\RelationalFieldsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
@@ -86,13 +113,16 @@ use Illuminate\Support\Facades\Route;
  * Actions that are accessible both with and without CP can be registered here.
  */
 foreach ([
-    Cms::config()->actionTrigger => [],
+    Cms::config()->actionTrigger => ['craft.web'],
     implode('/', [
         Cms::config()->cpTrigger,
         Cms::config()->actionTrigger,
     ]) => ['craft.cp'],
 ] as $prefix => $middleware) {
     Route::prefix($prefix)->middleware($middleware)->group(function () {
+        // App
+        Route::get('app/health-check', HealthCheckController::class);
+
         // Auth
         Route::post('users/login', [LoginController::class, 'attemptLogin']);
         Route::post('auth/verify-totp', [TwoFactorAuthenticationController::class, 'verify']);
@@ -109,6 +139,9 @@ foreach ([
         // Asset Transforms (anonymous access)
         Route::any('assets/generate-transform', [TransformController::class, 'generate']);
         Route::get('assets/generate-fallback-transform', [TransformController::class, 'generateFallback']);
+
+        // GQL API
+        Route::any('graphql/api', GqlApiController::class);
     });
 }
 
@@ -116,7 +149,6 @@ foreach ([
  * Actions that are accessible without CP can be registered here.
  */
 Route::prefix(Cms::config()->actionTrigger)->group(function () {
-    Route::any('graphql/api', GqlApiController::class);
     Route::post('migrate', MigrateController::class);
 
     Route::middleware(['auth:craft'])->group(function () {
@@ -172,6 +204,15 @@ Route::prefix(implode('/', [
         Route::post('addresses/fields', [AddressesController::class, 'fields']);
         Route::middleware(RequireAdminChanges::class)->post('addresses/save-field-layout', [AddressesController::class, 'saveFieldLayout']);
 
+        // App
+        Route::any('app/get-cp-alerts', [CpAlertsController::class, 'index']);
+        Route::any('app/shun-cp-alert', [CpAlertsController::class, 'destroy']);
+        Route::any('app/set-license-shun-cookie', [LicensesController::class, 'setShunCookie']);
+        Route::middleware(RequireAdmin::class)->post('app/get-plugin-license-info', [CraftCms\Cms\Http\Controllers\App\PluginsController::class, 'getLicenseInfo']);
+        Route::middleware(RequireAdminChanges::class)->post('app/update-plugin-license', [CraftCms\Cms\Http\Controllers\App\PluginsController::class, 'updateLicense']);
+        Route::any('app/render-elements', [RenderController::class, 'elements']);
+        Route::any('app/render-components', [RenderController::class, 'components']);
+
         // Auth methods
         Route::post('auth/method-setup-html', [AuthMethodController::class, 'setupHtml']);
         Route::post('auth/method-listing-html', [AuthMethodController::class, 'listingHtml']);
@@ -193,6 +234,11 @@ Route::prefix(implode('/', [
         Route::post('utilities/clear-caches-perform-action', [ClearCachesController::class, 'clearCaches']);
         Route::post('utilities/invalidate-tags', [ClearCachesController::class, 'invalidateTags']);
 
+        // Conditions
+        Route::post('conditions/render', [ConditionsController::class, 'show']);
+        Route::post('conditions/add-rule', [ConditionsController::class, 'store']);
+        Route::post('conditions/remove-rule', [ConditionsController::class, 'destroy']);
+
         // DbBackup
         Route::post('utilities/db-backup-perform-action', DbBackupController::class);
 
@@ -205,6 +251,44 @@ Route::prefix(implode('/', [
         Route::middleware([RequireAdmin::class])->group(function () {
             Route::post('app/try-edition', [EditionController::class, 'tryEdition']);
             Route::post('app/switch-to-licensed-edition', [EditionController::class, 'switchToLicensedEdition']);
+        });
+
+        // Elements
+        Route::post('elements/create', CreateElementController::class);
+        Route::any('elements/edit', EditElementController::class);
+        Route::post('elements/save', [SaveElementController::class, 'store']);
+        Route::post('elements/save-nested-element-for-derivative', [SaveElementController::class, 'storeForDerivative']);
+        Route::post('elements/delete', [DeleteElementController::class, 'destroy']);
+        Route::post('elements/delete-for-site', [DeleteElementController::class, 'destroyForSite']);
+        Route::post('elements/save-draft', [ElementDraftsController::class, 'store']);
+        Route::post('elements/ensure-draft', [ElementDraftsController::class, 'ensure']);
+        Route::post('elements/apply-draft', [ElementDraftsController::class, 'apply']);
+        Route::post('elements/delete-draft', [ElementDraftsController::class, 'destroy']);
+        Route::post('elements/revert', [ElementRevisionsController::class, 'revert']);
+        Route::post('elements/validate', ValidateElementController::class);
+        Route::post('elements/recent-activity', ElementActivityController::class);
+        Route::post('elements/update-field-layout', UpdateFieldLayoutController::class);
+        Route::post('elements/duplicate', [DuplicateElementController::class, 'duplicate']);
+        Route::post('elements/bulk-duplicate', [DuplicateElementController::class, 'bulkDuplicate']);
+        Route::post('elements/copy-values-from-site', CopyElementValuesController::class);
+
+        // Element Indexes
+        Route::post('element-indexes/source-path', [ElementIndexSourcesController::class, 'sourcePath']);
+        Route::post('element-indexes/source-attribute-info', [ElementIndexSourcesController::class, 'sourceAttributeInfo']);
+        Route::post('element-indexes/get-elements', [ElementIndexController::class, 'getElements']);
+        Route::post('element-indexes/get-more-elements', [ElementIndexController::class, 'getMoreElements']);
+        Route::post('element-indexes/count-elements', [ElementIndexController::class, 'countElements']);
+        Route::post('element-indexes/get-source-tree-html', [ElementIndexSourcesController::class, 'getSourceTreeHtml']);
+        Route::post('element-indexes/filter-hud', [ElementIndexController::class, 'filterHud']);
+        Route::post('element-indexes/element-table-html', [ElementIndexController::class, 'elementTableHtml']);
+        Route::post('element-indexes/save-elements', SaveElementIndexElementsController::class);
+        Route::post('element-indexes/export', ExportElementIndexController::class);
+        Route::post('element-indexes/perform-action', PerformElementActionController::class);
+        Route::post('element-search/search', ElementSearchController::class);
+        Route::post('element-selector-modals/body', ElementSelectorModalController::class);
+        Route::middleware([RequireAdminChanges::class])->group(function () {
+            Route::post('element-index-settings/get-customize-sources-modal-data', [ElementSourcesController::class, 'show']);
+            Route::post('element-index-settings/save-customize-sources-modal-settings', [ElementSourcesController::class, 'store']);
         });
 
         // Entries
@@ -264,8 +348,17 @@ Route::prefix(implode('/', [
             });
         });
 
+        // Matrix
+        Route::post('matrix/default-table-column-options', [MatrixController::class, 'defaultTableColumnOptions']);
+        Route::post('matrix/create-entry', [MatrixController::class, 'createEntry']);
+        Route::post('matrix/render-blocks', [MatrixController::class, 'renderBlocks']);
+
         // Migrations
         Route::post('utilities/apply-new-migrations', MigrationsController::class);
+
+        // Nested entries
+        Route::post('nested-elements/reorder', [NestedElementsController::class, 'reorder']);
+        Route::post('nested-elements/delete', [NestedElementsController::class, 'destroy']);
 
         // Asset Indexes
         Route::post('asset-indexes/start-indexing', [AssetIndexesController::class, 'startIndexing']);
@@ -296,6 +389,9 @@ Route::prefix(implode('/', [
 
         // Preview
         Route::any('preview/create-token', [PreviewController::class, 'createToken']);
+
+        // Relational fields
+        Route::any('relational-fields/structured-input-html', [RelationalFieldsController::class, 'structuredInputHtml']);
 
         // Widgets
         Route::post('dashboard/create-widget', [WidgetsController::class, 'store']);

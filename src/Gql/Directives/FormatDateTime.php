@@ -97,6 +97,6 @@ class FormatDateTime extends Directive
 
     public static function defaultTimeZone(): string
     {
-        return Cms::config()->setGraphqlDatesToSystemTimeZone ? app()->getTimezone() : self::DEFAULT_TIMEZONE;
+        return Cms::config()->setGraphqlDatesToSystemTimeZone ? Cms::timezone() : self::DEFAULT_TIMEZONE;
     }
 }

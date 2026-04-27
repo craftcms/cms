@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
@@ -44,7 +45,8 @@ readonly class SectionsController
 
     public function index(Request $request, Sections $sections): \Inertia\Response
     {
-        $page = $request->integer('page', 1);
+        $pageParam = Cms::config()->getPageTriggerParam();
+        $page = $request->integer($pageParam, 1);
         $limit = $request->integer('per_page', 50);
         $searchTerm = $request->input('search');
 
@@ -245,7 +247,8 @@ readonly class SectionsController
 
     public function tableData(Request $request, Sections $sections): Response
     {
-        $page = (int) $request->input('page', 1);
+        $pageParam = Cms::config()->getPageTriggerParam();
+        $page = (int) $request->input($pageParam, 1);
         $limit = (int) $request->input('per_page', 100);
         $searchTerm = $request->input('search');
 

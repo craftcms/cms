@@ -14,6 +14,7 @@ use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Shared\Enums\DateRangeType;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Models\User as UserModel;
 
@@ -171,7 +172,7 @@ describe('AuthorConditionRule', function () {
         Sections::refreshSections();
         $element = Entry::find()->id($entry->id)->one();
         $element->setAuthorId($author->id);
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         $condition = new EntryCondition(Entry::class);
         $rule = $condition->createConditionRule(AuthorConditionRule::class);
@@ -190,7 +191,7 @@ describe('AuthorConditionRule', function () {
         Sections::refreshSections();
         $element = Entry::find()->id($entry->id)->one();
         $element->setAuthorId($author1->id);
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         $condition = new EntryCondition(Entry::class);
         $rule = $condition->createConditionRule(AuthorConditionRule::class);
@@ -211,11 +212,11 @@ describe('AuthorConditionRule', function () {
 
         $element1 = Entry::find()->id($entry1->id)->one();
         $element1->setAuthorId($author1->id);
-        Craft::$app->getElements()->saveElement($element1);
+        Elements::saveElement($element1);
 
         $element2 = Entry::find()->id($entry2->id)->one();
         $element2->setAuthorId($author2->id);
-        Craft::$app->getElements()->saveElement($element2);
+        Elements::saveElement($element2);
 
         $condition = new EntryCondition(Entry::class);
         $rule = $condition->createConditionRule(AuthorConditionRule::class);

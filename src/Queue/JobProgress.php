@@ -89,8 +89,8 @@ readonly class JobProgress
             ->orderByRaw('CASE WHEN status = ? THEN 1 ELSE 0 END DESC', [JobStatus::Reserved->value])
             // Pending jobs go second
             ->orderByRaw('CASE WHEN status = ? THEN 1 ELSE 0 END DESC', [JobStatus::Pending->value])
-            // Then by now or dateCreated + delay
-            ->orderByRaw($delay, [now()->getTimestamp()])
+            // Then by now or dateCreated + delay, with furthest delayed jobs first
+            ->orderByRaw("$delay DESC", [now()->getTimestamp()])
             // Lastly by dateCreated
             ->orderBy('dateCreated');
     }
@@ -130,6 +130,10 @@ readonly class JobProgress
      */
     public function getActive(): Collection
     {
+        if (! Cms::isInstalled()) {
+            return collect();
+        }
+
         return JobProgressModel::query()
             ->whereIn('status', [
                 JobStatus::Pending,

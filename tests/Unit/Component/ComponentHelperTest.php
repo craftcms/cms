@@ -41,6 +41,34 @@ class DependencyHeavyStubComponent extends Component
     }
 }
 
+class DatetimeStubComponent extends Component
+{
+    public DateTime $startsAt;
+
+    public ?DateTime $endsAt = null;
+
+    public string $title = '';
+
+    public DateTimeImmutable $immutableAt;
+
+    public DateTime|int $unionAt;
+
+    public static ?DateTime $staticAt = null;
+
+    protected ?DateTime $hiddenAt = null;
+
+    #[Override]
+    public static function displayName(): string
+    {
+        return 'Datetime Stub';
+    }
+}
+
+class DatetimeChildStubComponent extends DatetimeStubComponent
+{
+    public DateTime $publishedAt;
+}
+
 class NonComponent {}
 
 abstract class AbstractStubComponent extends Component
@@ -431,5 +459,21 @@ describe('mergeSettings', function () {
         $config = ['settings'];
 
         expect(ComponentHelper::mergeSettings($config))->toBe(['settings']);
+    });
+});
+
+describe('datetimeAttributes', function () {
+    test('returns all public datetime attributes including inherited ones', function () {
+        expect(ComponentHelper::datetimeAttributes(new DatetimeChildStubComponent))
+            ->toEqualCanonicalizing(['startsAt', 'endsAt', 'publishedAt']);
+    });
+
+    test('excludes non-datetime, union, static, and non-public properties', function () {
+        expect(ComponentHelper::datetimeAttributes(new DatetimeStubComponent))
+            ->not->toContain('title')
+            ->not->toContain('immutableAt')
+            ->not->toContain('unionAt')
+            ->not->toContain('staticAt')
+            ->not->toContain('hiddenAt');
     });
 });

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Variables;
 
-use Craft;
-use craft\db\Paginator;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class Paginate extends Component
 {
@@ -29,8 +29,6 @@ class Paginate extends Component
 
     public int $totalPages = 0;
 
-    public string $pageTrigger;
-
     /**
      * @var string Base path
      *
@@ -39,26 +37,14 @@ class Paginate extends Component
      */
     private string $_basePath;
 
-    public function __construct(array $config = [])
+    public static function create(LengthAwarePaginator $paginator): self
     {
-        parent::__construct($config);
-
-        $this->pageTrigger ??= request()->isCpRequest()
-            ? 'p'
-            : Cms::config()->getPageTrigger();
-    }
-
-    public static function create(Paginator $paginator): self
-    {
-        $pageResults = $paginator->getPageResults();
-        $pageOffset = $paginator->getPageOffset();
-
         return new self([
-            'first' => $pageOffset + 1,
-            'last' => $pageOffset + count($pageResults),
-            'total' => $paginator->getTotalResults(),
-            'currentPage' => $paginator->getCurrentPage(),
-            'totalPages' => $paginator->getTotalPages(),
+            'first' => $paginator->firstItem() ?? 0,
+            'last' => $paginator->lastItem() ?? 0,
+            'total' => $paginator->total(),
+            'currentPage' => $paginator->currentPage(),
+            'totalPages' => $paginator->lastPage(),
         ]);
     }
 
@@ -78,33 +64,14 @@ class Paginate extends Component
             return null;
         }
 
-        $useQueryParam = str_starts_with($this->pageTrigger, '?');
+        $pageParam = Cms::config()->getPageTriggerParam();
+        $params = Arr::except(request()->query(), $pageParam);
 
-        $path = $this->getBasePath();
-
-        // If not using a query param, append the page to the path
-        if (! $useQueryParam && $page !== 1) {
-            if ($path) {
-                $path .= '/';
-            }
-
-            $path .= $this->pageTrigger.$page;
+        if ($page !== 1) {
+            $params[$pageParam] = $page;
         }
 
-        // Build the URL with the same query string as the current request
-        $url = Url::url($path, Craft::$app->getRequest()->getQueryStringWithoutPath());
-
-        // If using a query param, append or remove it
-        if ($useQueryParam) {
-            $param = trim($this->pageTrigger, '?=');
-            if ($page !== 1) {
-                $url = Url::urlWithParams($url, [$param => $page]);
-            } else {
-                $url = Url::removeParam($url, $param);
-            }
-        }
-
-        return $url;
+        return Url::url($this->getBasePath(), $params);
     }
 
     public function getFirstUrl(): ?string

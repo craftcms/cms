@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
-use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Concerns\RelationalField;
@@ -18,6 +18,7 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Data\LinkData;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\RegisterLinkTypes;
 use CraftCms\Cms\Field\LinkTypes\Asset;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
@@ -444,7 +445,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             // we need to prevent `View::renderObjectTemplate()` from trying to normalize this value again and again
             // to do that, we can e.g. set `propagating` to false before getting the translation key
             // see https://github.com/craftcms/cms/issues/18363 for more details
-            if ($this->translationMethod === self::TRANSLATION_METHOD_CUSTOM) {
+            if ($this->translationMethod === TranslationMethod::Custom->value) {
                 $element->propagating = false;
             }
 

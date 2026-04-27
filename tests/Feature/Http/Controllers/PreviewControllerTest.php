@@ -7,6 +7,7 @@ use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Http\Controllers\PreviewController;
 use CraftCms\Cms\RouteToken\Model\RouteToken;
 use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Route;
 
@@ -84,7 +85,7 @@ test('it can preview elements', function () {
 
     $entryId = $this->entry->id;
     Route::get('/', function () use ($entryId) {
-        $entry = Craft::$app->elements->getElementById($entryId, CraftCms\Cms\Entry\Elements\Entry::class);
+        $entry = Elements::getElementById($entryId, CraftCms\Cms\Entry\Elements\Entry::class);
 
         return $entry?->previewing ? 'previewing' : 'not previewing';
     });

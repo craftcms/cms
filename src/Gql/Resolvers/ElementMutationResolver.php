@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Resolvers;
 
-use Craft;
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Gql\Events\AfterPopulateElement;
 use CraftCms\Cms\Gql\Events\BeforePopulateElement;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
+use CraftCms\Cms\Support\Facades\Elements;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\FieldArgument;
 use GraphQL\Type\Definition\InputObjectType;
@@ -95,8 +96,8 @@ abstract class ElementMutationResolver extends MutationResolver
     protected function saveElement(ElementInterface $element): ElementInterface
     {
         /** @var Element $element */
-        if ($element->enabled && $element->inScenarios(Element::SCENARIO_DEFAULT)) {
-            $element->setScenario(Element::SCENARIO_LIVE);
+        if ($element->enabled && $element->ruleset->inScenarios(ElementRules::SCENARIO_DEFAULT)) {
+            $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         }
 
         $isNotNew = $element->id;
@@ -108,14 +109,14 @@ abstract class ElementMutationResolver extends MutationResolver
         }
 
         try {
-            Craft::$app->getElements()->saveElement($element);
+            Elements::saveElement($element);
         } finally {
             if ($isNotNew) {
                 $mutex->release();
             }
         }
 
-        if ($element->hasErrors()) {
+        if ($element->errors()->count()) {
             $validationErrors = [];
 
             foreach ($element->getFirstErrors() as $errorMessage) {

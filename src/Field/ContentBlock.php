@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
-use craft\base\ElementInterface;
-use craft\base\NestedElementInterface;
-use craft\elements\db\EagerLoadPlan;
-use craft\elements\NestedElementManager;
-use craft\web\assets\cp\CpAsset;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -25,6 +25,7 @@ use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Resolvers\Elements\ContentBlock as ContentBlockResolver;
 use CraftCms\Cms\Gql\Types\Generators\ContentBlock as ContentBlockGenerator;
 use CraftCms\Cms\Gql\Types\Input\ContentBlock as ContentBlockInputType;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -32,6 +33,8 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\LegacyAssets\CpAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -39,8 +42,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
+use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -72,7 +76,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     {
         // Don't ever automatically propagate values to other sites.
         return [
-            self::TRANSLATION_METHOD_SITE,
+            TranslationMethod::Site,
         ];
     }
 
@@ -257,7 +261,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     {
         try {
             $owner = $element->getOwner();
-        } catch (InvalidConfigException) {
+        } catch (RuntimeException) {
             $owner = $element->duplicateOf;
         }
 
@@ -272,7 +276,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     {
         $owner = $element->getOwner();
 
-        return $owner && Craft::$app->getElements()->canView($owner, $user);
+        return $owner && $user->can('view', $owner);
     }
 
     public function canSaveElement(NestedElementInterface $element, User $user): bool
@@ -283,15 +287,14 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
             return false;
         }
 
-        if (Craft::$app->getElements()->canSave($owner, $user)) {
+        if ($user->can('save', $owner)) {
             return true;
         }
 
         // Check all the owners. Maybe the user can save one of the other ones?
-        /** @phpstan-ignore-next-line  */
-        if (! Craft::$app->getElements()->canSave($owner, $user) && ! $owner->getIsRevision()) {
+        if (! $owner->getIsRevision()) {
             foreach ($element->getOwners(['revisions' => false]) as $o) {
-                if ($o->id !== $owner->id && Craft::$app->getElements()->canSave($o, $user)) {
+                if ($o->id !== $owner->id && $user->can('save', $o)) {
                     return true;
                 }
             }
@@ -328,12 +331,12 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
 
     private function settingsHtml(bool $readOnly): string
     {
-        $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
+        app(InternalAssetRegistry::class)->register(CpAsset::class);
 
         return template('_components/fieldtypes/ContentBlock/settings', [
             'field' => $this,
             'readOnly' => $readOnly,
-            'baseIconsUrl' => "$bundle->baseUrl/images/content-block",
+            'baseIconsUrl' => craftAsset('legacy/cp/dist/images/content-block'),
         ]);
     }
 
@@ -354,6 +357,14 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         ?ElementInterface $element,
         bool $fromRequest,
     ): ContentBlockElement {
+        if ($value instanceof ContentBlockElement) {
+            if ($element) {
+                $this->setOwnerOnContentBlockElement($element, $value);
+            }
+
+            return $value;
+        }
+
         if ($value instanceof ElementQueryInterface) {
             /** @var ?ContentBlockElement $contentBlock */
             $contentBlock = $value->one();
@@ -435,9 +446,9 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
                     if ($contentBlock) {
                         $this->setOwnerOnContentBlockElement($e, $contentBlock);
                     }
-                    $e->setEagerLoadedElements($handle, $contentBlock ? [$contentBlock] : [], new EagerLoadPlan([
-                        'handle' => $handle,
-                    ]));
+                    $e->setEagerLoadedElements($handle, $contentBlock ? [$contentBlock] : [], new EagerLoadPlan(
+                        handle: $handle,
+                    ));
                 }
 
                 /** @phpstan-ignore-next-line */
@@ -458,7 +469,8 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
 
     private function createContentBlockElement(?ElementInterface $owner): ContentBlockElement
     {
-        return Craft::$app->getElements()->createElement([
+        /** @var ContentBlockElement */
+        return Elements::createElement([
             'type' => ContentBlockElement::class,
             'siteId' => $owner->siteId,
             'owner' => $owner,
@@ -585,7 +597,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         // Make sure the content block is fully saved
         /** @var ContentBlockElement $value */
         if (! $value->id) {
-            Craft::$app->getElements()->saveElement($value);
+            Elements::saveElement($value);
         }
 
         $id = $this->getInputId();
@@ -638,7 +650,7 @@ JS, [
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
+        if (! $element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_DEFAULT, ElementRules::SCENARIO_LIVE)) {
             return [];
         }
 
@@ -651,8 +663,8 @@ JS, [
     {
         $value->setOwner($element);
 
-        if ($element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_LIVE)) {
-            $value->setScenario($element->getScenario());
+        if ($element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_LIVE)) {
+            $value->ruleset->useScenario($element->ruleset->getScenario());
         }
 
         if (! $value->validate()) {
@@ -726,17 +738,13 @@ JS, [
     #[Override]
     public function beforeElementDeleteForSite(ElementInterface $element): bool
     {
-        $elementsService = Craft::$app->getElements();
-
         /** @var ContentBlockElement[] $contentBlocks */
         $contentBlocks = ContentBlockElement::find()
             ->primaryOwner($element)
             ->status(null)
             ->all();
 
-        foreach ($contentBlocks as $contentBlock) {
-            $elementsService->deleteElementForSite($contentBlock);
-        }
+        Elements::deleteElementsForSite($contentBlocks);
 
         return true;
     }

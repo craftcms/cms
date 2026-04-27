@@ -24,24 +24,29 @@ class FieldLayoutFactory extends Factory
         ];
     }
 
-    public function forField(Field|FieldModel $field, bool $required = false): self
+    public function withContentTab(array $elements = [], string $name = 'Content'): self
     {
         return $this->state(fn () => [
             'config' => [
                 'tabs' => [
                     [
                         'uid' => Str::uuid()->toString(),
-                        'name' => 'Content',
-                        'elements' => [
-                            [
-                                'uid' => Str::uuid()->toString(),
-                                'type' => CustomField::class,
-                                'fieldUid' => $field->uid,
-                                'required' => $required,
-                            ],
-                        ],
+                        'name' => $name,
+                        'elements' => $elements,
                     ],
                 ],
+            ],
+        ]);
+    }
+
+    public function forField(Field|FieldModel $field, bool $required = false): self
+    {
+        return $this->withContentTab([
+            [
+                'uid' => Str::uuid()->toString(),
+                'type' => CustomField::class,
+                'fieldUid' => $field->uid,
+                'required' => $required,
             ],
         ]);
     }

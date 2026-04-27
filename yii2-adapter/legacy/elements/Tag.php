@@ -8,6 +8,7 @@
 namespace craft\elements;
 
 use Craft;
+use craft\base\LegacyEventConstants;
 use craft\elements\conditions\tags\TagCondition;
 use craft\elements\db\TagQuery;
 use craft\gql\interfaces\elements\Tag as TagInterface;
@@ -16,8 +17,11 @@ use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
+use CraftCms\Yii2Adapter\Validation\LegacyElementRules;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
 use yii\validators\InlineValidator;
@@ -31,8 +35,11 @@ use function CraftCms\Cms\t;
  * @since 3.0.0
  * @deprecated in 6.0.0
  */
+#[Ruleset(LegacyElementRules::class)]
 class Tag extends Element
 {
+    use LegacyEventConstants;
+
     /**
      * @inheritdoc
      */
@@ -207,13 +214,13 @@ class Tag extends Element
      */
     protected function defineRules(): array
     {
-        $rules = parent::defineRules();
+        $rules = [];
         $rules[] = [['groupId'], 'number', 'integerOnly' => true];
         $rules[] = [
             ['title'],
             'validateTitle',
             'when' => fn(): bool => !$this->errors()->has('groupId') && !$this->errors()->has('title'),
-            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
+            'on' => [ElementRules::SCENARIO_DEFAULT, ElementRules::SCENARIO_LIVE],
         ];
         return $rules;
     }
@@ -238,7 +245,7 @@ class Tag extends Element
         }
 
         if ($query->exists()) {
-            $validator->addError($this, $attribute, t('{attribute} "{value}" has already been taken.'));
+            $this->addError($attribute, t('{attribute} "{value}" has already been taken.'));
         }
     }
 

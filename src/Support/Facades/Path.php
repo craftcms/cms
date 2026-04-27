@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Facade;
  * @method static string composerBackups(string $path = '', bool $create = true)
  * @method static string configBackup(string $path = '', bool $create = true)
  * @method static string configDelta(string $path = '', bool $create = true)
- * @method static string rebrand(string $path = '', bool $create = true)
  * @method static string vendor(string $path = '')
  * @method static string runtime(string $path = '', bool $create = true)
  * @method static string dbBackup(string $path = '', bool $create = true)

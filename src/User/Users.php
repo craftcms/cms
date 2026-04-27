@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User;
 
-use Craft;
-use craft\web\Request;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
+use CraftCms\Cms\Asset\Validation\AssetRules;
+use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Field\Fields;
@@ -55,6 +57,7 @@ use CraftCms\Cms\User\Events\UserSuspended;
 use CraftCms\Cms\User\Events\UserUnlocked;
 use CraftCms\Cms\User\Events\UserUnsuspended;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Validation\UserRules;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
 use Illuminate\Auth\Passwords\PasswordBroker;
@@ -75,6 +78,11 @@ use function CraftCms\Cms\t;
 #[Singleton]
 class Users
 {
+    public function __construct(
+        private readonly Elements $elements,
+        private readonly ElementCaches $elementCaches,
+    ) {}
+
     /**
      * @var array Cached user preferences.
      *
@@ -107,7 +115,7 @@ class Users
             throw new InvalidArgumentException($user->errors()->first('email'));
         }
 
-        if (! Craft::$app->getElements()->saveElement($user, false)) {
+        if (! $this->elements->saveElement($user, false)) {
             throw new Exception('Unable to save user: '.implode(', ', $user->getFirstErrors()));
         }
 
@@ -126,7 +134,7 @@ class Users
      */
     public function getUserById(int $userId): ?User
     {
-        return Craft::$app->getElements()->getElementById($userId, User::class);
+        return $this->elements->getElementById($userId, User::class);
     }
 
     /**
@@ -274,7 +282,7 @@ class Users
     {
         $fePath = Cms::config()->getVerifyEmailPath();
 
-        return $this->getUserUrl($user, $fePath, Request::CP_PATH_VERIFY_EMAIL, $token);
+        return $this->getUserUrl($user, $fePath, CpAuthPath::VerifyEmail->value, $token);
     }
 
     /**
@@ -290,7 +298,7 @@ class Users
     {
         $fePath = Cms::config()->getSetPasswordPath();
 
-        return $this->getUserUrl($user, $fePath, Request::CP_PATH_SET_PASSWORD, $token);
+        return $this->getUserUrl($user, $fePath, CpAuthPath::SetPassword->value, $token);
     }
 
     /**
@@ -358,7 +366,7 @@ class Users
             $filename = AssetsService::getNameReplacementInFolder($filename, $folderId);
 
             $photo = new Asset;
-            $photo->setScenario(Asset::SCENARIO_CREATE);
+            $photo->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
             $photo->tempFilePath = $fileLocation;
             $photo->setFilename($filename);
             $photo->setMimeType(File::getMimeType($fileLocation, checkExtension: false) ?? $mimeType);
@@ -366,11 +374,10 @@ class Users
             $photo->setVolumeId($volume->id);
 
             // Save photo.
-            $elementsService = Craft::$app->getElements();
-            $elementsService->saveElement($photo);
+            $this->elements->saveElement($photo);
 
             $user->setPhoto($photo);
-            $elementsService->saveElement($user, false);
+            $this->elements->saveElement($user, false);
         }
 
         event(new UserPhotoSaved($user, $photo->id));
@@ -392,10 +399,10 @@ class Users
             return;
         }
 
-        $photo->setScenario(Asset::SCENARIO_MOVE);
+        $photo->ruleset->useScenario(AssetRules::SCENARIO_MOVE);
         $photo->avoidFilenameConflicts = true;
         $photo->newFolderId = $folderId;
-        Craft::$app->getElements()->saveElement($photo);
+        $this->elements->saveElement($photo);
     }
 
     /**
@@ -454,7 +461,7 @@ class Users
 
         event(new DeletingUserPhoto($user, $photoId));
 
-        $result = Craft::$app->getElements()->deleteElementById($photoId, Asset::class);
+        $result = $this->elements->deleteElementById($photoId, Asset::class);
 
         if ($result) {
             $user->setPhoto();
@@ -571,7 +578,7 @@ class Users
         }
 
         $originalUser = clone $user;
-        $user->setScenario(User::SCENARIO_ACTIVATION);
+        $user->ruleset->useScenario(UserRules::SCENARIO_ACTIVATION);
         $user->active = true;
         $user->pending = false;
         $user->locked = false;
@@ -922,7 +929,7 @@ class Users
         $userModel->save();
 
         $originalUser = clone $user;
-        $user->setScenario(User::SCENARIO_ACTIVATION);
+        $user->ruleset->useScenario(UserRules::SCENARIO_ACTIVATION);
         $user->pending = $userModel->pending;
 
         if (! $user->validate()) {
@@ -961,7 +968,7 @@ class Users
             })
             ->each(function (User $user) {
                 try {
-                    Craft::$app->getElements()->deleteElement($user);
+                    $this->elements->deleteElement($user);
                     Log::info("Just deleted pending user $user->username ($user->id), because they took too long to activate their account.", [__METHOD__]);
                 } catch (UserException $e) {
                     Log::warning($e->getMessage(), [__METHOD__]);
@@ -1145,7 +1152,7 @@ class Users
         $fieldsService->saveLayout($layout, false);
 
         // Invalidate user caches
-        Craft::$app->getElements()->invalidateCachesForElementType(User::class);
+        $this->elementCaches->invalidateForElementType(User::class);
     }
 
     /**

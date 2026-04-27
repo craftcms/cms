@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
-use Craft;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Entries;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -23,6 +22,7 @@ use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Users;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -51,14 +51,18 @@ readonly class CreateEntryController
         $user = $this->request->user();
 
         // Create & populate the draft
-        $entry = Craft::createObject(Entry::class);
+        $entry = new Entry;
         $entry->siteId = $site->id;
         $entry->sectionId = $section->id;
-        $entry->setAuthorIds(
-            $this->request->input('authorIds') ??
-            $this->request->input('authorId') ??
-            $user->id
-        );
+
+        if ($section->maxAuthors !== 0) {
+            $entry->setAuthorIds(
+                $this->request->input('authorIds') ??
+                $this->request->input('authorId') ??
+                $user->id
+            );
+        }
+
         $this->setTypeId($entry);
         $this->setStatus($entry, $section);
 
@@ -73,7 +77,8 @@ readonly class CreateEntryController
 
         // Make sure the user is allowed to create this entry
         $craftUser = $users->getUserById($user->id);
-        abort_unless(Craft::$app->getElements()->canSave($entry, $craftUser), 403, 'User not authorized to create this entry.');
+
+        Gate::forUser($craftUser)->authorize('save', $entry);
 
         $this->setTitleAndSlug($entry, $site);
 
@@ -90,7 +95,7 @@ readonly class CreateEntryController
         }
 
         // Save it
-        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $success = $drafts->saveElementAsDraft($entry, $user->id, markAsSaved: false);
 
         // Resume time

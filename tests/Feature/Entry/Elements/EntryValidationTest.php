@@ -3,11 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Gate;
 
@@ -111,7 +112,7 @@ describe('Date comparison validation', function () {
         bool $expectError
     ) {
         $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_LIVE);
+        $entry->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         $entry->postDate = $postDate;
         $entry->expiryDate = $expiryDate;
 
@@ -157,7 +158,7 @@ describe('Author required validation', function () {
             ->createElement();
 
         if ($isLiveScenario) {
-            $entry->setScenario(Element::SCENARIO_LIVE);
+            $entry->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         }
 
         $entry->setAuthorIds([]);
@@ -231,11 +232,11 @@ describe('Author permission validation', function () {
             ->forEntryType($entryType)
             ->createElement();
         $entry->setAuthorIds([$initialAuthor->id]);
-        Craft::$app->getElements()->saveElement($entry);
+        Elements::saveElement($entry);
 
         $entry->setAuthorIds([$user->id]);
 
-        $entry->validate(['authorIds']);
+        expect($entry->validate(['authorIds']))->toBeFalse();
 
         expect($entry->errors()->has('authorIds'))->toBeTrue();
         expect($entry->errors()->first('authorIds'))->toContain('permission');
@@ -266,7 +267,7 @@ describe('Author permission validation', function () {
             ->forEntryType($entryType)
             ->createElement();
         $entry->setAuthorIds([$initialAuthor->id]);
-        Craft::$app->getElements()->saveElement($entry);
+        Elements::saveElement($entry);
 
         $entry->setAuthorIds([$user->id]);
 
@@ -292,7 +293,7 @@ describe('Author permission validation', function () {
             ->forEntryType($entryType)
             ->createElement();
         $entry->setAuthorIds([$initialAuthor->id]);
-        Craft::$app->getElements()->saveElement($entry);
+        Elements::saveElement($entry);
 
         $entry->setAuthorIds([$adminUser->id]);
 
@@ -305,7 +306,7 @@ describe('Author permission validation', function () {
 describe('Scenario-specific validation', function () {
     test('SCENARIO_LIVE validates date comparison', function () {
         $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_LIVE);
+        $entry->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         $entry->postDate = new DateTime('2025-01-01');
         $entry->expiryDate = new DateTime('2024-01-01');
 
@@ -337,7 +338,7 @@ describe('Scenario-specific validation', function () {
             ->forSection($section)
             ->forEntryType($entryType)
             ->createElement();
-        $entry->setScenario(Element::SCENARIO_LIVE);
+        $entry->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         $entry->setAuthorIds([]);
 
         $entry->validate(['authorIds']);

@@ -217,9 +217,7 @@ class LegacyBehaviorCatalog
 
         $targetClass = null;
 
-        if (preg_match('/class_alias\(\s*(\\\\?CraftCms\\\\Cms\\\\[^:]+)::class,\s*' . $shortName . '::class\s*\);/', $contents, $aliasMatch)) {
-            $targetClass = ltrim($aliasMatch[1], '\\');
-        } elseif ($definition['extends'] !== null && str_starts_with($definition['extends'], 'CraftCms\\Cms\\')) {
+        if ($definition['extends'] !== null && str_starts_with($definition['extends'], 'CraftCms\\Cms\\')) {
             $targetClass = $definition['extends'];
         }
 

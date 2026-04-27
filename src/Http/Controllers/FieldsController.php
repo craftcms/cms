@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use Craft;
-use craft\base\ElementInterface;
-use craft\web\assets\fieldsettings\FieldSettingsAsset;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
@@ -17,7 +15,9 @@ use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\MissingField;
@@ -38,6 +38,8 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlStack;
+use CraftCms\Cms\View\LegacyAssets\FieldSettingsAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -174,7 +176,7 @@ class FieldsController
             'handle' => $request->input('handle'),
             'instructions' => $request->input('instructions'),
             'searchable' => (bool) $request->input('searchable', true),
-            'translationMethod' => $request->input('translationMethod', Field::TRANSLATION_METHOD_NONE),
+            'translationMethod' => $request->enum('translationMethod', TranslationMethod::class, TranslationMethod::None),
             'translationKeyFormat' => $request->input('translationKeyFormat'),
             'settings' => $request->input('types', [])[Html::id($type)] ?? [],
         ]);
@@ -303,7 +305,7 @@ class FieldsController
 
     public function tableData(Request $request): Response
     {
-        $page = (int) $request->input('page', 1);
+        $page = (int) $request->input(Cms::config()->getPageTriggerParam(), 1);
         $limit = (int) $request->input('per_page', 100);
         $searchTerm = $request->input('search');
         $orderBy = match ($request->input('sort.0.field')) {
@@ -403,6 +405,14 @@ class FieldsController
                 $supportedTranslationMethods[$class] = $class::supportedTranslationMethods();
             }
         }
+
+        $supportedTranslationMethods = array_map(
+            fn (array $translationMethods) => array_map(
+                static fn (TranslationMethod $translationMethod) => $translationMethod->value,
+                $translationMethods,
+            ),
+            $supportedTranslationMethods,
+        );
 
         // Allowed field types
         // ---------------------------------------------------------------------
@@ -504,7 +514,7 @@ class FieldsController
 
         $response
             ->prepareScreen(function () {
-                Craft::$app->getView()->registerAssetBundle(FieldSettingsAsset::class);
+                app(InternalAssetRegistry::class)->register(FieldSettingsAsset::class);
                 $this->HtmlStack->jsWithVars(fn ($typeId, $settingsId, $namespace) => <<<JS
 new Craft.FieldSettingsToggle('#' + $typeId, '#' + $settingsId, $namespace, {
   wrapWithTypeClassDiv: true

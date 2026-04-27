@@ -8,8 +8,8 @@
 namespace craft\behaviors;
 
 use CraftCms\Cms\Element\Element;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementHelper;
 use DateTime;
 use Illuminate\Support\Facades\DB;
 

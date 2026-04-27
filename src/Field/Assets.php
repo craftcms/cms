@@ -5,20 +5,18 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
-use Craft;
-use craft\base\ElementInterface;
-use craft\helpers\ElementHelper;
-use craft\web\UploadedFile;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
-use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
@@ -36,11 +34,14 @@ use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
 use CraftCms\Cms\Gql\Resolvers\Elements\Asset as AssetResolver;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
+use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -495,9 +496,9 @@ class Assets extends BaseRelationField
                         $asset->setVolumeId($uploadFolder->volumeId);
                         $asset->uploaderId = Auth::id();
                         $asset->avoidFilenameConflicts = true;
-                        $asset->setScenario(Asset::SCENARIO_CREATE);
+                        $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
 
-                        if (Craft::$app->getElements()->saveElement($asset)) {
+                        if (Elements::saveElement($asset)) {
                             $assetIds[] = $asset->id;
                         } else {
                             Log::warning('Couldn’t save uploaded asset due to validation errors: '.implode(', ', $asset->getFirstErrors()), [__METHOD__]);
@@ -530,7 +531,7 @@ class Assets extends BaseRelationField
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
         // No special treatment for revisions
-        $rootElement = ElementHelper::rootElement($element);
+        $rootElement = $element->getRootOwner();
         if (! $rootElement->getIsRevision()) {
             // Figure out what we're working with and set up some initial variables.
             $isCanonical = $rootElement->getIsCanonical();
@@ -652,7 +653,7 @@ class Assets extends BaseRelationField
             $sources = array_merge($this->sources);
         } else {
             $sources = [];
-            foreach (resolve(ElementSources::class)->getSources(Asset::class) as $source) {
+            foreach (ElementSources::getSources(Asset::class) as $source) {
                 if ($source['type'] !== ElementSources::TYPE_HEADING) {
                     $sources[] = $source['key'];
                 }
@@ -807,13 +808,21 @@ class Assets extends BaseRelationField
         $paramName = $this->requestParamName($element);
 
         if ($paramName !== null) {
-            $uploadedFiles = UploadedFile::getInstancesByName($paramName);
+            $uploadedFiles = request()->file($paramName, []);
 
-            foreach ($uploadedFiles as $uploadedFile) {
+            if ($uploadedFiles instanceof UploadedFile) {
+                $uploadedFiles = [$uploadedFiles];
+            }
+
+            foreach (Arr::flatten($uploadedFiles) as $uploadedFile) {
+                if (! $uploadedFile instanceof UploadedFile) {
+                    continue;
+                }
+
                 $files[] = [
-                    'filename' => $uploadedFile->name,
-                    'mimeType' => $uploadedFile->type,
-                    'path' => $uploadedFile->tempName,
+                    'filename' => $uploadedFile->getClientOriginalName(),
+                    'mimeType' => $uploadedFile->getMimeType(),
+                    'path' => $uploadedFile->path(),
                     'type' => 'upload',
                 ];
             }

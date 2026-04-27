@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Gql;
 
 use ArrayObject;
-use craft\elements\db\EagerLoadPlan;
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Assets as AssetField;
 use CraftCms\Cms\Field\BaseRelationField;
@@ -410,7 +410,14 @@ class ElementQueryConditionBuilder extends Component
                         $plan->alias = $alias ?: $nodeName;
                         /** @var InlineFragmentNode|FragmentDefinitionNode|null $wrappingFragment */
                         if ($wrappingFragment) {
-                            $plan->when = fn (Element $element) => $element->getGqlTypeName() === $wrappingFragment->typeCondition->name->value;
+                            $plan->when = function (Element $element) use ($wrappingFragment) {
+                                $typeName = $wrappingFragment->typeCondition->name->value;
+                                if (preg_match('/^(\w+)Interface$/', $typeName, $match)) {
+                                    return str_ends_with($element->getGqlTypeName(), "_{$match[1]}");
+                                }
+
+                                return $element->getGqlTypeName() === $typeName;
+                            };
                         }
                         $plan->criteria = array_merge_recursive($plan->criteria, $this->_argumentManager->prepareArguments($arguments));
                     }
@@ -497,11 +504,11 @@ class ElementQueryConditionBuilder extends Component
 
             // If not, create a new plan.
             if (! $foundPlan) {
-                $plans[] = new EagerLoadPlan([
-                    'handle' => $countedHandle,
-                    'alias' => $countedHandle,
-                    'count' => true,
-                ]);
+                $plans[] = new EagerLoadPlan(
+                    handle: $countedHandle,
+                    alias: $countedHandle,
+                    count: true,
+                );
             }
         }
 

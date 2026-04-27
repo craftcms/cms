@@ -10,7 +10,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\View\TemplateMode;
-use Twig\Markup;
+use Illuminate\Support\HtmlString;
 
 use function CraftCms\Cms\template;
 
@@ -24,7 +24,7 @@ use function CraftCms\Cms\template;
  */
 trait Renderable
 {
-    public function render(array $variables = []): Markup
+    public function render(array $variables = []): HtmlString
     {
         $templates = $this->partialTemplatePathCandidates();
 
@@ -39,7 +39,7 @@ trait Renderable
         ));
 
         if ($event->output !== null) {
-            return new Markup($event->output, 'UTF-8');
+            return new HtmlString($event->output);
         }
 
         $templates = $event->templates;
@@ -53,22 +53,20 @@ trait Renderable
 
                 $output = template($template['template'], $variables, templateMode: TemplateMode::Site);
 
-                return new Markup($output, 'UTF-8');
+                return new HtmlString($output);
             }
         }
 
         // fallback to the string representation of the element
         $output = Html::tag('p', Html::encode((string) $this));
 
-        return new Markup($output, 'UTF-8');
+        return new HtmlString($output);
     }
 
     /**
      * Returns the template paths to check when rendering the element’s partial template.
      *
      * @return array{template:string,priority:int}[]
-     *
-     * @since 5.8.0
      */
     protected function partialTemplatePathCandidates(): array
     {

@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
 use Override;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 use function CraftCms\Cms\t;
 
@@ -577,6 +577,24 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public array $cpHeadTags = [];
+
+    /**
+     * @var string|null Site icon
+     *
+     * Square SVG file recommended. The logo will be displayed at 32px by 32px.
+     *
+     * @group System
+     */
+    public ?string $cpIconUrl = null;
+
+    /**
+     * @var string|null Login page logo
+     *
+     * SVG file recommended. The logo will be displayed at 288px wide.
+     *
+     * @group System
+     */
+    public ?string $cpLogoUrl = null;
 
     /**
      * @var string|null The URI segment Craft should look for when determining if the current request should route to the control panel rather than
@@ -1148,24 +1166,6 @@ class GeneralConfig extends BaseConfig
      * @group Security
      */
     public bool $enableTwigSandbox = false;
-
-    /**
-     * @var string The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s template.
-     *
-     * If set to `'_'` your site’s 404 template would live at `templates/_404.twig`, for example.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->errorTemplatePrefix('_')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ERROR_TEMPLATE_PREFIX=_
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public string $errorTemplatePrefix = '';
 
     /**
      * @var string[]|null List of file extensions that will be merged into the <config5:allowedFileExtensions> config setting.
@@ -1948,20 +1948,12 @@ class GeneralConfig extends BaseConfig
     public bool $optimizeImageFilesize = true;
 
     /**
-     * @var string The string preceding a number which Craft will look for when determining if the current request is for a particular page in
-     *             a paginated list of pages.
+     * @var string The query string param name Craft should use for paginated requests.
      *
      * | Example Value | Example URI |
      * | --- | --- |
-     * | `p` | `/news/p5` |
-     * | `page` | `/news/page5` |
-     * | `page/` | `/news/page/5` |
-     * | `?page` | `/news?page=5` |
-     *
-     * ::: warning
-     * Craft may override this setting if it conflicts with <config5:pathParam>. If you want to set this to `?p` (e.g. `/news?p=5`), you’ll also need to change your <config5:pathParam> setting (which defaults to `p`).
-     * Then, if your server is running Apache, you’ll need to update the redirect code in your `.htaccess` file to match your new `pathParam` value.
-     * :::
+     * | `page` | `/news?page=5` |
+     * | `p` | `/news?p=5` |
      *
      * ::: code
      * ```php Static Config
@@ -1976,7 +1968,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group Routing
      */
-    public string $pageTrigger = 'p';
+    public string $pageTrigger = 'page';
 
     /**
      * @var string The path within the `templates` folder where element partial templates will live.
@@ -2970,6 +2962,24 @@ class GeneralConfig extends BaseConfig
     public ?string $tempAssetUploadFs = null;
 
     /**
+     * @var string|null The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
+     *
+     * This can be set to one of PHP’s [supported timezones](https://php.net/manual/en/timezones.php).
+     *
+     * ::: code
+     * ```php Static Config
+     * ->timezone('Europe/London')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_TIMEZONE=Europe/London
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public ?string $timezone = null;
+
+    /**
     /**
      * @var bool Whether GIF files should be cleansed/transformed.
      *
@@ -3807,6 +3817,38 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * Site icon
+     *
+     * Square SVG file recommended. The logo will be displayed at 32px by 32px.
+     *
+     * @group System
+     *
+     * @see $cpIconUrl
+     */
+    public function cpIconUrl(?string $value): self
+    {
+        $this->cpIconUrl = $value;
+
+        return $this;
+    }
+
+    /**
+     * Login page logo
+     *
+     * SVG file recommended. The logo will be displayed at 288px wide.
+     *
+     * @group System
+     *
+     * @see $cpLogoUrl
+     */
+    public function cpLogoUrl(?string $value): self
+    {
+        $this->cpLogoUrl = $value;
+
+        return $this;
+    }
+
+    /**
      * The URI segment Craft should look for when determining if the current request should route to the control panel rather than
      * the front-end website.
      *
@@ -3880,7 +3922,7 @@ class GeneralConfig extends BaseConfig
     public function defaultCountryCode(string $value): self
     {
         if (empty($value)) {
-            throw new InvalidConfigException('`defaultCountryCode` cannot be empty', 0);
+            throw new RuntimeException('`defaultCountryCode` cannot be empty', 0);
         }
 
         $this->defaultCountryCode = $value;
@@ -3897,7 +3939,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      *
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      *
      * @see $defaultCpLanguage
      */
@@ -3908,7 +3950,7 @@ class GeneralConfig extends BaseConfig
                 $value = I18N::normalizeLanguage($value);
                 /** @phpstan-ignore catch.neverThrown */
             } catch (InvalidArgumentException $e) {
-                throw new InvalidConfigException($e->getMessage(), 0, $e);
+                throw new RuntimeException($e->getMessage(), 0, $e);
             }
         }
 
@@ -4349,26 +4391,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s template.
-     *
-     * If set to `'_'` your site’s 404 template would live at `templates/_404.twig`, for example.
-     *
-     * ```php
-     * ->errorTemplatePrefix('_')
-     * ```
-     *
-     * @group System
-     *
-     * @see $errorTemplatePrefix
-     */
-    public function errorTemplatePrefix(string $value): self
-    {
-        $this->errorTemplatePrefix = $value;
-
-        return $this;
-    }
-
-    /**
      * List of file extensions that will be merged into the <config5:allowedFileExtensions> config setting.
      *
      * ```php
@@ -4403,7 +4425,7 @@ class GeneralConfig extends BaseConfig
      *
      * @param  string[]  $value
      *
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      *
      * @see $extraAppLocales
      */
@@ -4414,7 +4436,7 @@ class GeneralConfig extends BaseConfig
                 $localeId = I18N::normalizeLanguage($localeId);
                 /** @phpstan-ignore catch.neverThrown */
             } catch (InvalidArgumentException $e) {
-                throw new InvalidConfigException($e->getMessage(), 0, $e);
+                throw new RuntimeException($e->getMessage(), 0, $e);
             }
         }
 
@@ -5170,20 +5192,12 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The string preceding a number which Craft will look for when determining if the current request is for a particular page in
-     * a paginated list of pages.
+     * Sets the query string param name Craft should use for paginated requests.
      *
      * | Example Value | Example URI |
      * | --- | --- |
-     * | `p` | `/news/p5` |
-     * | `page` | `/news/page5` |
-     * | `page/` | `/news/page/5` |
-     * | `?page` | `/news?page=5` |
-     *
-     * ::: warning
-     * Craft may override this setting if it conflicts with <config5:pathParam>. If you want to set this to `?p` (e.g. `/news?p=5`), you’ll also need to change your <config5:pathParam> setting (which defaults to `p`).
-     * Then, if your server is running Apache, you’ll need to update the redirect code in your `.htaccess` file to match your new `pathParam` value.
-     * :::
+     * | `page` | `/news?page=5` |
+     * | `p` | `/news?p=5` |
      *
      * ```php
      * ->pageTrigger('page')
@@ -5195,7 +5209,7 @@ class GeneralConfig extends BaseConfig
      */
     public function pageTrigger(string $value): self
     {
-        $this->pageTrigger = $value;
+        $this->pageTrigger = $this->normalizePageTrigger($value);
 
         return $this;
     }
@@ -5609,7 +5623,7 @@ class GeneralConfig extends BaseConfig
      *
      * @defaultAlt 14 days
      *
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      *
      * @see $rememberedUserSessionDuration
      * @since 4.2.0
@@ -5620,7 +5634,7 @@ class GeneralConfig extends BaseConfig
         try {
             $interval = DateTimeHelper::toDateInterval($value);
         } catch (InvalidArgumentException $e) {
-            throw new InvalidConfigException($e->getMessage(), 0, $e);
+            throw new RuntimeException($e->getMessage(), 0, $e);
         }
 
         $this->rememberedUserSessionDuration = $interval ? ConfigHelper::durationInSeconds($interval) : 0;
@@ -6163,6 +6177,29 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * Configures Craft to send all system emails to either a single email address or an array of email addresses
+     * for testing purposes.
+     *
+     * The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
+     *
+     * This can be set to one of PHP’s [supported timezones](https://php.net/manual/en/timezones.php).
+     *
+     * ```php
+     * ->timezone('Europe/London')
+     * ```
+     *
+     * @group System
+     *
+     * @see $timezone
+     */
+    public function timezone(?string $value): self
+    {
+        $this->timezone = $value;
+
+        return $this;
+    }
+
+    /**
      * Whether GIF files should be cleansed/transformed.
      *
      * ```php
@@ -6621,25 +6658,31 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Returns the normalized page trigger.
+     * Returns the normalized page trigger in query-string form.
      *
      * @see pageTrigger
      */
     public function getPageTrigger(): string
     {
-        $pageTrigger = $this->pageTrigger;
+        return '?'.$this->getPageTriggerParam().'=';
+    }
+
+    public function getPageTriggerParam(): string
+    {
+        return $this->normalizePageTrigger($this->pageTrigger);
+    }
+
+    private function normalizePageTrigger(string $pageTrigger): string
+    {
+        $pageTrigger = trim($pageTrigger);
 
         if ($pageTrigger === '') {
-            $pageTrigger = 'p';
+            return 'page';
         }
 
-        // Is this query string-based pagination?
-        if (str_starts_with($pageTrigger, '?')) {
-            $pageTrigger = trim($pageTrigger, '?=');
+        $pageTrigger = trim($pageTrigger, '?=');
+        $pageTrigger = rtrim($pageTrigger, '/');
 
-            return '?'.$pageTrigger.'=';
-        }
-
-        return $pageTrigger;
+        return $pageTrigger !== '' ? $pageTrigger : 'page';
     }
 }

@@ -26,9 +26,10 @@ composer tests-adapter
 ./vendor/bin/codecept run unit --filter="test name"
 ```
 
-
+- Pest processes that use `tests/TestCase.php` or `yii2-adapter/tests-laravel/TestCase.php` are serialized with a shared lock. If another one is already running, the next process will wait and print `Another Pest process is already using the shared test database. Waiting for the lock...` until the lock is released.
+- `tests/Unit/` tests that use `UnitTestCase` do not take that lock and can still run concurrently.
 - When running tests with `./vendor/bin/pest`, always add `--compact` to reduce output verbosity and token count.
-- When writing tests, don't use Mockery or Mocks unless absolutely necessary. Prefer using Laravel's Facade fakes or running real code. Tests written are feature or integration tests and not unit tests.
+- When writing tests, prefer using real code paths or use Laravel Facades to set up mocks for services.
 
 ### Code Quality
 ```bash
@@ -132,7 +133,7 @@ Element queries (`src/Database/Queries/`) are the primary way to query content:
 - Uses `RefreshDatabase` trait - tables are migrated fresh via the `Install` migration
 - **Classes marked `final` have this keyword stripped during testing** - you can create custom test classes that extend production classes (e.g., extending `User` element) to override methods like `getFieldLayout()` for easier testing without complex mocks
 
-**Important**: When creating or adjusting tests, take a look at @docs/TESTING.md for patterns and best practices.
+**Important**: When creating or adjusting tests, use the `testing-guidelines` skill for patterns and best practices.
 
 ### Service Providers Pattern
 

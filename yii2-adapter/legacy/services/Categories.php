@@ -23,6 +23,8 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Structure\Data\Structure;
+use CraftCms\Cms\Support\Facades\ElementCaches;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\MemoizableArray;
@@ -487,7 +489,7 @@ class Categories extends Component
                                     ->one();
 
                                 if ($category) {
-                                    Craft::$app->getElements()->updateElementSlugAndUri($category, false, false);
+                                    Elements::updateElementSlugAndUri($category, false, false);
                                 }
                             }
                         }
@@ -512,7 +514,8 @@ class Categories extends Component
                 ->trashed()
                 ->andWhere(['categories.deletedWithGroup' => true])
                 ->all();
-            Craft::$app->getElements()->restoreElements($categories);
+
+            Elements::restoreElements($categories);
         }
 
         // Fire an 'afterSaveGroup' event
@@ -524,7 +527,7 @@ class Categories extends Component
         }
 
         // Invalidate category caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Category::class);
+        ElementCaches::invalidateForElementType(Category::class);
     }
 
     /**
@@ -669,7 +672,7 @@ class Categories extends Component
         }
 
         // Invalidate category caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Category::class);
+        ElementCaches::invalidateForElementType(Category::class);
     }
 
     /**
@@ -733,7 +736,10 @@ class Categories extends Component
             return null;
         }
 
-        return Craft::$app->getElements()->getElementById($categoryId, Category::class, $siteId, $criteria);
+        /** @var ?Category $category */
+        $category = Elements::getElementById($categoryId, Category::class, $siteId, $criteria);
+
+        return $category;
     }
 
     /**

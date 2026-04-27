@@ -247,26 +247,6 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     public bool $requireUserAgentAndIpForSession = true;
 
     /**
-     * @var string|null The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
-     *
-     * This can be set to one of PHP’s [supported timezones](https://php.net/manual/en/timezones.php).
-     *
-     * ::: code
-     * ```php Static Config
-     * ->timezone('Europe/London')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_TIMEZONE=Europe/London
-     * ```
-     * :::
-     *
-     * @group System
-     *
-     * @deprecated in 6.0.0. Laravel's `app.timezone` config variable should be used instead.
-     */
-    public ?string $timezone = null;
-
-    /**
      * @var mixed The amount of time before a user will get logged out due to inactivity.
      *
      * Set to `0` if you want users to stay logged in as long as their browser is open rather than a predetermined amount of time.
@@ -291,6 +271,25 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * @deprecated 6.0.0
      */
     public mixed $userSessionDuration = 3600;
+
+    /**
+     * @var string The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s template.
+     *
+     * If set to `'_'` your site’s 404 template would live at `templates/_404.twig`, for example.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->errorTemplatePrefix('_')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ERROR_TEMPLATE_PREFIX=_
+     * ```
+     * :::
+     *
+     * @group System
+     * @deprecated 6.0.0 in favor of [Laravel's custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages)
+     */
+    public string $errorTemplatePrefix = '';
 
     /**
      * @inheritdoc
@@ -875,34 +874,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
-    /**
-     * Configures Craft to send all system emails to either a single email address or an array of email addresses
-     * for testing purposes.
-     *
-     * The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
-     *
-     * This can be set to one of PHP’s [supported timezones](https://php.net/manual/en/timezones.php).
-     *
-     * ```php
-     * ->timezone('Europe/London')
-     * ```
-     *
-     * @group System
-     *
-     * @see $timezone
-     */
-    #[Deprecated(message: "in 6.0.0. Laravel's `app.timezone` config variable should be used instead.")]
-    public function timezone(?string $value): self
-    {
-        app()->booting(function() use ($value) {
-            Deprecator::log('generalConfig.timezone', 'Calling timezone() is deprecated. Laravel\'s `app.timezone` config variable should be used instead.');
-            ConfigFacade::set('app.timezone', $value);
-        });
 
-        $this->timezone = $value;
-
-        return $this;
-    }
     /**
      * The configuration for trusted security-related headers.
      *
@@ -1050,6 +1022,32 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         ));
 
         $this->testToEmailAddress = $value;
+
+        return $this;
+    }
+
+    /**
+     * The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s template.
+     *
+     * If set to `'_'` your site’s 404 template would live at `templates/_404.twig`, for example.
+     *
+     * ```php
+     * ->errorTemplatePrefix('_')
+     * ```
+     *
+     * @group System
+     *
+     * @see $errorTemplatePrefix
+     */
+    #[Deprecated(message: 'in 6.0.0. Configure [Laravel\'s custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages) instead.')]
+    public function errorTemplatePrefix(string $value): self
+    {
+        app()->booted(fn() => Deprecator::log(
+            'generalConfig.errorTemplatePrefix',
+            '`craft\\config\\GeneralConfig::$errorTemplatePrefix` and `craft\\config\\GeneralConfig::errorTemplatePrefix()` are deprecated. Configure [Laravel\'s custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages) instead.',
+        ));
+
+        $this->errorTemplatePrefix = $value;
 
         return $this;
     }

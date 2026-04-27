@@ -11,15 +11,17 @@ declare(strict_types=1);
 
 namespace craft\fieldlayoutelements\assets;
 
+use craft\base\LegacyEventConstants;
+
 /**
  * AssetTitleField represents a Title field that can be included within a volume's field layout designer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 3.6.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\assets\AssetTitleField} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\Assets\AssetTitleField} instead.
  */
-class AssetTitleField extends \CraftCms\Cms\FieldLayout\LayoutElements\assets\AssetTitleField
+class AssetTitleField extends \CraftCms\Cms\FieldLayout\LayoutElements\Assets\AssetTitleField
 {
-    use \craft\base\LegacyEventConstants;
+    use LegacyEventConstants;
 }

@@ -65,14 +65,14 @@ trait QueriesUserProperties
     {
         $this->beforeQuery(function (UserQuery $userQuery) {
             if ($userQuery->lastLoginDate) {
-                $userQuery->subQuery->whereDateParam('users.lastLoginDate', $this->lastLoginDate);
+                $userQuery->whereDateParam('users.lastLoginDate', $this->lastLoginDate);
             }
 
             if (is_bool($userQuery->hasPhoto)) {
                 $userQuery->when(
                     $userQuery->hasPhoto,
-                    fn (UserQuery $q) => $q->subQuery->whereNotNull('users.photoId'),
-                    fn (UserQuery $q) => $q->subQuery->whereNull('users.photoId'),
+                    fn (UserQuery $q) => $q->whereNotNull('users.photoId'),
+                    fn (UserQuery $q) => $q->whereNull('users.photoId'),
                 );
             }
 
@@ -85,7 +85,7 @@ trait QueriesUserProperties
                     $userQuery->$property = Query::escapeCommas($userQuery->$property);
                 }
 
-                $userQuery->subQuery->whereParam(
+                $userQuery->whereParam(
                     column: "users.$property",
                     param: $userQuery->$property,
                     caseInsensitive: true,

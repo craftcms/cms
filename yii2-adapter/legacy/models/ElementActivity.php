@@ -7,7 +7,7 @@
 
 namespace craft\models;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\User\Elements\User;
 use DateTime;
 
@@ -16,6 +16,7 @@ use DateTime;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Data\ElementActivity} instead.
  */
 class ElementActivity
 {

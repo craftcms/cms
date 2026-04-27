@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
-use Craft;
 use CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AfterReplaceAsset;
 use CraftCms\Cms\Asset\Events\BeforeReplaceAsset;
 use CraftCms\Cms\Asset\Events\DefineThumbUrl;
@@ -19,8 +19,10 @@ use CraftCms\Cms\Asset\PreviewHandlers\Image as ImagePreview;
 use CraftCms\Cms\Asset\PreviewHandlers\Pdf;
 use CraftCms\Cms\Asset\PreviewHandlers\Text;
 use CraftCms\Cms\Asset\PreviewHandlers\Video;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
@@ -42,9 +44,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
+use RuntimeException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
 
@@ -56,11 +58,12 @@ class Assets
 
     public function __construct(
         private readonly Folders $folders,
+        private readonly Elements $elements,
     ) {}
 
     public function getAssetById(int $assetId, ?int $siteId = null): ?Asset
     {
-        return Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
+        return $this->elements->getElementById($assetId, Asset::class, $siteId);
     }
 
     public function getTotalAssets(mixed $criteria = null): int
@@ -93,8 +96,8 @@ class Assets
         $asset->setMimeType(File::getMimeType($pathOnServer, checkExtension: false) ?? $mimeType);
         $asset->uploaderId = Auth::user()?->id;
         $asset->avoidFilenameConflicts = true;
-        $asset->setScenario(Asset::SCENARIO_REPLACE);
-        Craft::$app->getElements()->saveElement($asset);
+        $asset->ruleset->useScenario(AssetRules::SCENARIO_REPLACE);
+        $this->elements->saveElement($asset);
 
         event(new AfterReplaceAsset(
             asset: $asset,
@@ -117,12 +120,12 @@ class Assets
 
         if ($filenameChanging) {
             $asset->newFilename = $filename;
-            $asset->setScenario(Asset::SCENARIO_FILEOPS);
+            $asset->ruleset->useScenario(AssetRules::SCENARIO_FILEOPS);
         } else {
-            $asset->setScenario(Asset::SCENARIO_MOVE);
+            $asset->ruleset->useScenario(AssetRules::SCENARIO_MOVE);
         }
 
-        return Craft::$app->getElements()->saveElement($asset);
+        return $this->elements->saveElement($asset);
     }
 
     public function getThumbUrl(Asset $asset, int $width, ?int $height = null, bool $iconFallback = true): ?string
@@ -147,7 +150,7 @@ class Assets
             ]) : null;
         }
 
-        $transform = Craft::createObject(ImageTransform::class, [
+        $transform = new ImageTransform([
             'width' => $width,
             'height' => $height,
             'mode' => 'crop',
@@ -185,8 +188,7 @@ class Assets
             $originalWidth > $width ||
             $originalHeight > $height
         ) {
-            $transform = Craft::createObject([
-                'class' => ImageTransform::class,
+            $transform = new ImageTransform([
                 'width' => $width,
                 'height' => $height,
                 'mode' => 'crop',
@@ -204,7 +206,7 @@ class Assets
 
     /**
      * @throws AssetOperationException
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     public function getNameReplacementInFolder(string $originalFilename, int $folderId): string
     {
@@ -291,16 +293,16 @@ class Assets
         }
 
         return match ($asset->kind) {
-            Asset::KIND_IMAGE => new ImagePreview($asset),
-            Asset::KIND_PDF => new Pdf($asset),
-            Asset::KIND_VIDEO => new Video($asset),
-            Asset::KIND_HTML, Asset::KIND_JAVASCRIPT, Asset::KIND_JSON, Asset::KIND_PHP, Asset::KIND_TEXT, Asset::KIND_XML => new Text($asset),
+            FileKind::Image->value => new ImagePreview($asset),
+            FileKind::Pdf->value => new Pdf($asset),
+            FileKind::Video->value => new Video($asset),
+            FileKind::Html->value, FileKind::Javascript->value, FileKind::Json->value, FileKind::Php->value, FileKind::Text->value, FileKind::Xml->value => new Text($asset),
             default => null,
         };
     }
 
     /**
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     public function getTempAssetUploadFs(): FsInterface
     {
@@ -311,11 +313,11 @@ class Assets
         }
 
         return Filesystems::resolve($handle)
-            ?? throw new InvalidConfigException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle");
+            ?? throw new RuntimeException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle");
     }
 
     /**
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     public function getTempAssetUploadDisk(): FilesystemAdapter
     {
@@ -330,7 +332,7 @@ class Assets
 
         return Storage::disk(
             Filesystems::resolveDiskName($handle)
-                ?? throw new InvalidConfigException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle")
+                ?? throw new RuntimeException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle")
         );
     }
 

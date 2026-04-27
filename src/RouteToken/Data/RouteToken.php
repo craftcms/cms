@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\RouteToken\Data;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use Illuminate\Validation\Rule;
 
 class RouteToken extends Component

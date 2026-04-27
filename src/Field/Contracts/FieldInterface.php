@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Contracts;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Gql\Data\GqlSchema;
@@ -50,12 +51,11 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      */
     public ?string $describedBy { get; set; }
 
-    /**
-     * @var string The field’s translation method
-     *
-     * @phpstan-var Field::TRANSLATION_METHOD_*
-     */
-    public string $translationMethod { get; set; }
+    /** @var string The field’s translation method */
+    public string $translationMethod {
+        get;
+        set(string|TranslationMethod $value);
+    }
 
     /** @var string|null The field’s translation key format, if [[translationMethod]] is "custom" */
     public ?string $translationKeyFormat { get; set; }
@@ -107,7 +107,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      * - 'site' (values will never be copied to other sites)
      * - 'custom' (values will be copied/not copied depending on a custom translation key)
      *
-     * @return string[]
+     * @return TranslationMethod[]
      *
      * @see getTranslationKey()
      */
@@ -377,7 +377,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      * [
      *       'string',
      *       'min:3',
-     *       Rule::when($element->inScenarios(self::SCENARIO_LIVE), ['max:12']),
+     *       Rule::when($element->ruleset->inScenarios(\CraftCms\Cms\Element\Validation\ElementRules::SCENARIO_LIVE), ['max:12']),
      *  ]
      * ```
      */

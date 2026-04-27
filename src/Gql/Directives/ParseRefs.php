@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Directives;
 
-use Craft;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
+use CraftCms\Cms\Support\Facades\Elements;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -33,6 +33,6 @@ class ParseRefs extends Directive
 
     public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo): mixed
     {
-        return Craft::$app->getElements()->parseRefs((string) $value);
+        return Elements::parseRefs((string) $value);
     }
 }

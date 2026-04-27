@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use craft\elements\exporters\Expanded;
-use craft\elements\exporters\Raw;
 use CraftCms\Cms\Element\Events\RegisterExporters;
+use CraftCms\Cms\Element\Exporters\Expanded;
+use CraftCms\Cms\Element\Exporters\Raw;
 use CraftCms\Cms\Entry\Elements\Entry;
 use Illuminate\Support\Facades\Event;
 

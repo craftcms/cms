@@ -6,12 +6,12 @@ namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
 use craft\helpers\App;
-use craft\services\ElementSources;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
@@ -31,6 +31,7 @@ use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
 use CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
@@ -60,6 +61,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use RuntimeException;
 use SplFileInfo;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
@@ -67,8 +69,6 @@ use Throwable;
 use yii\base\Application;
 use yii\base\ErrorException;
 use yii\base\Exception;
-use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
 use yii\web\ServerErrorHttpException;
 
 use function Illuminate\Filesystem\join_paths;
@@ -446,7 +446,7 @@ class ProjectConfig
      * @throws Exception
      * @throws NotSupportedException if the service is set to read-only mode
      * @throws ServerErrorHttpException
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      * @throws BusyResourceException if a lock could not be acquired
      * @throws StaleResourceException if the loaded project config is out-of-date
      */
@@ -823,29 +823,6 @@ class ProjectConfig
     }
 
     /**
-     * Returns a summary of all pending config changes.
-     */
-    public function getPendingChangeSummary(): array
-    {
-        $pendingChanges = $this->_getPendingChanges();
-
-        $summary = [];
-
-        // Reduce all the small changes to overall item changes.
-        foreach ($pendingChanges as $type => $changes) {
-            $summary[$type] = [];
-            foreach ($changes as $path) {
-                $pathParts = explode('.', (string) $path);
-                if (count($pathParts) > 1) {
-                    $summary[$type][$pathParts[0].'.'.$pathParts[1]] = true;
-                }
-            }
-        }
-
-        return $summary;
-    }
-
-    /**
      * Get the list of applied changes
      */
     public function getAppliedChanges(): array
@@ -1027,7 +1004,7 @@ class ProjectConfig
      */
     public function registerChangeEventHandler(string $event, string $path, callable $handler, mixed $data = null): void
     {
-        $specificity = substr_count($path, '.');
+        $specificity = ProjectConfigHelper::pathDepth($path);
         $pattern = '/^(?P<path>'.preg_quote($path, '/').')(?P<extra>\..+)?$/';
         $pattern = str_replace('\\{uid\\}', '('.self::UID_PATTERN.')', $pattern);
 
@@ -1323,7 +1300,7 @@ class ProjectConfig
      * @param  array|null  $configData  config data to use. If null, the config is fetched from the project config files.
      * @param  bool  $existsOnly  whether to just return `true` or `false` depending on whether any changes are found.
      */
-    private function _getPendingChanges(?array $configData = null, bool $existsOnly = false): bool|array
+    protected function _getPendingChanges(?array $configData = null, bool $existsOnly = false): bool|array
     {
         $newItems = [];
         $changedItems = [];
@@ -1378,8 +1355,8 @@ class ProjectConfig
 
         // Sort by number of dots to ensure deepest paths listed first
         $sorter = function ($a, $b) {
-            $aDepth = substr_count($a, '.');
-            $bDepth = substr_count($b, '.');
+            $aDepth = ProjectConfigHelper::pathDepth($a);
+            $bDepth = ProjectConfigHelper::pathDepth($b);
 
             return $bDepth <=> $aDepth;
         };
@@ -1704,14 +1681,12 @@ class ProjectConfig
 
             foreach ($rows as $path => $value) {
                 $current = &$data;
-                $segments = explode('.', $path);
+                $segments = ProjectConfigHelper::pathSegments($path);
                 foreach ($segments as $segment) {
                     // If we're still traversing, enforce array to avoid errors.
-                    /** @phpstan-ignore-next-line */
                     if (! is_array($current)) {
                         $current = [];
                     }
-                    /** @phpstan-ignore-next-line */
                     if (! array_key_exists($segment, $current)) {
                         $current[$segment] = [];
                     }
@@ -1784,7 +1759,7 @@ class ProjectConfig
                 if ($config['type'] === ElementSources::TYPE_CUSTOM && isset($config['condition'])) {
                     try {
                         $config['condition'] = Conditions::createCondition($config['condition'])->getConfig();
-                    } catch (InvalidArgumentException|InvalidConfigException) {
+                    } catch (InvalidArgumentException|RuntimeException) {
                         // Ignore it
                     }
                 }

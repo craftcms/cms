@@ -30,4 +30,6 @@ it('can query elements by site', function () {
 
     expect(entryQuery()->site(['not', $site1->handle])->count())->toBe(1);
     expect(entryQuery()->site(['not', $site2->handle])->count())->toBe(1);
+
+    expect(entryQuery()->siteId([])->count())->toBe(0);
 });

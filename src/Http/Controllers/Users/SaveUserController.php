@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
-use craft\web\UploadedFile;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -23,6 +23,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
+use CraftCms\Cms\User\Validation\UserRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -43,6 +44,7 @@ readonly class SaveUserController
     use RespondsWithFlash;
 
     public function __construct(
+        private Elements $elements,
         private GeneralConfig $generalConfig,
         private ProjectConfig $projectConfig,
         private Sites $sites,
@@ -248,21 +250,21 @@ readonly class SaveUserController
         // Validate and save!
         // ---------------------------------------------------------------------
 
-        $photo = UploadedFile::getInstanceByName('photo');
+        $photo = $request->file('photo');
 
-        if ($photo && ! ImageHelper::canManipulateAsImage($photo->getExtension())) {
+        if ($photo && ! ImageHelper::canManipulateAsImage($photo->extension())) {
             $user->errors()->add('photo', t('The user photo provided is not an image.'));
         }
 
         // Don't validate required custom fields if it's public registration
         if (! $isPublicRegistration || ($userSettings['validateOnPublicRegistration'] ?? false)) {
-            $user->setScenario(Element::SCENARIO_LIVE);
+            $user->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         } else {
-            $user->setScenario(User::SCENARIO_REGISTRATION);
+            $user->ruleset->useScenario(UserRules::SCENARIO_REGISTRATION);
         }
 
         // Manually validate the user so we can pass $clearErrors=false
-        $success = $user->validate(null, false) && Craft::$app->getElements()->saveElement($user, false);
+        $success = $user->validate(null, false) && $this->elements->saveElement($user, false);
 
         if (! $success) {
             Log::info('User not saved due to validation error.', [__METHOD__]);
@@ -301,7 +303,7 @@ readonly class SaveUserController
         }
 
         // Save the user’s photo, if it was submitted
-        $this->processUserPhoto($request, $user);
+        $this->processUserPhoto($request, app(Elements::class), $user);
 
         // If this is public registration, assign the user to the default user group
         if (Edition::isAtLeast(Edition::Pro) && $isPublicRegistration) {
@@ -363,13 +365,13 @@ readonly class SaveUserController
         return $this->redirectToPostedUrl($user);
     }
 
-    private function processUserPhoto(Request $request, User $user): void
+    private function processUserPhoto(Request $request, Elements $elements, User $user): void
     {
         // Delete their photo?
         if ($request->input('deletePhoto')) {
             $this->users->deleteUserPhoto($user);
             $user->photoId = null;
-            Craft::$app->getElements()->saveElement($user);
+            $elements->saveElement($user);
         }
 
         $newPhoto = false;

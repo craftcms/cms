@@ -14,6 +14,7 @@ use CraftCms\Cms\ProjectConfig\Commands\ExportCommand;
 use CraftCms\Cms\ProjectConfig\Commands\GetCommand;
 use CraftCms\Cms\ProjectConfig\Commands\RebuildCommand;
 use CraftCms\Cms\ProjectConfig\Commands\RemoveCommand;
+use CraftCms\Cms\ProjectConfig\Commands\RepairCommand;
 use CraftCms\Cms\ProjectConfig\Commands\SetCommand;
 use CraftCms\Cms\ProjectConfig\Commands\TouchCommand;
 use CraftCms\Cms\ProjectConfig\Commands\WriteCommand;
@@ -68,6 +69,7 @@ class ProjectConfigServiceProvider extends ServiceProvider
             DiffCommand::class,
             ExportCommand::class,
             GetCommand::class,
+            RepairCommand::class,
             SetCommand::class,
             RebuildCommand::class,
             RemoveCommand::class,

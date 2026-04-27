@@ -162,6 +162,11 @@ class Plugin extends Module implements PluginInterface
         return $this->_settings ?: null;
     }
 
+    public function getSettingsRequestClass(): ?string
+    {
+        return null;
+    }
+
     /**
      * @inheritdoc
      */

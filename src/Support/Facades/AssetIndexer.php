@@ -9,10 +9,10 @@ use Override;
 
 /**
  * @method static \Generator getIndexListOnVolume(\CraftCms\Cms\Asset\Data\Volume $volume, string $directory = '')
- * @method static \Illuminate\Support\Collection getExistingIndexingSessions()
+ * @method static \Illuminate\Support\Collection<\CraftCms\Cms\Asset\Data\IndexingSession> getExistingIndexingSessions()
  * @method static int removeCliIndexingSessions()
  * @method static \CraftCms\Cms\Asset\Data\IndexingSession|null getIndexingSessionById(int $sessionId)
- * @method static \CraftCms\Cms\Asset\Data\IndexingSession startIndexingSession(array $volumes, bool $cacheRemoteImages = true, bool $listEmptyFolders = false)
+ * @method static \CraftCms\Cms\Asset\Data\IndexingSession startIndexingSession(array<int|string> $volumes, bool $cacheRemoteImages = true, bool $listEmptyFolders = false)
  * @method static void stopIndexingSession(\CraftCms\Cms\Asset\Data\IndexingSession $session)
  * @method static \CraftCms\Cms\Asset\Data\IndexingSession createIndexingSession(\CraftCms\Cms\Asset\Data\Volume[] $volumeList, bool $cacheRemoteImages = true, bool $isCli = false, bool $listEmptyFolders = false)
  * @method static int storeIndexList(\Generator $indexList, int $sessionId, \CraftCms\Cms\Asset\Data\Volume $volume)

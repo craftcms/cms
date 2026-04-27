@@ -3,6 +3,7 @@
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 
@@ -27,14 +28,14 @@ test('editable/savable returns 0 when having no access', function (string $metho
 ]);
 
 test('it adds the volume as a cache tag', function () {
-    Craft::$app->getElements()->startCollectingCacheInfo();
+    ElementCaches::startCollectingCacheInfo();
 
     $asset = AssetModel::factory()->create();
 
     assetQuery()->volumeId($asset->volumeId)->all();
 
     /** @var TagDependency $dependency */
-    $dependency = Craft::$app->getElements()->stopCollectingCacheInfo()[0];
+    $dependency = ElementCaches::stopCollectingCacheInfo()[0];
 
     expect($dependency->tags)->toContain('element::'.Asset::class.'::volume:'.$asset->volumeId);
 });

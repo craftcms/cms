@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Craft;
-use craft\base\ElementInterface;
-use craft\helpers\AdminTable;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Iconic;
@@ -14,11 +12,14 @@ use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Field\Addresses as AddressesField;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Entries as EntriesField;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\ApplyingFieldDelete;
 use CraftCms\Cms\Field\Events\ApplyingFieldSave;
 use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
@@ -97,6 +98,10 @@ class Fields
      * @var array<string,bool>|null Memoized map of all generated field handles.
      */
     private ?array $_allGeneratedFieldHandles = null;
+
+    public function __construct(
+        private readonly ElementCaches $elementCaches,
+    ) {}
 
     // Handle Registry
     // -------------------------------------------------------------------------
@@ -632,7 +637,7 @@ class Fields
     public function prepFieldForSave(FieldInterface $field): void
     {
         // Clear the translation key format if not using a custom translation method
-        if ($field->translationMethod !== Field::TRANSLATION_METHOD_CUSTOM) {
+        if ($field->translationMethod !== TranslationMethod::Custom->value) {
             $field->translationKeyFormat = null;
         }
 
@@ -766,7 +771,7 @@ class Fields
         event(new FieldDeleted($field));
 
         // Invalidate all element caches
-        Craft::$app->getElements()->invalidateAllCaches();
+        $this->elementCaches->invalidateAll();
     }
 
     /**
@@ -1068,9 +1073,10 @@ class Fields
      * Deletes a field layout(s) by its ID.
      *
      * @param  int|int[]  $layoutId  The field layout’s ID
+     * @param  bool  $hardDelete  Whether the field layout should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the field layout was deleted successfully
      */
-    public function deleteLayoutById(array|int $layoutId): bool
+    public function deleteLayoutById(array|int $layoutId, bool $hardDelete = false): bool
     {
         if (! $layoutId) {
             return false;
@@ -1078,7 +1084,7 @@ class Fields
 
         foreach (Arr::wrap($layoutId) as $thisLayoutId) {
             if ($layout = $this->getLayoutById($thisLayoutId)) {
-                $this->deleteLayout($layout);
+                $this->deleteLayout($layout, $hardDelete);
             }
         }
 
@@ -1089,13 +1095,18 @@ class Fields
      * Deletes a field layout.
      *
      * @param  FieldLayout  $layout  The field layout
+     * @param  bool  $hardDelete  Whether the field layout should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the field layout was deleted successfully
      */
-    public function deleteLayout(FieldLayout $layout): bool
+    public function deleteLayout(FieldLayout $layout, bool $hardDelete = false): bool
     {
         event(new FieldLayoutDeleting($layout));
 
-        DB::table(Table::FIELDLAYOUTS)->softDelete($layout->id);
+        if ($hardDelete) {
+            DB::table(Table::FIELDLAYOUTS)->delete($layout->id);
+        } else {
+            DB::table(Table::FIELDLAYOUTS)->softDelete($layout->id);
+        }
 
         event(new FieldLayoutDeleted($layout));
 
@@ -1168,7 +1179,7 @@ class Fields
             $deleteSearchIndexes = ! $isNewField && ! $searchable && $fieldRecord->searchable;
 
             // Clear the translation key format if not using a custom translation method
-            if ($data['translationMethod'] !== Field::TRANSLATION_METHOD_CUSTOM) {
+            if ($data['translationMethod'] !== TranslationMethod::Custom->value) {
                 $data['translationKeyFormat'] = null;
             }
 
@@ -1228,7 +1239,7 @@ class Fields
         }
 
         // Invalidate all element caches
-        Craft::$app->getElements()->invalidateAllCaches();
+        $this->elementCaches->invalidateAll();
     }
 
     /**
@@ -1245,8 +1256,7 @@ class Fields
         int $sortDir = SORT_ASC,
     ): array {
         $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
-
-        $offset = ($page - 1) * $limit;
+        $pageParam = Cms::config()->getPageTriggerParam();
         $query = $this->_createFieldQuery()
             ->where('context', 'global');
 
@@ -1280,12 +1290,12 @@ class Fields
             }
         }
 
-        $total = $query->count();
-
-        $query->limit($limit);
-        $query->offset($offset);
-
-        $result = $query->get();
+        $paginator = $query->paginate(
+            perPage: $limit,
+            pageName: $pageParam,
+            page: $page,
+        );
+        $result = $paginator->getCollection();
 
         $tableData = [];
         $usages = $this->allFieldUsages();
@@ -1315,7 +1325,18 @@ class Fields
             ];
         }
 
-        $pagination = AdminTable::paginationLinks($page, $total, $limit);
+        $paginator->appends(request()->except($pageParam));
+
+        $pagination = Arr::only($paginator->toArray(), [
+            'total',
+            'per_page',
+            'current_page',
+            'last_page',
+            'next_page_url',
+            'prev_page_url',
+            'from',
+            'to',
+        ]);
 
         return [$pagination, $tableData];
     }

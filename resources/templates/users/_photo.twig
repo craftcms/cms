@@ -6,7 +6,7 @@
             {% if user.photoId %}
                 {{ user.getThumbHtml(100)|raw }}
             {% else %}
-                {{ svg('@app/elements/thumbs/user.svg')|prepend(tag('title', {
+                {{ svg('@resources/images/thumbs/user.svg')|prepend(tag('title', {
                     text: user.getName(),
                 })) }}
             {% endif %}

@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Jobs;
 
-use Craft;
-use craft\base\ElementInterface;
-use craft\console\controllers\ResaveController;
-use craft\helpers\ElementHelper;
+use CraftCms\Cms\Element\Commands\Resave\ResaveCommand;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Queue\BatchedElementJob;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\I18N;
 use Override;
 use Throwable;
@@ -53,7 +54,7 @@ class ResaveElements extends BatchedElementJob
                     $set = false;
                 }
             } elseif ($this->ifInvalid) {
-                $element->setScenario(Element::SCENARIO_LIVE);
+                $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
 
                 if ($element->validate($this->set) && $element->validate("field:$this->set")) {
                     $set = false;
@@ -61,17 +62,17 @@ class ResaveElements extends BatchedElementJob
             }
 
             if ($set) {
-                $to = ResaveController::normalizeTo($this->to);
+                $to = ResaveCommand::normalizeTo($this->to);
                 $element->{$this->set} = $to($element);
             }
         }
 
-        $element->setScenario(Element::SCENARIO_ESSENTIALS);
+        $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $element->resaving = true;
 
         try {
-            Craft::$app->getElements()->saveElement(
-                $element,
+            Elements::saveElement(
+                element: $element,
                 updateSearchIndex: $this->updateSearchIndex,
                 forceTouch: $this->touch,
                 saveContent: true,

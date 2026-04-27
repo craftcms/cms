@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Database\Factories;
 
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Site\Models\SiteGroup;
+use CraftCms\Cms\Site\Sites;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Override;
 
@@ -26,5 +27,13 @@ class SiteFactory extends Factory
             'language' => $this->faker->locale(),
             'sortOrder' => $this->faker->numberBetween(1, 100),
         ];
+    }
+
+    #[Override]
+    public function configure(): self
+    {
+        return $this->afterCreating(function (Site $site) {
+            app(Sites::class)->refreshSites();
+        });
     }
 }

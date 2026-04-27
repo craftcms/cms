@@ -9,6 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\View\TemplateMode;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -126,7 +127,7 @@ class Local extends Filesystem
         return template('_components/fs/Local/settings', [
             'filesystem' => $this,
             'readOnly' => $readOnly,
-        ]);
+        ], TemplateMode::Cp);
     }
 
     #[Override]

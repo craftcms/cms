@@ -2,18 +2,13 @@
   import {t} from '@craftcms/cp';
   import AppLayout from '@/layout/AppLayout.vue';
   import {store} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/GeneralSettingsController';
-  import {
-    Edition,
-    type SystemData,
-    type TimezoneOption,
-  } from '@/types/settings';
+  import {type SystemData, type TimezoneOption} from '@/types/settings';
   import {useForm} from '@inertiajs/vue3';
   import useCraftData from '@/composables/useCraftData';
   import TransitionFade from '@/components/TransitionFade.vue';
   import {computed} from 'vue';
   import {useEventListener} from '@vueuse/core';
   import type {SelectOption, SuggestionGroup} from '@/types';
-  import FileUpload from '@/components/FileUpload.vue';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
 
   const props = defineProps<{
@@ -22,8 +17,6 @@
     nameSuggestions?: Array<SuggestionGroup>;
     timezoneOptions?: Array<TimezoneOption>;
     systemStatusOptions?: Array<SelectOption>;
-    siteIcon?: any;
-    siteLogo?: any;
     saveUrl: string;
     flash?: Record<any, any>;
     errors: Record<any, any>;
@@ -31,15 +24,12 @@
 
   const flash = computed(() => props.flash);
   const errors = computed(() => props.errors);
-  const {app} = useCraftData();
 
   const form = useForm({
     name: props.system.name,
     live: props.system.live,
     retryDuration: props.system.retryDuration,
     timeZone: props.system.timeZone,
-    siteIcon: props.siteIcon,
-    siteLogo: props.siteLogo,
   });
 
   function handleUpdate(event: CustomEvent) {
@@ -59,36 +49,7 @@
   });
 
   function save() {
-    form
-      .transform((data) => {
-        /**
-         * I'm not convinced this is the right approach but it works for the moment.
-         *
-         * When you first upload a file, we get a `File` object, that gets passed
-         * to the server and processed. All is well there.
-         *
-         * When we display the file you've uploaded, we send back an array of just
-         * the URL and the filename. We then use that information to set the
-         * uploadResponses on `craft-file-input` which is how we pre-fill the form.
-         *
-         * This means that the URL and name get sent up to the server on updates
-         * but the server doesn't know what to do with that. Instead of adding
-         * logic on the server, we just remove the `siteIcon` and `siteLogo`
-         * if they're not an instance of File and therefore weren't uploaded
-         * in this request.
-         */
-        if (data.siteIcon !== null && !(data.siteIcon instanceof File)) {
-          delete data.siteIcon;
-        }
-
-        if (data.siteLogo !== null && !(data.siteLogo instanceof File)) {
-          delete data.siteLogo;
-        }
-
-        return data;
-      })
-      .clearErrors()
-      .submit(store());
+    form.clearErrors().submit(store());
   }
 </script>
 
@@ -326,41 +287,6 @@
             </ul>
           </craft-combobox>
         </div>
-
-        <template v-if="app.edition.value >= Edition.Pro">
-          <hr />
-          <div class="p-4 grid gap-3">
-            <FileUpload
-              :label="t('Site Icon')"
-              name="siteIcon"
-              v-model="form.siteIcon"
-              :help-text="
-                t(
-                  'Square SVG file recommended. The logo will be displayed at {size} by {size}.',
-                  {size: '32px'}
-                )
-              "
-              :thumbnail-size="32"
-              :disabled="readOnly"
-              :error="form.errors.siteIcon"
-            />
-
-            <FileUpload
-              :label="t('Login Page Logo')"
-              v-model="form.siteLogo"
-              name="siteLogo"
-              :help-text="
-                t(
-                  'SVG file recommended. The logo will be displayed at {size} wide.',
-                  {size: '288px'}
-                )
-              "
-              :disabled="readOnly"
-              :thumbnail-size="288"
-              :error="form.errors.siteLogo"
-            />
-          </div>
-        </template>
       </div>
     </AppLayout>
   </form>

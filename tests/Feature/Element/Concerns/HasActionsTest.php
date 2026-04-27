@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use craft\elements\actions\Delete;
-use craft\elements\actions\Duplicate;
-use craft\elements\actions\Edit;
-use craft\elements\actions\SetStatus;
-use craft\elements\actions\View;
+use CraftCms\Cms\Element\Actions\Delete;
+use CraftCms\Cms\Element\Actions\Duplicate;
+use CraftCms\Cms\Element\Actions\Edit;
+use CraftCms\Cms\Element\Actions\SetStatus;
+use CraftCms\Cms\Element\Actions\View;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Events\RegisterActions;
 use CraftCms\Cms\Entry\Elements\Entry;

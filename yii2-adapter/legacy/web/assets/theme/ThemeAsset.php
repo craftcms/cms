@@ -7,34 +7,17 @@
 
 namespace craft\web\assets\theme;
 
-use Craft;
 use craft\web\AssetBundle;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Asset bundle for the control panel
+ * @deprecated 6.0.0
  */
 class ThemeAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
+    public function registerAssetFiles($view)
     {
-        parent::init();
-
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
-            $this->css = ['cp.css'];
-        } else {
-            $this->css = ['fe.css'];
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
-            if ($generalConfig->systemTemplateCss) {
-                $this->css[] = $generalConfig->systemTemplateCss;
-            }
-        }
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\ThemeAsset::class);
     }
 }

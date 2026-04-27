@@ -5,10 +5,9 @@ namespace craft\base\conditions;
 use craft\events\RegisterConditionRulesEvent;
 use craft\helpers\Html;
 use CraftCms\Cms\Condition\Events\RegisterConditionRules;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Yii2Adapter\ModelWrapper;
+use CraftCms\Yii2Adapter\Validation\LegacyYiiRules;
 use Illuminate\Support\Facades\Event;
-use yii\validators\Validator;
 
 /**
  * BaseCondition provides a base implementation for conditions.
@@ -34,29 +33,12 @@ abstract class BaseCondition extends \CraftCms\Cms\Condition\BaseCondition
 
     public function getRules(): array
     {
-        $yiiRules = $this->defineRules();
-
-        // Ensure it's set and an array
-        $rules = parent::getRules();
-        $rules['*'] ??= [];
-        $rules['*'] = Arr::wrap($rules['*']);
-
-        array_unshift($rules['*'], function($attribute, $value, $fail) use ($yiiRules) {
-            foreach ($yiiRules as $rule) {
-                $attributes = (array) $rule[0];
-                $type = $rule[1];
-                $options = array_slice($rule, 2);
-
-                if (!in_array($attribute, $attributes, true)) {
-                    continue;
-                }
-
-                $validator = Validator::createValidator($type, new ModelWrapper($this), $attributes, $options);
-                $validator->validateAttribute(new ModelWrapper($this), $attribute);
-            }
-        });
-
-        return $rules;
+        return LegacyYiiRules::mergeWildcardRules(
+            rules: parent::getRules(),
+            target: $this,
+            yiiRules: $this->defineRules(),
+            validatorTarget: fn() => new ModelWrapper($this),
+        );
     }
 
     public function defineRules(): array

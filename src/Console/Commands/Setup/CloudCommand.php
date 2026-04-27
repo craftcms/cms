@@ -36,7 +36,7 @@ class CloudCommand extends Command
         ));
 
         $composer->install([
-            'craftcms/cloud' => '*',
+            'craftcms/cloud' => '^3',
         ], function ($type, $buffer) {
             $this->output->write($buffer);
         });

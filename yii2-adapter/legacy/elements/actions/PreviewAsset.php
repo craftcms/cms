@@ -1,71 +1,15 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\elements\actions;
 
-use craft\base\ElementAction;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use function CraftCms\Cms\t;
-
-/**
- * View represents a View element action.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-class PreviewAsset extends ElementAction
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @var string|null The trigger label
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Actions\PreviewAsset} instead.
      */
-    public ?string $label = null;
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
+    class PreviewAsset extends \CraftCms\Cms\Asset\Actions\PreviewAsset
     {
-        if (!isset($this->label)) {
-            $this->label = t('Preview file');
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerLabel(): string
-    {
-        return $this->label;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerHtml(): ?string
-    {
-        HtmlStack::jsWithVars(fn($type) => <<<JS
-(() => {
-    new Craft.ElementActionTrigger({
-        type: $type,
-        bulk: false,
-        validateSelection: (selectedItems, elementIndex) => selectedItems.length === 1,
-        activate: (selectedItems, elementIndex) => {
-            const \$element = selectedItems.find('.element');
-            const settings = {};
-            if (\$element.data('image-width')) {
-                settings.startingWidth = \$element.data('image-width');
-                settings.startingHeight = \$element.data('image-height');
-            }
-            new Craft.PreviewFileModal(\$element.data('id'), elementIndex.view.elementSelect, settings);
-        },
-    });
-})();
-JS, [static::class]);
-
-        return null;
     }
 }
+
+class_alias(\CraftCms\Cms\Asset\Actions\PreviewAsset::class, PreviewAsset::class);

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Mutations;
 
-use Craft;
 use CraftCms\Cms\Entry\Data\EntryType as EntryTypeData;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Gql\Arguments\Mutations\Draft as DraftMutationArguments;
@@ -82,7 +81,7 @@ class Entry extends Mutation
         }
 
         if ($createDeleteMutation || $createDraftMutations) {
-            $resolver = Craft::createObject(EntryMutationResolver::class);
+            $resolver = new EntryMutationResolver;
 
             if ($createDeleteMutation) {
                 $mutationList['deleteEntry'] = [
@@ -91,7 +90,7 @@ class Entry extends Mutation
                         'id' => Type::nonNull(Type::int()),
                         'siteId' => Type::int(),
                     ],
-                    'resolve' => [$resolver, 'deleteEntry'],
+                    'resolve' => $resolver->deleteEntry(...),
                     'description' => 'Delete an entry.',
                     'type' => Type::boolean(),
                 ];
@@ -127,7 +126,7 @@ class Entry extends Mutation
                             'description' => 'The id of the creator of the draft.',
                         ],
                     ],
-                    'resolve' => [$resolver, 'createDraft'],
+                    'resolve' => $resolver->createDraft(...),
                     'description' => 'Create a draft for an entry and return the draft ID.',
                     'type' => Type::id(),
                 ];
@@ -146,7 +145,7 @@ class Entry extends Mutation
                             'description' => 'Whether the draft is a provisional draft.',
                         ],
                     ],
-                    'resolve' => [$resolver, 'publishDraft'],
+                    'resolve' => $resolver->publishDraft(...),
                     'description' => 'Publish a draft for the entry and return the entry ID.',
                     'type' => Type::id(),
                 ];
@@ -170,8 +169,7 @@ class Entry extends Mutation
         $draftMutationArguments = DraftMutationArguments::getArguments();
         $generatedType = EntryType::generateType($entryType);
 
-        /** @var EntryMutationResolver $resolver */
-        $resolver = Craft::createObject(EntryMutationResolver::class);
+        $resolver = new EntryMutationResolver;
         $resolver->setResolutionData('entryType', $entryType);
         $resolver->setResolutionData('section', $section);
 
@@ -236,8 +234,7 @@ class Entry extends Mutation
         $draftMutationArguments = DraftMutationArguments::getArguments();
         $generatedType = EntryType::generateType($entryType);
 
-        /** @var EntryMutationResolver $resolver */
-        $resolver = Craft::createObject(EntryMutationResolver::class);
+        $resolver = new EntryMutationResolver;
         $resolver->setResolutionData('entryType', $entryType);
         $resolver->setResolutionData('field', $field);
 

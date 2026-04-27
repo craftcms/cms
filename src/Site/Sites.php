@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Site;
 
-use Craft;
-use craft\base\ElementInterface;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Jobs\PropagateElements;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -25,6 +25,7 @@ use CraftCms\Cms\Site\Events\SitesReordered;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Str;
@@ -32,6 +33,7 @@ use CraftCms\Cms\Update\Updates;
 use Exception;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
@@ -99,6 +101,7 @@ class Sites
     public function __construct(
         private readonly ProjectConfig $projectConfig,
         private readonly Updates $updates,
+        private readonly ElementCaches $elementCaches,
     ) {
         $this->loadAllSites();
     }
@@ -229,6 +232,19 @@ class Sites
         } else {
             unset($_SERVER['CRAFT_SITE'], $_SERVER['CRAFT_SITE_UPPER']);
         }
+    }
+
+    public function getRequestPath(Request $request, ?Site $site = null): string
+    {
+        $path = trim($request->decodedPath(), '/');
+        $site ??= $this->getCurrentSite();
+        $basePath = trim((string) parse_url((string) $site->getBaseUrl(), PHP_URL_PATH), '/');
+
+        if ($basePath !== '' && str_starts_with($path.'/', $basePath.'/')) {
+            return ltrim(substr($path, strlen($basePath)), '/');
+        }
+
+        return $path;
     }
 
     /**
@@ -534,7 +550,7 @@ class Sites
         ));
 
         // Invalidate all element caches
-        Craft::$app->getElements()->invalidateAllCaches();
+        $this->elementCaches->invalidateAll();
     }
 
     /**
@@ -753,7 +769,7 @@ class Sites
         $this->refreshSites();
 
         // Invalidate all element caches
-        Craft::$app->getElements()->invalidateAllCaches();
+        $this->elementCaches->invalidateAll();
 
         // Was this the current site?
         if (isset($this->currentSite) && $this->currentSite->id === $site->id) {
@@ -763,7 +779,7 @@ class Sites
         event(new SiteDeleted($site));
 
         // Invalidate all element caches
-        Craft::$app->getElements()->invalidateAllCaches();
+        $this->elementCaches->invalidateAll();
     }
 
     /**
@@ -856,9 +872,10 @@ class Sites
      */
     private function allSites(?bool $withDisabled = null): Collection
     {
-        if ($withDisabled === null) {
-            $withDisabled = ! request()->isSiteRequest() || request()->isActionRequest();
-        }
+        $withDisabled ??= (
+            app()->runningInConsole() ||
+            (request()->isCpRequest() && Auth::check())
+        );
 
         return $withDisabled ? $this->allSitesById : $this->enabledSitesById;
     }
@@ -909,7 +926,7 @@ class Sites
             // Update all of the non-localized elements
             $nonLocalizedElementTypes = [];
 
-            foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
+            foreach (Elements::getAllElementTypes() as $elementType) {
                 /** @var class-string<ElementInterface> $elementType */
                 if (! $elementType::isLocalized()) {
                     $nonLocalizedElementTypes[] = $elementType;

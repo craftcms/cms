@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Events;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Concerns\Structurable;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * @event AfterMoveInStructure The event that is triggered after the element is moved in a structure.

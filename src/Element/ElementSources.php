@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use craft\base\ElementInterface;
 use craft\db\CoalesceColumnsExpression;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\DefineSourceSortOptions;
 use CraftCms\Cms\Element\Events\DefineSourceTableAttributes;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
@@ -46,6 +46,8 @@ class ElementSources
     public const string CONTEXT_MODAL = 'modal';
 
     public const string CONTEXT_SETTINGS = 'settings';
+
+    public const string CONTEXT_EMBEDDED_INDEX = 'embeddedIndex';
 
     /**
      * @see defineSources()
@@ -254,6 +256,64 @@ class ElementSources
     }
 
     /**
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    public function findSource(
+        string $elementType,
+        string $sourceKey,
+        string $context = self::CONTEXT_INDEX,
+        bool $withDisabled = false,
+        ?string $page = null,
+    ): ?array {
+        $path = explode('/', $sourceKey);
+        $sources = $this->getSources($elementType, $context, $withDisabled, $page)->all();
+        $rootSource = null;
+
+        while ($path) {
+            $key = array_shift($path);
+            $source = null;
+
+            foreach ($sources as $candidate) {
+                if (($candidate['key'] ?? null) === $key) {
+                    $source = $candidate;
+                    break;
+                }
+            }
+
+            if ($source === null) {
+                break;
+            }
+
+            if (empty($path)) {
+                if ($rootSource !== null) {
+                    $source['type'] = $rootSource['type'];
+                    $source['keyPath'] = $sourceKey;
+                }
+
+                return $source;
+            }
+
+            if ($rootSource === null) {
+                $rootSource = $source;
+            }
+
+            $sources = $source['nested'] ?? [];
+        }
+
+        if (! str_starts_with($sourceKey, 'custom:')) {
+            $source = $elementType::findSource($sourceKey, $context);
+
+            if ($source) {
+                $source['type'] = self::TYPE_NATIVE;
+
+                return $source;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Returns the unique pages found for the given element type’s sources.
      *
      * @param  class-string<ElementInterface>  $elementType  The element type class
@@ -437,20 +497,25 @@ class ElementSources
      * @param  class-string<ElementInterface>  $elementType  The element type class
      * @param  string  $sourceKey  The element type source key
      * @param  string[]|null  $customAttributes  Custom attributes to show rather than the defaults
+     * @param  FieldLayout[]|null  $fieldLayouts  The field layouts that should be factored in
      * @return Collection<array>
      */
-    public function getTableAttributes(string $elementType, string $sourceKey, ?array $customAttributes = null): Collection
-    {
+    public function getTableAttributes(
+        string $elementType,
+        string $sourceKey,
+        ?array $customAttributes = null,
+        ?array $fieldLayouts = null,
+    ): Collection {
         // If this is a source path, use the first segment
         if (($slash = strpos($sourceKey, '/')) !== false) {
             $sourceKey = substr($sourceKey, 0, $slash);
         }
 
-        if ($sourceKey === '__IMP__') {
-            $sourceAttributes = $this->getTableAttributesForFieldLayouts($elementType::fieldLayouts(null));
-        } else {
-            $sourceAttributes = $this->getSourceTableAttributes($elementType, $sourceKey);
-        }
+        $sourceAttributes = match (true) {
+            $fieldLayouts !== null => $this->getTableAttributesForFieldLayouts($fieldLayouts),
+            $sourceKey === '__IMP__' => $this->getTableAttributesForFieldLayouts($elementType::fieldLayouts(null)),
+            default => $this->getSourceTableAttributes($elementType, $sourceKey),
+        };
 
         $availableAttributes = $this->getAvailableTableAttributes($elementType)->merge($sourceAttributes);
 

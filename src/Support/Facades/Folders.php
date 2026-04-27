@@ -10,9 +10,9 @@ use Override;
 /**
  * @method static \CraftCms\Cms\Asset\Data\VolumeFolder|null getFolderById(int $folderId)
  * @method static \CraftCms\Cms\Asset\Data\VolumeFolder|null getFolderByUid(string $folderUid)
- * @method static \Illuminate\Support\Collection findFolders(mixed $criteria = [])
+ * @method static \Illuminate\Support\Collection<int, \CraftCms\Cms\Asset\Data\VolumeFolder> findFolders(mixed $criteria = [])
  * @method static \CraftCms\Cms\Asset\Data\VolumeFolder|null findFolder(mixed $criteria = [])
- * @method static array getAllDescendantFolders(\CraftCms\Cms\Asset\Data\VolumeFolder $parentFolder, string $orderBy = 'path', bool $withParent = true, bool $asTree = false)
+ * @method static array<int, \CraftCms\Cms\Asset\Data\VolumeFolder> getAllDescendantFolders(\CraftCms\Cms\Asset\Data\VolumeFolder $parentFolder, string $orderBy = 'path', bool $withParent = true, bool $asTree = false)
  * @method static \CraftCms\Cms\Asset\Data\VolumeFolder|null getRootFolderByVolumeId(int $volumeId)
  * @method static int getTotalFolders(mixed $criteria)
  * @method static bool foldersExist(mixed $criteria = null)

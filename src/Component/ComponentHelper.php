@@ -10,6 +10,10 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Support\Utils;
+use DateTime;
+use ReflectionNamedType;
+use ReflectionProperty;
 use RuntimeException;
 
 class ComponentHelper
@@ -137,5 +141,26 @@ class ComponentHelper
         }
 
         return array_merge($config, $settings);
+    }
+
+    /**
+     * Return all DateTime attributes for given model.
+     */
+    public static function datetimeAttributes(object $model): array
+    {
+        $datetimeAttributes = [];
+
+        $attributes = Utils::getPublicReflectionProperties($model, function (ReflectionProperty $property) {
+            $type = $property->getType();
+
+            return $type instanceof ReflectionNamedType && $type->getName() === DateTime::class;
+        });
+
+        foreach ($attributes as $property) {
+            $datetimeAttributes[] = $property->getName();
+        }
+
+        // Include datetimeAttributes() for now
+        return $datetimeAttributes;
     }
 }

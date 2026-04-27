@@ -65,7 +65,7 @@ trait QueriesAuthors
 
     private function applyAuthorId(EntryQuery $query): void
     {
-        if (! $query->authorId) {
+        if (is_null($query->authorId)) {
             return;
         }
 
@@ -95,7 +95,7 @@ trait QueriesAuthors
                 $authorIdOperator = 'whereExists';
             }
 
-            $query->subQuery->$authorIdOperator(
+            $query->$authorIdOperator(
                 DB::table(Table::ENTRIES_AUTHORS, 'entries_authors')
                     ->whereColumn('entries.id', 'entries_authors.entryId')
                     ->whereNumericParam('authorId', $authorIdCheck),
@@ -105,7 +105,7 @@ trait QueriesAuthors
 
     private function applyAuthorGroupId(EntryQuery $query): void
     {
-        if (! $query->authorGroupId) {
+        if (is_null($query->authorGroupId)) {
             return;
         }
 
@@ -135,7 +135,7 @@ trait QueriesAuthors
                 $groupIdOperator = 'whereExists';
             }
 
-            $query->subQuery->$groupIdOperator(
+            $query->$groupIdOperator(
                 DB::table(Table::ENTRIES_AUTHORS, "entries_authors$i")
                     ->join(new Alias(Table::USERGROUPS_USERS, "usergroups_users$i"), "usergroups_users$i.userId", '=', "entries_authors$i.authorId")
                     ->whereColumn('entries.id', "entries_authors$i.entryId")

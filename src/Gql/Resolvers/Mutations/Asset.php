@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Resolvers\Mutations;
 
-use Craft;
-use craft\base\ElementInterface;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Events\AfterReplaceAsset;
 use CraftCms\Cms\Asset\Events\BeforeReplaceAsset;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Gql\Resolvers\ElementMutationResolver;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Url;
@@ -43,7 +44,6 @@ class Asset extends ElementMutationResolver
         /** @var Volume $volume */
         $volume = $this->getResolutionData('volume');
         $canIdentify = ! empty($arguments['id']) || ! empty($arguments['uid']);
-        $elementService = Craft::$app->getElements();
 
         $newFolderId = $arguments['newFolderId'] ?? null;
 
@@ -51,9 +51,9 @@ class Asset extends ElementMutationResolver
             $this->requireSchemaAction('volumes.'.$volume->uid, 'save');
 
             if (! empty($arguments['uid'])) {
-                $asset = $elementService->createElementQuery(AssetElement::class)->uid($arguments['uid'])->one();
+                $asset = Elements::createElementQuery(AssetElement::class)->uid($arguments['uid'])->one();
             } else {
-                $asset = $elementService->getElementById($arguments['id'], AssetElement::class);
+                $asset = Elements::getElementById($arguments['id'], AssetElement::class);
             }
 
             if (! $asset) {
@@ -75,7 +75,7 @@ class Asset extends ElementMutationResolver
                 $newFolderId = Folders::getRootFolderByVolumeId($volume->id)->id;
             }
 
-            $asset = $elementService->createElement([
+            $asset = Elements::createElement([
                 'type' => AssetElement::class,
                 'volumeId' => $volume->id,
                 'newFolderId' => $newFolderId,
@@ -100,7 +100,7 @@ class Asset extends ElementMutationResolver
 
         $asset = $this->populateElementWithData($asset, $arguments, $resolveInfo);
 
-        $triggerReplaceEvents = $asset->getScenario() === AssetElement::SCENARIO_REPLACE;
+        $triggerReplaceEvents = $asset->ruleset->getScenario() === AssetRules::SCENARIO_REPLACE;
 
         if ($triggerReplaceEvents) {
             event($event = new BeforeReplaceAsset(
@@ -121,16 +121,16 @@ class Asset extends ElementMutationResolver
             ));
         }
 
-        return $elementService->getElementById($asset->id, AssetElement::class);
+        /** @var AssetElement */
+        return Elements::getElementById($asset->id, AssetElement::class);
     }
 
     public function deleteAsset(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): bool
     {
         $assetId = $arguments['id'];
-        $elementService = Craft::$app->getElements();
 
         /** @var AssetElement|null $asset */
-        $asset = $elementService->getElementById($assetId, AssetElement::class);
+        $asset = Elements::getElementById($assetId, AssetElement::class);
 
         if (! $asset) {
             return false;
@@ -139,7 +139,7 @@ class Asset extends ElementMutationResolver
         $volumeUid = DB::table(Table::VOLUMES)->uidById($asset->getVolumeId());
         $this->requireSchemaAction('volumes.'.$volumeUid, 'delete');
 
-        return $elementService->deleteElementById($assetId);
+        return Elements::deleteElementById($assetId);
     }
 
     #[Override]
@@ -153,9 +153,9 @@ class Asset extends ElementMutationResolver
         $element = parent::populateElementWithData($element, $arguments, $resolveInfo);
 
         if (! empty($fileInformation) && $this->handleUpload($element, $fileInformation)) {
-            $element->setScenario($element->id
-                ? AssetElement::SCENARIO_REPLACE
-                : AssetElement::SCENARIO_CREATE
+            $element->ruleset->useScenario($element->id
+                ? AssetRules::SCENARIO_REPLACE
+                : AssetRules::SCENARIO_CREATE
             );
         }
 

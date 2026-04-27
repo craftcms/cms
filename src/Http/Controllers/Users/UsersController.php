@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Craft;
-use craft\web\CpScreenResponseBehavior;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Support\Url;
-use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\DefineUserContentSummary;
 use CraftCms\Cms\User\Users;
@@ -24,8 +23,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use ReflectionClass;
-use ReflectionException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -56,9 +53,9 @@ readonly class UsersController
     {
         $user = new User;
 
-        abort_unless(Craft::$app->getElements()->canSave($user), 403, 'User not authorized to save this user.');
+        $this->authorize('save', $user);
 
-        $user->setScenario(Element::SCENARIO_ESSENTIALS);
+        $user->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         if (! $drafts->saveElementAsDraft($user, $request->user()->id, markAsSaved: false)) {
             return $this->asModelFailure($user, mb_ucfirst(t('Couldn’t create {type}.', [
                 'type' => User::lowerDisplayName(),
@@ -78,39 +75,20 @@ readonly class UsersController
         ]));
     }
 
-    public function edit(?int $userId = null): CpScreenResponse
+    public function edit(?int $userId = null): Response|CpScreenResponse
     {
         $user = $this->editedUser($userId);
 
         /**
-         * @TODO: Refactor away the runAction
-         * let the elements/edit action do most of the work
+         * Let the elements/edit action do most of the work
          */
-        Craft::$app->request->setIsCpRequest(true);
-        $response = Craft::$app->runAction('elements/edit', [
-            'element' => $user,
-        ]);
+        $response = app(EditElementController::class)->setElement($user)();
 
-        /**
-         * This transforms the old Yii CpScreen to the new
-         *
-         * @var CpScreenResponseBehavior $cpScreen
-         */
-        $cpScreen = $response->getBehavior('cp-screen');
-        $response = $this->asEditUserScreen($user, self::SCREEN_PROFILE);
-        $reflection = new ReflectionClass($response);
-        foreach (Utils::getPublicProperties($cpScreen) as $property => $value) {
-            if (isset($response->{$property})) {
-                continue;
-            }
-
-            try {
-                $reflection->getProperty($property)->setValue($response, $value);
-            } catch (ReflectionException) {
-            }
+        if (! $response instanceof CpScreenResponse) {
+            return $response;
         }
 
-        return $response
+        return $this->asEditUserScreen($user, self::SCREEN_PROFILE, $response)
             ->when(
                 $user->getIsUnpublishedDraft() && $this->showPermissionsScreen(),
                 function (CpScreenResponse $response) use ($user) {
@@ -121,7 +99,7 @@ readonly class UsersController
             );
     }
 
-    public function destroy(Request $request, Users $users): Response
+    public function destroy(Request $request, Elements $elements, Users $users): Response
     {
         $request->validate([
             'userId' => ['required', 'integer'],
@@ -157,7 +135,7 @@ readonly class UsersController
         // Delete the user
         $user->inheritorOnDelete = $transferContentTo;
 
-        if (! Craft::$app->getElements()->deleteElement($user)) {
+        if (! $elements->deleteElement($user)) {
             return $this->asFailure(t('Couldn’t delete {type}.', [
                 'type' => User::lowerDisplayName(),
             ]));

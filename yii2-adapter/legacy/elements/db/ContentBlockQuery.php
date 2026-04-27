@@ -22,7 +22,7 @@ use CraftCms\Cms\Field\Elements\ContentBlock;
  * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\ContentBlockQuery} instead.
  * @phpstan-ignore class.missingExtends
  */
-class ContentBlockQuery extends ElementQuery implements NestedElementQueryInterface
+class ContentBlockQuery extends ElementQuery implements \CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface
 {
     use NestedElementQueryTrait;
 

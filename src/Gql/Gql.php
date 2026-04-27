@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql;
 
-use Craft;
-use craft\base\ElementInterface as BaseElementInterface;
 use craft\behaviors\FieldLayoutBehavior;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Contracts\ElementInterface as BaseElementInterface;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -63,6 +63,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
@@ -161,6 +162,7 @@ class Gql
 
     public function __construct(
         private readonly ProjectConfig $projectConfig,
+        private readonly ElementCaches $elementCaches,
     ) {}
 
     /**
@@ -285,12 +287,8 @@ class Gql
         bool $debugMode = false,
     ): array {
         $context = [
-            'conditionBuilder' => Craft::createObject([
-                'class' => ElementQueryConditionBuilder::class,
-            ]),
-            'argumentManager' => Craft::createObject([
-                'class' => ArgumentManager::class,
-            ]),
+            'conditionBuilder' => new ElementQueryConditionBuilder,
+            'argumentManager' => new ArgumentManager,
         ];
         $result = $rootValue = null;
         $dep = null;
@@ -326,8 +324,7 @@ class Gql
                 $isIntrospectionQuery = GqlHelper::isIntrospectionQuery($query);
                 $prebuildSchema = $isIntrospectionQuery || ! Cms::config()->lazyGqlTypes;
                 $schemaDef = $this->getSchemaDef($schema, $prebuildSchema);
-                $elementsService = Craft::$app->getElements();
-                $elementsService->startCollectingCacheInfo();
+                $this->elementCaches->startCollectingCacheInfo();
 
                 $result = GraphQL::executeQuery(
                     $schemaDef,
@@ -342,7 +339,7 @@ class Gql
                     ->setErrorsHandler($this->handleQueryErrors(...))
                     ->toArray($debugMode ? DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE : DebugFlag::NONE);
 
-                [$dep, $duration] = $elementsService->stopCollectingCacheInfo();
+                [$dep, $duration] = $this->elementCaches->stopCollectingCacheInfo();
 
                 if (empty($result['errors']) && $cacheKey && $this->shouldCache($result)) {
                     $this->setCachedResult($cacheKey, $result, $dep, $duration);
@@ -876,7 +873,7 @@ class Gql
     public function defineContentArgumentsForFields(string $elementType, array $fields): array
     {
         $arguments = [];
-        $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
+        $elementQuery = Elements::createElementQuery($elementType);
 
         foreach ($fields as $field) {
             if (
@@ -897,7 +894,7 @@ class Gql
     public function defineContentArgumentsForGeneratedFields(string $elementType, array $fields): array
     {
         $arguments = [];
-        $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
+        $elementQuery = Elements::createElementQuery($elementType);
 
         foreach ($fields as $field) {
             $handle = $field['handle'] ?? '';
@@ -973,7 +970,7 @@ class Gql
             }
 
             // Log it.
-            Craft::$app->getErrorHandler()->logException($originException);
+            report($originException);
         }
 
         return array_map($formatter, $errors);
@@ -983,7 +980,7 @@ class Gql
     {
         if (! array_key_exists($typeName, $this->_typeDefinitions)) {
             if ($this->_typeManager === null) {
-                $this->_typeManager = Craft::createObject(TypeManager::class);
+                $this->_typeManager = new TypeManager;
             }
 
             $this->_typeDefinitions[$typeName] = $this->_typeManager->registerFieldDefinitions($fields, $typeName);
@@ -1012,7 +1009,7 @@ class Gql
         }
 
         // No cache key if we have placeholder elements
-        if (! empty(Craft::$app->getElements()->getPlaceholderElements())) {
+        if (! empty(Elements::getPlaceholderElements())) {
             return null;
         }
 
@@ -1026,7 +1023,7 @@ class Gql
                 '::'.serialize($variables).
                 ($operationName ? "::$operationName" : '');
         } catch (Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
+            report($e);
             $cacheKey = null;
         }
 
@@ -1121,10 +1118,7 @@ class Gql
                 $directiveClasses[] = ParseRefs::class;
             }
 
-            if (
-                ! Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective &&
-                in_array('directive:transform', $schema->scope)
-            ) {
+            if (in_array('directive:transform', $schema->scope)) {
                 $directiveClasses[] = Transform::class;
             }
         }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Html\ContentHtml;
@@ -19,7 +20,7 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
-use CraftCms\Cms\FieldLayout\LayoutElements\entries\EntryTitleField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Section\Data\Section;
@@ -205,7 +206,7 @@ class EntryTypesController
 
     public function tableData(Request $request): JsonResponse
     {
-        $page = (int) $request->input('page', 1);
+        $page = (int) $request->input(Cms::config()->getPageTriggerParam(), 1);
         $limit = (int) $request->input('per_page', 100);
         $searchTerm = $request->input('search');
         $orderBy = match ($request->input('sort.0.field')) {
@@ -267,7 +268,7 @@ class EntryTypesController
         $entryType->showStatusField = $request->boolean('showStatusField', $entryType->showStatusField);
 
         // If we're duplicating the entry type and the handle hasn't changed, find a unique one
-        if ($entryType->handle === ($originalEntryType->handle ?? null)) {
+        if ($saveAsNew && $entryType->handle === ($originalEntryType->handle ?? null)) {
             if (preg_match('/^(.*?)(\d+)$/', (string) $entryType->handle, $match)) {
                 $baseHandle = $match[1];
                 $i = (int) $match[2];

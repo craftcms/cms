@@ -16,6 +16,7 @@ use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\Cp;
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -48,7 +49,6 @@ use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Extension\ExtensionInterface;
 use yii\base\Exception;
-use yii\base\NotSupportedException;
 use yii\web\AssetBundle as YiiAssetBundle;
 
 use function CraftCms\Cms\t;
@@ -2170,7 +2170,7 @@ class View extends \yii\web\View
 
             $yiiEvent = new RegisterTemplateRootsEvent();
             Craft::$app->getView()->trigger(self::EVENT_REGISTER_CP_TEMPLATE_ROOTS, $yiiEvent);
-            $event->roots = $yiiEvent->roots;
+            $event->roots = array_merge($event->roots, $yiiEvent->roots);
         });
 
         Event::listen(RegisterSiteTemplateRoots::class, function(RegisterSiteTemplateRoots $event) {
@@ -2180,7 +2180,7 @@ class View extends \yii\web\View
 
             $yiiEvent = new RegisterTemplateRootsEvent();
             Craft::$app->getView()->trigger(self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, $yiiEvent);
-            $event->roots = $yiiEvent->roots;
+            $event->roots = array_merge($event->roots, $yiiEvent->roots);
         });
 
         Event::listen(function(TwigCreated $event) {

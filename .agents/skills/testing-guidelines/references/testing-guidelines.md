@@ -97,6 +97,7 @@ use craft\behaviors\CustomFieldBehavior;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 
 $field = Field::factory()->create([
@@ -118,7 +119,7 @@ $entry = entryQuery()->id($entry->id)->firstOrFail();
 $entry->title = 'Test entry';
 $entry->setFieldValue('textField', 'Foo');
 
-Craft::$app->getElements()->saveElement($entry);
+Elements::saveElement($entry);
 ```
 
 ## Testing element concerns (traits)
@@ -224,6 +225,7 @@ Use Laravel's event fakes to test that events are dispatched correctly:
 ```php
 use CraftCms\Cms\Element\Events\BeforeSave;
 use CraftCms\Cms\Element\Events\AfterSave;
+use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Facades\Event;
 
 test('dispatches save events', function () {
@@ -232,7 +234,7 @@ test('dispatches save events', function () {
     $entry = Entry::factory()->create();
     $element = entryQuery()->id($entry->id)->one();
 
-    Craft::$app->getElements()->saveElement($element);
+    Elements::saveElement($element);
 
     Event::assertDispatched(BeforeSave::class, function ($event) use ($element) {
         return $event->element->id === $element->id;
@@ -253,7 +255,7 @@ test('can cancel save via event', function () {
     $entry = Entry::factory()->create();
     $element = entryQuery()->id($entry->id)->one();
 
-    $result = Craft::$app->getElements()->saveElement($element);
+    $result = Elements::saveElement($element);
 
     expect($result)->toBeFalse();
 });

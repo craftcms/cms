@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Html;
 
-use Craft;
-use craft\base\ElementInterface;
-use craft\base\NestedElementInterface;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
@@ -22,6 +18,9 @@ use CraftCms\Cms\Cp\Events\DefineElementCardHtml;
 use CraftCms\Cms\Cp\Events\DefineElementChipHtml;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
@@ -30,7 +29,8 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Auth;
-use yii\base\InvalidConfigException;
+use Illuminate\Support\Facades\Gate;
+use RuntimeException;
 
 use function CraftCms\Cms\t;
 
@@ -304,7 +304,7 @@ readonly class ElementHtml
             'sortable' => false,
         ];
 
-        $showEditButton = $config['showEditButton'] && Craft::$app->getElements()->canView($element);
+        $showEditButton = $config['showEditButton'] && Gate::check('view', $element);
 
         if ($showEditButton) {
             $editId = sprintf('action-edit-%s', mt_rand());
@@ -518,9 +518,8 @@ JS, [
 
     private function baseElementAttributes(ElementInterface $element, array $config): array
     {
-        $elementsService = Craft::$app->getElements();
         $user = Auth::user();
-        $editable = $user && $elementsService->canView($element, $user);
+        $editable = $user && $user->can('view', $element);
 
         return Arr::merge(
             Html::normalizeTagAttributes($element->getHtmlAttributes($config['context'])),
@@ -549,16 +548,16 @@ JS, [
                     'level' => $element->level,
                     'trashed' => $element->trashed,
                     'editable' => $editable,
-                    'savable' => $editable && $this->contextIsAdministrative($config['context']) && $elementsService->canSave($element, $user),
-                    'duplicatable' => $editable && $this->contextIsAdministrative($config['context']) && $elementsService->canDuplicate($element, $user),
-                    'duplicatable-as-draft' => $editable && $this->contextIsAdministrative($config['context']) && $elementsService->canDuplicateAsDraft($element, $user),
-                    'copyable' => $editable && $this->contextIsAdministrative($config['context']) && $elementsService->canCopy($element, $user),
-                    'deletable' => $editable && $this->contextIsAdministrative($config['context']) && $elementsService->canDelete($element, $user),
+                    'savable' => $editable && $this->contextIsAdministrative($config['context']) && Gate::check('save', $element),
+                    'duplicatable' => $editable && $this->contextIsAdministrative($config['context']) && Gate::check('duplicate', $element),
+                    'duplicatable-as-draft' => $editable && $this->contextIsAdministrative($config['context']) && Gate::check('duplicateAsDraft', $element),
+                    'copyable' => $editable && $this->contextIsAdministrative($config['context']) && Gate::check('copy', $element),
+                    'deletable' => $editable && $this->contextIsAdministrative($config['context']) && Gate::check('delete', $element),
                     'deletable-for-site' => (
                         $editable &&
                         $this->contextIsAdministrative($config['context']) &&
                         ElementHelper::isMultiSite($element) &&
-                        $elementsService->canDeleteForSite($element, $user)
+                        Gate::check('deleteForSite', $element)
                     ),
                 ]),
             ],
@@ -574,7 +573,7 @@ JS, [
             $owner = null;
             try {
                 $owner = $element instanceof NestedElementInterface ? $element->getPrimaryOwner() : null;
-            } catch (InvalidConfigException) {
+            } catch (RuntimeException) {
             }
             if (! $owner) {
                 break;

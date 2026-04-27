@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Events;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Concerns\HasRoutesAndUrls;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Shared\Concerns\HandleableEvent;
 
 /**

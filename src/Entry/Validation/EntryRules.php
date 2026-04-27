@@ -16,18 +16,18 @@ use function CraftCms\Cms\t;
 /**
  * @extends ElementRules<Entry>
  *
- * @property Entry $component
+ * @property Entry $subject
  */
 class EntryRules extends ElementRules
 {
     #[Override]
-    protected function defineRules(): array
+    public function rules(): array
     {
-        $rules = parent::defineRules();
+        $rules = parent::rules();
 
         $rules['sectionId'] = ['nullable', 'integer', 'required_without:fieldId'];
         $rules['fieldId'] = ['nullable', 'integer', function (string $attribute, mixed $value, Closure $fail) {
-            if ($this->component->sectionId && $this->component->fieldId) {
+            if ($this->subject->sectionId && $this->subject->fieldId) {
                 $fail(t('`sectionId` and `fieldId` cannot both be set on an entry.'));
             }
         }];
@@ -35,36 +35,36 @@ class EntryRules extends ElementRules
         $rules['primaryOwnerId'] = ['nullable', 'integer'];
         $rules['sortOrder'] = ['nullable', 'integer'];
         $rules['placeInStructure'] = ['bool'];
-        $rules['postDate'] = ['nullable', 'date', Rule::when($this->component->inScenarios(Entry::SCENARIO_LIVE) && ! is_null($this->component->expiryDate), ['before:expiryDate'])];
+        $rules['postDate'] = ['nullable', 'date', Rule::when($this->inScenarios(self::SCENARIO_LIVE) && ! is_null($this->subject->expiryDate), ['before:expiryDate'])];
         $rules['expiryDate'] = ['nullable', 'date'];
         $rules['typeId'] = [
             'required',
             'integer',
-            Rule::when($this->component->inScenarios(Entry::SCENARIO_DEFAULT, Entry::SCENARIO_LIVE), [
+            Rule::when($this->inScenarios(self::SCENARIO_DEFAULT, self::SCENARIO_LIVE), [
                 function (string $attribute, int $value, Closure $fail) {
-                    $typeId = $this->component->getType()->id;
+                    $typeId = $this->subject->getType()->id;
 
-                    if (array_any($this->component->getAvailableEntryTypes(), fn ($entryType) => $entryType->id === $typeId)) {
+                    if (array_any($this->subject->getAvailableEntryTypes(), fn ($entryType) => $entryType->id === $typeId)) {
                         return;
                     }
 
                     $fail(t('{attribute} is invalid.', [
-                        'attribute' => $this->component->getAttributeLabel($attribute),
+                        'attribute' => $this->subject->getAttributeLabel($attribute),
                     ]));
                 },
             ]),
-            Rule::when($this->component->inScenarios(Entry::SCENARIO_LIVE), [
+            Rule::when($this->inScenarios(self::SCENARIO_LIVE), [
                 function (string $attribute, int $value, Closure $fail) {
-                    if (! $this->component->getIsCanonical()) {
+                    if (! $this->subject->getIsCanonical()) {
                         return;
                     }
 
-                    if ($this->component->isEntryTypeAllowed()) {
+                    if ($this->subject->isEntryTypeAllowed()) {
                         return;
                     }
 
                     $fail(t('{type} entries are no longer allowed in this section. Please choose a different entry type.', [
-                        'type' => $this->component->getType()->getUiLabel(),
+                        'type' => $this->subject->getType()->getUiLabel(),
                     ]));
                 },
             ]),
@@ -73,11 +73,11 @@ class EntryRules extends ElementRules
             'nullable',
             'array',
             Rule::when(function () {
-                if (! $this->component->inScenarios(Entry::SCENARIO_DEFAULT, Entry::SCENARIO_LIVE)) {
+                if (! $this->inScenarios(self::SCENARIO_DEFAULT, self::SCENARIO_LIVE)) {
                     return false;
                 }
 
-                $section = $this->component->getSection();
+                $section = $this->subject->getSection();
 
                 return
                     $section &&
@@ -86,7 +86,7 @@ class EntryRules extends ElementRules
                     $section->maxAuthors !== 0;
             }, [
                 function (string $attribute, array $value, Closure $fail) {
-                    $section = $this->component->getSection();
+                    $section = $this->subject->getSection();
 
                     if (is_null($section)) {
                         return;
@@ -98,12 +98,12 @@ class EntryRules extends ElementRules
                         ]));
                     }
 
-                    $authors = $this->component->getAuthors();
-                    if ($this->component->getOldAuthorIds() !== null) {
+                    $authors = $this->subject->getAuthors();
+                    if ($this->subject->getOldAuthorIds() !== null) {
                         foreach ($authors as $author) {
                             if (
-                                ! in_array($author->id, $this->component->getOldAuthorIds()) &&
-                                ! $author->can(sprintf('viewEntries:%s', $this->component->getSection()->uid))
+                                ! in_array($author->id, $this->subject->getOldAuthorIds()) &&
+                                ! $author->can(sprintf('viewEntries:%s', $this->subject->getSection()->uid))
                             ) {
                                 $fail(t('This user doesn’t have permission to author entries in this section.'));
                                 break;
@@ -113,11 +113,11 @@ class EntryRules extends ElementRules
                 },
             ]),
             Rule::requiredIf(function () {
-                if (! $this->component->inScenarios(Entry::SCENARIO_LIVE)) {
+                if (! $this->inScenarios(self::SCENARIO_LIVE)) {
                     return false;
                 }
 
-                $section = $this->component->getSection();
+                $section = $this->subject->getSection();
 
                 if (! $section) {
                     return false;

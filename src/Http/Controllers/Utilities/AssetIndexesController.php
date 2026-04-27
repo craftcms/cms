@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
-use Craft;
 use CraftCms\Cms\Asset\AssetIndexer;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Support\Facades\Folders;
@@ -170,7 +170,7 @@ readonly class AssetIndexesController
         return $this->asSuccess(null, ['session' => $indexingSession]);
     }
 
-    public function finishIndexingSession(Request $request): Response
+    public function finishIndexingSession(Request $request, Elements $elements, ImageTransforms $imageTransforms): Response
     {
         $validated = $request->validate([
             'sessionId' => ['required', 'integer'],
@@ -206,9 +206,9 @@ readonly class AssetIndexesController
                 ->all();
 
             foreach ($assets as $asset) {
-                app(ImageTransforms::class)->deleteCreatedTransformsForAsset($asset);
+                $imageTransforms->deleteCreatedTransformsForAsset($asset);
                 $asset->keepFileOnDelete = true;
-                Craft::$app->getElements()->deleteElement($asset);
+                $elements->deleteElement($asset);
             }
         }
 

@@ -93,7 +93,7 @@ trait QueriesUserGroups
                     $groupIdOperator = 'whereExists';
                 }
 
-                $userQuery->subQuery->$groupIdOperator(
+                $userQuery->$groupIdOperator(
                     DB::table(Table::USERGROUPS_USERS, "ugu$i")
                         ->whereColumn('elements.id', "ugu$i.userId")
                         ->whereNumericParam('groupId', $groupIdCheck),
