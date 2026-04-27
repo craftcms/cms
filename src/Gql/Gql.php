@@ -192,6 +192,11 @@ class Gql
             // as the query is being resolved thanks to the magic of lazy-loading, so we needn't worry.
             if (! $prebuildSchema) {
                 $this->_schemaDef = new Schema($schemaConfig);
+                // add default description (use schema name), or DumpSchemaCommandTest and SchemaPrinter::printSchemaDefinition() will error
+                // because of SchemaPrinter::hasDefaultRootOperationTypes($schema) and "Subscription"
+                if ($this->_schemaDef->description === null) {
+                    $this->_schemaDef->description = $schema?->name;
+                }
 
                 // but we always have to add the InputObjectType mutation args
                 /** @var ObjectType $mutation */
@@ -224,6 +229,11 @@ class Gql
             try {
                 $this->_schemaDef = new Schema($schemaConfig);
                 $this->_schemaDef->getTypeMap();
+                // add default description (use schema name), or DumpSchemaCommandTest and SchemaPrinter::printSchemaDefinition() will error
+                // because of SchemaPrinter::hasDefaultRootOperationTypes($schema) and "Subscription"
+                if ($this->_schemaDef->description === null) {
+                    $this->_schemaDef->description = $schema?->name;
+                }
             } catch (Throwable $exception) {
                 throw new GqlException('Failed to validate the GQL Schema - '.$exception->getMessage(),
                     previous: $exception);
