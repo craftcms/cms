@@ -61,7 +61,7 @@
 {{ forms.customSelectField({
   label: "Field Type"|t('app'),
   instructions: "What type of field is this?"|t('app'),
-  warning: (fieldId is not empty and not field.hasErrors('type') ? "Changing this may result in data loss."|t('app')),
+  warning: (fieldId is not empty and not field.errors.has('type') ? "Changing this may result in data loss."|t('app')),
   id: 'type',
   name: 'type',
   options: fieldTypeOptions,

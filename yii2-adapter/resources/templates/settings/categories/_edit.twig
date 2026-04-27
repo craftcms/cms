@@ -87,7 +87,7 @@
     {% for site in Sites.getAllSites() %}
         {% set siteSettings = categoryGroup.siteSettings[site.id] ?? null %}
         {% if siteSettings %}
-            {% for attribute, errors in siteSettings.getErrors() %}
+            {% for attribute, errors in siteSettings.errors.all() %}
                 {% set siteErrors = siteErrors|merge(errors) %}
             {% endfor %}
         {% endif %}
@@ -96,11 +96,11 @@
                 heading: site.name|t('site')|e,
                 uriFormat: {
                     value: siteSettings.uriFormat ?? null,
-                    hasErrors: siteSettings.hasErrors('uriFormat') ?? false
+                    hasErrors: siteSettings.errors.has('uriFormat') ?? false
                 },
                 template: not headlessMode ? {
                     value: siteSettings.template ?? null,
-                    hasErrors: siteSettings.hasErrors('template') ?? false,
+                    hasErrors: siteSettings.errors.has('template') ?? false,
                 }
             }
         }) %}

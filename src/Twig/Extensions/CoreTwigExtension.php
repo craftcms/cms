@@ -69,8 +69,6 @@ use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Session;
 use InvalidArgumentException;
 use Money\Money;
 use Override;
@@ -246,16 +244,13 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('app', $this->appFunction(...)),
             new TwigFunction('actionUrl', Url::actionUrl(...)),
             new TwigFunction('alias', Aliases::get(...)),
             new TwigFunction('asset', asset(...)),
-            new TwigFunction('can', Gate::check(...)),
             new TwigFunction('ceil', 'ceil'),
             new TwigFunction('className', 'get_class'),
             new TwigFunction('clone', $this->cloneFunction(...)),
             new TwigFunction('configure', Typecast::configure(...)),
-            new TwigFunction('config', config(...)),
             new TwigFunction('cpUrl', Url::cpUrl(...)),
             new TwigFunction('create', $this->createFunction(...)),
             new TwigFunction('dump', $this->dumpFunction(...), ['is_safe' => ['html'], 'needs_context' => true, 'is_variadic' => true]),
@@ -266,14 +261,12 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('floor', 'floor'),
             new TwigFunction('getenv', Env::get(...)),
             new TwigFunction('gql', $this->gqlFunction(...)),
-            new TwigFunction('old', $this->oldFunction(...)),
             new TwigFunction('parseEnv', Env::parse(...)),
             new TwigFunction('parseBooleanEnv', Env::parseBoolean(...)),
             new TwigFunction('plugin', $this->pluginFunction(...)),
             new TwigFunction('raw', TemplateHelper::raw(...)),
             new TwigFunction('renderObjectTemplate', $this->renderObjectTemplate(...)),
             new TwigFunction('seq', $this->seqFunction(...)),
-            new TwigFunction('session', $this->sessionFunction(...)),
             new TwigFunction('siteUrl', Url::siteUrl(...)),
             new TwigFunction('url', Url::url(...)),
 
@@ -414,11 +407,6 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         return Query::escapeParam((string) $value);
     }
 
-    public function appFunction(?string $abstract = null): mixed
-    {
-        return app($abstract);
-    }
-
     public function cloneFunction(mixed $var): mixed
     {
         return clone $var;
@@ -512,11 +500,6 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         return Gql::executeQuery($schema, $query, $variables, $operationName);
     }
 
-    public function oldFunction(?string $key = null, mixed $default = null): mixed
-    {
-        return Session::getOldInput($key, $default);
-    }
-
     public function pluginFunction(string $handle): ?PluginInterface
     {
         return app(Plugins::class)->getPlugin($handle);
@@ -534,10 +517,5 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
     public function renderObjectTemplate(string $template, mixed $object): string
     {
         return renderObjectTemplate($template, $object);
-    }
-
-    public function sessionFunction(array|string|null $key = null, mixed $default = null): mixed
-    {
-        return session($key, $default);
     }
 }

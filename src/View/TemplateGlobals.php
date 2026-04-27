@@ -15,8 +15,6 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\ViewErrorBag;
-use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -44,25 +42,16 @@ readonly class TemplateGlobals
 
         if ($isInstalled && ! $this->updates->isCraftUpdatePending()) {
             $currentSite = $this->sites->getCurrentSite();
-            $primarySite = $this->sites->getPrimarySite();
             $currentUser = Auth::user();
             $siteName = t($currentSite->getName(), category: 'site');
             $siteUrl = $currentSite->getBaseUrl();
             $systemName = Cms::systemName();
         } else {
-            $currentSite = $primarySite = $currentUser = $siteName = $siteUrl = $systemName = null;
-        }
-
-        try {
-            $errors = $this->request->session()->get('errors') ?: new ViewErrorBag;
-        } catch (Throwable) {
-            // Session is not started yet
-            $errors = new ViewErrorBag;
+            $currentUser = $siteName = $siteUrl = $systemName = null;
         }
 
         $globals = [
             'craft' => $this->craftVariable,
-            'sessionErrors' => $errors,
             'currentUser' => $currentUser,
             'siteName' => $siteName,
             'siteUrl' => $siteUrl,

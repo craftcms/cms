@@ -27,7 +27,7 @@
     label: 'Field Limit'|t('app'),
     instructions: "The maximum number of characters or bytes the field is allowed to have."|t('app'),
     id: 'fieldLimit',
-    errors: field.getErrors(field.byteLimit ? 'byteLimit' : 'charLimit'),
+    errors: field.errors.get(field.byteLimit ? 'byteLimit' : 'charLimit'),
     disabled: readOnly,
 } %}
     {% import "_includes/forms" as forms %}

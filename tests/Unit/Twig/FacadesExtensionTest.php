@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Twig\Extensions\FacadesExtension;
+use CraftCms\Cms\Twig\Extensions\LaravelExtension;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\Facades\Facade;
 
@@ -44,7 +44,7 @@ it('registers every Craft facade as a Laravel alias', function () {
 it('exposes Laravel facade aliases as Twig globals', function () {
     AliasLoader::getInstance(composerLaravelAliases());
 
-    $globals = (new FacadesExtension)->getGlobals();
+    $globals = (new LaravelExtension)->getGlobals();
 
     $this->assertEmpty(array_diff(array_keys(composerLaravelAliases()), array_keys($globals)));
 });

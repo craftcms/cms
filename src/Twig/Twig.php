@@ -12,9 +12,9 @@ use CraftCms\Cms\Twig\Extensions\ArrayTwigExtension;
 use CraftCms\Cms\Twig\Extensions\CoreTwigExtension;
 use CraftCms\Cms\Twig\Extensions\CpExtension;
 use CraftCms\Cms\Twig\Extensions\DateTwigExtension;
-use CraftCms\Cms\Twig\Extensions\FacadesExtension;
 use CraftCms\Cms\Twig\Extensions\FeExtension;
 use CraftCms\Cms\Twig\Extensions\HtmlTwigExtension;
+use CraftCms\Cms\Twig\Extensions\LaravelExtension;
 use CraftCms\Cms\Twig\Extensions\SinglePreloaderExtension;
 use CraftCms\Cms\Twig\Extensions\TextTwigExtension;
 use CraftCms\Cms\View\TemplateMode;
@@ -90,7 +90,7 @@ class Twig
 
             // Craft Twig Extensions
             CoreTwigExtension::class,
-            FacadesExtension::class,
+            LaravelExtension::class,
             DateTwigExtension::class,
             ArrayTwigExtension::class,
             TextTwigExtension::class,

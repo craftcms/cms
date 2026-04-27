@@ -11,7 +11,7 @@
     value: old('name', entryType.name),
     autofocus: true,
     required: true,
-    errors: sessionErrors.get('name'),
+    errors: errors.get('name'),
     data: {'error-key': 'name'},
     disabled: readOnly,
 }) }}
@@ -26,7 +26,7 @@
     autocapitalize: false,
     value: old('handle', entryType.handle),
     required: true,
-    errors: sessionErrors.get('handle'),
+    errors: errors.get('handle'),
     data: {'error-key': 'handle'},
     disabled: readOnly,
 }) }}
@@ -37,7 +37,7 @@
     class: 'nicetext',
     name: 'description',
     value: old('description', entryType.description ?? null),
-    errors: sessionErrors.get('description'),
+    errors: errors.get('description'),
     disabled: readOnly,
 }) }}
 
@@ -46,7 +46,7 @@
     id: 'icon',
     name: 'icon',
     value: old('icon', entryType.icon),
-    errors: sessionErrors.get('icon'),
+    errors: errors.get('icon'),
     data: {
         'error-key': 'icon',
     },
@@ -58,7 +58,7 @@
     id: 'color',
     name: 'color',
     value: old('color', entryType.color),
-    errors: sessionErrors.get('color'),
+    errors: errors.get('color'),
     data: {
         'error-key': 'color',
     },
@@ -72,7 +72,7 @@
   name: 'uiLabelFormat',
   class: 'code',
   value: entryType.uiLabelFormat,
-  errors: sessionErrors.get('uiLabelFormat'),
+  errors: errors.get('uiLabelFormat'),
   data: {
     'error-key': 'uiLabelFormat',
   },
@@ -116,7 +116,7 @@
                 id: 'translation-key-format',
                 name: 'titleTranslationKeyFormat',
                 value: old('titleTranslationKeyFormat', entryType.titleTranslationKeyFormat),
-                errors: sessionErrors.get('titleTranslationKeyFormat'),
+                errors: errors.get('titleTranslationKeyFormat'),
                 data: {
                     'error-key': 'titleTranslationKeyFormat',
                 },
@@ -133,7 +133,7 @@
     name: 'titleFormat',
     class: 'code',
     value: old('titleFormat', entryType.titleFormat),
-    errors: sessionErrors.get('titleFormat'),
+    errors: errors.get('titleFormat'),
     data: {
         'error-key': 'titleFormat',
     },
@@ -191,7 +191,7 @@
                 id: 'slug-translation-key-format',
                 name: 'slugTranslationKeyFormat',
                 value: old('slugTranslationKeyFormat', entryType.slugTranslationKeyFormat),
-                errors: sessionErrors.get('slugTranslationKeyFormat'),
+                errors: errors.get('slugTranslationKeyFormat'),
                 data: {
                     'error-key': 'slugTranslationKeyFormat',
                 },
@@ -206,7 +206,7 @@
     id: 'showStatusField',
     name: 'showStatusField',
     on: old('showStatusField', entryType.showStatusField),
-    errors: sessionErrors.get('showStatusField'),
+    errors: errors.get('showStatusField'),
     data: {
         'error-key': 'showStatusField',
     },
