@@ -6,6 +6,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Support\Facades\Sites;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
@@ -78,7 +79,7 @@ describe('Title validation', function () {
         $this->markTestSkippedWhen(DB::getDriverName() === 'pgsql', 'PostgreSQL always supports 4-byte unicode characters');
         $this->markTestSkippedWhen(DB::getDriverName() === 'sqlite', 'SQLite always supports 4-byte unicode characters');
 
-        Craft::$app->getDb()->setSupportsMb4(false);
+        Context::addHidden('craft.supportsMb4', false);
 
         $entry = EntryModel::factory()->createElement();
         $entry->title = 'Test 𝕋𝕚𝕥𝕝𝕖'; // Contains 4-byte unicode characters
