@@ -13,8 +13,8 @@ use CraftCms\Cms\Field\Conditions\CountryFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
+use CraftCms\Cms\Support\Query;
 use Override;
-use yii\db\Schema;
 
 use function CraftCms\Cms\t;
 
@@ -44,7 +44,7 @@ class Country extends Field implements CrossSiteCopyableFieldInterface, InlineEd
     #[Override]
     public static function dbType(): string
     {
-        return Schema::TYPE_STRING;
+        return Query::TYPE_STRING;
     }
 
     #[Override]

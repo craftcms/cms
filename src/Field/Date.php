@@ -26,7 +26,6 @@ use DateTimeZone;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Contracts\Database\Query\Builder;
 use Override;
-use yii\db\Schema;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -58,8 +57,8 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     public static function dbType(): array
     {
         return [
-            'date' => Schema::TYPE_DATETIME,
-            'tz' => Schema::TYPE_STRING,
+            'date' => Query::TYPE_DATETIME,
+            'tz' => Query::TYPE_STRING,
         ];
     }
 

@@ -27,7 +27,6 @@ use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use Override;
 use Throwable;
-use yii\db\Schema;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -315,14 +314,14 @@ JS;
     protected function dbTypeForValueSql(): string
     {
         if (! $this->decimals) {
-            return Schema::TYPE_INTEGER;
+            return Query::TYPE_INTEGER;
         }
 
         if (DB::isMysql()) {
-            return sprintf('%s(65,%s)', Schema::TYPE_DECIMAL, $this->decimals);
+            return sprintf('%s(65,%s)', Query::TYPE_DECIMAL, $this->decimals);
         }
 
-        return Schema::TYPE_DECIMAL;
+        return Query::TYPE_DECIMAL;
     }
 
     #[Override]

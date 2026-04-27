@@ -33,7 +33,6 @@ use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 use Override;
-use yii\db\Schema;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -91,7 +90,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
     #[Override]
     public static function dbType(): string
     {
-        return Schema::TYPE_JSON;
+        return Query::TYPE_JSON;
     }
 
     /**
