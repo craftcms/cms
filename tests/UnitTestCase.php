@@ -58,5 +58,6 @@ class UnitTestCase extends Orchestra
 
         File::cleanDirectory(config_path('craft/project'));
         File::cleanDirectory(storage_path('runtime/compiled_classes'));
+        File::cleanDirectory(storage_path('runtime/compiled_templates'));
     }
 }

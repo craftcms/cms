@@ -21,7 +21,7 @@ class RedirectNode extends Node
 
         if ($this->hasNode('error')) {
             $compiler
-                ->write(Flash::class.'::fail(')
+                ->write(Flash::class.'::error(')
                 ->subcompile($this->getNode('error'))
                 ->raw(");\n");
         }
