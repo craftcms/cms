@@ -19,7 +19,7 @@
     id: 'placeholder',
     name: 'placeholder',
     value: field.placeholder,
-    errors: field.getErrors('placeholder'),
+    errors: field.errors.get('placeholder'),
     disabled: readOnly,
 }) }}
 
@@ -78,7 +78,7 @@
         name: 'initialRows',
         value: field.initialRows,
         size: 3,
-        errors: field.getErrors('initialRows'),
+        errors: field.errors.get('initialRows'),
         disabled: readOnly,
     }) }}
 </div>

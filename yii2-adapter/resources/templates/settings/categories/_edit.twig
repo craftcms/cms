@@ -35,7 +35,7 @@
         id: 'name',
         name: 'name',
         value: categoryGroup.name,
-        errors: categoryGroup.getErrors('name'),
+        errors: categoryGroup.errors.get('name'),
         autofocus: true,
         required: true,
         disabled: readOnly,
@@ -50,7 +50,7 @@
         autocorrect: false,
         autocapitalize: false,
         value: categoryGroup.handle,
-        errors: categoryGroup.getErrors('handle'),
+        errors: categoryGroup.errors.get('handle'),
         required: true,
         disabled: readOnly,
     }) }}
@@ -62,7 +62,7 @@
         name: 'maxLevels',
         value: categoryGroup.maxLevels,
         size: 5,
-        errors: categoryGroup.getErrors('maxLevels'),
+        errors: categoryGroup.errors.get('maxLevels'),
         disabled: readOnly,
     }) }}
 
@@ -82,9 +82,9 @@
     <hr>
 
     {% set siteRows = [] %}
-    {% set siteErrors = categoryGroup.getErrors('siteSettings') %}
+    {% set siteErrors = categoryGroup.errors.get('siteSettings') %}
 
-    {% for site in craft.sites.getAllSites() %}
+    {% for site in Sites.getAllSites() %}
         {% set siteSettings = categoryGroup.siteSettings[site.id] ?? null %}
         {% if siteSettings %}
             {% for attribute, errors in siteSettings.getErrors() %}
@@ -154,7 +154,7 @@
     {% js on ready %}
         new Craft.HandleGenerator('#name', '#handle');
 
-        {% for site in craft.sites.getAllSites() %}
+        {% for site in Sites.getAllSites() %}
             new Craft.UriFormatGenerator(
                 '#name',
                 '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[uriFormat]"]',

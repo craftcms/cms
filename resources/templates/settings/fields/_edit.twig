@@ -15,7 +15,7 @@
   value: field.name,
   required: true,
   autofocus: true,
-  errors: field.getErrors('name'),
+  errors: field.errors.get('name'),
   data: {'error-key': 'name'},
   disabled: readOnly,
 }) }}
@@ -31,7 +31,7 @@
   maxlength: 64,
   value: field.handle,
   required: true,
-  errors: field.getErrors('handle'),
+  errors: field.errors.get('handle'),
   data: {'error-key': 'handle'},
   disabled: readOnly,
 }) }}
@@ -43,7 +43,7 @@
   class: 'nicetext',
   name: 'instructions',
   value: field.instructions,
-  errors: field.getErrors('instructions'),
+  errors: field.errors.get('instructions'),
   data: {
     'error-key': 'instructions',
   },
@@ -66,7 +66,7 @@
   name: 'type',
   options: fieldTypeOptions,
   value: field is missing ? field.expectedType : className(field),
-  errors: field.getErrors('type'),
+  errors: field.errors.get('type'),
   data: {
     'error-key': 'type',
   },
@@ -75,7 +75,7 @@
 
 {{ missingFieldPlaceholder|raw }}
 
-{% if craft.sites.isMultiSite() %}
+{% if Sites.isMultiSite() %}
   {% set translationMethods = field.supportedTranslationMethodValues %}
   {% if translationMethods|length > 1 %}
     <div id="translation-settings">
@@ -109,7 +109,7 @@
             class: 'code',
             name: 'translationKeyFormat',
             value: field.translationKeyFormat,
-            errors: field.getErrors('translationKeyFormat'),
+            errors: field.errors.get('translationKeyFormat'),
             data: {'error-key': 'translationKeyFormat'},
             disabled: readOnly,
           }) }}

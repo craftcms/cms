@@ -125,7 +125,7 @@ readonly class OAuthController extends AuthenticationController
             Log::warning($message, [__METHOD__, 'exception' => $previous]);
         }
 
-        Flash::fail($message);
+        Flash::error($message);
 
         return redirect($this->loginUrl($isCpRequest))->with(array_filter([
             'error' => $message,

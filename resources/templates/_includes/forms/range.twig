@@ -10,7 +10,7 @@
 {% set value = value ?? null %}
 {% set labelledBy = (inputAttributes.aria.label ?? false) ? false : (labelledBy ?? labelId ?? false) %}
 
-{% set orientation = orientation ?? inputAttributes.dir ?? craft.i18n.locale.getOrientation() %}
+{% set orientation = orientation ?? inputAttributes.dir ?? I18N.getLocale().getOrientation() %}
 
 {%- set suffix = suffix ?? false %}
 {%- set hasSuffix = suffix is not same as(false) %}

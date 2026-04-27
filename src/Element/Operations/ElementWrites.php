@@ -394,7 +394,7 @@ readonly class ElementWrites
                 }
 
                 if (($names === null || ! empty($names)) && ! $element->validate($names)) {
-                    Log::info('Element not saved due to validation error: '.print_r($element->errors, true), [__METHOD__]);
+                    Log::info('Element not saved due to validation error: '.print_r($element->errors()->all(), true), [__METHOD__]);
                     $this->resetElement($element, $originalFirstSave, $originalIsNewForSite, $originalPropagateAll);
 
                     return false;

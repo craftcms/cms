@@ -34,6 +34,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
     public function getGlobals(): array
     {
         return [
+            'Edition' => Edition::get(),
             'CraftEdition' => Edition::get()->value,
             'CraftSolo' => Edition::Solo->value,
             'CraftTeam' => Edition::Team->value,

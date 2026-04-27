@@ -40,23 +40,23 @@ class RequestMixin
         };
     }
 
-    /**
-     * Returns whether the client is running "Windows", "Mac", "Linux" or "Other", based on the
-     * browser's UserAgent string.
-     *
-     * ---
-     *
-     * ```php
-     * $clientOs = request()->clientOs();
-     * ```
-     * ```twig
-     * {% set clientOs = request.clientOs %}
-     * ```
-     *
-     * @return string The OS the client is running.
-     */
     public function clientOs(): Closure
     {
+        /**
+         * Returns whether the client is running "Windows", "Mac", "Linux" or "Other", based on the
+         * browser's UserAgent string.
+         *
+         * ---
+         *
+         * ```php
+         * $clientOs = request()->clientOs();
+         * ```
+         * ```twig
+         * {% set clientOs = request.clientOs %}
+         * ```
+         *
+         * @return string The OS the client is running.
+         */
         return function (): string {
             /**
              * @var Request $this

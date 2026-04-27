@@ -17,7 +17,7 @@
       {% block input %}
         {% include '_includes/forms/componentSelect.twig' with {
           name: 'groups[]',
-          options: craft.userGroups.getAssignableGroups(user),
+          options: UserGroups.getAssignableGroups(user),
           values: user.getGroups(),
           showDescription: true,
           sortable: false,
@@ -80,8 +80,8 @@
 
       {% include '_includes/permissions' with {
         subject: user.admin ? null : user,
-        permissions: craft.userPermissions.getAssignablePermissions(user),
-        groupPermissions: user.id ? craft.userPermissions.getGroupPermissionsByUserId(user.id) : [],
+        permissions: UserPermissions.getAssignablePermissions(user),
+        groupPermissions: user.id ? UserPermissions.getGroupPermissionsByUserId(user.id) : [],
         disabled: CraftEdition == CraftTeam,
       } only %}
     </div>

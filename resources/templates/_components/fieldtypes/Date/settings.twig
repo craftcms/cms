@@ -51,7 +51,7 @@
     id: 'min',
     name: 'min',
     value: field.min,
-    errors: field.getErrors('min'),
+    errors: field.errors.get('min'),
     data: {'error-key': 'min'},
     disabled: readOnly,
 }) }}
@@ -66,7 +66,7 @@
     id: 'max',
     name: 'max',
     value: field.max,
-    errors: field.getErrors('max'),
+    errors: field.errors.get('max'),
     data: {'error-key': 'max'},
     disabled: readOnly,
 }) }}

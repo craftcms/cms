@@ -87,7 +87,6 @@ readonly class ElementDeletions
                     }
 
                     $query->each(function (ElementInterface $element) use ($prevailingElement, $mergedElement) {
-                        /** @var Element $element */
                         foreach ($element->getFieldLayout()?->getCustomFields() ?? [] as $field) {
                             $fieldValue = $element->getCustomFieldRawValue($field->handle);
                             if (
@@ -378,6 +377,7 @@ readonly class ElementDeletions
         DB::beginTransaction();
 
         try {
+            /** @var Element $element */
             foreach ($elements as $element) {
                 $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
                 if (empty($supportedSites)) {
@@ -404,7 +404,7 @@ readonly class ElementDeletions
 
                 $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
                 if (! $element->validate()) {
-                    Log::warning("Unable to restore element $element->id: doesn't pass essential validation: ".print_r($element->errors, true), [__METHOD__]);
+                    Log::warning("Unable to restore element $element->id: doesn't pass essential validation: ".print_r($element->errors()->all(), true), [__METHOD__]);
                     DB::rollBack();
 
                     return false;
@@ -418,7 +418,7 @@ readonly class ElementDeletions
                     $siteElement->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
 
                     if (! $siteElement->validate()) {
-                        Log::warning("Unable to restore element $element->id: doesn't pass essential validation for site $element->siteId: ".print_r($element->errors, true), [__METHOD__]);
+                        Log::warning("Unable to restore element $element->id: doesn't pass essential validation for site $element->siteId: ".print_r($element->errors()->all(), true), [__METHOD__]);
                         throw new Exception("Element $element->id doesn't pass essential validation for site $element->siteId.");
                     }
                 }

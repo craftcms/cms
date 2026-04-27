@@ -1,6 +1,6 @@
-{% set systemName = craft.app.getSystemName()|t('site') -%}
+{% set systemName = systemName|t('site') -%}
 {% set docTitle = docTitle is defined ? docTitle : title|striptags -%}
-{% set orientation = craft.i18n.locale.getOrientation() -%}
+{% set orientation = I18N.getLocale().getOrientation() -%}
 {% set a11yDefaults = app.config.craft.general.accessibilityDefaults %}
 {% set requestedSite = craft.cp.requestedSite %}
 
@@ -23,7 +23,7 @@
 {% hook "cp.layouts.base" -%}
 
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="{{ craft.app.language }}">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="{{ language }}">
 <head>
     {% block head %}
     <meta http-equiv="X-UA-Compatible" content="IE=edge">

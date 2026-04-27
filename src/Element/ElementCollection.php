@@ -11,9 +11,9 @@ use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Enumerable;
+use Illuminate\Support\HtmlString;
 use Override;
 use RuntimeException;
-use Twig\Markup;
 
 /**
  * ElementCollection represents a collection of elements.
@@ -379,7 +379,7 @@ class ElementCollection extends Collection
      *
      * @see ElementHelper::renderElements()
      */
-    public function render(array $variables = []): Markup
+    public function render(array $variables = []): HtmlString
     {
         return ElementHelper::renderElements($this->items, $variables);
     }

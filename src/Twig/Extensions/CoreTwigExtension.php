@@ -8,6 +8,7 @@ use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\MissingComponentInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
@@ -64,8 +65,11 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\TemplateGlobals;
 use DirectoryIterator;
+use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
 use InvalidArgumentException;
 use Money\Money;
@@ -81,10 +85,6 @@ use Twig\Extension\GlobalsInterface;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
-use yii\base\BaseObject;
-use yii\behaviors\AttributeTypecastBehavior;
-use yii\db\Expression;
-use yii\db\QueryInterface;
 
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
@@ -200,8 +200,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         $globals = app(TemplateGlobals::class)->resolve();
 
         return array_merge($globals, [
-            // Twig-only: CraftVariable as 'app' (Blade can't use this — conflicts with Laravel's $app)
-            'app' => $globals['craft'],
+            'app' => app(),
             // Twig-only: convenience constants (PHP devs access these directly in Blade)
             'SORT_ASC' => SORT_ASC,
             'SORT_DESC' => SORT_DESC,
@@ -252,6 +251,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('actionUrl', Url::actionUrl(...)),
             new TwigFunction('alias', Aliases::get(...)),
             new TwigFunction('asset', asset(...)),
+            new TwigFunction('can', Gate::check(...)),
             new TwigFunction('ceil', 'ceil'),
             new TwigFunction('className', 'get_class'),
             new TwigFunction('clone', $this->cloneFunction(...)),
@@ -402,7 +402,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
 
     public function lengthFilter(TwigEnvironment $env, mixed $value): int
     {
-        if ($value instanceof QueryInterface) {
+        if ($value instanceof Builder) {
             return $value->count();
         }
 
@@ -437,7 +437,6 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         }
 
         foreach ([
-            AttributeTypecastBehavior::class,
             DirectoryIterator::class,
             Process::class,
             SimpleXMLElement::class,
@@ -447,12 +446,8 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             }
         }
 
-        if (
-            ! is_subclass_of($class, BaseObject::class) &&
-            ! str_starts_with($class, 'craft\\helpers\\') &&
-            ! str_starts_with($class, '\\CraftCms\\Cms\\')
-        ) {
-            throw new InvalidArgumentException(sprintf('create() can only be used to create instances of %s.', BaseObject::class));
+        if (! is_subclass_of($class, Component::class)) {
+            throw new InvalidArgumentException(sprintf('create() can only be used to create instances of %s.', Component::class));
         }
 
         $object = app()->make($class, $params);
@@ -494,16 +489,16 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         return $entryType;
     }
 
-    public function expressionFunction(mixed $expression, array $params = [], array $config = []): Expression
+    public function expressionFunction(mixed $expression): \Illuminate\Database\Query\Expression
     {
-        return new Expression($expression, $params, $config);
+        return new \Illuminate\Database\Query\Expression($expression);
     }
 
     public function fieldValueSqlFunction(FieldLayoutProviderInterface $provider, string $fieldHandle, ?string $key = null): ?string
     {
         $valueSql = $provider->getFieldLayout()->getFieldByHandle($fieldHandle)->getValueSql($key);
 
-        if ($valueSql instanceof \Illuminate\Contracts\Database\Query\Expression) {
+        if ($valueSql instanceof Expression) {
             return $valueSql->getValue(DB::getQueryGrammar());
         }
 

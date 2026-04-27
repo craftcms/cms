@@ -186,20 +186,6 @@ describe('renderTemplate', function () {
 
         expect(TemplateMode::get())->toBe(TemplateMode::Site);
     });
-
-    it('sets isRenderingTemplate during render and resets after', function () {
-        expect($this->renderer->isRenderingTemplate())->toBeFalse();
-
-        file_put_contents(
-            $this->tempDir.'/check-rendering.twig',
-            '{{ craft.app.view.isRenderingTemplate ? "yes" : "no" }}',
-        );
-
-        $result = $this->renderer->renderTemplate('check-rendering.twig');
-
-        expect($result)->toBe('yes');
-        expect($this->renderer->isRenderingTemplate())->toBeFalse();
-    });
 });
 
 describe('renderPageTemplate', function () {

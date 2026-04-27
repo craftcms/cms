@@ -31,7 +31,7 @@ readonly class MigrationsController
         } catch (Throwable $e) {
             report($e);
 
-            Flash::fail(t('Couldn’t apply new migrations.'));
+            Flash::error(t('Couldn’t apply new migrations.'));
         }
 
         return cp_redirect('utilities/migrations');

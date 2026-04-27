@@ -4,41 +4,25 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Variables;
 
-use CraftCms\Cms\Auth\Auth;
-use CraftCms\Cms\Auth\OAuth\OAuth;
-use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Queries\UserQuery;
-use CraftCms\Cms\Entry\EntryTypes;
-use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Route\Routes;
-use CraftCms\Cms\Section\Sections;
-use CraftCms\Cms\Site\SiteGroups;
-use CraftCms\Cms\Site\Sites;
-use CraftCms\Cms\Translation\I18N;
-use CraftCms\Cms\User\UserGroups;
-use CraftCms\Cms\User\UserPermissions;
-use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Traits\Macroable;
 
 class CraftVariable
 {
-    use Macroable;
+    use Macroable {
+        __call as macroCall;
+    }
 
     public function __construct(
         public readonly Io $io,
         public readonly Cp $cp,
     ) {}
-
-    public function config(): array
-    {
-        return Config::all();
-    }
 
     // Queries
     // -------------------------------------------------------------------------
@@ -77,71 +61,16 @@ class CraftVariable
         return DB::query()->when($table, fn ($query) => $query->from($table));
     }
 
-    // Services
-    // -------------------------------------------------------------------------
-
-    public function auth(): Auth
+    public function __call($method, $parameters): mixed
     {
-        return app(Auth::class);
-    }
+        if (method_exists(Cms::class, $method)) {
+            return Cms::$method(...$parameters);
+        }
 
-    public function elementSources(): ElementSources
-    {
-        return app(ElementSources::class);
-    }
+        if (method_exists(app(), $method)) {
+            return app()->$method(...$parameters);
+        }
 
-    public function entryTypes(): EntryTypes
-    {
-        return app(EntryTypes::class);
-    }
-
-    public function fields(): Fields
-    {
-        return app(Fields::class);
-    }
-
-    public function htmlStack(): HtmlStack
-    {
-        return app(HtmlStack::class);
-    }
-
-    public function i18n(): I18N
-    {
-        return app(I18N::class);
-    }
-
-    public function oauth(): OAuth
-    {
-        return app(OAuth::class);
-    }
-
-    public function routes(): Routes
-    {
-        return app(Routes::class);
-    }
-
-    public function sections(): Sections
-    {
-        return app(Sections::class);
-    }
-
-    public function siteGroups(): SiteGroups
-    {
-        return app(SiteGroups::class);
-    }
-
-    public function sites(): Sites
-    {
-        return app(Sites::class);
-    }
-
-    public function userGroups(): UserGroups
-    {
-        return app(UserGroups::class);
-    }
-
-    public function userPermissions(): UserPermissions
-    {
-        return app(UserPermissions::class);
+        return $this->macroCall($method, $parameters);
     }
 }

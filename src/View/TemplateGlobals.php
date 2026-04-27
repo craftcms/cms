@@ -74,6 +74,7 @@ readonly class TemplateGlobals
             'siteName' => $siteName,
             'siteUrl' => $siteUrl,
             'systemName' => $systemName,
+            'language' => app()->getLocale(),
             'devMode' => $this->app->hasDebugModeEnabled(),
             'isInstalled' => $isInstalled,
             'isUpdateInfoCached' => $this->updates->isUpdateInfoCached(),

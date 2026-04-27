@@ -81,7 +81,7 @@
 
 <hr>
 
-{% if craft.sites.isMultiSite() %}
+{% if Sites.isMultiSite() %}
     <div id="title-container">
         {{ forms.selectField({
             label: '{name} Translation Method'|t('app', {
@@ -156,7 +156,7 @@
     disabled: readOnly,
 }) }}
 
-{% if craft.sites.isMultiSite() %}
+{% if Sites.isMultiSite() %}
     <div id="slug-container"{% if not old('showSlugField', entryType.showSlugField) %} class="hidden"{% endif %}>
         {{ forms.selectField({
             label: '{name} Translation Method'|t('app', {

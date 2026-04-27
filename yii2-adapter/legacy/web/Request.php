@@ -804,7 +804,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      * $isMobileBrowser = Craft::$app->request->isMobileBrowser();
      * ```
      * ```twig
-     * {% set isMobileBrowser = craft.app.request.isMobileBrowser() %}
+     * {% set isMobileBrowser = request.isMobileBrowser() %}
      * ```
      *
      * @param bool $detectTablets Whether tablets should be considered “mobile”.

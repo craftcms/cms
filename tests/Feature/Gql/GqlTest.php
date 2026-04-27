@@ -2,21 +2,11 @@
 
 declare(strict_types=1);
 
-use craft\elements\GlobalSet;
-use craft\fs\Local;
-use craft\models\CategoryGroup;
-use craft\models\TagGroup;
-use craft\services\Categories;
-use craft\services\Entries;
-use craft\services\Globals;
-use craft\services\Tags;
-use craft\services\UserGroups;
-use craft\test\mockclasses\gql\MockDirective;
-use craft\test\mockclasses\gql\MockType;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\Events\DefineGqlValidationRules;
@@ -37,9 +27,9 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\User\Data\UserGroup;
+use CraftCms\Cms\Tests\TestClasses\Gql\MockDirective;
+use CraftCms\Cms\Tests\TestClasses\Gql\MockType;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Yii2Adapter\DeprecatedConcepts;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
@@ -241,10 +231,6 @@ it('generates the expected permission list through the new service', function ()
         'entryTypes' => [$typeB],
     ]);
 
-    $entriesService = Mockery::mock(Entries::class, [
-        'getAllEntryTypes' => [$typeA, $typeB],
-    ]);
-
     Sections::partialMock()
         ->shouldReceive('getAllSections')
         ->andReturn(collect([$sectionA, $sectionB]));
@@ -259,49 +245,6 @@ it('generates the expected permission list through the new service', function ()
             ]),
         ]));
 
-    $globalService = Mockery::mock(Globals::class, [
-        'getAllSets' => [
-            new GlobalSet([
-                'id' => 1,
-                'name' => 'Test global',
-                'uid' => 'globalUid',
-            ]),
-        ],
-    ]);
-    $categoryService = Mockery::mock(Categories::class, [
-        'getAllGroups' => [
-            new CategoryGroup([
-                'id' => 1,
-                'name' => 'Test category group',
-                'uid' => 'categoryGroupUid',
-            ]),
-        ],
-    ]);
-    $tagService = Mockery::mock(Tags::class, [
-        'getAllTagGroups' => [
-            new TagGroup([
-                'id' => 1,
-                'name' => 'Test tag group',
-                'uid' => 'tagGroupUid',
-            ]),
-        ],
-    ]);
-    $userGroupService = Mockery::mock(UserGroups::class, [
-        'getAllGroups' => [
-            new UserGroup([
-                'id' => 1,
-                'name' => 'Test user group',
-                'uid' => 'userGroupUid',
-            ]),
-        ],
-    ]);
-
-    Craft::$app->set('entries', $entriesService);
-    Craft::$app->set('globals', $globalService);
-    Craft::$app->set('categories', $categoryService);
-    Craft::$app->set('tags', $tagService);
-    Craft::$app->set('userGroups', $userGroupService);
-
     $edition = Edition::get();
     Edition::set(Edition::Pro);
 
@@ -314,25 +257,7 @@ it('generates the expected permission list through the new service', function ()
             ->and($components['queries']['Assets'] ?? [])->not->toBeEmpty()
             ->and($components['queries']['Users'] ?? [])->not->toBeEmpty()
             ->and($components['mutations']['Entries'] ?? [])->not->toBeEmpty()
-            ->and($components['mutations']['Assets'] ?? [])->not->toBeEmpty()
-            ->and(
-                DeprecatedConcepts::supportsGlobalSets() ? ($components['queries']['Global Sets'] ?? []) : [true],
-            )->not->toBeEmpty()
-            ->and(
-                DeprecatedConcepts::supportsCategories() ? ($components['queries']['Categories'] ?? []) : [true],
-            )->not->toBeEmpty()
-            ->and(
-                DeprecatedConcepts::supportsTags() ? ($components['queries']['Tags'] ?? []) : [true],
-            )->not->toBeEmpty()
-            ->and(
-                DeprecatedConcepts::supportsGlobalSets() ? ($components['mutations']['Global Sets'] ?? []) : [true],
-            )->not->toBeEmpty()
-            ->and(
-                DeprecatedConcepts::supportsCategories() ? ($components['mutations']['Categories'] ?? []) : [true],
-            )->not->toBeEmpty()
-            ->and(
-                DeprecatedConcepts::supportsTags() ? ($components['mutations']['Tags'] ?? []) : [true],
-            )->not->toBeEmpty();
+            ->and($components['mutations']['Assets'] ?? [])->not->toBeEmpty();
     } finally {
         Edition::set($edition);
     }

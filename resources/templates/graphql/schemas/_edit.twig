@@ -76,7 +76,7 @@
             id: 'name',
             name: 'name',
             value: schema.name,
-            errors: schema.getErrors('name'),
+            errors: schema.errors.get('name'),
             autofocus: true,
             required: true
         }) }}
@@ -86,7 +86,7 @@
 
     <h2>{{ 'Choose the available content for querying with this schema:'|t('app') }}</h2>
 
-    {% set schemaComponents = craft.app.gql.getAllSchemaComponents %}
+    {% set schemaComponents = Gql.getAllSchemaComponents() %}
 
     {% for category, catPermissions in schemaComponents.queries|filter %}
         {% set headingId = "content-heading-#{random()}" %}
@@ -122,7 +122,7 @@
         }),
         warning: 'Can be exploited to reveal sensitive content by information disclosure attacks.'|t('app'),
       },
-      'directive:transform': not craft.app.config.general.disableGraphqlTransformDirective ? {
+      'directive:transform': not app.config.craft.general.disableGraphqlTransformDirective ? {
         label: '{name} directive'|t('app', {
           name: '`@transform`',
         }),
@@ -148,7 +148,7 @@
                 id: 'expiryDate',
                 name: 'expiryDate',
                 value: (token.expiryDate ? token.expiryDate : null),
-                errors: token.getErrors('expiryDate')
+                errors: token.errors.get('expiryDate')
             }) }}
         </div>
     {% endif %}

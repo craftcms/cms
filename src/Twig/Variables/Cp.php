@@ -4,34 +4,23 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Variables;
 
-use CraftCms\Cms\Asset\Volumes;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Cp\Alerts;
-use CraftCms\Cms\Cp\Events\RegisterCpNavItems;
 use CraftCms\Cms\Cp\Events\RegisterFormActions;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Cp\SelectOptions;
-use CraftCms\Cms\Edition;
-use CraftCms\Cms\Element\ElementSources;
-use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\License\License;
-use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
-use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
-use CraftCms\Cms\Utility\Utilities;
-use CraftCms\Cms\Utility\Utility;
 use DateTime;
+use Deprecated;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Uri;
 use InvalidArgumentException;
 
@@ -98,178 +87,7 @@ class Cp extends Component
      */
     public function nav(): array
     {
-        $isAdmin = Auth::user()?->isAdmin();
-        $generalConfig = Cms::config();
-
-        $navItems = [
-            [
-                'label' => t('Dashboard'),
-                'url' => 'dashboard',
-                'icon' => 'gauge',
-            ],
-        ];
-
-        if (Sections::getTotalEditableSections()) {
-            $elementSourcesService = app(ElementSources::class);
-            $entryPages = $elementSourcesService->getPages(Entry::class);
-
-            if ($entryPages->isNotEmpty()) {
-                $entryPageSettings = $elementSourcesService->getPageSettings(Entry::class);
-                foreach ($entryPages as $page) {
-                    $navItems[] = [
-                        'label' => $page !== 'Entries' ? t($page, category: 'site') : t('Entries'),
-                        'url' => sprintf('content/%s', Str::slug($page)),
-                        'icon' => $entryPageSettings[$page]['icon'] ?? 'newspaper',
-                    ];
-                }
-            } else {
-                $navItems[] = [
-                    'label' => t('Entries'),
-                    'url' => 'content/entries',
-                    'icon' => 'newspaper',
-                ];
-            }
-        }
-
-        if (app(Volumes::class)->getTotalViewableVolumes()) {
-            $navItems[] = [
-                'label' => t('Assets'),
-                'url' => 'assets',
-                'icon' => 'image',
-            ];
-        }
-
-        if (
-            Edition::get() !== Edition::Solo &&
-            Gate::check('viewUsers')
-        ) {
-            $navItems[] = [
-                'label' => t('Users'),
-                'url' => 'users',
-                'icon' => 'user-group',
-            ];
-        }
-
-        // Add any Plugin nav items
-        $plugins = app(Plugins::class)->getAllPlugins();
-
-        foreach ($plugins as $plugin) {
-            if (
-                $plugin->hasCpSection &&
-                Gate::check('accessPlugin-'.$plugin->handle) &&
-                ($pluginNavItem = $plugin->getCpNavItem()) !== null
-            ) {
-                $navItems[] = $pluginNavItem;
-            }
-        }
-
-        if ($isAdmin) {
-            if ($generalConfig->enableGql) {
-                $subNavItems = [];
-
-                if ($generalConfig->allowAdminChanges) {
-                    $subNavItems['schemas'] = [
-                        'label' => t('Schemas'),
-                        'url' => 'graphql/schemas',
-                    ];
-                }
-
-                $subNavItems['tokens'] = [
-                    'label' => t('Tokens'),
-                    'url' => 'graphql/tokens',
-                ];
-
-                $subNavItems['graphiql'] = [
-                    'label' => 'GraphiQL',
-                    'url' => 'graphiql',
-                    'external' => true,
-                ];
-
-                $navItems[] = [
-                    'label' => 'GraphQL',
-                    'url' => 'graphql',
-                    'icon' => 'graphql',
-                    'subnav' => $subNavItems,
-                ];
-            }
-        }
-
-        $utilities = app(Utilities::class)->getAuthorizedUtilityTypes();
-
-        if (! empty($utilities)) {
-            $badgeCount = 0;
-
-            foreach ($utilities as $class) {
-                /** @var Utility $class */
-                $badgeCount += $class::badgeCount();
-            }
-
-            $navItems[] = [
-                'url' => 'utilities',
-                'label' => t('Utilities'),
-                'icon' => 'wrench',
-                'badgeCount' => $badgeCount,
-            ];
-        }
-
-        if ($isAdmin) {
-            $navItems[] = [
-                'url' => 'settings',
-                'label' => t('Settings'),
-                'icon' => Cms::config()->allowAdminChanges ? 'gear' : 'gear-slash',
-            ];
-
-            $navItems[] = [
-                'url' => 'plugin-store',
-                'label' => t('Plugin Store'),
-                'icon' => 'plug',
-            ];
-        }
-
-        event($event = new RegisterCpNavItems($navItems));
-
-        $navItems = $event->navItems;
-
-        // Figure out which item is selected, and normalize the items
-        $path = request()->decodedPath();
-
-        if ($path === 'myaccount' || str_starts_with($path, 'myaccount/')) {
-            $path = 'users';
-        }
-
-        $foundSelectedItem = false;
-
-        foreach ($navItems as &$item) {
-            if (! $foundSelectedItem && ($item['url'] == $path || str_starts_with($path, $item['url'].'/'))) {
-                $item['sel'] = true;
-                $foundSelectedItem = true;
-
-                // Modify aria-current value for exact page vs. subpages
-                $item['linkAttributes']['aria']['current'] = $item['url'] === $path ? 'page' : 'true';
-            } else {
-                $item['sel'] = false;
-            }
-
-            if (! isset($item['subnav'])) {
-                $item['subnav'] = false;
-            }
-
-            if (! isset($item['id'])) {
-                $item['id'] = 'nav-'.preg_replace('/[^\w\-_]/', '', Str::ascii(str_replace('/', '-', $item['url'])));
-            }
-
-            $item['url'] = Url::url($item['url']);
-
-            if (! isset($item['external'])) {
-                $item['external'] = false;
-            }
-
-            if (! isset($item['badgeCount'])) {
-                $item['badgeCount'] = 0;
-            }
-        }
-
-        return $navItems;
+        return app(Navigation::class)->getItems();
     }
 
     /**
@@ -363,7 +181,7 @@ class Cp extends Component
      *
      * @phpstan-return array{label:string,data:array}[]
      */
-    #[\Deprecated(message: 'in 6.0.0.  [[\CraftCms\Cms\Cp\SelectOptions::getEnvSuggestions]] should be used instead.')]
+    #[Deprecated(message: 'in 6.0.0.  [[\CraftCms\Cms\Cp\SelectOptions::getEnvSuggestions]] should be used instead.')]
     public function getEnvSuggestions(bool $includeAliases = false, ?callable $filter = null): array
     {
         return $this->formatLegacySuggestions(SelectOptions::getEnvSuggestions($includeAliases, $filter));
@@ -372,7 +190,7 @@ class Cp extends Component
     /**
      * Returns environment variable options for a select input.
      */
-    #[\Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getEnvOptions] should be used instead.')]
+    #[Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getEnvOptions] should be used instead.')]
     public function getEnvOptions(?array $allowedValues = null): array
     {
         return $this->formatLegacyOptions(SelectOptions::getEnvOptions($allowedValues));
@@ -381,7 +199,7 @@ class Cp extends Component
     /**
      * Returns environment variable options for a boolean menu.
      */
-    #[\Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getBooleanEnvOptions] should be used instead.')]
+    #[Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getBooleanEnvOptions] should be used instead.')]
     public function getBooleanEnvOptions(): array
     {
         return $this->formatLegacyOptions(SelectOptions::getBooleanEnvOptions());
@@ -392,7 +210,7 @@ class Cp extends Component
      *
      * @param  bool  $appOnly  Whether to limit the env options to those that match available app locales
      */
-    #[\Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getLanguageEnvOptions]] shoudl be used instead.')]
+    #[Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getLanguageEnvOptions]] shoudl be used instead.')]
     public function getLanguageEnvOptions(bool $appOnly = false): array
     {
         return $this->formatLegacyOptions(SelectOptions::getLanguageEnvOptions($appOnly));
@@ -403,7 +221,7 @@ class Cp extends Component
      *
      * @param  DateTime|null  $offsetDate  The [[DateTime]] object that contains the date/time to compute time zone offsets from
      */
-    #[\Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getTimezoneOptions]] should be used instead.')]
+    #[Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getTimezoneOptions]] should be used instead.')]
     public function getTimeZoneOptions(?DateTime $offsetDate = null): array
     {
         return $this->formatLegacyOptions(SelectOptions::getTimeZoneOptions($offsetDate));
@@ -416,7 +234,7 @@ class Cp extends Component
      * @param  bool  $showLocalizedNames  Whether to show the hint as localizes names; e.g. English, English (United Kingdom)
      * @param  bool  $appLocales  Whether to limit the returned locales to just app locales (cp translation options) or show them all
      */
-    #[\Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getLanguageOptions]] should be used instead.')]
+    #[Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getLanguageOptions]] should be used instead.')]
     public function getLanguageOptions(
         bool $showLocaleIds = false,
         bool $showLocalizedNames = false,
@@ -438,7 +256,7 @@ class Cp extends Component
     /**
      * Returns all options for a filesystem input.
      */
-    #[\Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getFsOptions]] should be used instead.')]
+    #[Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getFsOptions]] should be used instead.')]
     public function getFsOptions(): array
     {
         return SelectOptions::getFsOptions();
@@ -447,7 +265,7 @@ class Cp extends Component
     /**
      * Returns all options for a volume input.
      */
-    #[\Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getVolumeOptions]] should be used instead.')]
+    #[Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getVolumeOptions]] should be used instead.')]
     public function getVolumeOptions(): array
     {
         return SelectOptions::getVolumeOptions();
@@ -472,7 +290,7 @@ class Cp extends Component
      *
      * @phpstan-return array{label:string,data:array}[]
      */
-    #[\Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getTemplateSuggestions]] should be used instead.')]
+    #[Deprecated(message: 'in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getTemplateSuggestions]] should be used instead.')]
     public function getTemplateSuggestions(): array
     {
         $suggestions = SelectOptions::getTemplateSuggestions();

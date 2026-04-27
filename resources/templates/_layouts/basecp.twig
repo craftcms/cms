@@ -1,12 +1,11 @@
 {% extends "_layouts/base" %}
 
 {# Give the body a .mobile class for mobile devices #}
-{% if craft.app.request.isMobileBrowser(true) %}
+{% if request.isMobileBrowser(true) %}
     {% set bodyClass = (bodyClass ?? [])|explodeClass|push('mobile') -%}
 {% endif %}
 
-
-{% set localeData = craft.i18n.locale %}
+{% set localeData = I18N.getLocale() %}
 {% set orientation = localeData.getOrientation() %}
 
 {% macro noAccessMessage(message) %}

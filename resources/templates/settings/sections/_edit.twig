@@ -82,7 +82,7 @@
 {% set siteRows = [] %}
 {% set siteErrors = sessionErrors.get('sites') %}
 
-{% for site in craft.sites.getAllSites() %}
+{% for site in Sites.getAllSites() %}
     {% set siteSettings = old('sites.' ~ site.id, section.siteSettings[site.id] ?? null) %}
     {% if siteSettings %}
         {% for attribute, errors in sessionErrors.get('sites.' ~ site.id) %}
@@ -133,7 +133,7 @@
         enabled: {
             type: 'heading',
             thin: true,
-            class: not craft.sites.isMultiSite() ? 'hidden'
+            class: not Sites.isMultiSite() ? 'hidden'
         },
         singleHomepage: {
             type: 'checkbox',
@@ -185,7 +185,7 @@
     static: readOnly,
 }) }}
 
-{% if craft.sites.isMultiSite() %}
+{% if Sites.isMultiSite() %}
     <div class="field type-channel type-structure {% if sectionType == 'single' %}hidden{% endif %}">
         {{ forms.selectField({
             label: 'Propagation Method'|t('app'),
@@ -292,7 +292,7 @@
     {% js on ready %}
         new Craft.HandleGenerator('#name', '#handle');
 
-        {% for site in craft.sites.getAllSites() %}
+        {% for site in Sites.getAllSites() %}
             new Craft.UriFormatGenerator(
                 '#name',
                 '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[singleUri]"]',

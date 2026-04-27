@@ -3,7 +3,7 @@
     id: id ?? false,
     class: (class ?? [])|explodeClass,
     name: name ?? false,
-    autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+    autofocus: (autofocus ?? false) and not request.isMobileBrowser(true),
     disabled: disabled ?? false,
     aria: {
         describedby: describedBy ?? false,

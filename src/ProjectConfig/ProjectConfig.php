@@ -52,6 +52,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
+use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -64,9 +65,6 @@ use SplFileInfo;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
-use yii\base\ErrorException;
-use yii\base\Exception;
-use yii\web\ServerErrorHttpException;
 
 use function Illuminate\Filesystem\join_paths;
 
@@ -439,10 +437,8 @@ class ProjectConfig
      * @param  bool  $force  Whether the update should be processed regardless of whether the value actually changed
      * @return bool Whether the project config was modified
      *
-     * @throws ErrorException
      * @throws Exception
      * @throws NotSupportedException if the service is set to read-only mode
-     * @throws ServerErrorHttpException
      * @throws RuntimeException
      * @throws BusyResourceException if a lock could not be acquired
      * @throws StaleResourceException if the loaded project config is out-of-date
@@ -1509,6 +1505,7 @@ class ProjectConfig
                     // oh well
                 }
             }
+
             throw new Exception('Unable to write new project config files', 0, $e);
         }
 

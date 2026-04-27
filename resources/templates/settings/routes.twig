@@ -47,8 +47,8 @@
             <div class="route{{ readOnly ? ' inactive' : '' }}" data-uid="{{ route.uid }}"{% if route.siteUid %} data-site-uid="{{ route.siteUid }}"{% endif %}>
                 <div class="uri-container">
                     {%- apply spaceless %}
-                        {% if craft.sites.isMultiSite() %}
-                            <span class="site">{{ route.siteUid ? craft.sites.getSiteByUid(route.siteUid).name|t('site') : "Global"|t('app') }}</span>
+                        {% if Sites.isMultiSite() %}
+                            <span class="site">{{ route.siteUid ? Sites.getSiteByUid(route.siteUid).name|t('site') : "Global"|t('app') }}</span>
                         {% endif %}
                         <span class="uri">{{ route.uriDisplayHtml|raw }}</span>
                     {% endapply -%}

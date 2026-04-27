@@ -6,7 +6,7 @@
   {% set logo = app.config.craft.general.cpLogoUrl %}
 {% endif %}
 
-{% set loginError = craft.app.session.getError() ?? craft.app.session.getFlash('error') %}
+{% set loginError = session.getError() %}
 
 {% set formHtml %}
   <main>
@@ -27,7 +27,7 @@
       initialError: loginError,
     } %}
 
-    {% if craft.app.request.isCpRequest %}
+    {% if request.isCpRequest %}
       <a id="poweredby" href="http://craftcms.com/" title="{{ 'Powered by Craft CMS'|t('app') }}" aria-label="Craft CMS">
         {{ svg('@app/web/assets/cp/dist/images/craftcms.svg') }}
       </a>

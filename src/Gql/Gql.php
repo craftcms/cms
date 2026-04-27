@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql;
 
+use BadMethodCallException;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -71,6 +72,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
+use Exception;
 use GraphQL\Error\ClientAware;
 use GraphQL\Error\DebugFlag;
 use GraphQL\Error\Error;
@@ -94,8 +96,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Throwable;
-use yii\base\Exception;
-use yii\base\UnknownMethodException;
 
 use function CraftCms\Cms\t;
 
@@ -929,7 +929,7 @@ class Gql
                     try {
                         array_push($fields, ...$layout->getCustomFields());
                         array_push($generatedFields, ...$layout->getGeneratedFields());
-                    } catch (UnknownMethodException) {
+                    } catch (BadMethodCallException) {
                     }
                 }
             }

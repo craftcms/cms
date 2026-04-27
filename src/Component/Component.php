@@ -109,7 +109,7 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
         foreach ($values as $name => $value) {
             try {
                 $this->$name = $value;
-            } catch (UnknownPropertyException|InvalidCallException|\yii\base\UnknownPropertyException) {
+            } catch (UnknownPropertyException|InvalidCallException) {
                 // Property or setter doesn't exist
             }
         }
@@ -146,6 +146,24 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
         }
 
         throw new UnknownPropertyException('Setting unknown property: '.static::class.'::'.$name);
+    }
+
+    public function canSetProperty(string $name): bool
+    {
+        if (property_exists($this, $name)) {
+            return true;
+        }
+
+        return $this->resolveMagicMethod('set', $name) !== null;
+    }
+
+    public function canGetProperty(string $name): bool
+    {
+        if (property_exists($this, $name)) {
+            return true;
+        }
+
+        return $this->resolveMagicMethod('get', $name) !== null;
     }
 
     public function __isset(string $name): bool

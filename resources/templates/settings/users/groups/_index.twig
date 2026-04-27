@@ -8,7 +8,7 @@
 {% do registerLegacyAsset('CraftCms\\Cms\\View\\LegacyAssets\\AdminTableAsset') -%}
 
 
-{% set groups = craft.userGroups.getAllGroups() %}
+{% set groups = UserGroups.getAllGroups() %}
 
 {% if readOnly %}
     {% set contentNotice = readOnlyNotice() %}

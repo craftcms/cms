@@ -116,7 +116,7 @@ final class UpdateStatusesCommand extends Command implements Isolatable
             }
 
             if ($event->element->errors()->isNotEmpty()) {
-                $summary = implode(', ', $event->element->getErrorSummary(true));
+                $summary = implode(', ', $event->element->errors()->all());
                 $this->output->writeln("failed: $summary");
 
                 return;

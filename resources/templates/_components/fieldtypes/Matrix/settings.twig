@@ -40,7 +40,7 @@
   {% endblock %}
 {% endembed %}
 
-{% if craft.sites.isMultiSite() %}
+{% if Sites.isMultiSite() %}
   {{ forms.selectField({
     label: 'Propagation Method'|t('app'),
     instructions: 'Which sites should entries be saved to?'|t('app'),
@@ -70,7 +70,7 @@
       class: 'code',
       name: 'propagationKeyFormat',
       value: field.propagationKeyFormat,
-      errors: field.getErrors('propagationKeyFormat'),
+      errors: field.errors.get('propagationKeyFormat'),
       disabled: readOnly,
     }) }}
   {% endtag %}
@@ -100,7 +100,7 @@
 {% set siteRows = [] %}
 {% set siteErrors = [] %}
 
-{% for site in craft.sites.getAllSites() %}
+{% for site in Sites.getAllSites() %}
   {% set siteSettings = field.siteSettings[site.uid] ?? null %}
   {% if siteSettings %}
     {% for attribute, errors in siteSettings.errors ?? [] %}
@@ -168,7 +168,7 @@
   name: 'minEntries',
   value: field.minEntries,
   size: 3,
-  errors: field.getErrors('minEntries'),
+  errors: field.errors.get('minEntries'),
   data: {'error-key': 'minEntries'},
   disabled: readOnly,
 }) }}
@@ -184,7 +184,7 @@
   name: 'maxEntries',
   value: field.maxEntries,
   size: 3,
-  errors: field.getErrors('maxEntries'),
+  errors: field.errors.get('maxEntries'),
   data: {'error-key': 'maxEntries'},
   disabled: readOnly,
 }) }}
@@ -194,7 +194,7 @@
   id: 'enableVersioning',
   name: 'enableVersioning',
   on: field.enableVersioning,
-  errors: field.getErrors('enableVersioning'),
+  errors: field.errors.get('enableVersioning'),
   data: {'error-key': 'enableVersioning'},
   disabled: readOnly,
 }) }}
@@ -322,7 +322,7 @@
   name: 'createButtonLabel',
   value: field.createButtonLabel,
   placeholder: defaultCreateButtonLabel,
-  errors: field.getErrors('createButtonLabel'),
+  errors: field.errors.get('createButtonLabel'),
   disabled: readOnly,
 }) }}
 

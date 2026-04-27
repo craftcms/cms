@@ -15,7 +15,6 @@ use Twig\Sandbox\SecurityNotAllowedPropertyError;
 use Twig\Sandbox\SecurityNotAllowedTagError;
 use Twig\Sandbox\SecurityPolicyInterface;
 use Twig\Template;
-use yii\base\BaseObject;
 
 class SecurityPolicy implements SecurityPolicyInterface
 {
@@ -246,7 +245,7 @@ class SecurityPolicy implements SecurityPolicyInterface
             }
         }
 
-        if ($obj instanceof BaseObject) {
+        if (is_object($obj)) {
             try {
                 $this->checkMethodAllowed($obj, "get$property");
 

@@ -201,9 +201,14 @@ class AppServiceProvider extends ServiceProvider
         Aliases::set('@craftcms', File::normalizePath($this->root));
         Aliases::set('@package', '@craftcms/src');
         Aliases::set('@resources', "{$this->root}/resources");
+        Aliases::set('@vendor', '@root/vendor');
+        Aliases::set('@storage', $this->app->storagePath());
+        Aliases::set('@runtime', '@storage/runtime');
 
         if ($webUrl = Env::get('CRAFT_WEB_URL')) {
             Aliases::set('@web', $webUrl);
+        } else {
+            Aliases::set('@web', config('app.url'));
         }
     }
 }

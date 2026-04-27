@@ -45,7 +45,7 @@
                 name: name ?? null,
                 value: allValue,
                 checked: allChecked,
-                autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+                autofocus: (autofocus ?? false) and not request.isMobileBrowser(true),
                 targetPrefix: targetPrefix ?? null,
                 disabled: disabled
             } only %}

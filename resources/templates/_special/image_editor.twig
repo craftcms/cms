@@ -1,5 +1,5 @@
 {% import "_includes/forms" as forms %}
-{% set orientation = craft.i18n.locale.getOrientation() -%}
+{% set orientation = I18N.getLocale().getOrientation() -%}
 
 {{ tag('h1', {
     class: 'visually-hidden',

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Tests;
 
-use Craft;
-use craft\test\TestSetup;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Database\LaravelMigrations;
@@ -111,16 +109,6 @@ class TestCase extends Orchestra
         Gate::clearResolvedInstances();
 
         app(ProjectConfig::class)->reset();
-
-        DB::rollBack(0);
-
-        if (Craft::$app) {
-            Craft::$app->getDb()->close();
-            Craft::$app->getDb2()->close();
-            DB::disconnect();
-
-            TestSetup::tearDownCraft();
-        }
 
         self::resetStaticCaches();
 

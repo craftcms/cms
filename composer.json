@@ -42,7 +42,6 @@
     "craftcms/laravel-ruleset-validation": "^1.1",
     "craftcms/plugin-installer": "~1.6.0",
     "craftcms/server-check": "~5.1.0",
-    "craftcms/yii2-adapter": "self.version",
     "elvanto/litemoji": "~4.3.0",
     "enshrined/svg-sanitize": "~0.22.0",
     "guzzlehttp/guzzle": "^7.2.0",
