@@ -205,6 +205,12 @@ class AppServiceProvider extends ServiceProvider
         Aliases::set('@storage', $this->app->storagePath());
         Aliases::set('@runtime', '@storage/runtime');
 
+        if (Aliases::get('@templates', false) === false) {
+            Aliases::set('@templates', is_dir($this->app->resourcePath('views'))
+                ? $this->app->resourcePath('views')
+                : $this->app->basePath('templates'));
+        }
+
         if ($webUrl = Env::get('CRAFT_WEB_URL')) {
             Aliases::set('@web', $webUrl);
         } else {

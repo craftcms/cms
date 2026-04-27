@@ -8,6 +8,7 @@ use CraftCms\Cms\Support\Facades\Addresses;
 use CraftCms\Cms\Support\Facades\Announcements;
 use CraftCms\Cms\Support\Facades\AssetIndexer;
 use CraftCms\Cms\Support\Facades\Assets;
+use CraftCms\Cms\Support\Facades\Auth;
 use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
@@ -33,6 +34,7 @@ use CraftCms\Cms\Support\Facades\ImageTransforms;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\JobProgress;
 use CraftCms\Cms\Support\Facades\Markdown;
+use CraftCms\Cms\Support\Facades\OAuth;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Plugins;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
@@ -62,6 +64,7 @@ class FacadesExtension extends AbstractExtension implements GlobalsInterface
             'Addresses' => Addresses::class,
             'Announcements' => Announcements::class,
             'AssetIndexer' => AssetIndexer::class,
+            'Auth' => Auth::class,
             'Assets' => Assets::class,
             'BulkOps' => BulkOps::class,
             'Conditions' => Conditions::class,
@@ -88,6 +91,7 @@ class FacadesExtension extends AbstractExtension implements GlobalsInterface
             'InputNamespace' => InputNamespace::class,
             'JobProgress' => JobProgress::class,
             'Markdown' => Markdown::class,
+            'OAuth' => OAuth::class,
             'Path' => Path::class,
             'Plugins' => Plugins::class,
             'ProjectConfig' => ProjectConfig::class,
