@@ -12,7 +12,7 @@ use CraftCms\Cms\Gql\Events\BeforePopulateElement;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Support\Facades\Elements;
 use GraphQL\Error\UserError;
-use GraphQL\Type\Definition\FieldArgument;
+use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -139,12 +139,12 @@ abstract class ElementMutationResolver extends MutationResolver
         $normalized = [];
 
         // Keep track of known argument names and the corresponding input types.
-        /** @var FieldArgument $argumentDefinition */
+        /** @var Argument $argumentDefinition */
         foreach ($argumentDefinitions as $argumentDefinition) {
             $typeDef = $argumentDefinition->getType();
 
-            if ($typeDef instanceof WrappingType) {
-                $typeDef = $typeDef->getWrappedType(true);
+            while ($typeDef instanceof WrappingType) {
+                $typeDef = $typeDef->getWrappedType();
             }
 
             $this->argumentTypeDefsByName[$argumentDefinition->name] = $typeDef;

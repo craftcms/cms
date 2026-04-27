@@ -11,23 +11,11 @@ use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
-use GraphQL\Type\Definition\FieldArgument;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Support\Collection;
 
 class Transform extends Directive
 {
-    public function __construct(array $config)
-    {
-        $args = &$config['args'];
-
-        foreach ($args as &$argument) {
-            $argument = new FieldArgument($argument);
-        }
-
-        parent::__construct($config);
-    }
-
     public static function create(): GqlDirective
     {
         $typeName = static::name();

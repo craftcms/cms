@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Gql\Directives;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
-use GraphQL\Type\Definition\FieldArgument;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 
@@ -24,12 +23,12 @@ class StripTags extends Directive
             ],
             'description' => 'Strips HTML tags from the field value.',
             'args' => [
-                new FieldArgument([
+                [
                     'name' => 'allowed',
                     'type' => Type::listOf(Type::string()),
                     'defaultValue' => [],
                     'description' => 'List of allowed tag names.',
-                ]),
+                ],
             ],
         ]));
     }

@@ -197,7 +197,8 @@ class Gql
                     if (isset($item['args'])) {
                         foreach ($item['args'] as $arg) {
                             if ($arg instanceof InputObjectType) {
-                                TypeInfo::extractTypes($arg);
+                                $typeMap = [];
+                                TypeInfo::extractTypes($arg, $typeMap);
                             }
                         }
                     }
@@ -1126,7 +1127,7 @@ class Gql
         event($event = new RegisterGqlDirectives(directives: $directiveClasses));
         $directiveClasses = $event->directives;
 
-        $directives = GraphQL::getStandardDirectives();
+        $directives = GqlDirective::builtInDirectives();
 
         foreach ($directiveClasses as $class) {
             /** @var class-string<Directive> $class */

@@ -12,7 +12,6 @@ use CraftCms\Cms\Translation\Locale;
 use DateTime;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
-use GraphQL\Type\Definition\FieldArgument;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 
@@ -32,23 +31,23 @@ class FormatDateTime extends Directive
                 DirectiveLocation::FIELD,
             ],
             'args' => [
-                new FieldArgument([
+                [
                     'name' => 'format',
                     'type' => Type::string(),
                     'defaultValue' => self::DEFAULT_FORMAT,
                     'description' => 'The format to use. Can be `short`, `medium`, `long`, `full`, an [ICU date format](http://userguide.icu-project.org/formatparse/datetime), or a [PHP date format](https://www.php.net/manual/en/function.date.php). Defaults to the [Atom date time format](https://www.php.net/manual/en/class.datetimeinterface.php#datetime.constants.atom]).',
-                ]),
-                new FieldArgument([
+                ],
+                [
                     'name' => 'timezone',
                     'type' => Type::string(),
                     'description' => 'The full name of the timezone (e.g., America/New_York). Defaults to '.self::defaultTimeZone().' if no timezone set on the field.',
                     'defaultValue' => self::defaultTimeZone(),
-                ]),
-                new FieldArgument([
+                ],
+                [
                     'name' => 'locale',
                     'type' => Type::string(),
                     'description' => 'The locale to use when formatting the date. (E.g., en-US)',
-                ]),
+                ],
             ],
             'description' => 'Formats a date in the desired format. Can be applied to all fields, only changes output of DateTime fields.',
         ]));

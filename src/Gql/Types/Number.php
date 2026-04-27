@@ -16,17 +16,11 @@ use Override;
 
 class Number extends ScalarType implements SingularTypeInterface
 {
-    /**
-     * @var string
-     */
     #[Override]
-    public $name = 'Number';
+    public string $name = 'Number';
 
-    /**
-     * @var string
-     */
     #[Override]
-    public $description = 'The `Number` scalar type represents a number that can be a float, an integer or a null value.';
+    public ?string $description = 'The `Number` scalar type represents a number that can be a float, an integer or a null value.';
 
     public static function getType(): Number
     {

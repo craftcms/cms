@@ -8,7 +8,6 @@ use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Support\Facades\Markdown as MarkdownFacade;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
-use GraphQL\Type\Definition\FieldArgument;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 
@@ -28,18 +27,18 @@ class Markdown extends Directive
                 DirectiveLocation::FIELD,
             ],
             'args' => [
-                new FieldArgument([
+                [
                     'name' => 'flavor',
                     'type' => Type::string(),
                     'defaultValue' => self::DEFAULT_FLAVOR,
                     'description' => 'The “flavor” of Markdown the input should be interpreted with. Accepts the same flavor names as `CraftCms\\Cms\\Support\\Facades\\Markdown::parse()`.',
-                ]),
-                new FieldArgument([
+                ],
+                [
                     'name' => 'inlineOnly',
                     'type' => Type::boolean(),
                     'defaultValue' => self::DEFAULT_INLINE_ONLY,
                     'description' => 'Whether to only parse inline elements, omitting any `<p>` tags.',
-                ]),
+                ],
             ],
             'description' => 'Parses the passed field value as Markdown.',
         ]));

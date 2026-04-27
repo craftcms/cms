@@ -8,6 +8,7 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Gql\Concerns\HasGqlType;
 use CraftCms\Cms\Gql\Resolvers\ElementMutationResolver;
 use CraftCms\Cms\Gql\Resolvers\MutationResolver;
+use GraphQL\Type\Definition\WrappingType;
 
 abstract class Mutation
 {
@@ -29,7 +30,13 @@ abstract class Mutation
             $contentFieldType = $contentField->getContentGqlMutationArgumentType();
             $handle = $contentField->handle;
             $fieldList[$handle] = $contentFieldType;
-            $configArray = is_array($contentFieldType) ? $contentFieldType : $contentFieldType->config;
+            if (is_array($contentFieldType)) {
+                $configArray = $contentFieldType;
+            } elseif ($contentFieldType instanceof WrappingType) {
+                $configArray = $contentFieldType->getWrappedType()->config;
+            } else {
+                $configArray = $contentFieldType->config;
+            }
 
             if (is_array($configArray) && ! empty($configArray['normalizeValue'])) {
                 $resolver->setValueNormalizer($handle, $configArray['normalizeValue']);
