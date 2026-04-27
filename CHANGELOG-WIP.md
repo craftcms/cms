@@ -1,6 +1,7 @@
 # Release Notes for Craft CMS 4.18 (WIP)
 
 ### Development
+- The `|default` Twig filter and `is empty` Twig test now treat all `yii\base\Model` instances as not empty. ([#18727](https://github.com/craftcms/cms/issues/18727)) 
 - Added `craft\filters\SecFetchSiteFilter` for request origin verification. ([#18641](https://github.com/craftcms/cms/pull/18641))
 
 ### Extensibility
