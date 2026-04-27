@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Facade;
 
 function craftFacadeClasses(): array
 {
-    return collect(glob(base_path('src/Support/Facades/*.php')) ?: [])
+    return collect(glob(getcwd().'/src/Support/Facades/*.php') ?: [])
         ->mapWithKeys(function (string $file) {
             $name = pathinfo($file, PATHINFO_FILENAME);
 
@@ -21,7 +21,7 @@ function craftFacadeClasses(): array
 
 function composerLaravelAliases(): array
 {
-    $composer = file_get_contents(base_path('composer.json'));
+    $composer = file_get_contents(getcwd().'/composer.json');
 
     if ($composer === false) {
         return [];

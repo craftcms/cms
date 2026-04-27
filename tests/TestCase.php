@@ -22,6 +22,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Tests\Support\DatabaseLock;
+use CraftCms\Cms\Tests\Support\RegistersPackageAliases;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
@@ -45,6 +46,7 @@ use ReflectionProperty;
 class TestCase extends Orchestra
 {
     use RefreshDatabase;
+    use RegistersPackageAliases;
     use WithWorkbench;
 
     #[Override]
