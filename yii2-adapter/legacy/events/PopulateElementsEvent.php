@@ -15,6 +15,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.1.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\Events\ElementsHydrated} instead.
  */
 class PopulateElementsEvent extends Event
 {
