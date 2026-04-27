@@ -65,16 +65,16 @@ class SessionMixin
 
     public function getSuccess(): Closure
     {
-        return Flash::getSuccess(...);
+        return fn () => Flash::getSuccess();
     }
 
     public function getError(): Closure
     {
-        return Flash::getError(...);
+        return fn () => Flash::getError();
     }
 
     public function getNotice(): Closure
     {
-        return Flash::getNotice(...);
+        return fn () => Flash::getNotice();
     }
 }

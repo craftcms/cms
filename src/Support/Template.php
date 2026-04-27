@@ -80,7 +80,11 @@ class Template
                     $env->getExtension(SandboxExtension::class)->checkPropertyAllowed($object, $item, $lineno, $source);
                 }
 
-                return $object->$item;
+                try {
+                    return $object->$item;
+                } catch (UnknownPropertyException) {
+                    return $object->$item();
+                }
             }
 
             if ($object instanceof BaseModel && $object->hasAttribute($item)) {
