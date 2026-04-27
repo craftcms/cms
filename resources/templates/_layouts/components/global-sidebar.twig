@@ -33,7 +33,7 @@
     {% if not isSubnav and subnav %}
       <craft-nav-list slot="subnav">
         {% for subItemId, subItem in subnav %}
-          {% set isSelected = selectedSubnavItem is defined and selectedSubnavItem == subItemId and subItem.url in request.path -%}
+          {% set isSelected = selectedSubnavItem is defined and selectedSubnavItem == subItemId and subItem.url in Request.path -%}
           {{ _self.action(subItem, true, isSelected) }}
         {% endfor %}
       </craft-nav-list>

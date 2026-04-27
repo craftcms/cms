@@ -1,7 +1,7 @@
 {% set systemName = systemName|t('site') -%}
 {% set docTitle = docTitle is defined ? docTitle : title|striptags -%}
 {% set orientation = I18N.getLocale().getOrientation() -%}
-{% set a11yDefaults = app.config.craft.general.accessibilityDefaults %}
+{% set a11yDefaults = config('craft.general.accessibilityDefaults') %}
 {% set requestedSite = craft.cp.requestedSite %}
 
 {% set bodyClass = (bodyClass ?? [])|explodeClass|merge([
@@ -34,7 +34,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     {% set hasCustomIcon = false %}
-    {% for tag in app.config.craft.general.cpHeadTags %}
+    {% for tag in config('craft.general.cpHeadTags') %}
         {{ tag(tag[0], tag[1]) }}
         {% if tag[0] == 'link' and (tag[1].rel ?? null) == 'icon' %}
             {% set hasCustomIcon = true %}

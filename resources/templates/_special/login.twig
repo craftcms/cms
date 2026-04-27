@@ -5,7 +5,7 @@
 {% set staticEmail = staticEmail ?? null %}
 {% set initialError = initialError ?? null %}
 
-{% set generalConfig = app.config.craft.general %}
+{% set generalConfig = config('craft.general') %}
 {% set username = staticEmail ?? (generalConfig.rememberUsernameDuration ? Auth.getRememberedUsername() : '') %}
 
 {% if generalConfig.useEmailAsUsername %}

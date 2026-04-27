@@ -72,7 +72,7 @@
   ]) %}
 {% endif %}
 
-{% if entry.id or (currentUser.admin and app.config.craft.general.allowAdminChanges) %}
+{% if entry.id or (currentUser.admin and config('craft.general.allowAdminChanges')) %}
   {% set actionMenuItems = actionMenuItems|push({hr: true}) %}
 
   {% if entry.id and not static %}
@@ -84,7 +84,7 @@
     }) %}
   {% endif %}
 
-  {% if currentUser.admin and app.config.craft.general.allowAdminChanges %}
+  {% if currentUser.admin and config('craft.general.allowAdminChanges') %}
     {% set actionMenuItems = actionMenuItems|push({
       icon: 'gear',
       label: 'Entry type settings'|t('app'),

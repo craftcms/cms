@@ -96,7 +96,7 @@
   {% endif %}
 {% endif %}
 
-{% set headlessMode = app.config.craft.general.headlessMode %}
+{% set headlessMode = config('craft.general.headlessMode') %}
 {% set siteRows = [] %}
 {% set siteErrors = [] %}
 

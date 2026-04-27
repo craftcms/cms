@@ -2,11 +2,11 @@
 {% set title = "Sign In"|t('app') %}
 {% set bodyClass = 'login' %}
 
-{% if app.config.craft.general.cpLogoUrl %}
-  {% set logo = app.config.craft.general.cpLogoUrl %}
+{% if config('craft.general.cpLogoUrl') %}
+  {% set logo = config('craft.general.cpLogoUrl') %}
 {% endif %}
 
-{% set loginError = session.getError() %}
+{% set loginError = Session.getError() %}
 
 {% set formHtml %}
   <main>
@@ -27,7 +27,7 @@
       initialError: loginError,
     } %}
 
-    {% if request.isCpRequest %}
+    {% if Request.isCpRequest %}
       <a id="poweredby" href="http://craftcms.com/" title="{{ 'Powered by Craft CMS'|t('app') }}" aria-label="Craft CMS">
         {{ svg('@app/web/assets/cp/dist/images/craftcms.svg') }}
       </a>

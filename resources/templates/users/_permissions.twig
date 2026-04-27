@@ -21,7 +21,7 @@
           values: user.getGroups(),
           showDescription: true,
           sortable: false,
-          createAction: currentUser.admin and app.config.craft.general.allowAdminChanges ? 'user-settings/edit-group' : null,
+          createAction: currentUser.admin and config('craft.general.allowAdminChanges') ? 'user-settings/edit-group' : null,
         } %}
       {% endblock %}
     {% endembed %}
@@ -54,7 +54,7 @@
         <div class="readable mb-xl">
           <blockquote class="note tip">
             <p>
-              {% if app.config.craft.general.allowAdminChanges %}
+              {% if config('craft.general.allowAdminChanges') %}
                 {{ 'Team permissions can be managed from {link}.'|t('app', {
                   link: tag('strong', {
                     html: tag('a', {

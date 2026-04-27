@@ -6,7 +6,7 @@
 {% set outputLocaleParam = outputLocaleParam ?? true %}
 {% set timeZone = timeZone ?? null %}
 {% set outputTzParam = outputTzParam ?? true %}
-{% set isMobile = request.isMobileBrowser %}
+{% set isMobile = Request.isMobileBrowser %}
 {% set isDateTime = isDateTime ?? false %}
 
 {% do registerLegacyAsset('CraftCms\\Cms\\View\\LegacyAssets\\TimepickerAsset') -%}

@@ -157,7 +157,7 @@
         label: 'Allow Upscaling'|t('app'),
         id: 'upscale',
         name: 'upscale',
-        on: transform.upscale ?? app.config.craft.general.upscaleImages,
+        on: transform.upscale ?? config('craft.general.upscaleImages'),
         errors: transform.errors.get('upscale'),
         disabled: readOnly,
     }) }}

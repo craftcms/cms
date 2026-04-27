@@ -42,7 +42,7 @@
 {% extends '_layouts/basecp.twig' %}
 
 {# The control panel only supports queue components that implement QueueInterface #}
-{% set sidebarState = request.cookie("Craft-#{craft.systemUid}_sidebar") ?? 'expanded' %}
+{% set sidebarState = Request.cookie("Craft-#{craft.systemUid}_sidebar") ?? 'expanded' %}
 {% set bodyAttributes = {
     data: {
         sidebar: sidebarState,
@@ -103,7 +103,7 @@
         delta: DeltaRegistry.isActive(),
         'delta-names': DeltaRegistry.getNames(),
         'initial-delta-values': DeltaRegistry.getInitialValues(),
-        'modified-delta-names': DeltaRegistry.getModifiedNames()|merge(request.input('modifiedDeltaNames') ?? [])|unique|values,
+        'modified-delta-names': DeltaRegistry.getModifiedNames()|merge(Request.input('modifiedDeltaNames') ?? [])|unique|values,
     },
 }|merge(mainFormAttributes ?? [], recursive=true) %}
 
@@ -169,7 +169,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                                     {% endif %}
                                     <div class="flex-grow">
                                         <div>{{ currentUser.username }}</div>
-                                        {% if not app.config.craft.general.useEmailAsUsername %}
+                                        {% if not config('craft.general.useEmailAsUsername') %}
                                             <div class="smalltext">{{ currentUser.email }}</div>
                                         {% endif %}
                                     </div>
@@ -310,7 +310,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                             </div><!-- #content-container -->
 
                             {% if details is not empty %}
-                                <div id="details-container" tabindex="-1" data-state="{{ request.cookie("Craft-#{craft.systemUid}_sidebar-details")}}">
+                                <div id="details-container" tabindex="-1" data-state="{{ Request.cookie("Craft-#{craft.systemUid}_sidebar-details")}}">
                                     <div id="details">
                                         <div class="details">
                                             {{ details|raw }}
@@ -393,7 +393,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
 {% endblock %}
 
 
-{% if currentUser.can('performUpdates') and not isUpdateInfoCached %}
+{% if currentUser.can('performUpdates') and not Updates.isUpdateInfoCached() %}
     {% js %}
     Craft.cp.checkForUpdates();
     {% endjs %}

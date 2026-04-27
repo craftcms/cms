@@ -53,8 +53,6 @@ describe('globals parity', function () {
 
         expect($globals)->toHaveKeys([
             'craft',
-            'app',
-            'currentSite',
             'now',
         ]);
     });

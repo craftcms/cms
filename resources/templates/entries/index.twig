@@ -4,7 +4,7 @@
 {% if not page or not ElementSources.pageExists("CraftCms\\Cms\\Entry\\Elements\\Entry", page) %}
   {% if sectionHandle is defined %}
     {% set redirect = Entries.getSectionByHandle(sectionHandle).getCpIndexUri() ?? null %}
-    {% if redirect and redirect != request.decodedPath() %}
+    {% if redirect and redirect != Request.decodedPath() %}
       {% redirect redirect %}
     {% endif %}
   {% endif %}

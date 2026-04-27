@@ -2,7 +2,7 @@
 
 {% import '_includes/forms.twig' as forms %}
 
-{% set headlessMode = app.config.craft.general.headlessMode %}
+{% set headlessMode = config('craft.general.headlessMode') %}
 {% set sectionType = old('type', section.type.value) %}
 
 {% if not readOnly %}

@@ -6,7 +6,6 @@ namespace CraftCms\Cms\View;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Variables\CraftVariable;
@@ -27,7 +26,6 @@ readonly class TemplateGlobals
     public function __construct(
         private Application $app,
         private GeneralConfig $generalConfig,
-        private Plugins $plugins,
         private Request $request,
         private Sites $sites,
         private Updates $updates,
@@ -65,19 +63,13 @@ readonly class TemplateGlobals
         $globals = [
             'craft' => $this->craftVariable,
             'sessionErrors' => $errors,
-            'request' => $this->request,
-            'session' => $this->request->hasSession() ? $this->request->session() : null,
-            'pluginAssets' => $this->plugins->getAssetsHtml(),
-            'currentSite' => $currentSite,
             'currentUser' => $currentUser,
-            'primarySite' => $primarySite,
             'siteName' => $siteName,
             'siteUrl' => $siteUrl,
             'systemName' => $systemName,
             'language' => app()->getLocale(),
             'devMode' => $this->app->hasDebugModeEnabled(),
             'isInstalled' => $isInstalled,
-            'isUpdateInfoCached' => $this->updates->isUpdateInfoCached(),
             'loginUrl' => Url::siteUrl($this->generalConfig->getLoginPath()),
             'logoutUrl' => Url::siteUrl($this->generalConfig->getLogoutPath()),
             'setPasswordUrl' => $setPasswordRequestPath !== null ? Url::siteUrl($setPasswordRequestPath) : null,

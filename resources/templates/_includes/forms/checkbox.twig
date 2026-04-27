@@ -15,7 +15,7 @@
         'checkbox'
     ]|filter),
     checked: (checked ?? false) and checked,
-    autofocus: (autofocus ?? false) and not request.isMobileBrowser(true),
+    autofocus: (autofocus ?? false) and not Request.isMobileBrowser(true),
     disabled: (disabled ?? false) ? true : false,
     aria: aria|merge({
         labelledby: (aria.label ?? false) ? false : (labelledBy ?? false),

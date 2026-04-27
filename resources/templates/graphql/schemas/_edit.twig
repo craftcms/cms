@@ -122,7 +122,7 @@
         }),
         warning: 'Can be exploited to reveal sensitive content by information disclosure attacks.'|t('app'),
       },
-      'directive:transform': not app.config.craft.general.disableGraphqlTransformDirective ? {
+      'directive:transform': not config('craft.general.disableGraphqlTransformDirective') ? {
         label: '{name} directive'|t('app', {
           name: '`@transform`',
         }),

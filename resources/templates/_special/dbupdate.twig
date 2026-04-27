@@ -6,7 +6,7 @@
     <form method="post" class="buttons">
         {{ csrfInput() }}
         {{ actionInput('updater') }}
-        {{ hiddenInput('return', request.path()) }}
+        {{ hiddenInput('return', Request.path()) }}
         <button type="submit" class="btn submit">{{ 'Finish up'|t('app') }}</button>
     </form>
 {% endblock %}

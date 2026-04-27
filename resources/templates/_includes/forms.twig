@@ -533,7 +533,7 @@
 {%- endmacro %}
 
 {% macro shortcutText(key, shift, alt) %}
-    {%- switch request.clientOs() %}
+    {%- switch Request.clientOs() %}
     {%- case 'Mac' %}
         {{- (alt ? '⌥') ~ (shift ? '⇧') ~ '⌘' ~ key }}
     {%- default %}

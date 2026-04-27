@@ -9,7 +9,7 @@
 
 {% set cookieState = null %}
 {% if persist and storageMode == 'cookies' and storageKey %}
-    {% set cookieState = storageKey ? request.cookie("Craft-#{craft.systemUid}_#{storageKey}") : null %}
+    {% set cookieState = storageKey ? Request.cookie("Craft-#{craft.systemUid}_#{storageKey}") : null %}
 {% endif %}
 
 {% set state = state ?? cookieState %}

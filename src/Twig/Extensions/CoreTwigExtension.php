@@ -200,7 +200,6 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         $globals = app(TemplateGlobals::class)->resolve();
 
         return array_merge($globals, [
-            'app' => app(),
             // Twig-only: convenience constants (PHP devs access these directly in Blade)
             'SORT_ASC' => SORT_ASC,
             'SORT_DESC' => SORT_DESC,
@@ -256,6 +255,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('className', 'get_class'),
             new TwigFunction('clone', $this->cloneFunction(...)),
             new TwigFunction('configure', Typecast::configure(...)),
+            new TwigFunction('config', config(...)),
             new TwigFunction('cpUrl', Url::cpUrl(...)),
             new TwigFunction('create', $this->createFunction(...)),
             new TwigFunction('dump', $this->dumpFunction(...), ['is_safe' => ['html'], 'needs_context' => true, 'is_variadic' => true]),
