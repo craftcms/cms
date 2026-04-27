@@ -310,7 +310,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                             </div><!-- #content-container -->
 
                             {% if details is not empty %}
-                                <div id="details-container" tabindex="-1" data-state="{{ request.cookie("Craft-#{craft.app.systemUid}_sidebar-details")}}">
+                                <div id="details-container" tabindex="-1" data-state="{{ request.cookie("Craft-#{craft.systemUid}_sidebar-details")}}">
                                     <div id="details">
                                         <div class="details">
                                             {{ details|raw }}
