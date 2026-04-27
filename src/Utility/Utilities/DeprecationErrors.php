@@ -14,7 +14,7 @@ use function CraftCms\Cms\t;
 /**
  * DeprecationErrors represents a DeprecationErrors dashboard widget.
  */
-final class DeprecationErrors extends Utility
+class DeprecationErrors extends Utility
 {
     #[Override]
     public static function displayName(): string
@@ -51,7 +51,7 @@ final class DeprecationErrors extends Utility
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
         return Html::tag('DeprecationErrors', attributes: [

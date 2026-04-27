@@ -8,12 +8,12 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\events\ApplyFieldSaveEvent;
 use craft\events\DefineCompatibleFieldTypesEvent;
 use craft\events\FieldEvent;
 use craft\events\LocateUploadedFilesEvent;
 use craft\events\RegisterComponentTypesEvent;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -630,9 +630,9 @@ class Fields extends Component
      *
      * @return bool Whether the field layout was deleted successfully
      */
-    public function deleteLayoutById(array|int $layoutId): bool
+    public function deleteLayoutById(array|int $layoutId, bool $hardDelete = false): bool
     {
-        return app(\CraftCms\Cms\Field\Fields::class)->deleteLayoutById($layoutId);
+        return app(\CraftCms\Cms\Field\Fields::class)->deleteLayoutById($layoutId, $hardDelete);
     }
 
     /**
@@ -642,9 +642,9 @@ class Fields extends Component
      *
      * @return bool Whether the field layout was deleted successfully
      */
-    public function deleteLayout(FieldLayout $layout): bool
+    public function deleteLayout(FieldLayout $layout, bool $hardDelete = false): bool
     {
-        return app(\CraftCms\Cms\Field\Fields::class)->deleteLayout($layout);
+        return app(\CraftCms\Cms\Field\Fields::class)->deleteLayout($layout, $hardDelete);
     }
 
     /**

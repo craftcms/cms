@@ -9,7 +9,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 /**
  * @event BeforeHandleFile The event that is triggered before an asset is uploaded to volume.
  */
-final class BeforeHandleFile
+class BeforeHandleFile
 {
     public function __construct(
         public Asset $asset,

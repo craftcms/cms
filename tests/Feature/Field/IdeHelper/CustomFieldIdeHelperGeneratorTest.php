@@ -5,7 +5,6 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Fields;
@@ -43,13 +42,9 @@ describe('CustomFieldIdeHelperGenerator', function () {
             'type' => PlainText::class,
         ]);
 
-        $fieldLayout = FieldLayout::factory()->forField($field)->create();
-        $entryModel = Entry::factory()->create();
-        $entryModel->element->update(['fieldLayoutId' => $fieldLayout->id]);
-        $entryModel->entryType->update(['fieldLayoutId' => $fieldLayout->id]);
-
-        app(Fields::class)->invalidateCaches();
-        app(Fields::class)->refreshFields();
+        $entryModel = Entry::factory()
+            ->withFieldLayout(FieldLayout::factory()->forField($field))
+            ->create();
 
         $generator = app(CustomFieldIdeHelperGenerator::class);
         $generator->generate();
@@ -69,14 +64,11 @@ describe('CustomFieldIdeHelperGenerator', function () {
             'type' => PlainText::class,
         ]);
 
-        $fieldLayout = FieldLayout::factory()->forField($field)->create();
-        $entryModel = Entry::factory()->create();
-        $entryModel->element->update(['fieldLayoutId' => $fieldLayout->id]);
-        $entryModel->entryType->update(['fieldLayoutId' => $fieldLayout->id]);
+        $entryModel = Entry::factory()
+            ->withFieldLayout(FieldLayout::factory()->forField($field))
+            ->create();
 
-        app(Fields::class)->invalidateCaches();
         $fieldsService = app(Fields::class);
-        $fieldsService->refreshFields();
 
         // Verify the helper file doesn't exist yet
         $helperFile = $this->ideHelperPath.'/custom-fields.php';
@@ -108,13 +100,9 @@ describe('CustomFieldIdeHelperGenerator', function () {
             'type' => PlainText::class,
         ]);
 
-        $fieldLayout = FieldLayout::factory()->forField($field)->create();
-        $entryModel = Entry::factory()->create();
-        $entryModel->element->update(['fieldLayoutId' => $fieldLayout->id]);
-        $entryModel->entryType->update(['fieldLayoutId' => $fieldLayout->id]);
-
-        app(Fields::class)->invalidateCaches();
-        app(Fields::class)->refreshFields();
+        $entryModel = Entry::factory()
+            ->withFieldLayout(FieldLayout::factory()->forField($field))
+            ->create();
 
         $generator = app(CustomFieldIdeHelperGenerator::class);
         $generator->generate();
@@ -130,24 +118,12 @@ describe('CustomFieldIdeHelperGenerator', function () {
     });
 
     it('generates use imports inside namespace blocks for matrix fields', function () {
-        $imageLayout = FieldLayout::create([
-            'type' => EntryElement::class,
-            'config' => [
-                'tabs' => [
-                    [
-                        'uid' => Str::uuid()->toString(),
-                        'name' => 'Content',
-                        'elements' => [],
-                    ],
-                ],
-            ],
-        ]);
-
-        $imageEntryType = EntryTypeModel::factory()->create([
-            'fieldLayoutId' => $imageLayout->id,
-            'name' => 'Image',
-            'handle' => 'image',
-        ]);
+        $imageEntryType = EntryTypeModel::factory()
+            ->withFieldLayout()
+            ->create([
+                'name' => 'Image',
+                'handle' => 'image',
+            ]);
 
         $headingEntryType = EntryTypeModel::factory()->create([
             'name' => 'Heading',
@@ -160,13 +136,9 @@ describe('CustomFieldIdeHelperGenerator', function () {
             'settings' => ['entryTypes' => [$imageEntryType->id, $headingEntryType->id]],
         ]);
 
-        $fieldLayout = FieldLayout::factory()->forField($matrixField)->create();
-        $entryModel = Entry::factory()->create();
-        $entryModel->element->update(['fieldLayoutId' => $fieldLayout->id]);
-        $entryModel->entryType->update(['fieldLayoutId' => $fieldLayout->id]);
-
-        app(Fields::class)->invalidateCaches();
-        app(Fields::class)->refreshFields();
+        $entryModel = Entry::factory()
+            ->withFieldLayout(FieldLayout::factory()->forField($matrixField))
+            ->create();
 
         $generator = app(CustomFieldIdeHelperGenerator::class);
         $generator->generate();

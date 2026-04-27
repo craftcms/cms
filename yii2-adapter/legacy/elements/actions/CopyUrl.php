@@ -1,56 +1,15 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\elements\actions;
 
-use craft\base\ElementAction;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use function CraftCms\Cms\t;
-
-/**
- * CopyUrl represents a Copy URL element action.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.5.0
- */
-class CopyUrl extends ElementAction
-{
-    // Public Methods
-    // =========================================================================
-
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Actions\CopyUrl} instead.
      */
-    public function getTriggerLabel(): string
+    class CopyUrl extends \CraftCms\Cms\Asset\Actions\CopyUrl
     {
-        return t('Copy URL');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerHtml(): ?string
-    {
-        HtmlStack::jsWithVars(fn($type) => <<<JS
-(() => {
-    new Craft.ElementActionTrigger({
-        type: $type,
-        bulk: false,
-        validateSelection: (selectedItems, elementIndex) => !!selectedItems.find('.element').data('url'),
-        activate: (selectedItems, elementIndex) => {
-            Craft.ui.createCopyTextPrompt({
-                label: Craft.t('app', 'Copy the URL'),
-                value: selectedItems.find('.element').data('url'),
-            });
-        },
-    })
-})();
-JS, [static::class]);
-
-        return null;
     }
 }
+
+class_alias(\CraftCms\Cms\Asset\Actions\CopyUrl::class, CopyUrl::class);

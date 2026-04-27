@@ -8,17 +8,16 @@
 namespace craft\web\assets\vue;
 
 use craft\web\AssetBundle;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Vue asset bundle.
+ * @deprecated 6.0.0
  */
 class VueAsset extends AssetBundle
 {
-    /** @inheritdoc */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /** @inheritdoc */
-    public $js = [
-        'vue.js',
-    ];
+    public function registerAssetFiles($view)
+    {
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\VueAsset::class);
+    }
 }

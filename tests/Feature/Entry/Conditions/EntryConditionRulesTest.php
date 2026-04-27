@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use craft\helpers\DateRange;
 use CraftCms\Cms\Entry\Conditions\AuthorConditionRule;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Conditions\ExpiryDateConditionRule;
@@ -14,6 +13,8 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Shared\Enums\DateRangeType;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Models\User as UserModel;
 
@@ -23,8 +24,8 @@ describe('SectionConditionRule', function () {
         $section2 = Section::factory()->create(['type' => SectionType::Channel]);
         Sections::refreshSections();
 
-        $entry1 = EntryModel::factory()->create(['sectionId' => $section1->id]);
-        EntryModel::factory()->create(['sectionId' => $section2->id]);
+        $entry1 = EntryModel::factory()->forSection($section1)->create();
+        EntryModel::factory()->forSection($section2)->create();
 
         $condition = new EntryCondition(Entry::class);
         $rule = $condition->createConditionRule(SectionConditionRule::class);
@@ -41,8 +42,8 @@ describe('SectionConditionRule', function () {
         $section2 = Section::factory()->create(['type' => SectionType::Channel]);
         Sections::refreshSections();
 
-        EntryModel::factory()->create(['sectionId' => $section1->id]);
-        $entry2 = EntryModel::factory()->create(['sectionId' => $section2->id]);
+        EntryModel::factory()->forSection($section1)->create();
+        $entry2 = EntryModel::factory()->forSection($section2)->create();
 
         $condition = new EntryCondition(Entry::class);
         $rule = $condition->createConditionRule(SectionConditionRule::class);
@@ -59,8 +60,8 @@ describe('SectionConditionRule', function () {
         $section2 = Section::factory()->create(['type' => SectionType::Channel]);
         Sections::refreshSections();
 
-        $entry1 = EntryModel::factory()->create(['sectionId' => $section1->id]);
-        $entry2 = EntryModel::factory()->create(['sectionId' => $section2->id]);
+        $entry1 = EntryModel::factory()->forSection($section1)->create();
+        $entry2 = EntryModel::factory()->forSection($section2)->create();
 
         $condition = new EntryCondition(Entry::class);
         $rule = $condition->createConditionRule(SectionConditionRule::class);
@@ -77,7 +78,7 @@ describe('SectionConditionRule', function () {
     it('supports not_empty operator to match entries with any section', function () {
         $section = Section::factory()->create(['type' => SectionType::Channel]);
         Sections::refreshSections();
-        EntryModel::factory()->create(['sectionId' => $section->id]);
+        EntryModel::factory()->forSection($section)->create();
 
         $condition = new EntryCondition(Entry::class);
         $rule = $condition->createConditionRule(SectionConditionRule::class);
@@ -91,7 +92,7 @@ describe('SectionConditionRule', function () {
     it('modifies query with not_empty operator', function () {
         $section = Section::factory()->create(['type' => SectionType::Channel]);
         Sections::refreshSections();
-        EntryModel::factory()->create(['sectionId' => $section->id]);
+        EntryModel::factory()->forSection($section)->create();
 
         $condition = new EntryCondition(Entry::class);
         $rule = $condition->createConditionRule(SectionConditionRule::class);
@@ -109,11 +110,9 @@ describe('TypeConditionRule', function () {
         $entryType1 = EntryType::factory()->create();
         $entryType2 = EntryType::factory()->create();
 
-        $section = Section::factory()->create(['type' => SectionType::Channel]);
-        $section->entryTypes()->attach($entryType1, ['sortOrder' => 1]);
-        $section->entryTypes()->attach($entryType2, ['sortOrder' => 2]);
+        $section = Section::factory()->withEntryTypes($entryType1, $entryType2)->create(['type' => SectionType::Channel]);
 
-        $entry1 = EntryModel::factory()->create(['sectionId' => $section->id, 'typeId' => $entryType1->id]);
+        $entry1 = EntryModel::factory()->forSection($section)->forEntryType($entryType1)->create();
 
         $condition = new EntryCondition(Entry::class);
         $rule = $condition->createConditionRule(TypeConditionRule::class);
@@ -129,11 +128,9 @@ describe('TypeConditionRule', function () {
         $entryType1 = EntryType::factory()->create();
         $entryType2 = EntryType::factory()->create();
 
-        $section = Section::factory()->create(['type' => SectionType::Channel]);
-        $section->entryTypes()->attach($entryType1, ['sortOrder' => 1]);
-        $section->entryTypes()->attach($entryType2, ['sortOrder' => 2]);
+        $section = Section::factory()->withEntryTypes($entryType1, $entryType2)->create(['type' => SectionType::Channel]);
 
-        $entry2 = EntryModel::factory()->create(['sectionId' => $section->id, 'typeId' => $entryType2->id]);
+        $entry2 = EntryModel::factory()->forSection($section)->forEntryType($entryType2)->create();
 
         $condition = new EntryCondition(Entry::class);
         $rule = $condition->createConditionRule(TypeConditionRule::class);
@@ -149,12 +146,10 @@ describe('TypeConditionRule', function () {
         $entryType1 = EntryType::factory()->create();
         $entryType2 = EntryType::factory()->create();
 
-        $section = Section::factory()->create(['type' => SectionType::Channel]);
-        $section->entryTypes()->attach($entryType1, ['sortOrder' => 1]);
-        $section->entryTypes()->attach($entryType2, ['sortOrder' => 2]);
+        $section = Section::factory()->withEntryTypes($entryType1, $entryType2)->create(['type' => SectionType::Channel]);
 
-        $entry1 = EntryModel::factory()->create(['sectionId' => $section->id, 'typeId' => $entryType1->id]);
-        $entry2 = EntryModel::factory()->create(['sectionId' => $section->id, 'typeId' => $entryType2->id]);
+        $entry1 = EntryModel::factory()->forSection($section)->forEntryType($entryType1)->create();
+        $entry2 = EntryModel::factory()->forSection($section)->forEntryType($entryType2)->create();
 
         $condition = new EntryCondition(Entry::class);
         $rule = $condition->createConditionRule(TypeConditionRule::class);
@@ -177,7 +172,7 @@ describe('AuthorConditionRule', function () {
         Sections::refreshSections();
         $element = Entry::find()->id($entry->id)->one();
         $element->setAuthorId($author->id);
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         $condition = new EntryCondition(Entry::class);
         $rule = $condition->createConditionRule(AuthorConditionRule::class);
@@ -196,7 +191,7 @@ describe('AuthorConditionRule', function () {
         Sections::refreshSections();
         $element = Entry::find()->id($entry->id)->one();
         $element->setAuthorId($author1->id);
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         $condition = new EntryCondition(Entry::class);
         $rule = $condition->createConditionRule(AuthorConditionRule::class);
@@ -217,11 +212,11 @@ describe('AuthorConditionRule', function () {
 
         $element1 = Entry::find()->id($entry1->id)->one();
         $element1->setAuthorId($author1->id);
-        Craft::$app->getElements()->saveElement($element1);
+        Elements::saveElement($element1);
 
         $element2 = Entry::find()->id($entry2->id)->one();
         $element2->setAuthorId($author2->id);
-        Craft::$app->getElements()->saveElement($element2);
+        Elements::saveElement($element2);
 
         $condition = new EntryCondition(Entry::class);
         $rule = $condition->createConditionRule(AuthorConditionRule::class);
@@ -247,7 +242,7 @@ describe('PostDateConditionRule', function () {
 
         $condition = new EntryCondition(Entry::class);
         $rule = $condition->createConditionRule(PostDateConditionRule::class);
-        $rule->rangeType = DateRange::TYPE_RANGE;
+        $rule->rangeType = DateRangeType::Range->value;
         $rule->startDate = '2025-06-01';
         $rule->endDate = '2025-06-30';
 
@@ -270,7 +265,7 @@ describe('PostDateConditionRule', function () {
 
         $condition = new EntryCondition(Entry::class);
         $rule = $condition->createConditionRule(PostDateConditionRule::class);
-        $rule->rangeType = DateRange::TYPE_RANGE;
+        $rule->rangeType = DateRangeType::Range->value;
         $rule->startDate = '2025-06-01';
         $rule->endDate = '2025-06-30';
 

@@ -10,7 +10,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-final readonly class SessionInfoController
+readonly class SessionInfoController
 {
     use ConfirmsPasswords;
 

@@ -10,7 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\helpers\Console;
-use craft\helpers\FileHelper;
+use CraftCms\Cms\Support\File;
 use InvalidArgumentException;
 use Throwable;
 use yii\console\ExitCode;
@@ -21,6 +21,7 @@ use yii\console\ExitCode;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2.0
+ * @deprecated 6.0.0
  */
 class TestsController extends Controller
 {
@@ -92,7 +93,7 @@ class TestsController extends Controller
 
         $this->stdout(PHP_EOL . 'Generating the test suite ... ');
         try {
-            FileHelper::copyDirectory($src, $dst);
+            File::copyDirectory($src, $dst);
         } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stdout('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);

@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Override;
 
-final class SendAnnouncement extends Job
+class SendAnnouncement extends Job
 {
     /**
      * Creates a new SendAnnouncement job.

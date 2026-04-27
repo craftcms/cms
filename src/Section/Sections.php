@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section;
 
-use Craft;
-use craft\base\MemoizableArray;
-use craft\helpers\AdminTable;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -39,22 +41,24 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
 use Exception;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidConfigException;
 
 #[Scoped]
-final class Sections
+class Sections
 {
     /**
      * @var bool Whether entries should be resaved after a section has been updated.
@@ -77,7 +81,16 @@ final class Sections
      */
     private ?MemoizableArray $sections = null;
 
+    /**
+     * @var array<int, SectionSiteSettings[]>
+     *
+     * @see getSectionSiteSettings()
+     */
+    private array $sectionSiteSettings = [];
+
     public function __construct(
+        private readonly Elements $elements,
+        private readonly ElementCaches $elementCaches,
         private readonly ProjectConfig $projectConfig,
     ) {}
 
@@ -213,7 +226,7 @@ final class Sections
      */
     public function getAllSections(): Collection
     {
-        return collect($this->_sections()->all());
+        return $this->_sections()->collect();
     }
 
     /**
@@ -266,7 +279,7 @@ final class Sections
      */
     public function getSectionsByType(SectionType $type): Collection
     {
-        return collect($this->_sections()->where('type', $type, true)->all());
+        return $this->_sections()->where('type', $type, true)->collect();
     }
 
     /**
@@ -362,11 +375,15 @@ final class Sections
      */
     public function getSectionSiteSettings(int $sectionId): array
     {
-        return $this->_createSectionSiteSettingsQuery()
-            ->where('sections_sites.sectionId', $sectionId)
-            ->get()
-            ->mapInto(SectionSiteSettings::class)
-            ->all();
+        if (! isset($this->sectionSiteSettings[$sectionId])) {
+            $this->sectionSiteSettings[$sectionId] = $this->_createSectionSiteSettingsQuery()
+                ->where('sections_sites.sectionId', $sectionId)
+                ->get()
+                ->mapInto(SectionSiteSettings::class)
+                ->all();
+        }
+
+        return $this->sectionSiteSettings[$sectionId];
     }
 
     private function _createSectionSiteSettingsQuery(): Builder
@@ -713,7 +730,7 @@ final class Sections
         $this->refreshSections();
 
         if ($wasTrashed) {
-            /** @var \CraftCms\Cms\Element\ElementCollection<Entry> $entries */
+            /** @var ElementCollection<Entry> $entries */
             $entries = Entry::find()
                 ->sectionId($sectionModel->id)
                 ->drafts(null)
@@ -732,8 +749,9 @@ final class Sections
                     array_walk($typeEntries, function (Entry $entry) {
                         $entry->deletedWithSection = false;
                     });
-                    Craft::$app->getElements()->restoreElements($typeEntries);
-                } catch (InvalidConfigException) {
+
+                    $this->elements->restoreElements($typeEntries);
+                } catch (RuntimeException) {
                     // the entry type probably wasn't restored
                 }
             }
@@ -750,12 +768,13 @@ final class Sections
         event(new SectionSaved($section, $isNewSection));
 
         // Invalidate entry caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+        $this->elementCaches->invalidateForElementType(Entry::class);
     }
 
     public function refreshSections(): void
     {
         $this->sections = null;
+        $this->sectionSiteSettings = [];
         $this->_sections();
     }
 
@@ -852,7 +871,7 @@ final class Sections
 
             if ($entry !== null) {
                 if (isset($entry->dateDeleted)) {
-                    Craft::$app->getElements()->restoreElement($entry);
+                    $this->elements->restoreElement($entry);
                 }
 
                 $entry->setTypeId($entryTypeIds[0]);
@@ -885,7 +904,7 @@ final class Sections
         }
 
         // Validate first
-        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $entry->validate();
 
         // If there are any errors on the URI, re-validate as disabled
@@ -896,7 +915,7 @@ final class Sections
 
         if (
             $entry->errors()->isNotEmpty() ||
-            ! Craft::$app->getElements()->saveElement($entry, false)
+            ! $this->elements->saveElement($entry, false)
         ) {
             throw new Exception("Couldn’t save single entry for section $section->name due to validation errors: ".implode(', ',
                 $entry->getFirstErrors()));
@@ -905,7 +924,6 @@ final class Sections
         // Delete any other entries in the section
         // ---------------------------------------------------------------------
 
-        $elementsService = Craft::$app->getElements();
         $otherEntriesQuery = Entry::find()
             ->sectionId($section->id)
             ->drafts(null)
@@ -915,10 +933,9 @@ final class Sections
             ->id(['not', $entry->id])
             ->status(null);
 
-        $otherEntriesQuery->each(function (Entry $entryToDelete) use ($entry, $elementsService) {
-            /** @var Entry $entryToDelete */
-            if (! $entryToDelete->getIsDraft() || $entry->canonicalId != $entry->id) {
-                $elementsService->deleteElement($entryToDelete, true);
+        $otherEntriesQuery->each(function (Entry $entryToDelete) use ($entry) {
+            if (! $entryToDelete->getIsDraft() || $entry->canonicalId !== $entry->id) {
+                $this->elements->deleteElement($entryToDelete, true);
             }
         }, 100);
 
@@ -1043,7 +1060,7 @@ final class Sections
         event(new SectionDeleted($section));
 
         // Invalidate entry caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+        $this->elementCaches->invalidateForElementType(Entry::class);
     }
 
     /**
@@ -1088,7 +1105,7 @@ final class Sections
         string $orderBy = 'name',
         int $sortDir = SORT_ASC,
     ): array {
-        [$results, $total] = $this->prepTableData($this->createSectionQuery()->reorder(), $page, $limit, $searchTerm, $orderBy,
+        [$results, $paginator] = $this->prepTableData($this->createSectionQuery()->reorder(), $page, $limit, $searchTerm, $orderBy,
             $sortDir);
 
         /** @var Collection<Section> $sections */
@@ -1111,7 +1128,16 @@ final class Sections
             ];
         }
 
-        $pagination = AdminTable::paginationLinks($page, $total, $limit);
+        $pagination = Arr::only($paginator->toArray(), [
+            'total',
+            'per_page',
+            'current_page',
+            'last_page',
+            'next_page_url',
+            'prev_page_url',
+            'from',
+            'to',
+        ]);
 
         return [$pagination, $tableData];
     }
@@ -1120,7 +1146,7 @@ final class Sections
      * Returns query results needed for the VueAdminTable accounting for the pagination, search terms and sorting options.
      *
      *
-     * @return array{0: Collection, 1: int}
+     * @return array{0: Collection, 1: LengthAwarePaginator}
      */
     private function prepTableData(
         Builder $query,
@@ -1132,8 +1158,8 @@ final class Sections
     ): array {
         $sortDir = $sortDir === SORT_DESC ? 'desc' : 'asc';
         $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
+        $pageParam = Cms::config()->getPageTriggerParam();
 
-        $offset = ($page - 1) * $limit;
         $query = $query->orderBy($orderBy, $sortDir);
 
         if ($searchTerm !== null && $searchTerm !== '') {
@@ -1147,12 +1173,12 @@ final class Sections
             }
         }
 
-        $total = $query->count();
+        $paginator = $query->paginate($limit, ['*'], $pageParam, $page);
+        $results = $paginator->getCollection();
 
-        $query->limit($limit);
-        $query->offset($offset);
+        $paginator->appends(request()->except($pageParam));
 
-        return [$query->get(), $total];
+        return [$results, $paginator];
     }
 
     /**

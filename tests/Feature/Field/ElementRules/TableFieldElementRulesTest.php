@@ -18,14 +18,14 @@ test('table field validates column values', function () {
 
     $invalidResult = EntryModel::factory()
         ->withField('tableField', Table::class, $settings, value: [['col1' => 'invalid']])
-        ->createElementWithFields();
+        ->createElementWithFields(save: false);
     $invalidResult->element->validate();
 
     expect($invalidResult->element->errors()->has('tableField'))->toBeTrue();
 
     $validResult = EntryModel::factory()
         ->withField('tableFieldValid', Table::class, $settings, value: [['col1' => 'dev@example.com']])
-        ->createElementWithFields();
+        ->createElementWithFields(save: false);
     $validResult->element->validate();
 
     expect($validResult->element->errors()->has('tableFieldValid'))->toBeFalse();

@@ -8,7 +8,7 @@ use CraftCms\Cms\Twig\Nodes\NamespaceNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
-final class NamespaceTokenParser extends AbstractTokenParser
+class NamespaceTokenParser extends AbstractTokenParser
 {
     public function getTag(): string
     {

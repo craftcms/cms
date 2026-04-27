@@ -6,4 +6,4 @@ namespace CraftCms\Cms\Component\Exceptions;
 
 use Exception;
 
-final class UnknownPropertyException extends Exception {}
+class UnknownPropertyException extends Exception {}

@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-final readonly class PreferencesController
+readonly class PreferencesController
 {
     use EditUserTrait;
     use RespondsWithFlash;

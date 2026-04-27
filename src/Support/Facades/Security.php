@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Facade;
  *
  * @see \CraftCms\Cms\Support\Security
  */
-final class Security extends Facade
+class Security extends Facade
 {
     protected static function getFacadeAccessor(): string
     {

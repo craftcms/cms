@@ -1,1 +1,1 @@
-import o from"./nl2.js";const l={...o};export{l as default};
+import e from"./nl2.js";var t={...e};export{t as default};

@@ -10,14 +10,14 @@ use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Updates;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\Isolatable;
 use Throwable;
 
 use function Laravel\Prompts\confirm;
 
-final class UpCommand extends Command implements Isolatable
+class UpCommand extends Command implements Isolatable
 {
     use CraftCommand;
 

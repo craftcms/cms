@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Diff;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\AllDependencies;
@@ -17,10 +18,10 @@ use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use RuntimeException;
 use StdClass;
-use yii\base\InvalidConfigException;
 
-final class ProjectConfigHelper
+class ProjectConfigHelper
 {
     /**
      * Returns a project config compatible value encoded for storage.
@@ -258,7 +259,7 @@ final class ProjectConfigHelper
      *
      * @param  array  $config  Config array to clean
      *
-     * @throws InvalidConfigException if config contains unexpected data.
+     * @throws RuntimeException if config contains unexpected data.
      */
     public static function cleanupConfig(array $config): array
     {
@@ -281,7 +282,7 @@ final class ProjectConfigHelper
     /**
      * Cleans a config value.
      *
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     private static function _cleanupConfigValue(mixed $value): mixed
     {
@@ -292,7 +293,7 @@ final class ProjectConfigHelper
 
         if (! empty($value) && ! is_scalar($value) && ! is_array($value)) {
             Log::info('Unexpected data encountered in config data - '.print_r($value, true));
-            throw new InvalidConfigException('Unexpected data encountered in config data');
+            throw new RuntimeException('Unexpected data encountered in config data');
         }
 
         if (is_array($value)) {
@@ -454,7 +455,9 @@ final class ProjectConfigHelper
     public static function flattenConfigArray(array $array, string $path, array &$result): void
     {
         foreach ($array as $key => $value) {
-            $thisPath = ltrim($path.'.'.$key, '.');
+            // escape periods within keys, so they don't get confused as multiple path segments
+            // (see https://github.com/craftcms/cms/issues/18631)
+            $thisPath = ltrim(sprintf('%s.%s', $path, str_replace('.', '\.', (string) $key)), '.');
 
             if (is_array($value)) {
                 self::flattenConfigArray($value, $thisPath, $result);
@@ -492,7 +495,7 @@ final class ProjectConfigHelper
     public static function traverseDataArray(array &$data, string|array $path, mixed $value = null, bool $delete = false): mixed
     {
         if (is_string($path)) {
-            $path = explode('.', $path);
+            $path = static::pathSegments($path);
         }
 
         $nextSegment = array_shift($path);
@@ -624,7 +627,7 @@ final class ProjectConfigHelper
 
         $timestampLine = "dateModified: $timestamp\n";
 
-        $path = Craft::$app->getPath()->getProjectConfigFilePath();
+        $path = Path::projectConfigFile();
         $handle = fopen($path, 'r');
         $foundTimestamp = false;
 
@@ -721,7 +724,7 @@ final class ProjectConfigHelper
             $newContents .= $timestampLine;
         }
 
-        FileHelper::writeToFile($path, $newContents);
+        File::writeToFile($path, $newContents);
     }
 
     /**
@@ -737,7 +740,25 @@ final class ProjectConfigHelper
             throw new InvalidArgumentException('No project config path provided.');
         }
 
+        if (str_contains($path, '\.')) {
+            $segments = preg_split('/(?<!\\\)\./', $path);
+
+            return array_map(fn (string $segment) => str_replace('\.', '.', $segment), $segments);
+        }
+
         return explode('.', $path);
+    }
+
+    /**
+     * Returns the number of segments in the given path.
+     */
+    public static function pathDepth(string $path): int
+    {
+        if (str_contains($path, '\.')) {
+            return preg_match_all('/(?<!\\\)\./', $path);
+        }
+
+        return substr_count($path, '.');
     }
 
     /**
@@ -760,8 +781,15 @@ final class ProjectConfigHelper
     public static function pathWithoutLastSegment(string $path): ?string
     {
         $segments = self::pathSegments($path);
+
         array_pop($segments);
 
-        return ! empty($segments) ? implode('.', $segments) : null;
+        if (empty($segments)) {
+            return null;
+        }
+
+        $segments = array_map(fn (string $segment) => str_replace('.', '\.', $segment), $segments);
+
+        return implode('.', $segments);
     }
 }

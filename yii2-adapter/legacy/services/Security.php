@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Security as ModernSecurity;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
@@ -29,6 +30,20 @@ use yii\base\InvalidConfigException;
  */
 class Security extends \yii\base\Security
 {
+    /**
+     * @var string[] Keywords used to reference sensitive data.
+     */
+    public array $sensitiveKeywords = [
+        'key',
+        'pass',
+        'password',
+        'pw',
+        'secret',
+        'sk',
+        'tok',
+        'token',
+    ];
+
     /**
      * @return int
      * @deprecated 6.0.0 use {@see Password} validation rules instead.
@@ -154,7 +169,7 @@ class Security extends \yii\base\Security
      */
     public function isSensitive(string $key): bool
     {
-        return app(\CraftCms\Cms\Support\Security::class)->isSensitive($key);
+        return $this->supportSecurity()->isSensitive($key);
     }
 
     /**
@@ -166,7 +181,7 @@ class Security extends \yii\base\Security
      */
     public function redactIfSensitive(string $key, #[SensitiveParameter] mixed $value): mixed
     {
-        return app(\CraftCms\Cms\Support\Security::class)->redactIfSensitive($key, $value);
+        return $this->supportSecurity()->redactIfSensitive($key, $value);
     }
 
     /**
@@ -178,6 +193,11 @@ class Security extends \yii\base\Security
      */
     public function isSystemDir(string $path): bool
     {
-        return app(\CraftCms\Cms\Support\Security::class)->isSystemDir($path);
+        return app(ModernSecurity::class)->isSystemDir($path);
+    }
+
+    private function supportSecurity(): ModernSecurity
+    {
+        return new ModernSecurity($this->sensitiveKeywords);
     }
 }

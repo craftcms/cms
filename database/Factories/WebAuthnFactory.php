@@ -9,8 +9,9 @@ use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Override;
 
-final class WebAuthnFactory extends Factory
+class WebAuthnFactory extends Factory
 {
+    #[Override]
     protected $model = WebAuthn::class;
 
     #[Override]

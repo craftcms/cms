@@ -8,7 +8,7 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use Illuminate\Console\Command;
 
-final class TouchCommand extends Command
+class TouchCommand extends Command
 {
     use CraftCommand;
 

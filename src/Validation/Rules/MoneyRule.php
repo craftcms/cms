@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Validation\Rules;
 
 use Closure;
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Money\Currencies\ISOCurrencies;
@@ -16,7 +16,7 @@ use NumberFormatter;
 
 use function CraftCms\Cms\t;
 
-final readonly class MoneyRule implements ValidationRule
+readonly class MoneyRule implements ValidationRule
 {
     public function __construct(
         private ElementInterface $model,

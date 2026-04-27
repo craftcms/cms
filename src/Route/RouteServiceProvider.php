@@ -19,33 +19,39 @@ use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
+use CraftCms\Cms\Http\Middleware\HandleMatchedElementRoute;
+use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
+use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\RunQueue;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
 use CraftCms\Cms\Http\Middleware\SetCraftGuard;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
+use CraftCms\Cms\Http\Middleware\ShowBrokenImage;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
+use Illuminate\Foundation\Support\Providers\RouteServiceProvider as LaravelRouteServiceProvider;
 use Illuminate\Routing\Router;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
-final class RouteServiceProvider extends ServiceProvider
+class RouteServiceProvider extends ServiceProvider
 {
     #[Override]
     public function register(): void
     {
         /**
-         * These middleware are special and need to
-         * run before any other middleware as they
-         * rewrite the request
+         * These middleware must run before all others
+         * as they rewrite the incoming request.
          */
         $kernel = $this->app->get(HttpKernel::class);
         $kernel->setGlobalMiddleware(array_merge([
@@ -53,6 +59,13 @@ final class RouteServiceProvider extends ServiceProvider
             HandleTokenRequest::class,
             HandleActionRequest::class,
         ], $kernel->getGlobalMiddleware()));
+
+        LaravelRouteServiceProvider::loadCachedRoutesUsing(function (): void {
+            require $this->app->getCachedRoutesPath();
+
+            $this->bootMaintenanceModeExceptions();
+            $this->bootRequestForgeryExceptions();
+        });
     }
 
     public function boot(Router $router, Routes $routes): void
@@ -61,7 +74,11 @@ final class RouteServiceProvider extends ServiceProvider
 
         $this->bootMiddleware($router);
         $this->loadRoutesFrom(dirname(__DIR__).'/../routes/routes.php');
-        $this->bootMaintenanceModeExceptions();
+
+        if (! $this->app->routesAreCached()) {
+            $this->bootMaintenanceModeExceptions();
+            $this->bootRequestForgeryExceptions();
+        }
 
         $this->app->booted(function () use ($routes, $router): void {
             if (! Cms::isInstalled()) {
@@ -82,15 +99,33 @@ final class RouteServiceProvider extends ServiceProvider
         });
     }
 
+    private function bootRequestForgeryExceptions(): void
+    {
+        /**
+         * Actions that should not have CSRF token verification. These are automatically
+         * mapped to `/{cpTrigger}/{actionTrigger}/route` and `/{actionTrigger}/{route}`
+         */
+        PreventRequestForgery::except(collect([
+            'graphql/api',
+            'preview/preview',
+        ])->flatMap(fn (string $route) => [
+            $route,
+            Cms::config()->actionTrigger.Str::start($route, '/'),
+            Cms::config()->cpTrigger.'/'.Cms::config()->actionTrigger.Str::start($route, '/'),
+        ])->all());
+    }
+
     /**
      * Register routes that should remain accessible during maintenance mode.
      */
     private function bootMaintenanceModeExceptions(): void
     {
         PreventRequestsDuringMaintenance::except([
+            action([UpdaterController::class, 'precheck']),
             action([UpdaterController::class, 'finish']),
             action([UpdaterController::class, 'backup']),
             action([UpdaterController::class, 'serverCheck']),
+            action([UpdaterController::class, 'migrate']),
             action([ConfigSyncController::class, 'finish']),
             action([PluginStoreInstallController::class, 'finish']),
             action([PluginStoreRemoveController::class, 'finish']),
@@ -103,25 +138,30 @@ final class RouteServiceProvider extends ServiceProvider
         collect([
             AddLogContext::class,
             SetCraftGuard::class,
+            ResolveSite::class,
             UpdateLocale::class,
             CheckSchemaVersion::class,
             CheckForUpdates::class,
             SendPoweredByHeader::class,
             Enforce2fa::class,
             SetHeaders::class,
-        ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
+            ShowBrokenImage::class,
+        ])->each(fn (string $middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
 
         collect([
             RequireCpRequest::class,
             CheckRequirements::class,
             HandleInertiaRequests::class,
             EnforceLicenses::class,
-        ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.cp', $middleware));
+            HandleTemplateRequest::class,
+        ])->each(fn (string $middleware) => $router->pushMiddlewareToGroup('craft.cp', $middleware));
 
         collect([
             'web',
             AuthenticateSession::class,
             RunQueue::class,
-        ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.web', $middleware));
+            HandleMatchedElementRoute::class,
+            HandleTemplateRequest::class,
+        ])->each(fn (string $middleware) => $router->pushMiddlewareToGroup('craft.web', $middleware));
     }
 }

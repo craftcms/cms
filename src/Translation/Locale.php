@@ -13,7 +13,7 @@ use NumberFormatter;
 use RuntimeException;
 use Stringable;
 
-final class Locale implements Stringable
+class Locale implements Stringable
 {
     public const int ATTR_POSITIVE_PREFIX = 0;
 

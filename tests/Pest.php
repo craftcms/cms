@@ -2,16 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Element\Queries\AssetQuery;
-use CraftCms\Cms\Element\Queries\EntryQuery;
-use CraftCms\Cms\Element\Queries\UserQuery;
-use CraftCms\Cms\Plugin\Plugins;
-use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestCase;
-use CraftCms\Cms\Tests\TestClasses\TestPlugin;
 use CraftCms\Cms\Tests\UnitTestCase;
+use Illuminate\Http\Request;
 
 uses(TestCase::class)->in('Feature');
 uses(UnitTestCase::class)->in('Unit');
@@ -20,60 +15,17 @@ beforeEach(function () {
     app()->forgetInstance(GeneralConfig::class);
 });
 
-function loadTestPlugin(): void
+function swapUrlRequest(string $uri, string $method = 'GET', array $parameters = []): void
 {
-    $plugins = app(Plugins::class);
-
-    $reflectionClass = new ReflectionClass($plugins);
-    $reflectionClass->getProperty('plugins')->setValue($plugins, [
-        'test-plugin' => TestPlugin::create([
-            'handle' => 'test-plugin',
-            'name' => 'Test Plugin',
-            'version' => '1.0.1',
-        ]),
-    ]);
-    $reflectionClass->getProperty('composerPluginInfo')->setValue($plugins, [
-        'test-plugin' => [
-            'name' => 'Test Plugin',
-            'packageName' => 'craftcms/test-plugin',
-            'version' => '1.0.1',
-            'class' => TestPlugin::class,
-            'basePath' => __DIR__.'/TestClasses',
-        ],
-    ]);
-    $reflectionClass->getProperty('storedPluginInfo')->setValue($plugins, [
-        'test-plugin' => [
-            'id' => 1,
-            'name' => 'Test Plugin',
-            'handle' => 'test-plugin',
-            'version' => '1.0.1',
-            'schemaVersion' => '1.0.0',
-            'installDate' => $now = now(),
-            'dateCreated' => $now,
-            'dateUpdated' => $now,
-            'uid' => Str::uuid(),
-            'edition' => 'standard',
-            'licensedEdition' => 'pro',
-            'licenseKeyStatus' => LicenseKeyStatus::Trial->value,
-            'settings' => [],
-            'licenseKey' => null,
-            'enabled' => false,
-        ],
-    ]);
-    $reflectionClass->getProperty('pluginsLoaded')->setValue($plugins, true);
+    app()->instance('request', Request::create($uri, $method, $parameters));
+    app()->forgetScopedInstances();
 }
 
-function entryQuery(array $config = []): EntryQuery
+function buildExpectedUrl(string $url, string $scheme): string
 {
-    return new EntryQuery($config);
-}
+    $siteUrl = "$scheme://localhost/";
+    $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+    $cpUrl = $cpTrigger === '' ? rtrim($siteUrl, '/') : rtrim($siteUrl, '/')."/$cpTrigger";
 
-function assetQuery(array $config = []): AssetQuery
-{
-    return new AssetQuery($config);
-}
-
-function userQuery(array $config = []): UserQuery
-{
-    return new UserQuery($config);
+    return str_replace(['{siteUrl}', '{cpUrl}'], [$siteUrl, $cpUrl], $url);
 }

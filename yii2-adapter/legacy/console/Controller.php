@@ -52,21 +52,14 @@ class Controller extends YiiController
      *     Controller::EVENT_DEFINE_ACTIONS,
      *     function(DefineConsoleActionsEvent $event) {
      *         $event->actions['products'] = [
-     *             'options' => ['type'],
      *             'helpSummary' => 'Re-saves products.',
-     *             'action' => function($params): int {
-     *                 // @var ResaveController $controller
-     *                 $controller = Craft::$app->controller;
-     *                 $criteria = [];
-     *                 if ($controller->type) {
-     *                     $criteria['type'] = explode(',', $controller->type);
-     *                 }
-     *                 return $controller->resaveElements(Product::class, $criteria);
-     *             }
      *         ];
      *     }
      * );
      * ```
+     *
+     * @deprecated in 6.0.0. Listen for the Laravel `DefineResaveCommands` event and register
+     * standalone Artisan commands instead.
      */
     public const EVENT_DEFINE_ACTIONS = 'defineActions';
 

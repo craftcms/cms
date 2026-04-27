@@ -6,16 +6,16 @@ namespace CraftCms\Cms\Console\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
 
 use function CraftCms\Cms\t;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\table;
 
-final class ClearCachesCommand extends Command
+class ClearCachesCommand extends Command
 {
     use CraftCommand;
 

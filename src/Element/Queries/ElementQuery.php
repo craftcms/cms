@@ -5,29 +5,31 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries;
 
 use Closure;
-use Craft;
-use craft\base\ElementInterface;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Exception;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Concerns\BuildsQueries;
+use Illuminate\Database\MultipleRecordsFoundException;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\RecordsNotFoundException;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Traits\ForwardsCalls;
 use InvalidArgumentException;
@@ -44,7 +46,7 @@ use Twig\Markup;
 /**
  * @template TElement of ElementInterface
  *
- * @mixin \Illuminate\Database\Query\Builder
+ * @mixin Builder
  *
  * @method static select($columns = ['*'])
  * @method static addSelect($column)
@@ -64,7 +66,7 @@ use Twig\Markup;
  */
 class ElementQuery extends Component implements \Illuminate\Contracts\Database\Query\Builder, ElementQueryInterface
 {
-    /** @use \Illuminate\Database\Concerns\BuildsQueries<TElement> */
+    /** @use BuildsQueries<TElement> */
     use BuildsQueries {
         BuildsQueries::sole as baseSole;
         BuildsQueries::first as baseFirst;
@@ -91,19 +93,17 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     use Concerns\SearchesElements;
     use ForwardsCalls;
 
+    protected string $table = Table::ELEMENTS;
+
     /**
      * The base query builder instance.
      */
     protected Builder $query;
 
     /**
-     * The subquery that the main query will select from.
-     */
-    protected Builder $subQuery;
-
-    /**
      * All of the globally registered builder macros.
      */
+    #[Override]
     protected static $macros = [];
 
     /**
@@ -147,7 +147,6 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         'explain',
         'getbindings',
         'getconnection',
-        'getcountforpagination',
         'getgrammar',
         'getrawbindings',
         'implode',
@@ -192,19 +191,17 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * @var array<string,string> Column alias => name mapping
      *
-     * @see joinElementTable()
      * @see applyOrderByParams()
      * @see applySelectParam()
      */
     private array $columnMap;
 
     /**
-     * @var bool Whether an element table has been joined for the query
+     * @var bool Whether the query is sourcing rows from a concrete element table
      *
-     * @see prepare()
-     * @see joinElementTable()
+     * @see configureSourceTable()
      */
-    private bool $joinedElementTable = false;
+    private bool $hasElementSourceTable = false;
 
     /**
      * @var bool Whether the element query before query callback has been called
@@ -225,17 +222,19 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     ) {
         parent::__construct($config);
 
-        $this->query = DB::query()
-            ->join(new Alias(Table::ELEMENTS_SITES, 'elements_sites'), 'elements_sites.id', 'subquery.siteSettingsId')
-            ->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', 'subquery.elementsId')
-            ->select('**');
+        $this->query = DB::table($this->table)->select('**');
 
-        $this->subQuery = DB::table(Table::ELEMENTS, 'elements')
-            ->select([
-                'elements.id as elementsId',
-                'elements_sites.id as siteSettingsId',
-            ])
-            ->join(new Alias(Table::ELEMENTS_SITES, 'elements_sites'), 'elements_sites.elementId', 'elements.id');
+        if ($this->table !== Table::ELEMENTS) {
+            $this->when(
+                DB::isMysql(),
+                fn (self $query) => $this->straightJoin(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', '=', "{$this->table}.id"),
+                fn (self $query) => $this->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', '=', "{$this->table}.id"),
+            );
+
+            $this->hasElementSourceTable = true;
+        }
+
+        $this->query->join(new Alias(Table::ELEMENTS_SITES, 'elements_sites'), 'elements_sites.elementId', '=', 'elements.id');
 
         // Prepare a new column mapping
         // (for use in SELECT and ORDER BY clauses)
@@ -246,6 +245,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             'id' => 'elements.id',
             'slug' => 'elements_sites.slug',
             'uid' => 'elements.uid',
+            'siteId' => 'elements_sites.siteId',
         ];
 
         if ($this->elementType::hasTitles()) {
@@ -286,8 +286,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * Find a model by its primary key.
      *
      * @param  int|string|Arrayable<array-key, mixed>|array<mixed>  $id
-     * @param  string|\Illuminate\Contracts\Database\Query\Expression|array<string|\Illuminate\Contracts\Database\Query\Expression>  $columns
-     * @return ($id is (Arrayable<array-key, mixed>|array<mixed>) ? \CraftCms\Cms\Element\ElementCollection<TElement>|Collection<array> : TElement|array|null)
+     * @param  string|Expression|array<string|Expression>  $columns
+     * @return ($id is (Arrayable<array-key, mixed>|array<mixed>) ? ElementCollection<TElement>|Collection<array> : TElement|array|null)
      */
     public function find(mixed $id, $columns = ['*']): ElementInterface|ElementCollection|Collection|array|null
     {
@@ -301,8 +301,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Find multiple elements by their primary keys.
      *
-     * @param  \Illuminate\Contracts\Support\Arrayable|array  $ids
-     * @return \CraftCms\Cms\Element\ElementCollection<int, TElement>|Collection<int, array>
+     * @param  Arrayable|array  $ids
+     * @return ElementCollection<int, TElement>|Collection<int, array>
      */
     public function findMany(mixed $ids, array|string $columns = ['*']): ElementCollection|Collection
     {
@@ -318,7 +318,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Find a model by its primary key or throw an exception.
      *
-     * @return ($id is (\Illuminate\Contracts\Support\Arrayable<array-key, mixed>|array<mixed>) ? ElementCollection<int, TElement>|Collection<array> : TElement|array)
+     * @return ($id is (Arrayable<array-key, mixed>|array<mixed>) ? ElementCollection<int, TElement>|Collection<array> : TElement|array)
      *
      * @throws ElementNotFoundException<TElement>
      */
@@ -352,8 +352,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      *
      * @template TValue
      *
-     * @param  (\Closure(): TValue)|list<string>|string  $columns
-     * @param  (\Closure(): TValue)|null  $callback
+     * @param  (Closure(): TValue)|list<string>|string  $columns
+     * @param  (Closure(): TValue)|null  $callback
      * @return (
      *     $id is (\Illuminate\Contracts\Support\Arrayable<array-key, mixed>|array<mixed>)
      *     ? \CraftCms\Cms\Element\ElementCollection<int, TElement>
@@ -396,8 +396,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      *
      * @template TValue
      *
-     * @param  (\Closure(): TValue)|list<string>  $columns
-     * @param  (\Closure(): TValue)|null  $callback
+     * @param  (Closure(): TValue)|list<string>  $columns
+     * @param  (Closure(): TValue)|null  $callback
      * @return TElement|TValue
      */
     public function firstOr(array|string|Closure $columns = ['*'], ?Closure $callback = null): mixed
@@ -421,7 +421,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * @return TElement|array
      *
      * @throws ElementNotFoundException<TElement>
-     * @throws \Illuminate\Database\MultipleRecordsFoundException
+     * @throws MultipleRecordsFoundException
      */
     public function sole(array|string $columns = ['*']): ElementInterface|array
     {
@@ -450,8 +450,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Execute the query as a "select" statement.
      *
-     * @param  string|\Illuminate\Contracts\Database\Query\Expression|array<string|\Illuminate\Contracts\Database\Query\Expression>  $columns
-     * @return \CraftCms\Cms\Element\ElementCollection<TElement>|Collection<array>
+     * @param  string|Expression|array<string|Expression>  $columns
+     * @return ElementCollection<TElement>|Collection<array>
      */
     public function get($columns = ['*']): ElementCollection|Collection
     {
@@ -474,7 +474,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     {
         if (! is_null($result = $this->getResultOverride())) {
             if ($this->with) {
-                Craft::$app->getElements()->eagerLoadElements($this->elementType, $result, $this->with);
+                app(Elements::class)->eagerLoadElements($this->elementType, $result, $this->with);
             }
 
             return $result;
@@ -547,6 +547,59 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         return $this->query->pluck($column, $key);
     }
 
+    /**
+     * Paginate the given query.
+     *
+     * @param  int|null|Closure  $perPage
+     * @param  array|string  $columns
+     * @param  string  $pageName
+     * @param  int|null  $page
+     * @param  Closure|int|null  $total
+     *
+     * @throws InvalidArgumentException
+     */
+    public function paginate($perPage = 15, $columns = ['*'], $pageName = 'page', $page = null, $total = null): LengthAwarePaginator
+    {
+        $page = $page ?: Paginator::resolveCurrentPage($pageName);
+
+        $total = value($total) ?? $this->getCountForPagination();
+
+        $perPage = value($perPage, $total);
+
+        $results = $total
+            ? $this->forPage($page, $perPage)->get($columns)
+            : new ElementCollection;
+
+        return $this->paginator($results, $total, $perPage, $page, [
+            'path' => Paginator::resolveCurrentPath(),
+            'pageName' => $pageName,
+        ]);
+    }
+
+    /**
+     * Paginate the given query into a simple paginator.
+     *
+     * @param  int|null  $perPage
+     * @param  array|string  $columns
+     * @param  string  $pageName
+     * @param  int|null  $page
+     * @return \Illuminate\Contracts\Pagination\Paginator
+     */
+    public function simplePaginate($perPage = 15, $columns = ['*'], $pageName = 'page', $page = null)
+    {
+        $page = $page ?: Paginator::resolveCurrentPage($pageName);
+
+        // Next we will set the limit and offset for this query so that when we get the
+        // results we get the proper section of results. Then, we'll create the full
+        // paginator instances for these results with the given page and per page.
+        $this->offset(($page - 1) * $perPage)->limit($perPage + 1);
+
+        return $this->simplePaginator($this->get($columns), $perPage, $page, [
+            'path' => Paginator::resolveCurrentPath(),
+            'pageName' => $pageName,
+        ]);
+    }
+
     /** @TODO: Remove $_ variable after ElementQueryInterface is removed */
     public function count($columns = '*', $_ = null): int
     {
@@ -578,6 +631,34 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         return $this->applyAfterQueryCallbacks($result);
+    }
+
+    public function getCountForPagination($columns = ['*']): int
+    {
+        $query = clone $this;
+        $query->query = $query->query->cloneWithout([
+            'limit',
+            'offset',
+            'unionLimit',
+            'unionOffset',
+        ]);
+
+        try {
+            $query->applyBeforeQueryCallbacks();
+        } catch (QueryAbortedException) {
+            return 0;
+        }
+
+        if ((int) $query->queryCacheDuration >= 0) {
+            return DependencyCache::remember(
+                key: $query->queryCacheKey($query, 'getcountforpagination', $columns),
+                ttl: $query->queryCacheDuration,
+                callback: fn () => $query->query->getCountForPagination($columns),
+                dependency: $query->getCacheDependency(),
+            );
+        }
+
+        return $query->query->getCountForPagination($columns);
     }
 
     /** @TODO: Remove $db variable after ElementQueryInterface is removed */
@@ -648,7 +729,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Get a lazy collection for the given query.
      *
-     * @return \Illuminate\Support\LazyCollection<int, TElement|array>
+     * @return LazyCollection<int, TElement|array>
      */
     public function cursor(): LazyCollection
     {
@@ -674,19 +755,11 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     /**
-     * Get the underlying subquery builder instance.
-     */
-    public function getSubQuery(): Builder
-    {
-        return $this->subQuery;
-    }
-
-    /**
      * @param  int|null  $value
      */
     public function limit($value): self
     {
-        $this->subQuery->limit = $value;
+        $this->getQuery()->limit = $value;
 
         return $this;
     }
@@ -696,7 +769,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public function getLimit(): mixed
     {
-        return $this->subQuery->getLimit();
+        return $this->getQuery()->getLimit();
     }
 
     /**
@@ -704,7 +777,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public function offset($value): self
     {
-        $this->subQuery->offset = $value;
+        $this->getQuery()->offset = $value;
 
         return $this;
     }
@@ -719,14 +792,12 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
             foreach ($column as $c => $dir) {
                 $this->query->orderBy($c, $dir === SORT_ASC ? 'asc' : 'desc');
-                $this->subQuery->orderBy($c, $dir === SORT_ASC ? 'asc' : 'desc');
             }
 
             return $this;
         }
 
         $this->forwardCallTo($this->query, 'orderBy', [$column, $direction]);
-        $this->forwardCallTo($this->subQuery, 'orderBy', [$column, $direction]);
 
         return $this;
     }
@@ -736,13 +807,12 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public function getOffset(): mixed
     {
-        return $this->subQuery->getOffset();
+        return $this->getQuery()->getOffset();
     }
 
     public function getWhereForColumn(string $column): ?array
     {
-        return collect($this->subQuery->wheres)
-            ->firstWhere('column', $column);
+        return collect($this->query->wheres)->firstWhere('column', $column);
     }
 
     /**
@@ -787,7 +857,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Checks if a macro is registered.
      */
-    public function hasMacro(string $name): bool
+    public function hasLocalMacro(string $name): bool
     {
         return isset($this->localMacros[$name]);
     }
@@ -815,7 +885,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      *
      * @param  string  $key
      *
-     * @throws \Exception
+     * @throws Exception
      */
     #[Override]
     public function __get($key): mixed
@@ -861,6 +931,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * @param  string  $method
      * @param  array  $parameters
      */
+    #[Override]
     public function __call($method, $parameters): mixed
     {
         if ($method === 'macro') {
@@ -875,7 +946,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this;
         }
 
-        if ($this->hasMacro($method)) {
+        if ($this->hasLocalMacro($method)) {
             array_unshift($parameters, $this);
 
             return $this->localMacros[$method](...$parameters);
@@ -910,23 +981,13 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this->getQuery()->{$method}(...$parameters);
         }
 
-        /**
-         * Joins and orders should be done on both queries
-         */
-        if (in_array(strtolower($method), ['join', 'orderby', 'orderbydesc'])) {
-            $this->forwardCallTo($this->query, $method, $parameters);
-            $this->forwardCallTo($this->subQuery, $method, $parameters);
-
-            return $this;
-        }
-
-        if (in_array(strtolower($method), ['select', 'reorder', 'addselect'])) {
+        if (in_array(strtolower($method), ['join', 'orderby', 'orderbydesc', 'select', 'reorder', 'addselect'])) {
             $this->forwardCallTo($this->query, $method, $parameters);
 
             return $this;
         }
 
-        $this->forwardCallTo($this->subQuery, $method, $parameters);
+        $this->forwardCallTo($this->query, $method, $parameters);
 
         return $this;
     }
@@ -939,6 +1000,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      *
      * @throws \BadMethodCallException
      */
+    #[Override]
     public static function __callStatic($method, $parameters): mixed
     {
         if ($method === 'macro') {
@@ -1003,7 +1065,6 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     public function __clone(): void
     {
         $this->query = clone $this->query;
-        $this->subQuery = clone $this->subQuery;
 
         foreach ($this->onCloneCallbacks as $onCloneCallback) {
             $onCloneCallback($this);
@@ -1041,8 +1102,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
         $this->applySelectParams();
 
-        // If an element table was never joined in, explicitly filter based on the element type
-        if (! $this->joinedElementTable && $this->elementType !== Element::class) {
+        // If the query isn't sourced from a concrete element table, explicitly filter by element type.
+        if (! $this->hasElementSourceTable && $this->elementType !== Element::class) {
             try {
                 $ref = new ReflectionClass($this->elementType);
             } catch (ReflectionException) {
@@ -1050,7 +1111,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             }
 
             if ($ref && ! $ref->isAbstract()) {
-                $this->subQuery->where('elements.type', $this->elementType);
+                $this->query->where('elements.type', $this->elementType);
             }
         }
 
@@ -1060,36 +1121,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
         if ($this->getOffset() !== null && $this->getLimit() === null && (DB::isMysql() || DB::isSqlite())) {
             // Limit is not optional in MySQL or SQLite
-            $this->subQuery->limit(PHP_INT_MAX);
+            $this->query->limit(PHP_INT_MAX);
         }
-
-        $this->query->fromSub($this->subQuery, 'subquery');
 
         $this->elementQueryBeforeQueryCalled = true;
-    }
-
-    /**
-     * Joins in a table with an `id` column that has a foreign key pointing to `elements.id`.
-     *
-     * The table will be joined with an alias based on the unprefixed table name. For example,
-     * if `{{%entries}}` is passed, the table will be aliased to `entries`.
-     *
-     * @param  string  $table  The table name, e.g. `entries` or `{{%entries}}`
-     */
-    public function joinElementTable(string $table, ?string $alias = null): void
-    {
-        $alias ??= $table;
-
-        $this->query->join(new Alias($table, $alias), "$alias.id", 'subquery.elementsId');
-        $this->subQuery->join(new Alias($table, $alias), "$alias.id", 'elements.id');
-        $this->joinedElementTable = true;
-
-        // Add element table cols to the column map
-        foreach (Schema::getColumnListing($table) as $column) {
-            if (! isset($this->columnMap[$column])) {
-                $this->columnMap[$column] = "$alias.$column";
-            }
-        }
     }
 
     /**
@@ -1191,7 +1226,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      *
      * @return void
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function enforceOrderBy()
     {

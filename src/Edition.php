@@ -178,6 +178,11 @@ enum Edition: int implements Arrayable
         return $this->value >= self::Pro->value;
     }
 
+    public function supportsOAuth(): bool
+    {
+        return $this->value >= self::Pro->value;
+    }
+
     public function toArray(): array
     {
         return [

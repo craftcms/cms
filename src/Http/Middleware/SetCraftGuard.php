@@ -8,7 +8,7 @@ use Closure;
 use Illuminate\Config\Repository;
 use Illuminate\Http\Request;
 
-final readonly class SetCraftGuard
+readonly class SetCraftGuard
 {
     public function __construct(
         private Repository $config,

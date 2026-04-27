@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig\Nodes;
 
 use Craft;
-use craft\helpers\Template;
+use CraftCms\Cms\Support\Template;
 use Override;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
 
 #[YieldReady]
-final class DdNode extends Node
+class DdNode extends Node
 {
     #[Override]
     public function compile(Compiler $compiler): void

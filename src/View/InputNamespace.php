@@ -8,7 +8,7 @@ use CraftCms\Cms\Support\Html;
 use Illuminate\Container\Attributes\Scoped;
 
 #[Scoped]
-final class InputNamespace
+class InputNamespace
 {
     private ?string $namespace = null;
 

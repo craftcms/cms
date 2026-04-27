@@ -8,7 +8,7 @@ use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
-final readonly class Sequence
+readonly class Sequence
 {
     /**
      * Returns the current value in a given sequence.

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Events;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * RegisterExporters event is triggered when registering the available exporters for an element type.
  */
-final class RegisterExporters
+class RegisterExporters
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class

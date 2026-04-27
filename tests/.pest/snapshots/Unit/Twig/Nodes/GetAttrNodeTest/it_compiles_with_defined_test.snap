@@ -1,2 +1,2 @@
-craft\helpers\Template::attribute($this->env, $this->source, // line 1
+CraftCms\Cms\Support\Template::attribute($this->env, $this->source, // line 1
 ($context["entry"] ?? null), "title", [], "any", false, false, false, 1)

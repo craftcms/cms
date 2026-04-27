@@ -10,7 +10,7 @@ use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Facades\Artisan;
 
-final class EnvShowCommand extends Command implements PromptsForMissingInput
+class EnvShowCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
 

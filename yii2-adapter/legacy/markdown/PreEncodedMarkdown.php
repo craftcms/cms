@@ -11,19 +11,15 @@ namespace craft\markdown;
 /**
  * Markdown parser that should be used when the content has already been pre-encoded.
  *
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Facades\Markdown::parse()} with the `pre-encoded` flavor instead.
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.13
  */
-class PreEncodedMarkdown extends Markdown
+class PreEncodedMarkdown extends BaseMarkdownParser
 {
-    protected function renderCode($block): string
+    protected function flavor(): string
     {
-        $class = isset($block['language']) ? ' class="language-' . $block['language'] . '"' : '';
-        return sprintf("<pre><code%s>%s\n</code></pre>\n", $class, $block['content']);
-    }
-
-    protected function renderInlineCode($block): string
-    {
-        return sprintf('<code>%s</code>', $block[1]);
+        return 'pre-encoded';
     }
 }

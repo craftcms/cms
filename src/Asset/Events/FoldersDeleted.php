@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Asset\Events;
 /**
  * @event FoldersDeleted The event that is triggered after folders are deleted.
  */
-final class FoldersDeleted
+class FoldersDeleted
 {
     /** @param int[] $folderIds */
     public function __construct(

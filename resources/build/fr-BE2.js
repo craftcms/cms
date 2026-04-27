@@ -1,1 +1,1 @@
-import r from"./fr3.js";const o={...r};export{o as default};
+import e from"./fr3.js";var t={...e};export{t as default};

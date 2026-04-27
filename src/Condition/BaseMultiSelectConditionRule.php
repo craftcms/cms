@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use Override;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 /**
  * BaseMultiSelectConditionRule provides a base implementation for condition rules that are composed of a multi-select input.
  */
 abstract class BaseMultiSelectConditionRule extends BaseConditionRule
 {
-    #[\Override]
+    #[Override]
     public string $operator = self::OPERATOR_IN;
 
     /**
@@ -111,7 +112,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
 
         return
             Html::hiddenLabel(Html::encode($this->getLabel()), $multiSelectId).
-            Cp::selectizeHtml([
+            FormFields::selectizeHtml([
                 'id' => $multiSelectId,
                 'class' => 'flex-grow',
                 'name' => 'values',
@@ -121,7 +122,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
             ]);
     }
 
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -130,7 +131,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
     }
 
     /**
-     * Returns the rule’s value, prepped for {@see \CraftCms\Cms\Database\QueryParam::parse} based on the selected operator.
+     * Returns the rule’s value, prepped for {@see QueryParam::parse} based on the selected operator.
      *
      * @param  callable|null  $normalizeValue  Method for normalizing a given selected value.
      */
@@ -161,7 +162,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
         return match ($this->operator) {
             self::OPERATOR_IN => $values,
             self::OPERATOR_NOT_IN => array_merge(['not'], $values),
-            default => throw new InvalidConfigException("Invalid operator: $this->operator"),
+            default => throw new RuntimeException("Invalid operator: $this->operator"),
         };
     }
 
@@ -192,7 +193,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
         return match ($this->operator) {
             self::OPERATOR_IN => ! empty(array_intersect($value, $this->_values)),
             self::OPERATOR_NOT_IN => empty(array_intersect($value, $this->_values)),
-            default => throw new InvalidConfigException("Invalid operator: $this->operator"),
+            default => throw new RuntimeException("Invalid operator: $this->operator"),
         };
     }
 }

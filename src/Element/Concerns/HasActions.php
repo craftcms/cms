@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use craft\elements\actions\Delete;
-use craft\elements\actions\DeleteActionInterface;
-use craft\elements\actions\Duplicate;
-use craft\elements\actions\Edit;
-use craft\elements\actions\SetStatus;
-use craft\elements\actions\View as ViewAction;
+use CraftCms\Cms\Element\Actions\Delete;
+use CraftCms\Cms\Element\Actions\Duplicate;
+use CraftCms\Cms\Element\Actions\Edit;
+use CraftCms\Cms\Element\Actions\SetStatus;
+use CraftCms\Cms\Element\Actions\View as ViewAction;
+use CraftCms\Cms\Element\Contracts\DeleteActionInterface;
 use CraftCms\Cms\Element\Events\RegisterActions;
 use Illuminate\Support\Collection;
 
@@ -88,8 +88,6 @@ trait HasActions
 
     /**
      * Returns whether the Set Status action should be included in [[actions()]] automatically.
-     *
-     * @since 4.3.2
      */
     protected static function includeSetStatusAction(): bool
     {

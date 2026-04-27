@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +18,7 @@ use function CraftCms\Cms\t;
  * This trait contains methods related to tracking modified and outdated attributes,
  * dirty state management, and translatability of core attributes like title and slug.
  *
- * @mixin \CraftCms\Cms\Element\Element
+ * @mixin Element
  *
  * @internal
  */

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Variables;
 
-use craft\helpers\Assets;
+use CraftCms\Cms\Asset\AssetsHelper;
 
-final class Io
+class Io
 {
     public function getMaxUploadSize(): float|int
     {
-        return Assets::getMaxUploadSize();
+        return AssetsHelper::getMaxUploadSize();
     }
 
     public function getFileKinds(): array
     {
-        return Assets::getFileKinds();
+        return AssetsHelper::getFileKinds();
     }
 }

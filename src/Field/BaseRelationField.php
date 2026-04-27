@@ -6,25 +6,27 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use Craft;
-use craft\base\ElementInterface;
-use craft\base\NestedElementInterface;
-use craft\elements\db\ElementRelationParamParser;
-use craft\helpers\Cp;
-use craft\helpers\ElementHelper;
-use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Html\PreviewHtml;
+use CraftCms\Cms\Database\ElementRelationParamFilter;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
-use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\DefineElementCriteria;
 use CraftCms\Cms\Element\Jobs\LocalizeRelations;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
-use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Conditions\RelationalFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
@@ -32,32 +34,39 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\ElementSources;
+use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\View\LegacyAssets\CpAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;
 use Override;
+use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\Event;
-use yii\base\InvalidConfigException;
 use yii\db\Schema;
 
+use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -170,25 +179,28 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
 
         if (! empty($value)) {
-            /** @TODO Port to Laravel */
-            $parser = new ElementRelationParamParser([
-                'fields' => [
-                    $field->handle => $field,
-                ],
+            $filter = new ElementRelationParamFilter(fields: [
+                $field->handle => $field,
             ]);
-            $condition = $parser->parse([
+
+            $relationCriteria = [
                 'targetElement' => $value,
                 'field' => $field->handle,
-            ]);
-            if ($condition !== false) {
-                $params = [];
-                $sql = Craft::$app->getDb()->getQueryBuilder()->buildCondition($condition, $params);
+            ];
 
-                // Yii uses named parameters, Laravel uses positional
-                $sql = preg_replace('/:qp\d+/', '?', (string) $sql);
+            if ($query instanceof ElementQuery) {
+                $filter->apply($query->getQuery(), $relationCriteria);
 
-                $query->whereRaw($sql, $params);
+                return $query;
             }
+
+            if ($query instanceof Builder) {
+                $filter->apply($query, $relationCriteria);
+
+                return $query;
+            }
+
+            $query->where(fn (Builder $query) => $filter->apply($query, $relationCriteria));
         }
 
         return $query;
@@ -228,9 +240,9 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     ): Builder {
         $ns = sprintf('%s_%s', $field->handle, Str::random(5));
 
-        $query = DB::table(\CraftCms\Cms\Database\Table::RELATIONS, "relations_$ns")
-            ->join(new Alias(\CraftCms\Cms\Database\Table::ELEMENTS, "elements_$ns"), "elements_$ns.id", '=', "relations_$ns.targetId")
-            ->leftJoin(new Alias(\CraftCms\Cms\Database\Table::ELEMENTS_SITES, "elements_sites_$ns"), "elements_sites_$ns.elementId", '=', "elements_$ns.id")
+        $query = DB::table(Table::RELATIONS, "relations_$ns")
+            ->join(new Alias(Table::ELEMENTS, "elements_$ns"), "elements_$ns.id", '=', "relations_$ns.targetId")
+            ->leftJoin(new Alias(Table::ELEMENTS_SITES, "elements_sites_$ns"), "elements_sites_$ns.elementId", '=', "elements_$ns.id")
             ->whereColumn("relations_$ns.sourceId", 'elements.id')
             ->where("relations_$ns.fieldId", $field->id)
             ->whereNull("elements_$ns.dateDeleted")
@@ -420,9 +432,9 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
 
         if (isset($config['localizeRelations'])) {
-            $config['translationMethod'] = $config['localizeRelations'] ? self::TRANSLATION_METHOD_SITE : self::TRANSLATION_METHOD_NONE;
+            $config['translationMethod'] = $config['localizeRelations'] ? TranslationMethod::Site : TranslationMethod::None;
         } else {
-            $config['localizeRelations'] = ($config['translationMethod'] ?? self::TRANSLATION_METHOD_NONE) !== self::TRANSLATION_METHOD_NONE;
+            $config['localizeRelations'] = ($config['translationMethod'] ?? TranslationMethod::None) !== TranslationMethod::None;
         }
 
         $config['viewMode'] ??= self::VIEW_MODE_LIST;
@@ -444,12 +456,15 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         ]);
     }
 
+    public function afterValidate(?Validator $validator = null): void
+    {
+        $this->validateSources();
+    }
+
     /**
      * Ensure only one structured source is selected when maintainHierarchy is true.
-     *
-     * @todo This needs to be called from somewhere
      */
-    public function validateSources(string $attribute): void
+    public function validateSources(): void
     {
         if (! $this->maintainHierarchy) {
             return;
@@ -467,8 +482,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             $inputSources = [$inputSources];
         }
 
-        $elementSources = resolve(ElementSources::class)
-            ->getSources(static::elementType())
+        $elementSources = ElementSources::getSources(static::elementType())
             ->whereIn('key', $inputSources);
 
         if (count($elementSources) > 1) {
@@ -553,7 +567,7 @@ JS, [
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $element->inScenarios(Element::SCENARIO_LIVE)) {
+        if (! $element->ruleset->inScenarios(ElementRules::SCENARIO_LIVE)) {
             return [];
         }
 
@@ -682,7 +696,7 @@ JS, [
         // Prevent relational fields on this element from enforcing related element validation
         self::$validatingRelatedElements = true;
 
-        $target->setScenario(Element::SCENARIO_LIVE);
+        $target->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         $validates = $target->validate();
 
         self::$validatingRelatedElements = false;
@@ -693,7 +707,7 @@ JS, [
     #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var \CraftCms\Cms\Element\Queries\ElementQuery|ElementCollection $value */
+        /** @var ElementQuery|ElementCollection $value */
         if ($value instanceof ElementQueryInterface) {
             return ! $this->_all($value, $element)->exists();
         }
@@ -726,8 +740,8 @@ JS, [
         }
 
         $class = static::elementType();
-        // TODO: $class::find()
-        $query = new EntryQuery()
+        /** @var ElementQuery $query */
+        $query = $class::find()
             ->siteId($this->targetSiteId($element));
 
         if (is_array($value) || is_int($value)) {
@@ -744,11 +758,11 @@ JS, [
             // if this is the first instance of the field that was ever added to the field layout
             // and none of the other instances (which would have been added later on) have a value.
             if (! $this->allowMultipleSources && $this->source) {
-                $source = ElementHelper::findSource($class, $this->source, ElementSources::CONTEXT_FIELD);
+                $source = ElementSources::findSource($class, $this->source, ElementSources::CONTEXT_FIELD);
 
                 // Does the source specify any criteria attributes?
                 if (isset($source['criteria'])) {
-                    Craft::configure($query, $source['criteria']);
+                    Typecast::configure($query, $source['criteria']);
                 }
             }
 
@@ -765,29 +779,28 @@ JS, [
                 // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
                 // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied
                 // to the eager-loading query and cause a SQL error.
-                /** @var \Illuminate\Database\Query\Builder $q */
-                foreach ([$elementQuery->getQuery(), $elementQuery->getSubQuery()] as $q) {
-                    $q->join(
-                        new Alias(\CraftCms\Cms\Database\Table::RELATIONS, $relationsAlias),
-                        function (JoinClause $join) use ($element, $relationsAlias) {
-                            $join->whereColumn("$relationsAlias.targetId", 'elements.id')
-                                ->where("$relationsAlias.sourceId", $element->id)
-                                ->where("$relationsAlias.fieldId", $this->id)
-                                ->where(function (JoinClause $join) use ($element, $relationsAlias) {
-                                    $join->whereNull("$relationsAlias.sourceSiteId")
-                                        ->orWhere("$relationsAlias.sourceSiteId", $element->siteId);
-                                });
-                        },
-                    );
+                $query = $elementQuery->getQuery();
 
-                    if (
-                        $this->sortable &&
-                        ! $this->maintainHierarchy &&
-                        count($q->orderBy ?? []) === 1 &&
-                        ($q->orderBy[0]['column'] ?? null) instanceof OrderByPlaceholderExpression
-                    ) {
-                        $q->orderBy("$relationsAlias.sortOrder");
-                    }
+                $query->join(
+                    new Alias(Table::RELATIONS, $relationsAlias),
+                    function (JoinClause $join) use ($element, $relationsAlias) {
+                        $join->whereColumn("$relationsAlias.targetId", 'elements.id')
+                            ->where("$relationsAlias.sourceId", $element->id)
+                            ->where("$relationsAlias.fieldId", $this->id)
+                            ->where(function (JoinClause $join) use ($element, $relationsAlias) {
+                                $join->whereNull("$relationsAlias.sourceSiteId")
+                                    ->orWhere("$relationsAlias.sourceSiteId", $element->siteId);
+                            });
+                    },
+                );
+
+                if (
+                    $this->sortable &&
+                    ! $this->maintainHierarchy &&
+                    count($query->orderBy ?? []) === 1 &&
+                    ($query->orderBy[0]['column'] ?? null) instanceof OrderByPlaceholderExpression
+                ) {
+                    $query->orderBy("$relationsAlias.sortOrder");
                 }
             });
         } else {
@@ -874,19 +887,13 @@ JS, [
             $criteria['siteId'] = '*';
             $criteria['unique'] = true;
             // Just to be safe...
-            /** @var \CraftCms\Cms\Element\Queries\ElementQuery $query */
+            /** @var ElementQuery $query */
             if (is_numeric($query->siteId)) {
                 $criteria['preferSites'] = [$query->siteId];
             }
         }
 
         $query->andWith([$this->handle, $criteria]);
-    }
-
-    #[Override]
-    public function getIsTranslatable(?ElementInterface $element): bool
-    {
-        return $this->localizeRelations;
     }
 
     #[Override]
@@ -1004,7 +1011,7 @@ JS, [
         $mockup = new (static::elementType());
         $mockup->title = t('Related {type} Title', ['type' => $mockup->displayName()]);
 
-        return Cp::chipHtml($mockup);
+        return app(ElementHtml::class)->chipHtml($mockup);
     }
 
     /**
@@ -1012,7 +1019,7 @@ JS, [
      */
     protected function previewHtml(ElementCollection $elements): string
     {
-        return Cp::elementPreviewHtml($elements->all());
+        return app(PreviewHtml::class)->elementPreviewHtml($elements->all());
     }
 
     public function getThumbHtml(mixed $value, ElementInterface $element, int $size): ?string
@@ -1039,7 +1046,7 @@ JS, [
                 $rawValue = $rawValue->where['elements.id'] ?? null;
             }
             if ($rawValue instanceof ElementQuery) {
-                $where = Arr::first($rawValue->getSubQuery()->wheres, fn ($where) => ($where['column'] ?? '') === 'elements.id');
+                $where = Arr::first($rawValue->getQuery()->wheres, fn ($where) => ($where['column'] ?? '') === 'elements.id');
                 $rawValue = $where['value'] ?? null;
             }
             if (is_array($rawValue)) {
@@ -1056,12 +1063,10 @@ JS, [
 
         // Are there any source elements that don't have hardcoded relation IDs yet?
         if (! empty($missingSourceElementIds)) {
-            $missingMappingsQuery = DB::table(\CraftCms\Cms\Database\Table::RELATIONS)
+            $missingMappingsQuery = DB::table(Table::RELATIONS)
                 ->select(['sourceId as source', 'targetId as target'])
-                ->where([
-                    'fieldId' => $this->id,
-                    'sourceId' => $missingSourceElementIds,
-                ])
+                ->where('fieldId', $this->id)
+                ->whereIn('sourceId', $missingSourceElementIds)
                 ->where(fn (Builder $query) => $query
                     ->where('sourceSiteId', $sourceSiteId)
                     ->orWhereNull('sourceSiteId'),
@@ -1112,20 +1117,18 @@ JS, [
      */
     protected function gqlFieldArguments(): array
     {
-        $elementSourcesService = resolve(ElementSources::class);
-        $gqlService = Craft::$app->getGql();
         $fieldLayouts = [];
         $arguments = [];
 
         foreach ((array) $this->getInputSources() as $source) {
-            $sourceFieldLayouts = $elementSourcesService->getFieldLayoutsForSource(static::elementType(), $source);
+            $sourceFieldLayouts = ElementSources::getFieldLayoutsForSource(static::elementType(), $source);
             foreach ($sourceFieldLayouts as $fieldLayout) {
                 $fieldLayouts[$fieldLayout->uid] = $fieldLayout;
             }
         }
 
         foreach ($fieldLayouts as $fieldLayout) {
-            $arguments += $gqlService->getFieldLayoutArguments($fieldLayout);
+            $arguments += Gql::getFieldLayoutArguments($fieldLayout);
         }
 
         return $arguments;
@@ -1160,7 +1163,7 @@ JS, [
 
     public function getRelationTargetIds(ElementInterface $element): array
     {
-        /** @var \CraftCms\Cms\Element\Queries\ElementQuery|ElementCollection $value */
+        /** @var ElementQuery|ElementCollection $value */
         $value = $element->getFieldValue($this->handle);
 
         // $value will be an element query and its $id will be set if we're saving new relations
@@ -1170,7 +1173,7 @@ JS, [
             is_array($value->id) &&
             Arr::isNumeric($value->id)
         ) {
-            $targetIds = $value->id ?: [];
+            $targetIds = $value->id;
         } elseif (
             $value instanceof ElementQuery &&
             ($where = $value->getWhereForColumn('elements.id')) !== null &&
@@ -1237,11 +1240,11 @@ JS, [
                 );
                 $siteIds = Arr::where($siteIds, fn ($siteId) => $siteId !== $element->siteId);
                 if (! empty($siteIds)) {
-                    $userId = Craft::$app->getUser()->getId();
+                    $userId = Auth::id();
                     $timestamp = now();
 
                     foreach ($siteIds as $siteId) {
-                        DB::table(\CraftCms\Cms\Database\Table::CHANGEDFIELDS)
+                        DB::table(Table::CHANGEDFIELDS)
                             ->upsert([
                                 'elementId' => $element->id,
                                 'siteId' => $siteId,
@@ -1300,14 +1303,14 @@ JS, [
         }
 
         $html =
-            Cp::checkboxFieldHtml([
+            FormFields::checkboxFieldHtml([
                 'checkboxLabel' => t('Relate {type} from a specific site?', ['type' => $pluralType]),
                 'name' => 'useTargetSite',
                 'checked' => $showTargetSite,
                 'toggle' => 'target-site-field',
                 'reverseToggle' => 'show-site-menu-field',
             ]).
-            Cp::selectFieldHtml([
+            FormFields::selectFieldHtml([
                 'fieldClass' => ! $showTargetSite ? ['hidden'] : null,
                 'label' => t('Which site should {type} be related from?', ['type' => $pluralType]),
                 'id' => 'target-site',
@@ -1317,7 +1320,7 @@ JS, [
             ]);
 
         if (static::canShowSiteMenu()) {
-            $html .= Cp::checkboxFieldHtml([
+            $html .= FormFields::checkboxFieldHtml([
                 'fieldset' => true,
                 'fieldClass' => $showTargetSite ? ['hidden'] : null,
                 'checkboxLabel' => t('Show the site menu'),
@@ -1358,8 +1361,8 @@ JS, [
             self::VIEW_MODE_CARDS_GRID,
         ]))) {
             $html = Html::beginTag('div', ['class' => ['flex', 'items-start', 'gap-l']]);
-            $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
-            $baseIconsUrl = "$bundle->baseUrl/images/view-modes";
+            app(InternalAssetRegistry::class)->register(CpAsset::class);
+            $baseIconsUrl = craftAsset('legacy/cp/dist/images/view-modes');
 
             foreach ($supportedViewModes as $key => $label) {
                 $html .= Html::beginTag('label', ['class' => 'nowrap']).
@@ -1368,8 +1371,9 @@ JS, [
                         'width' => $key === self::VIEW_MODE_LIST ? 48 : 80,
                         'height' => 60,
                     ]).
-                    Html::radio('viewMode', $key === $this->viewMode, [
+                    Html::radio('viewMode', $key, [
                         'value' => $key,
+                        'checked' => $this->viewMode === $key,
                     ]).
                     ' '.$label.
                     Html::endTag('label');
@@ -1383,7 +1387,7 @@ JS, [
                 $viewModeOptions[] = ['label' => $label, 'value' => $key];
             }
 
-            $html = Cp::selectHtml([
+            $html = FormFields::selectHtml([
                 'id' => 'viewMode',
                 'name' => 'viewMode',
                 'options' => $viewModeOptions,
@@ -1391,7 +1395,7 @@ JS, [
             ]);
         }
 
-        return Cp::fieldHtml($html, [
+        return FormFields::fieldHtml($html, [
             'label' => t('View Mode'),
             'instructions' => t('Choose how the field should look for authors.'),
             'id' => 'viewMode',
@@ -1419,7 +1423,7 @@ JS, [
             $selectionCondition->forProjectConfig = true;
             $selectionCondition->queryParams[] = 'site';
 
-            $selectionConditionHtml = Cp::fieldHtml($selectionCondition->getBuilderHtml(), [
+            $selectionConditionHtml = FormFields::fieldHtml($selectionCondition->getBuilderHtml(), [
                 'label' => t('Selectable {type} Condition', [
                     'type' => $elementType::pluralDisplayName(),
                 ]),
@@ -1453,7 +1457,7 @@ JS, [
             $value = [];
         }
 
-        ElementHelper::loadProvisionalChanges($value);
+        app(Drafts::class)->loadProvisionalChanges($value);
 
         if ($this->validateRelatedElements && $element !== null) {
             // Pre-validate related elements
@@ -1480,7 +1484,7 @@ JS, [
                         if ($el) {
                             $disabledElementIds[] = $el->getCanonicalId();
                         }
-                    } catch (InvalidConfigException) {
+                    } catch (RuntimeException) {
                         break;
                     }
                 } while ($el instanceof NestedElementInterface);
@@ -1496,7 +1500,7 @@ JS, [
         $searchCriteria = null;
 
         if ($this->showSearchInput($element)) {
-            $source = ElementHelper::findSource($elementType, reset($sources), 'field');
+            $source = ElementSources::findSource($elementType, reset($sources), ElementSources::CONTEXT_FIELD);
             if (! empty($source['criteria'])) {
                 $searchCriteria = $source['criteria'];
             }
@@ -1706,8 +1710,7 @@ JS, [
      */
     protected function availableSources(): array
     {
-        return resolve(ElementSources::class)
-            ->getSources(static::elementType(), 'modal')
+        return ElementSources::getSources(static::elementType(), ElementSources::CONTEXT_MODAL)
             ->where('type', '!=', ElementSources::TYPE_HEADING)
             ->values()
             ->all();

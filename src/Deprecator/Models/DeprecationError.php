@@ -9,7 +9,7 @@ use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 use CraftCms\Cms\Support\Str;
 
-final class DeprecationError extends BaseModel
+class DeprecationError extends BaseModel
 {
     use HasUid;
 

@@ -8,16 +8,17 @@
 namespace craft\elements\db;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\helpers\Assets;
 use craft\helpers\Db;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ImageTransforms;
 use CraftCms\Cms\User\Elements\User;
@@ -980,7 +981,7 @@ class AssetQuery extends ElementQuery
 
         if ($this->kind) {
             $kindCondition = ['or', Db::parseParam('assets.kind', $this->kind)];
-            $kinds = Assets::getFileKinds();
+            $kinds = AssetsHelper::getFileKinds();
             foreach ((array)$this->kind as $kind) {
                 if (isset($kinds[$kind])) {
                     foreach ($kinds[$kind]['extensions'] as $extension) {

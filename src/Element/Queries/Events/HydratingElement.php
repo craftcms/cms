@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Events;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
-final class HydratingElement
+class HydratingElement
 {
     public function __construct(
         public array $row,

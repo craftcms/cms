@@ -5,11 +5,17 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Mixins;
 
 use Closure;
+use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Dashboard\Widgets\Widget;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
+use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Yii2Adapter\Validation\LegacyElementRules;
 
-final readonly class ValidateMixin
+readonly class ValidateMixin
 {
     public function hasErrors(): Closure
     {
@@ -17,7 +23,8 @@ final readonly class ValidateMixin
             Deprecator::log($this::class . '->hasErrors', 'Calling `->hasErrors` is deprecated. Use `->errors()->has($attribute)` or `->errors()->isNotEmpty()` instead.');
 
             /**
-             * @var \CraftCms\Cms\Element\Element|\CraftCms\Cms\Field\Field|\CraftCms\Cms\Field\Field $this
+             * @var Element|Field|Field $this
+             *
              * @phpstan-ignore-next-line
              */
             return is_null($attribute)
@@ -32,7 +39,8 @@ final readonly class ValidateMixin
             Deprecator::log($this::class . '->getErrors', 'Calling `->getErrors` is deprecated. Use `->errors()->get($attribute)` or `->errors()->getMessages()` instead.');
 
             /**
-             * @var \CraftCms\Cms\Element\Element|\CraftCms\Cms\Field\Field $this
+             * @var Element|Field $this
+             *
              * @phpstan-ignore-next-line
              */
             return is_null($attribute)
@@ -47,7 +55,8 @@ final readonly class ValidateMixin
             Deprecator::log($this::class . '->addErrors', 'Calling `->addErrors` is deprecated. Use `->errors()->add($attribute, $message)` instead.');
 
             /**
-             * @var \CraftCms\Cms\Element\Element|\CraftCms\Cms\Field\Field $this
+             * @var Element|Field $this
+             *
              * @phpstan-ignore-next-line
              */
             $this->errors()->add($attribute, $error);
@@ -60,36 +69,11 @@ final readonly class ValidateMixin
             Deprecator::log($this::class . '->addError', 'Calling `->addError` is deprecated. Use `->errors()->add($attribute, $message)` instead.');
 
             /**
-             * @var \CraftCms\Cms\Asset\Data\Volume|\CraftCms\Cms\Dashboard\Widgets\Widget|\CraftCms\Cms\Element\Element|\CraftCms\Cms\Field\Field|\CraftCms\Cms\FieldLayout\FieldLayoutComponent|\CraftCms\Cms\Filesystem\Filesystems\Filesystem $this
+             * @var Volume|Widget|Element|Field|FieldLayoutComponent|Filesystem $this
+             *
              * @phpstan-ignore-next-line
              */
             $this->errors()->add($attribute, $error);
-        };
-    }
-
-    public function clearErrors(): Closure
-    {
-        return function($attribute = null): void {
-            Deprecator::log($this::class . '->clearErrors', 'Calling `->clearErrors` is deprecated. Use `->errors()->forget()` instead.');
-
-            if ($attribute === null) {
-                /**
-                 * @var \CraftCms\Cms\Element\Element|\CraftCms\Cms\Field\Field $this
-                 * @phpstan-ignore-next-line
-                 */
-                foreach ($this->errors()->getMessages() as $key => $messages) {
-                    /** @phpstan-ignore-next-line */
-                    $this->errors()->forget($key);
-                }
-
-                return;
-            }
-
-            /**
-             * @var \CraftCms\Cms\Element\Element|\CraftCms\Cms\Field\Field $this
-             * @phpstan-ignore-next-line
-             */
-            $this->errors()->forget($attribute);
         };
     }
 
@@ -99,23 +83,25 @@ final readonly class ValidateMixin
             Deprecator::log($this::class . '->getFirstError', 'Calling `->getFirstError` is deprecated. Use `->getFirstErrors()` instead.');
 
             /**
-             * @var \CraftCms\Cms\Element\Element|\CraftCms\Cms\Field\Field $this
+             * @var Element|Field $this
+             *
              * @phpstan-ignore-next-line
              */
             return Arr::get($this->getFirstErrors(), $attribute);
         };
     }
 
-    public function getAttributeLabel(): Closure
+    public function getErrorSummary(): Closure
     {
-        return function(string $attribute): string {
-            Deprecator::log($this::class . '->getAttributeLabel', 'Calling `->getAttributeLabel` is deprecated. Use `->attributeLabels()` instead.');
+        return function($showAllErrors = false) {
+            Deprecator::log($this::class . '->getErrorSummary', 'Calling `->getErrorSummary` is deprecated. Use `->errors()->all()` instead.');
 
             /**
-             * @var \CraftCms\Cms\Asset\Data\Volume|\CraftCms\Cms\Dashboard\Widgets\Widget|\CraftCms\Cms\Element\Element|\CraftCms\Cms\Field\Field|\CraftCms\Cms\FieldLayout\FieldLayoutComponent|\CraftCms\Cms\Filesystem\Filesystems\Filesystem $this
+             * @var \CraftCms\Cms\Validation\Contracts\Validatable $this
+             *
              * @phpstan-ignore-next-line
              */
-            return $this->attributeLabels()[$attribute] ?? $attribute;
+            return $this->errors()->all();
         };
     }
 
@@ -123,6 +109,34 @@ final readonly class ValidateMixin
     {
         return function(): string {
             return LegacyElementRules::class;
+        };
+    }
+
+    public function setScenario(): Closure
+    {
+        return function(string $scenario) {
+            Deprecator::log($this::class . '->setScenario', 'Calling `->setScenario` is deprecated. Use `->ruleset->useScenario()` instead.');
+
+            /**
+             * @var \CraftCms\RulesetValidation\Contracts\ValidatesWithRuleset $this
+             *
+             * @phpstan-ignore-next-line
+             */
+            return $this->ruleset->useScenario($scenario);
+        };
+    }
+
+    public function getScenario(): Closure
+    {
+        return function() {
+            Deprecator::log($this::class . '->getScenario', 'Calling `->getScenario` is deprecated. Use `->ruleset->getScenario()` instead.');
+
+            /**
+             * @var \CraftCms\RulesetValidation\Contracts\ValidatesWithRuleset $this
+             *
+             * @phpstan-ignore-next-line
+             */
+            return $this->ruleset->getScenario();
         };
     }
 }

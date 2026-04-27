@@ -6,7 +6,7 @@ use CraftCms\Cms\Cms;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Auth;
 
-final class Controller extends \craft\web\Controller
+class Controller extends \craft\web\Controller
 {
     public function requireLogin(): void
     {

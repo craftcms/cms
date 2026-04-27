@@ -15,10 +15,12 @@ use craft\db\Command;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
+use craft\db\Query;
+use craft\db\Table;
 use craft\mail\Mailer;
 use craft\mail\Message;
-use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
+use craft\services\Config;
 use craft\web\AssetManager;
 use craft\web\Request;
 use craft\web\Request as WebRequest;
@@ -26,20 +28,22 @@ use craft\web\Response as WebResponse;
 use craft\web\User as WebUser;
 use craft\web\View;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Yii2Adapter\Cache;
 use InvalidArgumentException;
 use yii\base\Event;
 use yii\base\Exception;
+use yii\db\Exception as DbException;
 use yii\db\sqlite\Schema as SqliteSchema;
 use yii\mutex\FileMutex;
 use yii\mutex\MysqlMutex;
@@ -707,27 +711,46 @@ class App
      */
     public static function mailerConfig(?MailSettings $settings = null): array
     {
-        if ($settings === null) {
-            $settings = static::mailSettings();
+        if ($settings?->template) {
+            Deprecator::log(
+                'craft\\models\\MailSettings::$template',
+                '`craft\\models\\MailSettings::$template` is deprecated. Set the template via the email settings in Settings → Email instead.',
+            );
         }
 
-        try {
-            $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
-        } catch (MissingComponentException) {
-            // Fallback to the PHP mailer
-            $adapter = new Sendmail();
+        if ($settings && !empty($settings->siteOverrides)) {
+            Deprecator::log(
+                'craft\\models\\MailSettings::$siteOverrides',
+                '`craft\\models\\MailSettings::$siteOverrides` is deprecated and no longer has any effect. Use the email settings in Settings → Email instead.',
+            );
+        }
+
+        $fromEmail = data_get(config('mail'), 'from.address');
+        $fromName = data_get(config('mail'), 'from.name');
+        $replyTo = data_get(config('mail'), 'reply_to.address');
+
+        if (!is_string($fromEmail) || $fromEmail === '') {
+            $fromEmail = Env::get('FROM_EMAIL_ADDRESS');
+        }
+
+        if (!is_string($fromName) || $fromName === '') {
+            $fromName = Env::get('FROM_EMAIL_NAME');
+        }
+
+        if (!is_string($replyTo) || $replyTo === '') {
+            $replyTo = null;
         }
 
         return [
             'class' => Mailer::class,
             'messageClass' => Message::class,
-            'from' => [
-                Env::parse($settings->fromEmail) => Env::parse($settings->fromName),
-            ],
-            'replyTo' => Env::parse($settings->replyToEmail),
-            'template' => Env::parse($settings->template),
-            'siteOverrides' => $settings->siteOverrides,
-            'transport' => $adapter->defineTransport(),
+            'from' => ($fromEmail && is_string($fromEmail)) ? [
+                $fromEmail => is_string($fromName) ? $fromName : null,
+            ] : [],
+            'replyTo' => $replyTo,
+            'template' => null,
+            'siteOverrides' => [],
+            'transport' => app('mail.manager')->mailer()->getSymfonyTransport(),
         ];
     }
 
@@ -814,13 +837,13 @@ class App
      */
     public static function userConfig(): array
     {
-        $generalConfig = Cms::config();
-        $request = Craft::$app->getRequest();
+        /** @var \craft\config\GeneralConfig $generalConfig */
+        $generalConfig = Craft::$app->getConfig()->getConfigSettings(Config::CATEGORY_GENERAL);
 
-        if ($request->getIsConsoleRequest() || $request->getIsSiteRequest()) {
-            $loginUrl = UrlHelper::siteUrl($generalConfig->getLoginPath());
+        if (app()->runningInConsole() || request()->isSiteRequest()) {
+            $loginUrl = Url::siteUrl($generalConfig->getLoginPath());
         } else {
-            $loginUrl = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
+            $loginUrl = Url::cpUrl(Request::CP_PATH_LOGIN);
         }
 
         return [
@@ -846,7 +869,7 @@ class App
         ];
 
         $request = Craft::$app->getRequest();
-        if (!$request->getIsConsoleRequest()) {
+        if (!app()->runningInConsole()) {
             // Check these headers for site requests too, in case we're rendering a system fallback template
             $headers = $request->getHeaders();
             $config['registeredAssetBundles'] = array_filter(explode(',', $headers->get('X-Registered-Asset-Bundles', '')));
@@ -986,6 +1009,57 @@ class App
     {
         foreach ($properties as $name => $value) {
             $object->$name = $value;
+        }
+    }
+
+    /**
+     * Returns the path for a CP resource by its URI.
+     *
+     * @since 5.9.15
+     * @deprecated 6.0.0
+     */
+    public static function resourcePathByUri(string $uri): string
+    {
+        if (!\CraftCms\Cms\Support\Facades\Path::ensurePathIsContained($uri)) {
+            throw new InvalidArgumentException("Invalid resource: $uri");
+        }
+
+        $assetManager = Craft::$app->getAssetManager();
+        $path = "$assetManager->basePath/$uri";
+
+        if (file_exists($path)) {
+            return $path;
+        }
+
+        $slash = strpos($uri, '/');
+        $hash = substr($uri, 0, $slash);
+        $sourcePath = self::resourceSourcePathByHash($hash, $assetManager);
+
+        if (!$sourcePath) {
+            throw new InvalidArgumentException("Invalid resource: $uri");
+        }
+
+        $filePath = substr($uri, strlen($hash) + 1);
+        [$publishedDir] = $assetManager->publish(Craft::alias($sourcePath));
+        $publishedPath = $publishedDir . DIRECTORY_SEPARATOR . $filePath;
+
+        if (!file_exists($publishedPath)) {
+            throw new InvalidArgumentException("$filePath does not exist.");
+        }
+
+        return $publishedPath;
+    }
+
+    private static function resourceSourcePathByHash(string $hash, AssetManager $assetManager): string|false
+    {
+        try {
+            return (new Query())
+                ->select(['path'])
+                ->from(Table::RESOURCEPATHS)
+                ->where(['hash' => $hash])
+                ->scalar();
+        } catch (DbException) {
+            return Craft::$app->getCache()->get($assetManager->getCacheKeyForPathHash($hash));
         }
     }
 }

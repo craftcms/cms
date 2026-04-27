@@ -60,3 +60,28 @@ it('can set trackedQueueNames via fluent setter', function () {
 
     expect($config->trackedQueueNames)->toBe(['craft', 'default']);
 });
+
+it('does not expose moved deprecated members on the new class', function () {
+    $config = GeneralConfig::create();
+
+    expect(method_exists($config, 'devMode'))->toBeFalse()
+        ->and(method_exists($config, 'enableCsrfProtection'))->toBeFalse()
+        ->and(method_exists($config, 'securityKey'))->toBeFalse()
+        ->and(property_exists($config, 'allowedGraphqlOrigins'))->toBeFalse()
+        ->and(property_exists($config, 'userSessionDuration'))->toBeFalse()
+        ->and(method_exists($config, 'pageTrigger'))->toBeTrue()
+        ->and(property_exists($config, 'pageTrigger'))->toBeTrue();
+});
+
+it('normalizes pageTrigger on the main config class', function () {
+    $config = GeneralConfig::create();
+
+    expect($config->pageTrigger('page')->getPageTrigger())->toBe('?page=')
+        ->and($config->getPageTriggerParam())->toBe('page')
+        ->and($config->pageTrigger('?page')->getPageTrigger())->toBe('?page=')
+        ->and($config->pageTrigger('?page=')->getPageTrigger())->toBe('?page=')
+        ->and($config->pageTrigger('p')->getPageTrigger())->toBe('?p=')
+        ->and($config->pageTrigger('?p=')->getPageTrigger())->toBe('?p=')
+        ->and($config->pageTrigger('page/')->getPageTrigger())->toBe('?page=')
+        ->and($config->pageTrigger('')->getPageTrigger())->toBe('?page=');
+});

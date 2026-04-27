@@ -18,14 +18,16 @@ use CraftCms\Cms\ProjectConfig\Events\RebuildConfig;
 use CraftCms\Cms\ProjectConfig\Events\YamlFilesWritten;
 use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
 use Illuminate\Support\Facades\Event;
+use ReflectionClass;
 use Throwable;
 use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
 use yii\web\ServerErrorHttpException;
 
 /**
@@ -516,10 +518,30 @@ class ProjectConfig extends Component
      * Returns a summary of all pending config changes.
      *
      * @return array
+     * @deprecated in 5.9.19
      */
     public function getPendingChangeSummary(): array
     {
-        return app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->getPendingChangeSummary();
+        /**
+         * Call the private method to get the pending changes.
+         */
+        $reflectionMethod = new ReflectionClass(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->getMethod('_getPendingChanges');
+        $pendingChanges = $reflectionMethod->invoke(app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class));
+
+        $summary = [];
+
+        // Reduce all the small changes to overall item changes.
+        foreach ($pendingChanges as $type => $changes) {
+            $summary[$type] = [];
+            foreach ($changes as $path) {
+                $pathParts = ProjectConfigHelper::pathSegments($path);
+                if (count($pathParts) > 1) {
+                    $summary[$type][$pathParts[0] . '.' . $pathParts[1]] = true;
+                }
+            }
+        }
+
+        return $summary;
     }
 
     /**
@@ -596,6 +618,7 @@ class ProjectConfig extends Component
                 'path' => $event->path,
                 'oldValue' => $event->oldValue,
                 'newValue' => $event->newValue,
+                'tokenMatches' => $event->tokenMatches,
             ]);
 
             return $handler($yiiEvent);
@@ -638,6 +661,7 @@ class ProjectConfig extends Component
                 'path' => $event->path,
                 'oldValue' => $event->oldValue,
                 'newValue' => $event->newValue,
+                'tokenMatches' => $event->tokenMatches,
             ]);
 
             return $handler($yiiEvent);
@@ -679,6 +703,7 @@ class ProjectConfig extends Component
                 'path' => $event->path,
                 'oldValue' => $event->oldValue,
                 'newValue' => $event->newValue,
+                'tokenMatches' => $event->tokenMatches,
             ]);
 
             return $handler($yiiEvent);
@@ -863,6 +888,7 @@ class ProjectConfig extends Component
                 'path' => $event->path,
                 'oldValue' => $event->oldValue,
                 'newValue' => $event->newValue,
+                'tokenMatches' => $event->tokenMatches,
             ]);
 
             Craft::$app->getProjectConfig()->trigger(self::EVENT_ADD_ITEM, $yiiEvent);
@@ -873,6 +899,7 @@ class ProjectConfig extends Component
                 'path' => $event->path,
                 'oldValue' => $event->oldValue,
                 'newValue' => $event->newValue,
+                'tokenMatches' => $event->tokenMatches,
             ]);
 
             Craft::$app->getProjectConfig()->trigger(self::EVENT_REMOVE_ITEM, $yiiEvent);
@@ -883,6 +910,7 @@ class ProjectConfig extends Component
                 'path' => $event->path,
                 'oldValue' => $event->oldValue,
                 'newValue' => $event->newValue,
+                'tokenMatches' => $event->tokenMatches,
             ]);
 
             Craft::$app->getProjectConfig()->trigger(self::EVENT_UPDATE_ITEM, $yiiEvent);

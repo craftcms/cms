@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Craft;
-use craft\web\assets\passkeysetup\PasskeySetupAsset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\HtmlStack;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\PasskeySetupAsset;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final readonly class PasskeysController
+readonly class PasskeysController
 {
     use ConfirmsPasswords;
     use EditUserTrait;
@@ -36,7 +36,7 @@ final readonly class PasskeysController
 
         $response = $this->asEditUserScreen($user, self::SCREEN_PASSKEYS);
 
-        Craft::$app->getView()->registerAssetBundle(PasskeySetupAsset::class);
+        app(InternalAssetRegistry::class)->register(PasskeySetupAsset::class);
         $HtmlStack->js(<<<'JS'
 new Craft.PasskeySetup();
 JS);
@@ -52,9 +52,10 @@ JS);
     public function creationOptions(Request $request): JsonResponse
     {
         $this->requireConfirmedPassword();
+        $serializer = $this->passkeys->webauthnServer()->getSerializer();
 
         return new JsonResponse([
-            'options' => $this->passkeys->getPasskeyCreationOptions($request->user()),
+            'options' => $serializer->serialize($this->passkeys->getPasskeyCreationOptions($request->user()), 'json'),
         ]);
     }
 

@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Support\Exceptions;
 
 use InvalidArgumentException;
 
-final class InvalidHtmlTagException extends InvalidArgumentException
+class InvalidHtmlTagException extends InvalidArgumentException
 {
     /**
      * Constructor.

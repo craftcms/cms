@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth\Methods;
 
+use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\User\Elements\User;
 
@@ -119,17 +120,17 @@ interface AuthMethodInterface extends ComponentInterface
     /**
      * Returns action menu items for the authentication method, when active.
      *
-     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
+     * See [[\CraftCms\Cms\Cp\Html\MenuHtml::disclosureMenu()]] for documentation on supported item properties.
      */
     public function getActionMenuItems(): array;
 
     /**
      * Authenticates the user.
      *
-     * This will be called from {@see \CraftCms\Cms\Auth\Auth::verifyMethod}, which can be passed any number of arguments
+     * This will be called from {@see Auth::verifyMethod}, which can be passed any number of arguments
      * which will be forwarded onto this method. (See [[getAuthFormHtml()]] for a full walkthrough of how it works.)
      *
-     * @param  mixed  $args,...  Any arguments passed to {@see \CraftCms\Cms\Auth\Auth::verifyMethod}
+     * @param  mixed  $args,...  Any arguments passed to {@see Auth::verifyMethod}
      * @return bool Whether the user should be authenticated.
      */
     public function verify(mixed ...$args): bool;

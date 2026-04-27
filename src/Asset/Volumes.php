@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
-use Craft;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\ApplyingVolumeDelete;
@@ -15,13 +14,15 @@ use CraftCms\Cms\Asset\Events\VolumeSaved;
 use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
@@ -33,7 +34,7 @@ use Throwable;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final class Volumes
+class Volumes
 {
     /** @var Collection<int, Volume>|null */
     private ?Collection $volumes = null;
@@ -42,6 +43,7 @@ final class Volumes
         private readonly ProjectConfig $projectConfig,
         private readonly Assets $assets,
         private readonly Folders $folders,
+        private readonly ElementCaches $elementCaches,
     ) {}
 
     /** @return Collection<int, int> */
@@ -170,9 +172,9 @@ final class Volumes
             $volumeModel->transformFs = $data['transformFs'] ?? null;
             $volumeModel->transformSubpath = $data['transformSubpath'] ?? null;
             $volumeModel->sortOrder = $data['sortOrder'];
-            $volumeModel->titleTranslationMethod = $data['titleTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
+            $volumeModel->titleTranslationMethod = $data['titleTranslationMethod'] ?? TranslationMethod::Site->value;
             $volumeModel->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
-            $volumeModel->altTranslationMethod = $data['altTranslationMethod'] ?? Field::TRANSLATION_METHOD_NONE;
+            $volumeModel->altTranslationMethod = $data['altTranslationMethod'] ?? TranslationMethod::None->value;
             $volumeModel->altTranslationKeyFormat = $data['altTranslationKeyFormat'] ?? null;
             $volumeModel->uid = $volumeUid;
 
@@ -228,7 +230,7 @@ final class Volumes
                 ->where('assets.deletedWithVolume', true)
                 ->all();
 
-            Craft::$app->getElements()->restoreElements($assets);
+            Elements::restoreElements($assets);
         }
 
         event(new VolumeSaved(
@@ -236,7 +238,7 @@ final class Volumes
             isNew: $isNewVolume,
         ));
 
-        Craft::$app->getElements()->invalidateCachesForElementType(Asset::class);
+        $this->elementCaches->invalidateForElementType(Asset::class);
     }
 
     /** @param int[] $volumeIds */
@@ -301,12 +303,11 @@ final class Volumes
                 ->volumeId($volumeModel->id)
                 ->status(null)
                 ->all();
-            $elementsService = Craft::$app->getElements();
 
             foreach ($assets as $asset) {
                 $asset->deletedWithVolume = true;
                 $asset->keepFileOnDelete = true;
-                $elementsService->deleteElement($asset);
+                Elements::deleteElement($asset);
             }
 
             if ($volumeModel->fieldLayoutId) {
@@ -325,7 +326,7 @@ final class Volumes
 
         event(new VolumeDeleted(volume: $volume));
 
-        Craft::$app->getElements()->invalidateCachesForElementType(Asset::class);
+        $this->elementCaches->invalidateForElementType(Asset::class);
     }
 
     /**

@@ -1,1 +1,1 @@
-const o={optionsPopup:"Finestra a comparsa opzioni ComboBox"};export{o as default};
+var e={optionsPopup:`Finestra a comparsa opzioni ComboBox`};export{e as default};

@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
-use Illuminate\Support\Facades\File;
 use InvalidArgumentException;
 use Throwable;
 
@@ -131,7 +129,7 @@ class Json
             $json = static::reindent($json, $indent);
         }
 
-        FileHelper::writeToFile($path, $json."\n");
+        File::writeToFile($path, $json."\n");
     }
 
     /**

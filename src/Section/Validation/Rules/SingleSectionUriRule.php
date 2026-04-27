@@ -19,7 +19,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\t;
 
-final class SingleSectionUriRule implements DataAwareRule, ValidationRule
+class SingleSectionUriRule implements DataAwareRule, ValidationRule
 {
     /**
      * All of the data under validation.
@@ -41,7 +41,11 @@ final class SingleSectionUriRule implements DataAwareRule, ValidationRule
             ->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', '=', 'elements_sites.elementId')
             ->where('elements_sites.siteId', $this->data['siteId'])
             ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
-            ->where(new Lower('elements_sites.uri'), mb_strtolower((string) $this->data['uriFormat']))
+            ->when(
+                DB::isMysql(),
+                fn (Builder $query) => $query->where('elements_sites.uri', (string) $this->data['uriFormat']),
+                fn (Builder $query) => $query->where(new Lower('elements_sites.uri'), mb_strtolower((string) $this->data['uriFormat'])),
+            )
             ->when(
                 $section->id,
                 fn (Builder $query) => $query->join(new Alias(Table::ENTRIES, 'entries'), 'entries.id', '=', 'elements.id')

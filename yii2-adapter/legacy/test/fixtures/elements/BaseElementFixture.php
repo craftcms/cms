@@ -8,15 +8,17 @@
 namespace craft\test\fixtures\elements;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\test\DbFixtureTrait;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\DB;
 use PDO;
@@ -106,7 +108,7 @@ abstract class BaseElementFixture extends DbFixture
             $this->populateElement($element, $data);
 
             if ($element->enabled && $element->getIsCanonical() && !$element->isProvisionalDraft) {
-                $element->setScenario(Element::SCENARIO_LIVE);
+                $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
             }
 
             if (!$this->saveElement($element)) {
@@ -180,7 +182,7 @@ abstract class BaseElementFixture extends DbFixture
      */
     protected function saveElement(ElementInterface $element): bool
     {
-        return Craft::$app->getElements()->saveElement($element, true, true, false);
+        return Elements::saveElement($element, true, true, false);
     }
 
     /**
@@ -191,6 +193,6 @@ abstract class BaseElementFixture extends DbFixture
      */
     protected function deleteElement(ElementInterface $element): bool
     {
-        return Craft::$app->getElements()->deleteElement($element, true);
+        return Elements::deleteElement($element, true);
     }
 }

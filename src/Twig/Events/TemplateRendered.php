@@ -9,7 +9,7 @@ use CraftCms\Cms\View\TemplateMode;
 /**
  * @event TemplateRendered The event that is triggered after a template is rendered
  */
-final class TemplateRendered
+class TemplateRendered
 {
     public function __construct(
         public readonly string $template,

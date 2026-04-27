@@ -9,7 +9,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Cms\User\Elements\User;
 
-final class AuthorizingElementTest extends TestCase
+class AuthorizingElementTest extends TestCase
 {
     public function test_event_can_be_created(): void
     {

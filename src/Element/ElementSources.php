@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use craft\base\ElementInterface;
 use craft\db\CoalesceColumnsExpression;
-use craft\helpers\Cp;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\DefineSourceSortOptions;
 use CraftCms\Cms\Element\Events\DefineSourceTableAttributes;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
@@ -31,7 +31,7 @@ use Illuminate\Support\Facades\Auth;
 use function CraftCms\Cms\t;
 
 #[Scoped]
-final class ElementSources
+class ElementSources
 {
     public const string TYPE_HEADING = 'heading';
 
@@ -46,6 +46,8 @@ final class ElementSources
     public const string CONTEXT_MODAL = 'modal';
 
     public const string CONTEXT_SETTINGS = 'settings';
+
+    public const string CONTEXT_EMBEDDED_INDEX = 'embeddedIndex';
 
     /**
      * @see defineSources()
@@ -221,7 +223,6 @@ final class ElementSources
 
                     try {
                         return Sites::getSiteByUid($siteId)->id;
-                        /** @phpstan-ignore catch.neverThrown */
                     } catch (SiteNotFoundException) {
                         return null;
                     }
@@ -252,6 +253,64 @@ final class ElementSources
         return $this->getSources($elementType, $context, $withDisabled, $page)->contains(
             fn (array $source) => ($source['key'] ?? null) === $sourceKey,
         );
+    }
+
+    /**
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    public function findSource(
+        string $elementType,
+        string $sourceKey,
+        string $context = self::CONTEXT_INDEX,
+        bool $withDisabled = false,
+        ?string $page = null,
+    ): ?array {
+        $path = explode('/', $sourceKey);
+        $sources = $this->getSources($elementType, $context, $withDisabled, $page)->all();
+        $rootSource = null;
+
+        while ($path) {
+            $key = array_shift($path);
+            $source = null;
+
+            foreach ($sources as $candidate) {
+                if (($candidate['key'] ?? null) === $key) {
+                    $source = $candidate;
+                    break;
+                }
+            }
+
+            if ($source === null) {
+                break;
+            }
+
+            if (empty($path)) {
+                if ($rootSource !== null) {
+                    $source['type'] = $rootSource['type'];
+                    $source['keyPath'] = $sourceKey;
+                }
+
+                return $source;
+            }
+
+            if ($rootSource === null) {
+                $rootSource = $source;
+            }
+
+            $sources = $source['nested'] ?? [];
+        }
+
+        if (! str_starts_with($sourceKey, 'custom:')) {
+            $source = $elementType::findSource($sourceKey, $context);
+
+            if ($source) {
+                $source['type'] = self::TYPE_NATIVE;
+
+                return $source;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -425,7 +484,7 @@ final class ElementSources
             }
 
             if (isset($attributes[$key]['icon']) && in_array($attributes[$key]['icon'], ['world', 'earth'])) {
-                $attributes[$key]['icon'] = Cp::earthIcon();
+                $attributes[$key]['icon'] = Icons::earth();
             }
         }
 
@@ -438,20 +497,25 @@ final class ElementSources
      * @param  class-string<ElementInterface>  $elementType  The element type class
      * @param  string  $sourceKey  The element type source key
      * @param  string[]|null  $customAttributes  Custom attributes to show rather than the defaults
+     * @param  FieldLayout[]|null  $fieldLayouts  The field layouts that should be factored in
      * @return Collection<array>
      */
-    public function getTableAttributes(string $elementType, string $sourceKey, ?array $customAttributes = null): Collection
-    {
+    public function getTableAttributes(
+        string $elementType,
+        string $sourceKey,
+        ?array $customAttributes = null,
+        ?array $fieldLayouts = null,
+    ): Collection {
         // If this is a source path, use the first segment
         if (($slash = strpos($sourceKey, '/')) !== false) {
             $sourceKey = substr($sourceKey, 0, $slash);
         }
 
-        if ($sourceKey === '__IMP__') {
-            $sourceAttributes = $this->getTableAttributesForFieldLayouts($elementType::fieldLayouts(null));
-        } else {
-            $sourceAttributes = $this->getSourceTableAttributes($elementType, $sourceKey);
-        }
+        $sourceAttributes = match (true) {
+            $fieldLayouts !== null => $this->getTableAttributesForFieldLayouts($fieldLayouts),
+            $sourceKey === '__IMP__' => $this->getTableAttributesForFieldLayouts($elementType::fieldLayouts(null)),
+            default => $this->getSourceTableAttributes($elementType, $sourceKey),
+        };
 
         $availableAttributes = $this->getAvailableTableAttributes($elementType)->merge($sourceAttributes);
 
@@ -479,7 +543,7 @@ final class ElementSources
      * Returns all the field layouts available for the given element source.
      *
      * @param  class-string<ElementInterface>  $elementType
-     * @return Collection<\CraftCms\Cms\FieldLayout\FieldLayout>
+     * @return Collection<FieldLayout>
      */
     public function getFieldLayoutsForSource(string $elementType, string $sourceKey): Collection
     {
@@ -553,7 +617,7 @@ final class ElementSources
      * Returns additional sort options that should be available for an element index source that includes the given
      * field layouts.
      *
-     * @param  \CraftCms\Cms\FieldLayout\FieldLayout[]|Collection<\CraftCms\Cms\FieldLayout\FieldLayout>  $fieldLayouts
+     * @param  FieldLayout[]|Collection<FieldLayout>  $fieldLayouts
      * @return Collection<array>
      */
     public function getSortOptionsForFieldLayouts(array|Collection $fieldLayouts): Collection

@@ -17,9 +17,11 @@ use CraftCms\Cms\Plugin\Events\LoadingPlugins;
 use CraftCms\Cms\Plugin\Events\PluginDisabled;
 use CraftCms\Cms\Plugin\Events\PluginEnabled;
 use CraftCms\Cms\Plugin\Events\PluginInstalled;
+use CraftCms\Cms\Plugin\Events\PluginRegistered;
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
 use CraftCms\Cms\Plugin\Events\PluginsLoaded;
 use CraftCms\Cms\Plugin\Events\PluginUninstalled;
+use CraftCms\Cms\Plugin\Events\PluginUnregistered;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
 use CraftCms\Cms\Plugin\Events\UninstallingPlugin;
 use CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException;
@@ -30,6 +32,7 @@ use Illuminate\Support\Facades\Event;
 use InvalidArgumentException;
 use Throwable;
 use yii\base\Component;
+use yii\base\Module;
 
 /**
  * The Plugins service provides APIs for managing plugins.
@@ -568,6 +571,28 @@ class Plugins extends Component
             fn(PluginSettingsSaved $event) => $pluginService->trigger(self::EVENT_AFTER_SAVE_PLUGIN_SETTINGS, new PluginEvent([
                 'plugin' => $event->plugin,
             ])),
+        );
+
+        Event::listen(
+            PluginRegistered::class,
+            function(PluginRegistered $event) {
+                if (!$event->plugin instanceof Module) {
+                    return;
+                }
+
+                Craft::$app->setModule($event->plugin->handle, $event->plugin);
+            }
+        );
+
+        Event::listen(
+            PluginUnregistered::class,
+            function(PluginUnregistered $event) {
+                if (!$event->plugin instanceof Module) {
+                    return;
+                }
+
+                Craft::$app->setModule($event->plugin->handle, null);
+            }
         );
     }
 }

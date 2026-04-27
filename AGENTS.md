@@ -26,9 +26,10 @@ composer tests-adapter
 ./vendor/bin/codecept run unit --filter="test name"
 ```
 
-
+- Pest processes that use `tests/TestCase.php` or `yii2-adapter/tests-laravel/TestCase.php` are serialized with a shared lock. If another one is already running, the next process will wait and print `Another Pest process is already using the shared test database. Waiting for the lock...` until the lock is released.
+- `tests/Unit/` tests that use `UnitTestCase` do not take that lock and can still run concurrently.
 - When running tests with `./vendor/bin/pest`, always add `--compact` to reduce output verbosity and token count.
-- When writing tests, don't use Mockery or Mocks unless absolutely necessary. Prefer using Laravel's Facade fakes or running real code. Tests written are feature or integration tests and not unit tests.
+- When writing tests, prefer using real code paths or use Laravel Facades to set up mocks for services.
 
 ### Code Quality
 ```bash
@@ -132,7 +133,7 @@ Element queries (`src/Database/Queries/`) are the primary way to query content:
 - Uses `RefreshDatabase` trait - tables are migrated fresh via the `Install` migration
 - **Classes marked `final` have this keyword stripped during testing** - you can create custom test classes that extend production classes (e.g., extending `User` element) to override methods like `getFieldLayout()` for easier testing without complex mocks
 
-**Important**: When creating or adjusting tests, take a look at @docs/TESTING.md for patterns and best practices.
+**Important**: When creating or adjusting tests, use the `testing-guidelines` skill for patterns and best practices.
 
 ### Service Providers Pattern
 
@@ -146,7 +147,7 @@ Services that should be singletons use the `#[Singleton]` attribute from Laravel
 use Illuminate\Container\Attributes\Singleton;
 
 #[Singleton]
-final class MyService
+class MyService
 {
     public function __construct(
         private readonly SomeDependency $dependency,
@@ -183,7 +184,7 @@ Craft 6 uses Laravel's event system. Events are simple classes with public prope
 **Laravel Event Pattern:**
 ```php
 // Event class (src/Element/Events/BeforeSave.php)
-final class BeforeSave
+class BeforeSave
 {
     use \CraftCms\Cms\Shared\Concerns\ValidatableEvent; // For cancellable events
     use \CraftCms\Cms\Shared\Concerns\HandleableEvent; // For events able to be marked as handled
@@ -212,6 +213,13 @@ if (!$event->isValid) {
 - `src/User/Events/` - User-related events
 - `src/Plugin/Events/` - Plugin lifecycle events
 
+### Templates
+
+A portion of this port is moving from twig + jQuery templates into [Inertia](https://inertiajs.com/) + VueJs. The original twig templates are contained in `resources/templates` the new Inertia Vue files will live in `resources/js`. 
+
+We're also building component library located in the `@craftcms/cp` package. Whenever possible, use components from that package to build out UI. 
+
+
 ## Common Pitfalls
 
 ### Unicode Characters in Source Files
@@ -231,6 +239,6 @@ PHP 8.2+ does not allow accessing constants on traits directly (e.g., `MyTrait::
 - Uses Laravel Pint with Laravel preset
 - Rector for automated refactoring (PHP 8.4, Laravel-specific rules)
 - `declare(strict_types=1)` required in all PHP files
-- Final classes by default, `readonly` when possible
+- non-final classes by default, `readonly` when possible
 - ECS for yii2-adapter code style
 - You don't need to remove unused imports, running Pint will fix that for you

@@ -4,14 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
-use craft\base\ElementInterface;
 use craft\base\Serializable;
-use craft\gql\types\QueryArgument;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\ElementHelper;
-use craft\helpers\UrlHelper;
-use craft\models\GqlSchema;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
@@ -23,6 +16,8 @@ use CraftCms\Cms\Component\Events\ComponentEvent;
 use CraftCms\Cms\Database\Expressions\Cast;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
@@ -36,6 +31,9 @@ use CraftCms\Cms\Field\Events\DefineFieldKeywords;
 use CraftCms\Cms\Field\Events\FieldElementEvent;
 use CraftCms\Cms\Field\Events\FieldEvent;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Gql\Data\GqlSchema;
+use CraftCms\Cms\Gql\Types\QueryArgument;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -44,16 +42,15 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use Override;
@@ -67,7 +64,6 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
 {
     use ConfigurableComponent;
     use HasComponentEvents;
-    use Macroable;
     use SavableComponent;
 
     // Translation methods
@@ -214,15 +210,35 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
      */
     public ?string $describedBy = null;
 
-    /**
-     * @var string The field’s translation method
-     *
-     * @phpstan-var self::TRANSLATION_METHOD_*
-     */
-    public string $translationMethod = self::TRANSLATION_METHOD_NONE;
+    public string $translationMethod {
+        get => $this->_translationMethod->value;
+        set(string|TranslationMethod $value) {
+            $translationMethod = $value instanceof TranslationMethod
+                ? $value
+                : TranslationMethod::tryFrom($value);
+
+            if ($translationMethod === null) {
+                $supportedTranslationMethods = static::supportedTranslationMethods();
+                $translationMethod = reset($supportedTranslationMethods) ?: TranslationMethod::None;
+            }
+
+            $this->_translationMethod = $translationMethod;
+        }
+    }
 
     /** @var string|null The field’s translation key format, if [[translationMethod]] is "custom" */
     public ?string $translationKeyFormat = null;
+
+    public string $translationMethodValue {
+        get => $this->_translationMethod->value;
+    }
+
+    public array $supportedTranslationMethodValues {
+        get => array_map(
+            static fn (TranslationMethod $translationMethod) => $translationMethod->value,
+            static::supportedTranslationMethods(),
+        );
+    }
 
     /** @var string|null The field’s previous handle */
     public ?string $oldHandle = null;
@@ -339,6 +355,8 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
      */
     private ?bool $_isFresh = null;
 
+    protected TranslationMethod $_translationMethod = TranslationMethod::None;
+
     /**
      * @var array<string,string|false>
      *
@@ -354,12 +372,12 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         parent::__construct($config);
 
         // Validate the translation method
-        $supportedTranslationMethods = static::supportedTranslationMethods() ?: [self::TRANSLATION_METHOD_NONE];
-        if (! in_array($this->translationMethod, $supportedTranslationMethods, true)) {
-            $this->translationMethod = reset($supportedTranslationMethods);
+        $supportedTranslationMethods = static::supportedTranslationMethods() ?: [TranslationMethod::None];
+        if (! in_array($this->_translationMethod, $supportedTranslationMethods, true)) {
+            $this->_translationMethod = reset($supportedTranslationMethods);
         }
 
-        if ($this->translationMethod !== self::TRANSLATION_METHOD_CUSTOM) {
+        if ($this->_translationMethod !== TranslationMethod::Custom) {
             $this->translationKeyFormat = null;
         }
     }
@@ -391,16 +409,16 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     {
         if (static::dbType() === null) {
             return [
-                self::TRANSLATION_METHOD_NONE,
+                TranslationMethod::None,
             ];
         }
 
         return [
-            self::TRANSLATION_METHOD_NONE,
-            self::TRANSLATION_METHOD_SITE,
-            self::TRANSLATION_METHOD_SITE_GROUP,
-            self::TRANSLATION_METHOD_LANGUAGE,
-            self::TRANSLATION_METHOD_CUSTOM,
+            TranslationMethod::None,
+            TranslationMethod::Site,
+            TranslationMethod::SiteGroup,
+            TranslationMethod::Language,
+            TranslationMethod::Custom,
         ];
     }
 
@@ -470,18 +488,6 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     }
 
     #[Override]
-    public function attributes(): array
-    {
-        return Collection::make($this->settingsAttributes())
-            ->reject(fn ($name): bool => in_array($name, [
-                'validateHandleUniqueness',
-                'layoutElement',
-                'static',
-            ]))
-            ->all();
-    }
-
-    #[Override]
     public function attributeLabels(): array
     {
         return [
@@ -502,16 +508,16 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             'translationMethod' => [
                 'required',
                 Rule::in([
-                    self::TRANSLATION_METHOD_NONE,
-                    self::TRANSLATION_METHOD_SITE,
-                    self::TRANSLATION_METHOD_SITE_GROUP,
-                    self::TRANSLATION_METHOD_LANGUAGE,
-                    self::TRANSLATION_METHOD_CUSTOM,
+                    TranslationMethod::None->value,
+                    TranslationMethod::Site->value,
+                    TranslationMethod::SiteGroup->value,
+                    TranslationMethod::Language->value,
+                    TranslationMethod::Custom->value,
                 ]),
             ],
             'translationKeyFormat' => [
                 'nullable',
-                'required_if:translationMethod,'.self::TRANSLATION_METHOD_CUSTOM,
+                'required_if:translationMethod,'.TranslationMethod::Custom->value,
             ],
         ];
     }
@@ -542,7 +548,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             return null;
         }
 
-        return UrlHelper::cpUrl("settings/fields/edit/$this->id");
+        return Url::cpUrl("settings/fields/edit/$this->id");
     }
 
     public function getActionMenuItems(): array
@@ -607,11 +613,11 @@ JS, [
 
     public function getIsTranslatable(?ElementInterface $element): bool
     {
-        if ($this->translationMethod === self::TRANSLATION_METHOD_CUSTOM) {
+        if ($this->_translationMethod === TranslationMethod::Custom) {
             return $element === null || $this->getTranslationKey($element) !== '';
         }
 
-        return $this->translationMethod !== self::TRANSLATION_METHOD_NONE;
+        return $this->_translationMethod !== TranslationMethod::None;
     }
 
     public function getTranslationDescription(?ElementInterface $element): ?string
@@ -620,12 +626,12 @@ JS, [
             return null;
         }
 
-        return ElementHelper::translationDescription($this->translationMethod);
+        return $this->_translationMethod->description();
     }
 
     public function getTranslationKey(ElementInterface $element): string
     {
-        return ElementHelper::translationKey($element, $this->translationMethod, $this->translationKeyFormat);
+        return $this->_translationMethod->elementKey($element, $this->translationKeyFormat);
     }
 
     public function showStatus(): bool
@@ -783,7 +789,7 @@ JS, [
      */
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
-        return ElementHelper::attributeHtml($value);
+        return app(ElementAttributeRenderer::class)->attributeHtml($value);
     }
 
     /**
@@ -820,8 +826,7 @@ JS, [
 
         // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
         // see https://github.com/craftcms/cms/issues/15609
-        $db = Craft::$app->getDb();
-        if ($db->getIsMysql() && is_string($dbType) && Query::parseColumnType($dbType) === Query::TYPE_TEXT) {
+        if (DB::isMysql() && is_string($dbType) && Query::parseColumnType($dbType) === Query::TYPE_TEXT) {
             $orderBy = new Cast($orderBy, 'CHAR(255)');
         }
 

@@ -5,18 +5,21 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Policies;
 
 use BadMethodCallException;
-use craft\base\ElementInterface;
-use craft\base\NestedElementInterface;
 use CraftCms\Cms\Auth\Events\AuthorizingElement;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Gate;
 
 class ElementPolicy
 {
     private const array ABILITIES = [
         'view',
         'save',
+        'saveCanonical',
         'delete',
         'duplicate',
         'copy',
@@ -53,6 +56,18 @@ class ElementPolicy
         return $event->authorized;
     }
 
+    public function saveCanonical(User $user, ElementInterface $element): bool
+    {
+        if ($element->getIsUnpublishedDraft()) {
+            $fakeCanonical = clone $element;
+            $fakeCanonical->draftId = null;
+
+            return Gate::forUser($user)->check('save', $fakeCanonical);
+        }
+
+        return Gate::forUser($user)->check('save', $element->getCanonical(true));
+    }
+
     /**
      * Default deny for all abilities not explicitly defined.
      *
@@ -73,7 +88,7 @@ class ElementPolicy
             return null;
         }
 
-        if (! $site = Site::find($siteId)) {
+        if (! $site = Sites::getSiteById($siteId)) {
             return false;
         }
 
@@ -98,7 +113,7 @@ class ElementPolicy
             'view' => $field->canViewElement($element, $user),
             'save' => $this->checkNestedSaveAuthorization($element, $user, $field),
             'delete' => $field->canDeleteElement($element, $user),
-            'duplicate' => $field->canDuplicateElement($element, $user),
+            'duplicate', 'duplicateAsDraft' => $field->canDuplicateElement($element, $user),
             'deleteForSite' => $field->canDeleteElementForSite($element, $user),
             default => null,
         };

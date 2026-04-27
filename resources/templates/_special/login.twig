@@ -3,6 +3,7 @@
 {% set showResetPassword = showResetPassword ?? false %}
 {% set showRememberMeCheckbox = showRememberMeCheckbox ?? false %}
 {% set staticEmail = staticEmail ?? null %}
+{% set initialError = initialError ?? null %}
 
 {% set generalConfig = app.config.craft.general %}
 {% set username = staticEmail ?? (generalConfig.rememberUsernameDuration ? craft.auth.getRememberedUsername() : '') %}
@@ -83,7 +84,11 @@
       }) }}
     {% endtag %}
 
-    <div class="login-errors hidden"></div>
+    <div class="login-errors{{ not initialError ? ' hidden' }}">
+      {% if initialError %}
+        <p>{{ initialError }}</p>
+      {% endif %}
+    </div>
 
     {% if showResetPassword %}
       <form class="login-reset-password hidden">
@@ -135,9 +140,9 @@
       retryMessage: 'Sign in with a passkey'|t('app'),
     }) }}
 
-    {% if CraftEdition == CraftEnterprise %}
-      {% for provider in craft.app.sso.providers %}
-        {{ provider.getCpLoginHtml()|raw }}
+    {% if CraftEdition >= CraftPro %}
+      {% for button in craft.oauth.getLoginButtons() %}
+        {{ button }}
       {% endfor %}
     {% endif %}
 

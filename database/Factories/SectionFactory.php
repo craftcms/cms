@@ -4,17 +4,21 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Factories;
 
+use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Site\Models\Site;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Override;
 
-final class SectionFactory extends Factory
+class SectionFactory extends Factory
 {
+    #[Override]
     protected $model = Section::class;
 
-    #[\Override]
+    #[Override]
     public function definition(): array
     {
         return [
@@ -28,7 +32,7 @@ final class SectionFactory extends Factory
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function configure(): self
     {
         return $this->afterCreating(function (Section $section) {
@@ -38,6 +42,35 @@ final class SectionFactory extends Factory
                 'dateCreated' => $section->dateCreated,
                 'dateUpdated' => $section->dateUpdated,
             ]);
+        });
+    }
+
+    public function withEntryTypes(EntryType ...$types): static
+    {
+        return $this->afterCreating(function (Section $section) use ($types) {
+            foreach ($types as $index => $type) {
+                $section->entryTypes()->attach($type, ['sortOrder' => $index + 1]);
+            }
+        });
+    }
+
+    public function withSites(Site ...$sites): static
+    {
+        return $this->afterCreating(function (Section $section) use ($sites) {
+            foreach ($sites as $site) {
+                SectionSiteSettings::query()->firstOrCreate([
+                    'sectionId' => $section->id,
+                    'siteId' => $site->id,
+                ], [
+                    'uid' => (string) str()->uuid(),
+                    'dateCreated' => $section->dateCreated,
+                    'dateUpdated' => $section->dateUpdated,
+                    'hasUrls' => true,
+                ]);
+            }
+
+            app(Fields::class)->invalidateCaches();
+            app(Fields::class)->refreshFields();
         });
     }
 }

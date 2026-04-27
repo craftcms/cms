@@ -8,7 +8,7 @@ use CraftCms\Cms\Support\Api;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-final readonly class ApiController
+readonly class ApiController
 {
     public function __construct(
         private Api $api,

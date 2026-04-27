@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Search\Events;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
 /**
@@ -12,7 +12,7 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
  *
  * You may set [[ValidatableEvent::$isValid]] to `false` to prevent the attribute/field's keywords from being indexed.
  */
-final class BeforeIndexKeywords
+class BeforeIndexKeywords
 {
     use ValidatableEvent;
 

@@ -11,7 +11,7 @@ use Illuminate\Validation\Rules\DatabaseRule;
 use Illuminate\Validation\Rules\Unique;
 use Tpetry\QueryExpressions\Function\String\Lower;
 
-final class UniqueCaseInsensitiveRule extends Unique implements ValidationRule
+class UniqueCaseInsensitiveRule extends Unique implements ValidationRule
 {
     use DatabaseRule;
 

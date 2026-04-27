@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Utility;
 
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Utility\Events\RegisterUtilities;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
@@ -24,11 +24,8 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
-/**
- * The Utilities service provides APIs for managing utilities.
- */
 #[Singleton]
-final readonly class Utilities
+readonly class Utilities
 {
     public function __construct(
         private GeneralConfig $generalConfig,
@@ -53,7 +50,7 @@ final readonly class Utilities
                 fn (Collection $c) => $c->push(SystemMessagesUtility::class)
             )
             ->unless(
-                empty(app('Craft')->getVolumes()->getAllVolumes()),
+                Volumes::getAllVolumes()->isEmpty(),
                 fn (Collection $c) => $c->push(AssetIndexes::class)
             )
             ->push(

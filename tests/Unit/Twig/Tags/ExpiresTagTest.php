@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Twig\TemplateRenderer;
 
 beforeEach(function () {
@@ -11,7 +12,8 @@ beforeEach(function () {
 it('sets cache headers with duration', function () {
     $this->renderer->renderString('{% expires in 1 day %}');
 
-    expect(Craft::$app->getResponse()->getHeaders()->get('Cache-Control'))->toContain('max-age=86400');
+    expect(Craft::$app->getResponse()->getHeaders()->get('Cache-Control'))
+        ->toContain('max-age='.DateTimeHelper::relativeTimeToSeconds(1, 'day'));
     expect(Craft::$app->getResponse()->getHeaders()->get('Pragma'))->toBe('cache');
 });
 

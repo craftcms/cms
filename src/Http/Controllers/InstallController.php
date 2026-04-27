@@ -8,6 +8,7 @@ use craft\helpers\App;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Site\Concerns\SiteDefaults;
@@ -36,7 +37,7 @@ use Throwable;
  * Note that all actions in the controller are open and do not require an
  * authenticated Craft session to execute.
  */
-final readonly class InstallController
+readonly class InstallController
 {
     use SiteDefaults;
 
@@ -97,7 +98,6 @@ final readonly class InstallController
     {
         $data = $this->validateDbData($request->input());
 
-        // Test the connection
         $errors = [];
 
         try {
@@ -115,14 +115,14 @@ final readonly class InstallController
             $errors['database'][] = 'PDO exception: '.$e->getMessage();
         }
 
-        $validates = empty($errors);
+        if (empty($errors)) {
+            return new JsonResponse;
+        }
 
-        return $validates ?
-            new JsonResponse :
-            new JsonResponse([
-                'message' => 'Could not connect to the database.',
-                'errors' => $errors,
-            ], 422);
+        return new JsonResponse([
+            'message' => 'Could not connect to the database.',
+            'errors' => $errors,
+        ], 422);
     }
 
     public function validateAccount(Request $request, GeneralConfig $generalConfig): Response
@@ -151,7 +151,7 @@ final readonly class InstallController
         return new JsonResponse;
     }
 
-    public function install(Request $request, Migrator $migrator): Response
+    public function install(Request $request, Migrator $migrator, LaravelMigrations $laravelMigrations): Response
     {
         $path = app()->environmentFilePath();
 
@@ -195,9 +195,7 @@ final readonly class InstallController
             $siteUrl = Aliases::get($siteUrl);
         }
 
-        // Try to save the site URL to a APP_URL environment variable
-        // if it’s not already set to an alias or environment variable
-        if ($siteUrl[0] !== '@' && $siteUrl[0] !== '$' && ! App::isEphemeral()) {
+        if (! in_array($siteUrl[0], ['@', '$']) && ! App::isEphemeral()) {
             try {
                 Env::writeVariable('APP_URL', $siteUrl, $path);
                 $siteUrl = '$APP_URL';
@@ -237,6 +235,8 @@ final readonly class InstallController
         foreach ($migrator->getPendingMigrations() as $file) {
             $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
         }
+
+        $laravelMigrations->install($migrator);
 
         $redirect = Cms::config()->postCpLoginRedirect;
 

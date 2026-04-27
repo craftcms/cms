@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Craft;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Html;
@@ -16,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-final readonly class AddressesController
+readonly class AddressesController
 {
     use EditUserTrait;
     use PopulatesNames;
@@ -47,9 +48,8 @@ final readonly class AddressesController
         return $response;
     }
 
-    public function store(Request $request): Response
+    public function store(Request $request, Elements $elements): Response
     {
-        $elementsService = Craft::$app->getElements();
         $user = $request->user();
 
         $userId = (int) ($request->input('userId') ?? $user->id);
@@ -66,17 +66,17 @@ final readonly class AddressesController
             ]);
         }
 
-        abort_if(! $elementsService->canSave($address, $user), 403, 'User is not permitted to edit this address.');
+        Gate::authorize('save', $address);
 
         // Addresses have no status, and the default element save controller also sets the address scenario to live
-        $address->setScenario(Element::SCENARIO_LIVE);
+        $address->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
 
         // Name attributes
         $this->populateNameAttributes($request, $address);
 
         // All safe attributes
         $safeAttributes = [];
-        foreach ($address->safeAttributes() as $name) {
+        foreach (array_keys($address->ruleset->rules()) as $name) {
             if (in_array($name, ['id', 'uid', 'ownerId'])) {
                 continue;
             }
@@ -93,7 +93,7 @@ final readonly class AddressesController
         $fieldsLocation = $request->input('fieldsLocation') ?? 'fields';
         $address->setFieldValuesFromRequest($fieldsLocation);
 
-        if (! $elementsService->saveElement($address)) {
+        if (! $elements->saveElement($address)) {
             return $this->asModelFailure($address, mb_ucfirst(t('Couldn’t save {type}.', [
                 'type' => Address::lowerDisplayName(),
             ])), 'address');
@@ -104,7 +104,7 @@ final readonly class AddressesController
         ]));
     }
 
-    public function destroy(Request $request): Response
+    public function destroy(Request $request, Elements $elements): Response
     {
         $request->validate([
             'addressId' => ['required', 'integer'],
@@ -114,11 +114,9 @@ final readonly class AddressesController
 
         abort_if(! $address, 400, "Invalid address ID: $addressId");
 
-        $elementsService = Craft::$app->getElements();
+        Gate::authorize('delete', $address);
 
-        abort_if(! $elementsService->canDelete($address), 403, 'User is not permitted to delete this address.');
-
-        if (! $elementsService->deleteElement($address)) {
+        if (! $elements->deleteElement($address)) {
             return $this->asModelFailure($address, t('Couldn’t delete {type}.', [
                 'type' => Address::lowerDisplayName(),
             ]), 'address');

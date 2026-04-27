@@ -1,74 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace craft\gql\arguments\elements;
 
-use craft\base\GqlInlineFragmentFieldInterface;
-use craft\gql\base\ElementArguments;
-use craft\gql\types\QueryArgument;
-use CraftCms\Cms\Address\Elements\Address as AddressElement;
-use CraftCms\Cms\Field\Fields;
-use GraphQL\Type\Definition\Type;
-
 /**
- * Class Address
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Arguments\Elements\Address} instead.
  */
-class Address extends ElementArguments
+class Address extends \CraftCms\Cms\Gql\Arguments\Elements\Address
 {
-    /**
-     * @inheritdoc
-     */
-    public static function getArguments(): array
-    {
-        return array_merge(parent::getArguments(), self::getContentArguments(), [
-            'ownerId' => [
-                'name' => 'ownerId',
-                'type' => Type::listOf(QueryArgument::getType()),
-                'description' => 'Narrows the query results based on the addresses’ owners.',
-            ],
-            'countryCode' => [
-                'name' => 'countryCode',
-                'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the addresses’ country codes.',
-            ],
-            'administrativeArea' => [
-                'name' => 'administrativeArea',
-                'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the addresses’ administrative areas.',
-            ],
-        ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getContentArguments(): array
-    {
-        $contentArguments = [];
-
-        $contentFields = app(Fields::class)->getLayoutByType(AddressElement::class)->getCustomFields();
-
-        foreach ($contentFields as $contentField) {
-            if (!$contentField instanceof GqlInlineFragmentFieldInterface) {
-                $contentArguments[$contentField->handle] = $contentField->getContentGqlQueryArgumentType();
-            }
-        }
-
-        return array_merge(parent::getContentArguments(), $contentArguments);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getRevisionArguments(): array
-    {
-        return [];
-    }
 }

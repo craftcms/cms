@@ -9,7 +9,7 @@ use CraftCms\Cms\Support\Facades\AssetIndexer;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
 
-final class CleanupAssetIndexesCommand extends Command
+class CleanupAssetIndexesCommand extends Command
 {
     use CraftCommand;
 

@@ -49,6 +49,12 @@ test('convertToUtf8', function (string $expected, string $string) {
     ['İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±', 'İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±'],
 ]);
 
+test('convertToUtf8 accepts explicit source encoding', function () {
+    $iso88591 = iconv('UTF-8', 'ISO-8859-1//IGNORE', 'Café');
+
+    expect(Str::convertToUtf8($iso88591, 'iso-8859-1'))->toBe('Café');
+});
+
 test('convertLineBreaks', function (string $expected, string $string) {
     expect(Str::convertLineBreaks($string))->toBe($expected);
 })->with([

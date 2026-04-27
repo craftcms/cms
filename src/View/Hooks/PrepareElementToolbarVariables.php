@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View\Hooks;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Site\Sites;
 
-final readonly class PrepareElementToolbarVariables
+readonly class PrepareElementToolbarVariables
 {
     public function __construct(
         private Sites $sites,

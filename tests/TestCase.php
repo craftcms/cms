@@ -6,7 +6,9 @@ namespace CraftCms\Cms\Tests;
 
 use Craft;
 use craft\test\TestSetup;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
+use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
@@ -21,6 +23,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Tests\Support\DatabaseLock;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
@@ -29,7 +32,6 @@ use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -48,8 +50,19 @@ class TestCase extends Orchestra
     use WithWorkbench;
 
     #[Override]
+    public static function setUpBeforeClass(): void
+    {
+        parent::setUpBeforeClass();
+
+        DatabaseLock::acquire();
+    }
+
+    #[Override]
     protected function setUp(): void
     {
+        // This is so route registration in tests work
+        $_SERVER['CRAFT_EDITION'] = Edition::Pro->handle();
+
         parent::setUp();
 
         app()->setLocale('en-US');
@@ -58,11 +71,9 @@ class TestCase extends Orchestra
         // Reset timezone to a consistent value for tests
         // This is needed because AppServiceProvider::setTimezone() runs during boot,
         // before RefreshDatabase has prepared the database, potentially reading stale data
-        Config::set('app.timezone', 'America/Los_Angeles');
-        date_default_timezone_set('America/Los_Angeles');
+        Cms::config()->timezone('America/Los_Angeles');
 
-        // Tests run in Pro and Cp by default
-        Edition::set(Edition::Pro);
+        // Tests run in Cp by default
         TemplateMode::set(TemplateMode::Cp);
 
         File::cleanDirectory(config_path('craft/project'));
@@ -187,17 +198,20 @@ class TestCase extends Orchestra
                 password: 'craftcms2018!!',
                 email: 'support@craftcms.com',
                 site: $site,
-            );
+            )->silent();
 
             Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
 
-            $migration->up();
-
-            // Mark all existing migrations as applied
             $migrator = app(Migrator::class)->track('craft');
+            $migrator->runMigration($migration, 'up');
+            $migrator->getRepository()->log('Install', 1);
+
+            // Mark all existing Craft migrations as applied
             foreach ($migrator->getPendingMigrations() as $file) {
                 $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
             }
+
+            app(LaravelMigrations::class)->install($migrator);
 
             RefreshDatabaseState::$migrated = true;
         }
@@ -216,7 +230,7 @@ class TestCase extends Orchestra
         $app->bootstrapWith([LoadEnvironmentVariables::class]);
 
         tap($app->make(ConfigRepository::class), function (ConfigRepository $config) {
-            $config->set('inertia.testing.page_paths', [__DIR__.'/../resources/js/pages']);
+            $config->set('inertia.pages.paths', [__DIR__.'/../resources/js/pages']);
             $config->set('auth.defaults.guard', 'craft');
 
             $connection = env('DB_CONNECTION', 'testing');
@@ -224,6 +238,7 @@ class TestCase extends Orchestra
 
             $config->set('database.default', $connection);
             $config->set("database.connections.{$connection}.database", env('DB_DATABASE', ':memory:'));
+            $config->set("database.connections.{$connection}.host", env('DB_HOST', '127.0.0.1'));
             $config->set("database.connections.{$connection}.username", env('DB_USERNAME', 'root'));
             $config->set("database.connections.{$connection}.password", env('DB_PASSWORD', ''));
             $config->set("database.connections.{$connection}.charset", env('DB_CHARSET', in_array($driver, ['mysql', 'mariadb']) ? 'utf8mb4' : 'utf8'));

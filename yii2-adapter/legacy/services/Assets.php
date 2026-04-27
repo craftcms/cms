@@ -17,8 +17,8 @@ use craft\events\AssetPreviewEvent;
 
 use craft\events\DefineAssetThumbUrlEvent;
 use craft\events\ReplaceAssetEvent;
-use craft\helpers\Assets as AssetsHelper;
 use CraftCms\Cms\Asset\Assets as AssetsService;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
@@ -147,7 +147,7 @@ class Assets extends Component
             $tree[$volumeId] = $volumeFolders[$cacheKey];
         }
 
-        AssetsHelper::sortFolderTree($tree);
+        \craft\helpers\Assets::sortFolderTree($tree);
 
         return $tree;
     }
@@ -237,7 +237,7 @@ class Assets extends Component
      */
     public function getIconPath(Asset $asset): string
     {
-        return AssetsHelper::iconPath($asset->getExtension());
+        return \craft\helpers\Assets::iconPath($asset->getExtension());
     }
 
     public function getNameReplacementInFolder(string $originalFilename, int $folderId): string

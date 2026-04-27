@@ -14,6 +14,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Typecast;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
@@ -131,6 +132,18 @@ class Craft extends Yii
     }
 
     /**
+     * @param $object
+     * @param $properties
+     *
+     * @return object
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Typecast::configure()} instead.
+     */
+    public static function configure($object, $properties)
+    {
+        return Typecast::configure($object, $properties);
+    }
+
+    /**
      * Displays a variable.
      *
      * @param  mixed  $var  The variable to be dumped.
@@ -195,7 +208,7 @@ class Craft extends Yii
             if ($generalConfig->useSecureCookies === 'auto') {
                 $request ??= static::$app->getRequest();
 
-                if (!$request->getIsConsoleRequest()) {
+                if (!app()->runningInConsole()) {
                     $generalConfig->useSecureCookies = $request->getIsSecureConnection();
                 }
             }

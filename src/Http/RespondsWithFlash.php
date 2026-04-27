@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Contracts\Identifiable;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Flash;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\JsonResponse;
@@ -27,7 +27,11 @@ trait RespondsWithFlash
 
         Flash::fail($message);
 
-        return back()->with($data)->withErrors($data['errors'] ?? []);
+        request()->flash();
+
+        return back()
+            ->with('error', $message)
+            ->with($data)->withErrors($data['errors'] ?? []);
     }
 
     public function asJsonFailure(?string $message = null, array $data = []): JsonResponse
@@ -37,13 +41,13 @@ trait RespondsWithFlash
         ]), 400);
     }
 
-    public function asSuccess(?string $message = null, array $data = [], ?string $redirect = null): Response
+    public function asSuccess(?string $message = null, array $data = [], ?string $redirect = null, array $notificationSettings = []): Response
     {
         if (request()->expectsJson()) {
             return $this->asJsonSuccess($message, $data);
         }
 
-        Flash::success($message);
+        Flash::success($message, $notificationSettings);
 
         $redirect ??= $this->getPostedRedirectUrl();
 
@@ -51,7 +55,9 @@ trait RespondsWithFlash
             return redirect($redirect)->with($data);
         }
 
-        return back()->with($data);
+        return back()
+            ->with('success', $message)
+            ->with($data);
     }
 
     public function asJsonSuccess(?string $message = null, array $data = []): JsonResponse
@@ -127,7 +133,7 @@ trait RespondsWithFlash
         }
 
         if (request()->isCpRequest()) {
-            return UrlHelper::cpUrl($url);
+            return Url::cpUrl($url);
         }
 
         return $url;

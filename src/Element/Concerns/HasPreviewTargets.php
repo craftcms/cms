@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Element\Events\RegisterPreviewTargets;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\renderObjectTemplate;
@@ -24,8 +24,6 @@ trait HasPreviewTargets
 {
     /**
      * @var bool Whether the element is currently being previewed.
-     *
-     * @since 3.2.0
      */
     public bool $previewing = false;
 
@@ -55,7 +53,7 @@ trait HasPreviewTargets
                     return null;
                 }
 
-                $previewTarget['url'] = UrlHelper::siteUrl($previewTarget['url'], siteId: $this->siteId);
+                $previewTarget['url'] = Url::siteUrl($previewTarget['url'], siteId: $this->siteId);
 
                 if (! isset($previewTarget['refresh'])) {
                     $previewTarget['refresh'] = true;
@@ -73,7 +71,6 @@ trait HasPreviewTargets
      * Each target should be represented by a sub-array with `'label'` and `'url'` keys.
      *
      * @see getPreviewTargets()
-     * @since 3.2.0
      */
     protected function previewTargets(): array
     {

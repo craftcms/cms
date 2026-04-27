@@ -14,7 +14,7 @@ use Throwable;
 
 use function Laravel\Prompts\select;
 
-final class InstallCommand extends Command
+class InstallCommand extends Command
 {
     use CraftCommand;
     use PromptsForMissingHandle;

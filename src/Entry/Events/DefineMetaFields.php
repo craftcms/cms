@@ -11,7 +11,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
  *
  * @see Entry::metaFieldsHtml()
  */
-final class DefineMetaFields
+class DefineMetaFields
 {
     public function __construct(
         public Entry $entry,

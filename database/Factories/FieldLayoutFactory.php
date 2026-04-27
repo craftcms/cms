@@ -12,8 +12,9 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-final class FieldLayoutFactory extends Factory
+class FieldLayoutFactory extends Factory
 {
+    #[\Override]
     protected $model = FieldLayout::class;
 
     public function definition(): array
@@ -23,24 +24,29 @@ final class FieldLayoutFactory extends Factory
         ];
     }
 
-    public function forField(Field|FieldModel $field, bool $required = false): self
+    public function withContentTab(array $elements = [], string $name = 'Content'): self
     {
         return $this->state(fn () => [
             'config' => [
                 'tabs' => [
                     [
                         'uid' => Str::uuid()->toString(),
-                        'name' => 'Content',
-                        'elements' => [
-                            [
-                                'uid' => Str::uuid()->toString(),
-                                'type' => CustomField::class,
-                                'fieldUid' => $field->uid,
-                                'required' => $required,
-                            ],
-                        ],
+                        'name' => $name,
+                        'elements' => $elements,
                     ],
                 ],
+            ],
+        ]);
+    }
+
+    public function forField(Field|FieldModel $field, bool $required = false): self
+    {
+        return $this->withContentTab([
+            [
+                'uid' => Str::uuid()->toString(),
+                'type' => CustomField::class,
+                'fieldUid' => $field->uid,
+                'required' => $required,
             ],
         ]);
     }

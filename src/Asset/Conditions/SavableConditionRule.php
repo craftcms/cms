@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Conditions;
 
-use Craft;
-use craft\base\ElementInterface;
 use CraftCms\Cms\Condition\BaseLightswitchConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use Illuminate\Support\Facades\Gate;
 
 use function CraftCms\Cms\t;
 
-final class SavableConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
+class SavableConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
 {
     public function getLabel(): string
     {
@@ -33,8 +33,6 @@ final class SavableConditionRule extends BaseLightswitchConditionRule implements
 
     public function matchElement(ElementInterface $element): bool
     {
-        $savable = Craft::$app->getElements()->canSave($element);
-
-        return $savable === $this->value;
+        return Gate::check('save', $element) === $this->value;
     }
 }

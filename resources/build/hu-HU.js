@@ -1,1 +1,1 @@
-import o from"./hu2.js";const r={...o};export{r as default};
+import e from"./hu2.js";var t={...e};export{t as default};

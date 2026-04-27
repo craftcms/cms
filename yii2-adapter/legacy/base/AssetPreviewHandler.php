@@ -7,30 +7,18 @@
 
 namespace craft\base;
 
-use CraftCms\Cms\Asset\Elements\Asset;
-
-/**
- * AssetPreviewer is the base class for classes that provide asset previewing functionality.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.4.0
- */
-abstract class AssetPreviewHandler extends Component implements \CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @var Asset
-     */
-    public Asset $asset;
-
-    /**
-     * Constructor.
+     * AssetPreviewHandler is the base class for classes that provide asset previewing functionality.
      *
-     * @param Asset $asset
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 3.4.0
+     * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\Asset\PreviewHandlers\AssetPreviewHandler} instead.
      */
-    public function __construct(Asset $asset)
+    abstract class AssetPreviewHandler extends Component implements \CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface
     {
-        parent::__construct([
-            'asset' => $asset,
-        ]);
     }
 }
+
+class_alias(\CraftCms\Cms\Asset\PreviewHandlers\AssetPreviewHandler::class, AssetPreviewHandler::class);

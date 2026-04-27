@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Support;
 
 use Symfony\Component\Yaml\Yaml;
 
-final class Diff
+class Diff
 {
     /**
      * Generates a diff for two values, represented as YAML.

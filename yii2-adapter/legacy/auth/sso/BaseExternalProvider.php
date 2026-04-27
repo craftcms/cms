@@ -13,14 +13,15 @@ use craft\errors\ElementNotFoundException;
 use craft\errors\SsoFailedException;
 use craft\events\SsoEvent;
 use craft\events\UserGroupsAssignEvent;
-use craft\helpers\UrlHelper;
 use craft\services\Sso;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -37,6 +38,7 @@ use function CraftCms\Cms\t;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @internal
  * @since 5.3.0
+ * @deprecated 6.0.0 use the Laravel Socialite {@see \CraftCms\Cms\Auth\OAuth\OAuth} implementation instead.
  */
 abstract class BaseExternalProvider extends BaseProvider
 {
@@ -110,7 +112,7 @@ abstract class BaseExternalProvider extends BaseProvider
      */
     protected function getRequestUrl(): ?string
     {
-        return UrlHelper::actionUrl('sso/request', ['provider' => $this->handle], null, false);
+        return Url::actionUrl('sso/request', ['provider' => $this->handle], null, false);
     }
 
     /**
@@ -120,7 +122,7 @@ abstract class BaseExternalProvider extends BaseProvider
      */
     protected function getResponseUrl(): ?string
     {
-        return UrlHelper::actionUrl('sso/response', ['provider' => $this->handle], null, false);
+        return Url::actionUrl('sso/response', ['provider' => $this->handle], null, false);
     }
 
     /**
@@ -204,7 +206,7 @@ abstract class BaseExternalProvider extends BaseProvider
         }
 
         // Save user
-        if (!Craft::$app->getElements()->saveElement($user)) {
+        if (!Elements::saveElement($user)) {
             throw new SsoFailedException(
                 $this,
                 $user,

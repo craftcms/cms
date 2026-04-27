@@ -9,7 +9,7 @@ use CraftCms\Cms\User\Data\UserGroup;
 /**
  * @event ApplyingUserGroupDelete The event that is triggered before a user group delete is applied to the database.
  */
-final class ApplyingUserGroupDelete
+class ApplyingUserGroupDelete
 {
     public function __construct(
         public UserGroup $userGroup,

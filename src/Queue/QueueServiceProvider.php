@@ -15,7 +15,7 @@ use Illuminate\Queue\Events\JobQueued;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
-final class QueueServiceProvider extends ServiceProvider
+class QueueServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {

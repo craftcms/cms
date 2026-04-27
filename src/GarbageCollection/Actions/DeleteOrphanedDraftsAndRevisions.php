@@ -9,7 +9,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
 
-final class DeleteOrphanedDraftsAndRevisions extends GarbageCollectionAction
+class DeleteOrphanedDraftsAndRevisions extends GarbageCollectionAction
 {
     public function __invoke(): void
     {

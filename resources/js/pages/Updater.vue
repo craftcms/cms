@@ -151,7 +151,7 @@
     min-height: 100vh;
     padding: var(--c-spacing-xl);
     text-align: center;
-    background: var(--c-color-neutral-bg);
+    background: var(--c-color-neutral-fill-quiet);
   }
 
   .updater-graphic {
@@ -162,12 +162,12 @@
     }
 
     .icon-success {
-      color: var(--c-color-success-bg-emphasis);
+      color: var(--c-color-success-fill-loud);
       font-size: 4rem;
     }
 
     .icon-error {
-      color: var(--c-color-danger-bg-emphasis);
+      color: var(--c-color-danger-fill-loud);
       font-size: 4rem;
     }
   }
@@ -182,7 +182,7 @@
     }
 
     :deep(code) {
-      background: var(--c-color-neutral-bg-subtle);
+      background: var(--c-color-neutral-fill-quiet);
       padding: 0.125em 0.375em;
       border-radius: var(--c-radius-sm);
       font-family: var(--c-font-mono);
@@ -191,12 +191,12 @@
   }
 
   .error-message {
-    color: var(--c-color-danger-on-subtle);
+    color: var(--c-color-danger-on-quiet);
   }
 
   .error-details {
-    background: var(--c-color-neutral-bg-subtle);
-    border: 1px solid var(--c-color-neutral-border);
+    background: var(--c-color-neutral-fill-quiet);
+    border: 1px solid var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-md);
     padding: var(--c-spacing-md);
     font-family: var(--c-font-mono);
@@ -228,17 +228,17 @@
     border-radius: var(--c-radius-md);
     font-weight: 500;
     text-decoration: none;
-    background: var(--c-color-neutral-bg);
-    border: 1px solid var(--c-color-neutral-border);
-    color: var(--c-color-neutral-on);
+    background: var(--c-color-neutral-fill-quiet);
+    border: 1px solid var(--c-color-neutral-border-quiet);
+    color: var(--c-color-neutral-on-normal);
     cursor: pointer;
     transition:
       background-color 0.15s,
       border-color 0.15s;
 
     &:hover {
-      background: var(--c-color-neutral-bg-hover);
-      border-color: var(--c-color-neutral-border-hover);
+      background: var(--c-color-neutral-fill-normal);
+      border-color: var(--c-color-neutral-border-normal);
     }
 
     &.big {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Conditions\Contracts;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 /**

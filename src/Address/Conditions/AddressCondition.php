@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Address\Conditions;
 
 use CraftCms\Cms\Element\Conditions\ElementCondition;
+use Override;
 
-final class AddressCondition extends ElementCondition
+class AddressCondition extends ElementCondition
 {
-    #[\Override]
+    #[Override]
     protected function selectableConditionRules(): array
     {
         return array_merge(parent::selectableConditionRules(), [

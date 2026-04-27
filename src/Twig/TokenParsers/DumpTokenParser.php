@@ -8,7 +8,7 @@ use CraftCms\Cms\Twig\Nodes\DumpNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
-final class DumpTokenParser extends AbstractTokenParser
+class DumpTokenParser extends AbstractTokenParser
 {
     public function parse(Token $token): DumpNode
     {

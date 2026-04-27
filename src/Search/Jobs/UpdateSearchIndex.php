@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Search\Jobs;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Search;
 use InvalidArgumentException;
 use Override;
 
-final class UpdateSearchIndex extends Job
+class UpdateSearchIndex extends Job
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type.

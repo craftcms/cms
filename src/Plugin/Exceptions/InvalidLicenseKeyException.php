@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Plugin\Exceptions;
 use RuntimeException;
 use Throwable;
 
-final class InvalidLicenseKeyException extends RuntimeException
+class InvalidLicenseKeyException extends RuntimeException
 {
     public function __construct(
         public readonly string $licenseKey,

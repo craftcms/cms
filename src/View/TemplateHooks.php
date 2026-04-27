@@ -7,7 +7,7 @@ namespace CraftCms\Cms\View;
 use Illuminate\Container\Attributes\Scoped;
 
 #[Scoped]
-final class TemplateHooks
+class TemplateHooks
 {
     /** @var array<string, list<callable>> */
     private array $hooks = [];

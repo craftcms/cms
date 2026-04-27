@@ -6,6 +6,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\SystemMessage\Events\RegisterSystemMessages;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use CraftCms\Cms\SystemMessage\SystemMessages;
+use Illuminate\Support\Facades\Event;
 
 use function CraftCms\Cms\t;
 
@@ -27,7 +28,7 @@ it('retrieves all the default system messages', function () {
 });
 
 it('can add additional messages through an event', function () {
-    \Illuminate\Support\Facades\Event::listen(RegisterSystemMessages::class, function (RegisterSystemMessages $event) {
+    Event::listen(RegisterSystemMessages::class, function (RegisterSystemMessages $event) {
         $event->messages->push(new SystemMessage([
             'key' => 'foo',
             'heading' => 'A test system message',

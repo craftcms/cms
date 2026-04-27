@@ -1,31 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace craft\gql\handlers;
 
-use craft\gql\base\RelationArgumentHandler;
-use CraftCms\Cms\Asset\Elements\Asset;
-
 /**
- * Class RelatedAssets
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.6.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Handlers\RelatedAssets} instead.
  */
-class RelatedAssets extends RelationArgumentHandler
+class RelatedAssets extends \CraftCms\Cms\Gql\Handlers\RelatedAssets
 {
-    protected string $argumentName = 'relatedToAssets';
-
-    /**
-     * @inheritdoc
-     */
-    protected function handleArgument($argumentValue): mixed
-    {
-        $argumentValue = parent::handleArgument($argumentValue);
-        return $this->getIds(Asset::class, $argumentValue);
-    }
 }

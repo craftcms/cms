@@ -10,15 +10,15 @@
 {% set siteId = (translatable and (element.isLocalized() ?? true)) ? (siteId ?? element.siteId ?? craft.sites.currentSite.id) %}
 
 {% if not static %}
-    {% set isDeltaRegistrationActive = view.getIsDeltaRegistrationActive() %}
+    {% set isDeltaRegistrationActive = deltaRegistry.isActive() %}
     {% set registerDeltas = (element.id ?? false) and isDeltaRegistrationActive and (registerDeltas ?? false) %}
-    {% do view.setIsDeltaRegistrationActive(registerDeltas) %}
-    {% do view.registerDeltaName(field.handle) %}
+    {% do deltaRegistry.setActive(registerDeltas) %}
+    {% do deltaRegistry.registerName(field.handle) %}
     {% if not element or not element.id or element.isFieldEmpty(field.handle) %}
-        {% do view.setInitialDeltaValue(field.handle, null) %}
+        {% do deltaRegistry.setInitialValue(field.handle, null) %}
     {% endif %}
     {% set input = field.getInputHtml(value, element) %}
-    {% do view.setIsDeltaRegistrationActive(isDeltaRegistrationActive) %}
+    {% do deltaRegistry.setActive(isDeltaRegistrationActive) %}
 {% else %}
     {% set input = field.getStaticHtml(value, element) %}
 {% endif %}

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
@@ -16,15 +16,15 @@ use function CraftCms\Cms\template;
 /**
  * RadioButtons represents a Radio Buttons field.
  */
-final class RadioButtons extends BaseOptionsField implements SortableFieldInterface
+class RadioButtons extends BaseOptionsField implements SortableFieldInterface
 {
-    #[\Override]
+    #[Override]
     protected static bool $allowCustomOptions = true;
 
-    #[\Override]
+    #[Override]
     protected static bool $optionIcons = true;
 
-    #[\Override]
+    #[Override]
     protected static bool $optionColors = true;
 
     #[Override]

@@ -14,11 +14,11 @@ use Illuminate\Support\Facades\Facade;
  * @method static string[] getNames()
  * @method static string[] getModifiedNames()
  * @method static void setInitialValue(string $inputName, mixed $value)
- * @method static array getInitialValues()
+ * @method static array<string, mixed> getInitialValues()
  *
  * @see \CraftCms\Cms\View\DeltaRegistry
  */
-final class DeltaRegistry extends Facade
+class DeltaRegistry extends Facade
 {
     protected static function getFacadeAccessor(): string
     {

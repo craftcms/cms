@@ -306,7 +306,7 @@ return [
     'Choose which table columns should be visible by default.' => 'Choose which table columns should be visible by default.',
     'Choose which table columns should be visible for this source by default.' => 'Choose which table columns should be visible for this source by default.',
     'Choose which user groups should have access to this source.' => 'Choose which user groups should have access to this source.',
-    'Choose which users must use two-step verification when accessing the control panel.' => 'Choose which users must use two-step verification when accessing the control panel.',
+    'Choose which users must use two-step verification to sign in.' => 'Choose which users must use two-step verification to sign in.',
     'Choose' => 'Choose',
     'City' => 'City',
     'City/Town' => 'City/Town',

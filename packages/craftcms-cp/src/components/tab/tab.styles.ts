@@ -26,7 +26,7 @@ export default css`
     &:after {
       background-color: var(
         --c-tab-border-active,
-        var(--c-color-accent-border-emphasis)
+        var(--c-color-accent-border-loud)
       );
     }
   }

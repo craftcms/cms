@@ -7,11 +7,11 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\RouteToken\RouteTokens;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 
-final readonly class HandleTokenRequest
+readonly class HandleTokenRequest
 {
     public const string TOKEN_KEY = 'craft.token';
 
@@ -40,7 +40,7 @@ final readonly class HandleTokenRequest
          * If we POST to a route with a valid token, we don't
          * need to verify the CSRF token as well.
          */
-        VerifyCsrfToken::except([
+        PreventRequestForgery::except([
             $request->path(),
         ]);
 

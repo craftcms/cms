@@ -11,7 +11,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 
-final class SiteGroup extends Component
+class SiteGroup extends Component
 {
     public ?int $id = null;
 

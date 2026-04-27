@@ -7,12 +7,12 @@ namespace CraftCms\Cms\Tests\TestClasses;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use Illuminate\Validation\Validator as LaravelValidator;
 use Override;
 
 #[Ruleset(TestEntryRules::class)]
-final class TestEntryWithAfterValidate extends Entry
+class TestEntryWithAfterValidate extends Entry
 {
     public bool $afterValidateCalled = false;
 
@@ -45,4 +45,4 @@ final class TestEntryWithAfterValidate extends Entry
     }
 }
 
-final class TestEntryRules extends ElementRules {}
+class TestEntryRules extends ElementRules {}

@@ -28,7 +28,7 @@ it('needs authentication for the routes', function (string $method, array $route
 
     $this->$method(action($route))->assertUnauthorized();
 
-    \CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
+    CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
 
     actingAs(User::find()->one());
 

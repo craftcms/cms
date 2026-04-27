@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use craft\gql\interfaces\Element as ElementGqlType;
+use CraftCms\Cms\Gql\Interfaces\Element as ElementGqlType;
 use GraphQL\Type\Definition\Type;
 use ReflectionClass;
 
@@ -23,18 +23,12 @@ trait HasGqlType
         return ElementGqlType::getType();
     }
 
-    /**
-     * @since 3.3.0
-     */
     public static function gqlScopesByContext(mixed $context): array
     {
         // Default to no scopes required
         return [];
     }
 
-    /**
-     * @since 3.3.0
-     */
     public function getGqlTypeName(): string
     {
         // Default to the short class name

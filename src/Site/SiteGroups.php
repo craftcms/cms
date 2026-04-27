@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Site;
 
-use craft\base\MemoizableArray;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -16,6 +15,7 @@ use CraftCms\Cms\Site\Events\SavedSiteGroup;
 use CraftCms\Cms\Site\Events\SavingSiteGroup;
 use CraftCms\Cms\Site\Models\SiteGroup as SiteGroupModel;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 #[Singleton]
-final class SiteGroups
+class SiteGroups
 {
     /**
      * @var MemoizableArray<SiteGroup>|null
@@ -58,7 +58,7 @@ final class SiteGroups
      */
     public function getAllGroups(): Collection
     {
-        return collect($this->groups()->all());
+        return $this->groups()->collect();
     }
 
     public function getGroupById(int $groupId): ?SiteGroup

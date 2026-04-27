@@ -24,7 +24,7 @@ use Stringable;
 
 use function CraftCms\Cms\t;
 
-final class UserGroup extends Component implements Actionable, Chippable, CpEditable, Describable, Grippable, Stringable
+class UserGroup extends Component implements Actionable, Chippable, CpEditable, Describable, Grippable, Stringable
 {
     #[AllowedInSandbox]
     public ?int $id = null;

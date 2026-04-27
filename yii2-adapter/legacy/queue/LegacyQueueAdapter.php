@@ -19,7 +19,7 @@ namespace craft\queue;
  *
  * @deprecated 6.0.0
  */
-final class LegacyQueueAdapter
+class LegacyQueueAdapter
 {
     public function __construct(
         private readonly LegacyJobWrapper $wrapper,

@@ -10,12 +10,12 @@ use Override;
 /**
  * @extends ElementRules<ContentBlock>
  */
-final class ContentBlockRules extends ElementRules
+class ContentBlockRules extends ElementRules
 {
     #[Override]
-    protected function defineRules(): array
+    public function rules(): array
     {
-        return array_merge(parent::defineRules(), [
+        return array_merge(parent::rules(), [
             'fieldId' => ['nullable', 'integer'],
             'ownerId' => ['nullable', 'integer'],
             'primaryOwnerId' => ['nullable', 'integer'],

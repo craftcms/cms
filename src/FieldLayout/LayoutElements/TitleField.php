@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use craft\base\ElementInterface;
-use craft\helpers\ElementHelper;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -17,22 +17,22 @@ use function CraftCms\Cms\t;
 
 class TitleField extends TextField
 {
-    #[\Override]
+    #[Override]
     public bool $mandatory = true;
 
-    #[\Override]
+    #[Override]
     public string $attribute = 'title';
 
-    #[\Override]
+    #[Override]
     public bool $translatable = true;
 
-    #[\Override]
+    #[Override]
     public ?int $maxlength = 255;
 
-    #[\Override]
+    #[Override]
     public bool $required = true;
 
-    #[\Override]
+    #[Override]
     public bool $autofocus = true;
 
     public function __construct($config = [])

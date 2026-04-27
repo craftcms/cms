@@ -39,7 +39,7 @@ function createTestTransform(array $overrides = []): ImageTransformData
 
     $transform = $service->getTransformByHandle($data['handle']);
     if (is_null($transform)) {
-        throw new \RuntimeException('Failed to create image transform test fixture.');
+        throw new RuntimeException('Failed to create image transform test fixture.');
     }
 
     return $transform;

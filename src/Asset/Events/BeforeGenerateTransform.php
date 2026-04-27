@@ -10,7 +10,7 @@ use CraftCms\Cms\Image\Data\ImageTransform;
 /**
  * @event BeforeGenerateTransform The event that is triggered before a transform is generated for an asset.
  */
-final class BeforeGenerateTransform
+class BeforeGenerateTransform
 {
     public function __construct(
         public Asset $asset,

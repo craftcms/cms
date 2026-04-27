@@ -9,7 +9,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 /**
  * @event DeletingVolume The event that is triggered before a volume is deleted.
  */
-final class DeletingVolume
+class DeletingVolume
 {
     public function __construct(
         public Volume $volume,

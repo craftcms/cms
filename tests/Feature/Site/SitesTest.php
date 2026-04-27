@@ -16,6 +16,7 @@ use CraftCms\Cms\Site\Models\SiteGroup;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Sites as SitesFacade;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
@@ -91,6 +92,19 @@ it('can set the current site by id', function () {
     expect($this->sites->getCurrentSite()->id)->toBe($otherSite->id);
 });
 
+it('can normalize the request path for a path-based site', function () {
+    $site = Site::factory()->create([
+        'baseUrl' => 'https://localhost/fr',
+    ]);
+
+    $this->sites->refreshSites();
+    $this->sites->setCurrentSite($site->handle);
+
+    $request = Request::create('https://localhost/fr/news/story');
+
+    expect($this->sites->getRequestPath($request))->toBe('news/story');
+});
+
 it('can get the primary site', function () {
     expect($this->sites->getPrimarySite()->id)->toBe(Site::first()->id);
 });
@@ -130,24 +144,33 @@ it('can get sites by group id', function () {
     expect($this->sites->getSitesByGroupId(999))->toBeEmpty();
     expect($this->sites->getEditableSitesByGroupId(999))->toBeEmpty();
 
+    $siteGroup = SiteGroup::factory()->create();
+
     Site::factory()->create([
-        'groupId' => 1,
+        'groupId' => $siteGroup->id,
     ]);
 
-    expect($this->sites->getSitesByGroupId(1))->toHaveCount(1);
-    expect($this->sites->getEditableSitesByGroupId(1))->toHaveCount(1);
+    expect($this->sites->getSitesByGroupId($siteGroup->id))->toHaveCount(1);
+    expect($this->sites->getEditableSitesByGroupId($siteGroup->id))->toBeEmpty();
+
+    actingAs(User::find()->one());
+    $this->sites->refreshSites();
+
+    expect($this->sites->getEditableSitesByGroupId($siteGroup->id))->toHaveCount(1);
 });
 
 it('can get total amount of sites', function () {
-    expect($this->sites->getTotalSites())->toBe(1);
+    $initialCount = $this->sites->getTotalSites();
+
+    expect($initialCount)->toBe(1);
 
     Site::factory()->create();
 
-    expect($this->sites->getTotalSites())->toBe(1);
+    expect($this->sites->getTotalSites())->toBe($initialCount + 1);
 
     SitesFacade::refreshSites();
 
-    expect($this->sites->getTotalSites())->toBe(2);
+    expect($this->sites->getTotalSites())->toBe($initialCount + 1);
 });
 
 it('can get sites by id', function () {

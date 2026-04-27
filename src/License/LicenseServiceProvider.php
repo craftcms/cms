@@ -6,7 +6,7 @@ namespace CraftCms\Cms\License;
 
 use craft\helpers\App;
 use CraftCms\Cms\Support\Env;
-use Illuminate\Support\Facades\File;
+use CraftCms\Cms\Support\File;
 use Illuminate\Support\ServiceProvider;
 
 class LicenseServiceProvider extends ServiceProvider

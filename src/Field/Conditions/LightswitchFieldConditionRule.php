@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Field\Conditions;
 use CraftCms\Cms\Condition\BaseLightswitchConditionRule;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Lightswitch;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 class LightswitchFieldConditionRule extends BaseLightswitchConditionRule implements FieldConditionRuleInterface
 {
@@ -17,7 +17,7 @@ class LightswitchFieldConditionRule extends BaseLightswitchConditionRule impleme
     protected function inputHtml(): string
     {
         if (! $this->field() instanceof Lightswitch) {
-            throw new InvalidConfigException;
+            throw new RuntimeException;
         }
 
         return parent::inputHtml();

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use craft\base\ElementInterface;
-use craft\helpers\Cp;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Html\PreviewHtml;
+use CraftCms\Cms\Cp\Html\StatusHtml;
+use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -17,16 +19,20 @@ use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Translation\Locale;
+use DateTime;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Stringable;
+use Twig\Markup;
 
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final readonly class ElementAttributeRenderer
+readonly class ElementAttributeRenderer
 {
     public function __construct(
         private Fields $fields,
@@ -54,7 +60,7 @@ final readonly class ElementAttributeRenderer
             'uid' => $element->getCanonicalUid(),
             'ancestors' => $this->renderAncestorsAttribute($element),
             'parent' => $this->renderParentAttribute($element),
-            'status' => Cp::componentStatusLabelHtml($element),
+            'status' => app(StatusHtml::class)->componentStatusLabelHtml($element),
             'link' => $this->renderLinkAttribute($element),
             'uri' => $this->renderUriAttribute($element),
             'slug' => $this->renderSlugAttribute($element),
@@ -117,6 +123,68 @@ final readonly class ElementAttributeRenderer
         return $this->render($element, $attribute);
     }
 
+    public function attributeHtml(mixed $value): string
+    {
+        if ($value instanceof DateTime) {
+            $formatter = I18N::getFormatter();
+
+            return Html::tag('span', $formatter->asTimestamp($value, Locale::LENGTH_SHORT), [
+                'title' => $formatter->asDatetime($value, Locale::LENGTH_SHORT),
+            ]);
+        }
+
+        if (is_bool($value)) {
+            if (! $value) {
+                return '';
+            }
+
+            return Html::tag('span', '', [
+                'class' => 'checkbox-icon',
+                'role' => 'img',
+                'title' => t('Enabled'),
+                'aria' => [
+                    'label' => t('Enabled'),
+                ],
+            ]);
+        }
+
+        if ($value instanceof Markup) {
+            return (string) $value;
+        }
+
+        if (is_object($value) && ! $value instanceof Stringable) {
+            return '';
+        }
+
+        return Html::encode(strip_tags((string) $value));
+    }
+
+    public function linkAttributeHtml(?string $url): string
+    {
+        return Html::beginTag('a', [
+            'href' => $url,
+            'rel' => 'noopener',
+            'target' => '_blank',
+            'title' => t('Visit webpage'),
+            'aria-label' => t('View'),
+        ]).
+            Html::tag('span', Icons::svg('world'), [
+                'class' => ['cp-icon', 'small', 'inline-flex'],
+            ]).
+            Html::endTag('a');
+    }
+
+    public function uriAttributeHtml(?string $value, ?string $url): string
+    {
+        return Html::a(Html::tag('span', $value, ['dir' => 'ltr']), $url, [
+            'href' => $url,
+            'rel' => 'noopener',
+            'target' => '_blank',
+            'class' => 'go',
+            'title' => t('Visit webpage'),
+        ]);
+    }
+
     private function getSourceElement(ElementInterface $element): ElementInterface
     {
         return $element->isProvisionalDraft ? $element->getCanonical() : $element;
@@ -132,7 +200,7 @@ final readonly class ElementAttributeRenderer
 
         $html = Html::beginTag('ul', ['class' => 'path']);
         foreach ($ancestors as $ancestor) {
-            $html .= Html::tag('li', Cp::elementChipHtml($ancestor));
+            $html .= Html::tag('li', app(ElementHtml::class)->elementChipHtml($ancestor));
         }
 
         return $html.Html::endTag('ul');
@@ -142,7 +210,7 @@ final readonly class ElementAttributeRenderer
     {
         $parent = $this->getSourceElement($element)->getParent();
 
-        return $parent ? Cp::elementChipHtml($parent) : '';
+        return $parent ? app(ElementHtml::class)->elementChipHtml($parent) : '';
     }
 
     private function renderLinkAttribute(ElementInterface $element): string
@@ -155,7 +223,7 @@ final readonly class ElementAttributeRenderer
 
         $url = $sourceElement->getUrl();
 
-        return $url !== null ? ElementHelper::linkAttributeHtml($url) : '';
+        return $url !== null ? $this->linkAttributeHtml($url) : '';
     }
 
     private function renderUriAttribute(ElementInterface $element): string
@@ -191,7 +259,7 @@ final readonly class ElementAttributeRenderer
             $value = str_replace($find, $replace, $sourceElement->uri);
         }
 
-        return ElementHelper::uriAttributeHtml($value, $url);
+        return $this->uriAttributeHtml($value, $url);
     }
 
     private function renderSlugAttribute(ElementInterface $element): string
@@ -220,7 +288,7 @@ final readonly class ElementAttributeRenderer
 
         $creator = $revision->getRevisionCreator();
 
-        return $creator ? Cp::elementChipHtml($creator) : '';
+        return $creator ? app(ElementHtml::class)->elementChipHtml($creator) : '';
     }
 
     private function renderDraftsAttribute(ElementInterface $element): string
@@ -238,7 +306,7 @@ final readonly class ElementAttributeRenderer
             $draft->setUiLabel($draft->draftName);
         }
 
-        return Cp::elementPreviewHtml(
+        return app(PreviewHtml::class)->elementPreviewHtml(
             $drafts,
             showThumb: false,
             showDraftName: false,
@@ -279,7 +347,7 @@ final readonly class ElementAttributeRenderer
             return '';
         }
 
-        return ElementHelper::attributeHtml($element->$attribute);
+        return $this->attributeHtml($element->$attribute);
     }
 
     private function renderContentBlockAttribute(ElementInterface $element, string $attribute): string|Stringable

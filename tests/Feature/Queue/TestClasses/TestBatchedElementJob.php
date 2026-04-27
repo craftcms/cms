@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Tests\Feature\Queue\TestClasses;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Queue\BatchedElementJob;
 
-final class TestBatchedElementJob extends BatchedElementJob
+class TestBatchedElementJob extends BatchedElementJob
 {
     protected ?string $description = 'Test Element Job';
 

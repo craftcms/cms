@@ -20,9 +20,9 @@ export default class CraftSelectedFileList extends LionSelectedFileList {
           align-items: center;
           gap: var(--c-spacing-sm);
           padding: var(--c-spacing-sm);
-          border: 1px solid var(--c-color-neutral-border-subtle);
+          border: 1px solid var(--c-color-neutral-border-quiet);
           border-radius: var(--c-radius-sm);
-          background-color: var(--c-bg-surface);
+          background-color: var(--c-surface-default);
         }
 
         .file-name {

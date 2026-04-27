@@ -10,12 +10,13 @@ namespace craft\controllers;
 use Craft;
 use craft\elements\Tag;
 use craft\helpers\Db;
-use craft\helpers\UrlHelper;
 use craft\models\TagGroup;
 use craft\web\Controller;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Search;
+use CraftCms\Cms\Support\Url;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -91,11 +92,11 @@ class TagsController extends Controller
         $crumbs = [
             [
                 'label' => t('Settings'),
-                'url' => UrlHelper::url('settings'),
+                'url' => Url::url('settings'),
             ],
             [
                 'label' => t('Tags', category: 'yii2-adapter'),
-                'url' => UrlHelper::url('settings/tags'),
+                'url' => Url::url('settings/tags'),
             ],
         ];
 
@@ -264,7 +265,7 @@ class TagsController extends Controller
         $tag->title = trim($this->request->getRequiredBodyParam('title'));
 
         // Don't validate required custom fields
-        if (!Craft::$app->getElements()->saveElement($tag)) {
+        if (!Elements::saveElement($tag)) {
             return $this->asFailure();
         }
 

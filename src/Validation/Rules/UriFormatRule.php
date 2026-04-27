@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Validation\Rules;
 
 use Closure;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\ElementHelper;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 use function CraftCms\Cms\t;
 
-final class UriFormatRule implements ValidationRule
+class UriFormatRule implements ValidationRule
 {
     public function __construct(
         /**

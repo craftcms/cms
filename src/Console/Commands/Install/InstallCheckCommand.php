@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Console\Commands\Install;
 use CraftCms\Cms\Cms;
 use Illuminate\Console\Command;
 
-final class InstallCheckCommand extends Command
+class InstallCheckCommand extends Command
 {
     #[\Override]
     protected $signature = 'craft:install:check';

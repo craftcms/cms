@@ -1,66 +1,15 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\elements\actions;
 
-use craft\base\ElementAction;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use function CraftCms\Cms\t;
-
-/**
- * EditImage represents an Edit Image action
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-class EditImage extends ElementAction
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @var string The trigger label
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Actions\EditImage} instead.
      */
-    public string $label;
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
+    class EditImage extends \CraftCms\Cms\Asset\Actions\EditImage
     {
-        if (!isset($this->label)) {
-            $this->label = t('Edit Image');
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerLabel(): string
-    {
-        return $this->label;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerHtml(): ?string
-    {
-        HtmlStack::jsWithVars(fn($type) => <<<JS
-(() => {
-    new Craft.ElementActionTrigger({
-        type: $type,
-        bulk: false,
-        validateSelection: (selectedItems, elementIndex) => Garnish.hasAttr(selectedItems.find('.element'), 'data-editable-image'),
-        activate: (selectedItems, elementIndex) => {
-            const \$element = selectedItems.find('.element:first');
-            new Craft.AssetImageEditor(\$element.data('id'));
-        },
-    });
-})();
-JS, [static::class]);
-
-        return null;
     }
 }
+
+class_alias(\CraftCms\Cms\Asset\Actions\EditImage::class, EditImage::class);

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Events;
 
-use craft\base\ElementInterface;
-use craft\elements\db\EagerLoadPlan;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Shared\Concerns\HandleableEvent;
 
 /**
@@ -14,7 +14,7 @@ use CraftCms\Cms\Shared\Concerns\HandleableEvent;
  * Set `handled` to `true` to prevent the elements from getting stored to the
  * private `$_eagerLoadedElements` array.
  */
-final class SetEagerLoadedElements
+class SetEagerLoadedElements
 {
     use HandleableEvent;
 

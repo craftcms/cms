@@ -12,4 +12,4 @@ use Attribute;
  * @since 5.9.0
  */
 #[Attribute]
-final class AllowedInSandbox {}
+class AllowedInSandbox {}

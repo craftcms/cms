@@ -14,7 +14,7 @@ use Illuminate\Contracts\Console\PromptsForMissingInput;
 
 use function Laravel\Prompts\multiselect;
 
-final class Remove2faCommand extends Command implements PromptsForMissingInput
+class Remove2faCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
     use PromptsForMissingUser;

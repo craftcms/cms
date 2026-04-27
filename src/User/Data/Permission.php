@@ -7,7 +7,7 @@ namespace CraftCms\Cms\User\Data;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 
-final class Permission implements Arrayable
+class Permission implements Arrayable
 {
     public function __construct(
         public string $key,

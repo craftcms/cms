@@ -9,10 +9,12 @@ use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
 use CraftCms\Cms\Filesystem\Events\RegisterFilesystemTypes;
 use CraftCms\Cms\Filesystem\Filesystems;
+use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
+use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Filesystems as FilesystemsFacade;
 use Illuminate\Support\Collection;
@@ -147,7 +149,7 @@ it('resolves a disk: prefixed handle to a DiskFilesystem', function () {
 
     $fs = $this->service->resolve('disk:resolve-disk');
 
-    expect($fs)->toBeInstanceOf(\CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem::class)
+    expect($fs)->toBeInstanceOf(DiskFilesystem::class)
         ->and($fs->disk)->toBe('resolve-disk');
 });
 
@@ -165,7 +167,7 @@ it('resolves a Craft filesystem handle through resolve()', function () {
     $fs = $this->service->resolve('resolve-craft-handle');
 
     expect($fs)->toBeInstanceOf(FsInterface::class)
-        ->and($fs)->not->toBeInstanceOf(\CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem::class)
+        ->and($fs)->not->toBeInstanceOf(DiskFilesystem::class)
         ->and($fs->handle)->toBe('resolve-craft-handle');
 });
 
@@ -177,7 +179,7 @@ it('falls back to a plain Laravel disk name when no Craft filesystem matches', f
 
     $fs = $this->service->resolve('plain-laravel-disk');
 
-    expect($fs)->toBeInstanceOf(\CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem::class)
+    expect($fs)->toBeInstanceOf(DiskFilesystem::class)
         ->and($fs->disk)->toBe('plain-laravel-disk');
 });
 
@@ -223,7 +225,7 @@ it('registers a single disk when handleChangedFilesystem receives a specific han
 
     $newValue = [
         'name' => 'Single Register',
-        'type' => \CraftCms\Cms\Filesystem\Filesystems\Local::class,
+        'type' => Filesystems\Local::class,
         'hasUrls' => true,
         'url' => 'https://cdn.example.test/single/',
         'settings' => [
@@ -233,7 +235,7 @@ it('registers a single disk when handleChangedFilesystem receives a specific han
 
     app(ProjectConfig::class)->set('fs.single-register', $newValue);
 
-    $event = new \CraftCms\Cms\ProjectConfig\Events\ItemUpdated(
+    $event = new ItemUpdated(
         path: 'fs.single-register',
         newValue: $newValue,
         tokenMatches: ['single-register'],

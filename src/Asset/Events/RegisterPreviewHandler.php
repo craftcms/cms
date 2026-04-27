@@ -11,7 +11,7 @@ use CraftCms\Cms\Shared\Concerns\HandleableEvent;
 /**
  * @event RegisterPreviewHandler The event that is triggered when determining the preview handler for an asset.
  */
-final class RegisterPreviewHandler
+class RegisterPreviewHandler
 {
     use HandleableEvent;
 

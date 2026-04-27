@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -7,15 +8,11 @@
 
 namespace craft\fields;
 
-/** @phpstan-ignore-next-line **/
-if (false) {
-    /**
-     * @since 5.8.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\ContentBlock} instead.
-     */
-    class ContentBlock
-    {
-    }
+/**
+ * @since 5.8.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\ContentBlock} instead.
+ */
+class ContentBlock extends \CraftCms\Cms\Field\ContentBlock
+{
+    use \craft\base\LegacyEventConstants;
 }
-
-class_alias(\CraftCms\Cms\Field\ContentBlock::class, ContentBlock::class);

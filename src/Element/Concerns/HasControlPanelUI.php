@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use Craft;
-use craft\base\NestedElementInterface;
-use craft\controllers\ElementsController;
-use craft\helpers\Cp;
-use craft\helpers\ElementHelper;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Html\MenuHtml;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\DefineActionMenuItems;
 use CraftCms\Cms\Element\Events\DefineAdditionalButtons;
 use CraftCms\Cms\Element\Events\DefineAltActions;
@@ -19,6 +19,7 @@ use CraftCms\Cms\Element\Events\DefineMetadata;
 use CraftCms\Cms\Element\Events\DefineMetaFieldsHtml;
 use CraftCms\Cms\Element\Events\DefineSidebarHtml;
 use CraftCms\Cms\Element\Events\RegisterHtmlAttributes;
+use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
@@ -28,9 +29,9 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Translation\Formatter;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Stringable;
-use yii\web\Response;
+use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
@@ -64,7 +65,7 @@ trait HasControlPanelUI
     /**
      * Performs any action after the element's editor is fully ready.
      */
-    public function prepareEditScreen(Response|CpScreenResponse $response, string $containerId): void {}
+    public function prepareEditScreen(Response|CpScreenResponse|\yii\web\Response $response, string $containerId): void {}
 
     public function getAdditionalButtons(): string|Stringable
     {
@@ -76,8 +77,7 @@ trait HasControlPanelUI
     public function getAltActions(): array
     {
         $isUnpublishedDraft = $this->getIsUnpublishedDraft();
-        $elementsService = Craft::$app->getElements();
-        $canSaveCanonical = $elementsService->canSaveCanonical($this);
+        $canSaveCanonical = Gate::check('saveCanonical', $this);
 
         $altActions = [
             [
@@ -93,7 +93,7 @@ trait HasControlPanelUI
 
         if ($this->getIsCanonical() || $this->isProvisionalDraft) {
             $newElement = $this->createAnother();
-            if ($newElement && $elementsService->canSave($newElement)) {
+            if ($newElement && Gate::check('save', $newElement)) {
                 $altActions[] = [
                     'label' => $isUnpublishedDraft && $canSaveCanonical
                         ? t('Create and add another')
@@ -116,7 +116,7 @@ trait HasControlPanelUI
                 ];
             }
 
-            if (! $this->getIsRevision() && $elementsService->canDuplicateAsDraft($this)) {
+            if (! $this->getIsRevision() && Gate::check('duplicateAsDraft', $this)) {
                 $altActions[] = [
                     'label' => t('Save as a new {type}', [
                         'type' => static::lowerDisplayName(),
@@ -151,23 +151,20 @@ trait HasControlPanelUI
     /**
      * Returns action menu items for the element's edit screens.
      *
-     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
+     * See [[\CraftCms\Cms\Cp\Html\MenuHtml::disclosureMenu()]] for documentation on supported item properties.
      *
      * @see getActionMenuItems()
-     * @see Cp::disclosureMenu()
-     * @since 5.0.0
+     * @see MenuHtml::disclosureMenu()
      */
     protected function safeActionMenuItems(): array
     {
         $items = [];
-        $elementsService = Craft::$app->getElements();
 
         // Validate
         if (
             ! $this->getIsRevision() &&
-            ! Craft::$app->getRequest()->getHeaders()->has('X-Craft-Container-Id') &&
-            Craft::$app->controller instanceof ElementsController &&
-            Craft::$app->controller->element === $this
+            ! request()->headers->has('X-Craft-Container-Id') &&
+            app(ElementRequest::class)->element === $this
         ) {
             $validateId = sprintf('action-validate-%s', mt_rand());
             $items[] = [
@@ -220,7 +217,7 @@ JS, [
             ];
         }
 
-        if ($elementsService->canView($this)) {
+        if (Gate::check('view', $this)) {
             // Edit
             $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [
@@ -248,7 +245,7 @@ JS, [
             ]);
 
             // Copy
-            if (! $this->getIsRevision() && $elementsService->canCopy($this)) {
+            if (! $this->getIsRevision() && Gate::check('copy', $this)) {
                 $copyId = sprintf('action-copy-%s', mt_rand());
                 $items[] = [
                     'id' => $copyId,
@@ -286,20 +283,16 @@ JS, [
     /**
      * Returns destructive action menu items for the element's edit screens.
      *
-     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
+     * See [[\CraftCms\Cms\Cp\Html\MenuHtml::disclosureMenu()]] for documentation on supported item properties.
      *
      * `'destructive' => true` will be automatically added to all returned items.
      *
      * @see getActionMenuItems()
-     * @see Cp::disclosureMenu()
-     * @since 5.0.0
+     * @see MenuHtml::disclosureMenu()
      */
     protected function destructiveActionMenuItems(): array
     {
         $items = [];
-
-        $elementsService = Craft::$app->getElements();
-        $user = Auth::user();
 
         $isCanonical = $this->getIsCanonical();
         $isDraft = $this->getIsDraft();
@@ -318,13 +311,13 @@ JS, [
             default => false,
         };
 
-        $canDeleteDraft = $isDraft && ! $this->isProvisionalDraft && $elementsService->canDelete($this, $user);
-        $canDeleteCanonical = $elementsService->canDelete($canonical, $user);
-        $canDeleteCanonicalForSite = $elementsService->canDeleteForSite($canonical, $user);
+        $canDeleteDraft = $isDraft && ! $this->isProvisionalDraft && Gate::check('delete', $this);
+        $canDeleteCanonical = Gate::check('delete', $canonical);
+        $canDeleteCanonicalForSite = Gate::check('deleteForSite', $canonical);
         $canDeleteForSite = (
             ElementHelper::isMultiSite($this) &&
             (($isCurrent && $canDeleteCanonicalForSite) || ($canDeleteDraft && $isNewSite)) &&
-            $elementsService->canDeleteForSite($this, $user)
+            Gate::check('deleteForSite', $this)
         );
 
         if ($isCurrent) {
@@ -475,7 +468,6 @@ JS, [
      * @return string The HTML that should be shown for a given attribute in table and card views.
      *
      * @see getAttributeHtml()
-     * @since 5.0.0
      */
     protected function attributeHtml(string $attribute): string|Stringable
     {
@@ -489,7 +481,6 @@ JS, [
      * @return string The HTML that should be shown for a given attribute's inline input.
      *
      * @see getInlineAttributeInputHtml()
-     * @since 5.0.0
      */
     protected function inlineAttributeInputHtml(string $attribute): string|Stringable
     {
@@ -525,8 +516,6 @@ JS, [
      * Returns the HTML for any meta fields that should be shown within the editor sidebar.
      *
      * @param  bool  $static  Whether the fields should be static (non-interactive)
-     *
-     * @since 3.7.0
      */
     protected function metaFieldsHtml(bool $static): string|Stringable
     {
@@ -539,14 +528,12 @@ JS, [
      * Returns the HTML for the element's Slug field.
      *
      * @param  bool  $static  Whether the fields should be static (non-interactive)
-     *
-     * @since 3.7.0
      */
     protected function slugFieldHtml(bool $static): string|Stringable
     {
         $slug = isset($this->slug) && ! ElementHelper::isTempSlug($this->slug) ? $this->slug : null;
 
-        return Cp::textFieldHtml([
+        return FormFields::textFieldHtml([
             'status' => $this->getAttributeStatus('slug'),
             'label' => t('Slug'),
             'siteId' => $this->siteId,
@@ -565,9 +552,7 @@ JS, [
     /**
      * Returns whether the Status field should be shown for this element.
      *
-     *  If set to `false`, the element's status can't be updated via edit forms, the Set Status action, or `resave/*` commands.
-     *
-     * @since 4.5.0
+     * If set to `false`, the element's status can't be updated via edit forms, the Set Status action, or `resave/*` commands.
      */
     protected function showStatusField(): bool
     {
@@ -576,8 +561,6 @@ JS, [
 
     /**
      * Returns the status field HTML for the sidebar.
-     *
-     * @since 4.0.0
      */
     protected function statusFieldHtml(): string|Stringable
     {
@@ -604,7 +587,7 @@ JS, [
                 ])
                 : '';
 
-            $statusField = Cp::lightswitchFieldHtml([
+            $statusField = FormFields::lightswitchFieldHtml([
                 'fieldClass' => "enabled-for-site-$this->siteId-field",
                 'label' => t($this->getSite()->getName(), category: 'site'),
                 'headingSuffix' => $expandStatusBtn,
@@ -613,7 +596,7 @@ JS, [
                 'status' => $this->getAttributeStatus('enabled'),
             ]);
         } else {
-            $statusField = Cp::lightswitchFieldHtml([
+            $statusField = FormFields::lightswitchFieldHtml([
                 'id' => 'enabled',
                 'label' => t('Enabled'),
                 'name' => 'enabled',
@@ -631,13 +614,11 @@ JS, [
 
     /**
      * Returns the notes field HTML for the sidebar.
-     *
-     * @since 4.0.0
      */
     protected function notesFieldHtml(): string|Stringable
     {
         // todo: this should accept a $static arg
-        return Cp::textareaFieldHtml([
+        return FormFields::textareaFieldHtml([
             'label' => t('Notes about your changes'),
             'labelClass' => 'h6',
             'class' => ['nicetext', 'notes'],
@@ -656,8 +637,6 @@ JS, [
      * Returns whether the element has a field layout with at least one tab.
      *
      * @return bool Returns whether the element has a field layout with at least one tab.
-     *
-     * @since 3.7.0
      */
     protected function hasFieldLayout(): bool
     {
@@ -728,8 +707,6 @@ JS, [
      *
      * @return array The data, with keys representing the labels. The values can either be strings or callables.
      *               If a value is `false`, it will be omitted.
-     *
-     * @since 3.7.0
      */
     protected function metadata(): array
     {
@@ -749,7 +726,7 @@ JS, [
             return [
                 ...$owner->getCrumbs(),
                 [
-                    'html' => Cp::elementChipHtml($owner, [
+                    'html' => app(ElementHtml::class)->elementChipHtml($owner, [
                         'showDraftName' => false,
                         'class' => 'chromeless',
                         'hyperlink' => true,
@@ -764,7 +741,6 @@ JS, [
     /**
      * Returns the breadcrumbs that lead up to the element.
      *
-     * @since 5.0.0
      * @see getCrumbs()
      */
     protected function crumbs(): array
@@ -794,8 +770,6 @@ JS, [
 
     /**
      * Returns what the element should be called within the control panel.
-     *
-     * @since 3.6.4
      */
     protected function uiLabel(): ?string
     {

@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
-use Craft;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Events\SettingPassword;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
+use CraftCms\Cms\User\Validation\UserRules;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password as PasswordFacade;
@@ -22,7 +23,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-final readonly class SetPasswordController extends AuthenticationController
+readonly class SetPasswordController extends AuthenticationController
 {
     public function show(Request $request, Auth $auth): Response|View
     {
@@ -47,7 +48,7 @@ final readonly class SetPasswordController extends AuthenticationController
         ]);
     }
 
-    public function store(Request $request, Users $users): Response|View
+    public function store(Request $request, Users $users, Elements $elements): Response|View
     {
         $request->validate([
             'code' => ['required'],
@@ -70,11 +71,11 @@ final readonly class SetPasswordController extends AuthenticationController
                     'loginName' => $user->email,
                     'password' => $request->input('newPassword'),
                 ],
-                function (User $user, string $password) {
+                function (User $user, string $password) use ($elements) {
                     $user->newPassword = $password;
-                    $user->setScenario(User::SCENARIO_PASSWORD);
+                    $user->ruleset->useScenario(UserRules::SCENARIO_PASSWORD);
 
-                    if (! Craft::$app->getElements()->saveElement($user)) {
+                    if (! $elements->saveElement($user)) {
                         throw new RuntimeException('Couldn’t update password.');
                     }
                 }
@@ -127,11 +128,11 @@ final readonly class SetPasswordController extends AuthenticationController
 
         if ($request->isCpRequest()) {
             // Send them to the control panel login page by default
-            $url = UrlHelper::cpUrl(CpAuthPath::Login->value);
+            $url = Url::cpUrl(CpAuthPath::Login->value);
         } else {
             // Send them to the 'setPasswordSuccessPath' by default
             $setPasswordSuccessPath = Cms::config()->getSetPasswordSuccessPath();
-            $url = UrlHelper::siteUrl($setPasswordSuccessPath);
+            $url = Url::siteUrl($setPasswordSuccessPath);
         }
 
         return $this->redirectToPostedUrl($user, $url);

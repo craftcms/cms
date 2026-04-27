@@ -14,7 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-final readonly class SystemMessagesController
+readonly class SystemMessagesController
 {
     use RespondsWithFlash;
 

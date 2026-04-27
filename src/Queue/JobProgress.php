@@ -9,6 +9,7 @@ use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\Models\JobProgress as JobProgressModel;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Queue\ClearableQueue;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
@@ -18,7 +19,7 @@ use RuntimeException;
  * Service for tracking job progress and status.
  */
 #[Singleton]
-final readonly class JobProgress
+readonly class JobProgress
 {
     public function queued(string $uid, string $description, ?int $delay = null): void
     {
@@ -70,9 +71,9 @@ final readonly class JobProgress
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Builder<JobProgressModel>
+     * @return Builder<JobProgressModel>
      */
-    public function jobsQuery(): \Illuminate\Database\Eloquent\Builder
+    public function jobsQuery(): Builder
     {
         $delay = match (DB::connection()->getDriverName()) {
             'mysql' => 'GREATEST(?, UNIX_TIMESTAMP(dateCreated) + delay)',
@@ -88,8 +89,8 @@ final readonly class JobProgress
             ->orderByRaw('CASE WHEN status = ? THEN 1 ELSE 0 END DESC', [JobStatus::Reserved->value])
             // Pending jobs go second
             ->orderByRaw('CASE WHEN status = ? THEN 1 ELSE 0 END DESC', [JobStatus::Pending->value])
-            // Then by now or dateCreated + delay
-            ->orderByRaw($delay, [now()->getTimestamp()])
+            // Then by now or dateCreated + delay, with furthest delayed jobs first
+            ->orderByRaw("$delay DESC", [now()->getTimestamp()])
             // Lastly by dateCreated
             ->orderBy('dateCreated');
     }
@@ -129,6 +130,10 @@ final readonly class JobProgress
      */
     public function getActive(): Collection
     {
+        if (! Cms::isInstalled()) {
+            return collect();
+        }
+
         return JobProgressModel::query()
             ->whereIn('status', [
                 JobStatus::Pending,

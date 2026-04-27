@@ -12,7 +12,7 @@ use CraftCms\Cms\User\Elements\User;
  *
  * You may set [[$isValid]] to `false` to prevent the user from getting unlocked.
  */
-final class UnlockingUser extends UserEvent
+class UnlockingUser extends UserEvent
 {
     use ValidatableEvent;
 }

@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Component\Events;
 
 use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
-final class ComponentEvent
+class ComponentEvent
 {
     use ValidatableEvent;
 

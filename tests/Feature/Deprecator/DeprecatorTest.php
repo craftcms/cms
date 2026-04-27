@@ -17,7 +17,7 @@ beforeEach(function () {
 });
 
 it('has a working facade', function () {
-    expect(\CraftCms\Cms\Support\Facades\Deprecator::getTotalLogs())->toBe(0);
+    expect(CraftCms\Cms\Support\Facades\Deprecator::getTotalLogs())->toBe(0);
 });
 
 it('can log deprecations to the log', function () {

@@ -9,7 +9,7 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 /**
  * @event DeletingFolders The event that is triggered before folders are deleted.
  */
-final class DeletingFolders
+class DeletingFolders
 {
     use ValidatableEvent;
 

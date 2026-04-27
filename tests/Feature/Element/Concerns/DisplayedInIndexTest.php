@@ -7,8 +7,10 @@ use CraftCms\Cms\Element\Events\RegisterDefaultTableAttributes;
 use CraftCms\Cms\Element\Events\RegisterSortOptions;
 use CraftCms\Cms\Element\Events\RegisterTableAttributes;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ExcludeDescendantIdsExpression;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Event;
 
 /**
@@ -61,7 +63,7 @@ class TestEntryForDisplayedInIndex extends Entry
  */
 class TestEntryWithoutUris extends Entry
 {
-    #[\Override]
+    #[Override]
     public static function hasUris(): bool
     {
         return false;
@@ -73,7 +75,7 @@ class TestEntryWithoutUris extends Entry
  */
 class TestEntryWithoutStatuses extends Entry
 {
-    #[\Override]
+    #[Override]
     public static function hasStatuses(): bool
     {
         return false;
@@ -226,7 +228,7 @@ describe('sortOptions', function () {
 
         expect($complexOptions)->not->toBeEmpty();
 
-        $firstComplex = \Illuminate\Support\Arr::first($complexOptions);
+        $firstComplex = Arr::first($complexOptions);
         expect($firstComplex)->toHaveKey('label');
         expect($firstComplex)->toHaveKey('orderBy');
     });
@@ -254,7 +256,7 @@ describe('defineSortOptions', function () {
 
     test('section sort option has callable orderBy', function () {
         $options = TestEntryForDisplayedInIndex::exposeDefineSortOptions();
-        $sectionOption = \Illuminate\Support\Arr::first(array_filter($options, fn ($opt) => is_array($opt) && ($opt['attribute'] ?? null) === 'section')) ?? null;
+        $sectionOption = Arr::first(array_filter($options, fn ($opt) => is_array($opt) && ($opt['attribute'] ?? null) === 'section')) ?? null;
 
         expect($sectionOption)->not->toBeNull();
         expect($sectionOption['orderBy'])->toBeCallable();
@@ -262,7 +264,7 @@ describe('defineSortOptions', function () {
 
     test('entry type sort option has callable orderBy with database connection parameter', function () {
         $options = TestEntryForDisplayedInIndex::exposeDefineSortOptions();
-        $typeOption = \Illuminate\Support\Arr::first(array_filter($options, fn ($opt) => is_array($opt) && ($opt['attribute'] ?? null) === 'type')) ?? null;
+        $typeOption = Arr::first(array_filter($options, fn ($opt) => is_array($opt) && ($opt['attribute'] ?? null) === 'type')) ?? null;
 
         expect($typeOption)->not->toBeNull();
         expect($typeOption['orderBy'])->toBeCallable();
@@ -550,6 +552,22 @@ describe('indexElements', function () {
         $elements = TestEntryForDisplayedInIndex::exposeIndexElements($query, '*');
         expect($elements)->toBeArray();
         expect($elements)->toHaveCount(2);
+    });
+
+    test('removes exclude descendant ids expressions from subquery wheres', function () {
+        $query = entryQuery();
+        $excludeDescendantIdsExpression = new ExcludeDescendantIdsExpression([10, 11]);
+
+        $query
+            ->where($excludeDescendantIdsExpression)
+            ->where('elements.id', 1);
+
+        $method = new ReflectionMethod(Entry::class, 'elementQueryWithAllDescendants');
+
+        $result = $method->invoke(null, $query);
+
+        expect($result)->not->toBe($query);
+        expect($result->getQuery()->wheres)->not()->toContain($excludeDescendantIdsExpression);
     });
 });
 

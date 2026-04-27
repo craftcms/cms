@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Database;
 /**
  * This class provides constants for defining Craft’s database table names.
  */
-final readonly class Table
+readonly class Table
 {
     public const string ADDRESSES = 'addresses';
 

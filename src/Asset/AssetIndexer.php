@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
-use Craft;
-use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\Db as DbHelper;
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Asset\Data\AssetIndexEntry;
 use CraftCms\Cms\Asset\Data\IndexingSession;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\AssetNotIndexableException;
@@ -20,12 +17,16 @@ use CraftCms\Cms\Asset\Exceptions\MissingAssetException;
 use CraftCms\Cms\Asset\Exceptions\MissingVolumeFolderException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
 use CraftCms\Cms\Asset\Models\AssetIndexingSession as AssetIndexingSessionModel;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\ImageTransformHelper;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Generator;
@@ -43,15 +44,16 @@ use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
 #[Singleton]
-final class AssetIndexer
+class AssetIndexer
 {
     public Collection $existingIndexingSessions {
         get => $this->getExistingIndexingSessions();
     }
 
     public function __construct(
-        private readonly Volumes $volumes,
+        private readonly Elements $elements,
         private readonly Folders $folders,
+        private readonly Volumes $volumes,
     ) {}
 
     public function getIndexListOnVolume(Volume $volume, string $directory = ''): Generator
@@ -610,7 +612,7 @@ final class AssetIndexer
 
         /** @var Asset|null $asset */
         $asset = Asset::find()
-            ->filename(DbHelper::escapeParam($filename))
+            ->filename(Query::escapeParam($filename))
             ->folderId($folder->id)
             ->one();
 
@@ -630,14 +632,14 @@ final class AssetIndexer
         $asset->size = $indexEntry->size;
         $timeModified = $indexEntry->timestamp;
 
-        $asset->setScenario(Asset::SCENARIO_INDEX);
+        $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
 
         try {
             if ($isLocalFs) {
                 $asset->setMimeType($asset->getMimeType());
             }
 
-            if ($asset->kind === Asset::KIND_IMAGE) {
+            if ($asset->kind === FileKind::Image->value) {
                 $dimensions = null;
                 $tempPath = null;
 
@@ -663,7 +665,7 @@ final class AssetIndexer
                         AssetsHelper::downloadFile($volume->sourceDisk(), $indexEntry->uri, $tempPath);
                         $dimensions = ImageHelper::imageSize($tempPath);
 
-                        $asset->setMimeType(FileHelper::getMimeType($tempPath));
+                        $asset->setMimeType(File::getMimeType($tempPath));
                     }
                 }
 
@@ -672,18 +674,18 @@ final class AssetIndexer
                 $asset->setHeight($h);
                 $asset->dateModified = $timeModified;
 
-                Craft::$app->getElements()->saveElement($asset);
+                $this->elements->saveElement($asset);
 
                 $shouldCache = ! $isLocalFs && $cacheImages && Cms::config()->maxCachedCloudImageSize > 0;
 
                 if ($shouldCache && $tempPath) {
                     $targetPath = $asset->getImageTransformSourcePath();
                     ImageTransformHelper::storeLocalSource($tempPath, $targetPath);
-                    FileHelper::unlink($tempPath);
+                    File::delete($tempPath);
                 }
             } else {
                 $asset->dateModified = $timeModified;
-                Craft::$app->getElements()->saveElement($asset);
+                $this->elements->saveElement($asset);
             }
         } catch (Throwable $exception) {
             Log::info($exception->getMessage());

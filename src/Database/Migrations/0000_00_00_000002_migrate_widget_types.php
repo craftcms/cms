@@ -17,14 +17,14 @@ use Illuminate\Support\Facades\DB;
 return new class extends Migration
 {
     private array $map = [
-        CraftSupport::class => \CraftCms\Cms\Dashboard\Widgets\CraftSupport::class,
-        Feed::class => \CraftCms\Cms\Dashboard\Widgets\Feed::class,
-        MissingWidget::class => \CraftCms\Cms\Dashboard\Widgets\MissingWidget::class,
-        MyDrafts::class => \CraftCms\Cms\Dashboard\Widgets\MyDrafts::class,
-        NewUsers::class => \CraftCms\Cms\Dashboard\Widgets\NewUsers::class,
-        QuickPost::class => \CraftCms\Cms\Dashboard\Widgets\QuickPost::class,
-        RecentEntries::class => \CraftCms\Cms\Dashboard\Widgets\RecentEntries::class,
-        Updates::class => \CraftCms\Cms\Dashboard\Widgets\Updates::class,
+        CraftSupport::class => CraftCms\Cms\Dashboard\Widgets\CraftSupport::class,
+        Feed::class => CraftCms\Cms\Dashboard\Widgets\Feed::class,
+        MissingWidget::class => CraftCms\Cms\Dashboard\Widgets\MissingWidget::class,
+        MyDrafts::class => CraftCms\Cms\Dashboard\Widgets\MyDrafts::class,
+        NewUsers::class => CraftCms\Cms\Dashboard\Widgets\NewUsers::class,
+        QuickPost::class => CraftCms\Cms\Dashboard\Widgets\QuickPost::class,
+        RecentEntries::class => CraftCms\Cms\Dashboard\Widgets\RecentEntries::class,
+        Updates::class => CraftCms\Cms\Dashboard\Widgets\Updates::class,
     ];
 
     public function up(): void

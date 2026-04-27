@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Conditions;
 
-use craft\base\ElementInterface;
-use craft\helpers\Cp;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Condition\BaseNumberConditionRule;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Html;
@@ -17,7 +17,7 @@ use yii\base\InvalidValueException;
 
 use function CraftCms\Cms\t;
 
-final class FileSizeConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface
+class FileSizeConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface
 {
     public const string UNIT_B = 'B';
 
@@ -47,7 +47,7 @@ final class FileSizeConditionRule extends BaseNumberConditionRule implements Ele
         return Html::tag('div',
             parent::inputHtml().
             Html::hiddenLabel(t('Unit'), $unitId).
-            Cp::selectHtml([
+            FormFields::selectHtml([
                 'name' => 'unit',
                 'id' => $unitId,
                 'options' => [

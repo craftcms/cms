@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View\Hooks;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 
-final readonly class PrepareElementSourcesVariables
+readonly class PrepareElementSourcesVariables
 {
     public function __construct(
         private ElementSources $elementSources,

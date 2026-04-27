@@ -11,13 +11,23 @@ use CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
+use Override;
 
 /**
  * @extends ElementQuery<Address>
  */
-final class AddressQuery extends ElementQuery
+class AddressQuery extends ElementQuery
 {
     use QueriesNestedElements;
+
+    #[Override]
+    protected string $table = Table::ADDRESSES;
+
+    #[Override]
+    protected array $defaultOrderBy = [
+        'addresses.dateCreated' => SORT_DESC,
+        'addresses.id' => SORT_DESC,
+    ];
 
     /**
      * @var mixed The address countryCode(s) that the resulting address must be in.
@@ -318,8 +328,6 @@ final class AddressQuery extends ElementQuery
     {
         parent::__construct(Address::class, $config);
 
-        $this->joinElementTable(Table::ADDRESSES);
-
         $this->query->addSelect([
             'addresses.id as id',
             'addresses.fieldId as fieldId',
@@ -351,7 +359,7 @@ final class AddressQuery extends ElementQuery
                     throw new QueryAbortedException;
                 }
 
-                $addressQuery->subQuery->whereIn('addresses.primaryOwnerId', Arr::wrap($addressQuery->primaryOwnerId ?? $addressQuery->ownerId));
+                $addressQuery->whereIn('addresses.primaryOwnerId', Arr::wrap($addressQuery->primaryOwnerId ?? $addressQuery->ownerId));
             }
 
             foreach ([
@@ -374,7 +382,7 @@ final class AddressQuery extends ElementQuery
                     continue;
                 }
 
-                $addressQuery->subQuery->whereParam("addresses.$property", $addressQuery->$property);
+                $addressQuery->whereParam("addresses.$property", $addressQuery->$property);
             }
         });
     }
@@ -885,7 +893,7 @@ final class AddressQuery extends ElementQuery
         return $this;
     }
 
-    #[\Override]
+    #[Override]
     protected function fieldLayouts(): Collection
     {
         return new Collection([

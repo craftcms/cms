@@ -1,1 +1,1 @@
-import r from"./ru3.js";const t={...r};export{t as default};
+import e from"./ru3.js";var t={...e};export{t as default};

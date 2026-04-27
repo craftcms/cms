@@ -7,11 +7,10 @@ namespace CraftCms\Cms\Address\Validation;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Validation\ElementRules;
-use CraftCms\Cms\FieldLayout\LayoutElements\addresses\LatLongField;
-use CraftCms\Cms\FieldLayout\LayoutElements\addresses\OrganizationField;
-use CraftCms\Cms\FieldLayout\LayoutElements\addresses\OrganizationTaxIdField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Addresses\LatLongField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Addresses\OrganizationField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Addresses\OrganizationTaxIdField;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use CraftCms\Cms\FieldLayout\LayoutElements\FullNameField;
 use CraftCms\Cms\Support\Arr;
@@ -22,9 +21,9 @@ use Override;
 /**
  * @extends ElementRules<Address>
  *
- * @property Address $component
+ * @property Address $subject
  */
-final class AddressRules extends ElementRules
+class AddressRules extends ElementRules
 {
     /**
      * @var list<class-string<BaseNativeField>>
@@ -56,27 +55,27 @@ final class AddressRules extends ElementRules
     ];
 
     #[Override]
-    public function prepareForValidation(?array $attributeNames = null): void
+    public function prepareForValidation(): void
     {
-        parent::prepareForValidation($attributeNames);
+        parent::prepareForValidation();
 
-        $attributesToTrim = is_null($attributeNames)
+        $attributesToTrim = is_null($this->validationAttributes)
             ? self::TRIMMABLE_ATTRIBUTES
-            : array_intersect(self::TRIMMABLE_ATTRIBUTES, $attributeNames);
+            : array_intersect(self::TRIMMABLE_ATTRIBUTES, $this->validationAttributes);
 
         foreach ($attributesToTrim as $attribute) {
-            $value = $this->component->{$attribute};
+            $value = $this->subject->{$attribute};
 
             if (is_string($value)) {
-                $this->component->{$attribute} = trim($value);
+                $this->subject->{$attribute} = trim($value);
             }
         }
     }
 
     #[Override]
-    protected function defineRules(): array
+    public function rules(): array
     {
-        $rules = parent::defineRules();
+        $rules = parent::rules();
 
         $rules = $this->addAddressAttributeRules($rules);
         $rules = $this->addCountryCodeValidation($rules);
@@ -135,24 +134,24 @@ final class AddressRules extends ElementRules
 
     private function isRequiredByAddressFormat(string $attribute): bool
     {
-        if (! $this->component->inScenarios(Element::SCENARIO_LIVE)) {
+        if (! $this->inScenarios(self::SCENARIO_LIVE)) {
             return false;
         }
 
         $formatter = app(Addresses::class)
             ->getAddressFormatRepository()
-            ->get($this->component->countryCode);
+            ->get($this->subject->countryCode);
 
         return in_array($attribute, $formatter->getRequiredFields());
     }
 
     private function addFieldLayoutRequirements(array $rules): array
     {
-        $fieldLayout = $this->component->getFieldLayout();
+        $fieldLayout = $this->subject->getFieldLayout();
 
         foreach (self::REQUIRABLE_NATIVE_FIELDS as $fieldClass) {
             /** @var BaseNativeField|null $field */
-            $field = $fieldLayout->getFirstVisibleElementByType($fieldClass, $this->component);
+            $field = $fieldLayout->getFirstVisibleElementByType($fieldClass, $this->subject);
 
             if (! $field?->required) {
                 continue;
@@ -160,7 +159,7 @@ final class AddressRules extends ElementRules
 
             foreach ($this->resolveFieldAttributes($field) as $attribute) {
                 $rules[$attribute] ??= [];
-                $rules[$attribute][] = Rule::requiredIf($this->component->inScenarios(Element::SCENARIO_LIVE));
+                $rules[$attribute][] = Rule::requiredIf($this->inScenarios(self::SCENARIO_LIVE));
             }
         }
 
@@ -185,7 +184,7 @@ final class AddressRules extends ElementRules
 
     private function addCoordinateValidation(array $rules): array
     {
-        $coordinateScenarios = $this->component->inScenarios(Element::SCENARIO_LIVE, Element::SCENARIO_DEFAULT);
+        $coordinateScenarios = $this->inScenarios(self::SCENARIO_LIVE, self::SCENARIO_DEFAULT);
 
         $rules['latitude'][] = Rule::when($coordinateScenarios, [
             'numeric',

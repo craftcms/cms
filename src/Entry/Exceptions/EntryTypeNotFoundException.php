@@ -6,4 +6,4 @@ namespace CraftCms\Cms\Entry\Exceptions;
 
 use RuntimeException;
 
-final class EntryTypeNotFoundException extends RuntimeException {}
+class EntryTypeNotFoundException extends RuntimeException {}

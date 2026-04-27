@@ -12,7 +12,7 @@ use Override;
 use ReflectionProperty;
 use RuntimeException;
 
-final class Env extends \Illuminate\Support\Env
+class Env extends \Illuminate\Support\Env
 {
     /**
      * Remove a single key from the environment file.
@@ -48,6 +48,31 @@ final class Env extends \Illuminate\Support\Env
         }
 
         return $value;
+    }
+
+    /**
+     * Returns a config string value, falling back to environment variables when needed.
+     *
+     * @param  string  $key  Dot-notated config key (e.g. `mail.from.address`)
+     * @param  list<string>  $fallbackEnvs
+     */
+    public static function configValue(string $key, array $fallbackEnvs = []): ?string
+    {
+        $value = config($key);
+
+        if (is_string($value) && $value !== '') {
+            return $value;
+        }
+
+        foreach ($fallbackEnvs as $fallbackEnv) {
+            $value = self::get($fallbackEnv);
+
+            if (! is_null($value)) {
+                return (string) $value;
+            }
+        }
+
+        return null;
     }
 
     /**

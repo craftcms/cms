@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Validation\ComponentRules;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\Cms\Validation\Ruleset;
+use Illuminate\Validation\Validator;
 
 function createValidatableComponent(array $attributes, ?string $rulesetClass = null): Validatable
 {
@@ -23,49 +25,29 @@ function createValidatableComponent(array $attributes, ?string $rulesetClass = n
             $this->rulesetClass = $rulesetClass ?? TestRuleset::class;
         }
 
-        public function getRules(): array
-        {
-            return [];
-        }
-
-        public function getMessages(): array
-        {
-            return [];
-        }
-
         public function setAttributes(array $values, bool $safeOnly = true): void
         {
             $this->testAttributes = array_merge($this->testAttributes, $values);
         }
 
-        public function getAttributes(): array
+        public function validationData(): array
         {
             return $this->testAttributes;
         }
 
-        public function attributes(): array
-        {
-            return array_keys($this->testAttributes);
-        }
-
-        public function rulesClass(): string
+        public function ruleset(): string
         {
             return $this->rulesetClass;
         }
 
-        public function afterValidate(?\Illuminate\Validation\Validator $validator = null): void
+        public function afterValidate(?Validator $validator = null): void
         {
             $this->afterValidateCalled = true;
-        }
-
-        public function attributeLabels(): array
-        {
-            return [];
         }
     };
 }
 
-class TestRuleset extends Ruleset
+class TestRuleset extends ComponentRules
 {
     public bool $prepareForValidationCalled = false;
 
@@ -80,14 +62,15 @@ class TestRuleset extends Ruleset
         ];
     }
 
-    public function prepareForValidation(?array $attributeNames = null): void
+    #[Override]
+    public function prepareForValidation(): void
     {
         $this->prepareForValidationCalled = true;
-        $this->prepareForValidationAttributes = $attributeNames;
+        $this->prepareForValidationAttributes = $this->validationAttributes;
     }
 
     #[Override]
-    protected function defineRules(): array
+    public function rules(): array
     {
         return [
             'title' => ['required', 'string', 'max:255'],
@@ -98,67 +81,11 @@ class TestRuleset extends Ruleset
 
 class EmptyRuleset extends Ruleset
 {
-    #[Override]
-    protected function defineRules(): array
+    public function rules(): array
     {
         return [];
     }
 }
-
-describe('getRuleset', function () {
-    test('resolves ruleset via rulesClass method', function () {
-        $component = createValidatableComponent(['title' => 'Test']);
-
-        $ruleset = $component->getRuleset();
-
-        expect($ruleset)->toBeInstanceOf(TestRuleset::class);
-    });
-
-    test('caches ruleset instance', function () {
-        $component = createValidatableComponent(['title' => 'Test']);
-
-        $ruleset1 = $component->getRuleset();
-        $ruleset2 = $component->getRuleset();
-
-        expect($ruleset1)->toBe($ruleset2);
-    });
-
-    test('returns false when no ruleset configured', function () {
-        $component = new class implements Validatable
-        {
-            use Validates;
-
-            public function getRules(): array
-            {
-                return [];
-            }
-
-            public function getMessages(): array
-            {
-                return [];
-            }
-
-            public function setAttributes(array $values, bool $safeOnly = true): void {}
-
-            public function getAttributes(): array
-            {
-                return [];
-            }
-
-            public function attributes(): array
-            {
-                return [];
-            }
-
-            public function attributeLabels(): array
-            {
-                return [];
-            }
-        };
-
-        expect($component->getRuleset())->toBeFalse();
-    });
-});
 
 describe('validate', function () {
     test('returns true when validation passes', function () {
@@ -187,7 +114,7 @@ describe('validate', function () {
 
         $component->validate();
 
-        expect($component->getRuleset()->prepareForValidationCalled)->toBeTrue();
+        expect($component->ruleset->prepareForValidationCalled)->toBeTrue();
     });
 
     test('passes attribute names to prepareForValidation', function () {
@@ -195,7 +122,7 @@ describe('validate', function () {
 
         $component->validate(['title']);
 
-        expect($component->getRuleset()->prepareForValidationAttributes)->toBe(['title']);
+        expect($component->ruleset->prepareForValidationAttributes)->toBe(['title']);
     });
 
     test('validates only specified attributes', function () {

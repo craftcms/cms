@@ -8,7 +8,7 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use Illuminate\Console\Command;
 
-final class DiffCommand extends Command
+class DiffCommand extends Command
 {
     use CraftCommand;
 

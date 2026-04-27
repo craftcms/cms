@@ -6,18 +6,16 @@ namespace CraftCms\Cms\Support;
 
 use BackedEnum;
 use Craft;
-use craft\helpers\HtmlPurifier;
 use CraftCms\Cms\Cms;
-use HTMLPurifier_Config;
 use Illuminate\Support\Facades\Crypt;
 use InvalidArgumentException;
 use LitEmoji\LitEmoji;
 use Override;
 use Ramsey\Uuid\Validator\GenericValidator;
 use ReflectionClass;
+use RuntimeException;
 use voku\helper\ASCII;
 use yii\base\Exception;
-use yii\base\InvalidConfigException;
 
 class Str extends \Illuminate\Support\Str
 {
@@ -112,26 +110,17 @@ class Str extends \Illuminate\Support\Str
     /**
      * Attempts to convert a string to UTF-8 and clean any non-valid UTF-8 characters.
      */
-    public static function convertToUtf8(string $str): string
+    public static function convertToUtf8(string $str, ?string $encoding = null): string
     {
-        // If it's already a UTF8 string, just clean and return it
-        if (mb_check_encoding($str, 'UTF-8')) {
-            return HtmlPurifier::cleanUtf8($str);
+        if ($encoding !== null) {
+            $encoding = mb_strtolower($encoding);
         }
 
-        // Otherwise set HTMLPurifier to the actual string encoding
-        $config = HTMLPurifier_Config::createDefault();
-        $config->set('Core.Encoding', static::encoding($str));
+        $encoding ??= static::encoding($str);
 
-        // Clean it
-        $str = HtmlPurifier::cleanUtf8($str);
+        $str = mb_convert_encoding($str, 'UTF-8', $encoding);
 
-        // Convert it to UTF8 if possible
-        if (PHP::checkForValidIconv()) {
-            return HtmlPurifier::convertToUtf8($str, $config);
-        }
-
-        return mb_convert_encoding($str, 'UTF-8');
+        return str_replace("\0", '', $str);
     }
 
     /**
@@ -147,7 +136,7 @@ class Str extends \Illuminate\Support\Str
      *
      * @param  string  $str  The string.
      *
-     * @throws InvalidConfigException on OpenSSL not loaded
+     * @throws RuntimeException on OpenSSL not loaded
      * @throws Exception on OpenSSL error
      */
     public static function decdec(string $str): string
@@ -186,7 +175,7 @@ class Str extends \Illuminate\Support\Str
      *
      * @param  string  $str  the string
      *
-     * @throws InvalidConfigException on OpenSSL not loaded
+     * @throws RuntimeException on OpenSSL not loaded
      * @throws Exception on OpenSSL error
      *
      * @see decdec()

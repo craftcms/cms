@@ -8,11 +8,9 @@
 namespace crafttests\unit\gql\mutations;
 
 use Codeception\Stub\Expected;
-use Craft;
 use craft\elements\db\EntryQuery;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\Mutation;
-use craft\gql\base\MutationResolver;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\models\GqlSchema;
@@ -20,13 +18,14 @@ use craft\records\Section;
 use craft\services\Elements;
 use craft\test\TestCase;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Gql\Resolvers\MutationResolver;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
 use crafttests\fixtures\SectionsFixture;
 use GraphQL\Error\Error;
-use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -199,32 +198,6 @@ class GeneralMutationResolverTest extends TestCase
     }
 
     /**
-     * Test whether saving an element with validation errors throws the right exception.
-     *
-     * @throws ReflectionException
-     * @throws InvalidConfigException
-     */
-    public function testSavingElementWithValidationError(): void
-    {
-        $elementService = $this->make(Elements::class, [
-            'saveElement' => Expected::once(false),
-        ]);
-        Craft::$app->set('elements', $elementService);
-
-        $validationError = 'There was an error saving the element';
-
-        $entry = $this->make(Entry::class, [
-            'hasErrors' => true,
-            'getFirstErrors' => [$validationError],
-        ]);
-
-        $this->expectExceptionMessage($validationError);
-        $this->expectException(UserError::class);
-
-        $this->invokeMethod($this->resolver, 'saveElement', [$entry]);
-    }
-
-    /**
      * Test whether saving an element that is enabled correctly changes the scenario before saving.
      *
      * @throws ReflectionException
@@ -239,29 +212,28 @@ class GeneralMutationResolverTest extends TestCase
             'sections' => SectionsFixture::class,
         ]);
 
-        $elementService = $this->make(Elements::class, [
-            'saveElement' => false,
-        ]);
-        Craft::$app->set('elements', $elementService);
+        \CraftCms\Cms\Support\Facades\Elements::partialMock()
+            ->shouldReceive('saveElement')
+            ->andReturn(false);
 
         $entry = new Entry();
         $entry->title = 'Entry title';
         $entry->sectionId = Section::find()->one()->id;
 
-        $scenario = Element::SCENARIO_DEFAULT;
-        $entry->setScenario($scenario);
+        $scenario = ElementRules::SCENARIO_DEFAULT;
+        $entry->ruleset->useScenario($scenario);
         $entry->enabled = false;
 
         $this->invokeMethod($this->resolver, 'saveElement', [$entry]);
 
         // Ensure scenario unchanged for disabled elements
-        self::assertSame($scenario, $entry->getScenario());
+        self::assertSame($scenario, $entry->ruleset->getScenario());
 
         $entry->enabled = true;
         $this->invokeMethod($this->resolver, 'saveElement', [$entry]);
 
         // Ensure scenario changed for enabled elements with the default scenario
-        self::assertNotSame($scenario, $entry->getScenario());
+        self::assertNotSame($scenario, $entry->ruleset->getScenario());
     }
 
     public function testNestedNormalizers(): void
@@ -310,10 +282,9 @@ class GeneralMutationResolverTest extends TestCase
             'one' => $entry,
         ]);
 
-        Craft::$app->set('elements', $this->make(Elements::class, [
-            'saveElement' => true,
-            'createElementQuery' => $query,
-        ]));
+        \CraftCms\Cms\Support\Facades\Elements::partialMock()
+            ->shouldReceive('saveElement')->andReturn(true)
+            ->shouldReceive('createElementQuery')->andReturn($query);
 
         // Set up the mutation resolve to return our mock entry and pretend to save the entry, when asked to
         // Also mock our input type definitions

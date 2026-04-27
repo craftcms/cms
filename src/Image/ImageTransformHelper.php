@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image;
 
-use Craft;
-use craft\helpers\Assets;
-use craft\helpers\FileHelper;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
 use CraftCms\Cms\Asset\Exceptions\ImageException;
@@ -17,17 +16,21 @@ use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Imagine\Image\Format;
 use InvalidArgumentException;
+use Symfony\Component\Finder\Finder;
 
 use function CraftCms\Cms\t;
 
-final class ImageTransformHelper
+class ImageTransformHelper
 {
     /**
      * @var string The pattern to use for matching against a transform string.
@@ -81,7 +84,7 @@ final class ImageTransformHelper
             return $ext;
         }
 
-        if ($asset->kind !== Asset::KIND_IMAGE) {
+        if ($asset->kind !== FileKind::Image->value) {
             throw new AssetOperationException(t('Tried to detect the appropriate image format for a non-image!'));
         }
 
@@ -97,7 +100,7 @@ final class ImageTransformHelper
             // Don't change the same transform
             $transform = clone $transform;
 
-            $attributes = $transform->attributes();
+            $attributes = Utils::getPublicAttributes($transform);
 
             $nullables = [
                 'id',
@@ -139,33 +142,31 @@ final class ImageTransformHelper
                 if (! is_file($imageSourcePath) || filesize($imageSourcePath) === 0) {
                     if (is_file($imageSourcePath)) {
                         // Delete since it's a 0-byter
-                        FileHelper::unlink($imageSourcePath);
+                        File::delete($imageSourcePath);
                     }
 
                     $prefix = pathinfo($asset->getFilename(), PATHINFO_FILENAME).'.delimiter.';
                     $extension = $asset->getExtension();
                     $tempFilename = uniqid($prefix, true).'.'.$extension;
-                    $tempPath = Craft::$app->getPath()->getTempPath();
-                    $tempFilePath = $tempPath.DIRECTORY_SEPARATOR.$tempFilename;
+                    $tempPath = Path::temp();
+                    $tempFilePath = Path::temp($tempFilename);
 
-                    // Fetch a list of existing temp files for this image.
-                    $files = FileHelper::findFiles($tempPath, [
-                        'only' => [
-                            $prefix.'*'.'.'.$extension,
-                        ],
-                    ]);
+                    // Fetch existing temp files for this image and clean them up.
+                    $finder = Finder::create()
+                        ->ignoreDotFiles(false)
+                        ->ignoreVCS(false)
+                        ->files()
+                        ->in($tempPath)
+                        ->name($prefix.'*'.'.'.$extension);
 
-                    // And clean them up.
-                    if (! empty($files)) {
-                        foreach ($files as $filePath) {
-                            FileHelper::unlink($filePath);
-                        }
+                    foreach ($finder as $file) {
+                        File::delete($file->getPathname());
                     }
 
-                    Assets::downloadFile($volume->sourceDisk(), $asset->getPath(), $tempFilePath);
+                    AssetsHelper::downloadFile($volume->sourceDisk(), $asset->getPath(), $tempFilePath);
 
                     if (! is_file($tempFilePath) || filesize($tempFilePath) === 0) {
-                        if (is_file($tempFilePath) && ! FileHelper::unlink($tempFilePath)) {
+                        if (is_file($tempFilePath) && ! File::delete($tempFilePath)) {
                             Log::warning("Unable to delete the file \"$tempFilePath\".", [__METHOD__]);
                         }
                         throw new FilesystemException(t('Tried to download the source file for image "{file}", but it was 0 bytes long.', [
@@ -178,10 +179,12 @@ final class ImageTransformHelper
 
                     // And delete it after the request, if nobody wants it.
                     if (Cms::config()->maxCachedCloudImageSize === 0) {
-                        FileHelper::deleteFileAfterRequest($imageSourcePath);
+                        app()->terminating(function () use ($imageSourcePath) {
+                            File::delete($imageSourcePath);
+                        });
                     }
 
-                    if (! FileHelper::unlink($tempFilePath)) {
+                    if (! File::delete($tempFilePath)) {
                         Log::warning("Unable to delete the file \"$tempFilePath\".", [__METHOD__]);
                     }
                 }
@@ -410,7 +413,7 @@ final class ImageTransformHelper
             $position = 'center-center';
         }
 
-        $scaleIfSmaller = $transform->upscale ?? Cms::config()->upscaleImages;
+        $scaleIfSmaller = $transform->upscale;
 
         switch ($transform->mode) {
             case 'letterbox':
@@ -445,8 +448,8 @@ final class ImageTransformHelper
 
         // It's important that the temp filename has the target file extension, as CraftCms\Cms\Image\Raster::saveAs() uses it
         // to determine the options that should be passed to Imagine\Image\ManipulatorInterface::save().
-        $tempFilename = FileHelper::uniqueName(sprintf('%s.%s', $asset->getFilename(false), $format));
-        $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+        $tempFilename = File::uniqueName(sprintf('%s.%s', $asset->getFilename(false), $format));
+        $tempPath = Path::temp($tempFilename);
         $image->saveAs($tempPath);
         clearstatcache(true, $tempPath);
 

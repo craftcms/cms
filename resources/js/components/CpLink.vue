@@ -63,10 +63,7 @@
   .cp-link--button {
     cursor: pointer;
     font: inherit;
-    border: 1px solid var(--c-button-border, var(--c-button-default-border));
-    background-color: var(--c-button-bg, var(--c-button-default-bg));
     border-radius: var(--c-button-radius, var(--c-radius-sm));
-    color: var(--c-button-fg, inherit);
     padding-inline: var(--c-button-spacing-inline, var(--c-spacing-md));
     padding-block: 0;
     width: auto;
@@ -74,17 +71,28 @@
     min-width: var(--c-button-width, var(--c-size-control-md));
     white-space: nowrap;
 
+    /* Colorable styles */
+    color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
+    border-width: var(--c-button-border-width, 1px);
+    border-style: var(--c-button-border-style, solid);
+    border-color: var(
+      --c-color-border-loud,
+      var(--c-color-neutral-border-loud)
+    );
+    background-color: var(
+      --c-color-fill-loud,
+      var(--c-color-neutral-fill-loud)
+    );
+
     @media (hover: hover) {
-      &:hover {
-        background-color: var(
-          --c-button-bg-hover,
-          var(--c-button-default-bg-hover)
+      :host(:hover) {
+        background-color: color-mix(
+          in oklab,
+          var(--c-color-fill-loud, var(--c-button-default-fill)),
+          var(--c-color-mix-hover)
         );
-        border-color: var(
-          --c-button-border-hover,
-          var(--c-button-default-border-hover)
-        );
-        color: var(--c-button-fg-hover, var(--c-button-default-fg-hover));
+        color: var(--c-color-on-loud);
+        border-color: var(--c-color-border-loud);
       }
     }
 
@@ -109,29 +117,38 @@
   }
 
   .cp-link--default {
-    --c-button-bg: var(--c-button-default-bg);
-    --c-button-bg-hover: var(--c-button-default-bg-hover);
-    --c-button-border: var(--c-button-default-border);
-    --c-button-border-hover: var(--c-button-default-border-hover);
-    --c-button-fg: var(--c-button-default-fg);
-    --c-button-fg-hover: var(--c-button-default-fg-hover);
+    --c-color-fill-loud: var(--c-color-neutral-fill-loud);
+    --c-color-fill-normal: var(--c-color-neutral-fill-normal);
+    --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
+    --c-color-border-loud: var(--c-color-neutral-border-loud);
+    --c-color-border-normal: var(--c-color-neutral-border-normal);
+    --c-color-border-quiet: var(--c-color-neutral-border-quiet);
+    --c-color-on-loud: var(--c-color-neutral-on-loud);
+    --c-color-on-normal: var(--c-color-neutral-on-normal);
+    --c-color-on-quiet: var(--c-color-neutral-on-quiet);
   }
 
   .cp-link--primary {
-    --c-button-bg: var(--c-button-primary-bg);
-    --c-button-bg-hover: var(--c-button-primary-bg-hover);
-    --c-button-border: var(--c-button-primary-border);
-    --c-button-border-hover: var(--c-button-primary-border-hover);
-    --c-button-fg: var(--c-button-primary-fg);
-    --c-button-fg-hover: var(--c-button-primary-fg-hover);
+    --c-color-fill-loud: var(--c-color-brand-fill-loud);
+    --c-color-fill-normal: var(--c-color-brand-fill-normal);
+    --c-color-fill-quiet: var(--c-color-brand-fill-quiet);
+    --c-color-border-loud: var(--c-color-brand-border-loud);
+    --c-color-border-normal: var(--c-color-brand-border-normal);
+    --c-color-border-quiet: var(--c-color-brand-border-quiet);
+    --c-color-on-loud: var(--c-color-brand-on-loud);
+    --c-color-on-normal: var(--c-color-brand-on-normal);
+    --c-color-on-quiet: var(--c-color-brand-on-quiet);
   }
 
   .cp-link--danger {
-    --c-button-bg: var(--c-button-danger-bg);
-    --c-button-bg-hover: var(--c-button-danger-bg-hover);
-    --c-button-border: var(--c-button-danger-border);
-    --c-button-border-hover: var(--c-button-danger-border-hover);
-    --c-button-fg: var(--c-button-danger-fg);
-    --c-button-fg-hover: var(--c-button-danger-fg-hover);
+    --c-color-fill-loud: var(--c-color-danger-fill-loud);
+    --c-color-fill-normal: var(--c-color-danger-fill-normal);
+    --c-color-fill-quiet: var(--c-color-danger-fill-quiet);
+    --c-color-border-loud: var(--c-color-danger-border-loud);
+    --c-color-border-normal: var(--c-color-danger-border-normal);
+    --c-color-border-quiet: var(--c-color-danger-border-quiet);
+    --c-color-on-loud: var(--c-color-danger-on-loud);
+    --c-color-on-normal: var(--c-color-danger-on-normal);
+    --c-color-on-quiet: var(--c-color-danger-on-quiet);
   }
 </style>

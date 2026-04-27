@@ -8,7 +8,7 @@ use CraftCms\Cms\Twig\Nodes\RequirePermissionNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
-final class RequirePermissionTokenParser extends AbstractTokenParser
+class RequirePermissionTokenParser extends AbstractTokenParser
 {
     public function parse(Token $token): RequirePermissionNode
     {

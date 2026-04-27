@@ -11,6 +11,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
@@ -43,19 +44,19 @@ describe('updateRelations', function () {
             'handle' => 'testSection',
         ]);
 
-        $this->entryType = EntryType::factory()->create([
-            'fieldLayoutId' => $this->fieldLayout->id,
-        ]);
+        $this->entryType = EntryType::factory()
+            ->withFieldLayout($this->fieldLayout)
+            ->create();
 
         app(Fields::class)->invalidateCaches();
         app(Fields::class)->refreshFields();
     });
 
     it('creates relations for a new element', function () {
-        $sourceEntry = EntryModel::factory()->create([
-            'sectionId' => $this->section->id,
-            'typeId' => $this->entryType->id,
-        ]);
+        $sourceEntry = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->create();
         $sourceEntry->element->update(['fieldLayoutId' => $this->fieldLayout->id]);
 
         $targetEntry = EntryModel::factory()->create();
@@ -63,7 +64,7 @@ describe('updateRelations', function () {
         $element = entryQuery()->id($sourceEntry->id)->firstOrFail();
         $element->setFieldValue('relatedEntries', [$targetEntry->id]);
 
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         $relation = DB::table(Table::RELATIONS)
             ->where('sourceId', $element->id)
@@ -76,10 +77,10 @@ describe('updateRelations', function () {
     });
 
     it('creates multiple relations with correct sort order', function () {
-        $sourceEntry = EntryModel::factory()->create([
-            'sectionId' => $this->section->id,
-            'typeId' => $this->entryType->id,
-        ]);
+        $sourceEntry = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->create();
         $sourceEntry->element->update(['fieldLayoutId' => $this->fieldLayout->id]);
 
         $targetEntries = EntryModel::factory(3)->create();
@@ -88,7 +89,7 @@ describe('updateRelations', function () {
         $element = entryQuery()->id($sourceEntry->id)->firstOrFail();
         $element->setFieldValue('relatedEntries', $targetIds);
 
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         $relations = DB::table(Table::RELATIONS)
             ->where('sourceId', $element->id)
@@ -106,21 +107,21 @@ describe('updateRelations', function () {
     });
 
     it('updates existing relations when element is resaved', function () {
-        $sourceEntry = EntryModel::factory()->create([
-            'sectionId' => $this->section->id,
-            'typeId' => $this->entryType->id,
-        ]);
+        $sourceEntry = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->create();
         $sourceEntry->element->update(['fieldLayoutId' => $this->fieldLayout->id]);
 
         $targetEntries = EntryModel::factory(2)->create();
 
         $element = entryQuery()->id($sourceEntry->id)->firstOrFail();
         $element->setFieldValue('relatedEntries', [$targetEntries[0]->id]);
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         $element = entryQuery()->id($sourceEntry->id)->firstOrFail();
         $element->setFieldValue('relatedEntries', [$targetEntries[1]->id]);
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         $relations = DB::table(Table::RELATIONS)
             ->where('sourceId', $element->id)
@@ -132,32 +133,32 @@ describe('updateRelations', function () {
     });
 
     it('removes relations when cleared', function () {
-        $sourceEntry = EntryModel::factory()->create([
-            'sectionId' => $this->section->id,
-            'typeId' => $this->entryType->id,
-        ]);
+        $sourceEntry = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->create();
         $sourceEntry->element->update(['fieldLayoutId' => $this->fieldLayout->id]);
 
         $targetEntry = EntryModel::factory()->create();
 
         $element = entryQuery()->id($sourceEntry->id)->firstOrFail();
         $element->setFieldValue('relatedEntries', [$targetEntry->id]);
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         expect(DB::table(Table::RELATIONS)->where('sourceId', $element->id)->count())->toBe(1);
 
         $element = entryQuery()->id($sourceEntry->id)->firstOrFail();
         $element->setFieldValue('relatedEntries', []);
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         expect(DB::table(Table::RELATIONS)->where('sourceId', $element->id)->count())->toBe(0);
     });
 
     it('reorders relations when sort order changes', function () {
-        $sourceEntry = EntryModel::factory()->create([
-            'sectionId' => $this->section->id,
-            'typeId' => $this->entryType->id,
-        ]);
+        $sourceEntry = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->create();
         $sourceEntry->element->update(['fieldLayoutId' => $this->fieldLayout->id]);
 
         $targetEntries = EntryModel::factory(3)->create();
@@ -165,11 +166,11 @@ describe('updateRelations', function () {
 
         $element = entryQuery()->id($sourceEntry->id)->firstOrFail();
         $element->setFieldValue('relatedEntries', $targetIds);
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         $element = entryQuery()->id($sourceEntry->id)->firstOrFail();
         $element->setFieldValue('relatedEntries', array_reverse($targetIds));
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         $relations = DB::table(Table::RELATIONS)
             ->where('sourceId', $element->id)
@@ -197,17 +198,17 @@ describe('updateRelations', function () {
     });
 
     it('handles duplicate target ids by using first occurrence', function () {
-        $sourceEntry = EntryModel::factory()->create([
-            'sectionId' => $this->section->id,
-            'typeId' => $this->entryType->id,
-        ]);
+        $sourceEntry = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->create();
         $sourceEntry->element->update(['fieldLayoutId' => $this->fieldLayout->id]);
 
         $targetEntry = EntryModel::factory()->create();
 
         $element = entryQuery()->id($sourceEntry->id)->firstOrFail();
         $element->setFieldValue('relatedEntries', [$targetEntry->id, $targetEntry->id, $targetEntry->id]);
-        Craft::$app->getElements()->saveElement($element);
+        Elements::saveElement($element);
 
         $relations = DB::table(Table::RELATIONS)
             ->where('sourceId', $element->id)
@@ -233,19 +234,19 @@ describe('deleteSiteRelations', function () {
             'handle' => 'siteTestSection',
         ]);
 
-        $this->entryType = EntryType::factory()->create([
-            'fieldLayoutId' => $this->fieldLayout->id,
-        ]);
+        $this->entryType = EntryType::factory()
+            ->withFieldLayout($this->fieldLayout)
+            ->create();
 
         app(Fields::class)->invalidateCaches();
         app(Fields::class)->refreshFields();
     });
 
     it('deletes site-specific relations', function () {
-        $sourceEntry = EntryModel::factory()->create([
-            'sectionId' => $this->section->id,
-            'typeId' => $this->entryType->id,
-        ]);
+        $sourceEntry = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->create();
         $sourceEntry->element->update(['fieldLayoutId' => $this->fieldLayout->id]);
 
         $targetEntry = EntryModel::factory()->create();
@@ -271,10 +272,10 @@ describe('deleteSiteRelations', function () {
     });
 
     it('only deletes relations for the specific site', function () {
-        $sourceEntry = EntryModel::factory()->create([
-            'sectionId' => $this->section->id,
-            'typeId' => $this->entryType->id,
-        ]);
+        $sourceEntry = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->create();
         $sourceEntry->element->update(['fieldLayoutId' => $this->fieldLayout->id]);
 
         $targetEntry = EntryModel::factory()->create();
@@ -367,10 +368,10 @@ describe('relationalFields', function () {
             'fieldLayoutId' => $fieldLayout->id,
         ]);
 
-        $entry = EntryModel::factory()->create([
-            'sectionId' => $section->id,
-            'typeId' => $entryType->id,
-        ]);
+        $entry = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($entryType)
+            ->create();
         $entry->element->update(['fieldLayoutId' => $fieldLayout->id]);
 
         $element = entryQuery()->id($entry->id)->firstOrFail();
@@ -399,10 +400,10 @@ describe('relationalFields', function () {
         app(Fields::class)->invalidateCaches();
         app(Fields::class)->refreshFields();
 
-        $entry = EntryModel::factory()->create([
-            'sectionId' => $section->id,
-            'typeId' => $entryType->id,
-        ]);
+        $entry = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($entryType)
+            ->create();
         $entry->element->update(['fieldLayoutId' => $fieldLayout->id]);
 
         $element = entryQuery()->id($entry->id)->firstOrFail();

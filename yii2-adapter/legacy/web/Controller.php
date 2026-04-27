@@ -8,14 +8,13 @@
 namespace craft\web;
 
 use Craft;
-use craft\base\ModelInterface;
 use craft\events\DefineBehaviorsEvent;
-use craft\helpers\Cp;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Identifiable;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
@@ -386,7 +385,7 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Sends a failure response for a model.
      *
-     * @param Model|ModelInterface $model The model that was being operated on
+     * @param object $model The model that was being operated on
      * @param string|null $message
      * @param string|null $modelName The route param name that the model should be set to
      * @param array $data Additional data to include in the JSON response
@@ -395,7 +394,7 @@ abstract class Controller extends \yii\web\Controller
      * @since 4.0.0
      */
     public function asModelFailure(
-        mixed $model,
+        object $model,
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],
@@ -419,7 +418,7 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Sends a success response for a model.
      *
-     * @param Model|ModelInterface $model The model that was being operated on
+     * @param object $model The model that was being operated on
      * @param string|null $message
      * @param string|null $modelName The route param name that the model should be set to
      * @param array $data Additional data to include in the JSON response
@@ -428,7 +427,7 @@ abstract class Controller extends \yii\web\Controller
      * @since 4.0.0
      */
     public function asModelSuccess(
-        mixed $model,
+        object $model,
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],
@@ -446,7 +445,7 @@ abstract class Controller extends \yii\web\Controller
 
         $notificationSettings = [];
         if ($model instanceof Chippable) {
-            $notificationSettings['details'] = Cp::chipHtml($model);
+            $notificationSettings['details'] = app(ElementHtml::class)->chipHtml($model);
         }
 
         return $this->asSuccess(

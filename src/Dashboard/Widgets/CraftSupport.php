@@ -4,23 +4,25 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use Craft;
-use craft\web\Application;
-use craft\web\assets\craftsupport\CraftSupportAsset;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\PHP;
+use CraftCms\Cms\View\LegacyAssets\CraftSupportAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Override;
 
+use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\normalizeVersion;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final class CraftSupport extends Widget
+class CraftSupport extends Widget
 {
     public function __construct(
         private readonly GeneralConfig $generalConfig,
@@ -70,13 +72,9 @@ final class CraftSupport extends Widget
             return null;
         }
 
-        /** @var Application $craft */
-        $craft = app('Craft');
+        app(InternalAssetRegistry::class)->register(CraftSupportAsset::class);
 
-        $view = $craft->getView();
-        $assetBundle = $view->registerAssetBundle(CraftSupportAsset::class);
-
-        $cmsVersion = $craft->getVersion();
+        $cmsVersion = Cms::VERSION;
         $cmsMajorVersion = (int) $cmsVersion;
 
         $pluginVersions = [];
@@ -84,8 +82,7 @@ final class CraftSupport extends Widget
             $pluginVersions[] = sprintf('- %s %s', $plugin->name, $plugin->version);
         }
 
-        $db = $craft->getDb();
-        $dbDriver = $db->getDriverLabel();
+        $dbDriver = DB::driverLabel();
 
         $imagesService = $this->images;
         if ($imagesService->getIsGd()) {
@@ -125,7 +122,7 @@ JS, [
                     'cmsVersion' => sprintf('%s (%s)', $cmsVersion, Edition::get()->name),
                     'phpVersion' => PHP::version(),
                     'os' => sprintf('%s %s', PHP_OS, php_uname('r')),
-                    'db' => sprintf('%s %s', $dbDriver, normalizeVersion($db->getSchema()->getServerVersion())),
+                    'db' => sprintf('%s %s', $dbDriver, normalizeVersion(DB::getServerVersion())),
                     'imageDriver' => sprintf('%s %s', $imageDriver, $imagesService->getVersion()),
                     'plugins' => implode("\n", $pluginVersions),
                 ],
@@ -138,7 +135,7 @@ JS, [
         return template('_components/widgets/CraftSupport/body', [
             'widget' => $this,
             'showBackupOption' => $showBackupOption,
-            'bundleUrl' => $assetBundle->baseUrl,
+            'bundleUrl' => craftAsset('legacy/craftsupport/dist'),
         ]);
     }
 }

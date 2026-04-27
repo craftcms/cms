@@ -3,14 +3,15 @@
 ## Table of Contents
 
 1. Test directory structure and base classes
-2. CP URLs
-3. Elements
-4. Creating test elements
-5. Creating an entry with a custom field
-6. Testing element concerns (traits)
-7. Pest data providers
-8. Database best practices
-9. Testing Laravel events
+2. No comments in tests
+3. CP URLs
+4. Elements
+5. Creating test elements
+6. Creating an entry with a custom field
+7. Testing element concerns (traits)
+8. Pest data providers
+9. Database best practices
+10. Testing Laravel events
 
 ## Test directory structure and base classes
 
@@ -53,6 +54,15 @@ Use this for:
 - Tests that require an authenticated user (`actingAs`)
 - HTTP/route tests
 
+## No comments in tests
+
+Do not add comments in test files. This includes:
+- Section separator comments (e.g., `// -- validateComponentClass tests --`)
+- Inline explanations of what the code does
+- Docblocks on test functions
+
+Test names should be descriptive enough to convey intent without comments. Use `describe()` blocks to group related tests instead of comments.
+
 ## CP URLs
 
 - When testing CP URLs, always use `CraftCms\Cms\Cms::config()->cpTrigger` instead of testing for `/admin`.
@@ -87,6 +97,7 @@ use craft\behaviors\CustomFieldBehavior;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 
 $field = Field::factory()->create([
@@ -108,7 +119,7 @@ $entry = entryQuery()->id($entry->id)->firstOrFail();
 $entry->title = 'Test entry';
 $entry->setFieldValue('textField', 'Foo');
 
-Craft::$app->getElements()->saveElement($entry);
+Elements::saveElement($entry);
 ```
 
 ## Testing element concerns (traits)
@@ -214,6 +225,7 @@ Use Laravel's event fakes to test that events are dispatched correctly:
 ```php
 use CraftCms\Cms\Element\Events\BeforeSave;
 use CraftCms\Cms\Element\Events\AfterSave;
+use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Facades\Event;
 
 test('dispatches save events', function () {
@@ -222,7 +234,7 @@ test('dispatches save events', function () {
     $entry = Entry::factory()->create();
     $element = entryQuery()->id($entry->id)->one();
 
-    Craft::$app->getElements()->saveElement($element);
+    Elements::saveElement($element);
 
     Event::assertDispatched(BeforeSave::class, function ($event) use ($element) {
         return $event->element->id === $element->id;
@@ -243,7 +255,7 @@ test('can cancel save via event', function () {
     $entry = Entry::factory()->create();
     $element = entryQuery()->id($entry->id)->one();
 
-    $result = Craft::$app->getElements()->saveElement($element);
+    $result = Elements::saveElement($element);
 
     expect($result)->toBeFalse();
 });

@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Craft;
-use craft\web\assets\authmethodsetup\AuthMethodSetupAsset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
+use CraftCms\Cms\User\Validation\UserRules;
+use CraftCms\Cms\View\LegacyAssets\AuthMethodSetupAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,7 +28,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-final readonly class PasswordController
+readonly class PasswordController
 {
     use ConfirmsPasswords;
     use EditUserTrait;
@@ -38,7 +40,7 @@ final readonly class PasswordController
 
         $response = $this->asEditUserScreen($user, self::SCREEN_PASSWORD);
 
-        Craft::$app->getView()->registerAssetBundle(AuthMethodSetupAsset::class);
+        app(InternalAssetRegistry::class)->register(AuthMethodSetupAsset::class);
 
         $response->action('users/save-password');
         $response->contentTemplate('users/_password', compact('user'));
@@ -46,7 +48,7 @@ final readonly class PasswordController
         return $response;
     }
 
-    public function store(Request $request): Response
+    public function store(Request $request, Elements $elements): Response
     {
         $this->requireConfirmedPassword('An elevated session is required to change your password.');
 
@@ -64,9 +66,9 @@ final readonly class PasswordController
         }
 
         $user->newPassword = $validated['newPassword'];
-        $user->setScenario(User::SCENARIO_PASSWORD);
+        $user->ruleset->useScenario(UserRules::SCENARIO_PASSWORD);
 
-        if (! Craft::$app->getElements()->saveElement($user)) {
+        if (! $elements->saveElement($user)) {
             return $this->asFailure(
                 t('Couldn’t save password.'),
                 $user->errors()->get('newPassword'),
@@ -109,14 +111,14 @@ final readonly class PasswordController
         ]);
     }
 
-    public function requireReset(Request $request, Users $users): Response
+    public function requireReset(Request $request, Elements $elements, Users $users): Response
     {
-        return $this->togglePasswordResetRequirement($request, $users, required: true);
+        return $this->togglePasswordResetRequirement($request, $elements, $users, required: true);
     }
 
-    public function removeResetRequirement(Request $request, Users $users): Response
+    public function removeResetRequirement(Request $request, Elements $elements, Users $users): Response
     {
-        return $this->togglePasswordResetRequirement($request, $users, required: false);
+        return $this->togglePasswordResetRequirement($request, $elements, $users, required: false);
     }
 
     public function verifyPassword(Request $request): Response
@@ -128,7 +130,7 @@ final readonly class PasswordController
         return $this->asFailure(t('Invalid password.'));
     }
 
-    private function togglePasswordResetRequirement(Request $request, Users $users, bool $required): Response
+    private function togglePasswordResetRequirement(Request $request, Elements $elements, Users $users, bool $required): Response
     {
         $this->requirePermission('administrateUsers');
 
@@ -142,7 +144,7 @@ final readonly class PasswordController
 
         $user->passwordResetRequired = $required;
 
-        if (! Craft::$app->getElements()->saveElement($user, false)) {
+        if (! $elements->saveElement($user, false)) {
             return $this->asFailure(t('Couldn’t save {type}.', [
                 'type' => User::lowerDisplayName(),
             ]));

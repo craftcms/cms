@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image;
 
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Asset\Exceptions\ImageException;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\File;
 use Illuminate\Support\Facades\Log;
 use Imagick;
 use ImagickException;
@@ -110,7 +110,7 @@ class Raster extends Image
         }
 
         // Make sure the image says it's an image
-        $mimeType = FileHelper::getMimeType($path, null, false);
+        $mimeType = File::getMimeType($path, false);
 
         if ($mimeType !== null && ! str_starts_with($mimeType, 'image/') && ! str_starts_with($mimeType, 'application/pdf')) {
             throw new ImageException(t('The file “{name}” does not appear to be an image.', [
@@ -362,7 +362,7 @@ class Raster extends Image
             }
         }
 
-        $this->crop($x1, $x2, $y1, $y2);
+        $this->crop((int) $x1, (int) $x2, (int) $y1, (int) $y2);
 
         return $this;
     }
@@ -631,7 +631,7 @@ class Raster extends Image
         if ($step === 0) {
             $tempFileName = pathinfo($tempFileName, PATHINFO_DIRNAME).
                 DIRECTORY_SEPARATOR.
-                FileHelper::uniqueName(sprintf('%s.%s', pathinfo($tempFileName, PATHINFO_FILENAME), $extension));
+                File::uniqueName(sprintf('%s.%s', pathinfo($tempFileName, PATHINFO_FILENAME), $extension));
         }
 
         // Find our target quality by splitting the min and max qualities

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use craft\elements\exporters\Expanded;
-use craft\elements\exporters\Raw;
 use CraftCms\Cms\Element\Events\RegisterExporters;
+use CraftCms\Cms\Element\Exporters\Expanded;
+use CraftCms\Cms\Element\Exporters\Raw;
 
 /**
  * Exportable provides element export functionality.
@@ -23,8 +23,6 @@ trait Exportable
      *
      * @param  string  $source  The selected source's key
      * @return array The available element exporters
-     *
-     * @since 3.4.0
      */
     public static function exporters(string $source): array
     {
@@ -44,7 +42,6 @@ trait Exportable
      * @return array The available element exporters
      *
      * @see exporters()
-     * @since 3.4.0
      */
     protected static function defineExporters(string $source): array
     {

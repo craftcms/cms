@@ -14,7 +14,7 @@ use Twig\TokenParser\AbstractTokenParser;
  * Class SwitchTokenParser that parses {% switch %} tags.
  * Based on the rejected Twig pull request: https://github.com/TwigPHP/Twig/pull/185
  */
-final class SwitchTokenParser extends AbstractTokenParser
+class SwitchTokenParser extends AbstractTokenParser
 {
     public function getTag(): string
     {

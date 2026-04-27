@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Filesystem\Contracts;
 
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
+use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 
 /**
@@ -18,7 +19,7 @@ use CraftCms\Cms\Validation\Contracts\Validatable;
  * @property string|null $url
  * @property string|null $uid
  *
- * @phpstan-require-extends \CraftCms\Cms\Filesystem\Filesystems\Filesystem
+ * @phpstan-require-extends Filesystem
  */
 interface FsInterface extends ConfigurableComponentInterface, SavableComponentInterface, Validatable
 {

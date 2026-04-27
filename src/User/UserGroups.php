@@ -8,6 +8,7 @@ use Craft;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
@@ -30,7 +31,7 @@ use Illuminate\Validation\ValidationException;
 use Tpetry\QueryExpressions\Language\Alias;
 
 #[Singleton]
-final readonly class UserGroups
+readonly class UserGroups
 {
     /**
      * The “Team” group’s UUID.
@@ -39,6 +40,7 @@ final readonly class UserGroups
 
     public function __construct(
         private ProjectConfig $projectConfig,
+        private ElementCaches $elementCaches,
     ) {}
 
     /**
@@ -113,6 +115,17 @@ final readonly class UserGroups
             ->first();
 
         return $result ? new UserGroup((array) $result) : null;
+    }
+
+    public function resolveGroup(mixed $group): ?UserGroup
+    {
+        return match (true) {
+            is_int($group) => $this->getGroupById($group),
+            is_string($group) && ctype_digit($group) => $this->getGroupById((int) $group),
+            is_string($group) && Str::isUuid($group) => $this->getGroupByUid($group),
+            is_string($group) && trim($group) !== '' => $this->getGroupByHandle(trim($group)),
+            default => null,
+        };
     }
 
     /**
@@ -280,7 +293,7 @@ final readonly class UserGroups
         event(new UserGroupSaved($this->getGroupById($groupModel->id), $isNewGroup));
 
         // Invalidate user caches
-        Craft::$app->getElements()->invalidateCachesForElementType(User::class);
+        $this->elementCaches->invalidateForElementType(User::class);
     }
 
     /**
@@ -304,7 +317,7 @@ final readonly class UserGroups
         event(new UserGroupDeleted($group));
 
         // Invalidate user caches
-        Craft::$app->getElements()->invalidateCachesForElementType(User::class);
+        $this->elementCaches->invalidateForElementType(User::class);
     }
 
     public function deleteGroupById(int $groupId): bool

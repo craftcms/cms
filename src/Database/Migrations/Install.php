@@ -6,11 +6,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Migrations;
 
-use Craft;
-use craft\helpers\DateTimeHelper;
-use craft\mail\transportadapters\Sendmail;
-use craft\web\Response;
-use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Migrations\Event\PostCreateTables;
@@ -29,6 +25,8 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Str;
@@ -159,7 +157,7 @@ class Install extends Migration
             $table->integer('uploaderId')->nullable();
             $table->string('filename');
             $table->string('mimeType')->nullable();
-            $table->string('kind', 50)->default(Asset::KIND_UNKNOWN);
+            $table->string('kind', 50)->default(FileKind::Unknown->value);
             $table->text('alt')->nullable();
             $table->unsignedInteger('width')->nullable();
             $table->unsignedInteger('height')->nullable();
@@ -485,10 +483,15 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::dropIfExists(Table::MIGRATIONS);
-        app(Migrator::class)
-            ->getRepository()
-            ->createRepository();
+        if (! Schema::hasTable(Table::MIGRATIONS)) {
+            app(Migrator::class)
+                ->getRepository()
+                ->createRepository();
+        } elseif (! Schema::hasColumn(Table::MIGRATIONS, 'track')) {
+            Schema::table(Table::MIGRATIONS, function (Blueprint $table) {
+                $table->string('track')->nullable()->after('id');
+            });
+        }
 
         Schema::create('plugins', function (Blueprint $table) {
             $table->integer('id', true);
@@ -611,17 +614,6 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
             $table->char('uid', 36)->default('0');
         });
-
-        if (! Schema::hasTable('sessions')) {
-            Schema::create('sessions', function (Blueprint $table) {
-                $table->string('id')->primary();
-                $table->foreignId('user_id')->nullable()->index();
-                $table->string('ip_address', 45)->nullable();
-                $table->text('user_agent')->nullable();
-                $table->longText('payload');
-                $table->integer('last_activity')->index();
-            });
-        }
 
         Schema::create('shunnedmessages', function (Blueprint $table) {
             $table->integer('id', true);
@@ -973,7 +965,7 @@ class Install extends Migration
             DB::statement('CREATE INDEX keywords_index ON '.DB::getTablePrefix().Table::SEARCHINDEX.' USING btree(keywords)');
         } else {
             // SQLite: basic indexes only, no full-text or tsvector
-            Schema::createIndex(Table::ELEMENTS_SITES, ['uri', 'siteId']);
+            DB::statement('CREATE INDEX sites_uri_siteid_index ON '.DB::getTablePrefix().Table::ELEMENTS_SITES.' (lower(uri), "siteId")');
             Schema::createIndex(Table::USERS, ['email']);
             Schema::createIndex(Table::USERS, ['username']);
         }
@@ -1116,7 +1108,7 @@ class Install extends Migration
                 'newPassword' => $this->password,
                 'email' => $this->email,
             ]);
-            Craft::$app->getElements()->saveElement($user);
+            Elements::saveElement($user);
 
             Users::saveUserPreferences($user, [
                 'language' => $this->site->getLanguage(),
@@ -1189,20 +1181,10 @@ class Install extends Migration
         $pluginsService = app(Plugins::class);
         $pluginConfigs = app(ProjectConfig::class)->get(ProjectConfig::PATH_PLUGINS, true) ?? [];
 
-        // Prevent the plugin from sending any headers, etc.
-        $realResponse = Craft::$app->getResponse();
-        $tempResponse = new Response(['isSent' => true]);
-        Craft::$app->set('response', $tempResponse);
-
-        try {
-            foreach ($pluginConfigs as $handle => $pluginConfig) {
-                $this->components->task("Installing $handle", function () use ($handle, $pluginsService) {
-                    $pluginsService->installPlugin($handle);
-                });
-            }
-        } finally {
-            // Put the real response back
-            Craft::$app->set('response', $realResponse);
+        foreach ($pluginConfigs as $handle => $pluginConfig) {
+            $this->components->task("Installing $handle", function () use ($handle, $pluginsService) {
+                $pluginsService->installPlugin($handle);
+            });
         }
     }
 
@@ -1212,11 +1194,6 @@ class Install extends Migration
 
         return [
             'dateModified' => DateTimeHelper::currentTimeStamp(),
-            'email' => [
-                'fromEmail' => $this->email,
-                'fromName' => $this->site->getName(),
-                'transportType' => Sendmail::class,
-            ],
             'siteGroups' => [
                 $siteGroupUid => [
                     'name' => $this->site->getName(),

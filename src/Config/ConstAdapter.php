@@ -9,7 +9,7 @@ use Override;
 use PhpOption\Option;
 use PhpOption\Some;
 
-final class ConstAdapter implements AdapterInterface
+class ConstAdapter implements AdapterInterface
 {
     /**
      * Create a new array adapter instance.

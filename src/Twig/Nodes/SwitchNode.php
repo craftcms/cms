@@ -11,7 +11,7 @@ use Twig\Node\Expression\Binary\OrBinary;
 use Twig\Node\Node;
 
 #[YieldReady]
-final class SwitchNode extends Node
+class SwitchNode extends Node
 {
     #[Override]
     public function compile(Compiler $compiler): void

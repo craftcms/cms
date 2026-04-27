@@ -13,7 +13,7 @@ use function CraftCms\Cms\t;
 /**
  * FindAndReplace represents a FindAndReplace dashboard widget.
  */
-final class FindAndReplace extends Utility
+class FindAndReplace extends Utility
 {
     #[Override]
     public static function displayName(): string

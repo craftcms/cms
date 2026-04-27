@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig;
 
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Updates;
 use Twig\Loader\LoaderInterface;
 use Twig\Source;
 
 use function CraftCms\Cms\t;
 
-final readonly class TemplateLoader implements LoaderInterface
+readonly class TemplateLoader implements LoaderInterface
 {
     public function __construct(
         private TemplateResolver $resolver,

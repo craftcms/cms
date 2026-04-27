@@ -9,7 +9,7 @@ use CraftCms\Cms\Filesystem\Filesystems;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Support\ServiceProvider;
 
-final class FilesystemServiceProvider extends ServiceProvider
+class FilesystemServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {

@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Image\Events;
 
 use CraftCms\Cms\Asset\Elements\Asset;
 
-final class DeletingTransformedImage
+class DeletingTransformedImage
 {
     public function __construct(
         public Asset $asset,

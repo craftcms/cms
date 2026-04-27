@@ -1,1 +1,1 @@
-import t from"./tr.js";const o={...t};export{o as default};
+import e from"./tr.js";var t={...e};export{t as default};

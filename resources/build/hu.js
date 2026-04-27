@@ -1,1 +1,1 @@
-const a={optionsPopup:"Kombinált lista opcióinak felugró ablaka"};export{a as default};
+var e={optionsPopup:`Kombinált lista opcióinak felugró ablaka`};export{e as default};

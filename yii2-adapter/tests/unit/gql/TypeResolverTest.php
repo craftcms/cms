@@ -9,7 +9,6 @@ namespace crafttests\unit\gql;
 
 use ArrayObject;
 use Craft;
-use craft\base\ElementInterface;
 use craft\elements\GlobalSet;
 use craft\gql\base\Resolver;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
@@ -19,9 +18,11 @@ use craft\gql\resolvers\elements\User as UserResolver;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\TestCase;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Elements\User;
 use crafttests\fixtures\AssetFixture;
 use crafttests\fixtures\EntryFixture;
@@ -118,7 +119,7 @@ class TypeResolverTest extends TestCase
         if ($elementQueryClass instanceof ElementQuery) {
             $elementQuery = new $elementQueryClass($params);
         } else {
-            $elementQuery = Craft::configure($elementType::find(), $params);
+            $elementQuery = Typecast::configure($elementType::find(), $params);
         }
 
         // Get the ids and elements.

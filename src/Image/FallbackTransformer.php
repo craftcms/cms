@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image;
 
-use craft\helpers\Assets;
-use craft\helpers\UrlHelper;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Support\Facades\Crypt;
 
-final readonly class FallbackTransformer implements ImageTransformerInterface
+readonly class FallbackTransformer implements ImageTransformerInterface
 {
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
     {
@@ -26,9 +26,9 @@ final readonly class FallbackTransformer implements ImageTransformerInterface
             $transformString = 'original';
         }
 
-        return UrlHelper::actionUrl('assets/generate-fallback-transform', [
+        return Url::actionUrl('assets/generate-fallback-transform', [
             'transform' => Crypt::encrypt(sprintf('%s,%s', $asset->id, $transformString)),
-        ] + Assets::revParams($asset), showScriptName: false);
+        ] + AssetsHelper::revParams($asset), showScriptName: false);
     }
 
     public function invalidateAssetTransforms(Asset $asset): void

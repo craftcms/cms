@@ -29,7 +29,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
  *
  * @see FieldLayout::getAvailableNativeFields()
  */
-final class DefineNativeFields
+class DefineNativeFields
 {
     public function __construct(
         public FieldLayout $fieldLayout,

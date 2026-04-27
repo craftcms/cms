@@ -9,19 +9,17 @@
 
 namespace craft\fieldlayoutelements\addresses;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * Class OrganizationField.
-     *
-     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
-     *
-     * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\addresses\OrganizationField} instead.
-     */
-    class OrganizationField
-    {
-    }
-}
+use craft\base\LegacyEventConstants;
 
-class_alias(\CraftCms\Cms\FieldLayout\LayoutElements\addresses\OrganizationField::class, OrganizationField::class);
+/**
+ * Class OrganizationField.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
+ * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\Addresses\OrganizationField} instead.
+ */
+class OrganizationField extends \CraftCms\Cms\FieldLayout\LayoutElements\Addresses\OrganizationField
+{
+    use LegacyEventConstants;
+}

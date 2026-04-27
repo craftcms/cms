@@ -1,1 +1,1 @@
-import{C as o}from"./cp3.js";import"./CpGlobalSidebar.js";import"./CpQueueIndicator.js";window.Cp={...window.Cp||{},...o};console.log("window.Cp defined",window.Cp);
+import"./_plugin-vue_export-helper.js";import{t as e}from"./cp3.js";import"./CpGlobalSidebar.js";import"./CpQueueIndicator.js";window.Cp={...window.Cp||{},...e},console.log(`window.Cp defined`,window.Cp);

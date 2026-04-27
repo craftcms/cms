@@ -17,7 +17,7 @@ use Twig\Node\Node;
  * @author Yonel Ceruto <yonelceruto@gmail.com>
  */
 #[YieldReady]
-final class DeprecatedNode extends Node
+class DeprecatedNode extends Node
 {
     /**
      * Constructor

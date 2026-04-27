@@ -13,7 +13,7 @@ use Twig\Node\ForNode;
 use Twig\Node\Node;
 
 #[YieldReady]
-final class NavNode extends ForNode
+class NavNode extends ForNode
 {
     private readonly NavItemNode $navItemNode;
 

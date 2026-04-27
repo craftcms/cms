@@ -11,4 +11,5 @@ namespace craft\base\conditions;
  */
 abstract class BaseLightswitchConditionRule extends \CraftCms\Cms\Condition\BaseLightswitchConditionRule
 {
+    use \craft\base\LegacyEventConstants;
 }

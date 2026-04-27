@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Conditions;
 
-use craft\helpers\Cp;
 use CraftCms\Cms\Condition\BaseNumberConditionRule;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Money;
 use CraftCms\Cms\Support\Arr;
@@ -13,7 +13,8 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Money as MoneyHelper;
 use Money\Currency;
 use Money\Money as MoneyLibrary;
-use yii\base\InvalidConfigException;
+use Override;
+use RuntimeException;
 
 use function CraftCms\Cms\t;
 
@@ -21,7 +22,7 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
 {
     use FieldConditionRuleTrait;
 
-    #[\Override]
+    #[Override]
     public function setAttributes($values, $safeOnly = true): void
     {
         // Hold setting of the value attribute until we have all the info we need
@@ -35,12 +36,12 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
             $maxValue = Arr::pull($values, 'maxValue');
         }
 
-        parent::setAttributes($values, $safeOnly);
+        parent::setAttributes($values);
 
         $field = $this->field();
 
         if (! $field instanceof Money) {
-            throw new InvalidConfigException;
+            throw new RuntimeException;
         }
 
         if (isset($value, $this->_fieldUid)) {
@@ -59,13 +60,13 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
         }
     }
 
-    #[\Override]
+    #[Override]
     protected function inputHtml(): string
     {
         $field = $this->field();
 
         if (! $field instanceof Money) {
-            throw new InvalidConfigException;
+            throw new RuntimeException;
         }
 
         // don't show the value input if the condition checks for empty/notempty
@@ -79,11 +80,11 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
             return Html::tag('div',
                 Html::hiddenLabel(t('Min Value'), 'min').
                 // Min value (value) input
-                Cp::moneyInputHtml($this->inputOptions()).
+                FormFields::moneyInputHtml($this->inputOptions()).
                 Html::tag('span', t('and')).
                 Html::hiddenLabel(t('Max Value'), 'max').
                 // Max value input
-                Cp::moneyInputHtml(array_merge(
+                FormFields::moneyInputHtml(array_merge(
                     $this->inputOptions(),
                     ['id' => 'maxValue', 'name' => 'maxValue', 'value' => $maxValue]
                 )).
@@ -92,10 +93,10 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
             );
         }
 
-        return Cp::moneyInputHtml($this->inputOptions());
+        return FormFields::moneyInputHtml($this->inputOptions());
     }
 
-    #[\Override]
+    #[Override]
     protected function inputOptions(): array
     {
         /** @var Money $field */

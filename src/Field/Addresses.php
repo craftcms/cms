@@ -5,33 +5,35 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
-use Craft;
-use craft\base\ElementInterface;
-use craft\base\NestedElementInterface;
-use craft\elements\NestedElementManager;
-use craft\gql\arguments\elements\Address as AddressArguments;
-use craft\gql\interfaces\elements\Address as AddressGqlInterface;
-use craft\gql\resolvers\elements\Address as AddressResolver;
-use craft\gql\types\input\Addresses as AddressesInput;
-use craft\helpers\Gql;
-use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Database\Table as DbTable;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
+use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Conditions\EmptyFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
-use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
+use CraftCms\Cms\Gql\Arguments\Elements\Address as AddressArguments;
+use CraftCms\Cms\Gql\GqlHelper as Gql;
+use CraftCms\Cms\Gql\Interfaces\Elements\Address as AddressGqlInterface;
+use CraftCms\Cms\Gql\Resolvers\Elements\Address as AddressResolver;
+use CraftCms\Cms\Gql\Types\Input\Addresses as AddressesInput;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\LegacyAssets\CpAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
@@ -40,9 +42,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Override;
+use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidConfigException;
 
+use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -51,7 +54,7 @@ use function CraftCms\Cms\template;
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
-final class Addresses extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, MergeableFieldInterface
+class Addresses extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, MergeableFieldInterface
 {
     public const string VIEW_MODE_CARDS = 'cards';
 
@@ -79,7 +82,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     {
         // Don't ever automatically propagate values to other sites.
         return [
-            self::TRANSLATION_METHOD_SITE,
+            TranslationMethod::Site,
         ];
     }
 
@@ -215,7 +218,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     {
         try {
             $owner = $element->getOwner();
-        } catch (InvalidConfigException) {
+        } catch (RuntimeException) {
             $owner = $element->duplicateOf;
         }
 
@@ -228,17 +231,17 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
 
     public function canViewElement(NestedElementInterface $element, User $user): bool
     {
-        return Craft::$app->getElements()->canView($element->getOwner(), $user);
+        return $user->can('view', $element->getOwner());
     }
 
     public function canSaveElement(NestedElementInterface $element, User $user): bool
     {
-        if (! Craft::$app->getElements()->canSave($element->getOwner(), $user)) {
+        if (! $user->can('save', $owner = $element->getOwner())) {
             return false;
         }
 
         // If this is a new address, make sure we aren't hitting the Max Addresses limit
-        if (! $element->id && $element->getIsCanonical() && $this->maxAddressesReached($element->getOwner())) {
+        if (! $element->id && $element->getIsCanonical() && $this->maxAddressesReached($owner)) {
             return false;
         }
 
@@ -248,7 +251,8 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     public function canDuplicateElement(NestedElementInterface $element, User $user): bool
     {
         $owner = $element->getOwner();
-        if (! Craft::$app->getElements()->canSave($owner, $user)) {
+
+        if (! $user->can('save', $owner)) {
             return false;
         }
 
@@ -259,7 +263,8 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     public function canDeleteElement(NestedElementInterface $element, User $user): bool
     {
         $owner = $element->getOwner();
-        if (! Craft::$app->getElements()->canSave($element->getOwner(), $user)) {
+
+        if (! $user->can('save', $element->getOwner())) {
             return false;
         }
 
@@ -296,8 +301,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
                 ->drafts(null)
                 ->status(null)
                 ->siteId($owner->siteId)
-                ->limit(null)
-                ->count();
+                ->getCountForPagination();
         }
 
         return $value->count();
@@ -316,12 +320,12 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
 
     private function settingsHtml(bool $readOnly): string
     {
-        $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
+        app(InternalAssetRegistry::class)->register(CpAsset::class);
 
         return template('_components/fieldtypes/Addresses/settings', [
             'field' => $this,
             'readOnly' => $readOnly,
-            'baseIconsUrl' => "$bundle->baseUrl/images/view-modes",
+            'baseIconsUrl' => craftAsset('legacy/cp/dist/images/view-modes'),
         ]);
     }
 
@@ -355,7 +359,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
             $query->setResultOverride($query->all());
         } elseif ($element && is_array($value)) {
             $query->setResultOverride($this->createAddressesFromSerializedData($value, $element, $fromRequest));
-        } elseif (Craft::$app->getRequest()->getIsPreview()) {
+        } elseif (request()->isPreview()) {
             $query->withProvisionalDrafts();
         }
 
@@ -570,7 +574,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     }
 
     /**
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
@@ -618,7 +622,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
+        if (! $element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_DEFAULT, ElementRules::SCENARIO_LIVE)) {
             return [];
         }
 
@@ -645,15 +649,15 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
                 ->all();
 
             $invalidAddressIds = [];
-            $scenario = $element->getScenario();
+            $scenario = $element->ruleset->getScenario();
 
             foreach ($addresses as $address) {
                 /** @var Address $address */
                 if (
-                    $scenario === Element::SCENARIO_ESSENTIALS ||
-                    ($address->enabled && $scenario === Element::SCENARIO_LIVE)
+                    $scenario === ElementRules::SCENARIO_ESSENTIALS ||
+                    ($address->enabled && $scenario === ElementRules::SCENARIO_LIVE)
                 ) {
-                    $address->setScenario($scenario);
+                    $address->ruleset->useScenario($scenario);
                 }
 
                 if (! $address->validate()) {
@@ -677,7 +681,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
         }
 
         if (
-            $element->inScenarios(Element::SCENARIO_LIVE) &&
+            $element->ruleset->inScenarios(ElementRules::SCENARIO_LIVE) &&
             ($this->minAddresses || $this->maxAddresses)
         ) {
             $rules = [
@@ -777,7 +781,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     public function getEagerLoadingGqlConditions(): array
     {
         return [
-            'withProvisionalDrafts' => Craft::$app->getRequest()->getIsPreview(),
+            'withProvisionalDrafts' => request()->isPreview(),
         ];
     }
 

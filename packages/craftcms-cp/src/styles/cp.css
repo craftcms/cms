@@ -3,6 +3,7 @@
 @import './shared/preflight.css' layer(preflight);
 @import './shared/variables.css' layer(theme);
 @import './shared/tokens.css' layer(theme);
+@import './shared/colorable.css' layer(theme);
 @import './shared/base.css' layer(base);
 
 .resizable-container {

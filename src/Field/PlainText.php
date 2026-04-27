@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Craft;
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -22,7 +22,7 @@ use function CraftCms\Cms\template;
 /**
  * PlainText represents a Plain Text field.
  */
-final class PlainText extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class PlainText extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -204,7 +204,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
                 }
             };
         } elseif ($this->charLimit) {
-            $rules[] = ["max:$this->charLimit"];
+            $rules[] = "max:$this->charLimit";
         }
 
         return $rules;

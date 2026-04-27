@@ -66,7 +66,6 @@ use craft\services\Webpack;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\UrlManager;
-use craft\web\User as UserSession;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Announcement\Announcements;
@@ -78,7 +77,7 @@ use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator as DeprecatorFacade;
 use CraftCms\Cms\Translation\Locale;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Updates;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Symfony\Component\VarDumper\Dumper\AbstractDumper;
@@ -322,9 +321,7 @@ trait ApplicationTrait
         if ($useUserLanguage) {
             // If the user is logged in *and* has a primary language set, use that
             // (don't actually try to fetch the user, as plugins haven't been loaded yet)
-            /** @var UserSession $user */
-            $user = $this->getUser();
-            $id = Session::get($user->idParam);
+            $id = Session::get($this->getUser()->idParam);
             if (
                 $id &&
                 ($language = \CraftCms\Cms\Support\Facades\Users::getUserPreference($id, 'language')) !== null &&
@@ -1036,6 +1033,7 @@ trait ApplicationTrait
      * @return Gql The GraphQL service
      *
      * @since 3.3.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Gql} instead.
      */
     public function getGql(): Gql
     {
@@ -1070,6 +1068,7 @@ trait ApplicationTrait
      * Returns the current mailer.
      *
      * @return Mailer The mailer component
+     * @deprecated 6.0.0 use Laravel mailers/drivers and system-message mailables.
      */
     public function getMailer(): Mailer
     {
@@ -1201,6 +1200,7 @@ trait ApplicationTrait
      * @return Sso The SSO service
      *
      * @since 5.3.0
+     * @deprecated 6.0.0 use the Laravel Socialite {@see \CraftCms\Cms\Auth\OAuth\OAuth} implementation instead.
      */
     public function getSso(): Sso
     {
@@ -1235,6 +1235,7 @@ trait ApplicationTrait
      * Returns the template cache service.
      *
      * @return TemplateCaches The template caches service
+     * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\View\TemplateCaches} instead.
      */
     public function getTemplateCaches(): TemplateCaches
     {
@@ -1340,8 +1341,7 @@ trait ApplicationTrait
         $this->getLog();
 
         $this->language = app()->getLocale();
-        $this->setTimeZone(app()->getTimezone());
-        date_default_timezone_set(app()->getTimezone());
+        $this->setTimeZone(Cms::timezone());
 
         // Use our own Markdown parser classes
         $flavors = [

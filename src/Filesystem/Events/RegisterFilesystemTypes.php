@@ -10,7 +10,7 @@ use Illuminate\Support\Collection;
 /**
  * @event RegisterFilesystemTypes The event that is triggered when registering filesystem types.
  */
-final class RegisterFilesystemTypes
+class RegisterFilesystemTypes
 {
     public function __construct(
         /** @var Collection<class-string<FsInterface>> */

@@ -6,4 +6,4 @@ namespace CraftCms\Cms\Component\Exceptions;
 
 use RuntimeException;
 
-final class MissingComponentException extends RuntimeException {}
+class MissingComponentException extends RuntimeException {}

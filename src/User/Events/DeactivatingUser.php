@@ -12,7 +12,7 @@ use CraftCms\Cms\User\Elements\User;
  *
  * You may set [[$isValid]] to `false` to prevent the user from getting deactivated.
  */
-final class DeactivatingUser extends UserEvent
+class DeactivatingUser extends UserEvent
 {
     use ValidatableEvent;
 }

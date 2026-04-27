@@ -1,1 +1,1 @@
-import t from"./it2.js";const i={...t};export{i as default};
+import e from"./it2.js";var t={...e};export{t as default};

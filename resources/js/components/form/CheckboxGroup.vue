@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp/utilities/translate.ts';
   import {computed} from 'vue';
-  import type CraftCheckbox from '@craftcms/cp/src/components/checkbox/checkbox';
+  import type CraftCheckbox from '@craftcms/cp/components/checkbox/checkbox.ts.mjs';
   import type {CheckboxOption} from '@/types';
 
   const emit = defineEmits<{

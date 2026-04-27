@@ -12,7 +12,7 @@ use Throwable;
 use Twig\Error\RuntimeError;
 use Twig\Template;
 
-final readonly class TwigExceptionMapper
+readonly class TwigExceptionMapper
 {
     /**
      * Maps an exception and replaces all references to compiled Twig

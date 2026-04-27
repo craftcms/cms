@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Field\Data;
 /**
  * Single-select option field data class.
  */
-final class SingleOptionFieldData extends OptionData
+class SingleOptionFieldData extends OptionData
 {
     /** @var OptionData[] */
     private array $_options = [];

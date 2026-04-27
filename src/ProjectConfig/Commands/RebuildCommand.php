@@ -8,7 +8,7 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Console\Command;
 
-final class RebuildCommand extends Command
+class RebuildCommand extends Command
 {
     use CraftCommand;
 

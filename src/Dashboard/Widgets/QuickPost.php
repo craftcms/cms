@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use Craft;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Data\Section;
@@ -20,7 +19,7 @@ use Override;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final class QuickPost extends Widget
+class QuickPost extends Widget
 {
     #[Override]
     public static function displayName(): string
@@ -55,12 +54,12 @@ final class QuickPost extends Widget
     public ?string $customTitle = null;
 
     /**
-     * @see section()
+     * @see Section()
      */
     private Section|false $_section;
 
     /**
-     * @see entryType()
+     * @see EntryType()
      */
     private EntryType|false $_entryType;
 
@@ -206,7 +205,7 @@ JS, [
                 'siteId' => $this->siteId(),
                 'section' => $section->handle,
                 'type' => $entryType->handle,
-                'authorId' => Craft::$app->getUser()->getId(),
+                'authorId' => Auth::id(),
             ],
             Entry::class,
         ]);

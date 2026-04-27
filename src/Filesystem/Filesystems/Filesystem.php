@@ -10,7 +10,6 @@ use CraftCms\Cms\Component\Concerns\SavableComponent;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Validation\Rules\HandleRule;
-use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Rule;
 use Override;
 
@@ -19,7 +18,6 @@ use function CraftCms\Cms\t;
 abstract class Filesystem extends Component implements FsInterface
 {
     use ConfigurableComponent;
-    use Macroable;
     use SavableComponent;
 
     public const string CONFIG_MIMETYPE = 'mimetype';

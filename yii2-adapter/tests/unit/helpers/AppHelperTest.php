@@ -41,18 +41,35 @@ class AppHelperTest extends TestCase
     }
 
     /**
-     * Mailer config now needs a mail settings
+     * Mailer config is sourced from Laravel mail config/runtime.
      */
     public function testMailerConfigIndexes(): void
     {
-        $mailSettings = new MailSettings(['transportType' => Sendmail::class]);
+        config()->set('mail.from', [
+            'address' => 'mailer@craft.test',
+            'name' => 'Mailer Name',
+        ]);
+        config()->set('mail.reply_to', [
+            'address' => 'reply@craft.test',
+            'name' => null,
+        ]);
+
+        $mailSettings = new MailSettings([
+            'fromEmail' => 'legacy@craft.test',
+            'fromName' => 'Legacy Name',
+            'replyToEmail' => 'legacy-reply@craft.test',
+            'transportType' => Sendmail::class,
+        ]);
         $result = App::mailerConfig($mailSettings);
 
-        self::assertFalse($this->_areKeysMissing($result, ['class', 'messageClass', 'from', 'template', 'transport']));
+        self::assertFalse($this->_areKeysMissing($result, ['class', 'messageClass', 'from', 'replyTo', 'template', 'transport']));
 
         // Make sure its a component
         self::assertContains(Component::class, class_parents($result['class']));
         self::assertTrue(class_exists($result['class']));
+        self::assertSame(['mailer@craft.test' => 'Mailer Name'], $result['from']);
+        self::assertSame('reply@craft.test', $result['replyTo']);
+        self::assertSame(app('mail.manager')->mailer()->getSymfonyTransport(), $result['transport']);
     }
 
     /**

@@ -2,7 +2,7 @@
   import QueueManagerIndex from '@/components/utilities/QueueManager/QueueManagerIndex.vue';
   import QueueManagerShow from '@/components/utilities/QueueManager/QueueManagerShow.vue';
   import {inject, onMounted, ref} from 'vue';
-  import type {JobInfo} from '@craftcms/cp/src/types/index.js';
+  import type {JobInfo} from '@craftcms/cp/types/index.ts';
   import {Queue} from '@/types/keys';
 
   const props = withDefaults(

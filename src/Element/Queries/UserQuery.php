@@ -21,7 +21,7 @@ use Override;
 /**
  * @extends ElementQuery<User>
  */
-final class UserQuery extends ElementQuery
+class UserQuery extends ElementQuery
 {
     use QueriesAffiliatedSite;
     use QueriesAssetUploaders;
@@ -29,6 +29,9 @@ final class UserQuery extends ElementQuery
     use QueriesRolesAndPermissions;
     use QueriesUserGroups;
     use QueriesUserProperties;
+
+    #[Override]
+    protected string $table = Table::USERS;
 
     public const string STATUS_CREDENTIALED = 'credentialed';
 
@@ -42,8 +45,6 @@ final class UserQuery extends ElementQuery
     public function __construct(array $config = [])
     {
         parent::__construct(User::class, $config);
-
-        $this->joinElementTable(Table::USERS);
 
         $this->query->addSelect([
             'users.photoId',
@@ -95,7 +96,6 @@ final class UserQuery extends ElementQuery
 
             // If there's a custom orderBy, make sure we're showing active, non-pending accounts first
             $userQuery->query->orders = $orders;
-            $userQuery->subQuery->orders = $orders;
         });
     }
 

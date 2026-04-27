@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Events;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * @event RegisterSortOptions event is triggered when registering the sort options for an element type.
  */
-final class RegisterSortOptions
+class RegisterSortOptions
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class

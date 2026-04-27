@@ -14,7 +14,6 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Html;
 use Symfony\Component\Mailer\Transport\AbstractTransport;
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Sendmail implements a Sendmail transport adapter into Craft’s mailer.
@@ -22,6 +21,7 @@ use function CraftCms\Cms\template;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @mixin EnvAttributeParserBehavior
+ * @deprecated 6.0.0 transport adapters are ignored; use Laravel mail drivers.
  */
 class Sendmail extends BaseTransportAdapter
 {
@@ -106,19 +106,7 @@ class Sendmail extends BaseTransportAdapter
 
     private function settingsHtml(bool $readOnly): string
     {
-        $commandOptions = array_map(fn(string $command) => [
-            'label' => $command,
-            'value' => $command,
-            'data' => [
-                'hint' => null,
-            ],
-        ], $this->_allowedCommands());
-
-        return template('_components/mailertransportadapters/Sendmail/settings', [
-            'adapter' => $this,
-            'commandOptions' => $commandOptions,
-            'readOnly' => $readOnly,
-        ]);
+        return t('Legacy mail transport adapter settings are ignored. Configure Laravel mail drivers instead.');
     }
 
     /**

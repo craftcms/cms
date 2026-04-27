@@ -7,7 +7,7 @@ use CraftCms\Cms\Element\Events\Render;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
-use Twig\Markup;
+use Illuminate\Support\HtmlString;
 
 use function Pest\Laravel\actingAs;
 
@@ -25,7 +25,7 @@ describe('render', function () {
     test('returns markup', function () {
         $markup = $this->entry->render();
 
-        expect($markup)->toBeInstanceOf(Markup::class);
+        expect($markup)->toBeInstanceOf(HtmlString::class);
     });
 
     test('Render event allows setting custom output', function () {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
-use craft\helpers\Assets;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
@@ -85,18 +85,18 @@ trait QueriesAssetProperties
     {
         $this->beforeQuery(function (AssetQuery $assetQuery) {
             if ($assetQuery->uploaderId) {
-                $assetQuery->subQuery->whereIn('uploaderId', Arr::wrap($assetQuery->uploaderId));
+                $assetQuery->whereIn('uploaderId', Arr::wrap($assetQuery->uploaderId));
             }
 
             if ($assetQuery->filename) {
-                $assetQuery->subQuery->whereParam('assets.filename', $assetQuery->filename);
+                $assetQuery->whereParam('assets.filename', $assetQuery->filename);
             }
 
             if ($assetQuery->kind) {
-                $assetQuery->subQuery->where(function (Builder $query) use ($assetQuery) {
+                $assetQuery->where(function (Builder $query) use ($assetQuery) {
                     $query->whereParam('assets.kind', $assetQuery->kind);
 
-                    $kinds = Assets::getFileKinds();
+                    $kinds = AssetsHelper::getFileKinds();
 
                     foreach ((array) $assetQuery->kind as $kind) {
                         if (! isset($kinds[$kind])) {
@@ -111,7 +111,7 @@ trait QueriesAssetProperties
             }
 
             if ($assetQuery->dateModified) {
-                $assetQuery->subQuery->whereDateParam('assets.dateModified', $assetQuery->dateModified);
+                $assetQuery->whereDateParam('assets.dateModified', $assetQuery->dateModified);
             }
         });
     }

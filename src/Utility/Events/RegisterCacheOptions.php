@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Events;
 
+use CraftCms\Cms\Utility\Utilities\ClearCaches;
+
 /**
  * @event RegisterCacheOptions The event that is triggered when registering cache options.
  *
@@ -14,9 +16,9 @@ namespace CraftCms\Cms\Utility\Events;
  * - `action` – Either the path to a folder that should be cleared, or a callable that should handle the cache clearing.
  * - `info` _(optional)_ – A description of the cache option.
  *
- * @see \CraftCms\Cms\Utility\Utilities\ClearCaches::cacheOptions()
+ * @see ClearCaches::cacheOptions()
  */
-final class RegisterCacheOptions
+class RegisterCacheOptions
 {
     public function __construct(
         /**

@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Events;
 
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Fields;
 use Illuminate\Support\Collection;
 
 /**
  * @event DefineCompatibleFieldTypesEvent The event that is triggered when defining the compatible field types for a field.
  *
- * @see \CraftCms\Cms\Field\Fields::getCompatibleFieldTypes()
+ * @see Fields::getCompatibleFieldTypes()
  */
-final class DefineCompatibleFieldTypes
+class DefineCompatibleFieldTypes
 {
     public function __construct(
         public FieldInterface $field,

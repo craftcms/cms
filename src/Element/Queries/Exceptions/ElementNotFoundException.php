@@ -8,9 +8,9 @@ use CraftCms\Cms\Support\Arr;
 use Illuminate\Database\RecordsNotFoundException;
 
 /**
- * @template TElement of \craft\base\ElementInterface
+ * @template TElement of \CraftCms\Cms\Element\Contracts\ElementInterface
  */
-final class ElementNotFoundException extends RecordsNotFoundException
+class ElementNotFoundException extends RecordsNotFoundException
 {
     /**
      * Name of the affected element.

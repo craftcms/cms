@@ -1,1 +1,1 @@
-craft\helpers\Template::endProfile("block", "content");
+app('CraftCms\Cms\View\TemplateProfiler')->endProfile("block", "content");

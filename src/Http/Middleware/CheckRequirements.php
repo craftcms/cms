@@ -15,7 +15,7 @@ use RuntimeException;
 
 use function CraftCms\Cms\t;
 
-final readonly class CheckRequirements
+readonly class CheckRequirements
 {
     public function __construct(
         private GeneralConfig $generalConfig,

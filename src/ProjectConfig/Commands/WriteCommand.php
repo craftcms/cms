@@ -8,7 +8,7 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Console\Command;
 
-final class WriteCommand extends Command
+class WriteCommand extends Command
 {
     use CraftCommand;
 

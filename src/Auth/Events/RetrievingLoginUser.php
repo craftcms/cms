@@ -26,7 +26,7 @@ use CraftCms\Cms\User\Elements\User;
  * );
  * ```
  */
-final class RetrievingLoginUser
+class RetrievingLoginUser
 {
     public function __construct(
         public string $loginName,

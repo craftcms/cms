@@ -9,7 +9,7 @@ use CraftCms\Cms\User\Elements\User;
 /**
  * @event UserPhotoDeleted The event that is triggered after a user photo is deleted.
  */
-final class UserPhotoDeleted
+class UserPhotoDeleted
 {
     public function __construct(
         public User $user,

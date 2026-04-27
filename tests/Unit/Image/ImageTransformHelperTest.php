@@ -459,7 +459,7 @@ describe('extendTransform', function () {
                 'id' => 88,
                 'uid' => 'legacy-uid',
                 'handle' => 'square',
-                'parameterChangeTime' => new \DateTime,
+                'parameterChangeTime' => new DateTime,
             ]),
             ['format' => 'jpg'],
             [

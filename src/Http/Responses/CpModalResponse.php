@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Responses;
 
-use Craft;
-use craft\web\assets\htmx\HtmxAsset;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\LegacyAssets\HtmxAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
@@ -18,7 +18,7 @@ use Illuminate\Support\Traits\Conditionable;
 
 use function CraftCms\Cms\template;
 
-final class CpModalResponse implements Responsable
+class CpModalResponse implements Responsable
 {
     use Conditionable;
 
@@ -152,7 +152,7 @@ final class CpModalResponse implements Responsable
 
     public function toResponse($request): JsonResponse
     {
-        Craft::$app->getView()->registerAssetBundle(HtmxAsset::class);
+        app(InternalAssetRegistry::class)->register(HtmxAsset::class);
 
         $namespace = Str::random(10);
 

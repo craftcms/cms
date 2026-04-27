@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Utility\Utilities;
 
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Updates\Updates as UpdatesService;
+use CraftCms\Cms\Update\Updates as UpdatesService;
 use CraftCms\Cms\Utility\Utility;
 use Override;
 
@@ -14,7 +14,7 @@ use function CraftCms\Cms\t;
 /**
  * Updates represents a Updates dashboard widget.
  */
-final class Updates extends Utility
+class Updates extends Utility
 {
     #[Override]
     public static function displayName(): string

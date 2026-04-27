@@ -9,7 +9,7 @@ use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-final class RecoveryCodes extends BaseModel
+class RecoveryCodes extends BaseModel
 {
     #[\Override]
     protected $table = Table::RECOVERYCODES;

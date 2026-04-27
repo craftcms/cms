@@ -1,5 +1,5 @@
 import {describe, expect, test} from 'vitest';
-import {toEnvVar, toHandle} from './string';
+import {toEnvVar, toHandle, toUriFormat} from './string';
 
 describe('toHandle', () => {
   describe('camel', () => {
@@ -64,5 +64,23 @@ describe('toEnvVar', () => {
     expect(toEnvVar(name as string, options as Record<string, any>)).toBe(
       expected
     );
+  });
+});
+
+describe('toUriFormat', () => {
+  test.for([
+    ['foo-bar', 'Foo Bar'],
+    ['foo-bar-baz', 'Foo Bar Baz'],
+    ['blog-posts', 'Blog Posts'],
+    ['', ''],
+    ['foo-bar', '  Foo  Bar  '],
+    ['hello-world', '<b>Hello</b> World'],
+    ['foo-bar', '123 Foo Bar'],
+    ['foo-bar', 'Foo Bar!@#'],
+    ['foo-bar', 'Foo/Bar'],
+    ['foo-bar', 'Foo\\Bar'],
+    ['cafe', 'Café'],
+  ])('%s <- %s', ([expected, input]: Array<string>) => {
+    expect(toUriFormat(input as string)).toBe(expected as string);
   });
 });

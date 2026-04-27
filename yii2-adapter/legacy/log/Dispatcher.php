@@ -71,7 +71,7 @@ class Dispatcher extends \yii\log\Dispatcher
         // If the dispatcher is configured with flushInterval => 1, it could cause a PHP error if any log
         // targets haven’t been instantiated yet.
 
-        $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
+        $isConsoleRequest = app()->runningInConsole();
 
         // Only log console requests and web requests that aren't getAuthTimeout requests
         if (!$isConsoleRequest && !Craft::$app->getUser()->enableSession) {
@@ -94,7 +94,7 @@ class Dispatcher extends \yii\log\Dispatcher
                 'extractExceptionTrace' => !app()->hasDebugModeEnabled(),
                 'allowLineBreaks' => $allowLineBreaks,
                 'level' => app()->hasDebugModeEnabled() ? LogLevel::INFO : LogLevel::WARNING,
-                'logContext' => !Craft::$app->getRequest()->getIsConsoleRequest(),
+                'logContext' => !app()->runningInConsole(),
             ];
 
             return [$name => Craft::createObject($config)];

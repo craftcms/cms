@@ -12,7 +12,7 @@ use function CraftCms\Cms\t;
 /**
  * Email link type.
  */
-final class Email extends BaseTextLinkType
+class Email extends BaseTextLinkType
 {
     public static function id(): string
     {

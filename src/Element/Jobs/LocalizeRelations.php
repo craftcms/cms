@@ -15,7 +15,7 @@ use Override;
 /**
  * Localizes relations for a field that has changed from global to site-specific.
  */
-final class LocalizeRelations extends Job
+class LocalizeRelations extends Job
 {
     public function __construct(
         public int $fieldId,

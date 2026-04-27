@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use yii\web\NotFoundHttpException;
 
-final readonly class HandleActionRequest
+readonly class HandleActionRequest
 {
     public function handle(Request $request, Closure $next): mixed
     {

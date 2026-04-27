@@ -8,27 +8,16 @@
 namespace craft\web\assets\selectize;
 
 use craft\web\AssetBundle;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Selectize asset bundle.
+ * @deprecated 6.0.0
  */
 class SelectizeAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
+    public function registerAssetFiles($view)
     {
-        $this->sourcePath = __dir__ . '/dist';
-
-        $this->css = [
-            'css/selectize.css',
-        ];
-
-        $this->js = [
-            'selectize.js',
-        ];
-
-        parent::init();
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\SelectizeAsset::class);
     }
 }

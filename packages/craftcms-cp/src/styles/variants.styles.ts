@@ -2,62 +2,62 @@ import {css} from 'lit';
 
 export default css`
   :host([variant='default']) {
-    --c-color-bg-emphasis: var(--c-color-neutral-bg-emphasis);
-    --c-color-bg-normal: var(--c-color-neutral-bg-normal);
-    --c-color-bg-subtle: var(--c-color-neutral-bg-subtle);
-    --c-color-border-emphasis: var(--c-color-neutral-border-emphasis);
+    --c-color-fill-loud: var(--c-color-neutral-fill-loud);
+    --c-color-fill-normal: var(--c-color-neutral-fill-normal);
+    --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
+    --c-color-border-loud: var(--c-color-neutral-border-loud);
     --c-color-border-normal: var(--c-color-neutral-border-normal);
-    --c-color-border-subtle: var(--c-color-neutral-border-subtle);
-    --c-color-on-emphasis: var(--c-color-neutral-on-emphasis);
+    --c-color-border-quiet: var(--c-color-neutral-border-quiet);
+    --c-color-on-loud: var(--c-color-neutral-on-loud);
     --c-color-on-normal: var(--c-color-neutral-on-normal);
-    --c-color-on-subtle: var(--c-color-neutral-on-subtle);
+    --c-color-on-quiet: var(--c-color-neutral-on-quiet);
   }
 
   :host([variant='danger']) {
-    --c-color-bg-emphasis: var(--c-color-danger-bg-emphasis);
-    --c-color-bg-normal: var(--c-color-danger-bg-normal);
-    --c-color-bg-subtle: var(--c-color-danger-bg-subtle);
-    --c-color-border-emphasis: var(--c-color-danger-border-emphasis);
+    --c-color-fill-loud: var(--c-color-danger-fill-loud);
+    --c-color-fill-normal: var(--c-color-danger-fill-normal);
+    --c-color-fill-quiet: var(--c-color-danger-fill-quiet);
+    --c-color-border-loud: var(--c-color-danger-border-loud);
     --c-color-border-normal: var(--c-color-danger-border-normal);
-    --c-color-border-subtle: var(--c-color-danger-border-subtle);
-    --c-color-on-emphasis: var(--c-color-danger-on-emphasis);
+    --c-color-border-quiet: var(--c-color-danger-border-quiet);
+    --c-color-on-loud: var(--c-color-danger-on-loud);
     --c-color-on-normal: var(--c-color-danger-on-normal);
-    --c-color-on-subtle: var(--c-color-danger-on-subtle);
+    --c-color-on-quiet: var(--c-color-danger-on-quiet);
   }
 
   :host([variant='info']) {
-    --c-color-bg-emphasis: var(--c-color-info-bg-emphasis);
-    --c-color-bg-normal: var(--c-color-info-bg-normal);
-    --c-color-bg-subtle: var(--c-color-info-bg-subtle);
-    --c-color-border-emphasis: var(--c-color-info-border-emphasis);
+    --c-color-fill-loud: var(--c-color-info-fill-loud);
+    --c-color-fill-normal: var(--c-color-info-fill-normal);
+    --c-color-fill-quiet: var(--c-color-info-fill-quiet);
+    --c-color-border-loud: var(--c-color-info-border-loud);
     --c-color-border-normal: var(--c-color-info-border-normal);
-    --c-color-border-subtle: var(--c-color-info-border-subtle);
-    --c-color-on-emphasis: var(--c-color-info-on-emphasis);
+    --c-color-border-quiet: var(--c-color-info-border-quiet);
+    --c-color-on-loud: var(--c-color-info-on-loud);
     --c-color-on-normal: var(--c-color-info-on-normal);
-    --c-color-on-subtle: var(--c-color-info-on-subtle);
+    --c-color-on-quiet: var(--c-color-info-on-quiet);
   }
 
   :host([variant='warning']) {
-    --c-color-bg-emphasis: var(--c-color-warning-bg-emphasis);
-    --c-color-bg-normal: var(--c-color-warning-bg-normal);
-    --c-color-bg-subtle: var(--c-color-warning-bg-subtle);
-    --c-color-border-emphasis: var(--c-color-warning-border-emphasis);
+    --c-color-fill-loud: var(--c-color-warning-fill-loud);
+    --c-color-fill-normal: var(--c-color-warning-fill-normal);
+    --c-color-fill-quiet: var(--c-color-warning-fill-quiet);
+    --c-color-border-loud: var(--c-color-warning-border-loud);
     --c-color-border-normal: var(--c-color-warning-border-normal);
-    --c-color-border-subtle: var(--c-color-warning-border-subtle);
-    --c-color-on-emphasis: var(--c-color-warning-on-emphasis);
+    --c-color-border-quiet: var(--c-color-warning-border-quiet);
+    --c-color-on-loud: var(--c-color-warning-on-loud);
     --c-color-on-normal: var(--c-color-warning-on-normal);
-    --c-color-on-subtle: var(--c-color-warning-on-subtle);
+    --c-color-on-quiet: var(--c-color-warning-on-quiet);
   }
 
   :host([variant='success']) {
-    --c-color-bg-emphasis: var(--c-color-success-bg-emphasis);
-    --c-color-bg-normal: var(--c-color-success-bg-normal);
-    --c-color-bg-subtle: var(--c-color-success-bg-subtle);
-    --c-color-border-emphasis: var(--c-color-success-border-emphasis);
+    --c-color-fill-loud: var(--c-color-success-fill-loud);
+    --c-color-fill-normal: var(--c-color-success-fill-normal);
+    --c-color-fill-quiet: var(--c-color-success-fill-quiet);
+    --c-color-border-loud: var(--c-color-success-border-loud);
     --c-color-border-normal: var(--c-color-success-border-normal);
-    --c-color-border-subtle: var(--c-color-success-border-subtle);
-    --c-color-on-emphasis: var(--c-color-success-on-emphasis);
+    --c-color-border-quiet: var(--c-color-success-border-quiet);
+    --c-color-on-loud: var(--c-color-success-on-loud);
     --c-color-on-normal: var(--c-color-success-on-normal);
-    --c-color-on-subtle: var(--c-color-success-on-subtle);
+    --c-color-on-quiet: var(--c-color-success-on-quiet);
   }
 `;

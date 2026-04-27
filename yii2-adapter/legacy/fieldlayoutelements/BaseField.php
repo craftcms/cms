@@ -24,6 +24,8 @@ use Illuminate\Support\Facades\Event;
  */
 abstract class BaseField extends \CraftCms\Cms\FieldLayout\LayoutElements\BaseField
 {
+    use \craft\base\LegacyEventConstants;
+
     /**
      * @event DefineFieldActionsEvent The event that is triggered when defining action menu items.
      *

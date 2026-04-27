@@ -14,7 +14,7 @@ use function CraftCms\Cms\template;
 /**
  * PhpInfo represents a PhpInfo dashboard widget.
  */
-final class PhpInfo extends Utility
+class PhpInfo extends Utility
 {
     #[Override]
     public static function displayName(): string

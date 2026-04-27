@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Facade;
  *
  * @see \CraftCms\Cms\View\InputNamespace
  */
-final class InputNamespace extends Facade
+class InputNamespace extends Facade
 {
     protected static function getFacadeAccessor(): string
     {

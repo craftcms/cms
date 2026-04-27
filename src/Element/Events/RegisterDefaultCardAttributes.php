@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Events;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * RegisterDefaultCardAttributes event is triggered when registering the default card attributes for an element type.
  */
-final class RegisterDefaultCardAttributes
+class RegisterDefaultCardAttributes
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class

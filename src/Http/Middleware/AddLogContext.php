@@ -10,7 +10,7 @@ use CraftCms\Cms\Support\Security;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-final readonly class AddLogContext
+readonly class AddLogContext
 {
     public function __construct(
         private GeneralConfig $generalConfig,
@@ -22,7 +22,7 @@ final readonly class AddLogContext
         Log::shareContext(array_filter([
             'environment' => app()->environment(),
             'userId' => $request->user()?->id,
-            'sessionId' => $request->session()->getId(),
+            'sessionId' => $request->hasSession() ? $request->session()->getId() : null,
             'ips' => $this->generalConfig->storeUserIps ? $request->ips() : null,
         ]));
 

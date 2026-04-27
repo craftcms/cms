@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig\Nodes;
 
 use Craft;
-use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Support\DateTimeHelper;
 use Override;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
 
 #[YieldReady]
-final class ExpiresNode extends Node
+class ExpiresNode extends Node
 {
     #[Override]
     public function compile(Compiler $compiler): void

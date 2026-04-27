@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Element\Exceptions;
 use RuntimeException;
 use Throwable;
 
-final class InvalidTypeException extends RuntimeException
+class InvalidTypeException extends RuntimeException
 {
     public function __construct(
         public readonly string $class,

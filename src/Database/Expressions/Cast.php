@@ -13,7 +13,7 @@ use Tpetry\QueryExpressions\Concerns\StringizeExpression;
  * Extension of {@see \Tpetry\QueryExpressions\Language\Cast}
  * without exception on custom cast.
  */
-final readonly class Cast implements Expression
+readonly class Cast implements Expression
 {
     use IdentifiesDriver;
     use StringizeExpression;

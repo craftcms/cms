@@ -11,7 +11,7 @@ use CraftCms\Cms\Shared\Concerns\HasUid;
 /**
  * @property string $heading
  */
-final class SystemMessage extends BaseModel
+class SystemMessage extends BaseModel
 {
     use HasUid;
 

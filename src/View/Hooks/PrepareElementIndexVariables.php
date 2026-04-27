@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View\Hooks;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Site\Sites;
 
 use function CraftCms\Cms\t;
 
-final readonly class PrepareElementIndexVariables
+readonly class PrepareElementIndexVariables
 {
     public function __construct(
         private ElementSources $elementSources,

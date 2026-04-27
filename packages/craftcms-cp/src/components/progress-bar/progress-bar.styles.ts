@@ -6,7 +6,7 @@ export default css`
     --_radius: var(--c-progress-bar-radius, var(--c-radius-full));
     --_track-color: var(
       --c-progress-bar-track-color,
-      var(--c-color-neutral-bg-subtle)
+      var(--c-color-neutral-fill-quiet)
     );
     --_fill-color: var(
       --c-progress-bar-fill-color,

@@ -25,8 +25,8 @@ it('is a singleton', function () {
 });
 
 it('can get entry types by section id', function () {
-    $section = Section::factory()->create();
-    $entryType = $section->entryTypes()->save(EntryType::factory()->create(), ['sortOrder' => 1]);
+    $entryType = EntryType::factory()->create();
+    $section = Section::factory()->withEntryTypes($entryType)->create();
 
     expect($this->entryTypes->getEntryTypesBySectionId($section->id))->toHaveCount(1);
     expect($this->entryTypes->getEntryTypesBySectionId($section->id)->first()->id)->toBe($entryType->id);
@@ -151,4 +151,23 @@ it('can delete an entry type', function () {
 
 it('can get table data', function () {
     expect($this->entryTypes->getTableData(1, 100))->not()->toBeEmpty();
+});
+
+it('returns laravel-style pagination metadata for table data', function () {
+    EntryType::factory()->count(3)->create();
+    $this->entryTypes->refreshEntryTypes();
+
+    [$pagination] = $this->entryTypes->getTableData(2, 2);
+
+    expect($pagination)
+        ->toMatchArray([
+            'total' => 3,
+            'per_page' => 2,
+            'current_page' => 2,
+            'last_page' => 2,
+            'from' => 3,
+            'to' => 3,
+        ])
+        ->and($pagination['prev_page_url'])->toContain('page=1')
+        ->and($pagination['next_page_url'])->toBeNull();
 });

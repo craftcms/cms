@@ -7,13 +7,14 @@
 
 namespace craft\events;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * Element event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\BeforeSaveElement} or {@see \CraftCms\Cms\Element\Events\AfterSaveElement} instead.
  */
 class ElementEvent extends CancelableEvent
 {

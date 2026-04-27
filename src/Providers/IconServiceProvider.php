@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Providers;
 use Illuminate\Support\ServiceProvider;
 use Yiisoft\Aliases\Aliases as YiiAliases;
 
-final class IconServiceProvider extends ServiceProvider
+class IconServiceProvider extends ServiceProvider
 {
     public function boot(YiiAliases $aliases): void
     {

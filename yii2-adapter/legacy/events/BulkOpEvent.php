@@ -7,14 +7,8 @@
 
 namespace craft\events;
 
-use Craft;
-use craft\helpers\DateTimeHelper;
-use craft\services\Elements;
-use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Query;
-use yii\base\Application;
-use yii\base\Event;
+use CraftCms\Cms\Element\BulkOp\Events\DeferredBulkOpReplay;
+use CraftCms\Cms\Support\Facades\BulkOps;
 
 /**
  * Bulk operation event class.
@@ -24,9 +18,6 @@ use yii\base\Event;
  */
 class BulkOpEvent extends ElementQueryEvent
 {
-    private static array $handlers;
-    private static array $triggers;
-
     /**
      * Listens to a class-level event, but defers calling the handler until after a bulk operation
      * is completed, and only if the event was triggered during the bulk operation.
@@ -50,71 +41,14 @@ class BulkOpEvent extends ElementQueryEvent
         callable $handler,
         mixed $data = null,
     ): void {
-        if (!isset(self::$handlers)) {
-            self::$handlers = [];
-            self::$triggers = [];
+        BulkOps::defer($class, function(DeferredBulkOpReplay $replay) use ($handler) {
+            $event = new self([
+                'key' => $replay->key,
+                'data' => $replay->data,
+            ]);
 
-            Event::on(Elements::class, Elements::EVENT_AFTER_BULK_OP, function(self $event) {
-                $triggers = Arr::pull(self::$triggers, $event->key, []);
-                $connection = Craft::$app->getElements()->getBulkOpConnection();
-
-                // see if any events were fired for the same bulk op key from previous requests
-                $storedTriggers = $connection
-                    ->table(Table::BULKOPEVENTS)
-                    ->select(['senderClass', 'eventName'])
-                    ->where('key', $event->key)
-                    ->get();
-
-                if ($storedTriggers->isNotEmpty()) {
-                    \Illuminate\Support\Facades\DB::table(Table::BULKOPEVENTS)
-                        ->where('key', $event->key)
-                        ->delete();
-
-                    foreach ($storedTriggers as $trigger) {
-                        $triggers[$trigger['senderClass']][$trigger['eventName']] = true;
-                    }
-                }
-
-                foreach ($triggers as $class => $eventNames) {
-                    foreach (array_keys($eventNames) as $eventName) {
-                        $handlers = self::$handlers[$class][$eventName] ?? [];
-                        foreach ($handlers as [$handler, $data]) {
-                            $event->data = $data;
-                            call_user_func($handler, $event);
-                        }
-                    }
-                }
-            }, append: false);
-
-            Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() {
-                // keep track of any event triggers that haven’t been handled yet
-                if (!empty(self::$triggers)) {
-                    $timestamp = Query::prepareDateForDb(DateTimeHelper::now());
-                    $connection = Craft::$app->getElements()->getBulkOpConnection();
-                    foreach (self::$triggers as $key => $triggers) {
-                        foreach ($triggers as $class => $eventNames) {
-                            foreach (array_keys($eventNames) as $eventName) {
-                                $connection->table(Table::BULKOPEVENTS)
-                                    ->upsert([
-                                        'key' => $key,
-                                        'senderClass' => $class,
-                                        'eventName' => $eventName,
-                                        'timestamp' => $timestamp,
-                                    ], ['key', 'senderClass', 'eventName']);
-                            }
-                        }
-                    }
-                }
-            }, append: false);
-        }
-
-        self::$handlers[$class][$name][] = [$handler, $data];
-
-        static::on($class, $name, function() use ($class, $name) {
-            foreach (Craft::$app->getElements()->getBulkOpKeys() as $key) {
-                self::$triggers[$key][$class][$name] = true;
-            }
-        }, append: false);
+            call_user_func($handler, $event);
+        }, data: $data, watchKey: $name);
     }
 
     /**

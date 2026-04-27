@@ -211,7 +211,6 @@ trait FormatsResults
         }
 
         $this->parseOrderColumnMappings($elementQuery, $this->query);
-        $this->parseOrderColumnMappings($elementQuery, $this->subQuery);
     }
 
     private function applyDefaultOrder(ElementQuery $elementQuery): void
@@ -262,7 +261,6 @@ trait FormatsResults
             };
 
             $elementQuery->query->orderBy($column, $direction);
-            $elementQuery->subQuery->orderBy($column, $direction);
         }
     }
 
@@ -287,13 +285,8 @@ trait FormatsResults
 
     private function orderBySearchResults(ElementQuery $elementQuery): void
     {
-        $elementQuery->query->orders = array_filter(
-            $elementQuery->query->orders ?? [],
-            fn (array $order) => $order['column'] !== 'score',
-        );
-
-        $elementQuery->subQuery->orders = array_filter(
-            $elementQuery->subQuery->orders ?? [],
+        $elementQuery->getQuery()->orders = array_filter(
+            $elementQuery->getQuery()->orders ?? [],
             fn (array $order) => isset($order['column']) && $order['column'] !== 'score',
         );
 
@@ -324,6 +317,5 @@ trait FormatsResults
         }
 
         $elementQuery->query->orderBy(new CaseGroup($rules, new Value($i + 1)));
-        $elementQuery->subQuery->orderBy(new CaseGroup($rules, new Value($i + 1)));
     }
 }

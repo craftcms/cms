@@ -32,7 +32,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
  *
  * @see FieldLayout::getAvailableCustomFields()
  */
-final class DefineCustomFields
+class DefineCustomFields
 {
     public function __construct(
         public FieldLayout $fieldLayout,

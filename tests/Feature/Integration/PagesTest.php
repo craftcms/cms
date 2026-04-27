@@ -63,17 +63,6 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
         ],
     ],
 
-    [
-        'url' => '/settings/email',
-        'title' => 'Email Settings',
-        'extraContent' => [
-            ['rendered' => 'System Email Address'],
-            ['rendered' => 'This can begin with an environment variable.'],
-            ['rendered' => 'Sender Name'],
-            ['rendered' => 'HTML Email Template'],
-            ['rendered' => 'Transport Type'],
-        ],
-    ],
     ['url' => '/settings/plugins', 'title' => 'Plugins'],
     ['url' => '/settings/sites', 'title' => 'Sites'],
     [

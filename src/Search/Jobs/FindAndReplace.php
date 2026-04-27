@@ -16,7 +16,7 @@ use Override;
 /**
  * Finds and replaces text in element content.
  */
-final class FindAndReplace extends BatchedJob
+class FindAndReplace extends BatchedJob
 {
     public function __construct(
         public string $find,

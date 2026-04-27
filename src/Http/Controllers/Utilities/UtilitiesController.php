@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
-use craft\helpers\Cp;
-use craft\helpers\UrlHelper;
+use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Updates;
-use CraftCms\Cms\Utility\Utilities\Upgrade;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use InvalidArgumentException;
@@ -18,7 +18,7 @@ use InvalidArgumentException;
 use function CraftCms\Cms\cp_redirect;
 use function CraftCms\Cms\template;
 
-final readonly class UtilitiesController
+readonly class UtilitiesController
 {
     public function __construct(
         private Utilities $utilitiesService,
@@ -31,7 +31,7 @@ final readonly class UtilitiesController
         ]);
     }
 
-    public function index()
+    public function index(): RedirectResponse
     {
         $utilities = $this->utilitiesService->getAuthorizedUtilityTypes();
 
@@ -40,7 +40,7 @@ final readonly class UtilitiesController
         }
 
         // Don’t go to the Updates or Upgrade utilities by default if there are any others
-        $firstUtility = $utilities->first(fn (string $utility) => ! in_array($utility, [Updates::class, Upgrade::class])) ?? $utilities->first();
+        $firstUtility = $utilities->first(fn (string $utility) => $utility !== Updates::class) ?? $utilities->first();
 
         /** @var class-string<Utility> $firstUtility */
         return cp_redirect('utilities/'.$firstUtility::id());
@@ -60,7 +60,7 @@ final readonly class UtilitiesController
 
         return Inertia::render('UtilitiesShowPage', [
             'crumbs' => [
-                ['label' => 'Utilities', 'url' => UrlHelper::cpUrl('utilities')],
+                ['label' => 'Utilities', 'url' => Url::cpUrl('utilities')],
                 ['label' => $class::displayName(), 'url' => null],
             ],
             'id' => $id,
@@ -77,13 +77,13 @@ final readonly class UtilitiesController
         return $this->utilitiesService
             ->getAuthorizedUtilityTypes()
             /**
-             * @var class-string<\CraftCms\Cms\Utility\Utility> $class
+             * @var class-string<Utility> $class
              *
              * @phpstan-ignore argument.unresolvableType
              */
             ->map(fn (string $class) => [
                 'id' => $class::id(),
-                'url' => UrlHelper::cpUrl('utilities/'.$class::id()),
+                'url' => Url::cpUrl('utilities/'.$class::id()),
                 'iconSvg' => $this->utilityIconSvg($class),
                 'displayName' => $class::displayName(),
                 'iconPath' => $class::icon(),
@@ -103,7 +103,7 @@ final readonly class UtilitiesController
         }
 
         try {
-            $svg = Cp::iconSvg($icon);
+            $svg = Icons::svg($icon);
             if ($svg !== '') {
                 return $svg;
             }

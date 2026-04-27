@@ -20,7 +20,7 @@ use Twig\TwigFunction;
  * EventTagAdder adds missing `head()`, `beginBody()`, and `endBody()`
  * event tags to templates as they’re being compiled.
  */
-final class EventTagAdder extends BaseEventTagVisitor
+class EventTagAdder extends BaseEventTagVisitor
 {
     /**
      * @var string|null As much of the <body> tag as we’ve found so far
@@ -51,7 +51,7 @@ final class EventTagAdder extends BaseEventTagVisitor
         return $node;
     }
 
-    public function leaveNode(Node $node, Environment $env): \Twig\Node\Node
+    public function leaveNode(Node $node, Environment $env): Node
     {
         return $node;
     }

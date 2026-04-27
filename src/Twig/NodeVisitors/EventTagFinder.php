@@ -16,7 +16,7 @@ use Twig\Node\PrintNode;
  * EventTagFinder looks for `head()`, `beginBody()`, and `endBody()`
  * event tags in templates as they’re being compiled.
  */
-final class EventTagFinder extends BaseEventTagVisitor
+class EventTagFinder extends BaseEventTagVisitor
 {
     public function enterNode(Node $node, Environment $env): Node
     {
@@ -65,7 +65,7 @@ final class EventTagFinder extends BaseEventTagVisitor
         return $node;
     }
 
-    public function leaveNode(Node $node, Environment $env): \Twig\Node\Node
+    public function leaveNode(Node $node, Environment $env): Node
     {
         return $node;
     }

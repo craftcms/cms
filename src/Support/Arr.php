@@ -237,4 +237,21 @@ class Arr extends \Illuminate\Support\Arr
     {
         return Collection::make($array)->contains($key, $strict ? '===' : '==', $value);
     }
+
+    public static function containsRecursive(iterable $array, callable|string $key, mixed $value = true, bool $strict = false): bool
+    {
+        foreach ($array as $element) {
+            $elementValue = static::get($element, $key);
+
+            if (($strict && $elementValue === $value) || (! $strict && $elementValue == $value)) {
+                return true;
+            }
+
+            if (is_array($element) && static::containsRecursive($element, $key, $value, $strict)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

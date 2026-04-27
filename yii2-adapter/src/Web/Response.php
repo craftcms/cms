@@ -12,9 +12,11 @@ namespace CraftCms\Yii2Adapter\Web;
 use Craft;
 use Illuminate\Http\Response as IlluminateResponse;
 use Symfony\Component\HttpFoundation\Cookie;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Throwable;
 use Yii;
 use yii\web\HeadersAlreadySentException;
+use Yii2tech\Illuminate\Http\YiiApplicationMiddleware;
 
 /**
  * Response fills up Laravel HTTP response instead of sending itself back to the user agent.
@@ -46,10 +48,10 @@ use yii\web\HeadersAlreadySentException;
  * }
  * ```
  *
- * @see \Illuminate\Http\Response
- * @see \Yii2tech\Illuminate\Http\YiiApplicationMiddleware
+ * @see IlluminateResponse
+ * @see YiiApplicationMiddleware
  *
- * @property \Illuminate\Http\Response $illuminateResponse related Laravel response.
+ * @property SymfonyResponse $illuminateResponse related Laravel response.
  *
  * @author Paul Klimov <klimov.paul@gmail.com>
  *
@@ -58,14 +60,14 @@ use yii\web\HeadersAlreadySentException;
 class Response extends \yii\web\Response
 {
     /**
-     * @var \Illuminate\Http\Response|null related Laravel response.
+     * @var SymfonyResponse|null related Laravel response.
      */
     private $_illuminateResponse;
 
     /**
      * @param  bool  $create  whether to create a response, if it is empty.
      */
-    public function getIlluminateResponse(bool $create = false): ?IlluminateResponse
+    public function getIlluminateResponse(bool $create = false): ?SymfonyResponse
     {
         if ($create) {
             $this->_illuminateResponse ??= $this->createIlluminateResponse();
@@ -77,6 +79,13 @@ class Response extends \yii\web\Response
     protected function createIlluminateResponse(): IlluminateResponse
     {
         return app()->make(IlluminateResponse::class);
+    }
+
+    public function setIlluminateResponse(SymfonyResponse $response): static
+    {
+        $this->_illuminateResponse = $response;
+
+        return $this;
     }
 
     /**

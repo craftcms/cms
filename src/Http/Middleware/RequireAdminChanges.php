@@ -8,7 +8,7 @@ use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use Illuminate\Http\Request;
 
-final readonly class RequireAdminChanges
+readonly class RequireAdminChanges
 {
     public function __construct(
         private GeneralConfig $generalConfig,

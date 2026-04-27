@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Search;
 
 use CraftCms\Cms\Support\Str;
 
-final class SearchQuery
+class SearchQuery
 {
     /**
      * @var array{subLeft:bool,subRight:bool,exclude:bool,exact:bool}
@@ -140,7 +140,6 @@ final class SearchQuery
             $term->term = $token;
 
             if ($appendToPrevious) {
-                /** @phpstan-ignore-next-line */
                 $previousToken->terms[] = $term;
             } else {
                 $this->tokens[] = $term;

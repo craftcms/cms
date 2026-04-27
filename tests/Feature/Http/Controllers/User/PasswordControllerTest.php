@@ -4,6 +4,7 @@ use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -81,7 +82,7 @@ it('validates userId is required for requireReset and removeResetRequirement', f
 test('requireReset sets passwordResetRequired to true', function () {
     $user = User::findOne();
     $user->passwordResetRequired = false;
-    Craft::$app->getElements()->saveElement($user, false);
+    Elements::saveElement($user, false);
     $userId = $user->id;
 
     postJson(action([PasswordController::class, 'requireReset']), [
@@ -94,7 +95,7 @@ test('requireReset sets passwordResetRequired to true', function () {
 test('removeResetRequirement sets passwordResetRequired to false', function () {
     $user = User::findOne();
     $user->passwordResetRequired = true;
-    Craft::$app->getElements()->saveElement($user, false);
+    Elements::saveElement($user, false);
     $userId = $user->id;
 
     postJson(action([PasswordController::class, 'removeResetRequirement']), [

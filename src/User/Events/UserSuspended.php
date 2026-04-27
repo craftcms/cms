@@ -9,4 +9,4 @@ use CraftCms\Cms\User\Elements\User;
 /**
  * @event UserSuspended The event that is triggered after a user is suspended.
  */
-final class UserSuspended extends UserEvent {}
+class UserSuspended extends UserEvent {}

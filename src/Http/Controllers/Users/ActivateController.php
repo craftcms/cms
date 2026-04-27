@@ -16,7 +16,7 @@ use Throwable;
 
 use function CraftCms\Cms\t;
 
-final readonly class ActivateController
+readonly class ActivateController
 {
     use AuthorizesRequests;
     use EnforcesPermissions;

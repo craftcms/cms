@@ -133,7 +133,7 @@ class MonologTarget extends PsrTarget
 
         /** @var Logger $logger */
         $logger = $this->logger;
-        $logger->setTimezone(new DateTimeZone(app()->getTimezone()));
+        $logger->setTimezone(new DateTimeZone(Cms::timezone()));
 
         parent::export();
 

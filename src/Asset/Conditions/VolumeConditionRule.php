@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Conditions;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\Volumes;
 
 use function CraftCms\Cms\t;
 
-final class VolumeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class VolumeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     public function getLabel(): string
     {

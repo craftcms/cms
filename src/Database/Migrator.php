@@ -10,10 +10,10 @@ use Override;
 /**
  * @internal
  */
-final class Migrator extends \Illuminate\Database\Migrations\Migrator
+class Migrator extends \Illuminate\Database\Migrations\Migrator
 {
-    /** @var \CraftCms\Cms\Database\MigrationRepository */
-    #[\Override]
+    /** @var MigrationRepository */
+    #[Override]
     protected $repository;
 
     public function track(string $track): self

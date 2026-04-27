@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Updates;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
@@ -12,10 +11,11 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
-use CraftCms\Cms\Updates\Data\Update;
-use CraftCms\Cms\Updates\Data\Updates as UpdatesData;
-use CraftCms\Cms\Updates\Enums\UpdateStatus;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Update\Data\Update;
+use CraftCms\Cms\Update\Data\Updates as UpdatesData;
+use CraftCms\Cms\Update\Enums\UpdateStatus;
+use CraftCms\Cms\Update\Updates;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,7 +25,7 @@ use function CraftCms\Cms\t;
 /**
  * @internal
  */
-final readonly class UpdatesController
+readonly class UpdatesController
 {
     public function __construct(
         private GeneralConfig $generalConfig,
@@ -115,7 +115,7 @@ final readonly class UpdatesController
                 'price' => I18N::getFormatter()->asCurrency($update->renewalPrice, $update->renewalCurrency),
             ]);
 
-            $arr['ctaUrl'] = UrlHelper::url($update->renewalUrl);
+            $arr['ctaUrl'] = Url::url($update->renewalUrl);
 
             if ($allowUpdates && Edition::canTest()) {
                 $arr['altCtaText'] = t('Update anyway');
@@ -133,7 +133,7 @@ final readonly class UpdatesController
 
             if ($update->replacementName) {
                 if (Auth::user()?->isAdmin() && $this->generalConfig->allowAdminChanges) {
-                    $replacementUrl = UrlHelper::url("plugin-store/$update->replacementHandle");
+                    $replacementUrl = Url::url("plugin-store/$update->replacementHandle");
                 } else {
                     $replacementUrl = $update->replacementUrl;
                 }

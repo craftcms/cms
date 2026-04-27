@@ -17,7 +17,7 @@ use function CraftCms\Cms\t;
  *
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  */
-final class QueueManager extends Utility
+class QueueManager extends Utility
 {
     #[Override]
     public static function displayName(): string

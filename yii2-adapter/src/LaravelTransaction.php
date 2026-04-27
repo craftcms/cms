@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Log;
 use yii\db\Connection;
 use yii\db\Transaction;
 
-final class LaravelTransaction extends Transaction
+class LaravelTransaction extends Transaction
 {
     public function getIsActive()
     {

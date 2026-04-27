@@ -9,7 +9,7 @@ use CraftCms\Cms\User\Users;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 
-final class UnlockCommand extends Command implements PromptsForMissingInput
+class UnlockCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
     use PromptsForMissingUser;

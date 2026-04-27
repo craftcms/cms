@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Conditions\Contracts;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 
 /**
  * ElementConditionInterface defines the common interface to be implemented by element conditions.
@@ -23,14 +24,14 @@ interface ElementConditionInterface extends ConditionInterface
     /**
      * Returns the possible field layouts that the condition could be working with.
      *
-     * @return \CraftCms\Cms\FieldLayout\FieldLayout[]
+     * @return FieldLayout[]
      */
     public function getFieldLayouts(): array;
 
     /**
      * Sets the possible field layouts that the condition could be working with.
      *
-     * @param  array<\CraftCms\Cms\FieldLayout\FieldLayout|array>  $fieldLayouts
+     * @param  array<FieldLayout|array>  $fieldLayouts
      */
     public function setFieldLayouts(array $fieldLayouts): void;
 

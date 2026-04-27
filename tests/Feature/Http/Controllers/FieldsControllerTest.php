@@ -9,6 +9,7 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Field\RadioButtons;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
@@ -22,12 +23,12 @@ it('needs authentication and admin changes for the routes', function (string $me
 
     $this->$method(action($route))->assertUnauthorized();
 
-    \CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
+    CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
     actingAs(User::find()->one());
 
     $this->$method(action($route))->assertForbidden();
 
-    \CraftCms\Cms\User\Models\User::first()->update(['admin' => true]);
+    CraftCms\Cms\User\Models\User::first()->update(['admin' => true]);
     actingAs(User::find()->one());
 
     if ($requireAdminChanges) {
@@ -84,7 +85,7 @@ it('can render the settings of a field', function () {
 });
 
 it('preserves values between rendering settings', function () {
-    $label = \CraftCms\Cms\Support\Str::random();
+    $label = Str::random();
 
     $this->postJson(action([FieldsController::class, 'renderSettings']), [
         'type' => RadioButtons::class,

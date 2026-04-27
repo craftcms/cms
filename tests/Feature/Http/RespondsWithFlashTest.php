@@ -55,6 +55,11 @@ class TestFlashController extends Controller
             {
                 return new MessageBag(['name' => ['Name is required']]);
             }
+
+            public function setAttributes(array $values): void
+            {
+                $this->name = $values['name'] ?? '';
+            }
         };
 
         return $this->asModelFailure($model, 'Model save failed', 'testModel');
@@ -62,11 +67,11 @@ class TestFlashController extends Controller
 }
 
 beforeEach(function () {
-    Route::post('/test-flash/success', [TestFlashController::class, 'success']);
-    Route::post('/test-flash/failure', [TestFlashController::class, 'failure']);
-    Route::post('/test-flash/success-redirect', [TestFlashController::class, 'successWithRedirect']);
-    Route::post('/test-flash/model-success', [TestFlashController::class, 'modelSuccess']);
-    Route::post('/test-flash/model-failure', [TestFlashController::class, 'modelFailure']);
+    Route::middleware('web')->post('/test-flash/success', [TestFlashController::class, 'success']);
+    Route::middleware('web')->post('/test-flash/failure', [TestFlashController::class, 'failure']);
+    Route::middleware('web')->post('/test-flash/success-redirect', [TestFlashController::class, 'successWithRedirect']);
+    Route::middleware('web')->post('/test-flash/model-success', [TestFlashController::class, 'modelSuccess']);
+    Route::middleware('web')->post('/test-flash/model-failure', [TestFlashController::class, 'modelFailure']);
 
     actingAs(User::findOne());
 });

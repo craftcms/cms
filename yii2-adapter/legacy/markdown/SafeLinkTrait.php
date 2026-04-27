@@ -13,6 +13,8 @@ namespace craft\markdown;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.4.2
+ * @deprecated 6.0.0 safe link handling is built into {@see \CraftCms\Cms\Support\Facades\Markdown}.
+ * @phpstan-ignore trait.unused
  */
 trait SafeLinkTrait
 {

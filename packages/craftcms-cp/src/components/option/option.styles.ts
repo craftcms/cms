@@ -1,11 +1,12 @@
 import {css} from 'lit';
 export default css`
   :host([checked]) {
-    background-color: var(--c-color-neutral-bg-emphasis);
-    color: var(--c-color-neutral-on-emphasis);
+    background-color: var(--c-color-neutral-fill-loud);
+    color: var(--c-color-neutral-on-loud);
   }
 
   :host {
+    --c-option-wide-threshold: 640;
     padding-inline: var(--c-spacing-md);
     padding-block: var(--c-spacing-sm);
     font: inherit;
@@ -13,18 +14,18 @@ export default css`
   }
 
   :host(:hover) {
-    background-color: var(--c-color-neutral-bg-normal);
+    background-color: var(--c-color-neutral-fill-normal);
     color: var(--c-color-neutral-on-normal);
   }
 
   :host([active]) {
-    background-color: var(--c-color-neutral-bg-emphasis);
-    color: var(--c-color-neutral-on-emphasis);
+    background-color: var(--c-color-neutral-fill-loud);
+    color: var(--c-color-neutral-on-loud);
   }
 
   :host([checked]) {
-    background-color: var(--c-color-neutral-bg-emphasis);
-    color: var(--c-color-neutral-on-emphasis);
+    background-color: var(--c-color-neutral-fill-loud);
+    color: var(--c-color-neutral-on-loud);
   }
 
   :host([disabled]) {
@@ -34,15 +35,24 @@ export default css`
   .hint {
     color: color-mix(in srgb, currentColor, transparent 25%);
     align-self: end;
+    font-size: 0.8em;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   :host([active]) .hint {
-    color: var(--c-color-neutral-on-emphasis);
+    color: var(--c-color-neutral-on-loud);
   }
 
   .choice-field__label {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
     max-width: 100%;
+  }
+
+  :host([wide]) .choice-field__label {
+    align-items: baseline;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 `;

@@ -11,6 +11,7 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
+use CraftCms\Cms\Cms;
 use DateTime;
 use DateTimeZone;
 use Exception;
@@ -55,7 +56,7 @@ class ModelTest extends TestCase
         $model = new ExampleModel([$paramName => $dateForInput]);
 
         $dateTime = new DateTime($dateForInput, new DateTimeZone('UTC'));
-        $dateTime->setTimezone(new DateTimeZone(app()->getTimezone()));
+        $dateTime->setTimezone(new DateTimeZone(Cms::timezone()));
 
         self::assertSame($dateTime->format('Y-m-d H:i:s'), $model->$paramName->format('Y-m-d H:i:s'));
         self::assertSame($dateTime->getTimezone()->getName(), $model->$paramName->getTimezone()->getName());

@@ -13,7 +13,7 @@ use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTimeInterface;
 use Override;
 use RuntimeException;
@@ -22,7 +22,7 @@ use Stringable;
 use function CraftCms\Cms\t;
 
 #[Ruleset(SiteRules::class)]
-final class Site extends Component implements Chippable, Stringable
+class Site extends Component implements Chippable, Stringable
 {
     private ?string $_baseUrl = null;
 
@@ -84,7 +84,7 @@ final class Site extends Component implements Chippable, Stringable
 
     public ?DateTimeInterface $dateUpdated = null;
 
-    public static function get(int|string $id): ?static
+    public static function get(int|string $id): ?self
     {
         return Sites::getSiteById($id);
     }
@@ -147,7 +147,7 @@ final class Site extends Component implements Chippable, Stringable
         }
 
         if ($parse) {
-            return Env::parseBoolean($this->_enabled) ?? true;
+            return Env::parseBoolean($this->_enabled) ?? false;
         }
 
         return $this->_enabled;

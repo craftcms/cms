@@ -11,7 +11,7 @@ use Twig\Compiler;
 use Twig\Node\Node;
 
 #[YieldReady]
-final class RequirePermissionNode extends Node
+class RequirePermissionNode extends Node
 {
     #[Override]
     public function compile(Compiler $compiler): void

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth\Events;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Foundation\Events\Dispatchable;
 
@@ -14,7 +14,7 @@ use Illuminate\Foundation\Events\Dispatchable;
  * Listeners can call authorize() or deny() to short-circuit the authorization check.
  * If neither is called, authorization continues through the normal policy chain.
  */
-final class AuthorizingElement
+class AuthorizingElement
 {
     use Dispatchable;
 

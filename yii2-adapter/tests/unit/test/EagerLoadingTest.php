@@ -8,8 +8,8 @@
 namespace crafttests\unit\test;
 
 use Codeception\Test\Unit;
-use Craft;
 use craft\test\TestCase;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -100,7 +100,7 @@ class EagerLoadingTest extends TestCase
         // try to eager load a field that exists,
         // and is part of the layout for $entries that we retrieved
         try {
-            Craft::$app->getElements()->eagerLoadElements(
+            app(Elements::class)->eagerLoadElements(
                 Entry::class,
                 $entries,
                 'matrixFirst' // field exists but is not part of the layout
@@ -111,7 +111,7 @@ class EagerLoadingTest extends TestCase
 
         // try to eager load a field that doesn't exist
         try {
-            Craft::$app->getElements()->eagerLoadElements(
+            app(Elements::class)->eagerLoadElements(
                 Entry::class,
                 $entries,
                 'fieldDoesntExist' // field exists but is not part of the layout
@@ -125,7 +125,7 @@ class EagerLoadingTest extends TestCase
         // this would throw a \base\yii\ErrorException on 4.3.8.1;
         // see https://github.com/craftcms/cms/issues/12648 for more info
         try {
-            Craft::$app->getElements()->eagerLoadElements(
+            app(Elements::class)->eagerLoadElements(
                 Entry::class,
                 $entries,
                 'relatedEntry' // field exists but is not part of the layout

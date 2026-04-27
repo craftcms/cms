@@ -53,7 +53,9 @@
     box-shadow: var(--c-modal-shadow);
     -webkit-overflow-scrolling: touch;
     border-radius: var(--c-modal-radius);
-    border: var(--c-modal-border);
+    border-width: var(--c-modal-border-width);
+    border-style: var(--c-modal-border-style);
+    border-color: var(--c-modal-border-color);
     position: relative;
     overflow-y: scroll;
     pointer-events: auto;

@@ -11,19 +11,15 @@ declare(strict_types=1);
 
 namespace craft\fieldlayoutelements;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * LineBreak represents a line break UI element can be included in field layouts.
-     *
-     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
-     *
-     * @since 4.1.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\LineBreak} instead.
-     */
-    class LineBreak
-    {
-    }
+/**
+ * LineBreak represents a line break UI element can be included in field layouts.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
+ * @since 4.1.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\LineBreak} instead.
+ */
+class LineBreak extends \CraftCms\Cms\FieldLayout\LayoutElements\LineBreak
+{
+    use \craft\base\LegacyEventConstants;
 }
-
-class_alias(\CraftCms\Cms\FieldLayout\LayoutElements\LineBreak::class, LineBreak::class);

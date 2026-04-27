@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Events\DefineKeywords;
 use CraftCms\Cms\Support\Str;
 
@@ -13,7 +14,7 @@ use CraftCms\Cms\Support\Str;
  * This trait contains methods for generating and retrieving search keywords from element attributes,
  * as well as events for customizing search keyword behavior and registering searchable attributes.
  *
- * @mixin \CraftCms\Cms\Element\Element
+ * @mixin Element
  *
  * @internal
  */
@@ -28,8 +29,6 @@ trait Searchable
      * @var bool Whether the element's search keywords should be indexed immediately.
      *
      * If `null`, the search index will only be updated immediately for console requests.
-     *
-     * @since 5.8.0
      */
     public ?bool $updateSearchIndexImmediately = null;
 
@@ -52,8 +51,6 @@ trait Searchable
 
     /**
      * Returns the search keywords for a given search attribute.
-     *
-     * @since 3.5.0
      */
     protected function searchKeywords(string $attribute): string
     {

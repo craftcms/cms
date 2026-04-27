@@ -1,6 +1,6 @@
 html,
 body {
-  background-color: var(--c-bg-body);
+  background-color: var(--c-surface-default);
 }
 
 body {
@@ -9,7 +9,7 @@ body {
   font-family: var(--c-font-body, sans-serif);
   font-size: var(--c-text-base);
   line-height: var(--c-leading-normal);
-  color: var(--c-fg-text);
+  color: var(--c-text-default);
   -webkit-font-smoothing: subpixel-antialiased;
 }
 
@@ -26,7 +26,7 @@ pre {
 
 a {
   cursor: pointer;
-  color: var(--c-fg-link);
+  color: var(--c-text-link);
 }
 
 /*
@@ -53,8 +53,8 @@ hr {
   display: block;
   width: 100%;
   border: 0;
-  border-top: 1px solid var(--c-color-neutral-border-subtle);
-  margin-block: var(--c-spacing-xl);
+  border-top: 1px solid var(--c-color-neutral-border-quiet);
+  margin-block: var(--c-spacing-lg);
 }
 
 .index-grid {
@@ -132,28 +132,67 @@ Modify with `cp-table--borderless` to remove the inline cell padding
 Modify with `cp-table--auto` to apply table-layout: auto
  */
 .cp-table {
+  --_cell-spacing-inline: var(--c-spacing-md);
+  --_cell-spacing-block: var(--c-spacing-md);
   text-align: left;
   width: 100%;
-  border-collapse: collapse;
+  border-spacing: 0;
   font-variant-numeric: tabular-nums;
 
   @container (width >= 840px) {
     table-layout: fixed;
   }
 
-  thead {
-    background-color: var(--c-color-neutral-bg-normal);
+  thead,
+  th {
+    background-color: var(--c-color-neutral-fill-quiet);
   }
 
+  .cell {
+    padding: 0;
+    vertical-align: middle;
+    padding-inline: var(--_cell-spacing-inline);
+    padding-block: 0;
+    position: relative;
+    height: var(--c-size-control-md);
+
+    &:has(textarea),
+    &:has(input:not([type='checkbox']):not([type='radio'])) {
+      padding: 0;
+    }
+  }
+
+  td,
+  th,
+  tr:not(:last-child) {
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
+  td:not(:first-child),
+  th:not(:first-child) {
+    border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
+  textarea,
+  input:not([type='checkbox']):not([type='radio']) {
+    border: 0;
+    padding-block: var(--_cell-spacing-block);
+    padding-inline: var(--_cell-spacing-inline);
+    margin: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  textarea {
+    resize: none;
+    line-height: 1.2;
+  }
+}
+
+.cp-table--padded {
   th,
   td {
-    vertical-align: top;
     padding-block: var(--c-spacing-md);
-    padding-inline: var(--c-spacing-md);
-  }
-
-  tr:not(:last-child) {
-    border-bottom: 1px solid var(--c-color-neutral-border-subtle);
   }
 }
 
@@ -165,24 +204,19 @@ Modify with `cp-table--auto` to apply table-layout: auto
   table-layout: fixed;
 }
 
+.cp-table--collapsed,
 .cp-table--borderless {
-  th,
-  td {
-    padding-inline: 0;
-  }
+  --_cell-spacing-block: 0;
 }
 
 .cp-table--compact {
-  th,
-  td {
-    padding-block: var(--c-spacing-sm);
-  }
+  --_cell-spacing-block: var(--c-spacing-sm);
 }
 
 .cp-table-header,
 .cp-table-footer {
   padding: var(--c-spacing-md);
-  background-color: var(--c-color-neutral-bg-normal);
+  background-color: var(--c-color-neutral-fill-quiet);
   display: flex;
   align-items: center;
   justify-content: space-between;

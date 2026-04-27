@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use Illuminate\Support\Collection;
@@ -16,18 +16,18 @@ use function CraftCms\Cms\template;
 /**
  * Checkboxes represents a Checkboxes field.
  */
-final class Checkboxes extends BaseOptionsField
+class Checkboxes extends BaseOptionsField
 {
-    #[\Override]
+    #[Override]
     protected static bool $multi = true;
 
-    #[\Override]
+    #[Override]
     protected static bool $allowCustomOptions = true;
 
-    #[\Override]
+    #[Override]
     protected static bool $optionIcons = true;
 
-    #[\Override]
+    #[Override]
     protected static bool $optionColors = true;
 
     #[Override]

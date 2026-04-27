@@ -9,8 +9,9 @@ use CraftCms\Cms\Asset\Models\Volume;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Override;
 
-final class VolumeFactory extends Factory
+class VolumeFactory extends Factory
 {
+    #[Override]
     protected $model = Volume::class;
 
     #[Override]

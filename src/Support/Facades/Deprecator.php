@@ -19,7 +19,7 @@ use Override;
  *
  * @see \CraftCms\Cms\Deprecator\Deprecator
  */
-final class Deprecator extends Facade
+class Deprecator extends Facade
 {
     #[Override]
     protected static function getFacadeAccessor(): string

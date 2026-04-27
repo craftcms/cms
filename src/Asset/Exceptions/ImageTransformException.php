@@ -4,4 +4,4 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Exceptions;
 
-final class ImageTransformException extends AssetException {}
+class ImageTransformException extends AssetException {}

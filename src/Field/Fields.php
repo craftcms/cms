@@ -5,21 +5,21 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Craft;
-use craft\base\ElementInterface;
-use craft\base\MemoizableArray;
-use craft\helpers\AdminTable;
-use craft\helpers\Component as ComponentHelper;
-use craft\helpers\Cp;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Field\Addresses as AddressesField;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Entries as EntriesField;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\ApplyingFieldDelete;
 use CraftCms\Cms\Field\Events\ApplyingFieldSave;
 use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
@@ -48,6 +48,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ProjectConfig as ProjectConfigFacade;
 use CraftCms\Cms\Support\Json as JsonHelper;
+use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use Exception;
@@ -65,7 +66,7 @@ use Throwable;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final class Fields
+class Fields
 {
     /**
      * @var string The active field context
@@ -80,7 +81,7 @@ final class Fields
     private ?MemoizableArray $_fields = null;
 
     /**
-     * @var MemoizableArray<\CraftCms\Cms\FieldLayout\FieldLayout>|null
+     * @var MemoizableArray<FieldLayout>|null
      *
      * @see _layouts()
      */
@@ -97,6 +98,10 @@ final class Fields
      * @var array<string,bool>|null Memoized map of all generated field handles.
      */
     private ?array $_allGeneratedFieldHandles = null;
+
+    public function __construct(
+        private readonly ElementCaches $elementCaches,
+    ) {}
 
     // Handle Registry
     // -------------------------------------------------------------------------
@@ -428,7 +433,7 @@ final class Fields
      */
     public function getAllFields(mixed $context = null): Collection
     {
-        return collect($this->_fields($context)->all());
+        return $this->_fields($context)->collect();
     }
 
     /**
@@ -632,7 +637,7 @@ final class Fields
     public function prepFieldForSave(FieldInterface $field): void
     {
         // Clear the translation key format if not using a custom translation method
-        if ($field->translationMethod !== Field::TRANSLATION_METHOD_CUSTOM) {
+        if ($field->translationMethod !== TranslationMethod::Custom->value) {
             $field->translationKeyFormat = null;
         }
 
@@ -766,7 +771,7 @@ final class Fields
         event(new FieldDeleted($field));
 
         // Invalidate all element caches
-        Craft::$app->getElements()->invalidateAllCaches();
+        $this->elementCaches->invalidateAll();
     }
 
     /**
@@ -825,7 +830,7 @@ final class Fields
     /**
      * Returns a memoizable array of all field layouts.
      *
-     * @return MemoizableArray<\CraftCms\Cms\FieldLayout\FieldLayout>
+     * @return MemoizableArray<FieldLayout>
      */
     private function _layouts(): MemoizableArray
     {
@@ -840,8 +845,8 @@ final class Fields
         }
 
         /**
-         * @var MemoizableArray<\CraftCms\Cms\FieldLayout\FieldLayout> $layouts
-         * @var \CraftCms\Cms\FieldLayout\FieldLayout[] $layoutConfigs
+         * @var MemoizableArray<FieldLayout> $layouts
+         * @var FieldLayout[] $layoutConfigs
          */
         $layouts = new MemoizableArray(
             elements: $layoutConfigs,
@@ -869,7 +874,7 @@ final class Fields
      */
     public function getAllLayouts(): Collection
     {
-        return collect($this->_layouts()->all());
+        return $this->_layouts()->collect();
     }
 
     /**
@@ -877,7 +882,7 @@ final class Fields
      *
      * @param  int  $layoutId  The field layout’s ID
      * @param  bool  $withTrashed  Whether to return the field layout even if it’s soft-deleted
-     * @return \CraftCms\Cms\FieldLayout\FieldLayout|null The field layout, or null if it doesn’t exist
+     * @return FieldLayout|null The field layout, or null if it doesn’t exist
      */
     public function getLayoutById(int $layoutId, bool $withTrashed = false): ?FieldLayout
     {
@@ -897,7 +902,7 @@ final class Fields
      * Returns a field layout by its UUID.
      *
      * @param  string  $uid  The field layout’s UUID
-     * @return \CraftCms\Cms\FieldLayout\FieldLayout|null The field layout, or null if it doesn’t exist
+     * @return FieldLayout|null The field layout, or null if it doesn’t exist
      */
     public function getLayoutByUid(string $uid): ?FieldLayout
     {
@@ -912,7 +917,7 @@ final class Fields
      */
     public function getLayoutsByIds(array $layoutIds): Collection
     {
-        return collect($this->_layouts()->whereIn('id', $layoutIds)->all());
+        return $this->_layouts()->whereIn('id', $layoutIds)->collect();
     }
 
     /**
@@ -920,7 +925,7 @@ final class Fields
      *
      * @param  class-string<ElementInterface>  $type  The associated element type
      * @param  bool  $create  Whether to create a field layout if one doesn’t exist
-     * @return \CraftCms\Cms\FieldLayout\FieldLayout|null The field layout
+     * @return FieldLayout|null The field layout
      */
     public function getLayoutByType(string $type, bool $create = true): ?FieldLayout
     {
@@ -941,7 +946,7 @@ final class Fields
      */
     public function getLayoutsByType(string $type): Collection
     {
-        return collect($this->_layouts()->where('type', $type)->all());
+        return $this->_layouts()->where('type', $type)->collect();
     }
 
     /**
@@ -981,7 +986,7 @@ final class Fields
      * Assembles a field layout from post data.
      *
      * @param  string|null  $namespace  The namespace that the form data was posted in, if any
-     * @return \CraftCms\Cms\FieldLayout\FieldLayout The field layout
+     * @return FieldLayout The field layout
      */
     public function assembleLayoutFromPost(?string $namespace = null): FieldLayout
     {
@@ -989,7 +994,6 @@ final class Fields
 
         $config = JsonHelper::decode(Request::get("{$paramPrefix}fieldLayout"));
         $config['generatedFields'] = Request::get("{$paramPrefix}generatedFields") ?: null;
-        $config = ComponentHelper::cleanseConfig($config);
 
         $layout = $this->createLayout($config);
 
@@ -1006,7 +1010,7 @@ final class Fields
     /**
      * Saves a field layout.
      *
-     * @param  \CraftCms\Cms\FieldLayout\FieldLayout  $layout  The field layout
+     * @param  FieldLayout  $layout  The field layout
      * @param  bool  $runValidation  Whether the layout should be validated
      * @return bool Whether the field layout was saved successfully
      *
@@ -1069,9 +1073,10 @@ final class Fields
      * Deletes a field layout(s) by its ID.
      *
      * @param  int|int[]  $layoutId  The field layout’s ID
+     * @param  bool  $hardDelete  Whether the field layout should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the field layout was deleted successfully
      */
-    public function deleteLayoutById(array|int $layoutId): bool
+    public function deleteLayoutById(array|int $layoutId, bool $hardDelete = false): bool
     {
         if (! $layoutId) {
             return false;
@@ -1079,7 +1084,7 @@ final class Fields
 
         foreach (Arr::wrap($layoutId) as $thisLayoutId) {
             if ($layout = $this->getLayoutById($thisLayoutId)) {
-                $this->deleteLayout($layout);
+                $this->deleteLayout($layout, $hardDelete);
             }
         }
 
@@ -1089,14 +1094,19 @@ final class Fields
     /**
      * Deletes a field layout.
      *
-     * @param  \CraftCms\Cms\FieldLayout\FieldLayout  $layout  The field layout
+     * @param  FieldLayout  $layout  The field layout
+     * @param  bool  $hardDelete  Whether the field layout should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the field layout was deleted successfully
      */
-    public function deleteLayout(FieldLayout $layout): bool
+    public function deleteLayout(FieldLayout $layout, bool $hardDelete = false): bool
     {
         event(new FieldLayoutDeleting($layout));
 
-        DB::table(Table::FIELDLAYOUTS)->softDelete($layout->id);
+        if ($hardDelete) {
+            DB::table(Table::FIELDLAYOUTS)->delete($layout->id);
+        } else {
+            DB::table(Table::FIELDLAYOUTS)->softDelete($layout->id);
+        }
 
         event(new FieldLayoutDeleted($layout));
 
@@ -1169,7 +1179,7 @@ final class Fields
             $deleteSearchIndexes = ! $isNewField && ! $searchable && $fieldRecord->searchable;
 
             // Clear the translation key format if not using a custom translation method
-            if ($data['translationMethod'] !== Field::TRANSLATION_METHOD_CUSTOM) {
+            if ($data['translationMethod'] !== TranslationMethod::Custom->value) {
                 $data['translationKeyFormat'] = null;
             }
 
@@ -1229,7 +1239,7 @@ final class Fields
         }
 
         // Invalidate all element caches
-        Craft::$app->getElements()->invalidateAllCaches();
+        $this->elementCaches->invalidateAll();
     }
 
     /**
@@ -1246,8 +1256,7 @@ final class Fields
         int $sortDir = SORT_ASC,
     ): array {
         $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
-
-        $offset = ($page - 1) * $limit;
+        $pageParam = Cms::config()->getPageTriggerParam();
         $query = $this->_createFieldQuery()
             ->where('context', 'global');
 
@@ -1281,12 +1290,12 @@ final class Fields
             }
         }
 
-        $total = $query->count();
-
-        $query->limit($limit);
-        $query->offset($offset);
-
-        $result = $query->get();
+        $paginator = $query->paginate(
+            perPage: $limit,
+            pageName: $pageParam,
+            page: $page,
+        );
+        $result = $paginator->getCollection();
 
         $tableData = [];
         $usages = $this->allFieldUsages();
@@ -1306,7 +1315,7 @@ final class Fields
                 'type' => [
                     'isMissing' => $field instanceof MissingField,
                     'label' => $field instanceof MissingField ? $field->expectedType : $field::displayName(),
-                    'icon' => Cp::iconSvg($field instanceof Iconic ? $field->getIcon() : $field::icon()),
+                    'icon' => Icons::svg($field instanceof Iconic ? $field->getIcon() : $field::icon()),
                 ],
                 'usages' => isset($usages[$field->id])
                     ? t('{count, number} {count, plural, =1{layout} other{layouts}}', [
@@ -1316,7 +1325,18 @@ final class Fields
             ];
         }
 
-        $pagination = AdminTable::paginationLinks($page, $total, $limit);
+        $paginator->appends(request()->except($pageParam));
+
+        $pagination = Arr::only($paginator->toArray(), [
+            'total',
+            'per_page',
+            'current_page',
+            'last_page',
+            'next_page_url',
+            'prev_page_url',
+            'from',
+            'to',
+        ]);
 
         return [$pagination, $tableData];
     }

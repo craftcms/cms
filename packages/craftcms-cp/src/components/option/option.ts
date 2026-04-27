@@ -11,6 +11,24 @@ export default class CraftOption extends LionOption {
   @property()
   hint?: string | null = null;
 
+  #wideThreshold: number = 640;
+
+  constructor() {
+    super();
+    this.#wideThreshold = parseInt(
+      getComputedStyle(this).getPropertyValue('--c-option-wide-threshold') ||
+        '640',
+      10
+    );
+  }
+
+  override connectedCallback() {
+    super.connectedCallback();
+
+    const width = this.getBoundingClientRect().width ?? 0;
+    this.toggleAttribute('wide', width >= this.#wideThreshold);
+  }
+
   override render() {
     return html`
       <div class="choice-field__label">

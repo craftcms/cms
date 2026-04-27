@@ -8,7 +8,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 
-final class AssetIndexingSession extends BaseModel
+class AssetIndexingSession extends BaseModel
 {
     use HasUid;
 

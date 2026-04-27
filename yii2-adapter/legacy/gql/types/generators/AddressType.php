@@ -1,57 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace craft\gql\types\generators;
 
-use Craft;
-use craft\gql\base\Generator;
-use craft\gql\base\GeneratorInterface;
-use craft\gql\base\ObjectType;
-use craft\gql\base\SingleGeneratorInterface;
-use craft\gql\GqlEntityRegistry;
-use craft\gql\interfaces\elements\Address as AddressInterface;
-use craft\gql\types\elements\Address;
-use CraftCms\Cms\Address\Elements\Address as AddressElement;
-use CraftCms\Cms\Field\Fields;
-
 /**
- * Class AddressType
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Types\Generators\AddressType} instead.
  */
-class AddressType extends Generator implements GeneratorInterface, SingleGeneratorInterface
+class AddressType extends \CraftCms\Cms\Gql\Types\Generators\AddressType
 {
-    /**
-     * @inheritdoc
-     */
-    public static function generateTypes(mixed $context = null): array
-    {
-        // Users have no context
-        $type = static::generateType($context);
-        return [$type->name => $type];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function generateType(mixed $context): ObjectType
-    {
-        return GqlEntityRegistry::getOrCreate(AddressElement::GQL_TYPE_NAME, fn() => new Address([
-            'name' => AddressElement::GQL_TYPE_NAME,
-            'fields' => function() use ($context) {
-                $context ??= app(Fields::class)->getLayoutByType(AddressElement::class);
-                $contentFieldGqlTypes = self::getContentFields($context);
-                $addressFields = array_merge(AddressInterface::getFieldDefinitions(), $contentFieldGqlTypes);
-                return Craft::$app->getGql()->prepareFieldDefinitions(
-                    $addressFields,
-                    AddressElement::GQL_TYPE_NAME
-                );
-            },
-        ]));
-    }
 }

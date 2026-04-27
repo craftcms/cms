@@ -18,7 +18,7 @@ beforeEach(function () {
 test('authenticateWithPasskey with valid response', function () {
     $user = User::factory()->withPasskey('valid-credential-id')->createElement();
 
-    $requestOptions = ['challenge' => 'test-challenge'];
+    $requestOptions = Json::encode(['challenge' => 'test-challenge']);
     $response = Json::encode([
         'id' => 'valid-credential-id',
         'rawId' => 'valid-credential-id',
@@ -42,7 +42,7 @@ test('authenticateWithPasskey with valid response', function () {
 test('authenticateWithPasskey with mismatched credential', function () {
     $user = User::factory()->withPasskey('user-credential-id')->createElement();
 
-    $requestOptions = ['challenge' => 'test-challenge'];
+    $requestOptions = Json::encode(['challenge' => 'test-challenge']);
     $response = Json::encode(['id' => 'different-credential-id', 'response' => 'response']);
 
     $result = app(Auth::class)->authenticateWithPasskey($user, $requestOptions, $response);
@@ -54,7 +54,7 @@ test('authenticateWithPasskey with mismatched credential', function () {
 test('authenticateWithPasskey with invalid response', function () {
     $user = User::factory()->withPasskey('test-credential-id')->createElement();
 
-    $requestOptions = ['challenge' => 'test-challenge'];
+    $requestOptions = Json::encode(['challenge' => 'test-challenge']);
     $response = Json::encode(['id' => 'test-credential-id', 'response' => 'invalid-response']);
 
     $this->mock(Passkeys::class)
@@ -71,7 +71,7 @@ test('authenticateWithPasskey with invalid response', function () {
 test('authenticateWithPasskey with user without passkeys', function () {
     $user = User::factory()->createElement();
 
-    $requestOptions = ['challenge' => 'test-challenge'];
+    $requestOptions = Json::encode(['challenge' => 'test-challenge']);
     $response = Json::encode(['id' => 'nonexistent-credential', 'response' => 'response']);
 
     $result = app(Auth::class)->authenticateWithPasskey($user, $requestOptions, $response);
@@ -87,7 +87,7 @@ test('authenticateWithPasskey event blocking', function () {
         $event->authError = AuthError::InvalidCredentials;
     });
 
-    $requestOptions = ['challenge' => 'test-challenge'];
+    $requestOptions = Json::encode(['challenge' => 'test-challenge']);
     $response = Json::encode(['id' => 'valid-credential-id', 'response' => 'valid-response']);
 
     $result = app(Auth::class)->authenticateWithPasskey($user, $requestOptions, $response);
@@ -103,7 +103,7 @@ test('authenticateWithPasskey event can skip verification', function () {
         $event->performAuthentication = false;
     });
 
-    $requestOptions = ['challenge' => 'test-challenge'];
+    $requestOptions = Json::encode(['challenge' => 'test-challenge']);
     $response = Json::encode(['id' => 'any-credential', 'response' => 'response']);
 
     $result = app(Auth::class)->authenticateWithPasskey($user, $requestOptions, $response);

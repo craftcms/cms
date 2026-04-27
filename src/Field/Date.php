@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use craft\base\ElementInterface;
-use craft\gql\directives\FormatDateTime;
-use craft\gql\types\DateTime as DateTimeType;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
-use craft\helpers\Gql;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\DateFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Gql\Directives\FormatDateTime;
+use CraftCms\Cms\Gql\GqlHelper as Gql;
+use CraftCms\Cms\Gql\Types\DateTime as DateTimeType;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
@@ -34,7 +34,7 @@ use function CraftCms\Cms\template;
 /**
  * Date represents a Date/Time field.
  */
-final class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -228,7 +228,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var DateTime|null $value */
-        $timezone = $this->showTimeZone && $value ? $value->getTimezone()->getName() : app()->getTimezone();
+        $timezone = $this->showTimeZone && $value ? $value->getTimezone()->getName() : Cms::timezone();
 
         if ($value === null) {
             // Override the initial value being set to null by CustomField::inputHtml()
@@ -379,7 +379,9 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
             return null;
         }
 
+        /** @phpstan-ignore-next-line */
         if ($this->showTimeZone && (isset($timeZone) || (is_array($value) && ! empty($value['timezone'])))) {
+            /** @phpstan-ignore-next-line */
             $date->setTimezone(new DateTimeZone($timeZone ?? $value['timezone']));
         }
 

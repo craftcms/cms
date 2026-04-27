@@ -9,7 +9,7 @@ use Twig\Node\Expression\AssignNameExpression;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
-final class PaginateTokenParser extends AbstractTokenParser
+class PaginateTokenParser extends AbstractTokenParser
 {
     public function parse(Token $token): PaginateNode
     {

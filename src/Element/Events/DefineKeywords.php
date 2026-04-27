@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Events;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * DefineKeywords event is triggered when defining the search keywords for an element attribute.
  *
  * If `handled` is set to `true`, the custom `keywords` value will be used instead of the default.
  */
-final class DefineKeywords
+class DefineKeywords
 {
     /**
      * @param  ElementInterface  $element  The element

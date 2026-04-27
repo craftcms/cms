@@ -15,6 +15,7 @@ export default css`
 
   .tabs__tab-group {
     gap: var(--c-spacing-md);
-    border-bottom: 1px solid var(--c-tabs-border-end, var(--c-border-subtle));
+    border-bottom: 1px solid
+      var(--c-tabs-border-end, var(--c-color-neutral-border-quiet));
   }
 `;

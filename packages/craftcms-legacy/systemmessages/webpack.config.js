@@ -1,0 +1,13 @@
+/* jshint esversion: 6 */
+/* globals module, require */
+const {getConfig} = require('@craftcms/webpack');
+
+module.exports = getConfig({
+  context: __dirname,
+  config: {
+    entry: {system_messages: './system_messages.js'},
+    output: {
+      path: __dirname + '/../../../resources/legacy/systemmessages/dist',
+    },
+  },
+});

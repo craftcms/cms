@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Entry\Events;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Data\Section;
 
-final class EntryMovedToSection
+class EntryMovedToSection
 {
     public function __construct(
         public Entry $entry,

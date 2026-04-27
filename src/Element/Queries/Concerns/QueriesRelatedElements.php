@@ -55,7 +55,7 @@ trait QueriesRelatedElements
                     )
                     : []
             )->apply(
-                query: $elementQuery->subQuery,
+                query: $elementQuery->getQuery(),
                 relatedToParam: $elementQuery->relatedTo,
                 siteId: $elementQuery->siteId !== '*' ? $elementQuery->siteId : null
             );
@@ -71,7 +71,7 @@ trait QueriesRelatedElements
 
             $notRelatedToParam = $elementQuery->notRelatedTo;
 
-            $elementQuery->subQuery->whereNot(function (Builder $query) use ($notRelatedToParam, $elementQuery) {
+            $elementQuery->whereNot(function (Builder $query) use ($notRelatedToParam, $elementQuery) {
                 new ElementRelationParamFilter(
                     fields: $elementQuery->customFields
                         ? Arr::keyBy(

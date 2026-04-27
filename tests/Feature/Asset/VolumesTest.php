@@ -270,7 +270,7 @@ it('stores volume in project config on save', function () {
     $this->volumes = app(Volumes::class);
 
     $volume = $this->volumes->getVolumeByHandle('configVolume');
-    $configPath = \CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_VOLUMES.'.'.$volume->uid;
+    $configPath = CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_VOLUMES.'.'.$volume->uid;
 
     $projectConfigData = ProjectConfig::get($configPath);
 

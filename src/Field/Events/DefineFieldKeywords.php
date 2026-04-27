@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Events;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Concerns\HandleableEvent;
 
-final class DefineFieldKeywords extends FieldEvent
+class DefineFieldKeywords extends FieldEvent
 {
     use HandleableEvent;
 

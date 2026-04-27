@@ -22,7 +22,7 @@ use Throwable;
 
 use function CraftCms\Cms\t;
 
-final readonly class ImpersonationController
+readonly class ImpersonationController
 {
     use RespondsWithFlash;
 

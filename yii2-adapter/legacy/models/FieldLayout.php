@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace craft\models;
 
-use craft\base\ElementInterface;
 use craft\base\Event as YiiEvent;
 use craft\events\CreateFieldLayoutFormEvent;
 use craft\events\DefineFieldLayoutCustomFieldsEvent;
 use craft\events\DefineFieldLayoutElementsEvent;
 use craft\events\DefineFieldLayoutFieldsEvent;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\Events\CreateFieldLayoutForm;
 use CraftCms\Cms\FieldLayout\Events\DefineCustomFields;
 use CraftCms\Cms\FieldLayout\Events\DefineNativeFields;
@@ -30,6 +30,8 @@ use Illuminate\Support\Facades\Event;
  */
 class FieldLayout extends \CraftCms\Cms\FieldLayout\FieldLayout
 {
+    use \craft\base\LegacyEventConstants;
+
     public const EVENT_DEFINE_CUSTOM_FIELDS = 'defineCustomFields';
 
     public const EVENT_DEFINE_NATIVE_FIELDS = 'defineNativeFields';

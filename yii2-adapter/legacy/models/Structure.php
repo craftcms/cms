@@ -2,15 +2,11 @@
 
 namespace craft\models;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * @since 3.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Structure\Data\Structure} instead.
-     */
-    class Structure
-    {
-    }
+/**
+ * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Structure\Data\Structure} instead.
+ */
+class Structure extends \CraftCms\Cms\Structure\Data\Structure
+{
+    use \craft\base\LegacyEventConstants;
 }
-
-class_alias(\CraftCms\Cms\Structure\Data\Structure::class, Structure::class);

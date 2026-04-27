@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Asset\Conditions;
 
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 
-final class AssetCondition extends ElementCondition
+class AssetCondition extends ElementCondition
 {
     #[\Override]
     protected function selectableConditionRules(): array

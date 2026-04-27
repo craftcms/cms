@@ -17,6 +17,7 @@ use yii\console\controllers\FixtureController as BaseFixtureController;
  * @author Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2.0
+ * @deprecated 6.0.0
  */
 class FixtureController extends BaseFixtureController
 {

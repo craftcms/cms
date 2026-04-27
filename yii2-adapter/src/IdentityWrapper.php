@@ -6,18 +6,18 @@ namespace CraftCms\Yii2Adapter;
 
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Traits\ForwardsCalls;
 use yii\base\Exception;
-use yii\base\NotSupportedException;
 use yii\web\IdentityInterface;
 
 /**
  * @mixin User
  */
-final class IdentityWrapper implements IdentityInterface
+class IdentityWrapper implements IdentityInterface
 {
     use ForwardsCalls;
 
@@ -79,7 +79,7 @@ final class IdentityWrapper implements IdentityInterface
         throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
     }
 
-    public function getId(): int|null
+    public function getId(): ?int
     {
         return $this->user->getId();
     }

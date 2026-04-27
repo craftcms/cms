@@ -10,7 +10,7 @@ it('can instantiate with settings', function () {
         public string $foo;
     }
 
-    $widget = Widget::fromConfig(new \CraftCms\Cms\Dashboard\Models\Widget([
+    $widget = Widget::fromConfig(new CraftCms\Cms\Dashboard\Models\Widget([
         'userId' => 1,
         'colspan' => 4,
         'type' => TestWidget::class,

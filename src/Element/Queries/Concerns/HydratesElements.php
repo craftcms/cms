@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
-use Craft;
-use craft\base\ElementInterface;
-use craft\base\ExpirableElementInterface;
-use craft\helpers\ElementHelper;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
+use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Events\ElementHydrated;
 use CraftCms\Cms\Element\Queries\Events\ElementsHydrated;
 use CraftCms\Cms\Element\Queries\Events\HydratingElement;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use Illuminate\Support\Collection;
 use stdClass;
 
@@ -55,21 +57,21 @@ trait HydratesElements
 
         $elements = $this->afterHydrate($elements)
             ->unless($this->asArray, function (Collection $elements) {
-                $elementsService = Craft::$app->getElements();
+                $dependencyCollector = app(DependencyCollector::class);
 
                 $allElements = $elements->all();
 
-                $elements = $elements->map(function (ElementInterface $element) use ($allElements, $elementsService) {
+                $elements = $elements->map(function (ElementInterface $element) use ($allElements, $dependencyCollector) {
                     // Set the full query result on the element, in case it's needed for lazy eager loading
                     $element->elementQueryResult = $allElements;
 
                     // If we're collecting cache info and the element is expirable, register its expiry date
                     if (
                         $element instanceof ExpirableElementInterface &&
-                        $elementsService->getIsCollectingCacheInfo() &&
+                        $dependencyCollector->isCollecting() &&
                         ($expiryDate = $element->getExpiryDate()) !== null
                     ) {
-                        $elementsService->setCacheExpiryDate($expiryDate);
+                        $dependencyCollector->setExpiryDate($expiryDate);
                     }
 
                     return $element;
@@ -79,14 +81,14 @@ trait HydratesElements
 
                 // Should we eager-load some elements onto these?
                 if ($this->with) {
-                    $elementsService->eagerLoadElements($this->elementType, $elements, $this->with);
+                    Elements::eagerLoadElements($this->elementType, $elements->all(), $this->with);
                 }
 
                 return $elements;
             })->all();
 
         if ($this->withProvisionalDrafts) {
-            ElementHelper::swapInProvisionalDrafts($elements);
+            $elements = app(Drafts::class)->withProvisionalDrafts($elements);
         }
 
         event($event = new ElementsHydrated($elements, $items));
@@ -105,7 +107,7 @@ trait HydratesElements
         if (
             ! $this->ignorePlaceholders &&
             isset($row['id'], $row['siteId']) &&
-            ! is_null($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $row['siteId']))
+            ! is_null($element = Elements::getPlaceholderElement($row['id'], $row['siteId']))
         ) {
             return $element;
         }

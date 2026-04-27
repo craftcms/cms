@@ -5,12 +5,21 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database;
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Database\Commands\BackupCommand;
+use CraftCms\Cms\Database\Commands\ConvertCharsetCommand;
+use CraftCms\Cms\Database\Commands\DropAllTablesCommand;
+use CraftCms\Cms\Database\Commands\DropTablePrefixCommand;
 use CraftCms\Cms\Database\Commands\MigrateCommand;
+use CraftCms\Cms\Database\Commands\RepairCommand;
+use CraftCms\Cms\Database\Commands\RestoreCommand;
+use CraftCms\Cms\Element\BulkOp\BulkOpDeferrals;
+use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Cache\DatabaseStore;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Connection;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Migrations\MigrationRepositoryInterface;
 use Illuminate\Database\Query\Builder;
@@ -22,7 +31,7 @@ use Illuminate\Support\ServiceProvider;
 use Override;
 use ReflectionProperty;
 
-final class DatabaseServiceProvider extends ServiceProvider
+class DatabaseServiceProvider extends ServiceProvider
 {
     #[Override]
     public function register(): void
@@ -32,10 +41,26 @@ final class DatabaseServiceProvider extends ServiceProvider
             ->needs(MigrationRepositoryInterface::class)
             ->give(fn () => $this->app->make(MigrationRepository::class, ['table' => Table::MIGRATIONS]));
 
+        $this->app
+            ->when(BulkOps::class)
+            ->needs(ConnectionInterface::class)
+            ->give(fn () => $this->app->make(ConnectionResolverInterface::class)->connection(config('database.bulk_ops_connection', 'db2')));
+
+        $this->app
+            ->when(BulkOpDeferrals::class)
+            ->needs(ConnectionInterface::class)
+            ->give(fn () => $this->app->make(ConnectionResolverInterface::class)->connection(config('database.bulk_ops_connection', 'db2')));
+
         Connection::macro('isMysql', fn (bool $strict = false) => $strict ? $this->getDriverName() === 'mysql' : in_array($this->getDriverName(), ['mysql', 'mariadb']));
         Connection::macro('isMaria', fn () => $this->getDriverName() === 'mariadb');
         Connection::macro('isPgsql', fn () => $this->getDriverName() === 'pgsql');
         Connection::macro('isSqlite', fn () => $this->getDriverName() === 'sqlite');
+        Connection::macro('driverLabel', fn () => match (true) {
+            $this->isMaria() => 'MariaDB',
+            $this->isMysql() => 'MySQL',
+            $this->isSqlite() => 'SQLite',
+            default => 'PostgreSQL',
+        });
 
         Builder::macro('whereBool', fn ($column, bool $value) => $this->where($column, new QueryExpression(var_export($value, true))));
         Builder::macro('orWhereBool', fn ($column, bool $value) => $this->orWhere($column, new QueryExpression(var_export($value, true))));
@@ -49,7 +74,13 @@ final class DatabaseServiceProvider extends ServiceProvider
         Aliases::set('@migrations', '@package/Database/Migrations');
 
         $this->commands([
+            BackupCommand::class,
+            ConvertCharsetCommand::class,
+            DropAllTablesCommand::class,
+            DropTablePrefixCommand::class,
             MigrateCommand::class,
+            RepairCommand::class,
+            RestoreCommand::class,
         ]);
 
         if ($db->getDriverName() === 'sqlite') {

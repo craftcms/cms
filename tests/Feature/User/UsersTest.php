@@ -3,6 +3,7 @@
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Elements\User;
@@ -151,7 +152,7 @@ test('user activation email as username with an unverified email', function () {
     // Set useEmailAsUsername to true and add an unverified email.
     Cms::config()->useEmailAsUsername = true;
 
-    Craft::$app->elements->saveElement($user);
+    Elements::saveElement($user);
 
     $this->users->activateUser($user);
 

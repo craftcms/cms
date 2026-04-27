@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 use SensitiveParameter;
 
 #[Scoped]
-final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProvider
+readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProvider
 {
     /**
      * Create a new Craft user provider.

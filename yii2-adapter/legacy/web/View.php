@@ -15,6 +15,8 @@ use craft\events\CreateTwigEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\Cp;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -47,7 +49,6 @@ use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Extension\ExtensionInterface;
 use yii\base\Exception;
-use yii\base\NotSupportedException;
 use yii\web\AssetBundle as YiiAssetBundle;
 
 use function CraftCms\Cms\t;
@@ -2144,10 +2145,10 @@ class View extends \yii\web\View
             return null;
         }
 
-        if (isset($context['size']) && in_array($context['size'], [Cp::CHIP_SIZE_SMALL, Cp::CHIP_SIZE_LARGE], true)) {
+        if (isset($context['size']) && in_array($context['size'], [ElementHtml::CHIP_SIZE_SMALL, ElementHtml::CHIP_SIZE_LARGE], true)) {
             $size = $context['size'];
         } else {
-            $size = (isset($context['viewMode']) && $context['viewMode'] === 'thumbs') ? Cp::CHIP_SIZE_LARGE : Cp::CHIP_SIZE_SMALL;
+            $size = (isset($context['viewMode']) && $context['viewMode'] === 'thumbs') ? ElementHtml::CHIP_SIZE_LARGE : ElementHtml::CHIP_SIZE_SMALL;
         }
 
         return Cp::elementHtml(
@@ -2169,7 +2170,7 @@ class View extends \yii\web\View
 
             $yiiEvent = new RegisterTemplateRootsEvent();
             Craft::$app->getView()->trigger(self::EVENT_REGISTER_CP_TEMPLATE_ROOTS, $yiiEvent);
-            $event->roots = $yiiEvent->roots;
+            $event->roots = array_merge($event->roots, $yiiEvent->roots);
         });
 
         Event::listen(RegisterSiteTemplateRoots::class, function(RegisterSiteTemplateRoots $event) {
@@ -2179,7 +2180,7 @@ class View extends \yii\web\View
 
             $yiiEvent = new RegisterTemplateRootsEvent();
             Craft::$app->getView()->trigger(self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, $yiiEvent);
-            $event->roots = $yiiEvent->roots;
+            $event->roots = array_merge($event->roots, $yiiEvent->roots);
         });
 
         Event::listen(function(TwigCreated $event) {

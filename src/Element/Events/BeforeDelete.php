@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Events;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
 /**
@@ -12,9 +13,9 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
  *
  * Set `$isValid` to `false` to prevent the element from getting deleted.
  *
- * {@see \CraftCms\Cms\Element\Element::beforeDelete()}
+ * {@see Element::beforeDelete()}
  */
-final class BeforeDelete
+class BeforeDelete
 {
     use ValidatableEvent;
 

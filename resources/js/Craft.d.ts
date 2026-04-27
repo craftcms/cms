@@ -2,7 +2,7 @@
  * This is just a temp file copied from @craftcms/webpack to make typescript
  * happy for the moment.
  */
-import type {CpServices} from '@craftcms/cp/src/types/globals.d.ts';
+import type {CpServices} from '@craftcms/cp/types/globals.d.ts';
 
 // Set up interfaces and types
 interface ProgressBarInterface {

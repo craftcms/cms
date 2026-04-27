@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 
-final readonly class ExtractNamespace
+readonly class ExtractNamespace
 {
     public function handle(Request $request, Closure $next): mixed
     {
@@ -15,7 +15,7 @@ final readonly class ExtractNamespace
             return $next($request);
         }
 
-        $request->merge($request->input($namespace));
+        $request->merge($request->input($namespace, []));
 
         return $next($request);
     }

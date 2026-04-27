@@ -6,32 +6,37 @@ export default css`
   }
 
   .action-item {
+    border-color: var(--c-color-border-quiet, transparent);
+    color: var(--c-color-on-quiet, inherit);
+    background-color: transparent;
+
     font: inherit;
     text-align: left;
-    display: grid;
-    gap: var(--c-spacing-md);
-    grid-template-columns: auto 1fr auto;
+    display: flex;
+    width: 100%;
     align-items: center;
     text-decoration: none;
-    color: inherit;
     padding-inline: var(--c-spacing-sm);
     padding-block: var(--c-spacing-sm);
     border-radius: var(--c-radius-md);
     position: relative;
-    background-color: transparent;
-    border: 1px solid transparent;
+    border-width: 0;
+    border-style: solid;
   }
 
   @media (hover: hover) {
     :host(:hover) .action-item:not(:disabled) {
-      background-color: var(--c-color-accent-bg-subtle);
-      color: var(--c-color-accent-on-subtle);
+      background-color: var(
+        --c-color-fill-quiet,
+        var(--c-color-neutral-fill-quiet)
+      );
+      color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
     }
   }
 
   :host([active]) .action-item {
-    background-color: var(--c-color-accent-bg-emphasis);
-    color: var(--c-color-accent-on-emphasis);
+    background-color: var(--c-color-fill-loud);
+    color: var(--c-color-on-loud);
   }
 
   .action-item:disabled {
@@ -42,23 +47,45 @@ export default css`
     cursor: pointer;
   }
 
-  .action-item__prefix {
-    position: relative;
-    display: grid;
-    justify-content: center;
-    align-items: center;
+  .action-item__check,
+  .action-item__icon,
+  .action-item__suffix {
+    min-height: 1lh;
+  }
+
+  .action-item__check,
+  .action-item__icon {
+    min-width: 1lh;
+    display: inline-grid;
+    place-items: center;
+    align-self: start;
+  }
+
+  .action-item__check {
     aspect-ratio: 1;
-    width: 100%;
+  }
+
+  .action-item__suffix {
+    align-self: center;
+  }
+
+  .action-item__label {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-inline: var(--c-spacing-sm);
   }
 
   :host([variant='danger']) .action-item {
-    color: var(--c-color-on-subtle);
+    color: var(--c-color-on-quiet);
   }
 
   @media (hover: hover) {
     :host(:hover[variant='danger']) .action-item:not(:disabled) {
-      background-color: var(--c-color-bg-subtle);
-      color: var(--c-color-on-subtle);
+      background-color: var(--c-color-fill-quiet);
+      color: var(--c-color-on-quiet);
     }
   }
 `;

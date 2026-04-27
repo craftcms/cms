@@ -32,6 +32,7 @@ use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Facades\Users;
@@ -583,6 +584,14 @@ class EntrifyController extends Controller
             &$projectConfigChanged,
         ) {
             if (!$globalSet->dateDeleted) {
+                // Delete the layout first, so custom fields’ beforeElementDelete()
+                // and afterElementDelete() methods don’t get called
+                // (see https://github.com/craftcms/cms/issues/18650)
+                $fieldLayout = $globalSet->getFieldLayout();
+                if ($fieldLayout->id) {
+                    Craft::$app->getFields()->deleteLayout($fieldLayout, true);
+                }
+
                 Craft::$app->getGlobals()->deleteSet($globalSet);
                 $projectConfigChanged = true;
             }
@@ -595,7 +604,7 @@ class EntrifyController extends Controller
                 ->one();
 
             if ($oldEntry) {
-                Craft::$app->getElements()->deleteElement($oldEntry, true);
+                Elements::deleteElement($oldEntry, true);
             }
 
             DbFacade::table(Table::ENTRIES)

@@ -21,7 +21,7 @@ use Illuminate\Support\Collection;
  *
  * @since 3.0.13
  */
-final class DefineUserContentSummary
+class DefineUserContentSummary
 {
     public function __construct(
         /**

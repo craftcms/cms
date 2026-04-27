@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Concerns;
 
+use CraftCms\Cms\Plugin\Plugin;
+
 /**
- * @mixin \CraftCms\Cms\Plugin\Plugin
+ * @mixin Plugin
  *
  * @internal
  */

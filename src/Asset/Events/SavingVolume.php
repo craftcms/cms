@@ -9,7 +9,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 /**
  * @event SavingVolume The event that is triggered before a volume is saved.
  */
-final class SavingVolume
+class SavingVolume
 {
     public function __construct(
         public Volume $volume,

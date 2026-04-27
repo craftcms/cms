@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Support\Arr;
@@ -15,7 +15,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 #[Singleton]
-final readonly class ElementRelations
+readonly class ElementRelations
 {
     /**
      * Updates relation data for the given element after save.

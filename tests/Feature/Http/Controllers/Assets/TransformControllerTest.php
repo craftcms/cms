@@ -93,7 +93,7 @@ describe('generateFallback', function () {
         $transformString = '_101x99_crop_center-center_none';
         $transform = Crypt::encrypt($asset->id.','.$transformString);
         $path = implode(DIRECTORY_SEPARATOR, [
-            \Craft::$app->getPath()->getImageTransformsPath(),
+            Craft::$app->getPath()->getImageTransformsPath(),
             $transformString,
             sprintf('%s.jpg', $asset->id),
         ]);

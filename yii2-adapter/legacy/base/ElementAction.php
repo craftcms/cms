@@ -7,98 +7,105 @@
 
 namespace craft\base;
 
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use Craft;
+use CraftCms\Yii2Adapter\ModelWrapper;
+use CraftCms\Yii2Adapter\Validation\LegacyYiiRules;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * ElementAction is the base class for classes representing element actions in terms of objects.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\Element\Actions\ElementAction} instead.
  */
-abstract class ElementAction extends ConfigurableComponent implements ElementActionInterface
+abstract class ElementAction extends \CraftCms\Cms\Element\Actions\ElementAction implements ElementActionInterface
 {
-    /**
-     * @inheritdoc
-     */
-    public static function isDestructive(): bool
+    public function getRules(): array
     {
-        return false;
+        return LegacyYiiRules::mergeAttributeRules(
+            rules: parent::getRules(),
+            target: $this,
+            yiiRules: $this->defineRules(),
+            validatorTarget: fn() => new ModelWrapper($this),
+            allowMethodValidators: true,
+        );
+    }
+
+    public function getResponse(): ?Response
+    {
+        $response = parent::getResponse();
+
+        if ($response !== null || !static::isDownload()) {
+            return $response;
+        }
+
+        return $this->downloadResponse(Craft::$app->getResponse());
     }
 
     /**
-     * @inheritdoc
+     * @return array<int, array|string>
      */
-    public static function isDownload(): bool
+    protected function defineRules(): array
     {
-        return false;
+        return [];
     }
 
-    /**
-     * @var class-string<ElementInterface>
-     * @since 3.0.30
-     */
-    protected string $elementType;
-
-    /**
-     * @var string|null
-     */
-    private ?string $_message = null;
-
-    /**
-     * @inheritdoc
-     */
-    public function setElementType(string $elementType): void
+    private function downloadResponse(\craft\web\Response $response): Response
     {
-        $this->elementType = $elementType;
-    }
+        $headers = $response->getHeaders()->toArray();
 
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerLabel(): string
-    {
-        return static::displayName();
-    }
+        if ($response->stream === null) {
+            return new Response(
+                content: $response->content ?? '',
+                status: $response->getStatusCode(),
+                headers: $headers,
+            );
+        }
 
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerHtml(): ?string
-    {
-        return null;
-    }
+        return new StreamedResponse(
+            function() use ($response): void {
+                $stream = $response->stream;
 
-    /**
-     * @inheritdoc
-     */
-    public function getConfirmationMessage(): ?string
-    {
-        return null;
-    }
+                if (is_callable($stream)) {
+                    foreach ($stream() as $chunk) {
+                        echo $chunk;
+                    }
 
-    /**
-     * @inheritdoc
-     */
-    public function performAction(ElementQueryInterface $query): bool
-    {
-        return true;
-    }
+                    return;
+                }
 
-    /**
-     * @inheritdoc
-     */
-    public function getMessage(): ?string
-    {
-        return $this->_message;
-    }
+                $chunkSize = 8 * 1024 * 1024;
 
-    /**
-     * Sets the message that should be displayed to the user after the action is performed.
-     *
-     * @param string $message The message that should be displayed to the user after the action is performed.
-     */
-    protected function setMessage(string $message): void
-    {
-        $this->_message = $message;
+                if (is_array($stream)) {
+                    [$handle, $begin, $end] = $stream;
+
+                    if (stream_get_meta_data($handle)['seekable']) {
+                        fseek($handle, $begin);
+                    }
+
+                    while (!feof($handle) && ($position = ftell($handle)) <= $end) {
+                        if ($position + $chunkSize > $end) {
+                            $chunkSize = $end - $position + 1;
+                        }
+
+                        echo fread($handle, $chunkSize);
+                    }
+
+                    fclose($handle);
+
+                    return;
+                }
+
+                while (!feof($stream)) {
+                    echo fread($stream, $chunkSize);
+                }
+
+                fclose($stream);
+            },
+            $response->getStatusCode(),
+            $headers,
+        );
     }
 }

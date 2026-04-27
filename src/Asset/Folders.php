@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
-use Craft;
-use craft\helpers\Assets as AssetsHelper;
 use CraftCms\Cms\Asset\Data\FolderCriteria;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
@@ -17,6 +15,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectExistsException;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
@@ -27,7 +26,7 @@ use Throwable;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final class Folders
+class Folders
 {
     /** @var array<int, VolumeFolder|null> */
     private array $foldersById = [];
@@ -329,13 +328,12 @@ final class Folders
             }
         }
 
-        $assetQuery = Asset::find()->folderId($allFolderIds);
-        $elementService = Craft::$app->getElements();
-
-        $assetQuery->each(function (Asset $asset) use ($deleteDir, $elementService) {
-            $asset->keepFileOnDelete = ! $deleteDir;
-            $elementService->deleteElement($asset, true);
-        }, 100);
+        Asset::find()
+            ->folderId($allFolderIds)
+            ->each(function (Asset $asset) use ($deleteDir) {
+                $asset->keepFileOnDelete = ! $deleteDir;
+                Elements::deleteElement($asset, true);
+            }, 100);
 
         VolumeFolderModel::whereIn('id', $allFolderIds)->delete();
     }

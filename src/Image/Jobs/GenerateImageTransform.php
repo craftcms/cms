@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Override;
 use Throwable;
 
-final class GenerateImageTransform extends Job
+class GenerateImageTransform extends Job
 {
     public function __construct(
         public int $transformId,

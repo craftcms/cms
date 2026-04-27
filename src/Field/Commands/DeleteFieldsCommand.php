@@ -8,7 +8,7 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Field\Fields;
 use Illuminate\Console\Command;
 
-final class DeleteFieldsCommand extends Command
+class DeleteFieldsCommand extends Command
 {
     use CraftCommand;
 

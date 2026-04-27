@@ -1,67 +1,15 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\elements\actions;
 
-use craft\base\ElementAction;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use function CraftCms\Cms\t;
-
-/**
- * DownloadAssetFile represents a Download Asset element action.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-class DownloadAssetFile extends ElementAction
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Actions\DownloadAssetFile} instead.
      */
-    public function getTriggerLabel(): string
+    class DownloadAssetFile extends \CraftCms\Cms\Asset\Actions\DownloadAssetFile
     {
-        return t('Download');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTriggerHtml(): ?string
-    {
-        HtmlStack::jsWithVars(fn($type) => <<<JS
-(() => {
-    new Craft.ElementActionTrigger({
-        type: $type,
-        activate: (selectedItems, elementIndex) => {
-            var \$form = Craft.createForm().appendTo(Garnish.\$bod);
-            $(Craft.getCsrfInput()).appendTo(\$form);
-            $('<input/>', {
-                type: 'hidden',
-                name: 'action',
-                value: 'assets/download-asset'
-            }).appendTo(\$form);
-            selectedItems.each(function() {
-                $('<input/>', {
-                    type: 'hidden',
-                    name: 'assetId[]',
-                    value: $(this).data('id')
-                }).appendTo(\$form);
-            });
-            $('<input/>', {
-                type: 'submit',
-                value: 'Submit',
-            }).appendTo(\$form);
-            \$form.submit();
-            \$form.remove();
-        },
-    });
-})();
-JS, [static::class]);
-
-        return null;
     }
 }
+
+class_alias(\CraftCms\Cms\Asset\Actions\DownloadAssetFile::class, DownloadAssetFile::class);

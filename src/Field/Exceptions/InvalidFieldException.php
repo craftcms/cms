@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Field\Exceptions;
 use RuntimeException;
 use Throwable;
 
-final class InvalidFieldException extends RuntimeException
+class InvalidFieldException extends RuntimeException
 {
     public function __construct(
         public readonly string $handle,

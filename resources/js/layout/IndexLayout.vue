@@ -84,7 +84,7 @@
       </nav>
       <div
         id="content-pane"
-        class="bg-white border border-border-subtle rounded-sm shadow-sm @container"
+        class="bg-white border border-neutral-border-quiet rounded-sm shadow-sm @container"
         tabindex="-1"
       >
         <slot></slot>

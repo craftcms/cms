@@ -8,7 +8,7 @@ use craft\base\Model;
 use CraftCms\Cms\Support\Utils;
 use Illuminate\Support\Traits\ForwardsCalls;
 
-final class ModelWrapper extends Model
+class ModelWrapper extends Model
 {
     use ForwardsCalls;
 

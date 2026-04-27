@@ -1,1 +1,1 @@
-const o={optionsPopup:"Wyskakujące okno opcji pola wyboru"};export{o as default};
+var e={optionsPopup:`Wyskakujące okno opcji pola wyboru`};export{e as default};

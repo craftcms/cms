@@ -11,7 +11,7 @@ use Illuminate\Database\Schema\Blueprint;
 /**
  * @internal
  */
-final class MigrationRepository extends DatabaseMigrationRepository
+class MigrationRepository extends DatabaseMigrationRepository
 {
     private ?string $track = null;
 

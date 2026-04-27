@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import {type JobInfo} from '@craftcms/cp/src/types/index.js';
+  import {type JobInfo} from '@craftcms/cp/types/index.ts';
   import VarDump from '@/components/VarDump.vue';
   import Badge from '@/components/Badge.vue';
 
@@ -144,6 +144,6 @@
 
 <style scoped lang="scss">
   tr {
-    border-bottom: 1px solid var(--c-border-subtle);
+    border-bottom: 1px solid var(--c-color-neutral-border-quiet);
   }
 </style>

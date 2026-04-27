@@ -2,17 +2,7 @@
 {% set title = "Category Groups"|t('yii2-adapter') %}
 {% set readOnly = not app.config.craft.general.allowAdminChanges %}
 
-{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
-
-{% do view.registerTranslations('app', [
-    "Name",
-    "Handle",
-]) %}
-
-{% do view.registerTranslations('yii2-adapter', [
-  "Manage categories",
-  "No category groups exist yet.",
-]) %}
+{% do registerLegacyAsset('CraftCms\\Cms\\View\\LegacyAssets\\AdminTableAsset') -%}
 
 {% block actionButton %}
     {% if not readOnly %}

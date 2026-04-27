@@ -9,7 +9,7 @@ use CraftCms\Cms\User\Elements\User;
 /**
  * @event UserPhotoSaved The event that is triggered after a user photo is saved.
  */
-final class UserPhotoSaved
+class UserPhotoSaved
 {
     public function __construct(
         public User $user,

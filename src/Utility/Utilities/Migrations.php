@@ -15,7 +15,7 @@ use function CraftCms\Cms\t;
 /**
  * Migrations represents a Migrations utility.
  */
-final class Migrations extends Utility
+class Migrations extends Utility
 {
     #[Override]
     public static function displayName(): string

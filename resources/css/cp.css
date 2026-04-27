@@ -5,6 +5,7 @@ CP Styles
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
 @import '@craftcms/cp/styles/cp.css' layer(cp);
+@import '@craftcms/cp/tailwind.css' layer(theme);
 
 @import './global-sidebar.css';
 
@@ -12,8 +13,4 @@ CP Styles
   --global-sidebar-width: calc(226rem / 16);
   --global-content-width: calc(1440rem / 16);
   --header-height: calc(44rem / 16);
-}
-
-@theme {
-  --color-border-subtle: var(--c-color-neutral-border-subtle);
 }

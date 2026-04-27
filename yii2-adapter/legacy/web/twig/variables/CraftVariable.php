@@ -25,6 +25,7 @@ use craft\web\Application as WebApplication;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Queries\UserQuery;
@@ -35,12 +36,13 @@ use CraftCms\Cms\Route\Routes;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Translation\I18N;
 use CraftCms\Cms\Twig\Variables\Io;
-use CraftCms\Cms\Twig\Variables\Rebrand;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserGroups;
 use CraftCms\Cms\User\UserPermissions;
+use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Support\Facades\Config;
 use yii\di\ServiceLocator;
 
@@ -49,6 +51,7 @@ use yii\di\ServiceLocator;
  *
  * @property Cp $cp
  * @property Io $io
+ * @property OAuth $oauth
  * @property Rebrand $rebrand
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -81,6 +84,10 @@ class CraftVariable extends ServiceLocator
      */
     public function __construct($config = [])
     {
+        if (!class_exists(Craft::class)) {
+            return;
+        }
+
         $this->app = Craft::$app;
 
         if (Edition::isAtLeast(Edition::Pro)) {
@@ -150,7 +157,7 @@ class CraftVariable extends ServiceLocator
     public function addresses(array $criteria = []): AddressQuery
     {
         $query = new AddressQuery(Address::class);
-        Craft::configure($query, $criteria);
+        Typecast::configure($query, $criteria);
         return $query;
     }
 
@@ -163,13 +170,18 @@ class CraftVariable extends ServiceLocator
     public function assets(array $criteria = []): AssetQuery
     {
         $query = new AssetQuery(Asset::class);
-        Craft::configure($query, $criteria);
+        Typecast::configure($query, $criteria);
         return $query;
     }
 
     public function auth(): Auth
     {
         return app(Auth::class);
+    }
+
+    public function oauth(): OAuth
+    {
+        return app(OAuth::class);
     }
 
     /**
@@ -182,7 +194,7 @@ class CraftVariable extends ServiceLocator
     public function categories(array $criteria = []): CategoryQuery
     {
         $query = Category::find();
-        Craft::configure($query, $criteria);
+        Typecast::configure($query, $criteria);
         return $query;
     }
 
@@ -200,7 +212,7 @@ class CraftVariable extends ServiceLocator
     public function entries(array $criteria = []): EntryQuery
     {
         $query = new EntryQuery(Entry::class);
-        Craft::configure($query, $criteria);
+        Typecast::configure($query, $criteria);
         return $query;
     }
 
@@ -230,8 +242,13 @@ class CraftVariable extends ServiceLocator
     public function globalSets(array $criteria = []): GlobalSetQuery
     {
         $query = GlobalSet::find();
-        Craft::configure($query, $criteria);
+        Typecast::configure($query, $criteria);
         return $query;
+    }
+
+    public function htmlStack(): HtmlStack
+    {
+        return app(HtmlStack::class);
     }
 
     public function i18n(): I18N
@@ -290,7 +307,7 @@ class CraftVariable extends ServiceLocator
     public function tags(array $criteria = []): TagQuery
     {
         $query = Tag::find();
-        Craft::configure($query, $criteria);
+        Typecast::configure($query, $criteria);
         return $query;
     }
 
@@ -303,7 +320,7 @@ class CraftVariable extends ServiceLocator
     public function users(array $criteria = []): UserQuery
     {
         $query = User::find();
-        Craft::configure($query, $criteria);
+        Typecast::configure($query, $criteria);
         return $query;
     }
 }

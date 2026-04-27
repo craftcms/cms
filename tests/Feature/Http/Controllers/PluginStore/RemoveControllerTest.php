@@ -36,12 +36,12 @@ it('requires authentication, adminChanges and admin for all routes', function (s
 
     postJson(action([$controller, $action]))->assertUnauthorized();
 
-    \CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
+    CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
     actingAs(User::find()->one());
 
     postJson(action([$controller, $action]))->assertForbidden();
 
-    \CraftCms\Cms\User\Models\User::first()->update(['admin' => true]);
+    CraftCms\Cms\User\Models\User::first()->update(['admin' => true]);
     actingAs(User::find()->one());
     Cms::config()->allowAdminChanges(false);
 

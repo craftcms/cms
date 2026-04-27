@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use Craft;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Typecast;
 
 /**
  * Queryable provides element query factory methods.
@@ -39,9 +39,6 @@ trait Queryable
         return static::findByCondition($criteria, false);
     }
 
-    /**
-     * @interitdoc
-     */
     public static function get(int|string $id): ?static
     {
         return static::find()
@@ -56,7 +53,7 @@ trait Queryable
 
     public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(ElementCondition::class, [static::class]);
+        return new ElementCondition(static::class);
     }
 
     /**
@@ -70,14 +67,15 @@ trait Queryable
      */
     protected static function findByCondition(mixed $criteria, bool $one): array|static|null
     {
-        /** @var \CraftCms\Cms\Element\Queries\ElementQuery<static> $query */
+        /** @var ElementQuery<static> $query */
         $query = static::find();
 
         if ($criteria !== null) {
             if (! is_array($criteria) || Arr::isList($criteria)) {
                 $criteria = ['id' => $criteria];
             }
-            Craft::configure($query, $criteria);
+
+            Typecast::configure($query, $criteria);
         }
 
         if ($one) {

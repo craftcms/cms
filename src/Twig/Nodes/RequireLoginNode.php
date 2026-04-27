@@ -11,7 +11,7 @@ use Twig\Compiler;
 use Twig\Node\Node;
 
 #[YieldReady]
-final class RequireLoginNode extends Node
+class RequireLoginNode extends Node
 {
     /**
      * Compiles a RequireLoginNode into PHP.

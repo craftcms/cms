@@ -14,7 +14,7 @@ test('option fields accept valid options', function (string $handle, string $fie
                 ['label' => 'Option A', 'value' => 'a'],
             ],
         ], value: $value)
-        ->createElementWithFields();
+        ->createElementWithFields(save: false);
 
     $result->element->validate();
 
@@ -32,7 +32,7 @@ test('option fields reject invalid options', function (string $handle, string $f
                 ['label' => 'Option A', 'value' => 'a'],
             ],
         ], value: $value)
-        ->createElementWithFields();
+        ->createElementWithFields(save: false);
 
     $result->element->validate();
 

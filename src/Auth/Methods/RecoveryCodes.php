@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth\Methods;
 
-use Craft;
-use craft\web\assets\recoverycodes\RecoveryCodesAsset;
+use Carbon\CarbonInterface;
 use CraftCms\Cms\Auth\Models\RecoveryCodes as RecoveryCodesModel;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\RecoveryCodesAsset;
 use InvalidArgumentException;
 use Override;
 use PragmaRX\Recovery\Recovery;
@@ -15,7 +16,7 @@ use PragmaRX\Recovery\Recovery;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final class RecoveryCodes extends BaseAuthMethod
+class RecoveryCodes extends BaseAuthMethod
 {
     public static function displayName(): string
     {
@@ -43,7 +44,7 @@ JS, [$containerId]);
 
     public function getAuthFormHtml(): string
     {
-        Craft::$app->getView()->registerAssetBundle(RecoveryCodesAsset::class);
+        app(InternalAssetRegistry::class)->register(RecoveryCodesAsset::class);
 
         return template('_components/auth/methods/RecoveryCodes/form');
     }
@@ -116,7 +117,7 @@ JS, [$containerId]);
     /**
      * Returns the user’s recovery codes.
      *
-     * @return array{0:array<string|false>,1:\Carbon\CarbonInterface|null}
+     * @return array{0:array<string|false>,1:CarbonInterface|null}
      */
     public function getRecoveryCodes(): array
     {

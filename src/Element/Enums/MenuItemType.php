@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Enums;
 
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\Html\MenuHtml;
 
 /**
  * MenuItemType defines all possible disclosure menu item types.
  *
- * @see Cp::disclosureMenu()
+ * @see MenuHtml::disclosureMenu()
  */
 enum MenuItemType: string
 {

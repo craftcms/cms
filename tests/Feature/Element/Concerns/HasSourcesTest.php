@@ -6,10 +6,11 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Events\RegisterFieldLayouts;
 use CraftCms\Cms\Element\Events\RegisterSources;
 use CraftCms\Cms\Entry\Elements\Entry;
+use Illuminate\Support\Facades\Event;
 
 class TestHasSourcesElement extends Element
 {
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return 'Test Element';
@@ -37,7 +38,7 @@ describe('sources', function () {
     test('triggers RegisterSources event', function () {
         $eventTriggered = false;
 
-        \Illuminate\Support\Facades\Event::listen(function (RegisterSources $event) use (&$eventTriggered) {
+        Event::listen(function (RegisterSources $event) use (&$eventTriggered) {
             if ($event->elementType === TestHasSourcesElement::class) {
                 $eventTriggered = true;
                 $event->sources = [];
@@ -85,7 +86,7 @@ describe('fieldLayouts', function () {
     test('triggers RegisterFieldLayouts event', function () {
         $eventTriggered = false;
 
-        \Illuminate\Support\Facades\Event::listen(function (RegisterFieldLayouts $event) use (&$eventTriggered) {
+        Event::listen(function (RegisterFieldLayouts $event) use (&$eventTriggered) {
             if ($event->elementType === Entry::class) {
                 $eventTriggered = true;
                 $event->fieldLayouts = [];

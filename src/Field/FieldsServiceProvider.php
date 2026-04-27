@@ -11,7 +11,7 @@ use CraftCms\Cms\Field\IdeHelper\CustomFieldIdeHelperGenerator;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Support\ServiceProvider;
 
-final class FieldsServiceProvider extends ServiceProvider
+class FieldsServiceProvider extends ServiceProvider
 {
     public function boot(ProjectConfig $projectConfig, CustomFieldIdeHelperGenerator $generator): void
     {

@@ -7,34 +7,18 @@
 
 namespace craft\assetpreviews;
 
-use craft\base\AssetPreviewHandler;
-use yii\base\NotSupportedException;
-use function CraftCms\Cms\template;
-
-/**
- * Provides functionality to preview videos
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.4.3
- */
-class Video extends AssetPreviewHandler
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Provides functionality to preview videos.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 3.4.3
+     * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\Asset\PreviewHandlers\Video} instead.
      */
-    public function getPreviewHtml(array $variables = []): string
+    class Video extends \CraftCms\Cms\Asset\PreviewHandlers\Video
     {
-        $url = $this->asset->getUrl();
-
-        if ($url === null) {
-            throw new NotSupportedException('Preview not supported.');
-        }
-
-        return template('assets/_previews/video',
-            array_merge([
-                'asset' => $this->asset,
-                'url' => $url,
-            ], $variables)
-        );
     }
 }
+
+class_alias(\CraftCms\Cms\Asset\PreviewHandlers\Video::class, Video::class);

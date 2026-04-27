@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\NodeVisitors;
 
-use CraftCms\Cms\Twig\Nodes\FallbackNameExpression;
 use CraftCms\Cms\Twig\Nodes\PreloadSinglesNode;
 use Twig\Environment;
 use Twig\Node\BodyNode;
@@ -18,7 +17,7 @@ use Twig\NodeVisitor\NodeVisitorInterface;
 /**
  * SinglePreloader preloads Single section entries for a template.
  */
-final class SinglePreloader implements NodeVisitorInterface
+class SinglePreloader implements NodeVisitorInterface
 {
     /**
      * @var array<string,bool>[]
@@ -39,24 +38,12 @@ final class SinglePreloader implements NodeVisitorInterface
         ) {
             $variables = &$this->foundVariables[0];
             $variables[$node->getAttribute('name')] = true;
-
-            $isDefinedTest = $node->isDefinedTestEnabled();
-
-            // swap the node with a FallbackNameExpression
-            $node = new FallbackNameExpression($node->getAttribute('name'), [
-                'is_defined_test' => $isDefinedTest,
-                'ignore_strict_check' => $node->getAttribute('ignore_strict_check'),
-            ], $node->getTemplateLine());
-
-            if ($isDefinedTest) {
-                $node->enableDefinedTest();
-            }
         }
 
         return $node;
     }
 
-    public function leaveNode(Node $node, Environment $env): \Twig\Node\Node
+    public function leaveNode(Node $node, Environment $env): Node
     {
         if (! $this->isRelevant($node)) {
             return $node;
@@ -89,7 +76,7 @@ final class SinglePreloader implements NodeVisitorInterface
         ]));
 
         foreach ($subNodes as $key => $subNode) {
-            $body->setNode($key, $subNode);
+            $body->setNode((string) $key, $subNode);
         }
 
         return $node;

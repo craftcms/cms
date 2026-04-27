@@ -7,7 +7,7 @@ namespace CraftCms\Cms\View\Events;
 /**
  * @event RegisterCpTemplateRoots The event that is triggered when registering control panel template roots
  */
-final class RegisterCpTemplateRoots
+class RegisterCpTemplateRoots
 {
     /**
      * @var array<string, string|string[]> The registered template roots. Each key should be a root template path, and values should be the

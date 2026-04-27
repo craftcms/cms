@@ -4,23 +4,22 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section\Validation;
 
+use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Validation\Rules\SingleSectionUriRule;
 use CraftCms\Cms\Validation\Rules\SiteIdRule;
 use CraftCms\Cms\Validation\Rules\UriFormatRule;
 use CraftCms\Cms\Validation\Ruleset;
-use Override;
 use Throwable;
 
-/** @extends Ruleset<\CraftCms\Cms\Section\Data\SectionSiteSettings> */
-final class SectionSiteSettingsRules extends Ruleset
+/** @extends Ruleset<SectionSiteSettings> */
+class SectionSiteSettingsRules extends Ruleset
 {
-    #[Override]
-    public function defineRules(): array
+    public function rules(): array
     {
         $section = null;
         try {
-            $section = $this->component->getSection();
+            $section = $this->subject->getSection();
         } catch (Throwable) {
         }
 

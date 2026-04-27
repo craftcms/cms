@@ -8,7 +8,7 @@ use CraftCms\Cms\Element\Policies\ElementPolicy;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserPermissions;
 
-final class UserPolicy extends ElementPolicy
+class UserPolicy extends ElementPolicy
 {
     public function __construct(
         private readonly UserPermissions $userPermissions,

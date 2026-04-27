@@ -59,6 +59,13 @@ test('datetime properties', function () {
     expect($config['expiryDate'])->toBeNull();
 });
 
+test('can identify datetime properties', function () {
+    expect(Typecast::isDateTimeProperty(Entry::class, 'postDate'))->toBeTrue();
+    expect(Typecast::isDateTimeProperty(Entry::class, 'expiryDate'))->toBeTrue();
+    expect(Typecast::isDateTimeProperty(Entry::class, 'title'))->toBeFalse();
+    expect(Typecast::isDateTimeProperty(Entry::class, 'doesNotExist'))->toBeFalse();
+});
+
 test('enum properties', function () {
     enum Suit: string
     {

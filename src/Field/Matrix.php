@@ -6,33 +6,24 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use Craft;
-use craft\base\ElementInterface;
-use craft\base\GqlInlineFragmentFieldInterface;
-use craft\base\GqlInlineFragmentInterface;
-use craft\base\NestedElementInterface;
-use craft\elements\NestedElementManager;
-use craft\events\BulkElementsEvent;
-use craft\gql\arguments\elements\Entry as EntryArguments;
-use craft\gql\resolvers\elements\Entry as EntryResolver;
-use craft\gql\types\generators\EntryType as EntryTypeGenerator;
-use craft\gql\types\input\Matrix as MatrixInputType;
-use craft\helpers\Cp;
-use craft\helpers\Gql;
-use craft\validators\StringValidator;
-use craft\validators\UriFormatValidator;
-use craft\web\assets\cp\CpAsset;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
-use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Events\AfterSaveNestedElements;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
+use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
@@ -41,12 +32,22 @@ use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
-use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\DefineEntryTypesForField;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
+use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
+use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
+use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentInterface;
+use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
+use CraftCms\Cms\Gql\Types\Generators\EntryType as EntryTypeGenerator;
+use CraftCms\Cms\Gql\Types\Input\Matrix as MatrixInputType;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\ElementSources;
+use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -55,19 +56,24 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Validation\Rules\UriFormatRule;
+use CraftCms\Cms\View\LegacyAssets\CpAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
+use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidConfigException;
 
+use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -76,7 +82,7 @@ use function CraftCms\Cms\template;
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
-final class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, MergeableFieldInterface
+class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, MergeableFieldInterface
 {
     /**
      * @event DefineEntryTypesForFieldEvent The event that is triggered when defining the available entry types.
@@ -108,7 +114,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     {
         // Don't ever automatically propagate values to other sites.
         return [
-            self::TRANSLATION_METHOD_SITE,
+            TranslationMethod::Site,
         ];
     }
 
@@ -169,10 +175,9 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     public static function defaultTableColumnOptions(array $entryTypes): array
     {
         $fieldLayouts = array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes);
-        $elementSources = app(ElementSources::class);
         $tableColumns = array_merge(
-            $elementSources->getAvailableTableAttributes(Entry::class)->all(),
-            $elementSources->getTableAttributesForFieldLayouts($fieldLayouts)->all(),
+            ElementSources::getAvailableTableAttributes(Entry::class)->all(),
+            ElementSources::getTableAttributesForFieldLayouts(collect($fieldLayouts))->all(),
         );
 
         $options = [];
@@ -332,6 +337,8 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return array_merge(parent::getRules(), [
             'entryTypes' => ['array', 'min:1'],
             'siteSettings' => ['array'],
+            'siteSettings.*.uriFormat' => ['nullable', new UriFormatRule],
+            'siteSettings.*.template' => ['nullable', 'string', 'max:500'],
             'minEntries' => ['nullable', 'integer', 'min:0'],
             'maxEntries' => ['nullable', 'integer', 'min:0'],
             'viewMode' => Rule::in([
@@ -341,34 +348,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
                 self::VIEW_MODE_BLOCKS,
             ]),
         ]);
-    }
-
-    public function afterValidate(?Validator $validator = null): void
-    {
-        foreach ($this->siteSettings as $uid => &$siteSettings) {
-            unset($siteSettings['errors']);
-
-            if (isset($siteSettings['uriFormat'])) {
-                // Remove any leading or trailing slashes/spaces
-                $siteSettings['uriFormat'] = trim($siteSettings['uriFormat'], '/ ');
-
-                if (! (new UriFormatValidator)->validate($siteSettings['uriFormat'], $error)) {
-                    $error = str_replace(t('the input value'), t('Entry URI Format'), $error);
-                    $siteSettings['errors']['uriFormat'][] = $error;
-
-                    $validator?->errors()->add("siteSettings[$uid].uriFormat", $error);
-                }
-            }
-
-            if (isset($siteSettings['template'])) {
-                if (! new StringValidator(['max' => 500])->validate($siteSettings['template'], $error)) {
-                    $error = str_replace(t('the input value'), t('Template'), $error);
-                    $siteSettings['errors']['template'][] = $error;
-
-                    $validator->errors()->add("siteSettings[$uid].template", $error);
-                }
-            }
-        }
     }
 
     private function entryManager(): NestedElementManager
@@ -387,7 +366,13 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
                 ],
             );
 
-            $this->_entryManager->on(NestedElementManager::EVENT_AFTER_SAVE_ELEMENTS, $this->afterSaveEntries(...));
+            Event::listen(function (AfterSaveNestedElements $event) {
+                if ($event->manager !== $this->_entryManager) {
+                    return;
+                }
+
+                $this->afterSaveEntries($event);
+            });
         }
 
         return $this->_entryManager;
@@ -421,7 +406,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         ));
 
         if (empty($event->entryTypes)) {
-            throw new InvalidConfigException('At least one entry type is required.');
+            throw new RuntimeException('At least one entry type is required.');
         }
 
         return array_values($event->entryTypes);
@@ -471,7 +456,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     {
         try {
             $owner = $element->getOwner();
-        } catch (InvalidConfigException) {
+        } catch (RuntimeException) {
             $owner = $element->duplicateOf;
         }
 
@@ -486,7 +471,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     {
         $owner = $element->getOwner();
 
-        return $owner && Craft::$app->getElements()->canView($owner, $user);
+        return $owner && $user->can('view', $owner);
     }
 
     public function canSaveElement(NestedElementInterface $element, User $user): bool
@@ -497,15 +482,14 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
             return false;
         }
 
-        if (Craft::$app->getElements()->canSave($owner, $user)) {
+        if ($user->can('save', $owner)) {
             return true;
         }
 
         // Check all the owners. Maybe the user can save one of the other ones?
-        /** @phpstan-ignore-next-line  */
-        if (! Craft::$app->getElements()->canSave($owner, $user) && ! $owner->getIsRevision()) {
+        if (! $owner->getIsRevision()) {
             foreach ($element->getOwners(['revisions' => false]) as $o) {
-                if ($o->id !== $owner->id && Craft::$app->getElements()->canSave($o, $user)) {
+                if ($o->id !== $owner->id && $user->can('save', $o)) {
                     return true;
                 }
             }
@@ -518,7 +502,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     {
         $owner = $element->getOwner();
 
-        if (! $owner || ! Craft::$app->getElements()->canSave($owner, $user)) {
+        if (! $owner || ! $user->can('save', $owner)) {
             return false;
         }
 
@@ -530,7 +514,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     {
         $owner = $element->getOwner();
 
-        if (! $owner || ! Craft::$app->getElements()->canSave($element->getOwner(), $user)) {
+        if (! $owner || ! $user->can('save', $element->getOwner())) {
             return false;
         }
 
@@ -558,8 +542,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
             return (clone $value)
                 ->status(null)
                 ->siteId($owner->siteId)
-                ->limit(null)
-                ->count();
+                ->getCountForPagination();
         }
 
         return $value->count();
@@ -597,7 +580,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
             $namespace = InputNamespace::get();
             $entryTypeSelectHtml = InputNamespace::with(
                 namespace: null,
-                callback: fn () => InputNamespace::namespaceInputs(fn () => Cp::entryTypeSelectHtml([
+                callback: fn () => InputNamespace::namespaceInputs(fn () => FormFields::entryTypeSelectHtml([
                     ...$entryTypeSelectConfig,
                     'id' => 'TEMP_ID',
                 ]), $namespace),
@@ -605,7 +588,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
             $entryTypeSelectJs = HtmlStack::clearJsBuffer();
         }
 
-        $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
+        app(InternalAssetRegistry::class)->register(CpAsset::class);
 
         return template('_components/fieldtypes/Matrix/settings', [
             'field' => $this,
@@ -619,7 +602,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
                 Entry::indexViewModes(),
                 fn (array $viewMode) => ! ($viewMode['structuresOnly'] ?? false),
             ),
-            'baseIconsUrl' => "$bundle->baseUrl/images/view-modes",
+            'baseIconsUrl' => craftAsset('legacy/cp/dist/images/view-modes'),
             'readOnly' => $readOnly,
         ]);
     }
@@ -654,7 +637,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
             $query->setResultOverride($query->all());
         } elseif ($element && is_array($value)) {
             $query->setResultOverride($this->_createEntriesFromSerializedData($value, $element, $fromRequest));
-        } elseif (Craft::$app->getRequest()->getIsPreview()) {
+        } elseif (request()->isPreview()) {
             $query->withProvisionalDrafts();
         }
 
@@ -667,21 +650,19 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
 
         // Existing element?
         if ($owner && $owner->id) {
-            $query->beforeQuery(function (EntryQuery $entryQuery) use ($owner) {
-                $entryQuery->owner($owner);
+            $query->owner($owner);
 
-                // Clear out id=false if this query was populated previously
-                if ($entryQuery->id === false) {
-                    $entryQuery->id = null;
-                }
+            // Clear out id=false if this query was populated previously
+            if ($query->id === false) {
+                $query->id = null;
+            }
 
-                // If the owner is a revision, allow revision entries to be returned as well
-                if ($owner->getIsRevision()) {
-                    $entryQuery
-                        ->revisions(null)
-                        ->trashed(null);
-                }
-            });
+            // If the owner is a revision, allow revision entries to be returned as well
+            if ($owner->getIsRevision()) {
+                $query
+                    ->revisions(null)
+                    ->trashed(null);
+            }
 
             // Prepare the query for lazy eager loading
             $query->prepForEagerLoading($this->handle, $owner);
@@ -859,12 +840,14 @@ JS, [
             $entrySelector = ' > .blocks > .matrixblock';
 
             $items[] = $this->copyAction($type, $entrySelector);
-            $items[] = $this->duplicateAction($type, $entrySelector, <<<'JS'
+            if (! $this->static) {
+                $items[] = $this->duplicateAction($type, $entrySelector, <<<'JS'
 field.data('matrix').duplicateSelectedEntries();
 JS);
-            $items[] = $this->deleteAction($type, $entrySelector, <<<'JS'
+                $items[] = $this->deleteAction($type, $entrySelector, <<<'JS'
 field.data('matrix').deleteSelectedEntries();
 JS);
+            }
         }
 
         return $items;
@@ -1048,7 +1031,7 @@ JS, [
     }
 
     /**
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
@@ -1124,7 +1107,7 @@ JS, [
             )
         );
 
-        Craft::$app->getView()->registerAssetBundle(MatrixAsset::class);
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\MatrixAsset::class);
 
         $settings = [
             'fieldId' => $this->id,
@@ -1254,14 +1237,11 @@ JS,
             'pageSize' => $this->pageSize ?? 50,
             'storageKey' => sprintf('field:%s', $this->uid),
             'defaultViewMode' => $this->defaultIndexViewMode,
+            'defaultTableColumns' => array_map(fn (string $attribute) => [$attribute], $this->defaultTableColumns),
+            // field layouts are needed in the read-only (static) mode
+            // so that you can choose to show columns representing the custom fields when using index view mode with table view
+            'fieldLayouts' => array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
         ];
-
-        if (! $static) {
-            $config += [
-                'fieldLayouts' => array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
-                'defaultTableColumns' => array_map(fn (string $attribute) => [$attribute], $this->defaultTableColumns),
-            ];
-        }
 
         return $this->entryManager()->getIndexHtml($owner, $config);
     }
@@ -1285,7 +1265,7 @@ JS,
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
+        if (! $element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_DEFAULT, ElementRules::SCENARIO_LIVE)) {
             return [];
         }
 
@@ -1319,15 +1299,15 @@ JS,
                 ->all();
 
             $invalidEntryIds = [];
+            $scenario = $element->ruleset->getScenario();
 
             foreach ($entries as $entry) {
                 $entry->setOwner($element);
 
-                if (
-                    $element->inScenarios(Element::SCENARIO_ESSENTIALS) ||
-                    ($entry->enabled && $element->inScenarios(Element::SCENARIO_LIVE))
-                ) {
-                    $entry->setScenario($element->getScenario());
+                if (! $entry->enabled) {
+                    $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+                } else {
+                    $entry->ruleset->useScenario($scenario);
                 }
 
                 if (! $entry->validate()) {
@@ -1359,7 +1339,7 @@ JS,
         }
 
         if (
-            $element->inScenarios(Element::SCENARIO_LIVE) &&
+            $element->ruleset->inScenarios(ElementRules::SCENARIO_LIVE) &&
             ($this->minEntries || $this->maxEntries)
         ) {
             $rules = array_filter([
@@ -1481,18 +1461,17 @@ JS,
         $typeName = $this->handle.'_MatrixField';
 
         $arguments = EntryArguments::getArguments();
-        $gqlService = Craft::$app->getGql();
 
         foreach ($this->_entryTypes as $entryType) {
-            $arguments += $gqlService->getFieldLayoutArguments($entryType->getFieldLayout());
+            $arguments += Gql::getFieldLayoutArguments($entryType->getFieldLayout());
         }
 
         return [
             'name' => $this->handle,
-            'type' => Type::nonNull(Type::listOf(Gql::getUnionType($typeName, $typeArray))),
+            'type' => Type::nonNull(Type::listOf(GqlHelper::getUnionType($typeName, $typeArray))),
             'args' => $arguments,
             'resolve' => EntryResolver::class.'::resolve',
-            'complexity' => Gql::eagerLoadComplexity(),
+            'complexity' => GqlHelper::eagerLoadComplexity(),
         ];
     }
 
@@ -1500,7 +1479,7 @@ JS,
     public function getEagerLoadingGqlConditions(): array
     {
         return [
-            'withProvisionalDrafts' => Craft::$app->getRequest()->getIsPreview(),
+            'withProvisionalDrafts' => request()->isPreview(),
         ];
     }
 
@@ -1591,27 +1570,26 @@ JS,
     /**
      * Handles nested entry saves.
      */
-    public function afterSaveEntries(BulkElementsEvent $event): void
+    public function afterSaveEntries(AfterSaveNestedElements $event): void
     {
-        if (
-            ! Craft::$app->getRequest()->getIsConsoleRequest() &&
-            ! Craft::$app->getResponse()->isSent
-        ) {
-            // Tell the browser to collapse any new entry IDs
-            $collapsedIds = Collection::make($event->elements)
-                /** @phpstan-ignore-next-line */
-                ->filter(fn (Entry $entry) => $entry->collapsed)
-                /** @phpstan-ignore-next-line */
-                ->map(fn (Entry $entry) => $entry->id)
-                ->all();
+        if (app()->runningInConsole()) {
+            return;
+        }
 
-            if (! empty($collapsedIds)) {
-                Craft::$app->getSession()->addAssetBundleFlash(MatrixAsset::class);
+        // Tell the browser to collapse any new entry IDs
+        $collapsedIds = Collection::make($event->elements)
+            ->filter(fn (Entry $entry) => $entry->collapsed)
+            ->map(fn (Entry $entry) => $entry->id)
+            ->all();
 
-                foreach ($collapsedIds as $id) {
-                    Craft::$app->getSession()->addJsFlash("Craft.MatrixInput.rememberCollapsedEntryId($id);", View::POS_END);
-                }
-            }
+        if (empty($collapsedIds)) {
+            return;
+        }
+
+        Craft::$app->getSession()->addAssetBundleFlash(MatrixAsset::class);
+
+        foreach ($collapsedIds as $id) {
+            Craft::$app->getSession()->addJsFlash("Craft.MatrixInput.rememberCollapsedEntryId($id);", View::POS_END);
         }
     }
 
@@ -1631,17 +1609,13 @@ JS,
     #[Override]
     public function beforeElementDeleteForSite(ElementInterface $element): bool
     {
-        $elementsService = Craft::$app->getElements();
-
         /** @var Entry[] $entries */
         $entries = Entry::find()
             ->primaryOwner($element)
             ->status(null)
             ->all();
 
-        foreach ($entries as $entry) {
-            $elementsService->deleteElementForSite($entry);
-        }
+        Elements::deleteElementsForSite($entries);
 
         return true;
     }
@@ -1723,10 +1697,10 @@ JS,
         }
 
         // Should we ignore disabled entries?
-        $request = Craft::$app->getRequest();
-        $hideDisabledEntries = ! $request->getIsConsoleRequest() && (
+        $request = request();
+        $hideDisabledEntries = ! app()->runningInConsole() && (
             $request->getToken() !== null ||
-            $request->getIsLivePreview()
+            $request->isPreview()
         );
 
         $entries = [];
@@ -1778,7 +1752,6 @@ JS,
                 $forceSave = ! empty($entryData);
 
                 // Is this a derivative element, and does the entry primarily belong to the canonical?
-                $request = Craft::$app->getRequest();
                 if (
                     $forceSave &&
                     $element->getIsDerivative() &&
@@ -1786,12 +1759,12 @@ JS,
                     // this is so that extra drafts don't get created for matrix in matrix scenario
                     // where both are set to inline-editable blocks view mode
                     (
-                        $request->getIsConsoleRequest() ||
-                        $request->getActionSegments() !== ['elements', 'update-field-layout']
+                        app()->runningInConsole() ||
+                        request()->actionSegments() !== ['elements', 'update-field-layout']
                     )
                 ) {
                     // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
-                    $entry = app(Drafts::class)->createDraft($entry, Craft::$app->getUser()->getId(), null, null, [
+                    $entry = app(Drafts::class)->createDraft($entry, Auth::id(), null, null, [
                         'canonicalId' => $entry->id,
                         'primaryOwnerId' => $element->id,
                         'owner' => $element,

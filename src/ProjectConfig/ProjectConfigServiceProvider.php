@@ -14,6 +14,7 @@ use CraftCms\Cms\ProjectConfig\Commands\ExportCommand;
 use CraftCms\Cms\ProjectConfig\Commands\GetCommand;
 use CraftCms\Cms\ProjectConfig\Commands\RebuildCommand;
 use CraftCms\Cms\ProjectConfig\Commands\RemoveCommand;
+use CraftCms\Cms\ProjectConfig\Commands\RepairCommand;
 use CraftCms\Cms\ProjectConfig\Commands\SetCommand;
 use CraftCms\Cms\ProjectConfig\Commands\TouchCommand;
 use CraftCms\Cms\ProjectConfig\Commands\WriteCommand;
@@ -34,7 +35,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
-final class ProjectConfigServiceProvider extends ServiceProvider
+class ProjectConfigServiceProvider extends ServiceProvider
 {
     #[Override]
     public function register(): void
@@ -68,6 +69,7 @@ final class ProjectConfigServiceProvider extends ServiceProvider
             DiffCommand::class,
             ExportCommand::class,
             GetCommand::class,
+            RepairCommand::class,
             SetCommand::class,
             RebuildCommand::class,
             RemoveCommand::class,

@@ -11,19 +11,21 @@ use Craft;
 use craft\base\ModelInterface;
 use craft\helpers\Component;
 use craft\test\DbFixtureTrait;
+use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Typecast;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use PDO;
 use Throwable;
 use yii\base\Exception as YiiBaseException;
-use yii\base\NotSupportedException;
 use yii\test\DbFixture;
 use yii\test\FileFixtureTrait;
 
@@ -66,7 +68,7 @@ abstract class FieldLayoutFixture extends DbFixture
                 $layout = $fieldsService->getLayoutByUid($layoutConfig['uid']);
             }
             $layout ??= new FieldLayout();
-            Craft::configure($layout, $layoutConfig);
+            Typecast::configure($layout, $layoutConfig);
             $this->_layouts[] = $layout;
 
             $tabs = [];
@@ -96,7 +98,7 @@ abstract class FieldLayoutFixture extends DbFixture
                     // create field component, save it and add to layout elements
                     if ($fieldClass instanceof FieldInterface) {
                         /** @var FieldInterface|Field $field */
-                        $field = $this->_fields[] = Component::createComponent($fieldConfig, FieldInterface::class);
+                        $field = $this->_fields[] = ComponentHelper::createComponent($fieldConfig, FieldInterface::class);
 
                         if (!$fieldsService->saveField($field)) {
                             $this->throwModelError($field);

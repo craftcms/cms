@@ -8,9 +8,9 @@
 namespace craft\test\fixtures\elements;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\elements\GlobalSet;
 use craft\records\GlobalSet as GlobalSetRecord;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * Class GlobalSetFixture

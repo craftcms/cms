@@ -9,7 +9,7 @@ use Illuminate\Support\Collection;
 use ReflectionClass;
 use ReflectionProperty;
 
-final class Utils
+class Utils
 {
     /** @return Collection<ReflectionProperty> */
     public static function getPublicReflectionProperties(object|string $target, ?Closure $filter = null): Collection

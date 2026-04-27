@@ -110,12 +110,13 @@ export default class CraftNavItem extends LitElement {
             ? html`
                   <craft-button
                     @click="${this.toggleSubnav}"
-                    icon
-                    size="small"
-                    aria-controls="${this.id}-subnav"
-                    aria-expanded="${
-                      this.subnavState === 'open' ? 'true' : 'false'
-                    }"
+                    appearance="plain"
+                  icon
+                  size="small"
+                  aria-controls="${this.id}-subnav"
+                  aria-expanded="${
+                    this.subnavState === 'open' ? 'true' : 'false'
+                  }"
                     aria-labelledby="${this.id}-toggle-icon ${this.id}-label"
                   >
                     <craft-icon

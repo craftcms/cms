@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Tests\TestClasses\Factory;
 
-final readonly class FactoryFieldConfig
+readonly class FactoryFieldConfig
 {
     public function __construct(
         public string $handle,

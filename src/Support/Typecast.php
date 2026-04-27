@@ -7,17 +7,15 @@ namespace CraftCms\Cms\Support;
 use BackedEnum;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
-use craft\helpers\DateTimeHelper;
 use DateTime;
 use DateTimeInterface;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionNamedType;
-use ReflectionProperty;
 use ReflectionUnionType;
 use RuntimeException;
 
-final class Typecast
+class Typecast
 {
     private const string TYPE_BOOL = 'bool';
 
@@ -46,6 +44,26 @@ final class Typecast
     private static array $types = [];
 
     /**
+     * Configures a component with the initial property values.
+     *
+     * @template T of object
+     *
+     * @param  T  $object  the object to be configured
+     * @param  array  $properties  the property initial values given in terms of name-value pairs.
+     * @return T the object itself
+     */
+    final public static function configure(object $object, array $properties = []): object
+    {
+        self::properties($object::class, $properties);
+
+        foreach ($properties as $name => $value) {
+            $object->$name = $value;
+        }
+
+        return $object;
+    }
+
+    /**
      * Typecasts the given property values based on their type declarations.
      *
      * @param  class-string  $class  The class name
@@ -56,6 +74,19 @@ final class Typecast
         foreach ($properties as $name => &$value) {
             self::property($class, $name, $value);
         }
+    }
+
+    public static function isDateTimeProperty(string $class, string $property): bool
+    {
+        $type = self::propertyType($class, $property);
+
+        if ($type === false) {
+            return false;
+        }
+
+        [$typeName] = $type;
+
+        return is_a($typeName, DateTimeInterface::class, true);
     }
 
     public static function isInt(float|int|string $value): bool
@@ -194,14 +225,16 @@ final class Typecast
             self::resolveClassTypes($class);
         }
 
-        return self::$types[$class][$property] ?? false;
+        return self::$types[$class][$property]
+            ?? self::$types[$class]['_'.lcfirst($property)] // Underscore prefixed private
+            ?? false;
     }
 
     private static function resolveClassTypes(string $class): void
     {
         self::$types[$class] = [];
 
-        $properties = new ReflectionClass($class)->getProperties(ReflectionProperty::IS_PUBLIC);
+        $properties = new ReflectionClass($class)->getProperties();
 
         foreach ($properties as $ref) {
             if ($ref->isStatic()) {

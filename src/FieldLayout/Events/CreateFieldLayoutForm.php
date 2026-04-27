@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\Events;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutForm;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
@@ -45,7 +45,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutTab;
  *
  * @see FieldLayout::createForm()
  */
-final class CreateFieldLayoutForm
+class CreateFieldLayoutForm
 {
     public function __construct(
         public FieldLayout $fieldLayout,

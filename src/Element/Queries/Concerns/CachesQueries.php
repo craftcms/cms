@@ -8,6 +8,7 @@ use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Support\Json;
 use CraftCms\DependencyAwareCache\Dependency\Dependency;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
+use Illuminate\Database\Connection;
 
 /**
  * @internal
@@ -33,7 +34,7 @@ trait CachesQueries
     protected function queryCacheKey(ElementQuery $elementQuery, string $method, array|string $parameters = []): string
     {
         $sql = $elementQuery->query->toRawSql();
-        /** @var \Illuminate\Database\Connection $connection */
+        /** @var Connection $connection */
         $connection = $elementQuery->query->getConnection();
         $config = Json::encode($connection->getConfig());
 

@@ -10,12 +10,21 @@ use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
+use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementRedirectController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementRevisionsController;
+use CraftCms\Cms\Http\Controllers\Elements\PreviewElementController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
+use CraftCms\Cms\Http\Controllers\Gql\GraphiqlController;
+use CraftCms\Cms\Http\Controllers\Gql\IndexController as GqlIndexController;
+use CraftCms\Cms\Http\Controllers\Gql\SchemasController;
+use CraftCms\Cms\Http\Controllers\Gql\TokensController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
+use CraftCms\Cms\Http\Controllers\Settings\EmailSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
@@ -47,19 +56,23 @@ use Illuminate\Support\Facades\Storage;
  */
 Route::get('install', [InstallController::class, 'index']);
 
-Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
-Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm']);
-Route::get(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'show']);
-Route::post(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'store']);
-Route::get(CpAuthPath::VerifyEmail->value, [VerifyEmailController::class, 'show']);
-Route::post(CpAuthPath::VerifyEmail->value, [VerifyEmailController::class, 'store']);
+Route::middleware('craft.web')->group(function () {
+    Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
+    Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm']);
+    Route::get(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'show']);
+    Route::post(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'store']);
+    Route::get(CpAuthPath::VerifyEmail->value, [VerifyEmailController::class, 'show']);
+    Route::post(CpAuthPath::VerifyEmail->value, [VerifyEmailController::class, 'store']);
+});
 
 /**
  * Admin requests that require a login
  */
 Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
+    Route::get('/', [DashboardController::class, 'redirect']);
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
     Route::get(CpAuthPath::Logout->value, [LoginController::class, 'logout']);
-    Route::get('dashboard', DashboardController::class);
 
     Route::get('utilities', [UtilitiesController::class, 'index']);
     Route::get('utilities/{id}/{extra?}', [UtilitiesController::class, 'show'])
@@ -69,6 +82,30 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     Route::middleware(RequireAdminChanges::class)->group(function () {
         Route::view('settings/addresses', 'settings/addresses/_fields');
     });
+
+    /**
+     * Elements
+     */
+    $idSlugParams = [
+        'id' => '\d+',
+        'slug' => '(?:-[^\/]*)',
+    ];
+
+    Route::get('preview/{id}{slug}', PreviewElementController::class)->where($idSlugParams);
+    Route::get('edit/{id}{slug}', ElementRedirectController::class)->where($idSlugParams);
+    Route::get('edit/{uid}', ElementRedirectController::class);
+    Route::get('revisions/{id}{slug}', [ElementRevisionsController::class, 'index'])->where($idSlugParams);
+    Route::get('entries/{section}/{id}{slug}/revisions', [ElementRevisionsController::class, 'index'])->where($idSlugParams);
+    Route::get('content/{page}/{section}/{id}{slug}/revisions', [ElementRevisionsController::class, 'index'])->where([
+        ...$idSlugParams,
+        'page' => '[^\/]+',
+    ]);
+    Route::get('assets/edit/{id}{slug}', EditElementController::class)->where($idSlugParams);
+    Route::get('entries/{section}/{id}{slug}', EditElementController::class)->where($idSlugParams);
+    Route::get('content/{page}/{section}/{id}{slug}', EditElementController::class)->where([
+        ...$idSlugParams,
+        'page' => '[^\/]+',
+    ]);
 
     /**
      * Entries & Content
@@ -106,8 +143,9 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     /**
      * Assets
      */
+    // Route::get('assets/edit/{id}-{filename}', EditElementController::class); - TODO
     Route::get('assets/{defaultSource?}', AssetsIndexController::class)
-        ->where('defaultSource', '.*');
+        ->where('defaultSource', '(?!edit(?:/|$)).*');
 
     /**
      * Routes that require admin, but do not require admin changes
@@ -135,6 +173,29 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         Route::post('settings/general', [GeneralSettingsController::class, 'store'])
             ->middleware([RequireAdminChanges::class])
             ->name('settings.general.store');
+
+        // Email
+        Route::get('settings/email', [EmailSettingsController::class, 'index'])
+            ->name('settings.email.index');
+        Route::post('settings/email', [EmailSettingsController::class, 'store'])
+            ->middleware([RequireAdminChanges::class])
+            ->name('settings.email.store');
+        Route::post('settings/email/test', [EmailSettingsController::class, 'test'])
+            ->name('settings.email.test');
+
+        // GraphQL
+        Route::get('graphql', GqlIndexController::class);
+        Route::get('graphiql', GraphiqlController::class);
+        Route::get('graphql/tokens', [TokensController::class, 'index']);
+        Route::get('graphql/tokens/new', [TokensController::class, 'create']);
+        Route::get('graphql/tokens/{tokenId}', [TokensController::class, 'edit'])->whereNumber('tokenId');
+
+        Route::middleware(RequireAdminChanges::class)->group(function () {
+            Route::get('graphql/schemas', [SchemasController::class, 'index']);
+            Route::get('graphql/schemas/new', [SchemasController::class, 'create']);
+            Route::get('graphql/schemas/public', [SchemasController::class, 'editPublic']);
+            Route::get('graphql/schemas/{schemaId}', [SchemasController::class, 'edit'])->whereNumber('schemaId');
+        });
 
         // Plugins
         Route::get('settings/plugins', [PluginsController::class, 'index']);
@@ -211,6 +272,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         ])->group(function () {
             Route::get('/', [FilesystemsController::class, 'index']);
             Route::get('new', [FilesystemsController::class, 'create']);
+            Route::get('{handle}', [FilesystemsController::class, 'edit']);
             Route::get('{handle}/edit', [FilesystemsController::class, 'edit']);
         });
 

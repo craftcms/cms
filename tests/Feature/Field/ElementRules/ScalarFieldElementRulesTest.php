@@ -17,7 +17,7 @@ use CraftCms\Cms\Field\Time;
 test('valid scalar field values pass element validation', function (string $handle, string $fieldType, array $settings, mixed $value) {
     $result = EntryModel::factory()
         ->withField($handle, $fieldType, $settings, value: $value)
-        ->createElementWithFields();
+        ->createElementWithFields(save: false);
 
     $result->element->validate();
 
@@ -37,7 +37,7 @@ test('valid scalar field values pass element validation', function (string $hand
 test('invalid scalar field values add element errors', function (string $handle, string $fieldType, array $settings, mixed $value) {
     $result = EntryModel::factory()
         ->withField($handle, $fieldType, $settings, value: $value)
-        ->createElementWithFields();
+        ->createElementWithFields(save: false);
 
     $result->element->validate();
 

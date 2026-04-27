@@ -14,6 +14,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Contracts\Database\Query\Expression;
+use Illuminate\Database\Connection;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
@@ -143,7 +144,7 @@ trait QueriesCustomFields
 
                 // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
                 // see https://github.com/craftcms/cms/issues/15609
-                /** @var \Illuminate\Database\Connection $connection */
+                /** @var Connection $connection */
                 $connection = $this->query->getConnection();
                 if ($connection->isMysql() && Query::parseColumnType($dbType) === Query::TYPE_TEXT) {
                     $this->columnsToCast[$alias] = 'CHAR(255)';
@@ -225,7 +226,7 @@ trait QueriesCustomFields
                 ? QueryParam::AND
                 : QueryParam::OR;
 
-            $this->subQuery->where(function (Builder $query) use ($fieldsByHandle, $glue, $handle, $elementQuery) {
+            $this->where(function (Builder $query) use ($fieldsByHandle, $glue, $handle, $elementQuery) {
                 foreach ($fieldsByHandle[$handle] as $instances) {
                     $query->where(function (Builder $query) use ($handle, $elementQuery, $instances) {
                         $instances[0]::modifyQuery($query, $instances, $elementQuery->customFieldValues[$handle]);
@@ -257,7 +258,7 @@ trait QueriesCustomFields
                 ? $columns[0]
                 : new Coalesce($columns);
 
-            $elementQuery->subQuery->whereParam($column, $elementQuery->customFieldValues[$handle]);
+            $elementQuery->whereParam($column, $elementQuery->customFieldValues[$handle]);
         }
     }
 

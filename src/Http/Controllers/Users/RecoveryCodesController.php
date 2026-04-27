@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-final readonly class RecoveryCodesController
+readonly class RecoveryCodesController
 {
     use ConfirmsPasswords;
     use RespondsWithFlash;

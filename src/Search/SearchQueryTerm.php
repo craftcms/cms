@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Search;
 
-final class SearchQueryTerm
+class SearchQueryTerm
 {
     public ?bool $subLeft = null;
 

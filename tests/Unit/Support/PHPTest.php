@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\PHP;
 
 test('version', function () {
@@ -15,7 +16,7 @@ test('configValueAsBool', function () {
     @ini_set('display_errors', $displayErrorsValue);
 
     $timezoneValue = ini_get('date.timezone');
-    @ini_set('date.timezone', app()->getTimezone() ?: 'Europe/Amsterdam');
+    @ini_set('date.timezone', Cms::timezone() ?: 'Europe/Amsterdam');
     expect(PHP::configValueAsBool('date.timezone'))->toBeFalse();
     @ini_set('date.timezone', $timezoneValue);
 

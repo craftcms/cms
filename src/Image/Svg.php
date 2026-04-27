@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image;
 
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Asset\Exceptions\ImageException;
+use CraftCms\Cms\Support\File;
 use Illuminate\Support\Facades\Log;
 
 use function CraftCms\Cms\t;
@@ -196,7 +196,7 @@ class Svg extends Image
     public function saveAs(string $targetPath, bool $autoQuality = false): bool
     {
         if (pathinfo($targetPath, PATHINFO_EXTENSION) === 'svg') {
-            FileHelper::writeToFile($targetPath, $this->_svgContent);
+            File::writeToFile($targetPath, $this->_svgContent);
         } else {
             throw new ImageException(t('Manipulated SVG image rasterizing is unreliable. See \CraftCms\Cms\Image\Images::loadImage()'));
         }

@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Events;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Concerns\HasControlPanelUI;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * @event DefineMetadata The event that is triggered when defining the element's metadata info.
  *
- * {@see \CraftCms\Cms\Element\Concerns\HasControlPanelUI::getMetadata()}
+ * {@see HasControlPanelUI::getMetadata()}
  */
-final class DefineMetadata
+class DefineMetadata
 {
     /**
      * @param  ElementInterface  $element  The element

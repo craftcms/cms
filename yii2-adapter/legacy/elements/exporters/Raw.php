@@ -7,31 +7,14 @@
 
 namespace craft\elements\exporters;
 
-use craft\base\ElementExporter;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use function CraftCms\Cms\t;
-
-/**
- * Raw represents a "Raw data" element exporter.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.4.0
- */
-class Raw extends ElementExporter
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Exporters\Raw} instead.
      */
-    public static function displayName(): string
+    class Raw extends \CraftCms\Cms\Element\Exporters\Raw
     {
-        return t('Raw data (fastest)');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function export(ElementQueryInterface $query): mixed
-    {
-        return $query->asArray()->all();
     }
 }
+
+class_alias(\CraftCms\Cms\Element\Exporters\Raw::class, Raw::class);

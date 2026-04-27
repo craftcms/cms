@@ -9,27 +9,27 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\Events\DefineNativeFields;
-use CraftCms\Cms\FieldLayout\LayoutElements\addresses\AddressField;
-use CraftCms\Cms\FieldLayout\LayoutElements\addresses\CountryCodeField;
-use CraftCms\Cms\FieldLayout\LayoutElements\addresses\LabelField;
-use CraftCms\Cms\FieldLayout\LayoutElements\addresses\LatLongField;
-use CraftCms\Cms\FieldLayout\LayoutElements\addresses\OrganizationField;
-use CraftCms\Cms\FieldLayout\LayoutElements\addresses\OrganizationTaxIdField;
-use CraftCms\Cms\FieldLayout\LayoutElements\assets\AltField;
-use CraftCms\Cms\FieldLayout\LayoutElements\assets\AssetTitleField;
-use CraftCms\Cms\FieldLayout\LayoutElements\entries\EntryTitleField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Addresses\AddressField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Addresses\CountryCodeField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Addresses\LabelField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Addresses\LatLongField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Addresses\OrganizationField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Addresses\OrganizationTaxIdField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Assets\AltField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Assets\AssetTitleField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\LayoutElements\FullNameField;
-use CraftCms\Cms\FieldLayout\LayoutElements\users\AffiliatedSiteField;
-use CraftCms\Cms\FieldLayout\LayoutElements\users\EmailField;
-use CraftCms\Cms\FieldLayout\LayoutElements\users\FullNameField as UserFullNameField;
-use CraftCms\Cms\FieldLayout\LayoutElements\users\PhotoField;
-use CraftCms\Cms\FieldLayout\LayoutElements\users\UsernameField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Users\AffiliatedSiteField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Users\EmailField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Users\FullNameField as UserFullNameField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Users\PhotoField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Users\UsernameField;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
-final class FieldLayoutServiceProvider extends ServiceProvider
+class FieldLayoutServiceProvider extends ServiceProvider
 {
     public function boot(Sites $sites): void
     {

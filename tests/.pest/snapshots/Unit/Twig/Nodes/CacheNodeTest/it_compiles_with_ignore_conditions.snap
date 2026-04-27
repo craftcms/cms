@@ -1,5 +1,5 @@
 // line 1
-$cacheService = Craft::$app->getTemplateCaches();
+$cacheService = app(CraftCms\Cms\View\TemplateCaches::class);
 $request = request();
 $ignoreCache__v0 = ($request->isPreview() || $request->getToken() || (($context["skipCache"] ?? null)));
 if (!$ignoreCache__v0) {

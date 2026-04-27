@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Impersonation;
@@ -25,7 +24,7 @@ use Symfony\Component\HttpFoundation\Response;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final readonly class TwoFactorAuthenticationController
+readonly class TwoFactorAuthenticationController
 {
     use RespondsWithFlash;
 
@@ -77,9 +76,9 @@ final readonly class TwoFactorAuthenticationController
         if (! $returnUrl) {
             if ($request->isCpRequest()) {
                 // explicitly set the default return URL here, since checkPermission('accessCp') will be false
-                $defaultReturnUrl = UrlHelper::cpUrl($this->generalConfig->getPostCpLoginRedirect());
+                $defaultReturnUrl = \CraftCms\Cms\Support\Url::cpUrl($this->generalConfig->getPostCpLoginRedirect());
             } else {
-                $defaultReturnUrl = UrlHelper::siteUrl($this->generalConfig->getPostLoginRedirect());
+                $defaultReturnUrl = \CraftCms\Cms\Support\Url::siteUrl($this->generalConfig->getPostLoginRedirect());
             }
 
             $returnUrl = URL::returnUrl($defaultReturnUrl);

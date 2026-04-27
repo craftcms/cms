@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Contracts;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * EagerLoadingFieldInterface defines the common interface to be implemented by field classes that support eager-loading.
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
-interface EagerLoadingFieldInterface
+interface EagerLoadingFieldInterface extends FieldInterface
 {
     /**
      * Returns an array that maps source-to-target element IDs based on this custom field.

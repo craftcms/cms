@@ -9,7 +9,7 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
 
-final class DeletePointlessChangeData extends GarbageCollectionAction
+class DeletePointlessChangeData extends GarbageCollectionAction
 {
     public function __invoke(): void
     {

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
@@ -16,7 +18,7 @@ beforeEach(function () {
 });
 
 it('requires login', function () {
-    \Illuminate\Support\Facades\Auth::logout();
+    Auth::logout();
 
     get(cp_url('entries/pages/new'))->assertRedirect(cp_url('login'));
 });
@@ -34,10 +36,9 @@ it('requires a valid site when passed', function () {
 });
 
 it('creates a draft and redirects to it', function () {
-    $section = Section::factory()->create([
+    $section = Section::factory()->withEntryTypes(EntryType::factory()->create())->create([
         'handle' => 'blog',
     ]);
-    $section->entryTypes()->save(EntryType::factory()->create(), ['sortOrder' => 1]);
 
     get(cp_url('entries/blog/new'))
         ->assertStatus(302)
@@ -54,4 +55,20 @@ it('creates a draft and redirects to it', function () {
             'modelId',
             'message',
         ]);
+});
+
+it('does not assign authors when the section disallows them', function () {
+    $section = Section::factory()->withEntryTypes(EntryType::factory()->create())->create([
+        'handle' => 'solo',
+        'maxAuthors' => 0,
+    ]);
+
+    $response = getJson(cp_url('entries/solo/new'))
+        ->assertOk()
+        ->json();
+
+    $draft = Elements::getElementById($response['modelId']);
+
+    expect($draft->sectionId)->toBe($section->id)
+        ->and($draft->getAuthors())->toBeEmpty();
 });

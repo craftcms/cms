@@ -1,68 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace craft\gql\base;
 
-use craft\gql\GqlEntityRegistry;
-use CraftCms\Cms\Element\Element;
-use GraphQL\Type\Definition\Type;
-
 /**
- * Class InterfaceType
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Types\InterfaceType} instead.
  */
-abstract class InterfaceType
+abstract class InterfaceType extends \CraftCms\Cms\Gql\Types\InterfaceType
 {
-    /**
-     * Returns the schema object name
-     *
-     * @return string
-     */
-    abstract public static function getName(): string;
-
-    /**
-     * Returns the associated type generator class.
-     *
-     * @return string
-     */
-    abstract public static function getTypeGenerator(): string;
-
-    /**
-     * Resolve an element type name.
-     *
-     * @param Element $element
-     * @return string
-     * @since 3.5.0
-     */
-    public static function resolveElementTypeName(Element $element): string
-    {
-        return GqlEntityRegistry::prefixTypeName($element->getGqlTypeName());
-    }
-
-    /**
-     * List of fields for this type.
-     *
-     * @return array
-     */
-    public static function getFieldDefinitions(): array
-    {
-        return [
-            'id' => [
-                'name' => 'id',
-                'type' => Type::id(),
-                'description' => 'The ID of the entity',
-            ],
-            'uid' => [
-                'name' => 'uid',
-                'type' => Type::string(),
-                'description' => 'The UID of the entity',
-            ],
-        ];
-    }
 }

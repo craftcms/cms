@@ -10,7 +10,13 @@
 </script>
 
 <template>
-  <craft-button type="button" icon size="small" appearance="plain">
+  <craft-button
+    type="button"
+    icon
+    size="small"
+    appearance="plain"
+    v-bind="$attrs"
+  >
     <craft-icon name="custom-icons/grip-dots" :label="label"></craft-icon>
   </craft-button>
 </template>

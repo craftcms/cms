@@ -37,7 +37,7 @@ trait QueriesStatuses
     {
         $this->beforeQuery(function (ElementQuery $elementQuery) {
             if ($elementQuery->archived) {
-                $elementQuery->subQuery->whereBool('elements.archived', true);
+                $elementQuery->whereBool('elements.archived', true);
 
                 return;
             }
@@ -47,7 +47,7 @@ trait QueriesStatuses
             // only set archived=false if 'archived' doesn't show up in the status param
             // (_applyStatusParam() will normalize $this->status to an array if applicable)
             if (! is_array($elementQuery->status) || ! in_array($elementQuery->elementType::STATUS_ARCHIVED, $elementQuery->status)) {
-                $elementQuery->subQuery->whereBool('elements.archived', false);
+                $elementQuery->whereBool('elements.archived', false);
             }
         });
     }
@@ -128,7 +128,7 @@ trait QueriesStatuses
             $glue = 'and';
         }
 
-        $elementQuery->subQuery->where(function (Builder $query) use ($statuses, $negate, $glue) {
+        $elementQuery->where(function (Builder $query) use ($statuses, $negate, $glue) {
             foreach ($statuses as $status) {
                 match (true) {
                     $glue === 'or' && $negate === false => $query->orWhere($this->placeholderCondition($this->statusCondition($status))),
@@ -160,7 +160,7 @@ trait QueriesStatuses
      * @param  string  $status  The status
      * @return Closure(Builder): Builder The status condition, or false if $status is an unsupported status
      *
-     * @throws \CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException on unsupported status.
+     * @throws QueryAbortedException on unsupported status.
      */
     protected function statusCondition(string $status): Closure
     {

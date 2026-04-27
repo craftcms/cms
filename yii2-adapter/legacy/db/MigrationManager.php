@@ -12,6 +12,7 @@ use craft\errors\MigrationException;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -19,7 +20,6 @@ use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
 use yii\db\MigrationInterface;
 use yii\di\Instance;
 use function CraftCms\Cms\maxPowerCaptain;
@@ -233,7 +233,7 @@ class MigrationManager extends Component
 
         Log::info("Applying $migrationName", [__METHOD__]);
 
-        $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
+        $isConsoleRequest = app()->runningInConsole();
 
         if (!$isConsoleRequest) {
             ob_start();
@@ -296,7 +296,7 @@ class MigrationManager extends Component
 
         Log::info("Reverting $migrationName", [__METHOD__]);
 
-        $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
+        $isConsoleRequest = app()->runningInConsole();
 
         if (!$isConsoleRequest) {
             ob_start();

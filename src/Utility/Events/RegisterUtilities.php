@@ -23,7 +23,7 @@ use Illuminate\Support\Collection;
  * });
  * ```
  */
-final class RegisterUtilities
+class RegisterUtilities
 {
     public function __construct(
         public Collection $types,

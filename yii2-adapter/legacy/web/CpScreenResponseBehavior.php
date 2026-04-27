@@ -7,9 +7,9 @@
 
 namespace craft\web;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\TemplateMode;
 use yii\base\Behavior;
 use function CraftCms\Cms\template;
@@ -341,7 +341,7 @@ class CpScreenResponseBehavior extends Behavior
         }
         $this->crumbs[] = [
             'label' => $label,
-            'url' => UrlHelper::cpUrl($url),
+            'url' => Url::cpUrl($url),
         ];
         return $this->owner;
     }

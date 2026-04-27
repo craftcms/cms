@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use craft\helpers\Component;
-use craft\helpers\Cp;
-use craft\helpers\UrlHelper;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
@@ -19,7 +20,7 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
-use CraftCms\Cms\FieldLayout\LayoutElements\entries\EntryTitleField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Section\Data\Section;
@@ -28,6 +29,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -39,7 +41,7 @@ use Symfony\Component\HttpFoundation\Response;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final class EntryTypesController
+class EntryTypesController
 {
     use RespondsWithFlash;
 
@@ -145,7 +147,7 @@ final class EntryTypesController
                 callback: function (CpScreenResponse $response) use ($entryTypeData) {
                     $response
                         ->action('entry-types/save')
-                        ->redirectUrl(UrlHelper::cpReferralUrl() ?? 'settings/entry-types')
+                        ->redirectUrl(Url::cpReferralUrl() ?? 'settings/entry-types')
                         ->addAltAction(t('Save and continue editing'), [
                             'redirect' => 'settings/entry-types/{id}',
                             'shortcut' => true,
@@ -159,7 +161,7 @@ final class EntryTypesController
                             'action' => 'entry-types/delete',
                             'destructive' => true,
                         ])
-                        ->metaSidebarHtml(Cp::metadataHtml([
+                        ->metaSidebarHtml(app(ContentHtml::class)->metadataHtml([
                             t('ID') => $entryTypeData->id,
                             t('Used by') => function () use ($entryTypeData) {
                                 $usages = $entryTypeData->findUsages();
@@ -178,7 +180,7 @@ final class EntryTypesController
                                     $labelHtml = Html::beginTag('span', [
                                         'class' => ['flex', 'flex-nowrap', 'gap-s'],
                                     ]).
-                                        Html::tag('div', Cp::iconSvg($icon), [
+                                        Html::tag('div', Icons::svg($icon), [
                                             'class' => ['cp-icon', 'small'],
                                         ]).
                                         Html::tag('span', Html::encode($label)).
@@ -197,14 +199,14 @@ final class EntryTypesController
                         ]));
                 },
                 default: function (CpScreenResponse $response) {
-                    $response->noticeHtml(Cp::readOnlyNoticeHtml());
+                    $response->noticeHtml(app(ContentHtml::class)->readOnlyNoticeHtml());
                 },
             );
     }
 
     public function tableData(Request $request): JsonResponse
     {
-        $page = (int) $request->input('page', 1);
+        $page = (int) $request->input(Cms::config()->getPageTriggerParam(), 1);
         $limit = (int) $request->input('per_page', 100);
         $searchTerm = $request->input('search');
         $orderBy = match ($request->input('sort.0.field')) {
@@ -266,7 +268,7 @@ final class EntryTypesController
         $entryType->showStatusField = $request->boolean('showStatusField', $entryType->showStatusField);
 
         // If we're duplicating the entry type and the handle hasn't changed, find a unique one
-        if ($entryType->handle === ($originalEntryType->handle ?? null)) {
+        if ($saveAsNew && $entryType->handle === ($originalEntryType->handle ?? null)) {
             if (preg_match('/^(.*?)(\d+)$/', (string) $entryType->handle, $match)) {
                 $baseHandle = $match[1];
                 $i = (int) $match[2];
@@ -364,7 +366,6 @@ final class EntryTypesController
         $settings = array_filter(Arr::get($postedSettings, $settingsNamespace, []));
 
         if (! empty($settings)) {
-            $settings = Component::cleanseConfig($settings);
             foreach ($settings as $key => $value) {
                 $entryType->{$key} = $value;
             }
@@ -376,7 +377,7 @@ final class EntryTypesController
             }
         }
 
-        $chipHtml = Cp::chipHtml($entryType, [
+        $chipHtml = app(ElementHtml::class)->chipHtml($entryType, [
             'showHandle' => true,
             'showIndicators' => true,
             'showDescription' => true,

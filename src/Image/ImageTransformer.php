@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image;
 
-use Craft;
-use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\FileHelper;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Asset\Assets;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
+use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Image\Contracts\EagerImageTransformerInterface;
 use CraftCms\Cms\Image\Contracts\ImageEditorTransformerInterface;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
@@ -23,23 +20,26 @@ use CraftCms\Cms\Image\Data\ImageTransformIndex;
 use CraftCms\Cms\Image\Events\DeletingTransformedImage;
 use CraftCms\Cms\Image\Events\TransformingImage;
 use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use DateTimeInterface;
 use Exception;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Sleep;
+use RuntimeException;
 use Throwable;
-use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
 
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\t;
 
-final class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTransformerInterface, ImageTransformerInterface
+class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTransformerInterface, ImageTransformerInterface
 {
     /** @var array<string, array<string, mixed>> */
     private array $eagerLoadedTransformIndexes = [];
@@ -102,11 +102,11 @@ final class ImageTransformer implements EagerImageTransformerInterface, ImageEdi
 
                 // Prevent the page from being cached
                 if (! app()->runningInConsole()) {
-                    Craft::$app->getResponse()->setNoCacheHeaders();
+                    SetHeaders::noCache();
                 }
 
                 // Return the temporary transform URL
-                return UrlHelper::actionUrl('assets/generate-transform', [
+                return Url::actionUrl('assets/generate-transform', [
                     'transformId' => $index->id,
                 ], showScriptName: false);
             }
@@ -184,7 +184,7 @@ final class ImageTransformer implements EagerImageTransformerInterface, ImageEdi
 
         try {
             $asset->getVolume()->transformDisk()->delete($path);
-        } catch (InvalidConfigException|NotSupportedException) {
+        } catch (RuntimeException|NotSupportedException) {
             // NBD
         }
     }
@@ -343,7 +343,7 @@ final class ImageTransformer implements EagerImageTransformerInterface, ImageEdi
             fclose($stream);
         }
 
-        FileHelper::unlink($tempPath);
+        File::delete($tempPath);
     }
 
     /**
@@ -558,7 +558,7 @@ final class ImageTransformer implements EagerImageTransformerInterface, ImageEdi
     {
         $imageCopy = $asset->getCopyOfFile();
 
-        if (FileHelper::isSvg($imageCopy)) {
+        if (File::isSvg($imageCopy)) {
             $size = max($asset->width, $asset->height) ?? 1000;
             /** @var Raster $image */
             $image = app(Images::class)->loadImage($imageCopy, true, $size);
@@ -682,9 +682,9 @@ final class ImageTransformer implements EagerImageTransformerInterface, ImageEdi
             ->where([
                 'assetId' => $asset->id,
                 'fileExists' => true,
-                'transformString' => $possibleLocations,
                 'format' => $index->detectedFormat,
             ])
+            ->whereIn('transformString', $possibleLocations)
             ->whereNot('id', $index->id)
             ->first();
 

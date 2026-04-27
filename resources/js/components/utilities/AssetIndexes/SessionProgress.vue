@@ -34,19 +34,19 @@
   .progress-bar-container {
     width: 100%;
     height: 0.5rem;
-    background-color: var(--c-color-neutral-bg-subtle);
+    background-color: var(--c-color-neutral-fill-quiet);
     border-radius: var(--c-radius-sm);
     overflow: hidden;
   }
 
   .progress-bar {
     height: 100%;
-    background-color: var(--c-color-primary-bg);
+    background-color: var(--c-color-accent-fill-loud);
     transition: width 0.2s ease;
   }
 
   .progress-info {
-    font-size: var(--c-font-size-sm);
-    color: var(--c-color-neutral-on-subtle);
+    font-size: var(--c-text-sm);
+    color: var(--c-color-neutral-on-quiet);
   }
 </style>

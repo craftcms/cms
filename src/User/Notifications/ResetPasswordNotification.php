@@ -4,35 +4,40 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Notifications;
 
-use Craft;
-use craft\helpers\Template;
-use CraftCms\Cms\Notifications\Channels\CraftChannel;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\Support\Template;
+use CraftCms\Cms\SystemMessage\Mailables\SystemMessageMailable;
+use CraftCms\Cms\SystemMessage\SystemMessages;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Channels\MailChannel;
 use Illuminate\Notifications\Notification;
 
-final class ResetPasswordNotification extends Notification implements ShouldQueue
+class ResetPasswordNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     public function __construct(
         public string $token,
-    ) {}
+    ) {
+        $this->queue = Cms::config()->queueName;
+    }
 
     public function via(mixed $notifiable): array
     {
-        return [CraftChannel::class];
+        return [MailChannel::class];
     }
 
-    public function toCraft(User $user): bool
+    public function toMail(User $user): SystemMessageMailable
     {
         $url = Users::getPasswordResetUrl($user);
 
-        return Craft::$app->getMailer()
-            ->composeFromKey('forgot_password', ['link' => Template::raw($url)])
-            ->setTo($user)
-            ->send();
+        return app(SystemMessages::class)->mailable(
+            key: 'forgot_password',
+            user: $user,
+            variables: ['link' => Template::raw($url)],
+        );
     }
 }

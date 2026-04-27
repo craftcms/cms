@@ -1586,3 +1586,26 @@ export function toEnvVar(
   let name = toHandle(value, {handleCasing: 'snake'}).toUpperCase();
   return name ? `${settings.prefix}${name}${settings.suffix}` : '';
 }
+
+/**
+ * Converts a string to a URI-friendly slug format.
+ */
+export function toUriFormat(value: string): string {
+  // Remove HTML tags
+  let str = value.replace(/<(.*?)>/g, '');
+
+  // Make it lowercase
+  str = str.toLowerCase();
+
+  // Convert extended ASCII characters to basic ASCII
+  str = asciiString(str);
+
+  // Must start with a letter and end with a letter/number
+  str = str.replace(/^[^a-z]+/, '');
+  str = str.replace(/[^a-z0-9]+$/, '');
+
+  // Get the "words"
+  const words = str.split(/[^a-z0-9]+/).filter(Boolean);
+
+  return words.join('-');
+}

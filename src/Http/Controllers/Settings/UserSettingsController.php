@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-final readonly class UserSettingsController
+readonly class UserSettingsController
 {
     public function __construct(
         private ProjectConfig $projectConfig,

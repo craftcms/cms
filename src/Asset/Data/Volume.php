@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Data;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Validation\VolumeRules;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\CpEditable;
-use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
@@ -19,15 +18,14 @@ use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Filesystems;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\Cms\Support\Url;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Traits\Macroable;
 use Override;
 use RuntimeException;
-use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
 
@@ -41,7 +39,6 @@ use function CraftCms\Cms\t;
 class Volume extends Component implements CpEditable, FieldLayoutProviderInterface
 {
     use HasFieldLayout;
-    use Macroable;
 
     public const string STORAGE_FS_PREFIX = 'fs:';
 
@@ -53,14 +50,11 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
 
     public ?string $handle = null;
 
-    /**
-     * @phpstan-var Field::TRANSLATION_METHOD_NONE|Field::TRANSLATION_METHOD_SITE|Field::TRANSLATION_METHOD_SITE_GROUP|Field::TRANSLATION_METHOD_LANGUAGE|Field::TRANSLATION_METHOD_CUSTOM
-     */
-    public string $titleTranslationMethod = Field::TRANSLATION_METHOD_SITE;
+    public TranslationMethod $titleTranslationMethod = TranslationMethod::Site;
 
     public ?string $titleTranslationKeyFormat = null;
 
-    public string $altTranslationMethod = Field::TRANSLATION_METHOD_NONE;
+    public TranslationMethod $altTranslationMethod = TranslationMethod::None;
 
     public ?string $altTranslationKeyFormat = null;
 
@@ -128,19 +122,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
     }
 
     #[Override]
-    public function attributes(): array
-    {
-        return array_values(array_unique(array_merge(parent::attributes(), [
-            'fieldLayout',
-            'fsHandle',
-            'subpath',
-            'transformFsHandle',
-            'transformSubpath',
-        ])));
-    }
-
-    #[Override]
-    public function getAttributes(): array
+    public function validationData(): array
     {
         if (is_string($this->name)) {
             $this->name = trim($this->name);
@@ -156,7 +138,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
             $fieldLayout = null;
         }
 
-        return array_merge(parent::getAttributes(), [
+        return array_merge(parent::validationData(), [
             'fieldLayout' => $fieldLayout,
             'fsHandle' => $this->getFsHandle(false),
             'subpath' => $this->getSubpath(ensureTrailing: false, parse: false),
@@ -179,6 +161,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
         ];
     }
 
+    #[Override]
     public function getAttributeLabel(string $attribute): string
     {
         return $this->attributeLabels()[$attribute] ?? $attribute;
@@ -310,7 +293,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
             return null;
         }
 
-        return UrlHelper::cpUrl("settings/assets/volumes/$this->id");
+        return Url::cpUrl("settings/assets/volumes/$this->id");
     }
 
     public function validateFieldLayout(): void
@@ -351,7 +334,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
     {
         if (! isset($this->_fs)) {
             if (! $this->getFsHandle()) {
-                throw new InvalidConfigException('Volume is missing its filesystem handle.');
+                throw new RuntimeException('Volume is missing its filesystem handle.');
             }
 
             $target = $this->resolveStorageTargetKey($this->_fsHandle);
@@ -446,9 +429,9 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
             'subpath' => $this->_subpath,
             'transformFs' => $this->_transformFsHandle,
             'transformSubpath' => $this->_transformSubpath,
-            'titleTranslationMethod' => $this->titleTranslationMethod,
+            'titleTranslationMethod' => $this->titleTranslationMethod->value,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
-            'altTranslationMethod' => $this->altTranslationMethod,
+            'altTranslationMethod' => $this->altTranslationMethod->value,
             'altTranslationKeyFormat' => $this->altTranslationKeyFormat ?: null,
             'sortOrder' => $this->sortOrder,
         ];
@@ -539,7 +522,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
     {
         $target = $this->resolveStorageTargetKey($handle ?? $this->_fsHandle);
         if ($target === null) {
-            throw new InvalidConfigException('Volume is missing or has an invalid filesystem handle.');
+            throw new RuntimeException('Volume is missing or has an invalid filesystem handle.');
         }
 
         if (str_starts_with($target, self::STORAGE_DISK_PREFIX)) {
@@ -549,13 +532,13 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
         if (str_starts_with($target, self::STORAGE_FS_PREFIX)) {
             $handle = substr($target, strlen(self::STORAGE_FS_PREFIX));
             if ($handle === '') {
-                throw new InvalidConfigException('Volume has an invalid filesystem handle.');
+                throw new RuntimeException('Volume has an invalid filesystem handle.');
             }
 
             return Filesystems::toDiskName($handle);
         }
 
-        throw new InvalidConfigException('Volume has an invalid filesystem handle.');
+        throw new RuntimeException('Volume has an invalid filesystem handle.');
     }
 
     private function storageDiskFor(string $diskName, ?string $prefix): FilesystemAdapter
@@ -571,7 +554,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
         ]);
 
         if (! $disk instanceof FilesystemAdapter) {
-            throw new InvalidConfigException('Invalid filesystem disk configuration.');
+            throw new RuntimeException('Invalid filesystem disk configuration.');
         }
 
         return $disk;

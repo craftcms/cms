@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Support\Collection;
 
-final readonly class Cp
+readonly class Cp
 {
     /**
      * @TODO Could/should all this data just be handled in an inertia middleware?
@@ -26,9 +26,9 @@ final readonly class Cp
             ])
             ->merge([
                 'csrfTokenValue' => csrf_token(),
-                'actionUrl' => UrlHelper::actionUrl(),
-                'cpUrl' => UrlHelper::cpUrl(),
-                'baseUrl' => UrlHelper::url(),
+                'actionUrl' => Url::actionUrl(),
+                'cpUrl' => Url::cpUrl(),
+                'baseUrl' => Url::url(),
             ]);
     }
 }

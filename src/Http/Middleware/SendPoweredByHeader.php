@@ -8,7 +8,7 @@ use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use Symfony\Component\HttpFoundation\Response;
 
-final readonly class SendPoweredByHeader
+readonly class SendPoweredByHeader
 {
     public function __construct(
         private GeneralConfig $generalConfig,

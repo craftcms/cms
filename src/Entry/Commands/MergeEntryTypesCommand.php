@@ -18,16 +18,16 @@ use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\File;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\select;
 
-final class MergeEntryTypesCommand extends Command implements PromptsForMissingInput
+class MergeEntryTypesCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
 
@@ -85,7 +85,7 @@ final class MergeEntryTypesCommand extends Command implements PromptsForMissingI
 
         /** @var EntryType $persistingEntryType */
         /** @var EntryType $outgoingEntryType */
-        /** @var array<\CraftCms\Cms\Section\Data\Section|ElementContainerFieldInterface> $outgoingUsages */
+        /** @var array<Section|ElementContainerFieldInterface> $outgoingUsages */
         [$persistingEntryType, $outgoingEntryType, $outgoingUsages] = $choice === $entryTypeA->handle
             ? [$entryTypeA, $entryTypeB, $usagesB]
             : [$entryTypeB, $entryTypeA, $usagesA];
@@ -181,7 +181,7 @@ final class MergeEntryTypesCommand extends Command implements PromptsForMissingI
                         ->map(fn () => true)
                         ->all();
                     $tabs = $fieldLayout->getTabs();
-                    /** @var \CraftCms\Cms\FieldLayout\FieldLayoutTab|null $tab */
+                    /** @var FieldLayoutTab|null $tab */
                     $tab = Arr::first($tabs, fn (FieldLayoutTab $tab) => $tab->name === 'Merged Fields');
                     if (! $tab) {
                         $tab = new FieldLayoutTab(['name' => 'Merged Fields']);

@@ -11,9 +11,9 @@ use CraftCms\Cms\Plugin\Events\PluginEvent;
 use CraftCms\Cms\Plugin\Events\UninstallingPlugin;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\File;
 
 /**
  * @mixin Plugin

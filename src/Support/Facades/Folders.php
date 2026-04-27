@@ -18,15 +18,15 @@ use Override;
  * @method static bool foldersExist(mixed $criteria = null)
  * @method static void createFolder(\CraftCms\Cms\Asset\Data\VolumeFolder $folder)
  * @method static string renameFolderById(int $folderId, string $newName)
- * @method static void deleteFoldersByIds(int|array $folderIds, bool $deleteDir = true)
+ * @method static void deleteFoldersByIds(array|int $folderIds, bool $deleteDir = true)
  * @method static \CraftCms\Cms\Asset\Data\VolumeFolder ensureFolderByFullPathAndVolume(string $fullPath, \CraftCms\Cms\Asset\Data\Volume $volume, bool $justRecord = true)
- * @method static void storeFolderRecord(\CraftCms\Cms\Asset\Data\VolumeFolder $folder)
+ * @method static void storeFolderModel(\CraftCms\Cms\Asset\Data\VolumeFolder $folder)
  * @method static \Illuminate\Database\Query\Builder createFolderQuery()
  * @method static void reset()
  *
  * @see \CraftCms\Cms\Asset\Folders
  */
-final class Folders extends Facade
+class Folders extends Facade
 {
     #[Override]
     protected static function getFacadeAccessor(): string

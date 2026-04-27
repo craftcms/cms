@@ -14,6 +14,7 @@
   import {Form, router} from '@inertiajs/vue3';
   import AppLayout from '@/layout/AppLayout.vue';
   import Pane from '@/components/Pane.vue';
+  import CpLink from '@/components/CpLink.vue';
 
   export interface SectionModel {
     id: number;
@@ -87,6 +88,7 @@
   const pageIndex = computed(() =>
     props.pagination.current_page ? props.pagination.current_page - 1 : 0
   );
+  const pageParam = window.Craft?.pageTrigger ?? 'page';
   const tablePagination = ref<PaginationState>({
     pageIndex: pageIndex.value,
     pageSize: props.pagination.per_page,
@@ -142,7 +144,7 @@
           query: {
             ...Object.fromEntries(currentQuery),
             sort: sortQueryParams,
-            page: 1,
+            [pageParam]: 1,
           },
         }),
         {
@@ -164,7 +166,7 @@
         index({
           query: {
             ...Object.fromEntries(currentQuery),
-            page: next.pageIndex + 1,
+            [pageParam]: next.pageIndex + 1,
             per_page: next.pageSize,
           },
         }),
@@ -180,15 +182,16 @@
 <template>
   <AppLayout :title="title">
     <template #actions>
-      <a :href="create().url">
+      <CpLink as="craft-button" variant="primary" :href="create()">
         <craft-icon name="plus" slot="prefix"></craft-icon>
         {{ t('New section') }}
-      </a>
+      </CpLink>
     </template>
 
     <Pane :padding="0" appearance="raised">
       <AdminTable
         spacing="relaxed"
+        :title="title"
         :table="sectionTable"
         :reorderable="false"
         :from="pagination.from"

@@ -1,14 +1,17 @@
 <?php
 
-use CraftCms\Cms\Entry\Models\Entry;
+declare(strict_types=1);
 
-test('placeholder elements', function () {
+use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Support\Facades\Elements;
+
+test('queries return placeholder elements unless placeholders are ignored', function () {
     $entry = Entry::factory()->create();
     $entry->element->siteSettings()->first()->update([
         'title' => 'Old title',
     ]);
 
-    $element = Craft::$app->getElements()->getElementById($entry->id);
+    $element = Elements::getElementById($entry->id);
 
     expect($element->title)->toBe('Old title');
 
@@ -16,7 +19,7 @@ test('placeholder elements', function () {
 
     expect(entryQuery()->id($entry->id)->first()->title)->toBe('Old title');
 
-    Craft::$app->getElements()->setPlaceholderElement($element);
+    Elements::setPlaceholderElement($element);
 
     expect(entryQuery()->id($entry->id)->first()->title)->toBe('New title');
     expect(entryQuery()->id($entry->id)->ignorePlaceholders()->first()->title)->toBe('Old title');

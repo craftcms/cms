@@ -12,7 +12,7 @@ use Illuminate\Foundation\Events\Dispatchable;
  *
  * Plugins can listen to this event to add custom validation rules.
  */
-final class DefineValidationRules
+class DefineValidationRules
 {
     use Dispatchable;
 

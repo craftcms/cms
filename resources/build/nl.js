@@ -1,1 +1,1 @@
-const o={optionsPopup:"Pop-up van opties"};export{o as default};
+var e={optionsPopup:`Pop-up van opties`};export{e as default};

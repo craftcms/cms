@@ -9,11 +9,12 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\table;
 
-final class ListAdminsCommand extends Command
+class ListAdminsCommand extends Command
 {
     use Colors;
     use CraftCommand;
@@ -29,7 +30,7 @@ final class ListAdminsCommand extends Command
 
     public function handle(GeneralConfig $generalConfig): void
     {
-        /** @var \Illuminate\Support\Collection<User> $users */
+        /** @var Collection<User> $users */
         $users = User::find()
             ->admin()
             ->status(null)

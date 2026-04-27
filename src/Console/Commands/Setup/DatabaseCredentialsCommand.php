@@ -8,6 +8,7 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
+use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -18,7 +19,7 @@ use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
 
-final class DatabaseCredentialsCommand extends Command
+class DatabaseCredentialsCommand extends Command
 {
     use CraftCommand;
 
@@ -159,7 +160,7 @@ final class DatabaseCredentialsCommand extends Command
         ]);
 
         try {
-            /** @var \Illuminate\Database\Connection $connection */
+            /** @var Connection $connection */
             $connection = DB::build($config);
             $connection->getPdo();
         } catch (PDOException $e) {
@@ -234,7 +235,9 @@ final class DatabaseCredentialsCommand extends Command
 
         $this->components->success('Database credentials saved successfully.');
 
+        Config::set('database.default', $this->driver);
         Config::set("database.connections.{$this->driver}", $config);
+        DB::setDefaultConnection($this->driver);
         Config::set('database.connections.db2', $config);
 
         return self::SUCCESS;
