@@ -13,6 +13,7 @@ use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\Events\RegisterTemplateGlobals;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\t;
 
@@ -43,11 +44,13 @@ readonly class TemplateGlobals
             $siteUrl = $currentSite->getBaseUrl();
             $systemName = Cms::systemName();
         } else {
-            $siteName = $siteUrl = $systemName = null;
+            $currentSite = $siteName = $siteUrl = $systemName = null;
         }
 
         $globals = [
             'craft' => $this->craftVariable,
+            'currentSite' => $currentSite,
+            'currentUser' => Auth::user(),
             'siteName' => $siteName,
             'siteUrl' => $siteUrl,
             'systemName' => $systemName,

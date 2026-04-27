@@ -5,7 +5,9 @@ declare(strict_types=1);
 use craft\auth\methods\TOTP as LegacyTOTP;
 use craft\base\Component as LegacyComponent;
 use craft\base\Model as LegacyModel;
+use craft\behaviors\FieldLayoutBehavior;
 use craft\config\GeneralConfig as LegacyGeneralConfig;
+use craft\elements\GlobalSet as LegacyGlobalSet;
 use craft\events\DefineBehaviorsEvent;
 use craft\fields\PlainText as LegacyPlainText;
 use craft\models\DeprecationError as LegacyDeprecationError;
@@ -139,6 +141,12 @@ test('component-backed classes inherit behaviors from base model, base component
     $group->updateOwnerDescription('synced');
 
     expect($group->description)->toBe('synced');
+});
+
+test('legacy element classes expose class-defined behaviors', function() {
+    $globalSet = new LegacyGlobalSet();
+
+    expect($globalSet->getBehavior('fieldLayout'))->toBeInstanceOf(FieldLayoutBehavior::class);
 });
 
 test('field aliases inherit the define behaviors constant and support delegated method and property access', function() {

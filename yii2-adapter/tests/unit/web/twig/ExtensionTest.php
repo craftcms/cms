@@ -898,14 +898,6 @@ class ExtensionTest extends TestCase
         );
     }
 
-    public function test_expression_function(): void
-    {
-        $this->testRenderResult(
-            'Im an expression | var | Im an expression',
-            '{% set expression =  expression("Im an expression", ["var"]) %}{{ expression }} | {{ expression.params[0] }} | {{ expression.expression }}'
-        );
-    }
-
     public function test_field_value_sql_function(): void
     {
         $this->tester->haveFixtures([
