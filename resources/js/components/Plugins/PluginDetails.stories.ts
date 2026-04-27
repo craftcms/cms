@@ -72,6 +72,26 @@ export const InvalidLicense: Story = {
   },
 };
 
+export const Expired: Story = {
+  render,
+  args: {
+    plugin: createPlugin({
+      name: 'Formie',
+      handle: 'formie',
+      description: 'The most user-friendly forms plugin for Craft.',
+      iconUrl: 'https://pluginicons.craft-cdn.com/formie.svg',
+      documentationUrl: 'https://verbb.io/craft-plugins/formie',
+      packageName: 'verbb/formie',
+      version: '3.1.21',
+      licenseKey: 'XXXXXXXXXXXXXXXXXXXXXXXX',
+      licensedEdition: 'standard',
+      licenseKeyStatus: 'valid',
+      expired: true,
+      renewalUrl: '#',
+    }),
+  },
+};
+
 export const AllLicenseIssues: Story = {
   render,
   args: {

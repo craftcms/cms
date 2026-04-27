@@ -15,7 +15,7 @@
 </script>
 
 <template>
-  <component :is="as" v-bind="$attrs">{{ text }}</component>
+  <component :is="as" v-bind="$attrs" v-html="text" />
 </template>
 
 <style scoped lang="scss"></style>

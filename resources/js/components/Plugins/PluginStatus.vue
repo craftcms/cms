@@ -4,13 +4,16 @@
   import Badge from '@/components/Badge.vue';
 
   defineProps<{
-    plugin: PluginInfo;
+    plugin: PluginInfo & {isComposerInstalled?: boolean};
   }>();
 </script>
 
 <template>
   <template v-if="plugin.isEnabled">
     <Badge variant="success">{{ t('Installed') }}</Badge>
+  </template>
+  <template v-else-if="!plugin.isComposerInstalled">
+    <Badge>{{ t('Missing') }}</Badge>
   </template>
   <template v-else-if="plugin.isInstalled">
     <div class="flex gap-1 items-center">
