@@ -15,12 +15,12 @@ export type BaseAction =
       detail?: Record<string, unknown>;
       confirm?: string;
     }
-  | {type: 'navigate'; url: string; target?: '_self' | '_blank'}
   | {type: 'download'; url: string; filename?: string};
 
 export type FeedbackData = {
   message?: string;
-  display?: 'inline' | 'toast';
+  // @TODO
+  // display?: 'inline' | 'toast';
 };
 
 export type ActionFeedback = {
@@ -100,9 +100,9 @@ export async function runAction(action: BaseAction): Promise<void> {
       a.click();
       break;
 
-    default:
-      console.warn(`TODO: ${action.type} action`, action);
-      throw new Error(`Unknown action type: ${action.type}`);
-      break;
+    default: {
+      const unhandled: never = action;
+      throw new Error(`Unknown action type: ${(unhandled as BaseAction).type}`);
+    }
   }
 }

@@ -1,22 +1,12 @@
 import {html, LitElement, nothing} from 'lit';
 import {property, state} from 'lit/decorators.js';
 import styles from './action-item.styles.js';
-import {
-  type AsyncState,
-  AsyncStates,
-  Variant,
-  type VariantKey,
-} from '@src/types';
+import {type AsyncState, AsyncStates, Variant, type VariantKey,} from '@src/types';
 import variantsStyles from '@src/styles/variants.styles';
 import {classMap} from 'lit/directives/class-map.js';
 
 import '../shortcut/shortcut.js';
-import {
-  type ActionFeedback,
-  type BaseAction,
-  type FeedbackData,
-  runAction,
-} from '@src/actions';
+import {type ActionFeedback, type BaseAction, type FeedbackData, runAction,} from '@src/actions';
 
 /**
  * @summary Either a link or button typically used in a menu.
@@ -94,7 +84,6 @@ export default class CraftActionItem extends LitElement {
   setState(state: AsyncState, detail: FeedbackData = {}) {
     this.state = state;
     this.feedbackMessage = detail.message ?? null;
-    console.log({state: this.state});
 
     this.dispatchEvent(
       new CustomEvent('action:change-state', {
