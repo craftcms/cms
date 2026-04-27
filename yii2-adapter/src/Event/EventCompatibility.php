@@ -6,7 +6,6 @@ namespace CraftCms\Yii2Adapter\Event;
 
 use Craft;
 use craft\base\Element;
-use craft\base\Event as YiiEvent;
 use craft\base\FieldLayoutComponent;
 use craft\console\controllers\ResaveController;
 use craft\controllers\ElementsController;
@@ -16,7 +15,6 @@ use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\NestedElementManager;
 use craft\events\EditionChangeEvent;
-use craft\events\RegisterCpNavItemsEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\fields\Assets as LegacyAssetsField;
 use craft\fields\BaseOptionsField as LegacyBaseOptionsField;
@@ -54,9 +52,7 @@ use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
 use craft\web\Application;
 use craft\web\twig\variables\Cp;
-use craft\web\twig\variables\Cp as CpVariable;
 use craft\web\View;
-use CraftCms\Cms\Cp\Events\RegisterCpNavItems;
 use CraftCms\Cms\Edition\Events\EditionChanged;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\Events\RegisterTemplateCacheCollectors;
@@ -154,16 +150,6 @@ readonly class EventCompatibility
          * Variables
          */
         Cp::registerEvents();
-
-        Event::listen(function(RegisterCpNavItems $event) {
-            if (YiiEvent::hasHandlers(CpVariable::class, 'registerCpNavItems')) {
-                $yiiEvent = new RegisterCpNavItemsEvent(['navItems' => $event->navItems]);
-
-                YiiEvent::trigger(CpVariable::class, 'registerCpNavItems', $yiiEvent);
-
-                $event->navItems = $yiiEvent->navItems;
-            }
-        });
 
         Event::listen(function(EditionChanged $event) {
             /** @var Application $craft */

@@ -14,6 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.10
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Cp\Events\RegisterFormActions} instead.
  */
 class FormActionsEvent extends Event
 {

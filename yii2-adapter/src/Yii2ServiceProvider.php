@@ -3,13 +3,11 @@
 namespace CraftCms\Yii2Adapter;
 
 use Craft;
-use craft\web\twig\variables\CraftVariable;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\View\Events\RegisterTemplateGlobals;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
 use CraftCms\Yii2Adapter\Console\AddCategoriesSupportCommand;
 use CraftCms\Yii2Adapter\Console\AddGlobalSetsSupportCommand;
@@ -26,6 +24,7 @@ use CraftCms\Yii2Adapter\HtmlPurifier\LegacyHtmlPurifierConfigRegistrar;
 use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
 use CraftCms\Yii2Adapter\I18N\I18NCompatibility;
 use CraftCms\Yii2Adapter\Mail\TestToEmailAddressCompatibility;
+use CraftCms\Yii2Adapter\Mixins\CraftVariableMixin;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Support\Facades\Artisan;
@@ -150,9 +149,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
         new RebrandCompatibility()->boot();
 
-        Event::listen(function(RegisterTemplateGlobals $event) {
-            $event->globals['craft'] = new CraftVariable();
-        });
+        \CraftCms\Cms\Twig\Variables\CraftVariable::mixin(new CraftVariableMixin());
 
         /**
          * Keep legacy CustomFieldBehavior statics in sync when field caches are invalidated.

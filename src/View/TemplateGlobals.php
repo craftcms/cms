@@ -9,6 +9,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Twig\Variables\CraftVariable;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\Events\RegisterTemplateGlobals;
 use Illuminate\Container\Attributes\Scoped;
@@ -30,6 +31,7 @@ readonly class TemplateGlobals
         private Request $request,
         private Sites $sites,
         private Updates $updates,
+        private CraftVariable $craftVariable,
     ) {}
 
     /**
@@ -61,6 +63,7 @@ readonly class TemplateGlobals
         }
 
         $globals = [
+            'craft' => $this->craftVariable,
             'sessionErrors' => $errors,
             'request' => $this->request,
             'session' => $this->request->hasSession() ? $this->request->session() : null,
