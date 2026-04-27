@@ -33,10 +33,13 @@
       <template v-if="plugin.isForceDisabled">
         <craft-info-icon>
           {{
-            t('{plugin} can’t be installed due to the {setting} config setting.', {
-              plugin: plugin.name,
-              setting: 'disabledPlugins',
-            })
+            t(
+              '{plugin} can’t be installed due to the {setting} config setting.',
+              {
+                plugin: plugin.name,
+                setting: 'disabledPlugins',
+              }
+            )
           }}
         </craft-info-icon>
       </template>

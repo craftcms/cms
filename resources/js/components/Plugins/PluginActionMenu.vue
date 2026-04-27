@@ -45,7 +45,7 @@
           },
         },
       },
-      {type: 'hr'}
+      {type: 'hr'},
     ];
 
     if (!props.plugin.isInstalled) {

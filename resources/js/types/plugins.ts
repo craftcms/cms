@@ -6,7 +6,6 @@ export type LicenseIssueKey =
   | 'required'
   | 'invalid';
 
-
 export interface PluginInfo {
   handle: string;
   developer: string;

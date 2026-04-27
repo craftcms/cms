@@ -1,1 +1,1 @@
-import{B as e,I as t,T as n,_ as r,b as i,y as a}from"./_plugin-vue_export-helper.js";var o=n({__name:`DynamicHtmlRenderer`,props:{html:{}},setup(o){let s=o,c=r(()=>n({template:s.html}));return(n,r)=>o.html?(t(),a(e(c.value),{key:0})):i(``,!0)}});export{o as t};
+import{I as e,T as t,V as n,g as r,v as i,y as a}from"./_plugin-vue_export-helper.js";var o=t({__name:`DynamicHtmlRenderer`,props:{html:{}},setup(o){let s=o,c=r(()=>t({template:s.html}));return(t,r)=>o.html?(e(),i(n(c.value),{key:0})):a(``,!0)}});export{o as t};

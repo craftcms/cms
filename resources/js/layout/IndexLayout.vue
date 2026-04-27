@@ -26,6 +26,11 @@
     navState.value = navState.value === 'expanded' ? 'collapsed' : 'expanded';
   }
 
+  const skipLinks = [
+    {label: t('Skip to secondary navigation'), url: '#secondary-nav'},
+    {label: t('Skip to content'), url: '#content-pane'},
+  ];
+
   watch(
     isLarge,
     (newValue) => {
@@ -40,14 +45,19 @@
 </script>
 
 <template>
-  <AppLayout :full-width="true" :title="title" :debug="debug">
+  <AppLayout
+    :full-width="true"
+    :title="title"
+    :debug="debug"
+    :additional-skip-links="skipLinks"
+  >
     <!-- Forward all other slots -->
     <template v-for="(_, name) in forwardedSlots" #[name]="slotData">
       <slot :name="name" v-bind="slotData || {}"></slot>
     </template>
 
     <div class="index-grid">
-      <div>
+      <nav id="secondary-nav" :aria-label="t('Secondary')" tabindex="-1">
         <craft-button
           v-if="!isLarge"
           type="button"
@@ -71,9 +81,11 @@
         <div v-if="navState === 'expanded'" id="nav-container">
           <slot name="interior-nav" :state="navState"></slot>
         </div>
-      </div>
+      </nav>
       <div
+        id="content-pane"
         class="bg-white border border-neutral-border-quiet rounded-sm shadow-sm @container"
+        tabindex="-1"
       >
         <slot></slot>
       </div>
