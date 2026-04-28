@@ -903,9 +903,9 @@ class Asset extends Element
 
         $userSession = Craft::$app->getUser();
         $canUpload = $userSession->checkPermission("saveAssets:$volume->uid");
-        $canMoveTo = $canUpload && $userSession->checkPermission("deleteAssets:$volume->uid");
-        $canMovePeerFilesTo = (
-            $canMoveTo &&
+        $canMoveTo = (
+            $canUpload &&
+            $userSession->checkPermission("deleteAssets:$volume->uid") &&
             $userSession->checkPermission("savePeerAssets:$volume->uid") &&
             $userSession->checkPermission("deletePeerAssets:$volume->uid")
         );
@@ -924,7 +924,6 @@ class Asset extends Element
                 'folder-id' => $folder->id,
                 'can-upload' => $folder->volumeId === null || $canUpload,
                 'can-move-to' => $canMoveTo,
-                'can-move-peer-files-to' => $canMovePeerFilesTo,
                 'fs-type' => $fs::class,
             ],
         ];

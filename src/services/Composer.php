@@ -125,7 +125,7 @@ class Composer extends Component
 
         if ($requirements !== null) {
             $this->updateRequirements($io, $jsonPath, $requirements);
-            $command = array_merge(['update'], array_keys($requirements), ['--with-all-dependencies']);
+            $command = array_merge(['update'], array_keys($requirements), ['--with-dependencies']);
         } else {
             $command = ['install'];
         }

@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- Fixed a bug where dependencies required by `composer.json` were getting updated when installing/updating plugins. ([#18755](https://github.com/craftcms/cms/issues/18755))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-7h62-6v23-v8fm)
+
+## 4.17.14 - 2026-04-23
+
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. (GHSA-3w32-23wj-rxg3, GHSA-qh45-9g5p-m2v4)
+
+## 4.17.13.1 - 2026-04-14
+
+- Fixed an issue that prevented Craft from being installed. ([#18700](https://github.com/craftcms/cms/issues/18700))
+
+## 4.17.13 - 2026-04-07
+
 - Most classes can now be instantiated via the `create()` Twig function. ([#18376](https://github.com/craftcms/cms/discussions/18376))
 - Fixed a bug where element search query caches weren’t getting invalidated when elements’ search keywords were indexed. ([#18275](https://github.com/craftcms/cms/issues/18275))
 
@@ -9,8 +22,8 @@
 
 - Fixed a bug where GraphQL results were getting cached even if they contained transform generation URLs. ([#18581](https://github.com/craftcms/cms/issues/18581))
 - Fixed a bug where `aria-activedescendant`, `aria-flowto`, and `aria-owns` attributes weren’t getting namespaced by `{% namespace %}` tags. ([#18577](https://github.com/craftcms/cms/issues/18577))
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-gj2p-p9m4-c8gw)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-qrgm-p9w5-rrfw)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. ([GHSA-gj2p-p9m4-c8gw](https://github.com/craftcms/cms/security/advisories/GHSA-gj2p-p9m4-c8gw))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-qrgm-p9w5-rrfw](https://github.com/craftcms/cms/security/advisories/GHSA-qrgm-p9w5-rrfw))
 
 ## 4.17.11 - 2026-03-17
 

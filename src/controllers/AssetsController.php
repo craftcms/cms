@@ -422,8 +422,14 @@ class AssetsController extends Controller
             throw new NotFoundHttpException('Asset not found.');
         }
 
-        $this->requireVolumePermissionByAsset('replaceFiles', $assetToReplace ?: $sourceAsset);
-        $this->requirePeerVolumePermissionByAsset('replacePeerFiles', $assetToReplace ?: $sourceAsset);
+        if ($assetToReplace) {
+            $this->requireVolumePermissionByAsset('replaceFiles', $assetToReplace);
+            $this->requirePeerVolumePermissionByAsset('replacePeerFiles', $assetToReplace);
+        }
+        if ($sourceAsset) {
+            $this->requireVolumePermissionByAsset('replaceFiles', $sourceAsset);
+            $this->requirePeerVolumePermissionByAsset('replacePeerFiles', $sourceAsset);
+        }
 
         // Handle the Element Action
         if ($assetToReplace !== null && $uploadedFile) {
@@ -548,7 +554,7 @@ class AssetsController extends Controller
         }
 
         // Check if it's possible to delete objects in the target volume.
-        $this->requireVolumePermissionByFolder('deleteAssets', $folder);
+        $this->requireVolumePermissionByFolder('deletePeerAssets', $folder);
         $assets->deleteFoldersByIds($folderId);
 
         return $this->asSuccess();
@@ -740,11 +746,17 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('The destination folder does not exist');
         }
 
-        // Check if it's possible to delete objects in the source volume, create folders
-        // in the target volume, and save assets in the target volume.
-        $this->requireVolumePermissionByFolder('deleteAssets', $folderToMove);
-        $this->requireVolumePermissionByFolder('createFolders', $destinationFolder);
+        // Make sure the user has permission to move the source folder
+        // (same permissions checked for `data-movable`)
+        $this->requireVolumePermissionByFolder('savePeerAssets', $folderToMove);
+        $this->requireVolumePermissionByFolder('deletePeerAssets', $folderToMove);
+
+        // Make sure the user has permission to move folders into the target folder
+        // (same permissions checked for `data-can-move-to`)
         $this->requireVolumePermissionByFolder('saveAssets', $destinationFolder);
+        $this->requireVolumePermissionByFolder('deleteAssets', $destinationFolder);
+        $this->requireVolumePermissionByFolder('savePeerAssets', $destinationFolder);
+        $this->requireVolumePermissionByFolder('deletePeerAssets', $destinationFolder);
 
         $targetVolume = $destinationFolder->getVolume();
 
