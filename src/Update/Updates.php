@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Update;
 
-use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Exceptions\MigrateException;
 use CraftCms\Cms\Database\Migrator;

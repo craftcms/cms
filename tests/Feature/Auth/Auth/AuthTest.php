@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Events\Authenticating;
 use CraftCms\Cms\Cms;
@@ -12,7 +12,7 @@ use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
-    $this->auth = app(Auth::class);
+    $this->auth = app(AuthMethods::class);
     Cms::config()->isSystemLive = true;
 });
 

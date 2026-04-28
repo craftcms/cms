@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Elements;
 
-use craft\base\NestedElementTrait;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Concerns\NestedElement;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
@@ -26,7 +26,7 @@ use function CraftCms\Cms\t;
 #[Ruleset(ContentBlockRules::class)]
 class ContentBlock extends Element implements NestedElementInterface
 {
-    use NestedElementTrait;
+    use NestedElement;
 
     #[Override]
     public static function displayName(): string

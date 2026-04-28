@@ -9,7 +9,6 @@ use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Providers\CraftServiceProvider;
 use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\TestCase as BaseTestCase;
@@ -59,7 +58,6 @@ abstract class PluginTestCase extends BaseTestCase
     {
         return [
             CraftServiceProvider::class,
-            Yii2ServiceProvider::class,
         ];
     }
 }

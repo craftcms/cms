@@ -494,7 +494,7 @@
         {{ _self.field({
             label: 'Field Layout'|t('app'),
             fieldset: true,
-            errors: config.fieldLayout.getErrors('customFields') ?? [],
+            errors: config.fieldLayout.errors.get('customFields') ?? [],
             data: {'error-key': 'fieldLayout.customFields'},
         }|merge(config), 'template:_includes/forms/fieldLayoutDesigner') }}
 
@@ -502,7 +502,7 @@
             {{ _self.field({
                 label: 'Generated Fields'|t('app'),
                 instructions: 'Define any additional values that should be saved on your elements.'|t('app'),
-                errors: config.fieldLayout.getErrors('generatedFields') ?? [],
+                errors: config.fieldLayout.errors.get('generatedFields') ?? [],
                 data: {'error-key': 'fieldLayout.generatedFields'},
                 fieldLayout: config.fieldLayout ?? null,
                 disabled: config.disabled ?? false,
@@ -533,7 +533,7 @@
 {%- endmacro %}
 
 {% macro shortcutText(key, shift, alt) %}
-    {%- switch craft.app.request.getClientOs() %}
+    {%- switch Request.clientOs() %}
     {%- case 'Mac' %}
         {{- (alt ? '⌥') ~ (shift ? '⇧') ~ '⌘' ~ key }}
     {%- default %}

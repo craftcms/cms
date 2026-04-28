@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database;
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Commands\BackupCommand;
 use CraftCms\Cms\Database\Commands\ConvertCharsetCommand;
 use CraftCms\Cms\Database\Commands\DropAllTablesCommand;
@@ -26,6 +27,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression as QueryExpression;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Builder as SchemaBuilder;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Override;
@@ -60,6 +62,38 @@ class DatabaseServiceProvider extends ServiceProvider
             $this->isMysql() => 'MySQL',
             $this->isSqlite() => 'SQLite',
             default => 'PostgreSQL',
+        });
+        Connection::macro('supportsMb4', function () {
+            if (Context::hasHidden('craft.supportsMb4')) {
+                return Context::getHidden('craft.supportsMb4');
+            }
+
+            if (! Cms::isInstalled()) {
+                return false;
+            }
+
+            if ($this->isSqlite() || $this->isPgsql()) {
+                Context::addHidden('craft.supportsMb4', true);
+
+                return true;
+            }
+
+            // if elements_sites supports mb4, pretty good chance everything else does too
+            $columns = $this->getSchemaBuilder()->getColumns(Table::ELEMENTS_SITES);
+
+            foreach ($columns as $column) {
+                // collation names always start with the charset name,
+                // so if a collation includes "mb4" we can safely assume the table has an mb4 charset
+                if (isset($column['collation']) && str_contains($column['collation'], 'mb4')) {
+                    Context::addHidden('craft.supportsMb4', true);
+
+                    return true;
+                }
+            }
+
+            Context::addHidden('craft.supportsMb4', false);
+
+            return Context::getHidden('craft.supportsMb4');
         });
 
         Builder::macro('whereBool', fn ($column, bool $value) => $this->where($column, new QueryExpression(var_export($value, true))));

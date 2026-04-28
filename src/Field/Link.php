@@ -35,6 +35,7 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Template;
 use GraphQL\Type\Definition\InputObjectType;
@@ -43,7 +44,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
-use yii\db\Schema;
 
 use function CraftCms\Cms\t;
 
@@ -78,18 +78,18 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     public static function dbType(): array
     {
         return [
-            'value' => Schema::TYPE_STRING,
-            'type' => Schema::TYPE_STRING,
-            'label' => Schema::TYPE_STRING,
-            'urlSuffix' => Schema::TYPE_STRING,
-            'target' => Schema::TYPE_STRING,
-            'title' => Schema::TYPE_STRING,
-            'class' => Schema::TYPE_STRING,
-            'id' => Schema::TYPE_STRING,
-            'rel' => Schema::TYPE_STRING,
-            'ariaLabel' => Schema::TYPE_STRING,
-            'download' => Schema::TYPE_BOOLEAN,
-            'filename' => Schema::TYPE_STRING,
+            'value' => Query::TYPE_STRING,
+            'type' => Query::TYPE_STRING,
+            'label' => Query::TYPE_STRING,
+            'urlSuffix' => Query::TYPE_STRING,
+            'target' => Query::TYPE_STRING,
+            'title' => Query::TYPE_STRING,
+            'class' => Query::TYPE_STRING,
+            'id' => Query::TYPE_STRING,
+            'rel' => Query::TYPE_STRING,
+            'ariaLabel' => Query::TYPE_STRING,
+            'download' => Query::TYPE_BOOLEAN,
+            'filename' => Query::TYPE_STRING,
         ];
     }
 

@@ -53,18 +53,20 @@ class LegacyBehaviorCompatibility
 
         try {
             foreach (self::registrationsFor($object) as $registration) {
-                if (!YiiEvent::hasHandlers($registration['legacyClass'], 'defineBehaviors')) {
-                    continue;
+                $behaviors = self::classDefinedBehaviors($object, $registration['legacyClass']);
+
+                if (YiiEvent::hasHandlers($registration['legacyClass'], 'defineBehaviors')) {
+                    $event = new DefineBehaviorsEvent([
+                        'sender' => $object,
+                        'behaviors' => $behaviors,
+                    ]);
+
+                    YiiEvent::trigger($registration['legacyClass'], 'defineBehaviors', $event);
+
+                    $behaviors = $event->behaviors;
                 }
 
-                $event = new DefineBehaviorsEvent([
-                    'sender' => $object,
-                    'behaviors' => [],
-                ]);
-
-                YiiEvent::trigger($registration['legacyClass'], 'defineBehaviors', $event);
-
-                foreach ($event->behaviors as $name => $behavior) {
+                foreach ($behaviors as $name => $behavior) {
                     self::attachBehavior($object, is_int($name) ? $name : (string) $name, $behavior, false);
                 }
             }
@@ -349,6 +351,31 @@ class LegacyBehaviorCompatibility
         self::$states ??= new WeakMap();
 
         return self::$states[$object] ??= new LegacyBehaviorState();
+    }
+
+    /**
+     * @param  class-string  $legacyClass
+     * @return array<int|string, string|array|Behavior>
+     */
+    private static function classDefinedBehaviors(object $object, string $legacyClass): array
+    {
+        if (!method_exists($legacyClass, 'defineBehaviors')) {
+            return [];
+        }
+
+        try {
+            $owner = $object instanceof $legacyClass ? $object : self::legacyOwner($object);
+        } catch (BadMethodCallException) {
+            return [];
+        }
+
+        if (!$owner instanceof $legacyClass) {
+            return [];
+        }
+
+        $method = new ReflectionMethod($legacyClass, 'defineBehaviors');
+
+        return $method->invoke($owner);
     }
 
     /**

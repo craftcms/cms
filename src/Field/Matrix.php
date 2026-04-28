@@ -5,15 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
-use Craft;
-use craft\web\assets\matrix\MatrixAsset;
-use craft\web\View;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
@@ -57,8 +53,10 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Rules\UriFormatRule;
+use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\MatrixAsset;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
@@ -1107,7 +1105,7 @@ JS, [
             )
         );
 
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\MatrixAsset::class);
+        app(InternalAssetRegistry::class)->register(MatrixAsset::class);
 
         $settings = [
             'fieldId' => $this->id,
@@ -1586,10 +1584,10 @@ JS,
             return;
         }
 
-        Craft::$app->getSession()->addAssetBundleFlash(MatrixAsset::class);
+        app(InternalAssetRegistry::class)->flash(MatrixAsset::class);
 
         foreach ($collapsedIds as $id) {
-            Craft::$app->getSession()->addJsFlash("Craft.MatrixInput.rememberCollapsedEntryId($id);", View::POS_END);
+            session()->flashJs("Craft.MatrixInput.rememberCollapsedEntryId($id);", Position::BodyEnd);
         }
     }
 

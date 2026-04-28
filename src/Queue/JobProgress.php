@@ -164,6 +164,16 @@ readonly class JobProgress
         return $this->getByStatus(JobStatus::Failed);
     }
 
+    public function hasReservedJobs(): bool
+    {
+        return $this->getByStatus(JobStatus::Reserved)->isNotEmpty();
+    }
+
+    public function hasPendingJobs(): bool
+    {
+        return $this->getByStatus(JobStatus::Pending)->isNotEmpty();
+    }
+
     public function delete(string $uid): void
     {
         JobProgressModel::query()

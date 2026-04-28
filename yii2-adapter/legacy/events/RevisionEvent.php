@@ -15,6 +15,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2.0
+ * @deprecated 6.0.0 use one of the events extending {@see \CraftCms\Cms\Element\Events\RevisionEvent} instead.
  */
 class RevisionEvent extends Event
 {

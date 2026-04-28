@@ -43,6 +43,10 @@ use function CraftCms\Cms\t;
 
 class AppServiceProvider extends ServiceProvider
 {
+    public static int $minPasswordLength = 8;
+
+    public static int $maxPasswordLength = 160;
+
     private string $root = __DIR__.'/../..';
 
     #[Override]
@@ -77,7 +81,7 @@ class AppServiceProvider extends ServiceProvider
              * but we provide a sensible default.
              */
             if (! Password::$defaultCallback) {
-                Password::defaults(fn () => Password::min(8)->max(255));
+                Password::defaults(fn () => Password::min(self::$minPasswordLength)->max(self::$maxPasswordLength));
             }
 
             if (Cms::isInstalled() && ! Updates::isCraftUpdatePending()) {
@@ -102,6 +106,8 @@ class AppServiceProvider extends ServiceProvider
 
             return Env::parseBoolean(app(ProjectConfig::class)->get('system.live')) ?? false;
         });
+
+        Application::macro('isEphemeral', fn (): bool => Env::parseBoolean('$CRAFT_EPHEMERAL') === true);
 
         // Register Collection::one() as an alias of first()
         Collection::macro('one', fn () => $this->first(...func_get_args()));
@@ -195,9 +201,20 @@ class AppServiceProvider extends ServiceProvider
         Aliases::set('@craftcms', File::normalizePath($this->root));
         Aliases::set('@package', '@craftcms/src');
         Aliases::set('@resources', "{$this->root}/resources");
+        Aliases::set('@vendor', '@root/vendor');
+        Aliases::set('@storage', $this->app->storagePath());
+        Aliases::set('@runtime', '@storage/runtime');
+
+        if (Aliases::get('@templates', false) === false) {
+            Aliases::set('@templates', is_dir($this->app->resourcePath('views'))
+                ? $this->app->resourcePath('views')
+                : $this->app->basePath('templates'));
+        }
 
         if ($webUrl = Env::get('CRAFT_WEB_URL')) {
             Aliases::set('@web', $webUrl);
+        } else {
+            Aliases::set('@web', config('app.url'));
         }
     }
 }

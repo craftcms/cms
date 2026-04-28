@@ -23,6 +23,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Yii2Adapter\Database\MigrationWrapper;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Log;
+use ReflectionClass;
 use ReflectionMethod;
 use yii\base\Event;
 use yii\base\Module;
@@ -185,7 +186,14 @@ class Plugin extends Module implements PluginInterface
      */
     public function getSettingsResponse(): mixed
     {
-        return $this->settingsResponse(false);
+        $response = $this->settingsResponse(false);
+
+        if ($response instanceof \craft\web\Response) {
+            $response->send();
+            $response = $response->getIlluminateResponse();
+        }
+
+        return $response;
     }
 
     /**
@@ -366,7 +374,7 @@ class Plugin extends Module implements PluginInterface
     private function findMigrationClassByFile(string $realPath): ?string
     {
         foreach (array_reverse(get_declared_classes()) as $class) {
-            if ($realPath === (new \ReflectionClass($class))->getFileName()) {
+            if ($realPath === (new ReflectionClass($class))->getFileName()) {
                 return $class;
             }
         }

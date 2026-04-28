@@ -18,9 +18,9 @@ use CraftCms\Cms\Field\Data\IconData;
 use CraftCms\Cms\Gql\Types\Generators\IconDataType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Query;
 use GraphQL\Type\Definition\Type;
 use Override;
-use yii\db\Schema;
 
 use function CraftCms\Cms\t;
 
@@ -57,7 +57,7 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     #[Override]
     public static function dbType(): string
     {
-        return Schema::TYPE_STRING;
+        return Query::TYPE_STRING;
     }
 
     /**

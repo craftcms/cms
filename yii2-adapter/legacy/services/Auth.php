@@ -36,7 +36,7 @@ use function CraftCms\Cms\t;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\AuthMethods} instead.
  */
 class Auth extends Component
 {
@@ -50,12 +50,13 @@ class Auth extends Component
      * Get user and duration data from session
      *
      * @param int|null $sessionDuration
+     *
      * @return User|null
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth::getUser()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\AuthMethods::getUser()} instead.
      */
     public function getUser(?int &$sessionDuration = null): ?User
     {
-        return app(\CraftCms\Cms\Auth\Auth::class)->getUser();
+        return app(\CraftCms\Cms\Auth\AuthMethods::class)->getUser();
     }
 
     /**
@@ -63,11 +64,12 @@ class Auth extends Component
      *
      * @param User|null $user
      * @param int|null $sessionDuration
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth::setUser()} instead.
+     *
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\AuthMethods::setUser()} instead.
      */
     public function setUser(?User $user, ?int $sessionDuration = null): void
     {
-        app(\CraftCms\Cms\Auth\Auth::class)->setUser($user);
+        app(\CraftCms\Cms\Auth\AuthMethods::class)->setUser($user);
     }
 
     /**
@@ -100,12 +102,13 @@ class Auth extends Component
      *
      * @param class-string<AuthMethodInterface> $methodClass
      * @param mixed $args,...
+     *
      * @return bool
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth::verifyMethod} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\AuthMethods::verifyMethod} instead.
      */
     public function verify(string $methodClass, mixed ...$args): bool
     {
-        return app(\CraftCms\Cms\Auth\Auth::class)->verifyMethod($methodClass, ...$args);
+        return app(\CraftCms\Cms\Auth\AuthMethods::class)->verifyMethod($methodClass, ...$args);
     }
 
     /**
@@ -114,62 +117,67 @@ class Auth extends Component
      * that default message will be used.
      *
      * @param string|null $defaultMessage
+     *
      * @return string
      * @since 5.7.11
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth::getAuthMethodErrorMessage} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\AuthMethods::getAuthMethodErrorMessage} instead.
      */
     public function getAuthErrorMessage(?string $defaultMessage = null): string
     {
-        return app(\CraftCms\Cms\Auth\Auth::class)->getAuthMethodErrorMessage($defaultMessage);
+        return app(\CraftCms\Cms\Auth\AuthMethods::class)->getAuthMethodErrorMessage($defaultMessage);
     }
 
     /**
      * Returns all available user authentication methods.
      *
      * @param User|null $user
+     *
      * @return AuthMethodInterface[]
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth::getAllMethods} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\AuthMethods::getAllMethods} instead.
      */
     public function getAllMethods(?User $user = null): array
     {
-        return app(\CraftCms\Cms\Auth\Auth::class)->getAllMethods($user)->all();
+        return app(\CraftCms\Cms\Auth\AuthMethods::class)->getAllMethods($user)->all();
     }
 
     /**
      * Returns the authentication methods that are available for the given user.
      *
      * @param User|null $user
+     *
      * @return AuthMethodInterface[]
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth::getAvailableMethods} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\AuthMethods::getAvailableMethods} instead.
      */
     public function getAvailableMethods(?User $user = null): array
     {
-        return app(\CraftCms\Cms\Auth\Auth::class)->getAvailableMethods($user)->all();
+        return app(\CraftCms\Cms\Auth\AuthMethods::class)->getAvailableMethods($user)->all();
     }
 
     /**
      * Returns whether any authentication methods are active for the given user.
      *
      * @param User|null $user
+     *
      * @return bool
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth::hasActiveMethod} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\AuthMethods::hasActiveMethod} instead.
      */
     public function hasActiveMethod(?User $user = null): bool
     {
-        return app(\CraftCms\Cms\Auth\Auth::class)->hasActiveMethod($user);
+        return app(\CraftCms\Cms\Auth\AuthMethods::class)->hasActiveMethod($user);
     }
 
     /**
      * Returns the authentication methods that are active for the given user.
      *
      * @param User|null $user
+     *
      * @return AuthMethodInterface[]
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth::getActiveMethods} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\AuthMethods::getActiveMethods} instead.
      *
      */
     public function getActiveMethods(?User $user = null): array
     {
-        return app(\CraftCms\Cms\Auth\Auth::class)->getActiveMethods($user)->all();
+        return app(\CraftCms\Cms\Auth\AuthMethods::class)->getActiveMethods($user)->all();
     }
 
     /**
@@ -178,25 +186,27 @@ class Auth extends Component
      * @template T of AuthMethodInterface
      * @param class-string<T> $class
      * @param User|null $user
+     *
      * @return T
      * @throws InvalidArgumentException
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth::getMethod} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\AuthMethods::getMethod} instead.
      */
     public function getMethod(string $class, ?User $user = null): AuthMethodInterface
     {
-        return app(\CraftCms\Cms\Auth\Auth::class)->getMethod($class, $user);
+        return app(\CraftCms\Cms\Auth\AuthMethods::class)->getMethod($class, $user);
     }
 
     /**
      * Returns whether 2FA is required for a user.
      *
      * @param User $user
+     *
      * @return bool
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth::is2faRequired} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\AuthMethods::is2faRequired} instead.
      */
     public function is2faRequired(User $user): bool
     {
-        return app(\CraftCms\Cms\Auth\Auth::class)->is2faRequired($user);
+        return app(\CraftCms\Cms\Auth\AuthMethods::class)->is2faRequired($user);
     }
 
     /**

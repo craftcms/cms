@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use craft\fs\Local;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Database\Factories\UserFactory;
+use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;

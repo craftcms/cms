@@ -361,15 +361,15 @@ describe('generated URLs', function () {
         'absolute-site-url' => ['{siteUrl}?param1=entry1&param2=entry2', 'https://localhost/', ['param1' => 'entry1', 'param2' => 'entry2'], 'https'],
     ]);
 
-    test('creates site and absolute URLs', function (string $expected, string $path, ?array $params, string $scheme, ?bool $showScriptName) {
+    test('creates site and absolute URLs', function (string $expected, string $path, ?array $params, string $scheme) {
         swapUrlRequest('https://localhost/news');
 
-        expect(Url::url($path, $params, $scheme, $showScriptName))
+        expect(Url::url($path, $params, $scheme))
             ->toBe(buildExpectedUrl($expected, $scheme));
     })->with([
-        ['{siteUrl}endpoint', 'endpoint', null, 'https', null],
-        ['https://craftcms.com/', 'http://craftcms.com/', null, 'https', null],
-        ['https://craftcms.com/?param1=entry1&param2=entry2', 'http://craftcms.com/', ['param1' => 'entry1', 'param2' => 'entry2'], 'https', null],
+        ['{siteUrl}endpoint', 'endpoint', null, 'https'],
+        ['https://craftcms.com/', 'http://craftcms.com/', null, 'https'],
+        ['https://craftcms.com/?param1=entry1&param2=entry2', 'http://craftcms.com/', ['param1' => 'entry1', 'param2' => 'entry2'], 'https'],
     ]);
 
     test('creates site URLs', function (string $expected, string $path, array|string|null $params, string $scheme, ?int $siteId) {
@@ -383,14 +383,14 @@ describe('generated URLs', function () {
     it('creates action URLs', function () {
         swapUrlRequest('https://localhost/news');
 
-        expect(Url::actionUrl('endpoint', null, null, false))
+        expect(Url::actionUrl('endpoint'))
             ->toBe('https://localhost/actions/endpoint');
     });
 
     it('creates control panel action URLs', function () {
         swapUrlRequest('https://localhost/admin/dashboard');
 
-        expect(Url::actionUrl('endpoint', null, null, false))
+        expect(Url::actionUrl('endpoint'))
             ->toBe(buildExpectedUrl('{cpUrl}/actions/endpoint', 'https'));
     });
 

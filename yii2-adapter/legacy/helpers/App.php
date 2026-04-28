@@ -520,7 +520,7 @@ class App
      */
     public static function isEphemeral(): bool
     {
-        return self::parseBooleanEnv('$CRAFT_EPHEMERAL') === true;
+        return app()->isEphemeral();
     }
 
     /**

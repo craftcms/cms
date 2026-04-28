@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
-use Craft;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
@@ -48,6 +47,7 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\View\LegacyAssets\CpAsset;
@@ -64,7 +64,6 @@ use Illuminate\Validation\Validator;
 use Override;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\db\Schema;
 
 use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
@@ -131,7 +130,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     #[Override]
     public static function dbType(): array|string|null
     {
-        return Schema::TYPE_JSON;
+        return Query::TYPE_JSON;
     }
 
     #[Override]

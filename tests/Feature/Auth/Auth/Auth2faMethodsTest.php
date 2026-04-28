@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Events\RegisterAuthMethods;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Auth\Methods\TOTP;
@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Session;
 
 beforeEach(function () {
-    $this->auth = app(Auth::class);
+    $this->auth = app(AuthMethods::class);
     Event::fake();
     Session::flush();
 });

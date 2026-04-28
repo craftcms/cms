@@ -50,7 +50,7 @@ class Paginate extends Component
 
     public function getBasePath(): string
     {
-        return $this->_basePath ?? ($this->_basePath = request()->path());
+        return $this->_basePath ?? ($this->_basePath = request()->craftPath());
     }
 
     public function setBasePath(string $basePath): void

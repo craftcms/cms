@@ -1,2 +1,10 @@
 // line 1
-Craft::$app->controller->requireAdmin();
+if (! $user = Illuminate\Support\Facades\Auth::user()) {
+    throw new Illuminate\Auth\AuthenticationException('Unauthenticated.');
+}
+if (! $user->isAdmin()) {
+    abort(403, 'User is not permitted to perform this action.');
+}
+if (! CraftCms\Cms\Cms::config()->allowAdminChanges) {
+    abort(403, 'Administrative changes are disallowed in this environment.');
+}

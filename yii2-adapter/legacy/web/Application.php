@@ -103,7 +103,7 @@ class Application extends \yii\web\Application
 
         parent::init();
 
-        if (!App::isEphemeral()) {
+        if (!app()->isEphemeral()) {
             $this->ensureResourcePathExists();
         }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
-use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Events\InvalidUserToken;
@@ -31,7 +31,7 @@ abstract readonly class AuthenticationController
 
     public function __construct(
         protected GeneralConfig $generalConfig,
-        protected Auth $auth,
+        protected AuthMethods $auth,
     ) {}
 
     protected function completeLogin(Request $request, User $user, bool $remember): Response
@@ -96,8 +96,8 @@ abstract readonly class AuthenticationController
 
     protected function renderViewWithFallback(string $cpTemplate, array $data = []): View
     {
-        if (view()->exists(request()->path())) {
-            return view(request()->path(), $data);
+        if (view()->exists(request()->craftPath())) {
+            return view(request()->craftPath(), $data);
         }
 
         TemplateMode::set(TemplateMode::Cp);

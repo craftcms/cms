@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
@@ -14,6 +13,7 @@ use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -103,7 +103,7 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
     public function getSettings(): array
     {
         $settings = parent::getSettings();
-        if (isset($settings['placeholder']) && ! Craft::$app->getDb()->getSupportsMb4()) {
+        if (isset($settings['placeholder']) && ! DB::supportsMb4()) {
             $settings['placeholder'] = Str::emojiToShortcodes($settings['placeholder']);
         }
 
@@ -215,7 +215,7 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
     {
         if ($value !== null) {
             $value = Str::escapeShortcodes($value);
-            if (! Craft::$app->getDb()->getSupportsMb4()) {
+            if (! DB::supportsMb4()) {
                 $value = Str::emojiToShortcodes($value);
             }
         }

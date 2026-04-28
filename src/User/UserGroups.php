@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User;
 
-use Craft;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;

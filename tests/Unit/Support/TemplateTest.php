@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\View\HtmlStack;
@@ -11,7 +12,6 @@ use Twig\Error\RuntimeError;
 use Twig\Loader\ArrayLoader;
 use Twig\Markup;
 use Twig\Source;
-use yii\base\BaseObject;
 
 beforeEach(function () {
     TestTemplate::resetFallbacks();
@@ -138,7 +138,7 @@ class TestTemplate extends Template
     }
 }
 
-class TemplateAttributeTarget extends BaseObject
+class TemplateAttributeTarget extends Component
 {
     public string $title = 'Default';
 

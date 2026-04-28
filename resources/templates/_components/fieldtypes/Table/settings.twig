@@ -20,7 +20,7 @@
         name: 'minRows',
         value: field.minRows,
         size: 3,
-        errors: field.getErrors('minRows'),
+        errors: field.errors.get('minRows'),
         data: {'error-key': 'minRows'},
         disabled: readOnly,
     }) }}
@@ -32,7 +32,7 @@
         name: 'maxRows',
         value: field.maxRows,
         size: 3,
-        errors: field.getErrors('maxRows'),
+        errors: field.errors.get('maxRows'),
         data: {'error-key': 'maxRows'},
         disabled: readOnly,
     }) }}
@@ -44,7 +44,7 @@
         name: 'addRowLabel',
         value: field.addRowLabel,
         size: 20,
-        errors: field.getErrors('addRowLabel'),
+        errors: field.errors.get('addRowLabel'),
         disabled: readOnly,
     }) }}
 </fieldset>

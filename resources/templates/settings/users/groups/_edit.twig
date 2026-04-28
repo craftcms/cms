@@ -14,7 +14,7 @@
     id: 'name',
     name: 'name',
     value: group.name,
-    errors: sessionErrors.get('name'),
+    errors: errors.get('name'),
     data: {'error-key': 'name'},
     autofocus: true,
     required: true,
@@ -29,7 +29,7 @@
     autocorrect: false,
     autocapitalize: false,
     value: group.handle,
-    errors: sessionErrors.get('handle'),
+    errors: errors.get('handle'),
     data: {'error-key': 'handle'},
     required: true,
     disabled: readOnly,
@@ -41,7 +41,7 @@
     class: 'nicetext',
     name: 'description',
     value: group.description ?? null,
-    errors: sessionErrors.get('description'),
+    errors: errors.get('description'),
     data: {'error-key': 'description'},
     disabled: readOnly,
 }) }}
@@ -53,7 +53,7 @@
 <div id="permissions">
     {% include "_includes/permissions" with {
         subject: group ?? null,
-        permissions: craft.userPermissions.getAllPermissions(),
+        permissions: UserPermissions.getAllPermissions(),
         includeGroupPlaceholder: not group.id,
         disabled: readOnly,
     } only %}

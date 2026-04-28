@@ -8,9 +8,9 @@
     {% set value = null %}
 {% endif %}
 {% set disabled = disabled ?? false %}
-{% set formattingLocale = formattingLocale ?? craft.i18n.formattingLocale.id -%}
-{% set decimalSeparator = decimalSeparator ?? craft.i18n.formattingLocale.getNumberSymbol(constant('CraftCms\\Cms\\Translation\\Locale::SYMBOL_DECIMAL_SEPARATOR')) -%}
-{% set groupSeparator = groupSeparator ?? craft.i18n.formattingLocale.getNumberSymbol(constant('CraftCms\\Cms\\Translation\\Locale::SYMBOL_GROUPING_SEPARATOR')) -%}
+{% set formattingLocale = formattingLocale ?? I18N.formattingLocale.id -%}
+{% set decimalSeparator = decimalSeparator ?? I18N.formattingLocale.getNumberSymbol(constant('CraftCms\\Cms\\Translation\\Locale::SYMBOL_DECIMAL_SEPARATOR')) -%}
+{% set groupSeparator = groupSeparator ?? I18N.formattingLocale.getNumberSymbol(constant('CraftCms\\Cms\\Translation\\Locale::SYMBOL_GROUPING_SEPARATOR')) -%}
 {% set currencyLabel = currencyLabel ?? null  %}
 {% set showClear = (showClear ?? true) and not disabled %}
 

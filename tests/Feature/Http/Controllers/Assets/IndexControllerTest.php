@@ -34,6 +34,15 @@ it('renders the assets index page', function () {
         ->assertOk();
 });
 
+it('sets the CP-relative path for legacy URL generation', function () {
+    $cpTrigger = Cms::config()->cpTrigger;
+
+    get("/{$cpTrigger}/assets")
+        ->assertOk()
+        ->assertSee('"path":"assets"', false)
+        ->assertDontSee(sprintf('"path":"%s/assets"', $cpTrigger), false);
+});
+
 it('renders with a default source', function () {
     $volume = Volume::factory()->create([
         'fs' => 'disk:test-disk',

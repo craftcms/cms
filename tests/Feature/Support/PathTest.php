@@ -25,7 +25,7 @@ beforeEach(function () {
 
     $this->originalAliases = [];
     foreach ($this->aliases as $alias => $path) {
-        $this->originalAliases[$alias] = Aliases::get($alias);
+        $this->originalAliases[$alias] = Aliases::get($alias, false) ?: '';
         Aliases::set($alias, $path);
         File::ensureDirectoryExists($path);
     }

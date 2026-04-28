@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\File;
 
@@ -287,7 +288,7 @@ test('touch', function (string $input, string $expected) {
     $expected = Str::finish($expected, "\n");
 
     // Make a backup of project.yaml
-    $path = Craft::$app->getPath()->getProjectConfigFilePath();
+    $path = Path::projectConfigFile();
     if ($exists = file_exists($path)) {
         $backup = $path.'.bak';
         rename($path, $backup);

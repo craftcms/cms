@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Commands;
 
-use Craft;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Backups;
 use CraftCms\Cms\Database\Commands\Concerns\ManagesDatabaseTables;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
@@ -60,7 +60,7 @@ class RestoreCommand extends Command
                 return self::FAILURE;
             }
 
-            $tempDir = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.Str::random(10);
+            $tempDir = Path::temp(Str::random(10));
             File::ensureDirectoryExists($tempDir);
             $this->components->task('Extracting zip to a temp directory', function () use ($zip, $tempDir): void {
                 $zip->extractTo($tempDir);
@@ -150,7 +150,7 @@ class RestoreCommand extends Command
      */
     private function defaultBackupPaths(): array
     {
-        $backupPath = Craft::$app->getPath()->getDbBackupPath(false);
+        $backupPath = Path::dbBackup(create: false);
 
         if (! File::isDirectory($backupPath)) {
             return [];

@@ -12,10 +12,10 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Override;
-use yii\db\Schema;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -46,7 +46,7 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
     #[Override]
     public static function dbType(): string
     {
-        return Schema::TYPE_STRING;
+        return Query::TYPE_STRING;
     }
 
     /**

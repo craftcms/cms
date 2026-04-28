@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\MessageBag;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -284,7 +285,8 @@ class ElementDraftsController
         )) {
             // save the draft anyway, so we don’t lose the latest changes
             // (see https://github.com/craftcms/cms/issues/18657)
-            $errors = $element->getErrors();
+            /** @var MessageBag $errors */
+            $errors = $element->errors();
             $invalidNestedElementIds = $element->getInvalidNestedElementIds();
             $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
             $this->elements->saveElement(element: $element, saveContent: $saveContent);

@@ -16,6 +16,7 @@ use CraftCms\Cms\Gql\Types\Money as MoneyType;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Money as MoneyHelper;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Validation\Rules\MoneyRule;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
@@ -24,7 +25,6 @@ use Money\Currency;
 use Money\Exception\ParserException;
 use Money\Money as MoneyLibrary;
 use Override;
-use yii\db\Schema;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -177,7 +177,7 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
     #[Override]
     public static function dbType(): string
     {
-        return Schema::TYPE_DECIMAL;
+        return Query::TYPE_DECIMAL;
     }
 
     #[Override]

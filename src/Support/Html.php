@@ -223,7 +223,7 @@ class Html
      *                          See [[renderTagAttributes()]] for details on how attributes are being rendered.
      * @return string The generated hidden input tag
      *
-     * @throws \yii\base\Exception if the validation key could not be written
+     * @throws Exception if the validation key could not be written
      * @throws RuntimeException when HMAC generation fails
      */
     public static function redirectInput(string $url, array $options = []): string

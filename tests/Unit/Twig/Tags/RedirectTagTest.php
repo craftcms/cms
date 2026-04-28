@@ -33,7 +33,7 @@ it('sets flash notice on redirect', function () {
     } catch (RuntimeError) {
     }
 
-    expect(Craft::$app->getSession()->getNotice())->toBe('Saved!');
+    expect(session()->get('notice'))->toBe('Saved!');
 });
 
 it('sets flash error on redirect', function () {
@@ -42,5 +42,5 @@ it('sets flash error on redirect', function () {
     } catch (RuntimeError) {
     }
 
-    expect(Craft::$app->getSession()->getError())->toBe('Oops');
+    expect(session()->get('error'))->toBe('Oops');
 });
