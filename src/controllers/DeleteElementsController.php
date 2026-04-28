@@ -15,6 +15,7 @@ use craft\db\Table;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\elements\deletionblockers\DeletionBlockerInterface;
 use craft\elements\ElementCollection;
+use craft\helpers\App;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -56,7 +57,7 @@ class DeleteElementsController extends Controller
         $this->requireCpRequest();
 
         $this->elementType = $this->request->getRequiredParam('elementType');
-        $this->hardDelete = (bool)$this->request->getParam('hardDelete');
+        $this->hardDelete = App::normalizeBooleanValue($this->request->getParam('hardDelete')) ?? false;
 
         if (!Component::validateComponentClass($this->elementType, ElementInterface::class)) {
             throw new BadRequestHttpException("Invalid element type: $this->elementType");
@@ -78,7 +79,8 @@ class DeleteElementsController extends Controller
             ->unique()
             ->status(null)
             ->drafts(null)
-            ->savedDraftsOnly(false);
+            ->savedDraftsOnly(false)
+            ->trashed($this->hardDelete);
 
         $withDescendants = !$this->hardDelete && $this->request->getParam('withDescendants');
         if ($withDescendants) {
@@ -169,6 +171,7 @@ class DeleteElementsController extends Controller
         return $this->asJson([
             'blockers' => $blockers,
             'elementPreview' => $elementPreview,
+            'totalElements' => $elements->count(),
             'headHtml' => $this->view->getHeadHtml(),
             'bodyHtml' => $this->view->getBodyHtml(),
         ]);
@@ -218,7 +221,7 @@ class DeleteElementsController extends Controller
 
         /** @var class-string<ElementInterface> $sourceElementType */
         $sourceElementType = $this->request->getRequiredParam('sourceElementType');
-        $targetElementIds = $this->elements()->ids();
+        $targetElementIds = $this->elements->ids();
 
         return $this->asCpModal()
             ->action('delete-elements/replace-relations')
@@ -249,7 +252,7 @@ class DeleteElementsController extends Controller
 
         /** @var class-string<ElementInterface> $sourceElementType */
         $sourceElementType = $this->request->getRequiredBodyParam('sourceElementType');
-        $newTargetId = $this->request->getRequiredBodyParam('newTargetId');
+        $newTargetId = $this->request->getBodyParam('newTargetId');
 
         if (!$newTargetId) {
             return $this->asFailure(Craft::t('app', 'No new {type} selected.', [

@@ -137,7 +137,6 @@ JS;
             'Are you sure you want to delete the selected {type}?',
             'Are you sure you want to delete this image?',
             'Are you sure you want to delete this {type}?',
-            'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?',
             'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?',
             'Are you sure you want to delete “{name}”?',
             'Are you sure you want to discard your changes?',
