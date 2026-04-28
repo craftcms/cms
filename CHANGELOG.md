@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. (GHSA-3w32-23wj-rxg3, GHSA-qh45-9g5p-m2v4)
+- Fixed a bug where dependencies required by `composer.json` were getting updated when installing/updating plugins. ([#18755](https://github.com/craftcms/cms/issues/18755))
+
+## 4.17.14 - 2026-04-23
+
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. (GHSA-3w32-23wj-rxg3, GHSA-qh45-9g5p-m2v4)
 
 ## 4.17.13.1 - 2026-04-14
 
@@ -17,8 +21,8 @@
 
 - Fixed a bug where GraphQL results were getting cached even if they contained transform generation URLs. ([#18581](https://github.com/craftcms/cms/issues/18581))
 - Fixed a bug where `aria-activedescendant`, `aria-flowto`, and `aria-owns` attributes weren’t getting namespaced by `{% namespace %}` tags. ([#18577](https://github.com/craftcms/cms/issues/18577))
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-gj2p-p9m4-c8gw)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-qrgm-p9w5-rrfw)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. ([GHSA-gj2p-p9m4-c8gw](https://github.com/craftcms/cms/security/advisories/GHSA-gj2p-p9m4-c8gw))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-qrgm-p9w5-rrfw](https://github.com/craftcms/cms/security/advisories/GHSA-qrgm-p9w5-rrfw))
 
 ## 4.17.11 - 2026-03-17
 
