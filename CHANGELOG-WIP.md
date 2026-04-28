@@ -65,6 +65,7 @@
 - Added `craft\helpers\Markdown`. ([#18671](https://github.com/craftcms/cms/issues/18671))
 - Added `craft\models\Section::$minAuthors`. ([#18662](https://github.com/craftcms/cms/pull/18662))
 - Added `craft\queue\jobs\ReplaceRelations`. ([#18728](https://github.com/craftcms/cms/pull/18728))
+- Added `craft\services\Elements::REF_TAG_PATTERN`.
 - Added `craft\services\Entries::reassignEntries()`.
 - Added `craft\validators\TimeValidator::$outOfRange`. ([#18575](https://github.com/craftcms/cms/pull/18575))
 - Added `Craft.CpScreenSlideout::reload()`. ([#18625](https://github.com/craftcms/cms/pull/18625))
