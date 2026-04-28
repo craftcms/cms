@@ -1,7 +1,7 @@
 {% extends '_includes/forms/fld/field-settings.twig' %}
 {% import '_includes/forms' as forms %}
 
-{% set originalField = craft.fields.getFieldByUid(field.getField().uid) %}
+{% set originalField = Fields.getFieldByUid(field.getField().uid) %}
 
 {% block fieldSettings %}
   {% if originalField %}
@@ -38,7 +38,7 @@
     maxlength: 64,
     value: field.handle,
     placeholder: defaultHandle,
-    errors: field.getErrors('handle'),
+    errors: field.errors.get('handle'),
     required: true,
     data: {
       'error-key': 'handle'

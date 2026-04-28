@@ -8,7 +8,6 @@ use CommerceGuys\Addressing\AddressFormat\AddressField;
 use CommerceGuys\Addressing\AddressInterface;
 use CommerceGuys\Addressing\Country\Country;
 use CommerceGuys\Addressing\Subdivision\SubdivisionUpdater;
-use craft\base\NestedElementTrait;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Conditions\AddressCondition;
 use CraftCms\Cms\Address\Models\Address as AddressModel;
@@ -16,18 +15,19 @@ use CraftCms\Cms\Address\Validation\AddressRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Concerns\NestedElement;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Shared\Concerns\HasNames;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use Override;
 use RuntimeException;
-use yii\helpers\Html;
 
 use function CraftCms\Cms\t;
 
@@ -38,7 +38,7 @@ use function CraftCms\Cms\t;
 class Address extends Element implements AddressInterface, NestedElementInterface
 {
     use HasNames;
-    use NestedElementTrait;
+    use NestedElement;
 
     public const string GQL_TYPE_NAME = 'Address';
 

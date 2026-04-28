@@ -3,7 +3,7 @@
 
 {% set selectedSubnavItem = 'tokens' %}
 
-{% set tokens = craft.app.gql.tokens %}
+{% set tokens = Gql.getTokens() %}
 
 {% do registerLegacyAsset('CraftCms\\Cms\\View\\LegacyAssets\\AdminTableAsset') -%}
 

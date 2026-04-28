@@ -6,6 +6,7 @@ namespace CraftCms\Cms\User\Elements;
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\OAuth\OAuth;
@@ -1806,7 +1807,7 @@ JS, [
                 return $locale ? I18N::getLocaleById($locale)->getDisplayName(app()->getLocale()) : '';
 
             case 'is2faEnabled':
-                $enabled = app(\CraftCms\Cms\Auth\Auth::class)->hasActiveMethod($this);
+                $enabled = app(AuthMethods::class)->hasActiveMethod($this);
                 if ($this->viewMode === 'cards') {
                     return app(StatusHtml::class)->statusLabelHtml([
                         'color' => $enabled ? Color::Teal : Color::Gray,

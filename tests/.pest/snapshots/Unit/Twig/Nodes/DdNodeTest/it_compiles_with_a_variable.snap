@@ -1,2 +1,2 @@
 // line 1
-Craft::dd(($context["entry"] ?? null));
+dd(($context["entry"] ?? null));

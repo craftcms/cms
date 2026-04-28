@@ -19,7 +19,7 @@
     multiple: true,
     id: id ?? false,
     name: (name ?? false) ? "#{name}[]" : false,
-    autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+    autofocus: (autofocus ?? false) and not Request.isMobileBrowser(true),
     disabled: disabled ?? false,
     size: size ?? false,
     aria: {

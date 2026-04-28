@@ -97,8 +97,7 @@ readonly class ElementCanonicalChanges
             throw new InvalidArgumentException('Element was already canonical');
         }
 
-        /** @phpstan-ignore-next-line */
-        if ($element->hasMethod('isEntryTypeCompatible') && ! $element->isEntryTypeCompatible()) {
+        if (method_exists($element, 'isEntryTypeCompatible') && ! $element->isEntryTypeCompatible()) {
             throw new InvalidArgumentException('Entry Type is no longer allowed in this section.');
         }
 

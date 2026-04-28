@@ -176,24 +176,6 @@ class QueueController extends Controller
     }
 
     /**
-     * Returns info about all the jobs in the queue.
-     *
-     * @return Response
-     */
-    public function actionGetJobInfo(): Response
-    {
-        $this->requireAcceptsJson();
-        $this->requirePermission('accessCp');
-
-        $limit = $this->request->getParam('limit');
-
-        return $this->asJson([
-            'total' => $this->queue->getTotalJobs(),
-            'jobs' => $this->queue->getJobInfo($limit),
-        ]);
-    }
-
-    /**
      * Returns the details for a particular job. This includes the `job` column containing a lot of raw data.
      *
      * @return Response

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
+use Rector\CodingStyle\Rector\ArrowFunction\ArrowFunctionDelegatingCallToFirstClassCallableRector;
 use Rector\Config\RectorConfig;
 use Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector;
 use RectorLaravel\Rector\ArrayDimFetch\EnvVariableToEnvHelperRector;
@@ -35,6 +36,9 @@ return RectorConfig::configure()
         ],
         EnvVariableToEnvHelperRector::class => [
             __DIR__.'/src/Utility/Utilities/PhpInfo.php',
+        ],
+        ArrowFunctionDelegatingCallToFirstClassCallableRector::class => [
+            __DIR__.'/src/Http/Mixins/SessionMixin.php',
         ],
         AppToResolveRector::class,
     ])

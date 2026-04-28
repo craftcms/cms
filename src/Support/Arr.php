@@ -110,7 +110,7 @@ class Arr extends \Illuminate\Support\Arr
                 }
             }
 
-            if ($object instanceof \yii\base\Arrayable || $object instanceof ArrayableInterface) {
+            if ($object instanceof ArrayableInterface) {
                 $result = $object->toArray([], [], $recursive);
             } elseif ($object instanceof Arrayable || method_exists($object, 'toArray')) {
                 $result = $object->toArray();

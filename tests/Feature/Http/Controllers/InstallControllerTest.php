@@ -6,6 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Http\Controllers\InstallController;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\Tests\FakeMigrator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -215,6 +216,8 @@ test('install command invokes the Laravel optional migration installer', functio
         ->shouldReceive('install')
         ->once()
         ->with($migrator);
+
+    app(ProjectConfig::class)->writeYamlAutomatically = false;
 
     $this->artisan('craft:install', [
         '--email' => 'support@pixelandtonic.com',

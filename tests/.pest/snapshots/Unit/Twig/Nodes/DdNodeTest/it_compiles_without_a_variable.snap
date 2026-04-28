@@ -1,2 +1,2 @@
 // line 1
-Craft::dd(CraftCms\Cms\Support\Template::contextWithoutTemplate($context));
+dd(CraftCms\Cms\Support\Template::contextWithoutTemplate($context));

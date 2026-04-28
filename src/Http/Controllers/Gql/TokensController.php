@@ -131,7 +131,7 @@ readonly class TokensController extends GqlController
             return $this->asModelFailure($token, $message, 'token');
         }
 
-        Flash::fail($message);
+        Flash::error($message);
 
         return response($this->renderEditToken(
             $token,

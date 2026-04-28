@@ -462,7 +462,7 @@ class TestSetup
             password: 'craftcms2018!!',
             email: 'support@craftcms.com',
             site: $site,
-        );
+        )->silent();
 
         $migration->up();
         app(LaravelMigrations::class)->ensureSessionsTable();

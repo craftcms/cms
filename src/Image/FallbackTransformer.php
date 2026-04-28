@@ -28,7 +28,7 @@ readonly class FallbackTransformer implements ImageTransformerInterface
 
         return Url::actionUrl('assets/generate-fallback-transform', [
             'transform' => Crypt::encrypt(sprintf('%s,%s', $asset->id, $transformString)),
-        ] + AssetsHelper::revParams($asset), showScriptName: false);
+        ] + AssetsHelper::revParams($asset));
     }
 
     public function invalidateAssetTransforms(Asset $asset): void

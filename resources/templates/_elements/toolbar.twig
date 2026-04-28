@@ -39,7 +39,7 @@
     {{ text({
         class: 'clearable',
         placeholder: "Search"|t('app'),
-        value: craft.app.request.getParam('search'),
+        value: Request.input('search'),
         inputAttributes: {
             aria: {
                 label: 'Search'|t('app'),

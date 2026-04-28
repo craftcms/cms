@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Nodes;
 
-use craft\debug\DumpPanel;
 use CraftCms\Cms\Support\Template;
 use Override;
 use Twig\Attribute\YieldReady;
@@ -19,7 +18,7 @@ class DumpNode extends Node
     {
         $compiler
             ->addDebugInfo($this)
-            ->write(sprintf('%s::dump(', DumpPanel::class));
+            ->write('dump(');
 
         if ($this->hasNode('var')) {
             $compiler->subcompile($this->getNode('var'));

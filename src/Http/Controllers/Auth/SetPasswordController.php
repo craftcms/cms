@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
-use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Events\SettingPassword;
 use CraftCms\Cms\Cms;
@@ -25,7 +25,7 @@ use function CraftCms\Cms\t;
 
 readonly class SetPasswordController extends AuthenticationController
 {
-    public function show(Request $request, Auth $auth): Response|View
+    public function show(Request $request, AuthMethods $auth): Response|View
     {
         if (! is_array($info = $this->processTokenRequest($request))) {
             return $info;

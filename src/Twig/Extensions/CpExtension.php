@@ -18,7 +18,6 @@ use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\View\DeltaRegistry;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Foundation\ViteException;
 use Illuminate\Support\Collection;
@@ -34,13 +33,13 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
     public function getGlobals(): array
     {
         return [
+            'Edition' => Edition::get(),
             'CraftEdition' => Edition::get()->value,
             'CraftSolo' => Edition::Solo->value,
             'CraftTeam' => Edition::Team->value,
             'CraftPro' => Edition::Pro->value,
             'CraftEnterprise' => Edition::Enterprise->value,
             'requestedSite' => app(RequestedSite::class)->get(),
-            'deltaRegistry' => app(DeltaRegistry::class),
         ];
     }
 

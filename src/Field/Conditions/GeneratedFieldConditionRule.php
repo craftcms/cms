@@ -10,8 +10,9 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Support\Query;
+use Override;
 use RuntimeException;
-use yii\db\Schema;
 
 use function CraftCms\Cms\t;
 
@@ -28,7 +29,7 @@ class GeneratedFieldConditionRule extends BaseTextConditionRule implements Eleme
 
     private array|false $field;
 
-    #[\Override]
+    #[Override]
     public function getConfig(): array
     {
         return [
@@ -82,7 +83,7 @@ class GeneratedFieldConditionRule extends BaseTextConditionRule implements Eleme
             return;
         }
 
-        $query->whereParam(new JsonExtract('elements_sites.content', [$field['uid']]), $value, caseInsensitive: true, columnType: Schema::TYPE_JSON);
+        $query->whereParam(new JsonExtract('elements_sites.content', [$field['uid']]), $value, caseInsensitive: true, columnType: Query::TYPE_JSON);
     }
 
     public function matchElement(ElementInterface $element): bool
@@ -96,7 +97,7 @@ class GeneratedFieldConditionRule extends BaseTextConditionRule implements Eleme
         return $this->matchValue($value);
     }
 
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [

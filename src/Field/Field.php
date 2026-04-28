@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use craft\base\Serializable;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
@@ -33,6 +32,7 @@ use CraftCms\Cms\Field\Events\FieldEvent;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Types\QueryArgument;
+use CraftCms\Cms\Shared\Contracts\Serializable;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\HtmlStack;

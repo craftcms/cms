@@ -7,7 +7,7 @@
 {% set name = name ?? null -%}
 {% set value = value ?? null -%}
 {% set small = small ?? false -%}
-{% set autofocus = (autofocus ?? false) and not craft.app.request.isMobileBrowser(true) -%}
+{% set autofocus = (autofocus ?? false) and not Request.isMobileBrowser(true) -%}
 {% set disabled = disabled ?? false -%}
 {% set labelledBy = labelledBy ?? null %}
 

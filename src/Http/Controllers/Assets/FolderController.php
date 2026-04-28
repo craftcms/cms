@@ -12,9 +12,9 @@ use CraftCms\Cms\Asset\Exceptions\VolumeException;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Str;
+use Exception;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use yii\base\UserException;
 
 use function CraftCms\Cms\t;
 
@@ -57,7 +57,7 @@ readonly class FolderController
                 'folderUid' => $folderModel->uid,
                 'folderId' => $folderModel->id,
             ]);
-        } catch (UserException $exception) {
+        } catch (Exception $exception) {
             return $this->asFailure($exception->getMessage());
         }
     }

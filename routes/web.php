@@ -50,3 +50,7 @@ if (! is_null(Cms::config()->setPasswordRequestPath)) {
         return redirect($uri);
     });
 }
+
+Route::fallback(function () {
+    abort(404);
+});

@@ -20,7 +20,6 @@ use CraftCms\Cms\Support\Query;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Override;
-use yii\db\Schema;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -57,7 +56,7 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Inli
     #[Override]
     public static function dbType(): string
     {
-        return Schema::TYPE_BOOLEAN;
+        return Query::TYPE_BOOLEAN;
     }
 
     #[Override]

@@ -66,6 +66,7 @@ use CraftCms\Cms\Http\Controllers\PluginStore\InstallController as PluginStoreIn
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\PreviewController;
+use CraftCms\Cms\Http\Controllers\QueueController;
 use CraftCms\Cms\Http\Controllers\RelationalFieldsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
@@ -384,6 +385,10 @@ Route::prefix(implode('/', [
 
         // Preview
         Route::any('preview/create-token', [PreviewController::class, 'createToken']);
+
+        // Queue
+        Route::any('queue/run', [QueueController::class, 'run']);
+        Route::any('queue/get-job-info', [QueueController::class, 'jobInfo']);
 
         // Relational fields
         Route::any('relational-fields/structured-input-html', [RelationalFieldsController::class, 'structuredInputHtml']);

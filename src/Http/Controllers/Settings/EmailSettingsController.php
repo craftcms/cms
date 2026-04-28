@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Email\Actions\SendTestMailAction;

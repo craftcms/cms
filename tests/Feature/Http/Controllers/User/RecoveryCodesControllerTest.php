@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController;
 use CraftCms\Cms\User\Elements\User;
@@ -87,7 +87,7 @@ describe('download', function () {
 
     it('downloads recovery codes as text file', function () {
         // First generate codes
-        $auth = app(Auth::class);
+        $auth = app(AuthMethods::class);
         $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
         $recoveryCodes->generateRecoveryCodes();
 
@@ -99,7 +99,7 @@ describe('download', function () {
     });
 
     it('file contains correct headers', function () {
-        $auth = app(Auth::class);
+        $auth = app(AuthMethods::class);
         $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
         $recoveryCodes->generateRecoveryCodes();
 
@@ -112,7 +112,7 @@ describe('download', function () {
     });
 
     it('file contains system name', function () {
-        $auth = app(Auth::class);
+        $auth = app(AuthMethods::class);
         $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
         $recoveryCodes->generateRecoveryCodes();
 
@@ -124,7 +124,7 @@ describe('download', function () {
     });
 
     it('file contains user account info', function () {
-        $auth = app(Auth::class);
+        $auth = app(AuthMethods::class);
         $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
         $recoveryCodes->generateRecoveryCodes();
 
@@ -138,7 +138,7 @@ describe('download', function () {
     });
 
     it('file contains all recovery codes', function () {
-        $auth = app(Auth::class);
+        $auth = app(AuthMethods::class);
         $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
         $codes = $recoveryCodes->generateRecoveryCodes();
 
@@ -154,7 +154,7 @@ describe('download', function () {
     });
 
     it('file contains generation date', function () {
-        $auth = app(Auth::class);
+        $auth = app(AuthMethods::class);
         $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
         $recoveryCodes->generateRecoveryCodes();
 
@@ -166,7 +166,7 @@ describe('download', function () {
     });
 
     it('file contains website information', function () {
-        $auth = app(Auth::class);
+        $auth = app(AuthMethods::class);
         $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
         $recoveryCodes->generateRecoveryCodes();
 
@@ -178,7 +178,7 @@ describe('download', function () {
     });
 
     it('file contains usage instructions', function () {
-        $auth = app(Auth::class);
+        $auth = app(AuthMethods::class);
         $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
         $recoveryCodes->generateRecoveryCodes();
 

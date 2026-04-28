@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Operations;
 
-use craft\behaviors\CustomFieldBehavior;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
@@ -87,20 +87,19 @@ readonly class ElementDeletions
                     }
 
                     $query->each(function (ElementInterface $element) use ($prevailingElement, $mergedElement) {
-                        /** @var CustomFieldBehavior $behavior */
-                        $behavior = $element->getBehavior('customFields');
                         foreach ($element->getFieldLayout()?->getCustomFields() ?? [] as $field) {
+                            $fieldValue = $element->getCustomFieldRawValue($field->handle);
                             if (
                                 $field instanceof BaseRelationField &&
-                                isset($behavior->{$field->handle}) &&
-                                is_array($behavior->{$field->handle}) &&
-                                in_array($mergedElement->id, $behavior->{$field->handle})
+                                is_array($fieldValue) &&
+                                in_array($mergedElement->id, $fieldValue)
                             ) {
-                                if (in_array($prevailingElement->id, $behavior->{$field->handle})) {
-                                    $value = array_values(array_filter($behavior->{$field->handle}, fn ($value) => $value !== $mergedElement->id));
+                                if (in_array($prevailingElement->id, $fieldValue)) {
+                                    $value = array_values(array_filter($fieldValue, fn ($value) => $value !== $mergedElement->id));
                                 } else {
-                                    $value = array_map(fn ($value) => $value === $mergedElement->id ? $prevailingElement->id : $value, $behavior->{$field->handle});
+                                    $value = array_map(fn ($value) => $value === $mergedElement->id ? $prevailingElement->id : $value, $fieldValue);
                                 }
+
                                 $element->setFieldValue($field->handle, $value);
                             }
                         }
@@ -378,6 +377,7 @@ readonly class ElementDeletions
         DB::beginTransaction();
 
         try {
+            /** @var Element $element */
             foreach ($elements as $element) {
                 $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
                 if (empty($supportedSites)) {
@@ -404,7 +404,7 @@ readonly class ElementDeletions
 
                 $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
                 if (! $element->validate()) {
-                    Log::warning("Unable to restore element $element->id: doesn't pass essential validation: ".print_r($element->errors, true), [__METHOD__]);
+                    Log::warning("Unable to restore element $element->id: doesn't pass essential validation: ".print_r($element->errors()->all(), true), [__METHOD__]);
                     DB::rollBack();
 
                     return false;
@@ -418,7 +418,7 @@ readonly class ElementDeletions
                     $siteElement->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
 
                     if (! $siteElement->validate()) {
-                        Log::warning("Unable to restore element $element->id: doesn't pass essential validation for site $element->siteId: ".print_r($element->errors, true), [__METHOD__]);
+                        Log::warning("Unable to restore element $element->id: doesn't pass essential validation for site $element->siteId: ".print_r($element->errors()->all(), true), [__METHOD__]);
                         throw new Exception("Element $element->id doesn't pass essential validation for site $element->siteId.");
                     }
                 }

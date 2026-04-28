@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use craft\base\FieldInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
@@ -12,6 +11,7 @@ use CraftCms\Cms\Element\Models\ElementSiteSettings;
 use CraftCms\Cms\Element\Operations\ElementUris;
 use CraftCms\Cms\Element\Operations\ElementWrites;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;

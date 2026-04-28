@@ -131,7 +131,7 @@ readonly class SchemasController extends GqlController
             return $this->asModelFailure($schema, $message, 'schema');
         }
 
-        Flash::fail($message);
+        Flash::error($message);
 
         return response($this->renderEditSchema($schema));
     }
@@ -148,7 +148,7 @@ readonly class SchemasController extends GqlController
             ]);
         }
 
-        Flash::fail($message);
+        Flash::error($message);
 
         return $this->renderEditPublicSchema($schema, $token);
     }
@@ -165,7 +165,7 @@ readonly class SchemasController extends GqlController
             ]);
         }
 
-        Flash::fail($message);
+        Flash::error($message);
 
         return $this->renderEditPublicSchema($schema, $token);
     }

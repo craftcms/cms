@@ -9,7 +9,6 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Route\DynamicRoute;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Path;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\TemplateResolver;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -43,11 +42,7 @@ readonly class HandleTemplateRequest
 
         $path = $request->isSiteRequest()
             ? $this->sites->getRequestPath($request)
-            : $request->decodedPath();
-
-        if ($request->isCpRequest()) {
-            $path = ltrim(Str::after($path, Cms::config()->cpTrigger), '/');
-        }
+            : $request->craftPath();
 
         if (! $this->isPublicTemplatePath($request, $path)) {
             return $response;

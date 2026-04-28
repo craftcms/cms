@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
-use Craft;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
@@ -16,6 +15,7 @@ use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Path;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\View\TemplateMode;
@@ -318,7 +318,7 @@ class SelectOptions
      */
     public static function getVolumeOptions(): array
     {
-        return Collection::make(app(Craft::class)->getVolumes()->getAllVolumes())
+        return Volumes::getAllVolumes()
             ->map(fn (Volume $volume) => [
                 'label' => $volume->name,
                 'value' => $volume->id,

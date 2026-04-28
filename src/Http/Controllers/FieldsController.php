@@ -211,7 +211,7 @@ class FieldsController
         ]);
 
         if (! $this->fieldsService->saveField($field)) {
-            Flash::fail(t('Couldn’t save field.'));
+            Flash::error(t('Couldn’t save field.'));
 
             return $this->edit($request, $field);
         }

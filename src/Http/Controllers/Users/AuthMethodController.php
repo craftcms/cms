@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -25,7 +25,7 @@ readonly class AuthMethodController
     use RespondsWithFlash;
 
     public function __construct(
-        private Auth $auth,
+        private AuthMethods $auth,
     ) {}
 
     public function setupHtml(Request $request, HtmlStack $HtmlStack): JsonResponse

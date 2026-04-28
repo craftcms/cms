@@ -2,7 +2,7 @@
 
 {% macro numberField(config, decimals) %}
     {% from '_includes/forms' import textField %}
-    {{ hiddenInput("#{config.name}[locale]", craft.i18n.formattingLocale.id) }}
+    {{ hiddenInput("#{config.name}[locale]", I18N.formattingLocale.id) }}
     {% set config = config|merge({
         name: "#{config.name}[value]",
         value: config.value is not same as(null) ? config.value|number(decimals) : '',
@@ -24,7 +24,7 @@
 {{ forms.field({
     label: 'Currency'|t('app'),
     required: true,
-    errors: field.getErrors('currency'),
+    errors: field.errors.get('currency'),
     data: {'error-key': 'currency'},
     disabled: readOnly,
 }, currencyInput) }}
@@ -35,7 +35,7 @@
     name: 'defaultValue',
     value: field.defaultValue,
     size: 10,
-    errors: field.getErrors('defaultValue'),
+    errors: field.errors.get('defaultValue'),
     data: {'error-key': 'defaultValue'},
     disabled: readOnly,
 }, subUnits) }}
@@ -46,7 +46,7 @@
     name: 'min',
     value: field.min,
     size: 10,
-    errors: field.getErrors('min'),
+    errors: field.errors.get('min'),
     data: {'error-key': 'min'},
     disabled: readOnly,
 }, subUnits) }}
@@ -57,7 +57,7 @@
     name: 'max',
     value: field.max,
     size: 10,
-    errors: field.getErrors('max'),
+    errors: field.errors.get('max'),
     data: {'error-key': 'max'},
     disabled: readOnly,
 }, subUnits) }}
@@ -75,7 +75,7 @@
     name: 'size',
     value: field.size,
     size: 2,
-    errors: field.getErrors('size'),
+    errors: field.errors.get('size'),
     data: {'error-key': 'size'},
     disabled: readOnly,
 }) }}

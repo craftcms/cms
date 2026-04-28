@@ -4,21 +4,22 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Conditions;
 
-use craft\base\conditions\BaseConditionRule;
+use CraftCms\Cms\Condition\BaseConditionRule;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
+use Override;
 use RuntimeException;
 
 class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 
-    #[\Override]
+    #[Override]
     public string $operator = self::OPERATOR_NOT_EMPTY;
 
-    #[\Override]
+    #[Override]
     protected function operators(): array
     {
         return [

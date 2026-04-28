@@ -1,4 +1,4 @@
-{% set volume = craft.app.volumes.getUserPhotoVolume() %}
+{% set volume = Volumes.getUserPhotoVolume() %}
 {% if volume %}
     {% set id = id ?? "userphoto-#{random()}" %}
     <div id="{{ id }}" class="user-photo">

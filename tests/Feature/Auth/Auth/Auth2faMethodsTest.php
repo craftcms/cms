@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Events\RegisterAuthMethods;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Auth\Methods\TOTP;
@@ -12,6 +11,7 @@ use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\Models\UserGroup;
 use CraftCms\Cms\User\Users;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Session;
 

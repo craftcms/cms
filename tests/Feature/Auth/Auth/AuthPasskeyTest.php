@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Events\Authenticating;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
@@ -31,12 +31,12 @@ test('authenticateWithPasskey with valid response', function () {
         ->with($user, $requestOptions, $response)
         ->andReturn(true);
 
-    app()->forgetInstance(Auth::class);
+    app()->forgetInstance(AuthMethods::class);
 
-    $result = app(Auth::class)->authenticateWithPasskey($user, $requestOptions, $response);
+    $result = app(AuthMethods::class)->authenticateWithPasskey($user, $requestOptions, $response);
 
     expect($result)->toBeTrue();
-    expect(app(Auth::class)->authError)->toBeNull();
+    expect(app(AuthMethods::class)->authError)->toBeNull();
 });
 
 test('authenticateWithPasskey with mismatched credential', function () {
@@ -45,10 +45,10 @@ test('authenticateWithPasskey with mismatched credential', function () {
     $requestOptions = Json::encode(['challenge' => 'test-challenge']);
     $response = Json::encode(['id' => 'different-credential-id', 'response' => 'response']);
 
-    $result = app(Auth::class)->authenticateWithPasskey($user, $requestOptions, $response);
+    $result = app(AuthMethods::class)->authenticateWithPasskey($user, $requestOptions, $response);
 
     expect($result)->toBeFalse();
-    expect(app(Auth::class)->authError)->toBe(AuthError::InvalidCredentials);
+    expect(app(AuthMethods::class)->authError)->toBe(AuthError::InvalidCredentials);
 });
 
 test('authenticateWithPasskey with invalid response', function () {
@@ -61,9 +61,9 @@ test('authenticateWithPasskey with invalid response', function () {
         ->shouldReceive('verifyPasskey')
         ->andReturn(false);
 
-    app()->forgetInstance(Auth::class);
+    app()->forgetInstance(AuthMethods::class);
 
-    $result = app(Auth::class)->authenticateWithPasskey($user, $requestOptions, $response);
+    $result = app(AuthMethods::class)->authenticateWithPasskey($user, $requestOptions, $response);
 
     expect($result)->toBeFalse();
 });
@@ -74,10 +74,10 @@ test('authenticateWithPasskey with user without passkeys', function () {
     $requestOptions = Json::encode(['challenge' => 'test-challenge']);
     $response = Json::encode(['id' => 'nonexistent-credential', 'response' => 'response']);
 
-    $result = app(Auth::class)->authenticateWithPasskey($user, $requestOptions, $response);
+    $result = app(AuthMethods::class)->authenticateWithPasskey($user, $requestOptions, $response);
 
     expect($result)->toBeFalse();
-    expect(app(Auth::class)->authError)->toBe(AuthError::InvalidCredentials);
+    expect(app(AuthMethods::class)->authError)->toBe(AuthError::InvalidCredentials);
 });
 
 test('authenticateWithPasskey event blocking', function () {
@@ -90,10 +90,10 @@ test('authenticateWithPasskey event blocking', function () {
     $requestOptions = Json::encode(['challenge' => 'test-challenge']);
     $response = Json::encode(['id' => 'valid-credential-id', 'response' => 'valid-response']);
 
-    $result = app(Auth::class)->authenticateWithPasskey($user, $requestOptions, $response);
+    $result = app(AuthMethods::class)->authenticateWithPasskey($user, $requestOptions, $response);
 
     expect($result)->toBeFalse();
-    expect(app(Auth::class)->authError)->toBe(AuthError::InvalidCredentials);
+    expect(app(AuthMethods::class)->authError)->toBe(AuthError::InvalidCredentials);
 });
 
 test('authenticateWithPasskey event can skip verification', function () {
@@ -106,7 +106,7 @@ test('authenticateWithPasskey event can skip verification', function () {
     $requestOptions = Json::encode(['challenge' => 'test-challenge']);
     $response = Json::encode(['id' => 'any-credential', 'response' => 'response']);
 
-    $result = app(Auth::class)->authenticateWithPasskey($user, $requestOptions, $response);
+    $result = app(AuthMethods::class)->authenticateWithPasskey($user, $requestOptions, $response);
 
     expect($result)->toBeTrue();
 });

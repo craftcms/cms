@@ -48,11 +48,11 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema as SchemaFacade;
+use Illuminate\Support\HtmlString;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
-use Twig\Markup;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -2115,13 +2115,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      * If no partial template exists for an element, its string representation will be output instead.
      *
      * @param array $variables
-     * @return Markup
+     * @return HtmlString
      * @throws InvalidConfigException
      * @throws NotSupportedException
      * @see ElementHelper::renderElements()
      * @since 5.0.0
      */
-    public function render(array $variables = []): Markup
+    public function render(array $variables = []): HtmlString
     {
         return ElementHelper::renderElements($this->all(), $variables);
     }

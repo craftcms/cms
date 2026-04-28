@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Tests;
 
-use Craft;
-use craft\test\TestSetup;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Database\LaravelMigrations;
@@ -24,6 +22,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Tests\Support\DatabaseLock;
+use CraftCms\Cms\Tests\Support\RegistersPackageAliases;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
@@ -47,6 +46,7 @@ use ReflectionProperty;
 class TestCase extends Orchestra
 {
     use RefreshDatabase;
+    use RegistersPackageAliases;
     use WithWorkbench;
 
     #[Override]
@@ -111,16 +111,6 @@ class TestCase extends Orchestra
         Gate::clearResolvedInstances();
 
         app(ProjectConfig::class)->reset();
-
-        DB::rollBack(0);
-
-        if (Craft::$app) {
-            Craft::$app->getDb()->close();
-            Craft::$app->getDb2()->close();
-            DB::disconnect();
-
-            TestSetup::tearDownCraft();
-        }
 
         self::resetStaticCaches();
 

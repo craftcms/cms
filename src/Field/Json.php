@@ -13,11 +13,11 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\View\LegacyAssets\CodeMirrorAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use InvalidArgumentException;
 use Override;
-use yii\db\Schema;
 
 use function CraftCms\Cms\t;
 
@@ -47,7 +47,7 @@ class Json extends Field implements CrossSiteCopyableFieldInterface, MergeableFi
     #[Override]
     public static function dbType(): string
     {
-        return Schema::TYPE_JSON;
+        return Query::TYPE_JSON;
     }
 
     #[Override]

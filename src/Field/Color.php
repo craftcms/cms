@@ -14,12 +14,12 @@ use CraftCms\Cms\Field\Data\ColorData;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use Deprecated;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Override;
-use yii\db\Schema;
 
 use function CraftCms\Cms\t;
 
@@ -51,7 +51,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
     #[Override]
     public static function dbType(): string
     {
-        return sprintf('%s(7)', Schema::TYPE_CHAR);
+        return sprintf('%s(7)', Query::TYPE_CHAR);
     }
 
     /**

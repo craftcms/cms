@@ -217,8 +217,14 @@ class LegacyBehaviorCatalog
 
         $targetClass = null;
 
-        if ($definition['extends'] !== null && str_starts_with($definition['extends'], 'CraftCms\\Cms\\')) {
-            $targetClass = $definition['extends'];
+        if ($definition['extends'] !== null) {
+            $extends = $definition['extends'];
+            $extendsRoot = explode('\\', $extends, 2)[0];
+            $extends = $definition['uses'][$extendsRoot] ?? $extends;
+
+            if (str_starts_with($extends, 'CraftCms\\Cms\\')) {
+                $targetClass = $extends;
+            }
         }
 
         if ($targetClass === null) {
@@ -233,7 +239,7 @@ class LegacyBehaviorCatalog
     }
 
     /**
-     * @return array{namespace: string|null, shortName: string, extends: string|null}|null
+     * @return array{namespace: string|null, shortName: string, extends: string|null, uses: array<string, class-string>}|null
      */
     private static function parseClassDefinition(string $contents): ?array
     {
@@ -241,6 +247,7 @@ class LegacyBehaviorCatalog
         $namespace = null;
         $shortName = null;
         $extends = null;
+        $uses = [];
         $count = count($tokens);
 
         for ($i = 0; $i < $count; $i++) {
@@ -252,6 +259,16 @@ class LegacyBehaviorCatalog
 
             if ($token[0] === T_NAMESPACE) {
                 $namespace = self::collectQualifiedName($tokens, $i + 1);
+                continue;
+            }
+
+            if ($token[0] === T_USE) {
+                $use = self::collectUseAlias($tokens, $i + 1);
+
+                if ($use !== null) {
+                    $uses[$use['alias']] = $use['class'];
+                }
+
                 continue;
             }
 
@@ -295,10 +312,46 @@ class LegacyBehaviorCatalog
                 'namespace' => $namespace,
                 'shortName' => $shortName,
                 'extends' => $extends !== null ? ltrim($extends, '\\') : null,
+                'uses' => $uses,
             ];
         }
 
         return null;
+    }
+
+    /**
+     * @param  array<int, array{int, string, int}|string>  $tokens
+     * @return array{class: class-string, alias: string}|null
+     */
+    private static function collectUseAlias(array $tokens, int $offset): ?array
+    {
+        $class = self::collectQualifiedName($tokens, $offset);
+
+        if ($class === null) {
+            return null;
+        }
+
+        $alias = class_basename($class);
+
+        for ($i = $offset, $count = count($tokens); $i < $count; $i++) {
+            $token = $tokens[$i];
+
+            if (is_string($token) && $token === ';') {
+                break;
+            }
+
+            if (!is_array($token) || $token[0] !== T_AS) {
+                continue;
+            }
+
+            $alias = self::collectQualifiedName($tokens, $i + 1) ?? $alias;
+            break;
+        }
+
+        return [
+            'class' => ltrim($class, '\\'),
+            'alias' => $alias,
+        ];
     }
 
     /**

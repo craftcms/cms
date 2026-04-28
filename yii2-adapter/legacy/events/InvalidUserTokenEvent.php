@@ -15,6 +15,7 @@ use CraftCms\Cms\User\Elements\User;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.5
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Events\InvalidUserToken} instead.
  */
 class InvalidUserTokenEvent extends Event
 {

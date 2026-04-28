@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Iconic;

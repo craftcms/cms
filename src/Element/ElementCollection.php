@@ -5,16 +5,15 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use Closure;
-use Craft;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Enumerable;
+use Illuminate\Support\HtmlString;
 use Override;
 use RuntimeException;
-use Twig\Markup;
 
 /**
  * ElementCollection represents a collection of elements.
@@ -380,7 +379,7 @@ class ElementCollection extends Collection
      *
      * @see ElementHelper::renderElements()
      */
-    public function render(array $variables = []): Markup
+    public function render(array $variables = []): HtmlString
     {
         return ElementHelper::renderElements($this->items, $variables);
     }

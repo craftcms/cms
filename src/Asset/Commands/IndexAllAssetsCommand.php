@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Commands;
 
-use craft\helpers\App;
 use CraftCms\Cms\Asset\Commands\Concerns\IndexesAssets;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Console\CraftCommand;
@@ -34,7 +33,7 @@ class IndexAllAssetsCommand extends Command
     {
         parent::__construct();
 
-        if (! App::isEphemeral()) {
+        if (! app()->isEphemeral()) {
             $this->getDefinition()->addOption(new InputOption(
                 name: 'cacheRemoteImages',
                 mode: InputOption::VALUE_OPTIONAL,

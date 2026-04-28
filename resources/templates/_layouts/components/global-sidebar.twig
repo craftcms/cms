@@ -32,8 +32,8 @@
 
     {% if not isSubnav and subnav %}
       <craft-nav-list slot="subnav">
-        {% for subItem in subnav %}
-          {% set isSelected = selectedSubnavItem is defined and selectedSubnavItem == subItemId and subItem.url in craft.app.request.fullPath -%}
+        {% for subItemId, subItem in subnav %}
+          {% set isSelected = selectedSubnavItem is defined and selectedSubnavItem == subItemId and subItem.url in Request.path -%}
           {{ _self.action(subItem, true, isSelected) }}
         {% endfor %}
       </craft-nav-list>
@@ -52,13 +52,11 @@
         {{ _self.action(item, false) }}
       {% endfor %}
 
-      {% if queue is instance of("craft\\queue\\QueueInterface") %}
-        <cp-queue-indicator
-          displayed-job="{{ queue.getJobInfo(1)|first|json_encode|e('html_attr') }}"
-          has-reserved-jobs="{{ queue.getHasReservedJobs() }}"
-          has-waiting-jobs="{{ queue.getHasWaitingJobs }}"
-        ></cp-queue-indicator>
-      {% endif %}
+      <cp-queue-indicator
+        displayed-job="{{ JobProgress.getJobInfo(1)|first|json_encode|e('html_attr') }}"
+        has-reserved-jobs="{{ JobProgress.hasReservedJobs() }}"
+        has-waiting-jobs="{{ JobProgress.hasPendingJobs() }}"
+      ></cp-queue-indicator>
     </craft-nav-list>
 
     <div class="global-sidebar__footer">
@@ -66,7 +64,7 @@
         {% set toggleContent %}
           <span class="sidebar-action__prefix">
             <span class="nav-icon" aria-hidden="true" id="sidebar-toggle-icon">
-              {% if craft.i18n.locale.getOrientation() == 'rtl' %}
+              {% if I18N.getLocale().getOrientation() == 'rtl' %}
                 {{ iconSvg('angle-left') }}
               {% else %}
                 {{ iconSvg('angle-right') }}
@@ -89,7 +87,7 @@
         } %}
       </div>
 
-      {% if currentUser.admin and devMode %}
+      {% if Auth.user.admin and devMode %}
         {% set devModeText = 'Craft CMS is running in Dev Mode.'|t('app') %}
         <div id="devmode">
           {% tag 'span' with {

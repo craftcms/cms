@@ -40,6 +40,47 @@ class RequestMixin
         };
     }
 
+    public function clientOs(): Closure
+    {
+        /**
+         * Returns whether the client is running "Windows", "Mac", "Linux" or "Other", based on the
+         * browser's UserAgent string.
+         *
+         * ---
+         *
+         * ```php
+         * $clientOs = request()->clientOs();
+         * ```
+         * ```twig
+         * {% set clientOs = request.clientOs %}
+         * ```
+         *
+         * @return string The OS the client is running.
+         */
+        return function (): string {
+            /**
+             * @var Request $this
+             *
+             * @phpstan-ignore-next-line
+             */
+            $userAgent = $this->userAgent();
+
+            if (str_contains($userAgent, 'Linux')) {
+                return 'Linux';
+            }
+
+            if (str_contains($userAgent, 'Win')) {
+                return 'Windows';
+            }
+
+            if (str_contains($userAgent, 'Mac')) {
+                return 'Mac';
+            }
+
+            return 'Other';
+        };
+    }
+
     public function isCpRequest(): Closure
     {
         return function (): bool {
@@ -110,6 +151,42 @@ class RequestMixin
             $request = $this;
 
             return $request->actionSegments() !== [];
+        };
+    }
+
+    public function craftPath(): Closure
+    {
+        return function (): string {
+            /**
+             * @var Request $request
+             *
+             * @phpstan-ignore-next-line
+             */
+            $request = $this;
+            $generalConfig = Cms::config();
+            $path = (string) preg_replace('/\/\/+/', '/', trim($request->decodedPath(), '/'));
+
+            if ($request->isCpRequest()) {
+                $cpTrigger = trim((string) $generalConfig->cpTrigger, '/');
+
+                if ($cpTrigger !== '' && $path === $cpTrigger) {
+                    $path = '';
+                } elseif ($cpTrigger !== '' && str_starts_with($path.'/', $cpTrigger.'/')) {
+                    $path = ltrim(substr($path, strlen($cpTrigger)), '/');
+                }
+            }
+
+            $actionTrigger = trim($generalConfig->actionTrigger, '/');
+
+            if ($actionTrigger !== '' && $path === $actionTrigger) {
+                return '';
+            }
+
+            if ($actionTrigger !== '' && str_starts_with($path.'/', $actionTrigger.'/')) {
+                return ltrim(substr($path, strlen($actionTrigger)), '/');
+            }
+
+            return $path;
         };
     }
 

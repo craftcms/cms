@@ -15,6 +15,7 @@ use Throwable;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Events\BeforeResaveElement}, {@see \CraftCms\Cms\Element\Events\AfterResaveElement}, {@see \CraftCms\Cms\Element\Events\BeforePropagateElement}, or {@see \CraftCms\Cms\Element\Events\AfterPropagateElement} instead.
  */
 class MultiElementActionEvent extends ElementQueryEvent
 {

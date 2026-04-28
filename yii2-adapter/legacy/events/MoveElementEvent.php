@@ -17,6 +17,7 @@ use yii\base\InvalidConfigException;
  * @property-read ?ElementInterface $targetElement
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Events\BeforeMoveInStructure} or {@see \CraftCms\Cms\Element\Events\AfterMoveInStructure} instead.
  */
 class MoveElementEvent extends ElementEvent
 {

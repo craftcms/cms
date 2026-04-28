@@ -1,14 +1,14 @@
-{% set systemName = craft.app.getSystemName()|t('site') -%}
+{% set systemName = systemName|t('site') -%}
 {% set docTitle = docTitle is defined ? docTitle : title|striptags -%}
-{% set orientation = craft.i18n.locale.getOrientation() -%}
-{% set a11yDefaults = app.config.craft.general.accessibilityDefaults %}
+{% set orientation = I18N.getLocale().getOrientation() -%}
+{% set a11yDefaults = config('craft.general.accessibilityDefaults') %}
 {% set requestedSite = craft.cp.requestedSite %}
 
 {% set bodyClass = (bodyClass ?? [])|explodeClass|merge([
     orientation,
-    (currentUser.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false) ? 'use-shapes',
-    (currentUser.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false) ? 'underline-links',
-    "notifications--#{currentUser.getPreference('notificationPosition') ?? a11yDefaults['notificationPosition'] ?? 'end-start'}",
+    (Auth.user.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false) ? 'use-shapes',
+    (Auth.user.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false) ? 'underline-links',
+    "notifications--#{Auth.user.getPreference('notificationPosition') ?? a11yDefaults['notificationPosition'] ?? 'end-start'}",
     requestedSite ? "site--#{requestedSite.handle}",
     'cp-legacy-reset',
     'cp-legacy'
@@ -25,7 +25,7 @@
 {% hook "cp.layouts.base" -%}
 
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="{{ craft.app.language }}">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="{{ language }}">
 <head>
     {% block head %}
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -37,7 +37,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     {% set hasCustomIcon = false %}
-    {% for tag in app.config.craft.general.cpHeadTags %}
+    {% for tag in config('craft.general.cpHeadTags') %}
         {{ tag(tag[0], tag[1]) }}
         {% if tag[0] == 'link' and (tag[1].rel ?? null) == 'icon' %}
             {% set hasCustomIcon = true %}

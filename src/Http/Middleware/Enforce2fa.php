@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
-use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\LegacyAssets\AuthMethodSetupAsset;
@@ -17,7 +17,7 @@ readonly class Enforce2fa
 {
     public function __construct(
         private GeneralConfig $generalConfig,
-        private Auth $auth,
+        private AuthMethods $auth,
     ) {}
 
     public function handle(Request $request, Closure $next): mixed
