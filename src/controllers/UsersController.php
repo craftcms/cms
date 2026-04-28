@@ -34,6 +34,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\Json;
+use craft\helpers\Session as SessionHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
@@ -582,6 +583,16 @@ class UsersController extends Controller
         $this->requirePostRequest();
 
         $forElevatedSession = (bool)$this->request->getBodyParam('forElevatedSession');
+
+        // if we're showing the modal for session elevation, and we got this far,
+        // it means that the time left doesn't exceed minimum requirement,
+        // but there might still be some time left;
+        // to avoid strange behaviour, clear out whatever's left so that we start with the right amount of time
+        // see https://github.com/craftcms/cms/pull/18753
+        if ($forElevatedSession) {
+            SessionHelper::remove(Craft::$app->getUser()->elevatedSessionTimeoutParam);
+        }
+
 
         // If the current user is being impersonated, get the impersonator instead
         if ($forElevatedSession && ($impersonator = Craft::$app->getUser()->getImpersonator())) {

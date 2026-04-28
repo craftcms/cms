@@ -240,7 +240,13 @@ class Auth extends Component
         if ($user) {
             $authError = UserHelper::getAuthStatus($user);
         }
-        if ($authError == User::AUTH_INVALID_CREDENTIALS || !$authError) {
+        if (
+            $authError == User::AUTH_INVALID_CREDENTIALS ||
+            !$authError ||
+            // if preventUserEnumeration is true and the account is locked, still show the same message
+            (Craft::$app->getConfig()->getGeneral()->preventUserEnumeration &&
+            in_array($authError, [User::AUTH_ACCOUNT_LOCKED, User::AUTH_ACCOUNT_COOLDOWN]))
+        ) {
             if ($defaultMessage) {
                 return $defaultMessage;
             }
