@@ -19,30 +19,6 @@
   import {index as imageTransformsIndex} from '@actions/Settings/ImageTransformsController';
   import type {SortItem} from '@/types';
 
-  interface VolumeData {
-    id: number;
-    name: string;
-    handle: string;
-    titleTranslationMethod: {
-      name: string;
-      value: string;
-    };
-    titleTranslationKeyFormat: null;
-    altTranslationMethod: {
-      name: string;
-      value: string;
-    };
-    altTranslationKeyFormat: null;
-    sortOrder: number;
-    fieldLayoutId: number;
-    uid: string;
-    fsHandle: string;
-    transformFsHandle: null;
-    subpath: string;
-    transformSubpath: string;
-    idAttribute: string | null;
-  }
-
   const props = defineProps<{
     title: string;
     volumes: Array<VolumeData>;

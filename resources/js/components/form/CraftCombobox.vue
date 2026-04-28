@@ -2,10 +2,10 @@
   import {t} from '@craftcms/cp';
   import InputCombobox from '@/components/form/InputCombobox.vue';
   import type {SelectItem} from '@/types';
-  import {computed, useSlots} from 'vue';
+  import {computed} from 'vue';
 
   const emit = defineEmits<{
-    (e: 'update:modelValue', value: string): void;
+    (e: 'update:modelValue', value: string | number | boolean): void;
   }>();
   const props = defineProps<{
     modelValue: string | boolean | number;
@@ -27,12 +27,6 @@
       emit('update:modelValue', newValue);
     },
   });
-
-  const slots = useSlots();
-  const forwardedSlots = computed(() => {
-    const {default: _, ...rest} = slots;
-    return rest;
-  });
 </script>
 
 <template>
@@ -51,10 +45,7 @@
       :label="label"
       :require-option-match="requireOptionMatch"
     >
-      <!-- Forward all other slots -->
-      <template v-for="(_, name) in forwardedSlots" #[name]="slotData">
-        <slot :name="name" v-bind="slotData || {}"></slot>
-      </template>
+      <template #option><slot name="option"></slot></template>
     </InputCombobox>
 
     <div slot="after">

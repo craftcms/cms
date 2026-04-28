@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Resources\VolumeResource;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Html\ContentHtml;
@@ -19,6 +20,7 @@ use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -118,13 +120,14 @@ class VolumesController
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Assets'), 'settings/assets')
             ->addCrumb(t('Volumes'), 'settings/assets')
-            ->contentTemplate('settings/assets/volumes/_edit.twig', [
+            ->inertiaPage('SettingsVolumesEditPage', [
                 'volumeId' => $volumeId,
-                'volume' => $volume,
+                'volume' => VolumeResource::make($volume),
                 'isNewVolume' => $isNewVolume,
                 'typeName' => Asset::displayName(),
                 'lowerTypeName' => Asset::lowerDisplayName(),
                 'fsOptions' => $fsOptions,
+                'subpathOptions' => SelectOptions::getEnvOptions(),
                 'readOnly' => $this->readOnly,
             ])
             ->unless(
@@ -186,10 +189,10 @@ class VolumesController
         $volume->setFieldLayout($fieldLayout);
 
         if (! $volumes->saveVolume($volume)) {
-            return $this->asModelFailure($volume, t("Couldn\u{2019}t save volume."), 'volume');
+            throw ValidationException::withMessages($volume->errors()->getMessages());
         }
 
-        return $this->asModelSuccess($volume, t('Volume saved.'), 'volume');
+        return $this->asSuccess(t('Volume saved.'));
     }
 
     public function reorder(Request $request, Volumes $volumes): Response

@@ -53,6 +53,14 @@ export const baseFieldStyles = css`
   .input-group__after {
     margin-block-start: var(--c-spacing-sm);
   }
+
+  /* Required indicators */
+  :host([required]) slot[name='label']::after {
+    content: '*';
+    color: var(--c-color-danger-on-normal);
+    margin-inline-start: 0.25em;
+    font-weight: bold;
+  }
 `;
 
 export const inputStyles = css`
