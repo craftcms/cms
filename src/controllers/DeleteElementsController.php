@@ -161,6 +161,7 @@ class DeleteElementsController extends Controller
                 'details' => $blocker->getDetails(),
                 'actions' => $blocker->getActions(),
             ])
+            ->values()
             ->all();
 
         $elementPreview = Cp::elementPreviewHtml(
