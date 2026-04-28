@@ -4,6 +4,7 @@
 
 - Fixed a bug where dependencies required by `composer.json` were getting updated when installing/updating plugins. ([#18755](https://github.com/craftcms/cms/issues/18755))
 - Fixed a bug where element thumbnails weren’t always getting loaded when they became visible.
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-7h62-6v23-v8fm)
 
 ## 5.9.21 - 2026-04-23
 
