@@ -1,45 +1,38 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate.ts';
+  import {t} from '@craftcms/cp';
   import {useFlashMessages} from '@/composables/useFlashMessages';
-  import {useActionClient} from '@/composables/useFetch';
-  import {watch} from 'vue';
-  import {router} from '@inertiajs/vue3';
+  import {useForm} from '@inertiajs/vue3';
   import {deleteDeprecationError} from '@actions/Utilities/DeprecationErrorsController';
+  import DeleteButton from '@/components/AdminTable/DeleteButton.vue';
 
   const {flash} = useFlashMessages();
-  const {execute, state} = useActionClient(
-    'utilities/delete-deprecation-error'
-  );
 
   const props = defineProps<{
     logId: number;
   }>();
 
-  async function deleteLog() {
-    await execute({logId: props.logId});
-    flash('success', t('Log deleted.'));
-    router.visit(deleteDeprecationError());
-  }
-
-  watch(state, (newValue) => {
-    if (newValue === 'success') {
-      flash('success', t('Log deleted.'));
-    } else if (newValue === 'error') {
-      flash('error', t('Failed to delete log.'));
-    }
+  const form = useForm({
+    logId: props.logId,
   });
+
+  async function deleteLog() {
+    form.submit(deleteDeprecationError(), {
+      onSuccess: () => {
+        flash('success', t('Log deleted.'));
+      },
+      onError: () => {
+        flash('error', t('Failed to delete log.'));
+      },
+    });
+  }
 </script>
 
 <template>
-  <craft-button
-    size="small"
-    icon
-    appearance="plain"
+  <DeleteButton
+    :loading="form.processing"
     @click="deleteLog"
-    :loading="state === 'loading'"
-  >
-    <craft-icon name="remove" :label="t('Delete log')"></craft-icon>
-  </craft-button>
+    :label="t('Delete log')"
+  />
 </template>
 
 <style scoped lang="scss"></style>

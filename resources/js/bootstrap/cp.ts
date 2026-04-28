@@ -14,6 +14,7 @@ import Updates from '@/components/utilities/Updates/Updates.vue';
 import ProjectConfig from '@/components/utilities/ProjectConfig/ProjectConfig.vue';
 import AssetIndexes from '@/components/utilities/AssetIndexes/AssetIndexes.vue';
 import SystemMessages from '@/components/utilities/SystemMessages/SystemMessages.vue';
+import DeprecationErrorsToolbar from '@/components/utilities/DeprecationErrors/DeprecationErrorsToolbar.vue';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -85,6 +86,7 @@ const Cp = {
         app.component('QueueManager', QueueManager);
         app.component('QueueManagerToolbar', QueueManagerToolbar);
         app.component('DeprecationErrors', DeprecationErrors);
+        app.component('DeprecationErrorsToolbar', DeprecationErrorsToolbar);
         app.component('ClearCaches', ClearCaches);
         app.component('FindReplace', FindReplace);
         app.component('DatabaseBackup', DatabaseBackup);

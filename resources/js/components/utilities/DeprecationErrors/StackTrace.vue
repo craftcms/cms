@@ -1,27 +1,31 @@
 <script setup lang="ts">
-  import {useActionClient} from '@/composables/useFetch';
-  import {onMounted} from 'vue';
+  import {onMounted, ref} from 'vue';
   import Pane from '@/components/Pane.vue';
+  import {useHttp} from '@inertiajs/vue3';
+  import {getDeprecationErrorTracesModal} from '@actions/Utilities/DeprecationErrorsController';
 
   const props = defineProps<{
     logId: number;
   }>();
 
-  const {data, execute, isSuccess, isLoading} = useActionClient(
-    'utilities/get-deprecation-error-traces-modal'
-  );
+  const http = useHttp<{logId: any}, {html: string}>({logId: props.logId});
+  const data = ref<{html: string} | null>(null);
 
   onMounted(() => {
-    execute({logId: props.logId});
+    http.post(getDeprecationErrorTracesModal().url, {
+      onSuccess: ({html}) => {
+        data.value = {html};
+      },
+    });
   });
 </script>
 
 <template>
   <Pane class="max-w-4xl">
-    <template v-if="isLoading">
+    <template v-if="http.processing">
       <craft-spinner></craft-spinner>
     </template>
-    <template v-if="isSuccess">
+    <template v-if="http.wasSuccessful">
       <div v-html="data.html"></div>
     </template>
   </Pane>

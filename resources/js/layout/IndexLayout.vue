@@ -1,14 +1,10 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
-  import AppLayout from '@/layout/AppLayout.vue';
+  import AppLayout, {type AppLayoutProps} from '@/layout/AppLayout.vue';
   import {computed, ref, useSlots, watch} from 'vue';
   import {useMediaQuery} from '@vueuse/core';
 
-  defineProps<{
-    title?: string;
-    pageTitle?: string;
-    debug?: any;
-  }>();
+  defineProps<AppLayoutProps & {}>();
   const slots = useSlots();
 
   const isLarge = useMediaQuery('(min-width: 768px)');

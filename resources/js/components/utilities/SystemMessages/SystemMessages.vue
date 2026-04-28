@@ -60,7 +60,7 @@
   <div id="messages" class="p-4">
     <div v-for="message in localMessages" :key="message.key" class="mb-6">
       <h2 class="text-lg mb-2">{{ message.heading }}</h2>
-      <Pane appearance="outline" variant="code">
+      <Pane appearance="outline">
         <template #title>
           <div class="font-medium">
             {{ message.subject }}

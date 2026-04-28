@@ -1,16 +1,14 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import {
-    createColumnHelper,
-    getCoreRowModel,
-    useVueTable,
-  } from '@tanstack/vue-table';
+  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {h, ref} from 'vue';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
   import DeleteLogButton from '@/components/utilities/DeprecationErrors/DeleteLogButton.vue';
   import StackTraceButton from '@/components/utilities/DeprecationErrors/StackTraceButton.vue';
+  import {createCraftColumnHelper} from '@/components/AdminTable/createCraftColumnHelper';
+  import Empty from '@/components/Empty.vue';
 
-  interface LogData {
+  export interface LogData {
     id: number;
     origin: string;
     message: string;
@@ -21,12 +19,13 @@
     logs: Array<LogData>;
   }>();
 
-  const columnHelper = createColumnHelper<LogData>();
+  const columnHelper = createCraftColumnHelper<LogData>();
   const columns = ref([
     columnHelper.accessor('message', {
       header: t('Message'),
       cell: (info) => h('span', {innerHTML: info.getValue()}),
       meta: {
+        trackSize: '3fr',
         wrap: true,
       },
     }),
@@ -34,34 +33,22 @@
       header: t('Origin'),
       cell: (info) => h('code', {innerHTML: info.getValue()}),
       meta: {
+        trackSize: '2fr',
         wrap: true,
       },
     }),
-    columnHelper.accessor('lastOccurrence', {
-      header: t('Last Occurrence'),
-      cell: (info) =>
-        new Date(info.getValue()).toLocaleString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-          hour: 'numeric',
-          minute: '2-digit',
-          second: '2-digit',
-          timeZoneName: 'short',
-        }),
-    }),
+    columnHelper.date('lastOccurrence'),
     columnHelper.display({
       id: 'stackTrace',
       header: t('Stack Trace'),
+      meta: {
+        trackSize: '120px',
+      },
       cell: ({row}) => h(StackTraceButton, {logId: row.original.id}),
     }),
-    columnHelper.display({
-      id: 'actions',
-      cell: ({row}) =>
-        h('div', {class: 'flex justify-end'}, [
-          h(DeleteLogButton, {logId: row.original.id}),
-        ]),
-    }),
+    columnHelper.actions(({row}) => [
+      h(DeleteLogButton, {logId: row.original.id}),
+    ]),
   ]);
 
   const table = useVueTable({
@@ -77,20 +64,19 @@
 </script>
 
 <template>
-  <template v-if="!logs.length">
-    <p>{{ t('No deprecation warnings to report!') }}</p>
-  </template>
-  <template v-else>
-    <AdminTable
-      spacing="relaxed"
-      layout="auto"
-      :table="table"
-      :from="1"
-      :to="logs.length"
-      :total="logs.length"
-      :reorderable="false"
-    ></AdminTable>
-  </template>
+  <AdminTable
+    spacing="relaxed"
+    layout="auto"
+    :table="table"
+    :from="1"
+    :to="logs.length"
+    :total="logs.length"
+    :reorderable="false"
+  >
+    <template #empty-row>
+      <Empty :label="t('No deprecation warnings to report!')" />
+    </template>
+  </AdminTable>
 </template>
 
 <style scoped lang="scss"></style>

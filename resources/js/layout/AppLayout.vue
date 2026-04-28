@@ -21,19 +21,23 @@
     redirect?: boolean;
   }
 
+  export interface AppLayoutProps {
+    title?: string;
+    debug?: any;
+    fullWidth?: boolean;
+    form?: InertiaForm<any> | null;
+    formActions?: Array<ActionItemData>;
+    additionalSkipLinks?: Array<{label: string; url: string}>;
+  }
+
   const emit = defineEmits<{
     (e: 'save', options?: Partial<SaveOptions>): void;
   }>();
-  const props = withDefaults(
-    defineProps<{
-      title?: string;
-      debug?: any;
-      fullWidth?: boolean;
-      form?: InertiaForm<any> | null;
-      formActions?: Array<ActionItemData>;
-    }>(),
-    {fullWidth: false, crumbs: () => [], form: null}
-  );
+  const props = withDefaults(defineProps<AppLayoutProps>(), {
+    fullWidth: false,
+    crumbs: () => [],
+    form: null,
+  });
 
   const page = usePage<{
     title: string;

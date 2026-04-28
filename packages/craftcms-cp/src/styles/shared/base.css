@@ -150,8 +150,6 @@ Modify with `cp-table--auto` to apply table-layout: auto
 .cp-table {
   --_cell-spacing-inline: var(--c-spacing-md);
   --_cell-spacing-block: var(--c-spacing-md);
-  --table-column-count: auto-fill;
-  --table-template-columns: repeat(var(--table-column-count), 1fr);
   text-align: left;
   width: 100%;
   border-spacing: 0;
@@ -161,12 +159,6 @@ Modify with `cp-table--auto` to apply table-layout: auto
     table-layout: fixed;
   }
 
-  tr {
-    display: grid;
-    grid-template-columns: var(--table-template-columns);
-    grid-template-rows: minmax(var(--c-size-control-md), auto);
-  }
-
   thead,
   th {
     background-color: var(--c-color-neutral-fill-quiet);
@@ -174,10 +166,6 @@ Modify with `cp-table--auto` to apply table-layout: auto
 
   th,
   td {
-    display: flex;
-    align-items: start;
-    flex-direction: column;
-    justify-content: center;
     padding-block: var(--_cell-spacing-block);
     padding-inline: var(--_cell-spacing-inline);
     position: relative;
@@ -191,6 +179,15 @@ Modify with `cp-table--auto` to apply table-layout: auto
   th {
     border-block-end: 1px solid
       color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
+  }
+
+  /* Add a rule to the first cells */
+  tr:first-child {
+    td,
+    th {
+      border-block-start: 1px solid
+        color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
+    }
   }
 
   textarea,
@@ -213,6 +210,25 @@ Modify with `cp-table--auto` to apply table-layout: auto
   td:not(:first-child),
   th:not(:first-child) {
     border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
+  }
+}
+
+.cp-table--grid {
+  --table-column-count: auto-fill;
+  --table-template-columns: repeat(var(--table-column-count), 1fr);
+
+  tr {
+    display: grid;
+    grid-template-columns: var(--table-template-columns);
+    grid-template-rows: minmax(var(--c-size-control-md), auto);
+  }
+
+  th,
+  td {
+    display: flex;
+    align-items: start;
+    flex-direction: column;
+    justify-content: center;
   }
 }
 

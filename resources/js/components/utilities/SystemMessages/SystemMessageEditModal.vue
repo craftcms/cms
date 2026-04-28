@@ -7,6 +7,9 @@
   import {useActionClient} from '@/composables/useFetch';
   import {useAnnouncer} from '@/composables/useAnnouncer';
   import {store} from '@actions/Utilities/SystemMessagesController';
+  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import CraftTextarea from '@craftcms/cp/vue/CraftTextarea.vue';
+  import CraftSelect from '@craftcms/cp/vue/CraftSelect.vue';
 
   interface SystemMessageData {
     key: string;
@@ -127,7 +130,6 @@
     :loading="form.processing"
     @close="emit('close')"
     @submit="handleSubmit"
-    width="4xl"
   >
     <template #header-actions>
       <div class="flex items-center gap-2">
@@ -150,26 +152,26 @@
         </craft-select>
       </div>
     </template>
-    <div class="grid gap-3">
-      <craft-input
+    <div class="grid gap-3 w-4xl">
+      <CraftInput
         :label="t('Subject')"
         :help-text="t('Evaluated as a twig template, then parsed as markdown.')"
         v-model="form.subject"
+        class="w-full"
         maxlength="1000"
         required
         :disabled="isLoadingMessage"
-      >
-      </craft-input>
-      <craft-textarea
+      />
+      <CraftTextarea
         :label="t('Body')"
         :help-text="t('Evaluated as a twig template, then parsed as markdown.')"
         v-model="form.body"
+        class="w-full"
         monospace
         required
         :disabled="isLoadingMessage"
         max-rows="25"
-      >
-      </craft-textarea>
+      />
     </div>
   </ModalForm>
 </template>
