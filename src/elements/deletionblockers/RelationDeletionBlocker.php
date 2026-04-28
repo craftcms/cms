@@ -97,7 +97,7 @@ class RelationDeletionBlocker extends BaseDeletionBlocker
 
         return [
             [
-                'icon' => 'user-plus',
+                'icon' => 'swap',
                 'label' => Craft::t('app', 'Replace {numRelations, plural, =1{relation} other{relations}}', [
                     'numRelations' => $this->relationCount,
                 ]),
@@ -129,7 +129,7 @@ JS, [
                 ]),
             ],
             [
-                'icon' => 'user-minus',
+                'icon' => 'xmark',
                 'label' => Craft::t('app', 'Remove {numRelations, plural, =1{relation} other{relations}}', [
                     'numRelations' => $this->relationCount,
                 ]),
