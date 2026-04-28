@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import type {EntryType} from '@/types';
-  import {computed, inject, ref} from 'vue';
+  import {computed, ref} from 'vue';
   import {appendBodyHtml, appendHeadHtml, t} from '@craftcms/cp';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import Text from '@/components/Text.vue';
@@ -14,7 +14,7 @@
   import {router} from '@inertiajs/vue3';
   import DragShadow from '@/components/DragShadow.vue';
   import {useReorderableItems} from '@/composables/useReorderableItems';
-  import {Config} from '@/types/keys';
+  import ReorderButton from '@/components/ReorderButton.vue';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<EntryType>): void;
@@ -35,15 +35,29 @@
     );
   });
 
+  function reorder(startIndex: number, finishIndex: number) {
+    const items = [...props.modelValue];
+    const [removed] = items.splice(startIndex, 1);
+    items.splice(finishIndex, 0, removed);
+    emit('update:modelValue', items);
+  }
+
+  function getRowPosition(index: number) {
+    if (index === 0) {
+      return 'first';
+    }
+
+    if (index === props.modelValue.length - 1) {
+      return 'last';
+    }
+
+    return 'middle';
+  }
+
   const {setItemRef, setHandleRef, getDragState, getDropState} =
     useReorderableItems({
       getItemIds: () => props.modelValue.map((et) => et.id),
-      onReorder: (startIndex, finishIndex) => {
-        const items = [...props.modelValue];
-        const [removed] = items.splice(startIndex, 1);
-        items.splice(finishIndex, 0, removed);
-        emit('update:modelValue', items);
-      },
+      onReorder: reorder,
       enabled: () => props.modelValue.length > 1,
     });
 
@@ -208,7 +222,7 @@
 
 <template>
   <div class="entry-type-list">
-    <template v-for="entryType in modelValue" :key="entryType.id">
+    <template v-for="(entryType, index) in modelValue" :key="entryType.id">
       <div
         :ref="(el) => setItemRef(el as HTMLElement, entryType.id)"
         class="entry-type-item"
@@ -251,7 +265,16 @@
             },
           ]"
           @handle-ref="(el) => setHandleRef(el, entryType.id)"
-        />
+        >
+          <template #drag-handle>
+            <ReorderButton
+              variant="inherit"
+              :position="getRowPosition(index)"
+              @click:up="reorder(index, index - 1)"
+              @click:down="reorder(index, index + 1)"
+            />
+          </template>
+        </EntryTypeChip>
 
         <!-- Shadow after item when dragged over bottom edge -->
         <DragShadow

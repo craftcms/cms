@@ -1,6 +1,12 @@
 import '@github/relative-time-element';
 import {configureIcons} from './utilities/icons';
 
+// Types
+import './types/globals.js';
+import './types/events.js';
+import './types/index.js';
+import './types/queue.js';
+
 export {default as CraftDisclosure} from './components/disclosure/disclosure.js';
 export {default as CraftSpinner} from './components/spinner/spinner.js';
 export {default as CraftTooltip} from './components/tooltip/tooltip.js';
@@ -74,8 +80,5 @@ export type {
   IndexerEventListener,
 } from './services/AssetIndexer.js';
 export {IndexingActions} from './services/AssetIndexer.js';
-
-// Types
-export * from './types/index.js';
 
 configureIcons();

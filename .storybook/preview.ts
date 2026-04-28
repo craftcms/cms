@@ -4,7 +4,7 @@ import {withThemeByDataAttribute} from '@storybook/addon-themes';
 import '@craftcms/cp';
 import '../resources/css/cp.css';
 import './preview.css';
-import {installInertiaMock, type PageProps, setPageProps} from './inertia-mock';
+import {installInertiaMock, setPageProps} from './inertia-mock';
 
 // Install the Inertia mock globally
 setup((app) => {
@@ -14,7 +14,7 @@ setup((app) => {
 // Declare module augmentation for Storybook parameters
 declare module '@storybook/vue3' {
   interface Parameters {
-    inertia?: Partial<PageProps>;
+    inertia?: Partial<Record<string, unknown>>;
   }
 }
 

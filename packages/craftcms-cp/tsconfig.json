@@ -5,7 +5,7 @@
     "strictPropertyInitialization": false,
     "outDir": "./dist",
     "rootDir": ".",
-    "types": ["vite/client"],
+    "types": ["vite/client", "jquery"],
     "paths": {
       "@src/*": ["./src/*"]
     }

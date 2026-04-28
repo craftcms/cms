@@ -985,35 +985,6 @@ class Plugins
             )
         );
 
-        $links = [];
-        if ($info['developer']) {
-            $links[] = [
-                'id' => 'developer',
-                'icon' => 'building',
-                'href' => $info['developerUrl'],
-                'text' => $info['developer'],
-            ];
-        }
-
-        if ($info['documentationUrl']) {
-            $links[] = [
-                'id' => 'documentation',
-                'icon' => 'book',
-                'href' => $info['documentationUrl'],
-                'text' => t('Documentation'),
-            ];
-        }
-
-        if ($info['hasCpSettings'] || $info['hasReadOnlyCpSettings']) {
-            $links[] = [
-                'id' => 'settings',
-                'icon' => 'gear',
-                'href' => cp_url('settings/plugins/'.$handle),
-                'text' => t('Settings'),
-            ];
-        }
-        $info['links'] = $links;
-
         return $info;
     }
 

@@ -46,6 +46,10 @@
 
   const {errorFlash, successFlash} = useFlash();
   const crumbs = computed(() => page.props.crumbs ?? null);
+  const skipLinks = computed(() => [
+    {label: t('Skip to main section'), url: '#main'},
+    ...(props.additionalSkipLinks ?? []),
+  ]);
   const readOnly = computed(() => page.props.readOnly);
   const sidebarToggle = useTemplateRef('sidebarToggle');
   const {announcement, announce} = useAnnouncer();
@@ -116,7 +120,14 @@
   <Head :title="pageTitle" />
   <LiveRegion :debug="true"></LiveRegion>
   <div class="cp">
-    <div class="cp__header">
+    <header class="cp__header">
+      <a
+        v-for="link in skipLinks"
+        :key="link.url"
+        :href="link.url"
+        class="skip-link skip-link--global"
+        >{{ link.label }}</a
+      >
       <div class="flex gap-2 p-2">
         <craft-button
           icon
@@ -149,7 +160,7 @@
           successFlash
         }}</craft-callout>
       </template>
-    </div>
+    </header>
     <div class="cp__sidebar">
       <CpSidebar
         :mode="state.sidebar.mode"
@@ -159,15 +170,15 @@
     </div>
     <div class="cp__main">
       <slot name="main">
-        <main>
-          <slot name="breadcrumbs">
-            <div
-              class="px-4 py-2 border-b border-b-neutral-border-quiet"
-              v-if="crumbs"
-            >
-              <Breadcrumbs :items="crumbs" />
-            </div>
-          </slot>
+        <slot name="breadcrumbs">
+          <div
+            class="px-4 py-2 border-b border-b-neutral-border-quiet"
+            v-if="crumbs"
+          >
+            <Breadcrumbs :items="crumbs" />
+          </div>
+        </slot>
+        <main id="main" tabindex="-1">
           <component
             :is="form ? 'form' : 'div'"
             method="post"

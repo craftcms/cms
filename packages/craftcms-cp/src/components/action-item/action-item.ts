@@ -1,11 +1,12 @@
 import {html, LitElement, nothing} from 'lit';
-import {property} from 'lit/decorators.js';
+import {property, state} from 'lit/decorators.js';
 import styles from './action-item.styles.js';
-import {Variant, type VariantKey} from '@src/types';
+import {type AsyncState, AsyncStates, Variant, type VariantKey,} from '@src/types';
 import variantsStyles from '@src/styles/variants.styles';
 import {classMap} from 'lit/directives/class-map.js';
 
 import '../shortcut/shortcut.js';
+import {type ActionFeedback, type BaseAction, type FeedbackData, runAction,} from '@src/actions';
 
 /**
  * @summary Either a link or button typically used in a menu.
@@ -18,7 +19,14 @@ export default class CraftActionItem extends LitElement {
   @property({reflect: true}) variant: VariantKey = Variant.Default;
   @property({type: Boolean}) checked: boolean = false;
   @property({type: Boolean}) active: boolean = false;
-  @property() type: 'normal' | 'checkbox' = 'normal';
+  @property() type: 'button' | 'checkbox' = 'button';
+  @property({type: Object}) action: BaseAction | null = null;
+  @property({type: Object}) feedback: ActionFeedback | null = null;
+  @property({type: Number}) feedbackDuration: number = 1000;
+  @property() confirm: string | null = null;
+
+  @state() private state: AsyncState = AsyncStates.Idle;
+  @state() private feedbackMessage: string | null = null;
 
   @property({
     converter: {
@@ -63,31 +71,111 @@ export default class CraftActionItem extends LitElement {
     return nothing;
   }
 
-  renderBody() {
+  override connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('click', this);
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener('click', this);
+  }
+
+  setState(state: AsyncState, detail: FeedbackData = {}) {
+    this.state = state;
+    this.feedbackMessage = detail.message ?? null;
+
+    this.dispatchEvent(
+      new CustomEvent('action:change-state', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          state,
+          actionType: this.action?.type,
+          ...detail,
+        },
+      })
+    );
+  }
+
+  async handleEvent(event: Event) {
+    if (this.disabled) {
+      event.preventDefault();
+      return;
+    }
+
+    if (event.type === 'click' && this.action) {
+      // Only show loading spinner for http requests
+      if (this.action.type === 'http') {
+        this.setState(AsyncStates.Loading);
+      }
+
+      try {
+        await runAction(this.action);
+        this.setState(AsyncStates.Success, this.feedback?.success);
+      } catch (error: any) {
+        this.setState(AsyncStates.Error, {
+          message: error.message,
+          ...(this.feedback?.error || {}),
+        });
+      } finally {
+        setTimeout(() => {
+          this.setState(AsyncStates.Idle);
+        }, this.feedbackDuration);
+      }
+    }
+  }
+
+  renderCheckbox() {
+    return html`<span class="action-item__check">
+      <slot name="checkmark">
+        ${this.checked ? html`<craft-icon name="check"></craft-icon>` : nothing}
+      </slot>
+    </span>`;
+  }
+
+  renderIcon() {
+    switch (this.state) {
+      case AsyncStates.Loading:
+        return html`<craft-spinner style="--size: 0.8em"></craft-spinner>`;
+      case AsyncStates.Success:
+        return html`<craft-icon
+          name="check"
+          style="color: var(--c-color-success-on-normal)"
+        ></craft-icon>`;
+      case AsyncStates.Error:
+        return html`<craft-icon
+          name="xmark"
+          style="color: var(--c-color-danger-on-normal)"
+        ></craft-icon>`;
+      default:
+        return html`
+          <slot name="icon">
+            ${this.icon
+              ? html`<craft-icon name="${this.icon}"></craft-icon>`
+              : nothing}
+          </slot>
+        `;
+    }
+  }
+
+  renderPrefix() {
     const hasIcon = !!this.querySelector('[slot="icon"]') || !!this.icon;
 
     return html`
-      ${this.type === 'checkbox'
-        ? html` <span class="action-item__check">
-            <slot name="checkmark">
-              ${this.checked
-                ? html`<craft-icon name="check"></craft-icon>`
-                : nothing}
-            </slot>
-          </span>`
-        : nothing}
+      ${this.type === 'checkbox' ? this.renderCheckbox() : nothing}
       ${hasIcon
-        ? html`<span class="action-item__icon">
-            <slot name="icon">
-              ${this.icon
-                ? html`<craft-icon name="${this.icon}"></craft-icon>`
-                : nothing}
-            </slot>
-          </span>`
+        ? html`<div class="action-item__icon">${this.renderIcon()}</div>`
         : nothing}
+    `;
+  }
+
+  renderBody() {
+    return html`
+      ${this.renderPrefix()}
 
       <span class="action-item__label">
-        <slot></slot>
+        ${this.feedbackMessage ? this.feedbackMessage : html`<slot></slot>`}
       </span>
 
       <span class="action-item__suffix">

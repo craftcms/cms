@@ -112,15 +112,28 @@ export default css`
   /*
   Appearances 
    */
-
-  /* Plain */
-  :host([appearance~='plain']) {
+  :host([appearance~='inline']) {
+    display: inline;
+    appearance: none;
     background-color: transparent;
-    border-color: transparent;
+    border-color: currentColor;
     color: inherit;
+    font: inherit;
+    padding: 0;
+    min-height: auto;
+    min-width: auto;
+
+    &::before {
+      /* remove the sizer added by lion */
+      display: none;
+    }
+
+    .button-content {
+      padding: 0;
+    }
   }
 
-  :host([appearance~='plain']:hover) {
+  :host([appearance='inline']:not(:disabled):not(.loading):hover) {
     background-color: color-mix(
       in oklab,
       var(--c-color-fill-quiet, var(--c-button-default-fill)),
@@ -129,7 +142,32 @@ export default css`
     color: var(--c-color-on-quiet);
   }
 
-  :host([appearance~='plain']:active) {
+  :host([appearance='inline']:not(:disabled):not(.loading):active) {
+    color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
+    background-color: color-mix(
+      in oklab,
+      var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
+      var(--c-color-mix-active)
+    );
+  }
+
+  /* Plain */
+  :host([appearance~='plain']) {
+    background-color: transparent;
+    border-color: transparent;
+    color: inherit;
+  }
+
+  :host([appearance='plain']:not(:disabled):not(.loading):hover) {
+    background-color: color-mix(
+      in oklab,
+      var(--c-color-fill-quiet, var(--c-button-default-fill)),
+      var(--c-color-mix-hover)
+    );
+    color: var(--c-color-on-quiet);
+  }
+
+  :host([appearance='plain']:not(:disabled):not(.loading):active) {
     color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
     background-color: color-mix(
       in oklab,
@@ -148,7 +186,7 @@ export default css`
     color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
   }
 
-  :host([appearance~='filled']:hover) {
+  :host([appearance='filled']:not(:disabled):not(.loading):hover) {
     background-color: color-mix(
       in oklab,
       var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)),
@@ -157,7 +195,7 @@ export default css`
     color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
   }
 
-  :host([appearance~='filled']:active) {
+  :host([appearance='filled']:not(:disabled):not(.loading):active) {
     color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
     background-color: color-mix(
       in oklab,
@@ -174,7 +212,7 @@ export default css`
     color: var(--c-color-on-quiet);
   }
 
-  :host([appearance~='dashed']:hover) {
+  :host([appearance='dashed']:not(:disabled):not(.loading):hover) {
     background-color: color-mix(
       in oklab,
       var(--c-color-fill-quiet, var(--c-button-default-fill)),
@@ -183,7 +221,7 @@ export default css`
     color: var(--c-color-on-quiet);
   }
 
-  :host([appearance~='dashed']:active) {
+  :host([appearance='dashed']:not(:disabled):not(.loading):active) {
     color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
     background-color: color-mix(
       in oklab,

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
-  import {computed, h} from 'vue';
+  import {computed, h, onMounted} from 'vue';
   import Pane from '@/components/Pane.vue';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
   import Empty from '@/components/Empty.vue';
@@ -10,6 +10,8 @@
   import PluginDetails from '@/components/Plugins/PluginDetails.vue';
   import PluginStatus from '@/components/Plugins/PluginStatus.vue';
   import PluginActionMenu from '@/components/Plugins/PluginActionMenu.vue';
+  import {router} from '@inertiajs/vue3';
+  import {index} from '@actions/PluginsController';
 
   const props = defineProps<{
     pluginInfo: Record<string, PluginInfo>;
@@ -69,11 +71,26 @@
     },
     getCoreRowModel: getCoreRowModel<PluginInfo>(),
   });
+
+  /**
+   * Maybe a little heavy-handed, this will reload the inertia pluginInfo whenever
+   * an http action is successful
+   */
+  function handleStateChange(event: CustomEvent) {
+    if (
+      event.detail?.state === 'success' &&
+      event.detail?.actionType === 'http'
+    ) {
+      router.visit(index(), {
+        only: ['pluginInfo'],
+      });
+    }
+  }
 </script>
 
 <template>
   <Pane appearance="raised" :padding="0">
-    <AdminTable :table="table">
+    <AdminTable :table="table" @action:change-state="handleStateChange">
       <template #empty-row>
         <Empty
           icon="plugin"

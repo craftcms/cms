@@ -77,7 +77,7 @@ test('update plugin license stores the normalized key', function () {
 
     $response->assertOk();
 
-    expect($response->json())->toBe(1);
+    expect($response->json('message'))->toBe('License updated');
 
     expect(app(Plugins::class)->getPluginLicenseKey('test-plugin'))
         ->toBe('ABC123ABC123ABC123ABC123');

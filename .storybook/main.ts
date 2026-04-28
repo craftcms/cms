@@ -57,7 +57,7 @@ const config: StorybookConfig = {
           '@': join(__dirname, '../resources/js'),
           vue: 'vue/dist/vue.esm-bundler.js',
           // Mock Inertia for Storybook
-          '@inertiajs/vue3': join(__dirname, 'inertia-mock.ts'),
+          '@inertiajs/vue3': join(__dirname, 'inertia-mock.js'),
         },
       },
     };
