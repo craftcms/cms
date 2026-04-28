@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
-use Craft;
-use craft\web\assets\cp\CpAsset;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -19,6 +17,8 @@ use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\HtmlStack;
+use CraftCms\Cms\View\LegacyAssets\CpAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
 use Inertia\Middleware;
@@ -54,7 +54,7 @@ class HandleInertiaRequests extends Middleware
     #[Override]
     public function handle(Request $request, Closure $next): Response
     {
-        Craft::$app->view->registerAssetBundle(CpAsset::class);
+        app(InternalAssetRegistry::class)->register(CpAsset::class);
         $htmlStack = app(HtmlStack::class);
 
         View::composer('app', function ($view) use ($htmlStack) {
