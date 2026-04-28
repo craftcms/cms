@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
@@ -35,7 +36,7 @@ it('merges plugin config and registers publish paths', function () {
     ]);
 
     expect(ServiceProvider::pathsToPublish(TestPlugin::class, 'test-plugin'))->toBe([
-        PLUGIN_BASE_PATH.'/../config/test-plugin.php' => config_path('craft/test-plugin.php'),
+        File::normalizePath(PLUGIN_BASE_PATH.'/../config/test-plugin.php') => config_path('craft/test-plugin.php'),
     ]);
 });
 
