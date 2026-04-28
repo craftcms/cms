@@ -2,10 +2,7 @@
   import {t} from '@craftcms/cp';
   import AppLayout from '@/layout/AppLayout.vue';
   import {store} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/GeneralSettingsController';
-  import {
-    type SystemData,
-    type TimezoneOption,
-  } from '@/types/settings';
+  import {type SystemData, type TimezoneOption} from '@/types/settings';
   import {useForm} from '@inertiajs/vue3';
   import useCraftData from '@/composables/useCraftData';
   import TransitionFade from '@/components/TransitionFade.vue';
@@ -52,9 +49,7 @@
   });
 
   function save() {
-    form
-      .clearErrors()
-      .submit(store());
+    form.clearErrors().submit(store());
   }
 </script>
 
