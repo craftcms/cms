@@ -9,6 +9,7 @@ use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Crypt;
+use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -69,8 +70,9 @@ test('index', function () {
     postJson(action([RemoveController::class, 'index']), [
         'packageName' => 'craftcms/test-plugin',
     ])
-        ->assertSee('Plugin Uninstaller')
-        ->assertSee('Craft.updater');
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Updater')
+        );
 });
 
 test('composer-remove', function () {
@@ -97,6 +99,6 @@ test('finish', function () {
         'data' => $this->hashedData,
     ])->assertJsonFragment([
         'finished' => true,
-        'returnUrl' => 'settings/plugins',
+        'returnUrl' => \CraftCms\Cms\cp_url('settings/plugins'),
     ]);
 });
