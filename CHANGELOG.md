@@ -4,6 +4,7 @@
 
 - Fixed a bug where dependencies required by `composer.json` were getting updated when installing/updating plugins. ([#18755](https://github.com/craftcms/cms/issues/18755))
 - Fixed a bug where element thumbnails weren’t always getting loaded when they became visible.
+- Fixed a bug where two-step verification setup was working even if the user failed to re-authenticate, if they already had an elevated session. ([#18753](https://github.com/craftcms/cms/pull/18753))
 
 ## 5.9.21 - 2026-04-23
 
