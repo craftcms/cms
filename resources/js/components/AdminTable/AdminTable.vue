@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {FlexRender, type Column} from '@tanstack/vue-table';
+  import {type Column, FlexRender} from '@tanstack/vue-table';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import {computed, useId} from 'vue';
   import {useReorderableRows} from '@/composables/useReorderableRows';
@@ -10,7 +10,6 @@
   import Select from '@/components/form/Select.vue';
   import Text from '@/components/Text.vue';
   import Empty from '@/components/Empty.vue';
-  import {usePage} from '@inertiajs/vue3';
 
   const props = withDefaults(
     defineProps<{
@@ -164,6 +163,7 @@
     <table
       :class="{
         'cp-table': true,
+        'cp-table--grid': true,
         'cp-table--compact': spacing === TableSpacing.Compact,
         'cp-table--relaxed': spacing === TableSpacing.Relaxed,
         'cp-table--spacious': spacing === TableSpacing.Spacious,

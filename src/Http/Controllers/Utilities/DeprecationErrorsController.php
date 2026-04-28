@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Deprecator\Deprecator;
+use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\DeprecationErrors;
 use Illuminate\Http\JsonResponse;
@@ -18,6 +19,8 @@ use function CraftCms\Cms\template;
 
 readonly class DeprecationErrorsController
 {
+    use RespondsWithFlash;
+
     public function __construct(
         Utilities $utilitiesService,
         private Deprecator $deprecator
@@ -48,23 +51,22 @@ readonly class DeprecationErrorsController
             'logId' => ['required', 'integer', Rule::exists(Table::DEPRECATIONERRORS, 'id')],
         ]);
 
-        $this->deprecator->deleteLogById($request->integer('logId'));
-
-        if ($request->inertia()) {
-            return back()->with('success', t('Deprecation error removed.'));
+        $success = $this->deprecator->deleteLogById($request->integer('logId'));
+        if (! $success) {
+            return $this->asFailure(t('Failed to delete log.'));
         }
 
-        return new JsonResponse;
+        return $this->asSuccess(t('Log deleted.'));
     }
 
     public function deleteAllDeprecationErrors(Request $request): Response
     {
         $this->deprecator->deleteAllLogs();
 
-        if ($request->inertia()) {
-            return back()->with('success', t('Deprecation errors removed.'));
+        if ($request->wantsJson()) {
+            return new JsonResponse;
         }
 
-        return new JsonResponse;
+        return back()->with('success', t('Deprecation errors removed.'));
     }
 }

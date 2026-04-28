@@ -104,7 +104,7 @@
 <style scoped lang="scss">
   .cp-pane {
     --_pane-spacing: v-bind(computedPadding);
-    --_bg-color: var(--c-pane-fill);
+    --_bg-color: var(--c-surface-raised);
     --_radius: var(--c-pane-radius);
 
     background-color: var(--_bg-color);
@@ -134,6 +134,7 @@
 
   .cp-pane--outline {
     --c-pane-border-color: var(--c-color-neutral-border-quiet);
+    box-shadow: none;
   }
 
   .cp-pane__header {

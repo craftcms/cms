@@ -8,7 +8,7 @@ export default class CraftCheckbox extends LionCheckbox {
       css`
         /* same as radio, potentially consolidate */
         :host {
-          --_gap-x: var(--gap-x, --c-spacing-md);
+          --_gap-x: var(--gap-x, var(--c-spacing-md));
           display: grid;
           align-items: center;
           gap: 0 var(--_gap-x);

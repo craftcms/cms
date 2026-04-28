@@ -15,7 +15,7 @@
   const props = withDefaults(defineProps<ModalProps>(), {
     isActive: false,
     overlay: true,
-    size: 'md',
+    width: 'md',
   });
 
   onKeyStroke('Escape', (e) => {
@@ -29,7 +29,7 @@
 
 <template>
   <Transition name="body">
-    <div class="modal" v-if="isActive">
+    <div class="cp-modal" v-if="isActive">
       <div
         :class="{
           content: true,
@@ -42,7 +42,7 @@
   </Transition>
 
   <Transition name="fade" v-if="overlay">
-    <div class="overlay" v-if="isActive" @click="emit('close')"></div>
+    <div class="cp-overlay" v-if="isActive" @click="emit('close')"></div>
   </Transition>
 </template>
 
@@ -61,15 +61,15 @@
     pointer-events: auto;
   }
 
-  .modal,
-  .overlay {
+  .cp-modal,
+  .cp-overlay {
     position: fixed;
     width: 100vw;
     height: 100vh;
     inset: 0;
   }
 
-  .modal {
+  .cp-modal {
     z-index: 10002;
     display: grid;
     justify-content: center;
@@ -77,7 +77,7 @@
     pointer-events: none;
   }
 
-  .overlay {
+  .cp-overlay {
     /**
     Action menu items are z-index 10000, so we want to be above that
     @TODO make this less fragile/weird
