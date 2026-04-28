@@ -2,53 +2,14 @@
 
 namespace craft\elements\conditions\assets;
 
-use Craft;
-use craft\base\conditions\BaseLightswitchConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\AssetQuery;
-use craft\elements\db\ElementQueryInterface;
-use function CraftCms\Cms\t;
-
 /**
  * Asset viewable condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.4.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Conditions\ViewableConditionRule} instead.
  */
-class ViewableConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
+class ViewableConditionRule extends \CraftCms\Cms\Asset\Conditions\ViewableConditionRule
 {
-    /**
-     * @inheritdoc
-     */
-    public function getLabel(): string
-    {
-        return t('Viewable');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['editable'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var AssetQuery $query */
-        $query->editable($this->value);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        $viewable = Craft::$app->getElements()->canView($element);
-        return $viewable === $this->value;
-    }
+    use \craft\base\LegacyEventConstants;
 }

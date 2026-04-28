@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Providers;
 
-use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
+use CraftCms\Cms\Http\Mixins\RequestMixin;
+use CraftCms\Cms\Http\Mixins\SessionMixin;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Updates;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\Support\File;
 use GuzzleHttp\Utils;
-use Illuminate\Auth\Middleware\Authenticate;
-use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Foundation\Events\LocaleUpdated;
@@ -24,44 +23,36 @@ use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Routing\UrlGenerator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
-use IntlDateFormatter;
-use IntlException;
+use Illuminate\Validation\Rules\Password;
+use Override;
 use ReflectionClass;
 use RuntimeException;
 
+use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\t;
 
-final class AppServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
 {
+    public static int $minPasswordLength = 8;
+
+    public static int $maxPasswordLength = 160;
+
     private string $root = __DIR__.'/../..';
 
-    #[\Override]
+    #[Override]
     public function register(): void
     {
         $this->registerMacros();
-
-        /**
-         * Make sure we're using Craft's User model
-         *
-         * @var class-string<\Illuminate\Contracts\Auth\Authenticatable> $model
-         */
-        $model = Config::get('auth.providers.users.model');
-        if (! class_exists($model) || ! is_a($model, User::class, true)) {
-            Config::set('auth.providers.users.model', User::class);
-        }
-
-        Authenticate::redirectUsing(function () {
-            if (\request()->isCpRequest()) {
-                return Cms::config()->cpTrigger.'/login';
-            }
-
-            return Cms::config()->loginPath;
-        });
     }
 
     public function boot(): void
@@ -81,19 +72,28 @@ final class AppServiceProvider extends ServiceProvider
             'Version' => Cms::VERSION,
         ]);
 
-        $this->setTimezone();
         $this->setNamespace();
         $this->bootAliases();
 
         $this->app->booted(function () {
-            if (Info::isInstalled() && ! Updates::isCraftUpdatePending()) {
+            /**
+             * Users can register their own password rules,
+             * but we provide a sensible default.
+             */
+            if (! Password::$defaultCallback) {
+                Password::defaults(fn () => Password::min(self::$minPasswordLength)->max(self::$maxPasswordLength));
+            }
+
+            if (Cms::isInstalled() && ! Updates::isCraftUpdatePending()) {
                 // Possibly run garbage collection
                 app(GarbageCollection::class)->run();
             }
         });
 
         $this->publishes([
-            "{$this->root}/resources/build/" => public_path('vendor/craft'),
+            "{$this->root}/resources/build/" => public_path('vendor/craft/build'),
+            "{$this->root}/resources/icons/" => public_path('vendor/craft/icons'),
+            "{$this->root}/resources/legacy/" => public_path('vendor/craft/legacy'),
         ], ['craftcms', 'craftcms-assets']);
     }
 
@@ -107,10 +107,7 @@ final class AppServiceProvider extends ServiceProvider
             return Env::parseBoolean(app(ProjectConfig::class)->get('system.live')) ?? false;
         });
 
-        Application::macro(
-            'getTimezone',
-            fn (): string => $this->make(ConfigRepository::class)->get('app.timezone') ?? date_default_timezone_get(),
-        );
+        Application::macro('isEphemeral', fn (): bool => Env::parseBoolean('$CRAFT_EPHEMERAL') === true);
 
         // Register Collection::one() as an alias of first()
         Collection::macro('one', fn () => $this->first(...func_get_args()));
@@ -133,65 +130,8 @@ final class AppServiceProvider extends ServiceProvider
             return $this;
         });
 
-        Request::macro('isCpRequest', fn (): bool => $this->is(
-            Cms::config()->cpTrigger, // /admin
-            Cms::config()->cpTrigger.'/*' // /admin/foo
-            // NOT /adminsarefun
-        ));
-
-        Request::macro('isActionRequest', fn (): bool => ! empty($this->actionSegments()));
-
-        Request::macro('actionSegments', function (): array {
-            $actionTrigger = Cms::config()->actionTrigger;
-
-            $segmentIndex = $this->isCpRequest() ? 2 : 1;
-
-            if ($this->segment($segmentIndex) === $actionTrigger && count($this->segments()) > $segmentIndex) {
-                return array_slice($this->segments(), $segmentIndex);
-            }
-
-            if ($actionParam = $this->get('action')) {
-                if (! is_string($actionParam)) {
-                    abort(400, 'Invalid action param');
-                }
-
-                return array_values(array_filter(explode('/', $actionParam)));
-            }
-
-            return [];
-        });
-
-        Request::macro('actionSegmentsToRoute', function (?array $actionSegments = null): string {
-            $actionSegments ??= $this->actionSegments();
-
-            return implode('/', array_filter([
-                '',
-                $this->isCpRequest() ? Cms::config()->cpTrigger : null,
-                Cms::config()->actionTrigger,
-                ...$actionSegments,
-            ], fn ($value) => ! is_null($value)));
-        });
-
-        Request::macro('duplicateWithUri', fn (string $newUri, ?array $query = null, array $server = []): Request => $this->duplicate(
-            query: $query ?? $this->query->all(),
-            server: array_merge($this->server->all(), $server, [
-                'REQUEST_URI' => $newUri,
-            ]),
-        ));
-
-        Request::macro('getSigned', function (string $key, mixed $default = null): mixed {
-            $value = $this->get($key);
-
-            if (is_null($value)) {
-                return $default;
-            }
-
-            $value = \Craft::$app->getSecurity()->validateData($value);
-
-            abort_if($value === false, 400, 'Request contained an invalid body param');
-
-            return $value;
-        });
+        Request::mixin(new RequestMixin);
+        Session::mixin(new SessionMixin);
 
         Response::macro('setNoCacheHeaders', function (bool $replace = true) {
             $this->header('Expires', '0', $replace);
@@ -199,6 +139,27 @@ final class AppServiceProvider extends ServiceProvider
             $this->header('Cache-Control', 'no-cache, no-store, must-revalidate', $replace);
 
             return $this;
+        });
+
+        UrlGenerator::macro('defaultReturnUrl', function (): string {
+            if (request()->isCpRequest() && Gate::check('accessCp')) {
+                return \CraftCms\Cms\Support\Url::cpUrl(Cms::config()->getPostCpLoginRedirect());
+            }
+
+            return \CraftCms\Cms\Support\Url::siteUrl(Cms::config()->getPostLoginRedirect());
+        });
+
+        UrlGenerator::macro('returnUrl', function (?string $defaultUrl = null): string {
+            $defaultUrl ??= Auth::guard('craft')->guest()
+                ? action_url('users/redirect')
+                : $this->defaultReturnUrl();
+
+            $url = Redirect::getIntendedUrl() ?? $defaultUrl;
+
+            // Strip out any tags that may have gotten in there by accident
+            // i.e. if there was a {siteUrl} tag in the Site URL setting, but no matching environment variable,
+            // so they ended up on something like http://example.com/%7BsiteUrl%7D/some/path
+            return str_replace(['{', '}'], '', $url);
         });
 
         Factory::macro('create', fn (array $options = []) => $this->throw()
@@ -219,28 +180,6 @@ final class AppServiceProvider extends ServiceProvider
             ));
     }
 
-    private function setTimezone(): void
-    {
-        $timezone = app(ProjectConfig::class)->get('system.timeZone')
-            ?? $this->app->make(ConfigRepository::class)->get('app.timezone')
-            ?? 'UTC';
-
-        $timezone = Env::parse($timezone);
-
-        if ($timezone !== 'UTC') {
-            // Make sure that ICU supports this timezone
-            try {
-                new IntlDateFormatter($this->app->getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
-            } catch (IntlException) {
-                Log::warning("Time zone “{$timezone}” does not appear to be supported by ICU: ".intl_get_error_message());
-                $timezone = 'UTC';
-            }
-        }
-
-        $this->app->make(ConfigRepository::class)->set('app.timezone', $timezone);
-        date_default_timezone_set($timezone);
-    }
-
     private function setNamespace(): void
     {
         /**
@@ -259,12 +198,23 @@ final class AppServiceProvider extends ServiceProvider
     private function bootAliases(): void
     {
         Aliases::set('@root', Env::get('CRAFT_ROOT_PATH', $this->app->basePath()));
-        Aliases::set('@craftcms', FileHelper::normalizePath($this->root));
+        Aliases::set('@craftcms', File::normalizePath($this->root));
         Aliases::set('@package', '@craftcms/src');
         Aliases::set('@resources', "{$this->root}/resources");
+        Aliases::set('@vendor', '@root/vendor');
+        Aliases::set('@storage', $this->app->storagePath());
+        Aliases::set('@runtime', '@storage/runtime');
+
+        if (Aliases::get('@templates', false) === false) {
+            Aliases::set('@templates', is_dir($this->app->resourcePath('views'))
+                ? $this->app->resourcePath('views')
+                : $this->app->basePath('templates'));
+        }
 
         if ($webUrl = Env::get('CRAFT_WEB_URL')) {
             Aliases::set('@web', $webUrl);
+        } else {
+            Aliases::set('@web', config('app.url'));
         }
     }
 }

@@ -8,9 +8,9 @@
 namespace craft\queue\jobs;
 
 use Craft;
-use craft\elements\Asset;
 use craft\imagetransforms\ImageTransformer;
 use craft\queue\BaseJob;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Support\Facades\I18N;
 use Throwable;
 

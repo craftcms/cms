@@ -8,30 +8,33 @@
 namespace craft\fields;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\behaviors\EventBehavior;
 use craft\db\FixedOrderExpression;
 use craft\db\Table as DbTable;
 use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\OrderByPlaceholderExpression;
-use craft\elements\ElementCollection;
 use craft\events\CancelableEvent;
-use craft\helpers\ElementHelper;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
+use Override;
 
 /**
  * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\BaseRelationField} instead.
  */
 abstract class BaseRelationField extends \CraftCms\Cms\Field\BaseRelationField
 {
+    use \craft\base\LegacyEventConstants;
+
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         /** @var ElementQueryInterface|ElementCollection $value */
@@ -45,7 +48,7 @@ abstract class BaseRelationField extends \CraftCms\Cms\Field\BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         // If we're propagating a value, and we don't show the site menu,
@@ -88,11 +91,11 @@ abstract class BaseRelationField extends \CraftCms\Cms\Field\BaseRelationField
             // if this is the first instance of the field that was ever added to the field layout
             // and none of the other instances (which would have been added later on) have a value.
             if (!$this->allowMultipleSources && $this->source) {
-                $source = ElementHelper::findSource($class, $this->source, ElementSources::CONTEXT_FIELD);
+                $source = app(ElementSources::class)->findSource($class, $this->source, ElementSources::CONTEXT_FIELD);
 
                 // Does the source specify any criteria attributes?
                 if (isset($source['criteria'])) {
-                    Craft::configure($query, $source['criteria']);
+                    Typecast::configure($query, $source['criteria']);
                 }
             }
 
@@ -179,7 +182,7 @@ abstract class BaseRelationField extends \CraftCms\Cms\Field\BaseRelationField
             // just running $this->_all()->ids() will cause the query to get adjusted
             // see https://github.com/craftcms/cms/issues/14674 for details
             $targetIds = $this->_all($value, $element)
-                ->collect()
+                ->get()
                 ->map(fn(ElementInterface $element) => $element->id)
                 ->all();
         }

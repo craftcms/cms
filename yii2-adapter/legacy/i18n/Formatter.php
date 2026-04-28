@@ -9,7 +9,7 @@ namespace craft\i18n;
 
 use DateTime;
 use Illuminate\Support\Facades\Date;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 /**

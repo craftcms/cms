@@ -8,13 +8,14 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\models\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 
 /**
  * Field layout Event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Events\FieldLayoutSaving}, {@see \CraftCms\Cms\Field\Events\FieldLayoutSaved}, {@see \CraftCms\Cms\Field\Events\FieldLayoutDeleting}, or {@see \CraftCms\Cms\Field\Events\FieldLayoutDeleted} instead.
  */
 class FieldLayoutEvent extends Event
 {

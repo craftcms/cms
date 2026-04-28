@@ -4,28 +4,30 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
-use craft\base\ElementInterface;
-use craft\elements\Entry;
-use craft\gql\types\generators\IconDataType;
-use craft\helpers\Cp;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Data\IconData;
+use CraftCms\Cms\Gql\Types\Generators\IconDataType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Query;
 use GraphQL\Type\Definition\Type;
-use yii\db\Schema;
+use Override;
 
 use function CraftCms\Cms\t;
 
 /**
  * Icon represents an icon picker field.
  */
-final class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, ThumbableFieldInterface
+class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, ThumbableFieldInterface
 {
     /**
      * @var array Info about the available icons
@@ -34,40 +36,28 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
      */
     private static array $_icons;
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Icon');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'icons';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|null', IconData::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function dbType(): string
     {
-        return Schema::TYPE_STRING;
+        return Query::TYPE_STRING;
     }
 
     /**
@@ -79,7 +69,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
     {
         if (! isset(self::$_icons)) {
             $indexPath = '@craftcms/resources/icons/index.php';
-            self::$_icons = require Craft::getAlias($indexPath);
+            self::$_icons = require Aliases::get($indexPath);
         }
 
         return self::$_icons[$name]['styles'] ?? [];
@@ -95,9 +85,6 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
      */
     public bool $fullGraphqlData = true;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         // Default includeProIcons to true for existing Icon fields
@@ -117,17 +104,12 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -135,7 +117,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
 
     private function settingsHtml(bool $readOnly): string
     {
-        $html = Cp::lightswitchFieldHtml([
+        $html = FormFields::lightswitchFieldHtml([
             'label' => t('Include Pro icons'),
             'instructions' => t('Should icons that are exclusive to Font Awesome Pro be selectable? (<a href="{url}">View pricing</a>)', [
                 'url' => 'https://fontawesome.com/plans',
@@ -157,7 +139,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
             ]);
 
             $html .=
-                Cp::selectFieldHtml([
+                FormFields::selectFieldHtml([
                     'label' => t('GraphQL Mode'),
                     'id' => 'graphql-mode',
                     'name' => 'graphqlMode',
@@ -175,10 +157,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
         return $html;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof IconData) {
@@ -192,14 +171,11 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
         return new IconData($value, self::iconStyles($value));
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var IconData|null $value */
-        return Cp::iconPickerHtml([
+        return FormFields::iconPickerHtml([
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
@@ -208,52 +184,37 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         /** @var IconData|null $value */
-        return Cp::iconPickerHtml([
+        return FormFields::iconPickerHtml([
             'static' => true,
             'value' => $value?->name,
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var IconData|null $value */
-        return $value ? Html::tag('div', Cp::iconSvg($value->name), ['class' => 'cp-icon']) : '';
+        return $value ? Html::tag('div', Icons::svg($value->name), ['class' => 'cp-icon']) : '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         /** @var IconData|null $value */
         return $this->getPreviewHtml($value, $element ?? new Entry);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getThumbHtml(mixed $value, ElementInterface $element, int $size): ?string
     {
         /** @var IconData|null $value */
-        return $value ? Html::tag('div', Cp::iconSvg($value->name), ['class' => 'cp-icon']) : null;
+        return $value ? Html::tag('div', Icons::svg($value->name), ['class' => 'cp-icon']) : null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getContentGqlType(): Type|array
     {
         if (! $this->fullGraphqlData) {

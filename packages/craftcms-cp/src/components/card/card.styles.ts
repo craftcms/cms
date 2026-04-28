@@ -6,16 +6,10 @@ export default css`
   }
 
   .card {
-    //--c-card-fg: var(--c-card-fg, var(--c-color-neutral-on-faint));
-    //--c-card-border: var(--c-card-border, var(--c-color-neutral-border-subtle));
-    //--c-card-bg: var(--c-card-bg, var(--c-color-neutral-bg-faint));
-    //--c-card-bars-bg: var(--c-card-bars-bg, var(--c-color-neutral-bg-subtle));
-    //--c-card-bars-fg: var(--c-card-bars-fg, var(--c-color-neutral-on-subtle));
-    color: var(--c-card-color, var(--c-color-neutral-on-faint));
-    background-color: var(--c-card-bg, var(--c-color-neutral-bg-faint));
-    border: 1px solid var(--c-card-border, var(--c-color-neutral-border-subtle));
+    color: var(--c-card-color, var(--c-color-neutral-on-quiet));
+    background-color: var(--c-card-fill, var(--c-color-neutral-fill-quiet));
+    border: 1px solid var(--c-card-border, var(--c-color-neutral-border-quiet));
     border-radius: var(--c-card-radius, var(--c-radius-md));
-    //overflow: hidden;
     box-shadow: var(--c-card-shadow, var(--c-shadow-sm));
     position: relative;
   }
@@ -26,10 +20,13 @@ export default css`
     padding-block: var(--c-card-padding-block, var(--c-spacing-sm));
     padding-inline-start: var(--c-card-padding-inline, var(--c-spacing-md));
     padding-inline-end: var(--c-card-padding-inline, var(--c-spacing-sm));
-    color: var(--c-card-bars-fg, var(--c-color-neutral-on-subtle));
-    background-color: var(--c-card-bars-bg, var(--c-color-neutral-bg-subtle));
+    color: var(--c-card-bars-text, var(--c-color-neutral-on-quiet));
+    background-color: var(
+      --c-card-bars-fill,
+      var(--c-color-neutral-fill-quiet)
+    );
     border-width: 0;
-    border-color: var(--c-card-border, var(--c-color-neutral-border-subtle));
+    border-color: var(--c-card-border, var(--c-color-neutral-border-quiet));
     border-style: solid;
   }
 

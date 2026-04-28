@@ -9,11 +9,11 @@ namespace craft\web;
 
 use Craft;
 use craft\errors\DbConnectException;
-use craft\helpers\App;
 use craft\helpers\FileHelper;
-use craft\helpers\UrlHelper;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Url;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Database\QueryException;
@@ -41,7 +41,7 @@ class AssetManager extends \yii\web\AssetManager
      */
     public function publish($path, $options = []): array
     {
-        if (App::isEphemeral()) {
+        if (app()->isEphemeral()) {
             return [$path, $this->getPublishedUrl($path)];
         }
 
@@ -58,7 +58,7 @@ class AssetManager extends \yii\web\AssetManager
      */
     public function getPublishedUrl($path, bool $publish = false, ?string $filePath = null): string|false
     {
-        if ($publish === true && !App::isEphemeral()) {
+        if ($publish === true && !app()->isEphemeral()) {
             [, $url] = $this->publish($path);
         } else {
             $url = parent::getPublishedUrl($path);
@@ -69,7 +69,7 @@ class AssetManager extends \yii\web\AssetManager
 
             // Should we append a timestamp?
             if ($this->appendTimestamp) {
-                $fullPath = FileHelper::normalizePath(Craft::getAlias($path) . DIRECTORY_SEPARATOR . $filePath);
+                $fullPath = FileHelper::normalizePath(Aliases::get($path) . DIRECTORY_SEPARATOR . $filePath);
                 if (($timestamp = @filemtime($fullPath)) > 0) {
                     $url .= '?v=' . $timestamp;
                 }
@@ -170,10 +170,9 @@ class AssetManager extends \yii\web\AssetManager
     {
         $generalConfig = Cms::config();
         if ($generalConfig->buildId) {
-            return UrlHelper::urlWithParams($url, [
-                'buildId' => $generalConfig->buildId,
-            ]);
+            return Url::urlWithParams($url, ['buildId' => $generalConfig->buildId]);
         }
+
         return $url;
     }
 }

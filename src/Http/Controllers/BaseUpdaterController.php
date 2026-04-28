@@ -4,20 +4,22 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use Craft;
-use craft\web\Application;
-use craft\web\assets\updater\UpdaterAsset;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Exceptions\MigrateException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
-use CraftCms\Cms\Updates\Updates;
-use Illuminate\Container\Attributes\Give;
+use CraftCms\Cms\Update\Updates;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\UpdaterAsset;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
@@ -59,10 +61,10 @@ abstract class BaseUpdaterController
             return;
         }
 
-        if (! is_null($data = $this->request->input('data'))) {
-            $data = Craft::$app->getSecurity()->validateData($this->request->input('data', ''));
-
-            if ($data === false) {
+        if (! is_null($this->request->input('data'))) {
+            try {
+                $data = Crypt::decrypt($this->request->input('data', ''));
+            } catch (DecryptException) {
                 throw ValidationException::withMessages([
                     'data' => t('Invalid data.'),
                 ]);
@@ -72,11 +74,10 @@ abstract class BaseUpdaterController
         }
     }
 
-    public function index(#[Give('Craft')] Application $craft): Response
+    public function index(): Response|View
     {
         // Load the updater JS
-        $view = $craft->getView();
-        $view->registerAssetBundle(UpdaterAsset::class);
+        app(InternalAssetRegistry::class)->register(UpdaterAsset::class);
 
         $this->data = $this->initialData();
         $state = $this->realInitialState();
@@ -85,11 +86,11 @@ abstract class BaseUpdaterController
         $segments = $this->request->actionSegments();
         $idJs = Json::encode(implode('/', $segments));
         $stateJs = Json::encode($state);
-        $view->registerJs("Craft.updater = (new Craft.Updater($idJs)).setState($stateJs);");
+        HtmlStack::js("Craft.updater = (new Craft.Updater($idJs)).setState($stateJs);");
 
-        return response($view->renderPageTemplate('_special/updater.twig', [
+        return view('_special/updater', [
             'title' => $this->pageTitle(),
-        ]));
+        ]);
     }
 
     public function precheck(): Response
@@ -195,7 +196,7 @@ abstract class BaseUpdaterController
     public function finish(): Response
     {
         // Disable maintenance mode
-        Craft::$app->disableMaintenanceMode();
+        app()->maintenanceMode()->deactivate();
 
         return $this->send([
             'finished' => true,
@@ -503,7 +504,7 @@ abstract class BaseUpdaterController
      */
     private function hashedData(): string
     {
-        return Craft::$app->getSecurity()->hashData(Json::encode($this->data));
+        return Crypt::encrypt(Json::encode($this->data));
     }
 
     /**

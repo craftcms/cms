@@ -9,17 +9,17 @@ use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Request;
 use InvalidArgumentException;
 
 /**
  * Edition defines all available Craft CMS editions
  */
-enum Edition: int
+enum Edition: int implements Arrayable
 {
     case Solo = 0;
     case Team = 1;
@@ -101,15 +101,13 @@ enum Edition: int
 
         Context::addHidden(self::class, $edition);
 
-        if (Event::hasListeners(EditionChanged::class)) {
-            Event::dispatch(new EditionChanged($oldEdition, $edition));
-        }
+        event(new EditionChanged($oldEdition, $edition));
     }
 
     /** @internal */
     public static function canTest(): bool
     {
-        if (Env::get('CRAFT_NO_TRIALS')) {
+        if (Env::normalizeBooleanValue(Env::get('CRAFT_NO_TRIALS'))) {
             return false;
         }
 
@@ -125,7 +123,7 @@ enum Edition: int
 
     public static function canUpgrade(): bool
     {
-        if (! Auth::getUser()?->isAdmin()) {
+        if (! Auth::user()?->isAdmin()) {
             return false;
         }
 
@@ -140,13 +138,26 @@ enum Edition: int
             ($licensedEdition !== null && $licensedEdition->value < self::Pro->value);
     }
 
-    public static function require(Edition|int $edition, bool $orBetter = true): void
+    public static function isAtLeast(Edition|int|string $edition, bool $orBetter = true): bool
+    {
+        try {
+            self::require($edition, $orBetter);
+
+            return true;
+        } catch (WrongEditionException) {
+            return false;
+        }
+    }
+
+    public static function require(Edition|int|string $edition, bool $orBetter = true): void
     {
         if (is_int($edition)) {
             $edition = self::from($edition);
+        } elseif (is_string($edition)) {
+            $edition = self::fromHandle($edition);
         }
 
-        if (! \Craft::$app->getIsInstalled()) {
+        if (! Cms::isInstalled()) {
             return;
         }
 
@@ -160,5 +171,24 @@ enum Edition: int
         }) {
             throw new WrongEditionException("Craft $edition->name is required for this.");
         }
+    }
+
+    public function registersFrontendUserRoutes(): bool
+    {
+        return $this->value >= self::Pro->value;
+    }
+
+    public function supportsOAuth(): bool
+    {
+        return $this->value >= self::Pro->value;
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'value' => $this->value,
+            'handle' => $this->handle(),
+        ];
     }
 }

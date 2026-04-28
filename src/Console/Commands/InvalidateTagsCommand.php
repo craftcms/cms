@@ -15,7 +15,7 @@ use function CraftCms\Cms\t;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\table;
 
-final class InvalidateTagsCommand extends Command
+class InvalidateTagsCommand extends Command
 {
     use CraftCommand;
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Site;
 
-use craft\base\MemoizableArray;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -16,17 +15,17 @@ use CraftCms\Cms\Site\Events\SavedSiteGroup;
 use CraftCms\Cms\Site\Events\SavingSiteGroup;
 use CraftCms\Cms\Site\Models\SiteGroup as SiteGroupModel;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 
 #[Singleton]
-final class SiteGroups
+class SiteGroups
 {
     /**
      * @var MemoizableArray<SiteGroup>|null
@@ -48,7 +47,7 @@ final class SiteGroups
     {
         return $this->groups ??= new MemoizableArray(
             $this->createGroupQuery()->get()->all(),
-            fn (object $result) => new SiteGroup(...(array) $result),
+            fn (object $result) => new SiteGroup($result),
         );
     }
 
@@ -59,7 +58,7 @@ final class SiteGroups
      */
     public function getAllGroups(): Collection
     {
-        return collect($this->groups()->all());
+        return $this->groups()->collect();
     }
 
     public function getGroupById(int $groupId): ?SiteGroup
@@ -76,12 +75,16 @@ final class SiteGroups
      * @param  SiteGroup  $group  The site group to be saved
      * @return bool Whether the site group was saved successfully
      */
-    public function saveGroup(SiteGroup $group): bool
+    public function saveGroup(SiteGroup $group, bool $runValidation = true): bool
     {
         $isNewGroup = ! $group->id;
 
-        if (Event::hasListeners(SavingSiteGroup::class)) {
-            Event::dispatch(new SavingSiteGroup($group, $isNewGroup));
+        event(new SavingSiteGroup($group, $isNewGroup));
+
+        if ($runValidation && ! $group->validate()) {
+            Log::info('Site group not saved due to validation error.', [__METHOD__]);
+
+            return false;
         }
 
         if ($isNewGroup) {
@@ -127,9 +130,7 @@ final class SiteGroups
         // Clear caches
         $this->refreshGroups();
 
-        if (Event::hasListeners(SavedSiteGroup::class)) {
-            Event::dispatch(new SavedSiteGroup($this->getGroupById($groupModel->id), $isNewGroup));
-        }
+        event(new SavedSiteGroup($this->getGroupById($groupModel->id), $isNewGroup));
     }
 
     /**
@@ -146,18 +147,14 @@ final class SiteGroups
 
         $group = $this->getGroupById($groupModel->id);
 
-        if (Event::hasListeners(ApplyingSiteGroupDelete::class)) {
-            Event::dispatch(new ApplyingSiteGroupDelete($group));
-        }
+        event(new ApplyingSiteGroupDelete($group));
 
         $groupModel->delete();
 
         // Clear caches
         $this->refreshGroups();
 
-        if (Event::hasListeners(DeletedSiteGroup::class)) {
-            Event::dispatch(new DeletedSiteGroup($group));
-        }
+        event(new DeletedSiteGroup($group));
     }
 
     /**
@@ -193,9 +190,7 @@ final class SiteGroups
             return false;
         }
 
-        if (Event::hasListeners(DeletingSiteGroup::class)) {
-            Event::dispatch(new DeletingSiteGroup($group));
-        }
+        event(new DeletingSiteGroup($group));
 
         $this->projectConfig->remove(
             path: ProjectConfig::PATH_SITE_GROUPS.'.'.$group->uid,

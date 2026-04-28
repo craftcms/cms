@@ -10,6 +10,7 @@ namespace craft\filters;
 use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Env;
+use Illuminate\Support\Facades\Auth;
 use yii\base\InvalidConfigException;
 use yii\filters\auth\HttpBasicAuth;
 
@@ -19,6 +20,7 @@ use yii\filters\auth\HttpBasicAuth;
  * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-auth-httpbasicauth
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.5.0
+ * @deprecated 6.0.0 use the `auth.basic` middleware instead. @see https://laravel.com/docs/12.x/authentication#http-basic-authentication
  */
 class BasicHttpAuthStatic extends HttpBasicAuth
 {
@@ -53,7 +55,7 @@ class BasicHttpAuthStatic extends HttpBasicAuth
             throw new InvalidConfigException('Basic authentication is not configured.');
         }
 
-        $currentUser = Craft::$app->getUser()->getIdentity();
+        $currentUser = Auth::user();
 
         if ($currentUser) {
             return true;

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -7,15 +8,11 @@
 
 namespace craft\fields;
 
-/** @phpstan-ignore-next-line **/
-if (false) {
-    /**
-     * @since 3.5.12
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Time} instead.
-     */
-    class Time
-    {
-    }
+/**
+ * @since 3.5.12
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Time} instead.
+ */
+class Time extends \CraftCms\Cms\Field\Time
+{
+    use \craft\base\LegacyEventConstants;
 }
-
-class_alias(\CraftCms\Cms\Field\Time::class, Time::class);

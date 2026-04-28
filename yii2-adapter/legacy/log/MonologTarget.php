@@ -28,6 +28,7 @@ use yii\web\HttpException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @property-read string $contextMessage
  * @since 4.0.0
+ * @deprecated 6.0.0
  */
 class MonologTarget extends PsrTarget
 {
@@ -132,7 +133,7 @@ class MonologTarget extends PsrTarget
 
         /** @var Logger $logger */
         $logger = $this->logger;
-        $logger->setTimezone(new DateTimeZone(app()->getTimezone()));
+        $logger->setTimezone(new DateTimeZone(Cms::timezone()));
 
         parent::export();
 

@@ -1,24 +1,25 @@
-<div class="header">
-    <p>Steps leading up to the deprecation error:</p>
+<div class="border-b border-b-border-subtle pb-2 mb-3">
+  <p class="text-lg">Steps leading up to the deprecation error:</p>
 </div>
 
-<table class="data fullwidth fixed-layout">
-    <tbody>
-        {% for trace in log.traces %}
-            <tr>
-                <th class="light topalign" style="width: 14px;">{{ loop.revindex }}</th>
-                <td>
-                    {% if loop.first %}
-                        <strong>Deprecation error:</strong> {{ log.message|md(inlineOnly=true)|raw }}
-                    {% else %}
-                        <span class="code">{{ trace.objectClass or trace.class ? ((trace.objectClass ?: trace.class)|e|replace('\\', '\\<wbr>')~'::<wbr>')|raw }}{{ trace.method }}({{ trace.args }})</span>
-                    {% endif %}
+<table class="cp-table cp-table--auto">
+  <tbody>
+    {% for trace in log.traces %}
+      <tr>
+        <th class="light topalign">{{ loop.revindex }}</th>
+        <td>
+          {% if loop.first %}
+            <strong>Deprecation error:</strong> {{ log.message|md(inlineOnly=true)|raw }}
+          {% else %}
+            <code>{{ trace.objectClass or trace.class ? ((trace.objectClass ?: trace.class)|e|replace('\\', '\\<wbr>')~'::<wbr>')|raw }}{{ trace.method }}
+              ({{ trace.args }})</code>
+          {% endif %}
 
-                    {% if trace.file %}
-                        <br><span class="light">Called from <span class="code">{{ trace.file|e|replace('/', '/<wbr>')|raw }}:{{ trace.line }}</span></span>
-                    {% endif %}
-                </td>
-            </tr>
-        {% endfor %}
-    </tbody>
+          {% if trace.file %}
+            <br><span>Called from <code>{{ trace.file|e|replace('/', '/<wbr>')|raw }}:{{ trace.line }}</code></span>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
 </table>

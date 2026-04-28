@@ -1,27 +1,21 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\errors;
 
 use yii\base\Exception;
 
-/**
- * MissingComponentException represents an exception caused by creating a component with a missing class.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-class MissingComponentException extends Exception
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @return string the user-friendly name of this exception
+     * MissingComponentException represents an exception caused by creating a component with a missing class.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 3.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Component\Exceptions\MissingComponentException} instead.
      */
-    public function getName(): string
+    class MissingComponentException extends Exception
     {
-        return 'Missing component class';
     }
 }
+
+class_alias(\CraftCms\Cms\Component\Exceptions\MissingComponentException::class, MissingComponentException::class);

@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Support\Facades;
+
+use Illuminate\Support\Facades\Facade;
+use Override;
+
+/**
+ * @method static \CraftCms\Cms\Twig\Environment get(\CraftCms\Cms\View\TemplateMode|null $mode = null)
+ * @method static void set(\CraftCms\Cms\Twig\Environment $twig, \CraftCms\Cms\View\TemplateMode|null $mode = null)
+ * @method static \CraftCms\Cms\Twig\Environment create()
+ * @method static void registerExtension(\Twig\Extension\ExtensionInterface $extension, \CraftCms\Cms\View\TemplateMode|null $mode = null)
+ *
+ * @see \CraftCms\Cms\Twig\Twig
+ */
+class Twig extends Facade
+{
+    #[Override]
+    protected static function getFacadeAccessor(): string
+    {
+        return \CraftCms\Cms\Twig\Twig::class;
+    }
+}

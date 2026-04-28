@@ -1,18 +1,9 @@
 {% extends "_layouts/cp" %}
 {% set title = "Fields"|t('app') %}
 
-{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+{% do registerLegacyAsset('CraftCms\\Cms\\View\\LegacyAssets\\AdminTableAsset') -%}
 
-{% do view.registerTranslations('app', [
-    'Handle',
-    'Name',
-    'No fields exist yet.',
-    'No results.',
-    'No usages',
-    'This field’s values are used as search keywords.',
-    'Type',
-    'Used by',
-]) %}
+
 
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') }
@@ -109,7 +100,7 @@
     new Craft.VueAdminTable(config);
   })({{
     {
-      isMultiSite: craft.sites.isMultiSite(),
+      isMultiSite: Sites.isMultiSite(),
       emptyMessage: emptyMessage,
     }|json_encode|raw
   }});

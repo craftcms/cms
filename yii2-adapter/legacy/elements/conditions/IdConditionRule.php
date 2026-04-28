@@ -2,53 +2,14 @@
 
 namespace craft\elements\conditions;
 
-use craft\base\conditions\BaseNumberConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\db\ElementQueryInterface;
-use function CraftCms\Cms\t;
-
 /**
  * ID condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Conditions\IdConditionRule} instead.
  */
-class IdConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface
+class IdConditionRule extends \CraftCms\Cms\Element\Conditions\IdConditionRule
 {
-    /**
-     * @inheritdoc
-     */
-    public function getLabel(): string
-    {
-        return t('ID');
-    }
-
-    public static function supportsProjectConfig(): bool
-    {
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['id'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        $query->id($this->paramValue());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        return $this->matchValue($element->id);
-    }
+    use \craft\base\LegacyEventConstants;
 }

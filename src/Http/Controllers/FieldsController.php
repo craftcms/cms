@@ -4,35 +4,42 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use Craft;
-use craft\base\ElementInterface;
-use craft\base\FieldLayoutComponent;
-use craft\base\FieldLayoutElement;
-use craft\base\FieldLayoutProviderInterface;
-use craft\fieldlayoutelements\CustomField;
-use craft\helpers\Component;
-use craft\helpers\Cp;
-use craft\helpers\UrlHelper;
-use craft\models\FieldLayout;
-use craft\models\FieldLayoutTab;
-use craft\web\assets\fieldsettings\FieldSettingsAsset;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
+use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
+use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\View\HtmlStack;
+use CraftCms\Cms\View\LegacyAssets\FieldSettingsAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -41,8 +48,9 @@ use ReflectionProperty;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
-final class FieldsController
+class FieldsController
 {
     use RespondsWithFlash;
 
@@ -50,14 +58,15 @@ final class FieldsController
 
     public function __construct(
         GeneralConfig $generalConfig,
-        private Fields $fieldsService,
+        private HtmlStack $HtmlStack,
+        private readonly Fields $fieldsService,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
     public function index(): View
     {
-        return view('craftcms::settings/fields/index', [
+        return view('settings/fields/index', [
             'readOnly' => $this->readOnly,
         ]);
     }
@@ -73,7 +82,9 @@ final class FieldsController
     {
         $fieldId ??= $field->id ?? $request->input('fieldId');
 
-        abort_if(is_null($fieldId), 404, 'Field not found');
+        if (is_null($fieldId)) {
+            return $this->create();
+        }
 
         abort_if(is_null($found = $this->fieldsService->getFieldById((int) $fieldId)), 404, 'Field not found');
 
@@ -98,7 +109,7 @@ final class FieldsController
         $oldType = $request->input('oldType');
         $field = $this->fieldsService->createField($type);
 
-        if ($oldType && Component::validateComponentClass($oldType, FieldInterface::class)) {
+        if ($oldType && ComponentHelper::validateComponentClass($oldType, FieldInterface::class)) {
             $settingsStr = $request->input('settings', '');
             parse_str((string) $settingsStr, $postedOldSettings);
             $oldNamespace = $request->input('oldNamespace');
@@ -116,20 +127,18 @@ final class FieldsController
                 }
             }, ARRAY_FILTER_USE_KEY);
 
-            Typecast::properties($type, $settings);
-            Craft::configure($field, $settings);
+            Typecast::configure($field, $settings);
         }
 
-        $view = Craft::$app->getView();
-        $html = $view->renderTemplate('settings/fields/_type-settings.twig', [
+        $html = template('settings/fields/_type-settings', [
             'field' => $field,
             'namespace' => $request->input('namespace'),
         ]);
 
         return new JsonResponse([
             'settingsHtml' => $html,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => $this->HtmlStack->headHtml(),
+            'bodyHtml' => $this->HtmlStack->bodyHtml(),
         ]);
     }
 
@@ -165,22 +174,21 @@ final class FieldsController
             'uid' => $fieldUid,
             'name' => $request->input('name'),
             'handle' => $request->input('handle'),
-            'columnSuffix' => $oldField->columnSuffix ?? null,
             'instructions' => $request->input('instructions'),
             'searchable' => (bool) $request->input('searchable', true),
-            'translationMethod' => $request->input('translationMethod', Field::TRANSLATION_METHOD_NONE),
+            'translationMethod' => $request->enum('translationMethod', TranslationMethod::class, TranslationMethod::None),
             'translationKeyFormat' => $request->input('translationKeyFormat'),
             'settings' => $request->input('types', [])[Html::id($type)] ?? [],
         ]);
 
         if (! $this->fieldsService->saveField($field)) {
-            Flash::fail(t('Couldn’t save field.'));
+            Flash::error(t('Couldn’t save field.'));
 
             return $this->edit($request, $field);
         }
 
         if ($request->input('addAnother')) {
-            $redirect = UrlHelper::cpUrl('settings/fields/new', [
+            $redirect = Url::cpUrl('settings/fields/new', [
                 'type' => $field::class,
             ]);
         } else {
@@ -188,7 +196,7 @@ final class FieldsController
         }
 
         return $this->asModelSuccess($field, t('Field saved.'), 'field', [
-            'selectorHtml' => Cp::layoutElementSelectorHtml(new CustomField($field), true),
+            'selectorHtml' => app(FieldLayoutDesigner::class)->layoutElementSelectorHtml(new CustomField($field), true),
         ], $redirect);
     }
 
@@ -220,14 +228,13 @@ final class FieldsController
     {
         $element = $this->fieldLayoutComponent($request);
         $namespace = Str::random(10);
-        $view = Craft::$app->getView();
-        $html = $view->namespaceInputs(fn () => $element->getSettingsHtml(), $namespace);
+        $html = InputNamespace::namespaceInputs(fn () => $element->getSettingsHtml(), $namespace);
 
         return new JsonResponse([
             'settingsHtml' => $html,
             'namespace' => $namespace,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => $this->HtmlStack->headHtml(),
+            'bodyHtml' => $this->HtmlStack->bodyHtml(),
         ]);
     }
 
@@ -262,16 +269,16 @@ final class FieldsController
             }
 
             if (! $field->validate($validateAttributes)) {
-                if ($field->hasErrors('name')) {
-                    $field->addErrors(['label' => $field->getErrors('name')]);
-                    $field->clearErrors('name');
+                if ($field->errors()->has('name')) {
+                    $field->errors()->merge(['label' => $field->errors()->get('name')]);
+                    $field->errors()->forget('name');
                 }
 
                 return $this->asModelFailure($field, t('Couldn’t apply changes.'), 'field');
             }
         }
 
-        $selectorHtml = Cp::layoutElementSelectorHtml($element);
+        $selectorHtml = app(FieldLayoutDesigner::class)->layoutElementSelectorHtml($element);
 
         return new JsonResponse([
             'config' => ['type' => $element::class] + $element->toArray(),
@@ -279,7 +286,7 @@ final class FieldsController
         ]);
     }
 
-    public function renderCardPreview(Request $request): JsonResponse
+    public function renderCardPreview(Request $request, Fields $fields): JsonResponse
     {
         $request->validate([
             'fieldLayoutConfig' => ['required', 'array'],
@@ -289,36 +296,16 @@ final class FieldsController
         ]);
 
         $fieldLayoutConfig = $request->input('fieldLayoutConfig');
-        $cardElements = $request->input('cardElements');
-        $showThumb = $request->input('showThumb', false);
-        $thumbAlignment = $request->input('thumbAlignment', false);
-
-        if (! isset($fieldLayoutConfig['id'])) {
-            $fieldLayout = Craft::createObject([
-                'class' => FieldLayout::class,
-                ...$fieldLayoutConfig,
-            ]);
-            $fieldLayout->type = $fieldLayoutConfig['type'];
-        } else {
-            $fieldLayout = $this->fieldsService->getLayoutById($fieldLayoutConfig['id']);
-        }
-
-        abort_if(! $fieldLayout, 400, 'Invalid field layout');
-
-        $fieldLayout->setCardView(
-            array_column($cardElements, 'value')
-        ); // this fully takes care of attributes, but not fields
-
-        $fieldLayout->setCardThumbAlignment($thumbAlignment);
+        $fieldLayout = $fields->createLayout($fieldLayoutConfig);
 
         return new JsonResponse([
-            'previewHtml' => Cp::cardPreviewHtml($fieldLayout, $cardElements, $showThumb),
+            'previewHtml' => app(CardDesigner::class)->previewHtml($fieldLayout),
         ]);
     }
 
     public function tableData(Request $request): Response
     {
-        $page = (int) $request->input('page', 1);
+        $page = (int) $request->input(Cms::config()->getPageTriggerParam(), 1);
         $limit = (int) $request->input('per_page', 100);
         $searchTerm = $request->input('search');
         $orderBy = match ($request->input('sort.0.field')) {
@@ -419,6 +406,14 @@ final class FieldsController
             }
         }
 
+        $supportedTranslationMethods = array_map(
+            fn (array $translationMethods) => array_map(
+                static fn (TranslationMethod $translationMethod) => $translationMethod->value,
+                $translationMethods,
+            ),
+            $supportedTranslationMethods,
+        );
+
         // Allowed field types
         // ---------------------------------------------------------------------
 
@@ -448,7 +443,7 @@ final class FieldsController
                 $compatible = $isCurrent || $compatibleFieldTypes->contains($class);
                 $name = $class::displayName();
                 $option = [
-                    'icon' => $class::icon(),
+                    $isCurrent && $field instanceof Iconic ? $field->getIcon() : $class::icon(),
                     'value' => $class,
                 ];
                 if ($compatible) {
@@ -456,7 +451,7 @@ final class FieldsController
                 } else {
                     $option['labelHtml'] = Html::beginTag('div', ['class' => 'inline-flex']).
                         Html::tag('span', Html::encode($name)).
-                        Html::tag('span', Cp::iconSvg('triangle-exclamation'), ['class' => ['cp-icon', 'small', 'warning']]).
+                        Html::tag('span', Icons::svg('triangle-exclamation'), ['class' => ['cp-icon', 'small', 'warning']]).
                         Html::endTag('div');
                 }
                 $fieldTypeOptions[] = $option;
@@ -501,7 +496,7 @@ final class FieldsController
         if (! $this->readOnly) {
             $response
                 ->action('fields/save-field')
-                ->redirectUrl(UrlHelper::cpReferralUrl() ?? 'settings/fields')
+                ->redirectUrl(Url::cpReferralUrl() ?? 'settings/fields')
                 ->addAltAction(t('Save and continue editing'), [
                     'redirect' => 'settings/fields/edit/{id}',
                     'shortcut' => true,
@@ -514,21 +509,20 @@ final class FieldsController
                 ])
                 ->editUrl($field->id ? "settings/fields/edit/$field->id" : null);
         } else {
-            $response->noticeHtml(Cp::readOnlyNoticeHtml());
+            $response->noticeHtml(app(ContentHtml::class)->readOnlyNoticeHtml());
         }
 
         $response
             ->prepareScreen(function () {
-                $view = Craft::$app->getView();
-                $view->registerAssetBundle(FieldSettingsAsset::class);
-                $view->registerJsWithVars(fn ($typeId, $settingsId, $namespace) => <<<JS
+                app(InternalAssetRegistry::class)->register(FieldSettingsAsset::class);
+                $this->HtmlStack->jsWithVars(fn ($typeId, $settingsId, $namespace) => <<<JS
 new Craft.FieldSettingsToggle('#' + $typeId, '#' + $settingsId, $namespace, {
   wrapWithTypeClassDiv: true
 })
 JS, [
-                    $view->namespaceInputId('type'),
-                    $view->namespaceInputId('settings'),
-                    $view->namespaceInputName('types[__TYPE__]'),
+                    InputNamespace::namespaceId('type'),
+                    InputNamespace::namespaceId('settings'),
+                    InputNamespace::namespaceInputName('types[__TYPE__]'),
                 ]);
             });
 
@@ -545,7 +539,7 @@ JS, [
                     ]);
             }
             $response
-                ->metaSidebarHtml(Cp::metadataHtml([
+                ->metaSidebarHtml(app(ContentHtml::class)->metadataHtml([
                     t('ID') => $field->id,
                     t('Used by') => function () use ($field) {
                         $layouts = $this->fieldsService->findFieldUsages($field);
@@ -591,7 +585,7 @@ JS, [
                                 'class' => ['flex', 'flex-nowrap', 'gap-s'],
                             ]);
                             if ($icon) {
-                                $labelHtml .= Html::tag('div', Cp::iconSvg($icon), [
+                                $labelHtml .= Html::tag('div', Icons::svg($icon), [
                                     'class' => array_filter([
                                         'cp-icon',
                                         'small',

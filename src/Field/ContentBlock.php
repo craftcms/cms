@@ -4,48 +4,54 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
-use craft\base\Element;
-use craft\base\ElementInterface;
-use craft\base\FieldLayoutProviderInterface;
-use craft\base\NestedElementInterface;
-use craft\behaviors\EventBehavior;
-use craft\elements\ContentBlock as ContentBlockElement;
-use craft\elements\db\ContentBlockQuery;
-use craft\elements\db\EagerLoadPlan;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\ElementCollection;
-use craft\elements\NestedElementManager;
-use craft\elements\User;
-use craft\errors\InvalidFieldException;
-use craft\events\CancelableEvent;
-use craft\gql\resolvers\elements\ContentBlock as ContentBlockResolver;
-use craft\gql\types\generators\ContentBlock as ContentBlockGenerator;
-use craft\gql\types\input\ContentBlock as ContentBlockInputType;
-use craft\helpers\Gql;
-use craft\models\FieldLayout;
-use craft\web\assets\cp\CpAsset;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\NestedElementManager;
+use CraftCms\Cms\Element\Queries\ContentBlockQuery;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
+use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Gql\GqlHelper as Gql;
+use CraftCms\Cms\Gql\Resolvers\Elements\ContentBlock as ContentBlockResolver;
+use CraftCms\Cms\Gql\Types\Generators\ContentBlock as ContentBlockGenerator;
+use CraftCms\Cms\Gql\Types\Input\ContentBlock as ContentBlockInputType;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
+use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\LegacyAssets\CpAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Validator;
-use yii\base\InvalidArgumentException;
-use yii\base\InvalidConfigException;
+use InvalidArgumentException;
+use Override;
+use RuntimeException;
 
+use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Content Block field type
  */
-final class ContentBlock extends Field implements ElementContainerFieldInterface, FieldLayoutProviderInterface
+class ContentBlock extends Field implements ElementContainerFieldInterface, FieldLayoutProviderInterface
 {
     private const string VIEW_MODE_GROUPED = 'grouped';
 
@@ -53,39 +59,34 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
 
     private const string VIEW_MODE_INLINE = 'inline';
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Content Block');
     }
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'block';
     }
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public static function supportedTranslationMethods(): array
     {
         // Don't ever automatically propagate values to other sites.
         return [
-            self::TRANSLATION_METHOD_SITE,
+            TranslationMethod::Site,
         ];
     }
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|null', ContentBlockElement::class);
     }
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public static function dbType(): array|string|null
     {
         return null;
@@ -125,7 +126,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return $this->_contentBlockManager;
     }
 
-    /** {@inheritdoc} */
+    #[Override]
     public function getSettings(): array
     {
         $fieldLayout = $this->getFieldLayout();
@@ -138,13 +139,13 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         ];
     }
 
-    public function afterValidate(Validator $validator): void
+    public function afterValidate(?Validator $validator = null): void
     {
         $fieldLayout = $this->getFieldLayout();
         $fieldLayout->validate();
 
         if (! $this->ensureNoRecursion($this)) {
-            $validator->errors()->add('fieldLayout', t('Including a Content Block field recursively is not allowed.'));
+            $validator?->errors()->add('fieldLayout', t('Including a Content Block field recursively is not allowed.'));
         }
     }
 
@@ -153,25 +154,21 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return array_all($field->getFieldLayout()->getCustomFields(), fn ($customField) => ! ($customField instanceof self && ($customField->id === $this->id || ! $this->ensureNoRecursion($customField))));
     }
 
-    /** {@inheritdoc} */
     public function getFieldLayoutProviders(): array
     {
         return [$this];
     }
 
-    /** {@inheritdoc} */
     public function getUriFormatForElement(NestedElementInterface $element): ?string
     {
         return null;
     }
 
-    /** {@inheritdoc} */
     public function getRouteForElement(NestedElementInterface $element): mixed
     {
         return null;
     }
 
-    /** {@inheritdoc} */
     public function getFieldLayout(): FieldLayout
     {
         $this->_fieldLayout ??= new FieldLayout([
@@ -260,12 +257,11 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         $this->_fieldLayout = $layout;
     }
 
-    /** {@inheritdoc} */
     public function getSupportedSitesForElement(NestedElementInterface $element): array
     {
         try {
             $owner = $element->getOwner();
-        } catch (InvalidConfigException) {
+        } catch (RuntimeException) {
             $owner = $element->duplicateOf;
         }
 
@@ -276,15 +272,13 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return $this->contentBlockManager()->getSupportedSiteIds($owner);
     }
 
-    /** {@inheritdoc} */
     public function canViewElement(NestedElementInterface $element, User $user): bool
     {
         $owner = $element->getOwner();
 
-        return $owner && Craft::$app->getElements()->canView($owner, $user);
+        return $owner && $user->can('view', $owner);
     }
 
-    /** {@inheritdoc} */
     public function canSaveElement(NestedElementInterface $element, User $user): bool
     {
         $owner = $element->getOwner();
@@ -293,15 +287,14 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
             return false;
         }
 
-        if (Craft::$app->getElements()->canSave($owner, $user)) {
+        if ($user->can('save', $owner)) {
             return true;
         }
 
         // Check all the owners. Maybe the user can save one of the other ones?
-        /** @phpstan-ignore-next-line  */
-        if (! Craft::$app->getElements()->canSave($owner, $user) && ! $owner->getIsRevision()) {
+        if (! $owner->getIsRevision()) {
             foreach ($element->getOwners(['revisions' => false]) as $o) {
-                if ($o->id !== $owner->id && Craft::$app->getElements()->canSave($o, $user)) {
+                if ($o->id !== $owner->id && $user->can('save', $o)) {
                     return true;
                 }
             }
@@ -310,31 +303,27 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return false;
     }
 
-    /** {@inheritdoc} */
     public function canDuplicateElement(NestedElementInterface $element, User $user): bool
     {
         return false;
     }
 
-    /** {@inheritdoc} */
     public function canDeleteElement(NestedElementInterface $element, User $user): bool
     {
         return false;
     }
 
-    /** {@inheritdoc} */
     public function canDeleteElementForSite(NestedElementInterface $element, User $user): bool
     {
         return false;
     }
 
-    /** {@inheritdoc} */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /** {@inheritdoc} */
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -342,24 +331,22 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
 
     private function settingsHtml(bool $readOnly): string
     {
-        $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
+        app(InternalAssetRegistry::class)->register(CpAsset::class);
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/ContentBlock/settings.twig', [
+        return template('_components/fieldtypes/ContentBlock/settings', [
             'field' => $this,
             'readOnly' => $readOnly,
-            'baseIconsUrl' => "$bundle->baseUrl/images/content-block",
+            'baseIconsUrl' => craftAsset('legacy/cp/dist/images/content-block'),
         ]);
     }
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, false);
     }
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, true);
@@ -370,7 +357,16 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         ?ElementInterface $element,
         bool $fromRequest,
     ): ContentBlockElement {
+        if ($value instanceof ContentBlockElement) {
+            if ($element) {
+                $this->setOwnerOnContentBlockElement($element, $value);
+            }
+
+            return $value;
+        }
+
         if ($value instanceof ElementQueryInterface) {
+            /** @var ?ContentBlockElement $contentBlock */
             $contentBlock = $value->one();
 
             if ($contentBlock) {
@@ -408,7 +404,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
             return $this->_createContentBlockFromSerializedData($value, $element, $fromRequest);
         }
 
-        if (Craft::$app->getRequest()->getIsPreview()) {
+        if (request()->isPreview()) {
             $contentBlock = $this->createContentBlockQuery($element)
                 ->withProvisionalDrafts()
                 ->one();
@@ -439,17 +435,20 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
                     ->fieldId($this->id)
                     ->ownerId(array_map(fn (ElementInterface $e) => $e->id, $sameSiteElements))
                     ->siteId($element->siteId)
+                    // explicitly fetch revisions if the owner element is a revision
+                    // (see https://github.com/craftcms/cms/pull/18161)
+                    ->revisions($element->getIsRevision())
                     ->indexBy('ownerId')
-                    ->collect();
+                    ->get();
 
                 foreach ($sameSiteElements as $e) {
                     $contentBlock = $contentBlocks[$e->id] ?? null;
                     if ($contentBlock) {
                         $this->setOwnerOnContentBlockElement($e, $contentBlock);
                     }
-                    $e->setEagerLoadedElements($handle, $contentBlock ? [$contentBlock] : [], new EagerLoadPlan([
-                        'handle' => $handle,
-                    ]));
+                    $e->setEagerLoadedElements($handle, $contentBlock ? [$contentBlock] : [], new EagerLoadPlan(
+                        handle: $handle,
+                    ));
                 }
 
                 /** @phpstan-ignore-next-line */
@@ -470,7 +469,8 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
 
     private function createContentBlockElement(?ElementInterface $owner): ContentBlockElement
     {
-        return Craft::$app->getElements()->createElement([
+        /** @var ContentBlockElement */
+        return Elements::createElement([
             'type' => ContentBlockElement::class,
             'siteId' => $owner->siteId,
             'owner' => $owner,
@@ -484,26 +484,21 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
 
         // Existing element?
         if ($owner?->id) {
-            $query->attachBehavior(self::class, new EventBehavior([
-                ElementQuery::EVENT_BEFORE_PREPARE => function (
-                    CancelableEvent $event,
-                    ContentBlockQuery $query,
-                ) use ($owner) {
-                    $query->ownerId = $owner->id;
+            $query->beforeQuery(function (ContentBlockQuery $query) use ($owner) {
+                $query->owner($owner);
 
-                    // Clear out id=false if this query was populated previously
-                    if ($query->id === false) {
-                        $query->id = null;
-                    }
+                // Clear out id=false if this query was populated previously
+                if ($query->id === false) {
+                    $query->id = null;
+                }
 
-                    // If the owner is a revision, allow revision elements to be returned as well
-                    if ($owner->getIsRevision()) {
-                        $query
-                            ->revisions(null)
-                            ->trashed(null);
-                    }
-                },
-            ], true));
+                // If the owner is a revision, allow revision elements to be returned as well
+                if ($owner->getIsRevision()) {
+                    $query
+                        ->revisions(null)
+                        ->trashed(null);
+                }
+            });
 
             // Prepare the query for lazy eager loading
             $query->prepForEagerLoading($this->handle, $owner);
@@ -526,8 +521,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         }
     }
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         /** @var ContentBlockElement $value */
@@ -540,8 +534,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         ];
     }
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
     {
         /** @var ContentBlockElement $value */
@@ -554,36 +547,31 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         ];
     }
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function copyValue(ElementInterface $from, ElementInterface $to): void
     {
         // We'll do it later from afterElementPropagate()
     }
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function getIsTranslatable(?ElementInterface $element): bool
     {
         return $this->contentBlockManager()->getIsTranslatable($element);
     }
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function showStatus(): bool
     {
         return false;
     }
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function useFieldset(): bool
     {
         return $this->viewMode !== self::VIEW_MODE_INLINE;
     }
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         if (! $element?->id) {
@@ -598,8 +586,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return $this->inputHtmlInternal($value, $element, false);
     }
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return $this->inputHtmlInternal($value, $element, true);
@@ -610,19 +597,17 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         // Make sure the content block is fully saved
         /** @var ContentBlockElement $value */
         if (! $value->id) {
-            Craft::$app->getElements()->saveElement($value);
+            Elements::saveElement($value);
         }
 
-        $view = Craft::$app->getView();
         $id = $this->getInputId();
 
-        $originalNamespace = $view->getNamespace();
-        $namespace = $view->namespaceInputName($this->handle);
-        $view->setNamespace($namespace);
-        $form = $this->getFieldLayout()->createForm($value, $static);
-        $view->setNamespace($originalNamespace);
+        $form = InputNamespace::with(
+            namespace: $namespace = InputNamespace::namespaceInputName($this->handle),
+            callback: fn () => $this->getFieldLayout()->createForm($value, $static),
+        );
 
-        $formHtml = $view->namespaceInputs(fn () => $form->render(), $this->handle);
+        $formHtml = InputNamespace::namespaceInputs(fn () => $form->render(), $this->handle);
 
         $settings = [
             'baseInputName' => $namespace,
@@ -634,12 +619,12 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
             'visibleLayoutElements' => $form->getVisibleElements(),
         ];
 
-        $view->registerJsWithVars(fn ($id, $settings) => <<<JS
+        HtmlStack::jsWithVars(fn ($id, $settings) => <<<JS
 (() => {
   new Craft.ContentBlockEditor($('#' + $id), $settings)
 })();
 JS, [
-            $view->namespaceInputId($id),
+            InputNamespace::namespaceId($id),
             $settings,
         ]);
 
@@ -662,80 +647,48 @@ JS, [
         ]);
     }
 
-    /** {@inheritdoc} */
-    #[\Override]
-    public function getElementValidationRules(): array
+    #[Override]
+    public function getElementRules(ElementInterface $element): array
     {
+        if (! $element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_DEFAULT, ElementRules::SCENARIO_LIVE)) {
+            return [];
+        }
+
         return [
-            [
-                $this->validateContentBlock(...),
-                'on' => [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE],
-                'skipOnEmpty' => false,
-            ],
+            fn (string $attribute, ContentBlockElement $value) => $this->validateContentBlock($element, $value),
         ];
     }
 
-    private function validateContentBlock(ElementInterface $element): void
+    private function validateContentBlock(ElementInterface $element, ContentBlockElement $value): void
     {
-        /** @var ContentBlockElement $value */
-        $value = $element->getFieldValue($this->handle);
-        $scenario = $element->getScenario();
         $value->setOwner($element);
 
-        if (in_array($scenario, [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_LIVE])) {
-            $value->setScenario($scenario);
+        if ($element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_LIVE)) {
+            $value->ruleset->useScenario($element->ruleset->getScenario());
         }
 
         if (! $value->validate()) {
-            $element->addModelErrors($value, $this->handle);
+            // Merge errors from the ContentBlockElement onto the parent element
+            // We need to use the Laravel MessageBag directly since Element uses Laravel validation
+            foreach ($value->errors()->getMessages() as $attribute => $errors) {
+                foreach ($errors as $error) {
+                    $element->errors()->add("$this->handle.$attribute", $error);
+                }
+            }
+
             if ($value->id) {
                 $element->addInvalidNestedElementIds([$value->id]);
             }
         }
     }
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         return $this->contentBlockManager()->getSearchKeywords($element);
     }
 
-    /** {@inheritdoc} */
-    //    public function getEagerLoadingMap(array $sourceElements): array|null|false
-    //    {
-    //        // Get the source element IDs
-    //        $sourceElementIds = array_map(fn(elementInterface $element) => $element->id, $sourceElements);
-    //
-    //        // Return any relation data on these elements, defined with this field
-    //        $map = (new Query())
-    //            ->select([
-    //                'source' => 'elements_owners.ownerId',
-    //                'target' => 'contentblocks.id',
-    //            ])
-    //            ->from(['contentblocks' => DbTable::CONTENTBLOCKS])
-    //            ->innerJoin(['elements_owners' => DbTable::ELEMENTS_OWNERS], [
-    //                'and',
-    //                '[[elements_owners.elementId]] = [[contentblocks.id]]',
-    //                ['elements_owners.ownerId' => $sourceElementIds],
-    //            ])
-    //            ->where(['contentblocks.fieldId' => $this->id])
-    //            ->orderBy(['elements_owners.sortOrder' => SORT_ASC])
-    //            ->all();
-    //
-    //        return [
-    //            'elementType' => ContentBlockElement::class,
-    //            'map' => $map,
-    //            'criteria' => [
-    //                'fieldId' => $this->id,
-    //                'allowOwnerDrafts' => true,
-    //                'allowOwnerRevisions' => true,
-    //            ],
-    //        ];
-    //    }
-
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function getContentGqlType(): array
     {
         return [
@@ -746,8 +699,7 @@ JS, [
         ];
     }
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function getContentGqlMutationArgumentType(): Type|array
     {
         return ContentBlockInputType::getType($this);
@@ -756,24 +708,21 @@ JS, [
     // Events
     // -------------------------------------------------------------------------
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function afterSave(bool $isNew): void
     {
         Fields::saveLayout($this->getFieldLayout(), false);
         parent::afterSave($isNew);
     }
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
         $this->contentBlockManager()->maintainNestedElements($element, $isNew);
         parent::afterElementPropagate($element, $isNew);
     }
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function beforeElementDelete(ElementInterface $element): bool
     {
         if (! parent::beforeElementDelete($element)) {
@@ -786,28 +735,21 @@ JS, [
         return true;
     }
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function beforeElementDeleteForSite(ElementInterface $element): bool
     {
-        $elementsService = Craft::$app->getElements();
-
         /** @var ContentBlockElement[] $contentBlocks */
         $contentBlocks = ContentBlockElement::find()
-            ->primaryOwnerId($element->id)
+            ->primaryOwner($element)
             ->status(null)
-            ->siteId($element->siteId)
             ->all();
 
-        foreach ($contentBlocks as $contentBlock) {
-            $elementsService->deleteElementForSite($contentBlock);
-        }
+        Elements::deleteElementsForSite($contentBlocks);
 
         return true;
     }
 
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     public function afterElementRestore(ElementInterface $element): void
     {
         // Also restore any entries for this element
@@ -834,8 +776,6 @@ JS, [
             $contentBlock = $this->createContentBlockQuery($element)->one();
         }
 
-        $request = Craft::$app->getRequest();
-
         $fieldNamespace = $element->getFieldParamNamespace();
         $baseFieldNamespace = $fieldNamespace ? "$fieldNamespace.$this->handle" : null;
 
@@ -848,12 +788,12 @@ JS, [
                 // this is so that extra drafts don't get created for matrix in matrix scenario
                 // where both are set to inline-editable blocks view mode
                 (
-                    $request->getIsConsoleRequest() ||
-                    $request->getActionSegments() !== ['elements', 'update-field-layout']
+                    app()->runningInConsole() ||
+                    request()->actionSegments() !== ['elements', 'update-field-layout']
                 )
             ) {
                 // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
-                $contentBlock = app(Drafts::class)->createDraft($contentBlock, Craft::$app->getUser()->getId(), null, null, [
+                $contentBlock = app(Drafts::class)->createDraft($contentBlock, Auth::id(), null, null, [
                     'canonicalId' => $contentBlock->id,
                     'primaryOwnerId' => $element->id,
                     'owner' => $element,

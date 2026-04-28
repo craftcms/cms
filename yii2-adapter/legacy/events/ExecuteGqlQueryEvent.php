@@ -14,6 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.11
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Gql\Events\ExecutingGqlQuery} or {@see \CraftCms\Cms\Gql\Events\ExecutedGqlQuery} instead.
  */
 class ExecuteGqlQueryEvent extends Event
 {
@@ -52,4 +53,16 @@ class ExecuteGqlQueryEvent extends Event
      * @var array|null The query result to be returned.
      */
     public ?array $result = null;
+
+    /**
+     * @var string[]|null The cache invalidation tags that were registered during the query execution.
+     * @since 5.9.11
+     */
+    public ?array $cacheTags = null;
+
+    /**
+     * @var int|null The duration that the query should be cached for.
+     * @since 5.9.11
+     */
+    public ?int $cacheDuration = null;
 }

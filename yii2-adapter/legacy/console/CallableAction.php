@@ -8,6 +8,7 @@
 namespace craft\console;
 
 use Craft;
+use Illuminate\Support\Facades\Log;
 use ReflectionFunction;
 use ReflectionMethod;
 use yii\base\Action;
@@ -36,7 +37,7 @@ class CallableAction extends Action
     public function runWithParams($params): mixed
     {
         $args = $this->_bindActionParams($params);
-        Craft::debug('Running callable action', __METHOD__);
+        Log::debug('Running callable action', [__METHOD__]);
         if (Craft::$app->requestedParams === null) {
             Craft::$app->requestedParams = $args;
         }

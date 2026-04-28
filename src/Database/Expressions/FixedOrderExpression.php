@@ -12,7 +12,7 @@ use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
 use Tpetry\QueryExpressions\Value\Value;
 
-final readonly class FixedOrderExpression implements Expression
+readonly class FixedOrderExpression implements Expression
 {
     use StringizeExpression;
 

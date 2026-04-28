@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\GarbageCollection;
 
-use craft\elements\Address;
-use craft\elements\Asset;
-use craft\elements\ContentBlock;
-use craft\elements\Entry;
-use craft\elements\User;
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedDraftsAndRevisions;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedForeignKeyRows;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedNestedElements;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedRelations;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedSearchIndexes;
+use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedSearchIndexJobs;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedStructureElements;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePointlessChangeData;
@@ -32,10 +33,12 @@ use CraftCms\Cms\GarbageCollection\Actions\HardDeleteVolumes;
 use CraftCms\Cms\GarbageCollection\Actions\PurgePendingUsers;
 use CraftCms\Cms\GarbageCollection\Actions\PurgeUnsavedDrafts;
 use CraftCms\Cms\GarbageCollection\Actions\RemoveEmptyTempFolders;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Lottery;
+use Symfony\Component\Console\Output\OutputInterface;
 
-final class GarbageCollection
+class GarbageCollection
 {
     /**
      * @var int The number of items that should be deleted in a single batch.
@@ -61,6 +64,15 @@ final class GarbageCollection
      * @var bool Whether CLI output should be muted.
      */
     public bool $silent = false;
+
+    /**
+     * @var ?OutputInterface The output to use when garbage collection is run from a console command.
+     */
+    public ?OutputInterface $output = null;
+
+    public function __construct(
+        private readonly ElementCaches $elementCaches,
+    ) {}
 
     /**
      * Possibly runs garbage collection.
@@ -111,6 +123,7 @@ final class GarbageCollection
             DeleteOrphanedDraftsAndRevisions::class,
             DeleteOrphanedSearchIndexes::class,
             DeleteOrphanedRelations::class,
+            DeleteOrphanedSearchIndexJobs::class,
             DeleteOrphanedStructureElements::class,
             DeleteOrphanedForeignKeyRows::class,
             DeletePointlessChangeData::class,
@@ -124,7 +137,7 @@ final class GarbageCollection
         ]);
 
         // Invalidate all element caches so any hard-deleted elements don't look like they still exist
-        \Craft::$app->getElements()->invalidateAllCaches();
+        $this->elementCaches->invalidateAll();
     }
 
     /**

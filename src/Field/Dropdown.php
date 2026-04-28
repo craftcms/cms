@@ -4,59 +4,44 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
-use craft\base\ElementInterface;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 
 use function CraftCms\Cms\t;
 
 /**
  * Dropdown represents a Dropdown field.
  */
-final class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface, SortableFieldInterface
+class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface, SortableFieldInterface
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected static bool $optgroups = true;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected static bool $optionIcons = true;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected static bool $optionColors = true;
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function displayName(): string
     {
         return t('Dropdown');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function icon(): string
     {
         return 'ballot-check';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function getStatus(ElementInterface $element): ?array
     {
@@ -75,18 +60,12 @@ final class Dropdown extends BaseOptionsField implements InlineEditableFieldInte
         return parent::getStatus($element);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->inputHtmlInternal($value, $element, false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
     {
@@ -111,7 +90,7 @@ final class Dropdown extends BaseOptionsField implements InlineEditableFieldInte
 
         if (! $value->valid) {
             if (! $static) {
-                Craft::$app->getView()->setInitialDeltaValue($this->handle, $this->encodeValue($value->value));
+                DeltaRegistry::setInitialValue($this->handle, $this->encodeValue($value->value));
             }
 
             $default = $this->defaultValue();
@@ -127,7 +106,7 @@ final class Dropdown extends BaseOptionsField implements InlineEditableFieldInte
             }
         }
 
-        return Cp::selectizeHtml([
+        return FormFields::selectizeHtml([
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
@@ -145,18 +124,12 @@ final class Dropdown extends BaseOptionsField implements InlineEditableFieldInte
         return $encValue === null || $encValue === '' ? '__blank__' : $encValue;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function optionsSettingLabel(): string
     {
         return t('Dropdown Options');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function isOptionSelected(array $option, mixed $value, array &$selectedValues, bool &$selectedBlankOption): bool
     {

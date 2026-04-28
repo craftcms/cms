@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use Craft;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 
@@ -29,7 +30,7 @@ abstract class BaseTextLinkType extends BaseLinkType
     {
         $value = mb_strtolower($value);
 
-        return array_any((array) $this->urlPrefix(), fn ($prefix) => str_starts_with($value, $prefix));
+        return array_any((array) $this->urlPrefix(), fn ($prefix) => str_starts_with($value, (string) $prefix));
     }
 
     #[\Override]
@@ -71,8 +72,7 @@ abstract class BaseTextLinkType extends BaseLinkType
             ],
         ], $this->inputAttributes());
 
-        $view = Craft::$app->getView();
-        $view->registerJsWithVars(fn ($id, $settings) => <<<JS
+        HtmlStack::jsWithVars(fn ($id, $settings) => <<<JS
 (() => {
   new Craft.LinkInput('#' + $id, $settings)
 })();
@@ -101,7 +101,7 @@ JS, [
                 Html::beginTag('div', [
                     'class' => 'chip-actions',
                 ]).
-                Cp::disclosureMenu([], [
+                app(MenuHtml::class)->disclosureMenu([], [
                     'omitIfEmpty' => false,
                     'hiddenLabel' => t('Actions'),
                     'buttonAttributes' => [
@@ -114,7 +114,7 @@ JS, [
                 Html::endTag('div'). // .chip-content
                 Html::endTag('div'); // .chip;
         } else {
-            $html = Cp::textHtml(array_merge($textInputAttributes, [
+            $html = FormFields::textHtml(array_merge($textInputAttributes, [
                 'value' => $value,
             ]));
         }

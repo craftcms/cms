@@ -4,23 +4,24 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Announcement;
 
-use craft\helpers\Queue;
-use craft\queue\jobs\Announcement as AnnouncementJob;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Announcement\Jobs\SendAnnouncement;
 use CraftCms\Cms\Announcement\Models\Announcement;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\t;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use yii\helpers\Markdown;
 
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final readonly class Announcements
+readonly class Announcements
 {
     public function __construct(
         private Plugins $plugins,
@@ -30,7 +31,7 @@ final readonly class Announcements
      * Pushes a new announcement out to all control panel users.
      *
      * ::: tip
-     * Run the heading and body through [[\craft\i18n\Translation::prep()]] rather than [[\CraftCms\Cms\t()]]
+     * Run the heading and body through {@see I18N::prep} rather than {@see t()}
      * so they can be lazy-translated for users’ preferred languages rather than the current app language.
      * :::
      *
@@ -41,13 +42,12 @@ final readonly class Announcements
      */
     public function push(string $heading, string $body, ?string $pluginHandle = null, bool $adminsOnly = false): void
     {
-        /** @todo: Laravel queue */
-        Queue::push(new AnnouncementJob([
-            'heading' => $heading,
-            'body' => $body,
-            'pluginHandle' => $pluginHandle,
-            'adminsOnly' => $adminsOnly,
-        ]));
+        dispatch(new SendAnnouncement(
+            heading: $heading,
+            body: $body,
+            pluginHandle: $pluginHandle,
+            adminsOnly: $adminsOnly,
+        ));
     }
 
     /**
@@ -94,7 +94,7 @@ final readonly class Announcements
                 'icon' => $icon,
                 'label' => $label,
                 'heading' => Html::widont(Html::encode(t($announcement->heading))),
-                'body' => Html::widont(Markdown::processParagraph(Html::encode(t($announcement->body)))),
+                'body' => Html::widont(Markdown::parseParagraph(Html::encode(t($announcement->body)))),
                 'unread' => $announcement->unread,
             ];
         })->all();

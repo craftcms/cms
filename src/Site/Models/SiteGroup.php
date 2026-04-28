@@ -11,12 +11,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-final class SiteGroup extends BaseModel
+class SiteGroup extends BaseModel
 {
     use HasFactory;
     use HasUid;
     use SoftDeletes;
 
+    #[\Override]
     protected $table = Table::SITEGROUPS;
 
     /**

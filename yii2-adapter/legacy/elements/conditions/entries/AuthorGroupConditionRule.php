@@ -2,73 +2,14 @@
 
 namespace craft\elements\conditions\entries;
 
-use craft\base\conditions\BaseMultiSelectConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\db\EntryQuery;
-use craft\elements\Entry;
-use craft\models\UserGroup;
-use CraftCms\Cms\Support\Facades\UserGroups;
-use function CraftCms\Cms\t;
-
 /**
  * Author group condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Entry\Conditions\AuthorGroupConditionRule} instead.
  */
-class AuthorGroupConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class AuthorGroupConditionRule extends \CraftCms\Cms\Entry\Conditions\AuthorGroupConditionRule
 {
-    /**
-     * @inheritdoc
-     */
-    public function getLabel(): string
-    {
-        return t('Author Group');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['authorGroup', 'authorGroupId'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function isSelectable(): bool
-    {
-        return UserGroups::getAllGroups()->isNotEmpty();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function options(): array
-    {
-        return UserGroups::getAllGroups()->pluck('name', 'uid')->all();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var EntryQuery $query */
-        $query->authorGroupId($this->paramValue(fn($uid) => UserGroups::getGroupByUid($uid)->id ?? null));
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        /** @var Entry $element */
-        $groups = $element->getAuthor()?->getGroups() ?? [];
-        $groupUids = array_map(fn(UserGroup $group) => $group->uid, $groups);
-        return $this->matchValue($groupUids);
-    }
+    use \craft\base\LegacyEventConstants;
 }

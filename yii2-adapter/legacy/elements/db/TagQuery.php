@@ -36,6 +36,7 @@ use CraftCms\Cms\Support\Arr;
  * @replace {myElement} myTag
  * @replace {element-class} \craft\elements\Tag
  * @deprecated in 6.0.0
+ * @phpstan-ignore class.missingExtends
  */
 class TagQuery extends ElementQuery
 {

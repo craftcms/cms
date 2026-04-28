@@ -14,7 +14,7 @@ use craft\web\Controller;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Utility\Utilities\QueueManager;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 use yii\db\Exception as YiiDbException;
 use yii\queue\Queue;
 use yii\web\BadRequestHttpException;
@@ -31,6 +31,7 @@ use function CraftCms\Cms\t;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0
  */
 class QueueController extends Controller
 {
@@ -175,24 +176,6 @@ class QueueController extends Controller
     }
 
     /**
-     * Returns info about all the jobs in the queue.
-     *
-     * @return Response
-     */
-    public function actionGetJobInfo(): Response
-    {
-        $this->requireAcceptsJson();
-        $this->requirePermission('accessCp');
-
-        $limit = $this->request->getParam('limit');
-
-        return $this->asJson([
-            'total' => $this->queue->getTotalJobs(),
-            'jobs' => $this->queue->getJobInfo($limit),
-        ]);
-    }
-
-    /**
      * Returns the details for a particular job. This includes the `job` column containing a lot of raw data.
      *
      * @return Response
@@ -221,7 +204,7 @@ class QueueController extends Controller
         if (isset($details['job'])) {
             try {
                 $details['job'] = Json::encode($details['job'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-            } catch (\InvalidArgumentException) {
+            } catch (InvalidArgumentException) {
                 // Just leave the message alone
             }
         }

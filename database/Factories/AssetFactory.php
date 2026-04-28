@@ -11,15 +11,16 @@ use CraftCms\Cms\Element\Models\Element;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Override;
 
-final class AssetFactory extends Factory
+class AssetFactory extends Factory
 {
+    #[Override]
     protected $model = Asset::class;
 
     #[Override]
     public function definition(): array
     {
         return [
-            'id' => Element::factory()->set('type', \CraftCms\Cms\Element\Elements\Asset::class),
+            'id' => Element::factory()->set('type', \CraftCms\Cms\Asset\Elements\Asset::class),
             'volumeId' => Volume::factory(),
             'folderId' => VolumeFolder::factory(),
             'filename' => fake()->word().'.jpg',
@@ -27,7 +28,14 @@ final class AssetFactory extends Factory
         ];
     }
 
-    #[\Override]
+    public function createElement(array $attributes = []): \CraftCms\Cms\Asset\Elements\Asset
+    {
+        $model = $this->create($attributes);
+
+        return \CraftCms\Cms\Asset\Elements\Asset::find()->id($model->id)->one();
+    }
+
+    #[Override]
     public function configure(): self
     {
         return $this->afterCreating(function (Asset $asset) {
@@ -35,7 +43,7 @@ final class AssetFactory extends Factory
             if ($asset->id === 0) {
                 $asset->update([
                     'id' => Element::query()
-                        ->where('type', \CraftCms\Cms\Element\Elements\Asset::class)
+                        ->where('type', \CraftCms\Cms\Asset\Elements\Asset::class)
                         ->latest('id')
                         ->first()
                         ->id,

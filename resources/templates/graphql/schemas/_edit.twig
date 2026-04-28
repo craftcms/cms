@@ -35,7 +35,7 @@
 
             <li>
                 {{ checkbox({
-                    label: props.label,
+                    label: raw(props.label|md(inlineOnly=true, encode=true)),
                     name: 'permissions[]',
                     value: permissionName,
                     checked: checked,
@@ -60,12 +60,8 @@
 
 {% from _self import permissionList %}
 
-{% do view.registerTranslations('app', [
-    "Select All",
-    "Deselect All",
-]) %}
 
-{% do view.registerAssetBundle("craft\\web\\assets\\userpermissions\\UserPermissionsAsset") %}
+{% do registerLegacyAsset("CraftCms\\Cms\\View\\LegacyAssets\\UserPermissionsAsset") %}
 
 {% block content %}
     {{ actionInput(schema.isPublic ? 'graphql/save-public-schema' : 'graphql/save-schema') }}
@@ -80,7 +76,7 @@
             id: 'name',
             name: 'name',
             value: schema.name,
-            errors: schema.getErrors('name'),
+            errors: schema.errors.get('name'),
             autofocus: true,
             required: true
         }) }}
@@ -90,29 +86,50 @@
 
     <h2>{{ 'Choose the available content for querying with this schema:'|t('app') }}</h2>
 
-    {% set schemaComponents = craft.app.gql.getAllSchemaComponents %}
+    {% set schemaComponents = Gql.getAllSchemaComponents() %}
 
     {% for category, catPermissions in schemaComponents.queries|filter %}
+        {% set headingId = "content-heading-#{random()}" %}
         <div class="user-permissions">
-            <h3>{{ category }}</h3>
-            <div class="select-all"></div>
+            <h3 id="{{ headingId }}">{{ category }}</h3>
+            <button type="button" class="select-all" aria-describedby="{{ headingId }}"></button>
 
             {{ permissionList(schema, catPermissions) }}
         </div>
     {% endfor %}
 
-    <hr/>
+    <hr>
     <h2>{{ 'Choose the available mutations for this schema:'|t('app') }}</h2>
 
     {% for category, catPermissions in schemaComponents.mutations|filter %}
+        {% set headingId = "mutation-heading-#{random()}" %}
         <div class="user-permissions">
-            <h3>{{ category }}</h3>
-            <div class="select-all"></div>
+            <h3 id="{{ headingId }}">{{ category }}</h3>
+            <button type="button" class="select-all" aria-describedby="{{ headingId }}"></button>
 
             {{ permissionList(schema, catPermissions) }}
         </div>
     {% endfor %}
 
+  <hr>
+  <h2>{{ 'Choose optional features available to this schema:'|t('app') }}</h2>
+
+  <div class="user-permissions">
+    {{ permissionList(schema, {
+      'directive:parseRefs': {
+        label: '{name} directive'|t('app', {
+          name: '`@parseRefs`',
+        }),
+        warning: 'Can be exploited to reveal sensitive content by information disclosure attacks.'|t('app'),
+      },
+      'directive:transform': not config('craft.general.disableGraphqlTransformDirective') ? {
+        label: '{name} directive'|t('app', {
+          name: '`@transform`',
+        }),
+        warning: 'Can be exploited by DoS attacks.'|t('app'),
+      },
+    }|filter) }}
+  </div>
 
 {% endblock %}
 
@@ -131,7 +148,7 @@
                 id: 'expiryDate',
                 name: 'expiryDate',
                 value: (token.expiryDate ? token.expiryDate : null),
-                errors: token.getErrors('expiryDate')
+                errors: token.errors.get('expiryDate')
             }) }}
         </div>
     {% endif %}

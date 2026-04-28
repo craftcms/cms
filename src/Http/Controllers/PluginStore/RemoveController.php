@@ -11,20 +11,14 @@ use function CraftCms\Cms\t;
 /**
  * @internal
  */
-final class RemoveController extends BaseUpdaterController
+class RemoveController extends BaseUpdaterController
 {
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function pageTitle(): string
     {
         return t('Plugin Uninstaller');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function initialData(): array
     {
@@ -37,9 +31,6 @@ final class RemoveController extends BaseUpdaterController
         return $data;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function initialState(bool $force = false): array
     {
@@ -50,9 +41,6 @@ final class RemoveController extends BaseUpdaterController
         return $this->actionState(self::ACTION_COMPOSER_REMOVE);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function postComposerInstallState(): array
     {
@@ -61,9 +49,6 @@ final class RemoveController extends BaseUpdaterController
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function returnUrl(): string
     {

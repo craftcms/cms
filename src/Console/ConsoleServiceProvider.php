@@ -8,6 +8,7 @@ use CraftCms\Cms\Console\Commands\ClearCachesCommand;
 use CraftCms\Cms\Console\Commands\Env\EnvRemoveCommand;
 use CraftCms\Cms\Console\Commands\Env\EnvSetCommand;
 use CraftCms\Cms\Console\Commands\Env\EnvShowCommand;
+use CraftCms\Cms\Console\Commands\IdeHelper\GenerateCustomFieldsCommand;
 use CraftCms\Cms\Console\Commands\Install\InstallCheckCommand;
 use CraftCms\Cms\Console\Commands\Install\InstallCommand;
 use CraftCms\Cms\Console\Commands\InvalidateTagsCommand;
@@ -15,19 +16,27 @@ use CraftCms\Cms\Console\Commands\Setup\CloudCommand;
 use CraftCms\Cms\Console\Commands\Setup\DatabaseCredentialsCommand;
 use CraftCms\Cms\Console\Commands\Setup\SetupCommand;
 use CraftCms\Cms\Console\Commands\Setup\WelcomeCommand;
+use CraftCms\Cms\Console\Commands\System\OffCommand;
+use CraftCms\Cms\Console\Commands\System\OnCommand;
 use CraftCms\Cms\Console\Commands\Twig\TwigCacheCommand;
 use CraftCms\Cms\Console\Commands\Twig\TwigClearCommand;
 use CraftCms\Cms\Console\Commands\UpCommand;
 use CraftCms\Cms\Console\Commands\Utils\AsciiFilenamesCommand;
 use CraftCms\Cms\Console\Commands\Utils\DeleteEmptyVolumeFoldersCommand;
+use CraftCms\Cms\Console\Commands\Utils\FixElementUidsCommand;
+use CraftCms\Cms\Console\Commands\Utils\FixFieldLayoutUidsCommand;
+use CraftCms\Cms\Console\Commands\Utils\PruneOrphanedEntriesCommand;
+use CraftCms\Cms\Console\Commands\Utils\PruneProvisionalDraftsCommand;
+use CraftCms\Cms\Console\Commands\Utils\PruneRevisionsCommand;
 use CraftCms\Cms\Console\Commands\Utils\UpdateUsernamesCommand;
 use CraftCms\Cms\GarbageCollection\Commands\RunCommand;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Support\ServiceProvider;
 
 /**
  * @internal
  */
-final class ConsoleServiceProvider extends ServiceProvider
+class ConsoleServiceProvider extends ServiceProvider
 {
     private array $commands = [
         // Install
@@ -41,6 +50,10 @@ final class ConsoleServiceProvider extends ServiceProvider
         SetupCommand::class,
         CloudCommand::class,
 
+        // System
+        OffCommand::class,
+        OnCommand::class,
+
         // Env
         EnvShowCommand::class,
         EnvSetCommand::class,
@@ -49,6 +62,9 @@ final class ConsoleServiceProvider extends ServiceProvider
         // Gc
         RunCommand::class,
 
+        // IDE Helper
+        GenerateCustomFieldsCommand::class,
+
         // Twig
         TwigCacheCommand::class,
         TwigClearCommand::class,
@@ -56,6 +72,11 @@ final class ConsoleServiceProvider extends ServiceProvider
         // Utils
         AsciiFilenamesCommand::class,
         DeleteEmptyVolumeFoldersCommand::class,
+        FixFieldLayoutUidsCommand::class,
+        FixElementUidsCommand::class,
+        PruneRevisionsCommand::class,
+        PruneProvisionalDraftsCommand::class,
+        PruneOrphanedEntriesCommand::class,
         UpdateUsernamesCommand::class,
     ];
 
@@ -66,7 +87,7 @@ final class ConsoleServiceProvider extends ServiceProvider
         }
 
         $this->app->terminating(function () {
-            app('Craft')->getProjectConfig()->flush();
+            $this->app->make(ProjectConfig::class)->flush();
         });
 
         $this->commands($this->commands);

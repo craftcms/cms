@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Concerns;
 
-use craft\base\Element;
-use craft\base\Event as YiiEvent;
-use craft\events\RegisterComponentTypesEvent;
-use craft\services\Elements;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Events\RegisterElementTypes;
 use CraftCms\Cms\Plugin\Plugin;
+use Illuminate\Support\Facades\Event;
 
 /**
  * @mixin Plugin
@@ -30,13 +29,8 @@ trait HasElementTypes
             return;
         }
 
-        /** @todo: Laravelize */
-        YiiEvent::on(
-            Elements::class,
-            Elements::EVENT_REGISTER_ELEMENT_TYPES,
-            function (RegisterComponentTypesEvent $event) {
-                array_push($event->types, ...$this->elementTypes);
-            }
-        );
+        Event::listen(function (RegisterElementTypes $event) {
+            array_push($event->types, ...$this->elementTypes);
+        });
     }
 }

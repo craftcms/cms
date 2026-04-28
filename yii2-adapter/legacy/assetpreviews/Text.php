@@ -7,36 +7,18 @@
 
 namespace craft\assetpreviews;
 
-use Craft;
-use craft\base\AssetPreviewHandler;
-use craft\elements\Asset;
-use craft\helpers\FileHelper;
-use CraftCms\Cms\Support\Html;
-
-/**
- * Provides functionality to preview text files as HTML
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.4.0
- */
-class Text extends AssetPreviewHandler
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Provides functionality to preview text files as HTML.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 3.4.0
+     * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\Asset\PreviewHandlers\Text} instead.
      */
-    public function getPreviewHtml(array $variables = []): string
+    class Text extends \CraftCms\Cms\Asset\PreviewHandlers\Text
     {
-        $localCopy = $this->asset->getCopyOfFile();
-        $contents = Html::encode(file_get_contents($localCopy));
-        FileHelper::unlink($localCopy);
-        $language = $this->asset->kind === Asset::KIND_HTML ? 'markup' : $this->asset->kind;
-
-        return Craft::$app->getView()->renderTemplate('assets/_previews/text.twig',
-            array_merge([
-                'asset' => $this->asset,
-                'language' => $language,
-                'contents' => $contents,
-            ], $variables)
-        );
     }
 }
+
+class_alias(\CraftCms\Cms\Asset\PreviewHandlers\Text::class, Text::class);

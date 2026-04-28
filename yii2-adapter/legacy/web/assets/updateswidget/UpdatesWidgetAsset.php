@@ -8,48 +8,16 @@
 namespace craft\web\assets\updateswidget;
 
 use craft\web\AssetBundle;
-use craft\web\assets\cp\CpAsset;
-use craft\web\View;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Asset bundle for Updates widgets
+ * @deprecated 6.0.0
  */
 class UpdatesWidgetAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public $depends = [
-        CpAsset::class,
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $js = [
-        'UpdatesWidget.js',
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public function registerAssetFiles($view): void
+    public function registerAssetFiles($view)
     {
-        parent::registerAssetFiles($view);
-
-        if ($view instanceof View) {
-            $view->registerTranslations('app', [
-                'One update available!',
-                '{total} updates available!',
-                'Go to Updates',
-                'Congrats! You’re up to date.',
-                'Check again',
-            ]);
-        }
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\UpdatesWidgetAsset::class);
     }
 }

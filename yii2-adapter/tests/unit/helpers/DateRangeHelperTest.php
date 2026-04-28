@@ -11,11 +11,12 @@ use Craft;
 use craft\helpers\DateRange;
 use craft\helpers\DateTimeHelper;
 use craft\test\TestCase;
+use CraftCms\Cms\Cms;
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Exception;
-use Illuminate\Support\Facades\Config;
 use UnitTester;
 
 /**
@@ -151,12 +152,12 @@ class DateRangeHelperTest extends TestCase
     protected function _before(): void
     {
         Craft::$app->getUser()->setIdentity(
-            Craft::$app->getUsers()->getUserById(1)
+            new IdentityWrapper(Craft::$app->getUsers()->getUserById(1)),
         );
         Craft::$app->getUser()->getIdentity()->password = '$2y$13$tAtJfYFSRrnOkIbkruGGEu7TPh0Ixvxq0r.XgWqIgNWuWpxpA7SxK';
 
-        Config::set('app.timezone', 'America/Los_Angeles');
-        $this->systemTimezone = new DateTimeZone(app()->getTimezone());
+        Cms::config()->timezone('America/Los_Angeles');
+        $this->systemTimezone = new DateTimeZone(Cms::timezone());
         $this->utcTimezone = new DateTimeZone('UTC');
         $this->asiaTokyoTimezone = new DateTimeZone('Asia/Tokyo');
 

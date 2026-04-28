@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Translation;
 
 use Carbon\CarbonInterface;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Str;
 use DateInterval;
 use DateTime;
 use DateTimeInterface;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Facades\Date;
 use IntlDateFormatter;
 use IntlTimeZone;
@@ -19,8 +20,8 @@ use Throwable;
 
 use function CraftCms\Cms\t;
 
-#[Singleton]
-final class Formatter
+#[Scoped]
+class Formatter
 {
     public const string FORMAT_WIDTH_SHORT = 'short';
 
@@ -31,7 +32,7 @@ final class Formatter
     }
 
     public string $timeZone {
-        get => $this->timeZone ?? app()->getTimezone();
+        get => $this->timeZone ?? Cms::timezone();
     }
 
     public string $defaultDateFormat = 'medium';

@@ -18,6 +18,7 @@ use function CraftCms\Cms\t;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 transport adapters are ignored; use Laravel mail drivers.
  */
 class Smtp extends BaseTransportAdapter
 {
@@ -136,10 +137,7 @@ class Smtp extends BaseTransportAdapter
 
     private function settingsHtml(bool $readOnly): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/mailertransportadapters/Smtp/settings.twig', [
-            'adapter' => $this,
-            'readOnly' => $readOnly,
-        ]);
+        return t('Legacy mail transport adapter settings are ignored. Configure Laravel mail drivers instead.');
     }
 
     /**

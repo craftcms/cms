@@ -7,8 +7,8 @@
 
 namespace craft\behaviors;
 
-use Craft;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\Str;
 use yii\base\Behavior;
 use yii\base\Model;
@@ -32,16 +32,14 @@ use yii\validators\UrlValidator;
  * }
  * ```
  *
+ * @template T of Model
+ * @extends Behavior<T>
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Validation\Rules\EnvValueRule} instead.
  */
 class EnvAttributeParserBehavior extends Behavior
 {
-    /**
-     * @var Model
-     */
-    public $owner;
-
     /**
      * @var string[]|callable[] The attributes names that can be set to environment
      * variables (`$VARIABLE_NAME`) and/or aliases (`@aliasName`).
@@ -83,7 +81,6 @@ class EnvAttributeParserBehavior extends Behavior
     public function beforeValidate(): void
     {
         $this->_values = [];
-        $securityService = Craft::$app->getSecurity();
 
         foreach ($this->attributes as $i => $attribute) {
             if (is_string($i)) {
@@ -106,7 +103,7 @@ class EnvAttributeParserBehavior extends Behavior
                         $validator->defaultScheme = null;
                     }
 
-                    if (is_string($validator->message) && !$securityService->isSensitive($value)) {
+                    if (is_string($validator->message) && !Security::isSensitive($value)) {
                         $validator->message = Str::finish($validator->message, ' ({value})');
                     }
                 }

@@ -12,8 +12,8 @@ use Craft;
 use craft\db\pgsql\Schema;
 use craft\helpers\Db;
 use craft\test\TestCase;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use yii\base\Exception;
-use yii\base\NotSupportedException;
 
 /**
  * Unit tests for the DB Helper class where its output may need to be pgsql specific. Will be skipped if db isn't pgsql.

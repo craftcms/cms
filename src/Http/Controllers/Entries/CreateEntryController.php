@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
-use Craft;
-use craft\base\Element;
-use craft\elements\Entry;
-use craft\helpers\Cp;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\ElementHelper;
-use craft\helpers\UrlHelper;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Entries;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Section\Data\Section;
@@ -20,13 +17,18 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\User\Users;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
-final readonly class CreateEntryController
+readonly class CreateEntryController
 {
     use RespondsWithFlash;
 
@@ -37,7 +39,7 @@ final readonly class CreateEntryController
         private Entries $entries,
     ) {}
 
-    public function __invoke(Drafts $drafts): Response
+    public function __invoke(Drafts $drafts, Users $users): Response
     {
         $section = $this->getSection();
         $site = $this->getSite($section);
@@ -49,14 +51,18 @@ final readonly class CreateEntryController
         $user = $this->request->user();
 
         // Create & populate the draft
-        $entry = Craft::createObject(Entry::class);
+        $entry = new Entry;
         $entry->siteId = $site->id;
         $entry->sectionId = $section->id;
-        $entry->setAuthorIds(
-            $this->request->input('authorIds') ??
-            $this->request->input('authorId') ??
-            $user->id
-        );
+
+        if ($section->maxAuthors !== 0) {
+            $entry->setAuthorIds(
+                $this->request->input('authorIds') ??
+                $this->request->input('authorId') ??
+                $user->id
+            );
+        }
+
         $this->setTypeId($entry);
         $this->setStatus($entry, $section);
 
@@ -70,8 +76,9 @@ final readonly class CreateEntryController
         }
 
         // Make sure the user is allowed to create this entry
-        $craftUser = Craft::$app->getUsers()->getUserById($user->id);
-        abort_unless(Craft::$app->getElements()->canSave($entry, $craftUser), 403, 'User not authorized to create this entry.');
+        $craftUser = $users->getUserById($user->id);
+
+        Gate::forUser($craftUser)->authorize('save', $entry);
 
         $this->setTitleAndSlug($entry, $site);
 
@@ -88,7 +95,7 @@ final readonly class CreateEntryController
         }
 
         // Save it
-        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $success = $drafts->saveElementAsDraft($entry, $user->id, markAsSaved: false);
 
         // Resume time
@@ -111,9 +118,7 @@ final readonly class CreateEntryController
         ]));
 
         if (! $this->request->wantsJson()) {
-            $response->headers->set('Location', UrlHelper::urlWithParams($editUrl, [
-                'fresh' => 1,
-            ]));
+            $response->headers->set('Location', Url::urlWithParams($editUrl, ['fresh' => 1]));
         }
 
         return $response;
@@ -144,7 +149,7 @@ final readonly class CreateEntryController
             $site = $this->sites->getSiteById($siteId);
             abort_if(is_null($site), 400, "Invalid site ID: $siteId");
         } else {
-            $site = Cp::requestedSite();
+            $site = app(RequestedSite::class)->get();
             abort_if(is_null($site), 403, 'User not authorized to edit content in any sites.');
         }
 
@@ -155,7 +160,7 @@ final readonly class CreateEntryController
         if ($editableSiteIds->doesntContain($site->id)) {
             // If there’s more than one possibility and entries doesn’t propagate to all sites, let the user choose
             if ($editableSiteIds->count() > 1 && $section->propagationMethod !== PropagationMethod::All) {
-                return response(Craft::$app->getView()->renderTemplate('_special/sitepicker.twig', [
+                return response(template('_special/sitepicker', [
                     'siteIds' => $editableSiteIds->all(),
                     'baseUrl' => sprintf('%s/new', $section->getCpIndexUri()),
                 ]));

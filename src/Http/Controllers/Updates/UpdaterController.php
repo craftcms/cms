@@ -5,16 +5,21 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Updates;
 
 use Composer\Semver\Comparator;
-use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Database\Backups;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Update\Updates;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
+use Override;
 use RequirementsChecker;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -27,7 +32,7 @@ use function CraftCms\Cms\t;
 /**
  * @internal
  */
-final class UpdaterController extends BaseUpdaterController
+class UpdaterController extends BaseUpdaterController
 {
     public const string ACTION_FORCE_UPDATE = 'force-update';
 
@@ -53,15 +58,38 @@ final class UpdaterController extends BaseUpdaterController
         }
     }
 
+    /**
+     * Renders the Updater page via Inertia.
+     */
+    #[Override]
+    public function index(): Response
+    {
+        $this->data = $this->initialData();
+        $state = $this->realInitialState();
+        $state['data'] = Crypt::encrypt(Json::encode($this->data));
+
+        return Inertia::render('Updater', [
+            'title' => $this->pageTitle(),
+            'initialState' => $state,
+            'actionPrefix' => 'updater',
+            'returnUrl' => Url::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect()),
+        ])->toResponse($this->request);
+    }
+
     public function forceUpdate(): Response
     {
         return $this->send($this->realInitialState(force: true));
     }
 
-    public function backup(): Response
+    public function backup(Backups $backups): Response
     {
+        // make sure migrations are pending
+        if (! $this->updates->areMigrationsPending()) {
+            return $this->sendFinished();
+        }
+
         try {
-            app('Craft')->getDb()->backup();
+            $backups->backup();
         } catch (Throwable $e) {
             Log::error('Error backing up the database: '.$e->getMessage(), [__METHOD__]);
 
@@ -160,19 +188,13 @@ final class UpdaterController extends BaseUpdaterController
         return $this->runMigrations($handles) ?? $this->sendFinished();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function pageTitle(): string
     {
         return t('Updater');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function initialData(): array
     {
         $data = [];
@@ -226,10 +248,7 @@ final class UpdaterController extends BaseUpdaterController
         return $data;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function initialState(bool $force = false): array
     {
         // Is there anything to install/update?
@@ -240,7 +259,7 @@ final class UpdaterController extends BaseUpdaterController
         }
 
         // Is Craft already in Maintenance Mode?
-        if (! $force && Craft::$app->getIsInMaintenanceMode()) {
+        if (! $force && app()->isDownForMaintenance()) {
             // Bail if Craft is already in maintenance mode
             return [
                 'error' => str_replace(['<br>', '<br/>'], "\n\n", t('It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.')),
@@ -256,7 +275,7 @@ final class UpdaterController extends BaseUpdaterController
         }
 
         // Enable maintenance mode
-        Craft::$app->enableMaintenanceMode();
+        app()->maintenanceMode()->activate([]);
 
         if (! empty($this->data['install'])) {
             $nextAction = self::ACTION_COMPOSER_INSTALL;
@@ -268,10 +287,7 @@ final class UpdaterController extends BaseUpdaterController
         return $this->actionState($nextAction);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function postComposerInstallState(): array
     {
         // Was this after a revert?
@@ -287,16 +303,13 @@ final class UpdaterController extends BaseUpdaterController
     /**
      * Returns the return URL that should be passed with a finished state.
      */
-    #[\Override]
+    #[Override]
     protected function returnUrl(): string
     {
-        return $this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect();
+        return Url::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect());
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function actionStatus(string $action): string
     {
         return match ($action) {
@@ -309,14 +322,11 @@ final class UpdaterController extends BaseUpdaterController
         };
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function sendFinished(array $state = []): Response
     {
         // Disable maintenance mode
-        Craft::$app->disableMaintenanceMode();
+        app()->maintenanceMode()->deactivate();
 
         return parent::sendFinished($state);
     }
@@ -362,7 +372,7 @@ final class UpdaterController extends BaseUpdaterController
         }
 
         // Normalize the versions in case only one of them starts with a 'v' or something
-        $toVersion = normalizeVersion($toVersion);
+        $toVersion = normalizeVersion(ltrim($toVersion, '^'));
         $fromVersion = normalizeVersion($fromVersion);
 
         return Comparator::greaterThan($toVersion, $fromVersion);

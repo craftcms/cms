@@ -8,11 +8,9 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\ElementInterface;
-use craft\errors\StructureNotFoundException;
 use craft\events\MoveElementEvent;
-use craft\models\Structure;
-use CraftCms\Cms\Structure\Data\Structure as StructureData;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Structure\Data\Structure;
 use CraftCms\Cms\Structure\Enums\Action;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Structure\Events\ElementInserted;
@@ -187,11 +185,10 @@ class Structures extends Component
      * @param Structure $structure
      *
      * @return bool Whether the structure was saved successfully
-     * @throws StructureNotFoundException if $structure->id is invalid
      */
     public function saveStructure(Structure $structure): bool
     {
-        return StructuresFacade::saveStructure(StructureData::from($structure->toArray()));
+        return StructuresFacade::saveStructure($structure);
     }
 
     /**

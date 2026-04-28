@@ -1,521 +1,532 @@
 <?php
 
-use CraftCms\Aliases\Aliases;
+use Yiisoft\Aliases\Aliases;
 
-Aliases::set('@appicons/monero.svg', '@icons/brands/monero.svg');
-Aliases::set('@appicons/hooli.svg', '@icons/brands/hooli.svg');
-Aliases::set('@appicons/yelp.svg', '@icons/brands/yelp.svg');
-Aliases::set('@appicons/cc-visa.svg', '@icons/brands/cc-visa.svg');
-Aliases::set('@appicons/lastfm.svg', '@icons/brands/lastfm.svg');
-Aliases::set('@appicons/shopware.svg', '@icons/brands/shopware.svg');
-Aliases::set('@appicons/creative-commons-nc.svg', '@icons/brands/creative-commons-nc.svg');
-Aliases::set('@appicons/aws.svg', '@icons/brands/aws.svg');
-Aliases::set('@appicons/redhat.svg', '@icons/brands/redhat.svg');
-Aliases::set('@appicons/yoast.svg', '@icons/brands/yoast.svg');
-Aliases::set('@appicons/cloudflare.svg', '@icons/brands/cloudflare.svg');
-Aliases::set('@appicons/ups.svg', '@icons/brands/ups.svg');
-Aliases::set('@appicons/pixiv.svg', '@icons/brands/pixiv.svg');
-Aliases::set('@appicons/wpexplorer.svg', '@icons/brands/wpexplorer.svg');
-Aliases::set('@appicons/dyalog.svg', '@icons/brands/dyalog.svg');
-Aliases::set('@appicons/bity.svg', '@icons/brands/bity.svg');
-Aliases::set('@appicons/stackpath.svg', '@icons/brands/stackpath.svg');
-Aliases::set('@appicons/buysellads.svg', '@icons/brands/buysellads.svg');
-Aliases::set('@appicons/first-order.svg', '@icons/brands/first-order.svg');
-Aliases::set('@appicons/modx.svg', '@icons/brands/modx.svg');
-Aliases::set('@appicons/guilded.svg', '@icons/brands/guilded.svg');
-Aliases::set('@appicons/vnv.svg', '@icons/brands/vnv.svg');
-Aliases::set('@appicons/square-js.svg', '@icons/brands/square-js.svg');
-Aliases::set('@appicons/microsoft.svg', '@icons/brands/microsoft.svg');
-Aliases::set('@appicons/qq.svg', '@icons/brands/qq.svg');
-Aliases::set('@appicons/orcid.svg', '@icons/brands/orcid.svg');
-Aliases::set('@appicons/java.svg', '@icons/brands/java.svg');
-Aliases::set('@appicons/invision.svg', '@icons/brands/invision.svg');
-Aliases::set('@appicons/creative-commons-pd-alt.svg', '@icons/brands/creative-commons-pd-alt.svg');
-Aliases::set('@appicons/clone-dashed.svg', '@icons/custom-icons/clone-dashed.svg');
-Aliases::set('@appicons/centercode.svg', '@icons/brands/centercode.svg');
-Aliases::set('@appicons/glide-g.svg', '@icons/brands/glide-g.svg');
-Aliases::set('@appicons/drupal.svg', '@icons/brands/drupal.svg');
-Aliases::set('@appicons/jxl.svg', '@icons/brands/jxl.svg');
-Aliases::set('@appicons/dart-lang.svg', '@icons/brands/dart-lang.svg');
-Aliases::set('@appicons/hire-a-helper.svg', '@icons/brands/hire-a-helper.svg');
-Aliases::set('@appicons/creative-commons-by.svg', '@icons/brands/creative-commons-by.svg');
-Aliases::set('@appicons/unity.svg', '@icons/brands/unity.svg');
-Aliases::set('@appicons/whmcs.svg', '@icons/brands/whmcs.svg');
-Aliases::set('@appicons/rocketchat.svg', '@icons/brands/rocketchat.svg');
-Aliases::set('@appicons/vk.svg', '@icons/brands/vk.svg');
-Aliases::set('@appicons/untappd.svg', '@icons/brands/untappd.svg');
-Aliases::set('@appicons/mailchimp.svg', '@icons/brands/mailchimp.svg');
-Aliases::set('@appicons/css3-alt.svg', '@icons/brands/css3-alt.svg');
-Aliases::set('@appicons/square-reddit.svg', '@icons/brands/square-reddit.svg');
-Aliases::set('@appicons/vimeo-v.svg', '@icons/brands/vimeo-v.svg');
-Aliases::set('@appicons/contao.svg', '@icons/brands/contao.svg');
-Aliases::set('@appicons/square-font-awesome.svg', '@icons/brands/square-font-awesome.svg');
-Aliases::set('@appicons/deskpro.svg', '@icons/brands/deskpro.svg');
-Aliases::set('@appicons/brave.svg', '@icons/brands/brave.svg');
-Aliases::set('@appicons/sistrix.svg', '@icons/brands/sistrix.svg');
-Aliases::set('@appicons/square-instagram.svg', '@icons/brands/square-instagram.svg');
-Aliases::set('@appicons/battle-net.svg', '@icons/brands/battle-net.svg');
-Aliases::set('@appicons/asterisk-slash.svg', '@icons/custom-icons/asterisk-slash.svg');
-Aliases::set('@appicons/the-red-yeti.svg', '@icons/brands/the-red-yeti.svg');
-Aliases::set('@appicons/square-hacker-news.svg', '@icons/brands/square-hacker-news.svg');
-Aliases::set('@appicons/edge.svg', '@icons/brands/edge.svg');
-Aliases::set('@appicons/threads.svg', '@icons/brands/threads.svg');
-Aliases::set('@appicons/napster.svg', '@icons/brands/napster.svg');
-Aliases::set('@appicons/square-snapchat.svg', '@icons/brands/square-snapchat.svg');
-Aliases::set('@appicons/google-plus-g.svg', '@icons/brands/google-plus-g.svg');
-Aliases::set('@appicons/artstation.svg', '@icons/brands/artstation.svg');
-Aliases::set('@appicons/markdown.svg', '@icons/brands/markdown.svg');
-Aliases::set('@appicons/sourcetree.svg', '@icons/brands/sourcetree.svg');
-Aliases::set('@appicons/google-plus.svg', '@icons/brands/google-plus.svg');
-Aliases::set('@appicons/diaspora.svg', '@icons/brands/diaspora.svg');
-Aliases::set('@appicons/gear-slash.svg', '@icons/custom-icons/gear-slash.svg');
-Aliases::set('@appicons/foursquare.svg', '@icons/brands/foursquare.svg');
-Aliases::set('@appicons/stack-overflow.svg', '@icons/brands/stack-overflow.svg');
-Aliases::set('@appicons/github-alt.svg', '@icons/brands/github-alt.svg');
-Aliases::set('@appicons/phoenix-squadron.svg', '@icons/brands/phoenix-squadron.svg');
-Aliases::set('@appicons/pagelines.svg', '@icons/brands/pagelines.svg');
-Aliases::set('@appicons/algolia.svg', '@icons/brands/algolia.svg');
-Aliases::set('@appicons/red-river.svg', '@icons/brands/red-river.svg');
-Aliases::set('@appicons/creative-commons-sa.svg', '@icons/brands/creative-commons-sa.svg');
-Aliases::set('@appicons/safari.svg', '@icons/brands/safari.svg');
-Aliases::set('@appicons/google.svg', '@icons/brands/google.svg');
-Aliases::set('@appicons/square-font-awesome-stroke.svg', '@icons/brands/square-font-awesome-stroke.svg');
-Aliases::set('@appicons/atlassian.svg', '@icons/brands/atlassian.svg');
-Aliases::set('@appicons/linkedin-in.svg', '@icons/brands/linkedin-in.svg');
-Aliases::set('@appicons/digital-ocean.svg', '@icons/brands/digital-ocean.svg');
-Aliases::set('@appicons/nimblr.svg', '@icons/brands/nimblr.svg');
-Aliases::set('@appicons/chromecast.svg', '@icons/brands/chromecast.svg');
-Aliases::set('@appicons/evernote.svg', '@icons/brands/evernote.svg');
-Aliases::set('@appicons/hacker-news.svg', '@icons/brands/hacker-news.svg');
-Aliases::set('@appicons/creative-commons-sampling.svg', '@icons/brands/creative-commons-sampling.svg');
-Aliases::set('@appicons/adversal.svg', '@icons/brands/adversal.svg');
-Aliases::set('@appicons/creative-commons.svg', '@icons/brands/creative-commons.svg');
-Aliases::set('@appicons/watchman-monitoring.svg', '@icons/brands/watchman-monitoring.svg');
-Aliases::set('@appicons/fonticons.svg', '@icons/brands/fonticons.svg');
-Aliases::set('@appicons/weixin.svg', '@icons/brands/weixin.svg');
-Aliases::set('@appicons/shirtsinbulk.svg', '@icons/brands/shirtsinbulk.svg');
-Aliases::set('@appicons/thumb-right.svg', '@icons/custom-icons/thumb-right.svg');
-Aliases::set('@appicons/codepen.svg', '@icons/brands/codepen.svg');
-Aliases::set('@appicons/git-alt.svg', '@icons/brands/git-alt.svg');
-Aliases::set('@appicons/lyft.svg', '@icons/brands/lyft.svg');
-Aliases::set('@appicons/rev.svg', '@icons/brands/rev.svg');
-Aliases::set('@appicons/windows.svg', '@icons/brands/windows.svg');
-Aliases::set('@appicons/wizards-of-the-coast.svg', '@icons/brands/wizards-of-the-coast.svg');
-Aliases::set('@appicons/square-viadeo.svg', '@icons/brands/square-viadeo.svg');
-Aliases::set('@appicons/meetup.svg', '@icons/brands/meetup.svg');
-Aliases::set('@appicons/centos.svg', '@icons/brands/centos.svg');
-Aliases::set('@appicons/adn.svg', '@icons/brands/adn.svg');
-Aliases::set('@appicons/cloudsmith.svg', '@icons/brands/cloudsmith.svg');
-Aliases::set('@appicons/thumb-left.svg', '@icons/custom-icons/thumb-left.svg');
-Aliases::set('@appicons/opensuse.svg', '@icons/brands/opensuse.svg');
-Aliases::set('@appicons/pied-piper-alt.svg', '@icons/brands/pied-piper-alt.svg');
-Aliases::set('@appicons/globe.svg', '@icons/regular/globe.svg');
-Aliases::set('@appicons/square-dribbble.svg', '@icons/brands/square-dribbble.svg');
-Aliases::set('@appicons/codiepie.svg', '@icons/brands/codiepie.svg');
-Aliases::set('@appicons/duplicate.svg', '@icons/custom-icons/duplicate.svg');
-Aliases::set('@appicons/node.svg', '@icons/brands/node.svg');
-Aliases::set('@appicons/mix.svg', '@icons/brands/mix.svg');
-Aliases::set('@appicons/steam.svg', '@icons/brands/steam.svg');
-Aliases::set('@appicons/cc-apple-pay.svg', '@icons/brands/cc-apple-pay.svg');
-Aliases::set('@appicons/scribd.svg', '@icons/brands/scribd.svg');
-Aliases::set('@appicons/debian.svg', '@icons/brands/debian.svg');
-Aliases::set('@appicons/openid.svg', '@icons/brands/openid.svg');
-Aliases::set('@appicons/instalod.svg', '@icons/brands/instalod.svg');
-Aliases::set('@appicons/files-pinwheel.svg', '@icons/brands/files-pinwheel.svg');
-Aliases::set('@appicons/expeditedssl.svg', '@icons/brands/expeditedssl.svg');
-Aliases::set('@appicons/share-flip.svg', '@icons/custom-icons/share-flip.svg');
-Aliases::set('@appicons/sellcast.svg', '@icons/brands/sellcast.svg');
-Aliases::set('@appicons/square-twitter.svg', '@icons/brands/square-twitter.svg');
-Aliases::set('@appicons/list-flip.svg', '@icons/custom-icons/list-flip.svg');
-Aliases::set('@appicons/r-project.svg', '@icons/brands/r-project.svg');
-Aliases::set('@appicons/delicious.svg', '@icons/brands/delicious.svg');
-Aliases::set('@appicons/freebsd.svg', '@icons/brands/freebsd.svg');
-Aliases::set('@appicons/vuejs.svg', '@icons/brands/vuejs.svg');
-Aliases::set('@appicons/accusoft.svg', '@icons/brands/accusoft.svg');
-Aliases::set('@appicons/ioxhost.svg', '@icons/brands/ioxhost.svg');
-Aliases::set('@appicons/fonticons-fi.svg', '@icons/brands/fonticons-fi.svg');
-Aliases::set('@appicons/app-store.svg', '@icons/brands/app-store.svg');
-Aliases::set('@appicons/cc-mastercard.svg', '@icons/brands/cc-mastercard.svg');
-Aliases::set('@appicons/itunes-note.svg', '@icons/brands/itunes-note.svg');
-Aliases::set('@appicons/golang.svg', '@icons/brands/golang.svg');
-Aliases::set('@appicons/kickstarter.svg', '@icons/brands/kickstarter.svg');
-Aliases::set('@appicons/grav.svg', '@icons/brands/grav.svg');
-Aliases::set('@appicons/weibo.svg', '@icons/brands/weibo.svg');
-Aliases::set('@appicons/uncharted.svg', '@icons/brands/uncharted.svg');
-Aliases::set('@appicons/firstdraft.svg', '@icons/brands/firstdraft.svg');
-Aliases::set('@appicons/square-youtube.svg', '@icons/brands/square-youtube.svg');
-Aliases::set('@appicons/wikipedia-w.svg', '@icons/brands/wikipedia-w.svg');
-Aliases::set('@appicons/wpressr.svg', '@icons/brands/wpressr.svg');
-Aliases::set('@appicons/angellist.svg', '@icons/brands/angellist.svg');
-Aliases::set('@appicons/galactic-republic.svg', '@icons/brands/galactic-republic.svg');
-Aliases::set('@appicons/nfc-directional.svg', '@icons/brands/nfc-directional.svg');
-Aliases::set('@appicons/skype.svg', '@icons/brands/skype.svg');
-Aliases::set('@appicons/joget.svg', '@icons/brands/joget.svg');
-Aliases::set('@appicons/fedora.svg', '@icons/brands/fedora.svg');
-Aliases::set('@appicons/stripe-s.svg', '@icons/brands/stripe-s.svg');
-Aliases::set('@appicons/meta.svg', '@icons/brands/meta.svg');
-Aliases::set('@appicons/laravel.svg', '@icons/brands/laravel.svg');
-Aliases::set('@appicons/hotjar.svg', '@icons/brands/hotjar.svg');
-Aliases::set('@appicons/bluetooth-b.svg', '@icons/brands/bluetooth-b.svg');
-Aliases::set('@appicons/square-letterboxd.svg', '@icons/brands/square-letterboxd.svg');
-Aliases::set('@appicons/sticker-mule.svg', '@icons/brands/sticker-mule.svg');
-Aliases::set('@appicons/creative-commons-zero.svg', '@icons/brands/creative-commons-zero.svg');
-Aliases::set('@appicons/hips.svg', '@icons/brands/hips.svg');
-Aliases::set('@appicons/css.svg', '@icons/brands/css.svg');
-Aliases::set('@appicons/behance.svg', '@icons/brands/behance.svg');
-Aliases::set('@appicons/reddit.svg', '@icons/brands/reddit.svg');
-Aliases::set('@appicons/discord.svg', '@icons/brands/discord.svg');
-Aliases::set('@appicons/chrome.svg', '@icons/brands/chrome.svg');
-Aliases::set('@appicons/app-store-ios.svg', '@icons/brands/app-store-ios.svg');
-Aliases::set('@appicons/cc-discover.svg', '@icons/brands/cc-discover.svg');
-Aliases::set('@appicons/wpbeginner.svg', '@icons/brands/wpbeginner.svg');
-Aliases::set('@appicons/confluence.svg', '@icons/brands/confluence.svg');
-Aliases::set('@appicons/shoelace.svg', '@icons/brands/shoelace.svg');
-Aliases::set('@appicons/mdb.svg', '@icons/brands/mdb.svg');
-Aliases::set('@appicons/dochub.svg', '@icons/brands/dochub.svg');
-Aliases::set('@appicons/accessible-icon.svg', '@icons/brands/accessible-icon.svg');
-Aliases::set('@appicons/ebay.svg', '@icons/brands/ebay.svg');
-Aliases::set('@appicons/amazon.svg', '@icons/brands/amazon.svg');
-Aliases::set('@appicons/unsplash.svg', '@icons/brands/unsplash.svg');
-Aliases::set('@appicons/yarn.svg', '@icons/brands/yarn.svg');
-Aliases::set('@appicons/square-steam.svg', '@icons/brands/square-steam.svg');
-Aliases::set('@appicons/500px.svg', '@icons/brands/500px.svg');
-Aliases::set('@appicons/square-vimeo.svg', '@icons/brands/square-vimeo.svg');
-Aliases::set('@appicons/asymmetrik.svg', '@icons/brands/asymmetrik.svg');
-Aliases::set('@appicons/font-awesome.svg', '@icons/brands/font-awesome.svg');
-Aliases::set('@appicons/gratipay.svg', '@icons/brands/gratipay.svg');
-Aliases::set('@appicons/apple.svg', '@icons/brands/apple.svg');
-Aliases::set('@appicons/hive.svg', '@icons/brands/hive.svg');
-Aliases::set('@appicons/gitkraken.svg', '@icons/brands/gitkraken.svg');
-Aliases::set('@appicons/keybase.svg', '@icons/brands/keybase.svg');
-Aliases::set('@appicons/apple-pay.svg', '@icons/brands/apple-pay.svg');
-Aliases::set('@appicons/padlet.svg', '@icons/brands/padlet.svg');
-Aliases::set('@appicons/amazon-pay.svg', '@icons/brands/amazon-pay.svg');
-Aliases::set('@appicons/square-github.svg', '@icons/brands/square-github.svg');
-Aliases::set('@appicons/stumbleupon.svg', '@icons/brands/stumbleupon.svg');
-Aliases::set('@appicons/fedex.svg', '@icons/brands/fedex.svg');
-Aliases::set('@appicons/phoenix-framework.svg', '@icons/brands/phoenix-framework.svg');
-Aliases::set('@appicons/shopify.svg', '@icons/brands/shopify.svg');
-Aliases::set('@appicons/neos.svg', '@icons/brands/neos.svg');
-Aliases::set('@appicons/square-threads.svg', '@icons/brands/square-threads.svg');
-Aliases::set('@appicons/hackerrank.svg', '@icons/brands/hackerrank.svg');
-Aliases::set('@appicons/researchgate.svg', '@icons/brands/researchgate.svg');
-Aliases::set('@appicons/swift.svg', '@icons/brands/swift.svg');
-Aliases::set('@appicons/angular.svg', '@icons/brands/angular.svg');
-Aliases::set('@appicons/speakap.svg', '@icons/brands/speakap.svg');
-Aliases::set('@appicons/angrycreative.svg', '@icons/brands/angrycreative.svg');
-Aliases::set('@appicons/y-combinator.svg', '@icons/brands/y-combinator.svg');
-Aliases::set('@appicons/empire.svg', '@icons/brands/empire.svg');
-Aliases::set('@appicons/envira.svg', '@icons/brands/envira.svg');
-Aliases::set('@appicons/google-scholar.svg', '@icons/brands/google-scholar.svg');
-Aliases::set('@appicons/square-gitlab.svg', '@icons/brands/square-gitlab.svg');
-Aliases::set('@appicons/studiovinari.svg', '@icons/brands/studiovinari.svg');
-Aliases::set('@appicons/pied-piper.svg', '@icons/brands/pied-piper.svg');
-Aliases::set('@appicons/wordpress.svg', '@icons/brands/wordpress.svg');
-Aliases::set('@appicons/product-hunt.svg', '@icons/brands/product-hunt.svg');
-Aliases::set('@appicons/firefox.svg', '@icons/brands/firefox.svg');
-Aliases::set('@appicons/linode.svg', '@icons/brands/linode.svg');
-Aliases::set('@appicons/goodreads.svg', '@icons/brands/goodreads.svg');
-Aliases::set('@appicons/square-odnoklassniki.svg', '@icons/brands/square-odnoklassniki.svg');
-Aliases::set('@appicons/jsfiddle.svg', '@icons/brands/jsfiddle.svg');
-Aliases::set('@appicons/sith.svg', '@icons/brands/sith.svg');
-Aliases::set('@appicons/themeisle.svg', '@icons/brands/themeisle.svg');
-Aliases::set('@appicons/page4.svg', '@icons/brands/page4.svg');
-Aliases::set('@appicons/hashnode.svg', '@icons/brands/hashnode.svg');
-Aliases::set('@appicons/react.svg', '@icons/brands/react.svg');
-Aliases::set('@appicons/cc-paypal.svg', '@icons/brands/cc-paypal.svg');
-Aliases::set('@appicons/squarespace.svg', '@icons/brands/squarespace.svg');
-Aliases::set('@appicons/graphql.svg', '@icons/custom-icons/graphql.svg');
-Aliases::set('@appicons/cc-stripe.svg', '@icons/brands/cc-stripe.svg');
-Aliases::set('@appicons/creative-commons-share.svg', '@icons/brands/creative-commons-share.svg');
-Aliases::set('@appicons/bitcoin.svg', '@icons/brands/bitcoin.svg');
-Aliases::set('@appicons/keycdn.svg', '@icons/brands/keycdn.svg');
-Aliases::set('@appicons/opera.svg', '@icons/brands/opera.svg');
-Aliases::set('@appicons/itch-io.svg', '@icons/brands/itch-io.svg');
-Aliases::set('@appicons/umbraco.svg', '@icons/brands/umbraco.svg');
-Aliases::set('@appicons/galactic-senate.svg', '@icons/brands/galactic-senate.svg');
-Aliases::set('@appicons/ubuntu.svg', '@icons/brands/ubuntu.svg');
-Aliases::set('@appicons/draft2digital.svg', '@icons/brands/draft2digital.svg');
-Aliases::set('@appicons/stripe.svg', '@icons/brands/stripe.svg');
-Aliases::set('@appicons/houzz.svg', '@icons/brands/houzz.svg');
-Aliases::set('@appicons/gg.svg', '@icons/brands/gg.svg');
-Aliases::set('@appicons/dhl.svg', '@icons/brands/dhl.svg');
-Aliases::set('@appicons/square-pinterest.svg', '@icons/brands/square-pinterest.svg');
-Aliases::set('@appicons/xing.svg', '@icons/brands/xing.svg');
-Aliases::set('@appicons/blackberry.svg', '@icons/brands/blackberry.svg');
-Aliases::set('@appicons/creative-commons-pd.svg', '@icons/brands/creative-commons-pd.svg');
-Aliases::set('@appicons/playstation.svg', '@icons/brands/playstation.svg');
-Aliases::set('@appicons/quinscape.svg', '@icons/brands/quinscape.svg');
-Aliases::set('@appicons/less.svg', '@icons/brands/less.svg');
-Aliases::set('@appicons/blogger-b.svg', '@icons/brands/blogger-b.svg');
-Aliases::set('@appicons/element-card.svg', '@icons/custom-icons/element-card.svg');
-Aliases::set('@appicons/opencart.svg', '@icons/brands/opencart.svg');
-Aliases::set('@appicons/vine.svg', '@icons/brands/vine.svg');
-Aliases::set('@appicons/signal-messenger.svg', '@icons/brands/signal-messenger.svg');
-Aliases::set('@appicons/paypal.svg', '@icons/brands/paypal.svg');
-Aliases::set('@appicons/gitlab.svg', '@icons/brands/gitlab.svg');
-Aliases::set('@appicons/typo3.svg', '@icons/brands/typo3.svg');
-Aliases::set('@appicons/reddit-alien.svg', '@icons/brands/reddit-alien.svg');
-Aliases::set('@appicons/yahoo.svg', '@icons/brands/yahoo.svg');
-Aliases::set('@appicons/dailymotion.svg', '@icons/brands/dailymotion.svg');
-Aliases::set('@appicons/affiliatetheme.svg', '@icons/brands/affiliatetheme.svg');
-Aliases::set('@appicons/pied-piper-pp.svg', '@icons/brands/pied-piper-pp.svg');
-Aliases::set('@appicons/bootstrap.svg', '@icons/brands/bootstrap.svg');
-Aliases::set('@appicons/odnoklassniki.svg', '@icons/brands/odnoklassniki.svg');
-Aliases::set('@appicons/nfc-symbol.svg', '@icons/brands/nfc-symbol.svg');
-Aliases::set('@appicons/mintbit.svg', '@icons/brands/mintbit.svg');
-Aliases::set('@appicons/ethereum.svg', '@icons/brands/ethereum.svg');
-Aliases::set('@appicons/speaker-deck.svg', '@icons/brands/speaker-deck.svg');
-Aliases::set('@appicons/creative-commons-nc-eu.svg', '@icons/brands/creative-commons-nc-eu.svg');
-Aliases::set('@appicons/notification-top-right.svg', '@icons/custom-icons/notification-top-right.svg');
-Aliases::set('@appicons/patreon.svg', '@icons/brands/patreon.svg');
-Aliases::set('@appicons/avianex.svg', '@icons/brands/avianex.svg');
-Aliases::set('@appicons/ello.svg', '@icons/brands/ello.svg');
-Aliases::set('@appicons/gofore.svg', '@icons/brands/gofore.svg');
-Aliases::set('@appicons/bimobject.svg', '@icons/brands/bimobject.svg');
-Aliases::set('@appicons/brave-reverse.svg', '@icons/brands/brave-reverse.svg');
-Aliases::set('@appicons/facebook-f.svg', '@icons/brands/facebook-f.svg');
-Aliases::set('@appicons/square-google-plus.svg', '@icons/brands/square-google-plus.svg');
-Aliases::set('@appicons/web-awesome.svg', '@icons/brands/web-awesome.svg');
-Aliases::set('@appicons/mandalorian.svg', '@icons/brands/mandalorian.svg');
-Aliases::set('@appicons/first-order-alt.svg', '@icons/brands/first-order-alt.svg');
-Aliases::set('@appicons/osi.svg', '@icons/brands/osi.svg');
-Aliases::set('@appicons/google-wallet.svg', '@icons/brands/google-wallet.svg');
-Aliases::set('@appicons/d-and-d-beyond.svg', '@icons/brands/d-and-d-beyond.svg');
-Aliases::set('@appicons/periscope.svg', '@icons/brands/periscope.svg');
-Aliases::set('@appicons/fulcrum.svg', '@icons/brands/fulcrum.svg');
-Aliases::set('@appicons/cloudscale.svg', '@icons/brands/cloudscale.svg');
-Aliases::set('@appicons/forumbee.svg', '@icons/brands/forumbee.svg');
-Aliases::set('@appicons/mizuni.svg', '@icons/brands/mizuni.svg');
-Aliases::set('@appicons/schlix.svg', '@icons/brands/schlix.svg');
-Aliases::set('@appicons/square-xing.svg', '@icons/brands/square-xing.svg');
-Aliases::set('@appicons/bandcamp.svg', '@icons/brands/bandcamp.svg');
-Aliases::set('@appicons/wpforms.svg', '@icons/brands/wpforms.svg');
-Aliases::set('@appicons/cloudversify.svg', '@icons/brands/cloudversify.svg');
-Aliases::set('@appicons/usps.svg', '@icons/brands/usps.svg');
-Aliases::set('@appicons/megaport.svg', '@icons/brands/megaport.svg');
-Aliases::set('@appicons/magento.svg', '@icons/brands/magento.svg');
-Aliases::set('@appicons/spotify.svg', '@icons/brands/spotify.svg');
-Aliases::set('@appicons/optin-monster.svg', '@icons/brands/optin-monster.svg');
-Aliases::set('@appicons/fly.svg', '@icons/brands/fly.svg');
-Aliases::set('@appicons/square-bluesky.svg', '@icons/brands/square-bluesky.svg');
-Aliases::set('@appicons/aviato.svg', '@icons/brands/aviato.svg');
-Aliases::set('@appicons/itunes.svg', '@icons/brands/itunes.svg');
-Aliases::set('@appicons/cuttlefish.svg', '@icons/brands/cuttlefish.svg');
-Aliases::set('@appicons/blogger.svg', '@icons/brands/blogger.svg');
-Aliases::set('@appicons/flickr.svg', '@icons/brands/flickr.svg');
-Aliases::set('@appicons/viber.svg', '@icons/brands/viber.svg');
-Aliases::set('@appicons/soundcloud.svg', '@icons/brands/soundcloud.svg');
-Aliases::set('@appicons/digg.svg', '@icons/brands/digg.svg');
-Aliases::set('@appicons/tencent-weibo.svg', '@icons/brands/tencent-weibo.svg');
-Aliases::set('@appicons/letterboxd.svg', '@icons/brands/letterboxd.svg');
-Aliases::set('@appicons/symfony.svg', '@icons/brands/symfony.svg');
-Aliases::set('@appicons/maxcdn.svg', '@icons/brands/maxcdn.svg');
-Aliases::set('@appicons/etsy.svg', '@icons/brands/etsy.svg');
-Aliases::set('@appicons/facebook-messenger.svg', '@icons/brands/facebook-messenger.svg');
-Aliases::set('@appicons/audible.svg', '@icons/brands/audible.svg');
-Aliases::set('@appicons/think-peaks.svg', '@icons/brands/think-peaks.svg');
-Aliases::set('@appicons/bilibili.svg', '@icons/brands/bilibili.svg');
-Aliases::set('@appicons/erlang.svg', '@icons/brands/erlang.svg');
-Aliases::set('@appicons/x-twitter.svg', '@icons/brands/x-twitter.svg');
-Aliases::set('@appicons/cotton-bureau.svg', '@icons/brands/cotton-bureau.svg');
-Aliases::set('@appicons/dashcube.svg', '@icons/brands/dashcube.svg');
-Aliases::set('@appicons/42-group.svg', '@icons/brands/42-group.svg');
-Aliases::set('@appicons/stack-exchange.svg', '@icons/brands/stack-exchange.svg');
-Aliases::set('@appicons/elementor.svg', '@icons/brands/elementor.svg');
-Aliases::set('@appicons/square-pied-piper.svg', '@icons/brands/square-pied-piper.svg');
-Aliases::set('@appicons/creative-commons-nd.svg', '@icons/brands/creative-commons-nd.svg');
-Aliases::set('@appicons/palfed.svg', '@icons/brands/palfed.svg');
-Aliases::set('@appicons/superpowers.svg', '@icons/brands/superpowers.svg');
-Aliases::set('@appicons/resolving.svg', '@icons/brands/resolving.svg');
-Aliases::set('@appicons/xbox.svg', '@icons/brands/xbox.svg');
-Aliases::set('@appicons/square-web-awesome-stroke.svg', '@icons/brands/square-web-awesome-stroke.svg');
-Aliases::set('@appicons/searchengin.svg', '@icons/brands/searchengin.svg');
-Aliases::set('@appicons/tiktok.svg', '@icons/brands/tiktok.svg');
-Aliases::set('@appicons/square-facebook.svg', '@icons/brands/square-facebook.svg');
-Aliases::set('@appicons/slideout-right.svg', '@icons/custom-icons/slideout-right.svg');
-Aliases::set('@appicons/renren.svg', '@icons/brands/renren.svg');
-Aliases::set('@appicons/linux.svg', '@icons/brands/linux.svg');
-Aliases::set('@appicons/glide.svg', '@icons/brands/glide.svg');
-Aliases::set('@appicons/linkedin.svg', '@icons/brands/linkedin.svg');
-Aliases::set('@appicons/hubspot.svg', '@icons/brands/hubspot.svg');
-Aliases::set('@appicons/deploydog.svg', '@icons/brands/deploydog.svg');
-Aliases::set('@appicons/twitch.svg', '@icons/brands/twitch.svg');
-Aliases::set('@appicons/flutter.svg', '@icons/brands/flutter.svg');
-Aliases::set('@appicons/ravelry.svg', '@icons/brands/ravelry.svg');
-Aliases::set('@appicons/mixer.svg', '@icons/brands/mixer.svg');
-Aliases::set('@appicons/square-lastfm.svg', '@icons/brands/square-lastfm.svg');
-Aliases::set('@appicons/list-tree-flip.svg', '@icons/custom-icons/list-tree-flip.svg');
-Aliases::set('@appicons/vimeo.svg', '@icons/brands/vimeo.svg');
-Aliases::set('@appicons/mendeley.svg', '@icons/brands/mendeley.svg');
-Aliases::set('@appicons/uniregistry.svg', '@icons/brands/uniregistry.svg');
-Aliases::set('@appicons/figma.svg', '@icons/brands/figma.svg');
-Aliases::set('@appicons/creative-commons-remix.svg', '@icons/brands/creative-commons-remix.svg');
-Aliases::set('@appicons/cc-amazon-pay.svg', '@icons/brands/cc-amazon-pay.svg');
-Aliases::set('@appicons/dropbox.svg', '@icons/brands/dropbox.svg');
-Aliases::set('@appicons/instagram.svg', '@icons/brands/instagram.svg');
-Aliases::set('@appicons/cmplid.svg', '@icons/brands/cmplid.svg');
-Aliases::set('@appicons/upwork.svg', '@icons/brands/upwork.svg');
-Aliases::set('@appicons/facebook.svg', '@icons/brands/facebook.svg');
-Aliases::set('@appicons/gripfire.svg', '@icons/brands/gripfire.svg');
-Aliases::set('@appicons/jedi-order.svg', '@icons/brands/jedi-order.svg');
-Aliases::set('@appicons/uikit.svg', '@icons/brands/uikit.svg');
-Aliases::set('@appicons/fort-awesome-alt.svg', '@icons/brands/fort-awesome-alt.svg');
-Aliases::set('@appicons/phabricator.svg', '@icons/brands/phabricator.svg');
-Aliases::set('@appicons/ussunnah.svg', '@icons/brands/ussunnah.svg');
-Aliases::set('@appicons/earlybirds.svg', '@icons/brands/earlybirds.svg');
-Aliases::set('@appicons/trade-federation.svg', '@icons/brands/trade-federation.svg');
-Aliases::set('@appicons/autoprefixer.svg', '@icons/brands/autoprefixer.svg');
-Aliases::set('@appicons/whatsapp.svg', '@icons/brands/whatsapp.svg');
-Aliases::set('@appicons/square-upwork.svg', '@icons/brands/square-upwork.svg');
-Aliases::set('@appicons/slideshare.svg', '@icons/brands/slideshare.svg');
-Aliases::set('@appicons/google-play.svg', '@icons/brands/google-play.svg');
-Aliases::set('@appicons/viadeo.svg', '@icons/brands/viadeo.svg');
-Aliases::set('@appicons/line.svg', '@icons/brands/line.svg');
-Aliases::set('@appicons/notification-bottom-right.svg', '@icons/custom-icons/notification-bottom-right.svg');
-Aliases::set('@appicons/google-drive.svg', '@icons/brands/google-drive.svg');
-Aliases::set('@appicons/servicestack.svg', '@icons/brands/servicestack.svg');
-Aliases::set('@appicons/simplybuilt.svg', '@icons/brands/simplybuilt.svg');
-Aliases::set('@appicons/bitbucket.svg', '@icons/brands/bitbucket.svg');
-Aliases::set('@appicons/imdb.svg', '@icons/brands/imdb.svg');
-Aliases::set('@appicons/deezer.svg', '@icons/brands/deezer.svg');
-Aliases::set('@appicons/raspberry-pi.svg', '@icons/brands/raspberry-pi.svg');
-Aliases::set('@appicons/jira.svg', '@icons/brands/jira.svg');
-Aliases::set('@appicons/docker.svg', '@icons/brands/docker.svg');
-Aliases::set('@appicons/screenpal.svg', '@icons/brands/screenpal.svg');
-Aliases::set('@appicons/bluetooth.svg', '@icons/brands/bluetooth.svg');
-Aliases::set('@appicons/gitter.svg', '@icons/brands/gitter.svg');
-Aliases::set('@appicons/d-and-d.svg', '@icons/brands/d-and-d.svg');
-Aliases::set('@appicons/microblog.svg', '@icons/brands/microblog.svg');
-Aliases::set('@appicons/cc-diners-club.svg', '@icons/brands/cc-diners-club.svg');
-Aliases::set('@appicons/gg-circle.svg', '@icons/brands/gg-circle.svg');
-Aliases::set('@appicons/pied-piper-hat.svg', '@icons/brands/pied-piper-hat.svg');
-Aliases::set('@appicons/kickstarter-k.svg', '@icons/brands/kickstarter-k.svg');
-Aliases::set('@appicons/yandex.svg', '@icons/brands/yandex.svg');
-Aliases::set('@appicons/readme.svg', '@icons/brands/readme.svg');
-Aliases::set('@appicons/html5.svg', '@icons/brands/html5.svg');
-Aliases::set('@appicons/sellsy.svg', '@icons/brands/sellsy.svg');
-Aliases::set('@appicons/square-web-awesome.svg', '@icons/brands/square-web-awesome.svg');
-Aliases::set('@appicons/sass.svg', '@icons/brands/sass.svg');
-Aliases::set('@appicons/wirsindhandwerk.svg', '@icons/brands/wirsindhandwerk.svg');
-Aliases::set('@appicons/buromobelexperte.svg', '@icons/brands/buromobelexperte.svg');
-Aliases::set('@appicons/salesforce.svg', '@icons/brands/salesforce.svg');
-Aliases::set('@appicons/octopus-deploy.svg', '@icons/brands/octopus-deploy.svg');
-Aliases::set('@appicons/medapps.svg', '@icons/brands/medapps.svg');
-Aliases::set('@appicons/ns8.svg', '@icons/brands/ns8.svg');
-Aliases::set('@appicons/pinterest-p.svg', '@icons/brands/pinterest-p.svg');
-Aliases::set('@appicons/apper.svg', '@icons/brands/apper.svg');
-Aliases::set('@appicons/fort-awesome.svg', '@icons/brands/fort-awesome.svg');
-Aliases::set('@appicons/waze.svg', '@icons/brands/waze.svg');
-Aliases::set('@appicons/bluesky.svg', '@icons/brands/bluesky.svg');
-Aliases::set('@appicons/cc-jcb.svg', '@icons/brands/cc-jcb.svg');
-Aliases::set('@appicons/snapchat.svg', '@icons/brands/snapchat.svg');
-Aliases::set('@appicons/fantasy-flight-games.svg', '@icons/brands/fantasy-flight-games.svg');
-Aliases::set('@appicons/slideout-left.svg', '@icons/custom-icons/slideout-left.svg');
-Aliases::set('@appicons/rust.svg', '@icons/brands/rust.svg');
-Aliases::set('@appicons/wix.svg', '@icons/brands/wix.svg');
-Aliases::set('@appicons/square-behance.svg', '@icons/brands/square-behance.svg');
-Aliases::set('@appicons/supple.svg', '@icons/brands/supple.svg');
-Aliases::set('@appicons/webflow.svg', '@icons/brands/webflow.svg');
-Aliases::set('@appicons/rebel.svg', '@icons/brands/rebel.svg');
-Aliases::set('@appicons/css3.svg', '@icons/brands/css3.svg');
-Aliases::set('@appicons/staylinked.svg', '@icons/brands/staylinked.svg');
-Aliases::set('@appicons/kaggle.svg', '@icons/brands/kaggle.svg');
-Aliases::set('@appicons/space-awesome.svg', '@icons/brands/space-awesome.svg');
-Aliases::set('@appicons/deviantart.svg', '@icons/brands/deviantart.svg');
-Aliases::set('@appicons/cpanel.svg', '@icons/brands/cpanel.svg');
-Aliases::set('@appicons/goodreads-g.svg', '@icons/brands/goodreads-g.svg');
-Aliases::set('@appicons/square-git.svg', '@icons/brands/square-git.svg');
-Aliases::set('@appicons/square-tumblr.svg', '@icons/brands/square-tumblr.svg');
-Aliases::set('@appicons/trello.svg', '@icons/brands/trello.svg');
-Aliases::set('@appicons/creative-commons-nc-jp.svg', '@icons/brands/creative-commons-nc-jp.svg');
-Aliases::set('@appicons/get-pocket.svg', '@icons/brands/get-pocket.svg');
-Aliases::set('@appicons/perbyte.svg', '@icons/brands/perbyte.svg');
-Aliases::set('@appicons/grunt.svg', '@icons/brands/grunt.svg');
-Aliases::set('@appicons/element-card-slash.svg', '@icons/custom-icons/element-card-slash.svg');
-Aliases::set('@appicons/weebly.svg', '@icons/brands/weebly.svg');
-Aliases::set('@appicons/connectdevelop.svg', '@icons/brands/connectdevelop.svg');
-Aliases::set('@appicons/leanpub.svg', '@icons/brands/leanpub.svg');
-Aliases::set('@appicons/black-tie.svg', '@icons/brands/black-tie.svg');
-Aliases::set('@appicons/themeco.svg', '@icons/brands/themeco.svg');
-Aliases::set('@appicons/python.svg', '@icons/brands/python.svg');
-Aliases::set('@appicons/android.svg', '@icons/brands/android.svg');
-Aliases::set('@appicons/bots.svg', '@icons/brands/bots.svg');
-Aliases::set('@appicons/free-code-camp.svg', '@icons/brands/free-code-camp.svg');
-Aliases::set('@appicons/notification-top-left.svg', '@icons/custom-icons/notification-top-left.svg');
-Aliases::set('@appicons/hornbill.svg', '@icons/brands/hornbill.svg');
-Aliases::set('@appicons/js.svg', '@icons/brands/js.svg');
-Aliases::set('@appicons/ideal.svg', '@icons/brands/ideal.svg');
-Aliases::set('@appicons/git.svg', '@icons/brands/git.svg');
-Aliases::set('@appicons/dev.svg', '@icons/brands/dev.svg');
-Aliases::set('@appicons/sketch.svg', '@icons/brands/sketch.svg');
-Aliases::set('@appicons/yandex-international.svg', '@icons/brands/yandex-international.svg');
-Aliases::set('@appicons/cc-amex.svg', '@icons/brands/cc-amex.svg');
-Aliases::set('@appicons/uber.svg', '@icons/brands/uber.svg');
-Aliases::set('@appicons/github.svg', '@icons/brands/github.svg');
-Aliases::set('@appicons/php.svg', '@icons/brands/php.svg');
-Aliases::set('@appicons/alipay.svg', '@icons/brands/alipay.svg');
-Aliases::set('@appicons/youtube.svg', '@icons/brands/youtube.svg');
-Aliases::set('@appicons/skyatlas.svg', '@icons/brands/skyatlas.svg');
-Aliases::set('@appicons/firefox-browser.svg', '@icons/brands/firefox-browser.svg');
-Aliases::set('@appicons/replyd.svg', '@icons/brands/replyd.svg');
-Aliases::set('@appicons/suse.svg', '@icons/brands/suse.svg');
-Aliases::set('@appicons/jenkins.svg', '@icons/brands/jenkins.svg');
-Aliases::set('@appicons/twitter.svg', '@icons/brands/twitter.svg');
-Aliases::set('@appicons/rockrms.svg', '@icons/brands/rockrms.svg');
-Aliases::set('@appicons/pinterest.svg', '@icons/brands/pinterest.svg');
-Aliases::set('@appicons/buffer.svg', '@icons/brands/buffer.svg');
-Aliases::set('@appicons/npm.svg', '@icons/brands/npm.svg');
-Aliases::set('@appicons/yammer.svg', '@icons/brands/yammer.svg');
-Aliases::set('@appicons/btc.svg', '@icons/brands/btc.svg');
-Aliases::set('@appicons/dribbble.svg', '@icons/brands/dribbble.svg');
-Aliases::set('@appicons/stumbleupon-circle.svg', '@icons/brands/stumbleupon-circle.svg');
-Aliases::set('@appicons/internet-explorer.svg', '@icons/brands/internet-explorer.svg');
-Aliases::set('@appicons/stubber.svg', '@icons/brands/stubber.svg');
-Aliases::set('@appicons/element-cards.svg', '@icons/custom-icons/element-cards.svg');
-Aliases::set('@appicons/telegram.svg', '@icons/brands/telegram.svg');
-Aliases::set('@appicons/old-republic.svg', '@icons/brands/old-republic.svg');
-Aliases::set('@appicons/odysee.svg', '@icons/brands/odysee.svg');
-Aliases::set('@appicons/square-whatsapp.svg', '@icons/brands/square-whatsapp.svg');
-Aliases::set('@appicons/node-js.svg', '@icons/brands/node-js.svg');
-Aliases::set('@appicons/edge-legacy.svg', '@icons/brands/edge-legacy.svg');
-Aliases::set('@appicons/slack.svg', '@icons/brands/slack.svg');
-Aliases::set('@appicons/medrt.svg', '@icons/brands/medrt.svg');
-Aliases::set('@appicons/usb.svg', '@icons/brands/usb.svg');
-Aliases::set('@appicons/tumblr.svg', '@icons/brands/tumblr.svg');
-Aliases::set('@appicons/vaadin.svg', '@icons/brands/vaadin.svg');
-Aliases::set('@appicons/quora.svg', '@icons/brands/quora.svg');
-Aliases::set('@appicons/square-x-twitter.svg', '@icons/brands/square-x-twitter.svg');
-Aliases::set('@appicons/reacteurope.svg', '@icons/brands/reacteurope.svg');
-Aliases::set('@appicons/medium.svg', '@icons/brands/medium.svg');
-Aliases::set('@appicons/amilia.svg', '@icons/brands/amilia.svg');
-Aliases::set('@appicons/mixcloud.svg', '@icons/brands/mixcloud.svg');
-Aliases::set('@appicons/flipboard.svg', '@icons/brands/flipboard.svg');
-Aliases::set('@appicons/viacoin.svg', '@icons/brands/viacoin.svg');
-Aliases::set('@appicons/critical-role.svg', '@icons/brands/critical-role.svg');
-Aliases::set('@appicons/sitrox.svg', '@icons/brands/sitrox.svg');
-Aliases::set('@appicons/discourse.svg', '@icons/brands/discourse.svg');
-Aliases::set('@appicons/joomla.svg', '@icons/brands/joomla.svg');
-Aliases::set('@appicons/mastodon.svg', '@icons/brands/mastodon.svg');
-Aliases::set('@appicons/diamond-slash.svg', '@icons/custom-icons/diamond-slash.svg');
-Aliases::set('@appicons/airbnb.svg', '@icons/brands/airbnb.svg');
-Aliases::set('@appicons/wolf-pack-battalion.svg', '@icons/brands/wolf-pack-battalion.svg');
-Aliases::set('@appicons/buy-n-large.svg', '@icons/brands/buy-n-large.svg');
-Aliases::set('@appicons/gulp.svg', '@icons/brands/gulp.svg');
-Aliases::set('@appicons/creative-commons-sampling-plus.svg', '@icons/brands/creative-commons-sampling-plus.svg');
-Aliases::set('@appicons/strava.svg', '@icons/brands/strava.svg');
-Aliases::set('@appicons/ember.svg', '@icons/brands/ember.svg');
-Aliases::set('@appicons/canadian-maple-leaf.svg', '@icons/brands/canadian-maple-leaf.svg');
-Aliases::set('@appicons/teamspeak.svg', '@icons/brands/teamspeak.svg');
-Aliases::set('@appicons/pushed.svg', '@icons/brands/pushed.svg');
-Aliases::set('@appicons/wordpress-simple.svg', '@icons/brands/wordpress-simple.svg');
-Aliases::set('@appicons/nutritionix.svg', '@icons/brands/nutritionix.svg');
-Aliases::set('@appicons/grip-dots.svg', '@icons/custom-icons/grip-dots.svg');
-Aliases::set('@appicons/wodu.svg', '@icons/brands/wodu.svg');
-Aliases::set('@appicons/google-pay.svg', '@icons/brands/google-pay.svg');
-Aliases::set('@appicons/intercom.svg', '@icons/brands/intercom.svg');
-Aliases::set('@appicons/notification-bottom-left.svg', '@icons/custom-icons/notification-bottom-left.svg');
-Aliases::set('@appicons/zhihu.svg', '@icons/brands/zhihu.svg');
-Aliases::set('@appicons/korvue.svg', '@icons/brands/korvue.svg');
-Aliases::set('@appicons/pix.svg', '@icons/brands/pix.svg');
-Aliases::set('@appicons/steam-symbol.svg', '@icons/brands/steam-symbol.svg');
+$aliases = app(Aliases::class);
+
+/**
+ * We use reflection here as calling ->set every
+ * time incurs a high performance cost.
+ */
+$reflectionProperty = new ReflectionProperty($aliases, 'aliases');
+$reflectionProperty->setValue($aliases, array_merge_recursive($reflectionProperty->getValue($aliases), [
+    '@appicons' => [
+        '@appicons/monero.svg' => '@icons/brands/monero.svg',
+        '@appicons/hooli.svg' => '@icons/brands/hooli.svg',
+        '@appicons/yelp.svg' => '@icons/brands/yelp.svg',
+        '@appicons/cc-visa.svg' => '@icons/brands/cc-visa.svg',
+        '@appicons/lastfm.svg' => '@icons/brands/lastfm.svg',
+        '@appicons/shopware.svg' => '@icons/brands/shopware.svg',
+        '@appicons/creative-commons-nc.svg' => '@icons/brands/creative-commons-nc.svg',
+        '@appicons/aws.svg' => '@icons/brands/aws.svg',
+        '@appicons/redhat.svg' => '@icons/brands/redhat.svg',
+        '@appicons/yoast.svg' => '@icons/brands/yoast.svg',
+        '@appicons/cloudflare.svg' => '@icons/brands/cloudflare.svg',
+        '@appicons/ups.svg' => '@icons/brands/ups.svg',
+        '@appicons/pixiv.svg' => '@icons/brands/pixiv.svg',
+        '@appicons/wpexplorer.svg' => '@icons/brands/wpexplorer.svg',
+        '@appicons/dyalog.svg' => '@icons/brands/dyalog.svg',
+        '@appicons/bity.svg' => '@icons/brands/bity.svg',
+        '@appicons/stackpath.svg' => '@icons/brands/stackpath.svg',
+        '@appicons/buysellads.svg' => '@icons/brands/buysellads.svg',
+        '@appicons/first-order.svg' => '@icons/brands/first-order.svg',
+        '@appicons/modx.svg' => '@icons/brands/modx.svg',
+        '@appicons/guilded.svg' => '@icons/brands/guilded.svg',
+        '@appicons/vnv.svg' => '@icons/brands/vnv.svg',
+        '@appicons/square-js.svg' => '@icons/brands/square-js.svg',
+        '@appicons/microsoft.svg' => '@icons/brands/microsoft.svg',
+        '@appicons/qq.svg' => '@icons/brands/qq.svg',
+        '@appicons/orcid.svg' => '@icons/brands/orcid.svg',
+        '@appicons/java.svg' => '@icons/brands/java.svg',
+        '@appicons/invision.svg' => '@icons/brands/invision.svg',
+        '@appicons/creative-commons-pd-alt.svg' => '@icons/brands/creative-commons-pd-alt.svg',
+        '@appicons/clone-dashed.svg' => '@icons/custom-icons/clone-dashed.svg',
+        '@appicons/centercode.svg' => '@icons/brands/centercode.svg',
+        '@appicons/glide-g.svg' => '@icons/brands/glide-g.svg',
+        '@appicons/drupal.svg' => '@icons/brands/drupal.svg',
+        '@appicons/jxl.svg' => '@icons/brands/jxl.svg',
+        '@appicons/dart-lang.svg' => '@icons/brands/dart-lang.svg',
+        '@appicons/hire-a-helper.svg' => '@icons/brands/hire-a-helper.svg',
+        '@appicons/creative-commons-by.svg' => '@icons/brands/creative-commons-by.svg',
+        '@appicons/unity.svg' => '@icons/brands/unity.svg',
+        '@appicons/whmcs.svg' => '@icons/brands/whmcs.svg',
+        '@appicons/rocketchat.svg' => '@icons/brands/rocketchat.svg',
+        '@appicons/vk.svg' => '@icons/brands/vk.svg',
+        '@appicons/untappd.svg' => '@icons/brands/untappd.svg',
+        '@appicons/mailchimp.svg' => '@icons/brands/mailchimp.svg',
+        '@appicons/css3-alt.svg' => '@icons/brands/css3-alt.svg',
+        '@appicons/square-reddit.svg' => '@icons/brands/square-reddit.svg',
+        '@appicons/vimeo-v.svg' => '@icons/brands/vimeo-v.svg',
+        '@appicons/contao.svg' => '@icons/brands/contao.svg',
+        '@appicons/square-font-awesome.svg' => '@icons/brands/square-font-awesome.svg',
+        '@appicons/deskpro.svg' => '@icons/brands/deskpro.svg',
+        '@appicons/brave.svg' => '@icons/brands/brave.svg',
+        '@appicons/sistrix.svg' => '@icons/brands/sistrix.svg',
+        '@appicons/square-instagram.svg' => '@icons/brands/square-instagram.svg',
+        '@appicons/battle-net.svg' => '@icons/brands/battle-net.svg',
+        '@appicons/asterisk-slash.svg' => '@icons/custom-icons/asterisk-slash.svg',
+        '@appicons/the-red-yeti.svg' => '@icons/brands/the-red-yeti.svg',
+        '@appicons/square-hacker-news.svg' => '@icons/brands/square-hacker-news.svg',
+        '@appicons/edge.svg' => '@icons/brands/edge.svg',
+        '@appicons/threads.svg' => '@icons/brands/threads.svg',
+        '@appicons/napster.svg' => '@icons/brands/napster.svg',
+        '@appicons/square-snapchat.svg' => '@icons/brands/square-snapchat.svg',
+        '@appicons/google-plus-g.svg' => '@icons/brands/google-plus-g.svg',
+        '@appicons/artstation.svg' => '@icons/brands/artstation.svg',
+        '@appicons/markdown.svg' => '@icons/brands/markdown.svg',
+        '@appicons/sourcetree.svg' => '@icons/brands/sourcetree.svg',
+        '@appicons/google-plus.svg' => '@icons/brands/google-plus.svg',
+        '@appicons/diaspora.svg' => '@icons/brands/diaspora.svg',
+        '@appicons/gear-slash.svg' => '@icons/custom-icons/gear-slash.svg',
+        '@appicons/foursquare.svg' => '@icons/brands/foursquare.svg',
+        '@appicons/stack-overflow.svg' => '@icons/brands/stack-overflow.svg',
+        '@appicons/github-alt.svg' => '@icons/brands/github-alt.svg',
+        '@appicons/phoenix-squadron.svg' => '@icons/brands/phoenix-squadron.svg',
+        '@appicons/pagelines.svg' => '@icons/brands/pagelines.svg',
+        '@appicons/algolia.svg' => '@icons/brands/algolia.svg',
+        '@appicons/red-river.svg' => '@icons/brands/red-river.svg',
+        '@appicons/creative-commons-sa.svg' => '@icons/brands/creative-commons-sa.svg',
+        '@appicons/safari.svg' => '@icons/brands/safari.svg',
+        '@appicons/google.svg' => '@icons/brands/google.svg',
+        '@appicons/square-font-awesome-stroke.svg' => '@icons/brands/square-font-awesome-stroke.svg',
+        '@appicons/atlassian.svg' => '@icons/brands/atlassian.svg',
+        '@appicons/linkedin-in.svg' => '@icons/brands/linkedin-in.svg',
+        '@appicons/digital-ocean.svg' => '@icons/brands/digital-ocean.svg',
+        '@appicons/nimblr.svg' => '@icons/brands/nimblr.svg',
+        '@appicons/chromecast.svg' => '@icons/brands/chromecast.svg',
+        '@appicons/evernote.svg' => '@icons/brands/evernote.svg',
+        '@appicons/hacker-news.svg' => '@icons/brands/hacker-news.svg',
+        '@appicons/creative-commons-sampling.svg' => '@icons/brands/creative-commons-sampling.svg',
+        '@appicons/adversal.svg' => '@icons/brands/adversal.svg',
+        '@appicons/creative-commons.svg' => '@icons/brands/creative-commons.svg',
+        '@appicons/watchman-monitoring.svg' => '@icons/brands/watchman-monitoring.svg',
+        '@appicons/fonticons.svg' => '@icons/brands/fonticons.svg',
+        '@appicons/weixin.svg' => '@icons/brands/weixin.svg',
+        '@appicons/shirtsinbulk.svg' => '@icons/brands/shirtsinbulk.svg',
+        '@appicons/thumb-right.svg' => '@icons/custom-icons/thumb-right.svg',
+        '@appicons/codepen.svg' => '@icons/brands/codepen.svg',
+        '@appicons/git-alt.svg' => '@icons/brands/git-alt.svg',
+        '@appicons/lyft.svg' => '@icons/brands/lyft.svg',
+        '@appicons/rev.svg' => '@icons/brands/rev.svg',
+        '@appicons/windows.svg' => '@icons/brands/windows.svg',
+        '@appicons/wizards-of-the-coast.svg' => '@icons/brands/wizards-of-the-coast.svg',
+        '@appicons/square-viadeo.svg' => '@icons/brands/square-viadeo.svg',
+        '@appicons/meetup.svg' => '@icons/brands/meetup.svg',
+        '@appicons/centos.svg' => '@icons/brands/centos.svg',
+        '@appicons/adn.svg' => '@icons/brands/adn.svg',
+        '@appicons/cloudsmith.svg' => '@icons/brands/cloudsmith.svg',
+        '@appicons/thumb-left.svg' => '@icons/custom-icons/thumb-left.svg',
+        '@appicons/opensuse.svg' => '@icons/brands/opensuse.svg',
+        '@appicons/pied-piper-alt.svg' => '@icons/brands/pied-piper-alt.svg',
+        '@appicons/globe.svg' => '@icons/regular/globe.svg',
+        '@appicons/square-dribbble.svg' => '@icons/brands/square-dribbble.svg',
+        '@appicons/codiepie.svg' => '@icons/brands/codiepie.svg',
+        '@appicons/duplicate.svg' => '@icons/custom-icons/duplicate.svg',
+        '@appicons/node.svg' => '@icons/brands/node.svg',
+        '@appicons/mix.svg' => '@icons/brands/mix.svg',
+        '@appicons/steam.svg' => '@icons/brands/steam.svg',
+        '@appicons/cc-apple-pay.svg' => '@icons/brands/cc-apple-pay.svg',
+        '@appicons/scribd.svg' => '@icons/brands/scribd.svg',
+        '@appicons/debian.svg' => '@icons/brands/debian.svg',
+        '@appicons/openid.svg' => '@icons/brands/openid.svg',
+        '@appicons/instalod.svg' => '@icons/brands/instalod.svg',
+        '@appicons/files-pinwheel.svg' => '@icons/brands/files-pinwheel.svg',
+        '@appicons/expeditedssl.svg' => '@icons/brands/expeditedssl.svg',
+        '@appicons/share-flip.svg' => '@icons/custom-icons/share-flip.svg',
+        '@appicons/sellcast.svg' => '@icons/brands/sellcast.svg',
+        '@appicons/square-twitter.svg' => '@icons/brands/square-twitter.svg',
+        '@appicons/list-flip.svg' => '@icons/custom-icons/list-flip.svg',
+        '@appicons/r-project.svg' => '@icons/brands/r-project.svg',
+        '@appicons/delicious.svg' => '@icons/brands/delicious.svg',
+        '@appicons/freebsd.svg' => '@icons/brands/freebsd.svg',
+        '@appicons/vuejs.svg' => '@icons/brands/vuejs.svg',
+        '@appicons/accusoft.svg' => '@icons/brands/accusoft.svg',
+        '@appicons/ioxhost.svg' => '@icons/brands/ioxhost.svg',
+        '@appicons/fonticons-fi.svg' => '@icons/brands/fonticons-fi.svg',
+        '@appicons/app-store.svg' => '@icons/brands/app-store.svg',
+        '@appicons/cc-mastercard.svg' => '@icons/brands/cc-mastercard.svg',
+        '@appicons/itunes-note.svg' => '@icons/brands/itunes-note.svg',
+        '@appicons/golang.svg' => '@icons/brands/golang.svg',
+        '@appicons/kickstarter.svg' => '@icons/brands/kickstarter.svg',
+        '@appicons/grav.svg' => '@icons/brands/grav.svg',
+        '@appicons/weibo.svg' => '@icons/brands/weibo.svg',
+        '@appicons/uncharted.svg' => '@icons/brands/uncharted.svg',
+        '@appicons/firstdraft.svg' => '@icons/brands/firstdraft.svg',
+        '@appicons/square-youtube.svg' => '@icons/brands/square-youtube.svg',
+        '@appicons/wikipedia-w.svg' => '@icons/brands/wikipedia-w.svg',
+        '@appicons/wpressr.svg' => '@icons/brands/wpressr.svg',
+        '@appicons/angellist.svg' => '@icons/brands/angellist.svg',
+        '@appicons/galactic-republic.svg' => '@icons/brands/galactic-republic.svg',
+        '@appicons/nfc-directional.svg' => '@icons/brands/nfc-directional.svg',
+        '@appicons/skype.svg' => '@icons/brands/skype.svg',
+        '@appicons/joget.svg' => '@icons/brands/joget.svg',
+        '@appicons/fedora.svg' => '@icons/brands/fedora.svg',
+        '@appicons/stripe-s.svg' => '@icons/brands/stripe-s.svg',
+        '@appicons/meta.svg' => '@icons/brands/meta.svg',
+        '@appicons/laravel.svg' => '@icons/brands/laravel.svg',
+        '@appicons/hotjar.svg' => '@icons/brands/hotjar.svg',
+        '@appicons/bluetooth-b.svg' => '@icons/brands/bluetooth-b.svg',
+        '@appicons/square-letterboxd.svg' => '@icons/brands/square-letterboxd.svg',
+        '@appicons/sticker-mule.svg' => '@icons/brands/sticker-mule.svg',
+        '@appicons/creative-commons-zero.svg' => '@icons/brands/creative-commons-zero.svg',
+        '@appicons/hips.svg' => '@icons/brands/hips.svg',
+        '@appicons/css.svg' => '@icons/brands/css.svg',
+        '@appicons/behance.svg' => '@icons/brands/behance.svg',
+        '@appicons/reddit.svg' => '@icons/brands/reddit.svg',
+        '@appicons/discord.svg' => '@icons/brands/discord.svg',
+        '@appicons/chrome.svg' => '@icons/brands/chrome.svg',
+        '@appicons/app-store-ios.svg' => '@icons/brands/app-store-ios.svg',
+        '@appicons/cc-discover.svg' => '@icons/brands/cc-discover.svg',
+        '@appicons/wpbeginner.svg' => '@icons/brands/wpbeginner.svg',
+        '@appicons/confluence.svg' => '@icons/brands/confluence.svg',
+        '@appicons/shoelace.svg' => '@icons/brands/shoelace.svg',
+        '@appicons/mdb.svg' => '@icons/brands/mdb.svg',
+        '@appicons/dochub.svg' => '@icons/brands/dochub.svg',
+        '@appicons/accessible-icon.svg' => '@icons/brands/accessible-icon.svg',
+        '@appicons/ebay.svg' => '@icons/brands/ebay.svg',
+        '@appicons/amazon.svg' => '@icons/brands/amazon.svg',
+        '@appicons/unsplash.svg' => '@icons/brands/unsplash.svg',
+        '@appicons/yarn.svg' => '@icons/brands/yarn.svg',
+        '@appicons/square-steam.svg' => '@icons/brands/square-steam.svg',
+        '@appicons/500px.svg' => '@icons/brands/500px.svg',
+        '@appicons/square-vimeo.svg' => '@icons/brands/square-vimeo.svg',
+        '@appicons/asymmetrik.svg' => '@icons/brands/asymmetrik.svg',
+        '@appicons/font-awesome.svg' => '@icons/brands/font-awesome.svg',
+        '@appicons/gratipay.svg' => '@icons/brands/gratipay.svg',
+        '@appicons/apple.svg' => '@icons/brands/apple.svg',
+        '@appicons/hive.svg' => '@icons/brands/hive.svg',
+        '@appicons/gitkraken.svg' => '@icons/brands/gitkraken.svg',
+        '@appicons/keybase.svg' => '@icons/brands/keybase.svg',
+        '@appicons/apple-pay.svg' => '@icons/brands/apple-pay.svg',
+        '@appicons/padlet.svg' => '@icons/brands/padlet.svg',
+        '@appicons/amazon-pay.svg' => '@icons/brands/amazon-pay.svg',
+        '@appicons/square-github.svg' => '@icons/brands/square-github.svg',
+        '@appicons/stumbleupon.svg' => '@icons/brands/stumbleupon.svg',
+        '@appicons/fedex.svg' => '@icons/brands/fedex.svg',
+        '@appicons/phoenix-framework.svg' => '@icons/brands/phoenix-framework.svg',
+        '@appicons/shopify.svg' => '@icons/brands/shopify.svg',
+        '@appicons/neos.svg' => '@icons/brands/neos.svg',
+        '@appicons/square-threads.svg' => '@icons/brands/square-threads.svg',
+        '@appicons/hackerrank.svg' => '@icons/brands/hackerrank.svg',
+        '@appicons/researchgate.svg' => '@icons/brands/researchgate.svg',
+        '@appicons/swift.svg' => '@icons/brands/swift.svg',
+        '@appicons/angular.svg' => '@icons/brands/angular.svg',
+        '@appicons/speakap.svg' => '@icons/brands/speakap.svg',
+        '@appicons/angrycreative.svg' => '@icons/brands/angrycreative.svg',
+        '@appicons/y-combinator.svg' => '@icons/brands/y-combinator.svg',
+        '@appicons/empire.svg' => '@icons/brands/empire.svg',
+        '@appicons/envira.svg' => '@icons/brands/envira.svg',
+        '@appicons/google-scholar.svg' => '@icons/brands/google-scholar.svg',
+        '@appicons/square-gitlab.svg' => '@icons/brands/square-gitlab.svg',
+        '@appicons/studiovinari.svg' => '@icons/brands/studiovinari.svg',
+        '@appicons/pied-piper.svg' => '@icons/brands/pied-piper.svg',
+        '@appicons/wordpress.svg' => '@icons/brands/wordpress.svg',
+        '@appicons/product-hunt.svg' => '@icons/brands/product-hunt.svg',
+        '@appicons/firefox.svg' => '@icons/brands/firefox.svg',
+        '@appicons/linode.svg' => '@icons/brands/linode.svg',
+        '@appicons/goodreads.svg' => '@icons/brands/goodreads.svg',
+        '@appicons/square-odnoklassniki.svg' => '@icons/brands/square-odnoklassniki.svg',
+        '@appicons/jsfiddle.svg' => '@icons/brands/jsfiddle.svg',
+        '@appicons/sith.svg' => '@icons/brands/sith.svg',
+        '@appicons/themeisle.svg' => '@icons/brands/themeisle.svg',
+        '@appicons/page4.svg' => '@icons/brands/page4.svg',
+        '@appicons/hashnode.svg' => '@icons/brands/hashnode.svg',
+        '@appicons/react.svg' => '@icons/brands/react.svg',
+        '@appicons/cc-paypal.svg' => '@icons/brands/cc-paypal.svg',
+        '@appicons/squarespace.svg' => '@icons/brands/squarespace.svg',
+        '@appicons/graphql.svg' => '@icons/custom-icons/graphql.svg',
+        '@appicons/cc-stripe.svg' => '@icons/brands/cc-stripe.svg',
+        '@appicons/creative-commons-share.svg' => '@icons/brands/creative-commons-share.svg',
+        '@appicons/bitcoin.svg' => '@icons/brands/bitcoin.svg',
+        '@appicons/keycdn.svg' => '@icons/brands/keycdn.svg',
+        '@appicons/opera.svg' => '@icons/brands/opera.svg',
+        '@appicons/itch-io.svg' => '@icons/brands/itch-io.svg',
+        '@appicons/umbraco.svg' => '@icons/brands/umbraco.svg',
+        '@appicons/galactic-senate.svg' => '@icons/brands/galactic-senate.svg',
+        '@appicons/ubuntu.svg' => '@icons/brands/ubuntu.svg',
+        '@appicons/draft2digital.svg' => '@icons/brands/draft2digital.svg',
+        '@appicons/stripe.svg' => '@icons/brands/stripe.svg',
+        '@appicons/houzz.svg' => '@icons/brands/houzz.svg',
+        '@appicons/gg.svg' => '@icons/brands/gg.svg',
+        '@appicons/dhl.svg' => '@icons/brands/dhl.svg',
+        '@appicons/square-pinterest.svg' => '@icons/brands/square-pinterest.svg',
+        '@appicons/xing.svg' => '@icons/brands/xing.svg',
+        '@appicons/blackberry.svg' => '@icons/brands/blackberry.svg',
+        '@appicons/creative-commons-pd.svg' => '@icons/brands/creative-commons-pd.svg',
+        '@appicons/playstation.svg' => '@icons/brands/playstation.svg',
+        '@appicons/quinscape.svg' => '@icons/brands/quinscape.svg',
+        '@appicons/less.svg' => '@icons/brands/less.svg',
+        '@appicons/blogger-b.svg' => '@icons/brands/blogger-b.svg',
+        '@appicons/element-card.svg' => '@icons/custom-icons/element-card.svg',
+        '@appicons/opencart.svg' => '@icons/brands/opencart.svg',
+        '@appicons/vine.svg' => '@icons/brands/vine.svg',
+        '@appicons/signal-messenger.svg' => '@icons/brands/signal-messenger.svg',
+        '@appicons/paypal.svg' => '@icons/brands/paypal.svg',
+        '@appicons/gitlab.svg' => '@icons/brands/gitlab.svg',
+        '@appicons/typo3.svg' => '@icons/brands/typo3.svg',
+        '@appicons/reddit-alien.svg' => '@icons/brands/reddit-alien.svg',
+        '@appicons/yahoo.svg' => '@icons/brands/yahoo.svg',
+        '@appicons/dailymotion.svg' => '@icons/brands/dailymotion.svg',
+        '@appicons/affiliatetheme.svg' => '@icons/brands/affiliatetheme.svg',
+        '@appicons/pied-piper-pp.svg' => '@icons/brands/pied-piper-pp.svg',
+        '@appicons/bootstrap.svg' => '@icons/brands/bootstrap.svg',
+        '@appicons/odnoklassniki.svg' => '@icons/brands/odnoklassniki.svg',
+        '@appicons/nfc-symbol.svg' => '@icons/brands/nfc-symbol.svg',
+        '@appicons/mintbit.svg' => '@icons/brands/mintbit.svg',
+        '@appicons/ethereum.svg' => '@icons/brands/ethereum.svg',
+        '@appicons/speaker-deck.svg' => '@icons/brands/speaker-deck.svg',
+        '@appicons/creative-commons-nc-eu.svg' => '@icons/brands/creative-commons-nc-eu.svg',
+        '@appicons/notification-top-right.svg' => '@icons/custom-icons/notification-top-right.svg',
+        '@appicons/patreon.svg' => '@icons/brands/patreon.svg',
+        '@appicons/avianex.svg' => '@icons/brands/avianex.svg',
+        '@appicons/ello.svg' => '@icons/brands/ello.svg',
+        '@appicons/gofore.svg' => '@icons/brands/gofore.svg',
+        '@appicons/bimobject.svg' => '@icons/brands/bimobject.svg',
+        '@appicons/brave-reverse.svg' => '@icons/brands/brave-reverse.svg',
+        '@appicons/facebook-f.svg' => '@icons/brands/facebook-f.svg',
+        '@appicons/square-google-plus.svg' => '@icons/brands/square-google-plus.svg',
+        '@appicons/web-awesome.svg' => '@icons/brands/web-awesome.svg',
+        '@appicons/mandalorian.svg' => '@icons/brands/mandalorian.svg',
+        '@appicons/first-order-alt.svg' => '@icons/brands/first-order-alt.svg',
+        '@appicons/osi.svg' => '@icons/brands/osi.svg',
+        '@appicons/google-wallet.svg' => '@icons/brands/google-wallet.svg',
+        '@appicons/d-and-d-beyond.svg' => '@icons/brands/d-and-d-beyond.svg',
+        '@appicons/periscope.svg' => '@icons/brands/periscope.svg',
+        '@appicons/fulcrum.svg' => '@icons/brands/fulcrum.svg',
+        '@appicons/cloudscale.svg' => '@icons/brands/cloudscale.svg',
+        '@appicons/forumbee.svg' => '@icons/brands/forumbee.svg',
+        '@appicons/mizuni.svg' => '@icons/brands/mizuni.svg',
+        '@appicons/schlix.svg' => '@icons/brands/schlix.svg',
+        '@appicons/square-xing.svg' => '@icons/brands/square-xing.svg',
+        '@appicons/bandcamp.svg' => '@icons/brands/bandcamp.svg',
+        '@appicons/wpforms.svg' => '@icons/brands/wpforms.svg',
+        '@appicons/cloudversify.svg' => '@icons/brands/cloudversify.svg',
+        '@appicons/usps.svg' => '@icons/brands/usps.svg',
+        '@appicons/megaport.svg' => '@icons/brands/megaport.svg',
+        '@appicons/magento.svg' => '@icons/brands/magento.svg',
+        '@appicons/spotify.svg' => '@icons/brands/spotify.svg',
+        '@appicons/optin-monster.svg' => '@icons/brands/optin-monster.svg',
+        '@appicons/fly.svg' => '@icons/brands/fly.svg',
+        '@appicons/square-bluesky.svg' => '@icons/brands/square-bluesky.svg',
+        '@appicons/aviato.svg' => '@icons/brands/aviato.svg',
+        '@appicons/itunes.svg' => '@icons/brands/itunes.svg',
+        '@appicons/cuttlefish.svg' => '@icons/brands/cuttlefish.svg',
+        '@appicons/blogger.svg' => '@icons/brands/blogger.svg',
+        '@appicons/flickr.svg' => '@icons/brands/flickr.svg',
+        '@appicons/viber.svg' => '@icons/brands/viber.svg',
+        '@appicons/soundcloud.svg' => '@icons/brands/soundcloud.svg',
+        '@appicons/digg.svg' => '@icons/brands/digg.svg',
+        '@appicons/tencent-weibo.svg' => '@icons/brands/tencent-weibo.svg',
+        '@appicons/letterboxd.svg' => '@icons/brands/letterboxd.svg',
+        '@appicons/symfony.svg' => '@icons/brands/symfony.svg',
+        '@appicons/maxcdn.svg' => '@icons/brands/maxcdn.svg',
+        '@appicons/etsy.svg' => '@icons/brands/etsy.svg',
+        '@appicons/facebook-messenger.svg' => '@icons/brands/facebook-messenger.svg',
+        '@appicons/audible.svg' => '@icons/brands/audible.svg',
+        '@appicons/think-peaks.svg' => '@icons/brands/think-peaks.svg',
+        '@appicons/bilibili.svg' => '@icons/brands/bilibili.svg',
+        '@appicons/erlang.svg' => '@icons/brands/erlang.svg',
+        '@appicons/x-twitter.svg' => '@icons/brands/x-twitter.svg',
+        '@appicons/cotton-bureau.svg' => '@icons/brands/cotton-bureau.svg',
+        '@appicons/dashcube.svg' => '@icons/brands/dashcube.svg',
+        '@appicons/42-group.svg' => '@icons/brands/42-group.svg',
+        '@appicons/stack-exchange.svg' => '@icons/brands/stack-exchange.svg',
+        '@appicons/elementor.svg' => '@icons/brands/elementor.svg',
+        '@appicons/square-pied-piper.svg' => '@icons/brands/square-pied-piper.svg',
+        '@appicons/creative-commons-nd.svg' => '@icons/brands/creative-commons-nd.svg',
+        '@appicons/palfed.svg' => '@icons/brands/palfed.svg',
+        '@appicons/superpowers.svg' => '@icons/brands/superpowers.svg',
+        '@appicons/resolving.svg' => '@icons/brands/resolving.svg',
+        '@appicons/xbox.svg' => '@icons/brands/xbox.svg',
+        '@appicons/square-web-awesome-stroke.svg' => '@icons/brands/square-web-awesome-stroke.svg',
+        '@appicons/searchengin.svg' => '@icons/brands/searchengin.svg',
+        '@appicons/tiktok.svg' => '@icons/brands/tiktok.svg',
+        '@appicons/square-facebook.svg' => '@icons/brands/square-facebook.svg',
+        '@appicons/slideout-right.svg' => '@icons/custom-icons/slideout-right.svg',
+        '@appicons/renren.svg' => '@icons/brands/renren.svg',
+        '@appicons/linux.svg' => '@icons/brands/linux.svg',
+        '@appicons/glide.svg' => '@icons/brands/glide.svg',
+        '@appicons/linkedin.svg' => '@icons/brands/linkedin.svg',
+        '@appicons/hubspot.svg' => '@icons/brands/hubspot.svg',
+        '@appicons/deploydog.svg' => '@icons/brands/deploydog.svg',
+        '@appicons/twitch.svg' => '@icons/brands/twitch.svg',
+        '@appicons/flutter.svg' => '@icons/brands/flutter.svg',
+        '@appicons/ravelry.svg' => '@icons/brands/ravelry.svg',
+        '@appicons/mixer.svg' => '@icons/brands/mixer.svg',
+        '@appicons/square-lastfm.svg' => '@icons/brands/square-lastfm.svg',
+        '@appicons/list-tree-flip.svg' => '@icons/custom-icons/list-tree-flip.svg',
+        '@appicons/vimeo.svg' => '@icons/brands/vimeo.svg',
+        '@appicons/mendeley.svg' => '@icons/brands/mendeley.svg',
+        '@appicons/uniregistry.svg' => '@icons/brands/uniregistry.svg',
+        '@appicons/figma.svg' => '@icons/brands/figma.svg',
+        '@appicons/creative-commons-remix.svg' => '@icons/brands/creative-commons-remix.svg',
+        '@appicons/cc-amazon-pay.svg' => '@icons/brands/cc-amazon-pay.svg',
+        '@appicons/dropbox.svg' => '@icons/brands/dropbox.svg',
+        '@appicons/instagram.svg' => '@icons/brands/instagram.svg',
+        '@appicons/cmplid.svg' => '@icons/brands/cmplid.svg',
+        '@appicons/upwork.svg' => '@icons/brands/upwork.svg',
+        '@appicons/facebook.svg' => '@icons/brands/facebook.svg',
+        '@appicons/gripfire.svg' => '@icons/brands/gripfire.svg',
+        '@appicons/jedi-order.svg' => '@icons/brands/jedi-order.svg',
+        '@appicons/uikit.svg' => '@icons/brands/uikit.svg',
+        '@appicons/fort-awesome-alt.svg' => '@icons/brands/fort-awesome-alt.svg',
+        '@appicons/phabricator.svg' => '@icons/brands/phabricator.svg',
+        '@appicons/ussunnah.svg' => '@icons/brands/ussunnah.svg',
+        '@appicons/earlybirds.svg' => '@icons/brands/earlybirds.svg',
+        '@appicons/trade-federation.svg' => '@icons/brands/trade-federation.svg',
+        '@appicons/autoprefixer.svg' => '@icons/brands/autoprefixer.svg',
+        '@appicons/whatsapp.svg' => '@icons/brands/whatsapp.svg',
+        '@appicons/square-upwork.svg' => '@icons/brands/square-upwork.svg',
+        '@appicons/slideshare.svg' => '@icons/brands/slideshare.svg',
+        '@appicons/google-play.svg' => '@icons/brands/google-play.svg',
+        '@appicons/viadeo.svg' => '@icons/brands/viadeo.svg',
+        '@appicons/line.svg' => '@icons/brands/line.svg',
+        '@appicons/notification-bottom-right.svg' => '@icons/custom-icons/notification-bottom-right.svg',
+        '@appicons/google-drive.svg' => '@icons/brands/google-drive.svg',
+        '@appicons/servicestack.svg' => '@icons/brands/servicestack.svg',
+        '@appicons/simplybuilt.svg' => '@icons/brands/simplybuilt.svg',
+        '@appicons/bitbucket.svg' => '@icons/brands/bitbucket.svg',
+        '@appicons/imdb.svg' => '@icons/brands/imdb.svg',
+        '@appicons/deezer.svg' => '@icons/brands/deezer.svg',
+        '@appicons/raspberry-pi.svg' => '@icons/brands/raspberry-pi.svg',
+        '@appicons/jira.svg' => '@icons/brands/jira.svg',
+        '@appicons/docker.svg' => '@icons/brands/docker.svg',
+        '@appicons/screenpal.svg' => '@icons/brands/screenpal.svg',
+        '@appicons/bluetooth.svg' => '@icons/brands/bluetooth.svg',
+        '@appicons/gitter.svg' => '@icons/brands/gitter.svg',
+        '@appicons/d-and-d.svg' => '@icons/brands/d-and-d.svg',
+        '@appicons/microblog.svg' => '@icons/brands/microblog.svg',
+        '@appicons/cc-diners-club.svg' => '@icons/brands/cc-diners-club.svg',
+        '@appicons/gg-circle.svg' => '@icons/brands/gg-circle.svg',
+        '@appicons/pied-piper-hat.svg' => '@icons/brands/pied-piper-hat.svg',
+        '@appicons/kickstarter-k.svg' => '@icons/brands/kickstarter-k.svg',
+        '@appicons/yandex.svg' => '@icons/brands/yandex.svg',
+        '@appicons/readme.svg' => '@icons/brands/readme.svg',
+        '@appicons/html5.svg' => '@icons/brands/html5.svg',
+        '@appicons/sellsy.svg' => '@icons/brands/sellsy.svg',
+        '@appicons/square-web-awesome.svg' => '@icons/brands/square-web-awesome.svg',
+        '@appicons/sass.svg' => '@icons/brands/sass.svg',
+        '@appicons/wirsindhandwerk.svg' => '@icons/brands/wirsindhandwerk.svg',
+        '@appicons/buromobelexperte.svg' => '@icons/brands/buromobelexperte.svg',
+        '@appicons/salesforce.svg' => '@icons/brands/salesforce.svg',
+        '@appicons/octopus-deploy.svg' => '@icons/brands/octopus-deploy.svg',
+        '@appicons/medapps.svg' => '@icons/brands/medapps.svg',
+        '@appicons/ns8.svg' => '@icons/brands/ns8.svg',
+        '@appicons/pinterest-p.svg' => '@icons/brands/pinterest-p.svg',
+        '@appicons/apper.svg' => '@icons/brands/apper.svg',
+        '@appicons/fort-awesome.svg' => '@icons/brands/fort-awesome.svg',
+        '@appicons/waze.svg' => '@icons/brands/waze.svg',
+        '@appicons/bluesky.svg' => '@icons/brands/bluesky.svg',
+        '@appicons/cc-jcb.svg' => '@icons/brands/cc-jcb.svg',
+        '@appicons/snapchat.svg' => '@icons/brands/snapchat.svg',
+        '@appicons/fantasy-flight-games.svg' => '@icons/brands/fantasy-flight-games.svg',
+        '@appicons/slideout-left.svg' => '@icons/custom-icons/slideout-left.svg',
+        '@appicons/rust.svg' => '@icons/brands/rust.svg',
+        '@appicons/wix.svg' => '@icons/brands/wix.svg',
+        '@appicons/square-behance.svg' => '@icons/brands/square-behance.svg',
+        '@appicons/supple.svg' => '@icons/brands/supple.svg',
+        '@appicons/webflow.svg' => '@icons/brands/webflow.svg',
+        '@appicons/rebel.svg' => '@icons/brands/rebel.svg',
+        '@appicons/css3.svg' => '@icons/brands/css3.svg',
+        '@appicons/staylinked.svg' => '@icons/brands/staylinked.svg',
+        '@appicons/kaggle.svg' => '@icons/brands/kaggle.svg',
+        '@appicons/space-awesome.svg' => '@icons/brands/space-awesome.svg',
+        '@appicons/deviantart.svg' => '@icons/brands/deviantart.svg',
+        '@appicons/cpanel.svg' => '@icons/brands/cpanel.svg',
+        '@appicons/goodreads-g.svg' => '@icons/brands/goodreads-g.svg',
+        '@appicons/square-git.svg' => '@icons/brands/square-git.svg',
+        '@appicons/square-tumblr.svg' => '@icons/brands/square-tumblr.svg',
+        '@appicons/trello.svg' => '@icons/brands/trello.svg',
+        '@appicons/creative-commons-nc-jp.svg' => '@icons/brands/creative-commons-nc-jp.svg',
+        '@appicons/get-pocket.svg' => '@icons/brands/get-pocket.svg',
+        '@appicons/perbyte.svg' => '@icons/brands/perbyte.svg',
+        '@appicons/grunt.svg' => '@icons/brands/grunt.svg',
+        '@appicons/element-card-slash.svg' => '@icons/custom-icons/element-card-slash.svg',
+        '@appicons/weebly.svg' => '@icons/brands/weebly.svg',
+        '@appicons/connectdevelop.svg' => '@icons/brands/connectdevelop.svg',
+        '@appicons/leanpub.svg' => '@icons/brands/leanpub.svg',
+        '@appicons/black-tie.svg' => '@icons/brands/black-tie.svg',
+        '@appicons/themeco.svg' => '@icons/brands/themeco.svg',
+        '@appicons/python.svg' => '@icons/brands/python.svg',
+        '@appicons/android.svg' => '@icons/brands/android.svg',
+        '@appicons/bots.svg' => '@icons/brands/bots.svg',
+        '@appicons/free-code-camp.svg' => '@icons/brands/free-code-camp.svg',
+        '@appicons/notification-top-left.svg' => '@icons/custom-icons/notification-top-left.svg',
+        '@appicons/hornbill.svg' => '@icons/brands/hornbill.svg',
+        '@appicons/js.svg' => '@icons/brands/js.svg',
+        '@appicons/ideal.svg' => '@icons/brands/ideal.svg',
+        '@appicons/git.svg' => '@icons/brands/git.svg',
+        '@appicons/dev.svg' => '@icons/brands/dev.svg',
+        '@appicons/sketch.svg' => '@icons/brands/sketch.svg',
+        '@appicons/yandex-international.svg' => '@icons/brands/yandex-international.svg',
+        '@appicons/cc-amex.svg' => '@icons/brands/cc-amex.svg',
+        '@appicons/uber.svg' => '@icons/brands/uber.svg',
+        '@appicons/github.svg' => '@icons/brands/github.svg',
+        '@appicons/php.svg' => '@icons/brands/php.svg',
+        '@appicons/alipay.svg' => '@icons/brands/alipay.svg',
+        '@appicons/youtube.svg' => '@icons/brands/youtube.svg',
+        '@appicons/skyatlas.svg' => '@icons/brands/skyatlas.svg',
+        '@appicons/firefox-browser.svg' => '@icons/brands/firefox-browser.svg',
+        '@appicons/replyd.svg' => '@icons/brands/replyd.svg',
+        '@appicons/suse.svg' => '@icons/brands/suse.svg',
+        '@appicons/jenkins.svg' => '@icons/brands/jenkins.svg',
+        '@appicons/twitter.svg' => '@icons/brands/twitter.svg',
+        '@appicons/rockrms.svg' => '@icons/brands/rockrms.svg',
+        '@appicons/pinterest.svg' => '@icons/brands/pinterest.svg',
+        '@appicons/buffer.svg' => '@icons/brands/buffer.svg',
+        '@appicons/npm.svg' => '@icons/brands/npm.svg',
+        '@appicons/yammer.svg' => '@icons/brands/yammer.svg',
+        '@appicons/btc.svg' => '@icons/brands/btc.svg',
+        '@appicons/dribbble.svg' => '@icons/brands/dribbble.svg',
+        '@appicons/stumbleupon-circle.svg' => '@icons/brands/stumbleupon-circle.svg',
+        '@appicons/internet-explorer.svg' => '@icons/brands/internet-explorer.svg',
+        '@appicons/stubber.svg' => '@icons/brands/stubber.svg',
+        '@appicons/element-cards.svg' => '@icons/custom-icons/element-cards.svg',
+        '@appicons/telegram.svg' => '@icons/brands/telegram.svg',
+        '@appicons/old-republic.svg' => '@icons/brands/old-republic.svg',
+        '@appicons/odysee.svg' => '@icons/brands/odysee.svg',
+        '@appicons/square-whatsapp.svg' => '@icons/brands/square-whatsapp.svg',
+        '@appicons/node-js.svg' => '@icons/brands/node-js.svg',
+        '@appicons/edge-legacy.svg' => '@icons/brands/edge-legacy.svg',
+        '@appicons/slack.svg' => '@icons/brands/slack.svg',
+        '@appicons/medrt.svg' => '@icons/brands/medrt.svg',
+        '@appicons/usb.svg' => '@icons/brands/usb.svg',
+        '@appicons/tumblr.svg' => '@icons/brands/tumblr.svg',
+        '@appicons/vaadin.svg' => '@icons/brands/vaadin.svg',
+        '@appicons/quora.svg' => '@icons/brands/quora.svg',
+        '@appicons/square-x-twitter.svg' => '@icons/brands/square-x-twitter.svg',
+        '@appicons/reacteurope.svg' => '@icons/brands/reacteurope.svg',
+        '@appicons/medium.svg' => '@icons/brands/medium.svg',
+        '@appicons/amilia.svg' => '@icons/brands/amilia.svg',
+        '@appicons/mixcloud.svg' => '@icons/brands/mixcloud.svg',
+        '@appicons/flipboard.svg' => '@icons/brands/flipboard.svg',
+        '@appicons/viacoin.svg' => '@icons/brands/viacoin.svg',
+        '@appicons/critical-role.svg' => '@icons/brands/critical-role.svg',
+        '@appicons/sitrox.svg' => '@icons/brands/sitrox.svg',
+        '@appicons/discourse.svg' => '@icons/brands/discourse.svg',
+        '@appicons/joomla.svg' => '@icons/brands/joomla.svg',
+        '@appicons/mastodon.svg' => '@icons/brands/mastodon.svg',
+        '@appicons/diamond-slash.svg' => '@icons/custom-icons/diamond-slash.svg',
+        '@appicons/airbnb.svg' => '@icons/brands/airbnb.svg',
+        '@appicons/wolf-pack-battalion.svg' => '@icons/brands/wolf-pack-battalion.svg',
+        '@appicons/buy-n-large.svg' => '@icons/brands/buy-n-large.svg',
+        '@appicons/gulp.svg' => '@icons/brands/gulp.svg',
+        '@appicons/creative-commons-sampling-plus.svg' => '@icons/brands/creative-commons-sampling-plus.svg',
+        '@appicons/strava.svg' => '@icons/brands/strava.svg',
+        '@appicons/ember.svg' => '@icons/brands/ember.svg',
+        '@appicons/canadian-maple-leaf.svg' => '@icons/brands/canadian-maple-leaf.svg',
+        '@appicons/teamspeak.svg' => '@icons/brands/teamspeak.svg',
+        '@appicons/pushed.svg' => '@icons/brands/pushed.svg',
+        '@appicons/wordpress-simple.svg' => '@icons/brands/wordpress-simple.svg',
+        '@appicons/nutritionix.svg' => '@icons/brands/nutritionix.svg',
+        '@appicons/grip-dots.svg' => '@icons/custom-icons/grip-dots.svg',
+        '@appicons/wodu.svg' => '@icons/brands/wodu.svg',
+        '@appicons/google-pay.svg' => '@icons/brands/google-pay.svg',
+        '@appicons/intercom.svg' => '@icons/brands/intercom.svg',
+        '@appicons/notification-bottom-left.svg' => '@icons/custom-icons/notification-bottom-left.svg',
+        '@appicons/zhihu.svg' => '@icons/brands/zhihu.svg',
+        '@appicons/korvue.svg' => '@icons/brands/korvue.svg',
+        '@appicons/pix.svg' => '@icons/brands/pix.svg',
+        '@appicons/steam-symbol.svg' => '@icons/brands/steam-symbol.svg',
+    ],
+]));

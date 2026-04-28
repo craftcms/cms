@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use craft\helpers\App;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
-use CraftCms\Cms\Shared\Models\Info;
-use CraftCms\Cms\Shared\Rules\LanguageRule;
 use CraftCms\Cms\Site\Concerns\SiteDefaults;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Validation\Rules\LanguageRule;
+use Illuminate\Database\SQLiteDatabaseDoesNotExistException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -36,14 +36,14 @@ use Throwable;
  * Note that all actions in the controller are open and do not require an
  * authenticated Craft session to execute.
  */
-final readonly class InstallController
+readonly class InstallController
 {
     use SiteDefaults;
 
     public function __construct()
     {
         // Return a 404 if Craft is already installed
-        if (! app()->hasDebugModeEnabled() && Info::isInstalled()) {
+        if (! app()->hasDebugModeEnabled() && Cms::isInstalled()) {
             abort(404, 'Craft is already installed');
         }
     }
@@ -97,16 +97,10 @@ final readonly class InstallController
     {
         $data = $this->validateDbData($request->input());
 
-        Config::set("database.connections.{$data['driver']}", array_merge(
-            Config::get("database.connections.{$data['driver']}"),
-            $data,
-        ));
-
-        // Test the connection
         $errors = [];
 
         try {
-            DB::reconnect()->getPdo();
+            DB::build($data)->select('SELECT 1');
         } catch (PDOException $e) {
             $attr = match ($e->getCode()) {
                 1045 => 'user',
@@ -116,16 +110,18 @@ final readonly class InstallController
             };
 
             $errors[$attr][] = 'PDO exception: '.$e->getMessage();
+        } catch (SQLiteDatabaseDoesNotExistException $e) {
+            $errors['database'][] = 'PDO exception: '.$e->getMessage();
         }
 
-        $validates = empty($errors);
+        if (empty($errors)) {
+            return new JsonResponse;
+        }
 
-        return $validates ?
-            new JsonResponse :
-            new JsonResponse([
-                'message' => 'Could not connect to the database.',
-                'errors' => $errors,
-            ], 422);
+        return new JsonResponse([
+            'message' => 'Could not connect to the database.',
+            'errors' => $errors,
+        ], 422);
     }
 
     public function validateAccount(Request $request, GeneralConfig $generalConfig): Response
@@ -133,7 +129,7 @@ final readonly class InstallController
         $request->validate([
             'email' => ['required', 'email:strict'],
             'username' => [Rule::requiredIf(! $generalConfig->useEmailAsUsername), 'string', 'max:255', 'alpha_num'],
-            'password' => Password::required(),
+            'password' => ['required', Password::default()],
         ]);
 
         return new JsonResponse;
@@ -154,7 +150,7 @@ final readonly class InstallController
         return new JsonResponse;
     }
 
-    public function install(Request $request, Migrator $migrator): Response
+    public function install(Request $request, Migrator $migrator, LaravelMigrations $laravelMigrations): Response
     {
         $path = app()->environmentFilePath();
 
@@ -198,9 +194,7 @@ final readonly class InstallController
             $siteUrl = Aliases::get($siteUrl);
         }
 
-        // Try to save the site URL to a APP_URL environment variable
-        // if it’s not already set to an alias or environment variable
-        if ($siteUrl[0] !== '@' && $siteUrl[0] !== '$' && ! App::isEphemeral()) {
+        if (! in_array($siteUrl[0], ['@', '$']) && ! app()->isEphemeral()) {
             try {
                 Env::writeVariable('APP_URL', $siteUrl, $path);
                 $siteUrl = '$APP_URL';
@@ -209,13 +203,13 @@ final readonly class InstallController
             }
         }
 
-        $site = new Site(
-            name: $request->input('site.name'),
-            handle: 'default',
-            language: $request->input('site.language'),
-            baseUrl: $siteUrl,
-            hasUrls: true,
-        );
+        $site = new Site([
+            'name' => $request->input('site.name'),
+            'handle' => 'default',
+            'language' => $request->input('site.language'),
+            'baseUrl' => $siteUrl,
+            'hasUrls' => true,
+        ]);
 
         $migration = new Install(
             username: $username,
@@ -241,6 +235,8 @@ final readonly class InstallController
             $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
         }
 
+        $laravelMigrations->install($migrator);
+
         $redirect = Cms::config()->postCpLoginRedirect;
 
         return new JsonResponse(['redirect' => $redirect]);
@@ -249,7 +245,7 @@ final readonly class InstallController
     private function canControlDbConfig(): bool
     {
         // If this is ephemeral storage, then we can't be writing to a .env file
-        if (App::isEphemeral()) {
+        if (app()->isEphemeral()) {
             return false;
         }
 
@@ -265,7 +261,7 @@ final readonly class InstallController
     public function validateDbData($data): array
     {
         $data = Validator::validate($data, [
-            'driver' => ['required', 'string', Rule::in('mysql', 'pgsql')],
+            'driver' => ['required', 'string', Rule::in('mysql', 'pgsql', 'sqlite')],
             'host' => ['nullable', 'string'],
             'database' => ['required', 'string'],
             'port' => ['nullable', 'integer'],
@@ -275,7 +271,7 @@ final readonly class InstallController
             'schema' => ['nullable', 'string'],
         ]);
 
-        $defaultPort = $data['driver'] === 'mysql' ? 3306 : 5432;
+        $defaultPort = in_array($data['driver'], ['mysql', 'mariadb']) ? 3306 : 5432;
 
         $data['host'] ??= Config::get("database.connections.{$data['driver']}.host") ?: '127.0.0.1';
         $data['port'] ??= Config::get("database.connections.{$data['driver']}.port") ?: $defaultPort;

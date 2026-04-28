@@ -7,7 +7,7 @@
 
 namespace craft\events;
 
-use craft\models\Site;
+use CraftCms\Cms\Site\Data\Site;
 
 /**
  * Site event class.

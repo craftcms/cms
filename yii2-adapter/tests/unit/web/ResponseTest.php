@@ -8,6 +8,7 @@
 namespace crafttests\unit\web;
 
 use Codeception\Test\Unit;
+use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\test\TestCase;
 use craft\web\Response;
@@ -81,7 +82,7 @@ class ResponseTest extends TestCase
      */
     public function testRedirect(string $expected, mixed $url): void
     {
-        \Craft::$app->getRequest()->setIsConsoleRequest(false);
+        Craft::$app->getRequest()->setIsConsoleRequest(false);
 
         self::assertEquals(
             $expected,

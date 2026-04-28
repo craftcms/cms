@@ -11,7 +11,7 @@
     value: volume.name,
     autofocus: true,
     required: true,
-    errors: volume.getErrors('name'),
+    errors: volume.errors.get('name'),
     data: {'error-key': 'name'},
     disabled: readOnly,
 }) }}
@@ -25,7 +25,7 @@
     autocapitalize: false,
     value: volume.handle,
     required: true,
-    errors: volume.getErrors('handle'),
+    errors: volume.errors.get('handle'),
     data: {'error-key': 'handle'},
     disabled: readOnly,
 }) }}
@@ -40,7 +40,7 @@
     includeEnvVars: true,
     value: volume.getFsHandle(false),
     options: fsOptions,
-    errors: volume.getErrors('fsHandle'),
+    errors: volume.errors.get('fsHandle'),
     data: {'error-key': 'fsHandle'},
     disabled: readOnly,
 }) }}
@@ -52,7 +52,7 @@
     name: 'subpath',
     suggestEnvVars: true,
     value: volume.getSubpath(false, false),
-    errors: volume.getErrors('subpath'),
+    errors: volume.errors.get('subpath'),
     data: {'error-key': 'subpath'},
     disabled: readOnly,
 }) }}
@@ -65,7 +65,7 @@
     includeEnvVars: true,
     value: volume.transformFsHandle(false),
     options: [{label: 'Same as asset filesystem'|t('app'), value: null}]|merge(craft.cp.getFsOptions()),
-    errors: volume.getErrors('transformFsHandle'),
+    errors: volume.errors.get('transformFsHandle'),
     data: {'error-key': 'transformFsHandle'},
     disabled: readOnly,
     selectizeOptions: {
@@ -82,12 +82,12 @@
     name: 'transformSubpath',
     suggestEnvVars: true,
     value: volume.getTransformSubpath(false, false),
-    errors: volume.getErrors('transformSubpath'),
+    errors: volume.errors.get('transformSubpath'),
     data: {'error-key': 'transformSubpath'},
     disabled: readOnly,
 }) }}
 
-{% if craft.sites.isMultiSite() %}
+{% if Sites.isMultiSite() %}
     <hr>
 
     {{ forms.selectField({
@@ -106,13 +106,13 @@
             { value: 'language', label: 'Translate for each language'|t('app') },
             { value: 'custom', label: 'Custom…'|t('app') },
         ]|filter,
-        value: volume.titleTranslationMethod,
+        value: volume.titleTranslationMethod.value,
         toggle: true,
         targetPrefix: 'title-translation-method-',
         disabled: readOnly,
     }) }}
 
-    <div id="title-translation-method-custom" {% if volume.titleTranslationMethod != 'custom' %}class="hidden"{% endif %}>
+    <div id="title-translation-method-custom" {% if volume.titleTranslationMethod.value != 'custom' %}class="hidden"{% endif %}>
         {{ forms.textField({
             label: '{name} Translation Key Format'|t('app', {
                 name: 'Title'|t('app'),
@@ -123,7 +123,7 @@
             id: 'title-translation-key-format',
             name: 'titleTranslationKeyFormat',
             value: volume.titleTranslationKeyFormat,
-            errors: volume.getErrors('titleTranslationKeyFormat'),
+            errors: volume.errors.get('titleTranslationKeyFormat'),
             data: {'error-key': 'titleTranslationKeyFormat'},
             disabled: readOnly,
         }) }}
@@ -145,13 +145,13 @@
             { value: 'language', label: 'Translate for each language'|t('app') },
             { value: 'custom', label: 'Custom…'|t('app') },
         ]|filter,
-        value: volume.altTranslationMethod,
+        value: volume.altTranslationMethod.value,
         toggle: true,
         targetPrefix: 'alt-translation-method-',
         disabled: readOnly,
     }) }}
 
-    <div id="alt-translation-method-custom" {% if volume.altTranslationMethod != 'custom' %}class="hidden"{% endif %}>
+    <div id="alt-translation-method-custom" {% if volume.altTranslationMethod.value != 'custom' %}class="hidden"{% endif %}>
         {{ forms.textField({
             label: '{name} Translation Key Format'|t('app', {
                 name: 'Alternative Text'|t('app'),
@@ -162,7 +162,7 @@
             id: 'alt-translation-key-format',
             name: 'altTranslationKeyFormat',
             value: volume.altTranslationKeyFormat,
-            errors: volume.getErrors('altTranslationKeyFormat'),
+            errors: volume.errors.get('altTranslationKeyFormat'),
             data: {'error-key': 'altTranslationKeyFormat'},
             disabled: readOnly,
         }) }}

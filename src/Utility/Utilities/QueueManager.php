@@ -4,73 +4,81 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use Craft;
-use craft\web\assets\queuemanager\QueueManagerAsset;
+use CraftCms\Cms\Queue\Enums\JobStatus;
+use CraftCms\Cms\Queue\JobProgress;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Utility\Utility;
+use Override;
 
 use function CraftCms\Cms\t;
 
 /**
  * Queue manager is a utility used for managing jobs in the Queue.
  *
-  @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  */
-final class QueueManager extends Utility
+class QueueManager extends Utility
 {
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Queue Manager');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function id(): string
     {
         return 'queue-manager';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'play';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function toolbarHtml(): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/utilities/QueueManager/toolbar.twig');
+        $progressService = app(JobProgress::class);
+
+        return Html::tag('QueueManagerToolbar', attributes: [
+            ':activeJob' => self::getActiveJob($progressService),
+            ':jobs' => $progressService->getJobInfo(),
+        ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function footerHtml(): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/utilities/QueueManager/footer.twig');
+        return '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(QueueManagerAsset::class);
+        $progressService = app(JobProgress::class);
+        $jobsData = app(JobProgress::class)->getJobInfo();
 
-        return $view->renderTemplate('_components/utilities/QueueManager/content.twig');
+        return Html::tag('QueueManager', attributes: [
+            ':initialData' => $jobsData,
+            ':activeJob' => self::getActiveJob($progressService),
+            ':hasReservedJobs' => $progressService->getByStatus(JobStatus::Reserved)->count() > 0,
+            ':hasWaitingJobs' => $progressService->getByStatus(JobStatus::Pending)->count() > 0,
+            ':totalJobs' => $progressService->getTotalJobs(),
+        ]);
+    }
+
+    private static function getActiveJob(JobProgress $progressService): ?\CraftCms\Cms\Queue\Models\JobProgress
+    {
+        $jobId = request()->route('extra');
+
+        if ($jobId) {
+            return $progressService->jobsQuery()
+                ->where('uid', $jobId)
+                ->first();
+        }
+
+        return null;
     }
 }

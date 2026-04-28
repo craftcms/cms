@@ -5,14 +5,8 @@
     { label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
-{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+{% do registerLegacyAsset('CraftCms\\Cms\\View\\LegacyAssets\\AdminTableAsset') -%}
 
-{% do view.registerTranslations('app', [
-    "Name",
-    "Handle",
-    "Type",
-    "No filesystems exist yet."
-]) %}
 
 {% block actionButton %}
     {% if not readOnly %}

@@ -7,9 +7,10 @@
 
 namespace craft\filters;
 
-use Craft;
-use craft\elements\User;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\User\Elements\User;
+use CraftCms\Yii2Adapter\IdentityWrapper;
+use Illuminate\Support\Facades\Hash;
 use yii\filters\auth\HttpBasicAuth;
 use yii\web\IdentityInterface;
 
@@ -19,6 +20,7 @@ use yii\web\IdentityInterface;
  * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-auth-httpbasicauth
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.5.0
+ * @deprecated 6.0.0 use the `auth.basic` middleware instead. @see https://laravel.com/docs/12.x/authentication#http-basic-authentication
  */
 class BasicHttpAuthLogin extends HttpBasicAuth
 {
@@ -46,10 +48,12 @@ class BasicHttpAuthLogin extends HttpBasicAuth
             return null;
         }
 
-        $user = User::find()->username($username)->one();
-        $identity = $user?->findIdentity($user->id);
+        $user = User::find()->username($username)->first();
 
-        if ($identity && Craft::$app->getSecurity()->validatePassword($password, $identity->password)) {
+        /** @var ?IdentityWrapper $identity */
+        $identity = $user ? new IdentityWrapper($user)->findIdentity($user->id) : null;
+
+        if ($identity && Hash::check($password, $identity->password)) {
             return $identity;
         }
 

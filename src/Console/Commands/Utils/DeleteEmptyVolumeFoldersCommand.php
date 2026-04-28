@@ -4,21 +4,25 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Console\Commands\Utils;
 
-use Craft;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
 
-final class DeleteEmptyVolumeFoldersCommand extends Command
+class DeleteEmptyVolumeFoldersCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:utils:delete-empty-volume-folders {volume?*}';
 
+    #[\Override]
     protected $description = 'Deletes empty volume folders.';
 
+    #[\Override]
     protected $aliases = ['utils/delete-empty-volume-folders'];
 
     public function handle(): int
@@ -31,10 +35,9 @@ final class DeleteEmptyVolumeFoldersCommand extends Command
 
         if ($volumes = $this->argument('volume')) {
             $volumeIds = [];
-            $volumesService = Craft::$app->getVolumes();
 
             foreach ($volumes as $handle) {
-                $volume = $volumesService->getVolumeByHandle($handle);
+                $volume = Volumes::getVolumeByHandle($handle);
 
                 if (! $volume) {
                     $this->components->error("Invalid volume handle: $handle");
@@ -63,7 +66,7 @@ final class DeleteEmptyVolumeFoldersCommand extends Command
         );
 
         $this->components->task($message, function () use ($emptyFolderIds) {
-            Craft::$app->getAssets()->deleteFoldersByIds($emptyFolderIds);
+            Folders::deleteFoldersByIds($emptyFolderIds);
         });
 
         return self::SUCCESS;

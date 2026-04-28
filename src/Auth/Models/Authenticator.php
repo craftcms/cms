@@ -9,10 +9,12 @@ use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-final class Authenticator extends BaseModel
+class Authenticator extends BaseModel
 {
+    #[\Override]
     protected $table = Table::AUTHENTICATOR;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

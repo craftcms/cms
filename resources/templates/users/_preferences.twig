@@ -1,5 +1,5 @@
 {% import '_includes/forms.twig' as forms %}
-{% set orientation = craft.i18n.locale.getOrientation() -%}
+{% set orientation = I18N.getLocale().getOrientation() -%}
 
 <div>
   <h2>{{ 'General'|t('app') }}</h2>
@@ -19,7 +19,10 @@
     name: 'preferredLocale',
     label: 'Formatting Locale'|t('app'),
     instructions: 'The locale that should be used for date and number formatting.'|t('app'),
-    options: [{'label' : 'Same as language'|t('app'), 'value' : '__blank__'}]|merge(craft.cp.getLanguageOptions(false, true)),
+    options: [
+      {label: 'Same as language'|t('app'), value: '__blank__'},
+      ...craft.cp.getLanguageOptions(false, true),
+    ],
     value: userLocale,
   }) }}
 
@@ -27,8 +30,8 @@
     label: 'Week Start Day'|t('app'),
     id: 'weekStartDay',
     name: 'weekStartDay',
-    options: craft.i18n.locale.getWeekDayNames(),
-    value: currentUser.getPreference('weekStartDay', app.config.craft.general.defaultWeekStartDay)
+    options: I18N.getLocale().getWeekDayNames(),
+    value: Auth.user.getPreference('weekStartDay', config('craft.general.defaultWeekStartDay'))
   }) }}
 </div>
 
@@ -37,7 +40,7 @@
 <div>
   <h2>{{ 'Accessibility'|t('app') }}</h2>
 
-  {% set a11yDefaults = app.config.craft.general.accessibilityDefaults %}
+  {% set a11yDefaults = config('craft.general.accessibilityDefaults') %}
   {{ forms.checkboxGroupField({
     label: 'Display Settings'|t('app'),
     options: [
@@ -45,13 +48,13 @@
         label: 'Use shapes to represent statuses'|t('app'),
         name: 'useShapes',
         id: 'useShapes',
-        checked: currentUser.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false,
+        checked: Auth.user.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false,
       },
       {
         label: 'Underline links'|t('app'),
         name: 'underlineLinks',
         id: 'underlineLinks',
-        checked: currentUser.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false,
+        checked: Auth.user.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false,
       },
     ],
   }) }}
@@ -63,7 +66,7 @@
         label: 'Disable autofocus'|t('app'),
         name: 'disableAutofocus',
         id: 'disableAutofocus',
-        checked: currentUser.getPreference('disableAutofocus') ?? a11yDefaults['disableAutofocus'] ?? false,
+        checked: Auth.user.getPreference('disableAutofocus') ?? a11yDefaults['disableAutofocus'] ?? false,
       },
     ],
   }) }}
@@ -79,7 +82,7 @@
       {value: 10000, label: '{num, number} {num, plural, =1{second} other{seconds}}'|t('app', {num: 10})},
       {value: 0, label: 'Show them indefinitely'|t('app')},
     ],
-    value: currentUser.getPreference('notificationDuration') ?? a11yDefaults['notificationDuration'] ?? 5000,
+    value: Auth.user.getPreference('notificationDuration') ?? a11yDefaults['notificationDuration'] ?? 5000,
   }) }}
 
   {{ forms.buttonGroupField({
@@ -128,7 +131,7 @@
         },
       },
     ],
-    value: currentUser.getPreference('notificationPosition') ?? a11yDefaults['notificationPosition'] ?? 'end-start',
+    value: Auth.user.getPreference('notificationPosition') ?? a11yDefaults['notificationPosition'] ?? 'end-start',
   }) }}
 
   {{ forms.buttonGroupField({
@@ -157,12 +160,12 @@
         },
       },
     ],
-    value: currentUser.getPreference('slideoutPosition') ?? a11yDefaults['slideoutPosition'] ?? 'end',
+    value: Auth.user.getPreference('slideoutPosition') ?? a11yDefaults['slideoutPosition'] ?? 'end',
   }) }}
 
 </div>
 
-{% if currentUser.admin %}
+{% if Auth.user.admin %}
   <hr>
 
   <div>
@@ -175,19 +178,19 @@
           label: 'Show field handles in edit forms'|t('app'),
           name: 'showFieldHandles',
           id: 'showFieldHandles',
-          checked: currentUser.getPreference('showFieldHandles')
+          checked: Auth.user.getPreference('showFieldHandles')
         },
         {
           label: 'Profile Twig templates when Dev Mode is disabled'|t('app'),
           name: 'profileTemplates',
           id: 'profileTemplates',
-          checked: currentUser.getPreference('profileTemplates')
+          checked: Auth.user.getPreference('profileTemplates')
         },
         {
           label: 'Show full exception views when Dev Mode is disabled'|t('app'),
           name: 'showExceptionView',
           id: 'showExceptionView',
-          checked: currentUser.getPreference('showExceptionView')
+          checked: Auth.user.getPreference('showExceptionView')
         },
       ],
     }) }}
@@ -199,13 +202,13 @@
           label: 'Show the debug toolbar on the front end'|t('app'),
           name: 'enableDebugToolbarForSite',
           id: 'enableDebugToolbarForSite',
-          checked: currentUser.getPreference('enableDebugToolbarForSite')
+          checked: Auth.user.getPreference('enableDebugToolbarForSite')
         },
         {
           label: 'Show the debug toolbar in the control panel'|t('app'),
           name: 'enableDebugToolbarForCp',
           id: 'enableDebugToolbarForCp',
-          checked: currentUser.getPreference('enableDebugToolbarForCp')
+          checked: Auth.user.getPreference('enableDebugToolbarForCp')
         },
       ],
     }) }}

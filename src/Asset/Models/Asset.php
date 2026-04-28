@@ -14,14 +14,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
-final class Asset extends BaseModel
+class Asset extends BaseModel
 {
     use HasFactory;
 
+    #[\Override]
     protected $table = Table::ASSETS;
 
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

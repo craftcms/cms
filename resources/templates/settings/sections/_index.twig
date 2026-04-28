@@ -3,19 +3,9 @@
 
 {% set readOnly = readOnly ?? false %}
 
-{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+{% do registerLegacyAsset('CraftCms\\Cms\\View\\LegacyAssets\\AdminTableAsset') -%}
 
-{% do view.registerTranslations('app', [
-    "Are you sure you want to delete “{name}” and all its entries?",
-    "Edit entry type",
-    "Edit entry types ({count})",
-    "Edit entry types",
-    "Entry Types",
-    "Handle",
-    "Name",
-    "No sections exist yet.",
-    "Type",
-]) %}
+
 
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') }

@@ -10,7 +10,7 @@ use Illuminate\Database\Grammar;
 use Tpetry\QueryExpressions\Concerns\IdentifiesDriver;
 use Tpetry\QueryExpressions\Concerns\StringizeExpression;
 
-final readonly class JsonExtract implements Expression
+readonly class JsonExtract implements Expression
 {
     use IdentifiesDriver;
     use StringizeExpression;

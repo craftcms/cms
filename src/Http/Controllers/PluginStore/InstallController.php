@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\PluginStore;
 
-use Craft;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Updates;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Override;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -20,7 +20,7 @@ use function CraftCms\Cms\t;
 /**
  * @internal
  */
-final class InstallController extends BaseUpdaterController
+class InstallController extends BaseUpdaterController
 {
     public const string ACTION_CRAFT_INSTALL = 'craft-install';
 
@@ -89,19 +89,13 @@ final class InstallController extends BaseUpdaterController
         return $this->runMigrations([$this->data['handle']]) ?? $this->sendFinished();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function pageTitle(): string
     {
         return t('Plugin Installer');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function initialData(): array
     {
         $this->request->validate([
@@ -137,10 +131,7 @@ final class InstallController extends BaseUpdaterController
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function actionStatus(string $action): string
     {
         return match ($action) {
@@ -151,10 +142,7 @@ final class InstallController extends BaseUpdaterController
         };
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function initialState(bool $force = false): array
     {
         // Make sure we can find composer.json
@@ -165,10 +153,7 @@ final class InstallController extends BaseUpdaterController
         return $this->actionState(self::ACTION_COMPOSER_INSTALL);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function postComposerInstallState(): array
     {
         // Was this after a remove?
@@ -191,10 +176,7 @@ final class InstallController extends BaseUpdaterController
         return $this->actionState(self::ACTION_CRAFT_INSTALL);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function sendFinished(array $state = []): Response
     {
         // Set the license key
@@ -210,10 +192,7 @@ final class InstallController extends BaseUpdaterController
         return parent::sendFinished($state);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function returnUrl(): string
     {
         return $this->data['returnUrl'] ?? 'plugin-store';

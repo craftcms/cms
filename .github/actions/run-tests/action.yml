@@ -1,0 +1,73 @@
+name: 'Run Tests'
+description: 'Setup PHP, install dependencies, and run a test command'
+
+inputs:
+  test-command:
+    description: 'The test command to run'
+    required: true
+  php-version:
+    description: 'PHP version to install'
+    required: false
+    default: '8.5'
+  github-token:
+    description: 'GitHub token for Composer'
+    required: false
+    default: ''
+  packagist-username:
+    description: 'Packagist username'
+    required: false
+    default: ''
+  packagist-token:
+    description: 'Packagist token'
+    required: false
+    default: ''
+  working-directory:
+    description: 'Additional directory to run composer install in (e.g. yii2-adapter)'
+    required: false
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ inputs.php-version }}
+        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
+        tools: composer:v2
+        ini-values: display_errors=On, memory_limit=2G
+        coverage: none
+      env:
+        COMPOSER_TOKEN: ${{ inputs.github-token }}
+        COMPOSER_AUTH_JSON: |
+          {
+            "http-basic": {
+              "repo.packagist.com": {
+                "username": "${{ inputs.packagist-username }}",
+                "password": "${{ inputs.packagist-token }}"
+              }
+            }
+          }
+
+    - name: Set version
+      shell: bash
+      run: composer config version "6.x-dev"
+
+    - name: Install dependencies
+      uses: ramsey/composer-install@v3
+
+    - name: Set additional directory version
+      if: inputs.working-directory != ''
+      shell: bash
+      run: composer config version "6.x-dev"
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Install additional directory dependencies
+      if: inputs.working-directory != ''
+      uses: ramsey/composer-install@v3
+      with:
+        working-directory: ${{ inputs.working-directory }}
+
+    - name: Run tests
+      shell: bash
+      run: ${{ inputs.test-command }}

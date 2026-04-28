@@ -13,7 +13,6 @@ use craft\console\Controller;
 use craft\elements\Category;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
-use craft\elements\User;
 use craft\events\SectionEvent;
 use craft\fields\Categories;
 use craft\fields\Tags;
@@ -23,9 +22,9 @@ use craft\models\TagGroup;
 use craft\services\Entries as EntriesService;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Elements\Entry;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -33,8 +32,11 @@ use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -582,6 +584,14 @@ class EntrifyController extends Controller
             &$projectConfigChanged,
         ) {
             if (!$globalSet->dateDeleted) {
+                // Delete the layout first, so custom fields’ beforeElementDelete()
+                // and afterElementDelete() methods don’t get called
+                // (see https://github.com/craftcms/cms/issues/18650)
+                $fieldLayout = $globalSet->getFieldLayout();
+                if ($fieldLayout->id) {
+                    Craft::$app->getFields()->deleteLayout($fieldLayout, true);
+                }
+
                 Craft::$app->getGlobals()->deleteSet($globalSet);
                 $projectConfigChanged = true;
             }
@@ -594,7 +604,7 @@ class EntrifyController extends Controller
                 ->one();
 
             if ($oldEntry) {
-                Craft::$app->getElements()->deleteElement($oldEntry, true);
+                Elements::deleteElement($oldEntry, true);
             }
 
             DbFacade::table(Table::ENTRIES)
@@ -697,7 +707,7 @@ class EntrifyController extends Controller
     {
         if (!isset($this->_author)) {
             if (isset($this->author)) {
-                $author = Craft::$app->getUsers()->getUserByUsernameOrEmail($this->author);
+                $author = Users::getUserByUsernameOrEmail($this->author);
                 if (!$author) {
                     throw new InvalidConfigException("Invalid author username or email: $this->author");
                 }
@@ -706,14 +716,13 @@ class EntrifyController extends Controller
                 if (!$this->interactive) {
                     throw new InvalidConfigException('The --author option is required when this command is run non-interactively.');
                 }
-                $usersService = Craft::$app->getUsers();
                 $what = Cms::config()->useEmailAsUsername ? 'email' : 'username or email';
                 $usernameOrEmail = $this->prompt("Enter the $what of the author that the entries should have:", [
                     'required' => true,
-                    'validator' => fn(string $value) => $usersService->getUserByUsernameOrEmail($value) !== null,
+                    'validator' => fn(string $value) => Users::getUserByUsernameOrEmail($value) !== null,
                     'error' => "Invalid $what.",
                 ]);
-                $this->_author = $usersService->getUserByUsernameOrEmail($usernameOrEmail);
+                $this->_author = Users::getUserByUsernameOrEmail($usernameOrEmail);
             }
         }
 
@@ -832,23 +841,25 @@ MD);
 
     private function _addSectionToPage(string $name, string $icon): void
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $sourcesService = app(ElementSources::class);
 
-        $sourceConfigPath = sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class);
-        $sourceConfigs = Collection::make($projectConfig->get($sourceConfigPath))
-            ->map(fn(array $config) => $config + ['page' => 'Entries'])
+        $sourceKey = sprintf('section:%s', $this->_section()->uid);
+        $sourceConfigs = Collection::make($sourcesService->getSources(Entry::class, withDisabled: true))
+            ->map(function(array $config) use ($sourceKey, $name) {
+                if (($config['key'] ?? null) === $sourceKey) {
+                    $config['page'] = $name;
+                } else {
+                    $config['page'] ??= 'Entries';
+                }
+                return $config;
+            })
             ->all();
-        $sourceConfigs[] = [
-            'key' => sprintf('section:%s', $this->_section()->uid),
-            'page' => $name,
-            'type' => 'native',
-        ];
-        $projectConfig->set($sourceConfigPath, $sourceConfigs);
+        $sourcesService->saveSources(Entry::class, $sourceConfigs);
 
-        $pageSettings = app(ElementSources::class)->getPageSettings(Entry::class);
+        $pageSettings = $sourcesService->getPageSettings(Entry::class);
         $pageSettings[$name] = [
             'icon' => $icon,
         ];
-        $projectConfig->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, Entry::class), $pageSettings);
+        $sourcesService->savePageSettings(Entry::class, $pageSettings);
     }
 }

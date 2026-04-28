@@ -1,20 +1,24 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
 namespace craft\queue;
 
-use Craft;
+use CraftCms\Cms\Support\Facades\BulkOps;
 
 /**
  * BaseBatchedElementJob is the base class for large jobs that may need to spawn
  * additional jobs to complete the workload, which perform actions on elements.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 5.0.0
+ * @deprecated in Craft 6.0.0. Use [[CraftCms\Cms\Queue\BatchedElementJob]] instead.
  */
 abstract class BaseBatchedElementJob extends BaseBatchedJob
 {
@@ -22,26 +26,26 @@ abstract class BaseBatchedElementJob extends BaseBatchedJob
     public string $bulkOpKey;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function before(): void
     {
-        $this->bulkOpKey = Craft::$app->getElements()->beginBulkOp();
+        $this->bulkOpKey = BulkOps::start();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function beforeBatch(): void
     {
-        Craft::$app->getElements()->resumeBulkOp($this->bulkOpKey);
+        BulkOps::resume($this->bulkOpKey);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function after(): void
     {
-        Craft::$app->getElements()->endBulkOp($this->bulkOpKey);
+        BulkOps::end($this->bulkOpKey);
     }
 }

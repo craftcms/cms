@@ -26,13 +26,16 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Throwable;
+use Tpetry\QueryExpressions\Language\CaseGroup;
+use Tpetry\QueryExpressions\Language\CaseRule;
+use Tpetry\QueryExpressions\Operator\Comparison\Equal;
+use Tpetry\QueryExpressions\Value\Value;
 
 #[Singleton]
-final readonly class Dashboard
+readonly class Dashboard
 {
     /**
      * @return Collection<class-string<WidgetInterface>>
@@ -50,13 +53,9 @@ final readonly class Dashboard
             UpdatesWidget::class,
         ]);
 
-        if (Event::hasListeners(RegisterWidgetTypes::class)) {
-            Event::dispatch($event = new RegisterWidgetTypes($widgetTypes));
+        event($event = new RegisterWidgetTypes($widgetTypes));
 
-            return $event->types;
-        }
-
-        return $widgetTypes;
+        return $event->types;
     }
 
     /**
@@ -140,15 +139,13 @@ final readonly class Dashboard
     {
         $isNewWidget = ! $widget->id;
 
-        if (Event::hasListeners(WidgetSaving::class)) {
-            Event::dispatch($event = new WidgetSaving($widget, $isNewWidget));
+        event($event = new WidgetSaving($widget, $isNewWidget));
 
-            if (! $event->isValid) {
-                return false;
-            }
-
-            $widget = $event->widget;
+        if (! $event->isValid) {
+            return false;
         }
+
+        $widget = $event->widget;
 
         if (! $widget->beforeSave($isNewWidget)) {
             return false;
@@ -193,9 +190,7 @@ final readonly class Dashboard
             throw $e;
         }
 
-        if (Event::hasListeners(WidgetSaved::class)) {
-            Event::dispatch(new WidgetSaved($widget, $isNewWidget));
-        }
+        event(new WidgetSaved($widget, $isNewWidget));
 
         return true;
     }
@@ -221,13 +216,10 @@ final readonly class Dashboard
      */
     public function deleteWidget(WidgetInterface $widget): bool
     {
-        if (Event::hasListeners(WidgetDeleting::class)) {
-            $event = new WidgetDeleting($widget);
-            Event::dispatch($event);
+        event($event = new WidgetDeleting($widget));
 
-            if (! $event->isValid) {
-                return false;
-            }
+        if (! $event->isValid) {
+            return false;
         }
 
         if (! $widget->beforeDelete()) {
@@ -247,9 +239,7 @@ final readonly class Dashboard
             throw $e;
         }
 
-        if (Event::hasListeners(WidgetDeleted::class)) {
-            Event::dispatch(new WidgetDeleted($widget));
-        }
+        event(new WidgetDeleted($widget));
 
         return true;
     }
@@ -264,16 +254,16 @@ final readonly class Dashboard
      */
     public function reorderWidgets(array $widgetIds): bool
     {
-        $cases = '';
+        $cases = [];
 
         foreach ($widgetIds as $index => $id) {
-            $cases .= " WHEN {$id} THEN {$index}";
+            $cases[] = new CaseRule(new Value($index), new Equal('id', new Value($id)));
         }
 
         DB::table((new Models\Widget)->getTable())
             ->whereIn('id', $widgetIds)
             ->update([
-                'sortOrder' => DB::raw("CASE id {$cases} END"),
+                'sortOrder' => new CaseGroup($cases),
             ]);
 
         return true;
@@ -296,7 +286,6 @@ final readonly class Dashboard
      */
     private function addDefaultUserWidgets(): void
     {
-        /** @var User $user */
         $user = Auth::user();
 
         // Recent Entries widget
@@ -321,9 +310,11 @@ final readonly class Dashboard
             ],
         ]));
 
-        $user->update([
+        User::where('id', $user->id)->update([
             'hasDashboard' => true,
         ]);
+
+        $user->hasDashboard = true;
     }
 
     private function getUserWidgetModelById(?int $widgetId = null): Models\Widget

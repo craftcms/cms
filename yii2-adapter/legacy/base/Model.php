@@ -14,20 +14,29 @@ use craft\events\DefineRulesEvent;
 use craft\helpers\App;
 use craft\helpers\Component;
 use craft\helpers\DateTimeHelper;
-use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Support\Utils;
+use CraftCms\Cms\Validation\ComponentRules;
+use CraftCms\Cms\Validation\Contracts\Validatable;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Concerns\HasRuleset;
+use Illuminate\Contracts\Support\MessageBag;
 use yii\validators\Validator;
 
 /**
  * Model base class.
  *
+ * @method ($attribute is string ? string[] : array<string,string[]>) getErrors(?string $attribute = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class Model extends \yii\base\Model implements ModelInterface, ValidatableComponentInterface
+#[Ruleset(ComponentRules::class)]
+abstract class Model extends \yii\base\Model implements ModelInterface, Validatable
 {
     use ClonefixTrait;
+    use HasRuleset;
 
     /**
      * @event \yii\base\Event The event that is triggered after the model's init cycle
@@ -112,6 +121,24 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
         }
 
         return $behaviors;
+    }
+
+    /*
+     * @inheritdoc
+     */
+    public function getScenario(): string
+    {
+        return parent::getScenario();
+    }
+
+    public function setScenario($scenario): void
+    {
+        parent::setScenario($scenario);
+    }
+
+    public function scenarios(): array
+    {
+        return parent::scenarios();
     }
 
     /**
@@ -235,7 +262,47 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
 
     public function getAttributes($names = null, $except = []): array
     {
-        return parent::getAttributes($names, $except);
+        $attributes = $this->validationData($names, $except);
+
+        if ($names !== null) {
+            $attributes = Arr::only($attributes, $names);
+        }
+
+        if ($except !== []) {
+            $attributes = Arr::except($attributes, $except);
+        }
+
+        return $attributes;
+    }
+
+    public function attributes(): array
+    {
+        return parent::attributes();
+    }
+
+    public function safeAttributes(): array
+    {
+        return parent::safeAttributes();
+    }
+
+    public function getAttributeLabel($attribute): string
+    {
+        return parent::getAttributeLabel($attribute);
+    }
+
+    public function generateAttributeLabel($name): string
+    {
+        return parent::generateAttributeLabel($name);
+    }
+
+    public function errors(): MessageBag
+    {
+        return new \Illuminate\Support\MessageBag($this->getErrors());
+    }
+
+    public function clearErrors($attribute = null): void
+    {
+        parent::clearErrors($attribute);
     }
 
     /**
@@ -289,10 +356,10 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
     /**
      * Adds errors from another model, with a given attribute name prefix.
      *
-     * @param \yii\base\Model $model The other model
+     * @param \yii\base\Model|Validatable $model The other model
      * @param string $attrPrefix The prefix that should be added to error attributes when adding them to this model
      */
-    public function addModelErrors(\yii\base\Model $model, string $attrPrefix = ''): void
+    public function addModelErrors(\yii\base\Model|Validatable $model, string $attrPrefix = ''): void
     {
         if ($attrPrefix !== '') {
             $attrPrefix = rtrim($attrPrefix, '.') . '.';
@@ -305,28 +372,9 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function addError($attribute, $error = ''): void
+    public function activeAttributes(): array
     {
-        parent::addError($attribute, $error);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function addErrors(array $items): void
-    {
-        parent::addErrors($items);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getFirstError($attribute): ?string
-    {
-        return parent::getFirstError($attribute);
+        return parent::activeAttributes();
     }
 
     /**
@@ -353,12 +401,13 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
         return parent::getErrorSummary($showAllErrors);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function clearErrors($attribute = null): void
+    public function prepareForValidation(): void
     {
-        parent::clearErrors($attribute);
+    }
+
+    public function afterValidate(?\Illuminate\Validation\Validator $validator = null): void
+    {
+        // Not implemented
     }
 
     public function validate($attributeNames = null, $clearErrors = true): bool
@@ -398,7 +447,7 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
     /**
      * Legacy models are validated differently
      */
-    public static function getRules(): array
+    public function getRules(): array
     {
         return [];
     }
@@ -406,7 +455,7 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
     /**
      * Legacy models are validated differently
      */
-    public static function getMessages(): array
+    public function getMessages(): array
     {
         return [];
     }
@@ -417,5 +466,20 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
     public function getValidationData(): array
     {
         return [];
+    }
+
+    public function validationData($names = null, $except = []): array
+    {
+        return Arr::except(Utils::getPublicProperties($this), ['ruleset']);
+    }
+
+    public function attributeLabels(): array
+    {
+        return parent::attributeLabels();
+    }
+
+    public function inScenarios(string ...$scenarios): bool
+    {
+        return in_array($this->ruleset->getScenario(), $scenarios, true);
     }
 }

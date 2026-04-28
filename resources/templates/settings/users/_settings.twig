@@ -15,10 +15,10 @@
   defaultGroup: null,
 }|merge(settings) %}
 
-{% set hasVolumes = craft.app.volumes.getAllVolumes|length != 0 %}
-{% set photoVolume = settings.photoVolumeUid ? craft.app.volumes.getVolumeByUid(settings.photoVolumeUid) : null %}
+{% set hasVolumes = Volumes.getAllVolumes|length != 0 %}
+{% set photoVolume = settings.photoVolumeUid ? Volumes.getVolumeByUid(settings.photoVolumeUid) : null %}
 
-{% set allVolumes = craft.app.volumes.getAllVolumes() %}
+{% set allVolumes = Volumes.getAllVolumes() %}
 {% set volumeList = [] %}
 {% set validVolumeUids = [] %}
 
@@ -92,9 +92,9 @@
 
     {{ forms.checkboxSelectField({
       label: 'Require two-step verification'|t('app'),
-      instructions: 'Choose which users must use two-step verification when accessing the control panel.'|t('app'),
+      instructions: 'Choose which users must use two-step verification to sign in.'|t('app'),
       name: 'require2fa',
-      options: craft.userGroups.getAllGroups()
+      options: UserGroups.getAllGroups()
       |map(g => {value: g.uid, label: g.name|t('site')})
       |unshift({value: 'admins', label: 'Admins'|t('app')}),
       showAllOption: true,
@@ -145,7 +145,7 @@
       }) }}
 
       {% set groups = [{ label: "None"|t('app'), value: '' }] %}
-      {% for group in craft.userGroups.getAllGroups() %}
+      {% for group in UserGroups.getAllGroups() %}
         {% set groups = groups|merge([{ label: group.name, value: group.uid }]) %}
       {% endfor %}
 

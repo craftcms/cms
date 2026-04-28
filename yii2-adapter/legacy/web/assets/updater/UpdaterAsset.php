@@ -8,55 +8,16 @@
 namespace craft\web\assets\updater;
 
 use craft\web\AssetBundle;
-use craft\web\assets\cp\CpAsset;
-use craft\web\View;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Asset bundle for the Updater
+ * @deprecated 6.0.0
  */
 class UpdaterAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public $depends = [
-        CpAsset::class,
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $css = [
-        'css/Updater.css',
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $js = [
-        'Updater.js',
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public function registerAssetFiles($view): void
+    public function registerAssetFiles($view)
     {
-        parent::registerAssetFiles($view);
-
-        if ($view instanceof View) {
-            $view->registerTranslations('app', [
-                'A fatal error has occurred:',
-                'Status:',
-                'Response:',
-                'Send for help',
-                'Troubleshoot',
-            ]);
-        }
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\UpdaterAsset::class);
     }
 }

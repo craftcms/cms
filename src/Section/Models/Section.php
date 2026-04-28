@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Section\Models;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Element\Models\EntryType;
+use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\BaseModel;
@@ -18,15 +18,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Override;
 
-final class Section extends BaseModel
+class Section extends BaseModel
 {
     use HasFactory;
     use HasUid;
     use SoftDeletes;
 
+    #[Override]
     protected $table = Table::SECTIONS;
 
+    #[Override]
     protected $casts = [
         'previewTargets' => 'array',
         'enableVersioning' => 'boolean',

@@ -11,6 +11,7 @@ use Codeception\Stub;
 use Craft;
 use craft\test\TestCase;
 use craft\web\ErrorHandler;
+use CraftCms\Aliases\Aliases;
 use Exception;
 use ReflectionException;
 use Twig\Error\Error;
@@ -90,7 +91,7 @@ class ErrorHandlerTest extends TestCase
      */
     public function testIsCoreFile(bool $expected, string $file): void
     {
-        self::assertSame($expected, $this->errorHandler->isCoreFile(Craft::getAlias($file)));
+        self::assertSame($expected, $this->errorHandler->isCoreFile(Aliases::get($file)));
     }
 
     /**
@@ -123,9 +124,9 @@ class ErrorHandlerTest extends TestCase
      */
     public static function isCoreFileDataProvider(): array
     {
-        $path = Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
-        $vendorPath = Craft::getAlias('@vendor');
-        $srcPath = Craft::getAlias('@app');
+        $path = Aliases::get('@crafttestsfolder/storage/runtime/compiled_templates');
+        $vendorPath = Aliases::get('@vendor');
+        $srcPath = Aliases::get('@app');
 
         return [
             [true, $path . '/created_path'],
@@ -145,7 +146,7 @@ class ErrorHandlerTest extends TestCase
         parent::_before();
 
         // Create a dir in compiled templates. See self::144
-        $path = Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
+        $path = Aliases::get('@crafttestsfolder/storage/runtime/compiled_templates');
         mkdir($path . '/created_path', 0777, true);
 
         $this->errorHandler = Craft::createObject(ErrorHandler::class);
@@ -157,7 +158,7 @@ class ErrorHandlerTest extends TestCase
     protected function _after(): void
     {
         // Remove the dir created in _before
-        $path = Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
+        $path = Aliases::get('@crafttestsfolder/storage/runtime/compiled_templates');
         rmdir($path . '/created_path');
 
         parent::_after();

@@ -4,18 +4,30 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use craft\base\ElementInterface;
-use craft\elements\User;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 
 use function CraftCms\Cms\t;
 
-/** @phpstan-ignore trait.unused */
+/**
+ * Revisionable provides revision functionality for elements.
+ *
+ * This trait contains methods for managing element revisions, including tracking revision metadata
+ * (creator, number, notes), determining if an element is a revision, and fetching the current revision.
+ *
+ * @internal
+ */
 trait Revisionable
 {
+    /**
+     * @var int|null The ID of the revision’s row in the `revisions` table
+     */
+    public ?int $revisionId = null;
+
     /**
      * @var int|null The creator’s ID
      */
@@ -55,7 +67,7 @@ trait Revisionable
             $creator = User::find()
                 ->id($this->revisionCreatorId)
                 ->status(null)
-                ->one();
+                ->first();
 
             $this->revisionCreator = $creator ?? false;
         }
@@ -97,17 +109,11 @@ trait Revisionable
         DB::table(Table::REVISIONS)->delete($this->revisionId);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getIsRevision(): bool
     {
         return ! empty($this->revisionId);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCpRevisionsUrl(): ?string
     {
         $cpEditUrl = $this->cpRevisionsUrl();
@@ -122,7 +128,7 @@ trait Revisionable
             $params['site'] = $this->getSite()->handle;
         }
 
-        return UrlHelper::cpUrl($cpEditUrl, $params);
+        return Url::cpUrl($cpEditUrl, $params);
     }
 
     /**
@@ -133,9 +139,6 @@ trait Revisionable
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function hasRevisions(): bool
     {
         return false;
@@ -143,9 +146,6 @@ trait Revisionable
 
     abstract public function getCanonical(bool $anySite = false): ElementInterface;
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCurrentRevision(): ?ElementInterface
     {
         if (! $this->id) {
@@ -154,6 +154,7 @@ trait Revisionable
 
         if (! isset($this->currentRevision)) {
             $canonical = $this->getCanonical(true);
+
             $this->currentRevision = static::find()
                 ->siteId($canonical->siteId)
                 ->revisionOf($canonical->id)

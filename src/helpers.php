@@ -4,28 +4,54 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms;
 
+use BackedEnum;
 use Closure;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 use Stringable;
+use UnitEnum;
+
+/**
+ * Returns the scalar value of the given enum, or the value itself if it's not an enum.
+ */
+function enum_value(mixed $value, mixed $default = null): mixed
+{
+    return match (true) {
+        $value instanceof BackedEnum => $value->value,
+        $value instanceof UnitEnum => $value->name,
+        default => $value ?? value($default),
+    };
+}
+
+function craftAsset(string $path, ?bool $secure = null): string
+{
+    return asset("vendor/craft/$path", $secure);
+}
 
 function t(string|Stringable|null $id, array $parameters = [], ?string $category = 'app', ?string $locale = null): string
 {
     return I18N::translate($id ?? '', $parameters, $category, $locale);
 }
 
-function action_url(string $url): string
+function action_url(string $path = '', array|string|null $params = null, ?string $scheme = null): string
 {
-    return Str::start($url, Str::finish(Cms::config()->actionTrigger, '/'));
+    return Url::actionUrl($path, $params, $scheme);
 }
 
-function cp_url(string $url): string
+function cp_url(string $path = '', array|string|null $params = null, ?string $scheme = null): string
 {
-    return Str::start($url, Str::finish(Cms::config()->cpTrigger, '/'));
+    return Url::cpUrl($path, $params, $scheme);
+}
+
+function site_url(string $path = '', array|string|null $params = null, ?string $scheme = null, ?int $siteId = null): string
+{
+    return Url::siteUrl($path, $params, $scheme, $siteId);
 }
 
 function cp_redirect(string $url, int $status = 302, array $headers = [], ?bool $secure = null): RedirectResponse
@@ -36,6 +62,11 @@ function cp_redirect(string $url, int $status = 302, array $headers = [], ?bool 
         headers: $headers,
         secure: $secure
     );
+}
+
+function debugbar()
+{
+    return app()->bound('debugbar') ? app('debugbar') : optional();
 }
 
 /**
@@ -141,6 +172,41 @@ function silence(Closure|string $callable, ?int $mask = null): mixed
     } finally {
         error_reporting($old);
     }
+}
+
+function template(string $template, array $variables = [], ?TemplateMode $templateMode = null): string
+{
+    return app(TemplateRenderer::class)->renderTemplate($template, $variables, $templateMode);
+}
+
+function sandboxedTemplate(string $template, array $variables = [], ?TemplateMode $templateMode = null): string
+{
+    return app(TemplateRenderer::class)->renderSandboxedTemplate($template, $variables, $templateMode);
+}
+
+function pageTemplate(string $template, array $variables = [], ?TemplateMode $templateMode = null): string
+{
+    return app(TemplateRenderer::class)->renderPageTemplate($template, $variables, $templateMode);
+}
+
+function renderString(string $template, array $variables = [], TemplateMode $templateMode = TemplateMode::Site, bool $escapeHtml = false): string
+{
+    return app(TemplateRenderer::class)->renderString($template, $variables, $templateMode, $escapeHtml);
+}
+
+function renderSandboxedString(string $template, array $variables = [], TemplateMode $templateMode = TemplateMode::Site, bool $escapeHtml = false): string
+{
+    return app(TemplateRenderer::class)->renderSandboxedString($template, $variables, $templateMode, $escapeHtml);
+}
+
+function renderObjectTemplate(string $template, mixed $object, array $variables = [], TemplateMode $templateMode = TemplateMode::Site): string
+{
+    return app(TemplateRenderer::class)->renderObjectTemplate($template, $object, $variables, $templateMode);
+}
+
+function renderSandboxedObjectTemplate(string $template, mixed $object, array $variables = [], TemplateMode $templateMode = TemplateMode::Site): string
+{
+    return app(TemplateRenderer::class)->renderSandboxedObjectTemplate($template, $object, $variables, $templateMode);
 }
 
 /**

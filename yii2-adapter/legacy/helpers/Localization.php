@@ -7,7 +7,7 @@
 
 namespace craft\helpers;
 
-use Craft;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Locale;
 use yii\i18n\MissingTranslationEvent;
@@ -87,7 +87,7 @@ class Localization
         }
 
         // No luck in cache, check the file system.
-        $frameworkMessagePath = FileHelper::normalizePath(Craft::getAlias('@app/framework/messages'));
+        $frameworkMessagePath = FileHelper::normalizePath(Aliases::get('@app/framework/messages'));
 
         foreach ($translationFiles as $translationFile) {
             $path = $frameworkMessagePath . DIRECTORY_SEPARATOR . $translationFile . DIRECTORY_SEPARATOR . 'yii.php';

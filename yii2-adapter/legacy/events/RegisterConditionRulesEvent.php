@@ -14,6 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Condition\Events\RegisterConditionRules} instead.
  */
 class RegisterConditionRulesEvent extends Event
 {

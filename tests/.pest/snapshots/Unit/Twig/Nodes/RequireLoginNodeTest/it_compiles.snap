@@ -1,0 +1,4 @@
+// line 1
+if (Illuminate\Support\Facades\Auth::guest()) {
+    throw new Illuminate\Auth\AuthenticationException('Unauthenticated.');
+}

@@ -15,6 +15,7 @@ use DateTime;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Shared\Models\Info} instead.
  */
 class Info extends Model
 {
@@ -48,11 +49,6 @@ class Info extends Model
      * @since 3.5.6
      */
     public string $configVersion = '000000000000';
-
-    /**
-     * @var string|null Field version
-     */
-    public ?string $fieldVersion = null;
 
     /**
      * @var DateTime|null Date updated

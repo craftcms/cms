@@ -8,7 +8,7 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\models\UserGroup;
+use CraftCms\Cms\User\Data\UserGroup;
 
 /**
  * UserGroupEvent class.

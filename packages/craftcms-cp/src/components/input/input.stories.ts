@@ -8,9 +8,20 @@ import './input.js';
 const meta = {
   title: 'Controls/Input',
   component: 'craft-input',
-  args: {},
-  render: function () {
-    return html`<craft-input label="Craft Input" help-text="This is some instructions text"></craft-uinput>`;
+  args: {
+    size: undefined,
+  },
+  argTypes: {
+    size: {
+      control: {type: 'number'},
+    },
+  },
+  render: function ({maxlength}) {
+    return html`<craft-input
+      label="Craft Input"
+      help-text="This is some instructions text"
+      .maxlength="${maxlength}"
+    ></craft-input>`;
   },
 } satisfies Meta<any>;
 
@@ -20,4 +31,26 @@ type Story = StoryObj<any>;
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
 export const Default: Story = {
   args: {},
+};
+
+export const WithMaxLength: Story = {
+  args: {
+    maxlength: 5,
+  },
+};
+
+export const WithPrefix: Story = {
+  render: () => html`
+    <craft-input label="Search">
+      <craft-icon name="search" slot="prefix"></craft-icon>
+    </craft-input>
+  `,
+};
+
+export const WithSuffix: Story = {
+  render: () => html`
+    <craft-input label="Search">
+      <craft-icon name="search" slot="suffix"></craft-icon>
+    </craft-input>
+  `,
 };

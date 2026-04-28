@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\SystemMessage\Events;
 
+use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use Illuminate\Support\Collection;
 
 /**
@@ -29,21 +30,23 @@ use Illuminate\Support\Collection;
  *
  * Once a system message is registered, it will be editable from the System Messages utility.
  *
- * System messages can be sent via [[\craft\mail\Mailer::composeFromKey()]]:
+ * System messages can be sent via [[\CraftCms\Cms\SystemMessage\SystemMessages]]:
  *
  * ```php
- * Craft::$app->getMailer()
- *    ->composeFromKey('account_approved', [
- *        'approver' => $approver->friendlyName,
- *    ])
- *    ->setTo($user)
- *    ->send();
+ * use CraftCms\Cms\SystemMessage\SystemMessages;
+ * use Illuminate\Support\Facades\Mail;
+ *
+ * Mail::send(
+ *     app(SystemMessages::class)->mailable('account_approved', $user, [
+ *         'approver' => $approver->friendlyName,
+ *     ])
+ * );
  * ```
  */
-final class RegisterSystemMessages
+class RegisterSystemMessages
 {
     public function __construct(
-        /** @var Collection<\CraftCms\Cms\SystemMessage\Models\SystemMessage> */
+        /** @var Collection<SystemMessage> */
         public Collection $messages,
     ) {}
 }

@@ -11,19 +11,19 @@ use Craft;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
-use craft\elements\Entry;
 use craft\helpers\Db;
-use craft\models\UserGroup;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\User\Data\UserGroup;
 use DateTime;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use yii\base\InvalidConfigException;
 
@@ -52,10 +52,11 @@ use yii\base\InvalidConfigException;
  * @replace {elements} entries
  * @replace {twig-method} craft.entries()
  * @replace {myElement} myEntry
- * @replace {element-class} \craft\elements\Entry
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\EntryQuery} instead.
+ * @replace {element-class} \CraftCms\Cms\Entry\Elements\Entry
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\EntryQuery} instead.
+ * @phpstan-ignore class.missingExtends
  */
-class EntryQuery extends ElementQuery implements NestedElementQueryInterface
+class EntryQuery extends ElementQuery implements \CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface
 {
     use NestedElementQueryTrait {
         __set as nestedTraitSet;
@@ -84,7 +85,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch entries in the News section
-     * $entries = \craft\elements\Entry::find()
+     * $entries = \CraftCms\Cms\Entry\Elements\Entry::find()
      *     ->section('news')
      *     ->all();
      * ```
@@ -104,7 +105,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php{4}
      * // fetch Article entries in the News section
-     * $entries = \craft\elements\Entry::find()
+     * $entries = \CraftCms\Cms\Entry\Elements\Entry::find()
      *     ->section('news')
      *     ->type('article')
      *     ->all();
@@ -132,7 +133,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch entries authored by people in the Authors group
-     * $entries = \craft\elements\Entry::find()
+     * $entries = \CraftCms\Cms\Entry\Elements\Entry::find()
      *     ->authorGroup('authors')
      *     ->all();
      * ```
@@ -152,7 +153,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch entries written in 2018
-     * $entries = \craft\elements\Entry::find()
+     * $entries = \CraftCms\Cms\Entry\Elements\Entry::find()
      *     ->postDate(['and', '>= 2018-01-01', '< 2019-01-01'])
      *     ->all();
      * ```
@@ -171,7 +172,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch entries written before 4/4/2018
-     * $entries = \craft\elements\Entry::find()
+     * $entries = \CraftCms\Cms\Entry\Elements\Entry::find()
      *     ->before('2018-04-04')
      *     ->all();
      * ```
@@ -190,7 +191,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch entries written in the last 7 days
-     * $entries = \craft\elements\Entry::find()
+     * $entries = \CraftCms\Cms\Entry\Elements\Entry::find()
      *     ->after((new \DateTime())->modify('-7 days'))
      *     ->all();
      * ```
@@ -555,27 +556,25 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      */
     public function authorGroup(mixed $value): static
     {
-        if ($value instanceof UserGroup) {
-            $this->authorGroupId = $value->id;
-            return $this;
+        // If the value is a group handle, swap it with the user group
+        if (is_string($value) && ($group = Craft::$app->getUserGroups()->getGroupByHandle($value))) {
+            $value = $group;
         }
 
-        if (is_iterable($value)) {
-            $collection = Collection::make($value);
-            if ($collection->every(fn($v) => $v instanceof UserGroup)) {
-                $this->authorGroupId = $collection->map(fn(UserGroup $g) => $g->id)->all();
-                return $this;
-            }
-        }
-
-        if ($value !== null) {
-            $this->authorGroupId = (new Query())
+        if (Db::normalizeParam($value, fn($item) => $item instanceof UserGroup ? $item->id : null)) {
+            $this->authorGroupId = $value;
+        } else {
+            $values = QueryParam::toArray($value);
+            $operator = QueryParam::extractOperator($values);
+            $groupIds = (new Query())
                 ->select(['id'])
                 ->from([Table::USERGROUPS])
-                ->where(Db::parseParam('handle', $value))
+                ->where(Db::parseParam('handle', $values))
                 ->column();
-        } else {
-            $this->authorGroupId = null;
+
+            $this->authorGroupId = $operator === null
+                ? $groupIds
+                : [$operator, ...$groupIds];
         }
 
         return $this;
@@ -921,12 +920,40 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             }
 
             if ($this->authorGroupId) {
-                $this->subQuery->andWhere(['exists', (new Query())
-                    ->from(['entries_authors' => Table::ENTRIES_AUTHORS])
-                    ->innerJoin(['usergroups_users' => Table::USERGROUPS_USERS], '[[usergroups_users.userId]] = [[entries_authors.authorId]]')
-                    ->where('[[entries.id]] = [[entries_authors.entryId]]')
-                    ->andWhere(Db::parseNumericParam('usergroups_users.groupId', $this->authorGroupId)),
-                ]);
+                // Checking multiple groups?
+                if (
+                    is_array($this->authorGroupId) &&
+                    is_string(reset($this->authorGroupId)) &&
+                    strtolower(reset($this->authorGroupId)) === 'and'
+                ) {
+                    $groupIdChecks = array_slice($this->authorGroupId, 1);
+                } else {
+                    $groupIdChecks = [$this->authorGroupId];
+                }
+
+                foreach ($groupIdChecks as $i => $groupIdCheck) {
+                    if (
+                        is_array($groupIdCheck) &&
+                        is_string(reset($groupIdCheck)) &&
+                        strtolower(reset($groupIdCheck)) === 'not'
+                    ) {
+                        $groupIdOperator = 'not exists';
+                        array_shift($groupIdCheck);
+                        if (empty($groupIdCheck)) {
+                            continue;
+                        }
+                    } else {
+                        $groupIdOperator = 'exists';
+                    }
+
+                    $this->subQuery->andWhere([
+                        $groupIdOperator, (new Query())
+                            ->from(["entries_authors$i" => Table::ENTRIES_AUTHORS])
+                            ->innerJoin(["usergroups_users$i" => Table::USERGROUPS_USERS], "[[usergroups_users$i.userId]] = [[entries_authors$i.authorId]]")
+                            ->where("[[entries.id]] = [[entries_authors$i.entryId]]")
+                            ->andWhere(Db::parseNumericParam("usergroups_users$i.groupId", $groupIdCheck)),
+                    ]);
+                }
             }
         }
 
@@ -958,7 +985,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
         // while not excluding any entries that may have just been published in the past minute (https://github.com/craftcms/cms/issues/7853).
         $now = new DateTime();
         $now->setTime((int)$now->format('H'), (int)$now->format('i'), 59);
-        $currentTimeDb = Db::prepareDateForDb($now);
+        $currentTimeDb = \CraftCms\Cms\Support\Query::prepareDateForDb($now);
 
         return match ($status) {
             Entry::STATUS_LIVE => [
@@ -1012,7 +1039,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             return;
         }
 
-        $user = Craft::$app->getUser()->getIdentity() ?? Auth::user();
+        $user = Auth::user();
 
         if (!$user) {
             throw new QueryAbortedException();

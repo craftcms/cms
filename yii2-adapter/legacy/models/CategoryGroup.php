@@ -8,20 +8,22 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Category;
-use craft\helpers\UrlHelper;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use DateTime;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use function CraftCms\Cms\t;
 
@@ -140,10 +142,10 @@ class CategoryGroup extends Model implements
      */
     public function getCpEditUrl(): ?string
     {
-        if (!$this->id || !Craft::$app->getUser()->getIsAdmin()) {
+        if (!$this->id || !Auth::user()?->isAdmin()) {
             return null;
         }
-        return UrlHelper::cpUrl("settings/categories/$this->id");
+        return Url::cpUrl("settings/categories/$this->id");
     }
 
     /**
@@ -164,6 +166,7 @@ class CategoryGroup extends Model implements
     {
         $rules = parent::defineRules();
         $rules[] = [['id', 'structureId', 'fieldLayoutId', 'maxLevels'], 'number', 'integerOnly' => true];
+        $rules[] = [['name', 'handle'], 'trim'];
         $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => CategoryGroupRecord::class];
         $rules[] = [['name', 'handle', 'siteSettings'], 'required'];
@@ -282,7 +285,7 @@ class CategoryGroup extends Model implements
                 'maxLevels' => (int)$this->maxLevels ?: null,
             ],
             'siteSettings' => [],
-            'defaultPlacement' => $this->defaultPlacement ?? self::DEFAULT_PLACEMENT_END,
+            'defaultPlacement' => $this->defaultPlacement,
         ];
 
         $fieldLayout = $this->getFieldLayout();

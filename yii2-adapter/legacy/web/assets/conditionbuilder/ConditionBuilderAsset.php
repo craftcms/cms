@@ -8,29 +8,16 @@
 namespace craft\web\assets\conditionbuilder;
 
 use craft\web\AssetBundle;
-use craft\web\assets\htmx\HtmxAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Condition Builder asset bundle.
+ * @deprecated 6.0.0
  */
 class ConditionBuilderAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public $depends = [
-        HtmxAsset::class,
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $js = [
-        'ConditionBuilder.js',
-    ];
+    public function registerAssetFiles($view)
+    {
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\ConditionBuilderAsset::class);
+    }
 }

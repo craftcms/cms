@@ -13,23 +13,27 @@ use craft\gql\mutations\Category as CategoryMutations;
 use craft\gql\mutations\Entry as EntryMutations;
 use craft\gql\mutations\GlobalSet as GlobalSetMutations;
 use craft\gql\mutations\Tag as TagMutations;
-use craft\gql\types\elements\Asset as AssetGqlType;
 use craft\gql\types\elements\Category as CategoryGqlType;
-use craft\gql\types\elements\Entry as EntryGqlType;
 use craft\gql\types\elements\GlobalSet as GlobalSetGqlType;
 use craft\gql\types\elements\Tag as TagGqlType;
 use craft\models\CategoryGroup;
 use craft\models\GqlSchema;
 use craft\models\TagGroup;
-use craft\models\Volume;
 use craft\test\TestCase;
+use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Number;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Gql\Gql;
+use CraftCms\Cms\Gql\Types\Elements\Asset as AssetGqlType;
+use CraftCms\Cms\Gql\Types\Elements\Entry as EntryGqlType;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Volumes;
 use Exception;
+use Illuminate\Support\Collection;
 use UnitTester;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownMethodException;
@@ -44,11 +48,10 @@ class CreateMutationsTest extends TestCase
     protected function _before(): void
     {
         // Mock all the things
-        $this->tester->mockCraftMethods('volumes', [
-            'getAllVolumes' => [
+        Volumes::shouldReceive('getAllVolumes')
+            ->andReturn(new Collection([
                 new Volume(['uid' => 'uid', 'handle' => 'localVolume']),
-            ],
-        ]);
+            ]));
 
         $this->tester->mockCraftMethods('categories', [
             'getAllGroups' => [
@@ -68,29 +71,32 @@ class CreateMutationsTest extends TestCase
             ],
         ]);
 
-        $entryType = new \CraftCms\Cms\Entry\Data\EntryType(
-            handle: 'article',
-            uid: 'uid',
-        );
+        $entryType = new EntryType([
+            'handle' => 'article',
+            'uid' => 'uid',
+        ]);
 
-        $section = new Section(
-            handle: 'news',
-            type: SectionType::Channel,
-            uid: 'sectionUid',
-            entryTypes: [
+        $section = new Section([
+            'handle' => 'news',
+            'type' => SectionType::Channel,
+            'uid' => 'sectionUid',
+            'entryTypes' => [
                 $entryType,
             ],
-        );
+        ]);
 
         Sections::shouldReceive('getAllSections')
             ->andReturn(collect([$section]));
 
         EntryTypes::shouldReceive('getAllEntryTypes')
-            ->andReturn(collect([$entryType]));
+            ->andReturn(collect([$entryType]))
+            ->shouldReceive('getEntryType')
+            ->andReturn($entryType);
     }
 
     protected function _after(): void
     {
+        app(Gql::class)->setActiveSchema(null);
     }
 
     /**
@@ -122,12 +128,7 @@ class CreateMutationsTest extends TestCase
     public function testCreateAssetSaveMutation(): void
     {
         $volume = $this->make(Volume::class, [
-            '__call' => fn($name) => match ($name) {
-                'getCustomFields' => [
-                    new Number(['handle' => 'someNumberField']),
-                ],
-                default => throw new UnknownMethodException("Calling unknown method: $name()"),
-            },
+            'getCustomFields' => fn() => [new Number(['handle' => 'someNumberField'])],
         ]);
 
         $mutation = AssetMutations::createSaveMutation($volume);
@@ -300,44 +301,44 @@ class CreateMutationsTest extends TestCase
      */
     public function testCreateEntrySaveMutation(): void
     {
-        $typeA = $this->make(\CraftCms\Cms\Entry\Data\EntryType::class, [
+        $typeA = $this->make(EntryType::class, [
             'name' => 'typeA',
             'handle' => 'typeA',
             'getCustomFields' => [
                 new PlainText(['handle' => 'someTextField']),
             ],
         ]);
-        $sectionA = new Section(
-            handle: 'sectionA',
-            type: SectionType::Single,
-            entryTypes: [$typeA],
-        );
+        $sectionA = new Section([
+            'handle' => 'sectionA',
+            'type' => SectionType::Single,
+            'entryTypes' => [$typeA],
+        ]);
 
-        $typeB = $this->make(\CraftCms\Cms\Entry\Data\EntryType::class, [
+        $typeB = $this->make(EntryType::class, [
             'name' => 'typeB',
             'handle' => 'typeB',
             'getCustomFields' => [
                 new PlainText(['handle' => 'someTextField']),
             ],
         ]);
-        $sectionB = new Section(
-            handle: 'sectionB',
-            type: SectionType::Channel,
-            entryTypes: [$typeB],
-        );
+        $sectionB = new Section([
+            'handle' => 'sectionB',
+            'type' => SectionType::Channel,
+            'entryTypes' => [$typeB],
+        ]);
 
-        $typeC = $this->make(\CraftCms\Cms\Entry\Data\EntryType::class, [
+        $typeC = $this->make(EntryType::class, [
             'name' => 'typeC',
             'handle' => 'typeC',
             'getCustomFields' => [
                 new PlainText(['handle' => 'someTextField']),
             ],
         ]);
-        $sectionC = new Section(
-            handle: 'sectionC',
-            type: SectionType::Structure,
-            entryTypes: [$typeC],
-        );
+        $sectionC = new Section([
+            'handle' => 'sectionC',
+            'type' => SectionType::Structure,
+            'entryTypes' => [$typeC],
+        ]);
 
         [$saveMutation, $draftMutation] = EntryMutations::createSaveMutations($sectionA, $typeA, true);
         self::assertInstanceOf(EntryGqlType::class, $saveMutation['type']);
@@ -474,10 +475,13 @@ class CreateMutationsTest extends TestCase
      */
     private function _mockScope(array $scopes)
     {
-        $this->tester->mockCraftMethods('gql', [
-            'getActiveSchema' => $this->make(GqlSchema::class, [
-                'scope' => $scopes,
-            ]),
+        $schema = $this->make(GqlSchema::class, [
+            'scope' => $scopes,
         ]);
+
+        $this->tester->mockCraftMethods('gql', [
+            'getActiveSchema' => $schema,
+        ]);
+        app(Gql::class)->setActiveSchema($schema);
     }
 }

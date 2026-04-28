@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Contracts;
 
-use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
+use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Validation\Contracts\Validatable;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Request;
 use InvalidArgumentException;
 
 /**
@@ -158,11 +161,60 @@ interface PluginInterface
     /**
      * Returns the model that the plugin’s settings should be stored on, if the plugin has settings.
      *
-     * @return ?ValidatableComponentInterface The model that the plugin’s settings should be stored on, if the plugin has settings
+     * @return ?Validatable The model that the plugin’s settings should be stored on, if the plugin has settings
      *
      * @internal
      */
-    public function getSettings(): ?ValidatableComponentInterface;
+    public function getSettings(): ?Validatable;
+
+    /**
+     * Returns the request class used when saving plugin settings. Return a
+     * custom FormRequest class when your plugin settings need request
+     * level validation before the settings model is hydrated.
+     *
+     * The request will be resolved from the current control panel request, so you
+     * can validate nested `settings.*` input just like in any other FormRequest.
+     * After the request passes validation, Craft will continue saving the plugin
+     * settings model as usual.
+     *
+     * Usage:
+     *
+     * ```php
+     * use CraftCms\Cms\Plugin\Plugin;
+     * use CraftCms\Cms\Plugin\PluginSettings;
+     * use Illuminate\Foundation\Http\FormRequest;
+     *
+     * class MyPlugin extends Plugin
+     * {
+     *     protected function createSettingsModel(): ?PluginSettings
+     *     {
+     *         return new MyPluginSettings();
+     *     }
+     *
+     *     public function getSettingsRequestClass(): ?string
+     *     {
+     *         return MyPluginSettingsRequest::class;
+     *     }
+     * }
+     *
+     * class MyPluginSettingsRequest extends FormRequest
+     * {
+     *     public function rules(): array
+     *     {
+     *         return [
+     *             'settings.apiKey' => ['required', 'string'],
+     *             'settings.endpoint' => ['nullable', 'url'],
+     *         ];
+     *     }
+     * }
+     * ```
+     *
+     * Return `null` to use the default behavior and rely only on the plugin
+     * settings model's validation rules.
+     *
+     * @return class-string<FormRequest>|null
+     */
+    public function getSettingsRequestClass(): ?string;
 
     /**
      * Sets the plugin settings
@@ -225,7 +277,7 @@ interface PluginInterface
      * ```
      *
      * @see PluginTrait::$hasCpSection
-     * @see Cp::nav()
+     * @see Navigation::getItems()
      */
     public function getCpNavItem(): ?array;
 
@@ -267,6 +319,23 @@ interface PluginInterface
      * @return string the root directory of the plugin.
      */
     public function getBasePath(): string;
+
+    /**
+     * Returns the plugin’s resources directory.
+     *
+     * This is then used to register template roots and locate the plugin’s
+     * icon. Developers may also use it to assemble paths to publishable
+     * assets or other arbitrary files.
+     */
+    public function getResourcesPath(): string;
+
+    /**
+     * Returns the plugin migrations directory.
+     *
+     * Prefers the package root's `database/migrations` directory, and falls
+     * back to the plugin class directory's `migrations`.
+     */
+    public function getMigrationsPath(): string;
 
     /**
      * Creates and returns a new plugin instance based on a passed config

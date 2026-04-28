@@ -8,14 +8,17 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Support\Composer;
 use Illuminate\Console\Command;
 
-final class CloudCommand extends Command
+class CloudCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:setup:cloud';
 
+    #[\Override]
     protected $description = 'Prepares the Craft install to be deployed to Craft Cloud.';
 
+    #[\Override]
     protected $aliases = ['setup/cloud'];
 
     public function handle(Composer $composer): int
@@ -33,7 +36,7 @@ final class CloudCommand extends Command
         ));
 
         $composer->install([
-            'craftcms/cloud' => '*',
+            'craftcms/cloud' => '^3',
         ], function ($type, $buffer) {
             $this->output->write($buffer);
         });

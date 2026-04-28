@@ -1,0 +1,32 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Twig\Nodes;
+
+use CraftCms\Cms\Support\Template;
+use Override;
+use Twig\Attribute\YieldReady;
+use Twig\Compiler;
+use Twig\Node\Node;
+
+#[YieldReady]
+class DumpNode extends Node
+{
+    #[Override]
+    public function compile(Compiler $compiler): void
+    {
+        $compiler
+            ->addDebugInfo($this)
+            ->write('dump(');
+
+        if ($this->hasNode('var')) {
+            $compiler->subcompile($this->getNode('var'));
+        } else {
+            $compiler->raw(sprintf('%s::contextWithoutTemplate($context)', Template::class));
+        }
+
+        $compiler
+            ->raw(sprintf(", '%s', %s);\n", $this->getTemplateName(), $this->getTemplateLine()));
+    }
+}

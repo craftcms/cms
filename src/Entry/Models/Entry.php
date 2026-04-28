@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry\Models;
 
-use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
+use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Shared\BaseModel;
@@ -16,14 +16,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
-final class Entry extends BaseModel
+class Entry extends BaseModel
 {
     use HasFactory;
 
+    #[\Override]
     protected $table = Table::ENTRIES;
 
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

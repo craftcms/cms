@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\GarbageCollection\Actions;
 
-use craft\base\NestedElementInterface;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -15,7 +16,7 @@ use Tpetry\QueryExpressions\Language\Alias;
  *
  * Any soft-deleted nested elements that have revisions will be skipped, as their revisions may still be needed by the owner element.
  */
-final class HardDeleteElements extends GarbageCollectionAction
+class HardDeleteElements extends GarbageCollectionAction
 {
     public function __invoke(): void
     {
@@ -26,7 +27,7 @@ final class HardDeleteElements extends GarbageCollectionAction
         $normalElementTypes = [];
         $nestedElementTypes = [];
 
-        foreach (\Craft::$app->getElements()->getAllElementTypes() as $elementType) {
+        foreach (Elements::getAllElementTypes() as $elementType) {
             if (is_subclass_of($elementType, NestedElementInterface::class)) {
                 $nestedElementTypes[] = $elementType;
             } else {

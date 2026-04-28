@@ -10,14 +10,17 @@ use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-final class Draft extends BaseModel
+class Draft extends BaseModel
 {
     use HasFactory;
 
+    #[\Override]
     protected $table = Table::DRAFTS;
 
+    #[\Override]
     public $timestamps = false;
 
+    #[\Override]
     protected $casts = [
         'provisional' => 'bool',
         'trackChanges' => 'bool',
@@ -26,7 +29,7 @@ final class Draft extends BaseModel
     ];
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\Element\Models\Element, $this>
+     * @return BelongsTo<Element, $this>
      */
     public function element(): BelongsTo
     {
@@ -34,7 +37,7 @@ final class Draft extends BaseModel
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\Element\Models\Element, $this>
+     * @return BelongsTo<Element, $this>
      */
     public function canonical(): BelongsTo
     {
@@ -42,7 +45,7 @@ final class Draft extends BaseModel
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\User\Models\User, $this>
+     * @return BelongsTo<User, $this>
      */
     public function creator(): BelongsTo
     {

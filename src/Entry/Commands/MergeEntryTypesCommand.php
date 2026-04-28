@@ -4,37 +4,40 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry\Commands;
 
-use craft\base\FieldLayoutElement;
-use craft\models\FieldLayoutTab;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Migrator;
-use CraftCms\Cms\Element\Elements\Entry;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\File;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\select;
 
-final class MergeEntryTypesCommand extends Command implements PromptsForMissingInput
+class MergeEntryTypesCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:entry-types:merge {handleA} {handleB}';
 
+    #[\Override]
     protected $description = 'Merges two entry types.';
 
+    #[\Override]
     protected $aliases = ['entry-types/merge'];
 
     public function handle(EntryTypes $entryTypes, Fields $fields, Migrator $migrator): int
@@ -82,7 +85,7 @@ final class MergeEntryTypesCommand extends Command implements PromptsForMissingI
 
         /** @var EntryType $persistingEntryType */
         /** @var EntryType $outgoingEntryType */
-        /** @var array<\CraftCms\Cms\Section\Data\Section|ElementContainerFieldInterface> $outgoingUsages */
+        /** @var array<Section|ElementContainerFieldInterface> $outgoingUsages */
         [$persistingEntryType, $outgoingEntryType, $outgoingUsages] = $choice === $entryTypeA->handle
             ? [$entryTypeA, $entryTypeB, $usagesB]
             : [$entryTypeB, $entryTypeA, $usagesA];
@@ -312,6 +315,8 @@ final class MergeEntryTypesCommand extends Command implements PromptsForMissingI
         return $modified;
     }
 
+    /** @return array<string, \Closure(): mixed> */
+    #[\Override]
     protected function promptForMissingArgumentsUsing(): array
     {
         $options = app(EntryTypes::class)->getAllEntryTypes()

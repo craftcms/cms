@@ -7,10 +7,10 @@
 
 namespace craft\gql\resolvers\elements;
 
-use craft\elements\ElementCollection;
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
+use CraftCms\Cms\Element\ElementCollection;
 use yii\base\UnknownMethodException;
 
 /**

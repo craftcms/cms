@@ -2,10 +2,13 @@
 
 declare(strict_types=1);
 
+use Rector\Caching\ValueObject\Storage\FileCacheStorage;
+use Rector\CodingStyle\Rector\ArrowFunction\ArrowFunctionDelegatingCallToFirstClassCallableRector;
 use Rector\Config\RectorConfig;
 use Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector;
 use RectorLaravel\Rector\ArrayDimFetch\EnvVariableToEnvHelperRector;
 use RectorLaravel\Rector\Class_\AnonymousMigrationsRector;
+use RectorLaravel\Rector\FuncCall\AppToResolveRector;
 use RectorLaravel\Rector\MethodCall\ResponseHelperCallToJsonResponseRector;
 use RectorLaravel\Rector\MethodCall\UseComponentPropertyWithinCommandsRector;
 use RectorLaravel\Set\LaravelSetList;
@@ -16,6 +19,12 @@ return RectorConfig::configure()
         __DIR__.'/src',
         __DIR__.'/tests',
     ])
+    ->withCache(
+        // ensure file system caching is used instead of in-memory
+        cacheDirectory: '/tmp/rector',
+        // specify a path that works locally as well as on CI job runners
+        cacheClass: FileCacheStorage::class
+    )
     ->withSkip([
         __DIR__.'/resources/icons/index.php',
         __DIR__.'/resources/icons/aliases.php',
@@ -28,6 +37,10 @@ return RectorConfig::configure()
         EnvVariableToEnvHelperRector::class => [
             __DIR__.'/src/Utility/Utilities/PhpInfo.php',
         ],
+        ArrowFunctionDelegatingCallToFirstClassCallableRector::class => [
+            __DIR__.'/src/Http/Mixins/SessionMixin.php',
+        ],
+        AppToResolveRector::class,
     ])
     ->withSetProviders(LaravelSetProvider::class)
     ->withComposerBased(laravel: true)
@@ -51,4 +64,4 @@ return RectorConfig::configure()
         privatization: true,
         earlyReturn: true,
     )
-    ->withPhpSets(php84: true);
+    ->withPhpSets(php85: true);

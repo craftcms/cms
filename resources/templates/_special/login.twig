@@ -3,9 +3,10 @@
 {% set showResetPassword = showResetPassword ?? false %}
 {% set showRememberMeCheckbox = showRememberMeCheckbox ?? false %}
 {% set staticEmail = staticEmail ?? null %}
+{% set initialError = initialError ?? null %}
 
-{% set generalConfig = app.config.craft.general %}
-{% set username = staticEmail ?? (generalConfig.rememberUsernameDuration ? craft.app.user.getRememberedUsername(): '') %}
+{% set generalConfig = config('craft.general') %}
+{% set username = staticEmail ?? (generalConfig.rememberUsernameDuration ? AuthMethods.getRememberedUsername() : '') %}
 
 {% if generalConfig.useEmailAsUsername %}
   {% set usernameLabel = 'Email'|t('app') %}
@@ -83,7 +84,11 @@
       }) }}
     {% endtag %}
 
-    <div class="login-errors hidden"></div>
+    <div class="login-errors{{ not initialError ? ' hidden' }}">
+      {% if initialError %}
+        <p>{{ initialError }}</p>
+      {% endif %}
+    </div>
 
     {% if showResetPassword %}
       <form class="login-reset-password hidden">
@@ -113,7 +118,7 @@
 
         <div class="login-alt-container">
           {{ forms.button({
-            label: (craft.i18n.locale.getOrientation() == 'ltr' ? '← ' : ' →') ~
+            label: (I18N.getLocale().getOrientation() == 'ltr' ? '← ' : ' →') ~
               'Back to sign in'|t('app'),
             class: ['login-reset-back-btn', 'chromeless'],
             spinner: true,
@@ -135,9 +140,9 @@
       retryMessage: 'Sign in with a passkey'|t('app'),
     }) }}
 
-    {% if CraftEdition == CraftEnterprise %}
-      {% for provider in craft.app.sso.providers %}
-        {{ provider.getCpLoginHtml()|raw }}
+    {% if CraftEdition >= CraftPro %}
+      {% for button in OAuth.getLoginButtons() %}
+        {{ button }}
       {% endfor %}
     {% endif %}
 

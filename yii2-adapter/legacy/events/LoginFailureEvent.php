@@ -8,13 +8,14 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\elements\User;
+use CraftCms\Cms\User\Elements\User;
 
 /**
  * LoginFailureEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \Illuminate\Auth\Events\Failed} instead.
  */
 class LoginFailureEvent extends Event
 {

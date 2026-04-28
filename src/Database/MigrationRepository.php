@@ -11,7 +11,7 @@ use Illuminate\Database\Schema\Blueprint;
 /**
  * @internal
  */
-final class MigrationRepository extends DatabaseMigrationRepository
+class MigrationRepository extends DatabaseMigrationRepository
 {
     private ?string $track = null;
 
@@ -27,9 +27,6 @@ final class MigrationRepository extends DatabaseMigrationRepository
         return $this->track;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function log($file, $batch): void
     {

@@ -2,60 +2,14 @@
 
 namespace craft\elements\conditions;
 
-use craft\base\conditions\BaseMultiSelectConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\db\ElementQueryInterface;
-use yii\db\QueryInterface;
-use function CraftCms\Cms\t;
-
 /**
  * Element status condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Conditions\StatusConditionRule} instead.
  */
-class StatusConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class StatusConditionRule extends \CraftCms\Cms\Element\Conditions\StatusConditionRule
 {
-    /**
-     * @inheritdoc
-     */
-    public function getLabel(): string
-    {
-        return t('Status');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['status'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function options(): array
-    {
-        /** @var ElementCondition $condition */
-        $condition = $this->getCondition();
-        return array_map(fn($info) => $info['label'] ?? $info, $condition->elementType::statuses());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(QueryInterface $query): void
-    {
-        /** @var ElementQueryInterface $query */
-        $query->status($this->paramValue());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        return $this->matchValue($element->getStatus());
-    }
+    use \craft\base\LegacyEventConstants;
 }

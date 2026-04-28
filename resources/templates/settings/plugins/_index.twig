@@ -101,7 +101,7 @@
             <th>
               <div class="plugin-infos">
                 {% set pluginIcon %}
-                  {{ svg(craft.app.plugins.getPluginIconSvg(handle), sanitize=true, namespace=true) }}
+                  {{ svg(Plugins.getPluginIconSvg(handle), sanitize=true, namespace=true) }}
                   {% if config.licenseKeyStatus == 'valid' or config.licenseIssues is not empty %}
                     <span class="license-key-status {{ config.licenseIssues is empty ? 'valid' }}"></span>
                   {% endif %}

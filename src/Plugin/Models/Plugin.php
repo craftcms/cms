@@ -12,6 +12,7 @@ class Plugin extends BaseModel
 {
     use HasFactory;
 
+    #[\Override]
     protected $table = Table::PLUGINS;
 
     #[\Override]

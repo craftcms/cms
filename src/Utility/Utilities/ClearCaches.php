@@ -4,60 +4,46 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use Craft;
-use craft\helpers\FileHelper;
-use craft\web\assets\clearcaches\ClearCachesAsset;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Events\RegisterCacheOptions;
 use CraftCms\Cms\Utility\Events\RegisterTagOptions;
 use CraftCms\Cms\Utility\Utility;
-use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\File;
 use Override;
+use Symfony\Component\Filesystem\Path;
 
 use function CraftCms\Cms\t;
 
 /**
  * ClearCaches represents a ClearCaches dashboard widget.
  */
-final class ClearCaches extends Utility
+class ClearCaches extends Utility
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Caches');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function id(): string
     {
         return 'clear-caches';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
         return 'trash';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function contentHtml(): string
     {
@@ -68,7 +54,7 @@ final class ClearCaches extends Utility
             $cacheOptions[] = [
                 'label' => $cacheOption['label'],
                 'value' => $cacheOption['key'],
-                'info' => $cacheOption['info'] ?? null,
+                'info' => isset($cacheOption['info']) ? Str::markdown($cacheOption['info']) : null,
             ];
         }
 
@@ -80,14 +66,10 @@ final class ClearCaches extends Utility
         }
 
         $cacheOptions = Arr::sort($cacheOptions, 'label');
-        $view = Craft::$app->getView();
 
-        $view->registerAssetBundle(ClearCachesAsset::class);
-        $view->registerJs('new Craft.ClearCachesUtility(\'clear-caches\');');
-
-        return $view->renderTemplate('_components/utilities/ClearCaches.twig', [
-            'cacheOptions' => $cacheOptions,
-            'tagOptions' => $tagOptions,
+        return Html::tag('ClearCaches', attributes: [
+            ':cacheOptions' => $cacheOptions,
+            ':tagOptions' => $tagOptions,
         ]);
     }
 
@@ -96,13 +78,22 @@ final class ClearCaches extends Utility
      */
     public static function cacheOptions(): array
     {
-        $pathService = app('Craft')->getPath();
+        /**
+         * TODO: Remove this when dependency on app('Craft') is gone.
+         */
+        if (app()->runningUnitTests()) {
+            return [];
+        }
+
+        $pathService = app(\CraftCms\Cms\Support\Path::class);
 
         $options = [
             [
                 'key' => 'data',
                 'label' => t('Data caches'),
-                'info' => t('Anything cached with `Cache::put`'),
+                'info' => t('Anything cached with {method}', [
+                    'method' => '`Cache::put`',
+                ]),
                 'action' => [Cache::getFacadeRoot(), 'clear'],
             ],
             [
@@ -111,9 +102,9 @@ final class ClearCaches extends Utility
                 'info' => t('Local copies of remote images, generated thumbnails'),
                 'action' => function () use ($pathService) {
                     $dirs = [
-                        $pathService->getAssetSourcesPath(false),
-                        $pathService->getAssetsIconsPath(false),
-                        $pathService->getImageTransformsPath(false),
+                        $pathService->assetSources(create: false),
+                        $pathService->assetsIcons(create: false),
+                        $pathService->imageTransforms(create: false),
                     ];
                     foreach ($dirs as $dir) {
                         File::cleanDirectory($dir);
@@ -124,61 +115,25 @@ final class ClearCaches extends Utility
                 'key' => 'compiled-templates',
                 'label' => t('Compiled templates'),
                 'info' => t('Contents of {path}', [
-                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->getCompiledTemplatesPath(false), Aliases::get('@root'))),
+                    'path' => sprintf('`%s/`', File::relativePath($pathService->compiledTemplates(create: false), Aliases::get('@root'))),
                 ]),
-                'action' => $pathService->getCompiledTemplatesPath(false),
+                'action' => $pathService->compiledTemplates(create: false),
             ],
             [
                 'key' => 'compiled-classes',
                 'label' => t('Compiled classes'),
                 'info' => t('Contents of {path}', [
-                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->getCompiledClassesPath(false), Aliases::get('@root'))),
+                    'path' => sprintf('`%s/`', File::relativePath($pathService->compiledClasses(create: false), Aliases::get('@root'))),
                 ]),
-                'action' => $pathService->getCompiledClassesPath(false),
-            ],
-            [
-                'key' => 'cp-resources',
-                'label' => t('Control panel resources'),
-                'info' => t('Contents of {path}', [
-                    'path' => sprintf('`%s/`', Cms::config()->resourceBasePath),
-                ]),
-                'action' => function () {
-                    $basePath = Cms::config()->resourceBasePath;
-                    $request = Craft::$app->getRequest();
-                    if (
-                        $request->getIsConsoleRequest() &&
-                        $request->isWebrootAliasSetDynamically &&
-                        str_starts_with($basePath, '@webroot')
-                    ) {
-                        throw new Exception("Unable to clear control panel resources because the location isn't known for console commands.\n".
-                            "Explicitly set the @webroot alias in config/general.php to avoid this error.\n".
-                            'See https://craftcms.com/docs/6.x/configure.html#aliases for more info.');
-                    }
-
-                    $basePath = Aliases::get($basePath);
-                    if ($basePath !== false && file_exists($basePath)) {
-                        if (File::exists($basePath.'/.gitignore')) {
-                            $gitignoreContents = File::get($basePath.'/.gitignore');
-                        }
-
-                        File::cleanDirectory($basePath);
-
-                        if (isset($gitignoreContents)) {
-                            File::put($basePath.'/.gitignore', $gitignoreContents);
-                        }
-                    }
-
-                    // truncate the resourcepaths table while we're at it
-                    DB::table(Table::RESOURCEPATHS)->truncate();
-                },
+                'action' => $pathService->compiledClasses(create: false),
             ],
             [
                 'key' => 'temp-files',
                 'label' => t('Temp files'),
                 'info' => t('Contents of {path}', [
-                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->getTempPath(), Aliases::get('@root'))),
+                    'path' => sprintf('`%s/`', File::relativePath($pathService->temp(), Aliases::get('@root'))),
                 ]),
-                'action' => $pathService->getTempPath(),
+                'action' => $pathService->temp(),
             ],
             [
                 'key' => 'transform-indexes',
@@ -195,14 +150,25 @@ final class ClearCaches extends Utility
                     DB::table(Table::ASSETINDEXDATA)->truncate();
                 },
             ],
+            [
+                'key' => 'ide-helper',
+                'label' => t('IDE helper'),
+                'info' => t('Contents of {path}', [
+                    'path' => sprintf('`%s/`', Cms::config()->ideHelperPath),
+                ]),
+                'action' => function () {
+                    $configPath = Cms::config()->ideHelperPath;
+                    $path = Path::isAbsolute($configPath) ? $configPath : base_path($configPath);
+                    if (File::isDirectory($path)) {
+                        File::cleanDirectory($path);
+                    }
+                },
+            ],
         ];
 
-        if (Event::hasListeners(RegisterCacheOptions::class)) {
-            Event::dispatch($event = new RegisterCacheOptions($options));
-            $options = $event->options;
-        }
+        event($event = new RegisterCacheOptions($options));
 
-        return Arr::sort($options, 'label');
+        return Arr::sort($event->options, 'label');
     }
 
     /**
@@ -224,11 +190,8 @@ final class ClearCaches extends Utility
             ];
         }
 
-        if (Event::hasListeners(RegisterTagOptions::class)) {
-            Event::dispatch($event = new RegisterTagOptions($options));
-            $options = $event->options;
-        }
+        event($event = new RegisterTagOptions($options));
 
-        return Arr::sort($options, 'label');
+        return Arr::sort($event->options, 'label');
     }
 }

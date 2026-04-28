@@ -12,11 +12,8 @@ use Illuminate\Support\ServiceProvider;
 /**
  * @internal
  */
-final class PluginPackageManifest extends PackageManifest
+class PluginPackageManifest extends PackageManifest
 {
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function build(): void
     {

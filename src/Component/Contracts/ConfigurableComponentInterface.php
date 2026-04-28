@@ -12,7 +12,7 @@ interface ConfigurableComponentInterface
      * By default, this method returns all public non-static properties that were defined on the called class.
      * You may override this method to change the default behavior.
      *
-     * @return array<string, mixed> The list of settings attribute names and values
+     * @return string[] The list of settings attribute names and values
      *
      * @see getSettings()
      */
@@ -39,7 +39,7 @@ interface ConfigurableComponentInterface
      * `resources/templates/_settings.html`, passing the settings to it:
      *
      * ```php
-     * return Craft::$app->view->renderTemplate('plugin-handle/_widget-settings', [
+     * return \CraftCms\Cms\template('pluginHandle::plugin-handle/_widget-settings', [
      *     'widget' => $this
      * ]);
      * ```
@@ -85,7 +85,7 @@ interface ConfigurableComponentInterface
      *     $id = 'foo';
      *     $namespacedId = Craft::$app->view->namespaceInputId($id);
      *     // Render and return the input template
-     *     return Craft::$app->view->renderTemplate('plugin-handle/_widget-settings', [
+     *     return \CraftCms\Cms\template('pluginHandle::plugin-handle/_widget-settings', [
      *         'id' => $id,
      *         'namespacedId' => $namespacedId,
      *         'widget' => $this,

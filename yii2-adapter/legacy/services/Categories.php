@@ -8,29 +8,35 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\MemoizableArray;
 use craft\elements\Category;
 use craft\errors\CategoryGroupNotFoundException;
 use craft\events\CategoryGroupEvent;
 use craft\events\DeleteSiteEvent;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
-use craft\models\FieldLayout;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
-use craft\web\View;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Structure\Data\Structure;
+use CraftCms\Cms\Support\Facades\ElementCaches;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Twig\TemplateResolver;
+use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Yii2Adapter\DeprecatedConcepts;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
@@ -122,6 +128,12 @@ class Categories extends Component
     private function _groups(): MemoizableArray
     {
         if (!isset($this->_groups)) {
+            if (!DeprecatedConcepts::supportsCategories()) {
+                $this->_groups = new MemoizableArray([]);
+
+                return $this->_groups;
+            }
+
             $groupRecords = CategoryGroupRecord::find()
                 ->orderBy(['name' => SORT_ASC])
                 ->with('structure')
@@ -153,11 +165,11 @@ class Categories extends Component
      */
     public function getEditableGroups(): array
     {
-        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+        if (app()->runningInConsole()) {
             return $this->getAllGroups();
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
 
         if (!$user) {
             return [];
@@ -282,7 +294,7 @@ class Categories extends Component
         }
 
         if ($runValidation && !$group->validate()) {
-            Craft::info('Category group not saved due to validation error.', __METHOD__);
+            Log::info('Category group not saved due to validation error.', [__METHOD__]);
             return false;
         }
 
@@ -346,7 +358,7 @@ class Categories extends Component
 
             // Structure
             $structure = Structures::getStructureByUid($structureUid,
-                true) ?? new Structure(uid: $structureUid);
+                true) ?? new Structure(['uid' => $structureUid]);
             $structure->maxLevels = $structureData['maxLevels'];
             Structures::saveStructure($structure);
 
@@ -477,7 +489,7 @@ class Categories extends Component
                                     ->one();
 
                                 if ($category) {
-                                    Craft::$app->getElements()->updateElementSlugAndUri($category, false, false);
+                                    Elements::updateElementSlugAndUri($category, false, false);
                                 }
                             }
                         }
@@ -502,7 +514,8 @@ class Categories extends Component
                 ->trashed()
                 ->andWhere(['categories.deletedWithGroup' => true])
                 ->all();
-            Craft::$app->getElements()->restoreElements($categories);
+
+            Elements::restoreElements($categories);
         }
 
         // Fire an 'afterSaveGroup' event
@@ -514,7 +527,7 @@ class Categories extends Component
         }
 
         // Invalidate category caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Category::class);
+        ElementCaches::invalidateForElementType(Category::class);
     }
 
     /**
@@ -582,7 +595,7 @@ class Categories extends Component
         }
 
         $template = (string)$categoryGroupSiteSettings[$siteId]->template;
-        return Craft::$app->getView()->doesTemplateExist($template, View::TEMPLATE_MODE_SITE);
+        return app(TemplateResolver::class)->exists($template, TemplateMode::Site);
     }
 
     /**
@@ -659,7 +672,7 @@ class Categories extends Component
         }
 
         // Invalidate category caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Category::class);
+        ElementCaches::invalidateForElementType(Category::class);
     }
 
     /**
@@ -723,7 +736,10 @@ class Categories extends Component
             return null;
         }
 
-        return Craft::$app->getElements()->getElementById($categoryId, Category::class, $siteId, $criteria);
+        /** @var ?Category $category */
+        $category = Elements::getElementById($categoryId, Category::class, $siteId, $criteria);
+
+        return $category;
     }
 
     /**

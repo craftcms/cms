@@ -7,13 +7,13 @@
 
 namespace crafttests\unit\test;
 
-use Craft;
-use craft\elements\User;
 use craft\errors\ElementNotFoundException;
-use craft\errors\InvalidElementException;
 use craft\test\mockclasses\components\EventTriggeringComponent;
 use craft\test\TestCase;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\User\Elements\User;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -156,7 +156,7 @@ class CraftCodeceptionModuleTest extends TestCase
         $this->tester->saveElement($user);
 
         $dupeConfig = ['username' => 'user3', 'email' => 'user3@crafttest.com'];
-        $dupeUser = Craft::$app->getElements()->duplicateElement($user, $dupeConfig);
+        $dupeUser = Elements::duplicateElement($user, $dupeConfig);
 
         $this->tester->assertElementsExist(User::class, Arr::except($configArray, 'active'), 1);
         $this->tester->assertElementsExist(User::class, array_merge(Arr::except($configArray, 'active'), $dupeConfig), 1);

@@ -1,0 +1,2 @@
+// line 1
+abort(418, "I'm a teapot");

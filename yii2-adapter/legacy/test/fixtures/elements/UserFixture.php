@@ -7,8 +7,8 @@
 
 namespace craft\test\fixtures\elements;
 
-use craft\base\ElementInterface;
-use craft\elements\User;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\User\Elements\User;
 
 /**
  * Class UserFixture

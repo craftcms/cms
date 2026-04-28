@@ -1,57 +1,23 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fs;
 
-use Craft;
-use function CraftCms\Cms\t;
-
 /**
  * Temp represents a temporary filesystem.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Filesystems\Temp} instead.
  */
-class Temp extends Local
+class Temp extends \CraftCms\Cms\Filesystem\Filesystems\Temp
 {
-    /**
-     * @inheritdoc
-     */
-    public bool $hasUrls = false;
-
-    /**
-     * @inheritdoc
-     */
-    public static function displayName(): string
-    {
-        return 'Temp';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function __construct($config = [])
-    {
-        // Config normalization
-        if (!isset($config['path'])) {
-            $config['path'] = Craft::$app->getPath()->getTempAssetUploadsPath();
-        }
-        if (!isset($config['name'])) {
-            $config['name'] = t('Temporary Uploads');
-        }
-
-        parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSettingsHtml(): ?string
-    {
-        return null;
-    }
+    use \craft\base\LegacyEventConstants;
 }

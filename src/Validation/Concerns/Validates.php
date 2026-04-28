@@ -1,0 +1,132 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Validation\Concerns;
+
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Utils;
+use CraftCms\Cms\Validation\Contracts\Validatable;
+use CraftCms\RulesetValidation\Concerns\HasRuleset;
+use Illuminate\Support\MessageBag;
+use Illuminate\Validation\Validator;
+
+trait Validates
+{
+    use HasRuleset;
+
+    private ?MessageBag $errors = null;
+
+    public function getFirstErrors(): array
+    {
+        return array_map(fn (array $messages) => Arr::first($messages), $this->errors()->getMessages());
+    }
+
+    public function errors(): MessageBag
+    {
+        return $this->errors ??= new MessageBag;
+    }
+
+    public function clearErrors(?string $attribute = null): void
+    {
+        if ($attribute) {
+            $this->errors()->forget($attribute);
+
+            return;
+        }
+
+        $this->errors = new MessageBag;
+    }
+
+    public function addModelErrors(Validatable $model, string $attrPrefix = ''): void
+    {
+        if ($attrPrefix !== '') {
+            $attrPrefix = rtrim($attrPrefix, '.').'.';
+        }
+
+        foreach ($model->errors()->getMessages() as $attribute => $errors) {
+            foreach ($errors as $error) {
+                $this->errors()->add($attrPrefix.$attribute, $error);
+            }
+        }
+    }
+
+    /**
+     * TODO: Add types to method signature once components no longer rely
+     * on craft/base/Model
+     *
+     * @param  array|string|null  $attributeNames
+     * @param  bool  $clearErrors
+     */
+    public function validate($attributeNames = null, $clearErrors = true, bool $throw = false): bool
+    {
+        if ($clearErrors) {
+            $this->clearErrors();
+        }
+
+        if (is_string($attributeNames)) {
+            $attributeNames = [$attributeNames];
+        }
+
+        $ruleset = $this->ruleset;
+
+        if (! is_null($attributeNames)) {
+            $ruleset->only($attributeNames);
+        }
+
+        if ($throw) {
+            $ruleset->validate();
+        }
+
+        $result = $ruleset->passes();
+
+        $this->errors()->merge($ruleset->getValidator()->errors());
+
+        return $result && $this->errors()->isEmpty();
+    }
+
+    public function getRules(): array
+    {
+        return [];
+    }
+
+    public function getMessages(): array
+    {
+        return [];
+    }
+
+    public function attributeLabels(): array
+    {
+        return [];
+    }
+
+    public function getAttributeLabel(string $attribute): string
+    {
+        $labels = $this->attributeLabels();
+
+        return $labels[$attribute] ?? $this->generateAttributeLabel($attribute);
+    }
+
+    /**
+     * Generates a user friendly attribute label based on the give attribute name.
+     * This is done by replacing underscores, dashes and dots with blanks and
+     * changing the first letter of each word to upper case.
+     * For example, 'department_name' or 'DepartmentName' will generate 'Department Name'.
+     */
+    public function generateAttributeLabel(string $name): string
+    {
+        return Str::camel2words($name);
+    }
+
+    public function prepareForValidation(): void {}
+
+    public function passedValidation(): void {}
+
+    public function afterValidate(?Validator $validator = null): void {}
+
+    public function validationData(): array
+    {
+        return Arr::except(Utils::getPublicProperties($this), ['ruleset']);
+    }
+}

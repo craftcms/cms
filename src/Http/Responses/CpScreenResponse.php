@@ -4,27 +4,50 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Responses;
 
-use Craft;
-use craft\helpers\Cp;
-use craft\helpers\UrlHelper;
-use craft\web\assets\iframeresizer\ContentWindowAsset;
-use craft\web\View;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Html\MenuHtml;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\View\LegacyAssets\ContentWindowAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Traits\Conditionable;
+use Inertia\Inertia;
+use Stringable;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\pageTemplate;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
-final class CpScreenResponse implements Responsable
+class CpScreenResponse implements Responsable
 {
     use Conditionable;
+
+    /**
+     * @var string|null The Inertia page component to render.
+     *
+     * @see inertiaPage()
+     */
+    private ?string $inertiaPage = null;
+
+    /**
+     * @var array Props to pass to the Inertia page component.
+     *
+     * @see inertiaPage()
+     */
+    private array $inertiaProps = [];
 
     /**
      * @var callable|null Callable that will be called before other properties are added to the screen.
@@ -70,7 +93,7 @@ final class CpScreenResponse implements Responsable
     /**
      * @var Site|null The site that should be displayed within the breadcrumbs.
      *
-     * @see site()
+     * @see Site()
      */
     public ?Site $site = null;
 
@@ -304,7 +327,7 @@ final class CpScreenResponse implements Responsable
      * - `url` – The URL that the breadcrumb should link to
      * - `icon` – The icon which should be displayed beside the label
      * - `menu` – The menu items which should be displayed alongside the breadcrumb
-     *   (see [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties)
+     *   (see [[\CraftCms\Cms\Cp\Html\MenuHtml::disclosureMenu()]] for documentation on supported item properties)
      * - `current` – Whether the breadcrumb represents the current page
      *
      * This will only be used by full-page screens.
@@ -321,7 +344,7 @@ final class CpScreenResponse implements Responsable
      *
      * This will only be used by full-page screens.
      */
-    public function addCrumb(string $label, string $url): self
+    public function addCrumb(string $label, ?string $url = null): self
     {
         if (! is_array($this->crumbs)) {
             $this->crumbs = [];
@@ -329,7 +352,7 @@ final class CpScreenResponse implements Responsable
 
         $this->crumbs[] = [
             'label' => $label,
-            'url' => UrlHelper::cpUrl($url),
+            'url' => $url ? Url::cpUrl($url) : null,
         ];
 
         return $this;
@@ -505,7 +528,7 @@ final class CpScreenResponse implements Responsable
     /**
      * Sets the context menu items.
      *
-     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
+     * See [[\CraftCms\Cms\Cp\Html\MenuHtml::disclosureMenu()]] for documentation on supported item properties.
      */
     public function contextMenuItems(?callable $value): self
     {
@@ -530,14 +553,14 @@ final class CpScreenResponse implements Responsable
     public function toolbarTemplate(string $template, array $variables = []): self
     {
         return $this->toolbarHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP),
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
     }
 
     /**
      * Sets the action menu items.
      *
-     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
+     * See [[\CraftCms\Cms\Cp\Html\MenuHtml::disclosureMenu()]] for documentation on supported item properties.
      */
     public function actionMenuItems(?callable $value): self
     {
@@ -561,7 +584,7 @@ final class CpScreenResponse implements Responsable
      *
      * This will only be used by full-page screens.
      */
-    public function additionalButtonsHtml(callable|string|null $value): self
+    public function additionalButtonsHtml(callable|string|Stringable|null $value): self
     {
         $this->additionalButtonsHtml = $value;
 
@@ -576,7 +599,7 @@ final class CpScreenResponse implements Responsable
     public function additionalButtonsTemplate(string $template, array $variables = []): self
     {
         return $this->additionalButtonsHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP),
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
     }
 
@@ -596,8 +619,22 @@ final class CpScreenResponse implements Responsable
     public function contentTemplate(string $template, array $variables = []): self
     {
         return $this->contentHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP),
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
+    }
+
+    /**
+     * Sets the Inertia page component and props for this screen.
+     *
+     * When set, `toResponse()` will render an Inertia response instead of a Twig template.
+     * The `title` and `crumbs` properties will be automatically included as props.
+     */
+    public function inertiaPage(?string $value, array $props = []): self
+    {
+        $this->inertiaPage = $value;
+        $this->inertiaProps = $props;
+
+        return $this;
     }
 
     /**
@@ -616,7 +653,7 @@ final class CpScreenResponse implements Responsable
     public function metaSidebarTemplate(string $template, array $variables = []): self
     {
         return $this->metaSidebarHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP),
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
     }
 
@@ -636,7 +673,7 @@ final class CpScreenResponse implements Responsable
     public function pageSidebarTemplate(string $template, array $variables = []): self
     {
         return $this->pageSidebarHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP),
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
     }
 
@@ -656,7 +693,7 @@ final class CpScreenResponse implements Responsable
     public function noticeTemplate(string $template, array $variables = []): self
     {
         return $this->noticeHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP),
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
     }
 
@@ -676,13 +713,16 @@ final class CpScreenResponse implements Responsable
     public function errorSummaryTemplate(string $template, array $variables = []): self
     {
         return $this->errorSummary(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP),
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
     }
 
-    /** {@inheritdoc} */
     public function toResponse($request): Response
     {
+        if ($this->inertiaPage) {
+            return $this->inertiaResponse($request);
+        }
+
         if ($request->wantsJson()) {
             return $this->jsonResponse($request);
         }
@@ -690,29 +730,50 @@ final class CpScreenResponse implements Responsable
         return $this->response($request);
     }
 
+    private function inertiaResponse(Request $request): Response
+    {
+        if ($this->prepareScreen) {
+            ($this->prepareScreen)($this, $request);
+        }
+
+        $crumbs = $this->crumbs;
+        if ($this->title) {
+            $crumbs[] = ['label' => $this->title];
+        }
+
+        $props = array_filter([
+            'title' => $this->title,
+            'crumbs' => $crumbs,
+        ], fn ($value) => $value !== null);
+
+        return Inertia::render(
+            $this->inertiaPage,
+            [...$props, ...$this->inertiaProps],
+        )->toResponse($request);
+    }
+
     private function jsonResponse(Request $request): JsonResponse
     {
         $namespace = Str::random(10);
-        $view = Craft::$app->getView();
 
         if ($this->prepareScreen) {
             $containerId = $request->header('X-Craft-Container-Id');
 
             abort_unless((bool) $containerId, 400, 'Request missing the X-Craft-Container-Id header.');
 
-            $view->setNamespace($namespace);
+            InputNamespace::set($namespace);
             call_user_func($this->prepareScreen, $this, $containerId);
-            $view->setNamespace(null);
+            InputNamespace::set(null);
         }
 
         $extraToolbarItems = is_callable($this->toolbarHtml) ? call_user_func($this->toolbarHtml) : $this->toolbarHtml;
-        $notice = $this->noticeHtml ? $view->namespaceInputs($this->noticeHtml, $namespace) : null;
+        $notice = $this->noticeHtml ? InputNamespace::namespaceInputs($this->noticeHtml, $namespace) : null;
 
-        $tabs = count($this->tabs) > 1 ? $view->namespaceInputs(fn () => $view->renderTemplate('_includes/tabs.twig', [
+        $tabs = count($this->tabs) > 1 ? InputNamespace::namespaceInputs(fn () => template('_includes/tabs', [
             'tabs' => $this->tabs,
-        ], View::TEMPLATE_MODE_CP), $namespace) : null;
+        ], templateMode: TemplateMode::Cp), $namespace) : null;
 
-        $content = $view->namespaceInputs(function () {
+        $content = InputNamespace::namespaceInputs(function () {
             $components = [];
 
             if ($this->contentHtml) {
@@ -728,11 +789,11 @@ final class CpScreenResponse implements Responsable
             return implode("\n", $components);
         }, $namespace);
 
-        $sidebar = $this->metaSidebarHtml ? $view->namespaceInputs($this->metaSidebarHtml, $namespace) : null;
-        $errorSummary = $this->errorSummary ? $view->namespaceInputs($this->errorSummary, $namespace) : null;
+        $sidebar = $this->metaSidebarHtml ? InputNamespace::namespaceInputs($this->metaSidebarHtml, $namespace) : null;
+        $errorSummary = $this->errorSummary ? InputNamespace::namespaceInputs($this->errorSummary, $namespace) : null;
 
         return new JsonResponse([
-            'editUrl' => $this->editUrl ? UrlHelper::cpUrl($this->editUrl) : null,
+            'editUrl' => $this->editUrl ? Url::cpUrl($this->editUrl) : null,
             'namespace' => $namespace,
             'title' => $this->title,
             'notice' => $notice,
@@ -748,10 +809,10 @@ final class CpScreenResponse implements Responsable
             'content' => $content,
             'sidebar' => $sidebar,
             'errorSummary' => $errorSummary,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
-            'deltaNames' => $view->getDeltaNames(),
-            'initialDeltaValues' => $view->getInitialDeltaValues(),
+            'headHtml' => HtmlStack::headHtml(),
+            'bodyHtml' => HtmlStack::bodyHtml(),
+            'deltaNames' => DeltaRegistry::getNames(),
+            'initialDeltaValues' => DeltaRegistry::getInitialValues(),
         ]);
     }
 
@@ -777,12 +838,12 @@ final class CpScreenResponse implements Responsable
         if (isset($this->site) && Sites::isMultiSite()) {
             array_unshift($crumbs, [
                 'id' => 'site-crumb',
-                'icon' => Cp::earthIcon(),
+                'icon' => Icons::earth(),
                 'label' => t($this->site->getName(), category: 'site'),
                 'menu' => [
                     'label' => t('Select site'),
                     'items' => ! empty($this->selectableSites)
-                        ? Cp::siteMenuItems($this->selectableSites, $this->site, [
+                        ? app(MenuHtml::class)->siteMenuItems($this->selectableSites, $this->site, [
                             'includeOmittedSites' => true,
                         ])
                         : null,
@@ -800,19 +861,16 @@ final class CpScreenResponse implements Responsable
             }
         }
 
-        $security = Craft::$app->getSecurity();
-        $view = Craft::$app->getView();
-
         // If this is a preview request and `useIframeResizer` is enabled, register the iframe resizer script
         if (
             $request->input('x-craft-live-preview') !== null &&
             Cms::config()->useIframeResizer
         ) {
-            $view->registerAssetBundle(ContentWindowAsset::class);
+            app(InternalAssetRegistry::class)->register(ContentWindowAsset::class);
         }
 
         // Render and return the template
-        return response($view->renderPageTemplate(
+        return response(pageTemplate(
             '_layouts/cp',
             [
                 'docTitle' => $docTitle,
@@ -820,7 +878,7 @@ final class CpScreenResponse implements Responsable
                 'selectedSubnavItem' => $this->selectedSubnavItem,
                 'crumbs' => array_map(function (array $crumb): array {
                     if (isset($crumb['url'])) {
-                        $crumb['url'] = UrlHelper::cpUrl($crumb['url']);
+                        $crumb['url'] = Url::cpUrl($crumb['url']);
                     }
 
                     return $crumb;
@@ -841,9 +899,9 @@ final class CpScreenResponse implements Responsable
                 'fullPageForm' => $isForm,
                 'mainAttributes' => $this->mainAttributes,
                 'mainFormAttributes' => $this->formAttributes,
-                'formActions' => array_map(function (array $action) use ($security): array {
+                'formActions' => array_map(function (array $action): array {
                     if (isset($action['redirect'])) {
-                        $action['redirect'] = $security->hashData($action['redirect']);
+                        $action['redirect'] = Crypt::encrypt($action['redirect']);
                     }
 
                     return $action;
@@ -855,7 +913,7 @@ final class CpScreenResponse implements Responsable
                 'sidebar' => $pageSidebar,
                 'errorSummary' => $errorSummary,
             ],
-            View::TEMPLATE_MODE_CP
+            TemplateMode::Cp
         ));
     }
 
@@ -896,17 +954,17 @@ final class CpScreenResponse implements Responsable
         }
 
         $render = function () use ($itemsFactory, $config): ?string {
-            $items = Cp::normalizeMenuItems($itemsFactory() ?? []);
+            $items = app(MenuHtml::class)->normalizeMenuItems($itemsFactory() ?? []);
 
             if (empty($items)) {
                 return null;
             }
 
-            return Cp::disclosureMenu($items, $config);
+            return app(MenuHtml::class)->disclosureMenu($items, $config);
         };
 
         if ($namespace) {
-            return Craft::$app->getView()->namespaceInputs($render, $namespace);
+            return InputNamespace::namespaceInputs($render, $namespace);
         }
 
         return $render();

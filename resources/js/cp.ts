@@ -1,24 +1,12 @@
-import type {DefineComponent} from 'vue';
-import {createApp, h} from 'vue';
-import {resolvePageComponent} from 'laravel-vite-plugin/inertia-helpers';
-import {createInertiaApp} from '@inertiajs/vue3';
 import '@craftcms/cp';
-
-/**
- * Components
- */
+import Cp from './bootstrap/cp.js';
 import './components/CpGlobalSidebar.js';
+import './components/CpQueueIndicator.js';
 
-// noinspection JSIgnoredPromiseFromCall
-createInertiaApp({
-  resolve: (name) =>
-    resolvePageComponent(
-      `./pages/${name}.vue`,
-      import.meta.glob<DefineComponent>('./pages/**/*.vue')
-    ),
-  setup({el, App, props, plugin}) {
-    createApp({render: () => h(App, props)})
-      .use(plugin)
-      .mount(el);
-  },
-});
+// @ts-ignore
+window.Cp = {
+  ...(window.Cp || {}),
+  ...Cp,
+};
+
+console.log('window.Cp defined', window.Cp);

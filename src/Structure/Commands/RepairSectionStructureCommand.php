@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Structure\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
-use CraftCms\Cms\Element\Elements\Entry;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Sections;
@@ -13,14 +13,17 @@ use Illuminate\Contracts\Console\PromptsForMissingInput;
 
 use function Laravel\Prompts\select;
 
-final class RepairSectionStructureCommand extends RepairCommand implements PromptsForMissingInput
+class RepairSectionStructureCommand extends RepairCommand implements PromptsForMissingInput
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:utils:repair:section-structure {handle} {--dry-run}';
 
+    #[\Override]
     protected $description = 'Repairs structure data for a section.';
 
+    #[\Override]
     protected $aliases = ['utils/repair/section-structure', 'repair:section-structure', 'repair/section-structure'];
 
     public function handle(Sections $sections): int
@@ -42,6 +45,8 @@ final class RepairSectionStructureCommand extends RepairCommand implements Promp
         return $this->repairStructure($section->structureId, Entry::find()->section($section));
     }
 
+    /** @return array<string, \Closure(): mixed> */
+    #[\Override]
     protected function promptForMissingArgumentsUsing(): array
     {
         return [

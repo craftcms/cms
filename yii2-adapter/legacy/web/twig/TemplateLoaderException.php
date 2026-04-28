@@ -1,34 +1,18 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\web\twig;
 
 use Twig\Error\LoaderError;
 
-/**
- * Class TemplateLoaderException
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-class TemplateLoaderException extends LoaderError
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @var string|null
+     * @since 3.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException} instead.
      */
-    public ?string $template = null;
-
-    /**
-     * @param string $template The requested template
-     * @param string $message The exception message
-     */
-    public function __construct(string $template, string $message)
+    class TemplateLoaderException extends LoaderError
     {
-        $this->template = $template;
-        parent::__construct($message);
     }
 }
+
+class_alias(\CraftCms\Cms\Twig\Exceptions\TemplateLoaderException::class, TemplateLoaderException::class);

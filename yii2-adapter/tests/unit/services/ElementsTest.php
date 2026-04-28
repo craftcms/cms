@@ -11,16 +11,20 @@ declare(strict_types=1);
 namespace crafttests\unit\services;
 
 use Craft;
-use craft\elements\Entry;
+use craft\events\AuthorizationCheckEvent;
 use craft\services\Elements;
 use craft\test\TestCase;
 use craft\test\TestSetup;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Support\Str;
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use crafttests\fixtures\AssetFixture;
 use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\settings\GeneralConfigSettingFixture;
 use crafttests\fixtures\SitesFixture;
 use crafttests\fixtures\UserFixture;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Unit tests for the config service
@@ -44,7 +48,7 @@ class ElementsTest extends TestCase
         $this->markTestSkipped('Port to Laravel');
 
         // Generate a random slug that is unlikely to exist:
-        $randomSlug = Craft::$app->getSecurity()->generateRandomString(10);
+        $randomSlug = Str::random(10, extendedChars: true);
 
         $entryWithUrl = Entry::find()
             ->slug('With--URL--1')
@@ -83,6 +87,36 @@ class ElementsTest extends TestCase
         foreach ($strings as $label => [$expected, $text]) {
             self::assertEquals($expected, $this->elements->parseRefs($text), $label);
         }
+    }
+
+    public function testCanViewFallsBackToCurrentUser(): void
+    {
+        $entry = $this->_getEntry();
+        $user = $this->_getUser();
+
+        Auth::login($user);
+        Craft::$app->getUser()->setIdentity(new IdentityWrapper($user));
+
+        $this->elements->on(Elements::EVENT_AUTHORIZE_VIEW, function(AuthorizationCheckEvent $event) use ($user) {
+            self::assertSame($user->id, $event->user->id);
+            $event->authorized = true;
+        });
+
+        self::assertTrue($this->elements->canView($entry));
+    }
+
+    public function testCanSaveCanonicalUsesAuthorizeSaveEvent(): void
+    {
+        $entry = clone $this->_getEntry();
+        $user = $this->_getUser();
+        $entry->draftId = 100;
+
+        $this->elements->on(Elements::EVENT_AUTHORIZE_SAVE, function(AuthorizationCheckEvent $event) use ($user) {
+            self::assertSame($user->id, $event->user->id);
+            $event->authorized = true;
+        });
+
+        self::assertTrue($this->elements->canSaveCanonical($entry, $user));
     }
 
     /**
@@ -125,5 +159,18 @@ class ElementsTest extends TestCase
     {
         parent::_before();
         $this->elements = Craft::$app->getElements();
+    }
+
+    private function _getEntry(): Entry
+    {
+        return Entry::find()
+            ->site('*')
+            ->status(null)
+            ->one();
+    }
+
+    private function _getUser()
+    {
+        return Craft::$app->getUsers()->getUserById(1);
     }
 }

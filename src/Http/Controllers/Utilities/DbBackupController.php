@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
-use craft\helpers\FileHelper;
-use craft\web\Application;
+use CraftCms\Cms\Database\Backups;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\DbBackup;
 use Exception;
-use Illuminate\Container\Attributes\Give;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Throwable;
 
-final readonly class DbBackupController
+use function CraftCms\Cms\t;
+
+readonly class DbBackupController
 {
     public function __construct(Utilities $utilitiesService)
     {
@@ -23,10 +23,10 @@ final readonly class DbBackupController
         }
     }
 
-    public function __invoke(Request $request, #[Give('Craft')] Application $craft)
+    public function __invoke(Request $request, Backups $backups)
     {
         try {
-            $backupPath = $craft->getDb()->backup();
+            $backupPath = $backups->backup();
         } catch (Throwable $e) {
             throw new Exception('Could not create backup: '.$e->getMessage());
         }
@@ -36,12 +36,12 @@ final readonly class DbBackupController
         }
 
         // Zip it up and delete the SQL file
-        $zipPath = FileHelper::zip($backupPath);
+        $zipPath = File::zip($backupPath);
 
-        unlink($backupPath);
+        File::delete($backupPath);
 
         if (! $request->input('downloadBackup')) {
-            return new JsonResponse;
+            return back()->with('success', t('Backup created.'));
         }
 
         return response()->download($zipPath);

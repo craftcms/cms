@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Data;
 
 use ArrayObject;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 
-/**
- * Multi-select option field data class.
- */
-final class MultiOptionsFieldData extends ArrayObject
+#[AllowedInSandbox]
+class MultiOptionsFieldData extends ArrayObject
 {
     /** @var OptionData[] */
     private array $_options = [];

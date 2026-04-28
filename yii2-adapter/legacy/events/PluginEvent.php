@@ -15,6 +15,7 @@ use CraftCms\Cms\Plugin\Contracts\PluginInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use one of the events extending {@see \CraftCms\Cms\Plugin\Events\PluginEvent} instead.
  */
 class PluginEvent extends Event
 {

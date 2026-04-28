@@ -7,17 +7,17 @@
 
 namespace craft\web;
 
-use Craft;
-use craft\helpers\UrlHelper;
-use craft\models\Site;
-use CraftCms\Cms\Site\Data\Site as SiteData;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\View\TemplateMode;
 use yii\base\Behavior;
+use function CraftCms\Cms\template;
 
 /**
  * Control panel screen response behavior.
  *
- * @property Response $owner
+ * @extends Behavior<Response>
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
@@ -65,14 +65,14 @@ class CpScreenResponseBehavior extends Behavior
     public ?string $selectedSubnavItem = null;
 
     /**
-     * @var Site|SiteData|null The site that should be displayed within the breadcrumbs.
+     * @var Site|null The site that should be displayed within the breadcrumbs.
      * @see site()
      * @since 5.0.0
      */
-    public Site|SiteData|null $site = null;
+    public Site|null $site = null;
 
     /**
-     * @var array<Site|SiteData|array{site:Site|SiteData,status?:string}>|null The sites that should be selectable by the site breadcrumb menu.
+     * @var array<Site|array{site:Site,status?:string}>|null The sites that should be selectable by the site breadcrumb menu.
      * @see selectableSites()
      * @since 5.0.0
      */
@@ -341,7 +341,7 @@ class CpScreenResponseBehavior extends Behavior
         }
         $this->crumbs[] = [
             'label' => $label,
-            'url' => UrlHelper::cpUrl($url),
+            'url' => Url::cpUrl($url),
         ];
         return $this->owner;
     }
@@ -349,11 +349,11 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the site that should be displayed within the breadcrumbs.
      *
-     * @param Site|SiteData|null $value
+     * @param Site|null $value
      * @return Response
      * @since 5.0.0
      */
-    public function site(Site|SiteData|null $value): Response
+    public function site(Site|null $value): Response
     {
         $this->site = $value;
         return $this->owner;
@@ -362,7 +362,7 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the sites that should be selectable by the site breadcrumb menu.
      *
-     * @param array<Site|SiteData|array{site:Site|SiteData,status?:string}>|null $value
+     * @param array<Site|array{site:Site,status?:string}>|null $value
      * @return Response
      * @since 5.0.0
      */
@@ -571,7 +571,7 @@ class CpScreenResponseBehavior extends Behavior
     public function toolbarTemplate(string $template, array $variables = []): Response
     {
         return $this->toolbarHtml(
-            fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
+            fn() => template($template, $variables, templateMode: TemplateMode::Cp)
         );
     }
 
@@ -629,7 +629,7 @@ class CpScreenResponseBehavior extends Behavior
     public function additionalButtonsTemplate(string $template, array $variables = []): Response
     {
         return $this->additionalButtonsHtml(
-            fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
+            fn() => template($template, $variables, templateMode: TemplateMode::Cp)
         );
     }
 
@@ -656,7 +656,7 @@ class CpScreenResponseBehavior extends Behavior
     public function contentTemplate(string $template, array $variables = []): Response
     {
         return $this->contentHtml(
-            fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
+            fn() => template($template, $variables, templateMode: TemplateMode::Cp)
         );
     }
 
@@ -683,7 +683,7 @@ class CpScreenResponseBehavior extends Behavior
     public function metaSidebarTemplate(string $template, array $variables = []): Response
     {
         return $this->metaSidebarHtml(
-            fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
+            fn() => template($template, $variables, templateMode: TemplateMode::Cp)
         );
     }
 
@@ -711,7 +711,7 @@ class CpScreenResponseBehavior extends Behavior
     public function pageSidebarTemplate(string $template, array $variables = []): Response
     {
         return $this->pageSidebarHtml(
-            fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
+            fn() => template($template, $variables, templateMode: TemplateMode::Cp)
         );
     }
 
@@ -738,7 +738,7 @@ class CpScreenResponseBehavior extends Behavior
     public function noticeTemplate(string $template, array $variables = []): Response
     {
         return $this->noticeHtml(
-            fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
+            fn() => template($template, $variables, templateMode: TemplateMode::Cp)
         );
     }
 
@@ -766,7 +766,7 @@ class CpScreenResponseBehavior extends Behavior
     public function errorSummaryTemplate(string $template, array $variables = []): Response
     {
         return $this->errorSummary(
-            fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
+            fn() => template($template, $variables, templateMode: TemplateMode::Cp)
         );
     }
 }

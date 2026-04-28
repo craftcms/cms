@@ -20,17 +20,20 @@ use Symfony\Component\Yaml\Yaml;
  *
  * The “path” syntax used here may be composed of directory and filenames (within your `config/project` folder), YAML object keys (including UUIDs for many Craft resources), and integers (referencing numerically-indexed arrays), joined by a dot (`.`): `path.to.nested.array.0.property`.
  */
-final class GetCommand extends Command implements PromptsForMissingInput
+class GetCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:project-config:get
         {path}
         {--external : Whether to pull values from the project config YAML files instead of the loaded config.}
     ';
 
+    #[\Override]
     protected $description = 'Outputs a project config value.';
 
+    #[\Override]
     protected $aliases = ['project-config/get', 'pc:get', 'pc/get'];
 
     public function handle(ProjectConfig $projectConfig): void

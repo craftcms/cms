@@ -8,13 +8,14 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\elements\Asset;
+use CraftCms\Cms\Asset\Elements\Asset;
 
 /**
  * Class DefineAssetThumbUrlEvent
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Events\DefineThumbUrl} instead.
  */
 class DefineAssetThumbUrlEvent extends Event
 {

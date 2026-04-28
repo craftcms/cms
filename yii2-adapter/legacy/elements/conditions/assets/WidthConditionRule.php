@@ -2,53 +2,14 @@
 
 namespace craft\elements\conditions\assets;
 
-use craft\base\conditions\BaseNumberConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\Asset;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\AssetQuery;
-use craft\elements\db\ElementQueryInterface;
-use function CraftCms\Cms\t;
-
 /**
  * Width condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Conditions\WidthConditionRule} instead.
  */
-class WidthConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface
+class WidthConditionRule extends \CraftCms\Cms\Asset\Conditions\WidthConditionRule
 {
-    /**
-     * @inheritdoc
-     */
-    public function getLabel(): string
-    {
-        return t('Width');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['width'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var AssetQuery $query */
-        $query->width($this->paramValue());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        /** @var Asset $element */
-        return $this->matchValue($element->getWidth());
-    }
+    use \craft\base\LegacyEventConstants;
 }

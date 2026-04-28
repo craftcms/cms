@@ -4,32 +4,28 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use Craft;
-use craft\elements\ElementCollection;
-use craft\web\assets\recententries\RecentEntriesAsset;
-use CraftCms\Cms\Element\Elements\Entry;
+use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\RecentEntriesAsset;
 use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
-final class RecentEntries extends Widget
+class RecentEntries extends Widget
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Recent Entries');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
@@ -59,7 +55,7 @@ final class RecentEntries extends Widget
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         return [
             'siteId' => ['nullable', 'integer'],
@@ -67,21 +63,15 @@ final class RecentEntries extends Widget
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getSettingsHtml(): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/widgets/RecentEntries/settings.twig',
+        return template('_components/widgets/RecentEntries/settings',
             [
                 'widget' => $this,
             ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getTitle(): string
     {
@@ -113,9 +103,6 @@ final class RecentEntries extends Widget
         return $title;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getBodyHtml(): string
     {
@@ -125,18 +112,15 @@ final class RecentEntries extends Widget
             $params['sectionId'] = (int) $this->section;
         }
 
-        $view = Craft::$app->getView();
-
-        $view->registerAssetBundle(RecentEntriesAsset::class);
+        app(InternalAssetRegistry::class)->register(RecentEntriesAsset::class);
         $js = 'new Craft.RecentEntriesWidget('.$this->id.', '.Json::encode($params).');';
-        $view->registerJs($js);
+        HtmlStack::js($js);
 
         $entries = $this->getEntries();
 
-        return $view->renderTemplate('_components/widgets/RecentEntries/body.twig',
-            [
-                'entries' => $entries->all(),
-            ]);
+        return template('_components/widgets/RecentEntries/body', [
+            'entries' => $entries->all(),
+        ]);
     }
 
     /**
@@ -215,7 +199,7 @@ final class RecentEntries extends Widget
 
         // Only use that site if it still exists and they're allowed to edit it.
         // Otherwise go with the first site that they are allowed to edit.
-        if (! $editableSiteIds->contains($targetSiteId)) {
+        if ($editableSiteIds->doesntContain($targetSiteId)) {
             return $editableSiteIds[0];
         }
 

@@ -9,6 +9,8 @@ namespace crafttests\fixtures;
 
 use craft\records\Volume;
 use craft\test\ActiveFixture;
+use CraftCms\Cms\Filesystem\Filesystems;
+use CraftCms\Cms\Support\Facades\Volumes;
 
 /**
  * Class VolumesFixture.
@@ -34,4 +36,20 @@ class VolumesFixture extends ActiveFixture
      * @inheritdoc
      */
     public $depends = [FieldLayoutFixture::class, FsFixture::class];
+
+    public function load(): void
+    {
+        parent::load();
+
+        Volumes::reset();
+        app(Filesystems::class)->syncDisks();
+    }
+
+    public function unload(): void
+    {
+        parent::unload();
+
+        Volumes::reset();
+        app(Filesystems::class)->syncDisks();
+    }
 }

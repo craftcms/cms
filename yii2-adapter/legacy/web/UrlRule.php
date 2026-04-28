@@ -8,9 +8,9 @@
 namespace craft\web;
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Validation\Rules\HandleRule;
 
 /**
  * @inheritdoc

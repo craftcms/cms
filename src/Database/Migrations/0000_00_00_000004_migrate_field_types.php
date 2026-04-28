@@ -4,38 +4,63 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\Addresses;
+use CraftCms\Cms\Field\Assets;
+use CraftCms\Cms\Field\ButtonGroup;
+use CraftCms\Cms\Field\Checkboxes;
+use CraftCms\Cms\Field\Color;
+use CraftCms\Cms\Field\ContentBlock;
+use CraftCms\Cms\Field\Country;
+use CraftCms\Cms\Field\Date;
+use CraftCms\Cms\Field\Dropdown;
+use CraftCms\Cms\Field\Email;
+use CraftCms\Cms\Field\Entries;
+use CraftCms\Cms\Field\Icon;
+use CraftCms\Cms\Field\Json;
+use CraftCms\Cms\Field\Lightswitch;
+use CraftCms\Cms\Field\Link;
+use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Field\MissingField;
+use CraftCms\Cms\Field\Money;
+use CraftCms\Cms\Field\MultiSelect;
+use CraftCms\Cms\Field\Number;
+use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Field\RadioButtons;
+use CraftCms\Cms\Field\Range;
+use CraftCms\Cms\Field\Time;
+use CraftCms\Cms\Field\Users;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
     private array $map = [
-        \craft\fields\Addresses::class => \CraftCms\Cms\Field\Addresses::class,
-        \craft\fields\Assets::class => \CraftCms\Cms\Field\Assets::class,
-        \craft\fields\ButtonGroup::class => \CraftCms\Cms\Field\ButtonGroup::class,
-        \craft\fields\Checkboxes::class => \CraftCms\Cms\Field\Checkboxes::class,
-        \craft\fields\Color::class => \CraftCms\Cms\Field\Color::class,
-        \craft\fields\ContentBlock::class => \CraftCms\Cms\Field\ContentBlock::class,
-        \craft\fields\Country::class => \CraftCms\Cms\Field\Country::class,
-        \craft\fields\Date::class => \CraftCms\Cms\Field\Date::class,
-        \craft\fields\Dropdown::class => \CraftCms\Cms\Field\Dropdown::class,
-        \craft\fields\Email::class => \CraftCms\Cms\Field\Email::class,
-        \craft\fields\Entries::class => \CraftCms\Cms\Field\Entries::class,
-        \craft\fields\Icon::class => \CraftCms\Cms\Field\Icon::class,
-        \craft\fields\Json::class => \CraftCms\Cms\Field\Json::class,
-        \craft\fields\Lightswitch::class => \CraftCms\Cms\Field\Lightswitch::class,
-        \craft\fields\Link::class => \CraftCms\Cms\Field\Link::class,
-        \craft\fields\Matrix::class => \CraftCms\Cms\Field\Matrix::class,
-        \craft\fields\MissingField::class => \CraftCms\Cms\Field\MissingField::class,
-        \craft\fields\Money::class => \CraftCms\Cms\Field\Money::class,
-        \craft\fields\MultiSelect::class => \CraftCms\Cms\Field\MultiSelect::class,
-        \craft\fields\Number::class => \CraftCms\Cms\Field\Number::class,
-        \craft\fields\PlainText::class => \CraftCms\Cms\Field\PlainText::class,
-        \craft\fields\RadioButtons::class => \CraftCms\Cms\Field\RadioButtons::class,
-        \craft\fields\Range::class => \CraftCms\Cms\Field\Range::class,
-        \craft\fields\Table::class => \CraftCms\Cms\Field\Table::class,
-        \craft\fields\Time::class => \CraftCms\Cms\Field\Time::class,
-        \craft\fields\Users::class => \CraftCms\Cms\Field\Users::class,
+        'craft\fields\Addresses' => Addresses::class,
+        'craft\fields\Assets' => Assets::class,
+        'craft\fields\ButtonGroup' => ButtonGroup::class,
+        'craft\fields\Checkboxes' => Checkboxes::class,
+        'craft\fields\Color' => Color::class,
+        'craft\fields\ContentBlock' => ContentBlock::class,
+        'craft\fields\Country' => Country::class,
+        'craft\fields\Date' => Date::class,
+        'craft\fields\Dropdown' => Dropdown::class,
+        'craft\fields\Email' => Email::class,
+        'craft\fields\Entries' => Entries::class,
+        'craft\fields\Icon' => Icon::class,
+        'craft\fields\Json' => Json::class,
+        'craft\fields\Lightswitch' => Lightswitch::class,
+        'craft\fields\Link' => Link::class,
+        'craft\fields\Matrix' => Matrix::class,
+        'craft\fields\MissingField' => MissingField::class,
+        'craft\fields\Money' => Money::class,
+        'craft\fields\MultiSelect' => MultiSelect::class,
+        'craft\fields\Number' => Number::class,
+        'craft\fields\PlainText' => PlainText::class,
+        'craft\fields\RadioButtons' => RadioButtons::class,
+        'craft\fields\Range' => Range::class,
+        'craft\fields\Table' => CraftCms\Cms\Field\Table::class,
+        'craft\fields\Time' => Time::class,
+        'craft\fields\Users' => Users::class,
     ];
 
     public function up(): void

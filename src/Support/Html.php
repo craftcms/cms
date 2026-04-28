@@ -4,31 +4,37 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use Craft;
-use craft\elements\Asset;
-use craft\helpers\FileHelper;
-use craft\helpers\UrlHelper;
-use craft\image\SvgAllowedAttributes;
-use craft\web\View;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Middleware\SetHeaders;
+use CraftCms\Cms\Image\SvgAllowedAttributes;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
+use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\Security;
+use CraftCms\Cms\View\TemplateMode;
 use DOMElement;
 use enshrined\svgSanitize\Sanitizer;
 use Exception;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use RuntimeException;
+use Stringable;
 use Symfony\Component\DomCrawler\Crawler;
 use Throwable;
-use yii\base\InvalidConfigException;
 use Yiisoft\Html\Html as YiiHtml;
 use Yiisoft\Html\NoEncode;
+use Yiisoft\Html\Tag\Button;
+use Yiisoft\Html\Tag\Input;
+
+use function CraftCms\Cms\template;
 
 /**
  * @mixin YiiHtml
  */
-final class Html
+class Html
 {
     public const string TITLE_TAG_RE = '/<title(\s+([\s\S]*?))?>.*?<\/title>\s*/is';
 
@@ -118,11 +124,11 @@ final class Html
     {
         if (is_callable($html)) {
             // Call it to get the HTML, but disregard the JS
-            Craft::$app->getView()->startJsBuffer();
+            HtmlStack::startJsBuffer();
             try {
                 $html = $html();
             } finally {
-                Craft::$app->getView()->clearJsBuffer();
+                HtmlStack::clearJsBuffer();
             }
         }
 
@@ -167,25 +173,18 @@ final class Html
      */
     public static function csrfInput(array $options = []): string
     {
-        $request = Craft::$app->getRequest();
         $async = Arr::pull($options, 'async')
-            ?? ($request->getIsSiteRequest() && Cms::config()->asyncCsrfInputs);
+            ?? (request()->isSiteRequest() && Cms::config()->asyncCsrfInputs);
 
         if (! $async) {
-            Craft::$app->getResponse()->setNoCacheHeaders();
+            SetHeaders::noCache();
 
-            return self::hiddenInput($request->csrfParam, $request->getCsrfToken(), $options)->render();
+            return (string) csrf_field();
         }
 
-        Craft::$app->getView()->registerHtml(
-            Craft::$app->getView()->renderTemplate(
-                '_special/async-csrf-input',
-                [
-                    'url' => UrlHelper::actionUrl('users/session-info'),
-                ],
-                View::TEMPLATE_MODE_CP,
-            )
-        );
+        HtmlStack::html(template('_special/async-csrf-input', [
+            'url' => Url::actionUrl('users/session-info'),
+        ], templateMode: TemplateMode::Cp));
 
         return self::tag('craft-csrf-input');
     }
@@ -224,12 +223,12 @@ final class Html
      *                          See [[renderTagAttributes()]] for details on how attributes are being rendered.
      * @return string The generated hidden input tag
      *
-     * @throws \yii\base\Exception if the validation key could not be written
-     * @throws InvalidConfigException when HMAC generation fails
+     * @throws Exception if the validation key could not be written
+     * @throws RuntimeException when HMAC generation fails
      */
     public static function redirectInput(string $url, array $options = []): string
     {
-        return self::hiddenInput('redirect', Craft::$app->getSecurity()->hashData($url), $options)->render();
+        return self::hiddenInput('redirect', Crypt::encrypt($url), $options)->render();
     }
 
     /**
@@ -243,11 +242,11 @@ final class Html
      * @return string The generated hidden input tag
      *
      * @throws Exception if the validation key could not be written
-     * @throws InvalidConfigException when HMAC generation fails
+     * @throws RuntimeException when HMAC generation fails
      */
     public static function failMessageInput(string $message, array $options = []): string
     {
-        return self::hiddenInput('failMessage', Craft::$app->getSecurity()->hashData($message), $options)->render();
+        return self::hiddenInput('failMessage', Crypt::encrypt($message), $options)->render();
     }
 
     /**
@@ -261,28 +260,45 @@ final class Html
      * @return string The generated hidden input tag
      *
      * @throws Exception if the validation key could not be written
-     * @throws InvalidConfigException when HMAC generation fails
+     * @throws RuntimeException when HMAC generation fails
      */
     public static function successMessageInput(string $message, array $options = []): string
     {
-        return self::hiddenInput('successMessage', Craft::$app->getSecurity()->hashData($message), $options)->render();
+        return self::hiddenInput('successMessage', Crypt::encrypt($message), $options)->render();
     }
 
-    public static function tag($name, $content = '', $options = []): string
+    public static function hiddenInput(
+        ?string $name = null,
+        bool|float|int|string|Stringable|null $value = null,
+        array $attributes = [],
+    ): Input {
+        $tag = Input::hidden($name, $value);
+
+        return $attributes === [] ? $tag : $tag->addAttributes(self::normalizeTagAttributes($attributes));
+    }
+
+    public static function button(string $content = 'Button', array $attributes = []): Button
+    {
+        $tag = YiiHtml::button($content);
+
+        return $attributes === [] ? $tag : $tag->addAttributes(self::normalizeTagAttributes($attributes));
+    }
+
+    public static function tag($name, $content = '', $attributes = []): string
     {
         return YiiHtml::tag($name)
             ->content(NoEncode::string((string) $content))
-            ->attributes(self::normalizeTagAttributes($options))
+            ->attributes(self::normalizeTagAttributes($attributes))
             ->render();
     }
 
-    /** {@see \Yiisoft\Html\Html::openTag} */
+    /** {@see YiiHtml::openTag} */
     public static function beginTag($name, $options = []): string
     {
         return YiiHtml::openTag($name, self::normalizeTagAttributes($options));
     }
 
-    /** {@see \Yiisoft\Html\Html::closeTag} */
+    /** {@see YiiHtml::closeTag} */
     public static function endTag(string $name): string
     {
         return YiiHtml::closeTag($name);
@@ -292,7 +308,7 @@ final class Html
     {
         if ($url !== null) {
             // Use UrlHelper::url() instead of Url::to()
-            $options['href'] = UrlHelper::url($url);
+            $options['href'] = Url::url($url);
         }
 
         return self::tag('a', $text, $options);
@@ -401,7 +417,7 @@ final class Html
      * @param  array  $attributes  The attributes to be added to the tag.
      * @return string The modified HTML tag.
      *
-     * @throws \yii\base\InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
+     * @throws InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
      */
     public static function modifyTagAttributes(string $tag, array $attributes): string
     {
@@ -537,6 +553,13 @@ final class Html
 
         foreach ($attributes as $name => $value) {
             if (empty($name)) {
+                continue;
+            }
+
+            // Vue prop bindings need booleans rendered as "true"/"false" strings
+            if (is_bool($value) && str_starts_with((string) $name, ':')) {
+                $normalized[$name] = $value ? 'true' : 'false';
+
                 continue;
             }
 
@@ -751,7 +774,7 @@ final class Html
     }
 
     /**
-     * Normalizes an element ID into only alphanumeric characters, underscores, and dashes, or generates one at random.
+     * Normalizes an element ID into only alphanumeric characters, underscores, and hyphens, or generates one at random.
      */
     public static function id(string $id = ''): string
     {
@@ -761,7 +784,11 @@ final class Html
             return $id;
         }
 
-        $id = trim((string) preg_replace('/[^A-Za-z0-9_.]+/', '-', $id), '-');
+        // remove any non-alphanumeric characters that are already preceded/followed by a hyphen
+        $id = preg_replace('/(?<=-)[^A-Za-z0-9_.-]+|[^A-Za-z0-9_.-]+(?=-)/', '', $id);
+
+        // convert any remaining consecutive non-alphanumeric characters to hyphens
+        $id = trim((string) preg_replace('/[^A-Za-z0-9_.-]+/', '-', (string) $id), '-');
 
         return $id ?: Str::random(10);
     }
@@ -910,7 +937,7 @@ final class Html
 
         // normal HTML attributes
         $html = preg_replace_callback(
-            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|aria\\-controls|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\"))([^'\"]+)\\3/i",
+            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|aria\\-controls|aria\\-activedescendant|aria\\-flowto|aria\\-owns|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\"))([^'\"]+)\\3/i",
             function (array $match) use ($namespace, $ids): string {
                 $matchIds = preg_split('/([,\s+]+)/', $match[4], flags: PREG_SPLIT_DELIM_CAPTURE);
                 $namespacedIds = '';
@@ -1082,15 +1109,15 @@ final class Html
             throw new InvalidArgumentException("Invalid file path: $file");
         }
 
-        $file = FileHelper::absolutePath(Aliases::get($file), '/');
+        $file = File::absolutePath(Aliases::get($file), '/');
 
         // make sure it's contained within the project rot
-        $rootPath = FileHelper::absolutePath(Aliases::get('@root'), '/');
+        $rootPath = File::absolutePath(Aliases::get('@root'), '/');
         if (! str_starts_with($file, "$rootPath/")) {
             throw new InvalidArgumentException(sprintf('%s cannot be passed a path outside of the project root.', __METHOD__));
         }
 
-        if (Craft::$app->getSecurity()->isSystemDir(dirname($file))) {
+        if (Security::isSystemDir(dirname($file))) {
             throw new InvalidArgumentException(sprintf('%s cannot be passed a path within or above system directories.', __METHOD__));
         }
 
@@ -1101,7 +1128,7 @@ final class Html
 
         if ($mimeType === null) {
             try {
-                $mimeType = FileHelper::getMimeType($file);
+                $mimeType = File::getMimeType($file);
             } catch (Throwable $e) {
                 Log::warning("Unable to determine the MIME type for $file: ".$e->getMessage(), [__METHOD__]);
                 report($e);
@@ -1236,7 +1263,7 @@ final class Html
 
                 return '';
             }
-            if (! is_file($svg) || ! FileHelper::isSvg($svg)) {
+            if (! is_file($svg) || ! File::isSvg($svg)) {
                 if ($throwException) {
                     throw new InvalidArgumentException("Invalid SVG path: $svg");
                 }

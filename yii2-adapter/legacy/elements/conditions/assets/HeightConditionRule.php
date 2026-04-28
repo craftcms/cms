@@ -2,53 +2,14 @@
 
 namespace craft\elements\conditions\assets;
 
-use craft\base\conditions\BaseNumberConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\Asset;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\AssetQuery;
-use craft\elements\db\ElementQueryInterface;
-use function CraftCms\Cms\t;
-
 /**
  * Height condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Conditions\HeightConditionRule} instead.
  */
-class HeightConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface
+class HeightConditionRule extends \CraftCms\Cms\Asset\Conditions\HeightConditionRule
 {
-    /**
-     * @inheritdoc
-     */
-    public function getLabel(): string
-    {
-        return t('Height');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['height'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var AssetQuery $query */
-        $query->height($this->paramValue());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        /** @var Asset $element */
-        return $this->matchValue($element->getHeight());
-    }
+    use \craft\base\LegacyEventConstants;
 }

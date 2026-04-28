@@ -108,7 +108,7 @@
 </script>
 
 <template>
-  <Head :title="t('app', 'Install Craft CMS')" />
+  <Head :title="t('Install Craft CMS')" />
 
   <div class="install">
     <template v-if="isCurrent('start')">
@@ -118,7 +118,7 @@
         variant="primary"
         class="begin-button"
       >
-        {{ t('app', 'Install Craft CMS') }}
+        {{ t('Install Craft CMS') }}
         <craft-icon name="arrow-right" slot="suffix"></craft-icon>
       </craft-button>
     </template>
@@ -126,10 +126,10 @@
     <Modal :is-active="modalActive" :overlay="false">
       <!-- License screen -->
       <template v-if="isCurrent('license')">
-        <Pane class="tw:max-w-[80ch] tw:mx-auto">
+        <Pane class="max-w-[80ch] mx-auto">
           <Deferred data="licenseHtml">
             <template #fallback>
-              <div class="tw:flex tw:justify-center">
+              <div class="flex justify-center">
                 <craft-spinner></craft-spinner>
               </div>
             </template>
@@ -138,13 +138,13 @@
           </Deferred>
 
           <template #actions>
-            <div class="tw:flex tw:justify-center tw:w-full">
+            <div class="flex justify-center w-full">
               <craft-button
                 type="button"
                 variant="primary"
                 @click="goTo('account')"
               >
-                {{ t('app', 'Got it') }}
+                {{ t('Got it') }}
               </craft-button>
             </div>
           </template>
@@ -158,7 +158,7 @@
 
       <!-- Form screens -->
       <template v-else>
-        <div class="tw:max-w-[80ch]">
+        <div class="max-w-[80ch]">
           <Pane
             as="form"
             :action="current.action"
@@ -205,17 +205,17 @@
             </StepScreen>
 
             <template #actions>
-              <div class="tw:grid tw:grid-cols-3 tw:items-center tw:gap-2">
+              <div class="grid grid-cols-3 items-center gap-2">
                 <craft-button
                   type="button"
                   @click="goToPrevious"
                   appearance="plain"
-                  class="tw:justify-self-start"
+                  class="justify-self-start"
                 >
-                  {{ t('app', 'Back') }}
+                  {{ t('Back') }}
                   <craft-icon name="arrow-left" slot="prefix"></craft-icon>
                 </craft-button>
-                <ul class="tw:flex tw:gap-2 tw:justify-center">
+                <ul class="flex gap-2 justify-center">
                   <li v-for="(step, id) in dotSteps" :key="id">
                     <span
                       class="dot"
@@ -223,19 +223,19 @@
                         'dot--active': isCurrent(id),
                       }"
                     >
-                      <span class="tw:sr-only">
+                      <span class="sr-only">
                         {{ step.label }}
                       </span>
                     </span>
                   </li>
                 </ul>
                 <craft-button
-                  class="tw:justify-self-end"
+                  class="justify-self-end"
                   type="submit"
                   variant="primary"
                   :loading="state === 'loading'"
                 >
-                  {{ current.submitLabel ?? t('app', 'Next') }}
+                  {{ current.submitLabel ?? t('Next') }}
                   <craft-icon name="arrow-right" slot="suffix"></craft-icon>
                 </craft-button>
               </div>
@@ -277,8 +277,8 @@
   .dot {
     display: inline-block;
     appearance: none;
-    border: 1px solid var(--c-color-neutral-border-subtle);
-    background-color: var(--c-color-neutral-bg-subtle);
+    border: 1px solid var(--c-color-neutral-border-quiet);
+    background-color: var(--c-color-neutral-fill-quiet);
     border-radius: var(--c-radius-full);
     padding: 0;
     width: calc(10rem / 16);
@@ -287,8 +287,8 @@
   }
 
   .dot--active {
-    background-color: var(--c-color-accent-bg-emphasis);
-    border: 1px solid var(--c-color-accent-border-emphasis);
+    background-color: var(--c-color-accent-fill-loud);
+    border: 1px solid var(--c-color-accent-border-loud);
   }
 
   .license {

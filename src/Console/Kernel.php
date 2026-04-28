@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Console;
 
 use Illuminate\Console\Application as ConsoleApplication;
+use Override;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
  * @internal
  */
-final class Kernel extends \Illuminate\Foundation\Console\Kernel
+class Kernel extends \Illuminate\Foundation\Console\Kernel
 {
-    /** {@inheritdoc} */
-    #[\Override]
+    #[Override]
     protected function getArtisan(): ConsoleApplication
     {
         if (is_null($this->artisan)) {
@@ -30,7 +30,7 @@ final class Kernel extends \Illuminate\Foundation\Console\Kernel
         return $this->artisan;
     }
 
-    #[\Override]
+    #[Override]
     protected function shouldDiscoverCommands(): bool
     {
         return true;

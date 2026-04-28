@@ -3,7 +3,7 @@
 {% extends "settings/users/_layout" %}
 {% set selectedNavItem = 'fields' %}
 {% import "_includes/forms" as forms %}
-{% set readOnly = not app.config.craft.general.allowAdminChanges %}
+{% set readOnly = not config('craft.general.allowAdminChanges') %}
 
 {% if readOnly %}
     {% set contentNotice = readOnlyNotice() %}
@@ -16,7 +16,7 @@
 
         {{ forms.fieldLayoutDesignerField({
             first: true,
-            fieldLayout: fieldLayout ?? craft.fields.getLayoutByType('craft\\elements\\User'),
+            fieldLayout: fieldLayout ?? Fields.getLayoutByType('CraftCms\\Cms\\User\\Elements\\User'),
             withGeneratedFields: true,
             withCardViewDesigner: true,
             disabled: readOnly,

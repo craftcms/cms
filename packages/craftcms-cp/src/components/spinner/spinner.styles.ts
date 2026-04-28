@@ -2,9 +2,16 @@ import {css} from 'lit';
 
 export default css`
   :host {
+    --_size: var(--size, 24px);
+  }
+
+  .wrapper {
     display: inline-flex;
     justify-content: center;
-    --_size: var(--size, 24px);
+  }
+
+  .hidden {
+    display: none;
   }
 
   @keyframes rotator {

@@ -4,20 +4,23 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Commands;
 
-use Craft;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Users;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
+use Override;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\suggest;
 
-final class DeleteCommand extends Command implements PromptsForMissingInput
+class DeleteCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
     use PromptsForMissingUser;
 
+    #[Override]
     protected $signature = 'craft:users:delete
         {user}
         {--inheritor= : The email, username or ID of the user to inherit content when deleting a user.}
@@ -25,11 +28,13 @@ final class DeleteCommand extends Command implements PromptsForMissingInput
         {--hard : Whether the user should be hard-deleted immediately, instead of soft-deleted.}
     ';
 
+    #[Override]
     protected $description = 'Deletes a user.';
 
+    #[Override]
     protected $aliases = ['users/delete'];
 
-    public function handle(): int
+    public function handle(Elements $elements, Users $users): int
     {
         if (! $user = $this->getUser()) {
             return self::FAILURE;
@@ -51,8 +56,8 @@ final class DeleteCommand extends Command implements PromptsForMissingInput
 
         if ($inheritor) {
             $inheritor = is_numeric($inheritor)
-                ? Craft::$app->getUsers()->getUserById((int) $inheritor)
-                : Craft::$app->getUsers()->getUserByUsernameOrEmail($inheritor);
+                ? $users->getUserById((int) $inheritor)
+                : $users->getUserByUsernameOrEmail($inheritor);
 
             if (! $inheritor) {
                 $this->components->error("No user exists with a username/email/id of “{$inheritor}”");
@@ -82,8 +87,8 @@ final class DeleteCommand extends Command implements PromptsForMissingInput
         $fail = false;
         $this->components->task(
             'Deleting the user',
-            function () use ($user, &$fail) {
-                $fail = ! Craft::$app->getElements()->deleteElement($user, $this->option('hard'));
+            function () use ($elements, $user, &$fail) {
+                $fail = ! $elements->deleteElement($user, $this->option('hard'));
             }
         );
 

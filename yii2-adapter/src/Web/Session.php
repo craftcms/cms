@@ -10,9 +10,9 @@
 namespace CraftCms\Yii2Adapter\Web;
 
 use ArrayIterator;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Session\Store;
 use yii\base\Component;
-use function Psy\debug;
 
 /**
  * Session allows usage of the Laravel Session for Yii one.
@@ -32,11 +32,11 @@ use function Psy\debug;
  * ];
  * ```
  *
- * > Note: usage of this component requires Yii application running within {@see \Illuminate\Session\Middleware\StartSession} middleware.
+ * > Note: usage of this component requires Yii application running within {@see StartSession} middleware.
  *
- * @see \Illuminate\Session\Store
+ * @see Store
  *
- * @property \Illuminate\Session\Store $illuminateSession related Laravel session instance.
+ * @property Store $illuminateSession related Laravel session instance.
  *
  * @author Paul Klimov <klimov.paul@gmail.com>
  *
@@ -50,6 +50,8 @@ class Session extends \yii\web\Session
     public $flashParam = '__yii_flash';
 
     private ?Store $_illuminateSession = null;
+
+    private bool $_flashCountersUpdated = false;
 
     public function getIlluminateSession(): Store
     {
@@ -243,10 +245,30 @@ class Session extends \yii\web\Session
     // Flash :
 
     /**
+     * Ensures flash counters have been updated for this request.
+     *
+     * If {@see init()} ran before the Laravel session was started,
+     * the counters were never aged. This method ensures they are
+     * aged exactly once before any flash data is read.
+     */
+    private function ensureFlashCountersUpdated(): void
+    {
+        if ($this->_flashCountersUpdated) {
+            return;
+        }
+
+        if ($this->getIsActive()) {
+            $this->updateFlashCounters();
+        }
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function updateFlashCounters(): void
     {
+        $this->_flashCountersUpdated = true;
+
         $counters = $this->get($this->flashParam, []);
 
         if (!is_array($counters)) {
@@ -273,6 +295,8 @@ class Session extends \yii\web\Session
      */
     public function getFlash($key, $defaultValue = null, $delete = false)
     {
+        $this->ensureFlashCountersUpdated();
+
         $counters = $this->get($this->flashParam, []);
 
         if (!isset($counters[$key])) {
@@ -297,6 +321,8 @@ class Session extends \yii\web\Session
      */
     public function getAllFlashes($delete = false): array
     {
+        $this->ensureFlashCountersUpdated();
+
         $counters = $this->get($this->flashParam, []);
         $flashes = [];
 

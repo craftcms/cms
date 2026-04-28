@@ -9,12 +9,14 @@ use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-final class AssetIndexData extends BaseModel
+class AssetIndexData extends BaseModel
 {
     use HasUid;
 
+    #[\Override]
     protected $table = Table::ASSETINDEXDATA;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

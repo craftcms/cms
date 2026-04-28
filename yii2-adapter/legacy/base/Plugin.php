@@ -17,10 +17,13 @@ use CraftCms\Cms\Plugin\Concerns\Installable;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Yii2Adapter\Database\MigrationWrapper;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
+use ReflectionClass;
 use ReflectionMethod;
 use yii\base\Event;
 use yii\base\Module;
@@ -113,7 +116,7 @@ class Plugin extends Module implements PluginInterface
         // Set the default controller namespace
         if (!isset($this->controllerNamespace) && ($pos = strrpos(static::class, '\\')) !== false) {
             $namespace = substr(static::class, 0, $pos);
-            if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+            if (app()->runningInConsole()) {
                 $this->controllerNamespace = $namespace . '\\console\\controllers';
             } else {
                 $this->controllerNamespace = $namespace . '\\controllers';
@@ -160,13 +163,18 @@ class Plugin extends Module implements PluginInterface
         return $this->_settings ?: null;
     }
 
+    public function getSettingsRequestClass(): ?string
+    {
+        return null;
+    }
+
     /**
      * @inheritdoc
      */
     public function setSettings(array $settings): void
     {
         if (($model = $this->getSettings()) === null) {
-            Craft::warning('Attempting to set settings on a plugin that doesn\'t have settings: ' . $this->id);
+            Log::warning('Attempting to set settings on a plugin that doesn\'t have settings: ' . $this->id);
             return;
         }
 
@@ -178,7 +186,14 @@ class Plugin extends Module implements PluginInterface
      */
     public function getSettingsResponse(): mixed
     {
-        return $this->settingsResponse(false);
+        $response = $this->settingsResponse(false);
+
+        if ($response instanceof \craft\web\Response) {
+            $response->send();
+            $response = $response->getIlluminateResponse();
+        }
+
+        return $response;
     }
 
     /**
@@ -191,8 +206,7 @@ class Plugin extends Module implements PluginInterface
 
     private function settingsResponse(bool $readOnly): Response
     {
-        $view = Craft::$app->getView();
-        $settingsHtml = $view->namespaceInputs(function() use ($readOnly) {
+        $settingsHtml = InputNamespace::namespaceInputs(function() use ($readOnly) {
             if ($readOnly) {
                 // Just return the settings HTML with disabled inputs by default
                 return (string)Html::disableInputs(fn() => $this->settingsHtml());
@@ -204,7 +218,7 @@ class Plugin extends Module implements PluginInterface
         /** @var Controller $controller */
         $controller = Craft::$app->controller;
 
-        return $controller->renderTemplate('settings/plugins/_settings.twig', [
+        return $controller->rendertemplate('settings/plugins/_settings', [
             'plugin' => $this,
             'settingsHtml' => $settingsHtml,
             'readOnly' => $readOnly,
@@ -295,6 +309,28 @@ class Plugin extends Module implements PluginInterface
         return parent::getBasePath();
     }
 
+    public function getResourcesPath(): string
+    {
+        return dirname($this->getBasePath()) . '/resources';
+    }
+
+    public function getMigrationsPath(): string
+    {
+        $laravelPath = dirname($this->getBasePath()) . '/database/migrations';
+
+        if (File::isDirectory($laravelPath)) {
+            return $laravelPath;
+        }
+
+        $legacyPath = $this->getBasePath() . '/migrations';
+
+        if (File::isDirectory($legacyPath)) {
+            return $legacyPath;
+        }
+
+        return $laravelPath;
+    }
+
     /** {@inheritdoc} */
     public static function create(array $config): PluginInterface
     {
@@ -311,13 +347,43 @@ class Plugin extends Module implements PluginInterface
 
     public function createInstallMigration(): ?object
     {
-        if (!File::exists($this->getBasePath() . '/migrations/Install.php')) {
+        $path = $this->getMigrationsPath() . '/Install.php';
+
+        if (!File::exists($path)) {
             return null;
         }
 
-        $namespace = substr(static::class, 0, strrpos(static::class, '\\'));
-        $class = $namespace . '\migrations\Install';
+        $realPath = realpath($path);
+        $migration = $this->findMigrationClassByFile($realPath);
 
+        if ($migration !== null) {
+            return $this->wrapIfNeeded($migration);
+        }
+
+        $migration = require $path;
+
+        if (is_object($migration)) {
+            return $migration;
+        }
+
+        $migration = $this->findMigrationClassByFile($realPath);
+
+        return $migration !== null ? $this->wrapIfNeeded($migration) : null;
+    }
+
+    private function findMigrationClassByFile(string $realPath): ?string
+    {
+        foreach (array_reverse(get_declared_classes()) as $class) {
+            if ($realPath === (new ReflectionClass($class))->getFileName()) {
+                return $class;
+            }
+        }
+
+        return null;
+    }
+
+    private function wrapIfNeeded(string $class): object
+    {
         if (!is_a($class, Migration::class, true)) {
             return new MigrationWrapper($class);
         }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Contracts;
 
-use craft\base\FieldLayoutProviderInterface;
-use craft\base\NestedElementInterface;
-use craft\elements\User;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
+use CraftCms\Cms\User\Elements\User;
 
 /**
  * ElementContainerFieldInterface defines the common interface to be implemented by field classes

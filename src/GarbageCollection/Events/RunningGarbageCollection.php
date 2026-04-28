@@ -6,7 +6,7 @@ namespace CraftCms\Cms\GarbageCollection\Events;
 
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
 
-final readonly class RunningGarbageCollection
+readonly class RunningGarbageCollection
 {
     public function __construct(
         public GarbageCollection $garbageCollection

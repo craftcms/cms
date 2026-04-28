@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\helpers\Console;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
@@ -65,7 +66,7 @@ class SetupController extends Controller
             return ExitCode::OK;
         }
 
-        require Craft::getAlias('@vendor/yiisoft/yii2/i18n/migrations/m150207_210500_i18n_init.php');
+        require Aliases::get('@vendor/yiisoft/yii2/i18n/migrations/m150207_210500_i18n_init.php');
         /** @phpstan-ignore-next-line */
         $migration = new m150207_210500_i18n_init();
         /** @phpstan-ignore-next-line */

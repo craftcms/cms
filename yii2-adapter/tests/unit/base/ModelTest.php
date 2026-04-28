@@ -11,6 +11,7 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
+use CraftCms\Cms\Cms;
 use DateTime;
 use DateTimeZone;
 use Exception;
@@ -55,7 +56,7 @@ class ModelTest extends TestCase
         $model = new ExampleModel([$paramName => $dateForInput]);
 
         $dateTime = new DateTime($dateForInput, new DateTimeZone('UTC'));
-        $dateTime->setTimezone(new DateTimeZone(app()->getTimezone()));
+        $dateTime->setTimezone(new DateTimeZone(Cms::timezone()));
 
         self::assertSame($dateTime->format('Y-m-d H:i:s'), $model->$paramName->format('Y-m-d H:i:s'));
         self::assertSame($dateTime->getTimezone()->getName(), $model->$paramName->getTimezone()->getName());
@@ -148,8 +149,8 @@ class ModelTest extends TestCase
         self::assertSame(null, (new ExampleModel(['nullableBoolParam' => '']))->nullableBoolParam);
         self::assertSame(null, (new ExampleModel(['nullableBoolParam' => null]))->nullableBoolParam);
         self::assertSame(false, (new ExampleModel(['boolParam' => null]))->boolParam);
-        self::assertSame(true, (new ExampleModel(['boolParam' => 'foo']))->boolParam);
-        self::assertSame(true, (new ExampleModel(['boolParam' => '10']))->boolParam);
+        self::assertSame(false, (new ExampleModel(['boolParam' => 'foo']))->boolParam);
+        self::assertSame(false, (new ExampleModel(['boolParam' => '10']))->boolParam);
         self::assertSame(true, (new ExampleModel(['boolParam' => true]))->boolParam);
         self::expectException(TypeError::class);
         new ExampleModel(['boolParam' => []]);

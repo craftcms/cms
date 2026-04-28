@@ -8,13 +8,15 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
 use craft\elements\GlobalSet;
-use craft\helpers\Cp;
 use craft\web\Controller;
+use CraftCms\Cms\Cp\RequestedSite;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
+use Illuminate\Support\Facades\Gate;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -147,7 +149,7 @@ class GlobalsController extends Controller
      */
     public function actionEditContent(string $globalSetHandle, ?GlobalSet $globalSet = null): Response
     {
-        $site = Cp::requestedSite();
+        $site = app(RequestedSite::class)->get();
         if (!$site) {
             throw new ForbiddenHttpException('User not permitted to edit content in any sites');
         }
@@ -161,7 +163,7 @@ class GlobalsController extends Controller
             ->all();
 
         foreach ($globalSets as $thisGlobalSet) {
-            if (Craft::$app->getUser()->checkPermission('editGlobalSet:' . $thisGlobalSet->uid)) {
+            if (Gate::check('editGlobalSet:' . $thisGlobalSet->uid)) {
                 $editableGlobalSets[$thisGlobalSet->handle] = $thisGlobalSet;
             }
         }
@@ -180,7 +182,7 @@ class GlobalsController extends Controller
         ]);
 
         // Render the template!
-        return $this->renderTemplate('yii2-adapter/globals/_edit.twig', [
+        return $this->rendertemplate('yii2-adapter/globals/_edit', [
             'bodyClass' => 'edit-global-set',
             'editableGlobalSets' => $editableGlobalSets,
             'globalSet' => $globalSet,
@@ -222,9 +224,9 @@ class GlobalsController extends Controller
 
         $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
         $globalSet->setFieldValuesFromRequest($fieldsLocation);
-        $globalSet->setScenario(Element::SCENARIO_LIVE);
+        $globalSet->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
 
-        if (!Craft::$app->getElements()->saveElement($globalSet)) {
+        if (!Elements::saveElement($globalSet)) {
             $this->setFailFlash(mb_ucfirst(t('Couldn’t save {type}.', [
                 'type' => GlobalSet::lowerDisplayName(),
             ])));

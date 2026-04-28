@@ -20,7 +20,7 @@ use Tpetry\QueryExpressions\Language\Alias;
  * settings, then deploy those changes to another environment, apply project config changes, and re-run the
  * entrify command. (https://github.com/craftcms/cms/issues/13383)
  */
-final class DeleteUnsupportedSiteEntries extends GarbageCollectionAction
+class DeleteUnsupportedSiteEntries extends GarbageCollectionAction
 {
     public function __construct(
         GarbageCollection $garbageCollection,

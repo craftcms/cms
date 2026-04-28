@@ -4,33 +4,31 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use craft\web\Application;
-use craft\web\assets\plugins\PluginsAsset;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
-use Illuminate\Container\Attributes\Give;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\PluginsAsset;
+use Illuminate\Contracts\View\View;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-/* @since 6.0.0 */
-final readonly class PluginsController
+readonly class PluginsController
 {
     use RespondsWithFlash;
 
     public function __construct(
         private Plugins $plugins,
         private GeneralConfig $generalConfig,
-        #[Give('Craft')] private Application $craft,
     ) {}
 
-    public function index(): string
+    public function index(): View
     {
-        $view = $this->craft->getView();
-        $view->registerAssetBundle(PluginsAsset::class);
+        app(InternalAssetRegistry::class)->register(PluginsAsset::class);
 
         $info = $this->plugins
             ->getAllPluginInfo()
@@ -40,7 +38,7 @@ final readonly class PluginsController
                 ['name', 'asc'],
             ]);
 
-        return $view->renderPageTemplate('settings/plugins/_index.twig', [
+        return view('settings/plugins/_index', [
             'info' => $info,
             'disabledPlugins' => $this->generalConfig->disabledPlugins,
             'readOnly' => ! $this->generalConfig->allowAdminChanges,
@@ -129,14 +127,7 @@ final readonly class PluginsController
             return $plugin->getReadOnlySettingsResponse();
         }
 
-        $response = $plugin->getSettingsResponse();
-
-        if ($response instanceof \craft\web\Response) {
-            $response->send();
-            $response = $response->getIlluminateResponse();
-        }
-
-        return $response;
+        return $plugin->getSettingsResponse();
     }
 
     public function saveSettings(Request $request): Response
@@ -149,6 +140,12 @@ final readonly class PluginsController
         $plugin = $this->plugins->getPlugin($request->input('pluginHandle'));
 
         abort_if(is_null($plugin), 404, 'Plugin not found.');
+
+        $requestClass = $plugin->getSettingsRequestClass();
+
+        if (is_subclass_of($requestClass, FormRequest::class)) {
+            $request = app($requestClass);
+        }
 
         $success = $this->plugins->savePluginSettings($plugin, $request->input('settings', []));
 

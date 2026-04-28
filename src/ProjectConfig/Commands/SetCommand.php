@@ -27,10 +27,11 @@ use Symfony\Component\Yaml\Yaml;
  *
  * Values are updated in the database *and* in your local YAML files, but the root `dateModified` project config property is only touched when using the [`--update-timestamp` flag](#project-config-set-options). If you do not update the timestamp along with the value, the change may not be detected or applied in other environments!
  */
-final class SetCommand extends Command implements PromptsForMissingInput
+class SetCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:project-config:set
         {path} {value?}
         {--message= : A message describing the changes.}
@@ -38,8 +39,10 @@ final class SetCommand extends Command implements PromptsForMissingInput
         {--force : Whether every entry change should be force-applied.}
     ';
 
+    #[\Override]
     protected $description = 'Sets a project config value.';
 
+    #[\Override]
     protected $aliases = ['project-config/set', 'pc:set', 'pc/set'];
 
     public function handle(ProjectConfig $projectConfig): int

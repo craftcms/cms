@@ -7,25 +7,18 @@
 
 namespace craft\web\twig;
 
-use Illuminate\Support\Collection;
-use Twig\Extension\AbstractExtension;
-use Twig\Extension\GlobalsInterface;
-
-/**
- * Front-end Twig extension
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.5.0
- */
-class FeExtension extends AbstractExtension implements GlobalsInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Front-end Twig extension
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Twig\Extensions\FeExtension} instead.
      */
-    public function getGlobals(): array
+    class FeExtension
     {
-        return [
-            '_globals' => Collection::make(),
-        ];
     }
 }
+
+class_alias(\CraftCms\Cms\Twig\Extensions\FeExtension::class, FeExtension::class);

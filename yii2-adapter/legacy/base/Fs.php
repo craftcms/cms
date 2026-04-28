@@ -7,9 +7,11 @@
 
 namespace craft\base;
 
-use craft\validators\HandleValidator;
-use CraftCms\Cms\Support\Env;
-use function CraftCms\Cms\t;
+use craft\fs\bridge\LegacyFsFlysystemAdapter;
+use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
+use CraftCms\Yii2Adapter\ModelWrapper;
+use CraftCms\Yii2Adapter\Validation\LegacyYiiRules;
+use yii\base\InvalidConfigException;
 
 /**
  * Field is the base class for classes representing filesystems in terms of objects.
@@ -18,89 +20,43 @@ use function CraftCms\Cms\t;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-abstract class Fs extends SavableComponent implements FsInterface
+abstract class Fs extends Filesystem implements BaseFsInterface, FsInterface
 {
-    use FsTrait;
-
-    public const CONFIG_MIMETYPE = 'mimetype';
-    public const CONFIG_VISIBILITY = 'visibility';
-
-    public const VISIBILITY_DEFAULT = 'default';
-    public const VISIBILITY_HIDDEN = 'hidden';
-    public const VISIBILITY_PUBLIC = 'public';
-
-    /**
-     * @inheritdoc
-     */
-    public function getRootUrl(): ?string
+    public function getDiskConfig(): array
     {
-        if (!$this->hasUrls) {
-            return null;
+        if (!is_string($this->handle) || $this->handle === '') {
+            throw new InvalidConfigException('Filesystem handle is missing.');
         }
 
-        $url = Env::parse($this->url);
-        if (is_string($url)) {
-            $url = rtrim($url, '/');
-        }
-
-        return $url ? "$url/" : null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function attributeLabels(): array
-    {
-        return [
-            'handle' => t('Handle'),
-            'name' => t('Name'),
-            'url' => t('Base URL'),
+        $config = [
+            'driver' => LegacyFsFlysystemAdapter::DISK_DRIVER,
+            'fsHandle' => $this->handle,
         ];
+
+        $rootUrl = $this->getRootUrl();
+        if (is_string($rootUrl) && $rootUrl !== '') {
+            $config['url'] = rtrim($rootUrl, '/');
+        }
+
+        return $config;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getShowHasUrlSetting(): bool
+    public function getRules(): array
     {
-        return static::$showHasUrlSetting;
+        return LegacyYiiRules::mergeAttributeRules(
+            rules: parent::getRules(),
+            target: $this,
+            yiiRules: $this->defineRules(),
+            validatorTarget: fn() => new ModelWrapper($this),
+            allowMethodValidators: true,
+        );
     }
 
     /**
-     * @inheritdoc
-     */
-    public function getShowUrlSetting(): bool
-    {
-        return static::$showUrlSetting;
-    }
-
-    /**
-     * @inheritdoc
+     * @return array<int, array|string>
      */
     protected function defineRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = [['name', 'handle'], 'required'];
-        $rules[] = [
-            'url',
-            'required',
-            'when' => fn(self $fs) => $fs->hasUrls && $this->getShowUrlSetting(),
-        ];
-
-        $rules[] = [
-            ['handle'],
-            HandleValidator::class,
-            'reservedWords' => [
-                'dateCreated',
-                'dateUpdated',
-                'edit',
-                'id',
-                'new',
-                'title',
-                'uid',
-            ],
-        ];
-
-        return $rules;
+        return [];
     }
 }

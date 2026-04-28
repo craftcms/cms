@@ -4,92 +4,77 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use Craft;
-use craft\web\Application;
-use craft\web\assets\craftsupport\CraftSupportAsset;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\PHP;
+use CraftCms\Cms\View\LegacyAssets\CraftSupportAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Override;
 
+use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\normalizeVersion;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
-final class CraftSupport extends Widget
+class CraftSupport extends Widget
 {
     public function __construct(
         private readonly GeneralConfig $generalConfig,
         private readonly Plugins $plugins,
+        private readonly Images $images,
         array $config = []
     ) {
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Craft Support');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function isSelectable(): bool
     {
         // Only admins get the Craft Support widget.
-        return parent::isSelectable() && Auth::user()->isAdmin();
+        return parent::isSelectable() && Auth::user()?->isAdmin();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected static function allowMultipleInstances(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'life-ring';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getTitle(): ?string
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getBodyHtml(): ?string
     {
         // Only admins get the Craft Support widget.
-        if (! Auth::user()->isAdmin()) {
+        if (! Auth::user()?->isAdmin()) {
             return null;
         }
 
-        /** @var Application $craft */
-        $craft = app('Craft');
+        app(InternalAssetRegistry::class)->register(CraftSupportAsset::class);
 
-        $view = $craft->getView();
-        $assetBundle = $view->registerAssetBundle(CraftSupportAsset::class);
-
-        $cmsVersion = $craft->getVersion();
+        $cmsVersion = Cms::VERSION;
         $cmsMajorVersion = (int) $cmsVersion;
 
         $pluginVersions = [];
@@ -97,10 +82,9 @@ final class CraftSupport extends Widget
             $pluginVersions[] = sprintf('- %s %s', $plugin->name, $plugin->version);
         }
 
-        $db = $craft->getDb();
-        $dbDriver = $db->getDriverLabel();
+        $dbDriver = DB::driverLabel();
 
-        $imagesService = $craft->getImages();
+        $imagesService = $this->images;
         if ($imagesService->getIsGd()) {
             $imageDriver = 'GD';
         } else {
@@ -125,8 +109,8 @@ final class CraftSupport extends Widget
 
 EOD;
 
-        $view->registerJsWithVars(fn ($id, $settings) => <<<JS
-new Craft.CraftSupportWidget($id, $settings);
+        HtmlStack::jsWithVars(fn ($id, $settings) => <<<JS
+new Craft.CraftSupportWidget($id, $settings)
 JS, [
             $this->id,
             [
@@ -138,7 +122,7 @@ JS, [
                     'cmsVersion' => sprintf('%s (%s)', $cmsVersion, Edition::get()->name),
                     'phpVersion' => PHP::version(),
                     'os' => sprintf('%s %s', PHP_OS, php_uname('r')),
-                    'db' => sprintf('%s %s', $dbDriver, normalizeVersion($db->getSchema()->getServerVersion())),
+                    'db' => sprintf('%s %s', $dbDriver, normalizeVersion(DB::getServerVersion())),
                     'imageDriver' => sprintf('%s %s', $imageDriver, $imagesService->getVersion()),
                     'plugins' => implode("\n", $pluginVersions),
                 ],
@@ -148,10 +132,10 @@ JS, [
         // Only show the DB backup option if DB backups haven't been disabled
         $showBackupOption = $this->generalConfig->backupCommand !== false;
 
-        return $view->renderTemplate('_components/widgets/CraftSupport/body.twig', [
+        return template('_components/widgets/CraftSupport/body', [
             'widget' => $this,
             'showBackupOption' => $showBackupOption,
-            'bundleUrl' => $assetBundle->baseUrl,
+            'bundleUrl' => craftAsset('legacy/craftsupport/dist'),
         ]);
     }
 }

@@ -1,27 +1,20 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace craft\errors;
 
 use yii\base\Exception;
 
-/**
- * Class GqlException
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.0
- */
-class GqlException extends Exception
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @return string the user-friendly name of this exception
+     * @since 3.3.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Exceptions\GqlException} instead.
      */
-    public function getName(): string
+    class GqlException extends Exception
     {
-        return 'GraphQL exception';
     }
 }
+
+class_alias(\CraftCms\Cms\Gql\Exceptions\GqlException::class, GqlException::class);

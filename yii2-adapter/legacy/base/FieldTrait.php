@@ -7,8 +7,8 @@
 
 namespace craft\base;
 
-use craft\fieldlayoutelements\CustomField;
 use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use DateTime;
 
 /**
@@ -76,20 +76,13 @@ trait FieldTrait
     public ?array $oldSettings = null;
 
     /**
-     * @var string|null The field’s content column suffix
-     * @since 3.7.0
-     * @deprecated in 5.0.0
-     */
-    public ?string $columnSuffix = null;
-
-    /**
      * @var string|null The field's UID
      */
     public ?string $uid = null;
 
     /**
      * @var bool|null Whether the field is required in the field layout it was fetched from
-     * @deprecated in 4.1.4. [[\craft\fieldlayoutelements\BaseField::$required]] should be used instead
+     * @deprecated in 4.1.4. [[\CraftCms\Cms\FieldLayout\LayoutElements\BaseField::$required]] should be used instead
      */
     public ?bool $required = null;
 

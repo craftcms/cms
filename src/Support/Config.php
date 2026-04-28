@@ -8,7 +8,7 @@ use Carbon\CarbonInterval;
 use CraftCms\Cms\Support\Facades\Sites;
 use DateInterval;
 
-final class Config
+class Config
 {
     /**
      * Normalizes a time duration value into the number of seconds it represents.
@@ -66,7 +66,7 @@ final class Config
             return $value($siteHandle);
         }
 
-        if (array_key_exists($siteHandle, $value)) {
+        if (array_key_exists((string) $siteHandle, $value)) {
             return $value[$siteHandle];
         }
 

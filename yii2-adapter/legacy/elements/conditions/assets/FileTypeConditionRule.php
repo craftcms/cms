@@ -2,76 +2,14 @@
 
 namespace craft\elements\conditions\assets;
 
-use craft\base\conditions\BaseMultiSelectConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\Asset;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\AssetQuery;
-use craft\elements\db\ElementQueryInterface;
-use craft\helpers\Assets as AssetsHelper;
-use function CraftCms\Cms\t;
-
 /**
  * Asset volume condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Conditions\FileTypeConditionRule} instead.
  */
-class FileTypeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class FileTypeConditionRule extends \CraftCms\Cms\Asset\Conditions\FileTypeConditionRule
 {
-    /**
-     * @inheritdoc
-     */
-    public function getLabel(): string
-    {
-        return t('File Type');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['kind'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function operators(): array
-    {
-        return [
-            self::OPERATOR_IN,
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function options(): array
-    {
-        $options = [];
-        foreach (AssetsHelper::getAllowedFileKinds() as $value => $kind) {
-            $options[] = ['value' => $value, 'label' => $kind['label']];
-        }
-        return $options;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var AssetQuery $query */
-        $query->kind($this->paramValue());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        /** @var Asset $element */
-        return $this->matchValue($element->kind);
-    }
+    use \craft\base\LegacyEventConstants;
 }

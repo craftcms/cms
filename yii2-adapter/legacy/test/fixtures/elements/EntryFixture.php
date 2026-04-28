@@ -7,8 +7,8 @@
 
 namespace craft\test\fixtures\elements;
 
-use craft\base\ElementInterface;
-use craft\elements\Entry;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 

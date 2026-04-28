@@ -9,7 +9,7 @@ namespace craft\utilities;
 
 use craft\base\Utility;
 use craft\events\ListVolumesEvent;
-use craft\models\Volume;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Utility\Events\ListVolumes;
 use Illuminate\Support\Facades\Event as EventFacade;
 use yii\base\Event;

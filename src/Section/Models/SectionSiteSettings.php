@@ -11,13 +11,15 @@ use CraftCms\Cms\Site\Models\Site;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-final class SectionSiteSettings extends BaseModel
+class SectionSiteSettings extends BaseModel
 {
     use HasFactory;
     use HasUid;
 
+    #[\Override]
     protected $table = Table::SECTIONS_SITES;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

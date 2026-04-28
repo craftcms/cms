@@ -1,72 +1,25 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fieldlayoutelements;
 
-use craft\base\ElementInterface;
-use craft\helpers\Cp;
-use CraftCms\Cms\Support\Html;
-use function CraftCms\Cms\t;
-
 /**
  * Heading represents an `<h2>` UI element that can be included in field layouts.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.5.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\Heading} instead.
  */
-class Heading extends BaseUiElement
+class Heading extends \CraftCms\Cms\FieldLayout\LayoutElements\Heading
 {
-    /**
-     * @var string The heading text
-     */
-    public string $heading = '';
-
-    /**
-     * @inheritdoc
-     */
-    protected function selectorLabel(): string
-    {
-        return $this->heading ?: t('Heading');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function selectorIcon(): ?string
-    {
-        return 'hashtag';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function hasSettings()
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function settingsHtml(): ?string
-    {
-        return Cp::textFieldHtml([
-            'label' => t('Heading'),
-            'id' => 'heading',
-            'name' => 'heading',
-            'value' => $this->heading,
-        ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        return Html::tag('h2', Html::encode(t($this->heading, category: 'site')));
-    }
+    use \craft\base\LegacyEventConstants;
 }

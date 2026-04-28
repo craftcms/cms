@@ -4,26 +4,33 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use Craft;
-use craft\base\FieldLayoutElement;
-use craft\elements\Entry;
-use craft\fieldlayoutelements\entries\EntryTitleField;
-use craft\helpers\Cp;
-use craft\helpers\UrlHelper;
-use craft\models\FieldLayout;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
+use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -32,8 +39,9 @@ use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
-final class EntryTypesController
+class EntryTypesController
 {
     use RespondsWithFlash;
 
@@ -45,7 +53,7 @@ final class EntryTypesController
         Request $request,
         Fields $fields,
         GeneralConfig $generalConfig,
-        private EntryTypes $entryTypes,
+        private readonly EntryTypes $entryTypes,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
 
@@ -63,18 +71,26 @@ final class EntryTypesController
 
     public function index(): View
     {
-        return view('craftcms::settings.entry-types.index');
+        return view('settings.entry-types.index');
     }
 
     public function create(): CpScreenResponse
     {
+        $entryType = new EntryType;
+
+        $fieldLayout = $entryType->getFieldLayout();
+
+        if ($entryType->hasTitleField && ! $fieldLayout->isFieldIncluded('title')) {
+            $fieldLayout->prependElements([new EntryTitleField]);
+        }
+
         return new CpScreenResponse()
             ->title(t('Create a new entry type'))
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Entry Types'), 'settings/entry-types')
             ->contentTemplate('settings/entry-types/_edit.twig', [
                 'entryTypeId' => null,
-                'entryType' => new EntryType,
+                'entryType' => $entryType,
                 'typeName' => Entry::displayName(),
                 'lowerTypeName' => Entry::lowerDisplayName(),
                 'readOnly' => $this->readOnly,
@@ -88,8 +104,12 @@ final class EntryTypesController
             ]);
     }
 
-    public function edit(EntryTypeModel $entryType): CpScreenResponse
+    public function edit(Request $request, ?EntryTypeModel $entryType = null): CpScreenResponse
     {
+        $entryType ??= EntryTypeModel::find($request->input('entryTypeId'));
+
+        abort_if(is_null($entryType), 404, 'Entry type not found');
+
         $entryTypeData = $this->entryTypes->getEntryTypeById($entryType->id);
 
         abort_if(is_null($entryTypeData), 404, 'Entry type not found');
@@ -127,7 +147,7 @@ final class EntryTypesController
                 callback: function (CpScreenResponse $response) use ($entryTypeData) {
                     $response
                         ->action('entry-types/save')
-                        ->redirectUrl(UrlHelper::cpReferralUrl() ?? 'settings/entry-types')
+                        ->redirectUrl(Url::cpReferralUrl() ?? 'settings/entry-types')
                         ->addAltAction(t('Save and continue editing'), [
                             'redirect' => 'settings/entry-types/{id}',
                             'shortcut' => true,
@@ -141,7 +161,7 @@ final class EntryTypesController
                             'action' => 'entry-types/delete',
                             'destructive' => true,
                         ])
-                        ->metaSidebarHtml(Cp::metadataHtml([
+                        ->metaSidebarHtml(app(ContentHtml::class)->metadataHtml([
                             t('ID') => $entryTypeData->id,
                             t('Used by') => function () use ($entryTypeData) {
                                 $usages = $entryTypeData->findUsages();
@@ -153,12 +173,14 @@ final class EntryTypesController
                                 $items = array_map(function (Section|ElementContainerFieldInterface $usage) use (
                                     &$labels
                                 ) {
-                                    $icon = $usage instanceof FieldInterface ? $usage::icon() : $usage->getIcon();
+                                    $icon = $usage instanceof FieldInterface && ! $usage instanceof Iconic
+                                        ? $usage::icon()
+                                        : $usage->getIcon();
                                     $label = $labels[] = $usage->getUiLabel();
                                     $labelHtml = Html::beginTag('span', [
                                         'class' => ['flex', 'flex-nowrap', 'gap-s'],
                                     ]).
-                                        Html::tag('div', Cp::iconSvg($icon), [
+                                        Html::tag('div', Icons::svg($icon), [
                                             'class' => ['cp-icon', 'small'],
                                         ]).
                                         Html::tag('span', Html::encode($label)).
@@ -177,14 +199,14 @@ final class EntryTypesController
                         ]));
                 },
                 default: function (CpScreenResponse $response) {
-                    $response->noticeHtml(Cp::readOnlyNoticeHtml());
+                    $response->noticeHtml(app(ContentHtml::class)->readOnlyNoticeHtml());
                 },
             );
     }
 
     public function tableData(Request $request): JsonResponse
     {
-        $page = (int) $request->input('page', 1);
+        $page = (int) $request->input(Cms::config()->getPageTriggerParam(), 1);
         $limit = (int) $request->input('per_page', 100);
         $searchTerm = $request->input('search');
         $orderBy = match ($request->input('sort.0.field')) {
@@ -209,28 +231,44 @@ final class EntryTypesController
         ]);
     }
 
-    public function store(Request $request, EntryType $entryType): Response
+    public function store(Request $request): Response
     {
         $entryTypeId = $request->input('entryTypeId');
 
         if ($entryTypeId) {
             $entryTypeId = (int) $entryTypeId;
-            abort_if(is_null($found = $this->entryTypes->getEntryTypeById($entryTypeId)), 400, "Invalid entry type ID: $entryType");
+            abort_if(is_null($entryType = $this->entryTypes->getEntryTypeById($entryTypeId)), 400, "Invalid entry type ID: $entryType");
 
-            $entryType->id = $found->id;
-            $entryType->uid = $found->uid;
+            $saveAsNew = $request->boolean('saveAsNew');
+            if ($saveAsNew) {
+                $originalEntryType = $entryType;
+                $entryType = clone $entryType;
+                $entryType->id = $entryType->uid = null;
+            }
+        } else {
+            $entryType = new EntryType;
+            $saveAsNew = false;
         }
 
-        $saveAsNew = false;
-        $originalEntryType = null;
-        if ($entryTypeId && $saveAsNew = (bool) $request->input('saveAsNew')) {
-            $originalEntryType = $entryType;
-            $entryType = clone $entryType;
-            $entryType->id = $entryType->uid = null;
-        }
+        // Set the simple stuff
+        $entryType->name = $request->input('name', $entryType->name);
+        $entryType->handle = $request->input('handle', $entryType->handle);
+        $entryType->description = $request->input('description', $entryType->description);
+        $entryType->icon = $request->input('icon', $entryType->icon);
+        $color = $request->input('color', $entryType->color?->value);
+        $entryType->color = $color && $color !== '__blank__' ? Color::from($color) : null;
+        $entryType->uiLabelFormat = $request->input('uiLabelFormat', $entryType->uiLabelFormat);
+        $entryType->titleTranslationMethod = $request->enum('titleTranslationMethod', TranslationMethod::class, $entryType->titleTranslationMethod);
+        $entryType->titleTranslationKeyFormat = $request->input('titleTranslationKeyFormat', $entryType->titleTranslationKeyFormat);
+        $entryType->titleFormat = $request->input('titleFormat', $entryType->titleFormat);
+        $entryType->allowLineBreaksInTitles = $request->boolean('allowLineBreaksInTitles', $entryType->allowLineBreaksInTitles);
+        $entryType->showSlugField = $request->boolean('showSlugField', $entryType->showSlugField);
+        $entryType->slugTranslationMethod = $request->enum('slugTranslationMethod', TranslationMethod::class, $entryType->slugTranslationMethod);
+        $entryType->slugTranslationKeyFormat = $request->input('slugTranslationKeyFormat', $entryType->slugTranslationKeyFormat);
+        $entryType->showStatusField = $request->boolean('showStatusField', $entryType->showStatusField);
 
         // If we're duplicating the entry type and the handle hasn't changed, find a unique one
-        if ($originalEntryType && $this->entryTypes->getEntryTypeByHandle($entryType->handle)) {
+        if ($saveAsNew && $entryType->handle === ($originalEntryType->handle ?? null)) {
             if (preg_match('/^(.*?)(\d+)$/', (string) $entryType->handle, $match)) {
                 $baseHandle = $match[1];
                 $i = (int) $match[2];
@@ -248,6 +286,8 @@ final class EntryTypesController
         }
 
         $entryType->setFieldLayout($this->fieldLayout);
+
+        $entryType->validate(throw: true);
 
         if (! $this->fieldLayout->validate()) {
             return $this->asModelFailure($entryType, t('Couldn’t save entry type.'), 'entryType');
@@ -287,7 +327,7 @@ final class EntryTypesController
         ]));
     }
 
-    public function renderOverrideSettings(Request $request): JsonResponse
+    public function renderOverrideSettings(Request $request, HtmlStack $HtmlStack): JsonResponse
     {
         $entryType = $this->entryTypeForSelectInput($request);
         $entryType->name = $request->input('name', $entryType->name);
@@ -295,10 +335,9 @@ final class EntryTypesController
         $entryType->description = $request->input('description', $entryType->description);
 
         $namespace = Str::random(10);
-        $view = Craft::$app->getView();
 
-        $html = $view->namespaceInputs(
-            fn () => $view->renderTemplate('_includes/forms/entry-type-select/selection-settings.twig', [
+        $html = InputNamespace::namespaceInputs(
+            fn () => template('_includes/forms/entry-type-select/selection-settings', [
                 'entryType' => $entryType,
             ]),
             $namespace,
@@ -307,8 +346,8 @@ final class EntryTypesController
         return new JsonResponse([
             'settingsHtml' => $html,
             'namespace' => $namespace,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => $HtmlStack->headHtml(),
+            'bodyHtml' => $HtmlStack->bodyHtml(),
         ]);
     }
 
@@ -338,7 +377,7 @@ final class EntryTypesController
             }
         }
 
-        $chipHtml = Cp::chipHtml($entryType, [
+        $chipHtml = app(ElementHtml::class)->chipHtml($entryType, [
             'showHandle' => true,
             'showIndicators' => true,
             'showDescription' => true,

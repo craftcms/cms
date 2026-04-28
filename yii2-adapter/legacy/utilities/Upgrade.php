@@ -8,13 +8,19 @@
 namespace craft\utilities;
 
 use craft\base\Utility;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Upgrade utility
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.7.40
- * @deprecated in 6.0.0. [[\CraftCms\Cms\Utility\Utilities\Upgrade]] should be used instead.
+ * @deprecated in 6.0.0.
  */
 class Upgrade extends Utility
 {
@@ -23,7 +29,9 @@ class Upgrade extends Utility
      */
     public static function displayName(): string
     {
-        return \CraftCms\Cms\Utility\Utilities\Upgrade::displayName();
+        return t('Craft {version} Upgrade', [
+            'version' => (int) Cms::VERSION + 1,
+        ]);
     }
 
     /**
@@ -31,7 +39,7 @@ class Upgrade extends Utility
      */
     public static function id(): string
     {
-        return \CraftCms\Cms\Utility\Utilities\Upgrade::id();
+        return 'upgrade';
     }
 
     /**
@@ -39,7 +47,7 @@ class Upgrade extends Utility
      */
     public static function icon(): ?string
     {
-        return \CraftCms\Cms\Utility\Utilities\Upgrade::icon();
+        return 'square-arrow-up';
     }
 
     /**
@@ -47,6 +55,28 @@ class Upgrade extends Utility
      */
     public static function contentHtml(): string
     {
-        return \CraftCms\Cms\Utility\Utilities\Upgrade::contentHtml();
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\UpgradeAsset::class);
+
+        $pluginsService = app(Plugins::class);
+        $allPlugins = [];
+        foreach ($pluginsService->getAllPluginInfo() as $handle => $info) {
+            $allPlugins[] = [
+                'name' => $info['name'],
+                'handle' => $handle,
+                'developerName' => $info['developer'] ?? null,
+                'developerUrl' => $info['developerUrl'] ?? null,
+                'icon' => $pluginsService->getPluginIconSvg($handle),
+                'isInstalled' => $info['isInstalled'],
+            ];
+        }
+
+        $version = (int) Cms::VERSION + 1;
+        HtmlStack::jsWithVars(fn($args) => <<<JS
+window.upgradeUtility = new Craft.UpgradeUtility(...$args)
+JS, [
+            [$version, $allPlugins],
+        ]);
+
+        return template('_components/utilities/Upgrade');
     }
 }

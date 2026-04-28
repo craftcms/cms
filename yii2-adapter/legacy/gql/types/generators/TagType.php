@@ -11,7 +11,6 @@ use Craft;
 use craft\elements\Tag as TagElement;
 use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
-use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Tag as TagInterface;
@@ -53,7 +52,7 @@ class TagType extends Generator implements GeneratorInterface, SingleGeneratorIn
     /**
      * @inheritdoc
      */
-    public static function generateType(mixed $context): ObjectType
+    public static function generateType(mixed $context): mixed
     {
         $typeName = TagElement::gqlTypeName($context);
 

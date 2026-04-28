@@ -59,9 +59,6 @@ abstract class Utility implements ComponentInterface
         return '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function isSelectable(): bool
     {

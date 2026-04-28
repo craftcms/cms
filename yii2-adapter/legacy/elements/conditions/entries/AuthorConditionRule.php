@@ -2,80 +2,14 @@
 
 namespace craft\elements\conditions\entries;
 
-use craft\base\conditions\BaseElementSelectConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\db\EntryQuery;
-use craft\elements\Entry;
-use craft\elements\User;
-use function CraftCms\Cms\t;
-
 /**
  * Author condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Entry\Conditions\AuthorConditionRule} instead.
  */
-class AuthorConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
+class AuthorConditionRule extends \CraftCms\Cms\Entry\Conditions\AuthorConditionRule
 {
-    /**
-     * @inheritdoc
-     */
-    public function getLabel(): string
-    {
-        return t('Author');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function elementType(): string
-    {
-        return User::class;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function criteria(): ?array
-    {
-        return [
-            'authors' => true,
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function allowMultiple(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['author', 'authorId'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var EntryQuery $query */
-        $query->authorId($this->getElementIds());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        /** @var Entry $element */
-        return $this->matchValue($element->getAuthorId());
-    }
+    use \craft\base\LegacyEventConstants;
 }

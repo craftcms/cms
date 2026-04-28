@@ -14,17 +14,18 @@ use craft\errors\MutexException;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Queue as QueueHelper;
-use craft\helpers\UrlHelper;
 use craft\queue\jobs\Proxy;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use DateTime;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use InvalidArgumentException;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
 use yii\db\Query;
@@ -41,6 +42,7 @@ use function CraftCms\Cms\t;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Roman Zhuravlev <zhuravljov@gmail.com>
  * @since 3.0.0
+ * @deprecated 6.0.0
  */
 class Queue extends \yii\queue\cli\Queue implements QueueInterface
 {
@@ -552,7 +554,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         $info = [];
 
         foreach ($results as $result) {
-            if (!app()->hasDebugModeEnabled() && !Craft::$app->getUser()->getIsAdmin()) {
+            if (!app()->hasDebugModeEnabled() && !Auth::user()?->isAdmin()) {
                 $result['error'] = t('A server error occurred.');
             }
 
@@ -586,7 +588,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 }
                 Db::update($this->tableName, [
                     'fail' => true,
-                    'dateFailed' => Db::prepareDateForDb(new DateTime()),
+                    'dateFailed' => \CraftCms\Cms\Support\Query::prepareDateForDb(new DateTime()),
                     'error' => $event->error ? $this->_truncateErrorMessage($event->error->getMessage()) : null,
                 ], [
                     'id' => $event->id,
@@ -619,14 +621,14 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 
         // Include JS that tells the browser to fire an Ajax request to kick off a new queue runner
         // (Ajax request code adapted from http://www.quirksmode.org/js/xmlhttp.html - thanks ppk!)
-        $url = Json::encode(UrlHelper::actionUrl('queue/run', null, null, false));
+        $url = Json::encode(Url::actionUrl('queue/run', null, null));
         $js = <<<EOD
 <script type="text/javascript">
 /*<![CDATA[*/
 (function(){
   try {
     var req = new XMLHttpRequest();
-    req.open('GET', $url, true);
+    req.open('GET', $url, true)
     req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
     if (req.readyState === 4) return;
     req.send();
@@ -745,7 +747,7 @@ EOD;
                 $payload['timeUpdated'] = $payload['dateReserved']->getTimestamp();
                 $payload['attempt'] = (int)$payload['attempt'] + 1;
                 Db::update($this->tableName, [
-                    'dateReserved' => Db::prepareDateForDb($payload['dateReserved']),
+                    'dateReserved' => \CraftCms\Cms\Support\Query::prepareDateForDb($payload['dateReserved']),
                     'timeUpdated' => $payload['timeUpdated'],
                     'attempt' => $payload['attempt'],
                 ], [

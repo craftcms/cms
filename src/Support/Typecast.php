@@ -7,18 +7,15 @@ namespace CraftCms\Cms\Support;
 use BackedEnum;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
-use craft\helpers\DateTimeHelper;
-use CraftCms\Cms\Support\Json as JsonHelper;
 use DateTime;
 use DateTimeInterface;
 use InvalidArgumentException;
-use ReflectionException;
+use ReflectionClass;
 use ReflectionNamedType;
-use ReflectionProperty;
 use ReflectionUnionType;
 use RuntimeException;
 
-final class Typecast
+class Typecast
 {
     private const string TYPE_BOOL = 'bool';
 
@@ -47,6 +44,26 @@ final class Typecast
     private static array $types = [];
 
     /**
+     * Configures a component with the initial property values.
+     *
+     * @template T of object
+     *
+     * @param  T  $object  the object to be configured
+     * @param  array  $properties  the property initial values given in terms of name-value pairs.
+     * @return T the object itself
+     */
+    final public static function configure(object $object, array $properties = []): object
+    {
+        self::properties($object::class, $properties);
+
+        foreach ($properties as $name => $value) {
+            $object->$name = $value;
+        }
+
+        return $object;
+    }
+
+    /**
      * Typecasts the given property values based on their type declarations.
      *
      * @param  class-string  $class  The class name
@@ -57,6 +74,19 @@ final class Typecast
         foreach ($properties as $name => &$value) {
             self::property($class, $name, $value);
         }
+    }
+
+    public static function isDateTimeProperty(string $class, string $property): bool
+    {
+        $type = self::propertyType($class, $property);
+
+        if ($type === false) {
+            return false;
+        }
+
+        [$typeName] = $type;
+
+        return is_a($typeName, DateTimeInterface::class, true);
     }
 
     public static function isInt(float|int|string $value): bool
@@ -106,15 +136,23 @@ final class Typecast
 
         switch ($typeName) {
             case self::TYPE_BOOL:
+                if ($value === null || is_scalar($value)) {
+                    $value = Env::normalizeBooleanValue($value);
+
+                    if ($value === null && ! $allowsNull) {
+                        $value = false;
+                    }
+                }
+
+                return;
             case self::TYPE_FLOAT:
             case self::TYPE_INT:
             case self::TYPE_INT_FLOAT:
             case self::TYPE_INT_STRING:
             case self::TYPE_STRING:
                 if ($value === null || is_scalar($value)) {
-                    /** @phpstan-var self::TYPE_BOOL|self::TYPE_FLOAT|self::TYPE_INT|self::TYPE_INT_FLOAT|self::TYPE_INT_STRING|self::TYPE_STRING $typeName */
+                    /** @phpstan-var self::TYPE_FLOAT|self::TYPE_INT|self::TYPE_INT_FLOAT|self::TYPE_INT_STRING|self::TYPE_STRING $typeName */
                     $value = match ($typeName) {
-                        self::TYPE_BOOL => (bool) $value,
                         self::TYPE_FLOAT => (float) $value,
                         self::TYPE_INT => (int) $value,
                         self::TYPE_INT_FLOAT => self::toIntOrFloat($value ?? 0),
@@ -133,7 +171,7 @@ final class Typecast
                 }
                 if (is_string($value)) {
                     try {
-                        $decoded = JsonHelper::decode($value) ?? [];
+                        $decoded = Json::decode($value) ?? [];
                         if (is_array($decoded)) {
                             $value = $decoded;
                         }
@@ -176,7 +214,6 @@ final class Typecast
                     is_scalar($value) &&
                     is_subclass_of($typeName, BackedEnum::class)
                 ) {
-                    /** @var BackedEnum $typeName */
                     $value = $typeName::from($value);
                 }
         }
@@ -184,43 +221,56 @@ final class Typecast
 
     private static function propertyType(string $class, string $property): array|false
     {
-        if (! isset(self::$types[$class][$property])) {
-            self::$types[$class][$property] = self::_propertyType($class, $property);
+        if (! isset(self::$types[$class])) {
+            self::resolveClassTypes($class);
         }
 
-        return self::$types[$class][$property];
+        return self::$types[$class][$property]
+            ?? self::$types[$class]['_'.lcfirst($property)] // Underscore prefixed private
+            ?? false;
     }
 
-    private static function _propertyType(string $class, string $property): array|false
+    private static function resolveClassTypes(string $class): void
     {
-        try {
-            $ref = new ReflectionProperty($class, $property);
-        } catch (ReflectionException) {
-            // The property doesn’t exist
-            return false;
-        }
+        self::$types[$class] = [];
 
-        if (! $ref->isPublic() || $ref->isStatic()) {
-            return false;
-        }
+        $properties = new ReflectionClass($class)->getProperties();
 
-        $type = $ref->getType();
-
-        if ($type instanceof ReflectionNamedType) {
-            return [$type->getName(), $type->allowsNull()];
-        }
-
-        if ($type instanceof ReflectionUnionType) {
-            $names = array_map(fn (ReflectionNamedType $type) => $type->getName(), $type->getTypes());
-            sort($names);
-            // Special case for int|float
-            if ($names === [self::TYPE_FLOAT, self::TYPE_INT] || $names === [self::TYPE_FLOAT, self::TYPE_INT, self::TYPE_NULL]) {
-                return [self::TYPE_INT_FLOAT, in_array(self::TYPE_NULL, $names)];
+        foreach ($properties as $ref) {
+            if ($ref->isStatic()) {
+                continue;
             }
-            // Special case for int|string
-            if ($names === [self::TYPE_INT, self::TYPE_STRING] || $names === [self::TYPE_INT, self::TYPE_NULL, self::TYPE_STRING]) {
-                return [self::TYPE_INT_STRING, in_array(self::TYPE_NULL, $names)];
+
+            $type = $ref->getType();
+
+            if ($type instanceof ReflectionNamedType) {
+                self::$types[$class][$ref->getName()] = [$type->getName(), $type->allowsNull()];
+            } elseif ($type instanceof ReflectionUnionType) {
+                $resolved = self::resolveUnionType($type);
+
+                if ($resolved !== false) {
+                    self::$types[$class][$ref->getName()] = $resolved;
+                }
             }
+        }
+    }
+
+    private static function resolveUnionType(ReflectionUnionType $type): array|false
+    {
+        $names = array_map(fn (ReflectionNamedType $t) => $t->getName(), $type->getTypes());
+
+        sort($names);
+
+        $allowsNull = in_array(self::TYPE_NULL, $names);
+
+        // Special case for int|float
+        if ($names === [self::TYPE_FLOAT, self::TYPE_INT] || $names === [self::TYPE_FLOAT, self::TYPE_INT, self::TYPE_NULL]) {
+            return [self::TYPE_INT_FLOAT, $allowsNull];
+        }
+
+        // Special case for int|string
+        if ($names === [self::TYPE_INT, self::TYPE_STRING] || $names === [self::TYPE_INT, self::TYPE_NULL, self::TYPE_STRING]) {
+            return [self::TYPE_INT_STRING, $allowsNull];
         }
 
         return false;

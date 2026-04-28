@@ -7,15 +7,16 @@
 
 namespace craft\auth\sso\mapper;
 
-use Craft;
-use craft\elements\User;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @internal
  * @since 5.3.0
+ * @deprecated 6.0.0 use the Laravel Socialite {@see \CraftCms\Cms\Auth\OAuth\OAuth} implementation instead.
  */
 trait SetUserValueTrait
 {
@@ -35,24 +36,24 @@ trait SetUserValueTrait
     {
         $field = $this->getFieldLayoutField($user, $this->craftProperty);
         if ($field) {
-            Craft::info(
+            Log::info(
                 sprintf(
                     "Attribute mapper is setting a user value '%s' via field '%s'",
                     Json::encode($value),
                     $field->handle,
                 ),
-                "auth"
+                ["auth"]
             );
 
             $user->setFieldValue($this->craftProperty, $value);
         } elseif ($user->canSetProperty($this->craftProperty)) {
-            Craft::info(
+            Log::info(
                 sprintf(
                     "Attribute mapper is setting a user value '%s' via property '%s'",
                     Json::encode($value),
                     $this->craftProperty,
                 ),
-                "auth"
+                ["auth"]
             );
 
             $user->{$this->craftProperty} = $value;
@@ -69,12 +70,12 @@ trait SetUserValueTrait
         $fieldLayout = $user->getFieldLayout();
 
         if (is_null($fieldLayout)) {
-            Craft::warning(
+            Log::warning(
                 sprintf(
                     "User field layout was not found; therefore we will not set field '%s' value",
                     $fieldHandle
                 ),
-                'auth'
+                ['auth']
             );
 
             return null;
@@ -82,18 +83,18 @@ trait SetUserValueTrait
 
         $field = $fieldLayout->getFieldByHandle($fieldHandle);
 
-        $field ? Craft::info(
+        $field ? Log::info(
             sprintf(
                 "User field '%s' was found",
                 $fieldHandle
             ),
-            'Auth'
-        ) : Craft::warning(
+            ['auth']
+        ) : Log::warning(
             sprintf(
                 "User field '%s' was not found",
                 $fieldHandle
             ),
-            'auth'
+            ['auth']
         );
 
         return $field;

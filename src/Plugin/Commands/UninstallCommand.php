@@ -8,15 +8,18 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Plugin\Plugins;
 use Illuminate\Console\Command;
 
-final class UninstallCommand extends Command
+class UninstallCommand extends Command
 {
     use CraftCommand;
     use PromptsForMissingHandle;
 
+    #[\Override]
     protected $signature = 'craft:plugin:uninstall {handle?} {--all} {--force}';
 
+    #[\Override]
     protected $description = 'Uninstalls a plugin.';
 
+    #[\Override]
     protected $aliases = ['plugin/uninstall'];
 
     private Plugins $plugins;

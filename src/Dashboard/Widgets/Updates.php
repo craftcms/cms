@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use Craft;
-use craft\web\assets\updateswidget\UpdatesWidgetAsset;
-use CraftCms\Cms\Updates\Updates as UpdatesService;
+use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Update\Updates as UpdatesService;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\UpdatesWidgetAsset;
 use Illuminate\Support\Facades\Auth;
+use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
-final class Updates extends Widget
+class Updates extends Widget
 {
     public function __construct(
         private readonly UpdatesService $updates,
@@ -20,47 +23,32 @@ final class Updates extends Widget
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Updates');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function isSelectable(): bool
     {
         // Gotta have update permission to get this widget
         return parent::isSelectable() && Auth::user()->can('performUpdates');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected static function allowMultipleInstances(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'certificate';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getBodyHtml(): ?string
     {
         // Make sure the user actually has permission to perform updates
@@ -68,19 +56,17 @@ final class Updates extends Widget
             return null;
         }
 
-        $view = Craft::$app->getView();
         $cached = $this->updates->isUpdateInfoCached();
 
         if (! $cached || ! $this->updates->totalAvailableUpdates()) {
-            $view->registerAssetBundle(UpdatesWidgetAsset::class);
-            $view->registerJs('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
+            app(InternalAssetRegistry::class)->register(UpdatesWidgetAsset::class);
+            HtmlStack::js('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
         }
 
         if ($cached) {
-            return $view->renderTemplate('_components/widgets/Updates/body.twig',
-                [
-                    'total' => $this->updates->totalAvailableUpdates(),
-                ]);
+            return template('_components/widgets/Updates/body', [
+                'total' => $this->updates->totalAvailableUpdates(),
+            ]);
         }
 
         return '<p class="centeralign">'.t('Checking for updates…').'</p>';

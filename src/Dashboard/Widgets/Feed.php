@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use Craft;
-use craft\web\assets\feed\FeedAsset;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\View\LegacyAssets\FeedAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Support\Facades\Cache;
+use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
-final class Feed extends Widget
+class Feed extends Widget
 {
     public ?string $url = null;
 
@@ -19,29 +22,20 @@ final class Feed extends Widget
 
     public int $limit = 5;
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Feed');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'rss';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
-    public static function getRules(): array
+    #[Override]
+    public function getRules(): array
     {
         return [
             'title' => ['required'],
@@ -50,31 +44,22 @@ final class Feed extends Widget
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getSettingsHtml(): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/widgets/Feed/settings.twig',
+        return template('_components/widgets/Feed/settings',
             [
                 'widget' => $this,
             ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getTitle(): ?string
     {
         return $this->title;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getBodyHtml(): string
     {
         // See if it's already cached
@@ -94,9 +79,8 @@ final class Feed extends Widget
             $data['items'][] = [];
         }
 
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(FeedAsset::class);
-        $view->registerJs(
+        app(InternalAssetRegistry::class)->register(FeedAsset::class);
+        HtmlStack::js(
             "new Craft.FeedWidget($this->id, ".
             Json::encode($this->url).', '.
             Json::encode($this->limit).');'
@@ -107,7 +91,7 @@ final class Feed extends Widget
 
     private function render(mixed $data): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/widgets/Feed/body.twig', [
+        return template('_components/widgets/Feed/body', [
             'feed' => $data,
         ]);
     }

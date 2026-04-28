@@ -1,0 +1,92 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Http\Controllers\Users;
+
+use CraftCms\Cms\Auth\AuthMethods;
+use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
+use CraftCms\Cms\Auth\Methods\RecoveryCodes;
+use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\View\HtmlStack;
+use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
+
+readonly class AuthMethodController
+{
+    use ConfirmsPasswords;
+    use RespondsWithFlash;
+
+    public function __construct(
+        private AuthMethods $auth,
+    ) {}
+
+    public function setupHtml(Request $request, HtmlStack $HtmlStack): JsonResponse
+    {
+        $class = $request->validate([
+            'method' => ['required', 'string'],
+        ])['method'];
+
+        $method = $this->auth->getMethod($class);
+        $containerId = sprintf('auth-method-setup-%s', mt_rand());
+        $displayName = $method::displayName();
+
+        $html = TemplateMode::with(
+            TemplateMode::Cp,
+            fn () => Html::tag('h1', t('{name} Setup', [
+                'name' => $displayName,
+            ])).InputNamespace::namespaceInputs(
+                fn () => $method->getSetupHtml($containerId),
+                $containerId,
+            )
+        );
+
+        return new JsonResponse([
+            'containerId' => $containerId,
+            'html' => $html,
+            'headHtml' => $HtmlStack->headHtml(),
+            'bodyHtml' => $HtmlStack->bodyHtml(),
+            'methodName' => $displayName,
+        ]);
+    }
+
+    public function listingHtml(HtmlStack $HtmlStack): JsonResponse
+    {
+        $html = template('users/_auth-methods', templateMode: TemplateMode::Cp);
+
+        return new JsonResponse([
+            'html' => $html,
+            'headHtml' => $HtmlStack->headHtml(),
+            'bodyHtml' => $HtmlStack->bodyHtml(),
+        ]);
+    }
+
+    public function destroy(Request $request): Response
+    {
+        $this->requireConfirmedPassword('An elevated session is required to remove an authentication method.');
+
+        $methodClass = $request->validate([
+            'method' => ['required', 'string'],
+        ])['method'];
+
+        $method = $this->auth->getMethod($methodClass);
+        $method->remove();
+
+        // if that was the last non-Recovery Codes method, remove Recovery Codes too
+        if ($this->auth->getActiveMethods()->isEmpty()) {
+            $recoveryCodes = $this->auth->getMethod(RecoveryCodes::class);
+            if ($recoveryCodes->isActive()) {
+                $recoveryCodes->remove();
+            }
+        }
+
+        return $this->asSuccess(t('Authentication method removed.'));
+    }
+}

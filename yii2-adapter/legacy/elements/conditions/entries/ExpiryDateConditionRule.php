@@ -2,53 +2,14 @@
 
 namespace craft\elements\conditions\entries;
 
-use craft\base\conditions\BaseDateRangeConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\db\EntryQuery;
-use craft\elements\Entry;
-use function CraftCms\Cms\t;
-
 /**
  * Element expiry date condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Entry\Conditions\ExpiryDateConditionRule} instead.
  */
-class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
+class ExpiryDateConditionRule extends \CraftCms\Cms\Entry\Conditions\ExpiryDateConditionRule
 {
-    /**
-     * @inheritdoc
-     */
-    public function getLabel(): string
-    {
-        return t('Expiry Date');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['expiryDate'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var EntryQuery $query */
-        $query->expiryDate($this->queryParamValue());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        /** @var Entry $element */
-        return $this->matchValue($element->expiryDate);
-    }
+    use \craft\base\LegacyEventConstants;
 }

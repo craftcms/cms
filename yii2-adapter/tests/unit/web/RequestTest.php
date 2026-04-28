@@ -8,12 +8,14 @@
 namespace crafttests\unit\web;
 
 use Craft;
-use craft\models\Site;
+use craft\config\GeneralConfig as LegacyGeneralConfig;
 use craft\services\Sites;
 use craft\test\TestCase;
 use craft\web\Request;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Site\Data\Site;
 use crafttests\fixtures\SitesFixture;
+use Illuminate\Http\Request as LaravelRequest;
 use ReflectionException;
 use UnitTester;
 use yii\web\BadRequestHttpException;
@@ -61,7 +63,7 @@ class RequestTest extends TestCase
             'SCRIPT_NAME' => '/index.php',
             'SERVER_NAME' => 'craft.test',
         ]);
-        app()->bind('request', fn() => new \Illuminate\Http\Request(
+        app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
         $request = new Request();
@@ -76,10 +78,12 @@ class RequestTest extends TestCase
         ]);
         $sites = new Sites();
         $sites->setCurrentSite(new Site([
+            'name' => 'Site',
+            'handle' => 'site',
             'language' => 'en-US',
             'baseUrl' => 'http://craft.test/foo',
         ]));
-        app()->bind('request', fn() => new \Illuminate\Http\Request(
+        app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
         $request = new Request([
@@ -97,7 +101,7 @@ class RequestTest extends TestCase
         ]);
         $generalConfig = clone Cms::config();
         $generalConfig->cpTrigger = 'foo';
-        app()->bind('request', fn() => new \Illuminate\Http\Request(
+        app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
         $request = new Request([
@@ -114,7 +118,7 @@ class RequestTest extends TestCase
         ]);
         $generalConfig = clone Cms::config();
         $generalConfig->cpTrigger = 'foo';
-        app()->bind('request', fn() => new \Illuminate\Http\Request(
+        app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
         $request = new Request([
@@ -132,7 +136,7 @@ class RequestTest extends TestCase
         ]);
         $generalConfig = clone Cms::config();
         $generalConfig->cpTrigger = null;
-        app()->bind('request', fn() => new \Illuminate\Http\Request(
+        app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
         $request = new Request([
@@ -149,7 +153,7 @@ class RequestTest extends TestCase
             'SCRIPT_NAME' => '/foo/index.php',
             'SERVER_NAME' => 'craft.test',
         ]);
-        app()->bind('request', fn() => new \Illuminate\Http\Request(
+        app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
         $request = new Request();
@@ -165,10 +169,12 @@ class RequestTest extends TestCase
         ]);
         $sites = new Sites();
         $sites->setCurrentSite(new Site([
+            'name' => 'Site',
+            'handle' => 'site',
             'language' => 'en-US',
             'baseUrl' => 'http://craft.test/foo/bar',
         ]));
-        app()->bind('request', fn() => new \Illuminate\Http\Request(
+        app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
         $request = new Request([
@@ -186,7 +192,7 @@ class RequestTest extends TestCase
         ]);
         $generalConfig = clone Cms::config();
         $generalConfig->cpTrigger = 'bar';
-        app()->bind('request', fn() => new \Illuminate\Http\Request(
+        app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
         $request = new Request([
@@ -203,7 +209,7 @@ class RequestTest extends TestCase
         ]);
         $generalConfig = clone Cms::config();
         $generalConfig->cpTrigger = 'bar';
-        app()->bind('request', fn() => new \Illuminate\Http\Request(
+        app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
         $request = new Request([
@@ -221,7 +227,7 @@ class RequestTest extends TestCase
         ]);
         $generalConfig = clone Cms::config();
         $generalConfig->cpTrigger = null;
-        app()->bind('request', fn() => new \Illuminate\Http\Request(
+        app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
         $request = new Request([
@@ -341,36 +347,6 @@ class RequestTest extends TestCase
     }
 
     /**
-     *
-     */
-    public function testGetCsrfToken(): void
-    {
-        $token = $this->request->getCsrfToken(true);
-
-        $otherToken = $this->request->getCsrfToken();
-        self::assertSame($token, $otherToken);
-
-        self::assertNotSame($token, $this->request->getCsrfToken(true));
-    }
-
-    /**
-     *
-     */
-    public function testGenerateCsrfToken(): void
-    {
-        $token = $this->_generateCsrfToken();
-        self::assertSame(40, strlen($token));
-
-        $this->_setMockUser();
-        $newToken = $this->_generateCsrfToken();
-
-        self::assertNotSame($newToken, $token);
-
-        // Ensure that the data we want exists and is according to our desired specs
-        self::assertSame(40, strlen($newToken));
-    }
-
-    /**
      * @dataProvider getParamDataProvider
      * @param mixed $expected
      * @param mixed $defaultValue
@@ -404,6 +380,65 @@ class RequestTest extends TestCase
             'getAcceptableContentTypes' => array_flip($accepts),
         ]);
         self::assertEquals($expected, $request->accepts($contentType));
+    }
+
+    public function testGetPageNumUsesPageQueryParamForSiteRequests(): void
+    {
+        app()->bind('request', fn() => new LaravelRequest(
+            query: ['page' => 3],
+            server: [
+                'REQUEST_URI' => '/news',
+                'SCRIPT_NAME' => '/index.php',
+                'SERVER_NAME' => 'craft.test',
+            ],
+        ));
+
+        $request = new Request([
+            'generalConfig' => LegacyGeneralConfig::create()->pageTrigger('page'),
+        ]);
+        $request->setQueryParams(['page' => 3]);
+        $request->init();
+
+        self::assertSame(3, $request->getPageNum());
+        self::assertSame('news', $request->getPathInfo());
+    }
+
+    public function testGetPageNumUsesLegacyPageTriggerQueryParam(): void
+    {
+        Cms::config()->pageTrigger('p');
+
+        app()->bind('request', fn() => new LaravelRequest(
+            query: ['p' => 4],
+            server: [
+                'REQUEST_URI' => '/news',
+                'SCRIPT_NAME' => '/index.php',
+                'SERVER_NAME' => 'craft.test',
+            ],
+        ));
+
+        $request = new Request();
+        $request->setQueryParams(['p' => 4]);
+        $request->init();
+
+        self::assertSame(4, $request->getPageNum());
+    }
+
+    public function testGetPageNumDoesNotParsePathStylePagination(): void
+    {
+        app()->bind('request', fn() => new LaravelRequest(
+            server: [
+                'REQUEST_URI' => '/news/p2',
+                'SCRIPT_NAME' => '/index.php',
+                'SERVER_NAME' => 'craft.test',
+            ],
+        ));
+
+        $request = new Request([
+            'generalConfig' => LegacyGeneralConfig::create(),
+        ]);
+
+        self::assertSame(1, $request->getPageNum());
+        self::assertSame('news/p2', $request->getPathInfo());
     }
 
     /**
@@ -546,24 +581,5 @@ class RequestTest extends TestCase
     private function _getParam(?string $name, mixed $defaultValue, array $params): mixed
     {
         return $this->invokeMethod($this->request, '_getParam', [$name, $defaultValue, $params]);
-    }
-
-    /**
-     * @return mixed
-     * @throws ReflectionException
-     */
-    private function _generateCsrfToken(): mixed
-    {
-        return $this->invokeMethod($this->request, 'generateCsrfToken');
-    }
-
-    /**
-     *
-     */
-    private function _setMockUser()
-    {
-        Craft::$app->getUser()->setIdentity(
-            Craft::$app->getUsers()->getUserById(1)
-        );
     }
 }

@@ -10,22 +10,32 @@ use CraftCms\Cms\Support\Typecast;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
+use Override;
 use Throwable;
 
-final class ConfigServiceProvider extends ServiceProvider
+class ConfigServiceProvider extends ServiceProvider
 {
     private array $configFiles = [
         'general',
         'redirects',
         'routes',
+        'twig-sandbox',
     ];
 
-    #[\Override]
+    #[Override]
     public function register(): void
     {
-        Env::extend(fn () => ConstAdapter::class);
+        Env::extend(fn () => ConstAdapter::class, 'CraftConstAdapter');
 
         $this->app->singleton(GeneralConfig::class, fn () => $this->app->make(ConfigRepository::class)->get('craft.general'));
+
+        collect($this->configFiles)->each(function (string $file) {
+            if ($file === 'general') {
+                return;
+            }
+
+            $this->mergeConfigFrom(__DIR__."/../../config/$file.php", "craft.$file");
+        });
     }
 
     public function boot(): void
@@ -40,7 +50,7 @@ final class ConfigServiceProvider extends ServiceProvider
             return;
         }
 
-        collect($this->configFiles)->each(function ($file) {
+        collect($this->configFiles)->each(function (string $file) {
             $this->publishes([__DIR__."/../../config/$file.php" => config_path("craft/$file.php")], 'craftcms-config');
         });
     }
@@ -59,10 +69,12 @@ final class ConfigServiceProvider extends ServiceProvider
             Config::set('craft.general', $generalConfig);
         }
 
-        // Get any environment value overrides
-        $envConfig = Env::config(GeneralConfig::class, 'CRAFT_');
+        $configClass = $generalConfig::class;
 
-        Typecast::properties(GeneralConfig::class, $envConfig);
+        // Get any environment value overrides
+        $envConfig = Env::config($configClass, 'CRAFT_');
+
+        Typecast::properties($configClass, $envConfig);
 
         foreach ($envConfig as $name => $value) {
             // Use the fluent methods when possible, in case it has any value normalization logic

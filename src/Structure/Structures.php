@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Structure;
 
-use Craft;
-use craft\base\Element;
-use craft\base\ElementInterface;
-use CraftCms\Cms\Database\Queries\ElementQuery;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Structure\Data\Structure;
 use CraftCms\Cms\Structure\Enums\Action;
 use CraftCms\Cms\Structure\Enums\Mode;
@@ -18,16 +17,15 @@ use CraftCms\Cms\Structure\Events\InsertingElement;
 use CraftCms\Cms\Structure\Events\UpdatingElement;
 use CraftCms\Cms\Structure\Models\Structure as StructureModel;
 use CraftCms\Cms\Structure\Models\StructureElement as StructureElementModel;
+use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Throwable;
-use yii\base\Exception;
 
 #[Singleton]
-final class Structures
+class Structures
 {
     /**
      * @var int The timeout to pass to [[\yii\mutex\Mutex::acquire()]] when acquiring a lock on the structure.
@@ -38,6 +36,10 @@ final class Structures
      * @var StructureElementModel[]
      */
     private array $rootElementRecordsByStructureId = [];
+
+    public function __construct(
+        private readonly ElementCaches $elementCaches,
+    ) {}
 
     // Structure CRUD
     // -------------------------------------------------------------------------
@@ -56,7 +58,7 @@ final class Structures
             )
             ->find($structureId);
 
-        return $result ? Structure::from($result) : null;
+        return $result ? new Structure($result) : null;
     }
 
     public function getStructureByUid(string $structureUid, bool $withTrashed = false): ?Structure
@@ -74,7 +76,7 @@ final class Structures
             )
             ->first();
 
-        return $result ? Structure::from($result) : null;
+        return $result ? new Structure($result) : null;
     }
 
     /**
@@ -111,12 +113,7 @@ final class Structures
                     ->status(null);
 
                 if ($prevElement) {
-                    if ($ancestorQuery instanceof ElementQuery) {
-                        $ancestorQuery->where('structureelements.lft', '>', $prevElement->lft);
-                    } else {
-                        // @TODO: Remove when all ElementQueries are ported
-                        $ancestorQuery->andWhere(['>', 'structureelements.lft', $prevElement->lft]);
-                    }
+                    $ancestorQuery->where('structureelements.lft', '>', $prevElement->lft);
                 }
 
                 /** @var T $ancestor */
@@ -422,20 +419,17 @@ final class Structures
 
         $targetElementId = $targetElementModel->isRoot() ? null : $targetElementModel->elementId;
 
-        // Fire a 'beforeInsertElement' or 'beforeMoveElement' event
-        if (Event::hasListeners($beforeEvent)) {
-            Event::dispatch($event = new $beforeEvent(
-                element: $element,
-                structureId: $structureId,
-                targetElementId: $targetElementId,
-                action: $action,
-            ));
+        event($event = new $beforeEvent(
+            element: $element,
+            structureId: $structureId,
+            targetElementId: $targetElementId,
+            action: $action,
+        ));
 
-            if (! $event->isValid) {
-                $lock->release();
+        if (! $event->isValid) {
+            $lock->release();
 
-                return false;
-            }
+            return false;
         }
 
         // Tell the element about it
@@ -481,16 +475,14 @@ final class Structures
 
         // Invalidate all caches for the element type
         // (see https://github.com/craftcms/cms/issues/14846)
-        Craft::$app->getElements()->invalidateCachesForElementType($element::class);
+        $this->elementCaches->invalidateForElementType($element::class);
 
-        if (Event::hasListeners($afterEvent)) {
-            Event::dispatch(new $afterEvent(
-                element: $element,
-                structureId: $structureId,
-                targetElementId: $targetElementId,
-                action: $action,
-            ));
-        }
+        event(new $afterEvent(
+            element: $element,
+            structureId: $structureId,
+            targetElementId: $targetElementId,
+            action: $action,
+        ));
 
         return true;
     }

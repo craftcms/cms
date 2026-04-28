@@ -4,21 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\ProjectConfig;
 
-use Craft;
-use craft\base\FsInterface;
-use craft\elements\Address;
-use craft\elements\User;
-use craft\helpers\App;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\FileHelper;
-use craft\models\ImageTransform;
-use craft\models\Volume;
-use craft\services\ElementSources;
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Data\ProjectConfigData;
 use CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData;
@@ -33,38 +29,47 @@ use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
 use CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Data\SiteGroup;
+use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Filesystems;
+use CraftCms\Cms\Support\Facades\Gql;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
+use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
+use RuntimeException;
+use SplFileInfo;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
-use yii\base\Application;
-use yii\base\ErrorException;
-use yii\base\Exception;
-use yii\base\InvalidArgumentException;
-use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
-use yii\web\ServerErrorHttpException;
+
+use function Illuminate\Filesystem\join_paths;
 
 #[Singleton]
-final class ProjectConfig
+class ProjectConfig
 {
     /**
      * The cache key that is used to store the modified time of the project config files, at the time they were last applied.
@@ -327,8 +332,8 @@ final class ProjectConfig
         Event::listen(ItemUpdated::class, $this->handleChangeEvent(...));
         Event::listen(ItemRemoved::class, $this->handleChangeEvent(...));
 
-        $this->readOnly = Info::isInstalled() && ! $generalConfig->allowAdminChanges;
-        $this->writeYamlAutomatically = ! App::isEphemeral();
+        $this->readOnly = Cms::isInstalled() && ! $generalConfig->allowAdminChanges;
+        $this->writeYamlAutomatically = ! app()->isEphemeral();
     }
 
     /**
@@ -432,11 +437,9 @@ final class ProjectConfig
      * @param  bool  $force  Whether the update should be processed regardless of whether the value actually changed
      * @return bool Whether the project config was modified
      *
-     * @throws ErrorException
      * @throws Exception
      * @throws NotSupportedException if the service is set to read-only mode
-     * @throws ServerErrorHttpException
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      * @throws BusyResourceException if a lock could not be acquired
      * @throws StaleResourceException if the loaded project config is out-of-date
      */
@@ -589,7 +592,7 @@ final class ProjectConfig
      */
     public function getDoesExternalConfigExist(): bool
     {
-        return file_exists(Craft::$app->getPath()->getProjectConfigFilePath());
+        return file_exists(Path::projectConfigFile());
     }
 
     /**
@@ -714,7 +717,7 @@ final class ProjectConfig
                 }
 
                 if (! empty($changeSet['added'])) {
-                    $isMysql = DB::connection()->getDriverName() === 'mysql';
+                    $isMysql = DB::isMysql();
                     $batch = [];
                     $pathsToInsert = [];
                     $additionalCleanupPaths = [];
@@ -810,29 +813,6 @@ final class ProjectConfig
                 'path' => $path,
                 'value' => $value,
             ])->all());
-    }
-
-    /**
-     * Returns a summary of all pending config changes.
-     */
-    public function getPendingChangeSummary(): array
-    {
-        $pendingChanges = $this->_getPendingChanges();
-
-        $summary = [];
-
-        // Reduce all the small changes to overall item changes.
-        foreach ($pendingChanges as $type => $changes) {
-            $summary[$type] = [];
-            foreach ($changes as $path) {
-                $pathParts = explode('.', (string) $path);
-                if (count($pathParts) > 1) {
-                    $summary[$type][$pathParts[0].'.'.$pathParts[1]] = true;
-                }
-            }
-        }
-
-        return $summary;
     }
 
     /**
@@ -1017,7 +997,7 @@ final class ProjectConfig
      */
     public function registerChangeEventHandler(string $event, string $path, callable $handler, mixed $data = null): void
     {
-        $specificity = substr_count($path, '.');
+        $specificity = ProjectConfigHelper::pathDepth($path);
         $pattern = '/^(?P<path>'.preg_quote($path, '/').')(?P<extra>\..+)?$/';
         $pattern = str_replace('\\{uid\\}', '('.self::UID_PATTERN.')', $pattern);
 
@@ -1136,16 +1116,13 @@ final class ProjectConfig
         $config[self::PATH_VOLUMES] = $this->_getVolumeData();
 
         // Fire a 'rebuild' event
-        if (Event::hasListeners(RebuildConfig::class)) {
-            Event::dispatch($event = new RebuildConfig($config));
-            $config = $event->config;
-        }
+        event($event = new RebuildConfig($config));
 
         // Reset the component name map
         $this->_setInternal(self::PATH_META_NAMES, [], updateTimestamp: false, force: true);
 
         // Process the changes
-        foreach ($config as $path => $value) {
+        foreach ($event->config as $path => $value) {
             $this->_setInternal($path, $value, 'Project config rebuild', updateTimestamp: false, force: true);
         }
 
@@ -1239,9 +1216,7 @@ final class ProjectConfig
 
         Log::info('Finalizing configuration parsing', [__METHOD__]);
 
-        if (Event::hasListeners(ChangesApplied::class)) {
-            Event::dispatch(new ChangesApplied);
-        }
+        event(new ChangesApplied);
 
         $this->updateParsedConfigTimesAfterRequest();
         $this->isApplyingExternalChanges = false;
@@ -1252,7 +1227,7 @@ final class ProjectConfig
      */
     private function _getConfigFileModifiedTime(): int
     {
-        $path = Craft::$app->getPath()->getProjectConfigFilePath();
+        $path = Path::projectConfigFile();
 
         if (! file_exists($path)) {
             return 0;
@@ -1273,7 +1248,7 @@ final class ProjectConfig
 
         $fileList = $this->_getConfigFileList();
         $generatedConfig = [];
-        $projectConfigPathLength = strlen((string) Craft::$app->getPath()->getProjectConfigPath(false));
+        $projectConfigPathLength = strlen((string) Path::projectConfig(create: false));
 
         foreach ($fileList as $filePath) {
             $yamlConfig = Yaml::parse(file_get_contents($filePath));
@@ -1318,7 +1293,7 @@ final class ProjectConfig
      * @param  array|null  $configData  config data to use. If null, the config is fetched from the project config files.
      * @param  bool  $existsOnly  whether to just return `true` or `false` depending on whether any changes are found.
      */
-    private function _getPendingChanges(?array $configData = null, bool $existsOnly = false): bool|array
+    protected function _getPendingChanges(?array $configData = null, bool $existsOnly = false): bool|array
     {
         $newItems = [];
         $changedItems = [];
@@ -1373,8 +1348,8 @@ final class ProjectConfig
 
         // Sort by number of dots to ensure deepest paths listed first
         $sorter = function ($a, $b) {
-            $aDepth = substr_count($a, '.');
-            $bDepth = substr_count($b, '.');
+            $aDepth = ProjectConfigHelper::pathDepth($a);
+            $bDepth = ProjectConfigHelper::pathDepth($b);
 
             return $bDepth <=> $aDepth;
         };
@@ -1411,16 +1386,25 @@ final class ProjectConfig
     private function _findConfigFiles(?string $path = null): array
     {
         if ($path === null) {
-            $path = Craft::$app->getPath()->getProjectConfigPath(false);
+            $path = Path::projectConfig(create: false);
         }
         if (! is_dir($path)) {
             return [];
         }
 
-        return FileHelper::findFiles($path, [
-            'only' => ['*.yaml'],
-            'caseSensitive' => false,
-        ]);
+        $finder = Finder::create()
+            ->ignoreDotFiles(false)
+            ->ignoreVCS(false)
+            ->files()
+            ->in($path)
+            ->filter(fn (SplFileInfo $file): bool => fnmatch('*.yaml', $file->getFilename(), FNM_CASEFOLD));
+
+        $list = [];
+        foreach ($finder as $file) {
+            $list[] = $file->getPathname();
+        }
+
+        return $list;
     }
 
     /**
@@ -1429,12 +1413,6 @@ final class ProjectConfig
     private function _saveConfigAfterRequest(): void
     {
         $this->_updateYaml = true;
-
-        // @todo: Remove when all legacy tests are ported
-        // Are we too late for EVENT_AFTER_REQUEST?
-        if (Craft::$app->state >= Application::STATE_AFTER_REQUEST) {
-            $this->flush();
-        }
     }
 
     /**
@@ -1446,7 +1424,7 @@ final class ProjectConfig
      */
     private function storeYamlHistory(array $configData): void
     {
-        $basePath = Craft::$app->getPath()->getConfigDeltaPath().'/'.self::CONFIG_DELTA_FILENAME;
+        $basePath = Path::configDelta(self::CONFIG_DELTA_FILENAME);
 
         // Go through all of them and move them forward.
         for ($i = $this->maxDeltas; $i > 0; $i--) {
@@ -1489,12 +1467,10 @@ final class ProjectConfig
         $config = $this->getCurrentWorkingConfig();
 
         try {
-            $basePath = Craft::$app->getPath()->getProjectConfigPath();
+            $basePath = Path::projectConfig();
 
             // Delete everything except hidden files/folders
-            FileHelper::clearDirectory($basePath, [
-                'except' => ['.*', '.*/'],
-            ]);
+            File::cleanDirectory($basePath, except: ['.*', '.*/']);
 
             $projectConfigNames = $config->get(self::PATH_META_NAMES);
 
@@ -1512,32 +1488,31 @@ final class ProjectConfig
             foreach ($splitConfig as $relativeFile => $configData) {
                 $configData = ProjectConfigHelper::cleanupConfig($configData);
                 ksort($configData);
-                $filePath = $basePath.DIRECTORY_SEPARATOR.$relativeFile;
+                $filePath = join_paths($basePath, $relativeFile);
                 $yamlContent = Yaml::dump($configData, 20, 2);
                 if (! empty($uids)) {
                     $yamlContent = preg_replace($uids, $replacements, $yamlContent);
                 }
-                FileHelper::writeToFile($filePath, $yamlContent);
+                File::writeToFile($filePath, $yamlContent);
             }
         } catch (Throwable $e) {
             Cache::put(self::FILE_ISSUES_CACHE_KEY, true, self::CACHE_DURATION);
             if (isset($basePath)) {
                 // Try to delete everything (again?) so Craft doesn't apply half-baked project config data
                 try {
-                    FileHelper::clearDirectory($basePath, [
-                        'except' => ['.*', '.*/'],
-                    ]);
+                    File::cleanDirectory($basePath, except: ['.*', '.*/']);
                 } catch (Throwable) {
                     // oh well
                 }
             }
+
             throw new Exception('Unable to write new project config files', 0, $e);
         }
 
         Cache::forget(self::FILE_ISSUES_CACHE_KEY);
 
         // Let plugins know about it
-        Event::dispatch(new YamlFilesWritten);
+        event(new YamlFilesWritten);
 
         $this->_updateYaml = false;
     }
@@ -1659,7 +1634,7 @@ final class ProjectConfig
      */
     private function _loadInternalConfig(): ReadOnlyProjectConfigData
     {
-        if (! Info::isInstalled()) {
+        if (! Cms::isInstalled()) {
             return new ReadOnlyProjectConfigData([], $this);
         }
 
@@ -1694,14 +1669,12 @@ final class ProjectConfig
 
             foreach ($rows as $path => $value) {
                 $current = &$data;
-                $segments = explode('.', $path);
+                $segments = ProjectConfigHelper::pathSegments($path);
                 foreach ($segments as $segment) {
                     // If we're still traversing, enforce array to avoid errors.
-                    /** @phpstan-ignore-next-line */
                     if (! is_array($current)) {
                         $current = [];
                     }
-                    /** @phpstan-ignore-next-line */
                     if (! array_key_exists($segment, $current)) {
                         $current[$segment] = [];
                     }
@@ -1769,14 +1742,12 @@ final class ProjectConfig
      */
     private function _getElementSourceData(array $sourceConfigs): array
     {
-        $conditionsService = Craft::$app->getConditions();
-
         foreach ($sourceConfigs as &$elementTypeConfigs) {
             foreach ($elementTypeConfigs as &$config) {
                 if ($config['type'] === ElementSources::TYPE_CUSTOM && isset($config['condition'])) {
                     try {
-                        $config['condition'] = $conditionsService->createCondition($config['condition'])->getConfig();
-                    } catch (InvalidArgumentException|InvalidConfigException) {
+                        $config['condition'] = Conditions::createCondition($config['condition'])->getConfig();
+                    } catch (InvalidArgumentException|RuntimeException) {
                         // Ignore it
                     }
                 }
@@ -1801,10 +1772,8 @@ final class ProjectConfig
      */
     private function _getFsData(): array
     {
-        $fsService = Craft::$app->getFs();
-
-        return collect($fsService->getAllFilesystems())
-            ->mapWithKeys(fn (FsInterface $fs) => [$fs->handle => $fsService->createFilesystemConfig($fs)])
+        return Filesystems::getAllFilesystems()
+            ->mapWithKeys(fn (FsInterface $fs) => [$fs->handle => Filesystems::createFilesystemConfig($fs)])
             ->all();
     }
 
@@ -1823,7 +1792,7 @@ final class ProjectConfig
      */
     private function _getVolumeData(): array
     {
-        return collect(Craft::$app->getVolumes()->getAllVolumes())
+        return Volumes::getAllVolumes()
             ->mapWithKeys(fn (Volume $volume) => [$volume->uid => $volume->getConfig()])
             ->all();
     }
@@ -1891,7 +1860,7 @@ final class ProjectConfig
      */
     private function _getTransformData(): array
     {
-        return collect(Craft::$app->getImageTransforms()->getAllTransforms())
+        return app(ImageTransforms::class)->getAllTransforms()
             ->mapWithKeys(fn (ImageTransform $transform) => [$transform->uid => $transform->getConfig()])
             ->all();
     }
@@ -1901,8 +1870,7 @@ final class ProjectConfig
      */
     private function _getGqlData(): array
     {
-        $gqlService = Craft::$app->getGql();
-        $publicToken = $gqlService->getPublicToken();
+        $publicToken = Gql::getPublicToken();
 
         $data = [
             'schemas' => [],
@@ -1912,7 +1880,7 @@ final class ProjectConfig
             ],
         ];
 
-        foreach ($gqlService->getSchemas() as $schema) {
+        foreach (Gql::getSchemas() as $schema) {
             $data['schemas'][$schema->uid] = $schema->getConfig();
         }
 
@@ -1938,7 +1906,7 @@ final class ProjectConfig
             throw new BusyResourceException('A lock could not be acquired to modify the project config.');
         }
 
-        if (Info::isInstalled()) {
+        if (Cms::isInstalled()) {
             try {
                 $storedConfigVersion = DB::table(Table::INFO)->value('configVersion');
             } catch (Throwable) {

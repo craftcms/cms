@@ -10,14 +10,17 @@ use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Foundation\Application;
 
-final class EnvRemoveCommand extends Command implements PromptsForMissingInput
+class EnvRemoveCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:env:remove {name}';
 
+    #[\Override]
     protected $description = 'Removes an environment variable from the `.env` file.';
 
+    #[\Override]
     protected $aliases = ['env/remove'];
 
     public function handle(Application $app): void

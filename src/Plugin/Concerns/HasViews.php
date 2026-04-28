@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Concerns;
 
-use craft\base\Event as YiiEvent;
-use craft\events\RegisterTemplateRootsEvent;
-use craft\web\View;
 use CraftCms\Cms\Plugin\Plugin;
+use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
+use Illuminate\Support\Facades\Event;
 
 /**
  * @mixin Plugin
@@ -18,9 +17,9 @@ trait HasViews
 {
     public function bootHasViews(): void
     {
-        // Base template directory
-        YiiEvent::on(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function (RegisterTemplateRootsEvent $e) {
+        Event::listen(function (RegisterCpTemplateRoots $event) {
             $basePath = self::getInstance()->getBasePath();
+            $resourcesPath = self::getInstance()->getResourcesPath();
             $handle = self::getInstance()->handle;
 
             /**
@@ -28,16 +27,19 @@ trait HasViews
              */
             $baseDir = match (true) {
                 // Laravel Convention
-                is_dir($baseDir = dirname($basePath).'/resources/views') => $baseDir,
+                /** @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/13981 */
+                is_dir($baseDir = $resourcesPath.'/views') => $baseDir,
                 // Laravel Convention for resources, Twig convention for templates
-                is_dir($baseDir = dirname($basePath).'/resources/templates') => $baseDir,
+                /** @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/13981 */
+                is_dir($baseDir = $resourcesPath.'/templates') => $baseDir,
                 // Craft 5 and earlier
+                /** @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/13981 */
                 is_dir($baseDir = $basePath.'/templates') => $baseDir,
                 default => false,
             };
 
             if ($baseDir) {
-                $e->roots[$handle] = $baseDir;
+                $event->roots[$handle] = $baseDir;
             }
         });
     }

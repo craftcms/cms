@@ -1,15 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Database\Factories;
 
 use CraftCms\Cms\Plugin\Models\Plugin;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Override;
 
-final class PluginFactory extends Factory
+class PluginFactory extends Factory
 {
+    #[Override]
     protected $model = Plugin::class;
 
-    #[\Override]
+    #[Override]
     public function definition()
     {
         return [

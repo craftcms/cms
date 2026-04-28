@@ -1,40 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\models;
 
-use craft\base\Model;
-
 /**
- * SystemMessage represents a system email message.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @deprecated 6.0.0 use {@see \CraftCms\Cms\SystemMessage\Models\SystemMessage} instead.
  */
-class SystemMessage extends Model
+class SystemMessage extends \CraftCms\Cms\SystemMessage\Models\SystemMessage
 {
-    /**
-     * @var string|null Unique key for the message
-     */
-    public ?string $key = null;
-
-    /**
-     * @var string|null Heading to be shown on the settings page for this message
-     */
-    public ?string $heading = null;
-
-    /**
-     * @var string|null Subject template
-     */
-    public ?string $subject = null;
-
-    /**
-     * @var string|null Body template
-     */
-    public ?string $body = null;
+    use \craft\base\LegacyEventConstants;
 }

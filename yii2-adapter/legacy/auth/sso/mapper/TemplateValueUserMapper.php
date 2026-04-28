@@ -7,9 +7,9 @@
 
 namespace craft\auth\sso\mapper;
 
-use Craft;
 use craft\base\Component;
-use craft\elements\User;
+use CraftCms\Cms\User\Elements\User;
+use function CraftCms\Cms\renderObjectTemplate;
 
 /**
  * Set a value from a parsed view template as a User's attribute
@@ -17,6 +17,7 @@ use craft\elements\User;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @internal
  * @since 5.3.0
+ * @deprecated 6.0.0 use the Laravel Socialite {@see \CraftCms\Cms\Auth\OAuth\OAuth} implementation instead.
  */
 class TemplateValueUserMapper extends Component implements UserMapInterface
 {
@@ -32,7 +33,7 @@ class TemplateValueUserMapper extends Component implements UserMapInterface
      */
     public function __invoke(User $user, mixed $data): User
     {
-        $value = Craft::$app->view->renderObjectTemplate(
+        $value = renderObjectTemplate(
             $this->template,
             [
                 'property' => $this->craftProperty,

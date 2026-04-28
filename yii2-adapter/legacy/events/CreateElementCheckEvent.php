@@ -7,7 +7,7 @@
 
 namespace craft\events;
 
-use craft\elements\User;
+use CraftCms\Cms\User\Elements\User;
 
 /**
  * Create Element Check Event

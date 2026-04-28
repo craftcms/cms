@@ -10,14 +10,17 @@ use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Facades\Artisan;
 
-final class EnvShowCommand extends Command implements PromptsForMissingInput
+class EnvShowCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:env:show {name}';
 
+    #[\Override]
     protected $description = 'Displays the value of an environment variable, or sets its value if $name contains `=`.';
 
+    #[\Override]
     protected $aliases = ['env', 'env/show'];
 
     public function handle(): void

@@ -11,13 +11,14 @@ namespace craft\test;
 
 use Codeception\PHPUnit\TestCase as CodeceptionTestCase;
 use Craft;
+use craft\behaviors\CustomFieldBehavior;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\i18n\Locale;
 use craft\mail\Mailer;
-use craft\queue\Queue;
+use craft\queue\QueueComponent;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
 use craft\services\Categories;
@@ -56,23 +57,28 @@ use craft\web\Response;
 use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Event\PostCreateTables;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Yii2Adapter\Container;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config as ConfigFacade;
 use Illuminate\Support\Facades\Event as LaravelEvent;
+use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
+use Yii;
 use yii\base\ErrorException;
 use yii\base\Event;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\Module;
+use yii\BaseYii;
 use yii\db\Exception;
 use yii\mutex\Mutex;
 
@@ -141,6 +147,24 @@ class TestSetup
         Craft::setLogger(null);
 
         Craft::$app = null;
+
+        // Reset Yii2 container to prevent singleton accumulation
+        Yii::$container = new Container();
+
+        // Reset BaseYii statics that accumulate across tests
+        BaseYii::$classMap = [];
+        BaseYii::$aliases = ['@yii' => dirname((new ReflectionClass(BaseYii::class))->getFileName())];
+
+        // Reset Yii alias paths cache (private static)
+        $ref = new ReflectionClass(Yii::class);
+        $aliasPaths = $ref->getProperty('_aliasPaths');
+        $aliasPaths->setValue(null, []);
+        $aliasesChanged = $ref->getProperty('_aliasesChanged');
+        $aliasesChanged->setValue(null, false);
+
+        // Reset CustomFieldBehavior static handles
+        CustomFieldBehavior::$fieldHandles = [];
+        CustomFieldBehavior::$generatedFieldHandles = [];
     }
 
     /**
@@ -178,19 +202,19 @@ class TestSetup
 
         $appType = self::appType();
 
-        Craft::setAlias('@craftunitsupport', $srcPath . '/test');
-        Craft::setAlias('@craftunittemplates', $basePath . '/tests/_craft/templates');
-        Craft::setAlias('@craftunitfixtures', $basePath . '/tests/fixtures');
-        Craft::setAlias('@testsfolder', $basePath . '/tests');
-        Craft::setAlias('@crafttestsfolder', $basePath . '/tests/_craft');
+        Aliases::set('@craftunitsupport', $srcPath . '/test');
+        Aliases::set('@craftunittemplates', $basePath . '/tests/_craft/templates');
+        Aliases::set('@craftunitfixtures', $basePath . '/tests/fixtures');
+        Aliases::set('@testsfolder', $basePath . '/tests');
+        Aliases::set('@crafttestsfolder', $basePath . '/tests/_craft');
 
         // Normalize some Craft defined path aliases.
-        Craft::setAlias('@lib', CraftTest::normalizePathSeparators(Craft::getAlias('@lib')));
-        Craft::setAlias('@config', CraftTest::normalizePathSeparators(Craft::getAlias('@config')));
-        Craft::setAlias('@contentMigrations', CraftTest::normalizePathSeparators(Craft::getAlias('@contentMigrations')));
-        Craft::setAlias('@storage', CraftTest::normalizePathSeparators(Craft::getAlias('@storage')));
-        Craft::setAlias('@templates', CraftTest::normalizePathSeparators(Craft::getAlias('@templates')));
-        Craft::setAlias('@translations', CraftTest::normalizePathSeparators(Craft::getAlias('@translations')));
+        Aliases::set('@lib', CraftTest::normalizePathSeparators(Aliases::get('@lib')));
+        Aliases::set('@config', CraftTest::normalizePathSeparators(Aliases::get('@config')));
+        Aliases::set('@contentMigrations', CraftTest::normalizePathSeparators(Aliases::get('@contentMigrations')));
+        Aliases::set('@storage', CraftTest::normalizePathSeparators(Aliases::get('@storage')));
+        Aliases::set('@templates', CraftTest::normalizePathSeparators(Aliases::get('@templates')));
+        Aliases::set('@translations', CraftTest::normalizePathSeparators(Aliases::get('@translations')));
 
         $configService = self::$_configService ?? self::createConfigService();
 
@@ -291,12 +315,12 @@ class TestSetup
         require_once $srcPath . '/Craft.php';
 
         // Set aliases
-        Craft::setAlias('@vendor', $vendorPath);
-        Craft::setAlias('@lib', $libPath);
-        Craft::setAlias('@config', $configPath);
-        Craft::setAlias('@contentMigrations', $contentMigrationsPath);
-        Craft::setAlias('@tests', $testsPath);
-        Craft::setAlias('@translations', $translationsPath);
+        Aliases::set('@vendor', $vendorPath);
+        Aliases::set('@lib', $libPath);
+        Aliases::set('@config', $configPath);
+        Aliases::set('@contentMigrations', $contentMigrationsPath);
+        Aliases::set('@tests', $testsPath);
+        Aliases::set('@translations', $translationsPath);
 
         self::$_configService = self::createConfigService();
         $generalConfig = Cms::config();
@@ -306,7 +330,7 @@ class TestSetup
         if (is_array($customAliases)) {
             foreach ($customAliases as $name => $value) {
                 if (is_string($value)) {
-                    Craft::setAlias($name, $value);
+                    Aliases::set($name, $value);
                 }
             }
         }
@@ -419,7 +443,7 @@ class TestSetup
             }
         }
 
-        $site = new Site(...$siteConfig);
+        $site = new Site($siteConfig);
 
         LaravelEvent::listen(PostCreateTables::class, function() {
             Artisan::call('craft:add-categories-support', [
@@ -438,9 +462,10 @@ class TestSetup
             password: 'craftcms2018!!',
             email: 'support@craftcms.com',
             site: $site,
-        );
+        )->silent();
 
         $migration->up();
+        app(LaravelMigrations::class)->ensureSessionsTable();
     }
 
     /**
@@ -539,7 +564,7 @@ class TestSetup
             [Path::class, ['getPath', 'path']],
             [Plugins::class, ['getPlugins', 'plugins']],
             [\craft\services\ProjectConfig::class, ['getProjectConfig', 'projectConfig']],
-            [Queue::class, ['getQueue', 'queue']],
+            [QueueComponent::class, ['getQueue', 'queue']],
             [Relations::class, ['getRelations', 'relations']],
             [Routes::class, ['getRoutes', 'routes']],
             [Search::class, ['getSearch', 'search']],

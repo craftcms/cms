@@ -1,25 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace craft\gql\base;
 
 /**
- * GeneratorInterface defines the common interface to be implemented by GraphQL type generator classes.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Contracts\GeneratorInterface} instead.
  */
-interface GeneratorInterface
+interface GeneratorInterface extends \CraftCms\Cms\Gql\Contracts\GeneratorInterface
 {
-    /**
-     * Generate GraphQL types.
-     *
-     * @param mixed $context Context for generated types
-     * @return ObjectType[]
-     */
-    public static function generateTypes(mixed $context = null): array;
 }

@@ -42,8 +42,17 @@ $index = [];
 $aliasesPhp = <<<PHP
 <?php
 
-use CraftCms\Aliases\Aliases;
+use Yiisoft\Aliases\Aliases;
 
+\$aliases = app(Aliases::class);
+
+/**
+ * We use reflection here as calling ->set every
+ * time incurs a high performance cost.
+ */
+\$reflectionProperty = new ReflectionProperty(\$aliases, 'aliases');
+\$reflectionProperty->setValue(\$aliases, array_merge_recursive(\$reflectionProperty->getValue(\$aliases), [
+    '@appicons' => [
 
 PHP;
 
@@ -81,7 +90,7 @@ foreach ($meta as $name => $info) {
     if ($style !== 'custom') {
         $terms = $meta[$name]['search']['terms'] ?? [];
         $index[$name] = [
-            'name' => sprintf(' %s ', Search::normalizeKeywords($name, language: 'en-US')),
+            'name' => sprintf(' %s ', Search::normalizeKeywords((string) $name, language: 'en-US')),
             'terms' => sprintf(' %s ', Search::normalizeKeywords($terms, language: 'en-US')),
             'pro' => empty($meta[$name]['free']),
             'styles' => $meta[$name]['styles'] ?? [],
@@ -90,11 +99,16 @@ foreach ($meta as $name => $info) {
 
     if ($style !== 'solid') {
         $aliasesPhp .= <<<PHP
-Aliases::set('@appicons/$name.svg', "@icons/$dir/$name.svg");
+        '@appicons/$name.svg' => "@icons/$dir/$name.svg",
 
 PHP;
     }
 }
+
+$aliasesPhp .= <<<'PHP'
+    ]
+]));
+PHP;
 
 echo "Finished writing $wrote icons ($skipped skipped).\n";
 

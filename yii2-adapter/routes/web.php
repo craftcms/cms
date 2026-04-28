@@ -1,5 +1,6 @@
 <?php
 
+use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -9,9 +10,9 @@ Route::any('{any}', function() {
     abort(404);
 })
     ->middleware([
-        'web',
         'craft',
-        \CraftCms\Yii2Adapter\Http\LegacyMiddleware::class,
+        'craft.web',
+        LegacyMiddleware::class,
     ])
     ->where('any', '.*')
     ->fallback();

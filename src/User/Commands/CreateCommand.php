@@ -4,25 +4,28 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Commands;
 
-use Craft;
-use craft\elements\User;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Users;
 use Illuminate\Console\Command;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
+use Override;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\text;
 
-final class CreateCommand extends Command
+class CreateCommand extends Command
 {
     use CraftCommand;
 
+    #[Override]
     protected $signature = 'craft:users:create
         {--email= : The user’s email address.}
         {--username= : The user’s username.}
@@ -34,13 +37,15 @@ final class CreateCommand extends Command
         {--groupIds=* : The group IDs to assign the created user to.}
     ';
 
+    #[Override]
     protected $description = 'Creates a new user.';
 
+    #[Override]
     protected $aliases = ['users/create'];
 
-    public function handle(GeneralConfig $generalConfig): int
+    public function handle(Elements $elements, GeneralConfig $generalConfig, Users $users): int
     {
-        if (! Craft::$app->getUsers()->canCreateUsers()) {
+        if (! $users->canCreateUsers()) {
             $this->components->error('The maximum number of users has already been reached.');
 
             return self::FAILURE;
@@ -59,7 +64,7 @@ final class CreateCommand extends Command
 
         if (! empty($attributes) && ! $user->validate(array_keys($attributes))) {
             $this->error('Invalid arguments:');
-            $this->error(implode(PHP_EOL, $user->getErrorSummary(true)));
+            $this->error(implode(PHP_EOL, $user->errors()->all()));
 
             return self::FAILURE;
         }
@@ -112,8 +117,8 @@ final class CreateCommand extends Command
         $failed = false;
         $this->components->task(
             description: 'Saving the user',
-            task: function () use ($user, &$failed) {
-                $failed = ! Craft::$app->getElements()->saveElement($user, false);
+            task: function () use ($elements, $user, &$failed) {
+                $failed = ! $elements->saveElement($user, false);
 
                 return $failed;
             }
@@ -121,7 +126,7 @@ final class CreateCommand extends Command
 
         if ($failed) {
             $this->components->error('Failed to save the user.');
-            $this->components->error(implode(PHP_EOL, $user->getErrorSummary(true)));
+            $this->components->error(implode(PHP_EOL, $user->errors()->all()));
 
             return self::FAILURE;
         }
@@ -137,8 +142,8 @@ final class CreateCommand extends Command
         if ($groupIds) {
             $this->components->task(
                 description: 'Assigning the user to groups',
-                task: function () use ($user, $groupIds) {
-                    Craft::$app->getUsers()->assignUserToGroups($user->id, $groupIds);
+                task: function () use ($users, $user, $groupIds) {
+                    $users->assignUserToGroups($user->id, $groupIds);
                 }
             );
         }
@@ -148,7 +153,7 @@ final class CreateCommand extends Command
                 $this->components->task(
                     'Sending activation email...',
                     function () use ($user) {
-                        Craft::$app->getUsers()->sendActivationEmail($user);
+                        $user->sendEmailVerificationNotification();
                     }
                 );
 

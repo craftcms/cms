@@ -8,13 +8,14 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\models\Volume;
+use CraftCms\Cms\Asset\Data\Volume;
 
 /**
  * VolumeEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Events\SavingVolume}, {@see \CraftCms\Cms\Asset\Events\VolumeSaved}, {@see \CraftCms\Cms\Asset\Events\DeletingVolume}, {@see \CraftCms\Cms\Asset\Events\ApplyingVolumeDelete}, or {@see \CraftCms\Cms\Asset\Events\VolumeDeleted} instead.
  */
 class VolumeEvent extends Event
 {

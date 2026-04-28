@@ -8,7 +8,7 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\models\Section;
+use CraftCms\Cms\Section\Data\Section;
 
 /**
  * Section event class.
@@ -20,9 +20,9 @@ use craft\models\Section;
 class SectionEvent extends Event
 {
     /**
-     * @var Section|\CraftCms\Cms\Section\Data\Section The section model associated with the event.
+     * @var \CraftCms\Cms\Section\Data\Section The section model associated with the event.
      */
-    public Section|\CraftCms\Cms\Section\Data\Section $section;
+    public Section $section;
 
     /**
      * @var bool Whether the section is brand new

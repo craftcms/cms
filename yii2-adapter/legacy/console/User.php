@@ -7,7 +7,8 @@
 
 namespace craft\console;
 
-use craft\elements\User as UserElement;
+use CraftCms\Cms\User\Elements\User as UserElement;
+use Illuminate\Support\Facades\Auth;
 use yii\base\Component;
 
 /**
@@ -20,20 +21,13 @@ use yii\base\Component;
 class User extends Component
 {
     /**
-     * @var UserElement|null
-     * @see getIdentity()
-     * @see setIdentity()
-     */
-    private ?UserElement $_identity = null;
-
-    /**
      * Returns whether the current user is an admin.
      *
      * @return bool Whether the current user is an admin.
      */
     public function getIsAdmin(): bool
     {
-        $user = $this->getIdentity();
+        $user = Auth::user();
 
         return ($user && $user->admin);
     }
@@ -46,7 +40,7 @@ class User extends Component
      */
     public function checkPermission(string $permissionName): bool
     {
-        $user = $this->getIdentity();
+        $user = Auth::user();
 
         return ($user && $user->can($permissionName));
     }
@@ -59,7 +53,7 @@ class User extends Component
      */
     public function getIdentity(bool $autoRenew = true): UserElement|null
     {
-        return $this->_identity;
+        return Auth::user();
     }
 
     /**
@@ -70,7 +64,7 @@ class User extends Component
      */
     public function setIdentity(?UserElement $identity = null): void
     {
-        $this->_identity = $identity;
+        Auth::login($identity);
     }
 
     /**
@@ -80,7 +74,7 @@ class User extends Component
      */
     public function getIsGuest(): bool
     {
-        return $this->getIdentity() === null;
+        return Auth::user() === null;
     }
 
     /**
@@ -91,8 +85,6 @@ class User extends Component
      */
     public function getId(): ?int
     {
-        $identity = $this->getIdentity();
-
-        return $identity?->getId();
+        return Auth::user()?->getId();
     }
 }

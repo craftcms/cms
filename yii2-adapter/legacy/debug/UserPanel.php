@@ -7,7 +7,7 @@
 
 namespace craft\debug;
 
-use Craft;
+use CraftCms\Cms\Support\Facades\Security;
 
 /**
  * Debugger panel that collects and displays user info..
@@ -25,9 +25,8 @@ class UserPanel extends \yii\debug\panels\UserPanel
         $data = parent::save();
 
         if (isset($data['identity'])) {
-            $security = Craft::$app->getSecurity();
             foreach ($data['identity'] as $key => $value) {
-                $data['identity'][$key] = $security->redactIfSensitive($key, $value);
+                $data['identity'][$key] = Security::redactIfSensitive($key, $value);
             }
         }
 

@@ -1,14 +1,14 @@
-{% set systemName = craft.app.getSystemName()|t('site') -%}
+{% set systemName = systemName|t('site') -%}
 {% set docTitle = docTitle is defined ? docTitle : title|striptags -%}
-{% set orientation = craft.i18n.locale.getOrientation() -%}
-{% set a11yDefaults = app.config.craft.general.accessibilityDefaults %}
+{% set orientation = I18N.getLocale().getOrientation() -%}
+{% set a11yDefaults = config('craft.general.accessibilityDefaults') %}
 {% set requestedSite = craft.cp.requestedSite %}
 
 {% set bodyClass = (bodyClass ?? [])|explodeClass|merge([
     orientation,
-    (currentUser.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false) ? 'use-shapes',
-    (currentUser.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false) ? 'underline-links',
-    "notifications--#{currentUser.getPreference('notificationPosition') ?? a11yDefaults['notificationPosition'] ?? 'end-start'}",
+    (Auth.user.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false) ? 'use-shapes',
+    (Auth.user.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false) ? 'underline-links',
+    "notifications--#{Auth.user.getPreference('notificationPosition') ?? a11yDefaults['notificationPosition'] ?? 'end-start'}",
     requestedSite ? "site--#{requestedSite.handle}",
 ])|filter -%}
 
@@ -17,13 +17,13 @@
     dir: orientation,
 }|merge(bodyAttributes ?? {}, recursive=true) -%}
 
-{% do view.registerAssetBundle('craft\\web\\assets\\cp\\CpAsset') -%}
-{% set cpAssetUrl = view.getAssetManager().getPublishedUrl('@app/web/assets/cp/dist', true) -%}
+{% do registerLegacyAsset('CraftCms\\Cms\\View\\LegacyAssets\\CpAsset') -%}
+{% set cpAssetUrl = asset('vendor/craft/legacy/cp/dist') -%}
 
 {% hook "cp.layouts.base" -%}
 
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="{{ craft.app.language }}">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="{{ language }}">
 <head>
     {% block head %}
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -34,7 +34,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     {% set hasCustomIcon = false %}
-    {% for tag in app.config.craft.general.cpHeadTags %}
+    {% for tag in config('craft.general.cpHeadTags') %}
         {{ tag(tag[0], tag[1]) }}
         {% if tag[0] == 'link' and (tag[1].rel ?? null) == 'icon' %}
             {% set hasCustomIcon = true %}
@@ -51,16 +51,21 @@
         // Fix for Firefox autofocus CSS bug
         // See: http://stackoverflow.com/questions/18943276/html-5-autofocus-messes-up-css-loading/18945951#18945951
     </script>
+      <script>window.Cp = {};</script>
     {% endblock %}
 </head>
 <body {{ attr(bodyAttributes) }}>
-    {{ beginBody() }}
-    {% include '_layouts/components/global-live-region' %}
-    {% block body %}{% endblock %}
-    {% include '_layouts/components/notifications' %}
-    {% block foot %}{% endblock %}
-    {{ endBody() }}
-
+  {{ beginBody() }}
+  {% include '_layouts/components/global-live-region' %}
+  {% block body %}{% endblock %}
+  {% include '_layouts/components/notifications' %}
+  {% block foot %}{% endblock %}
     {{ vite(['resources/css/cp.css', 'resources/js/legacy.ts']) }}
+
+  {{ endBody() }}
+  <script
+    src="data:text/javascript;base64,{{ 'Cp.config(Craft); Cp.init()' | base64_encode }}"
+    defer
+  ></script>
 </body>
 </html>

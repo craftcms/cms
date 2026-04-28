@@ -8,7 +8,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
 
-final class PurgeUnsavedDrafts extends GarbageCollectionAction
+class PurgeUnsavedDrafts extends GarbageCollectionAction
 {
     public function __construct(
         GarbageCollection $garbageCollection,

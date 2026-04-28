@@ -22,10 +22,11 @@ use Illuminate\Contracts\Console\PromptsForMissingInput;
  *
  * As with [set](#project-config-set), removing values only updates the root `dateModified` key when using the [`--update-timestamp` flag](#project-config-set-options). If you do not include this flag, you must run `project-config/touch` before changes will be detected or applied in other environments!
  */
-final class RemoveCommand extends Command implements PromptsForMissingInput
+class RemoveCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:project-config:remove
         {path}
         {--message= : A message describing the changes.}
@@ -33,8 +34,10 @@ final class RemoveCommand extends Command implements PromptsForMissingInput
         {--force : Whether every entry change should be force-applied.}
     ';
 
+    #[\Override]
     protected $description = 'Removes a project config value.';
 
+    #[\Override]
     protected $aliases = ['project-config/remove', 'pc:remove', 'pc/remove'];
 
     public function handle(): int

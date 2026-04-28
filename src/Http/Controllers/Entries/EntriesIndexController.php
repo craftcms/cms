@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
-use craft\elements\Entry;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Http\RedirectResponse;
 
 use function CraftCms\Cms\cp_redirect;
 
-final readonly class EntriesIndexController
+readonly class EntriesIndexController
 {
     public function __invoke(ElementSources $elementSources): RedirectResponse
     {

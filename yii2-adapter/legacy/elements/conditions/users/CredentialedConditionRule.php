@@ -2,57 +2,14 @@
 
 namespace craft\elements\conditions\users;
 
-use craft\base\conditions\BaseLightswitchConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\db\UserQuery;
-use craft\elements\User;
-use function CraftCms\Cms\t;
-
 /**
  * Credentialed condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\Conditions\CredentialedConditionRule} instead.
  */
-class CredentialedConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
+class CredentialedConditionRule extends \CraftCms\Cms\User\Conditions\CredentialedConditionRule
 {
-    /**
-     * @inheritdoc
-     */
-    public function getLabel(): string
-    {
-        return t('Credentialed');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['status'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var UserQuery $query */
-        if ($this->value) {
-            $query->status(['active', 'pending']);
-        } else {
-            $query->status('inactive');
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        /** @var User $element */
-        return $this->matchValue($element->getIsCredentialed());
-    }
+    use \craft\base\LegacyEventConstants;
 }

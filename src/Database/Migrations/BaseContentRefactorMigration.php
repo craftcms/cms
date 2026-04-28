@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Migrations;
 
-use craft\base\ElementInterface;
-use craft\fieldlayoutelements\CustomField;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\MissingField;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
@@ -24,7 +26,6 @@ use Tpetry\QueryExpressions\Language\CaseGroup;
 use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
 use Tpetry\QueryExpressions\Value\Value;
-use yii\db\Schema as YiiSchema;
 
 use function Laravel\Prompts\progress;
 
@@ -123,7 +124,7 @@ class BaseContentRefactorMigration extends Migration
                 $content = [];
 
                 foreach ($fieldColumns as $layoutElementUid => $column) {
-                    /** @var \CraftCms\Cms\Field\Field $field */
+                    /** @var Field $field */
                     $field = $fieldsByUid[$layoutElementUid];
 
                     if ($field instanceof MissingField) {
@@ -247,7 +248,7 @@ class BaseContentRefactorMigration extends Migration
         array &$flatFieldColumns,
     ): bool {
         if ($field instanceof MissingField) {
-            $dbType = YiiSchema::TYPE_TEXT;
+            $dbType = Query::TYPE_TEXT;
         } else {
             $dbType = $field::dbType();
             if ($dbType === null) {
@@ -256,10 +257,9 @@ class BaseContentRefactorMigration extends Migration
         }
 
         $primaryColumn = sprintf(
-            '%s%s%s',
+            '%s%s',
             $fieldColumnPrefix,
             $field->handle,
-            (property_exists($field, 'columnSuffix') && $field->columnSuffix ? "_$field->columnSuffix" : ''),
         );
 
         if (! Schema::hasColumn($contentTable, $primaryColumn)) {
@@ -270,8 +270,7 @@ class BaseContentRefactorMigration extends Migration
         if (is_array($dbType) && count($dbType) > 1) {
             $dbTypeKeys = array_keys($dbType);
             $extraColumns = array_map(
-                fn (string $key) => sprintf('%s%s_%s_%s', $fieldColumnPrefix, $field->handle, $key,
-                    property_exists($field, 'columnSuffix') ? $field->columnSuffix : ''),
+                fn (string $key) => sprintf('%s%s_%s', $fieldColumnPrefix, $field->handle, $key),
                 array_slice($dbTypeKeys, 1),
             );
 
@@ -301,7 +300,7 @@ class BaseContentRefactorMigration extends Migration
         }
 
         // if dbType is null or text, the content column type may be more reliable
-        if (! $dbType || $dbType === YiiSchema::TYPE_TEXT) {
+        if (! $dbType || $dbType === Query::TYPE_TEXT) {
             $dbType = Schema::getColumnType($contentTable, $column);
         }
 
@@ -320,16 +319,16 @@ class BaseContentRefactorMigration extends Migration
 
             // special case for a datetime that was stored in a single column
             // we need to do it here, cause if it was stored in 2 cols, the $dbType wouldn't have been an array
-            if ($dbType === YiiSchema::TYPE_DATETIME && is_string($value)) {
+            if ($dbType === Query::TYPE_DATETIME && is_string($value)) {
                 return ['date' => $value];
             }
         }
 
         return match ($dbType) {
-            YiiSchema::TYPE_TINYINT, YiiSchema::TYPE_SMALLINT, YiiSchema::TYPE_INTEGER, YiiSchema::TYPE_BIGINT => (int) $value,
-            YiiSchema::TYPE_FLOAT, YiiSchema::TYPE_DOUBLE, YiiSchema::TYPE_DECIMAL, YiiSchema::TYPE_MONEY => (float) $value,
-            YiiSchema::TYPE_BOOLEAN => (bool) $value,
-            YiiSchema::TYPE_JSON => Json::decodeIfJson($value),
+            Query::TYPE_TINYINT, Query::TYPE_SMALLINT, Query::TYPE_INTEGER, Query::TYPE_BIGINT => (int) $value,
+            Query::TYPE_FLOAT, Query::TYPE_DOUBLE, Query::TYPE_DECIMAL, Query::TYPE_MONEY => (float) $value,
+            Query::TYPE_BOOLEAN => (bool) $value,
+            Query::TYPE_JSON => Json::decodeIfJson($value),
             default => $value,
         };
     }

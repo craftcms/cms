@@ -9,7 +9,7 @@ use CraftCms\Cms\User\Data\UserGroup;
 /**
  * @event SavingUserGroup The event that is triggered before a user group is saved.
  */
-final class SavingUserGroup
+class SavingUserGroup
 {
     public function __construct(
         public UserGroup $userGroup,

@@ -8,11 +8,12 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\SystemMessage\Events\RegisterSystemMessages;
+use CraftCms\Cms\SystemMessage\Mailables\SystemMessageMailable;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Event;
 use Tpetry\QueryExpressions\Language\CaseGroup;
 use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
@@ -21,7 +22,7 @@ use Tpetry\QueryExpressions\Value\Value;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final class SystemMessages
+class SystemMessages
 {
     /** @var Collection<SystemMessage>|null */
     private ?Collection $defaultMessages = null;
@@ -70,13 +71,10 @@ final class SystemMessages
             ]),
         ]);
 
-        if (Event::hasListeners(RegisterSystemMessages::class)) {
-            Event::dispatch($event = new RegisterSystemMessages($messages));
-            $messages = $event->messages;
-        }
+        event($event = new RegisterSystemMessages($messages));
 
         // Sort them all by key
-        $messages = $messages
+        $messages = $event->messages
             ->keyBy('key')
             ->sortBy('key');
 
@@ -203,5 +201,32 @@ final class SystemMessages
             'subject' => $message->subject,
             'body' => $message->body,
         ]);
+    }
+
+    public function mailable(string $key, User $user, array $variables = []): SystemMessageMailable
+    {
+        $siteId = null;
+        $language = $user->getPreferredLanguage();
+
+        if (
+            isset($user->affiliatedSiteId) &&
+            (
+                app()->runningInConsole() ||
+                request()->isCpRequest()
+            )
+        ) {
+            $siteId = $user->affiliatedSiteId;
+        }
+
+        $variables['user'] ??= $user;
+
+        return new SystemMessageMailable(
+            key: $key,
+            variables: $variables,
+            language: $language,
+            siteId: $siteId,
+        )
+            ->to($user->email, $user->fullName)
+            ->locale($language);
     }
 }

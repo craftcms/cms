@@ -2,7 +2,7 @@
 
 {% import '_includes/forms.twig' as forms %}
 
-{% set headlessMode = app.config.craft.general.headlessMode %}
+{% set headlessMode = config('craft.general.headlessMode') %}
 {% set sectionType = old('type', section.type.value) %}
 
 {% if not readOnly %}
@@ -19,7 +19,7 @@
     id: 'name',
     name: 'name',
     value: old('name', section.name),
-    errors: sessionErrors.get('name'),
+    errors: errors.get('name'),
     data: {'error-key': 'name'},
     autofocus: true,
     required: true,
@@ -35,7 +35,7 @@
     autocorrect: false,
     autocapitalize: false,
     value: old('handle', section.handle),
-    errors: sessionErrors.get('handle'),
+    errors: errors.get('handle'),
     data: {'error-key': 'handle'},
     required: true,
     disabled: readOnly,
@@ -59,7 +59,7 @@
     value: sectionType,
     toggle: true,
     targetPrefix: '.type-',
-    errors: sessionErrors.get('type'),
+    errors: errors.get('type'),
     data: {'error-key': 'type'},
     disabled: readOnly,
 }) }}
@@ -73,19 +73,19 @@
     name: 'entryTypes[]',
     values: section.getEntryTypes(),
     allowOverrides: true,
-    errors: sessionErrors.get('entryTypes'),
+    errors: errors.get('entryTypes'),
     data: {'error-key': 'entryTypes'},
     create: not readOnly,
     disabled: readOnly,
 }) }}
 
 {% set siteRows = [] %}
-{% set siteErrors = sessionErrors.get('sites') %}
+{% set siteErrors = errors.get('sites') %}
 
-{% for site in craft.sites.getAllSites() %}
+{% for site in Sites.getAllSites() %}
     {% set siteSettings = old('sites.' ~ site.id, section.siteSettings[site.id] ?? null) %}
     {% if siteSettings %}
-        {% for attribute, errors in sessionErrors.get('sites.' ~ site.id) %}
+        {% for attribute, errors in errors.get('sites.' ~ site.id) %}
             {% set siteErrors = siteErrors|merge(errors) %}
         {% endfor %}
     {% endif %}
@@ -104,15 +104,15 @@
             },
             singleUri: {
                 value: (sectionType == 'single' and siteSettings and siteSettings.uriFormat != '__home__') ? siteSettings.uriFormat,
-                hasErrors: (sectionType == 'single' and siteSettings ? sessionErrors.has('sites.' ~ site.id ~ '.uriFormat')),
+                hasErrors: (sectionType == 'single' and siteSettings ? errors.has('sites.' ~ site.id ~ '.uriFormat')),
             },
             uriFormat: {
                 value: siteSettings ? siteSettings.uriFormat,
-                hasErrors: (sectionType != 'single' and siteSettings ? sessionErrors.has('sites.' ~ site.id ~ '.uriFormat')),
+                hasErrors: (sectionType != 'single' and siteSettings ? errors.has('sites.' ~ site.id ~ '.uriFormat')),
             },
             template: not headlessMode ? {
                 value: siteSettings ? siteSettings.template,
-                hasErrors: siteSettings ? sessionErrors.has('sites.' ~ site.id ~ '.template'),
+                hasErrors: siteSettings ? errors.has('sites.' ~ site.id ~ '.template'),
             },
             enabledByDefault: siteSettings ? siteSettings.enabledByDefault : true,
         }|filter
@@ -133,7 +133,7 @@
         enabled: {
             type: 'heading',
             thin: true,
-            class: not craft.sites.isMultiSite() ? 'hidden'
+            class: not Sites.isMultiSite() ? 'hidden'
         },
         singleHomepage: {
             type: 'checkbox',
@@ -185,7 +185,7 @@
     static: readOnly,
 }) }}
 
-{% if craft.sites.isMultiSite() %}
+{% if Sites.isMultiSite() %}
     <div class="field type-channel type-structure {% if sectionType == 'single' %}hidden{% endif %}">
         {{ forms.selectField({
             label: 'Propagation Method'|t('app'),
@@ -214,7 +214,7 @@
         name: 'maxLevels',
         value: old('maxLevels', section.maxLevels),
         size: 5,
-        errors: sessionErrors.get('maxLevels'),
+        errors: errors.get('maxLevels'),
         data: {'error-key': 'maxLevels'},
         disabled: readOnly,
     }) }}
@@ -263,7 +263,7 @@
     allowReorder: true,
     allowDelete: true,
     rows: old('previewTargets', section.previewTargets),
-    errors: sessionErrors.get('previewTargets'),
+    errors: errors.get('previewTargets'),
     data: {'error-key': 'previewTargets'},
     static: readOnly,
 }) }}
@@ -273,21 +273,26 @@
     instructions: 'The maximum number of authors that entries in this section can have.'|t('app'),
     id: 'maxAuthors',
     name: 'maxAuthors',
-    autocorrect: false,
-    autocapitalize: false,
-    default: 1,
+    type: 'number',
+    min: 0,
+    max: 32767,
     value: old('maxAuthors', section.maxAuthors),
-    errors: sessionErrors.get('maxAuthors'),
+    errors: errors.get('maxAuthors'),
     data: {'error-key': 'maxAuthors'},
     size: 5,
     disabled: readOnly,
+    fieldClass: {
+      'type-channel': true,
+      'type-structure': true,
+      'hidden': section.type == 'single',
+    }|filter|keys,
 }) }}
 
 {% if brandNewSection %}
     {% js on ready %}
         new Craft.HandleGenerator('#name', '#handle');
 
-        {% for site in craft.sites.getAllSites() %}
+        {% for site in Sites.getAllSites() %}
             new Craft.UriFormatGenerator(
                 '#name',
                 '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[singleUri]"]',

@@ -8,23 +8,16 @@
 namespace craft\web\assets\codemirror;
 
 use craft\web\AssetBundle;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * CodeMirror asset bundle.
+ * @deprecated 6.0.0
  */
 class CodeMirrorAsset extends AssetBundle
 {
-    /** @inheritdoc */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /** @inheritdoc */
-    public $js = [
-        'codemirror.js',
-        'javascript.js',
-    ];
-
-    /** @inheritdoc */
-    public $css = [
-        'codemirror.css',
-    ];
+    public function registerAssetFiles($view): void
+    {
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\CodeMirrorAsset::class);
+    }
 }

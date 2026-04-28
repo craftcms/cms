@@ -4,35 +4,42 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use Craft;
-use craft\base\Element;
-use craft\base\ElementInterface;
-use craft\errors\InvalidElementException;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Events\ApplyingDraft;
 use CraftCms\Cms\Element\Events\CreatingDraft;
 use CraftCms\Cms\Element\Events\DraftApplied;
 use CraftCms\Cms\Element\Events\DraftCreated;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\User\Elements\User;
+use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final readonly class Drafts
+readonly class Drafts
 {
+    public const string CONTEXT_PREVIEW_USER_ID = 'craft.preview-user-id';
+
+    public function __construct(
+        private Elements $elements,
+    ) {}
+
     /**
      * Returns drafts for a given element ID that the current user is allowed to edit
      *
@@ -46,6 +53,7 @@ final readonly class Drafts
             return collect();
         }
 
+        /** @var ElementQueryInterface $query */
         $query = $element::find()
             ->draftOf($element)
             ->siteId($element->siteId)
@@ -89,18 +97,16 @@ final readonly class Drafts
 
         $markAsSaved = Arr::pull($newAttributes, 'markAsSaved', true);
 
-        if (Event::hasListeners(CreatingDraft::class)) {
-            Event::dispatch($event = new CreatingDraft(
-                canonical: $canonical,
-                creatorId: $creatorId,
-                provisional: $provisional,
-                draftName: $name,
-                draftNotes: $notes,
-            ));
+        event($event = new CreatingDraft(
+            canonical: $canonical,
+            creatorId: $creatorId,
+            provisional: $provisional,
+            draftName: $name,
+            draftNotes: $notes,
+        ));
 
-            $name = $event->draftName;
-            $notes = $event->draftNotes;
-        }
+        $name = $event->draftName;
+        $notes = $event->draftNotes;
 
         if ($name === null || $name === '') {
             $name = $this->generateDraftName($canonical->id);
@@ -122,15 +128,20 @@ final readonly class Drafts
             $newAttributes['trackDraftChanges'] = $canonical::trackChanges();
             $newAttributes['markDraftAsSaved'] = $markAsSaved;
 
-            $draft = Craft::$app->getElements()->duplicateElement($canonical, $newAttributes);
+            $draft = $this->elements->duplicateElement($canonical, $newAttributes);
 
-            // Duplicate nested element ownership
-            DB::table(Table::ELEMENTS_OWNERS)
-                ->insertUsing(['elementId', 'ownerId', 'sortOrder'],
-                    DB::table(Table::ELEMENTS_OWNERS, 'o')
-                        ->select('o.elementId', DB::raw($draft->id), 'o.sortOrder')
-                        ->where('o.ownerId', $canonical->id)
-                );
+            DB::table(Table::ELEMENTS_OWNERS)->insertUsing(
+                columns: ['elementId', 'ownerId', 'sortOrder'],
+                query: DB::table(Table::ELEMENTS_OWNERS, 'o')
+                    ->select('o.elementId', DB::raw($draft->id), 'o.sortOrder')
+                    ->where('o.ownerId', $canonical->id)
+                    ->whereNotExists(function ($query) use ($draft) {
+                        $query->selectRaw('1')
+                            ->from(Table::ELEMENTS_OWNERS)
+                            ->whereColumn('elementId', 'o.elementId')
+                            ->where('ownerId', $draft->id);
+                    }),
+            );
 
             DB::commit();
         } catch (Throwable $e) {
@@ -138,16 +149,14 @@ final readonly class Drafts
             throw $e;
         }
 
-        if (Event::hasListeners(DraftCreated::class)) {
-            Event::dispatch(new DraftCreated(
-                canonical: $canonical,
-                creatorId: $creatorId,
-                provisional: $provisional,
-                draftName: $name,
-                draftNotes: $notes,
-                draft: $draft,
-            ));
-        }
+        event(new DraftCreated(
+            canonical: $canonical,
+            creatorId: $creatorId,
+            provisional: $provisional,
+            draftName: $name,
+            draftNotes: $notes,
+            draft: $draft,
+        ));
 
         return $draft;
     }
@@ -193,7 +202,7 @@ final readonly class Drafts
         $element->markDraftAsSaved = $markAsSaved;
 
         // Try to save and return the result
-        return Craft::$app->getElements()->saveElement($element);
+        return $this->elements->saveElement($element);
     }
 
     /**
@@ -230,17 +239,14 @@ final readonly class Drafts
             }
         }
 
-        if (Event::hasListeners(ApplyingDraft::class)) {
-            Event::dispatch(new ApplyingDraft(
-                canonical: $canonical,
-                creatorId: $draft->draftCreatorId,
-                draftName: $draft->draftName,
-                draftNotes: $draft->draftNotes,
-                draft: $draft,
-            ));
-        }
+        event(new ApplyingDraft(
+            canonical: $canonical,
+            creatorId: $draft->draftCreatorId,
+            draftName: $draft->draftName,
+            draftNotes: $draft->draftNotes,
+            draft: $draft,
+        ));
 
-        $elementsService = Craft::$app->getElements();
         $draftNotes = $draft->draftNotes;
 
         DB::beginTransaction();
@@ -248,11 +254,11 @@ final readonly class Drafts
             if ($canonical !== $draft) {
                 // Merge in any attribute & field values that were updated in the canonical element, but not the draft
                 if ($draft::trackChanges() && ElementHelper::isOutdated($draft)) {
-                    $elementsService->mergeCanonicalChanges($draft);
+                    $this->elements->mergeCanonicalChanges($draft);
                 }
 
                 // "Duplicate" the draft with the canonical element’s ID and UID
-                $newCanonical = $elementsService->updateCanonicalElement($draft, array_merge($newAttributes, [
+                $newCanonical = $this->elements->updateCanonicalElement($draft, array_merge($newAttributes, [
                     'revisionNotes' => $draftNotes ?: t('Applied “{name}”', ['name' => $draft->draftName]),
                 ]));
 
@@ -262,7 +268,7 @@ final readonly class Drafts
                 }
 
                 // Now delete the draft
-                $elementsService->deleteElement($draft, true);
+                $this->elements->deleteElement($draft, true);
             } else {
                 // Just remove the draft data
                 $draft->setRevisionNotes($draftNotes);
@@ -276,21 +282,19 @@ final readonly class Drafts
 
             if ($e instanceof InvalidElementException && $draft !== $e->element) {
                 // Add the errors from the duplicated element back onto the draft
-                $draft->addErrors($e->element->getErrors());
+                $draft->errors()->merge($e->element->errors()->getMessages());
             }
 
             throw $e;
         }
 
-        if (Event::hasListeners(DraftApplied::class)) {
-            Event::dispatch(new DraftApplied(
-                canonical: $newCanonical,
-                creatorId: $draft->draftCreatorId,
-                draftName: $draft->draftName,
-                draftNotes: $draft->draftNotes,
-                draft: $draft,
-            ));
-        }
+        event(new DraftApplied(
+            canonical: $newCanonical,
+            creatorId: $draft->draftCreatorId,
+            draftName: $draft->draftName,
+            draftNotes: $draft->draftNotes,
+            draft: $draft,
+        ));
 
         // if we were on another site when the applyDraft was triggered,
         // ensure we return the canonical element for the site we were on
@@ -314,11 +318,11 @@ final readonly class Drafts
         $draft->firstSave = true;
 
         // We still need to validate so the SlugValidator gets run
-        $draft->setScenario(Element::SCENARIO_ESSENTIALS);
+        $draft->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $draft->validate();
 
         // If there are any errors on the URI, re-validate as disabled
-        if ($draft->hasErrors('uri') && $draft->enabled) {
+        if ($draft->errors()->has('uri') && $draft->enabled) {
             $draft->enabled = false;
             $draft->validate();
         }
@@ -326,7 +330,7 @@ final readonly class Drafts
         try {
             // no need to propagate or save content here – and it could end up overriding any
             // content changes made to other sites from a previous onAfterPropagate(), etc.
-            if ($draft->hasErrors() || ! Craft::$app->getElements()->saveElement($draft, false, false)) {
+            if ($draft->errors()->isNotEmpty() || ! $this->elements->saveElement($draft, false, false)) {
                 throw new InvalidElementException($draft, "Draft $draft->id could not be applied because it doesn't validate.");
             }
 
@@ -358,8 +362,6 @@ final readonly class Drafts
             ->where('elements.dateUpdated', '<', now()->subSeconds(Cms::config()->purgeUnsavedDraftsDuration))
             ->get();
 
-        $elementsService = Craft::$app->getElements();
-
         foreach ($drafts as $draftInfo) {
             /** @var class-string<ElementInterface> $elementType */
             $elementType = $draftInfo->type;
@@ -370,7 +372,7 @@ final readonly class Drafts
                 ->one();
 
             if ($draft) {
-                $elementsService->deleteElement($draft, true);
+                $this->elements->deleteElement($draft, true);
             } else {
                 // Perhaps the draft's row in the `entries` table was deleted manually or something.
                 // Just drop its row in the `drafts` table, and let that cascade to `elements` and whatever other tables
@@ -403,5 +405,118 @@ final readonly class Drafts
             'notes' => $notes,
             'trackChanges' => $trackChanges,
         ]);
+    }
+
+    /**
+     * @template T of ElementInterface
+     *
+     * @param  T[]  $elements
+     * @return T[]
+     */
+    public function withProvisionalDrafts(array $elements, ?User $user = null): array
+    {
+        $drafts = $this->provisionalDrafts($elements, $user);
+
+        if (empty($drafts)) {
+            return $elements;
+        }
+
+        $elementsWithDrafts = $elements;
+
+        foreach ($elements as $index => $element) {
+            if (! isset($drafts[$element->id])) {
+                continue;
+            }
+
+            $draft = $drafts[$element->id];
+            $draft->setCanonical($element);
+
+            if ($element->structureId !== null) {
+                $draft->structureId = $element->structureId;
+                $draft->root = $element->root;
+                $draft->lft = $element->lft;
+                $draft->rgt = $element->rgt;
+                $draft->level = $element->level;
+            }
+
+            if ($element instanceof NestedElementInterface && $draft instanceof NestedElementInterface) {
+                $draft->setOwnerId($element->getOwnerId());
+            }
+
+            $elementsWithDrafts[$index] = $draft;
+        }
+
+        return $elementsWithDrafts;
+    }
+
+    /**
+     * @template T of ElementInterface
+     *
+     * @param  T[]  $elements
+     */
+    public function loadProvisionalChanges(array $elements, ?User $user = null): void
+    {
+        $drafts = $this->provisionalDrafts($elements, $user);
+
+        if (empty($drafts)) {
+            return;
+        }
+
+        foreach ($elements as $element) {
+            if (! isset($drafts[$element->id])) {
+                continue;
+            }
+
+            $draft = $drafts[$element->id];
+            $element->hasProvisionalChanges = true;
+
+            foreach ($draft->getModifiedAttributes() as $name) {
+                if ($element->canSetProperty($name)) {
+                    $element->$name = $draft->$name;
+                }
+            }
+
+            foreach ($draft->getModifiedFields() as $handle) {
+                $element->setFieldValue($handle, $draft->getFieldValue($handle));
+            }
+        }
+    }
+
+    /**
+     * @param  ElementInterface[]  $elements
+     * @return ElementInterface[]
+     */
+    private function provisionalDrafts(array $elements, ?User $user = null): array
+    {
+        if ($user === null && Context::hasHidden(self::CONTEXT_PREVIEW_USER_ID)) {
+            $userId = Context::getHidden(self::CONTEXT_PREVIEW_USER_ID);
+            $user = User::find()->id($userId)->status(null)->one();
+        }
+
+        $user ??= Auth::user();
+
+        if (! $user) {
+            return [];
+        }
+
+        $canonicalElements = array_filter(
+            $elements,
+            fn (ElementInterface $element) => ! $element->getIsDraft() && ! $element->getIsRevision(),
+        );
+
+        if (empty($canonicalElements)) {
+            return [];
+        }
+
+        $first = reset($canonicalElements);
+
+        return $first::find()
+            ->draftOf($canonicalElements)
+            ->draftCreator($user)
+            ->provisionalDrafts()
+            ->siteId($first->siteId)
+            ->status(null)
+            ->indexBy('canonicalId')
+            ->all();
     }
 }

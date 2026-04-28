@@ -31,22 +31,22 @@
 </script>
 
 <template>
-  <Pane class="tw:max-w-[80ch] tw:mx-auto">
+  <Pane class="max-w-[80ch] mx-auto">
     <template v-if="isLoading">
       <div class="content">
-        <h2>{{ t('app', 'Installing Craft CMS…') }}</h2>
+        <h2>{{ t('Installing Craft CMS…') }}</h2>
         <craft-spinner></craft-spinner>
       </div>
     </template>
 
     <template v-else-if="isSuccess">
       <div class="content">
-        <h2>{{ t('app', 'Craft is installed! 🎉') }}</h2>
-        <div class="tw:flex tw:justify-center tw:items-center">
+        <h2>{{ t('Craft is installed! 🎉') }}</h2>
+        <div class="flex justify-center items-center">
           <craft-icon
             name="circle-check"
             variant="regular"
-            style="color: var(--c-color-success-bg-emphasis); font-size: 2.5rem"
+            style="color: var(--c-color-success-fill-loud); font-size: 2.5rem"
           ></craft-icon>
         </div>
       </div>
@@ -54,10 +54,10 @@
 
     <template v-if="isError">
       <div class="content">
-        <h2>{{ t('app', 'Install failed 😞') }}</h2>
+        <h2>{{ t('Install failed 😞') }}</h2>
 
         <div
-          class="tw:text-left tw:border tw:border-red-500 tw:rounded tw:p-4 tw:text-red-800 tw:bg-red-50 tw:font-mono tw:text-xs"
+          class="text-left border border-red-500 rounded p-4 text-red-800 bg-red-50 font-mono text-xs"
         >
           {{ error.message }}
         </div>

@@ -8,23 +8,26 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
+use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use PDOException;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
 
-final class DatabaseCredentialsCommand extends Command
+class DatabaseCredentialsCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:setup:db-creds
-        {--driver= : The database driver to use. Either `\'mysql\'` for MySQL or `\'pgsql\'` for PostgreSQL.}
+        {--driver= : The database driver to use. Either `\'mysql\'` for MySQL, `\'mariadb\'` for MariaDB or `\'pgsql\'` for PostgreSQL.}
         {--host= : The database server name or IP address. Usually `\'localhost\'` or `\'127.0.0.1\'`.}
-        {--port= : The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.}
+        {--port= : The database server port. Defaults to 3306 for MySQL and MariaDB and 5432 for PostgreSQL.}
         {--username= : The database username to connect with.}
         {--password= : The database password to connect with.}
         {--database= : The name of the database to select.}
@@ -32,8 +35,10 @@ final class DatabaseCredentialsCommand extends Command
         {--prefix= : The table prefix to add to all database tables. This can be no more than 5 characters, and must be all lowercase.}
     ';
 
+    #[\Override]
     protected $description = 'Stores new DB connection settings to the `.env` file.';
 
+    #[\Override]
     protected $aliases = ['setup/db-creds', 'setup:db', 'setup/db'];
 
     private string $driver;
@@ -63,6 +68,7 @@ final class DatabaseCredentialsCommand extends Command
             label: 'Which database driver are you using?',
             options: [
                 'mysql' => 'MySQL',
+                'mariadb' => 'MariaDB',
                 'pgsql' => 'PostgreSQL',
             ],
             default: $this->driver ?? $envDriver,
@@ -77,7 +83,7 @@ final class DatabaseCredentialsCommand extends Command
 
         $this->port = (int) ($this->option('port') ?? text(
             label: 'Database port:',
-            default: $this->port ?? Config::get("database.connections.{$this->driver}.port") ?? Env::get('DB_PORT', Env::get('CRAFT_DB_PORT', $this->driver === 'mysql' ? '3306' : '5432')),
+            default: $this->port ?? Config::get("database.connections.{$this->driver}.port") ?? Env::get('DB_PORT', Env::get('CRAFT_DB_PORT', in_array($this->driver, ['mysql', 'mariadb']) ? '3306' : '5432')),
             required: true,
         ));
 
@@ -154,10 +160,10 @@ final class DatabaseCredentialsCommand extends Command
         ]);
 
         try {
-            /** @var \Illuminate\Database\Connection $connection */
+            /** @var Connection $connection */
             $connection = DB::build($config);
             $connection->getPdo();
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             // Error codes:
             // 7:    Name or service not known (server)
             // 7:    could not connect to server (port)
@@ -229,7 +235,9 @@ final class DatabaseCredentialsCommand extends Command
 
         $this->components->success('Database credentials saved successfully.');
 
+        Config::set('database.default', $this->driver);
         Config::set("database.connections.{$this->driver}", $config);
+        DB::setDefaultConnection($this->driver);
         Config::set('database.connections.db2', $config);
 
         return self::SUCCESS;

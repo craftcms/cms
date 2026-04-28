@@ -12,14 +12,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-final class FieldLayout extends BaseModel
+class FieldLayout extends BaseModel
 {
     use HasFactory;
     use HasUid;
     use SoftDeletes;
 
+    #[\Override]
     protected $table = Table::FIELDLAYOUTS;
 
+    #[\Override]
     protected $casts = [
         'config' => 'json',
     ];

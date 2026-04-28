@@ -8,6 +8,7 @@ use CraftCms\Cms\Shared\BaseModel;
 
 class Widget extends BaseModel
 {
+    #[\Override]
     protected $casts = [
         'sortOrder' => 'integer',
         'colspan' => 'integer',

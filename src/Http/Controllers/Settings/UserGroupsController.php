@@ -4,24 +4,27 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use Craft;
-use craft\helpers\Cp;
+use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
+use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Http\EnforcesPermissions;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
 use CraftCms\Cms\User\UserGroups;
+use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-final readonly class UserGroupsController
+readonly class UserGroupsController
 {
+    use ConfirmsPasswords;
     use EnforcesPermissions;
     use RespondsWithFlash;
 
@@ -40,7 +43,7 @@ final readonly class UserGroupsController
             return redirect()->action([self::class, 'edit'], $this->userGroups->getTeamGroup()->id);
         }
 
-        return view('craftcms::settings/users/groups/_index');
+        return view('settings/users/groups/_index');
     }
 
     public function create(): CpScreenResponse
@@ -72,7 +75,7 @@ final readonly class UserGroupsController
         if (Edition::get() === Edition::Team) {
             $group = $this->userGroups->getTeamGroup();
 
-            return view('craftcms::settings/users/groups/_team', [
+            return view('settings/users/groups/_team', [
                 'group' => $group,
                 'readOnly' => $this->readOnly,
             ]);
@@ -102,7 +105,7 @@ final readonly class UserGroupsController
                 'readOnly' => $this->readOnly,
             ])
             ->prepareScreen(function (CpScreenResponse $response, string $containerId) {
-                Craft::$app->getView()->registerJsWithVars(
+                HtmlStack::jsWithVars(
                     fn ($containerId) => <<<JS
                         new Craft.ElevatedSessionForm('#' + $containerId, [
                             '.user-permissions input[type="checkbox"]:not(:checked)'
@@ -112,12 +115,21 @@ final readonly class UserGroupsController
                 );
             })
             ->when($this->readOnly, function (CpScreenResponse $response) {
-                $response->noticeHtml(Cp::readOnlyNoticeHtml());
+                $response->noticeHtml(app(ContentHtml::class)->readOnlyNoticeHtml());
             });
     }
 
-    public function store(Request $request, UserGroup $userGroupData): Response
+    public function store(Request $request, UserPermissions $userPermissions): Response
     {
+        $userGroupData = new UserGroup;
+        $userGroupData->id = $request->integer('id', $request->input('groupId'));
+        $userGroupData->name = $request->input('name');
+        $userGroupData->handle = $request->input('handle');
+        $userGroupData->description = $request->input('description');
+        $userGroupData->uid = $request->input('uid');
+
+        $userGroupData->validate(throw: true);
+
         if (Edition::get() === Edition::Team) {
             $group = $this->userGroups->getTeamGroup();
             $userGroupData->name = $group->name;
@@ -148,7 +160,7 @@ final readonly class UserGroupsController
                 }
 
                 // Yep. This will require an elevated session
-                $this->requireElevatedSession();
+                $this->requireConfirmedPassword();
                 break;
             }
         }
@@ -163,7 +175,7 @@ final readonly class UserGroupsController
             }
         }
 
-        Craft::$app->getUserPermissions()->saveGroupPermissions($group->id, $permissions);
+        $userPermissions->saveGroupPermissions($group->id, $permissions);
 
         $message = Edition::get() === Edition::Team
             ? t('Permissions saved.')

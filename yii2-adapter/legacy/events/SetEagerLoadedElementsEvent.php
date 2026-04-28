@@ -7,15 +7,16 @@
 
 namespace craft\events;
 
-use craft\base\ElementInterface;
 use craft\base\Event;
-use craft\elements\db\EagerLoadPlan;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Data\EagerLoadPlan;
 
 /**
  * SetEagerLoadedElementsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\SetEagerLoadedElements} instead.
  */
 class SetEagerLoadedElementsEvent extends Event
 {

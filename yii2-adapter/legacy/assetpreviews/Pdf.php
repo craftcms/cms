@@ -7,33 +7,18 @@
 
 namespace craft\assetpreviews;
 
-use craft\base\AssetPreviewHandler;
-use CraftCms\Cms\Support\Html;
-use yii\base\NotSupportedException;
-
-/**
- * Provides functionality to preview PDFs
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.4.0
- */
-class Pdf extends AssetPreviewHandler
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Provides functionality to preview PDFs.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 3.4.0
+     * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\Asset\PreviewHandlers\Pdf} instead.
      */
-    public function getPreviewHtml(array $variables = []): string
+    class Pdf extends \CraftCms\Cms\Asset\PreviewHandlers\Pdf
     {
-        $url = $this->asset->getUrl();
-
-        if ($url === null) {
-            throw new NotSupportedException('Preview not supported.');
-        }
-
-        return Html::tag('iframe', '', [
-            'width' => '100%',
-            'height' => '100%',
-            'src' => $url,
-        ]);
     }
 }
+
+class_alias(\CraftCms\Cms\Asset\PreviewHandlers\Pdf::class, Pdf::class);

@@ -1,0 +1,1 @@
+import e from"./sk2.js";var t={...e};export{t as default};

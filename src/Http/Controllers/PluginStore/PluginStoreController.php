@@ -4,42 +4,40 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\PluginStore;
 
-use Craft;
-use craft\web\Application;
-use craft\web\assets\pluginstore\PluginStoreAsset;
-use craft\web\View;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Composer;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\PHP;
-use Illuminate\Container\Attributes\Give;
+use CraftCms\Cms\View\Enums\Position;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\PluginStoreAsset;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\craftAsset;
+
 /**
  * @internal
  */
-final readonly class PluginStoreController
+readonly class PluginStoreController
 {
-    public function __construct(
-        #[Give('Craft')] private Application $craft,
-    ) {}
-
-    public function index(License $license, Composer $composer, GeneralConfig $generalConfig): Response
+    public function index(License $license, Composer $composer, GeneralConfig $generalConfig): View
     {
-        $view = $this->craft->getView();
-        $view->registerJsFile('https://js.stripe.com/v2/');
+        HtmlStack::jsFile('https://js.stripe.com/v2/');
 
         $variables = [
             'craftIdEndpoint' => Api::craftIdEndpoint(),
             'craftApiEndpoint' => Api::craftApiEndpoint(),
             'pluginStoreAppBaseUrl' => $generalConfig->cpTrigger.'/plugin-store',
             'cmsInfo' => [
-                'version' => $this->craft->getVersion(),
+                'version' => Cms::VERSION,
                 'edition' => Edition::get()->handle(),
             ],
             'cmsLicenseKey' => $license->key(),
@@ -48,15 +46,15 @@ final readonly class PluginStoreController
             'composerPhpVersion' => $composer->getConfig()['config']['platform']['php'] ?? null,
         ];
 
-        $view->registerJsWithVars(
+        HtmlStack::jsWithVars(
             fn ($variables) => "Object.assign(window, $variables)",
             [$variables],
-            View::POS_BEGIN,
+            Position::Head,
         );
 
-        $view->registerAssetBundle(PluginStoreAsset::class);
+        app(InternalAssetRegistry::class)->register(PluginStoreAsset::class);
 
-        return response($view->renderPageTemplate('plugin-store/_index.twig'));
+        return view('plugin-store/_index');
     }
 
     public function craftData(Request $request): Response
@@ -76,11 +74,7 @@ final readonly class PluginStoreController
         $data['CraftEnterprise'] = Edition::Enterprise->value;
 
         // Logos
-        $data['craftLogo'] = $this->craft->getAssetManager()->getPublishedUrl(
-            path: '@app/web/assets/pluginstore/dist/',
-            publish: true,
-            filePath: 'images/craft.svg',
-        );
+        $data['craftLogo'] = craftAsset('legacy/pluginstore/dist/images/craft.svg');
 
         return new JsonResponse($data);
     }

@@ -7,41 +7,18 @@
 
 namespace craft\errors;
 
-use Throwable;
-use yii\base\Exception;
-
-/**
- * Class FieldNotFoundException
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.4
- */
-class FieldNotFoundException extends Exception
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @var string The field’s UUID
-     */
-    public string $fieldUid;
-
-    /**
-     * Constructor
+     * Class FieldNotFoundException
      *
-     * @param string $fieldUid
-     * @param string $message
-     * @param int $code
-     * @param Throwable|null $previous
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.0.4
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Exceptions\FieldNotFoundException} instead.
      */
-    public function __construct(string $fieldUid, string $message = '', int $code = 0, ?Throwable $previous = null)
+    class FieldNotFoundException
     {
-        $this->fieldUid = $fieldUid;
-        parent::__construct($message, $code, $previous);
-    }
-
-    /**
-     * @return string the user-friendly name of this exception
-     */
-    public function getName(): string
-    {
-        return 'Field not found';
     }
 }
+
+class_alias(\CraftCms\Cms\Field\Exceptions\FieldNotFoundException::class, FieldNotFoundException::class);

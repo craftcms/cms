@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use Craft;
-use craft\elements\Asset as AssetElement;
-use craft\fs\Temp;
-use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\Cp;
-use craft\models\Volume;
-use CraftCms\Cms\Field\Link;
+use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
+use Override;
 
 use function CraftCms\Cms\t;
 
 /**
  * Asset link type.
  */
-final class Asset extends BaseElementLinkType
+class Asset extends BaseElementLinkType
 {
     /**
      * @var array|null The file kinds that the field should be restricted to (only used if [[restrictFiles]] is true).
@@ -53,12 +53,12 @@ final class Asset extends BaseElementLinkType
         return AssetElement::class;
     }
 
-    #[\Override]
+    #[Override]
     public function getSettingsHtml(): string
     {
         return
             parent::getSettingsHtml().
-            Cp::checkboxSelectFieldHtml([
+            FormFields::checkboxSelectFieldHtml([
                 'label' => t('Allowed File Types'),
                 'name' => 'allowedKinds',
                 'options' => Collection::make(AssetsHelper::getAllowedFileKinds())
@@ -70,13 +70,13 @@ final class Asset extends BaseElementLinkType
                 'values' => $this->allowedKinds ?? '*',
                 'showAllOption' => true,
             ]).
-            Cp::lightswitchFieldHtml([
+            FormFields::lightswitchFieldHtml([
                 'label' => t('Show unpermitted volumes'),
                 'instructions' => t('Whether to show volumes that the user doesn’t have permission to view.'),
                 'name' => 'showUnpermittedVolumes',
                 'on' => $this->showUnpermittedVolumes,
             ]).
-            Cp::lightswitchFieldHtml([
+            FormFields::lightswitchFieldHtml([
                 'label' => t('Show unpermitted files'),
                 'instructions' => t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'),
                 'name' => 'showUnpermittedFiles',
@@ -84,15 +84,14 @@ final class Asset extends BaseElementLinkType
             ]);
     }
 
-    #[\Override]
+    #[Override]
     protected function availableSourceKeys(): array
     {
-        $volumes = Collection::make(Craft::$app->getVolumes()->getAllVolumes())
+        $volumes = Volumes::getAllVolumes()
             ->filter(fn (Volume $volume) => $volume->getFs()->hasUrls);
 
         if (! $this->showUnpermittedVolumes) {
-            $userService = Craft::$app->getUser();
-            $volumes = $volumes->filter(fn (Volume $volume) => $userService->checkPermission("viewAssets:$volume->uid"));
+            $volumes = $volumes->filter(fn (Volume $volume) => Gate::check("viewAssets:$volume->uid"));
         }
 
         return $volumes
@@ -100,7 +99,7 @@ final class Asset extends BaseElementLinkType
             ->all();
     }
 
-    #[\Override]
+    #[Override]
     protected function selectionCriteria(): array
     {
         // Ignore the parent value since asset URLs don't get saved to the element
@@ -115,7 +114,7 @@ final class Asset extends BaseElementLinkType
         return $criteria;
     }
 
-    #[\Override]
+    #[Override]
     protected function elementSelectConfig(): array
     {
         $config = array_merge(parent::elementSelectConfig(), [
@@ -126,9 +125,8 @@ final class Asset extends BaseElementLinkType
             $sourceKeys = $this->sources ?? Collection::make($this->availableSources())
                 ->map(fn (array $source) => $source['key'])
                 ->all();
-            $userService = Craft::$app->getUser();
             $config['sources'] = Collection::make($sourceKeys)
-                ->filter(function (string $source) use ($userService) {
+                ->filter(function (string $source) {
                     // If it’s not a volume folder, let it through
                     if (! str_starts_with($source, 'volume:')) {
                         return true;
@@ -136,7 +134,7 @@ final class Asset extends BaseElementLinkType
                     // Only show it if they have permission to view it, or if it's the temp volume
                     $volumeUid = explode(':', $source)[1];
 
-                    return $userService->checkPermission("viewAssets:$volumeUid");
+                    return Gate::check("viewAssets:$volumeUid");
                 })
                 ->all();
         }

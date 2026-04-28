@@ -8,10 +8,11 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Attributes\EnvName;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
+use Override;
 use ReflectionProperty;
 use RuntimeException;
 
-final class Env extends \Illuminate\Support\Env
+class Env extends \Illuminate\Support\Env
 {
     /**
      * Remove a single key from the environment file.
@@ -31,12 +32,12 @@ final class Env extends \Illuminate\Support\Env
         $envContent = $filesystem->get($pathToFile);
 
         $lines = explode(PHP_EOL, $envContent);
-        $lines = array_filter($lines, fn ($line) => ! str_starts_with($line, $key.'='));
+        $lines = array_filter($lines, fn ($line) => ! str_starts_with((string) $line, $key.'='));
 
         $filesystem->put($pathToFile, implode(PHP_EOL, $lines));
     }
 
-    #[\Override]
+    #[Override]
     public static function get($key, $default = null): mixed
     {
         $value = parent::get($key, $default);
@@ -47,6 +48,31 @@ final class Env extends \Illuminate\Support\Env
         }
 
         return $value;
+    }
+
+    /**
+     * Returns a config string value, falling back to environment variables when needed.
+     *
+     * @param  string  $key  Dot-notated config key (e.g. `mail.from.address`)
+     * @param  list<string>  $fallbackEnvs
+     */
+    public static function configValue(string $key, array $fallbackEnvs = []): ?string
+    {
+        $value = config($key);
+
+        if (is_string($value) && $value !== '') {
+            return $value;
+        }
+
+        foreach ($fallbackEnvs as $fallbackEnv) {
+            $value = self::get($fallbackEnv);
+
+            if (! is_null($value)) {
+                return (string) $value;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -81,7 +107,16 @@ final class Env extends \Illuminate\Support\Env
         // …/$VAR/…
         $value = preg_replace_callback(
             '/(?<=^|\/)\$(\w+)(?=$|\/)?/',
-            fn ($m) => self::get($m[1]), $value
+            function ($m) {
+                $result = self::get($m[1]);
+
+                if (is_bool($result)) {
+                    return $result ? 'true' : 'false';
+                }
+
+                return (string) $result;
+            },
+            $value
         );
 
         if ($value === '') {
@@ -112,6 +147,20 @@ final class Env extends \Illuminate\Support\Env
      */
     public static function parseBoolean(mixed $value): ?bool
     {
+        if (is_string($value)) {
+            $value = self::parse($value);
+        }
+
+        return self::normalizeBooleanValue($value);
+    }
+
+    /**
+     * Normalizes a boolean environment variable/constant name/CLI command option.
+     *
+     * Truthy/falsy values include `on`/`off`, `yes`/`no`, `1`/`0`, and `true`/`false` (case-insensitive).
+     */
+    public static function normalizeBooleanValue(mixed $value): ?bool
+    {
         if (is_bool($value)) {
             return $value;
         }
@@ -121,12 +170,6 @@ final class Env extends \Illuminate\Support\Env
         }
 
         if (! is_string($value) || $value === '') {
-            return null;
-        }
-
-        $value = self::parse($value);
-
-        if ($value === null) {
             return null;
         }
 

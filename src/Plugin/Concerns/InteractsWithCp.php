@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Concerns;
 
+use CraftCms\Cms\Plugin\Plugin;
+
 /**
- * @mixin \CraftCms\Cms\Plugin\Plugin
+ * @mixin Plugin
  *
  * @internal
  */
@@ -14,7 +16,6 @@ trait InteractsWithCp
     /** @var bool Whether the plugin has its own section in the control panel */
     public bool $hasCpSection = false;
 
-    /** {@inheritdoc} */
     public function getCpNavItem(): ?array
     {
         $ret = [
@@ -36,7 +37,7 @@ trait InteractsWithCp
      */
     protected function cpNavIconPath(): ?string
     {
-        $path = $this->getBasePath().'/icon-mask.svg';
+        $path = $this->getResourcesPath().'/icon-mask.svg';
 
         return is_file($path) ? $path : null;
     }

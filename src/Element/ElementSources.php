@@ -4,34 +4,34 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use Craft;
-use craft\base\conditions\ConditionInterface;
-use craft\base\ElementInterface;
-use craft\db\CoalesceColumnsExpression;
-use craft\elements\conditions\ElementConditionInterface;
-use craft\errors\FieldNotFoundException;
-use craft\fieldlayoutelements\CustomField;
-use craft\helpers\Cp;
-use craft\models\FieldLayout;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Database\Expressions\JsonExtract;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\DefineSourceSortOptions;
 use CraftCms\Cms\Element\Events\DefineSourceTableAttributes;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Event;
+use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
 use function CraftCms\Cms\t;
 
-#[Singleton]
-final class ElementSources
+#[Scoped]
+class ElementSources
 {
     public const string TYPE_HEADING = 'heading';
 
@@ -46,6 +46,8 @@ final class ElementSources
     public const string CONTEXT_MODAL = 'modal';
 
     public const string CONTEXT_SETTINGS = 'settings';
+
+    public const string CONTEXT_EMBEDDED_INDEX = 'embeddedIndex';
 
     /**
      * @see defineSources()
@@ -103,10 +105,16 @@ final class ElementSources
             ->sources($elementType, $context)
             ->when(
                 ! $withDisabled,
-                fn (Collection $sources) => $sources->reject(fn (array $source): bool => (bool) ($source['disabled'] ?? false))
+                fn (Collection $sources) => $sources->reject(fn (array $source): bool => (bool) ($source['disabled'] ?? false)),
             );
 
-        if ($page && isset($sources[0]['page'])) {
+        if (
+            $page &&
+            isset($sources[0]['page']) &&
+            // ignore if there's only one page and it has a blank name; otherwise there's no way to fix
+            // (https://github.com/craftcms/cms/issues/18321)
+            ($sources[0]['page'] !== '' || count($this->getPages($elementType)) !== 1)
+        ) {
             $pageNameId = $this->pageNameId($page);
             $sources = $sources->filter(fn (array $source) => (
                 isset($source['page']) &&
@@ -203,7 +211,7 @@ final class ElementSources
                 continue;
             }
 
-            $source['sites'] = collect($source['sites'] ?? [])
+            $source['sites'] = collect($source['sites'])
                 ->map(function (int|string $siteId) {
                     if (! is_string($siteId)) {
                         return $siteId;
@@ -248,20 +256,103 @@ final class ElementSources
     }
 
     /**
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    public function findSource(
+        string $elementType,
+        string $sourceKey,
+        string $context = self::CONTEXT_INDEX,
+        bool $withDisabled = false,
+        ?string $page = null,
+    ): ?array {
+        $path = explode('/', $sourceKey);
+        $sources = $this->getSources($elementType, $context, $withDisabled, $page)->all();
+        $rootSource = null;
+
+        while ($path) {
+            $key = array_shift($path);
+            $source = null;
+
+            foreach ($sources as $candidate) {
+                if (($candidate['key'] ?? null) === $key) {
+                    $source = $candidate;
+                    break;
+                }
+            }
+
+            if ($source === null) {
+                break;
+            }
+
+            if (empty($path)) {
+                if ($rootSource !== null) {
+                    $source['type'] = $rootSource['type'];
+                    $source['keyPath'] = $sourceKey;
+                }
+
+                return $source;
+            }
+
+            if ($rootSource === null) {
+                $rootSource = $source;
+            }
+
+            $sources = $source['nested'] ?? [];
+        }
+
+        if (! str_starts_with($sourceKey, 'custom:')) {
+            $source = $elementType::findSource($sourceKey, $context);
+
+            if ($source) {
+                $source['type'] = self::TYPE_NATIVE;
+
+                return $source;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Returns the unique pages found for the given element type’s sources.
      *
      * @param  class-string<ElementInterface>  $elementType  The element type class
-     * @param  string  $context  The context
-     * @param  bool  $withDisabled  Whether disabled sources should be included
      * @return Collection<string>
      */
-    public function getPages(string $elementType, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): Collection
+    public function getPages(string $elementType): Collection
     {
-        return $this->getSources($elementType, $context, $withDisabled)
-            ->map(fn (array $source) => $source['page'] ?? null)
-            ->filter()
-            ->unique()
-            ->values();
+        $pages = [];
+        foreach ($this->sourceConfigs($elementType) ?? [] as $source) {
+            // divide all sources into pages
+            if (isset($source['page'])) {
+                $pages[$source['page']][] = $source;
+            }
+        }
+
+        // Remove pages that only have disabled sources
+        $pages = array_filter(
+            $pages,
+            fn (array $sources) => collect($sources)->contains(fn (array $source) => ! ($source['disabled'] ?? false)),
+        );
+
+        // Remove pages that only have headings, disabled sources, and sources not available for the user
+        $pages = array_filter($pages, fn (array $sources) => collect($sources)->contains(function (array $source) {
+            if ($source['type'] === self::TYPE_HEADING) {
+                return false;
+            }
+
+            if ($source['disabled'] ?? false) {
+                return false;
+            }
+
+            if (! $this->showCustomSource($source)) {
+                return false;
+            }
+
+            return true;
+        }));
+
+        return collect($pages)->keys();
     }
 
     /**
@@ -330,9 +421,48 @@ final class ElementSources
         }
 
         return array_any(
-            $user->getGroups()->all(),
-            fn ($group) => in_array($group->uid, $source['userGroups'], true)
+            $user->getGroups(),
+            fn ($group) => in_array($group->uid, $source['userGroups'], true),
         );
+    }
+
+    /**
+     * Saves an element’s source configs.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    public function saveSources(string $elementType, array $sources): void
+    {
+        // config cleanup
+        $sources = new Collection($sources)
+            ->map(fn (array $s) => array_filter([
+                'type' => $s['type'] ?? self::TYPE_NATIVE,
+                'key' => $s['key'] ?? null,
+                'page' => $s['page'] ?? null,
+                'tableAttributes' => $s['tableAttributes'] ?? null,
+                'defaultSort' => $s['defaultSort'] ?? null,
+                'defaultViewMode' => $s['defaultViewMode'] ?? null,
+                ...match ($s['type'] ?? self::TYPE_NATIVE) {
+                    self::TYPE_CUSTOM => [
+                        'label' => $s['label'] ?? null,
+                        'condition' => ($s['condition'] ?? false)
+                            ? ($s['condition'] instanceof ConditionInterface ? $s['condition']->getConfig() : $s['condition'])
+                            : null,
+                        'sites' => $s['sites'] ?? null,
+                        'userGroups' => $s['userGroups'] ?? null,
+                    ],
+                    self::TYPE_HEADING => [
+                        'heading' => $s['heading'] ?? null,
+                    ],
+                    default => [
+                        'disabled' => $s['disabled'] ?? null,
+                    ],
+                },
+            ], fn ($val) => $val !== null))
+            ->all();
+
+        $path = sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, $elementType);
+        $this->projectConfig->set($path, $sources);
     }
 
     /**
@@ -354,7 +484,7 @@ final class ElementSources
             }
 
             if (isset($attributes[$key]['icon']) && in_array($attributes[$key]['icon'], ['world', 'earth'])) {
-                $attributes[$key]['icon'] = Cp::earthIcon();
+                $attributes[$key]['icon'] = Icons::earth();
             }
         }
 
@@ -367,20 +497,25 @@ final class ElementSources
      * @param  class-string<ElementInterface>  $elementType  The element type class
      * @param  string  $sourceKey  The element type source key
      * @param  string[]|null  $customAttributes  Custom attributes to show rather than the defaults
+     * @param  FieldLayout[]|null  $fieldLayouts  The field layouts that should be factored in
      * @return Collection<array>
      */
-    public function getTableAttributes(string $elementType, string $sourceKey, ?array $customAttributes = null): Collection
-    {
+    public function getTableAttributes(
+        string $elementType,
+        string $sourceKey,
+        ?array $customAttributes = null,
+        ?array $fieldLayouts = null,
+    ): Collection {
         // If this is a source path, use the first segment
         if (($slash = strpos($sourceKey, '/')) !== false) {
             $sourceKey = substr($sourceKey, 0, $slash);
         }
 
-        if ($sourceKey === '__IMP__') {
-            $sourceAttributes = $this->getTableAttributesForFieldLayouts($elementType::fieldLayouts(null));
-        } else {
-            $sourceAttributes = $this->getSourceTableAttributes($elementType, $sourceKey);
-        }
+        $sourceAttributes = match (true) {
+            $fieldLayouts !== null => $this->getTableAttributesForFieldLayouts($fieldLayouts),
+            $sourceKey === '__IMP__' => $this->getTableAttributesForFieldLayouts($elementType::fieldLayouts(null)),
+            default => $this->getSourceTableAttributes($elementType, $sourceKey),
+        };
 
         $availableAttributes = $this->getAvailableTableAttributes($elementType)->merge($sourceAttributes);
 
@@ -428,7 +563,7 @@ final class ElementSources
         }
 
         /** @var ElementConditionInterface $condition */
-        $condition = Craft::$app->getConditions()->createCondition($source['condition']);
+        $condition = Conditions::createCondition($source['condition']);
         $query = $elementType::find();
         $condition->modifyQuery($query);
 
@@ -450,15 +585,13 @@ final class ElementSources
 
         $sortOptions = $this->getSortOptionsForFieldLayouts($fieldLayouts);
 
-        if (Event::hasListeners(DefineSourceSortOptions::class)) {
-            Event::dispatch($event = new DefineSourceSortOptions(
-                elementType: $elementType,
-                source: $sourceKey,
-                sortOptions: $sortOptions,
-            ));
+        event($event = new DefineSourceSortOptions(
+            elementType: $elementType,
+            source: $sourceKey,
+            sortOptions: $sortOptions,
+        ));
 
-            $sortOptions = $event->sortOptions;
-        }
+        $sortOptions = $event->sortOptions;
 
         // Combine duplicate attributes. If any attributes map to multiple sort
         // options and each option has a string orderBy value, cmobine them
@@ -472,10 +605,8 @@ final class ElementSources
                     return $group->first();
                 }
 
-                $expression = new CoalesceColumnsExpression($orderBys->all());
-
                 return array_merge($group->first(), [
-                    'orderBy' => $expression,
+                    'orderBy' => new Coalesce($orderBys->all()),
                 ]);
             });
     }
@@ -504,6 +635,19 @@ final class ElementSources
                 $sortOption['defaultDir'] ??= 'asc';
                 $sortOptions[] = $sortOption;
             }
+
+            foreach ($fieldLayout->getGeneratedFields() as $field) {
+                if (($field['name'] ?? '') === '') {
+                    continue;
+                }
+
+                $sortOptions[] = [
+                    'label' => t($field['name'], category: 'site'),
+                    'attribute' => "generatedField:{$field['uid']}",
+                    'orderBy' => new JsonExtract('elements_sites.content', [$field['uid']]),
+                    'defaultDir' => 'asc',
+                ];
+            }
         }
 
         return collect($sortOptions);
@@ -525,17 +669,13 @@ final class ElementSources
         $fieldLayouts = $this->getFieldLayoutsForSource($elementType, $sourceKey);
         $attributes = $this->getTableAttributesForFieldLayouts($fieldLayouts);
 
-        if (Event::hasListeners(DefineSourceTableAttributes::class)) {
-            Event::dispatch($event = new DefineSourceTableAttributes(
-                elementType: $elementType,
-                source: $sourceKey,
-                attributes: $attributes,
-            ));
+        event($event = new DefineSourceTableAttributes(
+            elementType: $elementType,
+            source: $sourceKey,
+            attributes: $attributes,
+        ));
 
-            return $event->attributes;
-        }
-
-        return $attributes;
+        return $event->attributes;
     }
 
     /**
@@ -548,7 +688,6 @@ final class ElementSources
     public function getTableAttributesForFieldLayouts(array|Collection $fieldLayouts): Collection
     {
         $user = Auth::user();
-        $userElement = Craft::$app->getUsers()->getUserById($user->id);
 
         $attributes = [];
         /** @var CustomField[][] $groupedFieldElements */
@@ -557,7 +696,7 @@ final class ElementSources
         foreach ($fieldLayouts as $fieldLayout) {
             foreach ($fieldLayout->getTabs() as $tab) {
                 // Factor in the user condition for non-admins
-                if ($user && ! $user->isAdmin() && ! ($tab->getUserCondition()?->matchElement($userElement) ?? true)) {
+                if ($user && ! $user->isAdmin() && ! ($tab->getUserCondition()?->matchElement($user) ?? true)) {
                     continue;
                 }
 
@@ -574,7 +713,7 @@ final class ElementSources
 
                     if (
                         $field instanceof PreviewableFieldInterface &&
-                        (! $user || $user->isAdmin() || ($layoutElement->getUserCondition()?->matchElement($userElement) ?? true))
+                        (! $user || $user->isAdmin() || ($layoutElement->getUserCondition()?->matchElement($user) ?? true))
                     ) {
                         if ($layoutElement->handle === null) {
                             // The handle wasn't overridden, so combine it with any other instances (from other layouts)
@@ -669,7 +808,7 @@ final class ElementSources
 
         return Arr::first(
             $sourceConfigs,
-            fn ($s) => $s['type'] !== self::TYPE_HEADING && $s['key'] === $sourceKey
+            fn ($s) => $s['type'] !== self::TYPE_HEADING && $s['key'] === $sourceKey,
         );
     }
 
@@ -681,7 +820,18 @@ final class ElementSources
     public function getPageSettings(string $elementType): array
     {
         return $this->projectConfig->get(
-            sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType)
+            sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType),
         ) ?? [];
+    }
+
+    /**
+     * Saves the page settings for a given element type.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    public function savePageSettings(string $elementType, array $pageSettings): void
+    {
+        $path = sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType);
+        $this->projectConfig->set($path, $pageSettings);
     }
 }

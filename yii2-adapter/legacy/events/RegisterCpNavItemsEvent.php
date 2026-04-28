@@ -14,6 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\Cp\Events\RegisterCpNavItems} instead.
  */
 class RegisterCpNavItemsEvent extends Event
 {

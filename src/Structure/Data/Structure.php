@@ -4,19 +4,29 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Structure\Data;
 
-use Illuminate\Support\Facades\Auth;
-use Spatie\LaravelData\Dto;
+use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Component\Component;
 
-final class Structure extends Dto
+class Structure extends Component
 {
-    public function __construct(
-        public ?int $id = null,
-        public ?int $maxLevels = null,
-        public ?string $uid = null,
-    ) {}
+    public ?int $id = null;
+
+    public ?int $maxLevels = null;
+
+    public ?string $uid = null;
+
+    #[\Override]
+    public function getRules(): array
+    {
+        return [
+            'id' => ['nullable', 'integer'],
+            'uid' => ['nullable', 'uuid'],
+            'maxLevels' => ['nullable', 'integer'],
+        ];
+    }
 
     public function isSortable(): bool
     {
-        return Auth::user()?->can("editStructure:{$this->id}");
+        return SessionAuth::checkAuthorization("editStructure:{$this->id}");
     }
 }

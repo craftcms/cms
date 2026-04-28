@@ -33,7 +33,7 @@
 <template>
   <craft-input
     v-if="showUsername"
-    :label="t('app', 'Username')"
+    :label="t('Username')"
     id="account-username"
     name="username"
     v-model="model.username"
@@ -46,7 +46,7 @@
     </ul>
   </craft-input>
   <craft-input
-    :label="t('app', 'Email')"
+    :label="t('Email')"
     id="account-email"
     name="email"
     v-model="model.email"
@@ -60,7 +60,7 @@
     </ul>
   </craft-input>
   <craft-input-password
-    :label="t('app', 'Password')"
+    :label="t('Password')"
     id="account-password"
     name="password"
     v-model="model.password"

@@ -10,7 +10,7 @@ namespace craft\db;
 use Craft;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 
@@ -98,7 +98,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      */
     protected function prepareForDb(): void
     {
-        $now = Db::prepareDateForDb(DateTimeHelper::now());
+        $now = Query::prepareDateForDb(DateTimeHelper::now());
 
         if ($this->getIsNewRecord()) {
             if ($this->hasAttribute('dateCreated') && !isset($this->dateCreated)) {
@@ -142,6 +142,6 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
     private function _prepareValue(string $name, mixed $value): mixed
     {
         $columnType = static::getTableSchema()->getColumn($name)->dbType ?? null;
-        return Db::prepareValueForDb($value, $columnType);
+        return Query::prepareValueForDb($value, $columnType);
     }
 }

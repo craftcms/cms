@@ -4,35 +4,37 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section\Data;
 
-use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\Section\Rules\SingleSectionUriRule;
-use CraftCms\Cms\Shared\Rules\SiteIdRule;
-use CraftCms\Cms\Shared\Rules\UriFormatRule;
+use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Section\Validation\SectionSiteSettingsRules;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use RuntimeException;
-use Spatie\LaravelData\Dto;
-use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-final class SectionSiteSettings extends Dto
+#[Ruleset(SectionSiteSettingsRules::class)]
+class SectionSiteSettings extends Component
 {
     private ?Section $section = null;
 
-    public function __construct(
-        public ?int $id = null,
-        public ?int $sectionId = null,
-        public ?int $siteId = null,
-        public bool $enabledByDefault = true,
-        public bool $hasUrls = false,
-        public ?string $uriFormat = null,
-        public ?string $template = null,
-    ) {}
+    public ?int $id = null;
+
+    public ?int $sectionId = null;
+
+    public ?int $siteId = null;
+
+    public bool $enabledByDefault = true;
+
+    public bool $hasUrls = false;
+
+    public ?string $uriFormat = null;
+
+    public ?string $template = null;
 
     /**
      * Returns the section.
      *
-     * @throws \RuntimeException if [[sectionId]] is missing or invalid
+     * @throws RuntimeException if [[sectionId]] is missing or invalid
      */
     public function getSection(): Section
     {
@@ -75,21 +77,5 @@ final class SectionSiteSettings extends Dto
         }
 
         return $site;
-    }
-
-    public static function rules(?ValidationContext $context = null): array
-    {
-        return [
-            'id' => ['nullable', 'integer'],
-            'siteId' => ['nullable', 'integer', new SiteIdRule],
-            'template' => ['nullable', 'string', 'max:500'],
-            'uriFormat' => array_merge(
-                ['required_if:hasUrls,true', new UriFormatRule],
-                $context?->fullPayload['type'] === SectionType::Single->value
-                    ? [new SingleSectionUriRule]
-                    : [],
-            ),
-            'hasUrls' => ['nullable', 'boolean'],
-        ];
     }
 }

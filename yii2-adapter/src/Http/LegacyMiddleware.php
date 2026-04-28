@@ -11,12 +11,12 @@ namespace CraftCms\Yii2Adapter\Http;
 
 use Closure;
 use Craft;
+use craft\helpers\App;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Yii2Adapter\Web\DummyResponse;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use yii\base\ExitException as YiiExitException;
 use yii\web\HttpException as YiiHttpException;
 
@@ -62,44 +62,44 @@ class LegacyMiddleware
             /**
              * Reset the user as it could have been set before.
              */
-            Craft::$app->set('user', Craft::createObject(\craft\helpers\App::userConfig()));
+            Craft::$app->set('user', Craft::createObject(App::userConfig()));
             Craft::$app->run();
 
-            return $this->createResponse();
+            return self::createResponse();
         } catch (YiiHttpException $e) {
             if ($e->statusCode === 404) {
-                $this->cleanup();
+                self::cleanup();
 
                 // If Yii indicates page does not exist - pass its resolving to Laravel
                 return $next($request);
             }
 
-            throw new HttpException($e->statusCode, $e->getMessage(), $e, [], $e->getCode());
+            throw $e;
         } catch (YiiExitException $e) {
             // In case Yii requests application termination - request is considered handled
-            return $this->createResponse();
+            return self::createResponse();
         }
     }
 
     /**
      * Creates HTTP response for this middleware.
      *
-     * @return \Illuminate\Http\Response HTTP response instance.
+     * @return \Symfony\Component\HttpFoundation\Response HTTP response instance.
      *
      *@see DummyResponse
      * @see \CraftCms\Yii2Adapter\Web\Response
      */
-    protected function createResponse(): Response
+    public static function createResponse(): \Symfony\Component\HttpFoundation\Response
     {
         if (headers_sent()) {
-            $this->cleanup();
+            self::cleanup();
 
             return new DummyResponse();
         }
 
         $yiiResponse = Craft::$app ? Craft::$app->get('response') : null;
 
-        $this->cleanup();
+        self::cleanup();
 
         if ($yiiResponse instanceof \CraftCms\Yii2Adapter\Web\Response) {
             return $yiiResponse->getIlluminateResponse(true);
@@ -108,16 +108,20 @@ class LegacyMiddleware
         return new DummyResponse();
     }
 
-    protected function cleanup(): void
+    public static function cleanup(): void
     {
-        $this->app->terminating(function() {
+        app()->terminating(function() {
+            if (!Craft::$app) {
+                return;
+            }
+
             Craft::$classMap = [];
 
             Craft::$app->getSession()->updateFlashCounters();
 
             Craft::setLogger(null);
             Craft::$app = null;
-            $this->app->forgetInstance('Craft');
+            app()->forgetInstance('Craft');
         });
     }
 

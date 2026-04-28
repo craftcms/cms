@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User;
 
-use Craft;
-use craft\elements\User;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Data\UserGroup;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\ApplyingUserGroupDelete;
 use CraftCms\Cms\User\Events\DeletingUserGroup;
 use CraftCms\Cms\User\Events\SavingUserGroup;
@@ -25,11 +25,12 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Tpetry\QueryExpressions\Language\Alias;
 
 #[Singleton]
-final readonly class UserGroups
+readonly class UserGroups
 {
     /**
      * The “Team” group’s UUID.
@@ -38,6 +39,7 @@ final readonly class UserGroups
 
     public function __construct(
         private ProjectConfig $projectConfig,
+        private ElementCaches $elementCaches,
     ) {}
 
     /**
@@ -53,7 +55,7 @@ final readonly class UserGroups
             default => $this->createUserGroupsQuery()
                 ->orderBy('name')
                 ->get()
-                ->map(fn (object $group) => UserGroup::from($group))
+                ->mapInto(UserGroup::class)
         };
     }
 
@@ -65,7 +67,6 @@ final readonly class UserGroups
      */
     public function getAssignableGroups(?User $user = null): Collection
     {
-        /** @var ?\CraftCms\Cms\User\Models\User $currentUser */
         $currentUser = Auth::user();
 
         if (! $currentUser && ! $user) {
@@ -94,7 +95,7 @@ final readonly class UserGroups
     {
         $result = $this->createUserGroupsQuery()->find($groupId);
 
-        return $result ? UserGroup::from($result) : null;
+        return $result ? new UserGroup((array) $result) : null;
     }
 
     public function getGroupByUid(string $uid): ?UserGroup
@@ -103,7 +104,7 @@ final readonly class UserGroups
             ->where('uid', $uid)
             ->first();
 
-        return $result ? UserGroup::from($result) : null;
+        return $result ? new UserGroup((array) $result) : null;
     }
 
     public function getGroupByHandle(string $groupHandle): ?UserGroup
@@ -112,7 +113,18 @@ final readonly class UserGroups
             ->where('handle', $groupHandle)
             ->first();
 
-        return $result ? UserGroup::from($result) : null;
+        return $result ? new UserGroup((array) $result) : null;
+    }
+
+    public function resolveGroup(mixed $group): ?UserGroup
+    {
+        return match (true) {
+            is_int($group) => $this->getGroupById($group),
+            is_string($group) && ctype_digit($group) => $this->getGroupById((int) $group),
+            is_string($group) && Str::isUuid($group) => $this->getGroupByUid($group),
+            is_string($group) && trim($group) !== '' => $this->getGroupByHandle(trim($group)),
+            default => null,
+        };
     }
 
     /**
@@ -126,7 +138,7 @@ final readonly class UserGroups
             return $group;
         }
 
-        $group = UserGroup::from([
+        $group = new UserGroup([
             'uid' => self::TEAM_GROUP_UUID,
         ]);
 
@@ -137,7 +149,10 @@ final readonly class UserGroups
             $group->handle = sprintf('team%s', $i > 1 ? $i : '');
 
             try {
-                UserGroup::validate(['name' => $group->name, 'handle' => $group->handle]);
+                Validator::validate(
+                    ['name' => $group->name, 'handle' => $group->handle],
+                    $group->getRules(),
+                );
                 break;
             } catch (ValidationException) {
                 // Continue
@@ -176,7 +191,7 @@ final readonly class UserGroups
             ->join(new Alias(Table::USERGROUPS_USERS, 'gu'), 'gu.groupId', 'g.id')
             ->where('gu.userId', $userId)
             ->get()
-            ->map(fn (object $group) => UserGroup::from($group));
+            ->mapInto(UserGroup::class);
     }
 
     /**
@@ -203,7 +218,7 @@ final readonly class UserGroups
                 ->whereIn('id', $assignments->pluck('groupId')->unique())
                 ->get()
                 ->keyBy('id')
-                ->map(fn (object $result) => UserGroup::from($result))
+                ->map(fn (object $result) => new UserGroup((array) $result))
                 ->all();
 
             // Create batches of user groups by user ID
@@ -236,9 +251,7 @@ final readonly class UserGroups
 
         $isNewGroup = ! $group->id;
 
-        if (Event::hasListeners(SavingUserGroup::class)) {
-            Event::dispatch(new SavingUserGroup($group, $isNewGroup));
-        }
+        event(new SavingUserGroup($group, $isNewGroup));
 
         $group->uid ??= $isNewGroup
             ? Str::uuid()->toString()
@@ -276,12 +289,10 @@ final readonly class UserGroups
         // Prevent permission information from being saved. Allowing it would prevent the appropriate event from firing.
         $event->newValue['permissions'] = $event->oldValue['permissions'] ?? [];
 
-        if (Event::hasListeners(UserGroupSaved::class)) {
-            Event::dispatch(new UserGroupSaved($this->getGroupById($groupModel->id), $isNewGroup));
-        }
+        event(new UserGroupSaved($this->getGroupById($groupModel->id), $isNewGroup));
 
         // Invalidate user caches
-        Craft::$app->getElements()->invalidateCachesForElementType(User::class);
+        $this->elementCaches->invalidateForElementType(User::class);
     }
 
     /**
@@ -298,18 +309,14 @@ final readonly class UserGroups
             return;
         }
 
-        if (Event::hasListeners(ApplyingUserGroupDelete::class)) {
-            Event::dispatch(new ApplyingUserGroupDelete($group));
-        }
+        event(new ApplyingUserGroupDelete($group));
 
         DB::table(Table::USERGROUPS)->where('uid', $uid)->delete();
 
-        if (Event::hasListeners(UserGroupDeleted::class)) {
-            Event::dispatch(new UserGroupDeleted($group));
-        }
+        event(new UserGroupDeleted($group));
 
         // Invalidate user caches
-        Craft::$app->getElements()->invalidateCachesForElementType(User::class);
+        $this->elementCaches->invalidateForElementType(User::class);
     }
 
     public function deleteGroupById(int $groupId): bool
@@ -329,9 +336,7 @@ final readonly class UserGroups
     {
         Edition::require(Edition::Pro);
 
-        if (Event::hasListeners(DeletingUserGroup::class)) {
-            Event::dispatch(new DeletingUserGroup($group));
-        }
+        event(new DeletingUserGroup($group));
 
         $this->projectConfig->remove(
             ProjectConfig::PATH_USER_GROUPS.'.'.$group->uid,

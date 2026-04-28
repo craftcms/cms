@@ -16,7 +16,7 @@ use CraftCms\Cms\Utility\Utilities\ClearCaches;
  *
  * @see ClearCaches::tagOptions()
  */
-final class RegisterTagOptions
+class RegisterTagOptions
 {
     public function __construct(
         /** @var array List of registered cache options for the Clear Caches tool. */

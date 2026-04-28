@@ -9,17 +9,21 @@ namespace craft\controllers;
 
 use Craft;
 use craft\errors\AuthProviderNotFoundException;
-use craft\errors\MissingComponentException;
 use craft\errors\SsoFailedException;
-use craft\helpers\User as UserHelper;
 use craft\web\Controller;
+use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Json;
 use Exception;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Throwable;
 use yii\web\HttpException;
 use yii\web\Response;
+use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
@@ -28,6 +32,7 @@ use function CraftCms\Cms\t;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @internal
  * @since 5.3.0
+ * @deprecated 6.0.0.
  */
 class SsoController extends Controller
 {
@@ -118,11 +123,7 @@ class SsoController extends Controller
     protected function handleSuccessfulResponse(): Response
     {
         // Get the return URL
-        $userSession = Craft::$app->getUser();
-        $returnUrl = $userSession->getReturnUrl();
-
-        // Clear it out
-        $userSession->removeReturnUrl();
+        $returnUrl = URL::returnUrl();
 
         // If this was an Ajax request, just return success:true
         if ($this->request->getAcceptsJson()) {
@@ -138,12 +139,9 @@ class SsoController extends Controller
         }
 
         return $this->redirect(
-            $returnUrl ?
-                Craft::$app->getView()->renderObjectTemplate(
-                    $returnUrl,
-                    $userSession->getIdentity()
-                ) :
-                $this->request->getPathInfo()
+            $returnUrl
+                ? renderObjectTemplate($returnUrl, Auth::user())
+                : $this->request->getPathInfo()
         );
     }
 
@@ -161,22 +159,21 @@ class SsoController extends Controller
 
         if ($exception instanceof SsoFailedException) {
             $user = $exception->identity;
-            $message =
-                UserHelper::getAuthFailureMessage($exception->identity) ??
-                $message;
+            $info = app(\CraftCms\Cms\Auth\AuthMethods::class)->getLoginFailureInfo(AuthError::tryFrom($exception->getMessage()), $user);
+            $message = $info[1] ?? $message;
         }
 
         // Log some context around the error
-        $user?->hasErrors() ? Craft::error(
+        $user?->errors()->isNotEmpty() ? Log::error(
             sprintf(
                 "%s. Errors: %s.",
                 $message,
-                Json::encode($user->getErrors())
+                Json::encode($user->errors()->getMessages())
             ),
-            "auth"
-        ) : Craft::error(
+            ["auth"]
+        ) : Log::error(
             $message,
-            "auth"
+            ["auth"]
         );
 
         throw new HttpException(500, $message, 0, $exception);

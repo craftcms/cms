@@ -4,27 +4,24 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Dashboard;
 
-use craft\web\Application;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Support\Json;
-use Illuminate\Container\Attributes\Give;
+use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
-final readonly class WidgetsController
+readonly class WidgetsController
 {
     use InteractsWithWidgets;
 
     public function __construct(
-        #[Give('Craft')] private Application $craft,
-        private Dashboard $dashboard
-    ) {
-        $this->view = $craft->getView();
-    }
+        private HtmlStack $HtmlStack,
+        private Dashboard $dashboard,
+    ) {}
 
     public function store(Request $request): JsonResponse
     {
@@ -66,12 +63,12 @@ final readonly class WidgetsController
             ],
         ]);
 
-        $widget = $this->dashboard->getWidgetById($request->input('widgetId'));
+        $widget = $this->dashboard->getWidgetById($request->integer('widgetId'));
 
         // Create a new widget model with the new settings
         $settings = $request->input("widget{$widget->id}-settings");
 
-        Validator::validate($settings, $widget::getRules());
+        Validator::validate($settings, $widget->getRules());
 
         $widget = $this->dashboard->createWidget([
             'id' => $widget->id,
@@ -137,12 +134,11 @@ final readonly class WidgetsController
         $this->dashboard->saveWidget($widget);
 
         $info = $this->getWidgetInfo($widget);
-        $view = $this->craft->getView();
 
         return new JsonResponse([
             'info' => $info,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => $this->HtmlStack->headHtml(),
+            'bodyHtml' => $this->HtmlStack->bodyHtml(),
         ]);
     }
 }

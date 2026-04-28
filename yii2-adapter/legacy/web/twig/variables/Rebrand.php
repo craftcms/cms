@@ -8,9 +8,9 @@
 namespace craft\web\twig\variables;
 
 use Craft;
+use craft\errors\WrongEditionException;
 use craft\helpers\Image as ImageHelper;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
 use yii\base\Exception;
 
 /**
@@ -18,6 +18,7 @@ use yii\base\Exception;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Config\GeneralConfig::$cpIconUrl} and {@see \CraftCms\Cms\Config\GeneralConfig::$cpLogoUrl} instead.
  */
 class Rebrand
 {

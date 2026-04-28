@@ -7,18 +7,18 @@ namespace CraftCms\Cms\Support\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static \Illuminate\Support\Collection getAllSectionIds()
- * @method static \Illuminate\Support\Collection getEditableSectionIds()
- * @method static \Illuminate\Support\Collection getAllSections()
- * @method static \Illuminate\Support\Collection getEditableSections()
- * @method static \Illuminate\Support\Collection getSectionsByType(\CraftCms\Cms\Section\Enums\SectionType $type)
+ * @method static \Illuminate\Support\Collection<int> getAllSectionIds()
+ * @method static \Illuminate\Support\Collection<int> getEditableSectionIds()
+ * @method static \Illuminate\Support\Collection<\CraftCms\Cms\Section\Data\Section> getAllSections()
+ * @method static \Illuminate\Support\Collection<\CraftCms\Cms\Section\Data\Section> getEditableSections()
+ * @method static \Illuminate\Support\Collection<\CraftCms\Cms\Section\Data\Section> getSectionsByType(\CraftCms\Cms\Section\Enums\SectionType $type)
  * @method static int getTotalSections()
  * @method static int getTotalEditableSections()
  * @method static \CraftCms\Cms\Section\Data\Section|null getSectionById(int $sectionId)
  * @method static \CraftCms\Cms\Section\Data\Section|null getSectionByUid(string $uid)
  * @method static \CraftCms\Cms\Section\Data\Section|null getSectionByHandle(string $sectionHandle)
  * @method static \CraftCms\Cms\Section\Data\SectionSiteSettings[] getSectionSiteSettings(int $sectionId)
- * @method static bool saveSection(\CraftCms\Cms\Section\Data\Section $section)
+ * @method static bool saveSection(\CraftCms\Cms\Section\Data\Section $section, bool $runValidation = true)
  * @method static void handleChangedSection(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event)
  * @method static void refreshSections()
  * @method static bool deleteSectionById(int $sectionId)
@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Facade;
  *
  * @see \CraftCms\Cms\Section\Sections
  */
-final class Sections extends Facade
+class Sections extends Facade
 {
     protected static function getFacadeAccessor(): string
     {

@@ -5,28 +5,99 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database;
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Commands\BackupCommand;
+use CraftCms\Cms\Database\Commands\ConvertCharsetCommand;
+use CraftCms\Cms\Database\Commands\DropAllTablesCommand;
+use CraftCms\Cms\Database\Commands\DropTablePrefixCommand;
 use CraftCms\Cms\Database\Commands\MigrateCommand;
+use CraftCms\Cms\Database\Commands\RepairCommand;
+use CraftCms\Cms\Database\Commands\RestoreCommand;
+use CraftCms\Cms\Element\BulkOp\BulkOpDeferrals;
+use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Cache\DatabaseStore;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Connection;
+use Illuminate\Database\ConnectionInterface;
+use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Migrations\MigrationRepositoryInterface;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\Expression as QueryExpression;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Builder as SchemaBuilder;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
+use Override;
+use ReflectionProperty;
 
-final class DatabaseServiceProvider extends ServiceProvider
+class DatabaseServiceProvider extends ServiceProvider
 {
-    #[\Override]
+    #[Override]
     public function register(): void
     {
         $this->app
             ->when(Migrator::class)
             ->needs(MigrationRepositoryInterface::class)
             ->give(fn () => $this->app->make(MigrationRepository::class, ['table' => Table::MIGRATIONS]));
+
+        $this->app
+            ->when(BulkOps::class)
+            ->needs(ConnectionInterface::class)
+            ->give(fn () => $this->app->make(ConnectionResolverInterface::class)->connection(config('database.bulk_ops_connection', 'db2')));
+
+        $this->app
+            ->when(BulkOpDeferrals::class)
+            ->needs(ConnectionInterface::class)
+            ->give(fn () => $this->app->make(ConnectionResolverInterface::class)->connection(config('database.bulk_ops_connection', 'db2')));
+
+        Connection::macro('isMysql', fn (bool $strict = false) => $strict ? $this->getDriverName() === 'mysql' : in_array($this->getDriverName(), ['mysql', 'mariadb']));
+        Connection::macro('isMaria', fn () => $this->getDriverName() === 'mariadb');
+        Connection::macro('isPgsql', fn () => $this->getDriverName() === 'pgsql');
+        Connection::macro('isSqlite', fn () => $this->getDriverName() === 'sqlite');
+        Connection::macro('driverLabel', fn () => match (true) {
+            $this->isMaria() => 'MariaDB',
+            $this->isMysql() => 'MySQL',
+            $this->isSqlite() => 'SQLite',
+            default => 'PostgreSQL',
+        });
+        Connection::macro('supportsMb4', function () {
+            if (Context::hasHidden('craft.supportsMb4')) {
+                return Context::getHidden('craft.supportsMb4');
+            }
+
+            if (! Cms::isInstalled()) {
+                return false;
+            }
+
+            if ($this->isSqlite() || $this->isPgsql()) {
+                Context::addHidden('craft.supportsMb4', true);
+
+                return true;
+            }
+
+            // if elements_sites supports mb4, pretty good chance everything else does too
+            $columns = $this->getSchemaBuilder()->getColumns(Table::ELEMENTS_SITES);
+
+            foreach ($columns as $column) {
+                // collation names always start with the charset name,
+                // so if a collation includes "mb4" we can safely assume the table has an mb4 charset
+                if (isset($column['collation']) && str_contains($column['collation'], 'mb4')) {
+                    Context::addHidden('craft.supportsMb4', true);
+
+                    return true;
+                }
+            }
+
+            Context::addHidden('craft.supportsMb4', false);
+
+            return Context::getHidden('craft.supportsMb4');
+        });
+
+        Builder::macro('whereBool', fn ($column, bool $value) => $this->where($column, new QueryExpression(var_export($value, true))));
+        Builder::macro('orWhereBool', fn ($column, bool $value) => $this->orWhere($column, new QueryExpression(var_export($value, true))));
 
         $this->registerQueryBuilderMacros();
         $this->registerSchemaBuilderMacros();
@@ -37,9 +108,42 @@ final class DatabaseServiceProvider extends ServiceProvider
         Aliases::set('@migrations', '@package/Database/Migrations');
 
         $this->commands([
+            BackupCommand::class,
+            ConvertCharsetCommand::class,
+            DropAllTablesCommand::class,
+            DropTablePrefixCommand::class,
             MigrateCommand::class,
+            RepairCommand::class,
+            RestoreCommand::class,
         ]);
 
+        if ($db->getDriverName() === 'sqlite') {
+            $this->bootSqlite($config, $db, $cache);
+        } else {
+            $this->bootDefault($config, $db, $cache);
+        }
+    }
+
+    private function bootSqlite(Repository $config, Connection $db, \Illuminate\Cache\Repository $cache): void
+    {
+        /**
+         * For SQLite db2 must be the same connection as the default.
+         */
+        $config->set('database.connections.db2', $db->getConfig());
+        $appDb = app(ConnectionResolverInterface::class);
+
+        $connections = new ReflectionProperty($appDb, 'connections');
+        $current = $connections->getValue($appDb);
+        $current['db2'] = $db;
+        $connections->setValue($appDb, $current);
+
+        if ($cache->getStore() instanceof DatabaseStore) {
+            $cache->getStore()->setConnection($db);
+        }
+    }
+
+    private function bootDefault(Repository $config, Connection $db, \Illuminate\Cache\Repository $cache): void
+    {
         /**
          * Register a second database connection to use during
          * bulk ops or when inside transactions.

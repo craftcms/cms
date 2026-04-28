@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Concerns;
 
-use Craft;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Support\Facades\I18N;
 use Yiisoft\Translator\CategorySource;
@@ -29,6 +28,7 @@ trait HasTranslations
         $basePath = $plugin->getBasePath();
         $translationsPath = match (true) {
             // Laravel Convention - /lang
+            /** @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/13981 */
             is_dir($baseDir = dirname($basePath).'/lang') => $baseDir,
             // Craft 5 and earlier - src/translations
             default => $basePath.'/translations',

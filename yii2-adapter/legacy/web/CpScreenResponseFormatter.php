@@ -8,11 +8,17 @@
 namespace craft\web;
 
 use Craft;
-use craft\helpers\Cp;
-use craft\helpers\UrlHelper;
+use CraftCms\Cms\Cp\Html\MenuHtml;
+use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Support\Facades\Crypt;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -21,6 +27,7 @@ use yii\web\Request;
 use yii\web\Response as YiiResponse;
 use yii\web\ResponseFormatterInterface;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Control panel screen response formatter.
@@ -59,26 +66,25 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         $response->format = Response::FORMAT_JSON;
 
         $namespace = Str::random(10);
-        $view = Craft::$app->getView();
 
         if ($behavior->prepareScreen) {
             $containerId = $request->getHeaders()->get('X-Craft-Container-Id');
             if (!$containerId) {
                 throw new BadRequestHttpException('Request missing the X-Craft-Container-Id header.');
             }
-            $view->setNamespace($namespace);
+            InputNamespace::set($namespace);
             call_user_func($behavior->prepareScreen, $response, $containerId);
-            $view->setNamespace(null);
+            InputNamespace::set(null);
         }
 
         $extraToolbarItems = is_callable($behavior->toolbarHtml) ? call_user_func($behavior->toolbarHtml) : $behavior->toolbarHtml;
-        $notice = $behavior->noticeHtml ? $view->namespaceInputs($behavior->noticeHtml, $namespace) : null;
+        $notice = $behavior->noticeHtml ? InputNamespace::namespaceInputs($behavior->noticeHtml, $namespace) : null;
 
-        $tabs = count($behavior->tabs) > 1 ? $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs.twig', [
+        $tabs = count($behavior->tabs) > 1 ? InputNamespace::namespaceInputs(fn() => template('_includes/tabs', [
             'tabs' => $behavior->tabs,
-        ], View::TEMPLATE_MODE_CP), $namespace) : null;
+        ], templateMode: TemplateMode::Cp), $namespace) : null;
 
-        $content = $view->namespaceInputs(function() use ($behavior) {
+        $content = InputNamespace::namespaceInputs(function() use ($behavior) {
             $components = [];
             if ($behavior->contentHtml) {
                 $components[] = is_callable($behavior->contentHtml) ? call_user_func($behavior->contentHtml) : $behavior->contentHtml;
@@ -91,11 +97,11 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             return implode("\n", $components);
         }, $namespace);
 
-        $sidebar = $behavior->metaSidebarHtml ? $view->namespaceInputs($behavior->metaSidebarHtml, $namespace) : null;
-        $errorSummary = $behavior->errorSummary ? $view->namespaceInputs($behavior->errorSummary, $namespace) : null;
+        $sidebar = $behavior->metaSidebarHtml ? InputNamespace::namespaceInputs($behavior->metaSidebarHtml, $namespace) : null;
+        $errorSummary = $behavior->errorSummary ? InputNamespace::namespaceInputs($behavior->errorSummary, $namespace) : null;
 
         $response->data = [
-            'editUrl' => $behavior->editUrl ? UrlHelper::cpUrl($behavior->editUrl) : null,
+            'editUrl' => $behavior->editUrl ? Url::cpUrl($behavior->editUrl) : null,
             'namespace' => $namespace,
             'title' => $behavior->title,
             'notice' => $notice,
@@ -111,10 +117,10 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'content' => $content,
             'sidebar' => $sidebar,
             'errorSummary' => $errorSummary,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
-            'deltaNames' => $view->getDeltaNames(),
-            'initialDeltaValues' => $view->getInitialDeltaValues(),
+            'headHtml' => HtmlStack::headHtml(),
+            'bodyHtml' => HtmlStack::bodyHtml(),
+            'deltaNames' => DeltaRegistry::getNames(),
+            'initialDeltaValues' => DeltaRegistry::getInitialValues(),
             'data' => $response->data,
         ];
 
@@ -143,14 +149,14 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
 
         if (Sites::isMultiSite() && isset($behavior->site)) {
             $siteMenuItems = !empty($behavior->selectableSites)
-                ? Cp::siteMenuItems($behavior->selectableSites, $behavior->site, [
+                ? app(MenuHtml::class)->siteMenuItems($behavior->selectableSites, $behavior->site, [
                     'includeOmittedSites' => true,
                 ])
                 : [];
 
             array_unshift($crumbs, [
                 'id' => 'site-crumb',
-                'icon' => Cp::earthIcon(),
+                'icon' => Icons::earth(),
                 'label' => t($behavior->site->getName(), category: 'site'),
                 'menu' => [
                     'label' => t('Select site'),
@@ -168,7 +174,6 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             }
         }
 
-        $security = Craft::$app->getSecurity();
         $response->attachBehavior(TemplateResponseBehavior::NAME, [
             'class' => TemplateResponseBehavior::class,
             'template' => '_layouts/cp',
@@ -178,7 +183,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'selectedSubnavItem' => $behavior->selectedSubnavItem,
                 'crumbs' => array_map(function(array $crumb): array {
                     if (isset($crumb['url'])) {
-                        $crumb['url'] = UrlHelper::cpUrl($crumb['url']);
+                        $crumb['url'] = Url::cpUrl($crumb['url']);
                     }
                     return $crumb;
                 }, $crumbs ?? []),
@@ -198,9 +203,9 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'fullPageForm' => $isForm,
                 'mainAttributes' => $behavior->mainAttributes,
                 'mainFormAttributes' => $behavior->formAttributes,
-                'formActions' => array_map(function(array $action) use ($security): array {
+                'formActions' => array_map(function(array $action): array {
                     if (isset($action['redirect'])) {
-                        $action['redirect'] = $security->hashData($action['redirect']);
+                        $action['redirect'] = Crypt::encrypt($action['redirect']);
                     }
                     return $action;
                 }, $altActions ?? []),
@@ -211,7 +216,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'sidebar' => $pageSidebar,
                 'errorSummary' => $errorSummary,
             ],
-            'templateMode' => View::TEMPLATE_MODE_CP,
+            'templateMode' => TemplateMode::Cp->value,
         ]);
 
         (new TemplateResponseFormatter())->format($response);
@@ -260,17 +265,17 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         }
 
         $render = function() use ($itemsFactory, $config): ?string {
-            $items = Cp::normalizeMenuItems($itemsFactory() ?? []);
+            $items = app(MenuHtml::class)->normalizeMenuItems($itemsFactory() ?? []);
 
             if (empty($items)) {
                 return null;
             }
 
-            return Cp::disclosureMenu($items, $config);
+            return app(MenuHtml::class)->disclosureMenu($items, $config);
         };
 
         if ($namespace) {
-            return Craft::$app->getView()->namespaceInputs($render, $namespace);
+            return InputNamespace::namespaceInputs($render, $namespace);
         }
 
         return $render();

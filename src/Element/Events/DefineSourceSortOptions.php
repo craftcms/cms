@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Events;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use Illuminate\Support\Collection;
 
 /**
  * @event DefineSourceSortOptions The event that is triggered when defining the available sort options for a source.
  */
-final class DefineSourceSortOptions
+class DefineSourceSortOptions
 {
     public function __construct(
         /**

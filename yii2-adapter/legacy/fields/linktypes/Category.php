@@ -7,19 +7,20 @@ namespace craft\fields\linktypes;
 use Craft;
 use craft\elements\Category as CategoryElement;
 use CraftCms\Cms\Support\Facades\Sites;
+use Override;
 
 /**
  * Category link type.
  * @deprecated in 6.0.0
  */
-final class Category extends \CraftCms\Cms\Field\LinkTypes\BaseElementLinkType
+class Category extends \CraftCms\Cms\Field\LinkTypes\BaseElementLinkType
 {
     protected static function elementType(): string
     {
         return CategoryElement::class;
     }
 
-    #[\Override]
+    #[Override]
     protected function availableSourceKeys(): array
     {
         $sources = [];

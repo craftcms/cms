@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
-use Craft;
-use craft\base\Element;
-use craft\errors\InvalidElementException;
-use craft\errors\UnsupportedSiteException;
-use craft\helpers\Cp;
-use craft\helpers\DateTimeHelper;
-use CraftCms\Cms\Element\Elements\Entry;
+use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
+use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Entries;
-use CraftCms\Cms\Http\EnforcesPermissions;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\DateTimeHelper;
 use Exception;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\Request;
@@ -24,13 +24,14 @@ use Throwable;
 
 use function CraftCms\Cms\t;
 
-final readonly class StoreEntryController
+readonly class StoreEntryController
 {
     use EnforcesPermissions;
     use RespondsWithFlash;
 
     public function __construct(
         private Request $request,
+        private Elements $elements,
         private Entries $entries,
         private Sites $sites,
     ) {}
@@ -62,7 +63,7 @@ final readonly class StoreEntryController
 
         // Save the entry (finally!)
         if ($entry->enabled && $entry->getEnabledForSite()) {
-            $entry->setScenario(Element::SCENARIO_LIVE);
+            $entry->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         }
 
         $isNotNew = (bool) $entry->id;
@@ -75,9 +76,9 @@ final readonly class StoreEntryController
         }
 
         try {
-            $success = Craft::$app->getElements()->saveElement($entry);
+            $success = $this->elements->saveElement($entry);
         } catch (UnsupportedSiteException $e) {
-            $entry->addError('siteId', $e->getMessage());
+            $entry->errors()->add('siteId', $e->getMessage());
             $success = false;
         } finally {
             if ($isNotNew) {
@@ -104,7 +105,7 @@ final readonly class StoreEntryController
             ->one();
 
         if ($provisional) {
-            Craft::$app->getElements()->deleteElement($provisional, true);
+            $this->elements->deleteElement($provisional, true);
         }
 
         $data = [];
@@ -127,7 +128,7 @@ final readonly class StoreEntryController
             $data['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
 
             if ($this->request->isCpRequest()) {
-                $data['elementHtml'] = Cp::elementChipHtml($entry);
+                $data['elementHtml'] = app(ElementHtml::class)->elementChipHtml($entry);
             }
         }
 
@@ -186,7 +187,7 @@ final readonly class StoreEntryController
             $wasEnabled = $entry->enabled;
             $entry->draftId = null;
             $entry->isProvisionalDraft = false;
-            $entry = Craft::$app->getElements()->duplicateElement($entry);
+            $entry = $this->elements->duplicateElement($entry);
             if ($wasEnabled && ! $entry->enabled) {
                 $forceDisabled = true;
             }
@@ -199,7 +200,7 @@ final readonly class StoreEntryController
             }
 
             // Send the original entry back to the template, with any validation errors on the clone
-            $entry->addErrors($clone->getErrors());
+            $entry->errors()->merge($clone->errors());
 
             return $this->asModelFailure(
                 model: $entry,
@@ -216,16 +217,14 @@ final readonly class StoreEntryController
     private function populateEntry(Entry $entry): void
     {
         // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
-        $entry->typeId = $this->request->input('typeId', $entry->typeId);
-        $entry->slug = $this->request->input('slug', $entry->slug);
-
-        if (($postDate = $this->request->input('postDate')) !== null) {
-            $entry->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
-        }
-
-        if (($expiryDate = $this->request->input('expiryDate')) !== null) {
-            $entry->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
-        }
+        $entry->setAttributesFromRequest(array_filter([
+            'authorIds' => $this->request->input('authors') ?? $this->request->input('author') ?? $entry->getAuthorId() ?? $this->request->user()->id,
+            'expiryDate' => $this->request->input('expiryDate'),
+            'postDate' => $this->request->input('postDate'),
+            'slug' => $this->request->input('slug'),
+            'title' => $this->request->input('title'),
+            'typeId' => $this->request->input('typeId'),
+        ], fn ($value) => $value !== null));
 
         $enabledForSite = $this->enabledForSiteValue();
         if (is_array($enabledForSite)) {
@@ -236,7 +235,6 @@ final readonly class StoreEntryController
         }
 
         $entry->setEnabledForSite($enabledForSite ?? $entry->getEnabledForSite());
-        $entry->title = $this->request->input('title', $entry->title);
 
         if (! $entry->typeId) {
             // Default to the section's first entry type
@@ -244,12 +242,8 @@ final readonly class StoreEntryController
         }
 
         // Authors
-        $authorIds = $this->request->input('authors') ?? $this->request->input('author');
-        if ($authorIds !== null) {
-            $entry->setAuthorIds($authorIds);
-        } elseif (! $entry->id) {
-            $craftUser = Craft::$app->getUsers()->getUserById($this->request->user()->id);
-            $entry->setAuthor($craftUser);
+        if (empty($entry->getAuthorIds()) && ! $entry->id) {
+            $entry->setAuthor($this->request->user());
         }
 
         // Parent

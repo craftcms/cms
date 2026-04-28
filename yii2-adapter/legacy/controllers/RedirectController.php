@@ -7,8 +7,9 @@
 
 namespace craft\controllers;
 
-use Craft;
 use craft\web\Controller;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Crypt;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -35,9 +36,9 @@ class RedirectController extends Controller
      */
     public function actionIndex(string $url, int $statusCode = 302): Response
     {
-        $url = Craft::$app->getSecurity()->validateData($url);
-
-        if (!$url) {
+        try {
+            $url = Crypt::decrypt($url);
+        } catch (DecryptException) {
             throw new BadRequestHttpException('Invalid URL.');
         }
 

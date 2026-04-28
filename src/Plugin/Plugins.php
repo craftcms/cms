@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin;
 
-use Craft;
-use craft\base\Plugin;
-use craft\errors\InvalidLicenseKeyException;
-use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -21,18 +18,21 @@ use CraftCms\Cms\Plugin\Events\LoadingPlugins;
 use CraftCms\Cms\Plugin\Events\PluginDisabled;
 use CraftCms\Cms\Plugin\Events\PluginEnabled;
 use CraftCms\Cms\Plugin\Events\PluginInstalled;
+use CraftCms\Cms\Plugin\Events\PluginRegistered;
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
 use CraftCms\Cms\Plugin\Events\PluginsLoaded;
 use CraftCms\Cms\Plugin\Events\PluginUninstalled;
+use CraftCms\Cms\Plugin\Events\PluginUnregistered;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
 use CraftCms\Cms\Plugin\Events\UninstallingPlugin;
+use CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Cache\Repository;
 use Illuminate\Container\Attributes\Singleton;
@@ -42,7 +42,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Vite;
 use InvalidArgumentException;
@@ -51,12 +50,11 @@ use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
-use yii\base\Module;
 
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final class Plugins
+class Plugins
 {
     /**
      * @var array[] Custom plugin configurations.
@@ -135,7 +133,7 @@ final class Plugins
             // Normalize the base path (and find the actual path, not a possibly-symlinked path)
             if (isset($plugin['basePath'])) {
                 if (($basePath = realpath($plugin['basePath'])) !== false) {
-                    $plugin['basePath'] = FileHelper::normalizePath($basePath);
+                    $plugin['basePath'] = File::normalizePath($basePath);
                 } else {
                     Log::warning("Invalid plugin base path: {$plugin['basePath']}", [__METHOD__]);
                     unset($plugin['basePath']);
@@ -152,17 +150,14 @@ final class Plugins
      */
     public function loadPlugins(): void
     {
-        if ($this->pluginsLoaded === true || $this->loadingPlugins === true || ! Info::isInstalled()) {
+        if ($this->pluginsLoaded === true || $this->loadingPlugins === true || ! Cms::isInstalled()) {
             return;
         }
 
         // Prevent this function from getting called twice.
         $this->loadingPlugins = true;
 
-        // Fire a 'beforeLoadPlugins' event
-        if (Event::hasListeners(LoadingPlugins::class)) {
-            Event::dispatch(new LoadingPlugins);
-        }
+        event(new LoadingPlugins);
 
         // Find all of the installed plugins
         $this->storedPluginInfo = DB::table(Table::PLUGINS)
@@ -227,7 +222,7 @@ final class Plugins
             }
 
             // If we're not updating, check if the plugin’s version number changed, but not its schema version.
-            if (! app('Craft')->getIsInMaintenanceMode() && $hasVersionChanged && ! $this->isPluginUpdatePending($plugin)) {
+            if (! app()->isDownForMaintenance() && $hasVersionChanged && ! $this->isPluginUpdatePending($plugin)) {
                 // Update our record of the plugin’s version number
                 DB::table(Table::PLUGINS)
                     ->where('id', $row['id'])
@@ -255,9 +250,7 @@ final class Plugins
         $this->loadingPlugins = false;
         $this->pluginsLoaded = true;
 
-        if (Event::hasListeners(PluginsLoaded::class)) {
-            Event::dispatch(PluginsLoaded::class);
-        }
+        event(PluginsLoaded::class);
     }
 
     /**
@@ -314,7 +307,7 @@ final class Plugins
         // Figure out the path to the folder that contains this class
         try {
             // Add a trailing slash so we don't get false positives
-            $classPath = Str::finish(FileHelper::normalizePath(dirname(new ReflectionClass($class)->getFileName())), '/');
+            $classPath = Str::finish(File::normalizePath(dirname(new ReflectionClass($class)->getFileName())), '/');
         } catch (ReflectionException) {
             return $this->classPluginHandles[$class] = null;
         }
@@ -338,7 +331,7 @@ final class Plugins
     {
         $this->loadPlugins();
 
-        return $this->plugins;
+        return $this->plugins ?? [];
     }
 
     /**
@@ -363,9 +356,7 @@ final class Plugins
             throw new InvalidPluginException($handle);
         }
 
-        if (Event::hasListeners(EnablingPlugin::class)) {
-            Event::dispatch(new EnablingPlugin($plugin));
-        }
+        event(new EnablingPlugin($plugin));
 
         // Enable the plugin in the project config
         app(ProjectConfig::class)->set(
@@ -377,9 +368,7 @@ final class Plugins
         $this->storedPluginInfo[$handle]['enabled'] = true;
         $this->registerPlugin($plugin);
 
-        if (Event::hasListeners(PluginEnabled::class)) {
-            Event::dispatch(new PluginEnabled($plugin));
-        }
+        event(new PluginEnabled($plugin));
 
         return true;
     }
@@ -406,9 +395,7 @@ final class Plugins
             throw new InvalidPluginException($handle);
         }
 
-        if (Event::hasListeners(DisablingPlugin::class)) {
-            Event::dispatch(new DisablingPlugin($plugin));
-        }
+        event(new DisablingPlugin($plugin));
 
         // Disable the plugin in the project config
         app(ProjectConfig::class)->set(
@@ -420,9 +407,7 @@ final class Plugins
         $this->storedPluginInfo[$handle]['enabled'] = false;
         $this->unregisterPlugin($plugin);
 
-        if (Event::hasListeners(PluginDisabled::class)) {
-            Event::dispatch(new PluginDisabled($plugin));
-        }
+        event(new PluginDisabled($plugin));
 
         return true;
     }
@@ -472,10 +457,7 @@ final class Plugins
 
         $plugin->edition = $edition;
 
-        // Fire a 'beforeInstallPlugin' event
-        if (Event::hasListeners(InstallingPlugin::class)) {
-            Event::dispatch(new InstallingPlugin($plugin));
-        }
+        event(new InstallingPlugin($plugin));
 
         DB::beginTransaction();
 
@@ -516,7 +498,7 @@ final class Plugins
                 // Implicitly committed.
             }
 
-            if (DB::getDriverName() === 'mysql') {
+            if (DB::isMysql()) {
                 // Explicitly remove the plugins row just in case the transaction was implicitly committed
                 DB::table(Table::PLUGINS)->where('handle', $handle)->delete();
             }
@@ -538,9 +520,7 @@ final class Plugins
         $this->storedPluginInfo[$handle] = $info;
         $this->registerPlugin($plugin);
 
-        if (Event::hasListeners(PluginInstalled::class)) {
-            Event::dispatch(new PluginInstalled($plugin));
-        }
+        event(new PluginInstalled($plugin));
 
         $projectConfig->readOnly = $readOnly;
 
@@ -584,10 +564,7 @@ final class Plugins
             throw new InvalidPluginException($handle);
         }
 
-        // Fire a 'beforeUninstallPlugin' event
-        if (Event::hasListeners(UninstallingPlugin::class)) {
-            Event::dispatch(new UninstallingPlugin($plugin));
-        }
+        event(new UninstallingPlugin($plugin));
 
         DB::beginTransaction();
         try {
@@ -629,10 +606,7 @@ final class Plugins
 
         unset($this->storedPluginInfo[$handle]);
 
-        // Fire an 'afterUninstallPlugin' event
-        if (Event::hasListeners(PluginUninstalled::class)) {
-            Event::dispatch(new PluginUninstalled($plugin));
-        }
+        event(new PluginUninstalled($plugin));
 
         $projectConfig->readOnly = $readOnly;
 
@@ -694,19 +668,17 @@ final class Plugins
         }
 
         // Save the settings on the plugin
-        $pluginSettings->setAttributes($settings, false);
+        $pluginSettings->setAttributes($settings);
 
         // Validate them, now that it's a model
         if ($pluginSettings->validate() === false) {
             return false;
         }
 
-        if (Event::hasListeners(SavingPluginSettings::class)) {
-            Event::dispatch($event = new SavingPluginSettings($plugin));
+        event($event = new SavingPluginSettings($plugin));
 
-            if (! $event->isValid) {
-                return false;
-            }
+        if (! $event->isValid) {
+            return false;
         }
 
         if (! $plugin->beforeSaveSettings()) {
@@ -714,7 +686,7 @@ final class Plugins
         }
 
         // Update the plugin’s settings in the project config
-        $pluginSettings = ProjectConfigHelper::packAssociativeArrays($pluginSettings->getAttributes());
+        $pluginSettings = ProjectConfigHelper::packAssociativeArrays($pluginSettings->validationData());
         app(ProjectConfig::class)->set(
             path: ProjectConfig::PATH_PLUGINS.'.'.$plugin->handle.'.settings',
             value: $pluginSettings,
@@ -723,9 +695,7 @@ final class Plugins
 
         $plugin->afterSaveSettings();
 
-        if (Event::hasListeners(PluginSettingsSaved::class)) {
-            Event::dispatch(new PluginSettingsSaved($plugin));
-        }
+        event(new PluginSettingsSaved($plugin));
 
         return true;
     }
@@ -877,7 +847,6 @@ final class Plugins
                 Aliases::set($alias, $path);
             }
 
-            // Unset them so we don't end up calling Module::setAliases()
             unset($config['aliases']);
         }
 
@@ -1090,17 +1059,17 @@ final class Plugins
     {
         // If it's installed, let the plugin say where it lives
         if (($plugin = $this->getPlugin($handle)) !== null) {
-            $basePath = $plugin->getBasePath();
+            $basePath = $plugin->getResourcesPath();
         } else {
             if (($basePath = $this->composerPluginInfo[$handle]['basePath'] ?? false) !== false) {
-                $basePath = Craft::getAlias($basePath);
+                $basePath = Aliases::get($basePath);
             }
         }
 
         $iconPath = ($basePath !== false) ? $basePath.'/icon.svg' : false;
 
-        if ($iconPath === false || ! is_file($iconPath) || ! FileHelper::isSvg($iconPath)) {
-            $iconPath = Craft::getAlias('@appicons/default-plugin.svg');
+        if ($iconPath === false || ! is_file($iconPath) || ! File::isSvg($iconPath)) {
+            $iconPath = Aliases::get('@appicons/default-plugin.svg');
         }
 
         return file_get_contents($iconPath);
@@ -1280,10 +1249,7 @@ final class Plugins
     {
         $this->plugins[$plugin->handle] = $plugin;
 
-        if ($plugin instanceof Module) {
-            /** @var Plugin $plugin */
-            app('Craft')->setModule($plugin->handle, $plugin);
-        }
+        event(new PluginRegistered($plugin));
     }
 
     /**
@@ -1295,9 +1261,7 @@ final class Plugins
     {
         unset($this->plugins[$plugin->handle]);
 
-        if ($plugin instanceof Module) {
-            app('Craft')->setModule($plugin->handle, null);
-        }
+        event(new PluginUnregistered($plugin));
     }
 
     /**

@@ -7,10 +7,8 @@
 
 namespace craft\elements\db;
 
+use Closure;
 use Craft;
-use craft\base\Element;
-use craft\base\ElementInterface;
-use craft\base\ExpirableElementInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\cache\ElementQueryTagDependency;
 use craft\db\CoalesceColumnsExpression;
@@ -19,39 +17,46 @@ use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
-use craft\elements\ElementCollection;
-use craft\elements\User;
 use craft\events\CancelableEvent;
 use craft\events\DefineValueEvent;
 use craft\events\PopulateElementEvent;
 use craft\events\PopulateElementsEvent;
-use craft\helpers\App;
 use craft\helpers\Db;
-use craft\helpers\ElementHelper;
-use craft\models\FieldLayout;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\QueryParam;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
+use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\ElementCaches;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema as SchemaFacade;
+use Illuminate\Support\HtmlString;
+use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
-use Twig\Markup;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidValueException;
-use yii\base\NotSupportedException;
 use yii\db\Connection as YiiConnection;
 use yii\db\Expression;
 use yii\db\ExpressionInterface;
@@ -70,7 +75,8 @@ use function CraftCms\Cms\backTraceAsString;
  * @mixin CustomFieldBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\ElementQuery} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\ElementQuery} instead.
+ * @phpstan-ignore class.missingExtends
  */
 class ElementQuery extends Query implements ElementQueryInterface
 {
@@ -959,6 +965,16 @@ class ElementQuery extends Query implements ElementQueryInterface
         return $this;
     }
 
+    public function getLimit(): int|null|ExpressionInterface
+    {
+        return $this->limit;
+    }
+
+    public function getOffset(): int|null|ExpressionInterface
+    {
+        return $this->offset;
+    }
+
     /**
      * @inheritdoc
      * @uses $orderBy
@@ -1106,7 +1122,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $siteId
      * @return static
      */
-    public function language($value): self
+    public function language($value): static
     {
         if (is_string($value)) {
             $sites = Sites::getSitesByLanguage($value);
@@ -1577,10 +1593,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         // Log a warning if the app isn't fully initialized yet
         if (!Craft::$app->getIsInitialized()) {
-            Craft::warning(
+            Log::warning(
                 "Element query executed before Craft is fully initialized.\nStack trace:\n" .
                 backTraceAsString(),
-                __METHOD__
+                [__METHOD__],
             );
         }
 
@@ -1611,7 +1627,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
-            if (Info::isInstalled() && !Updates::isCraftUpdatePending()) {
+            if (Cms::isInstalled() && !Updates::isCraftUpdatePending()) {
                 /** @noinspection PhpUnhandledExceptionInspection */
                 throw $e;
             }
@@ -1649,10 +1665,11 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Prepare a new column mapping
         // (for use in SELECT and ORDER BY clauses)
         $this->_columnMap = [
-            'id' => 'elements.id',
-            'enabled' => 'elements.enabled',
             'dateCreated' => 'elements.dateCreated',
             'dateUpdated' => 'elements.dateUpdated',
+            'enabled' => 'elements.enabled',
+            'id' => 'elements.id',
+            'slug' => 'elements_sites.slug',
             'uid' => 'elements.uid',
         ];
 
@@ -1836,8 +1853,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function afterPopulate(array $elements): array
     {
         if (!$this->asArray) {
-            $elementsService = Craft::$app->getElements();
-
             foreach ($elements as $element) {
                 // Set the full query result on the element, in case it's needed for lazy eager loading
                 $element->elementQueryResult = $elements;
@@ -1845,10 +1860,10 @@ class ElementQuery extends Query implements ElementQueryInterface
                 // If we're collecting cache info and the element is expirable, register its expiry date
                 if (
                     $element instanceof ExpirableElementInterface &&
-                    $elementsService->getIsCollectingCacheInfo() &&
+                    ElementCaches::isCollectingCacheInfo() &&
                     ($expiryDate = $element->getExpiryDate()) !== null
                 ) {
-                    $elementsService->setCacheExpiryDate($expiryDate);
+                    ElementCaches::setCacheExpiryDate($expiryDate);
                 }
             }
 
@@ -1856,7 +1871,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             // Should we eager-load some elements onto these?
             if ($this->with) {
-                $elementsService->eagerLoadElements($this->elementType, $elements, $this->with);
+                Elements::eagerLoadElements($this->elementType, $elements, $this->with);
             }
         }
 
@@ -1888,13 +1903,18 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @return TElement[]|array
+     * @phpstan-ignore method.childParameterType
      */
     public function all($db = null): array
     {
+        if (!$db instanceof YiiConnection) {
+            $db = null;
+        }
+
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
             if ($this->with) {
-                Craft::$app->getElements()->eagerLoadElements($this->elementType, $cachedResult, $this->with);
+                Elements::eagerLoadElements($this->elementType, $cachedResult, $this->with);
             }
             return $cachedResult;
         }
@@ -1930,18 +1950,18 @@ class ElementQuery extends Query implements ElementQueryInterface
         };
 
         if (!$eagerLoaded) {
-            Craft::$app->getElements()->eagerLoadElements(
+            Elements::eagerLoadElements(
                 $this->eagerLoadSourceElement::class,
                 $this->eagerLoadSourceElement->elementQueryResult,
                 [
-                    new EagerLoadPlan([
-                        'handle' => $this->eagerLoadHandle,
-                        'alias' => $alias,
-                        'criteria' => $criteria + $this->getCriteria() + ['with' => $this->with],
-                        'all' => !$count,
-                        'count' => $count,
-                        'lazy' => true,
-                    ]),
+                    new \CraftCms\Cms\Element\Data\EagerLoadPlan(
+                        handle: $this->eagerLoadHandle,
+                        alias: $alias,
+                        criteria: $criteria + $this->getCriteria() + ['with' => $this->with],
+                        all: !$count,
+                        count: $count,
+                        lazy: true,
+                    ),
                 ],
             );
         }
@@ -1956,9 +1976,14 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @return TElement|array|null
+     * @phpstan-ignore method.childParameterType
      */
     public function one($db = null): mixed
     {
+        if (!$db instanceof YiiConnection) {
+            $db = null;
+        }
+
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
             return reset($cachedResult) ?: null;
@@ -1976,6 +2001,11 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         return null;
+    }
+
+    public function first(): mixed
+    {
+        return $this->one();
     }
 
     /**
@@ -2041,9 +2071,14 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      * @return TElement|array|null
+     * @phpstan-ignore method.childParameterType
      */
-    public function nth(int $n, ?YiiConnection $db = null): mixed
+    public function nth(int $n, $db = null): mixed
     {
+        if (!$db instanceof YiiConnection) {
+            $db = null;
+        }
+
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
             return $cachedResult[$n] ?? null;
@@ -2080,13 +2115,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      * If no partial template exists for an element, its string representation will be output instead.
      *
      * @param array $variables
-     * @return Markup
+     * @return HtmlString
      * @throws InvalidConfigException
      * @throws NotSupportedException
      * @see ElementHelper::renderElements()
      * @since 5.0.0
      */
-    public function render(array $variables = []): Markup
+    public function render(array $variables = []): HtmlString
     {
         return ElementHelper::renderElements($this->all(), $variables);
     }
@@ -2336,7 +2371,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (
             !$this->ignorePlaceholders &&
             isset($row['id'], $row['siteId']) &&
-            ($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $row['siteId'])) !== null
+            ($element = Elements::getPlaceholderElement($row['id'], $row['siteId'])) !== null
         ) {
             return $element;
         }
@@ -2395,7 +2430,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 unset(
                     $row['draftCreatorId'],
                     $row['draftName'],
-                    $row['draftNotes']
+                    $row['draftNotes'],
                 );
             }
         }
@@ -2492,9 +2527,8 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
-        $elementsService = Craft::$app->getElements();
-        if ($elementsService->getIsCollectingCacheInfo()) {
-            $elementsService->collectCacheTags($this->getCacheTags());
+        if (ElementCaches::isCollectingCacheInfo()) {
+            ElementCaches::collectCacheTags($this->getCacheTags());
         }
 
         return true;
@@ -2596,7 +2630,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Returns the field layouts whose custom fields should be returned by [[customFields()]].
      *
-     * @return FieldLayout[]
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout[]
      * @since 5.0.0
      */
     protected function fieldLayouts(): array
@@ -2694,7 +2728,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if (!isset($this->_placeholderCondition) || $this->siteId !== $this->_placeholderSiteIds) {
             $placeholderSourceIds = [];
-            $placeholderElements = Craft::$app->getElements()->getPlaceholderElements();
+            $placeholderElements = Elements::getPlaceholderElements();
             if (!empty($placeholderElements)) {
                 $siteIds = array_flip((array)$this->siteId);
                 foreach ($placeholderElements as $element) {
@@ -2747,7 +2781,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
                     // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
                     // see https://github.com/craftcms/cms/issues/15609
-                    if ($isMysql && Db::parseColumnType($dbType) === Schema::TYPE_TEXT) {
+                    if ($isMysql && \CraftCms\Cms\Support\Query::parseColumnType($dbType) === Schema::TYPE_TEXT) {
                         $this->_columnsToCast[$alias] = 'CHAR(255)';
                     }
                 }
@@ -2862,7 +2896,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                                 $generatedFieldsByHandle,
                                 $fieldAttributes,
                                 $fieldsByHandle,
-                                false
+                                false,
                             );
                             $conditions = array_merge($conditions, $generatedFieldsConditions);
                         }
@@ -3265,9 +3299,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     private function _applyRevisionParams(): void
     {
         if ($this->drafts !== false) {
-            $joinType = $this->drafts === true ? 'INNER JOIN' : 'LEFT JOIN';
-            $this->subQuery->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
-            $this->query->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
+            $useInnerJoin = $this->drafts === true;
 
             $this->query->addSelect([
                 'elements.draftId',
@@ -3278,16 +3310,27 @@ class ElementQuery extends Query implements ElementQueryInterface
             ]);
 
             if ($this->draftId) {
+                $useInnerJoin = true;
                 $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
             }
 
-            if ($this->draftOf === '*') {
-                $this->subQuery->andWhere(['not', ['elements.canonicalId' => null]]);
-            } elseif (isset($this->draftOf)) {
-                $this->subQuery->andWhere(['elements.canonicalId' => $this->draftOf ?: null]);
+            if (isset($this->draftOf)) {
+                if ($this->draftOf === '*') {
+                    // drafts of any other element
+                    $useInnerJoin = true;
+                    $this->subQuery->andWhere(['not', ['drafts.canonicalId' => null]]);
+                } elseif ($this->draftOf === false) {
+                    // unpublished drafts only
+                    $this->subQuery->andWhere(['drafts.canonicalId' => null]);
+                } else {
+                    // drafts of specific owner elements
+                    $useInnerJoin = true;
+                    $this->subQuery->andWhere(['drafts.canonicalId' => $this->draftOf]);
+                }
             }
 
             if ($this->draftCreator) {
+                $useInnerJoin = true;
                 $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
             }
 
@@ -3316,6 +3359,10 @@ class ElementQuery extends Query implements ElementQueryInterface
                     ['drafts.saved' => true],
                 ]);
             }
+
+            $joinType = $useInnerJoin ? 'INNER JOIN' : 'LEFT JOIN';
+            $this->subQuery->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
+            $this->query->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
         } else {
             $this->subQuery->andWhere($this->_placeholderCondition(['elements.draftId' => null]));
         }
@@ -3403,7 +3450,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if (!$element instanceof ElementInterface) {
-            $element = Craft::$app->getElements()->getElementById($element, $class, $this->siteId, [
+            $element = Elements::getElementById($element, $class, $this->siteId, [
                 'structureId' => $this->structureId,
             ]);
 
@@ -3588,7 +3635,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $keyParamSuffix = sprintf('%s_%s', $paramSuffix, $i);
                 $scoreSql .= sprintf(
                     ' WHEN [[elements.id]] = :elementId_%s AND [[elements_sites.siteId]] = :siteId_%s THEN :value_%s',
-                    $keyParamSuffix, $keyParamSuffix, $keyParamSuffix
+                    $keyParamSuffix, $keyParamSuffix, $keyParamSuffix,
                 );
                 $scoreParams[":elementId_$keyParamSuffix"] = $elementId;
                 $scoreParams[":siteId_$keyParamSuffix"] = $siteId;
@@ -3888,7 +3935,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
 
             if ($this->withProvisionalDrafts) {
-                ElementHelper::swapInProvisionalDrafts($elements);
+                $elements = app(Drafts::class)->withProvisionalDrafts($elements);
             }
 
             // Fire an 'afterPopulateElements' event
@@ -3923,5 +3970,66 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         return $this->_columnMap[$key];
+    }
+
+    public function getResultOverride(): ?array
+    {
+        return $this->getCachedResult();
+    }
+
+    public function setResultOverride(array $elements): void
+    {
+        $this->setCachedResult($elements);
+    }
+
+    public function clearResultOverride(): void
+    {
+        $this->clearCachedResult();
+    }
+
+    public function afterHydrate(Collection $items): Collection
+    {
+        return collect($this->afterPopulate($items->all()));
+    }
+
+    public function whereIn($column, $values, $boolean = 'and', $not = false): static
+    {
+        return $this->andWhere(['in', $column, $values]);
+    }
+
+    /**
+     * Re-implement each as a supported call similar
+     * to Laravel's ->each on query builder.
+     * @return ?\yii\db\BatchQueryResult
+     */
+    public function each($batchSize = 100, $db = null)
+    {
+        if (is_int($batchSize)) {
+            return parent::each($batchSize, $db);
+        }
+
+        if ($batchSize instanceof Closure) {
+            $count = is_int($db) ? $db : 100;
+
+            foreach (Db::each($this, $count) as $element) {
+                $batchSize($element);
+            }
+
+            return null;
+        }
+
+        throw new InvalidArgumentException('Invalid call to ->each');
+    }
+
+    public function getCountForPagination($columns = ['*'])
+    {
+        return $this
+            ->select(new Expression('1'))
+            ->count();
+    }
+
+    public function get(): Collection
+    {
+        return collect($this->all());
     }
 }

@@ -9,6 +9,7 @@ namespace craft\mutex;
 
 use Craft;
 use craft\helpers\App;
+use CraftCms\Cms\Cms;
 use yii\di\Instance;
 use yii\mutex\Mutex as YiiMutex;
 
@@ -50,7 +51,7 @@ class Mutex extends YiiMutex
         $this->_init();
 
         if (!isset($this->mutex)) {
-            if (Craft::$app->id !== 'craft-test' && Craft::$app->getIsInstalled()) {
+            if (Craft::$app->id !== 'craft-test' && Cms::isInstalled()) {
                 $this->mutex = App::dbMutexConfig();
             } else {
                 $this->mutex = NullMutex::class;

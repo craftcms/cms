@@ -10,7 +10,7 @@ namespace craft\test\console;
 use Codeception\Stub;
 use Craft;
 use craft\console\Controller;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 /**

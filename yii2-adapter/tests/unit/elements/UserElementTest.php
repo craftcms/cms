@@ -10,19 +10,17 @@ namespace crafttests\unit\elements;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\User;
-use craft\errors\InvalidElementException;
-use craft\helpers\Session;
 use craft\services\Users;
 use craft\test\TestCase;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
+use Exception;
 use UnitTester;
-use yii\base\Exception;
-use yii\validators\InlineValidator;
 
 /**
  * Unit tests for the User Element
@@ -53,36 +51,6 @@ class UserElementTest extends TestCase
      */
     protected User $inactiveUser;
 
-    /**
-     *
-     */
-    public function testValidateUnverifiedEmail(): void
-    {
-        $validator = new InlineValidator();
-
-        $this->activeUser->unverifiedEmail = 'unverifemail@email.com';
-
-        $this->activeUser->validateUnverifiedEmail('unverifiedEmail', [], $validator);
-        self::assertSame([], $this->activeUser->getErrors());
-
-        $user = new User([
-            'active' => true,
-            'email' => 'unverifemail@email.com',
-            'username' => 'unverifusername',
-            'unverifiedEmail' => 'unverifemail@email.com',
-        ]);
-
-        $this->tester->saveElement($user);
-
-        $this->activeUser->validateUnverifiedEmail('unverifiedEmail', [], $validator);
-        self::assertSame(
-            ['unverifiedEmail' => ['Email "unverifemail@email.com" has already been taken.']],
-            $this->activeUser->getErrors()
-        );
-
-        $this->tester->deleteElement($user);
-    }
-
     public function testActivationValidation(): void
     {
         $user = new User([
@@ -106,9 +74,9 @@ class UserElementTest extends TestCase
         }
 
         self::assertNotNull($e);
-        self::assertFalse($user->hasErrors('fullName'));
-        self::assertTrue($user->hasErrors('username'));
-        self::assertTrue($user->hasErrors('email'));
+        self::assertFalse($user->errors()->has('fullName'));
+        self::assertTrue($user->errors()->has('username'));
+        self::assertTrue($user->errors()->has('email'));
 
         $e = null;
         try {
@@ -127,111 +95,6 @@ class UserElementTest extends TestCase
         $this->activeUser->active = false;
         $this->expectException(Exception::class);
         $this->tester->saveElement($this->activeUser);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testGetAuthKey(): void
-    {
-        Session::reset();
-
-        $this->tester->mockCraftMethods('session', [
-            'getHasSessionId' => fn() => true,
-            'get' => function($tokenParam) {
-                self::assertSame(Craft::$app->getUser()->tokenParam, $tokenParam);
-
-                return 'TOKEN';
-            },
-        ]);
-
-        $this->tester->mockCraftMethods('request', [
-            'getUserAgent' => 'Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us)',
-        ]);
-
-        self::assertSame(
-            '["TOKEN",null,"' . md5('Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us)') . '"]',
-            $this->activeUser->getAuthKey()
-        );
-
-        Session::reset();
-    }
-
-    /**
-     *
-     */
-    public function testGetAuthKeyException(): void
-    {
-        $this->tester->mockCraftMethods('session', [
-            'get' => null,
-        ]);
-
-        $this->tester->expectThrowable(Exception::class, function() {
-            $this->activeUser->getAuthKey();
-        });
-    }
-
-    /**
-     * @throws \yii\db\Exception
-     */
-    public function testValidateAuthKey(): void
-    {
-        $validUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36';
-        Craft::$app->getDb()->createCommand()
-            ->insert(Table::SESSIONS, [
-                'userId' => $this->activeUser->id,
-                'token' => 'EXAMPLE_TOKEN',
-            ])->execute();
-
-        self::assertFalse($this->activeUser->validateAuthKey('NOT_JSON'));
-        self::assertFalse($this->activeUser->validateAuthKey('["JSON_ONE_ITEM"]'));
-        self::assertFalse(
-            $this->activeUser->validateAuthKey(
-                '["EXAMPLE_TOKEN",null,"NOT_A_USER_AGENT"]'
-            )
-        );
-        self::assertFalse(
-            $this->activeUser->validateAuthKey(
-                '["NOT_A_VALID_TOKEN",null,"' . $validUserAgent . '"]'
-            )
-        );
-
-        Cms::config()->requireMatchingUserAgentForSession = true;
-
-        // Valid token, user agent, and json string
-        $this->tester->mockCraftMethods('request', [
-            'getUserAgent' => $validUserAgent,
-        ]);
-        self::assertTrue(
-            $this->activeUser->validateAuthKey(
-                '["EXAMPLE_TOKEN",null,"' . md5($validUserAgent) . '"]'
-            )
-        );
-    }
-
-    /**
-     * @throws \yii\db\Exception
-     */
-    public function testValidateAuthKeyWithConfigDisabled(): void
-    {
-        $validUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36';
-
-        Cms::config()->requireMatchingUserAgentForSession = false;
-        $this->tester->mockCraftMethods('request', [
-            'getUserAgent' => $validUserAgent,
-        ]);
-
-        Craft::$app->getDb()->createCommand()
-            ->insert(Table::SESSIONS, [
-                'userId' => $this->activeUser->id,
-                'token' => 'EXAMPLE_TOKEN',
-            ])->execute();
-
-        self::assertTrue(
-            $this->activeUser->validateAuthKey(
-                '["EXAMPLE_TOKEN",null,"INVALID_USER_AGENT"]'
-            )
-        );
     }
 
     /**
@@ -288,8 +151,8 @@ class UserElementTest extends TestCase
     {
         Craft::$app->getDb()->createCommand()
             ->batchInsert(Table::SESSIONS, [
-                'userId',
-                'token',
+                'user_id',
+                'id',
             ], [
                 [
                     $this->activeUser->id,
@@ -303,7 +166,7 @@ class UserElementTest extends TestCase
         $this->activeUser->newPassword = 'random_password';
         $this->tester->saveElement($this->activeUser);
 
-        $exists = (new Query())->from(Table::SESSIONS)->where(['userId' => $this->activeUser->id])->exists();
+        $exists = (new Query())->from(Table::SESSIONS)->where(['user_id' => $this->activeUser->id])->exists();
         self::assertFalse($exists);
     }
 
@@ -332,17 +195,6 @@ class UserElementTest extends TestCase
             $this->activeUser->afterSave(false);
         });
         $this->activeUser->pending = false;
-    }
-
-    /**
-     *
-     */
-    public function testAuthenticate(): void
-    {
-        self::assertTrue($this->activeUser->authenticate('password'));
-        self::assertFalse($this->inactiveUser->authenticate('password'));
-        self::assertEquals($this->inactiveUser->authError, User::AUTH_INVALID_CREDENTIALS);
-        $this->inactiveUser->authError = null;
     }
 
     /**

@@ -2,62 +2,14 @@
 
 namespace craft\elements\conditions\addresses;
 
-use craft\base\conditions\BaseMultiSelectConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\Address;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\AddressQuery;
-use craft\elements\db\ElementQueryInterface;
-use CraftCms\Cms\Addresses\Addresses;
-use function CraftCms\Cms\t;
-
 /**
  * Address country condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Address\Conditions\CountryConditionRule} instead.
  */
-class CountryConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class CountryConditionRule extends \CraftCms\Cms\Address\Conditions\CountryConditionRule
 {
-    /**
-     * @inheritdoc
-     */
-    public function getLabel(): string
-    {
-        return t('Country');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return [];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function options(): array
-    {
-        return app(Addresses::class)->getCountryList();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var AddressQuery $query */
-        $query->countryCode($this->paramValue());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        /** @var Address $element */
-        return $this->matchValue($element->countryCode);
-    }
+    use \craft\base\LegacyEventConstants;
 }

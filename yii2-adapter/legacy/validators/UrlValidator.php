@@ -7,7 +7,7 @@
 
 namespace craft\validators;
 
-use Craft;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\PHP;
 use yii\validators\UrlValidator as YiiUrlValidator;
 
@@ -54,7 +54,7 @@ class UrlValidator extends YiiUrlValidator
     public function validateValue($value): ?array
     {
         if ($this->allowAlias && str_starts_with($value, '@')) {
-            $value = Craft::getAlias($value);
+            $value = Aliases::get($value);
 
             // Prevent validateAttribute() from prepending a default scheme if the alias is missing one
             $this->defaultScheme = null;

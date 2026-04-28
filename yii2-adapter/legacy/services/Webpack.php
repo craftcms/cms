@@ -212,7 +212,7 @@ class Webpack extends Component
         }
 
         // Close the PHP session in case this takes a while
-        Session::close();
+        \Illuminate\Support\Facades\Session::save();
 
         // Make sure the request isn't too strict for people running the dev server using https and outside the container
         $client = Http::create()->withoutVerifying();

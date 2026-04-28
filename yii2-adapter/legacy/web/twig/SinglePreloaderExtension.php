@@ -7,24 +7,20 @@
 
 namespace craft\web\twig;
 
-use craft\web\twig\nodevisitors\SinglePreloader;
 use Twig\Extension\AbstractExtension;
 
-/**
- * Single preloader Twig extension
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.4.0
- */
-class SinglePreloaderExtension extends AbstractExtension
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Single preloader Twig extension
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.4.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Twig\Extensions\SinglePreloaderExtension} instead.
      */
-    public function getNodeVisitors(): array
+    class SinglePreloaderExtension extends AbstractExtension
     {
-        return [
-            new SinglePreloader(),
-        ];
     }
 }
+
+class_alias(\CraftCms\Cms\Twig\Extensions\SinglePreloaderExtension::class, SinglePreloaderExtension::class);

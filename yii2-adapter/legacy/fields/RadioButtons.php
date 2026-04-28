@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -7,15 +8,11 @@
 
 namespace craft\fields;
 
-/** @phpstan-ignore-next-line **/
-if (false) {
-    /**
-     * @since 3.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\RadioButtons} instead.
-     */
-    class RadioButtons
-    {
-    }
+/**
+ * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\RadioButtons} instead.
+ */
+class RadioButtons extends \CraftCms\Cms\Field\RadioButtons
+{
+    use \craft\base\LegacyEventConstants;
 }
-
-class_alias(\CraftCms\Cms\Field\RadioButtons::class, RadioButtons::class);

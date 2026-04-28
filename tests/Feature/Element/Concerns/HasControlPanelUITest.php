@@ -1,0 +1,525 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Events\DefineActionMenuItems;
+use CraftCms\Cms\Element\Events\DefineAdditionalButtons;
+use CraftCms\Cms\Element\Events\DefineAltActions;
+use CraftCms\Cms\Element\Events\DefineAttributeHtml;
+use CraftCms\Cms\Element\Events\DefineInlineAttributeInputHtml;
+use CraftCms\Cms\Element\Events\DefineMetadata;
+use CraftCms\Cms\Element\Events\DefineSidebarHtml;
+use CraftCms\Cms\Element\Events\RegisterHtmlAttributes;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Event;
+
+use function Pest\Laravel\actingAs;
+
+beforeEach(function () {
+    // Create a test entry for each test
+    $this->entry = EntryModel::factory()->create();
+
+    // Load it from an ElementQuery so all data is properly set
+    $this->entry = entryQuery()->id($this->entry->id)->one();
+
+    actingAs(User::findOne());
+});
+
+describe('getCpEditUrl', function () {
+    test('returns null when element has no id', function () {
+        $entry = new Entry;
+
+        expect($entry->getCpEditUrl())->toBeNull();
+    });
+
+    test('returns url when element has id and cpEditUrl is available', function () {
+        $url = $this->entry->getCpEditUrl();
+
+        expect($url)->toBeString()->toContain(Cms::config()->cpTrigger);
+    });
+});
+
+describe('getPostEditUrl', function () {
+    test('returns url for entry elements', function () {
+        $url = $this->entry->getPostEditUrl();
+
+        expect($url)->toBeString()->toContain(Cms::config()->cpTrigger);
+    });
+});
+
+describe('getAdditionalButtons', function () {
+    test('returns empty string by default', function () {
+        expect((string) $this->entry->getAdditionalButtons())->toBe('');
+    });
+
+    test('triggers DefineAdditionalButtons event', function () {
+        $eventTriggered = false;
+        $customHtml = '<button>Custom Button</button>';
+
+        Event::listen(function (DefineAdditionalButtons $event) use (&$eventTriggered, $customHtml) {
+            $eventTriggered = true;
+            $event->html = $customHtml;
+        });
+
+        $buttons = $this->entry->getAdditionalButtons();
+
+        expect($eventTriggered)->toBeTrue();
+        expect((string) $buttons)->toBe($customHtml);
+    });
+});
+
+describe('getAltActions', function () {
+    test('returns default alt actions for canonical element', function () {
+        $altActions = $this->entry->getAltActions();
+
+        expect($altActions)->toBeArray()->not->toBeEmpty();
+
+        $labels = collect($altActions)->pluck('label');
+        expect($labels)->toContain('Save and continue editing');
+    });
+
+    test('includes shortcut and retainScroll for continue editing action', function () {
+        $altActions = $this->entry->getAltActions();
+
+        $continueEditingAction = collect($altActions)
+            ->firstWhere('label', 'Save and continue editing');
+
+        expect($continueEditingAction)->toHaveKey('shortcut', true);
+        expect($continueEditingAction)->toHaveKey('retainScroll', true);
+        expect($continueEditingAction)->toHaveKey('redirect');
+    });
+
+    test('triggers DefineAltActions event', function () {
+        $eventTriggered = false;
+        $customAction = [
+            'label' => 'Custom Action',
+            'action' => 'custom/action',
+        ];
+
+        Event::listen(function (DefineAltActions $event) use (&$eventTriggered, $customAction) {
+            $eventTriggered = true;
+            $event->altActions[] = $customAction;
+        });
+
+        $altActions = $this->entry->getAltActions();
+
+        expect($eventTriggered)->toBeTrue();
+        expect($altActions)->toContain($customAction);
+    });
+
+    test('event can modify alt actions', function () {
+        Event::listen(function (DefineAltActions $event) {
+            $event->altActions = [
+                [
+                    'label' => 'Only Action',
+                    'action' => 'test/action',
+                ],
+            ];
+        });
+
+        $altActions = $this->entry->getAltActions();
+
+        expect($altActions)->toHaveCount(1);
+        expect($altActions[0]['label'])->toBe('Only Action');
+    });
+});
+
+describe('getActionMenuItems', function () {
+    test('returns array of menu items', function () {
+        $items = $this->entry->getActionMenuItems();
+
+        expect($items)->toBeArray();
+    });
+
+    test('includes destructive items with destructive flag', function () {
+        $items = $this->entry->getActionMenuItems();
+
+        $hasDestructiveItems = collect($items)
+            ->contains(fn ($item) => ($item['destructive'] ?? false) === true);
+
+        expect($items)->toBeArray();
+        expect($hasDestructiveItems)->toBeTrue();
+    });
+
+    test('triggers DefineActionMenuItems event', function () {
+        $eventTriggered = false;
+        $customItem = [
+            'id' => 'custom-action',
+            'label' => 'Custom Menu Item',
+            'icon' => 'wand',
+        ];
+
+        Event::listen(function (DefineActionMenuItems $event) use (&$eventTriggered, $customItem) {
+            $eventTriggered = true;
+            $event->items[] = $customItem;
+        });
+
+        $items = $this->entry->getActionMenuItems();
+
+        expect($eventTriggered)->toBeTrue();
+        expect($items)->toContain($customItem);
+    });
+
+    test('event can modify menu items', function () {
+        Event::listen(function (DefineActionMenuItems $event) {
+            $event->items = [
+                [
+                    'id' => 'only-item',
+                    'label' => 'Only Item',
+                ],
+            ];
+        });
+
+        $items = $this->entry->getActionMenuItems();
+
+        expect($items)->toHaveCount(1);
+        expect($items[0]['label'])->toBe('Only Item');
+    });
+});
+
+describe('getHtmlAttributes', function () {
+    test('returns array with data attributes', function () {
+        $attributes = $this->entry->getHtmlAttributes('index');
+
+        expect($attributes)->toBeArray()->toHaveKey('data');
+    });
+
+    test('includes disallow-status data attribute', function () {
+        $attributes = $this->entry->getHtmlAttributes('index');
+
+        expect($attributes['data'])->toHaveKey('disallow-status');
+    });
+
+    test('triggers RegisterHtmlAttributes event', function () {
+        $eventTriggered = false;
+        $customAttribute = 'custom-value';
+
+        Event::listen(function (RegisterHtmlAttributes $event) use (&$eventTriggered, $customAttribute) {
+            $eventTriggered = true;
+            $event->htmlAttributes['data']['custom'] = $customAttribute;
+        });
+
+        $attributes = $this->entry->getHtmlAttributes('index');
+
+        expect($eventTriggered)->toBeTrue();
+        expect($attributes['data']['custom'])->toBe($customAttribute);
+    });
+
+    test('event can modify html attributes', function () {
+        Event::listen(function (RegisterHtmlAttributes $event) {
+            $event->htmlAttributes = [
+                'class' => 'custom-class',
+                'data' => [
+                    'test' => 'value',
+                ],
+            ];
+        });
+
+        $attributes = $this->entry->getHtmlAttributes('index');
+
+        expect($attributes)->toHaveKey('class', 'custom-class');
+        expect($attributes['data'])->toHaveKey('test', 'value');
+    });
+});
+
+describe('getAttributeHtml', function () {
+    test('returns string for valid attribute', function () {
+        $html = $this->entry->getAttributeHtml('title');
+
+        expect($html)->toBeString();
+    });
+
+    test('triggers DefineAttributeHtml event', function () {
+        $eventTriggered = false;
+        $customHtml = '<span class="custom">Custom HTML</span>';
+
+        Event::listen(function (DefineAttributeHtml $event) use (&$eventTriggered, $customHtml) {
+            $eventTriggered = true;
+            if ($event->attribute === 'title') {
+                $event->html = $customHtml;
+            }
+        });
+
+        $html = $this->entry->getAttributeHtml('title');
+
+        expect($eventTriggered)->toBeTrue();
+        expect((string) $html)->toBe($customHtml);
+    });
+
+    test('event receives correct attribute name', function () {
+        $capturedAttribute = null;
+
+        Event::listen(function (DefineAttributeHtml $event) use (&$capturedAttribute) {
+            $capturedAttribute = $event->attribute;
+        });
+
+        $this->entry->getAttributeHtml('slug');
+
+        expect($capturedAttribute)->toBe('slug');
+    });
+});
+
+describe('getInlineAttributeInputHtml', function () {
+    test('returns string for valid attribute', function () {
+        $html = $this->entry->getInlineAttributeInputHtml('title');
+
+        expect($html)->toBeString();
+    });
+
+    test('triggers DefineInlineAttributeInputHtml event', function () {
+        $eventTriggered = false;
+        $customHtml = '<input type="text" value="Custom">';
+
+        Event::listen(function (DefineInlineAttributeInputHtml $event) use (&$eventTriggered, $customHtml) {
+            $eventTriggered = true;
+            if ($event->attribute === 'title') {
+                $event->html = $customHtml;
+            }
+        });
+
+        $html = $this->entry->getInlineAttributeInputHtml('title');
+
+        expect($eventTriggered)->toBeTrue();
+        expect((string) $html)->toBe($customHtml);
+    });
+
+    test('event receives correct attribute name', function () {
+        $capturedAttribute = null;
+
+        Event::listen(function (DefineInlineAttributeInputHtml $event) use (&$capturedAttribute) {
+            $capturedAttribute = $event->attribute;
+        });
+
+        $this->entry->getInlineAttributeInputHtml('slug');
+
+        expect($capturedAttribute)->toBe('slug');
+    });
+});
+
+describe('getSidebarHtml', function () {
+    test('returns string for static mode', function () {
+        $html = $this->entry->getSidebarHtml(true);
+
+        expect($html)->toBeString();
+    });
+
+    test('returns string for non-static mode', function () {
+        $html = $this->entry->getSidebarHtml(false);
+
+        expect($html)->toBeString();
+    });
+
+    test('triggers DefineSidebarHtml event', function () {
+        $eventTriggered = false;
+        $customHtml = '<div class="custom-sidebar">Custom</div>';
+
+        Event::listen(function (DefineSidebarHtml $event) use (&$eventTriggered, $customHtml) {
+            $eventTriggered = true;
+            $event->html = $customHtml;
+        });
+
+        $html = $this->entry->getSidebarHtml(false);
+
+        expect($eventTriggered)->toBeTrue();
+        expect((string) $html)->toBe($customHtml);
+    });
+
+    test('event can append to existing html', function () {
+        Event::listen(function (DefineSidebarHtml $event) {
+            $event->html .= '<div class="appended">Appended</div>';
+        });
+
+        $html = $this->entry->getSidebarHtml(false);
+
+        expect((string) $html)->toContain('Appended');
+    });
+});
+
+describe('getMetadata', function () {
+    test('returns array of metadata', function () {
+        $metadata = $this->entry->getMetadata();
+
+        expect($metadata)->toBeArray()->not->toBeEmpty();
+    });
+
+    test('includes ID in metadata', function () {
+        $metadata = $this->entry->getMetadata();
+
+        expect($metadata)->toHaveKey('ID');
+    });
+
+    test('includes Status in metadata when element has statuses', function () {
+        $metadata = $this->entry->getMetadata();
+
+        expect($metadata)->toHaveKey('Status');
+    });
+
+    test('includes Created at timestamp', function () {
+        $metadata = $this->entry->getMetadata();
+
+        expect($metadata)->toHaveKey('Created at');
+    });
+
+    test('includes Updated at timestamp', function () {
+        $metadata = $this->entry->getMetadata();
+
+        expect($metadata)->toHaveKey('Updated at');
+    });
+
+    test('triggers DefineMetadata event', function () {
+        $eventTriggered = false;
+
+        Event::listen(function (DefineMetadata $event) use (&$eventTriggered) {
+            $eventTriggered = true;
+            $event->metadata['Custom'] = 'Custom Value';
+        });
+
+        $metadata = $this->entry->getMetadata();
+
+        expect($eventTriggered)->toBeTrue();
+        expect($metadata)->toHaveKey('Custom');
+        expect($metadata['Custom'])->toBe('Custom Value');
+    });
+
+    test('event can modify existing metadata', function () {
+        Event::listen(function (DefineMetadata $event) {
+            $event->metadata = [
+                'Only Key' => 'Only Value',
+            ];
+        });
+
+        $metadata = $this->entry->getMetadata();
+
+        expect($metadata)->toHaveKey('Only Key');
+        expect($metadata)->toHaveKey('ID'); // Should still have merged defaults
+        expect($metadata)->toHaveKey('Status');
+    });
+
+    test('metadata values can be callables', function () {
+        $metadata = $this->entry->getMetadata();
+
+        // Status is defined as a callable
+        expect($metadata['Status'])->toBeCallable();
+
+        // When called, it should return something
+        $statusValue = call_user_func($metadata['Status']);
+        expect($statusValue)->not->toBeNull();
+    });
+
+    test('callable metadata can return false to omit', function () {
+        Event::listen(function (DefineMetadata $event) {
+            $event->metadata['Hidden'] = fn () => false;
+        });
+
+        $metadata = $this->entry->getMetadata();
+
+        expect($metadata)->toHaveKey('Hidden');
+
+        // The callable returns false, which indicates it should be omitted when rendered
+        $hiddenValue = call_user_func($metadata['Hidden']);
+        expect($hiddenValue)->toBeFalse();
+    });
+});
+
+describe('prepareEditScreen', function () {
+    test('can be called without errors', function () {
+        $response = new CpScreenResponse;
+        $containerId = 'test-container-id';
+
+        expect(fn () => $this->entry->prepareEditScreen($response, $containerId))
+            ->not->toThrow(Exception::class);
+    });
+});
+
+describe('getCrumbs', function () {
+    test('returns array', function () {
+        expect($this->entry->getCrumbs())->toBeArray();
+    });
+});
+
+describe('getUiLabel and setUiLabel', function () {
+    test('returns string representation by default', function () {
+        expect($this->entry->getUiLabel())->toBeString();
+    });
+
+    test('returns custom label when set', function () {
+        $customLabel = 'Custom UI Label';
+        $this->entry->setUiLabel($customLabel);
+
+        expect($this->entry->getUiLabel())->toBe($customLabel);
+    });
+
+    test('setting null reverts to default', function () {
+        $this->entry->setUiLabel('Custom');
+        $this->entry->setUiLabel(null);
+
+        expect($this->entry->getUiLabel())->toBe($this->entry->title);
+    });
+});
+
+describe('getUiLabelPath and setUiLabelPath', function () {
+    test('returns empty array by default', function () {
+        expect($this->entry->getUiLabelPath())->toBe([]);
+    });
+
+    test('returns custom path when set', function () {
+        $path = ['Section', 'Category'];
+        $this->entry->setUiLabelPath($path);
+
+        expect($this->entry->getUiLabelPath())->toBe($path);
+    });
+});
+
+describe('getChipLabelHtml', function () {
+    test('returns encoded UI label', function () {
+        $html = $this->entry->getChipLabelHtml();
+
+        expect((string) $html)->toBeString()->not->toBeEmpty();
+    });
+
+    test('encodes HTML entities', function () {
+        $this->entry->setUiLabel('<script>alert("xss")</script>');
+
+        $html = $this->entry->getChipLabelHtml();
+
+        expect((string) $html)->not->toContain('<script>');
+        expect((string) $html)->toContain('&lt;script&gt;');
+    });
+});
+
+describe('showStatusIndicator', function () {
+    test('returns true for elements with statuses', function () {
+        expect($this->entry->showStatusIndicator())->toBeTrue();
+    });
+});
+
+describe('getCardTitle', function () {
+    test('returns string for entries', function () {
+        expect($this->entry->getCardTitle())->toBeString();
+    });
+});
+
+describe('getCardBodyHtml', function () {
+    test('returns string', function () {
+        expect($this->entry->getCardBodyHtml())->toBeString();
+    });
+});
+
+describe('getRef', function () {
+    test('returns reference string', function () {
+        expect($this->entry->getRef())->toBeString();
+    });
+});
+
+describe('createAnother', function () {
+    test('returns new element instance for entries', function () {
+        $newElement = $this->entry->createAnother();
+
+        expect($newElement)->toBeInstanceOf(Entry::class);
+        expect($newElement->id)->toBeNull();
+    });
+});

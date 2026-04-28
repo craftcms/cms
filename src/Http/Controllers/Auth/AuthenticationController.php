@@ -1,0 +1,216 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Http\Controllers\Auth;
+
+use CraftCms\Cms\Auth\AuthMethods;
+use CraftCms\Cms\Auth\Enums\AuthError;
+use CraftCms\Cms\Auth\Enums\CpAuthPath;
+use CraftCms\Cms\Auth\Events\InvalidUserToken;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Events\EmailVerified;
+use CraftCms\Cms\User\Events\VerifyingEmail;
+use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Auth\Events\Failed;
+use Illuminate\Auth\Passwords\PasswordBroker;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\URL;
+use RuntimeException;
+use Symfony\Component\HttpFoundation\Response;
+
+abstract readonly class AuthenticationController
+{
+    use RespondsWithFlash;
+
+    public function __construct(
+        protected GeneralConfig $generalConfig,
+        protected AuthMethods $auth,
+    ) {}
+
+    protected function completeLogin(Request $request, User $user, bool $remember): Response
+    {
+        auth('craft')->login($user, $remember);
+
+        return $this->handleSuccessfulLogin($request, $user);
+    }
+
+    protected function handleSuccessfulLogin(Request $request, User $user): Response
+    {
+        $returnUrl = URL::returnUrl();
+
+        if ($request->wantsJson()) {
+            return $this->asModelSuccess($user, modelName: 'user', data: [
+                'returnUrl' => $returnUrl,
+            ]);
+        }
+
+        return $this->redirectToPostedUrl($user, $returnUrl);
+    }
+
+    protected function finalizeLogin(
+        Request $request,
+        User $user,
+        bool $remember,
+        bool $skipTwoFactor = false,
+    ): Response {
+        if (! $skipTwoFactor && ! $this->generalConfig->disable2fa && $this->auth->hasActiveMethod($user)) {
+            $this->auth->setUser($user);
+
+            if (! $request->isCpRequest() && ! $request->wantsJson()) {
+                if (! $loginPath = $this->generalConfig->getLoginPath()) {
+                    $request->session()->forget('user.id');
+                    throw new RuntimeException('User requires two-step verification, but the loginPath config setting is disabled.');
+                }
+
+                return redirect(\CraftCms\Cms\Support\Url::siteUrl($loginPath, array_filter([
+                    'verify' => 1,
+                    'returnUrl' => $this->getPostedRedirectUrl($user) ?? URL::returnUrl(),
+                ])));
+            }
+
+            return redirect()->action([TwoFactorAuthenticationController::class, 'showForm']);
+        }
+
+        return $this->completeLogin($request, $user, $remember);
+    }
+
+    protected function handleLoginFailure(Request $request, ?AuthError $authError = null, ?User $user = null): Response
+    {
+        [$authError, $message] = $this->auth->getLoginFailureInfo($authError, $user);
+
+        event(new Failed(
+            guard: 'craft',
+            user: $user,
+            credentials: $request->only('loginName', 'password'),
+        ));
+
+        return $this->asFailure($message, ['errorCode' => $authError?->value]);
+    }
+
+    protected function renderViewWithFallback(string $cpTemplate, array $data = []): View
+    {
+        if (view()->exists(request()->craftPath())) {
+            return view(request()->craftPath(), $data);
+        }
+
+        TemplateMode::set(TemplateMode::Cp);
+
+        return view('craftcms::'.Str::start($cpTemplate, ''), $data);
+    }
+
+    protected function processTokenRequest(Request $request): Response|array
+    {
+        $request->validate([
+            'id' => ['required'],
+            'code' => ['required'],
+        ]);
+
+        /** @var User|null $user */
+        $user = User::find()
+            ->uid($request->input('id'))
+            ->status(null)
+            ->addSelect(['users.password'])
+            ->one();
+
+        if (! $user) {
+            return $this->processInvalidToken($request);
+        }
+
+        // If someone is logged in and it’s not this person, log them out
+        if ($request->user() && $request->user()->id !== $user->id) {
+            auth('craft')->logout();
+        }
+
+        event(new VerifyingEmail($user));
+
+        /** @var PasswordBroker $broker */
+        $broker = Password::broker('craft');
+        if (! $broker->tokenExists($user, $request->input('code'))) {
+            return $this->processInvalidToken($request, $user);
+        }
+
+        event(new EmailVerified($user));
+
+        return [$user, $request->input('id'), $request->input('code')];
+    }
+
+    protected function processInvalidToken(Request $request, ?User $user = null): Response
+    {
+        event(new InvalidUserToken($user));
+
+        if ($request->wantsJson()) {
+            return $this->asFailure('InvalidVerificationCode');
+        }
+
+        // If they don't have a verification code at all, and they're already logged-in, just send them to the post-login URL
+        if ($user && ! auth('craft')->guest()) {
+            return redirect(URL::returnUrl());
+        }
+
+        // If the invalidUserTokenPath config setting is set, send them there
+        if (! $request->isCpRequest()) {
+            $url = Cms::config()->getInvalidUserTokenPath() ?? Cms::config()->getLoginPath();
+
+            return redirect(\CraftCms\Cms\Support\Url::siteUrl($url));
+        }
+
+        return redirect(CpAuthPath::Login->value);
+    }
+
+    protected function onAfterActivateUser(Request $request, User $user): ?Response
+    {
+        $this->maybeLoginUserAfterAccountActivation($user);
+
+        if ($request->wantsJson()) {
+            return $this->redirectUserToCp($user) ?? $this->redirectUserAfterAccountActivation($user);
+        }
+
+        return null;
+    }
+
+    protected function maybeLoginUserAfterAccountActivation(User $user): bool
+    {
+        if (! Cms::config()->autoLoginAfterAccountActivation) {
+            return false;
+        }
+
+        auth('craft')->login($user);
+
+        return true;
+    }
+
+    protected function redirectUserToCp(User $user): ?Response
+    {
+        if (! $user->can('accessCp')) {
+            return null;
+        }
+
+        $postCpLoginRedirect = Cms::config()->getPostCpLoginRedirect();
+        $url = \CraftCms\Cms\Support\Url::cpUrl($postCpLoginRedirect);
+
+        return redirect($url);
+    }
+
+    protected function redirectUserAfterAccountActivation(User $user): Response
+    {
+        $activateAccountSuccessPath = Cms::config()->getActivateAccountSuccessPath();
+        $url = \CraftCms\Cms\Support\Url::siteUrl($activateAccountSuccessPath);
+
+        return $this->redirectToPostedUrl($user, $url);
+    }
+
+    protected function redirectUserAfterEmailVerification(User $user): Response
+    {
+        $verifyEmailSuccessPath = Cms::config()->getVerifyEmailSuccessPath();
+        $url = \CraftCms\Cms\Support\Url::siteUrl($verifyEmailSuccessPath);
+
+        return $this->redirectToPostedUrl($user, $url);
+    }
+}

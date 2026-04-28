@@ -26,7 +26,7 @@
   name: 'name',
   value: old('name', entryType.name != entryType.original.name ? entryType.name : null),
   placeholder: entryType.original.name,
-  errors: sessionErrors.get('name'),
+  errors: errors.get('name'),
   data: {
     'error-key': 'name',
   },
@@ -42,7 +42,7 @@
   maxlength: 64,
   value: old('handle', entryType.handle != entryType.original.handle ? entryType.handle : null),
   placeholder: entryType.original.handle,
-  errors: sessionErrors.get('handle'),
+  errors: errors.get('handle'),
   data: {
     'error-key': 'handle'
   },
@@ -55,7 +55,7 @@
   name: 'description',
   value: old('description', entryType.description != entryType.original.description ? entryType.description : null),
   placeholder: entryType.original.description,
-  errors: sessionErrors.get('description'),
+  errors: errors.get('description'),
   data: {
     'error-key': 'description',
   },

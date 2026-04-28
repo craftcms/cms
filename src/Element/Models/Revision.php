@@ -9,18 +9,21 @@ use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-final class Revision extends BaseModel
+class Revision extends BaseModel
 {
+    #[\Override]
     protected $table = Table::REVISIONS;
 
+    #[\Override]
     public $timestamps = false;
 
+    #[\Override]
     protected $casts = [
         'num' => 'integer',
     ];
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\Element\Models\Element, $this>
+     * @return BelongsTo<Element, $this>
      */
     public function canonical(): BelongsTo
     {
@@ -28,7 +31,7 @@ final class Revision extends BaseModel
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\User\Models\User, $this>
+     * @return BelongsTo<User, $this>
      */
     public function creator(): BelongsTo
     {

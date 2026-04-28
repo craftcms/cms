@@ -7,7 +7,9 @@
 
 namespace craft\db;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Arr;
+use Illuminate\Pagination\LengthAwarePaginator;
 use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
 use yii\db\Connection as YiiConnection;
@@ -83,6 +85,8 @@ class Paginator extends BaseObject
      */
     private ?array $_pageResults = null;
 
+    private ?LengthAwarePaginator $paginator = null;
+
     /**
      * Constructor
      *
@@ -124,24 +128,7 @@ class Paginator extends BaseObject
      */
     public function getTotalResults(): float|int
     {
-        if (isset($this->totalResults)) {
-            return $this->totalResults;
-        }
-
-        /** @var YiiQuery $query */
-        $query = $this->query;
-
-        $this->totalResults = $query->count('*', $this->db);
-
-        // Factor in the offset and limit
-        if ($query->offset) {
-            $this->totalResults = max(0, $this->totalResults - $query->offset);
-        }
-        if ($query->limit && !$query->limit instanceof ExpressionInterface && $this->totalResults > $query->limit) {
-            $this->totalResults = $query->limit;
-        }
-
-        return $this->totalResults;
+        return $this->resolvePaginator()->total();
     }
 
     /**
@@ -151,11 +138,7 @@ class Paginator extends BaseObject
      */
     public function getTotalPages(): int
     {
-        if (isset($this->totalPages)) {
-            return $this->totalPages;
-        }
-        $totalResults = $this->getTotalResults();
-        return $this->totalPages = $totalResults ? (int)ceil($totalResults / $this->pageSize) : 1;
+        return $this->resolvePaginator()->lastPage();
     }
 
     /**
@@ -181,6 +164,7 @@ class Paginator extends BaseObject
         if ($currentPage !== $this->currentPage) {
             $this->currentPage = $currentPage;
             $this->_pageResults = null;
+            $this->paginator = null;
         }
     }
 
@@ -191,38 +175,7 @@ class Paginator extends BaseObject
      */
     public function getPageResults(): array
     {
-        if (isset($this->_pageResults)) {
-            return $this->_pageResults;
-        }
-
-        /** @var YiiQuery $query */
-        $query = $this->query;
-
-        $pageOffset = ($query->offset ?? 0) + $this->getPageOffset();
-
-        // Have we reached the last page, and would the default page size bleed past the total results?
-        if ($this->pageSize * $this->currentPage > $this->getTotalResults()) {
-            $pageLimit = max(0, $this->getTotalResults() - $this->getPageOffset());
-        } else {
-            $pageLimit = $this->pageSize;
-        }
-
-        if (!$pageLimit) {
-            return [];
-        }
-
-        $limit = $query->limit;
-        $offset = $query->offset;
-
-        $this->_pageResults = $query
-            ->offset($pageOffset)
-            ->limit($pageLimit)
-            ->all($this->db);
-
-        $query->limit = $limit;
-        $query->offset = $offset;
-
-        return $this->_pageResults;
+        return $this->resolvePaginator()->items();
     }
 
     /**
@@ -234,6 +187,7 @@ class Paginator extends BaseObject
     public function setPageResults(array $pageResults): void
     {
         $this->_pageResults = $pageResults;
+        $this->paginator = null;
     }
 
     /**
@@ -244,5 +198,88 @@ class Paginator extends BaseObject
     public function getPageOffset(): float|int
     {
         return $this->pageSize * ($this->currentPage - 1);
+    }
+
+    public function getPaginator(): LengthAwarePaginator
+    {
+        return $this->resolvePaginator();
+    }
+
+    private function resolvePaginator(): LengthAwarePaginator
+    {
+        if ($this->paginator !== null) {
+            return $this->paginator;
+        }
+
+        /** @var YiiQuery $query */
+        $query = $this->query;
+
+        $totalResults = $query->count('*', $this->db);
+
+        if ($query->offset) {
+            $totalResults = max(0, $totalResults - $query->offset);
+        }
+
+        if ($query->limit && !$query->limit instanceof ExpressionInterface && $totalResults > $query->limit) {
+            $totalResults = $query->limit;
+        }
+
+        $currentPage = max(1, $this->currentPage);
+        $totalPages = max((int) ceil($totalResults / $this->pageSize), 1);
+
+        if ($currentPage > $totalPages) {
+            $currentPage = $totalPages;
+            $this->currentPage = $currentPage;
+        }
+
+        $pageResults = $this->_pageResults ?? $this->fetchPageResults($query, $totalResults);
+
+        $this->totalResults = $totalResults;
+        $this->totalPages = $totalPages;
+        $this->_pageResults = $pageResults;
+        $pageParam = Cms::config()->getPageTriggerParam();
+        $this->paginator = new LengthAwarePaginator(
+            items: $pageResults,
+            total: $totalResults,
+            perPage: $this->pageSize,
+            currentPage: $currentPage,
+            options: [
+                'pageName' => $pageParam,
+            ],
+        );
+
+        $this->paginator->appends(request()->except($pageParam));
+
+        return $this->paginator;
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    private function fetchPageResults(YiiQuery $query, int $totalResults): array
+    {
+        $pageOffset = ($query->offset ?? 0) + $this->getPageOffset();
+        $pageLimit = $this->pageSize;
+
+        if ($this->pageSize * $this->currentPage > $totalResults) {
+            $pageLimit = max(0, $totalResults - $this->getPageOffset());
+        }
+
+        if (!$pageLimit) {
+            return [];
+        }
+
+        $limit = $query->limit;
+        $offset = $query->offset;
+
+        $pageResults = $query
+            ->offset($pageOffset)
+            ->limit($pageLimit)
+            ->all($this->db);
+
+        $query->limit = $limit;
+        $query->offset = $offset;
+
+        return $pageResults;
     }
 }

@@ -8,14 +8,15 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\elements\Entry;
-use craft\models\Section;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Section\Data\Section;
 
 /**
  * Move entry event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Entry\Events\MovingEntryToSection} or {@see \CraftCms\Cms\Entry\Events\EntryMovedToSection} instead.
  */
 class MoveEntryEvent extends Event
 {
@@ -25,7 +26,7 @@ class MoveEntryEvent extends Event
     public Entry $entry;
 
     /**
-     * @var Section|\CraftCms\Cms\Section\Data\Section The section we're moving the entry to
+     * @var Section The section we're moving the entry to
      */
-    public Section|\CraftCms\Cms\Section\Data\Section $section;
+    public Section $section;
 }

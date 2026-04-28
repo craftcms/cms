@@ -15,6 +15,7 @@ use craft\gql\base\SingularTypeInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Gql\Events\RegisterGqlTypes} instead.
  */
 class RegisterGqlTypesEvent extends Event
 {

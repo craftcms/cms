@@ -8,9 +8,12 @@
 namespace craft\web;
 
 use Craft;
-use craft\web\assets\htmx\HtmxAsset;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -43,8 +46,7 @@ class CpModalResponseFormatter extends Component implements ResponseFormatterInt
         }
 
         $request = Craft::$app->getRequest();
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(HtmxAsset::class);
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\HtmxAsset::class);
 
         $this->_formatJson($request, $response, $behavior);
     }
@@ -54,19 +56,18 @@ class CpModalResponseFormatter extends Component implements ResponseFormatterInt
         $response->format = Response::FORMAT_JSON;
 
         $namespace = Str::random(10);
-        $view = Craft::$app->getView();
 
         if ($behavior->prepareModal) {
             $containerId = $request->getHeaders()->get('X-Craft-Container-Id');
             if (!$containerId) {
                 throw new BadRequestHttpException('Request missing the X-Craft-Container-Id header.');
             }
-            $view->setNamespace($namespace);
+            InputNamespace::set($namespace);
             call_user_func($behavior->prepareModal, $response, $containerId);
-            $view->setNamespace(null);
+            InputNamespace::set(null);
         }
 
-        $content = $view->namespaceInputs(function() use ($behavior) {
+        $content = InputNamespace::namespaceInputs(function() use ($behavior) {
             $components = [];
             if ($behavior->contentHtml) {
                 $components[] = is_callable($behavior->contentHtml) ? call_user_func($behavior->contentHtml) : $behavior->contentHtml;
@@ -79,7 +80,7 @@ class CpModalResponseFormatter extends Component implements ResponseFormatterInt
             return implode("\n", $components);
         }, $namespace);
 
-        $errorSummary = $behavior->errorSummary ? $view->namespaceInputs($behavior->errorSummary, $namespace) : null;
+        $errorSummary = $behavior->errorSummary ? InputNamespace::namespaceInputs($behavior->errorSummary, $namespace) : null;
 
         $response->data = [
             'namespace' => $namespace,
@@ -88,10 +89,10 @@ class CpModalResponseFormatter extends Component implements ResponseFormatterInt
             'submitButtonLabel' => $behavior->submitButtonLabel,
             'content' => $content,
             'errorSummary' => $errorSummary,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
-            'deltaNames' => $view->getDeltaNames(),
-            'initialDeltaValues' => $view->getInitialDeltaValues(),
+            'headHtml' => HtmlStack::headHtml(),
+            'bodyHtml' => HtmlStack::bodyHtml(),
+            'deltaNames' => DeltaRegistry::getNames(),
+            'initialDeltaValues' => DeltaRegistry::getInitialValues(),
             'data' => $response->data,
         ];
 

@@ -6,22 +6,45 @@ namespace CraftCms\Cms\Field\Data;
 
 use ArrayAccess;
 use ArrayIterator;
-use craft\base\Serializable;
+use BadMethodCallException;
+use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Component\Exceptions\InvalidCallException;
+use CraftCms\Cms\Shared\Contracts\Serializable;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use IteratorAggregate;
-use Spatie\LaravelData\Dto;
+use Override;
+use Stringable;
 use Traversable;
-use yii\base\InvalidCallException;
 
-final class JsonData extends Dto implements \Stringable, ArrayAccess, IteratorAggregate, Serializable
+#[AllowedInSandbox]
+class JsonData extends Component implements IteratorAggregate, Serializable, Stringable
 {
     public function __construct(
         private mixed $value,
-    ) {}
+        public array $config = [],
+    ) {
+        parent::__construct($config);
+    }
 
     public function __toString(): string
     {
         return $this->getJson();
+    }
+
+    #[Override]
+    public function __call($method, $parameters)
+    {
+        try {
+            return parent::__call($method, $parameters);
+        } catch (BadMethodCallException $e) {
+            if (! empty($parameters)) {
+                throw $e;
+            }
+
+            // This is probably just Twig falling back to calling a properly like it's a method
+            return null;
+        }
     }
 
     public function getType(): string
@@ -59,16 +82,19 @@ final class JsonData extends Dto implements \Stringable, ArrayAccess, IteratorAg
         return $json;
     }
 
+    #[Override]
     public function offsetGet(mixed $offset): mixed
     {
         return $this->value[$offset];
     }
 
+    #[Override]
     public function offsetSet(mixed $offset, mixed $value): void
     {
         $this->value[$offset] = $value;
     }
 
+    #[Override]
     public function offsetExists(mixed $offset): bool
     {
         if (is_string($this->value)) {
@@ -76,7 +102,7 @@ final class JsonData extends Dto implements \Stringable, ArrayAccess, IteratorAg
         }
 
         if (is_array($this->value)) {
-            return array_key_exists($offset, $this->value);
+            return array_key_exists((string) $offset, $this->value);
         }
 
         if ($this->value instanceof ArrayAccess) {
@@ -86,6 +112,7 @@ final class JsonData extends Dto implements \Stringable, ArrayAccess, IteratorAg
         return false;
     }
 
+    #[Override]
     public function offsetUnset(mixed $offset): void
     {
         unset($this->value[$offset]);

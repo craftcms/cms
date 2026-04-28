@@ -8,7 +8,7 @@
 namespace craft\auth\sso\mapper;
 
 use craft\base\Component;
-use craft\elements\User;
+use CraftCms\Cms\User\Elements\User;
 
 /**
  * Set an explicit value as a User's attribute
@@ -16,6 +16,7 @@ use craft\elements\User;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @internal
  * @since 5.3.0
+ * @deprecated 6.0.0 use the Laravel Socialite {@see \CraftCms\Cms\Auth\OAuth\OAuth} implementation instead.
  */
 class ExplicitUserMapper extends Component implements UserMapInterface
 {

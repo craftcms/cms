@@ -8,16 +8,16 @@
 namespace craft\web;
 
 use Craft;
-use craft\base\Element;
-use craft\base\ElementInterface;
 use craft\events\RegisterUrlRulesEvent;
-use craft\helpers\UrlHelper;
 use craft\web\UrlRule as CraftUrlRule;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Edition;
-use CraftCms\Cms\RouteToken\RouteTokens;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Route\MatchedElement;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Url;
+use Illuminate\Support\Facades\Log;
 use yii\web\UrlRule as YiiUrlRule;
 use function CraftCms\Cms\backTraceAsString;
 
@@ -88,23 +88,13 @@ class UrlManager extends \yii\web\UrlManager
     private array $_routeParams = [];
 
     /**
-     * @var ElementInterface|false
-     */
-    private ElementInterface|false $_matchedElement;
-
-    /**
-     * @var mixed
-     */
-    private mixed $_matchedElementRoute = null;
-
-    /**
      * Constructor.
      *
      * @param array $config
      */
     public function __construct(array $config = [])
     {
-        $config['showScriptName'] = !Cms::config()->omitScriptNameInUrls;
+        $config['showScriptName'] = false;
 
         parent::__construct($config);
     }
@@ -122,7 +112,7 @@ class UrlManager extends \yii\web\UrlManager
 
         /** @var Request $request */
         // Just in case...
-        if ($request->getIsConsoleRequest()) {
+        if (app()->runningInConsole()) {
             return false;
         }
 
@@ -147,8 +137,7 @@ class UrlManager extends \yii\web\UrlManager
     public function createUrl($params): string
     {
         if (!Craft::$app->getIsInitialized()) {
-            Craft::warning(__METHOD__ . "() was called before the application was fully initialized.\n" .
-                "Stack trace:\n" . backTraceAsString(), __METHOD__);
+            Log::warning(__METHOD__ . "() was called before the application was fully initialized.\n" . "Stack trace:\n" . backTraceAsString(), [__METHOD__]);
         }
 
         $params = (array)$params;
@@ -157,7 +146,7 @@ class UrlManager extends \yii\web\UrlManager
         $route = trim($params[0], '/');
         unset($params[0]);
 
-        return UrlHelper::actionUrl($route, $params, null, false);
+        return Url::actionUrl($route, $params, null);
     }
 
     /**
@@ -166,8 +155,7 @@ class UrlManager extends \yii\web\UrlManager
     public function createAbsoluteUrl($params, $scheme = null): string
     {
         if (!Craft::$app->getIsInitialized()) {
-            Craft::warning(__METHOD__ . "() was called before the application was fully initialized.\n" .
-                "Stack trace:\n" . backTraceAsString(), __METHOD__);
+            Log::warning(__METHOD__ . "() was called before the application was fully initialized.\n" . "Stack trace:\n" . backTraceAsString(), [__METHOD__]);
         }
 
         $params = (array)$params;
@@ -179,7 +167,7 @@ class UrlManager extends \yii\web\UrlManager
         // Create the action URL manually here, so it doesn't get treated as a control panel request
         $path = Cms::config()->actionTrigger . '/' . $route;
 
-        return UrlHelper::siteUrl($path, $params, $scheme);
+        return Url::siteUrl($path, $params, $scheme);
     }
 
     /**
@@ -226,26 +214,11 @@ class UrlManager extends \yii\web\UrlManager
      * ```
      *
      * @return ElementInterface|false
+     * @deprecated 6.0.0 use {@see MatchedElement::get()} instead.
      */
     public function getMatchedElement(): ElementInterface|false
     {
-        if (!Craft::$app->getIsInitialized()) {
-            Craft::warning(__METHOD__ . "() was called before the application was fully initialized.\n" .
-                "Stack trace:\n" . backTraceAsString(), __METHOD__);
-        }
-
-        if (isset($this->_matchedElement)) {
-            return $this->_matchedElement;
-        }
-
-        $request = Craft::$app->getRequest();
-
-        if ($request->getIsConsoleRequest()) {
-            return false;
-        }
-
-        $this->_getMatchedElementRoute($request);
-        return $this->_matchedElement ?? false;
+        return MatchedElement::get();
     }
 
     /**
@@ -253,25 +226,11 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @param ElementInterface|false|null $element
      * @since 3.2.3
+     * @deprecated 6.0.0 use {@see MatchedElement::set()} instead.
      */
     public function setMatchedElement(ElementInterface|false|null $element): void
     {
-        if ($element instanceof ElementInterface) {
-            if ($route = $element->getRoute()) {
-                if (is_string($route)) {
-                    $route = [$route, []];
-                }
-                $this->_matchedElement = $element;
-                $this->_matchedElementRoute = $route;
-                return;
-            }
-
-            // Element doesn't have a route so ignore it
-            $element = false;
-        }
-
-        $this->_matchedElement = $element ?? false;
-        $this->_matchedElementRoute = $element;
+        MatchedElement::set($element);
     }
 
     /**
@@ -318,7 +277,7 @@ class UrlManager extends \yii\web\UrlManager
     {
         $request = Craft::$app->getRequest();
 
-        if ($request->getIsConsoleRequest()) {
+        if (app()->runningInConsole()) {
             return [];
         }
 
@@ -327,14 +286,6 @@ class UrlManager extends \yii\web\UrlManager
             $baseCpRoutesPath = Craft::$app->getBasePath() . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'cproutes';
             /** @var array $rules */
             $rules = require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'common.php';
-
-            if (Edition::get()->value >= Edition::Team->value) {
-                $rules = array_merge($rules, require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'team.php');
-
-                if (Edition::get()->value >= Edition::Pro->value) {
-                    $rules = array_merge($rules, require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'pro.php');
-                }
-            }
 
             $eventName = self::EVENT_REGISTER_CP_URL_RULES;
         } else {
@@ -359,71 +310,12 @@ class UrlManager extends \yii\web\UrlManager
      */
     private function _getRequestRoute(Request $request): mixed
     {
-        // Is there a token in the URL?
-        if (($route = $this->_getTokenRoute($request)) !== false) {
-            return $route;
-        }
-
-        // Is this an element request?
-        if (($route = $this->_getMatchedElementRoute($request)) !== false) {
-            return $route;
-        }
-
         // Do we have a URL route that matches?
         if (($route = $this->_getMatchedUrlRoute($request)) !== false) {
             return $route;
         }
 
-        // Is this a "well-known" request?
-        if (($route = $this->_getMatchedDiscoverableUrlRoute($request)) !== false) {
-            return $route;
-        }
-
-        // Does it look like they're trying to access a public template path?
-        return $this->_getTemplateRoute($request);
-    }
-
-    /**
-     * Attempts to match a path with an element in the database.
-     *
-     * @param Request $request
-     * @return mixed
-     */
-    private function _getMatchedElementRoute(Request $request): mixed
-    {
-        if (isset($this->_matchedElementRoute)) {
-            return $this->_matchedElementRoute;
-        }
-
-        if (
-            !Craft::$app->getIsInstalled() ||
-            !$request->getIsSiteRequest() ||
-            Cms::config()->headlessMode
-        ) {
-            $this->setMatchedElement(false);
-            return false;
-        }
-
-        $path = $request->getPathInfo();
-
-        // Don't allow routing to the homepage via /__home__
-        if ($path !== Element::HOMEPAGE_URI) {
-            $element = Craft::$app->getElements()->getElementByUri($path, Sites::getCurrentSite()->id, true);
-        } else {
-            $element = null;
-        }
-
-        $this->setMatchedElement($element ?: false);
-
-        if (app()->hasDebugModeEnabled()) {
-            Craft::debug([
-                'rule' => 'Element URI: ' . $path,
-                'match' => $this->_matchedElement instanceof ElementInterface,
-                'parent' => null,
-            ], __METHOD__);
-        }
-
-        return $this->_matchedElementRoute;
+        return false;
     }
 
     /**
@@ -440,11 +332,11 @@ class UrlManager extends \yii\web\UrlManager
             $route = $rule->parseRequest($this, $request);
 
             if (app()->hasDebugModeEnabled()) {
-                Craft::debug([
+                Log::debug(Json::encode([
                     'rule' => 'URL Rule: ' . (method_exists($rule, '__toString') ? $rule->__toString() : get_class($rule)),
                     'match' => $route !== false,
                     'parent' => null,
-                ], __METHOD__);
+                ]), [__METHOD__]);
             }
 
             if ($route !== false) {
@@ -457,113 +349,5 @@ class UrlManager extends \yii\web\UrlManager
         }
 
         return false;
-    }
-
-    /**
-     * Attempts to match a path with a “well-known” URL.
-     *
-     * @param Request $request
-     * @return array|false
-     */
-    private function _getMatchedDiscoverableUrlRoute(Request $request): array|false
-    {
-        $redirectUri = $request->getPathInfo() === '.well-known/change-password'
-            ? Cms::config()->getSetPasswordRequestPath(Sites::getCurrentSite()->handle)
-            : null;
-
-        if (app()->hasDebugModeEnabled()) {
-            Craft::debug([
-                'rule' => 'Discoverable change password URL',
-                'match' => $redirectUri !== null,
-                'parent' => null,
-            ], __METHOD__);
-        }
-
-        if (!$redirectUri) {
-            return false;
-        }
-
-        return [
-            'redirect',
-            [
-                'url' => Craft::$app->getSecurity()->hashData($redirectUri),
-                'statusCode' => 302,
-            ],
-        ];
-    }
-
-    /**
-     * Returns whether the current path is "public" (no segments that start with the privateTemplateTrigger).
-     *
-     * @param Request $request
-     * @return bool
-     */
-    private function _isPublicTemplatePath(Request $request): bool
-    {
-        if ($request->getIsSiteRequest() && !Cms::config()->privateTemplateTrigger) {
-            // If privateTemplateTrigger is set to an empty value, disable all public template routing
-            return false;
-        }
-
-        return Craft::$app->getView()->doesTemplateExist($request->getPathInfo(), publicOnly: true);
-    }
-
-    /**
-     * Checks if the path could be a public template path and if so, returns a route to that template.
-     *
-     * @param Request $request
-     * @return array|false
-     */
-    private function _getTemplateRoute(Request $request): array|false
-    {
-        if ($request->getIsSiteRequest() && Cms::config()->headlessMode) {
-            return false;
-        }
-
-        $matches = $this->_isPublicTemplatePath($request);
-        $path = $request->getPathInfo();
-
-        if (app()->hasDebugModeEnabled()) {
-            Craft::debug([
-                'rule' => 'Template: ' . $path,
-                'match' => $matches,
-                'parent' => null,
-            ], __METHOD__);
-        }
-
-        if (!$matches) {
-            return false;
-        }
-
-        return ['templates/render', ['template' => $path]];
-    }
-
-    /**
-     * Checks if the request has a token in it.
-     *
-     * @param Request $request
-     * @return array|false
-     */
-    private function _getTokenRoute(Request $request): array|false
-    {
-        if (!$this->checkToken) {
-            return false;
-        }
-
-        $token = $request->getToken();
-
-        if (app()->hasDebugModeEnabled()) {
-            Craft::debug([
-                'rule' => 'Token' . ($token !== null ? ': ' . $token : ''),
-                'match' => $token !== null,
-                'parent' => null,
-            ], __METHOD__);
-        }
-
-        if ($token === null) {
-            return false;
-        }
-
-        return app(RouteTokens::class)->getTokenRoute($token);
     }
 }

@@ -2,37 +2,14 @@
 
 namespace craft\fields\conditions;
 
-use craft\base\conditions\BaseNumberConditionRule;
-use Money\Money;
-
 /**
  * Text field condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Conditions\NumberFieldConditionRule} instead.
  */
-class NumberFieldConditionRule extends BaseNumberConditionRule implements FieldConditionRuleInterface
+class NumberFieldConditionRule extends \CraftCms\Cms\Field\Conditions\NumberFieldConditionRule
 {
-    use FieldConditionRuleTrait;
-
-    /**
-     * @inheritdoc
-     */
-    protected function elementQueryParam(): ?string
-    {
-        return $this->paramValue();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function matchFieldValue($value): bool
-    {
-        if ($value instanceof Money) {
-            $value = (float)$value->getAmount();
-        }
-
-        /** @var int|float|null $value */
-        return $this->matchValue($value);
-    }
+    use \craft\base\LegacyEventConstants;
 }

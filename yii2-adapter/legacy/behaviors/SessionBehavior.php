@@ -7,10 +7,11 @@
 
 namespace craft\behaviors;
 
-use Craft;
 use craft\web\Session;
 use craft\web\View;
-use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Support\Flash;
+use CraftCms\Cms\View\Enums\Position;
 use yii\base\Behavior;
 use yii\base\Exception;
 use yii\web\AssetBundle;
@@ -25,16 +26,6 @@ use function CraftCms\Cms\t;
  */
 class SessionBehavior extends Behavior
 {
-    private const AUTH_LOCK_NAME = 'authAccess';
-
-    /**
-     * @var string|null The session variable name used to store the authorization keys for the current session.
-     * @see authorize()
-     * @see deauthorize()
-     * @see checkAuthorization()
-     */
-    public ?string $authAccessParam = null;
-
     /**
      * @var string the name of the flash key that stores asset bundle data
      */
@@ -60,14 +51,7 @@ class SessionBehavior extends Behavior
      */
     public function setNotice(string $message, array $settings = []): void
     {
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
-            $this->_setNotificationFlash('notice', $message, $settings + [
-                    'icon' => 'info',
-                    'iconLabel' => t('Notice'),
-                ]);
-        } else {
-            $this->owner->setFlash('notice', $message);
-        }
+        Flash::notice($message, $settings);
     }
 
     /**
@@ -83,14 +67,7 @@ class SessionBehavior extends Behavior
      */
     public function setSuccess(string $message, array $settings = []): void
     {
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
-            $this->_setNotificationFlash('success', $message, $settings + [
-                    'icon' => 'check',
-                    'iconLabel' => t('Success'),
-                ]);
-        } else {
-            $this->owner->setFlash('success', $message);
-        }
+        Flash::success($message, $settings);
     }
 
     /**
@@ -105,14 +82,7 @@ class SessionBehavior extends Behavior
      */
     public function setError(string $message, array $settings = []): void
     {
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
-            $this->_setNotificationFlash('error', $message, $settings + [
-                    'icon' => 'alert',
-                    'iconLabel' => t('Error'),
-                ]);
-        } else {
-            $this->owner->setFlash('error', $message);
-        }
+        Flash::error($message, $settings);
     }
 
     /**
@@ -122,11 +92,7 @@ class SessionBehavior extends Behavior
      */
     public function getNotice(): ?string
     {
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
-            return $this->_getNotificationFlashMessage('notice');
-        }
-
-        return $this->owner->getFlash('notice');
+        return Flash::getNotice();
     }
 
     /**
@@ -137,11 +103,7 @@ class SessionBehavior extends Behavior
      */
     public function getSuccess(): ?string
     {
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
-            return $this->_getNotificationFlashMessage('success');
-        }
-
-        return $this->owner->getFlash('success');
+        return Flash::getSuccess();
     }
 
     /**
@@ -151,21 +113,7 @@ class SessionBehavior extends Behavior
      */
     public function getError(): ?string
     {
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
-            return $this->_getNotificationFlashMessage('error');
-        }
-
-        return $this->owner->getFlash('error');
-    }
-
-    private function _getNotificationFlashMessage(string $type)
-    {
-        return $this->owner->getFlash("cp-notification-$type")[0] ?? null;
-    }
-
-    private function _setNotificationFlash(string $type, string $message, array $settings = [])
-    {
-        $this->owner->setFlash("cp-notification-$type", [$message, $settings]);
+        return Flash::getError();
     }
 
     /**
@@ -187,7 +135,7 @@ class SessionBehavior extends Behavior
 
         $assetBundles = $this->getAssetBundleFlashes(false);
         $assetBundles[$name] = $position;
-        $this->owner->setFlash($this->assetBundleFlashKey, $assetBundles);
+        session()->flash($this->assetBundleFlashKey, $assetBundles);
     }
 
     /**
@@ -199,7 +147,11 @@ class SessionBehavior extends Behavior
      */
     public function getAssetBundleFlashes(bool $delete = false): array
     {
-        return $this->owner->getFlash($this->assetBundleFlashKey, [], $delete);
+        if ($delete) {
+            return session()->pull($this->assetBundleFlashKey, []);
+        }
+
+        return session()->get($this->assetBundleFlashKey, []);
     }
 
     /**
@@ -212,26 +164,28 @@ class SessionBehavior extends Behavior
      * @param int $position the position at which the JS script tag should
      * be inserted in a page.
      * @param string|null $key the key that identifies the JS code block.
+     *
      * @see getJsFlashes()
      * @see View::registerJs()
+     * @deprecated 6.0.0 use {@see \Illuminate\Support\Facades\Session::flashJs()} instead.
      */
     public function addJsFlash(string $js, int $position = View::POS_READY, ?string $key = null): void
     {
-        $scripts = $this->getJsFlashes();
-        $scripts[] = [$js, $position, $key];
-        $this->owner->setFlash($this->jsFlashKey, $scripts);
+        session()->flashJs($js, Position::tryFrom($position) ?? Position::Head, $key);
     }
 
     /**
      * Returns the stored JS flashes.
      *
      * @param bool $delete Whether to delete the stored flashes. Defaults to `true`.
+     *
      * @return array The stored JS flashes.
      * @see addJsFlash()
+     * @deprecated 6.0.0 use {@see \Illuminate\Support\Facades\Session::getJs()} instead.
      */
     public function getJsFlashes(bool $delete = true): array
     {
-        return $this->owner->getFlash($this->jsFlashKey, [], $delete);
+        return session()->getJs($delete);
     }
 
     /**
@@ -239,21 +193,11 @@ class SessionBehavior extends Behavior
      *
      * @param string|array $message The message to broadcast.
      * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \Illuminate\Support\Facades\Session::broadcastToJs()} instead.
      */
     public function broadcastToJs(string|array $message): void
     {
-        // This is a control panel-only feature
-        if (!Craft::$app->getRequest()->getIsCpRequest()) {
-            return;
-        }
-
-        $jsonMessage = Json::encode($message);
-        $this->addJsFlash(<<<JS
-if (Craft?.broadcaster) {
-    Craft.broadcaster.postMessage($jsonMessage)
-}
-JS
-        );
+        session()->broadcastToJs($message);
     }
 
     // Session-Based Authorization
@@ -263,57 +207,36 @@ JS
      * Authorizes the user to perform an action for the duration of the session.
      *
      * @param string $action
+     *
+     * @deprecated 6.0.0 use {@see SessionAuth::authorize} instead.
      */
     public function authorize(string $action): void
     {
-        $mutex = Craft::$app->getMutex();
-        $locked = $mutex->acquire(self::AUTH_LOCK_NAME, 5);
-
-        $access = $this->owner->get($this->authAccessParam, []);
-
-        if (!in_array($action, $access, true)) {
-            $access[] = $action;
-            $this->owner->set($this->authAccessParam, $access);
-        }
-
-        if ($locked) {
-            $mutex->release(self::AUTH_LOCK_NAME);
-        }
+        SessionAuth::authorize($action);
     }
 
     /**
      * Deauthorizes the user from performing an action.
      *
      * @param string $action
+     *
+     * @deprecated 6.0.0 use {@see SessionAuth::deauthorize} instead.
      */
     public function deauthorize(string $action): void
     {
-        $mutex = Craft::$app->getMutex();
-        $locked = $mutex->acquire(self::AUTH_LOCK_NAME, 5);
-
-        $access = $this->owner->get($this->authAccessParam, []);
-        $index = array_search($action, $access, true);
-
-        if ($index !== false) {
-            array_splice($access, $index, 1);
-            $this->owner->set($this->authAccessParam, $access);
-        }
-
-        if ($locked) {
-            $mutex->release(self::AUTH_LOCK_NAME);
-        }
+        SessionAuth::deauthorize($action);
     }
 
     /**
      * Returns whether the user is authorized to perform an action.
      *
      * @param string $action
+     *
      * @return bool
+     * @deprecated 6.0.0 use {@see SessionAuth::checkAuthorization} instead.
      */
     public function checkAuthorization(string $action): bool
     {
-        $access = $this->owner->get($this->authAccessParam, []);
-
-        return in_array($action, $access, true);
+        return SessionAuth::checkAuthorization($action);
     }
 }

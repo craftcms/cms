@@ -2,17 +2,8 @@
 {% set selectedNavItem = 'transforms' %}
 {% set readOnly = readOnly ?? false %}
 
-{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+{% do registerLegacyAsset('CraftCms\\Cms\\View\\LegacyAssets\\AdminTableAsset') -%}
 
-{% do view.registerTranslations('app', [
-    "Name",
-    "Handle",
-    "Mode",
-    "Dimensions",
-    "Interlace",
-    "Format",
-    "No image transforms exist yet.",
-]) %}
 
 {% if readOnly %}
     {% set contentNotice = readOnlyNotice() %}

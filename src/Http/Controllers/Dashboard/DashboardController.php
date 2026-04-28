@@ -4,26 +4,29 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Dashboard;
 
-use craft\web\Application;
-use craft\web\assets\dashboard\DashboardAsset;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Json;
-use Illuminate\Container\Attributes\Give;
+use CraftCms\Cms\View\HtmlStack;
+use CraftCms\Cms\View\LegacyAssets\DashboardAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 
-final readonly class DashboardController
+use function CraftCms\Cms\cp_url;
+
+readonly class DashboardController
 {
     use InteractsWithWidgets;
 
     public function __construct(
+        private HtmlStack $HtmlStack,
         private Dashboard $dashboard,
-        #[Give('Craft')] Application $craft,
-    ) {
-        $this->view = $craft->getView();
-    }
+    ) {}
 
-    public function __invoke()
+    public function index()
     {
         /**
          * @var Collection<string, array{iconSvg: mixed, name: string, maxColspan: int|null, settingsHtml?: string, settingsJs?: mixed, selectable: bool}> $widgetTypeInfo
@@ -33,10 +36,10 @@ final readonly class DashboardController
             ->filter(fn (string $widgetType) => $widgetType::isSelectable())
             /** @phpstan-ignore argument.unresolvableType */
             ->mapWithKeys(function (string $widgetType) {
-                $this->view->startJsBuffer();
+                $this->HtmlStack->startJsBuffer();
                 $widget = $this->dashboard->createWidget($widgetType);
-                $settingsHtml = $this->view->namespaceInputs(fn () => (string) $widget->getSettingsHtml(), '__NAMESPACE__');
-                $settingsJs = (string) $this->view->clearJsBuffer(false);
+                $settingsHtml = InputNamespace::namespaceInputs(fn () => (string) $widget->getSettingsHtml(), '__NAMESPACE__');
+                $settingsJs = (string) $this->HtmlStack->clearJsBuffer(false);
 
                 return [$widget::class => [
                     'iconSvg' => $this->getWidgetIconSvg($widget),
@@ -57,9 +60,9 @@ final readonly class DashboardController
 
         $this->dashboard->getAllWidgets()
             ->each(function (WidgetInterface $widget) use ($widgetTypeInfo, &$variables, &$allWidgetJs) {
-                $this->view->startJsBuffer();
+                $this->HtmlStack->startJsBuffer();
                 $info = $this->getWidgetInfo($widget);
-                $widgetJs = $this->view->clearJsBuffer(false);
+                $widgetJs = $this->HtmlStack->clearJsBuffer(false);
 
                 if ($info === false) {
                     return;
@@ -86,15 +89,24 @@ final readonly class DashboardController
             });
 
         // Include all the JS and CSS stuff
-        $this->view->registerAssetBundle(DashboardAsset::class);
-        $this->view->registerJsWithVars(
+        app(InternalAssetRegistry::class)->register(DashboardAsset::class);
+        $this->HtmlStack->jsWithVars(
             fn ($widgetTypeInfo) => "window.dashboard = new Craft.Dashboard($widgetTypeInfo)",
             [$widgetTypeInfo]
         );
-        $this->view->registerJs($allWidgetJs);
+        $this->HtmlStack->js($allWidgetJs);
 
         $variables['widgetTypes'] = $widgetTypeInfo;
 
-        return $this->view->renderPageTemplate('dashboard/_index.twig', $variables);
+        return view('dashboard/_index', $variables);
+    }
+
+    public function redirect(): RedirectResponse
+    {
+        if ($path = Cms::config()->getPostCpLoginRedirect()) {
+            return redirect(cp_url($path));
+        }
+
+        return redirect(route('craft.cp.dashboard'));
     }
 }

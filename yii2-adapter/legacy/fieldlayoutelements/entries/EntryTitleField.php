@@ -1,97 +1,27 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fieldlayoutelements\entries;
 
-use craft\base\ElementInterface;
-use craft\elements\Entry;
-use craft\fieldlayoutelements\TitleField;
-use craft\helpers\ElementHelper;
-use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Field;
-use CraftCms\Cms\Support\Arr;
-use yii\base\InvalidArgumentException;
+use craft\base\LegacyEventConstants;
 
 /**
- * EntryTitleField represents a Title field that can be included within an entry type’s field layout designer.
+ * EntryTitleField represents a Title field that can be included within an entry type's field layout designer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.5.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField} instead.
  */
-class EntryTitleField extends TitleField
+class EntryTitleField extends \CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField
 {
-    /**
-     * @inheritdoc
-     */
-    public bool $mandatory = false;
-
-    /**
-     * @inheritdoc
-     */
-    public bool $requirable = true;
-
-    /**
-     * @inheritdoc
-     */
-    public function __construct($config = [])
-    {
-        $this->required = Arr::pull($config, 'required', $this->required);
-        unset($config['requirable']);
-        parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function fields(): array
-    {
-        $fields = parent::fields();
-        unset($fields['requirable']);
-        $fields['required'] = 'required';
-        return $fields;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function translatable(?ElementInterface $element = null, bool $static = false): bool
-    {
-        if (!$element instanceof Entry) {
-            throw new InvalidArgumentException(sprintf('%s can only be used in entry field layouts.', self::class));
-        }
-
-        return $element->getType()->titleTranslationMethod !== TranslationMethod::None;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        if (!$element instanceof Entry) {
-            throw new InvalidArgumentException(sprintf('%s can only be used in entry field layouts.', self::class));
-        }
-
-        return ElementHelper::translationDescription($element->getType()->titleTranslationMethod);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        if (!$element instanceof Entry) {
-            throw new InvalidArgumentException(sprintf('%s can only be used in entry field layouts.', self::class));
-        }
-
-        if (!$element->getType()->hasTitleField) {
-            return null;
-        }
-
-        return parent::inputHtml($element, $static);
-    }
+    use LegacyEventConstants;
 }

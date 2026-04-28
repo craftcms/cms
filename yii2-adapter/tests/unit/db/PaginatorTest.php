@@ -1,194 +1,80 @@
 <?php
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\db;
 
-use Codeception\Test\Unit;
+use Carbon\Carbon;
 use craft\db\Paginator;
 use craft\db\Query;
-use craft\db\Table;
-use craft\records\Session;
 use craft\test\TestCase;
+use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\DB;
-use UnitTester;
-use yii\db\Exception;
+use Illuminate\Support\Str;
 
-/**
- * Unit tests for Paginator
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.2
- */
 class PaginatorTest extends TestCase
 {
-    /**
-     * @var Paginator
-     */
-    private Paginator $paginator;
-
-    /**
-     * @var UnitTester
-     */
-    protected UnitTester $tester;
-
-    /**
-     *
-     */
-    public function testTotalResults(): void
+    public function testItWrapsALaravelPaginator(): void
     {
-        $this->setPaginator([], [], 10);
-        self::assertSame('10', (string)$this->paginator->getTotalResults());
-        $this->resetPaginator();
+        $this->insertSites(4);
+
+        $paginator = new Paginator((new Query())->from(Table::SITES), [
+            'pageSize' => 2,
+            'currentPage' => 2,
+        ]);
+
+        self::assertSame(5, $paginator->getTotalResults());
+        self::assertSame(3, $paginator->getTotalPages());
+        self::assertCount(2, $paginator->getPageResults());
+        self::assertSame(2, $paginator->getPaginator()->currentPage());
+        self::assertSame(2, $paginator->getPaginator()->perPage());
     }
 
-    /**
-     *
-     */
-    public function testTotalResultsWithQueryLimit(): void
+    public function testItKeepsTotalSemanticsForLimitedQueries(): void
     {
-        $this->setPaginator(['limit' => 10], [], 25);
-        self::assertSame(10, $this->paginator->getTotalResults());
-        $this->resetPaginator();
-    }
+        $this->insertSites(5);
 
-    /**
-     *
-     */
-    public function testTotalResultsWithQueryOffset(): void
-    {
-        $this->setPaginator(['offset' => 5], [], 10);
-        self::assertSame(5, $this->paginator->getTotalResults());
-        $this->resetPaginator();
-    }
-
-    /**
-     *
-     */
-    public function testTotalPages(): void
-    {
-        $this->setPaginator([], ['pageSize' => '25']);
-        self::assertSame(4, $this->paginator->getTotalPages());
-        $this->resetPaginator();
-    }
-
-    /**
-     *
-     */
-    public function testTotalPagesWithOneOverflow(): void
-    {
-        $this->setPaginator([], ['pageSize' => '25'], 101);
-        self::assertSame(5, $this->paginator->getTotalPages());
-        $this->resetPaginator();
-    }
-
-    /**
-     *
-     */
-    public function testGetPageResults(): void
-    {
-        $this->setPaginator([], ['pageSize' => '2']);
-
-        $desiredResults = (new Query())->from([Table::SESSIONS])->limit(2)->all();
-        self::assertSame($desiredResults, $this->paginator->getPageResults());
-        $this->resetPaginator();
-    }
-
-    /**
-     *
-     */
-    public function testGetPageResultsSlices(): void
-    {
-        $this->setPaginator([], ['pageSize' => '2'], 10);
-
-        $desiredResults = (new Query())->from(Table::SESSIONS)->limit(4)->all();
-
-        // Should get the first two...
-        self::assertSame([$desiredResults[0], $desiredResults[1]], $this->paginator->getPageResults());
-
-        // Next page. Other two results.
-        $this->paginator->setCurrentPage(2);
-        self::assertSame([$desiredResults[2], $desiredResults[3]], $this->paginator->getPageResults());
-        $this->resetPaginator();
-    }
-
-    /**
-     *
-     */
-    public function testGetPageResultsIncompleteResults(): void
-    {
-        $this->setPaginator([], ['pageSize' => '2'], 1);
-
-        $desiredResults = (new Query())->from([Table::SESSIONS])->limit(1)->all();
-        self::assertSame($desiredResults, $this->paginator->getPageResults());
-        $this->resetPaginator();
-    }
-
-    /**
-     *
-     */
-    public function testGetPageOffset(): void
-    {
-        $this->setPaginator([], [], 10);
-        self::assertSame(0, $this->paginator->getPageOffset());
-        $this->resetPaginator();
-    }
-
-    /**
-     *
-     */
-    public function testSetPageResultValidation(): void
-    {
-        $this->setPaginator([], [], 10);
-        $this->paginator->setCurrentPage(5);
-        self::assertSame(1, $this->paginator->getCurrentPage());
-        $this->resetPaginator();
-    }
-
-    /**
-     *
-     */
-    public function testSetPageResultValidationLastPage(): void
-    {
-        $this->setPaginator([], ['pageSize' => '5'], 10);
-        $this->paginator->setCurrentPage(2);
-        self::assertSame(2, $this->paginator->getCurrentPage());
-
-        $this->paginator->setCurrentPage(3);
-        self::assertSame(2, $this->paginator->getCurrentPage());
-        $this->resetPaginator();
-    }
-
-    /**
-     * @param array $queryParams
-     * @param array $config
-     * @param int $requiredSessions
-     * @return void
-     */
-    protected function setPaginator(array $queryParams = [], array $config = [], int $requiredSessions = 100)
-    {
-        $this->tester->haveMultiple(Session::class, $requiredSessions);
-
-        $query = (new Query())->from(Table::SESSIONS);
-        foreach ($queryParams as $key => $value) {
-            $query->$key = $value;
-        }
-
-        $this->paginator = new Paginator(
-            $query,
-            $config
+        $paginator = new Paginator(
+            (new Query())
+                ->from(Table::SITES)
+                ->limit(3)
+                ->offset(2),
+            [
+                'pageSize' => 2,
+                'currentPage' => 1,
+            ],
         );
+
+        self::assertSame(3, $paginator->getTotalResults());
+        self::assertSame(2, $paginator->getTotalPages());
+        self::assertCount(2, $paginator->getPageResults());
     }
 
-    /**
-     * @throws Exception
-     */
-    protected function resetPaginator()
+    private function insertSites(int $count): void
     {
-        DB::table(\CraftCms\Cms\Database\Table::SESSIONS)->truncate();
+        $groupId = DB::table(Table::SITES)
+            ->value('groupId');
+        $timestamp = Carbon::now();
+
+        foreach (range(1, $count) as $index) {
+            DB::table(Table::SITES)->insert([
+                'groupId' => $groupId,
+                'primary' => false,
+                'enabled' => true,
+                'name' => "Site {$index}",
+                'handle' => "site{$index}-" . Str::lower(Str::random(6)),
+                'language' => 'en-US',
+                'hasUrls' => false,
+                'baseUrl' => null,
+                'sortOrder' => $index + 1,
+                'dateCreated' => $timestamp,
+                'dateUpdated' => $timestamp,
+                'uid' => (string) Str::uuid(),
+            ]);
+        }
     }
 }

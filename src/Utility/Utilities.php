@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility;
 
-use craft\queue\QueueInterface;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Utility\Events\RegisterUtilities;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
@@ -24,13 +23,9 @@ use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Event;
 
-/**
- * The Utilities service provides APIs for managing utilities.
- */
 #[Singleton]
-final readonly class Utilities
+readonly class Utilities
 {
     public function __construct(
         private GeneralConfig $generalConfig,
@@ -51,18 +46,15 @@ final readonly class Utilities
                 PhpInfo::class,
             )
             ->when(
-                Edition::get()->value >= Edition::Pro->value,
+                Edition::isAtLeast(Edition::Pro),
                 fn (Collection $c) => $c->push(SystemMessagesUtility::class)
             )
             ->unless(
-                empty(app('Craft')->getVolumes()->getAllVolumes()),
+                Volumes::getAllVolumes()->isEmpty(),
                 fn (Collection $c) => $c->push(AssetIndexes::class)
             )
-            ->when(
-                app('Craft')->getQueue() instanceof QueueInterface,
-                fn (Collection $c) => $c->push(QueueManager::class)
-            )
             ->push(
+                QueueManager::class,
                 ClearCaches::class,
                 DeprecationErrors::class,
             )
@@ -75,14 +67,11 @@ final readonly class Utilities
                 Migrations::class,
             );
 
-        if (Event::hasListeners(RegisterUtilities::class)) {
-            Event::dispatch($event = new RegisterUtilities($utilityTypes));
-            $utilityTypes = $event->types;
-        }
+        event($event = new RegisterUtilities($utilityTypes));
 
         $disabledUtilities = array_flip($this->generalConfig->disabledUtilities);
 
-        return $utilityTypes
+        return $event->types
             /** @var class-string<Utility> $class */
             ->filter(fn (string $class) => ! isset($disabledUtilities[$class::id()]) && $class::isSelectable());
     }
@@ -105,7 +94,6 @@ final readonly class Utilities
      */
     public function checkAuthorization(string $class): bool
     {
-        /** @var ?User $user */
         $user = Auth::user();
 
         // The Project Config utility is for admins only!

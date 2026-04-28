@@ -4,53 +4,54 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry;
 
-use Craft;
-use craft\base\MemoizableArray;
-use craft\errors\EntryTypeNotFoundException;
-use craft\helpers\AdminTable;
-use craft\helpers\Cp;
-use craft\helpers\Queue;
-use craft\models\FieldLayout;
-use craft\queue\jobs\ResaveElements;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Elements\Entry;
+use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Events\ApplyingDeleteEntryType;
 use CraftCms\Cms\Entry\Events\DeletingEntryType;
 use CraftCms\Cms\Entry\Events\EntryTypeDeleted;
 use CraftCms\Cms\Entry\Events\EntryTypeSaved;
 use CraftCms\Cms\Entry\Events\SavingEntryType;
+use CraftCms\Cms\Entry\Exceptions\EntryTypeNotFoundException;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Http\Events\RequestHandled;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidConfigException;
-use yii\helpers\Markdown;
 
 #[Singleton]
-final class EntryTypes
+class EntryTypes
 {
     /**
      * @var bool Whether entries should be resaved after an entry type has been updated.
@@ -71,6 +72,7 @@ final class EntryTypes
 
     public function __construct(
         private readonly ProjectConfig $projectConfig,
+        private readonly ElementCaches $elementCaches,
     ) {}
 
     /**
@@ -83,7 +85,7 @@ final class EntryTypes
      * ```
      *
      *
-     * @return \Illuminate\Support\Collection<EntryType>
+     * @return Collection<EntryType>
      */
     public function getEntryTypesBySectionId(int $sectionId): Collection
     {
@@ -116,7 +118,7 @@ final class EntryTypes
                 $result->slugTranslationMethod = TranslationMethod::from($result->slugTranslationMethod);
                 $result->color = $result->color ? Color::from($result->color) : null;
 
-                return EntryType::from($result);
+                return new EntryType($result);
             },
         );
 
@@ -138,6 +140,7 @@ final class EntryTypes
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
                 'titleFormat',
+                'allowLineBreaksInTitles',
                 'slugTranslationMethod',
                 'slugTranslationKeyFormat',
                 'showStatusField',
@@ -161,7 +164,7 @@ final class EntryTypes
      */
     public function getAllEntryTypes(): Collection
     {
-        return collect($this->entryTypes()->all());
+        return $this->entryTypes()->collect();
     }
 
     /**
@@ -180,7 +183,7 @@ final class EntryTypes
         if (! $entryType && $withTrashed) {
             $record = $this->getEntryTypeModel($entryTypeId, true);
             if ($record->exists) {
-                return EntryType::from(Arr::only($record->toArray(), [
+                return new EntryType(Arr::only($record->toArray(), [
                     'id',
                     'fieldLayoutId',
                     'name',
@@ -280,9 +283,7 @@ final class EntryTypes
     {
         $isNewEntryType = ! $entryType->id;
 
-        if (Event::hasListeners(SavingEntryType::class)) {
-            Event::dispatch(new SavingEntryType($entryType, $isNewEntryType));
-        }
+        event(new SavingEntryType($entryType, $isNewEntryType));
 
         $entryType->hasTitleField = $entryType->getFieldLayout()->isFieldIncluded('title');
 
@@ -330,6 +331,7 @@ final class EntryTypes
             $entryTypeModel->titleTranslationMethod = $data['titleTranslationMethod'] ?? '';
             $entryTypeModel->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $entryTypeModel->titleFormat = $data['titleFormat'];
+            $entryTypeModel->allowLineBreaksInTitles = $data['allowLineBreaksInTitles'] ?? false;
             $entryTypeModel->uiLabelFormat = $data['uiLabelFormat'] ?? '{title}';
             $entryTypeModel->showSlugField = $data['showSlugField'] ?? true;
             $entryTypeModel->slugTranslationMethod = $data['slugTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
@@ -395,11 +397,7 @@ final class EntryTypes
                 /** @var Entry[][] $entriesBySection */
                 $entriesBySection = $entries->groupBy('sectionId')->all();
                 foreach ($entriesBySection as $sectionEntries) {
-                    try {
-                        Craft::$app->getElements()->restoreElements($sectionEntries);
-                    } catch (InvalidConfigException) {
-                        // the section probably wasn't restored
-                    }
+                    Elements::restoreElements($sectionEntries);
                 }
             });
         }
@@ -409,26 +407,24 @@ final class EntryTypes
 
         if (! $isNewEntryType && $resaveEntries && $this->autoResaveEntries) {
             // Re-save the entries of this type
-            Queue::push(new ResaveElements([
-                'description' => I18N::prep('Resaving {type} entries', [
-                    'type' => $entryType->name,
-                ]),
-                'elementType' => Entry::class,
-                'criteria' => [
+            dispatch(new ResaveElements(
+                elementType: Entry::class,
+                criteria: [
                     'typeId' => $entryType->id,
                     'siteId' => '*',
                     'unique' => true,
                     'status' => null,
                 ],
-            ]));
+                description: I18N::prep('Resaving {type} entries', [
+                    'type' => $entryType->name,
+                ]),
+            ));
         }
 
-        if (Event::hasListeners(EntryTypeSaved::class)) {
-            Event::dispatch(new EntryTypeSaved($entryType, $isNewEntryType));
-        }
+        event(new EntryTypeSaved($entryType, $isNewEntryType));
 
         // Invalidate entry caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+        $this->elementCaches->invalidateForElementType(Entry::class);
     }
 
     /**
@@ -472,9 +468,7 @@ final class EntryTypes
      */
     public function deleteEntryType(EntryType $entryType): bool
     {
-        if (Event::hasListeners(DeletingEntryType::class)) {
-            Event::dispatch(new DeletingEntryType($entryType));
-        }
+        event(new DeletingEntryType($entryType));
 
         $this->projectConfig->remove(
             path: ProjectConfig::PATH_ENTRY_TYPES.'.'.$entryType->uid,
@@ -499,9 +493,7 @@ final class EntryTypes
         /** @var EntryType $entryType */
         $entryType = $this->getEntryTypeById($entryTypeModel->id);
 
-        if (Event::hasListeners(ApplyingDeleteEntryType::class)) {
-            Event::dispatch(new ApplyingDeleteEntryType($entryType));
-        }
+        event(new ApplyingDeleteEntryType($entryType));
 
         DB::beginTransaction();
 
@@ -552,12 +544,10 @@ final class EntryTypes
         // Clear caches
         $this->refreshEntryTypes();
 
-        if (Event::hasListeners(EntryTypeDeleted::class)) {
-            Event::dispatch(new EntryTypeDeleted($entryType));
-        }
+        event(new EntryTypeDeleted($entryType));
 
         // Invalidate entry caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+        $this->elementCaches->invalidateForElementType(Entry::class);
     }
 
     /**
@@ -566,6 +556,9 @@ final class EntryTypes
     public function refreshEntryTypes(): void
     {
         $this->entryTypes = null;
+
+        // Sections cache entry types internally, so ensure those get refreshed as well.
+        Sections::refreshSections();
     }
 
     /**
@@ -581,7 +574,7 @@ final class EntryTypes
         string $orderBy = 'name',
         int $sortDir = SORT_ASC,
     ): array {
-        [$results, $total] = $this->prepTableData(
+        [$results, $paginator] = $this->prepTableData(
             query: $this->_createEntryTypeQuery(),
             page: $page,
             limit: $limit,
@@ -598,16 +591,16 @@ final class EntryTypes
         $usages = $this->allEntryTypeUsages();
 
         foreach ($entryTypes as $entryType) {
-            $label = $entryType->getUiLabel();
+            $label = Html::encode($entryType->getUiLabel());
             $chipCellContent = Html::beginTag('div', ['class' => 'inline-chips']).
-                Cp::chipHtml($entryType, [
+                app(ElementHtml::class)->chipHtml($entryType, [
                     'labelHtml' => Html::a($label, $entryType->getCpEditUrl(), [
                         'class' => ['chip-label', 'cell-bold'],
                     ]),
                 ]);
             if ($entryType->description) {
                 $chipCellContent .= Html::tag('span',
-                    Html::decodeDoubles(Markdown::process(Html::encodeInvalidTags(Html::encode($entryType->description)),
+                    Html::decodeDoubles(Markdown::parse(Html::encodeInvalidTags(Html::encode($entryType->description)),
                         'gfm-comment')),
                     ['class' => 'info']);
             }
@@ -618,11 +611,20 @@ final class EntryTypes
                 'title' => $label,
                 'chip' => $chipCellContent,
                 'handle' => $entryType->handle,
-                'usages' => Cp::componentPreviewHtml($usages[$entryType->id] ?? []),
+                'usages' => app(PreviewHtml::class)->componentPreviewHtml($usages[$entryType->id] ?? [], ['hyperlink' => true]),
             ];
         }
 
-        $pagination = AdminTable::paginationLinks($page, $total, $limit);
+        $pagination = Arr::only($paginator->toArray(), [
+            'total',
+            'per_page',
+            'current_page',
+            'last_page',
+            'next_page_url',
+            'prev_page_url',
+            'from',
+            'to',
+        ]);
 
         return [$pagination, $tableData];
     }
@@ -631,7 +633,7 @@ final class EntryTypes
      * Returns query results needed for the VueAdminTable accounting for the pagination, search terms and sorting options.
      *
      *
-     * @return array{0: Collection, 1: int}
+     * @return array{0: Collection, 1: LengthAwarePaginator}
      */
     private function prepTableData(
         Builder $query,
@@ -642,8 +644,8 @@ final class EntryTypes
         int $sortDir = SORT_ASC,
     ): array {
         $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
+        $pageParam = Cms::config()->getPageTriggerParam();
 
-        $offset = ($page - 1) * $limit;
         $query = $query->orderBy($orderBy, $sortDir === SORT_DESC ? 'desc' : 'asc');
 
         if ($searchTerm !== null && $searchTerm !== '') {
@@ -657,12 +659,12 @@ final class EntryTypes
             }
         }
 
-        $total = $query->count();
+        $paginator = $query->paginate($limit, ['*'], $pageParam, $page);
+        $results = $paginator->getCollection();
 
-        $query->limit($limit);
-        $query->offset($offset);
+        $paginator->appends(request()->except($pageParam));
 
-        return [$query->get(), $total];
+        return [$results, $paginator];
     }
 
     /**

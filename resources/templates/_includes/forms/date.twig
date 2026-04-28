@@ -2,11 +2,11 @@
 {% set id = (id ?? "date#{random()}") ~ '-date' -%}
 {% set name = name ?? null -%}
 {% set value = (value ?? false) ? date(value, false) : null -%}
-{% set locale = craft.i18n.getFormattingLocale() %}
+{% set locale = I18N.getFormattingLocale() %}
 {% set outputLocaleParam = outputLocaleParam ?? true %}
 {% set timeZone = timeZone ?? null %}
 {% set outputTzParam = outputTzParam ?? true %}
-{% set isMobile = craft.app.request.isMobileBrowser %}
+{% set isMobile = Request.isMobileBrowser %}
 {% set isDateTime = isDateTime ?? false %}
 {% set disabled = disabled ?? false %}
 
@@ -47,7 +47,7 @@
         {{- hiddenInput("#{name}[locale]", locale.id) -}}
     {%- endif -%}
     {%- if name and outputTzParam -%}
-        {{- hiddenInput("#{name}[timezone]", craft.app.getTimeZone()) -}}
+        {{- hiddenInput("#{name}[timezone]", craft.timezone()) -}}
     {%- endif -%}
 {% endtag %}
 

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -7,15 +8,11 @@
 
 namespace craft\fields;
 
-/** @phpstan-ignore-next-line **/
-if (false) {
-    /**
-     * @since 5.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Addresses} instead.
-     */
-    class Addresses
-    {
-    }
+/**
+ * @since 5.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Addresses} instead.
+ */
+class Addresses extends \CraftCms\Cms\Field\Addresses
+{
+    use \craft\base\LegacyEventConstants;
 }
-
-class_alias(\CraftCms\Cms\Field\Addresses::class, Addresses::class);

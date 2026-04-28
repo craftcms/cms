@@ -5,36 +5,96 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\AddressesController;
+use CraftCms\Cms\Http\Controllers\AnnouncementsController;
 use CraftCms\Cms\Http\Controllers\ApiController;
+use CraftCms\Cms\Http\Controllers\App\CpAlertsController;
+use CraftCms\Cms\Http\Controllers\App\HealthCheckController;
+use CraftCms\Cms\Http\Controllers\App\LicensesController;
+use CraftCms\Cms\Http\Controllers\App\RenderController;
+use CraftCms\Cms\Http\Controllers\Assets\ActionController as AssetsActionController;
+use CraftCms\Cms\Http\Controllers\Assets\FolderController as AssetsFolderController;
+use CraftCms\Cms\Http\Controllers\Assets\IconController as AssetsIconController;
+use CraftCms\Cms\Http\Controllers\Assets\ImageEditorController;
+use CraftCms\Cms\Http\Controllers\Assets\PreviewController as AssetsPreviewController;
+use CraftCms\Cms\Http\Controllers\Assets\TransformController;
+use CraftCms\Cms\Http\Controllers\Assets\UploadController as AssetsUploadController;
+use CraftCms\Cms\Http\Controllers\Auth\LoginController;
+use CraftCms\Cms\Http\Controllers\Auth\PasskeyController;
+use CraftCms\Cms\Http\Controllers\Auth\SessionInfoController;
+use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
+use CraftCms\Cms\Http\Controllers\ConditionsController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
+use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\NewUsersController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
+use CraftCms\Cms\Http\Controllers\EditionController;
+use CraftCms\Cms\Http\Controllers\Elements\CopyElementValuesController;
+use CraftCms\Cms\Http\Controllers\Elements\CreateElementController;
+use CraftCms\Cms\Http\Controllers\Elements\DeleteElementController;
+use CraftCms\Cms\Http\Controllers\Elements\DuplicateElementController;
+use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementActivityController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementDraftsController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexSourcesController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ExportElementIndexController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\SaveElementIndexElementsController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementRevisionsController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementSourcesController;
+use CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController;
+use CraftCms\Cms\Http\Controllers\Elements\SaveElementController;
+use CraftCms\Cms\Http\Controllers\Elements\SearchController as ElementSearchController;
+use CraftCms\Cms\Http\Controllers\Elements\UpdateFieldLayoutController;
+use CraftCms\Cms\Http\Controllers\Elements\ValidateElementController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
-use CraftCms\Cms\Http\Controllers\FilesystemsController;
+use CraftCms\Cms\Http\Controllers\Gql\ApiController as GqlApiController;
+use CraftCms\Cms\Http\Controllers\Gql\SchemasController as GqlSchemasController;
+use CraftCms\Cms\Http\Controllers\Gql\TokensController as GqlTokensController;
+use CraftCms\Cms\Http\Controllers\IconController;
 use CraftCms\Cms\Http\Controllers\InstallController;
+use CraftCms\Cms\Http\Controllers\MatrixController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
+use CraftCms\Cms\Http\Controllers\NestedElementsController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\InstallController as PluginStoreInstallController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\PreviewController;
+use CraftCms\Cms\Http\Controllers\QueueController;
+use CraftCms\Cms\Http\Controllers\RelationalFieldsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
-use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
+use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
 use CraftCms\Cms\Http\Controllers\Settings\RoutesController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
-use CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController;
-use CraftCms\Cms\Http\Controllers\Settings\SitesController;
 use CraftCms\Cms\Http\Controllers\Settings\UserGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
+use CraftCms\Cms\Http\Controllers\Users\ActivateController;
+use CraftCms\Cms\Http\Controllers\Users\AuthMethodController;
+use CraftCms\Cms\Http\Controllers\Users\EnableController;
 use CraftCms\Cms\Http\Controllers\Users\ImpersonationController;
+use CraftCms\Cms\Http\Controllers\Users\PasskeysController as UserPasskeysController;
+use CraftCms\Cms\Http\Controllers\Users\PasswordController;
+use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
+use CraftCms\Cms\Http\Controllers\Users\PhotoController;
+use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
+use CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController;
+use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
+use CraftCms\Cms\Http\Controllers\Users\SaveUsersFieldLayoutController;
+use CraftCms\Cms\Http\Controllers\Users\SuspendController;
+use CraftCms\Cms\Http\Controllers\Users\UnlockController;
+use CraftCms\Cms\Http\Controllers\Users\UsersController;
+use CraftCms\Cms\Http\Controllers\Utilities\AssetIndexesController;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
 use CraftCms\Cms\Http\Controllers\Utilities\DbBackupController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
@@ -46,23 +106,45 @@ use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
-use CraftCms\Cms\Http\Middleware\RequireElevatedSession;
 use CraftCms\Cms\Http\Middleware\RequireToken;
-use CraftCms\Cms\Support\Str;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 
 /**
- * Actions that should not have CSRF token verification. These are automatically
- * mapped to `/{cpTrigger}/{actionTrigger}/route` and `/{actionTrigger}/{route}`
+ * Actions that are accessible both with and without CP can be registered here.
  */
-VerifyCsrfToken::except(collect([
-    'preview/preview',
-])->flatMap(fn (string $route) => [
-    $route,
-    Cms::config()->actionTrigger.Str::start($route, '/'),
-    Cms::config()->cpTrigger.'/'.Cms::config()->actionTrigger.Str::start($route, '/'),
-])->all());
+foreach ([
+    Cms::config()->actionTrigger => ['craft.web'],
+    implode('/', [
+        Cms::config()->cpTrigger,
+        Cms::config()->actionTrigger,
+    ]) => ['craft.cp'],
+] as $prefix => $middleware) {
+    Route::prefix($prefix)->middleware($middleware)->group(function () {
+        // App
+        Route::get('app/health-check', HealthCheckController::class);
+
+        // Auth
+        Route::post('users/login', [LoginController::class, 'attemptLogin']);
+        Route::post('auth/verify-totp', [TwoFactorAuthenticationController::class, 'verify']);
+        Route::post('auth/verify-recovery-code', [TwoFactorAuthenticationController::class, 'verifyRecoveryCode']);
+        Route::post('auth/passkey-request-options', [PasskeyController::class, 'requestOptions']);
+        Route::post('users/login-with-passkey', [PasskeyController::class, 'login']);
+        Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
+        Route::any('users/redirect', [LoginController::class, 'redirect']);
+        Route::any('users/session-info', [SessionInfoController::class, 'show'])->withoutMiddleware(StartSession::class);
+        Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout']);
+        Route::middleware('throttle:1,1')->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
+        Route::post('users/save-user', SaveUserController::class);
+
+        // Asset Transforms (anonymous access)
+        Route::any('assets/generate-transform', [TransformController::class, 'generate']);
+        Route::get('assets/generate-fallback-transform', [TransformController::class, 'generateFallback']);
+
+        // GQL API
+        Route::any('graphql/api', GqlApiController::class);
+    });
+}
 
 /**
  * Actions that are accessible without CP can be registered here.
@@ -70,8 +152,10 @@ VerifyCsrfToken::except(collect([
 Route::prefix(Cms::config()->actionTrigger)->group(function () {
     Route::post('migrate', MigrateController::class);
 
-    Route::middleware(['auth'])->group(function () {
+    Route::middleware(['auth:craft'])->group(function () {
         Route::post('entries/save-entry', StoreEntryController::class);
+        Route::post('users/save-address', [CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'store']);
+        Route::post('users/delete-address', [CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'destroy']);
     });
 
     Route::middleware([RequireToken::class])->group(function () {
@@ -95,6 +179,8 @@ Route::prefix(implode('/', [
     Route::any('app/api-headers', [ApiController::class, 'headers']);
     Route::any('app/process-api-response-headers', [ApiController::class, 'processResponseHeaders']);
     Route::any('app/get-utilities-badge-count', [UtilitiesController::class, 'badgeCount']);
+    Route::any('app/icon-svg', [IconController::class, 'svg']);
+    Route::any('app/icon-picker-options', [IconController::class, 'pickerOptions']);
 
     // Updater
     Route::prefix('updater')->group(function () {
@@ -114,10 +200,31 @@ Route::prefix(implode('/', [
     /**
      * Actions needing auth
      */
-    Route::middleware(['auth'])->group(function () {
+    Route::middleware(['auth:craft'])->group(function () {
         // Addresses
         Route::post('addresses/fields', [AddressesController::class, 'fields']);
         Route::middleware(RequireAdminChanges::class)->post('addresses/save-field-layout', [AddressesController::class, 'saveFieldLayout']);
+
+        // App
+        Route::any('app/get-cp-alerts', [CpAlertsController::class, 'index']);
+        Route::any('app/shun-cp-alert', [CpAlertsController::class, 'destroy']);
+        Route::any('app/set-license-shun-cookie', [LicensesController::class, 'setShunCookie']);
+        Route::middleware(RequireAdmin::class)->post('app/get-plugin-license-info', [CraftCms\Cms\Http\Controllers\App\PluginsController::class, 'getLicenseInfo']);
+        Route::middleware(RequireAdminChanges::class)->post('app/update-plugin-license', [CraftCms\Cms\Http\Controllers\App\PluginsController::class, 'updateLicense']);
+        Route::any('app/render-elements', [RenderController::class, 'elements']);
+        Route::any('app/render-components', [RenderController::class, 'components']);
+
+        // Auth methods
+        Route::post('auth/method-setup-html', [AuthMethodController::class, 'setupHtml']);
+        Route::post('auth/method-listing-html', [AuthMethodController::class, 'listingHtml']);
+        Route::post('auth/remove-method', [AuthMethodController::class, 'destroy']);
+
+        Route::post('auth/passkey-creation-options', [UserPasskeysController::class, 'creationOptions']);
+        Route::post('auth/verify-passkey-creation', [UserPasskeysController::class, 'verifyCreation']);
+        Route::post('auth/delete-passkey', [UserPasskeysController::class, 'delete']);
+
+        Route::post('auth/generate-recovery-codes', [RecoveryCodesController::class, 'generate']);
+        Route::post('auth/download-recovery-codes', [RecoveryCodesController::class, 'download']);
 
         // DeprecationErrors
         Route::post('utilities/get-deprecation-error-traces-modal', [DeprecationErrorsController::class, 'getDeprecationErrorTracesModal']);
@@ -128,8 +235,62 @@ Route::prefix(implode('/', [
         Route::post('utilities/clear-caches-perform-action', [ClearCachesController::class, 'clearCaches']);
         Route::post('utilities/invalidate-tags', [ClearCachesController::class, 'invalidateTags']);
 
+        // Conditions
+        Route::post('conditions/render', [ConditionsController::class, 'show']);
+        Route::post('conditions/add-rule', [ConditionsController::class, 'store']);
+        Route::post('conditions/remove-rule', [ConditionsController::class, 'destroy']);
+
         // DbBackup
         Route::post('utilities/db-backup-perform-action', DbBackupController::class);
+
+        // DeprecationErrors
+        Route::post('utilities/get-deprecation-error-traces-modal', [DeprecationErrorsController::class, 'getDeprecationErrorTracesModal']);
+        Route::post('utilities/delete-deprecation-error', [DeprecationErrorsController::class, 'deleteDeprecationError']);
+        Route::post('utilities/delete-all-deprecation-errors', [DeprecationErrorsController::class, 'deleteAllDeprecationErrors']);
+
+        // Edition
+        Route::middleware([RequireAdmin::class])->group(function () {
+            Route::post('app/try-edition', [EditionController::class, 'tryEdition']);
+            Route::post('app/switch-to-licensed-edition', [EditionController::class, 'switchToLicensedEdition']);
+        });
+
+        // Elements
+        Route::post('elements/create', CreateElementController::class);
+        Route::any('elements/edit', EditElementController::class);
+        Route::post('elements/save', [SaveElementController::class, 'store']);
+        Route::post('elements/save-nested-element-for-derivative', [SaveElementController::class, 'storeForDerivative']);
+        Route::post('elements/delete', [DeleteElementController::class, 'destroy']);
+        Route::post('elements/delete-for-site', [DeleteElementController::class, 'destroyForSite']);
+        Route::post('elements/save-draft', [ElementDraftsController::class, 'store']);
+        Route::post('elements/ensure-draft', [ElementDraftsController::class, 'ensure']);
+        Route::post('elements/apply-draft', [ElementDraftsController::class, 'apply']);
+        Route::post('elements/delete-draft', [ElementDraftsController::class, 'destroy']);
+        Route::post('elements/revert', [ElementRevisionsController::class, 'revert']);
+        Route::post('elements/validate', ValidateElementController::class);
+        Route::post('elements/recent-activity', ElementActivityController::class);
+        Route::post('elements/update-field-layout', UpdateFieldLayoutController::class);
+        Route::post('elements/duplicate', [DuplicateElementController::class, 'duplicate']);
+        Route::post('elements/bulk-duplicate', [DuplicateElementController::class, 'bulkDuplicate']);
+        Route::post('elements/copy-values-from-site', CopyElementValuesController::class);
+
+        // Element Indexes
+        Route::post('element-indexes/source-path', [ElementIndexSourcesController::class, 'sourcePath']);
+        Route::post('element-indexes/source-attribute-info', [ElementIndexSourcesController::class, 'sourceAttributeInfo']);
+        Route::post('element-indexes/get-elements', [ElementIndexController::class, 'getElements']);
+        Route::post('element-indexes/get-more-elements', [ElementIndexController::class, 'getMoreElements']);
+        Route::post('element-indexes/count-elements', [ElementIndexController::class, 'countElements']);
+        Route::post('element-indexes/get-source-tree-html', [ElementIndexSourcesController::class, 'getSourceTreeHtml']);
+        Route::post('element-indexes/filter-hud', [ElementIndexController::class, 'filterHud']);
+        Route::post('element-indexes/element-table-html', [ElementIndexController::class, 'elementTableHtml']);
+        Route::post('element-indexes/save-elements', SaveElementIndexElementsController::class);
+        Route::post('element-indexes/export', ExportElementIndexController::class);
+        Route::post('element-indexes/perform-action', PerformElementActionController::class);
+        Route::post('element-search/search', ElementSearchController::class);
+        Route::post('element-selector-modals/body', ElementSelectorModalController::class);
+        Route::middleware([RequireAdminChanges::class])->group(function () {
+            Route::post('element-index-settings/get-customize-sources-modal-data', [ElementSourcesController::class, 'show']);
+            Route::post('element-index-settings/save-customize-sources-modal-settings', [ElementSourcesController::class, 'store']);
+        });
 
         // Entries
         Route::post('entries/create', CreateEntryController::class);
@@ -139,7 +300,7 @@ Route::prefix(implode('/', [
 
         // Entry Types
         Route::get('entry-types/table-data', [EntryTypesController::class, 'tableData']);
-        Route::get('entry-types/edit/{entryType}', [EntryTypesController::class, 'edit']);
+        Route::get('entry-types/edit/{entryType?}', [EntryTypesController::class, 'edit']);
         Route::middleware([
             RequireAdminChanges::class,
         ])->group(function () {
@@ -168,11 +329,74 @@ Route::prefix(implode('/', [
         // FindAndReplace
         Route::post('utilities/find-and-replace-perform-action', FindAndReplaceController::class);
 
+        // GraphQL
+        Route::middleware([RequireAdmin::class])->group(function () {
+            Route::post('graphql/delete-token', [GqlTokensController::class, 'destroy']);
+            Route::post('graphql/generate-token', [GqlTokensController::class, 'generate']);
+
+            Route::middleware('password.confirm')->group(function () {
+                Route::post('graphql/save-token', [GqlTokensController::class, 'store']);
+                Route::post('graphql/fetch-token', [GqlTokensController::class, 'fetch']);
+            });
+        });
+
+        Route::middleware([RequireAdminChanges::class])->group(function () {
+            Route::post('graphql/delete-schema', [GqlSchemasController::class, 'destroy']);
+
+            Route::middleware('password.confirm')->group(function () {
+                Route::post('graphql/save-schema', [GqlSchemasController::class, 'save']);
+                Route::post('graphql/save-public-schema', [GqlSchemasController::class, 'savePublic']);
+            });
+        });
+
+        // Matrix
+        Route::post('matrix/default-table-column-options', [MatrixController::class, 'defaultTableColumnOptions']);
+        Route::post('matrix/create-entry', [MatrixController::class, 'createEntry']);
+        Route::post('matrix/render-blocks', [MatrixController::class, 'renderBlocks']);
+
         // Migrations
         Route::post('utilities/apply-new-migrations', MigrationsController::class);
 
+        // Nested entries
+        Route::post('nested-elements/reorder', [NestedElementsController::class, 'reorder']);
+        Route::post('nested-elements/delete', [NestedElementsController::class, 'destroy']);
+
+        // Asset Indexes
+        Route::post('asset-indexes/start-indexing', [AssetIndexesController::class, 'startIndexing']);
+        Route::post('asset-indexes/stop-indexing-session', [AssetIndexesController::class, 'stopIndexingSession']);
+        Route::post('asset-indexes/process-indexing-session', [AssetIndexesController::class, 'processIndexingSession']);
+        Route::post('asset-indexes/indexing-session-overview', [AssetIndexesController::class, 'indexingSessionOverview']);
+        Route::post('asset-indexes/finish-indexing-session', [AssetIndexesController::class, 'finishIndexingSession']);
+
+        // Assets
+        Route::post('assets/upload', [AssetsUploadController::class, 'upload']);
+        Route::post('assets/replace-file', [AssetsUploadController::class, 'replaceFile']);
+        Route::post('assets/delete-asset', [AssetsActionController::class, 'deleteAsset']);
+        Route::post('assets/move-asset', [AssetsActionController::class, 'moveAsset']);
+        Route::post('assets/download-asset', [AssetsActionController::class, 'downloadAsset']);
+        Route::any('assets/show-in-folder', [AssetsActionController::class, 'showInFolder']);
+        Route::post('assets/move-info', [AssetsActionController::class, 'moveInfo']);
+        Route::post('assets/preview-thumb', [AssetsPreviewController::class, 'previewThumb']);
+        Route::post('assets/preview-file', [AssetsPreviewController::class, 'previewFile']);
+        Route::post('assets/create-folder', [AssetsFolderController::class, 'create']);
+        Route::post('assets/delete-folder', [AssetsFolderController::class, 'delete']);
+        Route::post('assets/rename-folder', [AssetsFolderController::class, 'rename']);
+        Route::post('assets/move-folder', [AssetsFolderController::class, 'move']);
+        Route::post('assets/image-editor', [ImageEditorController::class, 'show']);
+        Route::get('assets/edit-image', [ImageEditorController::class, 'editImage']);
+        Route::post('assets/save-image', [ImageEditorController::class, 'save']);
+        Route::post('assets/update-focal-position', [ImageEditorController::class, 'updateFocalPoint']);
+        Route::get('assets/icon/{extension?}', AssetsIconController::class);
+
         // Preview
         Route::any('preview/create-token', [PreviewController::class, 'createToken']);
+
+        // Queue
+        Route::any('queue/run', [QueueController::class, 'run']);
+        Route::any('queue/get-job-info', [QueueController::class, 'jobInfo']);
+
+        // Relational fields
+        Route::any('relational-fields/structured-input-html', [RelationalFieldsController::class, 'structuredInputHtml']);
 
         // Widgets
         Route::post('dashboard/create-widget', [WidgetsController::class, 'store']);
@@ -182,12 +406,22 @@ Route::prefix(implode('/', [
         Route::post('dashboard/reorder-user-widgets', [WidgetsController::class, 'reorder']);
         Route::post('dashboard/cache-feed-data', [FeedController::class, 'cacheData']);
         Route::post('dashboard/send-support-request', CraftSupportController::class);
+        Route::post('charts/get-new-users-data', [NewUsersController::class, 'data']);
 
         // Filesystems
         Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::get('fs/edit', [FilesystemsController::class, 'edit']);
             Route::post('fs/save', [FilesystemsController::class, 'save']);
             Route::post('fs/remove', [FilesystemsController::class, 'delete']);
+        });
+
+        // Volumes
+        Route::middleware([RequireAdminChanges::class])->group(function () {
+            Route::post('volumes/save-volume', [VolumesController::class, 'save']);
+            Route::post('volumes/delete-volume', [VolumesController::class, 'delete']);
+            Route::post('volumes/reorder-volumes', [VolumesController::class, 'reorder']);
+            Route::post('image-transforms/save', [ImageTransformsController::class, 'save']);
+            Route::post('image-transforms/delete', [ImageTransformsController::class, 'delete']);
         });
 
         // Plugins
@@ -208,7 +442,7 @@ Route::prefix(implode('/', [
         Route::get('project-config/download', [ProjectConfigController::class, 'download']);
 
         // Project Config sync
-        Route::prefix('config-sync')->group(function () {
+        Route::prefix('config-sync')->middleware([RequireAdmin::class])->group(function () {
             Route::post('/', [ConfigSyncController::class, 'index']);
             Route::post(ConfigSyncController::ACTION_RETRY, [ConfigSyncController::class, 'retry']);
             Route::post(ConfigSyncController::ACTION_APPLY_YAML_CHANGES, [ConfigSyncController::class, 'applyYamlChanges']);
@@ -239,18 +473,6 @@ Route::prefix(implode('/', [
             Route::post('sections/delete-section', [SectionsController::class, 'destroy']);
         });
 
-        // Sites & Site Groups
-        Route::middleware([
-            RequireAdminChanges::class,
-        ])->group(function () {
-            Route::post('sites/rename-group-field', [SiteGroupsController::class, 'showGroupRenameField']);
-            Route::post('sites/save-group', [SiteGroupsController::class, 'store']);
-            Route::post('sites/delete-group', [SiteGroupsController::class, 'destroy']);
-            Route::post('sites/save-site', [SitesController::class, 'store']);
-            Route::post('sites/reorder-sites', [SitesController::class, 'reorder']);
-            Route::post('sites/delete-site', [SitesController::class, 'destroy']);
-        });
-
         // Structures
         Route::post('structures/get-element-level-delta', [StructuresController::class, 'getElementLevelDelta']);
         Route::post('structures/move-element', [StructuresController::class, 'moveElement']);
@@ -259,22 +481,44 @@ Route::prefix(implode('/', [
         Route::post('system-messages/get-message-modal', [SystemMessagesController::class, 'show']);
         Route::post('system-messages/save-message', [SystemMessagesController::class, 'store']);
 
-        // System settings
-        Route::middleware([
-            RequireAdminChanges::class,
-        ])->group(function () {
-            Route::post('system-settings/save-general-settings', [GeneralSettingsController::class, 'store']);
-        });
-
         // Updates
         Route::post('app/check-for-updates', [UpdatesController::class, 'check']);
         Route::post('app/cache-updates', [UpdatesController::class, 'cache']);
 
         // Users
-        Route::middleware([RequireElevatedSession::class])->group(function () {
-            Route::post('users/impersonate', [ImpersonationController::class, 'impersonate']);
-            Route::post('users/get-impersonation-url', [ImpersonationController::class, 'getUrl']);
+        Route::post('users/mark-announcements-as-read', [AnnouncementsController::class, 'markRead']);
+
+        Route::middleware('password.confirm')->group(function () {
+            Route::post('users/save-password', [PasswordController::class, 'store']);
         });
+
+        Route::middleware([RequireEdition::class.':'.Edition::Team->value, 'can:editUsers'])->group(function () {
+            Route::middleware('password.confirm')->group(function () {
+                Route::post('users/impersonate', [ImpersonationController::class, 'impersonate']);
+                Route::post('users/get-impersonation-url', [ImpersonationController::class, 'getUrl']);
+            });
+
+            Route::post('users/get-password-reset-url', [PasswordController::class, 'passwordResetUrl']);
+            Route::post('users/enable-user', EnableController::class);
+            Route::post('users/activate-user', [ActivateController::class, 'activate']);
+            Route::post('users/deactivate-user', [ActivateController::class, 'deactivate']);
+            Route::post('users/send-activation-email', [ActivateController::class, 'sendActivationEmail']);
+            Route::post('users/unlock-user', UnlockController::class);
+            Route::post('users/suspend-user', [SuspendController::class, 'suspend']);
+            Route::post('users/unsuspend-user', [SuspendController::class, 'unsuspend']);
+        });
+
+        Route::post('users/save-permissions', [PermissionsController::class, 'store']);
+        Route::post('users/save-preferences', [PreferencesController::class, 'store']);
+        Route::post('users/delete-user', [UsersController::class, 'destroy']);
+        Route::post('users/user-content-summary', [UsersController::class, 'contentSummary']);
+        Route::post('users/render-photo-input', [PhotoController::class, 'renderInput']);
+        Route::post('users/upload-user-photo', [PhotoController::class, 'upload']);
+        Route::post('users/delete-user-photo', [PhotoController::class, 'destroy']);
+        Route::post('users/require-password-reset', [PasswordController::class, 'requireReset']);
+        Route::post('users/remove-password-reset-requirement', [PasswordController::class, 'removeResetRequirement']);
+        Route::post('users/verify-password', [PasswordController::class, 'verifyPassword']);
+        Route::post('users/save-field-layout', SaveUsersFieldLayoutController::class);
 
         // User groups
         Route::middleware([

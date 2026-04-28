@@ -2,6 +2,7 @@
 
 namespace CraftCms\Yii2Adapter\Web;
 
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use Illuminate\Auth\AuthManager;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
@@ -24,7 +25,7 @@ class User extends \yii\web\User
             return $this->_identity;
         }
 
-        $identity = $this->getIlluminateAuthManager()->user();
+        $identity = $this->getIlluminateAuthManager()->guard('craft')->user();
 
         if ($identity !== null) {
             $identity = $this->convertIlluminateIdentity($identity);
@@ -58,7 +59,7 @@ class User extends \yii\web\User
         $this->setIdentity($identity);
 
         if ($identity === null) {
-            $this->getIlluminateAuthManager()->logout();
+            $this->getIlluminateAuthManager()->guard('craft')->logout();
 
             return;
         }
@@ -73,7 +74,7 @@ class User extends \yii\web\User
          * When "Remember me for 2 weeks" is checked, the duration will be larger
          * than 3600, so we pass remember to Laravel's auth as well.
          */
-        $this->getIlluminateAuthManager()->loginUsingId($id, remember: $duration > 3600);
+        $this->getIlluminateAuthManager()->guard('craft')->loginUsingId($id, remember: $duration > 3600);
     }
 
     protected function convertIlluminateIdentity(mixed $identity): IdentityInterface
@@ -85,17 +86,8 @@ class User extends \yii\web\User
             default => throw new RuntimeException('Unable to convert identity from "' . print_r($identity, true) . '"'),
         };
 
-        /** @var class-string<IdentityInterface> $identityClass */
-        $identityClass = $this->identityClass;
+        $identity = \CraftCms\Cms\User\Elements\User::find()->id($id)->status(null)->firstOrFail();
 
-        if (!empty($attributes) && is_subclass_of($identityClass, BaseActiveRecord::class)) {
-            $record = new $identityClass();
-
-            call_user_func([$identityClass, 'populateRecord'], $record, $attributes);
-
-            return $record;
-        }
-
-        return call_user_func([$identityClass, 'findIdentity'], $id);
+        return new IdentityWrapper($identity);
     }
 }

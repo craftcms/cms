@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Commands;
 
-use craft\errors\InvalidFieldException;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Commands\Concerns\MergesFields;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
+use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
@@ -19,15 +19,18 @@ use Illuminate\Support\Collection;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\select;
 
-final class FieldsMergeCommand extends Command
+class FieldsMergeCommand extends Command
 {
     use CraftCommand;
     use MergesFields;
 
+    #[\Override]
     protected $signature = 'craft:fields:merge {handles* : The field handles to merge.}';
 
+    #[\Override]
     protected $description = 'Merges custom fields together.';
 
+    #[\Override]
     protected $aliases = ['fields/merge'];
 
     public function handle(Fields $fieldsService): int

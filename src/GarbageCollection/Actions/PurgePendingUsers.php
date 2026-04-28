@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\GarbageCollection\Actions;
 
-final class PurgePendingUsers extends GarbageCollectionAction
+use CraftCms\Cms\Support\Facades\Users;
+
+class PurgePendingUsers extends GarbageCollectionAction
 {
     public function __invoke(): void
     {
@@ -15,7 +17,7 @@ final class PurgePendingUsers extends GarbageCollectionAction
         $this->components->task(
             'purging pending users with stale activation codes',
             function () {
-                \Craft::$app->getUsers()->purgeExpiredPendingUsers();
+                Users::purgeExpiredPendingUsers();
             },
         );
     }

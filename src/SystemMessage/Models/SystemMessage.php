@@ -8,10 +8,14 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 
-final class SystemMessage extends BaseModel
+/**
+ * @property string $heading
+ */
+class SystemMessage extends BaseModel
 {
     use HasUid;
 
+    #[\Override]
     protected $table = Table::SYSTEMMESSAGES;
 
     #[\Override]

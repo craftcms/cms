@@ -1,46 +1,16 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\errors;
 
-use craft\base\ElementInterface;
-use CraftCms\Cms\Support\Arr;
-use function CraftCms\Cms\t;
-
-/**
- * InvalidElementException represents an exception caused by setting an invalid element.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-class InvalidElementException extends ElementException
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * @since 3.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Exceptions\InvalidElementException} instead.
      */
-    public function __construct(ElementInterface $element, ?string $message = null, int $code = 0)
+    class InvalidElementException extends ElementException
     {
-        if ($message === null) {
-            $error = Arr::first($element->getFirstErrors());
-            $message = $error
-                ? str_replace('*', '', $error)
-                : t('The {type} is invalid.', [
-                    'type' => $element::lowerDisplayName(),
-                ]);
-        }
-
-        parent::__construct($element, $message, $code);
-    }
-
-    /**
-     * @return string the user-friendly name of this exception
-     */
-    public function getName(): string
-    {
-        return 'Invalid element';
     }
 }
+
+class_alias(\CraftCms\Cms\Element\Exceptions\InvalidElementException::class, InvalidElementException::class);

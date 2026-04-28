@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
-use craft\helpers\FileHelper;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Illuminate\Foundation\Application;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
-use yii\base\InvalidArgumentException;
 
-final readonly class ClearCachesController
+readonly class ClearCachesController
 {
     public function __construct(Utilities $utilitiesService)
     {
@@ -24,7 +24,7 @@ final readonly class ClearCachesController
         }
     }
 
-    public function clearCaches(Request $request, Application $app): JsonResponse
+    public function clearCaches(Request $request, Application $app): Response
     {
         $caches = $request->validate([
             'caches' => ['required'],
@@ -39,7 +39,7 @@ final readonly class ClearCachesController
 
             if (is_string($action)) {
                 try {
-                    FileHelper::clearDirectory($action);
+                    File::cleanDirectory($action);
                 } catch (InvalidArgumentException) {
                     // the directory doesn't exist
                 } catch (Throwable $e) {
@@ -52,10 +52,10 @@ final readonly class ClearCachesController
             }
         }
 
-        return new JsonResponse;
+        return back();
     }
 
-    public function invalidateTags(Request $request): JsonResponse
+    public function invalidateTags(Request $request): Response
     {
         $tags = $request->validate([
             'tags' => ['required', 'array'],
@@ -64,11 +64,8 @@ final readonly class ClearCachesController
 
         foreach ($tags as $tag) {
             TagDependency::invalidate($tag);
-
-            // @todo: Remove after all usage of Yii's TagDependency is removed
-            \yii\caching\TagDependency::invalidate(app('Craft')->getCache(), $tag);
         }
 
-        return new JsonResponse;
+        return back();
     }
 }

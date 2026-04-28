@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -7,17 +8,11 @@
 
 namespace craft\widgets;
 
-use craft\base\Widget;
-
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * @since 3.0.0
-     * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\NewUsers` instead.
-     */
-    class NewUsers extends Widget
-    {
-    }
+/**
+ * @since 3.0.0
+ * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\NewUsers` instead.
+ */
+class NewUsers extends \CraftCms\Cms\Dashboard\Widgets\NewUsers
+{
+    use \craft\base\LegacyEventConstants;
 }
-
-class_alias(\CraftCms\Cms\Dashboard\Widgets\NewUsers::class, NewUsers::class);

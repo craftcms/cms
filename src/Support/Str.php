@@ -5,17 +5,16 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Support;
 
 use BackedEnum;
-use Craft;
-use craft\helpers\HtmlPurifier;
 use CraftCms\Cms\Cms;
-use HTMLPurifier_Config;
+use Exception;
+use Illuminate\Support\Facades\Crypt;
 use InvalidArgumentException;
 use LitEmoji\LitEmoji;
+use Override;
 use Ramsey\Uuid\Validator\GenericValidator;
 use ReflectionClass;
+use RuntimeException;
 use voku\helper\ASCII;
-use yii\base\Exception;
-use yii\base\InvalidConfigException;
 
 class Str extends \Illuminate\Support\Str
 {
@@ -110,26 +109,25 @@ class Str extends \Illuminate\Support\Str
     /**
      * Attempts to convert a string to UTF-8 and clean any non-valid UTF-8 characters.
      */
-    public static function convertToUtf8(string $str): string
+    public static function convertToUtf8(string $str, ?string $encoding = null): string
     {
-        // If it's already a UTF8 string, just clean and return it
-        if (mb_check_encoding($str, 'UTF-8')) {
-            return HtmlPurifier::cleanUtf8($str);
+        if ($encoding !== null) {
+            $encoding = mb_strtolower($encoding);
         }
 
-        // Otherwise set HTMLPurifier to the actual string encoding
-        $config = HTMLPurifier_Config::createDefault();
-        $config->set('Core.Encoding', static::encoding($str));
+        $encoding ??= static::encoding($str);
 
-        // Clean it
-        $str = HtmlPurifier::cleanUtf8($str);
+        $str = mb_convert_encoding($str, 'UTF-8', $encoding);
 
-        // Convert it to UTF8 if possible
-        if (PHP::checkForValidIconv()) {
-            return HtmlPurifier::convertToUtf8($str, $config);
-        }
+        return str_replace("\0", '', $str);
+    }
 
-        return mb_convert_encoding($str, 'UTF-8');
+    /**
+     * Converts line breaks to Unix line breaks (LF) within the given string.
+     */
+    public static function convertLineBreaks(string $str): string
+    {
+        return preg_replace('/\R/u', "\n", $str);
     }
 
     /**
@@ -137,7 +135,7 @@ class Str extends \Illuminate\Support\Str
      *
      * @param  string  $str  The string.
      *
-     * @throws InvalidConfigException on OpenSSL not loaded
+     * @throws RuntimeException on OpenSSL not loaded
      * @throws Exception on OpenSSL error
      */
     public static function decdec(string $str): string
@@ -147,7 +145,7 @@ class Str extends \Illuminate\Support\Str
         }
 
         if (str_starts_with($str, 'crypt:')) {
-            return Craft::$app->getSecurity()->decryptByKey(substr($str, 6));
+            return Crypt::decryptString(substr($str, 6));
         }
 
         return $str;
@@ -176,14 +174,14 @@ class Str extends \Illuminate\Support\Str
      *
      * @param  string  $str  the string
      *
-     * @throws InvalidConfigException on OpenSSL not loaded
+     * @throws RuntimeException on OpenSSL not loaded
      * @throws Exception on OpenSSL error
      *
      * @see decdec()
      */
     public static function encenc(string $str): string
     {
-        return 'base64:'.base64_encode('crypt:'.Craft::$app->getSecurity()->encryptByKey($str));
+        return 'base64:'.base64_encode('crypt:'.Crypt::encryptString($str));
     }
 
     /**
@@ -238,7 +236,7 @@ class Str extends \Illuminate\Support\Str
         return static::lines($str)[0];
     }
 
-    #[\Override]
+    #[Override]
     public static function flushCache(): void
     {
         parent::flushCache();
@@ -370,12 +368,18 @@ class Str extends \Illuminate\Support\Str
      * @param  bool  $extendedChars  Whether to include symbols in the random string.
      * @return string The randomly generated string.
      */
-    #[\Override]
+    #[Override]
     public static function random($length = 36, bool $extendedChars = false): string
     {
-        $validChars = $extendedChars
-            ? 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()-_=+[]\{}|;:\'",./<>?"'
-            : 'abcdefghijklmnopqrstuvwxyz';
+        if (static::$randomStringFactory) {
+            return (static::$randomStringFactory)($length);
+        }
+
+        if ($extendedChars) {
+            return parent::random($length);
+        }
+
+        $validChars = 'abcdefghijklmnopqrstuvwxyz';
 
         $string = '';
 

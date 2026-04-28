@@ -10,8 +10,8 @@ namespace craft\web;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Session;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Url;
 use Throwable;
 use yii\base\Application as BaseApplication;
 use yii\web\Cookie;
@@ -35,6 +35,16 @@ class Response extends \CraftCms\Yii2Adapter\Web\Response
      * @since 4.16.10
      */
     public const FORMAT_GQL = 'gql';
+
+    /**
+     * @since 5.9.0
+     */
+    public const FORMAT_XLSX = 'xlsx';
+
+    /**
+     * @since 5.9.0
+     */
+    public const FORMAT_YAML = 'yaml';
 
     /**
      * Default response formatter configurations.
@@ -224,7 +234,7 @@ class Response extends \CraftCms\Yii2Adapter\Web\Response
     public function redirect($url, $statusCode = 302, $checkAjax = true): self
     {
         if (is_string($url)) {
-            $url = UrlHelper::encodeUrl(UrlHelper::url($url));
+            $url = Url::encodeUrl(Url::url($url));
         }
 
         if ($this->format === TemplateResponseFormatter::FORMAT) {
@@ -286,9 +296,6 @@ class Response extends \CraftCms\Yii2Adapter\Web\Response
             return;
         }
 
-        // Get the active user before headers are sent
-        Craft::$app->getUser()->getIdentity();
-
         // Prevent the script from ending when the browser closes the connection
         ignore_user_abort(true);
 
@@ -314,7 +321,7 @@ class Response extends \CraftCms\Yii2Adapter\Web\Response
         $this->send();
 
         // Close the session.
-        Session::close();
+        \Illuminate\Support\Facades\Session::save();
 
         // In case we're running on php-fpm (https://secure.php.net/manual/en/book.fpm.php)
         if (function_exists('fastcgi_finish_request')) {
@@ -333,6 +340,8 @@ class Response extends \CraftCms\Yii2Adapter\Web\Response
             [
                 self::FORMAT_CSV => ['class' => CsvResponseFormatter::class],
                 self::FORMAT_GQL => ['class' => GqlResponseFormatter::class],
+                self::FORMAT_XLSX => ['class' => XlsxResponseFormatter::class],
+                self::FORMAT_YAML => ['class' => YamlResponseFormatter::class],
             ],
             $this->defaultFormatters,
         );

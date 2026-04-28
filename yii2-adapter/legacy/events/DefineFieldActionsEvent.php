@@ -7,14 +7,15 @@
 
 namespace craft\events;
 
-use craft\base\ElementInterface;
 use craft\base\Event;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * DefineFieldActionsEvent event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.9.0
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\FieldLayout\Events\DefineActionMenuItems} instead.
  */
 class DefineFieldActionsEvent extends DefineMenuItemsEvent
 {

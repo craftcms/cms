@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Database;
 /**
  * This class provides constants for defining Craft’s database table names.
  */
-final readonly class Table
+readonly class Table
 {
     public const string ADDRESSES = 'addresses';
 
@@ -69,12 +69,17 @@ final readonly class Table
 
     public const string MIGRATIONS = 'migrations';
 
+    public const string PASSWORD_RESET_TOKENS = 'password_reset_tokens';
+
     public const string PHPSESSIONS = 'sessions';
 
     public const string PLUGINS = 'plugins';
 
     public const string PROJECTCONFIG = 'projectconfig';
 
+    public const string JOBPROGRESS = 'jobprogress';
+
+    #[\Deprecated(message: "in 6.0.0. The queue table has been removed. Use Laravel's queue system instead.")]
     public const string QUEUE = 'queue';
 
     public const string RECOVERYCODES = 'recoverycodes';

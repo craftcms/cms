@@ -7,4 +7,4 @@ namespace CraftCms\Cms\ProjectConfig\Events;
 /**
  * @event Event The event that is triggered after pending project config file changes have been applied.
  */
-final class ChangesApplied {}
+class ChangesApplied {}

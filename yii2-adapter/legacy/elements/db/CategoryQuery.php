@@ -39,6 +39,7 @@ use CraftCms\Cms\Support\Arr;
  * @replace {myElement} myCategory
  * @replace {element-class} \craft\elements\Category
  * @deprecated in 6.0.0
+ * @phpstan-ignore class.missingExtends
  */
 class CategoryQuery extends ElementQuery
 {

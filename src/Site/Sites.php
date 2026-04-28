@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Site;
 
-use Craft;
-use craft\base\ElementInterface;
-use craft\elements\Asset;
-use craft\helpers\Queue;
-use craft\queue\jobs\PropagateElements;
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Element\Jobs\PropagateElements;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Events\ApplyingSiteDelete;
 use CraftCms\Cms\Site\Events\DeletingSite;
@@ -26,27 +25,28 @@ use CraftCms\Cms\Site\Events\SitesReordered;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\Typecast;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Updates;
 use Exception;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\maxPowerCaptain;
 
-#[Singleton]
-final class Sites
+#[Scoped]
+class Sites
 {
     /**
      * This value can be configured as needed, but exists as a safeguard against performance issues.
@@ -101,6 +101,7 @@ final class Sites
     public function __construct(
         private readonly ProjectConfig $projectConfig,
         private readonly Updates $updates,
+        private readonly ElementCaches $elementCaches,
     ) {
         $this->loadAllSites();
     }
@@ -172,7 +173,7 @@ final class Sites
      *
      * > [!NOTE]
      * > This will always return the primary site for control panel requests. To fetch the site the control panel
-     * > is currently working with, based on the `site` query string param, use [[\craft\helpers\Cp::requestedSite()]].
+     * > is currently working with, based on the `site` query string param, use [[\CraftCms\Cms\Cp\RequestedSite::get()]].
      *
      * @return Site the current site
      *
@@ -211,7 +212,7 @@ final class Sites
         // Did something go wrong?
         if (! $this->currentSite) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
-            if (Info::isInstalled() && ! $this->updates->isCraftUpdatePending()) {
+            if (Cms::isInstalled() && ! $this->updates->isCraftUpdatePending()) {
                 throw new InvalidArgumentException('Invalid site: '.$site);
             }
 
@@ -231,6 +232,19 @@ final class Sites
         } else {
             unset($_SERVER['CRAFT_SITE'], $_SERVER['CRAFT_SITE_UPPER']);
         }
+    }
+
+    public function getRequestPath(Request $request, ?Site $site = null): string
+    {
+        $path = trim($request->decodedPath(), '/');
+        $site ??= $this->getCurrentSite();
+        $basePath = trim((string) parse_url((string) $site->getBaseUrl(), PHP_URL_PATH), '/');
+
+        if ($basePath !== '' && str_starts_with($path.'/', $basePath.'/')) {
+            return ltrim(substr($path, strlen($basePath)), '/');
+        }
+
+        return $path;
     }
 
     /**
@@ -387,7 +401,7 @@ final class Sites
      * @throws SiteNotFoundException if $site->id is invalid
      * @throws Throwable if reasons
      */
-    public function saveSite(Site $site): bool
+    public function saveSite(Site $site, bool $runValidation = true): bool
     {
         $isNewSite = ! $site->id;
 
@@ -397,12 +411,16 @@ final class Sites
 
         $primarySite = $this->allSitesById->isEmpty() ? null : $this->getPrimarySite();
 
-        if (Event::hasListeners(SavingSite::class)) {
-            Event::dispatch(new SavingSite(
-                site: $site,
-                isNew: $isNewSite,
-                oldPrimarySiteId: $primarySite->id ?? null,
-            ));
+        event(new SavingSite(
+            site: $site,
+            isNew: $isNewSite,
+            oldPrimarySiteId: $primarySite->id ?? null,
+        ));
+
+        if ($runValidation && ! $site->validate()) {
+            Log::info('Site not saved due to validation error.', [__METHOD__]);
+
+            return false;
         }
 
         if ($isNewSite) {
@@ -514,27 +532,25 @@ final class Sites
             ];
 
             foreach ($elementTypes as $elementType) {
-                Queue::push(new PropagateElements([
-                    'elementType' => $elementType,
-                    'criteria' => [
+                dispatch(new PropagateElements(
+                    elementType: $elementType,
+                    criteria: [
                         'siteId' => $oldPrimarySiteId,
                     ],
-                    'siteId' => $site->id,
-                    'isNewSite' => true,
-                ]));
+                    siteId: $site->id,
+                    isNewSite: true,
+                ));
             }
         }
 
-        if (Event::hasListeners(SiteSaved::class)) {
-            Event::dispatch(new SiteSaved(
-                site: $site,
-                isNew: $isNewSite,
-                oldPrimarySiteId: $oldPrimarySiteId,
-            ));
-        }
+        event(new SiteSaved(
+            site: $site,
+            isNew: $isNewSite,
+            oldPrimarySiteId: $oldPrimarySiteId,
+        ));
 
         // Invalidate all element caches
-        Craft::$app->getElements()->invalidateAllCaches();
+        $this->elementCaches->invalidateAll();
     }
 
     /**
@@ -547,11 +563,7 @@ final class Sites
      */
     public function reorderSites(array $siteIds): bool
     {
-        if (Event::hasListeners(ReorderingSites::class)) {
-            Event::dispatch(new ReorderingSites(
-                siteIds: $siteIds,
-            ));
-        }
+        event(new ReorderingSites(siteIds: $siteIds));
 
         $uidsByIds = DB::table(Table::SITES)->uidsByIds($siteIds);
 
@@ -567,11 +579,7 @@ final class Sites
             );
         }
 
-        if (Event::hasListeners(SitesReordered::class)) {
-            Event::dispatch(new SitesReordered(
-                siteIds: $siteIds,
-            ));
-        }
+        event(new SitesReordered(siteIds: $siteIds));
 
         return true;
     }
@@ -613,15 +621,10 @@ final class Sites
             throw new Exception('You cannot delete the primary site.');
         }
 
-        if (Event::hasListeners(DeletingSite::class)) {
-            Event::dispatch($event = new DeletingSite(
-                site: $site,
-                transferContentTo: $transferContentTo,
-            ));
+        event($event = new DeletingSite(site: $site, transferContentTo: $transferContentTo));
 
-            if (! $event->isValid) {
-                return false;
-            }
+        if (! $event->isValid) {
+            return false;
         }
 
         // TODO: Move this code into entries module, etc.
@@ -756,9 +759,7 @@ final class Sites
         /** @var Site $site */
         $site = $this->getSiteById($siteRecord->id);
 
-        if (Event::hasListeners(ApplyingSiteDelete::class)) {
-            Event::dispatch(new ApplyingSiteDelete($site));
-        }
+        event(new ApplyingSiteDelete($site));
 
         DB::transaction(function () use ($siteRecord) {
             DB::table(Table::SITES)->softDelete($siteRecord->id);
@@ -768,19 +769,17 @@ final class Sites
         $this->refreshSites();
 
         // Invalidate all element caches
-        Craft::$app->getElements()->invalidateAllCaches();
+        $this->elementCaches->invalidateAll();
 
         // Was this the current site?
         if (isset($this->currentSite) && $this->currentSite->id === $site->id) {
             $this->setCurrentSite($this->primarySite);
         }
 
-        if (Event::hasListeners(SiteDeleted::class)) {
-            Event::dispatch(new SiteDeleted($site));
-        }
+        event(new SiteDeleted($site));
 
         // Invalidate all element caches
-        Craft::$app->getElements()->invalidateAllCaches();
+        $this->elementCaches->invalidateAll();
     }
 
     /**
@@ -817,7 +816,7 @@ final class Sites
         $this->allSitesById = collect();
         $this->enabledSitesById = collect();
 
-        if (! Info::isInstalled(true)) {
+        if (! Cms::isInstalled(true)) {
             return;
         }
 
@@ -853,12 +852,7 @@ final class Sites
             $result->dateCreated = Date::parse($result->dateCreated);
             $result->dateUpdated = Date::parse($result->dateUpdated);
 
-            $result = (array) $result;
-
-            // @TODO: Use Site::from() when Codeception tests are removed
-            Typecast::properties(Site::class, $result);
-
-            $site = new Site(...$result);
+            $site = new Site($result);
             $this->allSitesById[$site->id] = $site;
 
             if ($site->getEnabled()) {
@@ -878,12 +872,10 @@ final class Sites
      */
     private function allSites(?bool $withDisabled = null): Collection
     {
-        if ($withDisabled === null) {
-            $withDisabled = (
-                app()->runningInConsole() ||
-                (request()->isCpRequest() && Auth::check())
-            );
-        }
+        $withDisabled ??= (
+            app()->runningInConsole() ||
+            (request()->isCpRequest() && Auth::check())
+        );
 
         return $withDisabled ? $this->allSitesById : $this->enabledSitesById;
     }
@@ -934,7 +926,7 @@ final class Sites
             // Update all of the non-localized elements
             $nonLocalizedElementTypes = [];
 
-            foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
+            foreach (Elements::getAllElementTypes() as $elementType) {
                 /** @var class-string<ElementInterface> $elementType */
                 if (! $elementType::isLocalized()) {
                     $nonLocalizedElementTypes[] = $elementType;
@@ -975,8 +967,6 @@ final class Sites
         // Set the new primary site by forcing a reload from the DB.
         $this->refreshSites();
 
-        if (Event::hasListeners(PrimarySiteChanged::class)) {
-            Event::dispatch(new PrimarySiteChanged($this->primarySite));
-        }
+        event(new PrimarySiteChanged($this->primarySite));
     }
 }

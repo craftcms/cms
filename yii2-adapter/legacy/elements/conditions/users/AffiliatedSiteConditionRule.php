@@ -2,68 +2,14 @@
 
 namespace craft\elements\conditions\users;
 
-use craft\base\conditions\BaseMultiSelectConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\db\UserQuery;
-use craft\elements\User;
-use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Cms\Support\Facades\Sites;
-use function CraftCms\Cms\t;
-
 /**
  * Site condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.6.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\Conditions\AffiliatedSiteConditionRule} instead.
  */
-class AffiliatedSiteConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class AffiliatedSiteConditionRule extends \CraftCms\Cms\User\Conditions\AffiliatedSiteConditionRule
 {
-    /**
-     * @inheritdoc
-     */
-    public function getLabel(): string
-    {
-        return t('Affiliated Site');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['affiliatedSite', 'affiliatedSiteId'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function options(): array
-    {
-        return Sites::getAllSites()
-            ->map(fn(Site $site) => [
-                'label' => $site->getUiLabel(),
-                'value' => $site->uid,
-            ])
-            ->all();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var UserQuery $query */
-        $query->affiliatedSiteId($this->paramValue(fn($uid) => Sites::getSiteByUid($uid, true)->id ?? null));
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        /** @var User $element */
-        return $this->matchValue($element->getAffiliatedSite()?->uid);
-    }
+    use \craft\base\LegacyEventConstants;
 }

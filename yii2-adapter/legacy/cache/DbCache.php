@@ -7,15 +7,15 @@
 
 namespace craft\cache;
 
-use Craft;
 use craft\db\Connection;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use Exception;
+use Illuminate\Support\Facades\Log;
 use PDO;
 use Throwable;
 use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
 use yii\caching\DbCache as YiiDbCache;
 use yii\db\PdoValue;
 
@@ -68,7 +68,7 @@ class DbCache extends YiiDbCache
             $this->gc();
             return true;
         } catch (Throwable $e) {
-            Craft::warning("Unable to update or insert cache data: {$e->getMessage()}", __METHOD__);
+            Log::warning("Unable to update or insert cache data: {$e->getMessage()}", [__METHOD__]);
             return false;
         }
     }
@@ -88,7 +88,7 @@ class DbCache extends YiiDbCache
             ]);
             return true;
         } catch (Exception $e) {
-            Craft::warning("Unable to insert cache data: {$e->getMessage()}", __METHOD__);
+            Log::warning("Unable to insert cache data: {$e->getMessage()}", [__METHOD__]);
             return false;
         }
     }

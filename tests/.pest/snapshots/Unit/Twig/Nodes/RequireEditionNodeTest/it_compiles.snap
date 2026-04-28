@@ -1,0 +1,6 @@
+// line 1
+try {
+    CraftCms\Cms\Edition::require("pro");
+} catch (CraftCms\Cms\Edition\Exceptions\WrongEditionException) {
+    abort(404);
+}

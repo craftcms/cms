@@ -2,9 +2,9 @@
 
 namespace craft\elements\conditions\categories;
 
-use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\HasDescendantsRule;
 use craft\elements\conditions\LevelConditionRule;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
 
 /**
  * Category query condition.

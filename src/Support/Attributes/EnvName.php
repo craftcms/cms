@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Support\Attributes;
 use Attribute;
 
 #[Attribute]
-final readonly class EnvName
+readonly class EnvName
 {
     public function __construct(
         public string $name,

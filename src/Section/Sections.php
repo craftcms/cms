@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section;
 
-use Craft;
-use craft\base\Element;
-use craft\base\MemoizableArray;
-use craft\errors\SectionNotFoundException;
-use craft\helpers\AdminTable;
-use craft\helpers\Queue;
-use craft\queue\jobs\ApplyNewPropagationMethod;
-use craft\queue\jobs\ResaveElements;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Elements\Entry;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
+use CraftCms\Cms\Element\Jobs\ResaveElements;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
@@ -28,6 +28,7 @@ use CraftCms\Cms\Section\Events\DeletingSection;
 use CraftCms\Cms\Section\Events\SavingSection;
 use CraftCms\Cms\Section\Events\SectionDeleted;
 use CraftCms\Cms\Section\Events\SectionSaved;
+use CraftCms\Cms\Section\Exceptions\SectionNotFoundException;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Section\Models\SectionSiteSettings as SectionSiteSettingsModel;
 use CraftCms\Cms\Site\Data\Site;
@@ -40,22 +41,24 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
 use Exception;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
+use RuntimeException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidConfigException;
 
-#[Singleton]
-final class Sections
+#[Scoped]
+class Sections
 {
     /**
      * @var bool Whether entries should be resaved after a section has been updated.
@@ -78,7 +81,16 @@ final class Sections
      */
     private ?MemoizableArray $sections = null;
 
+    /**
+     * @var array<int, SectionSiteSettings[]>
+     *
+     * @see getSectionSiteSettings()
+     */
+    private array $sectionSiteSettings = [];
+
     public function __construct(
+        private readonly Elements $elements,
+        private readonly ElementCaches $elementCaches,
         private readonly ProjectConfig $projectConfig,
     ) {}
 
@@ -159,11 +171,11 @@ final class Sections
                 $result->propagationMethod = PropagationMethod::from($result->propagationMethod);
                 $result->defaultPlacement = DefaultPlacement::from($result->defaultPlacement);
 
-                $section = Section::from($result);
+                $section = new Section($result);
 
                 if ($siteSettings = Arr::pull($siteSettingsBySection, $section->id)) {
                     $section->setSiteSettings(
-                        array_map(SectionSiteSettings::from(...), $siteSettings),
+                        array_map(fn ($data) => new SectionSiteSettings($data), $siteSettings),
                     );
                 }
 
@@ -214,7 +226,7 @@ final class Sections
      */
     public function getAllSections(): Collection
     {
-        return collect($this->_sections()->all());
+        return $this->_sections()->collect();
     }
 
     /**
@@ -267,7 +279,7 @@ final class Sections
      */
     public function getSectionsByType(SectionType $type): Collection
     {
-        return collect($this->_sections()->where('type', $type, true)->all());
+        return $this->_sections()->where('type', $type, true)->collect();
     }
 
     /**
@@ -363,11 +375,15 @@ final class Sections
      */
     public function getSectionSiteSettings(int $sectionId): array
     {
-        return $this->_createSectionSiteSettingsQuery()
-            ->where('sections_sites.sectionId', $sectionId)
-            ->get()
-            ->map(fn (object $result) => SectionSiteSettings::from($result))
-            ->all();
+        if (! isset($this->sectionSiteSettings[$sectionId])) {
+            $this->sectionSiteSettings[$sectionId] = $this->_createSectionSiteSettingsQuery()
+                ->where('sections_sites.sectionId', $sectionId)
+                ->get()
+                ->mapInto(SectionSiteSettings::class)
+                ->all();
+        }
+
+        return $this->sectionSiteSettings[$sectionId];
     }
 
     private function _createSectionSiteSettingsQuery(): Builder
@@ -424,12 +440,16 @@ final class Sections
      * @throws SectionNotFoundException if $section->id is invalid
      * @throws Throwable if reasons
      */
-    public function saveSection(Section $section): bool
+    public function saveSection(Section $section, bool $runValidation = true): bool
     {
         $isNewSection = ! $section->id;
 
-        if (Event::hasListeners(SavingSection::class)) {
-            Event::dispatch(new SavingSection($section, $isNewSection));
+        event(new SavingSection($section, $isNewSection));
+
+        if ($runValidation && ! $section->validate()) {
+            Log::info('Section not saved due to validation error.', [__METHOD__]);
+
+            return false;
         }
 
         if ($isNewSection) {
@@ -520,7 +540,7 @@ final class Sections
                 // Save the structure
                 $structureUid = $data['structure']['uid'];
                 $structure = Structures::getStructureByUid($structureUid, true)
-                    ?? new Structure(uid: $structureUid);
+                    ?? new Structure(['uid' => $structureUid]);
                 $isNewStructure = empty($structure->id);
                 $structure->maxLevels = $data['structure']['maxLevels'];
 
@@ -669,23 +689,20 @@ final class Sections
             if (! $isNewSection && $resaveEntries) {
                 // If the propagation method just changed, we definitely need to update entries for that
                 if ($propagationMethodChanged) {
-                    Queue::push(new ApplyNewPropagationMethod([
-                        'description' => I18N::prep('Applying new propagation method to {name} entries', [
-                            'name' => $sectionModel->name,
-                        ]),
-                        'elementType' => Entry::class,
-                        'criteria' => [
+                    dispatch(new ApplyNewPropagationMethod(
+                        elementType: Entry::class,
+                        criteria: [
                             'sectionId' => $sectionModel->id,
                             'structureId' => $sectionModel->structureId,
                         ],
-                    ]));
-                } elseif ($this->autoResaveEntries) {
-                    Queue::push(new ResaveElements([
-                        'description' => I18N::prep('Resaving {name} entries', [
+                        description: I18N::prep('Applying new propagation method to {name} entries', [
                             'name' => $sectionModel->name,
                         ]),
-                        'elementType' => \craft\elements\Entry::class,
-                        'criteria' => [
+                    ));
+                } elseif ($this->autoResaveEntries) {
+                    dispatch(new ResaveElements(
+                        elementType: Entry::class,
+                        criteria: [
                             'sectionId' => $sectionModel->id,
                             'siteId' => array_values($siteIdMap),
                             'preferSites' => [Sites::getPrimarySite()->id],
@@ -695,8 +712,11 @@ final class Sections
                             'provisionalDrafts' => null,
                             'revisions' => null,
                         ],
-                        'updateSearchIndex' => $hasNewSite,
-                    ]));
+                        updateSearchIndex: $hasNewSite,
+                        description: I18N::prep('Resaving {name} entries', [
+                            'name' => $sectionModel->name,
+                        ]),
+                    ));
                 }
             }
 
@@ -710,7 +730,7 @@ final class Sections
         $this->refreshSections();
 
         if ($wasTrashed) {
-            /** @var \craft\elements\ElementCollection<Entry> $entries */
+            /** @var ElementCollection<Entry> $entries */
             $entries = Entry::find()
                 ->sectionId($sectionModel->id)
                 ->drafts(null)
@@ -729,8 +749,9 @@ final class Sections
                     array_walk($typeEntries, function (Entry $entry) {
                         $entry->deletedWithSection = false;
                     });
-                    Craft::$app->getElements()->restoreElements($typeEntries);
-                } catch (InvalidConfigException) {
+
+                    $this->elements->restoreElements($typeEntries);
+                } catch (RuntimeException) {
                     // the entry type probably wasn't restored
                 }
             }
@@ -744,17 +765,16 @@ final class Sections
             $this->ensureSingleEntry($section, $siteSettingData);
         }
 
-        if (Event::hasListeners(SectionSaved::class)) {
-            Event::dispatch(new SectionSaved($section, $isNewSection));
-        }
+        event(new SectionSaved($section, $isNewSection));
 
         // Invalidate entry caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+        $this->elementCaches->invalidateForElementType(Entry::class);
     }
 
     public function refreshSections(): void
     {
         $this->sections = null;
+        $this->sectionSiteSettings = [];
         $this->_sections();
     }
 
@@ -851,7 +871,7 @@ final class Sections
 
             if ($entry !== null) {
                 if (isset($entry->dateDeleted)) {
-                    Craft::$app->getElements()->restoreElement($entry);
+                    $this->elements->restoreElement($entry);
                 }
 
                 $entry->setTypeId($entryTypeIds[0]);
@@ -884,18 +904,18 @@ final class Sections
         }
 
         // Validate first
-        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $entry->validate();
 
         // If there are any errors on the URI, re-validate as disabled
-        if ($entry->hasErrors('uri') && $entry->enabled) {
+        if ($entry->errors()->has('uri') && $entry->enabled) {
             $entry->enabled = false;
             $entry->validate();
         }
 
         if (
-            $entry->hasErrors() ||
-            ! Craft::$app->getElements()->saveElement($entry, false)
+            $entry->errors()->isNotEmpty() ||
+            ! $this->elements->saveElement($entry, false)
         ) {
             throw new Exception("Couldn’t save single entry for section $section->name due to validation errors: ".implode(', ',
                 $entry->getFirstErrors()));
@@ -904,7 +924,6 @@ final class Sections
         // Delete any other entries in the section
         // ---------------------------------------------------------------------
 
-        $elementsService = Craft::$app->getElements();
         $otherEntriesQuery = Entry::find()
             ->sectionId($section->id)
             ->drafts(null)
@@ -914,10 +933,9 @@ final class Sections
             ->id(['not', $entry->id])
             ->status(null);
 
-        $otherEntriesQuery->each(function (Entry $entryToDelete) use ($entry, $elementsService) {
-            /** @var Entry $entryToDelete */
-            if (! $entryToDelete->getIsDraft() || $entry->canonicalId != $entry->id) {
-                $elementsService->deleteElement($entryToDelete, true);
+        $otherEntriesQuery->each(function (Entry $entryToDelete) use ($entry) {
+            if (! $entryToDelete->getIsDraft() || $entry->canonicalId !== $entry->id) {
+                $this->elements->deleteElement($entryToDelete, true);
             }
         }, 100);
 
@@ -965,9 +983,7 @@ final class Sections
      */
     public function deleteSection(Section $section): bool
     {
-        if (Event::hasListeners(DeletingSection::class)) {
-            Event::dispatch(new DeletingSection($section));
-        }
+        event(new DeletingSection($section));
 
         // Remove the section from the project config
         $this->projectConfig->remove(
@@ -993,9 +1009,7 @@ final class Sections
         /** @var Section $section */
         $section = $this->getSectionById($sectionModel->id);
 
-        if (Event::hasListeners(ApplyingSectionDelete::class)) {
-            Event::dispatch(new ApplyingSectionDelete($section));
-        }
+        event(new ApplyingSectionDelete($section));
 
         DB::beginTransaction();
         try {
@@ -1043,12 +1057,10 @@ final class Sections
         // Clear caches
         $this->refreshSections();
 
-        if (Event::hasListeners(SectionDeleted::class)) {
-            Event::dispatch(new SectionDeleted($section));
-        }
+        event(new SectionDeleted($section));
 
         // Invalidate entry caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+        $this->elementCaches->invalidateForElementType(Entry::class);
     }
 
     /**
@@ -1093,7 +1105,7 @@ final class Sections
         string $orderBy = 'name',
         int $sortDir = SORT_ASC,
     ): array {
-        [$results, $total] = $this->prepTableData($this->createSectionQuery(), $page, $limit, $searchTerm, $orderBy,
+        [$results, $paginator] = $this->prepTableData($this->createSectionQuery()->reorder(), $page, $limit, $searchTerm, $orderBy,
             $sortDir);
 
         /** @var Collection<Section> $sections */
@@ -1116,7 +1128,16 @@ final class Sections
             ];
         }
 
-        $pagination = AdminTable::paginationLinks($page, $total, $limit);
+        $pagination = Arr::only($paginator->toArray(), [
+            'total',
+            'per_page',
+            'current_page',
+            'last_page',
+            'next_page_url',
+            'prev_page_url',
+            'from',
+            'to',
+        ]);
 
         return [$pagination, $tableData];
     }
@@ -1125,7 +1146,7 @@ final class Sections
      * Returns query results needed for the VueAdminTable accounting for the pagination, search terms and sorting options.
      *
      *
-     * @return array{0: Collection, 1: int}
+     * @return array{0: Collection, 1: LengthAwarePaginator}
      */
     private function prepTableData(
         Builder $query,
@@ -1137,8 +1158,8 @@ final class Sections
     ): array {
         $sortDir = $sortDir === SORT_DESC ? 'desc' : 'asc';
         $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
+        $pageParam = Cms::config()->getPageTriggerParam();
 
-        $offset = ($page - 1) * $limit;
         $query = $query->orderBy($orderBy, $sortDir);
 
         if ($searchTerm !== null && $searchTerm !== '') {
@@ -1152,12 +1173,12 @@ final class Sections
             }
         }
 
-        $total = $query->count();
+        $paginator = $query->paginate($limit, ['*'], $pageParam, $page);
+        $results = $paginator->getCollection();
 
-        $query->limit($limit);
-        $query->offset($offset);
+        $paginator->appends(request()->except($pageParam));
 
-        return [$query->get(), $total];
+        return [$results, $paginator];
     }
 
     /**

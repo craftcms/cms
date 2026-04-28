@@ -14,7 +14,7 @@ use Throwable;
 use function CraftCms\Cms\cp_redirect;
 use function CraftCms\Cms\t;
 
-final readonly class MigrationsController
+readonly class MigrationsController
 {
     public function __construct(Utilities $utilitiesService)
     {
@@ -31,7 +31,7 @@ final readonly class MigrationsController
         } catch (Throwable $e) {
             report($e);
 
-            Flash::fail(t('Couldn’t apply new migrations.'));
+            Flash::error(t('Couldn’t apply new migrations.'));
         }
 
         return cp_redirect('utilities/migrations');

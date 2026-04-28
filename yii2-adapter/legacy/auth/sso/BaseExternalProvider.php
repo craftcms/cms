@@ -9,18 +9,20 @@ namespace craft\auth\sso;
 
 use Craft;
 use craft\auth\sso\mapper\UserAttributesMapper;
-use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\errors\SsoFailedException;
 use craft\events\SsoEvent;
 use craft\events\UserGroupsAssignEvent;
-use craft\helpers\UrlHelper;
 use craft\services\Sso;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Exception;
@@ -36,6 +38,7 @@ use function CraftCms\Cms\t;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @internal
  * @since 5.3.0
+ * @deprecated 6.0.0 use the Laravel Socialite {@see \CraftCms\Cms\Auth\OAuth\OAuth} implementation instead.
  */
 abstract class BaseExternalProvider extends BaseProvider
 {
@@ -109,7 +112,7 @@ abstract class BaseExternalProvider extends BaseProvider
      */
     protected function getRequestUrl(): ?string
     {
-        return UrlHelper::actionUrl('sso/request', ['provider' => $this->handle], null, false);
+        return Url::actionUrl('sso/request', ['provider' => $this->handle], null);
     }
 
     /**
@@ -119,7 +122,7 @@ abstract class BaseExternalProvider extends BaseProvider
      */
     protected function getResponseUrl(): ?string
     {
-        return UrlHelper::actionUrl('sso/response', ['provider' => $this->handle], null, false);
+        return Url::actionUrl('sso/response', ['provider' => $this->handle], null);
     }
 
     /**
@@ -172,7 +175,7 @@ abstract class BaseExternalProvider extends BaseProvider
 
         // Finally, attempt via username / email
         if ($idpIdentifier) {
-            return Craft::$app->getUsers()->getUserByUsernameOrEmail(
+            return Users::getUserByUsernameOrEmail(
                 $idpIdentifier
             );
         }
@@ -203,7 +206,7 @@ abstract class BaseExternalProvider extends BaseProvider
         }
 
         // Save user
-        if (!Craft::$app->getElements()->saveElement($user)) {
+        if (!Elements::saveElement($user)) {
             throw new SsoFailedException(
                 $this,
                 $user,
@@ -250,7 +253,7 @@ abstract class BaseExternalProvider extends BaseProvider
 
         $this->trigger(Sso::EVENT_POPULATE_USER_GROUPS, $event);
 
-        return Craft::$app->getUsers()->assignUserToGroups(
+        return Users::assignUserToGroups(
             $user->getId(),
             $event->groupIds,
         );
@@ -263,7 +266,7 @@ abstract class BaseExternalProvider extends BaseProvider
     private function enableUser(User $user): void
     {
         if ($user->getId()) {
-            Craft::$app->getUsers()->activateUser($user);
+            Users::activateUser($user);
 
             return;
         }
@@ -275,8 +278,6 @@ abstract class BaseExternalProvider extends BaseProvider
         $user->pending = false;
         $user->locked = false;
         $user->suspended = false;
-        $user->verificationCode = null;
-        $user->verificationCodeIssuedDate = null;
         $user->invalidLoginCount = null;
         $user->lastInvalidLoginDate = null;
         $user->lockoutDate = null;

@@ -7,15 +7,16 @@
 
 namespace craft\events;
 
-use craft\base\AssetPreviewHandlerInterface;
 use craft\base\Event;
-use craft\elements\Asset;
+use CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface;
+use CraftCms\Cms\Asset\Elements\Asset;
 
 /**
  * Asset preview event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Events\RegisterPreviewHandler} instead.
  */
 class AssetPreviewEvent extends Event
 {

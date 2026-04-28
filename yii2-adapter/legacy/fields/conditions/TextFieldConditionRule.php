@@ -2,32 +2,14 @@
 
 namespace craft\fields\conditions;
 
-use craft\base\conditions\BaseTextConditionRule;
-
 /**
  * Text field condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Conditions\TextFieldConditionRule} instead.
  */
-class TextFieldConditionRule extends BaseTextConditionRule implements FieldConditionRuleInterface
+class TextFieldConditionRule extends \CraftCms\Cms\Field\Conditions\TextFieldConditionRule
 {
-    use FieldConditionRuleTrait;
-
-    /**
-     * @inheritdoc
-     */
-    protected function elementQueryParam(): ?string
-    {
-        return $this->paramValue();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function matchFieldValue($value): bool
-    {
-        /** @var string|null $value */
-        return $this->matchValue($value);
-    }
+    use \craft\base\LegacyEventConstants;
 }

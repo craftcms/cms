@@ -4,20 +4,19 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Data;
 
-use craft\base\ElementInterface;
-use craft\base\Serializable;
-use craft\elements\db\ElementQueryInterface;
-use craft\helpers\Template;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
+use CraftCms\Cms\Shared\Contracts\Serializable;
 use CraftCms\Cms\Support\Html;
-use Spatie\LaravelData\Dto;
+use CraftCms\Cms\Support\Template;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
+use Stringable;
 use Twig\Markup;
 
-/**
- * Link field data class.
- */
-final class LinkData extends Dto implements \Stringable, Serializable
+#[AllowedInSandbox]
+class LinkData implements Serializable, Stringable
 {
     /** @var string|null The link’s URL suffix value. */
     public ?string $urlSuffix = null;
@@ -84,7 +83,13 @@ final class LinkData extends Dto implements \Stringable, Serializable
      */
     public function getUrl(): string
     {
-        return sprintf('%s%s', $this->getValue(), $this->urlSuffix ?? '');
+        $url = $this->getValue();
+
+        if ($url === '') {
+            return $url;
+        }
+
+        return sprintf('%s%s', $url, $this->urlSuffix ?? '');
     }
 
     /**
@@ -132,25 +137,44 @@ final class LinkData extends Dto implements \Stringable, Serializable
      */
     public function getLink(): Markup
     {
-        $url = $this->getUrl();
-        if ($url === '') {
+        $attributes = $this->getAttributes();
+
+        if ($attributes === null) {
             $html = '';
         } else {
             $label = $this->getLabel();
-            $html = Html::a(Html::encode($label !== '' ? $label : $url), $url, [
-                'target' => $this->target,
-                'title' => $this->title,
-                'class' => $this->class,
-                'id' => $this->id,
-                'rel' => $this->rel,
-                'aria' => [
-                    'label' => $this->ariaLabel,
-                ],
-                'download' => $this->download ? ($this->filename ?? true) : false,
-            ]);
+            if ($label === '') {
+                $label = $this->getUrl();
+            }
+            $html = Html::a(Html::encode($label), options: $attributes);
         }
 
         return Template::raw($html);
+    }
+
+    /**
+     * Returns the attributes that should be added to `<a>` tags for this link.
+     */
+    public function getAttributes(): ?array
+    {
+        $url = $this->getUrl();
+
+        if ($url === '') {
+            return null;
+        }
+
+        return [
+            'href' => $url,
+            'target' => $this->target,
+            'title' => $this->title,
+            'class' => $this->class,
+            'id' => $this->id,
+            'rel' => $this->rel,
+            'aria' => [
+                'label' => $this->ariaLabel,
+            ],
+            'download' => $this->download && (bool) ($this->filename ?? true),
+        ];
     }
 
     /**

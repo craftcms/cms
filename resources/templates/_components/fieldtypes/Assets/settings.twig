@@ -33,7 +33,7 @@
 {% endmacro %}
 
 {% set dynamicPathTip = "The path can contain variables like `{slug}` or `{author.username}`."|t('app') %}
-{% if 'craft\\fields\\Matrix' in craft.app.view.getNamespace() %}
+{% if 'CraftCms\\Cms\\Field\\Matrix' in InputNamespace.get() %}
     {% set dynamicPathTip = dynamicPathTip|replace({
         '{slug}': '{owner.slug}',
         '{author.username}': '{owner.author.username}'
@@ -64,7 +64,7 @@
             sourceOptions: sourceOptions,
             sourceValue: field.restrictedLocationSource,
             subpathValue: field.restrictedLocationSubpath,
-            errors: field.getErrors('restrictedLocationSubpath'),
+            errors: field.errors.get('restrictedLocationSubpath'),
         }) }}
 
         {{ forms.lightswitchField({
@@ -105,7 +105,7 @@
             sourceOptions: sourceOptions,
             sourceValue: field.defaultUploadLocationSource,
             subpathValue: field.defaultUploadLocationSubpath,
-            errors: field.getErrors('defaultUploadLocationSubpath'),
+            errors: field.errors.get('defaultUploadLocationSubpath'),
         }) }}
     {% endtag %}
 
@@ -149,7 +149,7 @@
                 checked: (option.value in field.allowedKinds),
             }) }}
         {% endfor %}
-        {{ forms.errorList(field.getErrors('allowedKinds')) }}
+        {{ forms.errorList(field.errors.get('allowedKinds')) }}
     </fieldset>
 
     {{ forms.lightswitchField({
@@ -181,7 +181,7 @@
             {label: 'Show thumbnails only'|t('app'), value: 'thumbs'},
         ],
         value: field.previewMode,
-        errors: field.getErrors('previewMode'),
+        errors: field.errors.get('previewMode'),
         data: {'error-key': 'previewMode'},
     }) }}
 

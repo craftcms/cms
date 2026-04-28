@@ -9,7 +9,7 @@ use Illuminate\Support\Collection;
 use ReflectionClass;
 use ReflectionProperty;
 
-final class Utils
+class Utils
 {
     /** @return Collection<ReflectionProperty> */
     public static function getPublicReflectionProperties(object|string $target, ?Closure $filter = null): Collection
@@ -35,6 +35,13 @@ final class Utils
 
                 return [$property->getName() => $value];
             })
+            ->all();
+    }
+
+    public static function getPublicAttributes(object|string $target, ?Closure $filter = null): array
+    {
+        return self::getPublicReflectionProperties($target, $filter)
+            ->map(fn (ReflectionProperty $property) => $property->getName())
             ->all();
     }
 }

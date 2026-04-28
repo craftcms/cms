@@ -4,20 +4,21 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use craft\elements\Entry as EntryElement;
-use craft\helpers\Cp;
-use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Collection;
+use Override;
 
 use function CraftCms\Cms\t;
 
 /**
  * Entry link type.
  */
-final class Entry extends BaseElementLinkType
+class Entry extends BaseElementLinkType
 {
     /**
      * @var bool Whether to show input sources for sections the user doesn’t have permission to view
@@ -50,19 +51,19 @@ final class Entry extends BaseElementLinkType
         parent::__construct($config);
     }
 
-    #[\Override]
+    #[Override]
     public function getSettingsHtml(): string
     {
         return
             parent::getSettingsHtml().
-            Cp::lightswitchFieldHtml([
+            FormFields::lightswitchFieldHtml([
                 'label' => t('Show unpermitted sections'),
                 'instructions' => t('Whether to show sections that the user doesn’t have permission to view.'),
                 'id' => 'showUnpermittedSections',
                 'name' => 'showUnpermittedSections',
                 'on' => $this->showUnpermittedSections,
             ]).
-            Cp::lightswitchFieldHtml([
+            FormFields::lightswitchFieldHtml([
                 'label' => t('Show unpermitted entries'),
                 'instructions' => t('Whether to show entries that the user doesn’t have permission to view, per the “View other users’ entries” permission.'),
                 'id' => 'showUnpermittedEntries',
@@ -71,7 +72,7 @@ final class Entry extends BaseElementLinkType
             ]);
     }
 
-    #[\Override]
+    #[Override]
     protected function availableSourceKeys(): array
     {
         // find the sections that don't have a URL format in any site
@@ -93,8 +94,7 @@ final class Entry extends BaseElementLinkType
         }
 
         // Get all the native source keys, excluding URL-less sections
-        $sources = app(ElementSources::class)
-            ->getSources(self::elementType(), ElementSources::CONTEXT_FIELD)
+        $sources = ElementSources::getSources(self::elementType(), ElementSources::CONTEXT_FIELD)
             ->filter(fn ($s) => (
                 $s['type'] === ElementSources::TYPE_NATIVE &&
                 ! isset($excludeKeys[$s['key']])
@@ -110,7 +110,7 @@ final class Entry extends BaseElementLinkType
         return array_values(array_unique($sources));
     }
 
-    #[\Override]
+    #[Override]
     protected function selectionCriteria(): array
     {
         $criteria = parent::selectionCriteria();
@@ -122,18 +122,14 @@ final class Entry extends BaseElementLinkType
         return $criteria;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function elementSelectConfig(): array
     {
         $config = parent::elementSelectConfig();
 
         if (! $this->showUnpermittedSections) {
             // get all the native & custom sources that user has permissions to view
-            $permittedSources = app(ElementSources::class)
-                ->getSources(EntryElement::class)
+            $permittedSources = ElementSources::getSources(EntryElement::class)
                 ->filter(fn ($source) => $source['type'] !== ElementSources::TYPE_HEADING)
                 ->pluck('key')
                 ->flip()

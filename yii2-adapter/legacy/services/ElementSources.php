@@ -8,12 +8,12 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
-use craft\models\FieldLayout;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\DefineSourceSortOptions;
 use CraftCms\Cms\Element\Events\DefineSourceTableAttributes;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use yii\base\Component;
@@ -109,7 +109,7 @@ class ElementSources extends Component
      */
     public function getPages(string $elementType, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): array
     {
-        return app(\CraftCms\Cms\Element\ElementSources::class)->getPages($elementType, $context, $withDisabled)->all();
+        return app(\CraftCms\Cms\Element\ElementSources::class)->getPages($elementType)->all();
     }
 
     /**
@@ -169,11 +169,12 @@ class ElementSources extends Component
      * @param class-string<ElementInterface> $elementType The element type class
      * @param string $sourceKey The element type source key
      * @param string[]|null $customAttributes Custom attributes to show rather than the defaults
+     * @param FieldLayout[]|null $fieldLayouts The field layouts that should be factored in
      * @return array[]
      */
-    public function getTableAttributes(string $elementType, string $sourceKey, ?array $customAttributes = null): array
+    public function getTableAttributes(string $elementType, string $sourceKey, ?array $customAttributes = null, ?array $fieldLayouts = null): array
     {
-        return app(\CraftCms\Cms\Element\ElementSources::class)->getTableAttributes($elementType, $sourceKey, $customAttributes)->all();
+        return app(\CraftCms\Cms\Element\ElementSources::class)->getTableAttributes($elementType, $sourceKey, $customAttributes, $fieldLayouts)->all();
     }
 
     /**
@@ -181,7 +182,8 @@ class ElementSources extends Component
      *
      * @param class-string<ElementInterface> $elementType
      * @param string $sourceKey
-     * @return FieldLayout[]
+     *
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout[]
      */
     public function getFieldLayoutsForSource(string $elementType, string $sourceKey): array
     {

@@ -22,12 +22,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.4
+          php-version: 8.5
           extensions: :php-psr
           tools: composer:v2
           coverage: none
@@ -49,25 +49,22 @@ jobs:
           timeout_minutes: 5
           max_attempts: 5
           command: |
-            composer config repositories.facade-documenter vcs git@github.com:laravel/facade-documenter.git
+            composer config repositories.facade-documenter vcs git@github.com:riasvdv/facade-documenter.git
             composer require --dev laravel/facade-documenter:dev-main --prefer-stable --prefer-dist --no-interaction --no-progress -W
 
       - name: Update facade docblocks
         run: |
-          php -f vendor/bin/facade.php -- \
-            CraftCms\\Cms\\Support\\Facades\\Announcements \
-            CraftCms\\Cms\\Support\\Facades\\Deprecator \
-            CraftCms\\Cms\\Support\\Facades\\EntryTypes \
-            CraftCms\\Cms\\Support\\Facades\\Fields \
-            CraftCms\\Cms\\Support\\Facades\\I18N \
-            CraftCms\\Cms\\Support\\Facades\\ProjectConfig \
-            CraftCms\\Cms\\Support\\Facades\\Sections \
-            CraftCms\\Cms\\Support\\Facades\\Structures \
-            CraftCms\\Cms\\Support\\Facades\\Updates \
-            CraftCms\\Cms\\Support\\Facades\\UserGroups
+          mapfile -t facades < <(find src/Support/Facades -name '*.php' -type f | sort)
+          facade_classes=()
+
+          for facade in "${facades[@]}"; do
+            facade_classes+=("CraftCms\\Cms\\Support\\Facades\\$(basename "$facade" .php)")
+          done
+
+          php -f vendor/bin/facade.php -- "${facade_classes[@]}"
 
       - name: Commit facade docblocks
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: Update facade docblocks
           file_pattern: src/

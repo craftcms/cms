@@ -10,12 +10,14 @@ namespace craft\console;
 use Craft;
 use craft\base\ApplicationTrait;
 use craft\console\controllers\HelpController;
-use craft\errors\MissingComponentException;
 use craft\helpers\Console;
 use craft\queue\QueueLogBehavior;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use IntlDateFormatter;
 use IntlException;
 use Throwable;
@@ -71,7 +73,7 @@ class Application extends \yii\console\Application
      */
     public function runAction($route, $params = []): int|BaseResponse|null
     {
-        if ($this->_requireInfoTable($route, $params) && !$this->getIsInstalled(true)) {
+        if ($this->_requireInfoTable($route, $params) && !Cms::isInstalled(true)) {
             // Is the connection valid at least?
             if (!$this->getIsDbConnectionValid()) {
                 Console::outputWarning('Craft can’t connect to the database. Check your connection settings.');
@@ -92,11 +94,11 @@ class Application extends \yii\console\Application
     }
 
     /**
-     * @deprecated 6.0.0 use `app()->getTimezone()` instead.
+     * @deprecated 6.0.0 use `Cms::timezone()` instead.
      */
     public function getTimeZone(): string
     {
-        return app()->getTimezone();
+        return Cms::timezone();
     }
 
     /**
@@ -111,7 +113,7 @@ class Application extends \yii\console\Application
             try {
                 new IntlDateFormatter(app()->getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
             } catch (IntlException) {
-                Craft::warning("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
+                Log::info("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');
             }
         }
@@ -188,7 +190,7 @@ class Application extends \yii\console\Application
 
     private function _requireInfoTable(string $route, array &$params): bool
     {
-        $skipCheck = Env::get('CRAFT_NO_DB') ?? false;
+        $skipCheck = Env::normalizeBooleanValue(Env::get('CRAFT_NO_DB')) ?? false;
 
         if ($skipCheck || isset($params['help'])) {
             return false;

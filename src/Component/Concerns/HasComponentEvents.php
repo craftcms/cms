@@ -37,7 +37,7 @@ trait HasComponentEvents
     public function dispatchComponentEvent(string $event, mixed $payload): void
     {
         foreach (static::getClasses() as $class) {
-            Event::dispatch(self::componentEventName($event, $class), $payload);
+            event(self::componentEventName($event, $class), $payload);
 
             if (property_exists($payload, 'handled') && $payload->handled) {
                 return;

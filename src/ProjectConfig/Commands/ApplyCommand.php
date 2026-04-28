@@ -14,18 +14,21 @@ use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
 use CraftCms\Cms\ProjectConfig\Events\RemovingItem;
 use CraftCms\Cms\ProjectConfig\Events\UpdatingItem;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Updates;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Event;
 
-final class ApplyCommand extends Command
+class ApplyCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:project-config:apply {--force : Whether every entry change should be force-applied.}';
 
+    #[\Override]
     protected $description = 'Applies project config file changes.';
 
+    #[\Override]
     protected $aliases = ['project-config/apply', 'project-config:sync', 'project-config/sync', 'pc:apply', 'pc/apply', 'pc:sync', 'pc/sync'];
 
     /**

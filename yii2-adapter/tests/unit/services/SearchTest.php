@@ -11,9 +11,9 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\User;
 use craft\services\Search;
 use craft\test\TestCase;
+use CraftCms\Cms\User\Elements\User;
 use crafttests\fixtures\UserFixture;
 use Illuminate\Support\Collection;
 

@@ -12,12 +12,13 @@ use CraftCms\Cms\Structure\Concerns\StructureNode;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-final class StructureElement extends BaseModel
+class StructureElement extends BaseModel
 {
     use HasFactory;
     use HasUid;
     use StructureNode;
 
+    #[\Override]
     protected $table = Table::STRUCTUREELEMENTS;
 
     /**

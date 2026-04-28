@@ -15,12 +15,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-final class Element extends BaseModel
+class Element extends BaseModel
 {
     use HasFactory;
     use HasUid;
     use SoftDeletes;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

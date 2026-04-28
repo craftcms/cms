@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -13,6 +15,7 @@ use craft\helpers\Queue as QueueHelper;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use yii\queue\RetryableJobInterface;
+
 use function CraftCms\Cms\t;
 
 /**
@@ -25,13 +28,15 @@ use function CraftCms\Cms\t;
  * :::
  *
  * :::warning
- * Spawned jobs are cloned from the current job, so any public properties that are set to objects which aren’t
+ * Spawned jobs are cloned from the current job, so any public properties that are set to objects which aren't
  * `serialize()`-friendly should be excluded via `__sleep()`, and any private/protected properties will need
  * to be reset to their default values via `__wakeup()` to avoid uninitialized property errors.
  * :::
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.4.0
+ * @deprecated in Craft 6.0.0. Use [[CraftCms\Cms\Queue\BatchedJob]] instead.
  */
 abstract class BaseBatchedJob extends BaseJob
 {
@@ -61,10 +66,11 @@ abstract class BaseBatchedJob extends BaseJob
     public ?int $ttr = null;
 
     private ?Batchable $_data = null;
+
     private ?int $_totalItems = null;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function init(): void
     {
@@ -81,49 +87,43 @@ abstract class BaseBatchedJob extends BaseJob
 
     /**
      * Loads the batchable data.
-     *
-     * @return Batchable
      */
     abstract protected function loadData(): Batchable;
 
     /**
      * Returns the batchable data.
-     *
-     * @return Batchable
      */
     final protected function data(): Batchable
     {
         if (!isset($this->_data)) {
             $this->_data = $this->loadData();
         }
+
         return $this->_data;
     }
 
     /**
      * Returns the total number of items across all the batches.
-     *
-     * @return int
      */
     final protected function totalItems(): int
     {
         if (!isset($this->_totalItems)) {
             $this->_totalItems = $this->data()->count();
         }
+
         return $this->_totalItems;
     }
 
     /**
      * Returns the total number of batches.
-     *
-     * @return int
      */
     final protected function totalBatches(): int
     {
-        return (int)ceil($this->totalItems() / $this->batchSize);
+        return (int) ceil($this->totalItems() / $this->batchSize);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function execute($queue): void
     {
@@ -188,8 +188,6 @@ abstract class BaseBatchedJob extends BaseJob
 
     /**
      * Processes an item.
-     *
-     * @param mixed $item
      */
     abstract protected function processItem(mixed $item): void;
 
@@ -230,7 +228,7 @@ abstract class BaseBatchedJob extends BaseJob
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     final public function getDescription(): ?string
     {
@@ -239,6 +237,7 @@ abstract class BaseBatchedJob extends BaseJob
         if ($totalBatches <= 1) {
             return $description;
         }
+
         return t('{description} (batch {index, number} of {total, number})', [
             'description' => t($description),
             'index' => $this->batchIndex + 1,

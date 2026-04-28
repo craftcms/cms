@@ -12,7 +12,7 @@ use CraftCms\Cms\Plugin\Commands\UninstallCommand;
 use Illuminate\Foundation\PackageManifest;
 use Illuminate\Support\ServiceProvider;
 
-final class PluginServiceProvider extends ServiceProvider
+class PluginServiceProvider extends ServiceProvider
 {
     #[\Override]
     public function register(): void

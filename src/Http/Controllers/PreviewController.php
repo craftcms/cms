@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use craft\helpers\ElementHelper;
-use CraftCms\Cms\Http\EnforcesPermissions;
+use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
+use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\RouteToken\Data\RouteToken;
 use CraftCms\Cms\RouteToken\RouteTokens;
@@ -15,19 +16,29 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Uri;
 
 use function CraftCms\Cms\t;
 
-final readonly class PreviewController
+readonly class PreviewController
 {
     use EnforcesPermissions;
 
-    public function createToken(Request $request, RouteTokens $tokens, RouteToken $tokenData): JsonResponse|RedirectResponse
+    public function createToken(Request $request, RouteTokens $tokens): JsonResponse|RedirectResponse
     {
+        $tokenData = new RouteToken($request->post());
+
+        if ($token = $request->input('previewToken')) {
+            $tokenData->previewToken = Crypt::decrypt($token);
+        }
+
+        $tokenData->validate(throw: true);
+
         match (true) {
-            isset($tokenData->draftId) => $this->requirePermission("previewDraft:{$tokenData->draftId}"),
-            isset($tokenData->revisionId) => $this->requirePermission("previewRevision:{$tokenData->revisionId}"),
-            default => $this->requirePermission("previewElement:{$tokenData->getCanonicalId()}"),
+            isset($tokenData->draftId) => $this->requireSessionAuthorization("previewDraft:{$tokenData->draftId}"),
+            isset($tokenData->revisionId) => $this->requireSessionAuthorization("previewRevision:{$tokenData->revisionId}"),
+            default => $this->requireSessionAuthorization("previewElement:{$tokenData->getCanonicalId()}"),
         };
 
         $token = $tokens->createPreviewToken([
@@ -50,8 +61,11 @@ final readonly class PreviewController
         return new JsonResponse(compact('token'));
     }
 
-    public function preview(Request $request, Kernel $kernel, RouteToken $tokenData): mixed
+    public function preview(Request $request, Kernel $kernel, Elements $elements): mixed
     {
+        $tokenData = new RouteToken($request->all());
+        $tokenData->validate(throw: true);
+
         $query = $tokenData->elementType::find()
             ->siteId($tokenData->siteId)
             ->status(null);
@@ -60,7 +74,7 @@ final readonly class PreviewController
             ! is_null($tokenData->draftId) => fn () => $query->draftId($tokenData->draftId)->one(),
             ! is_null($tokenData->revisionId) => fn () => $query->revisionId($tokenData->revisionId)->one(),
             ! is_null($tokenData->userId) => function () use ($tokenData, $query) {
-                ElementHelper::setProvisionalDraftUser($tokenData->userId);
+                Context::addHidden(Drafts::CONTEXT_PREVIEW_USER_ID, $tokenData->userId);
 
                 $element = (clone $query)
                     ->draftOf($tokenData->canonicalId)
@@ -85,10 +99,10 @@ final readonly class PreviewController
             }
 
             $element->previewing = true;
-            \Craft::$app->getElements()->setPlaceholderElement($element);
+            $elements->setPlaceholderElement($element);
         }
 
-        /** @var \Illuminate\Support\Uri $originalUri */
+        /** @var Uri $originalUri */
         $originalUri = Context::pullHidden(HandleTokenRequest::ORIGINAL_URI_KEY);
 
         $response = $kernel->handle($request->duplicateWithUri(

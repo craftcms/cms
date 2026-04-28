@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Commands\Concerns;
 
-use craft\console\Application;
-use craft\errors\AssetDisallowedExtensionException;
-use craft\errors\AssetNotIndexableException;
-use craft\errors\MissingAssetException;
-use craft\errors\MissingVolumeFolderException;
-use craft\models\AssetIndexingSession;
-use craft\models\FsListing;
-use craft\models\Volume;
-use craft\services\AssetIndexer;
+use CraftCms\Cms\Asset\Data\IndexingSession;
+use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
+use CraftCms\Cms\Asset\Exceptions\AssetNotIndexableException;
+use CraftCms\Cms\Asset\Exceptions\MissingAssetException;
+use CraftCms\Cms\Asset\Exceptions\MissingVolumeFolderException;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Elements\Asset;
+use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Filesystem\Data\FsListing;
+use CraftCms\Cms\Image\ImageTransforms;
+use CraftCms\Cms\Support\Facades\AssetIndexer;
+use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -23,8 +26,6 @@ use function Laravel\Prompts\select;
 
 trait IndexesAssets
 {
-    private AssetIndexer $assetIndexer;
-
     private bool $cacheRemoteImages;
 
     private bool $deleteEmptyFolders;
@@ -42,19 +43,18 @@ trait IndexesAssets
     }
 
     /**
-     * @param  \craft\models\Volume[]  $volumes
+     * @param  Volume[]  $volumes
      */
-    protected function indexAssets(Application $craft, array $volumes, string $path = '', int $startAt = 0): void
+    protected function indexAssets(array $volumes, string $path = '', int $startAt = 0): void
     {
         $this->cacheRemoteImages = $this->hasOption('cacheRemoteImages') && $this->parseBooleanOption($this->option('cacheRemoteImages'));
         $this->deleteEmptyFolders = $this->parseBooleanOption($this->option('deleteEmptyFolders'));
         $this->deleteMissingAssets = $this->parseBooleanOption($this->option('deleteMissingAssets'));
         $this->createMissingAssets = $this->parseBooleanOption($this->option('createMissingAssets'));
-        $this->assetIndexer = $craft->getAssetIndexer();
 
         $this->newLine();
 
-        $session = $this->assetIndexer->createIndexingSession(
+        $session = AssetIndexer::createIndexingSession(
             volumeList: $volumes,
             cacheRemoteImages: $this->cacheRemoteImages,
             isCli: true,
@@ -67,7 +67,7 @@ trait IndexesAssets
 
         // Manually close the indexing session.
         $session->actionRequired = true;
-        $missingEntries = $this->assetIndexer->getMissingEntriesForSession($session, $path);
+        $missingEntries = AssetIndexer::getMissingEntriesForSession($session, $path);
         $missingFiles = $missingEntries['files'];
         $missingFolders = $missingEntries['folders'];
 
@@ -108,14 +108,14 @@ trait IndexesAssets
 
             $this->components->task(
                 'Deleting the'.($totalMissingFiles > 1 ? ' '.$totalMissingFiles : '').' missing asset record'.Str::plural('record', $totalMissingFiles),
-                function () use ($craft, $assetIds) {
-                    /** @var \craft\elements\ElementCollection<Asset> $assets */
+                function () use ($assetIds) {
+                    /** @var ElementCollection<Asset> $assets */
                     $assets = Asset::find()->id($assetIds)->get();
 
                     foreach ($assets as $asset) {
-                        $craft->getImageTransforms()->deleteCreatedTransformsForAsset($asset);
+                        app(ImageTransforms::class)->deleteCreatedTransformsForAsset($asset);
                         $asset->keepFileOnDelete = true;
-                        $craft->getElements()->deleteElement($asset);
+                        Elements::deleteElement($asset);
                     }
                 }
             );
@@ -126,24 +126,24 @@ trait IndexesAssets
 
             $this->components->task(
                 'Deleting the'.($totalMissingFolders > 1 ? ' '.$totalMissingFolders : '').' missing and empty '.Str::plural('folder', $totalMissingFolders),
-                function () use ($missingFolders, $craft) {
-                    $craft->getAssets()->deleteFoldersByIds(array_keys($missingFolders));
+                function () use ($missingFolders) {
+                    Folders::deleteFoldersByIds(array_keys($missingFolders));
                 }
             );
         }
 
-        $this->assetIndexer->stopIndexingSession($session);
+        AssetIndexer::stopIndexingSession($session);
     }
 
     private function processVolume(
         Volume $volume,
         string $path,
         int $startAt,
-        AssetIndexingSession $session,
+        IndexingSession $session,
     ): array {
         $this->components->twoColumnDetail("Indexing assets in <fg=cyan>{$volume->name}</>");
 
-        $fileList = $this->assetIndexer->getIndexListOnVolume($volume, $path);
+        $fileList = AssetIndexer::getIndexListOnVolume($volume, $path);
         $fsSubpath = $volume->getSubpath();
 
         /** @var Collection<MissingAssetException|MissingVolumeFolderException> $missingRecords */
@@ -163,8 +163,8 @@ trait IndexesAssets
 
             try {
                 $item->getIsDir()
-                    ? $this->assetIndexer->indexFolderByListing($volume, $item, $session->id, $this->createMissingAssets)
-                    : $this->assetIndexer->indexFileByListing($volume, $item, $session->id, $this->cacheRemoteImages, $this->createMissingAssets);
+                    ? AssetIndexer::indexFolderByListing($volume, $item, $session->id, $this->createMissingAssets)
+                    : AssetIndexer::indexFileByListing($volume, $item, $session->id, $this->cacheRemoteImages, $this->createMissingAssets);
             } catch (MissingAssetException|MissingVolumeFolderException $e) {
                 $missingRecords->add($e);
 
@@ -279,7 +279,7 @@ trait IndexesAssets
                             'dateUpdated' => now(),
                         ]);
 
-                    $this->assetIndexer->indexFileByEntry($e->indexEntry, $this->cacheRemoteImages, false);
+                    AssetIndexer::indexFileByEntry($e->indexEntry, $this->cacheRemoteImages, false);
                 }
             );
         }

@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Deprecator;
 
-use Craft;
-use craft\base\Component;
-use craft\elements\db\ElementQuery;
-use craft\helpers\Template;
-use craft\web\twig\Extension;
 use CraftCms\Cms\Deprecator\Exceptions\DeprecationException;
 use CraftCms\Cms\Deprecator\Models\DeprecationError;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Container\Attributes\Singleton;
+use CraftCms\Cms\Support\Template;
+use CraftCms\Cms\Twig\TemplateResolver;
+use CraftCms\Cms\Twig\TwigExceptionMapper;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Throwable;
+use Twig\Extension\AbstractExtension;
 use Twig\Template as TwigTemplate;
 
-#[Singleton]
-final class Deprecator
+#[Scoped]
+class Deprecator
 {
     /**
      * @var bool Whether deprecation warnings should throw exceptions rather than being logged.
@@ -172,7 +172,8 @@ final class Deprecator
             $templateTrace = 2;
         } elseif (
             isset($traces[1]['class'], $traces[1]['function']) &&
-            ($traces[1]['class'] === ElementQuery::class && $traces[1]['function'] === 'getIterator')
+            is_a($traces[1]['class'], ElementQueryInterface::class, true) &&
+            $traces[1]['function'] === 'getIterator'
         ) {
             // looping through element queries
             if (isset($traces[4]['function']) && $traces[4]['function'] === 'twig_array_batch') {
@@ -183,7 +184,7 @@ final class Deprecator
             }
         } elseif (
             isset($traces[1]['class'], $traces[1]['function']) &&
-            $traces[1]['class'] === Extension::class &&
+            is_a($traces[1]['class'], AbstractExtension::class, true) &&
             in_array($traces[1]['function'], [
                 'getCsrfInput',
                 'getFootHtml',
@@ -204,15 +205,15 @@ final class Deprecator
 
             if ($template instanceof TwigTemplate) {
                 $templateName = $template->getTemplateName();
-                $file = Craft::$app->getView()->resolveTemplate($templateName) ?: $templateName;
+                $file = app(TemplateResolver::class)->resolve($templateName) ?: $templateName;
                 $line = $this->findTemplateLine($template, $templateCodeLine);
 
                 return [$file, $line];
             }
         }
 
-        // Did this go through Component::__get()?
-        if (isset($traces[2]['class'], $traces[2]['function']) && $traces[2]['class'] === Component::class && $traces[2]['function'] === '__get') {
+        // Did this go through ::__get()?
+        if (isset($traces[2]['class'], $traces[2]['function']) && $traces[2]['function'] === '__get') {
             $t = 3;
         } else {
             $t = 1;
@@ -225,7 +226,7 @@ final class Deprecator
     }
 
     /**
-     * Returns whether the given trace is a call to [[\craft\heplers\Template::attribute()]]
+     * Returns whether the given trace is a call to [[Template::attribute()]]
      *
      * @param  array  $traces  debug_backtrace() results leading up to [[log()]]
      * @param  int  $index  The trace index to check
@@ -257,7 +258,7 @@ final class Deprecator
             $file = $trace['file'] ?? null;
             $line = $trace['line'] ?? null;
             try {
-                $templateInfo = Template::resolveTemplatePathAndLine($file ?? '', $line);
+                $templateInfo = app(TwigExceptionMapper::class)->resolveTemplatePathAndLine($file ?? '', $line);
             } catch (Throwable) {
                 $templateInfo = false;
             }
@@ -306,7 +307,7 @@ final class Deprecator
                 $value = match (true) {
                     is_object($value) => $value::class,
                     is_bool($value) => $value ? 'true' : 'false',
-                    is_string($value) => Str::limit($value, 64),
+                    is_string($value) => mb_convert_encoding(Str::limit($value, 64), 'UTF-8'),
                     is_array($value) => '['.$this->argsToString($value).']',
                     is_null($value) => 'null',
                     is_resource($value) => 'resource',

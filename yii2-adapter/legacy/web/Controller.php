@@ -8,16 +8,19 @@
 namespace craft\web;
 
 use Craft;
-use craft\base\ModelInterface;
-use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
-use craft\helpers\Cp;
+use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Identifiable;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
+use InvalidArgumentException;
 use yii\base\Action;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\Model;
 use yii\web\BadRequestHttpException;
@@ -26,6 +29,7 @@ use yii\web\JsonResponseFormatter;
 use yii\web\MethodNotAllowedHttpException;
 use yii\web\Response as YiiResponse;
 use yii\web\UnauthorizedHttpException;
+use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
@@ -41,6 +45,8 @@ use function CraftCms\Cms\t;
  */
 abstract class Controller extends \yii\web\Controller
 {
+    use ConfirmsPasswords;
+
     /**
      * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
      * @see behaviors()
@@ -208,7 +214,7 @@ abstract class Controller extends \yii\web\Controller
             if ($isCpRequest) {
                 $this->requireLogin();
                 $this->requirePermission('accessCp');
-            } elseif (Craft::$app->getUser()->getIsGuest()) {
+            } elseif (Auth::guest()) {
                 if ($isLive) {
                     throw new ForbiddenHttpException();
                 } else {
@@ -223,7 +229,7 @@ abstract class Controller extends \yii\web\Controller
             // If the system is offline, make sure they have permission to access the control panel/site
             if (!$isLive) {
                 $permission = $this->request->getIsCpRequest() ? 'accessCpWhenSystemIsOff' : 'accessSiteWhenSystemIsOff';
-                if (!Craft::$app->getUser()->checkPermission($permission)) {
+                if (!Gate::check($permission)) {
                     $error = $this->request->getIsCpRequest()
                         ? t('Your account doesn’t have permission to access the control panel when the system is offline.')
                         : t('Your account doesn’t have permission to access the site when the system is offline.');
@@ -243,7 +249,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public static function currentUser(bool $autoRenew = true): ?User
     {
-        return Craft::$app->getUser()->getIdentity($autoRenew);
+        return Auth::user();
     }
 
     /**
@@ -379,7 +385,7 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Sends a failure response for a model.
      *
-     * @param Model|ModelInterface $model The model that was being operated on
+     * @param object $model The model that was being operated on
      * @param string|null $message
      * @param string|null $modelName The route param name that the model should be set to
      * @param array $data Additional data to include in the JSON response
@@ -388,7 +394,7 @@ abstract class Controller extends \yii\web\Controller
      * @since 4.0.0
      */
     public function asModelFailure(
-        mixed $model,
+        object $model,
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],
@@ -399,7 +405,7 @@ abstract class Controller extends \yii\web\Controller
         $data += [
             'modelName' => $modelName,
             $modelName => $model->toArray(),
-            'errors' => $model->getErrors(),
+            'errors' => $model->errors()->getMessages(),
         ];
 
         return $this->asFailure(
@@ -412,7 +418,7 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Sends a success response for a model.
      *
-     * @param Model|ModelInterface $model The model that was being operated on
+     * @param object $model The model that was being operated on
      * @param string|null $message
      * @param string|null $modelName The route param name that the model should be set to
      * @param array $data Additional data to include in the JSON response
@@ -421,7 +427,7 @@ abstract class Controller extends \yii\web\Controller
      * @since 4.0.0
      */
     public function asModelSuccess(
-        mixed $model,
+        object $model,
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],
@@ -439,7 +445,7 @@ abstract class Controller extends \yii\web\Controller
 
         $notificationSettings = [];
         if ($model instanceof Chippable) {
-            $notificationSettings['details'] = Cp::chipHtml($model);
+            $notificationSettings['details'] = app(ElementHtml::class)->chipHtml($model);
         }
 
         return $this->asSuccess(
@@ -457,7 +463,7 @@ abstract class Controller extends \yii\web\Controller
     {
         $userSession = Craft::$app->getUser();
 
-        if ($userSession->getIsGuest()) {
+        if (Auth::guest()) {
             $userSession->loginRequired();
             Craft::$app->end();
         }
@@ -467,12 +473,13 @@ abstract class Controller extends \yii\web\Controller
      * Redirects the user to the account template if they are logged in.
      *
      * @since 3.4.0
+     * @deprecated 6.0.0 use the "guest" middleware instead.
      */
     public function requireGuest(): void
     {
         $userSession = Craft::$app->getUser();
 
-        if (!$userSession->getIsGuest()) {
+        if (!Auth::guest()) {
             $userSession->guestRequired();
             Craft::$app->end();
         }
@@ -491,7 +498,7 @@ abstract class Controller extends \yii\web\Controller
         $this->requireLogin();
 
         // Make sure they're an admin
-        if (!Craft::$app->getUser()->getIsAdmin()) {
+        if (!Auth::user()?->isAdmin()) {
             throw new ForbiddenHttpException('User is not permitted to perform this action.');
         }
 
@@ -505,13 +512,10 @@ abstract class Controller extends \yii\web\Controller
      * Checks whether the current user has a given permission, and ends the request with a 403 error if they don’t.
      *
      * @param string $permissionName The name of the permission.
-     * @throws ForbiddenHttpException if the current user doesn’t have the required permission
      */
     public function requirePermission(string $permissionName): void
     {
-        if (!Craft::$app->getUser()->checkPermission($permissionName)) {
-            throw new ForbiddenHttpException('User is not authorized to perform this action.');
-        }
+        Gate::forUser(Auth::guard('craft')->user())->authorize($permissionName);
     }
 
     /**
@@ -522,7 +526,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireAuthorization(string $action): void
     {
-        if (!Craft::$app->getSession()->checkAuthorization($action)) {
+        if (!SessionAuth::checkAuthorization($action)) {
             throw new ForbiddenHttpException('User is not authorized to perform this action');
         }
     }
@@ -534,9 +538,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireElevatedSession(): void
     {
-        if (!Craft::$app->getUser()->getHasElevatedSession()) {
-            throw new ForbiddenHttpException(t('This action may only be performed with an elevated session.'));
-        }
+        $this->requireConfirmedPassword(t('This action may only be performed with an elevated session.'));
     }
 
     /**
@@ -571,7 +573,8 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireToken(): void
     {
-        if (!$this->request->getHadToken()) {
+        $tokenRoute = $this->request->getTokenRoute()[0] ?? null;
+        if ($tokenRoute !== $this->getRoute()) {
             throw new BadRequestHttpException('Valid token required');
         }
     }
@@ -649,7 +652,7 @@ abstract class Controller extends \yii\web\Controller
         $url = $this->request->getValidatedBodyParam('redirect');
 
         if ($url && $object) {
-            $url = $this->getView()->renderObjectTemplate($url, $object);
+            $url = renderObjectTemplate($url, $object);
         }
 
         return $url;

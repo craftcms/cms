@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin;
 
-use CraftCms\Cms\Component\Concerns\ValidatableComponent;
-use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
+use CraftCms\Cms\Component\Component;
 
-abstract class PluginSettings implements ValidatableComponentInterface
-{
-    use ValidatableComponent;
-}
+abstract class PluginSettings extends Component {}

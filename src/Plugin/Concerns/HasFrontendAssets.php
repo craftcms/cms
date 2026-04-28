@@ -11,9 +11,9 @@ use CraftCms\Cms\Plugin\Events\PluginEvent;
 use CraftCms\Cms\Plugin\Events\UninstallingPlugin;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\File;
 
 /**
  * @mixin Plugin
@@ -111,18 +111,18 @@ trait HasFrontendAssets
         $name = static::getInstance()->packageName;
         $version = md5(static::getInstance()->version);
 
-        $assets = collect(array_merge($this->styles, $this->scripts))->mapWithKeys(fn ($public, $resource) => [$resource => $this->app->publicPath("vendor/{$name}/{$public}")])->all();
+        $assets = collect(array_merge($this->styles, $this->scripts))->mapWithKeys(fn ($public, $resource) => [$resource => $this->app->publicPath($this->getPublishablePath($public))])->all();
 
         foreach ($this->styles as $public) {
             $public = "$public?v=$version";
 
-            $this->pluginsService->addStyle($name, asset("vendor/{$name}/{$public}"));
+            $this->pluginsService->addStyle($name, asset($this->getPublishablePath($public)));
         }
 
         foreach ($this->scripts as $public) {
             $public = "$public?v=$version";
 
-            $this->pluginsService->addScript($name, asset("vendor/{$name}/{$public}"));
+            $this->pluginsService->addScript($name, asset($this->getPublishablePath($public)));
         }
 
         $this->publishes($assets, static::getInstance()->handle);
@@ -130,14 +130,20 @@ trait HasFrontendAssets
 
     private function getSourceAndTarget(PluginInterface $plugin, array $config): array
     {
-        $name = $plugin->packageName;
         $directory = Str::finish(dirname($plugin->getBasePath()), '/');
         $publicDirectory = Str::finish($config['publicDirectory'] ?? 'public', '/');
         $buildDirectory = Str::finish($config['buildDirectory'] ?? 'build', '/');
 
         $source = "{$directory}{$publicDirectory}{$buildDirectory}";
-        $target = "vendor/{$name}/{$buildDirectory}";
+        $target = $this->getPublishablePath($buildDirectory);
 
         return [$source, $target];
+    }
+
+    public function getPublishablePath(string $path): string
+    {
+        $ns = static::getInstance()->packageName;
+
+        return "vendor/{$ns}/$path";
     }
 }

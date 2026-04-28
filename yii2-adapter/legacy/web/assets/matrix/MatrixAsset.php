@@ -8,53 +8,16 @@
 namespace craft\web\assets\matrix;
 
 use craft\web\AssetBundle;
-use craft\web\assets\cp\CpAsset;
-use craft\web\View;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Asset bundle for Matrix fields
+ * @deprecated 6.0.0
  */
 class MatrixAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public $depends = [
-        CpAsset::class,
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $js = [
-        'MatrixInput.js',
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public function registerAssetFiles($view): void
+    public function registerAssetFiles($view)
     {
-        parent::registerAssetFiles($view);
-
-        if ($view instanceof View) {
-            $view->registerTranslations('app', [
-                'Actions',
-                'Add an entry',
-                'Add {type} above',
-                'Are you sure you want to delete the selected entries?',
-                'Collapse',
-                'Disable',
-                'Disabled',
-                'Enable',
-                'Entry could not be added. Maximum number of entries reached.',
-                'Expand',
-            ]);
-        }
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\MatrixAsset::class);
     }
 }

@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Element\Events;
 
 use CraftCms\Cms\Shared\Concerns\HandleableEvent;
 
-final class CreatingRevision extends RevisionEvent
+class CreatingRevision extends RevisionEvent
 {
     use HandleableEvent;
 }

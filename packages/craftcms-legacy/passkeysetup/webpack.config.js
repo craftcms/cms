@@ -1,0 +1,13 @@
+/* jshint esversion: 6 */
+/* globals module, require */
+const {getConfig} = require('@craftcms/webpack');
+
+module.exports = getConfig({
+  context: __dirname,
+  config: {
+    entry: {PasskeySetup: './PasskeySetup.js'},
+    output: {
+      path: __dirname + '/../../../resources/legacy/passkeysetup/dist',
+    },
+  },
+});

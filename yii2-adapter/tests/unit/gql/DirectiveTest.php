@@ -9,7 +9,6 @@ namespace crafttests\unit\gql;
 
 use ArrayObject;
 use Craft;
-use craft\elements\Asset;
 use craft\gql\base\Directive;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
@@ -24,6 +23,7 @@ use craft\services\Config;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\mockclasses\gql\MockDirective;
 use craft\test\TestCase;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use Craft;
-use craft\web\assets\prismjs\PrismJsAsset;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Utility\Utility;
+use Override;
 use Symfony\Component\Yaml\Yaml;
 
 use function CraftCms\Cms\t;
@@ -15,50 +15,33 @@ use function CraftCms\Cms\t;
 /**
  * ProjectConfig represents a ProjectConfig utility.
  */
-final class ProjectConfig extends Utility
+class ProjectConfig extends Utility
 {
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Project Config');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function id(): string
     {
         return 'project-config';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'gear';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
         $projectConfig = app(ProjectConfigService::class);
         $areChangesPending = $projectConfig->areChangesPending(force: true);
-        $view = Craft::$app->getView();
 
         if ($areChangesPending) {
-            $view->registerAssetBundle(PrismJsAsset::class);
-            $view->registerTranslations('app', [
-                'Show all changes',
-            ]);
             $invert = (
                 ! $projectConfig->readOnly &&
                 ! $projectConfig->writeYamlAutomatically &&
@@ -68,12 +51,12 @@ final class ProjectConfig extends Utility
             $invert = false;
         }
 
-        return $view->renderTemplate('_components/utilities/ProjectConfig.twig', [
-            'readOnly' => $projectConfig->readOnly,
-            'invert' => $invert,
-            'yamlExists' => $projectConfig->writeYamlAutomatically || $projectConfig->getDoesExternalConfigExist(),
-            'areChangesPending' => $areChangesPending,
-            'entireConfig' => Yaml::dump($projectConfig->get(), 20, 2),
+        return Html::tag('ProjectConfig', attributes: [
+            ':read-only' => $projectConfig->readOnly,
+            ':invert' => $invert,
+            ':yaml-exists' => ($projectConfig->writeYamlAutomatically || $projectConfig->getDoesExternalConfigExist()) ? 'true' : 'false',
+            ':are-changes-pending' => $areChangesPending,
+            'entire-config' => Yaml::dump($projectConfig->get(), 20, 2),
         ]);
     }
 }

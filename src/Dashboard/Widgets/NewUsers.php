@@ -4,22 +4,21 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use Craft;
-use craft\elements\User;
-use craft\web\assets\newusers\NewUsersAsset;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\NewUsersAsset;
 use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
-final class NewUsers extends Widget
+class NewUsers extends Widget
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
@@ -28,9 +27,6 @@ final class NewUsers extends Widget
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function isSelectable(): bool
     {
@@ -38,9 +34,6 @@ final class NewUsers extends Widget
         return Edition::get()->value >= Edition::Pro->value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
@@ -57,9 +50,6 @@ final class NewUsers extends Widget
      */
     public ?string $dateRange = null;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getTitle(): ?string
     {
@@ -78,9 +68,6 @@ final class NewUsers extends Widget
         return parent::getTitle();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getBodyHtml(): ?string
     {
@@ -91,20 +78,16 @@ final class NewUsers extends Widget
         $options = $this->getSettings();
         $options['orientation'] = I18N::getLocale()->getOrientation();
 
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(NewUsersAsset::class);
-        $view->registerJs('new Craft.NewUsersWidget('.$this->id.', '.Json::encode($options).');');
+        app(InternalAssetRegistry::class)->register(NewUsersAsset::class);
+        HtmlStack::js('new Craft.NewUsersWidget('.$this->id.', '.Json::encode($options).');');
 
         return '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getSettingsHtml(): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/widgets/NewUsers/settings.twig',
+        return template('_components/widgets/NewUsers/settings',
             [
                 'widget' => $this,
             ]);

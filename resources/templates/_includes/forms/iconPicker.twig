@@ -21,7 +21,7 @@
     }|filter|keys,
     title: hasValue ? value : false,
     role: hasValue ? 'img' : false,
-    lang: craft.app.getTargetLanguage() starts with 'en' ? false : 'en',
+    lang: craft.targetLanguage() starts with 'en' ? false : 'en',
     aria: {
       label: hasValue ? value : false,
     },

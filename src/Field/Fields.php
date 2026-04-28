@@ -4,29 +4,25 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
-use craft\base\ElementInterface;
-use craft\base\FieldLayoutElement;
-use craft\base\MemoizableArray;
-use craft\behaviors\CustomFieldBehavior;
-use craft\errors\MissingComponentException;
-use craft\fieldlayoutelements\BaseField;
-use craft\fieldlayoutelements\CustomField;
-use craft\helpers\AdminTable;
-use craft\helpers\Component as ComponentHelper;
-use craft\helpers\Cp;
-use craft\helpers\Db as DbHelper;
-use craft\models\FieldLayout;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\ComponentHelper;
+use CraftCms\Cms\Component\Contracts\Iconic;
+use CraftCms\Cms\Component\Exceptions\MissingComponentException;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Field\Addresses as AddressesField;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Entries as EntriesField;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\ApplyingFieldDelete;
 use CraftCms\Cms\Field\Events\ApplyingFieldSave;
 use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
+use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Field\Events\FieldDeleted;
 use CraftCms\Cms\Field\Events\FieldDeleting;
 use CraftCms\Cms\Field\Events\FieldLayoutDeleted;
@@ -40,21 +36,25 @@ use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
 use CraftCms\Cms\Field\Matrix as MatrixField;
 use CraftCms\Cms\Field\Table as TableField;
 use CraftCms\Cms\Field\Users as UsersField;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ProjectConfig as ProjectConfigFacade;
 use CraftCms\Cms\Support\Json as JsonHelper;
+use CraftCms\Cms\Support\MemoizableArray;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Validation\ValidationException;
@@ -65,7 +65,7 @@ use Throwable;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final class Fields
+class Fields
 {
     /**
      * @var string The active field context
@@ -87,6 +87,116 @@ final class Fields
     private ?MemoizableArray $_layouts = null;
 
     private array $_savingFields = [];
+
+    /**
+     * @var array<string,bool>|null Memoized map of all known custom field handles.
+     */
+    private ?array $_allFieldHandles = null;
+
+    /**
+     * @var array<string,bool>|null Memoized map of all generated field handles.
+     */
+    private ?array $_allGeneratedFieldHandles = null;
+
+    public function __construct(
+        private readonly ElementCaches $elementCaches,
+    ) {}
+
+    // Handle Registry
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns a map of all known custom field handles (including layout-overridden handles).
+     *
+     * @return array<string,bool>
+     */
+    public function allFieldHandles(): array
+    {
+        if ($this->_allFieldHandles !== null) {
+            return $this->_allFieldHandles;
+        }
+
+        $handles = [];
+
+        foreach ($this->getAllFields(false) as $field) {
+            $handles[$field->handle] = true;
+        }
+
+        foreach ($this->getAllLayouts() as $layout) {
+            foreach ($layout->getCustomFields() as $field) {
+                $handles[$field->handle] = true;
+            }
+        }
+
+        return $this->_allFieldHandles = $handles;
+    }
+
+    /**
+     * Returns a map of all generated field handles from all layouts.
+     *
+     * @return array<string,bool>
+     */
+    public function allGeneratedFieldHandles(): array
+    {
+        if ($this->_allGeneratedFieldHandles !== null) {
+            return $this->_allGeneratedFieldHandles;
+        }
+
+        $handles = [];
+
+        foreach ($this->getAllLayouts() as $layout) {
+            foreach ($layout->getGeneratedFields() as $generatedField) {
+                if (! empty($generatedField['handle'])) {
+                    $handles[$generatedField['handle']] = true;
+                }
+            }
+        }
+
+        return $this->_allGeneratedFieldHandles = $handles;
+    }
+
+    /**
+     * Returns whether the given handle belongs to a custom field.
+     */
+    public function isFieldHandle(string $handle): bool
+    {
+        return isset($this->allFieldHandles()[$handle]);
+    }
+
+    /**
+     * Returns whether the given handle belongs to a generated field.
+     */
+    public function isGeneratedFieldHandle(string $handle): bool
+    {
+        return isset($this->allGeneratedFieldHandles()[$handle]);
+    }
+
+    /**
+     * Returns whether the given handle belongs to any known field (custom or generated).
+     */
+    public function isKnownFieldHandle(string $handle): bool
+    {
+        if ($this->isFieldHandle($handle)) {
+            return true;
+        }
+
+        return $this->isGeneratedFieldHandle($handle);
+    }
+
+    /**
+     * Invalidates all memoized field and layout caches including handle maps.
+     *
+     * Call this whenever fields or layouts change, without writing a new field version to the database.
+     */
+    public function invalidateCaches(): void
+    {
+        $this->_fields = null;
+        $this->_layouts = null;
+        $this->_allFieldHandles = null;
+        $this->_allGeneratedFieldHandles = null;
+
+        event(new FieldCachesInvalidated);
+    }
 
     // Fields
     // -------------------------------------------------------------------------
@@ -136,13 +246,9 @@ final class Fields
             UsersField::class,
         ]);
 
-        if (Event::hasListeners(RegisterFieldTypes::class)) {
-            Event::dispatch($event = new RegisterFieldTypes($fieldTypes));
+        event($event = new RegisterFieldTypes($fieldTypes));
 
-            return $event->types;
-        }
-
-        return $fieldTypes;
+        return $event->types;
     }
 
     /**
@@ -168,7 +274,7 @@ final class Fields
     public function getCompatibleFieldTypes(FieldInterface $field, bool $includeCurrent = true): Collection
     {
         // If the field has any validation errors and has an ID, swap it with the saved field
-        if (! $field->getIsNew() && $field->hasErrors()) {
+        if (! $field->getIsNew() && $field->errors()->isNotEmpty()) {
             $field = $this->getFieldById($field->id);
         }
 
@@ -193,13 +299,9 @@ final class Fields
             $types->add($field::class);
         }
 
-        if (Event::hasListeners(DefineCompatibleFieldTypes::class)) {
-            Event::dispatch($event = new DefineCompatibleFieldTypes($field, $types));
+        event($event = new DefineCompatibleFieldTypes($field, $types));
 
-            return $event->compatibleTypes;
-        }
-
-        return $types;
+        return $event->compatibleTypes;
     }
 
     /**
@@ -224,7 +326,7 @@ final class Fields
             return false;
         }
 
-        return DbHelper::areColumnTypesCompatible($dbTypeA, $dbTypeB);
+        return Query::areColumnTypesCompatible($dbTypeA, $dbTypeB);
     }
 
     /**
@@ -238,13 +340,9 @@ final class Fields
             MatrixField::class,
         ]);
 
-        if (Event::hasListeners(RegisterNestedEntryFieldTypes::class)) {
-            Event::dispatch($event = new RegisterNestedEntryFieldTypes($fieldTypes));
+        event($event = new RegisterNestedEntryFieldTypes($fieldTypes));
 
-            return $event->types;
-        }
-
-        return $fieldTypes;
+        return $event->types;
     }
 
     /**
@@ -305,6 +403,10 @@ final class Fields
     {
         $context ??= $this->fieldContext;
 
+        if (! Cms::isInstalled()) {
+            return new MemoizableArray([], fn () => []);
+        }
+
         $this->_fields ??= new MemoizableArray(
             $this->_createFieldQuery()->get()->all(),
             fn (object $config) => $this->createField((array) $config),
@@ -330,7 +432,7 @@ final class Fields
      */
     public function getAllFields(mixed $context = null): Collection
     {
-        return collect($this->_fields($context)->all());
+        return $this->_fields($context)->collect();
     }
 
     /**
@@ -460,7 +562,6 @@ final class Fields
         return [
             'name' => $field->name,
             'handle' => $field->handle,
-            'columnSuffix' => property_exists($field, 'columnSuffix') ? $field->columnSuffix : null,
             'instructions' => $field->instructions,
             'searchable' => $field->searchable,
             'translationMethod' => $field->translationMethod,
@@ -491,9 +592,7 @@ final class Fields
 
         $isNewField = $field->getIsNew();
 
-        if (Event::hasListeners(FieldSaving::class)) {
-            Event::dispatch(new FieldSaving($field, $isNewField));
-        }
+        event(new FieldSaving($field, $isNewField));
 
         if (! $field->beforeSave($isNewField)) {
             return false;
@@ -537,7 +636,7 @@ final class Fields
     public function prepFieldForSave(FieldInterface $field): void
     {
         // Clear the translation key format if not using a custom translation method
-        if ($field->translationMethod !== Field::TRANSLATION_METHOD_CUSTOM) {
+        if ($field->translationMethod !== TranslationMethod::Custom->value) {
             $field->translationKeyFormat = null;
         }
 
@@ -603,9 +702,7 @@ final class Fields
      */
     public function deleteField(FieldInterface $field): bool
     {
-        if (Event::hasListeners(FieldDeleting::class)) {
-            Event::dispatch(new FieldDeleting($field));
-        }
+        event(new FieldDeleting($field));
 
         if (! $field->beforeDelete()) {
             return false;
@@ -649,9 +746,7 @@ final class Fields
 
         $field = $this->getFieldById($fieldRecord->id);
 
-        if (Event::hasListeners(ApplyingFieldDelete::class)) {
-            Event::dispatch(new ApplyingFieldDelete($field));
-        }
+        event(new ApplyingFieldDelete($field));
 
         DB::beginTransaction();
 
@@ -670,17 +765,12 @@ final class Fields
         }
 
         // Clear caches
-        $this->_fields = null;
+        $this->invalidateCaches();
 
-        // Update the field version
-        $this->updateFieldVersion();
-
-        if (Event::hasListeners(FieldDeleted::class)) {
-            Event::dispatch(new FieldDeleted($field));
-        }
+        event(new FieldDeleted($field));
 
         // Invalidate all element caches
-        Craft::$app->getElements()->invalidateAllCaches();
+        $this->elementCaches->invalidateAll();
     }
 
     /**
@@ -691,10 +781,7 @@ final class Fields
      */
     public function refreshFields(): void
     {
-        $this->_fields = null;
-        $this->_layouts = null;
-
-        $this->updateFieldVersion();
+        $this->invalidateCaches();
     }
 
     /**
@@ -750,7 +837,7 @@ final class Fields
             return $this->_layouts;
         }
 
-        if (Info::isInstalled()) {
+        if (Cms::isInstalled()) {
             $layoutConfigs = $this->_createLayoutQuery()->get()->all();
         } else {
             $layoutConfigs = [];
@@ -786,7 +873,7 @@ final class Fields
      */
     public function getAllLayouts(): Collection
     {
-        return collect($this->_layouts()->all());
+        return $this->_layouts()->collect();
     }
 
     /**
@@ -829,7 +916,7 @@ final class Fields
      */
     public function getLayoutsByIds(array $layoutIds): Collection
     {
-        return collect($this->_layouts()->whereIn('id', $layoutIds)->all());
+        return $this->_layouts()->whereIn('id', $layoutIds)->collect();
     }
 
     /**
@@ -858,7 +945,7 @@ final class Fields
      */
     public function getLayoutsByType(string $type): Collection
     {
-        return collect($this->_layouts()->where('type', $type)->all());
+        return $this->_layouts()->where('type', $type)->collect();
     }
 
     /**
@@ -866,15 +953,15 @@ final class Fields
      */
     public function createLayout(array $config): FieldLayout
     {
-        $config['class'] = FieldLayout::class;
+        unset($config['class']);
 
-        return Craft::createObject($config);
+        return new FieldLayout($config);
     }
 
     /**
      * Creates a field layout element instance from its config.
      *
-     * @template T of FieldLayoutElement
+     * @template T of \CraftCms\Cms\FieldLayout\FieldLayoutElement
      *
      * @phpstan-param array{type:class-string<T>} $config
      *
@@ -890,10 +977,8 @@ final class Fields
             throw new InvalidArgumentException("Invalid field layout element class: $type");
         }
 
-        $config['class'] = $type;
-
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return Craft::createObject($config);
+        return new $type(config: $config);
     }
 
     /**
@@ -908,8 +993,6 @@ final class Fields
 
         $config = JsonHelper::decode(Request::get("{$paramPrefix}fieldLayout"));
         $config['generatedFields'] = Request::get("{$paramPrefix}generatedFields") ?: null;
-        $config['cardView'] = Request::get("{$paramPrefix}cardView") ?: null;
-        $config['cardThumbAlignment'] = Request::get($paramPrefix.'thumbAlignment');
 
         $layout = $this->createLayout($config);
 
@@ -941,9 +1024,7 @@ final class Fields
 
         $isNewLayout = ! $layout->id;
 
-        if (Event::hasListeners(FieldLayoutSaving::class)) {
-            Event::dispatch(new FieldLayoutSaving($layout, $isNewLayout));
-        }
+        event(new FieldLayoutSaving($layout, $isNewLayout));
 
         if ($runValidation && ! $layout->validate()) {
             Log::info('Field layout not saved due to validation error.', [__METHOD__]);
@@ -979,22 +1060,10 @@ final class Fields
 
         $layout->uid = $layoutModel->uid;
 
-        if (Event::hasListeners(FieldLayoutSaved::class)) {
-            Event::dispatch(new FieldLayoutSaved($layout, $isNewLayout));
-        }
+        event(new FieldLayoutSaved($layout, $isNewLayout));
 
         // Clear caches
-        $this->_layouts = null;
-
-        // Refresh CustomFieldBehavior in case any custom field handles were just added/removed
-        $this->updateFieldVersion();
-
-        // Tell the current CustomFieldBehavior class about the fields, since they might have custom handles
-        foreach ($layout->getCustomFieldElements() as $layoutElement) {
-            if (isset($layoutElement->handle)) {
-                CustomFieldBehavior::$fieldHandles[$layoutElement->handle] = true;
-            }
-        }
+        $this->invalidateCaches();
 
         return true;
     }
@@ -1003,9 +1072,10 @@ final class Fields
      * Deletes a field layout(s) by its ID.
      *
      * @param  int|int[]  $layoutId  The field layout’s ID
+     * @param  bool  $hardDelete  Whether the field layout should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the field layout was deleted successfully
      */
-    public function deleteLayoutById(array|int $layoutId): bool
+    public function deleteLayoutById(array|int $layoutId, bool $hardDelete = false): bool
     {
         if (! $layoutId) {
             return false;
@@ -1013,7 +1083,7 @@ final class Fields
 
         foreach (Arr::wrap($layoutId) as $thisLayoutId) {
             if ($layout = $this->getLayoutById($thisLayoutId)) {
-                $this->deleteLayout($layout);
+                $this->deleteLayout($layout, $hardDelete);
             }
         }
 
@@ -1024,22 +1094,25 @@ final class Fields
      * Deletes a field layout.
      *
      * @param  FieldLayout  $layout  The field layout
+     * @param  bool  $hardDelete  Whether the field layout should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the field layout was deleted successfully
      */
-    public function deleteLayout(FieldLayout $layout): bool
+    public function deleteLayout(FieldLayout $layout, bool $hardDelete = false): bool
     {
-        if (Event::hasListeners(FieldLayoutDeleting::class)) {
-            Event::dispatch(new FieldLayoutDeleting($layout));
+        event(new FieldLayoutDeleting($layout));
+
+        if ($hardDelete) {
+            DB::table(Table::FIELDLAYOUTS)->delete($layout->id);
+        } else {
+            DB::table(Table::FIELDLAYOUTS)->softDelete($layout->id);
         }
 
-        DB::table(Table::FIELDLAYOUTS)->softDelete($layout->id);
-
-        if (Event::hasListeners(FieldLayoutDeleted::class)) {
-            Event::dispatch(new FieldLayoutDeleted($layout));
-        }
+        event(new FieldLayoutDeleted($layout));
 
         // Clear caches
         $this->_layouts = null;
+        $this->_allFieldHandles = null;
+        $this->_allGeneratedFieldHandles = null;
 
         return true;
     }
@@ -1058,6 +1131,8 @@ final class Fields
 
         // Clear caches
         $this->_layouts = null;
+        $this->_allFieldHandles = null;
+        $this->_allGeneratedFieldHandles = null;
 
         return (bool) $affectedRows;
     }
@@ -1074,38 +1149,10 @@ final class Fields
 
         // Clear caches
         $this->_layouts = null;
+        $this->_allFieldHandles = null;
+        $this->_allGeneratedFieldHandles = null;
 
         return (bool) $affectedRows;
-    }
-
-    /**
-     * Returns the current field version.
-     */
-    public function getFieldVersion(): ?string
-    {
-        $fieldVersion = Info::fetch()->fieldVersion;
-
-        // If it doesn't start with `3@`, then it needs to be updated
-        if ($fieldVersion === null || ! str_starts_with($fieldVersion, '3@')) {
-            return null;
-        }
-
-        return $fieldVersion;
-    }
-
-    /**
-     * Sets a new field version, so the CustomFieldBehavior class
-     * will get regenerated on the next request.
-     */
-    public function updateFieldVersion(): void
-    {
-        // Make sure that CustomFieldBehavior has already been loaded,
-        // so the field version change won't be detected until the next request
-        class_exists(CustomFieldBehavior::class);
-
-        Info::fetch()->update([
-            'fieldVersion' => '3@'.Str::random(10),
-        ]);
     }
 
     /**
@@ -1121,9 +1168,7 @@ final class Fields
         // For control panel save requests, make sure we have all the custom data already saved on the object.
         $field = $this->_savingFields[$fieldUid] ?? null;
 
-        if (Event::hasListeners(ApplyingFieldSave::class)) {
-            Event::dispatch(new ApplyingFieldSave($oldField, $data));
-        }
+        event(new ApplyingFieldSave($oldField, $data));
 
         DB::beginTransaction();
 
@@ -1133,7 +1178,7 @@ final class Fields
             $deleteSearchIndexes = ! $isNewField && ! $searchable && $fieldRecord->searchable;
 
             // Clear the translation key format if not using a custom translation method
-            if ($data['translationMethod'] !== Field::TRANSLATION_METHOD_CUSTOM) {
+            if ($data['translationMethod'] !== TranslationMethod::Custom->value) {
                 $data['translationKeyFormat'] = null;
             }
 
@@ -1145,7 +1190,6 @@ final class Fields
             $fieldRecord->name = $data['name'];
             $fieldRecord->handle = $data['handle'];
             $fieldRecord->context = $context;
-            $fieldRecord->columnSuffix = $data['columnSuffix'] ?? null;
             $fieldRecord->instructions = $data['instructions'];
             $fieldRecord->searchable = (bool) $searchable;
             $fieldRecord->translationMethod = $data['translationMethod'];
@@ -1169,9 +1213,6 @@ final class Fields
         // Clear caches
         $this->refreshFields();
 
-        // Tell the current CustomFieldBehavior class about the field
-        CustomFieldBehavior::$fieldHandles[$fieldRecord->handle] = true;
-
         // Now get the field, if it's not a field save request
         $field ??= $this->getFieldById($fieldRecord->id);
         if ($isNewField) {
@@ -1186,9 +1227,7 @@ final class Fields
 
         $field->afterSave($isNewField);
 
-        if (Event::hasListeners(FieldSaved::class)) {
-            Event::dispatch(new FieldSaved($field, $isNewField));
-        }
+        event(new FieldSaved($field, $isNewField));
 
         // If we just dropped `searchable`, delete the field’s search indexes immediately.
         if ($deleteSearchIndexes) {
@@ -1199,7 +1238,7 @@ final class Fields
         }
 
         // Invalidate all element caches
-        Craft::$app->getElements()->invalidateAllCaches();
+        $this->elementCaches->invalidateAll();
     }
 
     /**
@@ -1216,8 +1255,7 @@ final class Fields
         int $sortDir = SORT_ASC,
     ): array {
         $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
-
-        $offset = ($page - 1) * $limit;
+        $pageParam = Cms::config()->getPageTriggerParam();
         $query = $this->_createFieldQuery()
             ->where('context', 'global');
 
@@ -1251,12 +1289,12 @@ final class Fields
             }
         }
 
-        $total = $query->count();
-
-        $query->limit($limit);
-        $query->offset($offset);
-
-        $result = $query->get();
+        $paginator = $query->paginate(
+            perPage: $limit,
+            pageName: $pageParam,
+            page: $page,
+        );
+        $result = $paginator->getCollection();
 
         $tableData = [];
         $usages = $this->allFieldUsages();
@@ -1276,7 +1314,7 @@ final class Fields
                 'type' => [
                     'isMissing' => $field instanceof MissingField,
                     'label' => $field instanceof MissingField ? $field->expectedType : $field::displayName(),
-                    'icon' => Cp::iconSvg($field::icon()),
+                    'icon' => Icons::svg($field instanceof Iconic ? $field->getIcon() : $field::icon()),
                 ],
                 'usages' => isset($usages[$field->id])
                     ? t('{count, number} {count, plural, =1{layout} other{layouts}}', [
@@ -1286,7 +1324,18 @@ final class Fields
             ];
         }
 
-        $pagination = AdminTable::paginationLinks($page, $total, $limit);
+        $paginator->appends(request()->except($pageParam));
+
+        $pagination = Arr::only($paginator->toArray(), [
+            'total',
+            'per_page',
+            'current_page',
+            'last_page',
+            'next_page_url',
+            'prev_page_url',
+            'from',
+            'to',
+        ]);
 
         return [$pagination, $tableData];
     }
@@ -1320,7 +1369,6 @@ final class Fields
                 'fields.name',
                 'fields.handle',
                 'fields.context',
-                'fields.columnSuffix',
                 'fields.instructions',
                 'fields.searchable',
                 'fields.translationMethod',

@@ -1,6 +1,6 @@
 {% import '_includes/forms.twig' as forms %}
 
-{% do view.registerAssetBundle("craft\\web\\assets\\vue\\VueAsset") %}
+{% do registerLegacyAsset("CraftCms\\Cms\\View\\LegacyAssets\\VueAsset") %}
 
 {% set suggestions = (suggestions ?? [])
     |merge((suggestTemplates ?? false) ? craft.cp.getTemplateSuggestions() : [])
@@ -77,7 +77,7 @@ new Vue({
                 name: (name ?? '')|namespaceInputName,
                 size: size ?? '',
                 maxlength: maxlength ?? '',
-                autofocus: (autofocus ?? false) and currentUser and currentUser.getAutofocusPreferred() and not craft.app.request.isMobileBrowser(true),
+                autofocus: (autofocus ?? false) and Auth.user and Auth.user.getAutofocusPreferred() and not Request.isMobileBrowser(true),
                 disabled: disabled ?? false,
                 title: title ?? '',
                 placeholder: placeholder ?? '',

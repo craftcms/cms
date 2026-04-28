@@ -12,8 +12,13 @@ use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Composer;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Update\Updates;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Inertia\Inertia;
+use Override;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -22,7 +27,7 @@ use function CraftCms\Cms\t;
 /**
  * @internal
  */
-final class ConfigSyncController extends BaseUpdaterController
+class ConfigSyncController extends BaseUpdaterController
 {
     public const string ACTION_RETRY = 'retry';
 
@@ -43,6 +48,24 @@ final class ConfigSyncController extends BaseUpdaterController
         private readonly ProjectConfig $projectConfig,
     ) {
         parent::__construct($request, $generalConfig, $composer, $plugins, $updates);
+    }
+
+    /**
+     * Renders the Config Sync page via Inertia.
+     */
+    #[Override]
+    public function index(): Response
+    {
+        $this->data = $this->initialData();
+        $state = $this->realInitialState();
+        $state['data'] = Crypt::encrypt(Json::encode($this->data));
+
+        return Inertia::render('Updater', [
+            'title' => $this->pageTitle(),
+            'initialState' => $state,
+            'actionPrefix' => 'config-sync',
+            'returnUrl' => $this->returnUrl(),
+        ])->toResponse($this->request);
     }
 
     /**
@@ -122,19 +145,13 @@ final class ConfigSyncController extends BaseUpdaterController
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function pageTitle(): string
     {
         return t('Project Config Sync');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function initialData(): array
     {
         $data = [
@@ -155,10 +172,7 @@ final class ConfigSyncController extends BaseUpdaterController
         return $data;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function initialState(bool $force = false): array
     {
         $incompatibilities = [];
@@ -228,28 +242,19 @@ final class ConfigSyncController extends BaseUpdaterController
         return $this->actionState($this->nextApplyYamlAction());
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function postComposerInstallState(): array
     {
         throw new RuntimeException('postComposerInstallState() is not supported by '.self::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function returnUrl(): string
     {
-        return $this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect();
+        return Url::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect());
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function actionStatus(string $action): string
     {
         switch ($action) {

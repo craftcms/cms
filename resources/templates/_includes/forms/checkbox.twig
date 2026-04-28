@@ -15,7 +15,7 @@
         'checkbox'
     ]|filter),
     checked: (checked ?? false) and checked,
-    autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+    autofocus: (autofocus ?? false) and not Request.isMobileBrowser(true),
     disabled: (disabled ?? false) ? true : false,
     aria: aria|merge({
         labelledby: (aria.label ?? false) ? false : (labelledBy ?? false),
@@ -61,10 +61,10 @@
                         <div class="color-preview" style="background-color: {{ color }}"></div>
                     </div>
                 {% endif %}
-                <span>{{ label|raw }}</span>
+                <span>{{ label }}</span>
             </div>
         {% else %}
-            {{ label|raw }}
+            {{ label }}
         {% endif %}
 
     {% endif %}

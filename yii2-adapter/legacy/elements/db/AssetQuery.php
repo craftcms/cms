@@ -8,17 +8,22 @@
 namespace craft\elements\db;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
-use craft\elements\Asset;
-use craft\elements\User;
 use craft\helpers\Assets;
 use craft\helpers\Db;
-use craft\models\Volume;
+use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Folders;
+use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Arr;
-use yii\base\InvalidArgumentException;
+use CraftCms\Cms\Support\Facades\ImageTransforms;
+use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Auth;
+use InvalidArgumentException;
 use yii\db\Schema;
 
 /**
@@ -38,8 +43,9 @@ use yii\db\Schema;
  * @replace {elements} assets
  * @replace {twig-method} craft.assets()
  * @replace {myElement} myAsset
- * @replace {element-class} \craft\elements\Asset
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\AssetQuery} instead.
+ * @replace {element-class} \CraftCms\Cms\Asset\Elements\Asset
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\AssetQuery} instead.
+ * @phpstan-ignore class.missingExtends
  */
 class AssetQuery extends ElementQuery
 {
@@ -65,7 +71,7 @@ class AssetQuery extends ElementQuery
      * ---
      * ```php
      * // fetch assets in the Logos volume
-     * $logos = \craft\elements\Asset::find()
+     * $logos = \CraftCms\Cms\Asset\Elements\Asset::find()
      *     ->volume('logos')
      *     ->all();
      * ```
@@ -127,7 +133,7 @@ class AssetQuery extends ElementQuery
      *
      * ```php
      * // fetch only images
-     * $logos = \craft\elements\Asset::find()
+     * $logos = \CraftCms\Cms\Asset\Elements\Asset::find()
      *     ->kind('image')
      *     ->all();
      * ```
@@ -153,7 +159,7 @@ class AssetQuery extends ElementQuery
      * ---
      * ```php{4}
      * // fetch images that are at least 500 pixels wide
-     * $images = \craft\elements\Asset::find()
+     * $images = \CraftCms\Cms\Asset\Elements\Asset::find()
      *     ->kind('image')
      *     ->width('>= 500')
      *     ->all();
@@ -174,7 +180,7 @@ class AssetQuery extends ElementQuery
      * ---
      * ```php{4}
      * // fetch images that are at least 500 pixels high
-     * $images = \craft\elements\Asset::find()
+     * $images = \CraftCms\Cms\Asset\Elements\Asset::find()
      *     ->kind('image')
      *     ->height('>= 500')
      *     ->all();
@@ -220,7 +226,7 @@ class AssetQuery extends ElementQuery
      * ---
      * ```php{4}
      * // fetch images with their 'thumb' transforms preloaded
-     * $images = \craft\elements\Asset::find()
+     * $images = \CraftCms\Cms\Asset\Elements\Asset::find()
      *     ->kind('image')
      *     ->withTransforms(['thumb'])
      *     ->all();
@@ -313,7 +319,7 @@ class AssetQuery extends ElementQuery
     {
         if (Db::normalizeParam($value, function($item) {
             if (is_string($item)) {
-                $item = Craft::$app->getVolumes()->getVolumeByHandle($item);
+                $item = app(Volumes::class)->getVolumeByHandle($item);
             }
             return $item instanceof Volume ? $item->id : null;
         })) {
@@ -873,7 +879,7 @@ class AssetQuery extends ElementQuery
                 $transforms = is_string($transforms) ? str($transforms)->explode(',')->all() : [$transforms];
             }
 
-            Craft::$app->getImageTransforms()->eagerLoadTransforms($elements, $transforms);
+            ImageTransforms::eagerLoadTransforms($elements, $transforms);
         }
 
         return $elements;
@@ -943,8 +949,8 @@ class AssetQuery extends ElementQuery
 
             $folderCondition = Db::parseNumericParam('assets.folderId', $this->folderId);
             if (is_numeric($this->folderId) && $this->includeSubfolders) {
-                $assetsService = Craft::$app->getAssets();
-                $descendants = $assetsService->getAllDescendantFolders($assetsService->getFolderById($this->folderId));
+                $folders = app(Folders::class);
+                $descendants = $folders->getAllDescendantFolders($folders->getFolderById($this->folderId));
                 $folderCondition = ['or', $folderCondition, ['in', 'assets.folderId', array_keys($descendants)]];
             }
             $this->subQuery->andWhere($folderCondition);
@@ -975,7 +981,7 @@ class AssetQuery extends ElementQuery
 
         if ($this->kind) {
             $kindCondition = ['or', Db::parseParam('assets.kind', $this->kind)];
-            $kinds = Assets::getFileKinds();
+            $kinds = AssetsHelper::getFileKinds();
             foreach ((array)$this->kind as $kind) {
                 if (isset($kinds[$kind])) {
                     foreach ($kinds[$kind]['extensions'] as $extension) {
@@ -1064,7 +1070,7 @@ class AssetQuery extends ElementQuery
             return;
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Auth::user();
 
         if (!$user) {
             throw new QueryAbortedException();
@@ -1074,7 +1080,7 @@ class AssetQuery extends ElementQuery
         $partiallyAuthorizedVolumeIds = [];
         $unauthorizedVolumeIds = [];
 
-        foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
+        foreach (app(Volumes::class)->getAllVolumes() as $volume) {
             if ($user->can("$peerPermissionPrefix:$volume->uid")) {
                 $fullyAuthorizedVolumeIds[] = $volume->id;
             } elseif ($user->can("$permissionPrefix:$volume->uid")) {
@@ -1184,7 +1190,7 @@ class AssetQuery extends ElementQuery
     {
         if ($this->volumeId && $this->volumeId !== ':empty:') {
             $fieldLayouts = [];
-            $volumesService = Craft::$app->getVolumes();
+            $volumesService = app(Volumes::class);
             foreach ($this->volumeId as $volumeId) {
                 $volume = $volumesService->getVolumeById($volumeId);
                 if ($volume) {

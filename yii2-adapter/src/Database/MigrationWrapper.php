@@ -4,7 +4,7 @@ namespace CraftCms\Yii2Adapter\Database;
 
 use CraftCms\Cms\Database\Migration;
 
-final class MigrationWrapper extends Migration
+class MigrationWrapper extends Migration
 {
     private object $migration;
 

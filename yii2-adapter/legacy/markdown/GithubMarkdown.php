@@ -8,15 +8,20 @@
 
 namespace craft\markdown;
 
-use cebe\markdown\GithubMarkdown as BaseGithubMarkdown;
-
 /**
  * Markdown parser
+ *
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Facades\Markdown::parse()} with the `gfm` or `gfm-comment` flavor instead.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.4.2
  */
-class GithubMarkdown extends BaseGithubMarkdown
+class GithubMarkdown extends BaseMarkdownParser
 {
-    use SafeLinkTrait;
+    public bool $enableNewlines = false;
+
+    protected function flavor(): string
+    {
+        return $this->enableNewlines ? 'gfm-comment' : 'gfm';
+    }
 }

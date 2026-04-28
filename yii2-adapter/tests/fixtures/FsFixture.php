@@ -11,6 +11,7 @@ use Craft;
 use craft\helpers\FileHelper;
 use craft\services\Fs;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Json;
 use yii\base\ErrorException;
 use yii\test\ArrayFixture;
@@ -45,6 +46,7 @@ class FsFixture extends ArrayFixture
 
         $projectConfig->set(ProjectConfig::PATH_FS, $this->getData());
         Craft::$app->set('fs', new Fs());
+        Filesystems::reset();
     }
 
     /**
@@ -63,6 +65,8 @@ class FsFixture extends ArrayFixture
         if (isset($this->_originalService)) {
             Craft::$app->set('fs', $this->_originalService);
         }
+
+        Filesystems::reset();
 
         parent::unload();
     }

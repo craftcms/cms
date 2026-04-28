@@ -4,20 +4,22 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
-use craft\base\ElementInterface;
-use craft\elements\Entry;
-use craft\helpers\Cp;
-use craft\validators\ColorValidator;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
-use CraftCms\Cms\Shared\Rules\ColorRule;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Query;
+use CraftCms\Cms\Validation\Rules\ColorRule;
+use Deprecated;
 use Illuminate\Support\Collection;
-use yii\db\Schema;
+use Illuminate\Validation\Rule;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -26,42 +28,30 @@ use function CraftCms\Cms\t;
  *
  * @property string|null $defaultColor
  */
-final class Color extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
+class Color extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Color');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'palette';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|null', ColorData::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function dbType(): string
     {
-        return sprintf('%s(7)', Schema::TYPE_CHAR);
+        return sprintf('%s(7)', Query::TYPE_CHAR);
     }
 
     /**
@@ -76,9 +66,6 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
      */
     public bool $allowCustomColors = false;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         // presets => palette
@@ -143,7 +130,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * @return string[]
      */
-    #[\Deprecated(message: 'in 5.6.0')]
+    #[Deprecated(message: 'in 5.6.0')]
     public function getPresets(): array
     {
         return array_values(array_filter(array_map(fn (array $color) => $color['color'], $this->palette)));
@@ -152,7 +139,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * @param  string[]  $presets
      */
-    #[\Deprecated(message: 'in 5.6.0')]
+    #[Deprecated(message: 'in 5.6.0')]
     public function setPresets(array $presets): void
     {
         $this->palette = array_map(
@@ -161,17 +148,12 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -180,7 +162,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     private function settingsHtml(bool $readOnly): string
     {
         return
-            Cp::editableTableFieldHtml([
+            FormFields::editableTableFieldHtml([
                 'label' => t('Palette'),
                 'name' => 'palette',
                 'instructions' => t('Define the available colors to choose from.'),
@@ -204,11 +186,11 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
                 'allowReorder' => true,
                 'allowDelete' => true,
                 'addRowLabel' => t('Add a color'),
-                'errors' => $this->getErrors('palette'),
+                'errors' => $this->errors()->get('palette'),
                 'data' => ['error-key' => 'palette'],
                 'static' => $readOnly,
             ]).
-            Cp::lightswitchFieldHtml([
+            FormFields::lightswitchFieldHtml([
                 'label' => t('Allow custom colors'),
                 'id' => 'allow-custom-colors',
                 'name' => 'allowCustomColors',
@@ -217,8 +199,8 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
             ]);
     }
 
-    #[\Override]
-    public static function getRules(): array
+    #[Override]
+    public function getRules(): array
     {
         return array_merge(parent::getRules(), [
             'allowCustomColors' => ['required', 'boolean'],
@@ -229,26 +211,21 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         ]);
     }
 
-    public static function getMessages(): array
+    #[Override]
+    public function getMessages(): array
     {
         return [
             'palette.required_if' => t('Palette cannot be blank if custom colors aren’t allowed.'),
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function useFieldset(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof ColorData) {
@@ -293,40 +270,30 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
-    public function getElementValidationRules(): array
+    #[Override]
+    public function getElementRules(ElementInterface $element): array
     {
         return [
-            ColorValidator::class,
-            [
-                function (ElementInterface $element) {
-                    if (! $this->allowCustomColors) {
-                        /** @var ColorData $value */
-                        $value = $element->getFieldValue($this->handle);
-                        if (Collection::make($this->palette)->doesntContain(fn (array $color) => $color['color'] === $value->getHex())) {
-                            $element->addError("field:$this->handle", t('{attribute} is invalid.', [
-                                'attribute' => $this->getUiLabel(),
-                            ]));
-                        }
+            new ColorRule,
+            Rule::when(! $this->allowCustomColors, [
+                function ($attribute, ColorData $value, $fail) {
+                    if (Collection::make($this->palette)->doesntContain(fn (array $color) => $color['color'] === $value->getHex())) {
+                        $fail(t('{attribute} is invalid.', [
+                            'attribute' => $this->getUiLabel(),
+                        ]));
                     }
                 },
-            ],
+            ]),
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $id = $this->getInputId();
 
         if (empty($this->palette)) {
-            return Cp::colorHtml([
+            return FormFields::colorHtml([
                 'id' => $id,
                 'describedBy' => $this->describedBy,
                 'name' => $this->handle,
@@ -358,7 +325,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
                     'max-width' => '100%',
                 ],
             ]).
-            Cp::colorSelectFieldHtml([
+            FormFields::colorSelectFieldHtml([
                 'id' => $id,
                 'labelledBy' => $this->getLabelId(),
                 'describedBy' => $this->describedBy,
@@ -411,7 +378,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
                 ]).
                 Html::label(t('Custom color:'), "$id-custom-input")
                     ->id($customLabelId).
-                Cp::colorHtml([
+                FormFields::colorHtml([
                     'id' => "$id-custom-input",
                     'labelledBy' => $customLabelId,
                     'describedBy' => $this->describedBy,
@@ -420,16 +387,13 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
                 ]).
                 Html::endTag('div');
         } elseif ($value && ! $isInPalette) {
-            Craft::$app->getView()->setInitialDeltaValue($this->handle, $value->getHex());
+            DeltaRegistry::setInitialValue($this->handle, $value->getHex());
         }
 
         return $html.Html::endTag('div');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         /** @var ColorData|null $value */
@@ -438,7 +402,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         }
 
         $html = Html::beginTag('div', ['class' => ['color', 'noteditable']]).
-            Html::tag('div', options: [
+            Html::tag('div', attributes: [
                 'class' => 'color-preview',
                 'style' => ['background-color' => $value->getHex()],
             ]).
@@ -453,21 +417,18 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $html;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var ColorData|null $value */
         if (! $value) {
             return Html::beginTag('div', ['class' => ['color', 'small', 'static']]).
-                Html::tag('div', options: ['class' => 'color-preview']).
+                Html::tag('div', attributes: ['class' => 'color-preview']).
                 Html::endTag('div');
         }
 
         $html = Html::beginTag('div', ['class' => ['color', 'small', 'static']]).
-            Html::tag('div', options: [
+            Html::tag('div', attributes: [
                 'class' => 'color-preview',
                 'style' => [
                     'background-color' => $value->getHex(),
@@ -484,10 +445,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $html;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {

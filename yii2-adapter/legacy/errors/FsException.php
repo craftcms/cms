@@ -7,21 +7,17 @@
 
 namespace craft\errors;
 
-use yii\base\Exception;
+use RuntimeException;
 
-/**
- * Class FsException
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-class FsException extends Exception
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Exceptions\FilesystemException} instead.
      */
-    public function getName(): string
+    class FsException extends RuntimeException
     {
-        return 'Filesystem Error';
     }
 }
+
+class_alias(\CraftCms\Cms\Filesystem\Exceptions\FilesystemException::class, FsException::class);

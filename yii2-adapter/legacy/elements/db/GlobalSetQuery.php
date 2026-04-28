@@ -12,6 +12,7 @@ use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\GlobalSet;
 use craft\helpers\Db;
+use CraftCms\Cms\Cms;
 
 /**
  * GlobalSetQuery represents a SELECT SQL statement for global sets in a way that is independent of DBMS.
@@ -30,6 +31,7 @@ use craft\helpers\Db;
  * @replace {myElement} myGlobalSet
  * @replace {element-class} \craft\elements\GlobalSet
  * @deprecated in 6.0.0
+ * @phpstan-ignore class.missingExtends
  */
 class GlobalSetQuery extends ElementQuery
 {
@@ -161,7 +163,12 @@ class GlobalSetQuery extends ElementQuery
 
     public function getCacheTags(): array
     {
-        // no need to register cache tags for global set queries
+        // no need to register cache tags for global set queries,
+        // unless this is a GraphQL request
+        if (request()->is(Cms::config()->actionTrigger . '/graphql/api')) {
+            return parent::getCacheTags();
+        }
+
         return [];
     }
 }

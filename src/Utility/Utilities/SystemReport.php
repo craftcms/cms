@@ -5,98 +5,67 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Composer\InstalledVersions;
-use Craft;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Plugin\Contracts\PluginInterface;
+use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Utility\Utility;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use OutOfBoundsException;
+use Override;
 use RequirementsChecker;
-use yii\base\Module;
 
 use function CraftCms\Cms\normalizeVersion;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * SystemReport represents a SystemReport dashboard widget.
  */
-final class SystemReport extends Utility
+class SystemReport extends Utility
 {
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('System Report');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function id(): string
     {
         return 'system-report';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'list-check';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
-        $modules = collect(Craft::$app->getModules())
-            ->map(function (mixed $module): string {
-                if ($module instanceof PluginInterface) {
-                    return '';
-                }
-
-                if ($module instanceof Module) {
-                    return $module::class;
-                }
-
-                if (is_string($module)) {
-                    return $module;
-                }
-
-                if (is_array($module) && isset($module['class'])) {
-                    return $module['class'];
-                }
-
-                return t('Unknown type');
-            })
-            ->filter();
-
         $aliases = [];
         foreach (Aliases::getAll() as $alias => $value) {
             if (is_array($value)) {
                 foreach ($value as $a => $v) {
-                    $aliases[$a] = $v;
+                    if (! str_starts_with((string) $a, '@appicons/')) {
+                        $aliases[$a] = $v;
+                    }
                 }
-            } else {
+            } elseif (! str_starts_with((string) $alias, '@appicons/')) {
                 $aliases[$alias] = $value;
             }
         }
         ksort($aliases);
 
-        return Craft::$app->getView()->renderTemplate('_components/utilities/SystemReport.twig', [
+        return template('_components/utilities/SystemReport', [
             'appInfo' => self::appInfo(),
             'plugins' => app(Plugins::class)->getAllPlugins(),
-            'modules' => $modules,
             'aliases' => $aliases,
             'requirements' => self::requirementResults(),
         ]);
@@ -116,7 +85,7 @@ final class SystemReport extends Utility
         ];
 
         if (! class_exists(InstalledVersions::class, false)) {
-            $path = Craft::$app->getPath()->getVendorPath().DIRECTORY_SEPARATOR.'composer'.DIRECTORY_SEPARATOR.'InstalledVersions.php';
+            $path = Path::vendor('composer/InstalledVersions.php');
             if (file_exists($path)) {
                 require $path;
             }
@@ -152,7 +121,7 @@ final class SystemReport extends Utility
      */
     private static function dbDriver(): string
     {
-        $label = DB::getDriverTitle();
+        $label = DB::driverLabel();
         $version = normalizeVersion(DB::getServerVersion());
 
         return "$label $version";
@@ -163,7 +132,7 @@ final class SystemReport extends Utility
      */
     private static function imageDriver(): string
     {
-        $imagesService = Craft::$app->getImages();
+        $imagesService = app(Images::class);
 
         $driverName = $imagesService->getIsGd()
             ? 'GD'
@@ -179,11 +148,18 @@ final class SystemReport extends Utility
     {
         $checker = new RequirementsChecker;
 
-        $dbConfig = Craft::$app->getConfig()->getDb();
-        $checker->dsn = $dbConfig->dsn;
+        $prefix = 'database.connections.'.DB::getDriverName();
+        $checker->dsn = implode('', [
+            DB::getDriverName(),
+            ':host='.Config::get("$prefix.host"),
+            ';port='.Config::get("$prefix.port"),
+            ';dbname='.Config::get("$prefix.database"),
+            ';user='.Config::get("$prefix.username"),
+            ';password='.Config::get("$prefix.password"),
+        ]);
         $checker->dbDriver = DB::getDriverName();
-        $checker->dbUser = $dbConfig->user;
-        $checker->dbPassword = $dbConfig->password;
+        $checker->dbUser = Config::get("$prefix.username");
+        $checker->dbPassword = Config::get("$prefix.password");
         $checker->checkCraft();
 
         return $checker->getResult()['requirements'];

@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry;
 
-use Craft;
-use craft\base\Element;
-use craft\errors\InvalidElementException;
-use craft\errors\UnsupportedSiteException;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Elements\Entry;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
+use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Events\EntryMovedToSection;
 use CraftCms\Cms\Entry\Events\MovingEntryToSection;
 use CraftCms\Cms\Section\Data\Section;
@@ -17,24 +18,28 @@ use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Exception;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
-#[Singleton]
-final class Entries
+#[Scoped]
+class Entries
 {
     /**
      * @var array<int,array<string,Entry|false>>
      */
     private array $singleEntries = [];
+
+    public function __construct(
+        private readonly Elements $elements,
+    ) {}
 
     /**
      * Returns an entry by its ID.
@@ -62,7 +67,7 @@ final class Entries
                 ->value('sections.structureId');
         }
 
-        return Craft::$app->getElements()->getElementById($entryId, Entry::class, $siteId, $criteria);
+        return $this->elements->getElementById($entryId, Entry::class, $siteId, $criteria);
     }
 
     /**
@@ -147,9 +152,7 @@ final class Entries
     public function moveEntryToSection(Entry $entry, Section $section): bool
     {
         // todo: what about revisions or drafts that might be of a type that's not compatible with the new section?
-        if (Event::hasListeners(MovingEntryToSection::class)) {
-            Event::dispatch(new MovingEntryToSection($entry, $section));
-        }
+        event(new MovingEntryToSection($entry, $section));
 
         // Make sure the element exists
         if (! $entry->id) {
@@ -170,22 +173,22 @@ final class Entries
         $entry->sectionId = $section->id;
 
         // Validate
-        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $entry->validate();
 
         // If there are any errors on the URI, re-validate as disabled
-        if ($entry->hasErrors('uri') && $entry->enabled) {
+        if ($entry->errors()->has('uri') && $entry->enabled) {
             $entry->enabled = false;
             $entry->validate();
         }
 
         // When moving to a section that allows for less authors than the entry has, allow the move.
         // The error will be shown the next time that entry is saved.
-        if ($entry->hasErrors('authorIds')) {
-            $entry->clearErrors('authorIds');
+        if ($entry->errors()->has('authorIds')) {
+            $entry->errors()->forget('authorIds');
         }
 
-        if ($entry->hasErrors()) {
+        if ($entry->errors()->isNotEmpty()) {
             throw new InvalidElementException($entry,
                 'Element '.$entry->id.' could not be moved because it doesn\'t validate.');
         }
@@ -193,17 +196,15 @@ final class Entries
         // prevents revision from being created
         $entry->resaving = true;
 
-        $elementsService = Craft::$app->getElements();
-        $elementsService->ensureBulkOp(function () use (
+        BulkOps::ensure(function () use (
             $entry,
             $section,
             $oldSection,
-            $elementsService,
         ) {
             DB::beginTransaction();
             try {
                 // Start with $entry’s site
-                if (! $elementsService->saveElement($entry, false, false)) {
+                if (! $this->elements->saveElement($entry, false, false)) {
                     throw new InvalidElementException($entry,
                         'Element '.$entry->id.' could not be moved for site '.$entry->siteId);
                 }
@@ -272,16 +273,13 @@ final class Entries
                 // Invalidate caches for the old section
                 $tag = sprintf('element::%s::section:%s', Entry::class, $oldSection->id);
                 TagDependency::invalidate($tag);
-                \yii\caching\TagDependency::invalidate(app('Craft')->getCache(), $tag);
             } catch (Throwable $e) {
                 DB::rollBack();
                 throw $e;
             }
         });
 
-        if (Event::hasListeners(EntryMovedToSection::class)) {
-            Event::dispatch(new EntryMovedToSection($entry, $section));
-        }
+        event(new EntryMovedToSection($entry, $section));
 
         return true;
     }

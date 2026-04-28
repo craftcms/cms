@@ -1,15 +1,9 @@
 {% extends "settings/assets/_layout" %}
 {% set selectedNavItem = 'volumes' %}
-{% set readOnly = not app.config.craft.general.allowAdminChanges %}
+{% set readOnly = not config('craft.general.allowAdminChanges') %}
 
-{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+{% do registerLegacyAsset('CraftCms\\Cms\\View\\LegacyAssets\\AdminTableAsset') -%}
 
-{% do view.registerTranslations('app', [
-    "Name",
-    "Handle",
-    "Type",
-    "No volumes exist yet."
-]) %}
 
 {% if readOnly %}
     {% set contentNotice = readOnlyNotice() %}

@@ -17,6 +17,7 @@ use Psr\Log\LogLevel;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.0
+ * @deprecated 6.0.0
  */
 class Dispatcher extends \yii\log\Dispatcher
 {
@@ -70,7 +71,7 @@ class Dispatcher extends \yii\log\Dispatcher
         // If the dispatcher is configured with flushInterval => 1, it could cause a PHP error if any log
         // targets haven’t been instantiated yet.
 
-        $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
+        $isConsoleRequest = app()->runningInConsole();
 
         // Only log console requests and web requests that aren't getAuthTimeout requests
         if (!$isConsoleRequest && !Craft::$app->getUser()->enableSession) {
@@ -82,7 +83,7 @@ class Dispatcher extends \yii\log\Dispatcher
             static::TARGET_CONSOLE,
             static::TARGET_QUEUE,
         ])->mapWithKeys(function($name) use ($isConsoleRequest) {
-            $allowLineBreaks = (bool) (Env::get('CRAFT_LOG_ALLOW_LINE_BREAKS') ?? app()->hasDebugModeEnabled());
+            $allowLineBreaks = Env::normalizeBooleanValue(Env::get('CRAFT_LOG_ALLOW_LINE_BREAKS') ?? app()->hasDebugModeEnabled());
             $config = $this->monologTargetConfig + [
                 'class' => MonologTarget::class,
                 'name' => $name,
@@ -93,7 +94,7 @@ class Dispatcher extends \yii\log\Dispatcher
                 'extractExceptionTrace' => !app()->hasDebugModeEnabled(),
                 'allowLineBreaks' => $allowLineBreaks,
                 'level' => app()->hasDebugModeEnabled() ? LogLevel::INFO : LogLevel::WARNING,
-                'logContext' => !Craft::$app->getRequest()->getIsConsoleRequest(),
+                'logContext' => !app()->runningInConsole(),
             ];
 
             return [$name => Craft::createObject($config)];

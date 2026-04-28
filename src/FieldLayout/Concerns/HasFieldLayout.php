@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\Concerns;
 
-use craft\base\ElementInterface;
-use craft\base\FieldLayoutProviderInterface;
-use craft\models\EntryType;
-use craft\models\FieldLayout;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\Fields;
 use RuntimeException;
+use Throwable;
 
 trait HasFieldLayout
 {
@@ -22,7 +23,7 @@ trait HasFieldLayout
     /**
      * @var int|string|callable|null The field layout ID, or the name of a method on the owner that will return it, or a callback function that will return it
      */
-    private $fieldLayoutId;
+    private $fieldLayoutIdConfig;
 
     /**
      * @var FieldLayout|null The field layout associated with the owner
@@ -41,35 +42,53 @@ trait HasFieldLayout
      */
     public function getFieldLayoutId(): int
     {
-        if (! isset($this->fieldLayoutId) && ! isset($this->idAttribute)) {
+        if (! isset($this->fieldLayoutIdConfig) && ! isset($this->idAttribute)) {
             $this->idAttribute = 'fieldLayoutId';
         }
 
-        if (is_int($this->fieldLayoutId)) {
-            return $this->fieldLayoutId;
+        if (is_int($this->fieldLayoutIdConfig)) {
+            return $this->fieldLayoutIdConfig;
         }
 
         if (isset($this->idAttribute)) {
-            $id = $this->{$this->idAttribute};
-        } elseif (is_callable($this->fieldLayoutId)) {
-            $id = call_user_func($this->fieldLayoutId);
-        } elseif (is_string($this->fieldLayoutId)) {
-            $id = $this->{$this->fieldLayoutId}();
+            if ($this->canReadFieldLayoutIdAttribute($this->idAttribute)) {
+                $id = $this->{$this->idAttribute};
+            } elseif ($this->idAttribute === 'fieldLayoutId') {
+                // Keep backwards compatibility with providers that don't declare a fieldLayoutId property.
+                $id = $this->fieldLayoutIdConfig;
+            }
+        } elseif (is_callable($this->fieldLayoutIdConfig)) {
+            $id = call_user_func($this->fieldLayoutIdConfig);
+        } elseif (is_string($this->fieldLayoutIdConfig)) {
+            $id = $this->{$this->fieldLayoutIdConfig}();
         }
 
         if (! isset($id) || ! is_numeric($id)) {
             throw new RuntimeException('Unable to determine the field layout ID for '.$this::class.'.');
         }
 
-        return $this->fieldLayoutId = (int) $id;
+        return $this->fieldLayoutIdConfig = (int) $id;
     }
 
     /**
      * Sets the owner's field layout ID.
      */
-    public function setFieldLayoutId(callable|int|string $id): void
+    public function setFieldLayoutId(callable|int|string|null $id): void
     {
-        $this->fieldLayoutId = $id;
+        $this->fieldLayoutIdConfig = $id;
+    }
+
+    private function canReadFieldLayoutIdAttribute(string $attribute): bool
+    {
+        if (property_exists($this, $attribute)) {
+            return true;
+        }
+
+        try {
+            return isset($this->{$attribute}) || $this->{$attribute} === null;
+        } catch (Throwable) {
+            return false;
+        }
     }
 
     /**
@@ -104,7 +123,8 @@ trait HasFieldLayout
             // Set the provider to the original entry type, so it uses the original provider handle
             // (see https://github.com/craftcms/cms/pull/17213)
             // todo: FieldLayoutProviderInterface could define a getProvider() method
-            $fieldLayout->provider = $this->owner->original ?? $this->owner;
+            $fieldLayout->provider = $this->original ?? $this;
+            /** @phpstan-ignore instanceof.alwaysFalse */
         } elseif ($this instanceof FieldLayoutProviderInterface) {
             $fieldLayout->provider = $this;
         }

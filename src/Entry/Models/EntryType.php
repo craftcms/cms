@@ -15,20 +15,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-final class EntryType extends BaseModel
+class EntryType extends BaseModel
 {
     use HasFactory;
     use HasUid;
     use SoftDeletes;
 
+    #[\Override]
     protected $table = Table::ENTRYTYPES;
 
+    #[\Override]
     protected function casts(): array
     {
         return [
             'hasTitleField' => 'bool',
             'showSlugField' => 'bool',
             'showStatusField' => 'bool',
+            'allowLineBreaksInTitles' => 'bool',
         ];
     }
 

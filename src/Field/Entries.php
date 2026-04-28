@@ -4,32 +4,33 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use craft\base\ElementInterface;
-use craft\elements\conditions\ElementCondition;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\db\EntryQuery;
-use craft\elements\ElementCollection;
-use craft\elements\Entry;
-use craft\gql\arguments\elements\Entry as EntryArguments;
-use craft\gql\interfaces\elements\Entry as EntryInterface;
-use craft\gql\resolvers\elements\Entry as EntryResolver;
-use craft\helpers\Cp;
-use craft\helpers\Gql;
-use craft\helpers\Gql as GqlHelper;
-use craft\models\GqlSchema;
-use craft\services\Gql as GqlService;
-use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
+use CraftCms\Cms\Gql\Data\GqlSchema;
+use CraftCms\Cms\Gql\Gql as GqlService;
+use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Gql\GqlHelper as Gql;
+use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
+use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
+use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Sections;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Override;
 
 use function CraftCms\Cms\t;
 
 /**
  * Entries represents an Entries field.
  */
-final class Entries extends BaseRelationField
+class Entries extends BaseRelationField
 {
     /**
      * @var bool Whether to show input sources for sections the user doesn’t have permission to view
@@ -42,63 +43,41 @@ final class Entries extends BaseRelationField
      */
     public bool $showUnpermittedEntries = false;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[Override]
     protected string $settingsTemplate = '_components/fieldtypes/Entries/settings.twig';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[Override]
     protected ?string $inputJsClass = 'Craft.EntrySelectInput';
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Entries');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'newspaper';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function elementType(): string
     {
         return Entry::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function defaultSelectionLabel(): string
     {
         return t('Add an entry');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', EntryQuery::class, ElementCollection::class, Entry::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct(array $config = [])
     {
         // Default showUnpermittedSections and showUnpermittedEntries to true for existing Entries fields
@@ -110,10 +89,7 @@ final class Entries extends BaseRelationField
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function inputTemplateVariables(array|ElementQueryInterface|null $value = null, ?ElementInterface $element = null): array
     {
         $variables = parent::inputTemplateVariables($value, $element);
@@ -131,19 +107,13 @@ final class Entries extends BaseRelationField
         return $variables;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function includeInGqlSchema(GqlSchema $schema): bool
     {
         return Gql::canQueryEntries($schema);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getContentGqlType(): array
     {
         return [
@@ -158,10 +128,7 @@ final class Entries extends BaseRelationField
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
@@ -190,10 +157,7 @@ final class Entries extends BaseRelationField
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getInputSelectionCriteria(): array
     {
         $criteria = parent::getInputSelectionCriteria();
@@ -205,9 +169,6 @@ final class Entries extends BaseRelationField
         return $criteria;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function createSelectionCondition(): ElementCondition
     {
         $condition = Entry::createCondition();
@@ -216,10 +177,7 @@ final class Entries extends BaseRelationField
         return $condition;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         $mockup = new Entry;
@@ -237,13 +195,10 @@ final class Entries extends BaseRelationField
 
         $mockup->sectionId = $section->id;
 
-        return Cp::chipHtml($mockup);
+        return app(ElementHtml::class)->chipHtml($mockup);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getInputSources(?ElementInterface $element = null): array|string|null
     {
         if ($this->sources === null) {
@@ -253,8 +208,7 @@ final class Entries extends BaseRelationField
         // Enforce the showUnpermittedSections setting
         if (! $this->showUnpermittedSections) {
             // get all the native & custom sources that user has permissions to view
-            $permittedSources = app(ElementSources::class)
-                ->getSources(Entry::class)
+            $permittedSources = ElementSources::getSources(Entry::class)
                 ->where('type', '!==', ElementSources::TYPE_HEADING)
                 ->pluck('key')
                 ->flip()

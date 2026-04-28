@@ -4,46 +4,36 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use Craft;
-use craft\helpers\App;
-use craft\models\Volume;
-use craft\web\assets\assetindexes\AssetIndexesAsset;
+use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Support\Facades\AssetIndexer;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Utility\Events\ListVolumes;
 use CraftCms\Cms\Utility\Utility;
-use Illuminate\Support\Facades\Event;
+use Override;
 
 use function CraftCms\Cms\t;
 
 /**
  * AssetIndexes represents a AssetIndexes dashboard widget.
  */
-final class AssetIndexes extends Utility
+class AssetIndexes extends Utility
 {
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Asset Indexes');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function id(): string
     {
         return 'asset-indexes';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'image';
@@ -56,22 +46,14 @@ final class AssetIndexes extends Utility
      */
     public static function volumes(): array
     {
-        $volumes = Craft::$app->getVolumes()->getAllVolumes();
+        $volumes = Volumes::getAllVolumes()->all();
 
-        if (Event::hasListeners(ListVolumes::class)) {
-            $event = new ListVolumes($volumes);
-            Event::dispatch($event);
+        event($event = new ListVolumes($volumes));
 
-            return $event->volumes;
-        }
-
-        return $volumes;
+        return $event->volumes;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
         $volumeOptions = [];
@@ -83,25 +65,14 @@ final class AssetIndexes extends Utility
             ];
         }
 
-        $view = Craft::$app->getView();
-        $checkboxSelectHtml = $view->renderTemplate('_includes/forms/checkboxSelect.twig', [
-            'class' => 'first',
-            'name' => 'volumes',
-            'options' => $volumeOptions,
-            'showAllOption' => true,
-            'values' => '*',
-        ]);
-
-        $view->registerAssetBundle(AssetIndexesAsset::class);
         $dateFormat = I18N::getLocale()->getDateTimeFormat('short', Locale::FORMAT_PHP);
+        $existingIndexingSessions = AssetIndexer::getExistingIndexingSessions();
 
-        $existingIndexingSessions = Craft::$app->getAssetIndexer()->getExistingIndexingSessions();
-
-        return $view->renderTemplate('_components/utilities/AssetIndexes.twig', [
-            'existingSessions' => $existingIndexingSessions,
-            'checkboxSelectHtml' => $checkboxSelectHtml,
+        return Html::tag('AssetIndexes', attributes: [
+            ':existingSessions' => $existingIndexingSessions,
+            ':volumeOptions' => $volumeOptions,
             'dateFormat' => $dateFormat,
-            'isEphemeral' => App::isEphemeral(),
+            ':isEphemeral' => app()->isEphemeral(),
         ]);
     }
 }

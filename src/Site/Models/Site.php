@@ -15,14 +15,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-final class Site extends BaseModel
+class Site extends BaseModel
 {
     use HasFactory;
     use HasUid;
     use SoftDeletes;
 
+    #[\Override]
     protected $table = Table::SITES;
 
+    #[\Override]
     protected function casts(): array
     {
         return [
@@ -40,7 +42,7 @@ final class Site extends BaseModel
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\CraftCms\Cms\Element\Models\Element, $this, ElementSiteSettings>
+     * @return BelongsToMany<Element, $this, ElementSiteSettings>
      */
     public function elements(): BelongsToMany
     {

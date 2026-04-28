@@ -9,6 +9,8 @@ namespace craft\base;
 
 use Craft;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Security;
+use Illuminate\Support\Facades\Auth;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\VarDumper;
@@ -63,7 +65,7 @@ trait LogTargetTrait
         }
 
         $user = Craft::$app->has('user', true) ? Craft::$app->getUser() : null;
-        if ($user && ($identity = $user->getIdentity(false))) {
+        if ($user && ($identity = Auth::user())) {
             $userID = $identity->getId();
         } else {
             $userID = '-';
@@ -105,10 +107,8 @@ trait LogTargetTrait
         // https://github.com/yiisoft/yii-core/issues/49
         // https://github.com/yiisoft/yii2/issues/15847
         if (Craft::$app) {
-            $security = Craft::$app->getSecurity();
-
             foreach ($context as $key => $value) {
-                $value = $security->redactIfSensitive($key, $value);
+                $value = Security::redactIfSensitive($key, $value);
                 $result[] = "\$$key = " . VarDumper::dumpAsString($value);
             }
         }

@@ -11,11 +11,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-final class VolumeFolder extends BaseModel
+class VolumeFolder extends BaseModel
 {
     use HasFactory;
     use HasUid;
 
+    #[\Override]
     protected $table = Table::VOLUMEFOLDERS;
 
     /**

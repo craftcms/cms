@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Database\Commands\Concerns\BackupTrait;
+use CraftCms\Cms\Database\Events\RegisterMigrators;
+use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Updates;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Contracts\Console\Isolatable;
@@ -16,11 +19,12 @@ use Illuminate\Foundation\Console\DownCommand;
 use Illuminate\Foundation\Console\UpCommand;
 use Laravel\Prompts\Concerns\Colors;
 use Laravel\Prompts\Themes\Default\Concerns\DrawsBoxes;
+use Override;
 use Throwable;
 
 use function Laravel\Prompts\confirm;
 
-final class MigrateCommand extends Command implements Isolatable
+class MigrateCommand extends Command implements Isolatable
 {
     use BackupTrait;
     use Colors;
@@ -28,6 +32,7 @@ final class MigrateCommand extends Command implements Isolatable
     use CraftCommand;
     use DrawsBoxes;
 
+    #[Override]
     protected $signature = 'craft:migrate:all
         {--force : Force the operation to run when in production}
         {--pretend : Dump the SQL queries that would be run}
@@ -39,20 +44,24 @@ final class MigrateCommand extends Command implements Isolatable
         {--track= : The migration track to work with (e.g. `craft`, `content`, `plugin:commerce`, etc.)}
         {--graceful : Return a successful exit code even if an error occurs}';
 
+    #[Override]
     protected $description = 'Run the database migrations';
 
+    #[Override]
     protected $aliases = ['migrate/all', 'migrate:up', 'migrate/up'];
 
     private Updates $updates;
 
     private Plugins $plugins;
 
+    private LaravelMigrations $laravelMigrations;
+
     /**
      * @var array<string, Migrator>
      */
     private array $migrators = [];
 
-    public function handle(Updates $updates, Plugins $plugins): int
+    public function handle(Updates $updates, Plugins $plugins, LaravelMigrations $laravelMigrations): int
     {
         if (! $this->confirmToProceed()) {
             return self::SUCCESS;
@@ -60,6 +69,7 @@ final class MigrateCommand extends Command implements Isolatable
 
         $this->updates = $updates;
         $this->plugins = $plugins;
+        $this->laravelMigrations = $laravelMigrations;
 
         try {
             $this->runMigrations();
@@ -86,9 +96,8 @@ final class MigrateCommand extends Command implements Isolatable
                 ->setOutput($this->output);
         }
 
-        return $this->migrators[$track] ??= app(Migrator::class)
-            ->setOutput($this->output)
-            ->track($track);
+        return ($this->migrators[$track] ??= app(Migrator::class)->track($track))
+            ->setOutput($this->output);
     }
 
     private function runMigrations(): void
@@ -121,10 +130,11 @@ final class MigrateCommand extends Command implements Isolatable
         foreach ($migrationsByTrack as $track => $migrations) {
             $n = count($migrations);
 
-            $which = match ($track) {
-                'craft' => 'Craft',
-                'content' => 'content',
-                default => $plugins[substr((string) $track, 7)]->name,
+            $which = match (true) {
+                $track === 'craft' => 'Craft',
+                $track === 'content' => 'content',
+                str_starts_with((string) $track, 'plugin') => $plugins[substr((string) $track, 7)]->name,
+                default => $track,
             };
 
             $this->box(
@@ -160,7 +170,7 @@ final class MigrateCommand extends Command implements Isolatable
             // Update version info
             if ($track === 'craft') {
                 $this->updates->updateCraftVersionInfo();
-            } elseif ($track !== 'content') {
+            } elseif (str_starts_with((string) $track, 'plugin')) {
                 $this->plugins->updatePluginVersionInfo($plugins[substr((string) $track, 7)]);
             }
         }
@@ -191,9 +201,36 @@ final class MigrateCommand extends Command implements Isolatable
 
         $noContent = $this->option('no-content') ?? $this->option('noContent');
         if (! $noContent && (! $this->option('track') || $this->option('track') === 'content')) {
+            $this->laravelMigrations->reconcile($this->getMigrator('content'));
             $contentMigrations = $this->getMigrator('content')->getPendingMigrations();
             if (! empty($contentMigrations)) {
                 $migrationsByTrack['content'] = $contentMigrations;
+            }
+        }
+
+        event($event = new RegisterMigrators);
+
+        foreach ($event->migrators as $migrator) {
+            if (! $migrator instanceof Migrator) {
+                $this->components->warn($migrator::class.' is not an instance of '.Migrator::class);
+
+                continue;
+            }
+
+            if (! $track = $migrator->getTrack()) {
+                $this->components->warn('A migrator was registered without a track.');
+
+                continue;
+            }
+
+            if ($this->option('track') && $this->option('track') !== $track) {
+                continue;
+            }
+
+            $this->migrators[$track] = $migrator;
+
+            if (! empty($migrations = $migrator->getPendingMigrations())) {
+                $migrationsByTrack[$track] = $migrations;
             }
         }
     }

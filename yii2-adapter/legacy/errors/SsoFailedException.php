@@ -8,13 +8,14 @@
 namespace craft\errors;
 
 use craft\auth\sso\ProviderInterface;
-use craft\elements\User;
+use CraftCms\Cms\User\Elements\User;
 use Throwable;
 use yii\base\Exception;
 
 /**
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
+ * @deprecated 6.0.0 use the Laravel Socialite {@see \CraftCms\Cms\Auth\OAuth\OAuth} implementation instead.
  */
 class SsoFailedException extends Exception
 {

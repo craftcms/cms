@@ -9,6 +9,8 @@ namespace craft\web;
 
 use Craft;
 use craft\base\RequestTrait;
+use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Shared\Models\Info;
@@ -19,8 +21,12 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Updates\Updates;
-use yii\base\InvalidArgumentException;
+use CraftCms\Cms\Update\Updates;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Pagination\AbstractPaginator;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\di\Instance;
 use yii\web\BadRequestHttpException;
@@ -54,11 +60,11 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
 {
     use RequestTrait;
 
-    public const CP_PATH_LOGIN = 'login';
-    public const CP_PATH_LOGOUT = 'logout';
-    public const CP_PATH_SET_PASSWORD = 'set-password';
-    public const CP_PATH_VERIFY_EMAIL = 'verify-email';
-    public const CP_PATH_UPDATE = 'update';
+    public const CP_PATH_LOGIN = CpAuthPath::Login->value;
+    public const CP_PATH_LOGOUT = CpAuthPath::Logout->value;
+    public const CP_PATH_SET_PASSWORD = CpAuthPath::SetPassword->value;
+    public const CP_PATH_VERIFY_EMAIL = CpAuthPath::VerifyEmail->value;
+    public const CP_PATH_UPDATE = CpAuthPath::Update->value;
 
     /**
      * @inheritdoc
@@ -106,11 +112,6 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      * @var string[]
      */
     private array $_segments;
-
-    /**
-     * @var int
-     */
-    private int $_pageNum = 1;
 
     /**
      * @var bool|null
@@ -193,6 +194,12 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
     public ?string $_token = null;
 
     /**
+     * @var array|null
+     * @see getTokenRoute()
+     */
+    public ?array $_tokenRoute = null;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -206,12 +213,12 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
 
         // Set the @webroot and @web aliases now (instead of from yii\web\Application::bootstrap())
         // in case a site's base URL requires @web, and so we can include the host info in @web
-        if (Craft::getRootAlias('@webroot') === false) {
-            Craft::setAlias('@webroot', dirname($this->getScriptFile()));
+        if (Aliases::get('@webroot', false) === false) {
+            Aliases::set('@webroot', dirname($this->getScriptFile()));
             $this->isWebrootAliasSetDynamically = true;
         }
-        if (Craft::getRootAlias('@web') === false) {
-            Craft::setAlias('@web', $this->getHostInfo() . $this->getBaseUrl());
+        if (Aliases::get('@web', false) === false) {
+            Aliases::set('@web', $this->getHostInfo() . $this->getBaseUrl());
             $this->isWebAliasSetDynamically = true;
         }
 
@@ -236,7 +243,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
             }
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn’t installed yet or is in the middle of updating
-            if (Craft::$app->getIsInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
+            if (Cms::isInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
                 /** @noinspection PhpUnhandledExceptionInspection */
                 throw $e;
             }
@@ -277,9 +284,8 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
         if ($this->_isCpRequest && $this->generalConfig->cpTrigger && str_starts_with($this->_path . '/', $this->generalConfig->cpTrigger . '/')) {
             $this->_path = ltrim(substr($this->_path, strlen($this->generalConfig->cpTrigger)), '/');
         }
-
         // Trim off any leading path segments that are part of the base URL
-        if ($this->_path !== '' && isset($baseUrl) && ($basePath = parse_url($baseUrl, PHP_URL_PATH)) !== null) {
+        elseif ($this->_path !== '' && isset($baseUrl) && ($basePath = parse_url($baseUrl, PHP_URL_PATH)) !== null) {
             $basePath = $this->_normalizePath($basePath);
 
             // If Craft is running from a subfolder, chop the subfolder path off of the base path first
@@ -294,28 +300,6 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
                 $this->_path = ltrim(substr($this->_path, strlen($basePath)), '/');
             }
         }
-
-        // Is this a paginated request?
-        $pageTrigger = $this->_isCpRequest ? 'p' : $this->generalConfig->getPageTrigger();
-
-        // Is this query string-based pagination?
-        if (str_starts_with($pageTrigger, '?')) {
-            $this->_pageNum = (int)$this->getQueryParam(trim($pageTrigger, '?='), '1');
-        } elseif ($this->_path !== '') {
-            // Match against the entire path string as opposed to just the last segment so that we can support
-            // "/page/2"-style pagination URLs
-            $pageTrigger = preg_quote($pageTrigger, '/');
-
-            if (preg_match("/^(?:(.*)\/)?$pageTrigger(\d+)$/", $this->_path, $match)) {
-                // Capture the page num
-                $this->_pageNum = (int)$match[2];
-
-                // Sanitize
-                $this->_path = $match[1];
-            }
-        }
-
-        $this->_pageNum = min($this->_pageNum, $this->maxPageNum);
     }
 
     /**
@@ -332,18 +316,10 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
         }
 
         try {
-            if ($this->generalConfig->usePathInfo) {
+            $this->_fullPath = $this->_getQueryStringPath();
+
+            if (!$this->_fullPath) {
                 $this->_fullPath = $this->getPathInfo(true);
-
-                if (!$this->_fullPath) {
-                    $this->_fullPath = $this->_getQueryStringPath();
-                }
-            } else {
-                $this->_fullPath = $this->_getQueryStringPath();
-
-                if (!$this->_fullPath) {
-                    $this->_fullPath = $this->getPathInfo(true);
-                }
             }
         } catch (InvalidConfigException) {
             $this->_fullPath = $this->_getQueryStringPath();
@@ -474,7 +450,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      */
     public function getPageNum(): int
     {
-        return $this->_pageNum;
+        return AbstractPaginator::resolveCurrentPage(Cms::config()->getPageTriggerParam());
     }
 
     /**
@@ -503,6 +479,20 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
     {
         $this->_findToken();
         return $this->_token;
+    }
+
+    /**
+     * Returns the route the request’s token resolves to.
+     *
+     * @return array|null The route, or `null` if there isn’t one.
+     * @see getToken())
+     * @see Tokens::createToken()
+     * @since 5.9.12
+     */
+    public function getTokenRoute(): ?array
+    {
+        $this->_findToken();
+        return $this->_tokenRoute;
     }
 
     /**
@@ -540,13 +530,29 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
             return;
         }
 
-        $token = ($this->getQueryParam($this->generalConfig->tokenParam) ?? $this->getHeaders()->get('X-Craft-Token')) ?: null;
-        $this->_hasInvalidToken = $token && !preg_match('/^[A-Za-z0-9_-]+$/', $token);
+        $this->_hadToken = false;
+        $this->_hasInvalidToken = false;
 
-        if (!$this->_hasInvalidToken) {
-            $this->_token = $token;
-            $this->_hadToken = $token !== null;
+        $token = ($this->getQueryParam($this->generalConfig->tokenParam) ?? $this->getHeaders()->get('X-Craft-Token')) ?: null;
+
+        if (!$token) {
+            return;
         }
+
+        if (!preg_match('/^[A-Za-z0-9_-]+$/', $token)) {
+            $this->_hasInvalidToken = true;
+            return;
+        }
+
+        $this->_tokenRoute = Craft::$app->getTokens()->getTokenRoute($token) ?: null;
+
+        if (!$this->_tokenRoute) {
+            $this->_hasInvalidToken = true;
+            return;
+        }
+
+        $this->_token = $token;
+        $this->_hadToken = true;
     }
 
     /**
@@ -687,11 +693,14 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      */
     public function getIsPreview(): bool
     {
-        $previewParamValue = $this->getQueryParam('x-craft-preview') ?? $this->getQueryParam('x-craft-live-preview');
+        $previewParamValue = $this->getQueryParam('x-craft-preview') ?? $this->getQueryParam('x-craft-live-preview') ?? $this->getHeaders()->get('X-Craft-Preview-Token');
         if (!$previewParamValue) {
             return false;
         }
-        if (!Craft::$app->getSecurity()->validateData($previewParamValue)) {
+
+        try {
+            Crypt::decrypt($previewParamValue);
+        } catch (DecryptException) {
             return false;
         }
 
@@ -787,7 +796,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      * $isMobileBrowser = Craft::$app->request->isMobileBrowser();
      * ```
      * ```twig
-     * {% set isMobileBrowser = craft.app.request.isMobileBrowser() %}
+     * {% set isMobileBrowser = request.isMobileBrowser() %}
      * ```
      *
      * @param bool $detectTablets Whether tablets should be considered “mobile”.
@@ -924,13 +933,11 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
             return null;
         }
 
-        $value = Craft::$app->getSecurity()->validateData($value);
-
-        if ($value === false) {
+        try {
+            return Crypt::decrypt($value);
+        } catch (DecryptException) {
             throw new BadRequestHttpException('Request contained an invalid body param');
         }
-
-        return $value;
     }
 
     /**
@@ -954,13 +961,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      */
     public function getQueryParamsWithoutPath(): array
     {
-        $params = $this->getQueryParams();
-
-        if ($this->generalConfig->pathParam) {
-            unset($params[$this->generalConfig->pathParam]);
-        }
-
-        return $params;
+        return $this->getQueryParams();
     }
 
     /**
@@ -1048,13 +1049,11 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
             return null;
         }
 
-        $value = Craft::$app->getSecurity()->validateData($value);
-
-        if ($value === false) {
+        try {
+            return Crypt::decrypt($value);
+        } catch (DecryptException) {
             throw new BadRequestHttpException('Request contained an invalid query param');
         }
-
-        return $value;
     }
 
     /**
@@ -1118,23 +1117,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      */
     public function getQueryStringWithoutPath(): string
     {
-        // Get the full query string
-        $queryString = $this->getQueryString();
-
-        // If there's no path param, just return the full query string
-        if (!$this->generalConfig->pathParam) {
-            return $queryString;
-        }
-
-        // Tear it down and rebuild it without the path param
-        $parts = explode('&', $queryString);
-        foreach ($parts as $key => $part) {
-            if (str_starts_with($part, $this->generalConfig->pathParam . '=')) {
-                unset($parts[$key]);
-                break;
-            }
-        }
-        return implode('&', $parts);
+        return $this->getQueryString();
     }
 
     /**
@@ -1268,12 +1251,16 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
 
         // If cookie validation is enabled, then we don't need the concept of "raw" cookies to begin with
         if ($this->enableCookieValidation) {
-            $security = Craft::$app->getSecurity();
             foreach ($_COOKIE as $name => $value) {
                 // Ignore if this is a hashed cookie
-                if (is_string($value) && $security->validateData($value, $this->cookieValidationKey) !== false) {
-                    continue;
+                if (is_string($value)) {
+                    try {
+                        Crypt::decryptString($value);
+                    } catch (DecryptException) {
+                        continue;
+                    }
                 }
+
                 $cookies[$name] = Craft::createObject([
                     'class' => Cookie::class,
                     'name' => $name,
@@ -1295,8 +1282,31 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      */
     public function accepts(string $contentType): bool
     {
+        return $this->acceptsInternal($contentType, $this->getAcceptableContentTypes());
+    }
+
+    /**
+     * Returns whether the request primarily wants a given content type.
+     *
+     * @since 5.9.11
+     */
+    public function wants(string $contentType): bool
+    {
         $acceptableContentTypes = $this->getAcceptableContentTypes();
 
+        if (empty($acceptableContentTypes)) {
+            return false;
+        }
+
+        $firstType = array_key_first($acceptableContentTypes);
+
+        return $this->acceptsInternal($contentType, [
+            $firstType => $acceptableContentTypes[$firstType],
+        ]);
+    }
+
+    private function acceptsInternal(string $contentType, array $acceptableContentTypes): bool
+    {
         if (array_key_exists($contentType, $acceptableContentTypes)) {
             return true;
         }
@@ -1333,6 +1343,17 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
     }
 
     /**
+     * Returns whether the request primarily wants a JSON response.
+     *
+     * @return bool
+     * @since 5.9.11
+     */
+    public function getWantsJson(): bool
+    {
+        return $this->wants('application/json') || $this->wants('application/*+json');
+    }
+
+    /**
      * Returns whether the request will accept an image response.
      *
      * @return bool
@@ -1341,6 +1362,17 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
     public function getAcceptsImage(): bool
     {
         return $this->accepts('image/*');
+    }
+
+    /**
+     * Returns whether the request primarily wants an image response.
+     *
+     * @return bool
+     * @since 5.9.11
+     */
+    public function getWantsImage(): bool
+    {
+        return $this->wants('image/*');
     }
 
     /**
@@ -1421,7 +1453,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
             } else {
                 $site = Sites::getSiteByHandle($siteId, false);
             }
-            if (!$site && Info::isInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
+            if (!$site && Cms::isInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
                 throw new InvalidArgumentException("Invalid site: $siteId");
             }
             return $site;
@@ -1455,10 +1487,17 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
         if ($siteToken === null) {
             return null;
         }
-        $siteId = Craft::$app->getSecurity()->validateData($siteToken);
+
+        try {
+            $siteId = Crypt::decrypt($siteToken);
+        } catch (DecryptException) {
+            throw new BadRequestHttpException('Invalid site token');
+        }
+
         if (!is_numeric($siteId)) {
             throw new BadRequestHttpException('Invalid site token');
         }
+
         $site = Sites::getSiteById((int)$siteId, true);
         if (!$site) {
             throw new BadRequestHttpException('Invalid site ID: ' . $siteId);
@@ -1497,7 +1536,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
     private function _scoreUrl(string $url): int
     {
         if (($parsed = parse_url($url)) === false) {
-            Craft::warning("Unable to parse the URL: $url");
+            Log::info("Unable to parse the URL: $url");
             return 0;
         }
 
@@ -1557,7 +1596,8 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      */
     private function _getQueryStringPath(): string
     {
-        $value = $this->getQueryParam($this->generalConfig->pathParam, '');
+        $value = $this->getQueryParam('', '');
+
         if (!is_string($value)) {
             return '';
         }
@@ -1585,12 +1625,14 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
             $this->_isLoginRequest = false;
         }
 
+        // Avoid infinite recursion if something else calls checkIfActionRequest() in the process
+        // (see https://github.com/craftcms/cms/issues/18605)
+        $this->_checkedRequestType = true;
+
         // If there's a token on the request, then that should take precedence over everything else
         if (!$checkToken || $this->getToken() === null) {
             $this->_isActionRequest = $this->_checkIfActionRequestInternal($checkSpecialPaths);
         }
-
-        $this->_checkedRequestType = true;
     }
 
     private function _checkIfActionRequestInternal(bool $checkSpecialPaths): bool

@@ -1,34 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace craft\gql\types\input\criteria;
 
-use craft\gql\arguments\elements\User as UserArguments;
-use craft\gql\GqlEntityRegistry;
-use GraphQL\Type\Definition\InputObjectType;
-
 /**
- * Class User
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.6.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Types\Input\Criteria\User} instead.
  */
-class User extends InputObjectType
+class User extends \CraftCms\Cms\Gql\Types\Input\Criteria\User
 {
-    /**
-     * @return mixed
-     */
-    public static function getType(): mixed
-    {
-        $typeName = 'UserCriteriaInput';
-
-        return GqlEntityRegistry::getOrCreate($typeName, fn() => new InputObjectType([
-            'name' => $typeName,
-            'fields' => fn() => UserArguments::getArguments(),
-        ]));
-    }
 }

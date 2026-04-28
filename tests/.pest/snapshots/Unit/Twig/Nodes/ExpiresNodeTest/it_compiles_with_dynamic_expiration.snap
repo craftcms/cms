@@ -1,0 +1,3 @@
+$expiration = // line 1
+($context["expiresAt"] ?? null);
+$duration = CraftCms\Cms\Support\DateTimeHelper::toDateTime($expiration)->getTimestamp() - CraftCms\Cms\Support\DateTimeHelper::currentTimeStamp();CraftCms\Cms\Http\Middleware\SetHeaders::setCache($duration);

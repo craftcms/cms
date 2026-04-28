@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
 use Exception;
 use League\Uri\Uri;
 
@@ -13,7 +13,7 @@ use function CraftCms\Cms\t;
 /**
  * URL link type.
  */
-final class Url extends BaseTextLinkType
+class Url extends BaseTextLinkType
 {
     public static function id(): string
     {
@@ -76,17 +76,17 @@ final class Url extends BaseTextLinkType
     public function getSettingsHtml(): string
     {
         return
-            Cp::lightswitchFieldHtml([
+            FormFields::lightswitchFieldHtml([
                 'label' => t('Allow root-relative URLs'),
                 'name' => 'allowRootRelativeUrls',
                 'on' => $this->allowRootRelativeUrls,
             ]).
-            Cp::lightswitchFieldHtml([
+            FormFields::lightswitchFieldHtml([
                 'label' => t('Allow anchors'),
                 'name' => 'allowAnchors',
                 'on' => $this->allowAnchors,
             ]).
-            Cp::lightswitchFieldHtml([
+            FormFields::lightswitchFieldHtml([
                 'label' => t('Allow custom URL schemes'),
                 'name' => 'allowCustomSchemes',
                 'on' => $this->allowCustomSchemes,

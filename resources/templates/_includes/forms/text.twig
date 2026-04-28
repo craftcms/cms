@@ -8,7 +8,7 @@
 {%- set id = id ?? "text#{random()}" %}
 {%- set descriptionId = descriptionId ?? "#{id}-desc" %}
 
-{%- set orientation = orientation ?? inputAttributes.dir ?? craft.i18n.locale.getOrientation() %}
+{%- set orientation = orientation ?? inputAttributes.dir ?? I18N.getLocale().getOrientation() %}
 {%- set expanded = expanded ?? ((role ?? false) == 'combobox' ? 'false' : false) %}
 
 {%- set suffix = suffix ?? unit ?? false %}
@@ -23,7 +23,7 @@
     name: name ?? false,
     value: value ?? false,
     maxlength: maxlength ?? false,
-    autofocus: (autofocus ?? false) and currentUser and currentUser.getAutofocusPreferred() and not craft.app.request.isMobileBrowser(true),
+    autofocus: (autofocus ?? false) and Auth.user and Auth.user.getAutofocusPreferred() and not Request.isMobileBrowser(true),
     autocomplete: autocomplete is boolean ? (autocomplete ? 'on' : 'off') : autocomplete,
     autocorrect: (autocorrect ?? true) ? false : 'off',
     autocapitalize: (autocapitalize ?? true) ? false : 'none',

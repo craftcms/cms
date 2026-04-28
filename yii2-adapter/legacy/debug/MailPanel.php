@@ -34,7 +34,7 @@ class MailPanel extends \yii\debug\panels\MailPanel
             $this->mailPath = "{$this->module->dataPath}/mail";
         }
 
-        if (!$this->module->fs) {
+        if (!$this->module->disk) {
             return;
         }
 
@@ -55,7 +55,7 @@ class MailPanel extends \yii\debug\panels\MailPanel
 
             // store message as file
             $fileName = $event->sender->generateMessageFileName();
-            $this->module->fs->write("$this->mailPath/$fileName", $message->toString());
+            $this->module->disk->put("$this->mailPath/$fileName", $message->toString());
             $messageData['file'] = $fileName;
 
             $this->_messages[] = $messageData;

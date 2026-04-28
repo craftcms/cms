@@ -4,49 +4,38 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use Craft;
 use CraftCms\Cms\Database\Migrator;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utility;
+use Override;
 
 use function CraftCms\Cms\t;
 
 /**
  * Migrations represents a Migrations utility.
  */
-final class Migrations extends Utility
+class Migrations extends Utility
 {
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Migrations');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function id(): string
     {
         return 'migrations';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'up';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function badgeCount(): int
     {
         return count(app(Migrator::class)
@@ -54,10 +43,7 @@ final class Migrations extends Utility
             ->getPendingMigrations());
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
         $migrator = app(Migrator::class)->track('content');
@@ -68,9 +54,9 @@ final class Migrations extends Utility
             $migrator->getPendingMigrations(),
         );
 
-        return Craft::$app->getView()->renderTemplate('_components/utilities/Migrations.twig', [
-            'migrationHistory' => $migrationHistory,
-            'newMigrations' => $newMigrations,
+        return Html::tag('Migrations', attributes: [
+            ':migrationHistory' => $migrationHistory,
+            ':newMigrations' => $newMigrations,
         ]);
     }
 }

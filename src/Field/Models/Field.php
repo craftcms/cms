@@ -10,16 +10,18 @@ use CraftCms\Cms\Shared\Concerns\HasUid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-final class Field extends BaseModel
+class Field extends BaseModel
 {
     use HasFactory;
     use HasUid;
     use SoftDeletes;
 
+    #[\Override]
     protected $table = Table::FIELDS;
 
     private ?string $oldHandle = null;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

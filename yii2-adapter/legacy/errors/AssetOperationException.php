@@ -7,19 +7,25 @@
 
 namespace craft\errors;
 
-/**
- * Class AssetLogicException
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-class AssetOperationException extends AssetException
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @return string the user-friendly name of this exception
+     * Class AssetLogicException
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 3.0.0
+     * @deprecated in 6.0.0 use {@see \CraftCms\Cms\Asset\Exceptions\AssetOperationException} instead.
      */
-    public function getName(): string
+    class AssetOperationException extends AssetException
     {
-        return 'Asset Logic Error';
+        /**
+         * @return string the user-friendly name of this exception
+         */
+        public function getName(): string
+        {
+            return 'Asset Logic Error';
+        }
     }
 }
+
+class_alias(\CraftCms\Cms\Asset\Exceptions\AssetOperationException::class, AssetOperationException::class);

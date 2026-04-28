@@ -8,6 +8,8 @@ use CraftCms\Cms\Support\Facades\Deprecator;
 use DateTimeInterface;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
+use Override;
+use Yiisoft\Arrays\ArrayableInterface;
 
 class Arr extends \Illuminate\Support\Arr
 {
@@ -108,7 +110,7 @@ class Arr extends \Illuminate\Support\Arr
                 }
             }
 
-            if ($object instanceof \yii\base\Arrayable) {
+            if ($object instanceof ArrayableInterface) {
                 $result = $object->toArray([], [], $recursive);
             } elseif ($object instanceof Arrayable || method_exists($object, 'toArray')) {
                 $result = $object->toArray();
@@ -167,12 +169,10 @@ class Arr extends \Illuminate\Support\Arr
     }
 
     /**
-     * {@inheritdoc}
-     *
      * If the key is specified in square bracket notation (e.g. `x[y][z]`), it will automatically be converted
      * to dot notation (`x.y.z`).
      */
-    #[\Override]
+    #[Override]
     public static function get($array, $key, $default = null)
     {
         // Normalize the key into dot notation
@@ -219,8 +219,6 @@ class Arr extends \Illuminate\Support\Arr
 
     /**
      * Returns whether all the elements in the array are numeric.
-     *
-     * @since 6.x
      */
     public static function isNumeric(array $array): bool
     {
@@ -229,11 +227,31 @@ class Arr extends \Illuminate\Support\Arr
 
     /**
      * Returns whether all the elements in the array are integers.
-     *
-     * @since 6.x
      */
     public static function isIndexed(array $array): bool
     {
         return Collection::make($array)->every(fn ($v) => is_int($v));
+    }
+
+    public static function contains(iterable $array, callable|string $key, mixed $value = true, bool $strict = false): bool
+    {
+        return Collection::make($array)->contains($key, $strict ? '===' : '==', $value);
+    }
+
+    public static function containsRecursive(iterable $array, callable|string $key, mixed $value = true, bool $strict = false): bool
+    {
+        foreach ($array as $element) {
+            $elementValue = static::get($element, $key);
+
+            if (($strict && $elementValue === $value) || (! $strict && $elementValue == $value)) {
+                return true;
+            }
+
+            if (is_array($element) && static::containsRecursive($element, $key, $value, $strict)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

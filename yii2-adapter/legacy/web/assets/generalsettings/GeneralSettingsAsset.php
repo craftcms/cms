@@ -8,36 +8,16 @@
 namespace craft\web\assets\generalsettings;
 
 use craft\web\AssetBundle;
-use craft\web\assets\cp\CpAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Asset bundle for the General Settings page
+ * @deprecated 6.0.0
  */
 class GeneralSettingsAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public $depends = [
-        CpAsset::class,
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $css = [
-        'css/rebrand.css',
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $js = [
-        'rebrand.js',
-    ];
+    public function registerAssetFiles($view)
+    {
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\GeneralSettingsAsset::class);
+    }
 }

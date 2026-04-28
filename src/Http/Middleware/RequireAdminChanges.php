@@ -8,7 +8,7 @@ use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use Illuminate\Http\Request;
 
-final readonly class RequireAdminChanges
+readonly class RequireAdminChanges
 {
     public function __construct(
         private GeneralConfig $generalConfig,
@@ -16,7 +16,7 @@ final readonly class RequireAdminChanges
 
     public function handle(Request $request, Closure $next): mixed
     {
-        abort_unless($request->user()->isAdmin(), 403, 'User is not permitted to perform this action.');
+        abort_unless($request->user('craft')->isAdmin(), 403, 'User is not permitted to perform this action.');
 
         if (! $this->generalConfig->allowAdminChanges) {
             abort(403, 'Administrative changes are disallowed in this environment.');

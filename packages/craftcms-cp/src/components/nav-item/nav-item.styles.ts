@@ -1,17 +1,38 @@
 import {css} from 'lit';
 
 export default css`
+  :host {
+    --_padding-inline: var(--c-spacing-md);
+    --_padding-block: var(--c-spacing-sm);
+  }
+
   .nav-item {
     display: grid;
     gap: var(--c-spacing-md);
-    grid-template-columns: calc(24rem / 16) 1fr auto;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
     text-decoration: none;
     color: inherit;
-    padding-inline: var(--c-spacing-sm);
-    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--_padding-inline);
+    padding-block: var(--_padding-block);
     border-radius: var(--c-radius-md);
     position: relative;
+  }
+  
+  craft-badge-indicator {
+      position: absolute;
+      inset-inline-end: 0;
+      inset-block-end: 0;
+    }
+  }
+
+  .nav-item--prefixed {
+    padding-inline: var(--c-spacing-sm);
+    grid-template-columns: calc(24rem / 16) 1fr auto;
+  }
+
+  .nav-item--flush {
+    margin-inline-start: calc(var(--_padding-inline) * -1);
   }
 
   :host([active]) .nav-item {
@@ -24,7 +45,7 @@ export default css`
       height: 76%;
       border-radius: calc(2rem / 16);
       background-color: currentColor;
-      transform: translateX(-200%);
+      transform: translateX(-150%);
     }
   }
 
@@ -51,19 +72,6 @@ export default css`
     :host([active]) & {
       width: calc(6rem / 16);
     }
-  }
-
-  .indicator {
-    display: inline-block;
-    aspect-ratio: 1;
-    width: calc(6rem / 16);
-    border-radius: var(--c-radius-full);
-    background-color: var(--c-color-accent-bg-emphasis);
-    border: 1px solid var(--c-color-accent-border-emphasis);
-    outline: 2px solid Canvas;
-    position: absolute;
-    inset-inline-end: 0;
-    inset-block-end: 0;
   }
 
   .subnav {

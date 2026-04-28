@@ -1,40 +1,19 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
 namespace craft\base;
 
-use Craft;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\db\mysql\Schema;
-use craft\elements\Address;
-use craft\elements\Asset;
-use craft\elements\Entry;
-use craft\elements\User;
 use craft\errors\DbConnectException;
-use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\DeleteSiteEvent;
-use craft\fieldlayoutelements\addresses\AddressField;
-use craft\fieldlayoutelements\addresses\CountryCodeField;
-use craft\fieldlayoutelements\addresses\LabelField;
-use craft\fieldlayoutelements\addresses\LatLongField;
-use craft\fieldlayoutelements\addresses\OrganizationField;
-use craft\fieldlayoutelements\addresses\OrganizationTaxIdField;
-use craft\fieldlayoutelements\assets\AltField;
-use craft\fieldlayoutelements\assets\AssetTitleField;
-use craft\fieldlayoutelements\entries\EntryTitleField;
-use craft\fieldlayoutelements\FullNameField;
-use craft\fieldlayoutelements\TitleField;
-use craft\fieldlayoutelements\users\AffiliatedSiteField;
-use craft\fieldlayoutelements\users\EmailField;
-use craft\fieldlayoutelements\users\FullNameField as UserFullNameField;
-use craft\fieldlayoutelements\users\PhotoField;
-use craft\fieldlayoutelements\users\UsernameField;
-use craft\helpers\Session;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\log\Dispatcher;
@@ -43,7 +22,6 @@ use craft\markdown\GithubMarkdown;
 use craft\markdown\Markdown;
 use craft\markdown\MarkdownExtra;
 use craft\markdown\PreEncodedMarkdown;
-use craft\models\FieldLayout;
 use craft\models\Info;
 use craft\queue\QueueInterface;
 use craft\services\Addresses;
@@ -51,7 +29,6 @@ use craft\services\AssetIndexer;
 use craft\services\Assets;
 use craft\services\Auth;
 use craft\services\Categories;
-use craft\services\Conditions;
 use craft\services\Config;
 use craft\services\Dashboard;
 use craft\services\Deprecator;
@@ -89,20 +66,20 @@ use craft\services\Webpack;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\UrlManager;
-use craft\web\User as UserSession;
 use craft\web\View;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator as DeprecatorFacade;
 use CraftCms\Cms\Translation\Locale;
-use CraftCms\Cms\Updates\Updates;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
+use CraftCms\Cms\Update\Updates;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
 use Symfony\Component\VarDumper\Dumper\AbstractDumper;
 use Yii;
 use yii\base\Application;
@@ -145,7 +122,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Globals $globals The globals service
  * @property-read Gql $gql The GraphQl service
  * @property-read I18N $i18n The internationalization (i18n) component
- * @property-read Images $images The images service
+ * @property-read Images $images The images service (deprecated)
  * @property-read ImageTransforms $imageTransforms The image transforms service
  * @property-read Locale $formattingLocale The Locale object that should be used to define the formatter
  * @property-read Locale $locale The Locale object for the target language
@@ -183,6 +160,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read bool $isMultiSite Whether this site has multiple sites
  * @property-read bool $isSystemLive Whether the system is live
  * @property-read string $installedSchemaVersion The installed schema version
+ *
  * @method AssetManager getAssetManager() Returns the asset manager component.
  * @method Connection getDb() Returns the database connection component.
  * @method Dispatcher getLog() Returns the log dispatcher component.
@@ -191,9 +169,12 @@ use yii\web\ServerErrorHttpException;
  * @method Security getSecurity() Returns the security component.
  * @method UrlManager getUrlManager() Returns the URL manager for this application.
  * @method View getView() Returns the view component.
+ *
  * @mixin WebApplication
  * @mixin ConsoleApplication
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 trait ApplicationTrait
@@ -219,11 +200,12 @@ trait ApplicationTrait
      */
     public ?string $env {
         get => app()->environment();
-        set(null | string $value) => $this->env = $value;
+        set(null|string $value) => $this->env = $value;
     }
 
     /**
      * @var Edition The installed Craft CMS edition.
+     *
      * @since 5.0.0
      * @deprecated 6.0.0 use `Edition::get()` instead.
      */
@@ -233,23 +215,23 @@ trait ApplicationTrait
 
     /**
      * @var bool Whether the application is fully initialized yet
+     *
      * @see getIsInitialized()
      */
     private bool $_isInitialized = false;
 
-    /**
-     * @var bool
-     */
     private bool $_gettingLanguage = false;
 
     /**
      * @var bool Whether we’re listening for the request end, to update the application info
+     *
      * @see saveInfoAfterRequest()
      */
     private bool $_waitingToSaveInfo = false;
 
     /**
      * @var callable[]
+     *
      * @see onAfterRequest()
      */
     private array $afterRequestCallbacks = [];
@@ -257,7 +239,6 @@ trait ApplicationTrait
     /**
      * Returns the application ID combined with the environment name.
      *
-     * @return string
      * @since 5.4.0
      * @see id
      * @see env
@@ -268,7 +249,7 @@ trait ApplicationTrait
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function setVendorPath($path): void
     {
@@ -276,27 +257,27 @@ trait ApplicationTrait
 
         // Override the @bower and @npm aliases if using asset-packagist.org
         // todo: remove this whenever Yii is updated with support for asset-packagist.org
-        $altBowerPath = $this->getVendorPath() . DIRECTORY_SEPARATOR . 'bower-asset';
-        $altNpmPath = $this->getVendorPath() . DIRECTORY_SEPARATOR . 'npm-asset';
+        $altBowerPath = $this->getVendorPath().DIRECTORY_SEPARATOR.'bower-asset';
+        $altNpmPath = $this->getVendorPath().DIRECTORY_SEPARATOR.'npm-asset';
         if (is_dir($altBowerPath)) {
-            Craft::setAlias('@bower', $altBowerPath);
+            Aliases::set('@bower', $altBowerPath);
         }
         if (is_dir($altNpmPath)) {
-            Craft::setAlias('@npm', $altNpmPath);
+            Aliases::set('@npm', $altNpmPath);
         }
 
         // Override where Yii should find its asset deps
-        Craft::setAlias('@bower/jquery/dist', '@app/web/assets/jquery/dist');
-        Craft::setAlias('@bower/inputmask/dist','@app/web/assets/inputmask/dist');
-        Craft::setAlias('@bower/punycode', '@app/web/assets/punycode/dist');
-        Craft::setAlias('@bower/yii2-pjax', '@app/web/assets/yii2pjax/dist');
+        Aliases::set('@bower/jquery/dist', '@app/web/assets/jquery/dist');
+        Aliases::set('@bower/inputmask/dist', '@app/web/assets/inputmask/dist');
+        Aliases::set('@bower/punycode', '@app/web/assets/punycode/dist');
+        Aliases::set('@bower/yii2-pjax', '@app/web/assets/yii2pjax/dist');
     }
 
     /**
      * Sets the target application language.
      *
-     * @param bool|null $useUserLanguage Whether the user’s preferred language should be used.
-     * If null, the user’s preferred language will be used if this is a control panel request or a console request.
+     * @param  bool|null  $useUserLanguage  Whether the user’s preferred language should be used.
+     *                                      If null, the user’s preferred language will be used if this is a control panel request or a console request.
      */
     public function updateTargetLanguage(?bool $useUserLanguage = null): void
     {
@@ -306,6 +287,7 @@ trait ApplicationTrait
             $fallbackLanguage = $this->_getFallbackLanguage();
             $this->_gettingLanguage = false;
             app()->setLocale($fallbackLanguage);
+
             return;
         }
 
@@ -323,15 +305,14 @@ trait ApplicationTrait
     /**
      * Returns the target app language.
      *
-     * @param bool $useUserLanguage Whether the user’s preferred language should be used.
-     * @return string
+     * @param  bool  $useUserLanguage  Whether the user’s preferred language should be used.
      */
     public function getTargetLanguage(bool $useUserLanguage = true): string
     {
         // Use the fallback language for console requests, or if Craft isn't installed or is updating
         if (
             $this instanceof ConsoleApplication ||
-            !$this->getIsInstalled() ||
+            ! Cms::isInstalled() ||
             app(Updates::class)->isCraftUpdatePending()
         ) {
             return $this->_getFallbackLanguage();
@@ -340,12 +321,10 @@ trait ApplicationTrait
         if ($useUserLanguage) {
             // If the user is logged in *and* has a primary language set, use that
             // (don't actually try to fetch the user, as plugins haven't been loaded yet)
-            /** @var UserSession $user */
-            $user = $this->getUser();
-            $id = Session::get($user->idParam);
+            $id = Session::get($this->getUser()->idParam);
             if (
                 $id &&
-                ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null &&
+                ($language = \CraftCms\Cms\Support\Facades\Users::getUserPreference($id, 'language')) !== null &&
                 \CraftCms\Cms\Support\Facades\I18N::validateAppLocaleId($language)
             ) {
                 return $language;
@@ -362,28 +341,28 @@ trait ApplicationTrait
     /**
      * Returns whether Craft is installed.
      *
-     * @param bool $strict Whether to ignore the cached value and explicitly check from the default schema.
-     * @return bool
+     * @param  bool  $strict  Whether to ignore the cached value and explicitly check from the default schema.
+     *
+     * @deprecated 6.0.0 use {@see Cms::isInstalled()} instead.
      */
     public function getIsInstalled(bool $strict = false): bool
     {
-        return \CraftCms\Cms\Shared\Models\Info::isInstalled($strict);
+        return Cms::isInstalled($strict);
     }
 
     /**
      * Sets Craft's record of whether it's installed
      *
-     * @param bool|null $value
+     * @deprecated 6.0.0 use {@see Cms::setIsInstalled()} instead.
      */
     public function setIsInstalled(?bool $value = true): void
     {
-        \CraftCms\Cms\Shared\Models\Info::setIsInstalled($value);
+        Cms::setIsInstalled($value);
     }
 
     /**
      * Returns the installed schema version.
      *
-     * @return string
      * @since 3.2.0
      * @deprecated in 4.0.0
      */
@@ -395,7 +374,6 @@ trait ApplicationTrait
     /**
      * Returns whether Craft has been fully initialized.
      *
-     * @return bool
      * @since 3.0.13
      */
     public function getIsInitialized(): bool
@@ -408,7 +386,6 @@ trait ApplicationTrait
      *
      * If Craft is already fully initialized, the callback will be invoked immediately.
      *
-     * @param callable $callback
      * @since 4.3.5
      */
     public function onInit(callable $callback): void
@@ -416,7 +393,7 @@ trait ApplicationTrait
         if ($this->_isInitialized) {
             $callback();
         } else {
-            $this->on(WebApplication::EVENT_INIT, function() use ($callback) {
+            $this->on(WebApplication::EVENT_INIT, function () use ($callback) {
                 $callback();
             });
         }
@@ -427,7 +404,6 @@ trait ApplicationTrait
      *
      * If the request is already ending, the callback will be invoked immediately.
      *
-     * @param callable $callback
      * @since 4.5.11
      */
     public function onAfterRequest(callable $callback): void
@@ -444,13 +420,13 @@ trait ApplicationTrait
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function trigger($name, Event $event = null)
+    public function trigger($name, ?Event $event = null)
     {
         // call the onAfterRequest() callbacks directly
-        if ($name === self::EVENT_AFTER_REQUEST && !empty($this->afterRequestCallbacks)) {
-            $event ??= new Event();
+        if ($name === self::EVENT_AFTER_REQUEST && ! empty($this->afterRequestCallbacks)) {
+            $event ??= new Event;
             $event->sender = $this;
             $event->name = $name;
             while ($callback = array_shift($this->afterRequestCallbacks)) {
@@ -464,9 +440,9 @@ trait ApplicationTrait
     /**
      * Returns whether this Craft install has multiple sites.
      *
-     * @param bool $refresh Whether to ignore the cached result and check again
-     * @param bool $withTrashed Whether to factor in soft-deleted sites
-     * @return bool
+     * @param  bool  $refresh  Whether to ignore the cached result and check again
+     * @param  bool  $withTrashed  Whether to factor in soft-deleted sites
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Site\Sites::isMultiSite} instead.
      */
     public function getIsMultiSite(bool $refresh = false, bool $withTrashed = false): bool
@@ -497,7 +473,6 @@ trait ApplicationTrait
     /**
      * Returns the name of the Craft edition.
      *
-     * @return string
      * @deprecated in 6.0.0. `Edition::get()->name` should be used instead.
      */
     public function getEditionName(): string
@@ -508,7 +483,6 @@ trait ApplicationTrait
     /**
      * Returns the handle of the Craft edition.
      *
-     * @return string
      * @since 4.4.0
      * @deprecated in 6.0.0. `Edition::get()->handle()` should be used instead.
      */
@@ -520,7 +494,6 @@ trait ApplicationTrait
     /**
      * Returns the edition Craft is actually licensed to run in.
      *
-     * @return Edition|null
      * @deprecated in 6.0.0. `Edition::getLicensed()` should be used instead.
      */
     public function getLicensedEdition(): ?Edition
@@ -531,7 +504,6 @@ trait ApplicationTrait
     /**
      * Returns the name of the edition Craft is actually licensed to run in.
      *
-     * @return string|null
      * @deprecated in 6.0.0. `Edition::getLicensed()?->name` should be used instead.
      */
     public function getLicensedEditionName(): ?string
@@ -542,7 +514,6 @@ trait ApplicationTrait
     /**
      * Returns whether Craft is running with the wrong edition.
      *
-     * @return bool
      * @deprecated in 6.0.0. `Edition::isWrong()` should be used instead.
      */
     public function getHasWrongEdition(): bool
@@ -553,7 +524,7 @@ trait ApplicationTrait
     /**
      * Sets the installed Craft CMS edition.
      *
-     * @param Edition|int $edition The edition to set.
+     * @param  Edition|int  $edition  The edition to set.
      *
      * @deprecated in 6.0.0. `Edition::set($edition)` should be used instead.
      */
@@ -567,8 +538,8 @@ trait ApplicationTrait
     /**
      * Requires that Craft is running an equal or better edition than what's passed in
      *
-     * @param Edition|int $edition The Craft edition to require.
-     * @param bool $orBetter If true, makes $edition the minimum edition required.
+     * @param  Edition|int  $edition  The Craft edition to require.
+     * @param  bool  $orBetter  If true, makes $edition the minimum edition required.
      *
      * @deprecated in 6.0.0. {@see Edition::require()} should be used instead.
      */
@@ -580,7 +551,6 @@ trait ApplicationTrait
     /**
      * Returns whether Craft is eligible to be upgraded to a different edition.
      *
-     * @return bool
      * @deprecated in 6.0.0. {@see Edition::canUpgrade()} should be used instead.
      */
     public function getCanUpgradeEdition(): bool
@@ -592,8 +562,8 @@ trait ApplicationTrait
      * Returns whether Craft is running on a domain that is eligible to test
      * unlicensed Craft and plugin editions/updates.
      *
-     * @return bool
      * @internal
+     *
      * @deprecated in 6.0.0. {@see Edition::canTest()} should be used instead.
      */
     public function getCanTestEditions(): bool
@@ -603,8 +573,6 @@ trait ApplicationTrait
 
     /**
      * Returns the system's UID.
-     *
-     * @return string|null
      */
     public function getSystemUid(): ?string
     {
@@ -614,7 +582,6 @@ trait ApplicationTrait
     /**
      * Returns whether the system is currently live.
      *
-     * @return bool
      * @since 3.1.0
      * @deprecated 6.0.0 use `app()->isLive()` instead.
      */
@@ -626,44 +593,45 @@ trait ApplicationTrait
     /**
      * Returns whether someone is currently performing a system update.
      *
-     * @return bool
      * @see enableMaintenanceMode()
      * @see disableMaintenanceMode()
      */
     public function getIsInMaintenanceMode(): bool
     {
-        return \CraftCms\Cms\Shared\Models\Info::fetch()->maintenance;
+        return app()->isDownForMaintenance();
     }
 
     /**
      * Enables Maintenance Mode.
      *
-     * @return bool
      * @see getIsInMaintenanceMode()
      * @see disableMaintenanceMode()
      */
     public function enableMaintenanceMode(): bool
     {
-        return $this->_setMaintenanceMode(true);
+        app()->maintenanceMode()->activate([]);
+
+        return true;
     }
 
     /**
      * Disables Maintenance Mode.
      *
-     * @return bool
      * @see getIsInMaintenanceMode()
      * @see disableMaintenanceMode()
      */
     public function disableMaintenanceMode(): bool
     {
-        return $this->_setMaintenanceMode(false);
+        app()->maintenanceMode()->deactivate();
+
+        return true;
     }
 
     /**
      * Returns the info model, or just a particular attribute.
      *
-     * @param bool $throwException Whether an exception should be thrown if the `info` table doesn't exist
-     * @return Info
+     * @param  bool  $throwException  Whether an exception should be thrown if the `info` table doesn't exist
+     *
      * @throws DbException if the `info` table doesn’t exist yet and `$throwException` is `true`
      * @throws ServerErrorHttpException if the info table is missing its row
      */
@@ -681,10 +649,10 @@ trait ApplicationTrait
      */
     public function saveInfoAfterRequest(): void
     {
-        if (!$this->_waitingToSaveInfo) {
+        if (! $this->_waitingToSaveInfo) {
             $this->_waitingToSaveInfo = true;
 
-            $this->onAfterRequest(function() {
+            $this->onAfterRequest(function () {
                 $this->saveInfoAfterRequestHandler();
             });
         }
@@ -693,15 +661,17 @@ trait ApplicationTrait
     /**
      * @throws Exception
      * @throws ServerErrorHttpException
+     *
      * @since 3.1.33
+     *
      * @internal
      */
     public function saveInfoAfterRequestHandler(): void
     {
         $info = \CraftCms\Cms\Shared\Models\Info::fetch();
 
-        if (!$info->save()) {
-            throw new Exception("Unable to save new application info");
+        if (! $info->save()) {
+            throw new Exception('Unable to save new application info');
         }
 
         $this->_waitingToSaveInfo = false;
@@ -710,17 +680,15 @@ trait ApplicationTrait
     /**
      * Updates the info row.
      *
-     * @param Info $info
-     * @param string[]|null $attributeNames The attributes to save
-     * @return bool
+     * @param  string[]|null  $attributeNames  The attributes to save
      */
     public function saveInfo(Info $info, ?array $attributeNames = null): bool
     {
         if ($attributeNames === null) {
-            $attributeNames = ['version', 'schemaVersion', 'maintenance', 'configVersion', 'fieldVersion'];
+            $attributeNames = ['version', 'schemaVersion', 'maintenance', 'configVersion'];
         }
 
-        if (!$info->validate($attributeNames)) {
+        if (! $info->validate($attributeNames)) {
             return false;
         }
 
@@ -731,7 +699,7 @@ trait ApplicationTrait
             $attributes,
         );
 
-        $this->setIsInstalled();
+        Cms::setIsInstalled();
 
         return true;
     }
@@ -739,7 +707,6 @@ trait ApplicationTrait
     /**
      * Returns the system name.
      *
-     * @return string
      * @since 3.1.4
      * @deprecated 6.0.0 use {@see Cms::systemName()} instead.
      */
@@ -750,8 +717,6 @@ trait ApplicationTrait
 
     /**
      * Returns the Yii framework version.
-     *
-     * @return string
      */
     public function getYiiVersion(): string
     {
@@ -761,7 +726,6 @@ trait ApplicationTrait
     /**
      * Returns whether the DB connection settings are valid.
      *
-     * @return bool
      * @internal Don't even think of moving this check into Connection->init().
      */
     public function getIsDbConnectionValid(): bool
@@ -772,7 +736,7 @@ trait ApplicationTrait
 
             // Only log for web requests
             if ($this instanceof WebApplication) {
-                Craft::error('There was a problem connecting to the database: ' . $e->getMessage(), __METHOD__);
+                Log::error('There was a problem connecting to the database: '.$e->getMessage(), [__METHOD__]);
                 /** @var ErrorHandler $errorHandler */
                 $errorHandler = $this->getErrorHandler();
                 $errorHandler->logException($e);
@@ -791,8 +755,9 @@ trait ApplicationTrait
      * Returns the addresses service.
      *
      * @return Addresses The addresses service
+     *
      * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Addresses\Addresses} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Address\Addresses} instead.
      */
     public function getAddresses(): Addresses
     {
@@ -803,6 +768,7 @@ trait ApplicationTrait
      * Returns the announcements service.
      *
      * @return Announcements The announcements service
+     *
      * @since 3.7.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Announcement\Announcements} instead.
      */
@@ -815,6 +781,7 @@ trait ApplicationTrait
      * Returns the assets service.
      *
      * @return Assets The assets service
+     * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\Asset\Assets} or {@see \CraftCms\Cms\Asset\Folders} instead.
      */
     public function getAssets(): Assets
     {
@@ -835,7 +802,9 @@ trait ApplicationTrait
      * Returns the user authentication service.
      *
      * @return Auth The Auth service
+     *
      * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\AuthMethods} instead.
      */
     public function getAuth(): Auth
     {
@@ -846,6 +815,7 @@ trait ApplicationTrait
      * Returns the image transforms service.
      *
      * @return ImageTransforms The asset transforms service
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Image\ImageTransforms} instead.
      */
     public function getImageTransforms(): ImageTransforms
     {
@@ -856,6 +826,7 @@ trait ApplicationTrait
      * Returns the categories service.
      *
      * @return Categories The categories service
+     *
      * @deprecated in 6.0.0
      */
     public function getCategories(): Categories
@@ -867,7 +838,9 @@ trait ApplicationTrait
      * Returns the conditions service.
      *
      * @return Conditions The conditions service
+     *
      * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Condition\Conditions} instead.
      */
     public function getConditions(): Conditions
     {
@@ -888,6 +861,7 @@ trait ApplicationTrait
      * Returns the dashboard service.
      *
      * @return Dashboard The dashboard service
+     *
      * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\Dashboard\Dashboard} instead.
      */
     public function getDashboard(): Dashboard
@@ -901,7 +875,6 @@ trait ApplicationTrait
      * This helps avoid erratic behavior when locks are used during transactions
      * (see https://makandracards.com/makandra/17437-mysql-careful-when-using-database-locks-in-transactions).
      *
-     * @return Connection
      * @since 5.3.0
      */
     public function getDb2(): Connection
@@ -913,6 +886,7 @@ trait ApplicationTrait
      * Returns the deprecator service.
      *
      * @return Deprecator The deprecator service
+     *
      * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\Deprecator\Deprecator} instead.
      */
     public function getDeprecator(): Deprecator
@@ -924,6 +898,7 @@ trait ApplicationTrait
      * Returns the drafts service.
      *
      * @return Drafts The drafts service
+     *
      * @since 3.2.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Drafts} instead.
      */
@@ -935,7 +910,6 @@ trait ApplicationTrait
     /**
      * Returns the variable dumper.
      *
-     * @return AbstractDumper
      * @since 4.4.2
      */
     public function getDumper(): AbstractDumper
@@ -947,6 +921,7 @@ trait ApplicationTrait
      * Returns the element indexes service.
      *
      * @return ElementSources The element indexes service
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementSources} instead.
      */
     public function getElementSources(): ElementSources
@@ -968,6 +943,7 @@ trait ApplicationTrait
      * Returns the system email messages service.
      *
      * @return SystemMessages The system email messages service
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\SystemMessage\SystemMessages} instead.
      */
     public function getSystemMessages(): SystemMessages
@@ -979,6 +955,7 @@ trait ApplicationTrait
      * Returns the entries service.
      *
      * @return Entries The entries service
+     *
      * @deprecated 6.0.0. Use {@see \CraftCms\Cms\Entry\EntryTypes}, {@see \CraftCms\Cms\Section\Sections} or {@see \CraftCms\Cms\Entry\Entries} instead.
      */
     public function getEntries(): Entries
@@ -990,6 +967,7 @@ trait ApplicationTrait
      * Returns the fields service.
      *
      * @return Fields The fields service
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Fields} instead.
      */
     public function getFields(): Fields
@@ -1003,7 +981,9 @@ trait ApplicationTrait
      * Returns the filesystems service.
      *
      * @return Fs The filesystems service
+     *
      * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Filesystems} instead.
      */
     public function getFs(): Fs
     {
@@ -1013,7 +993,6 @@ trait ApplicationTrait
     /**
      * Returns the locale that should be used to define the formatter.
      *
-     * @return \craft\i18n\Locale
      * @since 3.6.0
      * @deprecated 6.0.0 use {I18N::getFormattingLocale()} instead.
      */
@@ -1028,6 +1007,7 @@ trait ApplicationTrait
      * Returns the garbage collection service.
      *
      * @return Gc The garbage collection service
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\GarbageCollection\GarbageCollection} instead.
      */
     public function getGc(): Gc
@@ -1039,6 +1019,7 @@ trait ApplicationTrait
      * Returns the globals service.
      *
      * @return Globals The globals service
+     *
      * @deprecated in 6.0.0
      */
     public function getGlobals(): Globals
@@ -1050,7 +1031,9 @@ trait ApplicationTrait
      * Returns the GraphQL service.
      *
      * @return Gql The GraphQL service
+     *
      * @since 3.3.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Gql} instead.
      */
     public function getGql(): Gql
     {
@@ -1061,6 +1044,8 @@ trait ApplicationTrait
      * Returns the images service.
      *
      * @return Images The images service
+     *
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Image\Images} instead.
      */
     public function getImages(): Images
     {
@@ -1083,6 +1068,7 @@ trait ApplicationTrait
      * Returns the current mailer.
      *
      * @return Mailer The mailer component
+     * @deprecated 6.0.0 use Laravel mailers/drivers and system-message mailables.
      */
     public function getMailer(): Mailer
     {
@@ -1093,6 +1079,7 @@ trait ApplicationTrait
      * Returns the application’s mutex service.
      *
      * @return Mutex The application’s mutex service
+     *
      * @deprecated in 6.0.0. Use `\Illuminate\Support\Facades\Cache::lock()` instead.
      */
     public function getMutex(): Mutex
@@ -1114,6 +1101,7 @@ trait ApplicationTrait
      * Returns the plugins service.
      *
      * @return Plugins The plugins service
+     *
      * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Plugin\Plugins} instead.
      */
     public function getPlugins(): Plugins
@@ -1125,6 +1113,7 @@ trait ApplicationTrait
      * Returns the system config service.
      *
      * @return \craft\services\ProjectConfig The system config service
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\ProjectConfig\ProjectConfig} instead.
      */
     public function getProjectConfig(): \craft\services\ProjectConfig
@@ -1135,9 +1124,10 @@ trait ApplicationTrait
     /**
      * Returns the queue service.
      *
-     * @return Queue The queue service
+     * @return Queue|QueueInterface The queue service
+     * @deprecated 6.0.0. Use Laravel's Queue system instead.
      */
-    public function getQueue(): Queue
+    public function getQueue(): Queue|QueueInterface
     {
         return $this->get('queue');
     }
@@ -1146,6 +1136,7 @@ trait ApplicationTrait
      * Returns the relations service.
      *
      * @return Relations The relations service
+     *
      * @deprecated in 5.3.0
      */
     public function getRelations(): Relations
@@ -1157,6 +1148,7 @@ trait ApplicationTrait
      * Returns the revisions service.
      *
      * @return Revisions The revisions service
+     *
      * @since 3.2.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Revisions} instead.
      */
@@ -1169,6 +1161,7 @@ trait ApplicationTrait
      * Returns the routes service.
      *
      * @return Routes The routes service
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Route\Routes} instead.
      */
     public function getRoutes(): Routes
@@ -1180,6 +1173,7 @@ trait ApplicationTrait
      * Returns the search service.
      *
      * @return Search The search service
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Search\Search} instead.
      */
     public function getSearch(): Search
     {
@@ -1190,6 +1184,7 @@ trait ApplicationTrait
      * Returns the sites service.
      *
      * @return Sites The sites service
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Site\Sites} instead.
      */
     public function getSites(): Sites
@@ -1203,7 +1198,9 @@ trait ApplicationTrait
      * Returns the SSO service.
      *
      * @return Sso The SSO service
+     *
      * @since 5.3.0
+     * @deprecated 6.0.0 use the Laravel Socialite {@see \CraftCms\Cms\Auth\OAuth\OAuth} implementation instead.
      */
     public function getSso(): Sso
     {
@@ -1214,6 +1211,7 @@ trait ApplicationTrait
      * Returns the structures service.
      *
      * @return Structures The structures service
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Structure\Structures} instead.
      */
     public function getStructures(): Structures
@@ -1225,6 +1223,7 @@ trait ApplicationTrait
      * Returns the tags service.
      *
      * @return Tags The tags service
+     *
      * @deprecated in 6.0.0
      */
     public function getTags(): Tags
@@ -1236,6 +1235,7 @@ trait ApplicationTrait
      * Returns the template cache service.
      *
      * @return TemplateCaches The template caches service
+     * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\View\TemplateCaches} instead.
      */
     public function getTemplateCaches(): TemplateCaches
     {
@@ -1246,6 +1246,7 @@ trait ApplicationTrait
      * Returns the tokens service.
      *
      * @return Tokens The tokens service
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\RouteToken\RouteTokens} instead.
      */
     public function getTokens(): Tokens
@@ -1257,6 +1258,7 @@ trait ApplicationTrait
      * Returns the user groups service.
      *
      * @return UserGroups The user groups service
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\UserGroups} instead.
      */
     public function getUserGroups(): UserGroups
@@ -1268,6 +1270,8 @@ trait ApplicationTrait
      * Returns the user permissions service.
      *
      * @return UserPermissions The user permissions service
+     *
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\UserPermissions} instead.
      */
     public function getUserPermissions(): UserPermissions
     {
@@ -1276,6 +1280,8 @@ trait ApplicationTrait
 
     /**
      * Returns the users service.
+     *
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\Users} instead.
      *
      * @return Users The users service
      */
@@ -1288,6 +1294,7 @@ trait ApplicationTrait
      * Returns the utilities service.
      *
      * @deprecated in 6.0.0. [[app(\CraftCms\Cms\Utility\Utilities)]] should be used instead.
+     *
      * @return Utilities The utilities service
      */
     public function getUtilities(): Utilities
@@ -1309,6 +1316,7 @@ trait ApplicationTrait
      * Returns the webpack service.
      *
      * @return Webpack The volumes service
+     *
      * @since 3.7.22
      */
     public function getWebpack(): Webpack
@@ -1333,8 +1341,7 @@ trait ApplicationTrait
         $this->getLog();
 
         $this->language = app()->getLocale();
-        $this->setTimeZone(app()->getTimezone());
-        date_default_timezone_set(app()->getTimezone());
+        $this->setTimeZone(Cms::timezone());
 
         // Use our own Markdown parser classes
         $flavors = [
@@ -1346,7 +1353,7 @@ trait ApplicationTrait
         ];
 
         foreach ($flavors as $flavor => $class) {
-            if (!isset(MarkdownHelper::$flavors[$flavor]) || !is_object(MarkdownHelper::$flavors[$flavor])) {
+            if (! isset(MarkdownHelper::$flavors[$flavor]) || ! is_object(MarkdownHelper::$flavors[$flavor])) {
                 MarkdownHelper::$flavors[$flavor]['class'] = $class;
             }
         }
@@ -1357,9 +1364,6 @@ trait ApplicationTrait
      */
     private function _postInit(): void
     {
-        // Register field layout listeners
-        $this->_registerFieldLayoutListener();
-
         // Register all the listeners for config items
         $this->_registerConfigListeners();
 
@@ -1372,33 +1376,16 @@ trait ApplicationTrait
     }
 
     /**
-     * Enables or disables Maintenance Mode
-     *
-     * @param bool $value
-     * @return bool
-     */
-    private function _setMaintenanceMode(bool $value): bool
-    {
-        $info = \CraftCms\Cms\Shared\Models\Info::fetch();
-        if ($info->maintenance === $value) {
-            return true;
-        }
-        $info->maintenance = $value;
-        return $info->save();
-    }
-
-    /**
      * Tries to find a language match with the browser’s preferred language(s).
      *
      * If not uses the app’s sourceLanguage.
-     *
-     * @return string
      */
     private function _getFallbackLanguage(): string
     {
         // See if we have the control panel translated in one of the user’s browsers preferred language(s)
         if ($this instanceof WebApplication) {
             $languages = \CraftCms\Cms\Support\Facades\I18N::getAppLocaleIds();
+
             return $this->getRequest()->getPreferredLanguage($languages->all());
         }
 
@@ -1407,54 +1394,13 @@ trait ApplicationTrait
     }
 
     /**
-     * Register event listeners for field layouts.
-     */
-    private function _registerFieldLayoutListener(): void
-    {
-        Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_NATIVE_FIELDS, function(DefineFieldLayoutFieldsEvent $event) {
-            /** @var FieldLayout $fieldLayout */
-            $fieldLayout = $event->sender;
-
-            switch ($fieldLayout->type) {
-                case Address::class:
-                    $event->fields[] = LabelField::class;
-                    $event->fields[] = OrganizationField::class;
-                    $event->fields[] = OrganizationTaxIdField::class;
-                    $event->fields[] = FullNameField::class;
-                    $event->fields[] = CountryCodeField::class;
-                    $event->fields[] = AddressField::class;
-                    $event->fields[] = LatLongField::class;
-                    break;
-                case Asset::class:
-                    $event->fields[] = AssetTitleField::class;
-                    $event->fields[] = AltField::class;
-                    break;
-                case Entry::class:
-                    $event->fields[] = EntryTitleField::class;
-                    break;
-                case User::class:
-                    if (!Cms::config()->useEmailAsUsername) {
-                        $event->fields[] = UsernameField::class;
-                    }
-                    $event->fields[] = UserFullNameField::class;
-                    $event->fields[] = PhotoField::class;
-                    $event->fields[] = EmailField::class;
-                    if (\CraftCms\Cms\Support\Facades\Sites::isMultiSite()) {
-                        $event->fields[] = AffiliatedSiteField::class;
-                    }
-                    break;
-            }
-        });
-    }
-
-    /**
      * Register event listeners for config changes.
      */
     private function _registerConfigListeners(): void
     {
         // Prune deleted sites from site settings
-        Event::on(Sites::class, Sites::EVENT_AFTER_DELETE_SITE, function(DeleteSiteEvent $event) {
-            if (!app(ProjectConfig::class)->isApplyingExternalChanges) {
+        Event::on(Sites::class, Sites::EVENT_AFTER_DELETE_SITE, function (DeleteSiteEvent $event) {
+            if (! app(ProjectConfig::class)->isApplyingExternalChanges) {
                 $this->getCategories()->pruneDeletedSite($event);
             }
         });

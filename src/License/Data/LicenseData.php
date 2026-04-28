@@ -9,7 +9,7 @@ use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 /**
  * @internal
  */
-final readonly class LicenseData
+readonly class LicenseData
 {
     public LicenseKeyStatus $status;
 

@@ -8,7 +8,7 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\models\Volume;
+use CraftCms\Cms\Asset\Data\Volume;
 
 /**
  * ListVolumesEvent class.

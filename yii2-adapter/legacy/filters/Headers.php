@@ -15,6 +15,7 @@ use yii\base\ActionFilter;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
+ * @deprecated 6.0.0 use Laravel middleware instead. @see https://laravel.com/docs/middleware
  */
 class Headers extends ActionFilter
 {

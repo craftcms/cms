@@ -2,33 +2,14 @@
 
 namespace craft\elements\conditions\assets;
 
-use craft\elements\conditions\ElementCondition;
-
 /**
  * Asset query condition.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Conditions\AssetCondition} instead.
  */
-class AssetCondition extends ElementCondition
+class AssetCondition extends \CraftCms\Cms\Asset\Conditions\AssetCondition
 {
-    /**
-     * @inheritdoc
-     */
-    protected function selectableConditionRules(): array
-    {
-        return array_merge(parent::selectableConditionRules(), [
-            DateModifiedConditionRule::class,
-            FileSizeConditionRule::class,
-            FileTypeConditionRule::class,
-            FilenameConditionRule::class,
-            HasAltConditionRule::class,
-            HeightConditionRule::class,
-            SavableConditionRule::class,
-            UploaderConditionRule::class,
-            ViewableConditionRule::class,
-            VolumeConditionRule::class,
-            WidthConditionRule::class,
-        ]);
-    }
+    use \craft\base\LegacyEventConstants;
 }

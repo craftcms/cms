@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Models;
 
-use Craft;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -13,44 +12,32 @@ use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
-use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
-use Illuminate\Auth\Passwords\CanResetPassword;
-use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Override;
 
-class User extends BaseModel implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract
+#[Hidden([
+    'password',
+    'rememberToken',
+])]
+class User extends BaseModel
 {
-    use Authenticatable;
-    use Authorizable;
-    use CanResetPassword;
     use HasFactory;
     use MustVerifyEmail;
 
+    #[Override]
     public $incrementing = false;
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
 
     private ?Collection $userGroupData = null;
 
+    #[Override]
     protected $casts = [
         'active' => 'bool',
         'pending' => 'bool',
@@ -63,7 +50,6 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
         'lastInvalidLoginDate' => 'datetime',
         'lockoutDate' => 'datetime',
         'hasDashboard' => 'bool',
-        'verificationCodeIssuedDate' => 'datetime',
         'passwordResetRequired' => 'bool',
         'lastPasswordChangeDate' => 'datetime',
     ];
@@ -84,28 +70,17 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
             );
     }
 
-    /**
-     * Returns whether the user has permission to perform a given action.
-     *
-     * @param  string  $abilities
-     *
-     * @todo Permissions to Laravel Gates
-     */
-    #[Override]
-    public function can($abilities, $arguments = []): bool
+    public function asElement(): \CraftCms\Cms\User\Elements\User
     {
-        if (
-            $this->admin ||
-            Edition::get() === Edition::Solo
-        ) {
-            return true;
-        }
+        $element = new \CraftCms\Cms\User\Elements\User(Arr::except($this->toArray(), [
+            'invalidLoginWindowStart',
+        ]));
 
-        if (! isset($this->id)) {
-            return false;
-        }
+        $element->password = $this->password;
 
-        return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id, $abilities);
+        unset($this->uid);
+
+        return $element;
     }
 
     /**

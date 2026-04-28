@@ -9,15 +9,18 @@ namespace craft\web;
 
 use Craft;
 use craft\errors\ExitException;
-use craft\helpers\FileHelper;
-use craft\web\assets\iframeresizer\ContentWindowAsset;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Twig\TemplateResolver;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\TemplateMode;
 use Throwable;
 use yii\base\Component;
 use yii\base\ExitException as YiiExitException;
 use yii\base\InvalidConfigException;
 use yii\web\ResponseFormatterInterface;
+use function CraftCms\Cms\pageTemplate;
 
 /**
  * Template response formatter.
@@ -42,7 +45,6 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
             throw new InvalidConfigException('TemplateResponseFormatter can only be used on responses with a TemplateResponseBehavior.');
         }
 
-        $view = Craft::$app->getView();
         $generalConfig = Cms::config();
 
         // If this is a preview request and `useIframeResizer` is enabled, register the iframe resizer script
@@ -50,12 +52,12 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
             Craft::$app->getRequest()->getQueryParam('x-craft-live-preview') !== null &&
             $generalConfig->useIframeResizer
         ) {
-            $view->registerAssetBundle(ContentWindowAsset::class);
+            app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\ContentWindowAsset::class);
         }
 
         // Render and return the template
         try {
-            $response->content = $view->renderPageTemplate($behavior->template, $behavior->variables, $behavior->templateMode);
+            $response->content = pageTemplate($behavior->template, $behavior->variables, $behavior->templateMode ? TemplateMode::from($behavior->templateMode) : null);
         } catch (Throwable $e) {
             $previous = $e->getPrevious();
             if ($previous instanceof YiiExitException) {
@@ -80,8 +82,8 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
         // Set the MIME type for the request based on the matched template's file extension (unless the
         // Content-Type header was already set, perhaps by the template via the {% header %} tag)
         if (!$headers->has('content-type')) {
-            $templateFile = Str::chopEnd(strtolower($view->resolveTemplate($behavior->template)), '.twig');
-            $mimeType = FileHelper::getMimeTypeByExtension($templateFile) ?? 'text/html';
+            $templateFile = Str::chopEnd(strtolower(app(TemplateResolver::class)->resolve($behavior->template)), '.twig');
+            $mimeType = File::getMimeTypeByExtension($templateFile) ?? 'text/html';
             $headers->set('content-type', $mimeType . '; charset=' . $response->charset);
         }
     }

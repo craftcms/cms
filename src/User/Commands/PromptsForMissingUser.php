@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Commands;
 
-use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Validation\Rules\Password;
@@ -16,6 +16,7 @@ use function Laravel\Prompts\search;
 
 trait PromptsForMissingUser
 {
+    /** @return array<string, \Closure(): mixed> */
     protected function promptForMissingArgumentsUsing(): array
     {
         return [
@@ -39,14 +40,14 @@ trait PromptsForMissingUser
         ];
     }
 
-    protected function getUser(): ?\craft\elements\User
+    protected function getUser(): ?\CraftCms\Cms\User\Elements\User
     {
         $value = $this->argument('user');
 
         if (is_numeric($value)) {
-            $user = Craft::$app->getUsers()->getUserById((int) $value);
+            $user = Users::getUserById((int) $value);
         } else {
-            $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($value);
+            $user = Users::getUserByUsernameOrEmail($value);
         }
 
         if (! $user) {

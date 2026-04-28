@@ -11,7 +11,6 @@ use Craft;
 use craft\elements\Category as CategoryElement;
 use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
-use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
@@ -53,7 +52,7 @@ class CategoryType extends Generator implements GeneratorInterface, SingleGenera
     /**
      * @inheritdoc
      */
-    public static function generateType(mixed $context): ObjectType
+    public static function generateType(mixed $context): mixed
     {
         $typeName = CategoryElement::gqlTypeName($context);
 

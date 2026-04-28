@@ -2,11 +2,9 @@
 
 namespace craft\debug;
 
-use craft\errors\FsException;
-use craft\models\FsListing;
 use Exception;
 use Illuminate\Support\Collection;
-use yii\base\InvalidConfigException;
+use Throwable;
 use yii\debug\FlattenException;
 
 /**
@@ -27,7 +25,7 @@ class LogTarget extends \yii\debug\LogTarget
      */
     public function export(): void
     {
-        if (!$this->module->fs) {
+        if (!$this->module->disk) {
             parent::export();
             return;
         }
@@ -53,7 +51,7 @@ class LogTarget extends \yii\debug\LogTarget
         $data['summary'] = $summary;
         $data['exceptions'] = $exceptions;
 
-        $this->module->fs->write(
+        $this->module->disk->put(
             "$path/{$this->tag}.data",
             serialize($data),
         );
@@ -66,12 +64,14 @@ class LogTarget extends \yii\debug\LogTarget
      */
     public function loadManifest(): array
     {
-        if (!$this->module->fs) {
+        if (!$this->module->disk) {
             return parent::loadManifest();
         }
 
         $indexFile = $this->module->dataPath . '/index.data';
-        $content = $this->module->fs->read($indexFile);
+        $content = $this->module->disk->exists($indexFile)
+            ? $this->module->disk->get($indexFile)
+            : '';
 
         if ($content !== '') {
             return array_reverse(unserialize($content), true);
@@ -85,12 +85,12 @@ class LogTarget extends \yii\debug\LogTarget
      */
     public function loadTagToPanels($tag): array
     {
-        if (!$this->module->fs) {
+        if (!$this->module->disk) {
             return parent::loadTagToPanels($tag);
         }
 
         $dataFile = $this->module->dataPath . "/$tag.data";
-        $data = unserialize($this->module->fs->read($dataFile));
+        $data = unserialize($this->module->disk->get($dataFile));
         $exceptions = $data['exceptions'];
         foreach ($this->module->panels as $id => $panel) {
             if (isset($data[$id])) {
@@ -110,7 +110,7 @@ class LogTarget extends \yii\debug\LogTarget
      */
     protected function gc(&$manifest): void
     {
-        if (!$this->module->fs) {
+        if (!$this->module->disk) {
             parent::gc($manifest);
             return;
         }
@@ -120,10 +120,10 @@ class LogTarget extends \yii\debug\LogTarget
         if (count($manifest) > $this->module->historySize + 10) {
             $n = count($manifest) - $this->module->historySize;
             foreach (array_keys($manifest) as $tag) {
-                $this->module->fs->deleteFile("{$this->module->dataPath}/$tag");
+                $this->module->disk->delete("{$this->module->dataPath}/$tag");
                 if (isset($manifest[$tag]['mailFiles']) && $mailPanel instanceof MailPanel) {
                     foreach ($manifest[$tag]['mailFiles'] as $mailFile) {
-                        $this->module->fs->deleteFile("$mailPanel->mailPath/$mailFile");
+                        $this->module->disk->delete("$mailPanel->mailPath/$mailFile");
                     }
                 }
                 unset($manifest[$tag]);
@@ -140,21 +140,20 @@ class LogTarget extends \yii\debug\LogTarget
      */
     protected function removeStaleDataFiles($manifest): void
     {
-        if (!$this->module->fs) {
+        if (!$this->module->disk) {
             parent::removeStaleDataFiles($manifest);
             return;
         }
 
-        Collection::make($this->module->fs->getFileList($this->module->dataPath, false))
-            ->reject(function(FsListing $listing) use ($manifest) {
-                $basename = $listing->getBasename();
+        Collection::make($this->module->disk->files($this->module->dataPath))
+            ->reject(function(string $path) use ($manifest) {
+                $basename = pathinfo($path, PATHINFO_BASENAME);
                 $tag = pathinfo($basename, PATHINFO_FILENAME);
 
                 return $basename === 'index.data' || array_key_exists($tag, $manifest);
             })
-            ->map(fn(FsListing $listing) => $listing->getUri())
             ->each(function(string $path) {
-                $this->module->fs->deleteFile($path);
+                $this->module->disk->delete($path);
             });
     }
 
@@ -163,21 +162,21 @@ class LogTarget extends \yii\debug\LogTarget
      *
      * @param string $indexFile path to index file
      * @param array $summary summary log data
-     * @throws InvalidConfigException
-     * @throws FsException
      */
     private function _updateIndexFile(string $indexFile, array $summary): void
     {
         try {
-            $manifest = unserialize($this->module->fs->read($indexFile));
-        } catch (FsException $e) {
+            $manifest = $this->module->disk->exists($indexFile)
+                ? unserialize($this->module->disk->get($indexFile))
+                : [];
+        } catch (Throwable) {
             $manifest = [];
         }
 
         $manifest[$this->tag] = $summary;
         $this->gc($manifest);
 
-        $this->module->fs->write(
+        $this->module->disk->put(
             $indexFile,
             serialize($manifest),
         );

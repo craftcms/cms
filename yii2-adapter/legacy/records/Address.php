@@ -35,7 +35,7 @@ use craft\db\Table;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Addresses\Models\Address} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Address\Models\Address} instead.
  */
 class Address extends ActiveRecord
 {

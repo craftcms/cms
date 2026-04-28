@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
 
-final class DeleteOrphanedForeignKeyRows extends GarbageCollectionAction
+class DeleteOrphanedForeignKeyRows extends GarbageCollectionAction
 {
     public function __invoke(): void
     {

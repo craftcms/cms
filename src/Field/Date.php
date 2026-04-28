@@ -4,79 +4,65 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
-use craft\base\ElementInterface;
-use craft\elements\Entry;
-use craft\fields\conditions\DateFieldConditionRule;
-use craft\gql\directives\FormatDateTime;
-use craft\gql\types\DateTime as DateTimeType;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
-use craft\helpers\Gql;
-use craft\validators\DateTimeValidator;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Conditions\DateFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Gql\Directives\FormatDateTime;
+use CraftCms\Cms\Gql\GqlHelper as Gql;
+use CraftCms\Cms\Gql\Types\DateTime as DateTimeType;
+use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Locale;
 use DateTime;
 use DateTimeZone;
 use GraphQL\Type\Definition\ResolveInfo;
-use Illuminate\Database\Query\Builder;
-use yii\db\Schema;
+use Illuminate\Contracts\Database\Query\Builder;
+use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Date represents a Date/Time field.
  */
-final class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Date');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'calendar';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|null', DateTime::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function dbType(): array
     {
         return [
-            'date' => Schema::TYPE_DATETIME,
-            'tz' => Schema::TYPE_STRING,
+            'date' => Query::TYPE_DATETIME,
+            'tz' => Query::TYPE_STRING,
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
         $valueSql = self::valueSql($instances);
@@ -115,9 +101,6 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
      */
     public int $minuteIncrement = 30;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         // dateTime => showDate + showTime
@@ -160,10 +143,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function attributeLabels(): array
     {
         return [
@@ -172,8 +152,8 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         ];
     }
 
-    #[\Override]
-    public static function getRules(): array
+    #[Override]
+    public function getRules(): array
     {
         return array_merge(parent::getRules(), [
             'showDate' => 'boolean',
@@ -184,17 +164,12 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -233,7 +208,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
             'value' => 'showBoth',
         ];
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Date/settings.twig', [
+        return template('_components/fieldtypes/Date/settings', [
             'options' => $options,
             'value' => $dateTimeValue,
             'incrementOptions' => $incrementOptions,
@@ -242,24 +217,17 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getInputId(): string
     {
         return sprintf('%s-date', parent::getInputId());
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var DateTime|null $value */
-        $view = Craft::$app->getView();
-        $timezone = $this->showTimeZone && $value ? $value->getTimezone()->getName() : app()->getTimezone();
+        $timezone = $this->showTimeZone && $value ? $value->getTimezone()->getName() : Cms::timezone();
 
         if ($value === null) {
             // Override the initial value being set to null by CustomField::inputHtml()
@@ -271,7 +239,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
                 $initialValue['time'] = '';
             }
             $initialValue['timezone'] = $timezone;
-            $view->setInitialDeltaValue($this->handle, $initialValue);
+            DeltaRegistry::setInitialValue($this->handle, $initialValue);
         }
 
         $components = [];
@@ -289,15 +257,15 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         ];
 
         if ($this->showDate) {
-            $components[] = $view->renderTemplate('_includes/forms/date.twig', $variables);
+            $components[] = template('_includes/forms/date', $variables);
         }
 
         if ($this->showTime) {
-            $components[] = $view->renderTemplate('_includes/forms/time.twig', $variables);
+            $components[] = template('_includes/forms/time', $variables);
         }
 
         if ($this->showTimeZone) {
-            $components[] = $view->renderTemplate('_includes/forms/timeZone.twig', [
+            $components[] = template('_includes/forms/timeZone', [
                 'describedBy' => $this->describedBy,
                 'name' => "$this->handle[timezone]",
                 'value' => $timezone,
@@ -312,34 +280,29 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
-    public function getElementValidationRules(): array
+    #[Override]
+    public function getElementRules(ElementInterface $element): array
     {
-        return [
-            [
-                DateTimeValidator::class,
-                'min' => $this->min?->setTime(0, 0, 0),
-                'max' => $this->max?->setTime(23, 59, 59),
-            ],
-        ];
+        $rules = ['date'];
+
+        if ($this->min) {
+            $rules[] = 'after_or_equal:'.$this->min->setTimezone(new DateTimeZone('UTC'))->setTime(0, 0)->format('Y-m-d H:i:s');
+        }
+
+        if ($this->max) {
+            $rules[] = 'before_or_equal:'.$this->max->setTimezone(new DateTimeZone('UTC'))->setTime(0, 0)->format('Y-m-d H:i:s');
+        }
+
+        return $rules;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         return '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var DateTime|null $value */
@@ -373,10 +336,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         return $formatter->asTime($value, Locale::LENGTH_SHORT);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {
@@ -386,19 +346,13 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         return $this->getPreviewHtml($value, $element ?? new Entry);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function useFieldset(): bool
     {
         return $this->showTime;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof DateTime) {
@@ -424,17 +378,16 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
             return null;
         }
 
+        /** @phpstan-ignore-next-line */
         if ($this->showTimeZone && (isset($timeZone) || (is_array($value) && ! empty($value['timezone'])))) {
+            /** @phpstan-ignore-next-line */
             $date->setTimezone(new DateTimeZone($timeZone ?? $value['timezone']));
         }
 
         return $date;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
     {
         if (! $value) {
@@ -442,7 +395,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         }
 
         $serialized = [
-            'date' => Db::prepareDateForDb($value),
+            'date' => Query::prepareDateForDb($value),
         ];
 
         if ($this->showTimeZone && $value->getTimezone()->getLocation()) {
@@ -454,18 +407,12 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         return $serialized;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getElementConditionRuleType(): string
     {
         return DateFieldConditionRule::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getContentGqlType(): array
     {
         return [
@@ -485,10 +432,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getContentGqlMutationArgumentType(): array
     {
         $type = DateTimeType::getType();

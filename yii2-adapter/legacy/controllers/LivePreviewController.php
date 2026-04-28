@@ -9,9 +9,10 @@ namespace craft\controllers;
 
 use Craft;
 use craft\elements\db\UserQuery;
-use craft\elements\User;
 use craft\web\Controller;
 use CraftCms\Cms\RouteToken\RouteTokens;
+use CraftCms\Cms\User\Elements\User;
+use CraftCms\Yii2Adapter\IdentityWrapper;
 use yii\base\InvalidRouteException;
 use yii\console\Exception;
 use yii\web\BadRequestHttpException;
@@ -102,7 +103,7 @@ class LivePreviewController extends Controller
             throw new ServerErrorHttpException('No user exists with an ID of ' . $userId);
         }
 
-        Craft::$app->getUser()->setIdentity($user);
+        Craft::$app->getUser()->setIdentity(new IdentityWrapper($user));
 
         // Add CORS headers
         $this->response->getHeaders()
