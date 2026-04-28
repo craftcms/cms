@@ -146,7 +146,7 @@ class UrlManager extends \yii\web\UrlManager
         $route = trim($params[0], '/');
         unset($params[0]);
 
-        return Url::actionUrl($route, $params, null, false);
+        return Url::actionUrl($route, $params, null);
     }
 
     /**

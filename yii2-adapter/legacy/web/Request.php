@@ -1596,7 +1596,8 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      */
     private function _getQueryStringPath(): string
     {
-        $value = $this->getQueryParam(null, '');
+        $value = $this->getQueryParam('', '');
+
         if (!is_string($value)) {
             return '';
         }
