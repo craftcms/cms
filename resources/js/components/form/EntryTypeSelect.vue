@@ -47,7 +47,7 @@
       return 'first';
     }
 
-    if (index === props.modelValue.length) {
+    if (index === props.modelValue.length - 1) {
       return 'last';
     }
 
