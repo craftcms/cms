@@ -301,6 +301,11 @@ class Plugin extends Module implements PluginInterface
         return parent::getBasePath();
     }
 
+    public function getResourcesPath(): string
+    {
+        return dirname($this->getBasePath()) . '/resources';
+    }
+
     public function getMigrationsPath(): string
     {
         $laravelPath = dirname($this->getBasePath()) . '/database/migrations';

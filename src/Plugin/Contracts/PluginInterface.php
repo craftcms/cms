@@ -321,6 +321,15 @@ interface PluginInterface
     public function getBasePath(): string;
 
     /**
+     * Returns the plugin’s resources directory.
+     *
+     * This is then used to register template roots and locate the plugin’s
+     * icon. Developers may also use it to assemble paths to publishable
+     * assets or other arbitrary files.
+     */
+    public function getResourcesPath(): string;
+
+    /**
      * Returns the plugin migrations directory.
      *
      * Prefers the package root's `database/migrations` directory, and falls
