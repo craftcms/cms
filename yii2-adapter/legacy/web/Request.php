@@ -316,18 +316,10 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
         }
 
         try {
-            if ($this->generalConfig->usePathInfo) {
+            $this->_fullPath = $this->_getQueryStringPath();
+
+            if (!$this->_fullPath) {
                 $this->_fullPath = $this->getPathInfo(true);
-
-                if (!$this->_fullPath) {
-                    $this->_fullPath = $this->_getQueryStringPath();
-                }
-            } else {
-                $this->_fullPath = $this->_getQueryStringPath();
-
-                if (!$this->_fullPath) {
-                    $this->_fullPath = $this->getPathInfo(true);
-                }
             }
         } catch (InvalidConfigException) {
             $this->_fullPath = $this->_getQueryStringPath();
@@ -969,13 +961,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      */
     public function getQueryParamsWithoutPath(): array
     {
-        $params = $this->getQueryParams();
-
-        if ($this->generalConfig->pathParam) {
-            unset($params[$this->generalConfig->pathParam]);
-        }
-
-        return $params;
+        return $this->getQueryParams();
     }
 
     /**
@@ -1131,23 +1117,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      */
     public function getQueryStringWithoutPath(): string
     {
-        // Get the full query string
-        $queryString = $this->getQueryString();
-
-        // If there's no path param, just return the full query string
-        if (!$this->generalConfig->pathParam) {
-            return $queryString;
-        }
-
-        // Tear it down and rebuild it without the path param
-        $parts = explode('&', $queryString);
-        foreach ($parts as $key => $part) {
-            if (str_starts_with($part, $this->generalConfig->pathParam . '=')) {
-                unset($parts[$key]);
-                break;
-            }
-        }
-        return implode('&', $parts);
+        return $this->getQueryString();
     }
 
     /**
@@ -1626,7 +1596,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      */
     private function _getQueryStringPath(): string
     {
-        $value = $this->getQueryParam($this->generalConfig->pathParam, '');
+        $value = $this->getQueryParam(null, '');
         if (!is_string($value)) {
             return '';
         }

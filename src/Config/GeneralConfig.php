@@ -1892,38 +1892,6 @@ class GeneralConfig extends BaseConfig
     public string|int $maxUploadFileSize = 16777216;
 
     /**
-     * @var bool Whether generated URLs should omit `index.php` (e.g. `http://my-project.tld/path` instead of `http://my-project.tld/index.php/path`)
-     *
-     * This can only be possible if your server is configured to redirect would-be 404s to `index.php`, for example, with the redirect found
-     * in the `.htaccess` file that came with Craft:
-     *
-     * ```
-     * RewriteEngine On
-     * RewriteCond %{REQUEST_FILENAME} !-f
-     * RewriteCond %{REQUEST_FILENAME} !-d
-     * RewriteRule (.+) /index.php?p=$1 [QSA,L]
-     * ```
-     *
-     * ::: code
-     * ```php Static Config
-     * ->omitScriptNameInUrls(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_OMIT_SCRIPT_NAME_IN_URLS=true
-     * ```
-     * :::
-     *
-     * ::: tip
-     * Even when this is set to `true`, the script name could still be included in some action URLs.
-     * If you want to ensure that `index.php` is fully omitted from **all** generated URLs, set the <config5:pathParam>
-     * config setting to `null`.
-     * :::
-     *
-     * @group Routing
-     */
-    public bool $omitScriptNameInUrls = true;
-
-    /**
      * @var bool Whether Craft should optimize images for reduced file sizes without noticeably reducing image quality. (Only supported when
      *           ImageMagick is used.)
      *
@@ -1993,29 +1961,6 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public string $partialTemplatesPath = '_partials';
-
-    /**
-     * @var string|null The query string param that Craft will check when determining the request’s path.
-     *
-     * This can be set to `null` if your web server is capable of directing traffic to `index.php` without a query string param.
-     * If you’re using Apache, that means you’ll need to change the `RewriteRule` line in your `.htaccess` file to:
-     *
-     * ```
-     * RewriteRule (.+) index.php [QSA,L]
-     * ```
-     *
-     * ::: code
-     * ```php Static Config
-     * ->pathParam(null)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_PATH_PARAM=
-     * ```
-     * :::
-     *
-     * @group Routing
-     */
-    public ?string $pathParam = null;
 
     /**
      * @var string|null The maximum amount of memory Craft will try to reserve during memory-intensive operations such as zipping,
@@ -3166,24 +3111,6 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public bool $useIframeResizer = false;
-
-    /**
-     * @var bool Whether Craft should specify the path using `PATH_INFO` or as a query string parameter when generating URLs.
-     *
-     * This setting only takes effect if <config5:omitScriptNameInUrls> is set to `false`.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->usePathInfo(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_USE_PATH_INFO=true
-     * ```
-     * :::
-     *
-     * @group Routing
-     */
-    public bool $usePathInfo = false;
 
     /**
      * @var bool|string Whether Craft will set the “secure” flag when saving cookies when using `Craft::cookieConfig()` to create a cookie.

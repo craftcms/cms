@@ -138,12 +138,10 @@ class CpAsset implements LegacyAssetInterface
             'left' => $orientation === 'ltr' ? 'left' : 'right',
             'maxPasswordLength' => AppServiceProvider::$maxPasswordLength,
             'minPasswordLength' => AppServiceProvider::$minPasswordLength,
-            'omitScriptNameInUrls' => $generalConfig->omitScriptNameInUrls,
             'orientation' => $orientation,
             'pageNum' => Paginator::resolveCurrentPage(Cms::config()->getPageTriggerParam()),
             'pageTrigger' => Cms::config()->getPageTriggerParam(),
             'path' => request()->craftPath(),
-            'pathParam' => $generalConfig->pathParam,
             'registeredAssetBundles' => [], // force encode as JS object
             'registeredJsFiles' => [], // force encode as JS object
             'right' => $orientation === 'ltr' ? 'right' : 'left',
@@ -153,7 +151,6 @@ class CpAsset implements LegacyAssetInterface
             'tokenParam' => $generalConfig->tokenParam,
             'translations' => I18N::getAllTranslationsForLocale(app()->getLocale()) ?: new stdClass,
             'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
-            'usePathInfo' => $generalConfig->usePathInfo,
         ];
 
         if (request()->isCpRequest()) {

@@ -23,11 +23,11 @@ readonly class QueueController
     public function run(): Response
     {
         if (! Cms::config()->runQueueAutomatically) {
-            return response();
+            return response()->make();
         }
 
         if ($this->jobProgress->hasReservedJobs() || ! $this->jobProgress->hasPendingJobs()) {
-            return response();
+            return response()->make();
         }
 
         app()->terminating(function () {
@@ -42,7 +42,7 @@ readonly class QueueController
             ]);
         });
 
-        return response();
+        return response()->make();
     }
 
     public function jobInfo(): JsonResponse
