@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Structure;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Structure\Data\Structure;
@@ -17,12 +17,12 @@ use CraftCms\Cms\Structure\Events\InsertingElement;
 use CraftCms\Cms\Structure\Events\UpdatingElement;
 use CraftCms\Cms\Structure\Models\Structure as StructureModel;
 use CraftCms\Cms\Structure\Models\StructureElement as StructureElementModel;
+use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Throwable;
-use yii\base\Exception;
 
 #[Singleton]
 class Structures

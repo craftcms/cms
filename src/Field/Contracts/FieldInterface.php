@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Contracts;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -377,7 +377,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      * [
      *       'string',
      *       'min:3',
-     *       Rule::when($element->inScenarios(self::SCENARIO_LIVE), ['max:12']),
+     *       Rule::when($element->ruleset->inScenarios(\CraftCms\Cms\Element\Validation\ElementRules::SCENARIO_LIVE), ['max:12']),
      *  ]
      * ```
      */

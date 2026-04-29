@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Collection;
@@ -87,23 +87,7 @@ trait QueriesEagerly
      */
     public function with(array|string|null $value): static
     {
-        if (is_null($value)) {
-            $this->with = null;
-
-            return $this;
-        }
-
-        $this->with ??= [];
-
-        if (is_string($this->with)) {
-            $this->with = str($this->with)->explode(',')->all();
-        }
-
-        if (! is_array($value)) {
-            $value = str($value)->explode(',')->all();
-        }
-
-        $this->with = array_merge($this->with, $value);
+        $this->with = $value;
 
         return $this;
     }
@@ -113,11 +97,19 @@ trait QueriesEagerly
      */
     public function andWith(array|string|null $value): static
     {
-        if (! is_null($value)) {
+        if (empty($this->with)) {
+            $this->with = [$value];
+
             return $this;
         }
 
-        return $this->with($value);
+        if (is_string($this->with)) {
+            $this->with = str($this->with)->explode(',')->all();
+        }
+
+        $this->with[] = $value;
+
+        return $this;
     }
 
     /**

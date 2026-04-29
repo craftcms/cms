@@ -19,8 +19,8 @@ use CraftCms\Cms\User\Elements\User;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
+use Exception;
 use UnitTester;
-use yii\base\Exception;
 
 /**
  * Unit tests for the User Element

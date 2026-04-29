@@ -178,3 +178,28 @@ it('returns true from shouldStillRun when no uuid available', function () {
     // No job property set, so uuid() will return null
     expect($job->shouldStillRun())->toBeTrue();
 });
+
+it('returns true from shouldStillRun for sync jobs without progress', function () {
+    $job = new class extends Job
+    {
+        public function handle(): void {}
+    };
+
+    $mockQueueJob = new class
+    {
+        public function uuid(): string
+        {
+            return 'sync-job-uuid';
+        }
+
+        public function getConnectionName(): string
+        {
+            return 'sync';
+        }
+    };
+
+    $reflection = new ReflectionProperty($job, 'job');
+    $reflection->setValue($job, $mockQueueJob);
+
+    expect($job->shouldStillRun())->toBeTrue();
+});

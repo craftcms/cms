@@ -28,7 +28,7 @@ test('showLogin shows the login form for guests', function () {
 });
 
 test('showLogin renders flashed login errors', function () {
-    Craft::$app->getSession()->setFlash('cp-notification-error', ['Authentication failed.', []]);
+    session()->flash('cp-notification-error', ['Authentication failed.', []]);
 
     get(cp_url('login'))
         ->assertOk()

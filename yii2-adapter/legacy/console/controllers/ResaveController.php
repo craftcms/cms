@@ -8,7 +8,6 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\base\Event as YiiEvent;
 use craft\console\Controller;
 use craft\elements\Category;
@@ -23,12 +22,14 @@ use craft\services\Elements;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Element\Commands\Resave\ResaveCommand;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\DefineResaveCommands;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -613,7 +614,7 @@ class ResaveController extends Controller
                                     $set = false;
                                 }
                             } elseif ($this->ifInvalid) {
-                                $element->setScenario(Element::SCENARIO_LIVE);
+                                $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
                                 if ($element->validate($this->set) && $element->validate("field:$this->set")) {
                                     $set = false;
                                 }

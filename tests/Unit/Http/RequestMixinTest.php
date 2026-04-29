@@ -52,6 +52,32 @@ describe('isSiteRequest', function () {
     });
 });
 
+describe('craftPath', function () {
+    it('returns the trimmed site request path', function () {
+        expect(Request::create('/news/latest')->craftPath())->toBe('news/latest');
+    });
+
+    it('normalizes repeated slashes', function () {
+        expect(Request::create('/news//latest')->craftPath())->toBe('news/latest');
+    });
+
+    it('returns the control panel path without the control panel trigger', function () {
+        expect(Request::create('/admin/assets')->craftPath())->toBe('assets');
+    });
+
+    it('returns an empty string for the control panel root', function () {
+        expect(Request::create('/admin')->craftPath())->toBe('');
+    });
+
+    it('returns site action paths without the action trigger', function () {
+        expect(Request::create('/actions/users/login')->craftPath())->toBe('users/login');
+    });
+
+    it('returns control panel action paths without the control panel or action triggers', function () {
+        expect(Request::create('/admin/actions/users/login')->craftPath())->toBe('users/login');
+    });
+});
+
 describe('actionSegments and isActionRequest', function () {
     it('extracts action segments from the path for site requests', function () {
         $request = Request::create('/actions/users/login');
@@ -147,6 +173,16 @@ describe('duplicateWithUri', function () {
         expect($duplicate->query())->toBe(['page' => '2'])
             ->and($duplicate->server('REQUEST_URI'))->toBe('/entries')
             ->and($duplicate->server('HTTP_HOST'))->toBe('example.test');
+    });
+
+    it('preserves the session on the duplicated request', function () {
+        $request = Request::create('/news?foo=bar');
+        $request->setLaravelSession(session()->driver());
+
+        $duplicate = $request->duplicateWithUri('/entries');
+
+        expect($duplicate->hasSession())->toBeTrue()
+            ->and($duplicate->session())->toBe($request->session());
     });
 });
 

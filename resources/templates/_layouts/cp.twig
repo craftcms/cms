@@ -42,9 +42,7 @@
 {% extends '_layouts/basecp.twig' %}
 
 {# The control panel only supports queue components that implement QueueInterface #}
-{% set queue = craft.app.queue %}
-
-{% set sidebarState = craft.app.request.rawCookies.value("Craft-#{craft.app.systemUid}_sidebar") ?? 'expanded' %}
+{% set sidebarState = Request.cookie("Craft-#{craft.systemUid}_sidebar") ?? 'expanded' %}
 {% set bodyAttributes = {
     data: {
         sidebar: sidebarState,
@@ -53,9 +51,9 @@
 
 {% set fullPageForm = (fullPageForm is defined and fullPageForm) %}
 
-{% set editionName = craft.app.edition.name %}
-{% set canUpgradeEdition = craft.app.getCanUpgradeEdition() %}
-{% set licensedEdition = craft.app.getLicensedEdition() %}
+{% set editionName = Edition.name %}
+{% set canUpgradeEdition = Edition.canUpgrade() %}
+{% set licensedEdition = Edition.getLicensed() %}
 {% set isTrial = licensedEdition is not same as(null) and licensedEdition is not same as(CraftEdition) %}
 {% set trialInfo = craft.cp.trialInfo() %}
 
@@ -82,9 +80,6 @@
 {% if not showHeader %}
     {% set bodyClass = bodyClass|push('no-header') -%}
 {% endif %}
-{% if craft.app.hasModule('debug') %}
-    {% set bodyClass = bodyClass|push('has-debug-toolbar') %}
-{% endif %}
 
 {% set mainAttributes = {
     id: 'main',
@@ -105,10 +100,10 @@
         'saveshortcut-scroll': retainScrollOnSaveShortcut ?? false,
         actions: formActions ?? false,
         'confirm-unload': true,
-        delta: view.getIsDeltaRegistrationActive(),
-        'delta-names': view.getDeltaNames(),
-        'initial-delta-values': view.getInitialDeltaValues(),
-        'modified-delta-names': view.getModifiedDeltaNames()|merge(craft.app.request.getBodyParam('modifiedDeltaNames') ?? [])|unique|values,
+        delta: DeltaRegistry.isActive(),
+        'delta-names': DeltaRegistry.getNames(),
+        'initial-delta-values': DeltaRegistry.getInitialValues(),
+        'modified-delta-names': DeltaRegistry.getModifiedNames()|merge(Request.input('modifiedDeltaNames') ?? [])|unique|values,
     },
 }|merge(mainFormAttributes ?? [], recursive=true) %}
 
@@ -169,13 +164,13 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                         <ul>
                             <li>
                                 <a href="{{ url('myaccount') }}" class="flex flex-nowrap">
-                                    {% if currentUser.photoId %}
+                                    {% if Auth.user.photoId %}
                                         {{ userPhoto|raw }}
                                     {% endif %}
                                     <div class="flex-grow">
-                                        <div>{{ currentUser.username }}</div>
-                                        {% if not app.config.craft.general.useEmailAsUsername %}
-                                            <div class="smalltext">{{ currentUser.email }}</div>
+                                        <div>{{ Auth.user.username }}</div>
+                                        {% if not config('craft.general.useEmailAsUsername') %}
+                                            <div class="smalltext">{{ Auth.user.email }}</div>
                                         {% endif %}
                                     </div>
                                 </a>
@@ -315,7 +310,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                             </div><!-- #content-container -->
 
                             {% if details is not empty %}
-                                <div id="details-container" tabindex="-1" data-state="{{ craft.app.request.rawCookies.value("Craft-#{craft.app.systemUid}_sidebar-details")}}">
+                                <div id="details-container" tabindex="-1" data-state="{{ Request.cookie("Craft-#{craft.systemUid}_sidebar-details")}}">
                                     <div id="details">
                                         <div class="details">
                                             {{ details|raw }}
@@ -357,7 +352,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                                 <span class="visually-hidden">{{ fullEditionName }}</span>
                             </span>
                         </span>
-                        {{ craft.app.version }}
+                        {{ craft.version }}
                     </span>
                     {% if canUpgradeEdition and not isTrial %}
                         {% set linkText = 'Upgrade to Craft Pro'|t('app') %}
@@ -398,7 +393,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
 {% endblock %}
 
 
-{% if currentUser.can('performUpdates') and not isUpdateInfoCached %}
+{% if Auth.user.can('performUpdates') and not Updates.isUpdateInfoCached() %}
     {% js %}
     Craft.cp.checkForUpdates();
     {% endjs %}

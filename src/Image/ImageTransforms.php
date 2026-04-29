@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image;
 
-use Craft;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
@@ -298,7 +297,7 @@ class ImageTransforms
             throw new ImageTransformException("Invalid image transformer: $class");
         }
 
-        return $this->imageTransformers[$class] = Craft::createObject(array_merge(['class' => $class], $config));
+        return $this->imageTransformers[$class] = new $class($config);
     }
 
     /**

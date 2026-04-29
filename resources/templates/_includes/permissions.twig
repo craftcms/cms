@@ -1,7 +1,7 @@
 {% requireEdition CraftTeam %}
 
 
-{% do view.registerAssetBundle("craft\\web\\assets\\userpermissions\\UserPermissionsAsset") %}
+{% do registerLegacyAsset("CraftCms\\Cms\\View\\LegacyAssets\\UserPermissionsAsset") %}
 
 {% set wrapperClass = "user-permissions-#{random()}" %}
 
@@ -19,8 +19,8 @@
                 {% set checked = true %}
             {% else %}
                 {% if subject %}
-                    {% if request.actionSegments() == ['users', 'save-user'] %}
-                        {% set checked = permission.key in request.input('permissions', []) %}
+                    {% if Request.actionSegments() == ['users', 'save-user'] %}
+                        {% set checked = permission.key in Request.input('permissions', []) %}
                     {% else %}
                         {% set checked = subject.can(permission.key) %}
                     {% endif %}

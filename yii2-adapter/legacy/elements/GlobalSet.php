@@ -7,17 +7,21 @@
 
 namespace craft\elements;
 
+use craft\base\LegacyEventConstants;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\db\GlobalSetQuery;
 use craft\records\GlobalSet as GlobalSetRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
+use CraftCms\Yii2Adapter\Validation\LegacyElementRules;
 use Illuminate\Support\Facades\Log;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
@@ -30,8 +34,11 @@ use function CraftCms\Cms\t;
  * @since 3.0.0
  * @deprecated in 6.0.0
  */
+#[Ruleset(LegacyElementRules::class)]
 class GlobalSet extends Element implements FieldLayoutProviderInterface
 {
+    use LegacyEventConstants;
+
     /**
      * @since 4.4.6
      */
@@ -188,7 +195,7 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
      */
     protected function defineBehaviors(): array
     {
-        $behaviors = parent::defineBehaviors();
+        $behaviors = [];
         $behaviors['fieldLayout'] = [
             'class' => FieldLayoutBehavior::class,
             'elementType' => self::class,
@@ -212,7 +219,7 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
      */
     protected function defineRules(): array
     {
-        $rules = parent::defineRules();
+        $rules = [];
         $rules[] = [['fieldLayoutId'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         $rules[] = [['name', 'handle'], 'required'];
@@ -221,14 +228,14 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
             ['name', 'handle'],
             UniqueValidator::class,
             'targetClass' => GlobalSetRecord::class,
-            'except' => [self::SCENARIO_ESSENTIALS],
+            'except' => [ElementRules::SCENARIO_ESSENTIALS],
         ];
 
         $rules[] = [
             ['handle'],
             HandleValidator::class,
             'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title'],
-            'except' => [self::SCENARIO_ESSENTIALS],
+            'except' => [ElementRules::SCENARIO_ESSENTIALS],
         ];
 
         $rules[] = [['fieldLayout'], function() {
@@ -239,17 +246,6 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
         }];
 
         return $rules;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function scenarios(): array
-    {
-        $scenarios = parent::scenarios();
-        $scenarios[self::SCENARIO_SAVE_SET] = $scenarios[self::SCENARIO_DEFAULT];
-
-        return $scenarios;
     }
 
     /**

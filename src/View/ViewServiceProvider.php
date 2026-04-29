@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View;
 
+use CraftCms\Cms\View\Events\RenderingAssets;
 use CraftCms\Cms\View\Hooks\PrepareElementIndexVariables;
 use CraftCms\Cms\View\Hooks\PrepareElementSourcesVariables;
 use CraftCms\Cms\View\Hooks\PrepareElementToolbarVariables;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Contracts\View\Factory as ViewFactory;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -35,6 +38,10 @@ class ViewServiceProvider extends ServiceProvider
 
     public function boot(TemplateHooks $hooks): void
     {
+        Event::listen(function (RenderingAssets $event) {
+            app(InternalAssetRegistry::class)->flush();
+        });
+
         /**
          * Console should run in CP Template mode by default.
          */
@@ -48,6 +55,19 @@ class ViewServiceProvider extends ServiceProvider
         $hooks->register('cp.layouts.elementindex', PrepareElementIndexVariables::class);
         $hooks->register('cp.elements.toolbar', PrepareElementToolbarVariables::class);
         $hooks->register('cp.elements.sources', PrepareElementSourcesVariables::class);
+
+        $this->app->booted(function () {
+            /**
+             * This ensures that when Laravel tries to find an error view,
+             * it will look in the CP templates for it as well.
+             */
+            if (request()->isCpRequest()) {
+                config()->set('view.paths', array_merge(
+                    config('view.paths'),
+                    [dirname(__DIR__, 2).'/resources/templates']
+                ));
+            }
+        });
     }
 
     private function registerTemplateGlobals(): void

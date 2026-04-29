@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Middleware;
 
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\Navigation;
-use CraftCms\Cms\Cp\Rebrand;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
@@ -69,11 +69,9 @@ class HandleInertiaRequests extends Middleware
             $currentUser = $request->user();
         }
 
-        $systemIcon = Icons::svg('c-outline');
-
-        if (Edition::isAtLeast(Edition::Pro) && $rebrand = app(Rebrand::class)) {
-            $systemIcon = $rebrand->getImage('icon');
-        }
+        $systemIcon = Cms::config()->cpIconUrl
+            ? Aliases::get(Cms::config()->cpIconUrl)
+            : Icons::svg('c-outline');
 
         return [
             ...parent::share($request),

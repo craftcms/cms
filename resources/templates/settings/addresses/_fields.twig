@@ -15,7 +15,7 @@
 
     {{ forms.fieldLayoutDesignerField({
       first: true,
-      fieldLayout: fieldLayout ?? craft.app.addresses.getFieldLayout(),
+      fieldLayout: fieldLayout ?? Addresses.getFieldLayout(),
       withGeneratedFields: true,
       withCardViewDesigner: true,
     }) }}

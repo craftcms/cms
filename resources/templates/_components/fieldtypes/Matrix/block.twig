@@ -72,7 +72,7 @@
   ]) %}
 {% endif %}
 
-{% if entry.id or (currentUser.admin and app.config.craft.general.allowAdminChanges) %}
+{% if entry.id or (Auth.user.admin and config('craft.general.allowAdminChanges')) %}
   {% set actionMenuItems = actionMenuItems|push({hr: true}) %}
 
   {% if entry.id and not static %}
@@ -84,7 +84,7 @@
     }) %}
   {% endif %}
 
-  {% if currentUser.admin and app.config.craft.general.allowAdminChanges %}
+  {% if Auth.user.admin and config('craft.general.allowAdminChanges') %}
     {% set actionMenuItems = actionMenuItems|push({
       icon: 'gear',
       label: 'Entry type settings'|t('app'),
@@ -187,7 +187,7 @@
     {{ hiddenInput("#{name}[sortOrder][]", entry.uid) }}
     {# only register a delta name for this entry if it’s not new #}
     {% if entry.id and not entry.getIsUnpublishedDraft() %}
-      {% do view.registerDeltaName(baseInputName) %}
+      {% do deltaRegistry.registerName(baseInputName) %}
     {% endif %}
     {{ hiddenInput("#{baseInputName}[type]", entryType.handle) }}
     {{ hiddenInput("#{baseInputName}[enabled]", entry.enabled ? '1' : '') }}
@@ -205,7 +205,7 @@
         flex: true,
         'flex-nowrap': true,
         'flex-gap-xs': true,
-        error: not static and entry.hasErrors(),
+        error: not static and entry.errors.isNotEmpty(),
       }|filter|keys,
     } %}
       {% if entryType.icon %}
@@ -215,7 +215,7 @@
         }) }}
       {% endif %}
       <div>{{ entryTypeName }}</div>
-      {% if not static and entry.hasErrors() %}<span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>{% endif %}
+      {% if not static and entry.errors.isNotEmpty() %}<span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>{% endif %}
     {% endtag %}
     <div class="preview"></div>
     {% tag 'div' with {

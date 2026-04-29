@@ -7,11 +7,11 @@
 
 namespace craft\elements\db;
 
-use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\helpers\Db;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
@@ -22,6 +22,7 @@ use CraftCms\Cms\Support\Arr;
  * @mixin ElementQuery
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.5.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements} instead.
  */
 trait NestedElementQueryTrait
 {

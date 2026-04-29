@@ -304,7 +304,7 @@ class Globals extends Component
         }
 
         // Prevent most custom field validators
-        $globalSet->setScenario(GlobalSet::SCENARIO_SAVE_SET);
+        $globalSet->ruleset->useScenario(GlobalSet::SCENARIO_SAVE_SET);
 
         if ($runValidation && !$globalSet->validate()) {
             Log::info('Global set not saved due to validation error.', [__METHOD__]);

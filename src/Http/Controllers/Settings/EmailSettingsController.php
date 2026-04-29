@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Email\Actions\SendTestMailAction;
@@ -12,6 +11,7 @@ use CraftCms\Cms\Http\Requests\EmailSettingsRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -49,7 +49,7 @@ readonly class EmailSettingsController
             'templateSuggestions' => SelectOptions::getTemplateSuggestions(),
             'sites' => $sites,
             'crumbs' => [
-                ['label' => t('Settings'), 'url' => UrlHelper::cpUrl('settings')],
+                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Email')],
             ],
             'readOnly' => ! $generalConfig->allowAdminChanges,

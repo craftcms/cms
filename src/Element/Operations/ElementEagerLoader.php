@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Operations;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadInfo;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
@@ -244,9 +244,11 @@ readonly class ElementEagerLoader
                         $query->offset(null);
                         $query->limit(null);
 
+                        // The mapping criteria should take precedence here
+                        // (see https://github.com/craftcms/cms/pull/18704)
                         $criteria = array_merge(
-                            $map['criteria'] ?? [],
                             $plan->criteria,
+                            $map['criteria'] ?? [],
                         );
 
                         // Save the offset & limit params for later

@@ -7,16 +7,17 @@ namespace CraftCms\Cms\Http\Controllers\Assets;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Image\ImageTransforms;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use yii\base\NotSupportedException;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -220,7 +221,7 @@ readonly class ImageEditorController
 
         $newAsset = new Asset;
         $newAsset->avoidFilenameConflicts = true;
-        $newAsset->setScenario(Asset::SCENARIO_CREATE);
+        $newAsset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
 
         $newAsset->tempFilePath = $finalImage;
         $newAsset->setFilename($asset->getFilename());

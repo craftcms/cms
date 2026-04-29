@@ -6,11 +6,11 @@ namespace craft\enums;
 if (false) {
     /**
      * @since 5.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Enums\ElementIndexViewMode} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Enums\ElementIndexViewMode} instead.
      */
     enum ElementIndexViewMode: string
     {
     }
 }
 
-class_alias(\CraftCms\Cms\Field\Enums\ElementIndexViewMode::class, ElementIndexViewMode::class);
+class_alias(\CraftCms\Cms\Element\Enums\ElementIndexViewMode::class, ElementIndexViewMode::class);

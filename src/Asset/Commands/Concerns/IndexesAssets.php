@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Commands\Concerns;
 
-use craft\console\Application;
 use CraftCms\Cms\Asset\Data\IndexingSession;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -46,7 +45,7 @@ trait IndexesAssets
     /**
      * @param  Volume[]  $volumes
      */
-    protected function indexAssets(Application $craft, array $volumes, string $path = '', int $startAt = 0): void
+    protected function indexAssets(array $volumes, string $path = '', int $startAt = 0): void
     {
         $this->cacheRemoteImages = $this->hasOption('cacheRemoteImages') && $this->parseBooleanOption($this->option('cacheRemoteImages'));
         $this->deleteEmptyFolders = $this->parseBooleanOption($this->option('deleteEmptyFolders'));

@@ -19,7 +19,7 @@
     id: 'placeholder',
     name: 'placeholder',
     value: field.placeholder,
-    errors: field.getErrors('placeholder'),
+    errors: field.errors.get('placeholder'),
     disabled: readOnly,
 }) }}
 
@@ -27,7 +27,7 @@
     label: 'Field Limit'|t('app'),
     instructions: "The maximum number of characters or bytes the field is allowed to have."|t('app'),
     id: 'fieldLimit',
-    errors: field.getErrors(field.byteLimit ? 'byteLimit' : 'charLimit'),
+    errors: field.errors.get(field.byteLimit ? 'byteLimit' : 'charLimit'),
     disabled: readOnly,
 } %}
     {% import "_includes/forms" as forms %}
@@ -78,7 +78,7 @@
         name: 'initialRows',
         value: field.initialRows,
         size: 3,
-        errors: field.getErrors('initialRows'),
+        errors: field.errors.get('initialRows'),
         disabled: readOnly,
     }) }}
 </div>

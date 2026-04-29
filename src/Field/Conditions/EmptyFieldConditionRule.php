@@ -4,21 +4,22 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Conditions;
 
-use craft\base\conditions\BaseConditionRule;
-use craft\base\ElementInterface;
+use CraftCms\Cms\Condition\BaseConditionRule;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
-use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
+use Override;
+use RuntimeException;
 
 class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 
-    #[\Override]
+    #[Override]
     public string $operator = self::OPERATOR_NOT_EMPTY;
 
-    #[\Override]
+    #[Override]
     protected function operators(): array
     {
         return [
@@ -31,7 +32,7 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
     {
         try {
             $field = $this->field();
-        } catch (InvalidConfigException) {
+        } catch (RuntimeException) {
             // The field doesn't exist
             return true;
         }
@@ -57,7 +58,7 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
         return match ($this->operator) {
             self::OPERATOR_EMPTY => ':empty:',
             self::OPERATOR_NOT_EMPTY => 'not :empty:',
-            default => throw new InvalidConfigException("Invalid operator: $this->operator"),
+            default => throw new RuntimeException("Invalid operator: $this->operator"),
         };
     }
 

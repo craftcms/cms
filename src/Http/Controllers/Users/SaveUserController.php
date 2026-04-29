@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Craft;
-use craft\web\UploadedFile;
 use CraftCms\Cms\Asset\AssetsHelper;
-use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -24,6 +22,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
+use CraftCms\Cms\User\Validation\UserRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -250,17 +249,17 @@ readonly class SaveUserController
         // Validate and save!
         // ---------------------------------------------------------------------
 
-        $photo = UploadedFile::getInstanceByName('photo');
+        $photo = $request->file('photo');
 
-        if ($photo && ! ImageHelper::canManipulateAsImage($photo->getExtension())) {
+        if ($photo && ! ImageHelper::canManipulateAsImage($photo->extension())) {
             $user->errors()->add('photo', t('The user photo provided is not an image.'));
         }
 
         // Don't validate required custom fields if it's public registration
         if (! $isPublicRegistration || ($userSettings['validateOnPublicRegistration'] ?? false)) {
-            $user->setScenario(Element::SCENARIO_LIVE);
+            $user->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         } else {
-            $user->setScenario(User::SCENARIO_REGISTRATION);
+            $user->ruleset->useScenario(UserRules::SCENARIO_REGISTRATION);
         }
 
         // Manually validate the user so we can pass $clearErrors=false
@@ -299,7 +298,7 @@ readonly class SaveUserController
         // Is this the current user, and did their username just change?
         if ($isCurrentUser && $user->username !== $oldUsername) {
             // Update the username cookie
-            app(Auth::class)->setRememberedUsername($user);
+            app(AuthMethods::class)->setRememberedUsername($user);
         }
 
         // Save the user’s photo, if it was submitted
@@ -357,7 +356,7 @@ readonly class SaveUserController
         }
 
         // Tell all browser windows about the draft deletion
-        Craft::$app->getSession()->broadcastToJs([
+        session()->broadcastToJs([
             'event' => 'saveElement',
             'id' => $user->id,
         ]);

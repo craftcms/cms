@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Actions;
 
-use Craft;
 use CraftCms\Cms\Element\Actions\ElementAction;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\UserQuery;
@@ -12,13 +11,14 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
+use Override;
 use Throwable;
 
 use function CraftCms\Cms\t;
 
 class SuspendUsers extends ElementAction
 {
-    #[\Override]
+    #[Override]
     public function getTriggerLabel(): string
     {
         return t('Suspend');
@@ -49,13 +49,13 @@ class SuspendUsers extends ElementAction
 })();
 JS, [
             static::class,
-            Craft::$app->getUser()->getId(),
+            Auth::user()->id,
         ]);
 
         return null;
     }
 
-    #[\Override]
+    #[Override]
     public function performAction(ElementQueryInterface $query): bool
     {
         // Get the users that aren't already suspended

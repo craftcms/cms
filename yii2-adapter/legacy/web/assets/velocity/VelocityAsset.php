@@ -8,23 +8,16 @@
 namespace craft\web\assets\velocity;
 
 use craft\web\AssetBundle;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Velocity asset bundle.
+ * @deprecated 6.0.0
  */
 class VelocityAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
+    public function registerAssetFiles($view)
     {
-        $this->sourcePath = __DIR__ . '/dist';
-
-        $this->js = [
-            'velocity.js',
-        ];
-
-        parent::init();
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\VelocityAsset::class);
     }
 }

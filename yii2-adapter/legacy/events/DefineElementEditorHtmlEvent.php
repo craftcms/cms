@@ -7,13 +7,14 @@
 
 namespace craft\events;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * DefineElementEditorHtmlEvent is used to define the HTML for an element editor.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Events\DefineElementEditorContent} instead.
  */
 class DefineElementEditorHtmlEvent extends DefineHtmlEvent
 {

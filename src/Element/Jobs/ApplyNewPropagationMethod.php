@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Jobs;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Queue\BatchedJob;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -190,7 +191,7 @@ class ApplyNewPropagationMethod extends BatchedJob
 
     private function resaveItem(ElementInterface $item): void
     {
-        $item->setScenario(Element::SCENARIO_ESSENTIALS);
+        $item->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $item->resaving = true;
 
         try {

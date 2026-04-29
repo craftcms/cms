@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
-use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Events\SettingPassword;
 use CraftCms\Cms\Cms;
@@ -13,6 +13,7 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
+use CraftCms\Cms\User\Validation\UserRules;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password as PasswordFacade;
@@ -24,7 +25,7 @@ use function CraftCms\Cms\t;
 
 readonly class SetPasswordController extends AuthenticationController
 {
-    public function show(Request $request, Auth $auth): Response|View
+    public function show(Request $request, AuthMethods $auth): Response|View
     {
         if (! is_array($info = $this->processTokenRequest($request))) {
             return $info;
@@ -72,7 +73,7 @@ readonly class SetPasswordController extends AuthenticationController
                 ],
                 function (User $user, string $password) use ($elements) {
                     $user->newPassword = $password;
-                    $user->setScenario(User::SCENARIO_PASSWORD);
+                    $user->ruleset->useScenario(UserRules::SCENARIO_PASSWORD);
 
                     if (! $elements->saveElement($user)) {
                         throw new RuntimeException('Couldn’t update password.');

@@ -7,7 +7,7 @@
 
 namespace craft\test\fixtures\elements;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Typecast;

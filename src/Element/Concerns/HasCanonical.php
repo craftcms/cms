@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use craft\base\ElementInterface;
-use craft\base\NestedElementInterface;
-use craft\elements\db\NestedElementQueryInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Attributes\Importable;
 use DateTime;
-use yii\base\NotSupportedException;
 
 /**
  * HasCanonical provides support for canonical elements and their derivatives.
@@ -30,15 +30,11 @@ trait HasCanonical
 {
     /**
      * @var DateTime|null The date that the canonical element was last merged into this one
-     *
-     * @since 3.7.0
      */
     public ?DateTime $dateLastMerged = null;
 
     /**
      * @var bool Whether recent changes to the canonical element are being merged into this element.
-     *
-     * @since 3.7.0
      */
     public bool $mergingCanonicalChanges = false;
 
@@ -46,8 +42,6 @@ trait HasCanonical
      * @var bool Whether the element is being updated from a derivative element, such as a draft or revision.
      *
      * If this is true, the derivative element can be accessed via [[duplicateOf]].
-     *
-     * @since 3.7.0
      */
     public bool $updatingFromDerivative = false;
 
@@ -111,8 +105,7 @@ trait HasCanonical
                 ->ignorePlaceholders();
 
             if ($this instanceof NestedElementInterface && $query instanceof NestedElementQueryInterface) {
-                $query
-                    ->fieldId($this->getField()?->id);
+                $query->fieldId($this->getField()?->id);
             }
 
             $this->$prop = $query->one();

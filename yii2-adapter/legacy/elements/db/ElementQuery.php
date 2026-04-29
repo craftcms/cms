@@ -9,7 +9,6 @@ namespace craft\elements\db;
 
 use Closure;
 use Craft;
-use craft\base\ElementInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\cache\ElementQueryTagDependency;
 use craft\db\CoalesceColumnsExpression;
@@ -25,6 +24,7 @@ use craft\events\PopulateElementsEvent;
 use craft\helpers\Db;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\QueryParam;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
@@ -33,6 +33,7 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
@@ -47,16 +48,15 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema as SchemaFacade;
+use Illuminate\Support\HtmlString;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
-use Twig\Markup;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidValueException;
-use yii\base\NotSupportedException;
 use yii\db\Connection as YiiConnection;
 use yii\db\Expression;
 use yii\db\ExpressionInterface;
@@ -2115,13 +2115,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      * If no partial template exists for an element, its string representation will be output instead.
      *
      * @param array $variables
-     * @return Markup
+     * @return HtmlString
      * @throws InvalidConfigException
      * @throws NotSupportedException
      * @see ElementHelper::renderElements()
      * @since 5.0.0
      */
-    public function render(array $variables = []): Markup
+    public function render(array $variables = []): HtmlString
     {
         return ElementHelper::renderElements($this->all(), $variables);
     }
@@ -4026,5 +4026,10 @@ class ElementQuery extends Query implements ElementQueryInterface
         return $this
             ->select(new Expression('1'))
             ->count();
+    }
+
+    public function get(): Collection
+    {
+        return collect($this->all());
     }
 }

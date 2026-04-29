@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Resolvers\Mutations;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Events\AfterReplaceAsset;
 use CraftCms\Cms\Asset\Events\BeforeReplaceAsset;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Gql\Resolvers\ElementMutationResolver;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -99,7 +100,7 @@ class Asset extends ElementMutationResolver
 
         $asset = $this->populateElementWithData($asset, $arguments, $resolveInfo);
 
-        $triggerReplaceEvents = $asset->getScenario() === AssetElement::SCENARIO_REPLACE;
+        $triggerReplaceEvents = $asset->ruleset->getScenario() === AssetRules::SCENARIO_REPLACE;
 
         if ($triggerReplaceEvents) {
             event($event = new BeforeReplaceAsset(
@@ -152,9 +153,9 @@ class Asset extends ElementMutationResolver
         $element = parent::populateElementWithData($element, $arguments, $resolveInfo);
 
         if (! empty($fileInformation) && $this->handleUpload($element, $fileInformation)) {
-            $element->setScenario($element->id
-                ? AssetElement::SCENARIO_REPLACE
-                : AssetElement::SCENARIO_CREATE
+            $element->ruleset->useScenario($element->id
+                ? AssetRules::SCENARIO_REPLACE
+                : AssetRules::SCENARIO_CREATE
             );
         }
 

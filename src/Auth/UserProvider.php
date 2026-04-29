@@ -25,7 +25,7 @@ readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProvider
     public function __construct(
         private HasherContract $hasher,
         private Users $users,
-        private Auth $auth,
+        private AuthMethods $auth,
     ) {}
 
     public function retrieveById($identifier): ?User

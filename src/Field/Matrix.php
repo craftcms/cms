@@ -5,19 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
-use Craft;
-use craft\base\ElementInterface;
-use craft\base\NestedElementInterface;
-use craft\validators\StringValidator;
-use craft\validators\UriFormatValidator;
-use craft\web\assets\cp\CpAsset;
-use craft\web\assets\matrix\MatrixAsset;
-use craft\web\View;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Events\AfterSaveNestedElements;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
@@ -25,6 +19,7 @@ use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
@@ -35,7 +30,6 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
-use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\DefineEntryTypesForField;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
@@ -61,6 +55,11 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Validation\Rules\UriFormatRule;
+use CraftCms\Cms\View\Enums\Position;
+use CraftCms\Cms\View\LegacyAssets\CpAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\MatrixAsset;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
@@ -70,12 +69,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
+use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidConfigException;
 
+use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -341,6 +340,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         return array_merge(parent::getRules(), [
             'entryTypes' => ['array', 'min:1'],
             'siteSettings' => ['array'],
+            'siteSettings.*.uriFormat' => ['nullable', new UriFormatRule],
+            'siteSettings.*.template' => ['nullable', 'string', 'max:500'],
             'minEntries' => ['nullable', 'integer', 'min:0'],
             'maxEntries' => ['nullable', 'integer', 'min:0'],
             'viewMode' => Rule::in([
@@ -350,34 +351,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 self::VIEW_MODE_BLOCKS,
             ]),
         ]);
-    }
-
-    public function afterValidate(?Validator $validator = null): void
-    {
-        foreach ($this->siteSettings as $uid => &$siteSettings) {
-            unset($siteSettings['errors']);
-
-            if (isset($siteSettings['uriFormat'])) {
-                // Remove any leading or trailing slashes/spaces
-                $siteSettings['uriFormat'] = trim($siteSettings['uriFormat'], '/ ');
-
-                if (! (new UriFormatValidator)->validate($siteSettings['uriFormat'], $error)) {
-                    $error = str_replace(t('the input value'), t('Entry URI Format'), $error);
-                    $siteSettings['errors']['uriFormat'][] = $error;
-
-                    $validator?->errors()->add("siteSettings[$uid].uriFormat", $error);
-                }
-            }
-
-            if (isset($siteSettings['template'])) {
-                if (! new StringValidator(['max' => 500])->validate($siteSettings['template'], $error)) {
-                    $error = str_replace(t('the input value'), t('Template'), $error);
-                    $siteSettings['errors']['template'][] = $error;
-
-                    $validator->errors()->add("siteSettings[$uid].template", $error);
-                }
-            }
-        }
     }
 
     private function entryManager(): NestedElementManager
@@ -436,7 +409,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ));
 
         if (empty($event->entryTypes)) {
-            throw new InvalidConfigException('At least one entry type is required.');
+            throw new RuntimeException('At least one entry type is required.');
         }
 
         return array_values($event->entryTypes);
@@ -486,7 +459,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         try {
             $owner = $element->getOwner();
-        } catch (InvalidConfigException) {
+        } catch (RuntimeException) {
             $owner = $element->duplicateOf;
         }
 
@@ -618,7 +591,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $entryTypeSelectJs = HtmlStack::clearJsBuffer();
         }
 
-        $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
+        app(InternalAssetRegistry::class)->register(CpAsset::class);
 
         return template('_components/fieldtypes/Matrix/settings', [
             'field' => $this,
@@ -632,7 +605,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 Entry::indexViewModes(),
                 fn (array $viewMode) => ! ($viewMode['structuresOnly'] ?? false),
             ),
-            'baseIconsUrl' => "$bundle->baseUrl/images/view-modes",
+            'baseIconsUrl' => craftAsset('legacy/cp/dist/images/view-modes'),
             'readOnly' => $readOnly,
         ]);
     }
@@ -1061,7 +1034,7 @@ JS, [
     }
 
     /**
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
@@ -1137,7 +1110,7 @@ JS, [
             )
         );
 
-        Craft::$app->getView()->registerAssetBundle(MatrixAsset::class);
+        app(InternalAssetRegistry::class)->register(MatrixAsset::class);
 
         $settings = [
             'fieldId' => $this->id,
@@ -1267,14 +1240,11 @@ JS,
             'pageSize' => $this->pageSize ?? 50,
             'storageKey' => sprintf('field:%s', $this->uid),
             'defaultViewMode' => $this->defaultIndexViewMode,
+            'defaultTableColumns' => array_map(fn (string $attribute) => [$attribute], $this->defaultTableColumns),
+            // field layouts are needed in the read-only (static) mode
+            // so that you can choose to show columns representing the custom fields when using index view mode with table view
+            'fieldLayouts' => array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
         ];
-
-        if (! $static) {
-            $config += [
-                'fieldLayouts' => array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
-                'defaultTableColumns' => array_map(fn (string $attribute) => [$attribute], $this->defaultTableColumns),
-            ];
-        }
 
         return $this->entryManager()->getIndexHtml($owner, $config);
     }
@@ -1298,7 +1268,7 @@ JS,
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
+        if (! $element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_DEFAULT, ElementRules::SCENARIO_LIVE)) {
             return [];
         }
 
@@ -1332,15 +1302,15 @@ JS,
                 ->all();
 
             $invalidEntryIds = [];
-            $scenario = $element->getScenario();
+            $scenario = $element->ruleset->getScenario();
 
             foreach ($entries as $entry) {
                 $entry->setOwner($element);
 
                 if (! $entry->enabled) {
-                    $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+                    $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
                 } else {
-                    $entry->setScenario($scenario);
+                    $entry->ruleset->useScenario($scenario);
                 }
 
                 if (! $entry->validate()) {
@@ -1372,7 +1342,7 @@ JS,
         }
 
         if (
-            $element->inScenarios(Element::SCENARIO_LIVE) &&
+            $element->ruleset->inScenarios(ElementRules::SCENARIO_LIVE) &&
             ($this->minEntries || $this->maxEntries)
         ) {
             $rules = array_filter([
@@ -1619,10 +1589,10 @@ JS,
             return;
         }
 
-        Craft::$app->getSession()->addAssetBundleFlash(MatrixAsset::class);
+        app(InternalAssetRegistry::class)->flash(MatrixAsset::class);
 
         foreach ($collapsedIds as $id) {
-            Craft::$app->getSession()->addJsFlash("Craft.MatrixInput.rememberCollapsedEntryId($id);", View::POS_END);
+            session()->flashJs("Craft.MatrixInput.rememberCollapsedEntryId($id);", Position::BodyEnd);
         }
     }
 

@@ -27,8 +27,8 @@
         {% set languageInput %}
             <div class="select">
                 <select id="site-language">
-                    {% for locale in craft.app.i18n.getAllLocales() %}
-                        <option value="{{ locale.id }}"{% if locale.id == defaultSiteLanguage %} selected{% endif %}>{{ locale.id }} ({{ locale.getDisplayName(craft.app.language) }})</option>
+                    {% for locale in I18N.getAllLocales() %}
+                        <option value="{{ locale.id }}"{% if locale.id == defaultSiteLanguage %} selected{% endif %}>{{ locale.id }} ({{ locale.getDisplayName(language) }})</option>
                     {% endfor %}
                 </select>
             </div>

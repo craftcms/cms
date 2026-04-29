@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
-use Craft;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Entries;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -52,7 +51,7 @@ readonly class CreateEntryController
         $user = $this->request->user();
 
         // Create & populate the draft
-        $entry = Craft::createObject(Entry::class);
+        $entry = new Entry;
         $entry->siteId = $site->id;
         $entry->sectionId = $section->id;
 
@@ -96,7 +95,7 @@ readonly class CreateEntryController
         }
 
         // Save it
-        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $success = $drafts->saveElementAsDraft($entry, $user->id, markAsSaved: false);
 
         // Resume time

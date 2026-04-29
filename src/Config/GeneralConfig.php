@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Config;
 
 use Closure;
-use Craft;
 use CraftCms\Cms\Support\Attributes\EnvName;
 use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\DateTimeHelper;
@@ -14,15 +13,11 @@ use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use DateInterval;
-use Deprecated;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
 use Override;
-use yii\base\InvalidConfigException;
-
-use function CraftCms\Cms\t;
+use RuntimeException;
 
 class GeneralConfig extends BaseConfig
 {
@@ -577,6 +572,24 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public array $cpHeadTags = [];
+
+    /**
+     * @var string|null Site icon
+     *
+     * Square SVG file recommended. The logo will be displayed at 32px by 32px.
+     *
+     * @group System
+     */
+    public ?string $cpIconUrl = null;
+
+    /**
+     * @var string|null Login page logo
+     *
+     * SVG file recommended. The logo will be displayed at 288px wide.
+     *
+     * @group System
+     */
+    public ?string $cpLogoUrl = null;
 
     /**
      * @var string|null The URI segment Craft should look for when determining if the current request should route to the control panel rather than
@@ -1148,24 +1161,6 @@ class GeneralConfig extends BaseConfig
      * @group Security
      */
     public bool $enableTwigSandbox = false;
-
-    /**
-     * @var string The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s template.
-     *
-     * If set to `'_'` your site’s 404 template would live at `templates/_404.twig`, for example.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->errorTemplatePrefix('_')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ERROR_TEMPLATE_PREFIX=_
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public string $errorTemplatePrefix = '';
 
     /**
      * @var string[]|null List of file extensions that will be merged into the <config5:allowedFileExtensions> config setting.
@@ -1897,38 +1892,6 @@ class GeneralConfig extends BaseConfig
     public string|int $maxUploadFileSize = 16777216;
 
     /**
-     * @var bool Whether generated URLs should omit `index.php` (e.g. `http://my-project.tld/path` instead of `http://my-project.tld/index.php/path`)
-     *
-     * This can only be possible if your server is configured to redirect would-be 404s to `index.php`, for example, with the redirect found
-     * in the `.htaccess` file that came with Craft:
-     *
-     * ```
-     * RewriteEngine On
-     * RewriteCond %{REQUEST_FILENAME} !-f
-     * RewriteCond %{REQUEST_FILENAME} !-d
-     * RewriteRule (.+) /index.php?p=$1 [QSA,L]
-     * ```
-     *
-     * ::: code
-     * ```php Static Config
-     * ->omitScriptNameInUrls(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_OMIT_SCRIPT_NAME_IN_URLS=true
-     * ```
-     * :::
-     *
-     * ::: tip
-     * Even when this is set to `true`, the script name could still be included in some action URLs.
-     * If you want to ensure that `index.php` is fully omitted from **all** generated URLs, set the <config5:pathParam>
-     * config setting to `null`.
-     * :::
-     *
-     * @group Routing
-     */
-    public bool $omitScriptNameInUrls = true;
-
-    /**
      * @var bool Whether Craft should optimize images for reduced file sizes without noticeably reducing image quality. (Only supported when
      *           ImageMagick is used.)
      *
@@ -1998,29 +1961,6 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public string $partialTemplatesPath = '_partials';
-
-    /**
-     * @var string|null The query string param that Craft will check when determining the request’s path.
-     *
-     * This can be set to `null` if your web server is capable of directing traffic to `index.php` without a query string param.
-     * If you’re using Apache, that means you’ll need to change the `RewriteRule` line in your `.htaccess` file to:
-     *
-     * ```
-     * RewriteRule (.+) index.php [QSA,L]
-     * ```
-     *
-     * ::: code
-     * ```php Static Config
-     * ->pathParam(null)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_PATH_PARAM=
-     * ```
-     * :::
-     *
-     * @group Routing
-     */
-    public ?string $pathParam = null;
 
     /**
      * @var string|null The maximum amount of memory Craft will try to reserve during memory-intensive operations such as zipping,
@@ -3173,24 +3113,6 @@ class GeneralConfig extends BaseConfig
     public bool $useIframeResizer = false;
 
     /**
-     * @var bool Whether Craft should specify the path using `PATH_INFO` or as a query string parameter when generating URLs.
-     *
-     * This setting only takes effect if <config5:omitScriptNameInUrls> is set to `false`.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->usePathInfo(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_USE_PATH_INFO=true
-     * ```
-     * :::
-     *
-     * @group Routing
-     */
-    public bool $usePathInfo = false;
-
-    /**
      * @var bool|string Whether Craft will set the “secure” flag when saving cookies when using `Craft::cookieConfig()` to create a cookie.
      *
      * Valid values are `true`, `false`, and `'auto'`. Defaults to `'auto'`, which will set the secure flag if the page you’re currently accessing
@@ -3817,6 +3739,38 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * Site icon
+     *
+     * Square SVG file recommended. The logo will be displayed at 32px by 32px.
+     *
+     * @group System
+     *
+     * @see $cpIconUrl
+     */
+    public function cpIconUrl(?string $value): self
+    {
+        $this->cpIconUrl = $value;
+
+        return $this;
+    }
+
+    /**
+     * Login page logo
+     *
+     * SVG file recommended. The logo will be displayed at 288px wide.
+     *
+     * @group System
+     *
+     * @see $cpLogoUrl
+     */
+    public function cpLogoUrl(?string $value): self
+    {
+        $this->cpLogoUrl = $value;
+
+        return $this;
+    }
+
+    /**
      * The URI segment Craft should look for when determining if the current request should route to the control panel rather than
      * the front-end website.
      *
@@ -3890,7 +3844,7 @@ class GeneralConfig extends BaseConfig
     public function defaultCountryCode(string $value): self
     {
         if (empty($value)) {
-            throw new InvalidConfigException('`defaultCountryCode` cannot be empty', 0);
+            throw new RuntimeException('`defaultCountryCode` cannot be empty', 0);
         }
 
         $this->defaultCountryCode = $value;
@@ -3907,7 +3861,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      *
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      *
      * @see $defaultCpLanguage
      */
@@ -3918,7 +3872,7 @@ class GeneralConfig extends BaseConfig
                 $value = I18N::normalizeLanguage($value);
                 /** @phpstan-ignore catch.neverThrown */
             } catch (InvalidArgumentException $e) {
-                throw new InvalidConfigException($e->getMessage(), 0, $e);
+                throw new RuntimeException($e->getMessage(), 0, $e);
             }
         }
 
@@ -4359,26 +4313,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s template.
-     *
-     * If set to `'_'` your site’s 404 template would live at `templates/_404.twig`, for example.
-     *
-     * ```php
-     * ->errorTemplatePrefix('_')
-     * ```
-     *
-     * @group System
-     *
-     * @see $errorTemplatePrefix
-     */
-    public function errorTemplatePrefix(string $value): self
-    {
-        $this->errorTemplatePrefix = $value;
-
-        return $this;
-    }
-
-    /**
      * List of file extensions that will be merged into the <config5:allowedFileExtensions> config setting.
      *
      * ```php
@@ -4413,7 +4347,7 @@ class GeneralConfig extends BaseConfig
      *
      * @param  string[]  $value
      *
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      *
      * @see $extraAppLocales
      */
@@ -4424,7 +4358,7 @@ class GeneralConfig extends BaseConfig
                 $localeId = I18N::normalizeLanguage($localeId);
                 /** @phpstan-ignore catch.neverThrown */
             } catch (InvalidArgumentException $e) {
-                throw new InvalidConfigException($e->getMessage(), 0, $e);
+                throw new RuntimeException($e->getMessage(), 0, $e);
             }
         }
 
@@ -5611,7 +5545,7 @@ class GeneralConfig extends BaseConfig
      *
      * @defaultAlt 14 days
      *
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      *
      * @see $rememberedUserSessionDuration
      * @since 4.2.0
@@ -5622,7 +5556,7 @@ class GeneralConfig extends BaseConfig
         try {
             $interval = DateTimeHelper::toDateInterval($value);
         } catch (InvalidArgumentException $e) {
-            throw new InvalidConfigException($e->getMessage(), 0, $e);
+            throw new RuntimeException($e->getMessage(), 0, $e);
         }
 
         $this->rememberedUserSessionDuration = $interval ? ConfigHelper::durationInSeconds($interval) : 0;

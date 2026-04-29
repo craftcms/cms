@@ -6,12 +6,6 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Translation\I18N;
-use CraftCms\Cms\Update\Updates;
-use CraftCms\Cms\User\Users;
-use Illuminate\Auth\AuthManager;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
@@ -19,49 +13,12 @@ readonly class UpdateLocale
 {
     public function __construct(
         private Application $app,
-        private GeneralConfig $generalConfig,
-        private I18N $i18N,
-        private Updates $updates,
-        private AuthManager $auth,
-        private Users $users,
     ) {}
 
     public function handle(Request $request, Closure $next): mixed
     {
-        $this->app->setLocale($this->getTargetLocale($request));
+        $this->app->setLocale(Cms::targetLanguage($request));
 
         return $next($request);
-    }
-
-    private function getTargetLocale(Request $request): string
-    {
-        if (! Cms::isInstalled()) {
-            return $this->getFallbackLocale($request);
-        }
-
-        if ($this->updates->isCraftUpdatePending()) {
-            return $this->getFallbackLocale($request);
-        }
-
-        if (! $request->isCpRequest()) {
-            return Sites::getCurrentSite()->getLanguage();
-        }
-
-        $user = $this->auth->user();
-
-        if (
-            ($id = $user?->getAuthIdentifier()) &&
-            ($language = $this->users->getUserPreference($id, 'language')) !== null &&
-            $this->i18N->validateAppLocaleId($language)
-        ) {
-            return $language;
-        }
-
-        return $this->generalConfig->defaultCpLanguage ?? $this->getFallbackLocale($request);
-    }
-
-    private function getFallbackLocale(Request $request): string
-    {
-        return $request->getPreferredLanguage($this->i18N->getAppLocaleIds()->all());
     }
 }

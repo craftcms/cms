@@ -8,41 +8,130 @@ use CommerceGuys\Addressing\AddressFormat\AddressField;
 use CommerceGuys\Addressing\AddressInterface;
 use CommerceGuys\Addressing\Country\Country;
 use CommerceGuys\Addressing\Subdivision\SubdivisionUpdater;
-use Craft;
-use craft\base\NestedElementInterface;
-use craft\base\NestedElementTrait;
-use craft\elements\conditions\addresses\AddressCondition;
 use CraftCms\Cms\Address\Addresses;
+use CraftCms\Cms\Address\Conditions\AddressCondition;
 use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Address\Validation\AddressRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Concerns\NestedElement;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Shared\Concerns\HasNames;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
-use Deprecated;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use Override;
-use yii\base\InvalidConfigException;
-use yii\helpers\Html;
+use RuntimeException;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @property AddressRules $ruleset
+ */
 #[Ruleset(AddressRules::class)]
 class Address extends Element implements AddressInterface, NestedElementInterface
 {
     use HasNames;
-    use NestedElementTrait;
+    use NestedElement;
+
+    public const string GQL_TYPE_NAME = 'Address';
 
     /**
-     * @since 5.0.0
+     * @var string Two-letter country code
+     *
+     * @see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
      */
-    public const string GQL_TYPE_NAME = 'Address';
+    #[AllowedInSandbox]
+    public string $countryCode;
+
+    /**
+     * @var string|null Administrative area
+     */
+    #[AllowedInSandbox]
+    public ?string $administrativeArea = null;
+
+    /**
+     * @var string|null Locality
+     */
+    #[AllowedInSandbox]
+    public ?string $locality = null;
+
+    /**
+     * @var string|null Dependent locality
+     */
+    #[AllowedInSandbox]
+    public ?string $dependentLocality = null;
+
+    /**
+     * @var string|null Postal code
+     */
+    #[AllowedInSandbox]
+    public ?string $postalCode = null;
+
+    /**
+     * @var string|null Sorting code
+     */
+    #[AllowedInSandbox]
+    public ?string $sortingCode = null;
+
+    /**
+     * @var string|null First line of the address
+     */
+    #[AllowedInSandbox]
+    public ?string $addressLine1 = null;
+
+    /**
+     * @var string|null Second line of the address
+     */
+    #[AllowedInSandbox]
+    public ?string $addressLine2 = null;
+
+    /**
+     * @var string|null Third line of the address
+     */
+    #[AllowedInSandbox]
+    public ?string $addressLine3 = null;
+
+    /**
+     * @var string|null Organization name
+     */
+    #[AllowedInSandbox]
+    public ?string $organization = null;
+
+    /**
+     * @var string|null Organization tax ID
+     */
+    #[AllowedInSandbox]
+    public ?string $organizationTaxId = null;
+
+    /**
+     * @var string|null Latitude
+     */
+    #[AllowedInSandbox]
+    public ?string $latitude = null;
+
+    /**
+     * @var string|null Longitude
+     */
+    #[AllowedInSandbox]
+    public ?string $longitude = null;
+
+    public function __construct($config = [])
+    {
+        parent::__construct($config);
+
+        if (! isset($this->countryCode)) {
+            $this->countryCode = Cms::config()->defaultCountryCode;
+        }
+
+        $this->normalizeNames();
+    }
 
     #[Override]
     public static function displayName(): string
@@ -89,7 +178,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     #[Override]
     public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(AddressCondition::class, [self::class]);
+        return new AddressCondition(self::class);
     }
 
     #[Override]
@@ -197,116 +286,8 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         ];
     }
 
-    /**
-     * Returns an address attribute label.
-     */
-    #[Deprecated(message: 'in 4.3.0. [[\craft\services\Addresses::getFieldLabel()]] should be used instead.')]
-    public static function addressAttributeLabel(string $attribute, string $countryCode): ?string
-    {
-        if (! AddressField::exists($attribute)) {
-            return null;
-        }
-
-        /** @phpstan-var AddressField::* $attribute */
-        return app(Addresses::class)->getFieldLabel($attribute, $countryCode);
-    }
-
-    /**
-     * @var string Two-letter country code
-     *
-     * @see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
-     */
-    #[AllowedInSandbox]
-    public string $countryCode;
-
-    /**
-     * @var string|null Administrative area
-     */
-    #[AllowedInSandbox]
-    public ?string $administrativeArea = null;
-
-    /**
-     * @var string|null Locality
-     */
-    #[AllowedInSandbox]
-    public ?string $locality = null;
-
-    /**
-     * @var string|null Dependent locality
-     */
-    #[AllowedInSandbox]
-    public ?string $dependentLocality = null;
-
-    /**
-     * @var string|null Postal code
-     */
-    #[AllowedInSandbox]
-    public ?string $postalCode = null;
-
-    /**
-     * @var string|null Sorting code
-     */
-    #[AllowedInSandbox]
-    public ?string $sortingCode = null;
-
-    /**
-     * @var string|null First line of the address
-     */
-    #[AllowedInSandbox]
-    public ?string $addressLine1 = null;
-
-    /**
-     * @var string|null Second line of the address
-     */
-    #[AllowedInSandbox]
-    public ?string $addressLine2 = null;
-
-    /**
-     * @var string|null Third line of the address
-     *
-     * @since 5.0.0
-     */
-    #[AllowedInSandbox]
-    public ?string $addressLine3 = null;
-
-    /**
-     * @var string|null Organization name
-     */
-    #[AllowedInSandbox]
-    public ?string $organization = null;
-
-    /**
-     * @var string|null Organization tax ID
-     */
-    #[AllowedInSandbox]
-    public ?string $organizationTaxId = null;
-
-    /**
-     * @var string|null Latitude
-     */
-    #[AllowedInSandbox]
-    public ?string $latitude = null;
-
-    /**
-     * @var string|null Longitude
-     */
-    #[AllowedInSandbox]
-    public ?string $longitude = null;
-
     #[Override]
-    public function init(): void
-    {
-        parent::init();
-
-        if (! isset($this->countryCode)) {
-            $this->countryCode = Cms::config()->defaultCountryCode;
-        }
-
-        $this->normalizeNames();
-    }
-
-    #[Override]
-    public function setAttributes($values, $safeOnly = true): void
+    public function setAttributes($values): void
     {
         // Don't even allow setting a blank country code
         if (array_key_exists('countryCode', $values) && empty($values['countryCode'])) {
@@ -321,7 +302,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             $this->firstName = $this->lastName = null;
         }
 
-        parent::setAttributes($values, $safeOnly);
+        parent::setAttributes($values);
     }
 
     #[Override]
@@ -346,8 +327,6 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
 
     /**
      * Returns whether the address belongs to the currently logged-in user.
-     *
-     * @since 4.5.13
      */
     public function getBelongsToCurrentUser(): bool
     {
@@ -364,8 +343,6 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
 
     /**
      * Returns a [[Country]] object representing the address’ country.
-     *
-     * @since 5.3.0
      */
     #[AllowedInSandbox]
     public function getCountry(): Country
@@ -451,9 +428,6 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         return app()->getLocale();
     }
 
-    /**
-     * @since 3.3.0
-     */
     #[Override]
     public function getGqlTypeName(): string
     {
@@ -472,7 +446,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     #[Override]
-    public function beforeValidate(): bool
+    public function prepareForValidation(): void
     {
         $usedFields = array_unique([
             ...app(Addresses::class)->getUsedFields($this->countryCode),
@@ -491,7 +465,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             $this->$field = null;
         }
 
-        return parent::beforeValidate();
+        parent::prepareForValidation();
     }
 
     #[Override]
@@ -539,7 +513,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
                 );
             }
             // Andorra is the only country with remapped localities.
-            if ($this->countryCode == 'AD' && isset($this->locality)) {
+            if ($this->countryCode === 'AD' && isset($this->locality)) {
                 $this->locality = SubdivisionUpdater::updateValue(
                     $this->countryCode,
                     $this->locality,
@@ -551,7 +525,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     /**
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     #[Override]
     public function afterSave(bool $isNew): void
@@ -560,7 +534,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             $model = AddressModel::find($this->id);
 
             if (! $model) {
-                throw new InvalidConfigException("Invalid address ID: $this->id");
+                throw new RuntimeException("Invalid address ID: $this->id");
             }
         } else {
             $model = new AddressModel;

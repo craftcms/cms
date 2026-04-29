@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use craft\base\ElementInterface;
-use craft\base\NestedElementInterface;
 use CraftCms\Cms\Auth\Events\AuthorizingElement;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Policies\ElementPolicy;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -246,6 +246,16 @@ it('delegates nested duplicate checks to the field', function () {
     $element = createElementPolicyNestedElement(field: $field);
 
     $result = $this->policy->before($user, 'duplicate', $element);
+
+    expect($result)->toBeTrue();
+});
+
+it('delegates nested duplicate as draft checks to the field', function () {
+    $user = UserModel::factory()->createElement();
+    $field = createElementPolicyField(duplicate: true);
+    $element = createElementPolicyNestedElement(field: $field);
+
+    $result = $this->policy->before($user, 'duplicateAsDraft', $element);
 
     expect($result)->toBeTrue();
 });

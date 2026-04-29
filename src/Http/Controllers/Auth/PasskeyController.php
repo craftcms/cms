@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
-use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
@@ -27,7 +27,7 @@ readonly class PasskeyController extends AuthenticationController
         ]);
     }
 
-    public function login(Request $request, Auth $auth, Impersonation $impersonation): Response
+    public function login(Request $request, AuthMethods $auth, Impersonation $impersonation): Response
     {
         $request->validate([
             'requestOptions' => ['required'],

@@ -7,14 +7,15 @@
 
 namespace craft\events;
 
-use craft\base\ElementInterface;
 use craft\base\Event;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * DefineFieldKeywordsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Events\DefineFieldKeywords} instead.
  */
 class DefineFieldKeywordsEvent extends Event
 {

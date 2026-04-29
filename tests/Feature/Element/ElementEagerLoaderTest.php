@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
@@ -311,6 +311,32 @@ it('applies explicit query ids before where in constraints', function () {
 
     expect($source->getEagerLoadedElements('filtered')?->pluck('id')->all())->toBe([502, 503])
         ->and(TestElementEagerLoaderQuery::$whereInCalls[TestElementEagerLoaderTargetElement::class][0])->toBe([501, 502, 503]);
+});
+
+it('lets eager loading map criteria override the eager load plan criteria', function () {
+    $loader = app(ElementEagerLoader::class);
+    $source = new TestElementEagerLoaderSourceElement(['id' => 1]);
+
+    TestElementEagerLoaderSourceElement::setTestEagerLoadingMap('mapped', [
+        'elementType' => TestElementEagerLoaderTargetElement::class,
+        'criteria' => ['siteId' => 1],
+        'map' => [
+            ['source' => 1, 'target' => 801],
+            ['source' => 1, 'target' => 802],
+        ],
+    ]);
+
+    TestElementEagerLoaderQuery::setRows(TestElementEagerLoaderTargetElement::class, [
+        ['id' => 801, 'siteId' => 1, 'title' => 'Alpha'],
+        ['id' => 802, 'siteId' => 2, 'title' => 'Beta'],
+    ]);
+
+    $loader->eagerLoadElements(TestElementEagerLoaderSourceElement::class, [$source], [
+        ['path' => 'mapped', 'criteria' => ['siteId' => 2]],
+    ]);
+
+    expect($source->getEagerLoadedElements('mapped')?->pluck('id')->all())->toBe([801])
+        ->and(TestElementEagerLoaderQuery::$querySiteIds[TestElementEagerLoaderTargetElement::class][0])->toBe(1);
 });
 
 it('uses custom element factories and provisional drafts when requested', function () {

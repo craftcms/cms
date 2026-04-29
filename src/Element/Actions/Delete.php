@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Actions;
 
-use craft\base\ElementInterface;
-use craft\base\NestedElementInterface;
-use craft\services\Elements;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\DeleteActionInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -72,7 +73,7 @@ JS, [static::class]);
         return null;
     }
 
-    #[\Override]
+    #[Override]
     public function getTriggerLabel(): string
     {
         if ($this->hard) {
@@ -86,7 +87,7 @@ JS, [static::class]);
         return t('Delete');
     }
 
-    #[\Override]
+    #[Override]
     public static function isDestructive(): bool
     {
         return true;
@@ -115,7 +116,7 @@ JS, [static::class]);
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function performAction(ElementQueryInterface $query): bool
     {
         $withDescendants = $this->withDescendants && ! $this->hard;
@@ -194,6 +195,6 @@ JS, [static::class]);
             }
         }
 
-        \CraftCms\Cms\Support\Facades\Elements::deleteElement($element, $this->hard);
+        Elements::deleteElement($element, $this->hard);
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
-use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
@@ -32,7 +32,7 @@ readonly class TwoFactorAuthenticationController
         private GeneralConfig $generalConfig,
     ) {}
 
-    public function showForm(Request $request, Auth $auth, Impersonation $impersonation, HtmlStack $HtmlStack): Response|string
+    public function showForm(Request $request, AuthMethods $auth, Impersonation $impersonation, HtmlStack $HtmlStack): Response|string
     {
         $user = $impersonation->getImpersonator()
             ?? User::find()->id($request->session()->get('user.id'))->first();
@@ -105,7 +105,7 @@ readonly class TwoFactorAuthenticationController
         return template('login', compact('authFormData'), templateMode: TemplateMode::Cp);
     }
 
-    public function verify(Request $request, Auth $auth): Response
+    public function verify(Request $request, AuthMethods $auth): Response
     {
         $request->validate([
             'code' => ['required', 'string'],
@@ -120,7 +120,7 @@ readonly class TwoFactorAuthenticationController
         return $this->asSuccess(t('Verification successful.'));
     }
 
-    public function verifyRecoveryCode(Request $request, Auth $auth): Response
+    public function verifyRecoveryCode(Request $request, AuthMethods $auth): Response
     {
         $request->validate([
             'code' => ['required', 'string'],

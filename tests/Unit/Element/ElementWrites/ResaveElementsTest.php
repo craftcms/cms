@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use craft\base\ElementInterface;
-use craft\base\NestedElementInterface;
 use CraftCms\Cms\Element\BulkOp\BulkOps as BulkOpsService;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
@@ -18,6 +18,7 @@ use CraftCms\Cms\Element\Operations\ElementUris;
 use CraftCms\Cms\Element\Operations\ElementWrites;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Site\Sites;
@@ -59,7 +60,7 @@ it('resaves matching elements and dispatches lifecycle events', function () {
     expect($this->saveElementAction->calls[0]['updateSearchIndex'])->toBeFalse();
     expect($this->saveElementAction->calls[0]['forceTouch'])->toBeTrue();
     expect($this->saveElementAction->calls[0]['saveContent'])->toBeTrue();
-    expect($this->saveElementAction->calls[0]['scenario'])->toBe(Element::SCENARIO_ESSENTIALS);
+    expect($this->saveElementAction->calls[0]['scenario'])->toBe(ElementRules::SCENARIO_ESSENTIALS);
     expect($this->saveElementAction->calls[0]['resaving'])->toBeTrue();
     expect($this->saveElementAction->calls[1]['element'])->toBe($secondElement);
 
@@ -234,7 +235,7 @@ readonly class TestResaveElementWrites extends ElementWrites
             'updateSearchIndex' => $updateSearchIndex,
             'forceTouch' => $forceTouch,
             'saveContent' => $saveContent,
-            'scenario' => $element->getScenario(),
+            'scenario' => $element->ruleset->getScenario(),
             'resaving' => $element->resaving,
         ];
 

@@ -15,6 +15,7 @@ use Craft;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.6.3
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\ExcludeDescendantIdsExpression} instead.
  */
 class ExcludeDescendantIdsExpression implements ExpressionInterface
 {

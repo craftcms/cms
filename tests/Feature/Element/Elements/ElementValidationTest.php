@@ -3,9 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Support\Facades\Sites;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
@@ -25,7 +26,7 @@ describe('Site ID validation', function () {
 
     test('siteId is validated on SCENARIO_LIVE', function () {
         $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_LIVE);
+        $entry->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         $site = Sites::getPrimarySite();
         $entry->siteId = $site->id;
 
@@ -36,7 +37,7 @@ describe('Site ID validation', function () {
 
     test('siteId is validated on SCENARIO_ESSENTIALS', function () {
         $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $site = Sites::getPrimarySite();
         $entry->siteId = $site->id;
 
@@ -78,7 +79,7 @@ describe('Title validation', function () {
         $this->markTestSkippedWhen(DB::getDriverName() === 'pgsql', 'PostgreSQL always supports 4-byte unicode characters');
         $this->markTestSkippedWhen(DB::getDriverName() === 'sqlite', 'SQLite always supports 4-byte unicode characters');
 
-        Craft::$app->getDb()->setSupportsMb4(false);
+        Context::addHidden('craft.supportsMb4', false);
 
         $entry = EntryModel::factory()->createElement();
         $entry->title = 'Test 𝕋𝕚𝕥𝕝𝕖'; // Contains 4-byte unicode characters
@@ -90,7 +91,7 @@ describe('Title validation', function () {
 
     test('title is required on SCENARIO_LIVE for elements with titles', function () {
         $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_LIVE);
+        $entry->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         $entry->title = '';
 
         $entry->validate(['title']);
@@ -139,7 +140,7 @@ describe('Slug validation', function () {
 
     test('slug is validated on SCENARIO_ESSENTIALS', function () {
         $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $entry->slug = str_repeat('a', 256);
 
         $entry->validate(['slug']);
@@ -159,7 +160,7 @@ describe('URI validation', function () {
 
     test('uri is validated on SCENARIO_ESSENTIALS', function () {
         $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
 
         $entry->validate(['uri']);
 
@@ -170,7 +171,7 @@ describe('URI validation', function () {
 describe('Scenario validation', function () {
     test('SCENARIO_LIVE validates title when required', function () {
         $entry = EntryModel::factory()->createElement();
-        $entry->setScenario(Element::SCENARIO_LIVE);
+        $entry->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         $entry->title = '';
 
         $entry->validate(['title']);

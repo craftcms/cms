@@ -9,9 +9,9 @@ namespace craft\db\mysql;
 
 use craft\db\Connection;
 use craft\helpers\Db;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Facades\DB as DbFacade;
-use yii\base\NotSupportedException;
 
 /**
  * @inheritdoc

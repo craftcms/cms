@@ -14,6 +14,15 @@ class MacroableTestComponent extends Component
     public mixed $stored = null;
 }
 
+class ArrayableTestComponent extends Component
+{
+    public ?DateTime $dateCreated = null;
+
+    public ?DateTimeImmutable $dateUpdated = null;
+
+    public string $name = 'test';
+}
+
 beforeEach(function () {
     MacroableTestComponent::flushMacros();
 });
@@ -71,4 +80,17 @@ test('throws unknown property exception when no matching macro exists', function
 
     expect(fn () => $component->foo)
         ->toThrow(UnknownPropertyException::class, 'Getting unknown property');
+});
+
+test('serializes datetime properties to iso8601', function () {
+    $component = new ArrayableTestComponent([
+        'dateCreated' => new DateTime('2024-01-02 03:04:05', new DateTimeZone('America/Los_Angeles')),
+        'dateUpdated' => new DateTimeImmutable('2024-02-03 04:05:06', new DateTimeZone('America/New_York')),
+    ]);
+
+    expect($component->toArray())->toMatchArray([
+        'dateCreated' => '2024-01-02T11:04:05+00:00',
+        'dateUpdated' => '2024-02-03T09:05:06+00:00',
+        'name' => 'test',
+    ]);
 });

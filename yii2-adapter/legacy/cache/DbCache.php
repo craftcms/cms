@@ -10,12 +10,12 @@ namespace craft\cache;
 use craft\db\Connection;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use PDO;
 use Throwable;
 use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
 use yii\caching\DbCache as YiiDbCache;
 use yii\db\PdoValue;
 

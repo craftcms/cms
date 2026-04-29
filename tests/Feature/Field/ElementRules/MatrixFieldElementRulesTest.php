@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Matrix;
@@ -23,7 +23,7 @@ test('matrix field enforces min entries', function () {
 
     $result = EntryModel::factory()
         ->withField('matrixField', Matrix::class, ['entryTypes' => [$entryType->id], 'minEntries' => 1], value: '')
-        ->withScenario(Element::SCENARIO_LIVE)
+        ->withScenario(ElementRules::SCENARIO_LIVE)
         ->createElementWithFields(save: false);
 
     $result->element->validate();
@@ -45,7 +45,7 @@ test('matrix field surfaces nested entry validation errors', function () {
 
     $result = EntryModel::factory()
         ->withField('matrixField', Matrix::class, ['entryTypes' => [$entryType->id], 'viewMode' => Matrix::VIEW_MODE_INDEX], value: $value)
-        ->withScenario(Element::SCENARIO_LIVE)
+        ->withScenario(ElementRules::SCENARIO_LIVE)
         ->createElementWithFields(save: false);
 
     $result->element->validate();

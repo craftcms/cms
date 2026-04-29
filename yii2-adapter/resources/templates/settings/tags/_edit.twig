@@ -33,7 +33,7 @@
         id: 'name',
         name: 'name',
         value: tagGroup.name,
-        errors: tagGroup.getErrors('name'),
+        errors: tagGroup.errors.get('name'),
         autofocus: true,
         required: true,
         disabled: readOnly,
@@ -48,7 +48,7 @@
         autocorrect: false,
         autocapitalize: false,
         value: tagGroup.handle,
-        errors: tagGroup.getErrors('handle'),
+        errors: tagGroup.errors.get('handle'),
         required: true,
         disabled: readOnly,
     }) }}

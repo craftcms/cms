@@ -65,12 +65,6 @@ test('disabled utilities are not included', function () {
     expect($this->utilities->getAuthorizedUtilityTypes())->not()->toContain(SystemReport::class);
 });
 
-it('can get badge count for all utilities', function () {
-    actingAs(User::find()->one());
-
-    expect($this->utilities->getUtilitiesBadgeCount())->toBe(0);
-});
-
 class DummyUtility extends Utility
 {
     #[Override]

@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Requests;
 
-use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Validation\Rules\EnvValueRule;
 use Illuminate\Foundation\Http\FormRequest;
-
-use function CraftCms\Cms\t;
+use Illuminate\Validation\Rule;
 
 class EmailSettingsRequest extends FormRequest
 {
@@ -17,25 +16,19 @@ class EmailSettingsRequest extends FormRequest
         $validMailers = array_keys(config('mail.mailers', []));
 
         $rules = [
-            'fromEmail' => ['required', 'string'],
+            'fromEmail' => [new EnvValueRule(['required', 'string', 'email'])],
             'fromName' => ['required', 'string'],
-            'replyToEmail' => ['nullable', 'string'],
-            'mailer' => ['nullable', 'string', function (string $attribute, mixed $value, \Closure $fail) use ($validMailers) {
-                $resolved = Env::parse($value);
-
-                if ($resolved !== null && ! in_array($resolved, $validMailers, true)) {
-                    $fail(t('The selected mailer is invalid.'));
-                }
-            }],
+            'replyToEmail' => [new EnvValueRule(['nullable', 'string', 'email'])],
+            'mailer' => [new EnvValueRule(['nullable', 'string', Rule::in($validMailers)])],
             'template' => ['nullable', 'string'],
         ];
 
         foreach (Sites::getAllSites() as $site) {
             $prefix = "siteOverrides.{$site->uid}";
 
-            $rules["{$prefix}.fromEmail"] = ['nullable', 'string'];
+            $rules["{$prefix}.fromEmail"] = [new EnvValueRule(['nullable', 'string', 'email'])];
             $rules["{$prefix}.fromName"] = ['nullable', 'string'];
-            $rules["{$prefix}.replyToEmail"] = ['nullable', 'string'];
+            $rules["{$prefix}.replyToEmail"] = [new EnvValueRule(['nullable', 'string', 'email'])];
             $rules["{$prefix}.template"] = ['nullable', 'string'];
         }
 

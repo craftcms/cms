@@ -7,50 +7,20 @@
 
 namespace craft\web\assets\installer;
 
-use Craft;
-use craft\helpers\Json;
 use craft\web\AssetBundle;
-use craft\web\assets\cp\CpAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Asset bundle for the Installer
+ * @deprecated 6.0.0
  */
 class InstallerAsset extends AssetBundle
 {
     /**
      * @inheritdoc
      */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public $depends = [
-        CpAsset::class,
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $css = [
-        'css/install.css',
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $js = [
-        'install.js',
-    ];
-
-    /**
-     * @inheritdoc
-     */
     public function registerAssetFiles($view): void
     {
-        parent::registerAssetFiles($view);
-
-        $redirect = Json::encode(Craft::$app->getConfig()->getGeneral()->postCpLoginRedirect);
-        $view->registerJs("window.postCpLoginRedirect = $redirect;");
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\InstallerAsset::class);
     }
 }

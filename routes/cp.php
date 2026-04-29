@@ -10,6 +10,10 @@ use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
+use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementRedirectController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementRevisionsController;
+use CraftCms\Cms\Http\Controllers\Elements\PreviewElementController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
@@ -82,6 +86,30 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     });
 
     /**
+     * Elements
+     */
+    $idSlugParams = [
+        'id' => '\d+',
+        'slug' => '(?:-[^\/]*)',
+    ];
+
+    Route::get('preview/{id}{slug}', PreviewElementController::class)->where($idSlugParams);
+    Route::get('edit/{id}{slug}', ElementRedirectController::class)->where($idSlugParams);
+    Route::get('edit/{uid}', ElementRedirectController::class);
+    Route::get('revisions/{id}{slug}', [ElementRevisionsController::class, 'index'])->where($idSlugParams);
+    Route::get('entries/{section}/{id}{slug}/revisions', [ElementRevisionsController::class, 'index'])->where($idSlugParams);
+    Route::get('content/{page}/{section}/{id}{slug}/revisions', [ElementRevisionsController::class, 'index'])->where([
+        ...$idSlugParams,
+        'page' => '[^\/]+',
+    ]);
+    Route::get('assets/edit/{id}{slug}', EditElementController::class)->where($idSlugParams);
+    Route::get('entries/{section}/{id}{slug}', EditElementController::class)->where($idSlugParams);
+    Route::get('content/{page}/{section}/{id}{slug}', EditElementController::class)->where([
+        ...$idSlugParams,
+        'page' => '[^\/]+',
+    ]);
+
+    /**
      * Entries & Content
      */
     Route::get('entries', EntriesIndexController::class);
@@ -131,8 +159,9 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     /**
      * Assets
      */
+    // Route::get('assets/edit/{id}-{filename}', EditElementController::class); - TODO
     Route::get('assets/{defaultSource?}', AssetsIndexController::class)
-        ->where('defaultSource', '.*');
+        ->where('defaultSource', '(?!edit(?:/|$)).*');
 
     /**
      * Routes that require admin, but do not require admin changes

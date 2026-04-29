@@ -33,7 +33,7 @@ describe('CoreTwigExtension', function () {
         expect($extension->getTokenParsers())->not->toBeEmpty();
         expect($extension->getTests())->not->toBeEmpty();
         expect($extension->getExpressionParsers())->toHaveCount(2);
-        expect($extension->getGlobals())->toHaveKeys(['craft', 'app', 'now']);
+        expect($extension->getGlobals())->toHaveKeys(['craft', 'now']);
     });
 
     it('supports has some / has every helpers', function () {

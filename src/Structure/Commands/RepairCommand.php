@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Structure\Commands;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Structure\Enums\Mode;
@@ -20,7 +20,6 @@ use Tpetry\QueryExpressions\Language\CaseGroup;
 use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\NotIsNull;
 use Tpetry\QueryExpressions\Value\Value;
-use yii\console\ExitCode;
 
 abstract class RepairCommand extends Command
 {
@@ -77,7 +76,7 @@ abstract class RepairCommand extends Command
         if (empty($elements)) {
             $this->components->error("No matching $displayName to process");
 
-            return ExitCode::OK;
+            return self::SUCCESS;
         }
 
         $this->components->twoColumnDetail(
@@ -217,6 +216,6 @@ abstract class RepairCommand extends Command
             $this->option('dry-run') ? ' (dry run)' : '',
         );
 
-        return ExitCode::OK;
+        return self::SUCCESS;
     }
 }

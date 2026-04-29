@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Conditions;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Condition\BaseNumberConditionRule;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Validation\Rule;
-use yii\base\InvalidValueException;
+use Override;
+use UnexpectedValueException;
 
 use function CraftCms\Cms\t;
 
@@ -39,7 +40,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
         return t('File Size');
     }
 
-    #[\Override]
+    #[Override]
     protected function inputHtml(): string
     {
         $unitId = 'unit';
@@ -91,7 +92,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
             self::OPERATOR_LTE => $query->size("<= $maxBytes"),
             self::OPERATOR_GT => $query->size("> $maxBytes"),
             self::OPERATOR_GTE => $query->size(">= $minBytes"),
-            default => throw new InvalidValueException("Invalid file size operator: $this->operator"),
+            default => throw new UnexpectedValueException("Invalid file size operator: $this->operator"),
         };
     }
 
@@ -119,11 +120,11 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
             self::OPERATOR_LTE => $element->size <= $minBytes,
             self::OPERATOR_GT => $element->size > $maxBytes,
             self::OPERATOR_GTE => $element->size >= $maxBytes,
-            default => throw new InvalidValueException("Invalid file size operator: $this->operator"),
+            default => throw new UnexpectedValueException("Invalid file size operator: $this->operator"),
         };
     }
 
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -153,7 +154,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
             self::UNIT_GB => 1000 * 1000 * 1000,
             self::UNIT_MB => 1000 * 1000,
             self::UNIT_KB => 1000,
-            default => throw new InvalidValueException("Invalid file size unit: $this->unit"),
+            default => throw new UnexpectedValueException("Invalid file size unit: $this->unit"),
         };
 
         // 1 KB == 500 - 1,499 B
@@ -164,7 +165,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
         return [$minBytes, $maxBytes];
     }
 
-    #[\Override]
+    #[Override]
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [

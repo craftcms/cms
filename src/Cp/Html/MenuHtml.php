@@ -151,7 +151,7 @@ readonly class MenuHtml
             ->keyBy(fn (array $site) => $site['site']->id)
             ->all();
 
-        $path = request()->path();
+        $path = request()->craftPath();
         $params = Arr::except(request()->query(), 'fresh');
 
         $totalSites = 0;

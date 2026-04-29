@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
@@ -11,7 +11,7 @@ use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Session;
 
 beforeEach(function () {
-    $this->auth = app(Auth::class);
+    $this->auth = app(AuthMethods::class);
     Session::flush();
 });
 

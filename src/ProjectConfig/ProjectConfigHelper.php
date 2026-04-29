@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\ProjectConfig;
 
-use Craft;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Diff;
@@ -18,8 +17,8 @@ use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use RuntimeException;
 use StdClass;
-use yii\base\InvalidConfigException;
 
 class ProjectConfigHelper
 {
@@ -259,7 +258,7 @@ class ProjectConfigHelper
      *
      * @param  array  $config  Config array to clean
      *
-     * @throws InvalidConfigException if config contains unexpected data.
+     * @throws RuntimeException if config contains unexpected data.
      */
     public static function cleanupConfig(array $config): array
     {
@@ -282,7 +281,7 @@ class ProjectConfigHelper
     /**
      * Cleans a config value.
      *
-     * @throws InvalidConfigException
+     * @throws RuntimeException
      */
     private static function _cleanupConfigValue(mixed $value): mixed
     {
@@ -293,7 +292,7 @@ class ProjectConfigHelper
 
         if (! empty($value) && ! is_scalar($value) && ! is_array($value)) {
             Log::info('Unexpected data encountered in config data - '.print_r($value, true));
-            throw new InvalidConfigException('Unexpected data encountered in config data');
+            throw new RuntimeException('Unexpected data encountered in config data');
         }
 
         if (is_array($value)) {

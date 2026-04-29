@@ -14,7 +14,7 @@
     value: old('name', (filesystem is defined ? filesystem.name : null)),
     autofocus: true,
     required: true,
-    errors: (filesystem is defined ? sessionErrors.get('name') : null),
+    errors: (filesystem is defined ? errors.get('name') : null),
     data: {'error-key': 'name'},
     disabled: readOnly,
 }) }}
@@ -29,7 +29,7 @@
     autocapitalize: false,
     value: old('handle', (filesystem is defined ? filesystem.handle : null)),
     required: true,
-    errors: (filesystem is defined ? sessionErrors.get('handle') : null),
+    errors: (filesystem is defined ? errors.get('handle') : null),
     data: {'error-key': 'handle'},
     disabled: readOnly,
 }) }}
@@ -103,7 +103,7 @@
                 value: old('url', (filesystem is defined ? filesystem.url : null)),
                 required: true,
                 placeholder: "//example.com/path/to/folder",
-                errors: (filesystem is defined ? sessionErrors.get('url') : null),
+                errors: (filesystem is defined ? errors.get('url') : null),
                 data: {'error-key': 'url'},
                 disabled: disabled,
             }) }}

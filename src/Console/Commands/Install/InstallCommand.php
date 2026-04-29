@@ -17,20 +17,25 @@ use CraftCms\Cms\Translation\I18N;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Prompts\Support\Logger;
+use Override;
 use PDOException;
 use Throwable;
 
 use function Laravel\Prompts\form;
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\suggest;
+use function Laravel\Prompts\task;
 use function Laravel\Prompts\text;
+use function Laravel\Prompts\warning;
 
 class InstallCommand extends Command
 {
     use CraftCommand;
     use SiteDefaults;
 
-    #[\Override]
+    #[Override]
     protected $signature = 'craft:install
         {--email= : The default email address for the first user to create during install.}
         {--username= : The default username for the first user to create during install.}
@@ -40,10 +45,10 @@ class InstallCommand extends Command
         {--language= : The default language for the first site to create during install.}
     ';
 
-    #[\Override]
+    #[Override]
     protected $description = 'Craft CMS CLI installer.';
 
-    #[\Override]
+    #[Override]
     protected $aliases = ['install:craft', 'install/craft'];
 
     public function handle(
@@ -53,14 +58,20 @@ class InstallCommand extends Command
         LaravelMigrations $laravelMigrations,
     ): int {
         if (Cms::isInstalled(true)) {
-            $this->components->warn('Craft is already installed!');
+            warning('Craft is already installed!');
 
             return self::SUCCESS;
         }
 
         try {
-            DB::clearResolvedInstances();
-            DB::reconnect()->getPdo();
+            $connection = DB::connection();
+
+            if ($connection->transactionLevel() === 0) {
+                DB::clearResolvedInstances();
+                DB::reconnect($connection->getName())->getPdo();
+            } else {
+                $connection->getPdo();
+            }
         } catch (PDOException) {
             return $this->call('craft:setup:welcome');
         }
@@ -161,7 +172,7 @@ class InstallCommand extends Command
             }
         }
 
-        $this->components->info('Installing Craft');
+        info('Installing Craft CMS...');
 
         $migrator->runMigration(new Install(
             username: $username,
@@ -172,17 +183,26 @@ class InstallCommand extends Command
 
         $migrator->getRepository()->log('Install', 1);
 
-        $this->components->success('Installed Craft successfully');
-
-        // Mark all existing migrations as applied
-        foreach ($migrator->getPendingMigrations() as $file) {
-            $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
-        }
-
-        $laravelMigrations->install($migrator);
-
-        $this->ensureProjectConfigFileExists();
+        task('Finishing up', function (Logger $logger) use ($laravelMigrations, $migrator) {
+            $this->markPendingMigrationsAsApplied($migrator);
+            $laravelMigrations->install($migrator);
+            $this->ensureProjectConfigFileExists();
+            $logger->success('Craft CMS installed successfully!');
+        }, keepSummary: true);
 
         return self::SUCCESS;
+    }
+
+    private function markPendingMigrationsAsApplied(Migrator $migrator): void
+    {
+        $pendingMigrations = $migrator->getPendingMigrations();
+
+        if ($pendingMigrations === []) {
+            return;
+        }
+
+        foreach ($pendingMigrations as $file) {
+            $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
+        }
     }
 }

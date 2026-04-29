@@ -226,7 +226,7 @@ trait QueriesCustomFields
                 ? QueryParam::AND
                 : QueryParam::OR;
 
-            $this->subQuery->where(function (Builder $query) use ($fieldsByHandle, $glue, $handle, $elementQuery) {
+            $this->where(function (Builder $query) use ($fieldsByHandle, $glue, $handle, $elementQuery) {
                 foreach ($fieldsByHandle[$handle] as $instances) {
                     $query->where(function (Builder $query) use ($handle, $elementQuery, $instances) {
                         $instances[0]::modifyQuery($query, $instances, $elementQuery->customFieldValues[$handle]);
@@ -258,7 +258,7 @@ trait QueriesCustomFields
                 ? $columns[0]
                 : new Coalesce($columns);
 
-            $elementQuery->subQuery->whereParam($column, $elementQuery->customFieldValues[$handle]);
+            $elementQuery->whereParam($column, $elementQuery->customFieldValues[$handle]);
         }
     }
 

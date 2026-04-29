@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Extensions;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
@@ -30,6 +30,7 @@ class ArrayTwigExtension extends AbstractExtension
             new TwigFilter('contains', Arr::contains(...)),
             new TwigFilter('diff', 'array_diff'),
             new TwigFilter('filter', $this->filterFilter(...), ['needs_environment' => true]),
+            new TwigFilter('firstWhere', Arr::first(...)),
             new TwigFilter('flatten', Arr::flatten(...)),
             new TwigFilter('group', $this->groupFilter(...)),
             new TwigFilter('indexOf', $this->indexOfFilter(...)),

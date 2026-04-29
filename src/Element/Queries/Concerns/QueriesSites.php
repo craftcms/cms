@@ -30,6 +30,8 @@ trait QueriesSites
      */
     public mixed $siteId = null;
 
+    private mixed $appliedSiteId = null;
+
     protected function initQueriesSites(): void
     {
         $this->beforeQuery(function (ElementQuery $elementQuery) {
@@ -50,8 +52,10 @@ trait QueriesSites
                 throw new QueryAbortedException($e->getMessage(), 0, $e);
             }
 
+            $elementQuery->appliedSiteId = $elementQuery->siteId;
+
             if (Sites::isMultiSite(false, true)) {
-                $elementQuery->subQuery->whereIn('elements_sites.siteId', Arr::wrap($elementQuery->siteId));
+                $elementQuery->whereIn('elements_sites.siteId', Arr::wrap($elementQuery->siteId));
             }
         });
     }

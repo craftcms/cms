@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Component\Concerns;
 
 use BackedEnum;
+use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Component\Events\DefineSettingsAttributes;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Html;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Event;
 use ReflectionProperty;
 use RuntimeException;
 
+/** @phpstan-require-implements ConfigurableComponentInterface */
 trait ConfigurableComponent
 {
     use HasComponentEvents;
@@ -29,7 +31,7 @@ trait ConfigurableComponent
         $attributes = array_keys(Utils::getPublicProperties($this, fn (ReflectionProperty $property) => $property->class === static::class));
 
         $this->dispatchComponentEvent(self::EVENT_DEFINE_SETTINGS_ATTRIBUTES, $event = new DefineSettingsAttributes(
-            component: $this,
+            component: $this instanceof ConfigurableComponentInterface ? $this : throw new RuntimeException(sprintf('%s must implement %s.', static::class, ConfigurableComponentInterface::class)),
             attributes: $attributes,
         ));
 

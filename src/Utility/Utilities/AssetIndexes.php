@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use craft\helpers\App;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Support\Facades\AssetIndexer;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -73,7 +72,7 @@ class AssetIndexes extends Utility
             ':existingSessions' => $existingIndexingSessions,
             ':volumeOptions' => $volumeOptions,
             'dateFormat' => $dateFormat,
-            ':isEphemeral' => App::isEphemeral(),
+            ':isEphemeral' => app()->isEphemeral(),
         ]);
     }
 }

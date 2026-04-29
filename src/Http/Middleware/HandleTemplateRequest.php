@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Route\DynamicRoute;
+use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Path;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\TemplateResolver;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,6 +17,7 @@ readonly class HandleTemplateRequest
 {
     public function __construct(
         private TemplateResolver $templateResolver,
+        private Sites $sites,
     ) {}
 
     public function handle(Request $request, Closure $next): mixed
@@ -39,11 +40,9 @@ readonly class HandleTemplateRequest
             return $response;
         }
 
-        $path = $request->decodedPath();
-
-        if ($request->isCpRequest()) {
-            $path = ltrim(Str::after($path, Cms::config()->cpTrigger), '/');
-        }
+        $path = $request->isSiteRequest()
+            ? $this->sites->getRequestPath($request)
+            : $request->craftPath();
 
         if (! $this->isPublicTemplatePath($request, $path)) {
             return $response;

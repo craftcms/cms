@@ -19,6 +19,7 @@ trait HasViews
     {
         Event::listen(function (RegisterCpTemplateRoots $event) {
             $basePath = self::getInstance()->getBasePath();
+            $resourcesPath = self::getInstance()->getResourcesPath();
             $handle = self::getInstance()->handle;
 
             /**
@@ -27,10 +28,10 @@ trait HasViews
             $baseDir = match (true) {
                 // Laravel Convention
                 /** @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/13981 */
-                is_dir($baseDir = dirname($basePath).'/resources/views') => $baseDir,
+                is_dir($baseDir = $resourcesPath.'/views') => $baseDir,
                 // Laravel Convention for resources, Twig convention for templates
                 /** @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/13981 */
-                is_dir($baseDir = dirname($basePath).'/resources/templates') => $baseDir,
+                is_dir($baseDir = $resourcesPath.'/templates') => $baseDir,
                 // Craft 5 and earlier
                 /** @phpstan-ignore-next-line https://github.com/phpstan/phpstan/issues/13981 */
                 is_dir($baseDir = $basePath.'/templates') => $baseDir,

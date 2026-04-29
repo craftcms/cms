@@ -7,13 +7,14 @@
 
 namespace craft\events;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * DefineFieldHtmlEvent is used to define the HTML for a field input.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Events\DefineFieldHtml} instead.
  */
 class DefineFieldHtmlEvent extends DefineHtmlEvent
 {

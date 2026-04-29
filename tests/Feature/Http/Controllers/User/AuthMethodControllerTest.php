@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Http\Controllers\Users\AuthMethodController;
 use CraftCms\Cms\User\Elements\User;
@@ -106,7 +106,7 @@ describe('destroy', function () {
 
     it('removes authentication method successfully', function () {
         // First, add the method
-        $auth = app(Auth::class);
+        $auth = app(AuthMethods::class);
         $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
         $recoveryCodes->generateRecoveryCodes();
 
@@ -125,7 +125,7 @@ describe('destroy', function () {
     });
 
     it('returns success message', function () {
-        $auth = app(Auth::class);
+        $auth = app(AuthMethods::class);
         $recoveryCodes = $auth->getMethod(RecoveryCodes::class);
         $recoveryCodes->generateRecoveryCodes();
 

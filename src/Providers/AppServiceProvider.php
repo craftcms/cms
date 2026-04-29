@@ -9,6 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\Http\Mixins\RequestMixin;
+use CraftCms\Cms\Http\Mixins\SessionMixin;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Path;
@@ -29,6 +30,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -41,6 +43,10 @@ use function CraftCms\Cms\t;
 
 class AppServiceProvider extends ServiceProvider
 {
+    public static int $minPasswordLength = 8;
+
+    public static int $maxPasswordLength = 160;
+
     private string $root = __DIR__.'/../..';
 
     #[Override]
@@ -75,7 +81,7 @@ class AppServiceProvider extends ServiceProvider
              * but we provide a sensible default.
              */
             if (! Password::$defaultCallback) {
-                Password::defaults(fn () => Password::min(8)->max(255));
+                Password::defaults(fn () => Password::min(self::$minPasswordLength)->max(self::$maxPasswordLength));
             }
 
             if (Cms::isInstalled() && ! Updates::isCraftUpdatePending()) {
@@ -87,23 +93,8 @@ class AppServiceProvider extends ServiceProvider
         $this->publishes([
             "{$this->root}/resources/build/" => public_path('vendor/craft/build'),
             "{$this->root}/resources/icons/" => public_path('vendor/craft/icons'),
+            "{$this->root}/resources/legacy/" => public_path('vendor/craft/legacy'),
         ], ['craftcms', 'craftcms-assets']);
-
-        // @TODO Remove when rebrand assets are refactored
-        config([
-            'filesystems.disks.rebrand' => [
-                'driver' => 'local',
-                'root' => Path::rebrand(create: false),
-                'url' => implode('/', [
-                    config('app.url'),
-                    Cms::config()->cpTrigger,
-                    'rebrand',
-                ]),
-                'visibility' => 'public',
-                'throw' => false,
-                'report' => false,
-            ],
-        ]);
     }
 
     private function registerMacros(): void
@@ -115,6 +106,8 @@ class AppServiceProvider extends ServiceProvider
 
             return Env::parseBoolean(app(ProjectConfig::class)->get('system.live')) ?? false;
         });
+
+        Application::macro('isEphemeral', fn (): bool => Env::parseBoolean('$CRAFT_EPHEMERAL') === true);
 
         // Register Collection::one() as an alias of first()
         Collection::macro('one', fn () => $this->first(...func_get_args()));
@@ -138,6 +131,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Request::mixin(new RequestMixin);
+        Session::mixin(new SessionMixin);
 
         Response::macro('setNoCacheHeaders', function (bool $replace = true) {
             $this->header('Expires', '0', $replace);
@@ -207,9 +201,20 @@ class AppServiceProvider extends ServiceProvider
         Aliases::set('@craftcms', File::normalizePath($this->root));
         Aliases::set('@package', '@craftcms/src');
         Aliases::set('@resources', "{$this->root}/resources");
+        Aliases::set('@vendor', '@root/vendor');
+        Aliases::set('@storage', $this->app->storagePath());
+        Aliases::set('@runtime', '@storage/runtime');
+
+        if (Aliases::get('@templates', false) === false) {
+            Aliases::set('@templates', is_dir($this->app->resourcePath('views'))
+                ? $this->app->resourcePath('views')
+                : $this->app->basePath('templates'));
+        }
 
         if ($webUrl = Env::get('CRAFT_WEB_URL')) {
             Aliases::set('@web', $webUrl);
+        } else {
+            Aliases::set('@web', config('app.url'));
         }
     }
 }

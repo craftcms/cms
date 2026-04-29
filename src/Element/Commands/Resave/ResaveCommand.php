@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Commands\Resave;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\AfterPropagateElement;
@@ -15,6 +15,7 @@ use CraftCms\Cms\Element\Events\BeforeResaveElement;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Jobs\ResaveElements as ResaveElementsJob;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -364,7 +365,7 @@ abstract class ResaveCommand extends Command
                                 $shouldSet = false;
                             }
                         } elseif ($ifInvalid) {
-                            $element->setScenario(Element::SCENARIO_LIVE);
+                            $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
 
                             if ($element->validate($set) && $element->validate("field:$set")) {
                                 $shouldSet = false;

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Image;
 
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
 use CraftCms\Cms\Asset\Exceptions\ImageException;
@@ -18,6 +19,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\Log;
@@ -82,7 +84,7 @@ class ImageTransformHelper
             return $ext;
         }
 
-        if ($asset->kind !== Asset::KIND_IMAGE) {
+        if ($asset->kind !== FileKind::Image->value) {
             throw new AssetOperationException(t('Tried to detect the appropriate image format for a non-image!'));
         }
 
@@ -98,7 +100,7 @@ class ImageTransformHelper
             // Don't change the same transform
             $transform = clone $transform;
 
-            $attributes = $transform->attributes();
+            $attributes = Utils::getPublicAttributes($transform);
 
             $nullables = [
                 'id',

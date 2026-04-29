@@ -8,17 +8,19 @@
 namespace craft\test\fixtures\elements;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\test\DbFixtureTrait;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Typecast;
 use Illuminate\Support\Facades\DB;
 use PDO;
 use yii\log\Logger;
@@ -107,7 +109,7 @@ abstract class BaseElementFixture extends DbFixture
             $this->populateElement($element, $data);
 
             if ($element->enabled && $element->getIsCanonical() && !$element->isProvisionalDraft) {
-                $element->setScenario(Element::SCENARIO_LIVE);
+                $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
             }
 
             if (!$this->saveElement($element)) {
@@ -168,6 +170,8 @@ abstract class BaseElementFixture extends DbFixture
      */
     protected function populateElement(ElementInterface $element, array $attributes): void
     {
+        Typecast::properties($element::class, $attributes);
+
         foreach ($attributes as $name => $value) {
             $element->$name = $value;
         }

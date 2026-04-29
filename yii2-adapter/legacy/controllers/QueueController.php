@@ -31,6 +31,7 @@ use function CraftCms\Cms\t;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0
  */
 class QueueController extends Controller
 {
@@ -172,24 +173,6 @@ class QueueController extends Controller
         $this->queue->retryAll();
 
         return $this->actionRun();
-    }
-
-    /**
-     * Returns info about all the jobs in the queue.
-     *
-     * @return Response
-     */
-    public function actionGetJobInfo(): Response
-    {
-        $this->requireAcceptsJson();
-        $this->requirePermission('accessCp');
-
-        $limit = $this->request->getParam('limit');
-
-        return $this->asJson([
-            'total' => $this->queue->getTotalJobs(),
-            'jobs' => $this->queue->getJobInfo($limit),
-        ]);
     }
 
     /**

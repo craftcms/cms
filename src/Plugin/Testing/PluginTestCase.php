@@ -6,9 +6,9 @@ namespace CraftCms\Cms\Plugin\Testing;
 
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
+use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Providers\CraftServiceProvider;
 use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\TestCase as BaseTestCase;
@@ -40,10 +40,17 @@ abstract class PluginTestCase extends BaseTestCase
             password: 'craftcms2018!!',
             email: 'support@craftcms.com',
             site: $site,
-        );
+        )->silent();
 
-        $migration->up();
-        app(LaravelMigrations::class)->ensureSessionsTable();
+        $migrator = app(Migrator::class)->track('craft');
+        $migrator->runMigration($migration, 'up');
+        $migrator->getRepository()->log('Install', 1);
+
+        foreach ($migrator->getPendingMigrations() as $file) {
+            $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
+        }
+
+        app(LaravelMigrations::class)->install($migrator);
     }
 
     #[Override]
@@ -51,7 +58,6 @@ abstract class PluginTestCase extends BaseTestCase
     {
         return [
             CraftServiceProvider::class,
-            Yii2ServiceProvider::class,
         ];
     }
 }
