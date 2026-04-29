@@ -54,15 +54,16 @@ class Remove2faCommand extends Command implements PromptsForMissingInput
             return self::SUCCESS;
         }
 
-        if ($method !== 'all') {
+        if ($method === 'all') {
+            $methodsToRemove = array_keys($activeMethods);
+        } elseif ($method) {
+            $methodsToRemove = [$method];
+        } else {
             $methodsToRemove = multiselect(
                 label: "Which two-step verification method(s) would you like to remove for user “{$user->username}”?",
                 options: array_keys($activeMethods),
-                default: $method ? [$method] : null,
                 required: true,
             );
-        } else {
-            $methodsToRemove = array_keys($activeMethods);
         }
 
         foreach ($methodsToRemove as $method) {
