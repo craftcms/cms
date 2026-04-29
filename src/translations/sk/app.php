@@ -162,7 +162,7 @@ return [
     'Are you sure you want to delete this image?' => 'Naozaj chcete tento obrázok odstrániť?',
     'Are you sure you want to delete this route?' => 'Určite chcete túto trasu vymazať?',
     'Are you sure you want to delete this {type}?' => 'Naozaj chcete odstrániť tento {type}?',
-    'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?',
+    'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?' => 'Naozaj chcete odstrániť {numElements, plural, one {} few {tieto} many {týchto}=1{tento} other{týchto}} {type}?',
     'Are you sure you want to delete “{name}” and all entries of that type?' => 'Určite zmazať „{name}“ a všetky položky tohto typu?',
     'Are you sure you want to delete “{name}” and all its entries?' => 'Určite zmazať „{name}“ a všetky jeho záznamy?',
     'Are you sure you want to delete “{name}”?' => 'Určite zmazať „{name}“?',
