@@ -101,7 +101,7 @@ trait QueriesSites
         if ($value === null) {
             $this->siteId = null;
         } elseif ($value === '*') {
-            $this->siteId = Sites::getAllSiteIds();
+            $this->siteId = Sites::getAllSiteIds()->all();
         } elseif ($value instanceof Site || $value instanceof SiteModel) {
             $this->siteId = $value->id;
         } elseif (is_string($value)) {

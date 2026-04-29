@@ -9,7 +9,7 @@ namespace craft\events;
 
 use craft\base\Event;
 use craft\elements\deletionblockers\DeletionBlockerInterface;
-use craft\elements\ElementCollection;
+use CraftCms\Cms\Element\ElementCollection;
 
 /**
  * DefineElementDeletionBlockersEvent class.

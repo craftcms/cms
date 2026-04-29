@@ -27,6 +27,8 @@ class RelationDeletionBlocker extends BaseDeletionBlocker
         bool $hardDelete,
         array $config = [],
     ) {
+        parent::__construct($elements, $hardDelete, $config);
+
         $this->relationCount = $this->sourceElementType::find()
             ->relatedTo([
                 'targetElement' => $this->elements->ids()->all(),
@@ -35,8 +37,6 @@ class RelationDeletionBlocker extends BaseDeletionBlocker
             ->unique()
             ->status(null)
             ->count();
-
-        parent::__construct($elements, $hardDelete, $config);
     }
 
     public function isActive(): bool
