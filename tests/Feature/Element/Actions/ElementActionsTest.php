@@ -19,7 +19,6 @@ use CraftCms\Cms\Element\Events\AfterPerformAction;
 use CraftCms\Cms\Element\Events\BeforePerformAction;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\User\Actions\DeleteUsers;
 use CraftCms\Cms\User\Actions\SuspendUsers;
 use CraftCms\Cms\User\Actions\UnsuspendUsers;
 use CraftCms\Cms\User\Elements\User;
@@ -81,7 +80,6 @@ it('resolves canonical user and address actions', function () {
 
     expect($userActions)->toContain(SuspendUsers::class)
         ->and($userActions)->toContain(UnsuspendUsers::class)
-        ->and($userActions)->toContain(DeleteUsers::class)
         ->and($addressActions)->toContain(Copy::class);
 });
 

@@ -105,8 +105,8 @@ JS, [
             ],
             [
                 'icon' => 'trash',
-                'label' => t('Delete {numEntries, plural, =1{entry} other{entries}}', [
-                    'numEntries' => $numEntries,
+                'label' => t('Delete {type}', [
+                    'type' => $numEntries === 1 ? Entry::lowerDisplayName() : Entry::pluralLowerDisplayName(),
                 ]),
                 'destructive' => true,
                 'callback' => Html::jsWithVars(fn ($elementType, $entryIds, $message) => <<<JS

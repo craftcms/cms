@@ -123,7 +123,7 @@ trait HydratesElements
 
         // Remove the field values
         // (We'll set them after the element has been created, and we have its field layout.)
-        $content = Arr::pull($row, 'content', []);
+        $content = Arr::pull($row, 'content') ?? [];
         if (is_string($content)) {
             $content = Json::decode($content);
         }

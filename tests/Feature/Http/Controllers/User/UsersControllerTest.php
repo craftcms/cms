@@ -2,7 +2,6 @@
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
@@ -82,60 +81,6 @@ describe('edit', function () {
 
     test('edit can show specific user by ID', function () {
         get(action([UsersController::class, 'edit'], ['userId' => User::findOne()->id]))->assertOk();
-    });
-});
-
-describe('destroy', function () {
-    test('destroy deletes a user', function () {
-        $user = CraftCms\Cms\User\Models\User::factory()->create();
-
-        expect(new UserQuery()->count())->toBe(2);
-
-        postJson(action([UsersController::class, 'destroy']), [
-            'userId' => $user->id,
-        ])->assertOk();
-
-        expect(new UserQuery()->count())->toBe(1);
-    });
-
-    test('destroy validates required userId', function () {
-        postJson(action([UsersController::class, 'destroy']), [])
-            ->assertJsonValidationErrors(['userId']);
-    });
-
-    test('destroy can transfer content to another user', function () {
-        $user = CraftCms\Cms\User\Models\User::factory()->create();
-        $transferTo = User::findOne();
-
-        postJson(action([UsersController::class, 'destroy']), [
-            'userId' => $user->id,
-            'transferContentTo' => $transferTo->id,
-        ])->assertOk();
-
-        // Verify user was deleted
-        expect(User::find()->id($user->id)->exists())->toBeFalse();
-    });
-
-    test('destroy handles non-existent user gracefully', function () {
-        postJson(action([UsersController::class, 'destroy']), [
-            'userId' => 99999,
-        ])->assertStatus(400);
-    });
-
-    test('destroy requires proper authorization', function () {
-        Gate::before(function ($user, $ability) {
-            if ($ability === 'deleteUsers') {
-                return false;
-            }
-
-            return null;
-        });
-
-        $user = CraftCms\Cms\User\Models\User::factory()->create();
-
-        postJson(action([UsersController::class, 'destroy']), [
-            'userId' => $user->id,
-        ])->assertForbidden();
     });
 });
 

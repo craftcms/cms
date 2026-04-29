@@ -39,7 +39,7 @@ Craft.ElementDeletionManager = Garnish.Base.extend(
       this.settings.onLoadBlockers();
 
       if (!data.blockers.length) {
-        await this.confirmAndDelete();
+        await this.confirmAndDelete(data.totalElements);
         return;
       }
 
@@ -77,8 +77,8 @@ Craft.ElementDeletionManager = Garnish.Base.extend(
       }
     },
 
-    confirmAndDelete: async function () {
-      const message = this.getConfirmationMessage();
+    confirmAndDelete: async function (totalElements) {
+      const message = this.getConfirmationMessage(totalElements);
       if (!confirm(message)) {
         this.settings.onCancel();
         return;
@@ -100,13 +100,13 @@ Craft.ElementDeletionManager = Garnish.Base.extend(
       this.modal?.hide();
     },
 
-    getConfirmationMessage: function () {
+    getConfirmationMessage: function (totalElements) {
       if (this.settings.confirmationMessage) {
         return this.settings.confirmationMessage;
       }
 
       const elementTypeName =
-        this.elementIds.length === 1
+        totalElements === 1
           ? Craft.elementTypeNames[this.elementType][2]
           : Craft.elementTypeNames[this.elementType][3];
 
@@ -116,18 +116,7 @@ Craft.ElementDeletionManager = Garnish.Base.extend(
           'Are you sure you want to permanently delete {numElements, plural, =1{this} other{these}} {type}?',
           {
             type: elementTypeName,
-            numElements: this.elementIds.length,
-          }
-        );
-      }
-
-      if (this.settings.withDescendants) {
-        return Craft.t(
-          'app',
-          'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type} along with {numElements, plural, =1{its} other{their}} descendants?',
-          {
-            type: elementTypeName,
-            numElements: this.elementIds.length,
+            numElements: totalElements,
           }
         );
       }
@@ -137,7 +126,7 @@ Craft.ElementDeletionManager = Garnish.Base.extend(
         'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?',
         {
           type: elementTypeName,
-          numElements: this.elementIds.length,
+          numElements: totalElements,
         }
       );
     },
@@ -211,7 +200,7 @@ Craft.ElementDeletionManager = Garnish.Base.extend(
       });
 
       this.$submitBtn.on('activate', async () => {
-        await this.confirmAndDelete();
+        await this.confirmAndDelete(data.totalElements);
       });
     },
 

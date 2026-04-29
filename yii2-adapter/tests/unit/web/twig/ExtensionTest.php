@@ -7,8 +7,10 @@
 
 namespace crafttests\unit\web\twig;
 
+use ArrayIterator;
 use ArrayObject;
 use Craft;
+use craft\base\Model;
 use craft\test\TestCase;
 use craft\test\TestSetup;
 use craft\web\View;
@@ -38,7 +40,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use IteratorAggregate;
 use Throwable;
+use Traversable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -208,7 +212,37 @@ class ExtensionTest extends TestCase
         );
     }
 
-    public function test_translate_filter(): void
+    public function testEmptyTest(): void
+    {
+        $this->testRenderResult('empty', '{{ foo is empty ? "empty" : "not empty" }}', [
+            'foo' => null,
+        ]);
+
+        $this->testRenderResult('empty', '{{ foo is empty ? "empty" : "not empty" }}', [
+            'foo' => new class() implements IteratorAggregate {
+                public function getIterator(): Traversable
+                {
+                    return new ArrayIterator([]);
+                }
+            },
+        ]);
+
+        $this->testRenderResult('not empty', '{{ foo is empty ? "empty" : "not empty" }}', [
+            'foo' => new class() implements IteratorAggregate {
+                public function getIterator(): Traversable
+                {
+                    return new ArrayIterator([1, 2, 3]);
+                }
+            },
+        ]);
+
+        $this->testRenderResult('not empty', '{{ foo is empty ? "empty" : "not empty" }}', [
+            'foo' => new class() extends Model {
+            },
+        ]);
+    }
+
+    public function testTranslateFilter(): void
     {
         $this->markTestSkipped('Move test to Laravel');
 
@@ -877,6 +911,46 @@ class ExtensionTest extends TestCase
     public function test_widont_filter(): void
     {
         $this->testRenderResult('foo bar&nbsp;baz', '{{ "foo bar baz"|widont }}');
+    }
+
+    public function testDefaultFilter(): void
+    {
+        $this->testRenderResult('default', '{{ foo|default("default") }}');
+
+        $this->testRenderResult('default', '{{ foo|default("default") }}', [
+            'foo' => new class() implements IteratorAggregate {
+                public function __toString(): string
+                {
+                    return 'foo';
+                }
+                public function getIterator(): Traversable
+                {
+                    return new ArrayIterator([]);
+                }
+            },
+        ]);
+
+        $this->testRenderResult('foo', '{{ foo|default("default") }}', [
+            'foo' => new class() implements IteratorAggregate {
+                public function __toString(): string
+                {
+                    return 'foo';
+                }
+                public function getIterator(): Traversable
+                {
+                    return new ArrayIterator([1, 2, 3]);
+                }
+            },
+        ]);
+
+        $this->testRenderResult('foo', '{{ foo|default("default") }}', [
+            'foo' => new class() extends Model {
+                public function __toString(): string
+                {
+                    return 'foo';
+                }
+            },
+        ]);
     }
 
     public function test_clone_function(): void

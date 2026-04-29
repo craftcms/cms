@@ -73,7 +73,7 @@ readonly class FolderController
 
         abort_if(! $folder, 400, 'The folder cannot be found');
 
-        $this->requireVolumePermissionByFolder('deleteAssets', $folder);
+        $this->requireVolumePermissionByFolder('deletePeerAssets', $folder);
         $this->folders->deleteFoldersByIds($folderId);
 
         return $this->asSuccess();

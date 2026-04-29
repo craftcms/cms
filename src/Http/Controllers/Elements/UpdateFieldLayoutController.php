@@ -64,7 +64,7 @@ readonly class UpdateFieldLayoutController
 
         $data += [
             'initialDeltaValues' => $this->deltaRegistry->getInitialValues(),
-            'uiLabel' => $this->request->element()->getUiLabel(),
+            'uiLabel' => $element->getUiLabel(),
         ];
 
         return new ElementResponse()->success($element, 'Field layout updated.', $data, true);

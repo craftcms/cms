@@ -80,6 +80,7 @@ use Twig\ExpressionParser\Infix\BinaryOperatorExpressionParser;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\GlobalsInterface;
+use Twig\Node\Expression\Filter\DefaultFilter;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
@@ -172,6 +173,14 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigTest('boolean', fn ($obj): bool => is_bool($obj)),
             new TwigTest('callable', fn ($obj): bool => is_callable($obj)),
             new TwigTest('countable', fn ($obj): bool => is_countable($obj)),
+            new TwigTest('empty', function ($obj): bool {
+                if ($obj instanceof Component) {
+                    // assume the IteratorAggregate implementation was not intentional
+                    return false;
+                }
+
+                return CoreExtension::testEmpty($obj);
+            }),
             new TwigTest('float', fn ($obj): bool => is_float($obj)),
             new TwigTest('instance of', fn ($obj, $class) => $obj instanceof $class),
             new TwigTest('integer', fn ($obj): bool => is_int($obj)),
@@ -224,6 +233,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('base64_encode', 'base64_encode'),
             new TwigFilter('boolean', 'boolval'),
             new TwigFilter('currency', $this->currencyFilter(...)),
+            new TwigFilter('default', $this->defaultFilter(...), ['node_class' => DefaultFilter::class]),
             new TwigFilter('filesize', $this->filesizeFilter(...)),
             new TwigFilter('float', 'floatval'),
             new TwigFilter('integer', 'intval'),
@@ -336,6 +346,23 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         } catch (Throwable) {
             return $value;
         }
+    }
+
+    /**
+     * Returns the passed-in value if it’s not empty; otherwise, the provided default value.
+     */
+    public static function defaultFilter(mixed $value, string $default = ''): mixed
+    {
+        if ($value instanceof Component) {
+            // assume the IteratorAggregate implementation was not intentional
+            return $value;
+        }
+
+        if (CoreExtension::testEmpty($value)) {
+            return $default;
+        }
+
+        return $value;
     }
 
     public function filesizeFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = []): string

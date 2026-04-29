@@ -27,6 +27,21 @@ class Delete extends ElementAction implements DeleteActionInterface
 
     public ?string $successMessage = null;
 
+    private readonly string $triggerId;
+
+    public function __construct(object|array $config = [])
+    {
+        parent::__construct($config);
+
+        $this->triggerId = sprintf('action-trigger-%s', mt_rand());
+    }
+
+    #[Override]
+    public function getTriggerId(): string
+    {
+        return $this->triggerId;
+    }
+
     public function canHardDelete(): bool
     {
         return ! $this->withDescendants;
@@ -41,7 +56,7 @@ class Delete extends ElementAction implements DeleteActionInterface
     {
         // Only enable for deletable elements, per canDelete()
         HtmlStack::jsWithVars(fn (
-            $type,
+            $triggerId,
             $elementType,
             $withDescendants,
             $hardDelete,
@@ -49,7 +64,7 @@ class Delete extends ElementAction implements DeleteActionInterface
         ) => <<<JS
 (() => {
   new Craft.ElementActionTrigger({
-    type: $type,
+    triggerId: $triggerId,
     validateSelection: (selectedItems, elementIndex) => {
       for (let i = 0; i < selectedItems.length; i++) {
         if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), 'data-deletable')) {
@@ -82,7 +97,7 @@ class Delete extends ElementAction implements DeleteActionInterface
   })
 })();
 JS, [
-            static::class,
+            $this->getTriggerId(),
             $this->elementType,
             $this->withDescendants,
             $this->hard,

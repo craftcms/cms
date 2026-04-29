@@ -334,14 +334,14 @@ class Cp extends Component
         $options = [];
 
         foreach ($originalOptions as $value) {
-            if ($value['type'] === 'optgroup') {
+            if (($value['type'] ?? null) === 'optgroup') {
                 $options[] = ['optgroup' => $value['label']];
                 array_push($options, ...($value['options'] ?? []));
             } else {
                 $options[] = [
                     'label' => $value['label'],
                     'value' => $value['value'],
-                    'data' => $value['data'],
+                    'data' => $value['data'] ?? null,
                 ];
             }
         }

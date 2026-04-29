@@ -13,6 +13,14 @@ it('sorts by username by default', function () {
     expect(userQuery()->pluck('id')->all())->toBe([$secondUser->id, $firstUser->id]);
 });
 
+it('empty usernames go last', function () {
+    UserModel::firstOrFail()->update(['username' => null]);
+    $firstUser = UserModel::firstOrFail();
+    $secondUser = UserModel::factory()->create(['username' => 'z']);
+
+    expect(userQuery()->pluck('id')->all())->toBe([$secondUser->id, $firstUser->id]);
+});
+
 test('gets active users first', function () {
     $inactive = UserModel::factory()->createElement([
         'active' => false,

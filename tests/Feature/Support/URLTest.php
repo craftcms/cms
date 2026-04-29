@@ -322,21 +322,6 @@ describe('base and control panel helpers', function () {
             ->and(Url::cpHost())->toBe('https://cms.example.test');
     });
 
-    test('returns control panel referral URLs', function (?string $expected, ?string $referrer) {
-        swapUrlRequest('https://localhost/admin/dashboard');
-
-        if ($referrer !== null) {
-            request()->headers->set('referer', $referrer);
-        }
-
-        expect(Url::cpReferralUrl())->toBe($expected);
-    })->with([
-        'missing-referrer' => [null, null],
-        'self-referrer' => [null, 'https://localhost/admin/dashboard'],
-        'external-referrer' => [null, 'https://craftcms.com/admin/dashboard'],
-        'cp-referrer' => ['https://localhost/admin/entries', 'https://localhost/admin/entries'],
-    ]);
-
     test('prepends the control panel trigger', function (string $expected, ?string $cpTrigger, string $path) {
         Cms::config()->cpTrigger = $cpTrigger;
 

@@ -122,17 +122,30 @@ class EntryRules extends ElementRules
                     }
                 },
             ]),
-            Rule::when(
-                $this->inScenarios(self::SCENARIO_LIVE) &&
-                $section &&
-                $section->type !== SectionType::Single &&
-                $section->maxAuthors !== 0, [
-                    'min:'.$section->minAuthors,
-                    'max:'.$section->maxAuthors,
-                ]),
         ];
 
-        $rules['authorIds.*'] = ['integer'];
+        if ($this->inScenarios(self::SCENARIO_LIVE) &&
+            $section &&
+            $section->type !== SectionType::Single
+        ) {
+            if ($section->minAuthors > 0) {
+                $rules['authorIds'] = array_merge($rules['authorIds'], [
+                    'required',
+                ]);
+            }
+
+            $rules['authorIds'] = array_merge($rules['authorIds'], [
+                'min:'.$section->minAuthors,
+            ]);
+
+            if (isset($section->maxAuthors) && $section->maxAuthors !== 0) {
+                $rules['authorIds'] = array_merge($rules['authorIds'], array_filter([
+                    'max:'.$section->maxAuthors,
+                ]));
+            }
+        }
+
+        $rules['authorIds.*'] = ['nullable', 'integer'];
 
         return $rules;
     }

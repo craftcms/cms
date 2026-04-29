@@ -60,6 +60,7 @@ it('creates a draft and redirects to it', function () {
 it('does not assign authors when the section disallows them', function () {
     $section = Section::factory()->withEntryTypes(EntryType::factory()->create())->create([
         'handle' => 'solo',
+        'minAuthors' => 0,
         'maxAuthors' => 0,
     ]);
 

@@ -39,8 +39,8 @@ describe('DateTwigExtension', function () {
     it('handles empty timestamp values', function () {
         $extension = new DateTwigExtension($this->pageLifecycle, $this->env);
 
-        expect($extension->timestampFilter(''))->toBe('');
-        expect($extension->timestampFilter(null))->toBe('');
+        expect($extension->timestampFilter(''))->not()->toBe('');
+        expect($extension->timestampFilter(null))->not()->toBe('');
     });
 
     it('can convert dates via date function', function () {

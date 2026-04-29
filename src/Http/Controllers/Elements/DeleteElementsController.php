@@ -63,6 +63,7 @@ readonly class DeleteElementsController
                 'details' => $blocker->getDetails(),
                 'actions' => $blocker->getActions(),
             ])
+            ->values()
             ->all();
 
         $elementPreview = $previewHtml->elementPreviewHtml(

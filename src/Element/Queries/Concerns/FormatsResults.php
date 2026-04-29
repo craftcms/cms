@@ -261,13 +261,18 @@ trait FormatsResults
         }
 
         foreach ($elementQuery->defaultOrderBy as $column => $direction) {
+            if ($direction instanceof Expression) {
+                $elementQuery->orderByRaw($direction->getValue($elementQuery->query->getGrammar()));
+
+                continue;
+            }
+
             $direction = match ($direction) {
-                SORT_ASC, 'asc' => 'asc',
                 SORT_DESC, 'desc' => 'desc',
-                default => throw new QueryAbortedException('Invalid sort direction: '.$direction),
+                default => 'asc',
             };
 
-            $elementQuery->query->orderBy($column, $direction);
+            $elementQuery->orderBy($column);
         }
     }
 
@@ -280,6 +285,10 @@ trait FormatsResults
         }
 
         $query->orders = array_map(function ($order) use ($elementQuery) {
+            if (! isset($order['column'])) {
+                return $order;
+            }
+
             if (! is_string($order['column'])) {
                 return $order;
             }

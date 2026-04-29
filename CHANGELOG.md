@@ -4,6 +4,7 @@
 
 - Fixed a bug where dependencies required by `composer.json` were getting updated when installing/updating plugins. ([#18755](https://github.com/craftcms/cms/issues/18755))
 - Fixed a bug where element thumbnails weren’t always getting loaded when they became visible.
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-7h62-6v23-v8fm)
 
 ## 5.9.21 - 2026-04-23
 
@@ -16,7 +17,8 @@
 - Fixed a bug where it wasn’t always possible to sign into a user account that had the same email address as an inactive user. ([#18723](https://github.com/craftcms/cms/issues/18723))
 - Fixed a bug where relational fields’ element query results weren’t always limited to the selected relations if the `id` param was overridden. ([#15570](https://github.com/craftcms/cms/issues/15570))
 - Fixed an error that could occur when executing a queue job. ([#18739](https://github.com/craftcms/cms/issues/18739))
-- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. (GHSA-x5m4-g2cq-52pq, GHSA-3w32-23wj-rxg3, GHSA-qh45-9g5p-m2v4)
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. (GHSA-x5m4-g2cq-52pq)
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. (GHSA-3w32-23wj-rxg3, GHSA-qh45-9g5p-m2v4)
 - Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerabilities. (GHSA-qq2c-2q8j-jh27, GHSA-43cq-c2gq-pfpw)
 
 ## 5.9.20 - 2026-04-14
@@ -74,8 +76,8 @@
 - Fixed a bug where nested entries were getting assigned new IDs if they were edited multiple times for the same owner element draft. ([#18461](https://github.com/craftcms/cms/issues/18461))
 - Fixed a SQL error that could occur when editing an element draft that had upstream changes. ([#18626](https://github.com/craftcms/cms/pull/18626))
 - Fixed a bug where custom sources’ labels weren’t being translated within the document title. ([#18629](https://github.com/craftcms/cms/issues/18629))
-- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. (GHSA-gj2p-p9m4-c8gw, GHSA-33m5-hqp9-97pw)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-qrgm-p9w5-rrfw)
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. ([GHSA-gj2p-p9m4-c8gw](https://github.com/craftcms/cms/security/advisories/GHSA-gj2p-p9m4-c8gw), [GHSA-33m5-hqp9-97pw](https://github.com/craftcms/cms/security/advisories/GHSA-33m5-hqp9-97pw))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-qrgm-p9w5-rrfw](https://github.com/craftcms/cms/security/advisories/GHSA-qrgm-p9w5-rrfw))
 
 ## 5.9.17 - 2026-03-17
 

@@ -129,7 +129,7 @@ it('rejects invalid propagate-to and set combinations for entries', function () 
 
 it('requires to when set is passed to entries', function () {
     $this->artisan('craft:resave:entries --set=title')
-        ->expectsOutputToContain('--to is required when using --set.')
+        ->expectsOutputToContain('--to or --to-default is required when using --set.')
         ->assertExitCode(1);
 });
 

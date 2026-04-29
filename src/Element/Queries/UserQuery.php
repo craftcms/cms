@@ -45,6 +45,7 @@ class UserQuery extends ElementQuery
 
         $this->defaultOrderBy = [
             new Expression('CASE WHEN users.username IS NULL THEN 1 ELSE 0 END ASC'),
+            'users.username' => SORT_ASC,
             'users.active' => SORT_DESC,
             'users.pending' => SORT_DESC,
         ];
