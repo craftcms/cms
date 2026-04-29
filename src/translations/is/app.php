@@ -162,7 +162,7 @@ return [
     'Are you sure you want to delete this image?' => 'Ertu viss um að þú viljir eyða þessari mynd?',
     'Are you sure you want to delete this route?' => 'Ertu viss um að þú viljir eyða þessari leið?',
     'Are you sure you want to delete this {type}?' => 'Ertu viss um að þú viljir eyða þessari {type}?',
-    'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?' => 'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?',
+    'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?' => 'Ertu viss um að þú viljir eyða {numElements, plural, =1{þessari} other{þessum}} {type}?',
     'Are you sure you want to delete “{name}” and all entries of that type?' => 'Ertu viss um að þú viljir eyða „{name}“ og öllum færslum af þeirri gerð?',
     'Are you sure you want to delete “{name}” and all its entries?' => 'Ertu viss um að þú viljir eyða „{name}“ og öllum færslum þess?',
     'Are you sure you want to delete “{name}”?' => 'Ertu viss um að þú viljir eyða „{name}“?',
