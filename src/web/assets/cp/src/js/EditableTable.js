@@ -700,11 +700,11 @@ Craft.EditableTable = Garnish.Base.extend(
           .appendTo($tr);
       }
 
-      if (staticRows && includeRowId) {
+      if (includeRowId) {
         $('<input/>', {
           type: 'hidden',
           name: `${baseName}[${rowId}][rowId]`,
-          value: Craft.uuid(),
+          value: values.rowId ?? Craft.uuid(),
         }).appendTo($tr);
       }
 
