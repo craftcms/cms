@@ -34,7 +34,7 @@
     :isActive="isActive"
     :overlay="overlay"
     @close="emit('close')"
-    v-bind="$props"
+    :width="width"
   >
     <form @submit.prevent="submitHandler">
       <Pane :title="title">

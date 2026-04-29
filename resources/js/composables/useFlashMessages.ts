@@ -73,13 +73,17 @@ export function useFlashMessages(
   function flash(
     type: 'success' | 'error',
     message: string | null,
-    duration: number = options.duration ?? 5000
+    options: Partial<UseFlashMessagesOptions> = {}
   ) {
+    const {duration = options.duration ?? 5000} = options;
+
     messages.value[type] = message;
 
-    setTimeout(() => {
-      messages.value[type] = null;
-    }, duration);
+    if (duration !== -1) {
+      setTimeout(() => {
+        messages.value[type] = null;
+      }, duration);
+    }
   }
 
   return {

@@ -35,6 +35,7 @@
     return (
       slots.footer ||
       slots.actions ||
+      slots.feedback ||
       slots['primary-action'] ||
       slots['secondary-action']
     );
@@ -90,6 +91,8 @@
     </slot>
     <slot name="footer" v-if="showFooter">
       <div class="pane__footer">
+        <slot name="feedback"></slot>
+        <div class="flex-1"></div>
         <slot name="actions">
           <div class="actions">
             <slot name="secondary-action"></slot>
@@ -150,6 +153,8 @@
   }
 
   .pane__footer {
+    display: flex;
+    align-items: center;
     background-color: var(--_bg-color);
     border-top: 1px solid var(--c-color-neutral-border-quiet);
     padding-inline: var(--_pane-spacing);
@@ -166,5 +171,6 @@
     gap: var(--c-spacing-md);
     justify-content: end;
     align-items: center;
+    align-self: end;
   }
 </style>

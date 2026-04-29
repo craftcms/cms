@@ -130,3 +130,20 @@ export interface Site {
   dateCreated: string;
   dateUpdated: string;
 }
+
+/**
+ * These are mostly here so tailwind sees them and makes sure the classes
+ * are around, but you can use it if you want.
+ */
+export const Width = {
+  sm: 'w-sm',
+  md: 'w-md',
+  lg: 'w-lg',
+  xl: 'w-xl',
+  '2xl': 'w-2xl',
+  '3xl': 'w-3xl',
+  '4xl': 'w-4xl',
+  '5xl': 'w-5xl',
+  '6xl': 'w-6xl',
+  '7xl': 'w-7xl',
+} as const;
