@@ -767,13 +767,7 @@ JS, [
 
             $relationsAlias = sprintf('relations_%s', Str::random(10));
 
-            $query->beforeQuery(function (ElementQuery $elementQuery) use (
-                $element,
-                $relationsAlias) {
-                if ($elementQuery->id !== null) {
-                    return;
-                }
-
+            $query->beforeQuery(function (ElementQuery $elementQuery) use ($element, $relationsAlias) {
                 // Make these changes directly on the prepared queries, so `sortOrder` doesn't ever make it into
                 // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
                 // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied

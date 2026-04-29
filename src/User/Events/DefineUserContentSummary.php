@@ -19,7 +19,7 @@ use Illuminate\Support\Collection;
  * });
  * ```
  *
- * @since 3.0.13
+ * @deprecated 5.10.0
  */
 class DefineUserContentSummary
 {

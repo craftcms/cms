@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Collection;
 use Tpetry\QueryExpressions\Language\CaseGroup;
 use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
@@ -181,6 +182,12 @@ trait FormatsResults
     public function ids(): array
     {
         return $this->pluck('elements.id')->all();
+    }
+
+    /** @return Collection<int> */
+    public function collectIds(): Collection
+    {
+        return $this->pluck('elements.id');
     }
 
     protected function initFormatsResults(): void

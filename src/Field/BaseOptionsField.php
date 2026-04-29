@@ -10,6 +10,7 @@ use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Conditions\OptionsFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
+use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
@@ -36,7 +37,7 @@ use function CraftCms\Cms\t;
 /**
  * BaseOptionsField is the base class for classes representing an options field.
  */
-abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldInterface, MergeableFieldInterface, PreviewableFieldInterface
+abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, MergeableFieldInterface, PreviewableFieldInterface
 {
     /**
      * @event {@see DefineInputOptions} Event triggered when defining the options for the field's input.
@@ -331,6 +332,12 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         }
 
         return $html;
+    }
+
+    #[Override]
+    public function getDefaultValue(): array|string|null
+    {
+        return $this->defaultValue();
     }
 
     #[Override]

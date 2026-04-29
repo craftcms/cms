@@ -11,7 +11,6 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Override;
@@ -41,7 +40,13 @@ class Delete extends ElementAction implements DeleteActionInterface
     public function getTriggerHtml(): ?string
     {
         // Only enable for deletable elements, per canDelete()
-        HtmlStack::jsWithVars(fn ($type) => <<<JS
+        HtmlStack::jsWithVars(fn (
+            $type,
+            $elementType,
+            $withDescendants,
+            $hardDelete,
+            $confirmationMessage,
+        ) => <<<JS
 (() => {
   new Craft.ElementActionTrigger({
     type: $type,
@@ -54,21 +59,35 @@ class Delete extends ElementAction implements DeleteActionInterface
 
       return elementIndex.settings.canDeleteElements(selectedItems);
     },
-    beforeActivate: async (selectedItems, elementIndex) => {
-      await elementIndex.settings.onBeforeDeleteElements(selectedItems);
-    },
-    afterActivate: async (selectedItems, elementIndex) => {
-      await elementIndex.settings.onDeleteElements(selectedItems);
+    activate: async (selectedItems, elementIndex) => {
+      await elementIndex.onBeforeDeleteElements(selectedItems);
+      elementIndex.setIndexBusy();
+      const elementIds = elementIndex.getSelectedElementIds();
+
+      new Craft.ElementDeletionManager($elementType, elementIds, {
+        siteId: elementIndex.siteId,
+        ownerId: elementIndex.settings.criteria?.ownerId,
+        withDescendants: $withDescendants,
+        hardDelete: $hardDelete,
+        confirmationMessage: $confirmationMessage,
+        onLoadBlockers: () => {
+          elementIndex.setIndexAvailable();
+        },
+        onSuccess: async () => {
+          elementIndex.updateElements(true, true);
+          await elementIndex.onDeleteElements(selectedItems);
+        },
+      })
     },
   })
 })();
-JS, [static::class]);
-
-        if ($this->hard) {
-            return Html::tag('div', $this->getTriggerLabel(), [
-                'class' => ['btn', 'formsubmit'],
-            ]);
-        }
+JS, [
+            static::class,
+            $this->elementType,
+            $this->withDescendants,
+            $this->hard,
+            $this->confirmationMessage,
+        ]);
 
         return null;
     }

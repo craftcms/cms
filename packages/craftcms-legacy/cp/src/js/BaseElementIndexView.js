@@ -331,6 +331,12 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       }
     },
 
+    selectElementsById: function (ids) {
+      for (const id of ids) {
+        this.selectElementById(id);
+      }
+    },
+
     selectAllElements: function () {
       this.elementSelect.selectAll();
     },

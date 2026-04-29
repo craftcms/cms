@@ -8,7 +8,9 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\base\DefaultableFieldInterface;
 use craft\base\Event as YiiEvent;
+use craft\base\FieldInterface;
 use craft\console\Controller;
 use craft\elements\Category;
 use craft\elements\db\ElementQuery;
@@ -195,7 +197,7 @@ class ResaveController extends Controller
     public ?string $countryCode = null;
 
     /**
-     * @var string[] Only resave elements that have custom fields with these global field handles.
+     * @var string[]|FieldInterface[] Only resave elements that have custom fields with these global field handles.
      * @since 5.5.0
      */
     public array $withFields = [];
@@ -225,6 +227,12 @@ class ResaveController extends Controller
      * @since 3.7.29
      */
     public ?string $to = null;
+
+    /**
+     * @var bool Sets the specified fields to their default values.
+     * @since 5.10.0
+     */
+    public bool $toDefault = false;
 
     /**
      * @var bool Whether the `--set` attribute should only be set if it doesn’t have a value.
@@ -291,6 +299,7 @@ class ResaveController extends Controller
 
         $options[] = 'set';
         $options[] = 'to';
+        $options[] = 'toDefault';
         $options[] = 'ifEmpty';
         $options[] = 'ifInvalid';
 
@@ -334,9 +343,49 @@ class ResaveController extends Controller
             }
         }
 
-        if (isset($this->set) && !isset($this->to)) {
-            $this->stderr('--to is required when using --set.' . PHP_EOL, Console::FG_RED);
+        if (isset($this->set) && !isset($this->to) && !$this->toDefault) {
+            $this->stderr('--to or --to-default is required when using --set.' . PHP_EOL, Console::FG_RED);
             return false;
+        }
+
+        if (!empty($this->withFields)) {
+            $fieldsService = Craft::$app->getFields();
+
+            foreach ($this->withFields as $i => $field) {
+                if (!$field instanceof FieldInterface) {
+                    $handle = $field;
+                    $field = $fieldsService->getFieldByHandle($handle);
+                    if (!$field) {
+                        $this->stderr("Invalid field: `$handle`" . PHP_EOL, Console::FG_RED);
+                        return false;
+                    }
+                }
+                $this->withFields[$i] = $field;
+            }
+        }
+
+        if ($this->toDefault) {
+            if (empty($this->withFields) && !isset($this->set)) {
+                $this->stderr('--with-fields or --set is required when using --to-default.' . PHP_EOL, Console::FG_RED);
+                return false;
+            }
+
+            $fieldsService = Craft::$app->getFields();
+
+            if (isset($this->set)) {
+                $field = $fieldsService->getFieldByHandle($this->set);
+                if (!$field) {
+                    $this->stderr("Invalid field handle: $this->set", Console::FG_RED);
+                    return false;
+                }
+            } else {
+                foreach ($this->withFields as $field) {
+                    if (!$field instanceof DefaultableFieldInterface) {
+                        $this->stderr("$field->handle doesn’t support --to-default." . PHP_EOL, Console::FG_RED);
+                        return false;
+                    }
+                }
+            }
         }
 
         return true;
@@ -418,10 +467,8 @@ class ResaveController extends Controller
 
     public function hasTheFields(FieldLayout $fieldLayout): bool
     {
-        $fieldsService = app(Fields::class);
-        foreach ($this->withFields as $handle) {
-            $field = $fieldsService->getFieldByHandle($handle);
-            if ($field && $fieldLayout->getFieldByUid($field->uid)) {
+        foreach ($this->withFields as $field) {
+            if ($fieldLayout->getFieldByUid($field->uid)) {
                 return true;
             }
         }
@@ -442,9 +489,11 @@ class ResaveController extends Controller
             dispatch(new ResaveElements(
                 elementType: $elementType,
                 criteria: $criteria,
+                withFields: array_map(fn(FieldInterface $field) => $field->handle, $this->withFields),
                 updateSearchIndex: $this->updateSearchIndex,
                 set: $this->set,
                 to: $this->to,
+                toDefault: $this->toDefault,
                 ifEmpty: $this->ifEmpty,
                 ifInvalid: $this->ifInvalid,
                 touch: $this->touch,
@@ -607,7 +656,37 @@ class ResaveController extends Controller
                     }
 
                     try {
-                        if (isset($this->set)) {
+                        if ($this->toDefault) {
+                            if ($this->set) {
+                                $fields = [$element->getFieldLayout()?->getFieldByHandle($this->set)];
+                            } else {
+                                $fields = array_map(
+                                    fn(FieldInterface $field) => $element->getFieldLayout()?->getFieldByUid($field->uid),
+                                    $this->withFields,
+                                );
+                            }
+
+                            $fields = array_filter($fields, fn(?FieldInterface $field) => $field instanceof DefaultableFieldInterface);
+
+                            foreach ($fields as $field) {
+                                $set = true;
+                                if ($this->ifEmpty) {
+                                    if (!ElementHelper::isAttributeEmpty($element, $field->handle)) {
+                                        $set = false;
+                                    }
+                                } elseif ($this->ifInvalid) {
+                                    $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+                                    if ($element->validate("field:$field->handle")) {
+                                        $set = false;
+                                    }
+                                }
+
+                                if ($set) {
+                                    /** @var DefaultableFieldInterface $field */
+                                    $element->setFieldValue($field->handle, $field->getDefaultValue());
+                                }
+                            }
+                        } elseif (isset($this->set)) {
                             $set = true;
                             if ($this->ifEmpty) {
                                 if (!ElementHelper::isAttributeEmpty($element, $this->set)) {

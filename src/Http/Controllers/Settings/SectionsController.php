@@ -168,7 +168,9 @@ readonly class SectionsController
         $section->handle = $request->input('handle');
         $section->type = $request->enum('type', SectionType::class, SectionType::Channel);
         $section->enableVersioning = $request->boolean('enableVersioning', true);
+        $minAuthors = $request->input('minAuthors');
         $maxAuthors = $request->input('maxAuthors');
+        $section->minAuthors = is_numeric($minAuthors) ? (int) $minAuthors : 0;
         $section->maxAuthors = is_numeric($maxAuthors) ? (int) $maxAuthors : null;
         $section->propagationMethod = PropagationMethod::tryFrom($request->input('propagationMethod') ?? '')
             ?? PropagationMethod::All;

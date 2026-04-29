@@ -89,6 +89,7 @@ class Entry extends Mutation
                     'args' => [
                         'id' => Type::nonNull(Type::int()),
                         'siteId' => Type::int(),
+                        'hardDelete' => Type::boolean(),
                     ],
                     'resolve' => $resolver->deleteEntry(...),
                     'description' => 'Delete an entry.',

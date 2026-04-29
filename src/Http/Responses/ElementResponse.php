@@ -68,6 +68,10 @@ class ElementResponse
                 ]);
             }
 
+            if ($returnUrl = request()->input('returnUrl')) {
+                $url = Url::urlWithParams($url, ['returnUrl' => $returnUrl]);
+            }
+
             return redirect($url);
         }
 

@@ -23,6 +23,8 @@ class EntryRules extends ElementRules
     #[Override]
     public function rules(): array
     {
+        $section = $this->subject->getSection();
+
         $rules = parent::rules();
 
         $rules['sectionId'] = ['nullable', 'integer', 'required_without:fieldId'];
@@ -63,7 +65,15 @@ class EntryRules extends ElementRules
                         return;
                     }
 
-                    $fail(t('{type} entries are no longer allowed in this section. Please choose a different entry type.', [
+                    if (isset($this->subject->sectionId)) {
+                        $fail(t('{type} entries are no longer allowed in this section. Please choose a different entry type.', [
+                            'type' => $this->subject->getType()->getUiLabel(),
+                        ]));
+
+                        return;
+                    }
+
+                    $fail(t('{type} entries are no longer allowed in this field. Please choose a different entry type.', [
                         'type' => $this->subject->getType()->getUiLabel(),
                     ]));
                 },
@@ -112,28 +122,16 @@ class EntryRules extends ElementRules
                     }
                 },
             ]),
-            Rule::requiredIf(function () {
-                if (! $this->inScenarios(self::SCENARIO_LIVE)) {
-                    return false;
-                }
-
-                $section = $this->subject->getSection();
-
-                if (! $section) {
-                    return false;
-                }
-
-                if ($section->type === SectionType::Single) {
-                    return false;
-                }
-
-                if ($section->maxAuthors === 0) {
-                    return false;
-                }
-
-                return true;
-            }),
+            Rule::when(
+                $this->inScenarios(self::SCENARIO_LIVE) &&
+                $section &&
+                $section->type !== SectionType::Single &&
+                $section->maxAuthors !== 0, [
+                    'min:'.$section->minAuthors,
+                    'max:'.$section->maxAuthors,
+                ]),
         ];
+
         $rules['authorIds.*'] = ['integer'];
 
         return $rules;

@@ -15,6 +15,7 @@ use craft\events\AuthenticateUserEvent;
 use craft\events\DefineValueEvent;
 use CraftCms\Cms\Auth\Events\Authenticating;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Events\DefineFriendlyName;
@@ -65,6 +66,12 @@ class User extends UserElement
     public const string EVENT_BEFORE_AUTHENTICATE = 'beforeAuthenticate';
 
     /**
+     * @var self|null The user who should take over the user’s content if the user is deleted.
+     * @deprecated in 5.10.0
+     */
+    public ?self $inheritorOnDelete = null;
+
+    /**
      * Returns the user’s full name.
      */
     #[Deprecated(message: 'in 4.0.0. [[fullName]] should be used instead.')]
@@ -72,6 +79,20 @@ class User extends UserElement
     public function getFullName(): ?string
     {
         return $this->fullName;
+    }
+
+    public function beforeDelete(): bool
+    {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+
+        // Reassign the user's entries?
+        if ($this->inheritorOnDelete) {
+            Entries::reassignEntries($this->id, $this->inheritorOnDelete->id);
+        }
+
+        return true;
     }
 
     public static function registerEvents(): void

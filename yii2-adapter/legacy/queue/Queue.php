@@ -507,9 +507,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             'job' => $job,
             'ttr' => (int)$result['ttr'],
             'Priority' => $result['priority'],
-            'Pushed at' => $result['timePushed'] ? $formatter->asDatetime($result['timePushed']) : '',
-            'Updated at' => $result['timeUpdated'] ? $formatter->asDatetime($result['timeUpdated']) : '',
-            'Failed at' => $result['dateFailed'] ? $formatter->asDatetime($result['dateFailed']) : '',
+            'Pushed at' => $result['timePushed'] ? $formatter->asDatetime($result['timePushed'], withTimeZone: true) : '',
+            'Updated at' => $result['timeUpdated'] ? $formatter->asDatetime($result['timeUpdated'], withTimeZone: true) : '',
+            'Failed at' => $result['dateFailed'] ? $formatter->asDatetime($result['dateFailed'], withTimeZone: true) : '',
         ]);
     }
 

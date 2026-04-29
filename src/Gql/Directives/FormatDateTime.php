@@ -18,9 +18,9 @@ use GraphQL\Type\Definition\Type;
 
 class FormatDateTime extends Directive
 {
-    public const DEFAULT_FORMAT = 'Y-m-d\TH:i:sP';
+    public const string DEFAULT_FORMAT = 'Y-m-d\TH:i:sP';
 
-    public const DEFAULT_TIMEZONE = 'UTC';
+    public const string DEFAULT_TIMEZONE = 'UTC';
 
     public static function create(): GqlDirective
     {
@@ -48,6 +48,12 @@ class FormatDateTime extends Directive
                     'name' => 'locale',
                     'type' => Type::string(),
                     'description' => 'The locale to use when formatting the date. (E.g., en-US)',
+                ]),
+                new FieldArgument([
+                    'name' => 'withTimeZone',
+                    'type' => Type::boolean(),
+                    'description' => 'Whether the time zone abbreviation should be appended to the formatted time.',
+                    'defaultValue' => false,
                 ]),
             ],
             'description' => 'Formats a date in the desired format. Can be applied to all fields, only changes output of DateTime fields.',
@@ -92,7 +98,7 @@ class FormatDateTime extends Directive
 
         $formatter->timeZone = $timezone;
 
-        return $formatter->asDatetime($value, $format);
+        return $formatter->asDatetime($value, $format, $arguments['withTimeZone'] ?? false);
     }
 
     public static function defaultTimeZone(): string

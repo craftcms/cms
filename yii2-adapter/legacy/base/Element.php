@@ -23,6 +23,7 @@ use craft\events\DefineAltActionsEvent;
 use craft\events\DefineAttributeHtmlEvent;
 use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\DefineEagerLoadingMapEvent;
+use craft\events\DefineElementDeletionBlockersEvent;
 use craft\events\DefineHtmlEvent;
 use craft\events\DefineMenuItemsEvent;
 use craft\events\DefineMetadataEvent;
@@ -61,6 +62,7 @@ use CraftCms\Cms\Element\Events\DefineAdditionalButtons;
 use CraftCms\Cms\Element\Events\DefineAltActions;
 use CraftCms\Cms\Element\Events\DefineAttributeHtml;
 use CraftCms\Cms\Element\Events\DefineCacheTags;
+use CraftCms\Cms\Element\Events\DefineDeletionBlockers;
 use CraftCms\Cms\Element\Events\DefineEagerLoadingMap;
 use CraftCms\Cms\Element\Events\DefineInlineAttributeInputHtml;
 use CraftCms\Cms\Element\Events\DefineKeywords;
@@ -969,6 +971,28 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                 ]);
 
                 YiiEvent::trigger($class, self::EVENT_AFTER_MOVE_IN_STRUCTURE, $yiiEvent);
+            }
+        });
+
+        Event::listen(function(DefineDeletionBlockers $event) use ($elementClasses) {
+            foreach ($elementClasses as $class) {
+                if (!YiiEvent::hasHandlers($class, self::EVENT_DEFINE_DELETION_BLOCKERS)) {
+                    continue;
+                }
+
+                if (!is_subclass_of($class, $event->elementType)) {
+                    continue;
+                }
+
+                $yiiEvent = new DefineElementDeletionBlockersEvent([
+                    'elements' => $event->elements,
+                    'hardDelete' => $event->hardDelete,
+                    'blockers' => $event->blockers,
+                ]);
+
+                YiiEvent::trigger($class, self::EVENT_DEFINE_DELETION_BLOCKERS, $yiiEvent);
+
+                $event->blockers = $yiiEvent->blockers;
             }
         });
     }

@@ -98,10 +98,7 @@ class HtmlStack
      */
     public function jsWithVars(callable $fn, array $vars, Position $position = Position::BodyEnd, ?string $key = null): void
     {
-        $encodedVars = array_map(fn (mixed $var): string => Json::encode($var), $vars);
-        $js = $fn(...array_values($encodedVars));
-
-        $this->js($js, $position, $key);
+        $this->js(Html::jsWithVars($fn, $vars), $position, $key);
     }
 
     /**

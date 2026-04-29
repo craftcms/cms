@@ -13,6 +13,7 @@ use CraftCms\Cms\Component\Contracts\Statusable;
 use CraftCms\Cms\Component\Contracts\Thumbable;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
+use CraftCms\Cms\Element\DeletionBlockers\Contracts\DeletionBlockerInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements;
@@ -588,6 +589,15 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *                                                      exist, or null if the result should be ignored
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false;
+
+    /**
+     * Returns any deletion blockers for the given elements.
+     *
+     * @param  ElementCollection  $elements  The elements to be deleted
+     * @param  bool  $hardDelete  Whether the elements will be hard-deleted
+     * @return DeletionBlockerInterface[]
+     */
+    public static function deletionBlockers(ElementCollection $elements, bool $hardDelete): array;
 
     /**
      * Returns the base GraphQL type name that represents elements of this type.
@@ -1236,6 +1246,13 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * @throws InvalidFieldException if `$fieldHandle` is an invalid field handle
      */
     public function setFieldValueFromRequest(string $fieldHandle, mixed $value): void;
+
+    /**
+     * Enables or disables dirty field tracking.
+     *
+     * @see getDirtyFields()
+     */
+    public function setDirtyFieldTracking(bool $enabled = true): void;
 
     /**
      * Returns the field handles that have been updated on the canonical element since the last time it was

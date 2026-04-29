@@ -1594,6 +1594,13 @@ interface ElementQueryInterface extends Builder
     public function ids(): array;
 
     /**
+     * Executes the query and returns the IDs of the resulting elements as a collection.
+     *
+     * @return Collection<int> The resulting element IDs as a collection.
+     */
+    public function collectIds(): Collection;
+
+    /**
      * Converts a found row into an element instance.
      */
     public function createElement(array $row): ElementInterface;

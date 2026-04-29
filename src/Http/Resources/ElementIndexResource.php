@@ -80,7 +80,11 @@ class ElementIndexResource extends JsonResource
         $responseData['html'] = $elementType::indexHtml(
             elementQuery: $elementQuery,
             disabledElementIds: $request->array('disabledElementIds'),
-            viewState: [...$viewState, 'fieldLayouts' => $this->resolveFieldLayouts()],
+            viewState: [
+                ...$viewState,
+                'fieldLayouts' => $this->resolveFieldLayouts(),
+                'returnUrl' => $request->input('returnUrl'),
+            ],
             sourceKey: $sourceKey,
             context: $request->context(),
             includeContainer: $this->includeContainer,

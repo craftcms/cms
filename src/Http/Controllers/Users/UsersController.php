@@ -18,7 +18,6 @@ use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\DefineUserContentSummary;
-use CraftCms\Cms\User\Users;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
@@ -97,53 +96,6 @@ readonly class UsersController
                         ->redirectUrl($this->editUserScreenUrl($user, self::SCREEN_PERMISSIONS));
                 },
             );
-    }
-
-    public function destroy(Request $request, Elements $elements, Users $users): Response
-    {
-        $request->validate([
-            'userId' => ['required', 'integer'],
-        ]);
-
-        $user = $users->getUserById($request->integer('userId'));
-
-        abort_if(! $user, 400, 'User not found');
-
-        if (! $user->getIsCurrent()) {
-            $this->authorize('deleteUsers');
-
-            if ($user->admin) {
-                $this->requireAdmin();
-            }
-        }
-
-        // Are we transferring the user’s content to a different user?
-        $transferContentToId = $request->input('transferContentTo');
-
-        if (is_array($transferContentToId) && isset($transferContentToId[0])) {
-            $transferContentToId = $transferContentToId[0];
-        }
-
-        if ($transferContentToId) {
-            $transferContentTo = $users->getUserById((int) $transferContentToId);
-
-            abort_if(! $transferContentTo, 400, 'User not found');
-        } else {
-            $transferContentTo = null;
-        }
-
-        // Delete the user
-        $user->inheritorOnDelete = $transferContentTo;
-
-        if (! $elements->deleteElement($user)) {
-            return $this->asFailure(t('Couldn’t delete {type}.', [
-                'type' => User::lowerDisplayName(),
-            ]));
-        }
-
-        return $this->asSuccess(t('{type} deleted.', [
-            'type' => User::displayName(),
-        ]));
     }
 
     /**

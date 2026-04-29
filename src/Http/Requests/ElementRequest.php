@@ -41,6 +41,7 @@ class ElementRequest extends FormRequest
         return [
             '*' => [],
             'id' => ['missing'],
+            'uid' => ['missing'],
             'canonicalId' => ['missing'],
 
             /**

@@ -10,6 +10,7 @@ class HydratingElement
 {
     public function __construct(
         public array $row,
+        public array $content,
         public ?ElementInterface $element = null,
     ) {}
 }

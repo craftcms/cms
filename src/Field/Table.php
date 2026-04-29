@@ -8,6 +8,7 @@ use Closure;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
+use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\Types\Generators\TableRowType;
@@ -40,7 +41,7 @@ use function CraftCms\Cms\template;
 /**
  * Table represents a Table field.
  */
-class Table extends Field implements CrossSiteCopyableFieldInterface
+class Table extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface
 {
     private static array $typeOptions;
 
@@ -407,6 +408,11 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
     public function useFieldset(): bool
     {
         return true;
+    }
+
+    public function getDefaultValue(): ?array
+    {
+        return $this->defaults;
     }
 
     #[Override]

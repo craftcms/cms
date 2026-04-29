@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\LightswitchFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
+use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
@@ -27,7 +28,7 @@ use function CraftCms\Cms\template;
 /**
  * Lightswitch represents a Lightswitch field.
  */
-class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -150,6 +151,12 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Inli
                 'on' => $this->showLabelsInCards,
                 'disabled' => $readOnly,
             ]);
+    }
+
+    #[Override]
+    public function getDefaultValue(): bool
+    {
+        return $this->default;
     }
 
     #[Override]

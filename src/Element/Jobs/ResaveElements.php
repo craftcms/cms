@@ -9,8 +9,11 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Queue\BatchedElementJob;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
 use Override;
 use Throwable;
@@ -33,8 +36,10 @@ class ResaveElements extends BatchedElementJob
         protected string $elementType,
         protected array $criteria = [],
         public bool $updateSearchIndex = false,
+        public array $withFields = [],
         public ?string $set = null,
         public ?string $to = null,
+        public bool $toDefault = false,
         public bool $ifEmpty = false,
         public bool $ifInvalid = false,
         public bool $touch = false,
@@ -46,7 +51,52 @@ class ResaveElements extends BatchedElementJob
 
     protected function processElement(ElementInterface $element): void
     {
-        if (isset($this->set)) {
+        if ($this->toDefault) {
+            if ($this->set) {
+                /** @var ElementInterface $element */
+                $fields = [$element->getFieldLayout()?->getFieldByHandle($this->set)];
+            } else {
+                $fields = array_map(
+                    function (string $handle) use ($element) {
+                        $field = Fields::getFieldByHandle($handle);
+                        if (! $field) {
+                            return null;
+                        }
+
+                        return $element->getFieldLayout()?->getFieldByUid($field->uid);
+                    },
+                    $this->withFields,
+                );
+            }
+
+            $fields = array_filter(
+                $fields,
+                fn (?FieldInterface $field) => $field instanceof DefaultableFieldInterface
+            );
+
+            foreach ($fields as $field) {
+                $set = true;
+                if ($this->ifEmpty) {
+                    if (! ElementHelper::isAttributeEmpty($element, $field->handle)) {
+                        $set = false;
+                    }
+                } elseif ($this->ifInvalid) {
+                    $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+                    if ($element->validate("field:$field->handle")) {
+                        $set = false;
+                    }
+                }
+
+                if ($set) {
+                    /** @var ElementInterface $element */
+                    /** @var DefaultableFieldInterface $field */
+                    $defaultValue = $field->getDefaultValue();
+                    if ($defaultValue !== null) {
+                        $element->setFieldValue($field->handle, $defaultValue);
+                    }
+                }
+            }
+        } elseif (isset($this->set)) {
             $set = true;
 
             if ($this->ifEmpty) {

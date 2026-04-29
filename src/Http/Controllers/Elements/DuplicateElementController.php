@@ -37,15 +37,17 @@ readonly class DuplicateElementController
             abort(400, 'No element was identified by the request.');
         }
 
+        $isExplicitDraft = $element->getIsDraft() && ! $element->getIsUnpublishedDraft() && ! $element->isProvisionalDraft;
+
         // save as a new is now available to people who can create drafts
         $asUnpublishedDraft = $this->request->boolean('asUnpublishedDraft') && $element::hasDrafts();
-        $asUnpublishedDraft
+        $asUnpublishedDraft || $isExplicitDraft
             ? Gate::authorize('duplicateAsDraft', $element)
             : Gate::authorize('duplicate', $element);
 
         $newAttributes = [
             'isProvisionalDraft' => false,
-            'draftId' => null,
+            'draftId' => $isExplicitDraft ? $element->draftId : null,
         ];
 
         if ($asUnpublishedDraft &&
@@ -93,6 +95,11 @@ readonly class DuplicateElementController
         $this->request->validate([
             'elements' => ['required', 'array'],
             'newAttributes' => ['required', 'array'],
+
+            // No funny business
+            'newAttributes.id' => ['missing'],
+            'newAttributes.uid' => ['missing'],
+            'newAttributes.canonicalId' => ['missing'],
         ]);
 
         $elementInfo = $this->request->array('elements');

@@ -293,6 +293,9 @@ class NestedElementManager extends Component
                     'deleteConfirmationMessage' => t('Are you sure you want to delete the selected {type}?', [
                         'type' => $this->elementType::lowerDisplayName(),
                     ]),
+                    'bulkDeleteConfirmationMessage' => t('Are you sure you want to delete the selected {type}?', [
+                        'type' => $this->elementType::pluralLowerDisplayName(),
+                    ]),
                     'showInGrid' => $config['showInGrid'],
                     'selectable' => $config['selectable'],
                 ];

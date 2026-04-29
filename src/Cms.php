@@ -40,9 +40,21 @@ readonly class Cms
 
     public static function timezone(): string
     {
-        $timezone = Cms::config()->timezone
-            ?? ProjectConfig::get('system.timeZone')
-            ?? config('app.timezone', 'UTC');
+        $timezone = null;
+
+        // If the user is logged in *and* has a preferred time zone, use that
+        // (don't actually try to fetch the user, as plugins haven't been loaded yet)
+        if (request()->isCpRequest() && $id = Auth::id()) {
+            $timezone = Users::getUserPreference($id, 'timeZone');
+        }
+
+        if (! $timezone) {
+            $timezone = Cms::config()->timezone ?? ProjectConfig::get('system.timeZone');
+        }
+
+        if (! $timezone) {
+            $timezone = config('app.timezone', 'UTC');
+        }
 
         $timezone = Env::parse($timezone);
 
