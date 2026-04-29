@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Gate;
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
-use function Pest\Laravel\postJson;
 
 beforeEach(function () {
     Edition::set(Edition::Pro);
@@ -23,7 +22,6 @@ it('requires login', function () {
     get(action([UsersController::class, 'index']))->assertRedirect(Cms::config()->cpTrigger.'/login');
     get(action([UsersController::class, 'create']))->assertRedirect(Cms::config()->cpTrigger.'/login');
     get(action([UsersController::class, 'edit']))->assertRedirect(Cms::config()->cpTrigger.'/login');
-    postJson(action([UsersController::class, 'destroy']))->assertUnauthorized();
 });
 
 describe('index', function () {

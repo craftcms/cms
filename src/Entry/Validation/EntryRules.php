@@ -139,9 +139,9 @@ class EntryRules extends ElementRules
             ]);
 
             if (isset($section->maxAuthors) && $section->maxAuthors !== 0) {
-                $rules['authorIds'] = array_merge($rules['authorIds'], array_filter([
+                $rules['authorIds'] = array_merge($rules['authorIds'], [
                     'max:'.$section->maxAuthors,
-                ]));
+                ]);
             }
         }
 

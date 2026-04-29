@@ -7,7 +7,7 @@
 
 namespace craft\helpers;
 
-use cebe\markdown\Parser;
+use craft\markdown\Markdown as Parser;
 use yii\helpers\Markdown as YiiMarkdown;
 
 /**
@@ -21,6 +21,7 @@ class Markdown extends YiiMarkdown
 {
     protected static function getParser($flavor): Parser
     {
+        /** @var Parser $parser */
         $parser = parent::getParser($flavor);
 
         if (property_exists($parser, 'keepListStartNumber')) {

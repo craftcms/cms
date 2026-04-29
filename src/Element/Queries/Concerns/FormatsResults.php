@@ -262,7 +262,7 @@ trait FormatsResults
 
         foreach ($elementQuery->defaultOrderBy as $column => $direction) {
             if ($direction instanceof Expression) {
-                $elementQuery->orderByRaw($direction->getValue($elementQuery->query->getGrammar()));
+                $elementQuery->getQuery()->orderByRaw($direction->getValue($elementQuery->query->getGrammar()));
 
                 continue;
             }
@@ -272,7 +272,7 @@ trait FormatsResults
                 default => 'asc',
             };
 
-            $elementQuery->orderBy($column);
+            $elementQuery->getQuery()->orderBy($column, $direction);
         }
     }
 

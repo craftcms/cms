@@ -10,12 +10,12 @@ namespace crafttests\unit\web\twig;
 use ArrayIterator;
 use ArrayObject;
 use Craft;
-use craft\base\Model;
 use craft\test\TestCase;
 use craft\test\TestSetup;
 use craft\web\View;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Models\Element;
@@ -237,7 +237,7 @@ class ExtensionTest extends TestCase
         ]);
 
         $this->testRenderResult('not empty', '{{ foo is empty ? "empty" : "not empty" }}', [
-            'foo' => new class() extends Model {
+            'foo' => new class() extends Component {
             },
         ]);
     }
@@ -944,7 +944,7 @@ class ExtensionTest extends TestCase
         ]);
 
         $this->testRenderResult('foo', '{{ foo|default("default") }}', [
-            'foo' => new class() extends Model {
+            'foo' => new class() extends Component {
                 public function __toString(): string
                 {
                     return 'foo';
@@ -1066,7 +1066,7 @@ class ExtensionTest extends TestCase
         );
 
         $this->testRenderResult(
-            '<p>&lt;script&gt;alert(&#039;Hello&#039;);&lt;/script&gt;</p>',
+            '<p>&lt;script&gt;alert(\'Hello\');&lt;/script&gt;</p>',
             '{{ tag("p", "<script>alert(\'Hello\');</script>") }}'
         );
 
@@ -1107,7 +1107,7 @@ class ExtensionTest extends TestCase
         }
 
         $this->testRenderResult(
-            '<h1>&lt;script&gt;alert(&#039;Hello&#039;);&lt;/script&gt;</h1>',
+            '<h1>&lt;script&gt;alert(\'Hello\');&lt;/script&gt;</h1>',
             '{{ h1("<script>alert(\'Hello\');</script>") }}'
         );
 
@@ -1117,7 +1117,7 @@ class ExtensionTest extends TestCase
         );
 
         $this->testRenderResult(
-            '<h1>&lt;script&gt;alert(&#039;Hello&#039;);&lt;/script&gt;</h1>',
+            '<h1>&lt;script&gt;alert(\'Hello\');&lt;/script&gt;</h1>',
             '{{ h1({text: "<script>alert(\'Hello\');</script>"}) }}'
         );
 

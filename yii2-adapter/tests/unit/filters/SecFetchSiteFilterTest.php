@@ -11,6 +11,7 @@ use Craft;
 use craft\filters\SecFetchSiteFilter;
 use craft\test\TestCase;
 use craft\web\Request;
+use Illuminate\Http\Request as HttpRequest;
 use yii\base\Action;
 use yii\web\BadRequestHttpException;
 use yii\web\Controller;
@@ -27,6 +28,8 @@ class SecFetchSiteFilterTest extends TestCase
     private Action $action;
     private Request $request;
 
+    private HttpRequest $originalRequest;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -35,6 +38,14 @@ class SecFetchSiteFilterTest extends TestCase
         $this->action = new Action('test-action', $controller);
         $this->filter = new SecFetchSiteFilter();
         $this->request = Craft::$app->getRequest();
+        $this->originalRequest = request();
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        app()->bind('request', fn() => $this->originalRequest);
     }
 
     public function testAllowsSameOriginForUnsafeMethods(): void
@@ -71,20 +82,26 @@ class SecFetchSiteFilterTest extends TestCase
 
     public function testRejectsWhenOriginOnlyAndHeaderInvalid(): void
     {
-        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $request = new HttpRequest();
+        $request->setMethod('POST');
+
+        app()->bind('request', fn() => $request);
+
         $this->request->getHeaders()->set('Sec-Fetch-Site', 'cross-site');
 
         $this->filter->originOnly = true;
 
         $this->expectException(BadRequestHttpException::class);
         $this->filter->beforeAction($this->action);
-
-        unset($_SERVER['REQUEST_METHOD']);
     }
 
     public function testEnforcesWhenCsrfDisabled(): void
     {
-        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $request = new HttpRequest();
+        $request->setMethod('POST');
+
+        app()->bind('request', fn() => $request);
+
         $this->request->getHeaders()->set('Sec-Fetch-Site', 'cross-site');
 
         $original = $this->request->enableCsrfValidation;
@@ -103,7 +120,10 @@ class SecFetchSiteFilterTest extends TestCase
 
     public function testSkipsSafeMethods(): void
     {
-        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $request = new HttpRequest();
+        $request->setMethod('GET');
+
+        app()->bind('request', fn() => $request);
         $this->request->getHeaders()->set('Sec-Fetch-Site', 'cross-site');
 
         $this->filter->originOnly = true;
@@ -114,7 +134,10 @@ class SecFetchSiteFilterTest extends TestCase
 
     public function testInvalidHeaderFallsThroughWhenNotOriginOnly(): void
     {
-        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $request = new HttpRequest();
+        $request->setMethod('POST');
+
+        app()->bind('request', fn() => $request);
         $this->request->getHeaders()->set('Sec-Fetch-Site', 'cross-site');
 
         $this->filter->originOnly = false;
