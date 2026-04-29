@@ -44,6 +44,7 @@ use CraftCms\Cms\Http\Controllers\Users\PasswordController;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
+use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
@@ -75,6 +76,13 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     Route::get(CpAuthPath::Logout->value, [LoginController::class, 'logout']);
 
     Route::get('utilities', [UtilitiesController::class, 'index']);
+
+    // DeprecationErrors
+    Route::get('utilities/deprecation-errors/{logId}', [DeprecationErrorsController::class, 'show'])->whereNumber('logId')->name('utilities.deprecation-errors.show');
+    Route::delete('utilities/deprecation-errors/{logId}', [DeprecationErrorsController::class, 'destroy']);
+    Route::delete('utilities/deprecation-errors', [DeprecationErrorsController::class, 'destroyAll']);
+
+    // The rest of the utilities
     Route::get('utilities/{id}/{extra?}', [UtilitiesController::class, 'show'])
         ->where('extra', '.*')
         ->name('utilities.show');

@@ -226,11 +226,6 @@ Route::prefix(implode('/', [
         Route::post('auth/generate-recovery-codes', [RecoveryCodesController::class, 'generate']);
         Route::post('auth/download-recovery-codes', [RecoveryCodesController::class, 'download']);
 
-        // DeprecationErrors
-        Route::post('utilities/get-deprecation-error-traces-modal', [DeprecationErrorsController::class, 'getDeprecationErrorTracesModal']);
-        Route::post('utilities/delete-deprecation-error', [DeprecationErrorsController::class, 'deleteDeprecationError']);
-        Route::post('utilities/delete-all-deprecation-errors', [DeprecationErrorsController::class, 'deleteAllDeprecationErrors']);
-
         // ClearCaches
         Route::post('utilities/clear-caches-perform-action', [ClearCachesController::class, 'clearCaches']);
         Route::post('utilities/invalidate-tags', [ClearCachesController::class, 'invalidateTags']);
