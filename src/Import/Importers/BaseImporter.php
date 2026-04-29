@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Importers;
 
 use Closure;
-use craft\base\ElementInterface;
-use craft\services\Elements;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\HandleRule;

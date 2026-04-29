@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Commands;
 
-use craft\services\Elements;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Console\Command;
@@ -42,7 +42,7 @@ class Element extends Command
         $responses = form()
             ->addIf(! $this->option('elementType'), fn ($form) => select(
                 label: 'Which element type you want to import into?',
-                options: collect((new Elements)->getAllElementTypes())
+                options: collect(Elements::getAllElementTypes())
                     ->all()
             ), 'elementType')
             // TODO: do we want to support URLs containing all the data (like in feed me where you can use rss feed) or just files?

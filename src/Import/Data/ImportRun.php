@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Data;
 
 use Closure;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -144,6 +144,6 @@ class ImportRun extends Component implements CpEditable
             return null;
         }
 
-        return UrlHelper::cpUrl("import/runs/$this->uid");
+        return Url::cpUrl("import/runs/$this->uid");
     }
 }

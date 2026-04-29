@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Import;
 
-use craft\helpers\Cp;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Import\Data\ImportRun;
@@ -191,7 +191,7 @@ class ImportRunController
                 },
                 default: function (CpScreenResponse $response) {
                     if ($this->readOnly) {
-                        $response->noticeHtml(Cp::readOnlyNoticeHtml());
+                        $response->noticeHtml(new ContentHtml()->readOnlyNoticeHtml());
                     }
                 },
             );

@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Importers;
 
 use Closure;
-use Craft;
-use craft\services\Elements;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use http\Exception\InvalidArgumentException;
 use Illuminate\Validation\Validator;
@@ -37,7 +36,7 @@ class ElementImporter extends BaseImporter
     #[Override]
     protected function settingsHtml(bool $readOnly): string
     {
-        $allElementTypes = Craft::$app->getElements()->getAllElementTypes();
+        $allElementTypes = Elements::getAllElementTypes();
         $availableElementTypes = array_map(fn ($type) => [
             'label' => $type::displayName(),
             'value' => $type,
@@ -87,7 +86,7 @@ class ElementImporter extends BaseImporter
             return false;
         }
 
-        $allElementTypes = (new Elements)->getAllElementTypes();
+        $allElementTypes = Elements::getAllElementTypes();
         if (! in_array($value, $allElementTypes)) {
             $fail($attribute, t('Element type “{elementType}” is not a valid element type.', [
                 'elementType' => $value,
@@ -127,7 +126,7 @@ class ElementImporter extends BaseImporter
     #[Override]
     public function className(string $className): self
     {
-        $allElements = (new Elements)->getAllElementTypes();
+        $allElements = Elements::getAllElementTypes();
         if (! in_array($className, $allElements)) {
             throw new InvalidArgumentException("Class '{$className}' is not a valid element type.");
         }

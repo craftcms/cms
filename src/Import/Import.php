@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
-use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Import\Data\ImportRun;
 use CraftCms\Cms\Import\DataTypes\Csv;
 use CraftCms\Cms\Import\DataTypes\Json;
