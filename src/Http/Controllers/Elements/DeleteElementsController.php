@@ -207,9 +207,11 @@ readonly class DeleteElementsController
                         [
                             'orderBy' => [Table::STRUCTUREELEMENTS.'.lft' => SORT_DESC],
                             'status' => null,
+                            'withStructure' => true,
                         ],
                     ],
                 ])
+                ->withStructure()
                 ->orderByDesc(Table::STRUCTUREELEMENTS.'.lft');
         }
 
@@ -226,12 +228,15 @@ readonly class DeleteElementsController
             if (isset($elementIds[$element->id])) {
                 continue;
             }
+
             if (! Gate::check('view', $element)) {
                 continue;
             }
+
             if (! Gate::check('delete', $element)) {
                 continue;
             }
+
             $elements[] = $element;
             $elementIds[$element->id] = true;
 
@@ -240,12 +245,15 @@ readonly class DeleteElementsController
                     if (isset($elementIds[$descendant->id])) {
                         continue;
                     }
+
                     if (! Gate::check('view', $descendant)) {
                         continue;
                     }
+
                     if (! Gate::check('delete', $descendant)) {
                         continue;
                     }
+
                     $elements[] = $descendant;
                     $elementIds[$descendant->id] = true;
                 }
