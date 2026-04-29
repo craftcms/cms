@@ -88,7 +88,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
      */
     $idSlugParams = [
         'id' => '\d+',
-        'slug' => '(?:-?[^\/]*)',
+        'slug' => '(?:-[^\/]*)',
     ];
 
     Route::get('preview/{id}{slug}', PreviewElementController::class)->where($idSlugParams);
@@ -102,7 +102,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     ]);
     Route::get('assets/edit/{id}{slug}', EditElementController::class)->where($idSlugParams);
     Route::get('entries/{section}/{id}{slug}', EditElementController::class)->where($idSlugParams);
-    Route::get('content/{page}/{section}/{id}{slug}', EditElementController::class)->where([
+    Route::get('content/{page}/{section}/{id}{slug?}', EditElementController::class)->where([
         ...$idSlugParams,
         'page' => '[^\/]+',
     ]);
