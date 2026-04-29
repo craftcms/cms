@@ -8,9 +8,11 @@ use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\DefineResaveCommands;
+use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Lightswitch;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
@@ -22,6 +24,7 @@ use CraftCms\Cms\User\Models\UserGroup;
 use CraftCms\Cms\User\Users;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Queue;
 
 it('runs the built-in resave commands from resave all', function () {
     $entry = Entry::factory()->title('Article')->createElement();
@@ -86,6 +89,73 @@ it('accepts comma-separated with-fields on entries command directly', function (
 
     expect(EntryElement::find()->id($first->element->id)->one()?->title)->toBe('Updated by Fields')
         ->and(EntryElement::find()->id($second->element->id)->one()?->title)->toBe('Updated by Fields');
+});
+
+it('sets matching fields to their default values', function () {
+    $result = Entry::factory()
+        ->withField('featured', Lightswitch::class, ['default' => true], value: false)
+        ->withField('promoted', Lightswitch::class, ['default' => true], value: false)
+        ->createElementWithFields();
+
+    $this->artisan('craft:resave:entries --with-fields=featured,promoted --to-default')
+        ->assertSuccessful();
+
+    $entry = EntryElement::find()->id($result->element->id)->one();
+
+    expect($entry->getFieldValue('featured'))->toBeTrue()
+        ->and($entry->getFieldValue('promoted'))->toBeTrue();
+});
+
+it('sets a single field to its default value when passed as set', function () {
+    $result = Entry::factory()
+        ->withField('featured', Lightswitch::class, ['default' => true], value: false)
+        ->withField('promoted', Lightswitch::class, ['default' => true], value: false)
+        ->createElementWithFields();
+
+    $this->artisan('craft:resave:entries --set=featured --to-default')
+        ->assertSuccessful();
+
+    $entry = EntryElement::find()->id($result->element->id)->one();
+
+    expect($entry->getFieldValue('featured'))->toBeTrue()
+        ->and($entry->getFieldValue('promoted'))->toBeFalse();
+});
+
+it('requires a target field when setting fields to default values', function () {
+    $this->artisan('craft:resave:entries --to-default')
+        ->expectsOutputToContain('--with-fields or --set is required when using --to-default.')
+        ->assertExitCode(1);
+});
+
+it('rejects invalid fields before resaving', function () {
+    $this->artisan('craft:resave:entries --with-fields=missingField --to-default')
+        ->expectsOutputToContain('Invalid field: `missingField`')
+        ->assertExitCode(1);
+});
+
+it('rejects fields without default values when setting all matching fields to defaults', function () {
+    Entry::factory()
+        ->withField('bodyText', PlainText::class, value: 'Body')
+        ->createElementWithFields();
+
+    $this->artisan('craft:resave:entries --with-fields=bodyText --to-default')
+        ->expectsOutputToContain('bodyText doesn’t support --to-default.')
+        ->assertExitCode(1);
+});
+
+it('passes fields and default value options to queued resave jobs', function () {
+    Entry::factory()
+        ->withField('featured', Lightswitch::class, ['default' => true], value: false)
+        ->createElementWithFields();
+
+    Queue::fake();
+
+    $this->artisan('craft:resave:entries --with-fields=featured --set=featured --to-default --queue')
+        ->assertSuccessful();
+
+    Queue::assertPushed(ResaveElements::class, fn (ResaveElements $job) => $job->withFields === ['featured']
+        && $job->set === 'featured'
+        && $job->toDefault === true);
 });
 
 it('filters users by group', function () {
