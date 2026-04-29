@@ -2363,7 +2363,7 @@ Gratulujeme, Craftu se podařilo odeslat email.Byla pro to použita následujíc
     '{type} entries are no longer allowed in this field. Please choose a different entry type.' => 'V tomto poli již nejsou povoleny položky {type}. Zvolte prosím jiný typ záznamu.',
     '{type} entries are no longer allowed in this section. Please choose a different entry type.' => 'V této sekci již nejsou povoleny položky {type}. Zvolte prosím jiný typ záznamu.',
     '{type} not restored.' => 'Nedošlo k obnovení {type}.',
-    '{type} reassigned.' => '{type} reassigned.',
+    '{type} reassigned.' => '„{type}“ – přiřazení změněno.',
     '{type} restored.' => 'Došlo k obnovení {type}.',
     '{type} reverted to past revision.' => '{type} byl vrácen do předchozí revize.',
     '{type} saved.' => '{type} byl uložen.',
