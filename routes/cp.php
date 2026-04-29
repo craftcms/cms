@@ -88,7 +88,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
      */
     $idSlugParams = [
         'id' => '\d+',
-        'slug' => '(?:-[^\/]*)',
+        'slug' => '(?:-?[^\/]*)',
     ];
 
     Route::get('preview/{id}{slug}', PreviewElementController::class)->where($idSlugParams);
