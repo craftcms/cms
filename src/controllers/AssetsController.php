@@ -562,7 +562,7 @@ class AssetsController extends Controller
         }
 
         // Check if it's possible to delete objects in the target volume.
-        $this->requireVolumePermissionByFolder('deleteAssets', $folder);
+        $this->requireVolumePermissionByFolder('deletePeerAssets', $folder);
         $assets->deleteFoldersByIds($folderId);
 
         return $this->asSuccess();
