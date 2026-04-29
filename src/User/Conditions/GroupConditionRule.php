@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Conditions;
 
-use craft\elements\db\UserQuery;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\User\Elements\User;
+use Override;
 use RuntimeException;
 
 use function CraftCms\Cms\t;
@@ -28,7 +29,7 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
         return ['group', 'groupId'];
     }
 
-    #[\Override]
+    #[Override]
     public static function isSelectable(): bool
     {
         return UserGroups::getAllGroups()->isNotEmpty();

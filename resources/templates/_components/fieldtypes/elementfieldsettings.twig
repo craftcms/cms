@@ -16,7 +16,7 @@
                     options: sourceOptions,
                     values: field.sources,
                     showAllOption: true,
-                    errors: field.getErrors('sources'),
+                    errors: field.errors.get('sources'),
                     data: {'error-key': 'sources'},
                 }) }}
             {% else %}
@@ -27,7 +27,7 @@
                     name: 'source',
                     options: sourceOptions,
                     value: field.source,
-                    errors: field.getErrors('source'),
+                    errors: field.errors.get('source'),
                     data: {'error-key': 'source'},
                 }) }}
             {% endif %}
@@ -63,7 +63,7 @@
                 name: 'minRelations',
                 value: field.minRelations,
                 size: 2,
-                errors: field.getErrors('minRelations'),
+                errors: field.errors.get('minRelations'),
                 data: {'error-key': 'minRelations'},
             }) }}
 
@@ -76,7 +76,7 @@
                 name: 'maxRelations',
                 value: field.maxRelations,
                 size: 2,
-                errors: field.getErrors('maxRelations'),
+                errors: field.errors.get('maxRelations'),
                 data: {'error-key': 'maxRelations'},
             }) }}
         {% endif %}
@@ -88,7 +88,7 @@
             name: 'branchLimit',
             value: field.branchLimit,
             size: 2,
-            errors: field.getErrors('branchLimit'),
+            errors: field.errors.get('branchLimit'),
             data: {'error-key': 'branchLimit'},
         }) }}
     {% endblock %}
@@ -104,7 +104,7 @@
                 {label: 'After other {type}'|t('app', {type: pluralElementType}), value: 'end'},
             ],
             value: field.defaultPlacement,
-            errors: field.getErrors('defaultPlacement'),
+            errors: field.errors.get('defaultPlacement'),
             data: {'error-key': 'defaultPlacement'},
         })}}
     {% endblock %}
@@ -121,7 +121,7 @@
             name: 'selectionLabel',
             value: field.selectionLabel,
             placeholder: field.defaultSelectionLabel(),
-            errors: field.getErrors('selectionLabel'),
+            errors: field.errors.get('selectionLabel'),
         }) }}
     {% endblock %}
 
@@ -132,7 +132,7 @@
             id: 'show-search-input',
             name: 'showSearchInput',
             on: field.showSearchInput,
-            errors: field.getErrors('showSearchInput'),
+            errors: field.errors.get('showSearchInput'),
         }) }}
     {% endblock %}
 
@@ -160,7 +160,7 @@
                 on: field.allowSelfRelations,
             }) }}
 
-            {% if craft.sites.isMultiSite() %}
+            {% if Sites.isMultiSite() %}
 
                 {% block targetSiteField %}
                     {{ field.getTargetSiteFieldHtml()|raw }}

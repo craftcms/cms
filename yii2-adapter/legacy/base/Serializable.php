@@ -7,19 +7,19 @@
 
 namespace craft\base;
 
-/**
- * Serializable is the interface that should be implemented by classes who want to support customizable representation of their instances
- * when getting stored somewhere.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-interface Serializable
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * Returns the object’s serialized value.
+     * Serializable is the interface that should be implemented by classes who want to support customizable representation of their instances
+     * when getting stored somewhere.
      *
-     * @return mixed The serialized value
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 3.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Shared\Contracts\Serializable} instead.
      */
-    public function serialize(): mixed;
+    interface Serializable extends \CraftCms\Cms\Shared\Contracts\Serializable
+    {
+    }
 }
+
+class_alias(\CraftCms\Cms\Shared\Contracts\Serializable::class, Serializable::class);

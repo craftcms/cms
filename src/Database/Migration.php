@@ -16,6 +16,8 @@ abstract class Migration extends LaravelMigration
 {
     use InteractsWithIO;
 
+    protected bool $silent = false;
+
     public function __construct()
     {
         $this->input = new ArrayInput([]);
@@ -25,6 +27,7 @@ abstract class Migration extends LaravelMigration
 
     public function silent(): self
     {
+        $this->silent = true;
         $this->output = new OutputStyle($this->input, new NullOutput);
         $this->components = new Factory($this->output);
 

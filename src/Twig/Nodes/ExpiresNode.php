@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Nodes;
 
-use Craft;
+use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Support\DateTimeHelper;
 use Override;
 use Twig\Attribute\YieldReady;
@@ -37,7 +37,6 @@ class ExpiresNode extends Node
             $compiler->write("\$duration = $duration;\n");
         }
 
-        $compiler
-            ->write(Craft::class."::\$app->getResponse()->setCacheHeaders(\$duration);\n");
+        $compiler->write(SetHeaders::class."::setCache(\$duration);\n");
     }
 }

@@ -8,7 +8,7 @@
 {%- set hasSuffix = suffix is not same as(false) %}
 
 {% if formatNumber %}
-    {{ hiddenInput("#{field.handle}[locale]", craft.i18n.formattingLocale.id) }}
+    {{ hiddenInput("#{field.handle}[locale]", I18N.formattingLocale.id) }}
 {% endif %}
 
 {% if hasPrefix or hasSuffix %}
@@ -39,7 +39,7 @@
             size: field.size,
             describedBy: [describedBy ?? null, hasPrefix or hasSuffix ? descriptionId : null]|filter|join(' ') ?: false,
         } %}
-        
+
         {% if config.type == 'number' %}
             {% set config = config|merge({
                 min: field.min ?? null,

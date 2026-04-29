@@ -18,6 +18,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\ViewErrorBag;
 use Illuminate\Validation\ConditionalRules;
 use Illuminate\Validation\Rules\RequiredIf;
 use InvalidArgumentException;
@@ -42,6 +43,9 @@ readonly class FormFields
         $tip = $config['tip'] ?? null;
         $warning = $config['warning'] ?? null;
         $errors = $config['errors'] ?? null;
+        if ($errors instanceof ViewErrorBag) {
+            $errors = $errors->get($attribute);
+        }
         $status = $config['status'] ?? null;
         $disabled = $config['disabled'] ?? false;
         $static = $config['static'] ?? false;

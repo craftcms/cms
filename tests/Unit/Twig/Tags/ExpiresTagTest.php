@@ -2,31 +2,41 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Twig\TemplateRenderer;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 beforeEach(function () {
     $this->renderer = app(TemplateRenderer::class);
 });
 
-it('sets cache headers with duration', function () {
-    $this->renderer->renderString('{% expires in 1 day %}');
+function renderAndApplyExpiresHeaders(string $template): Response
+{
+    app(TemplateRenderer::class)->renderString($template);
 
-    expect(Craft::$app->getResponse()->getHeaders()->get('Cache-Control'))
+    return app(SetHeaders::class)->handle(Request::create('foo'), fn () => new Response);
+}
+
+it('sets cache headers with duration', function () {
+    $response = renderAndApplyExpiresHeaders('{% expires in 1 day %}');
+
+    expect($response->headers->get('Cache-Control'))
         ->toContain('max-age='.DateTimeHelper::relativeTimeToSeconds(1, 'day'));
-    expect(Craft::$app->getResponse()->getHeaders()->get('Pragma'))->toBe('cache');
+    expect($response->headers->get('Pragma'))->toBe('cache');
 });
 
 it('sets no-cache headers with zero duration', function () {
-    $this->renderer->renderString('{% expires %}');
+    $response = renderAndApplyExpiresHeaders('{% expires %}');
 
-    expect(Craft::$app->getResponse()->getHeaders()->get('Cache-Control'))->toContain('no-cache');
+    expect($response->headers->get('Cache-Control'))->toContain('no-cache');
 });
 
 it('supports hours', function () {
-    $this->renderer->renderString('{% expires in 2 hours %}');
+    $response = renderAndApplyExpiresHeaders('{% expires in 2 hours %}');
 
-    expect(Craft::$app->getResponse()->getHeaders()->get('Cache-Control'))->toContain('max-age=7200');
+    expect($response->headers->get('Cache-Control'))->toContain('max-age=7200');
 });
 
 it('renders body content alongside setting headers', function () {

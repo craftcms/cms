@@ -15,6 +15,8 @@ use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Config;
 
+use function Pest\Laravel\startSession;
+
 beforeEach(function () {
     Edition::set(Edition::Pro);
     Cms::config()->isSystemLive = true;
@@ -108,6 +110,9 @@ describe('provider configuration', function () {
         expect($provider)->not()->toBeNull()
             ->and($provider->handle)->toBe('github')
             ->and($provider->driver)->toBe('github');
+
+        startSession();
+        request()->setLaravelSession(session()->driver());
 
         $redirectUrl = app(OAuth::class)
             ->buildProvider($provider)

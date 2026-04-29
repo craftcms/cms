@@ -239,11 +239,8 @@ class Url extends \Illuminate\Support\Facades\URL
 
     /**
      * Returns either a control panel or a site URL, depending on the request type.
-     *
-     * @param  bool|null  $showScriptName  Whether the script name (index.php) should be included in the URL.
-     *                                     By default (null) it will defer to the `omitScriptNameInUrls` config setting.
      */
-    public static function url(string $path = '', array|string|null $params = null, ?string $scheme = null, ?bool $showScriptName = null): string
+    public static function url(string $path = '', array|string|null $params = null, ?string $scheme = null): string
     {
         // Return $path if it appears to be an absolute URL.
         if (static::isFullUrl($path)) {
@@ -273,7 +270,7 @@ class Url extends \Illuminate\Support\Facades\URL
             $scheme = 'https';
         }
 
-        return self::_createUrl($path, $params, $scheme, $cpUrl, showScriptName: $showScriptName);
+        return self::_createUrl($path, $params, $scheme, $cpUrl);
     }
 
     /**
@@ -340,10 +337,8 @@ class Url extends \Illuminate\Support\Facades\URL
     /**
      * @param  string|null  $scheme  The scheme to use ('http' or 'https'). If empty, the scheme used for the current
      *                               request will be used.
-     * @param  bool  $showScriptName  Whether the script name (index.php) should be included in the URL. Note that
-     *                                it’s only safe to set this to `false` for URLs that will be used for GET requests.
      */
-    public static function actionUrl(string $path = '', array|string|null $params = null, ?string $scheme = null, ?bool $showScriptName = null): string
+    public static function actionUrl(string $path = '', array|string|null $params = null, ?string $scheme = null): string
     {
         $generalConfig = Cms::config();
         $path = $generalConfig->actionTrigger.'/'.trim($path, '/');
@@ -362,12 +357,7 @@ class Url extends \Illuminate\Support\Facades\URL
             $scheme = 'https';
         }
 
-        // Default to showing index.php if there's a pathParam
-        if ($showScriptName === null) {
-            $showScriptName = (bool) $generalConfig->pathParam;
-        }
-
-        return self::_createUrl($path, $params, $scheme, $cpUrl, true, $showScriptName, false);
+        return self::_createUrl($path, $params, $scheme, $cpUrl, true, false);
     }
 
     /**
@@ -572,7 +562,6 @@ class Url extends \Illuminate\Support\Facades\URL
         ?string $scheme,
         bool $cpUrl,
         bool $useRequestHostInfo = false,
-        ?bool $showScriptName = null,
         bool $addToken = true,
     ): string {
         // Extract any params/fragment from the path
@@ -622,26 +611,12 @@ class Url extends \Illuminate\Support\Facades\URL
             }
         }
 
-        if ($showScriptName === null) {
-            $showScriptName = ! $generalConfig->omitScriptNameInUrls;
-        }
-
         if ($useRequestHostInfo) {
             $baseUrl = self::fallbackBaseUrl();
-        } elseif ($showScriptName) {
-            $baseUrl = app()->runningInConsole() ? '/' : static::host();
         } elseif ($cpUrl) {
             $baseUrl = static::baseCpUrl();
         } else {
             $baseUrl = static::baseSiteUrl();
-        }
-
-        if ($showScriptName) {
-            $scriptName = basename($request->getScriptName() ?: 'index.php');
-            $baseUrl = sprintf('%s/%s',
-                rtrim($baseUrl, '/'),
-                app()->runningInConsole() ? 'index.php' : $scriptName,
-            );
         }
 
         if ($scheme === null && ! static::isAbsoluteUrl($baseUrl)) {
@@ -654,24 +629,14 @@ class Url extends \Illuminate\Support\Facades\URL
         }
 
         // Put it all together
-        if (! $showScriptName || $generalConfig->usePathInfo || ! $generalConfig->pathParam) {
-            if ($path) {
-                $url = rtrim($baseUrl, '/').'/'.trim((string) $path, '/');
+        if ($path) {
+            $url = rtrim($baseUrl, '/').'/'.trim((string) $path, '/');
 
-                if (! $cpUrl && $generalConfig->addTrailingSlashesToUrls && ! preg_match('/\.[^\/]+$/', $url)) {
-                    $url .= '/';
-                }
-            } else {
-                $url = $baseUrl;
+            if (! $cpUrl && $generalConfig->addTrailingSlashesToUrls && ! preg_match('/\.[^\/]+$/', $url)) {
+                $url .= '/';
             }
         } else {
             $url = $baseUrl;
-
-            if ($path) {
-                // Prepend it to the params array
-                Arr::forget($params, $generalConfig->pathParam);
-                $params = array_merge([$generalConfig->pathParam => $path], $params);
-            }
         }
 
         return self::_buildUrl($url, $params, $fragment);

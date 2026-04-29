@@ -6,6 +6,7 @@ use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Http\Controllers\Assets\TransformController;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Crypt;
 
@@ -93,7 +94,7 @@ describe('generateFallback', function () {
         $transformString = '_101x99_crop_center-center_none';
         $transform = Crypt::encrypt($asset->id.','.$transformString);
         $path = implode(DIRECTORY_SEPARATOR, [
-            Craft::$app->getPath()->getImageTransformsPath(),
+            Path::imageTransforms(),
             $transformString,
             sprintf('%s.jpg', $asset->id),
         ]);

@@ -6,6 +6,8 @@ use craft\base\Fs;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Policies\AssetPolicy;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
@@ -233,74 +235,11 @@ function createAssetTestAsset(
     ?int $uploaderId = null,
     bool $isFolder = false,
 ): Asset {
-    $mockFs = new class extends Fs
-    {
-        public function getRootUrl(): ?string
-        {
-            return null;
-        }
-
-        public function getFileList(string $directory = '', bool $recursive = true): Generator
-        {
-            yield from [];
-        }
-
-        public function getFileSize(string $uri): int
-        {
-            return 0;
-        }
-
-        public function getDateModified(string $uri): int
-        {
-            return 0;
-        }
-
-        public function read(string $path): string
-        {
-            return '';
-        }
-
-        public function write(string $path, string $contents, array $config = []): void {}
-
-        public function fileExists(string $path): bool
-        {
-            return false;
-        }
-
-        public function deleteFile(string $path): void {}
-
-        public function renameFile(string $path, string $newPath, array $config = []): void {}
-
-        public function copyFile(string $path, string $newPath, array $config = []): void {}
-
-        public function getFileStream(string $uriPath, array $config = [])
-        {
-            return fopen('php://memory', 'r');
-        }
-
-        public function writeFileFromStream(string $path, $stream, array $config = []): void {}
-
-        public function directoryExists(string $path): bool
-        {
-            return false;
-        }
-
-        public function createDirectory(string $path, array $config = []): void {}
-
-        public function deleteDirectory(string $path): void {}
-
-        public function renameDirectory(string $path, string $newName): void {}
-    };
-
-    $mockFs->handle = 'testFs';
-
     $mockVolume = new class extends Volume
     {
-        public ?Fs $mockFs = null;
-
-        public function getFs(): Fs
+        public function getFs(): FsInterface
         {
-            return $this->mockFs;
+            return new Local;
         }
     };
 
@@ -308,7 +247,6 @@ function createAssetTestAsset(
     $mockVolume->uid = $volume->uid;
     $mockVolume->name = $volume->name;
     $mockVolume->handle = $volume->handle;
-    $mockVolume->mockFs = $mockFs;
 
     $asset = new class extends Asset
     {

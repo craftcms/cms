@@ -53,7 +53,7 @@ readonly class ImpersonationController
         try {
             Auth::guard('craft')->login($user);
         } catch (Throwable) {
-            Flash::fail(t('There was a problem impersonating this user.'));
+            Flash::error(t('There was a problem impersonating this user.'));
 
             Log::error($this->request->user()->username.' tried to impersonate userId: '.$userId.' but something went wrong.');
 
@@ -104,7 +104,7 @@ readonly class ImpersonationController
         try {
             Auth::guard('craft')->login($user);
         } catch (Throwable) {
-            Flash::fail(t('There was a problem impersonating this user.'));
+            Flash::error(t('There was a problem impersonating this user.'));
 
             return back();
         }

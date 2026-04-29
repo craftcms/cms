@@ -73,12 +73,13 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      * so that login forms can remember the initial Username value on login forms.
      *
      * @param UserElement $user
+     *
      * @see afterLogin()
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth::setRememberedUsername()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\AuthMethods::setRememberedUsername()} instead.
      */
     public function sendUsernameCookie(UserElement $user): void
     {
-        app(\CraftCms\Cms\Auth\Auth::class)->setRememberedUsername($user);
+        app(\CraftCms\Cms\Auth\AuthMethods::class)->setRememberedUsername($user);
     }
 
     /**
@@ -147,11 +148,11 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      * ```
      *
      * @return string|null
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth::getRememberedUsername()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\AuthMethods::getRememberedUsername()} instead.
      */
     public function getRememberedUsername(): ?string
     {
-        return app(\CraftCms\Cms\Auth\Auth::class)->getRememberedUsername();
+        return app(\CraftCms\Cms\Auth\AuthMethods::class)->getRememberedUsername();
     }
 
     /**
@@ -341,7 +342,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
         // Save the username cookie if they're not being impersonated
         $impersonator = app(Impersonation::class)->getImpersonator();
         if (!$impersonator) {
-            app(\CraftCms\Cms\Auth\Auth::class)->setRememberedUsername(UserElement::find()->id($identity->getId())->firstOrFail());
+            app(\CraftCms\Cms\Auth\AuthMethods::class)->setRememberedUsername(UserElement::find()->id($identity->getId())->firstOrFail());
         }
 
         // Update the user record
@@ -434,7 +435,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     private function _clearOtherSessionParams(): void
     {
         // Make sure 2FA data doesn't bleed over
-        app(\CraftCms\Cms\Auth\Auth::class)->setUser(null);
+        app(\CraftCms\Cms\Auth\AuthMethods::class)->setUser(null);
         \Illuminate\Support\Facades\Session::forget(app(Passkeys::class)->passkeyCreationOptionsParam);
     }
 }

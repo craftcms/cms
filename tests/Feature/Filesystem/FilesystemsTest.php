@@ -2,15 +2,13 @@
 
 declare(strict_types=1);
 
-use craft\base\Fs;
-use craft\fs\Local;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
 use CraftCms\Cms\Filesystem\Events\RegisterFilesystemTypes;
 use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
-use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
+use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
@@ -27,10 +25,6 @@ beforeEach(function () {
 it('is a singleton and is available via the facade', function () {
     expect($this->service)->toBe(app(Filesystems::class))
         ->and($this->service)->toBe(FilesystemsFacade::getFacadeRoot());
-});
-
-it('keeps the legacy base Fs class as a subclass of the new filesystem base', function () {
-    expect(is_subclass_of(Fs::class, Filesystem::class))->toBeTrue();
 });
 
 it('can register extra filesystem types through an event', function () {
@@ -225,7 +219,7 @@ it('registers a single disk when handleChangedFilesystem receives a specific han
 
     $newValue = [
         'name' => 'Single Register',
-        'type' => Filesystems\Local::class,
+        'type' => Local::class,
         'hasUrls' => true,
         'url' => 'https://cdn.example.test/single/',
         'settings' => [
@@ -325,7 +319,7 @@ function createServiceLocalFilesystem(
     string $url = '',
 ): FsInterface {
     $config = [
-        'type' => 'craft\\fs\\Local',
+        'type' => Local::class,
         'name' => $handle,
         'handle' => $handle,
         'settings' => [

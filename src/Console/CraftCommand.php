@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Console;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
+use Laravel\Prompts\Support\Logger;
+
+use function Laravel\Prompts\task;
 
 /**
  * @mixin Command
@@ -36,8 +39,9 @@ trait CraftCommand
             return;
         }
 
-        $this->outputComponents()->info('Generating project config files from the loaded project config ... ');
-        $projectConfig->regenerateExternalConfig();
-        $this->outputComponents()->success('done');
+        task('Generating project config files from the loaded project config', function (Logger $logger) use ($projectConfig) {
+            $projectConfig->regenerateExternalConfig();
+            $logger->success('Done.');
+        });
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use craft\helpers\App;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -195,7 +194,7 @@ readonly class InstallController
             $siteUrl = Aliases::get($siteUrl);
         }
 
-        if (! in_array($siteUrl[0], ['@', '$']) && ! App::isEphemeral()) {
+        if (! in_array($siteUrl[0], ['@', '$']) && ! app()->isEphemeral()) {
             try {
                 Env::writeVariable('APP_URL', $siteUrl, $path);
                 $siteUrl = '$APP_URL';
@@ -246,7 +245,7 @@ readonly class InstallController
     private function canControlDbConfig(): bool
     {
         // If this is ephemeral storage, then we can't be writing to a .env file
-        if (App::isEphemeral()) {
+        if (app()->isEphemeral()) {
             return false;
         }
 

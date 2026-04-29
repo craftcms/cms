@@ -30,7 +30,7 @@
                 describedBy: describedBy ?? null,
                 name: name ?? null,
                 checked: (option.value is defined and option.value == value and (option.value or not (option.custom ?? false))),
-                autofocus: loop.first and (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+                autofocus: loop.first and (autofocus ?? false) and not Request.isMobileBrowser(true),
                 disabled: disabled,
             }|merge(option) only %}
         </div>

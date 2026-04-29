@@ -60,6 +60,7 @@ use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Validation\UserRules;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
+use Exception;
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
@@ -69,8 +70,6 @@ use Illuminate\Support\Facades\Password;
 use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Function\String\Lower;
-use yii\base\Exception;
-use yii\base\UserException;
 
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
@@ -970,7 +969,7 @@ class Users
                 try {
                     $this->elements->deleteElement($user);
                     Log::info("Just deleted pending user $user->username ($user->id), because they took too long to activate their account.", [__METHOD__]);
-                } catch (UserException $e) {
+                } catch (Exception $e) {
                     Log::warning($e->getMessage(), [__METHOD__]);
                 }
             });

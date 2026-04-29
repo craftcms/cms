@@ -30,6 +30,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Traits\ForwardsCalls;
 use InvalidArgumentException;
@@ -41,7 +42,6 @@ use ReflectionProperty;
 use RuntimeException;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use Tpetry\QueryExpressions\Language\Alias;
-use Twig\Markup;
 
 /**
  * @template TElement of ElementInterface
@@ -277,7 +277,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      *
      * @see ElementHelper::renderElements()
      */
-    public function render(array $variables = []): Markup
+    public function render(array $variables = []): HtmlString
     {
         return ElementHelper::renderElements($this->all(), $variables);
     }
@@ -463,6 +463,16 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
         return $this->applyAfterQueryCallbacks($results)
             ->when($this->indexBy, fn (ElementCollection|Collection $collection) => $collection->keyBy($this->indexBy));
+    }
+
+    /**
+     * Execute the query as a "select" statement and return a collection.
+     *
+     * @return ElementCollection<TElement>|Collection<array>
+     */
+    public function collect(): ElementCollection|Collection
+    {
+        return $this->get();
     }
 
     /**

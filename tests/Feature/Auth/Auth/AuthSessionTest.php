@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Session;
 
 beforeEach(function () {
-    $this->auth = app(Auth::class);
+    $this->auth = app(AuthMethods::class);
 });
 
 afterEach(function () {

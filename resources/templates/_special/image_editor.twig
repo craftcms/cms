@@ -1,5 +1,5 @@
 {% import "_includes/forms" as forms %}
-{% set orientation = craft.i18n.locale.getOrientation() -%}
+{% set orientation = I18N.getLocale().getOrientation() -%}
 
 {{ tag('h1', {
     class: 'visually-hidden',
@@ -75,7 +75,7 @@
         }) }}
 
         {% set constraintOptions = [] %}
-        {% for label, ratio in app.config.craft.general.imageEditorRatios %}
+        {% for label, ratio in config('craft.general.imageEditorRatios') %}
             {% set constraintOptions = constraintOptions|merge([{
                 value: ratio,
                 label: label|t('app')

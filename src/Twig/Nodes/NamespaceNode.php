@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Nodes;
 
-use Craft;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use Override;
 use Twig\Attribute\YieldReady;
@@ -24,8 +24,8 @@ class NamespaceNode extends Node
             ->raw(";\n")
             ->write("if (\$_namespace !== null && \$_namespace !== '') {\n")
             ->indent()
-            ->write('$_originalNamespace = '.Craft::class."::\$app->getView()->getNamespace();\n")
-            ->write(Craft::class.'::$app->getView()->setNamespace('.Craft::class."::\$app->getView()->namespaceInputName(\$_namespace));\n")
+            ->write('$_originalNamespace = '.InputNamespace::class."::get();\n")
+            ->write(InputNamespace::class.'::set('.InputNamespace::class."::namespaceInputName(\$_namespace));\n")
             ->write("ob_start();\n")
             ->write("try {\n")
             ->indent()
@@ -40,7 +40,7 @@ class NamespaceNode extends Node
             ->write('yield '.Html::class.'::namespaceHtml(ob_get_clean(), $_namespace, ')
             ->raw($this->hasAttribute('withClasses') ? 'true' : 'false')
             ->raw(");\n")
-            ->write(Craft::class."::\$app->getView()->setNamespace(\$_originalNamespace);\n")
+            ->write(InputNamespace::class."::set(\$_originalNamespace);\n")
             ->outdent()
             ->write("} else {\n")
             ->indent()

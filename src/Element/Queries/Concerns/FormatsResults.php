@@ -15,7 +15,7 @@ use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
 use Tpetry\QueryExpressions\Operator\Logical\CondAnd;
 use Tpetry\QueryExpressions\Value\Value;
-use yii\base\InvalidValueException;
+use UnexpectedValueException;
 
 /**
  * @internal
@@ -304,7 +304,7 @@ trait FormatsResults
             [$elementId, $siteId] = array_pad(explode('-', (string) $key, 2), 2, null);
 
             if ($siteId === null) {
-                throw new InvalidValueException("Invalid element search score key: \"$key\". Search scores should be indexed by element ID and site ID (e.g. \"100-1\").");
+                throw new UnexpectedValueException("Invalid element search score key: \"$key\". Search scores should be indexed by element ID and site ID (e.g. \"100-1\").");
             }
 
             $rules[] = new CaseRule(

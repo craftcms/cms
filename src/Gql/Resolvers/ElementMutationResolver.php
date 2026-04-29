@@ -18,7 +18,6 @@ use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\WrappingType;
 use Illuminate\Support\Facades\Cache;
-use yii\web\ServerErrorHttpException;
 
 abstract class ElementMutationResolver extends MutationResolver
 {
@@ -104,7 +103,7 @@ abstract class ElementMutationResolver extends MutationResolver
         if ($isNotNew) {
             $mutex = Cache::lock("element:$element->id", 15);
             if (! $mutex->get()) {
-                throw new ServerErrorHttpException('Could not acquire a lock to save the element.');
+                abort(500, 'Could not acquire a lock to save the element.');
             }
         }
 

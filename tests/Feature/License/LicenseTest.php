@@ -12,6 +12,7 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
+use Symfony\Component\Process\Process;
 
 use function Pest\Laravel\actingAs;
 
@@ -23,27 +24,37 @@ it('can get the key path', function () {
     expect($this->license->keyPath())->toBeString();
 });
 
-it('can get key', function () {
-    File::delete(config_path('craft/license.key'));
+it('can get key from file', function () {
+    File::delete($this->license->keyPath());
     expect($this->license->key())->toBeNull();
 
-    /**
-     * It can get key from file
-     */
     File::put(
-        config_path('craft/license.key'),
+        $this->license->keyPath(),
         $key = Str::random(250),
     );
 
     expect($this->license->key())->toBe($key);
-    File::delete(config_path('craft/license.key'));
+    File::delete($this->license->keyPath());
     expect($this->license->key())->toBeNull();
+});
 
-    /**
-     * It can get key from constant
-     */
-    define('CRAFT_LICENSE_KEY', $key);
-    expect($this->license->key())->toBe($key);
+it('can get key from constant', function () {
+    $key = Str::random(250);
+
+    $process = new Process([
+        PHP_BINARY,
+        '-r',
+        sprintf(
+            'require %s; define("CRAFT_LICENSE_KEY", %s); $license = (new ReflectionClass(%s))->newInstanceWithoutConstructor(); echo $license->key();',
+            var_export(dirname(__DIR__, 3).'/vendor/autoload.php', true),
+            var_export($key, true),
+            var_export(License::class, true),
+        ),
+    ]);
+
+    $process->mustRun();
+
+    expect($process->getOutput())->toBe($key);
 });
 
 it('can get the shun cookie name', function () {
@@ -138,7 +149,7 @@ it('can get mismatched license issues for craft', function () {
     expect($this->license->issues())->toBe([
         [
             'Craft',
-            'The Craft CMS license key in use belongs to <a href="http://craftcms.com" rel="noopener" target="_blank">craftcms.com</a> <a class="go" href="https://craftcms.com/support/resolving-mismatched-licenses">Learn more</a>',
+            'The Craft CMS license located at config/license.key belongs to <a href="http://craftcms.com" rel="noopener" target="_blank">craftcms.com</a>. <a class="go" href="https://craftcms.com/support/resolving-mismatched-licenses">Learn more</a>',
             null,
         ],
     ]);

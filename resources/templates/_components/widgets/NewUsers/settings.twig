@@ -23,11 +23,11 @@
         value: 'lastmonth',
     },
     ],
-    errors: widget.getErrors('dateRange')
+    errors: widget.errors.get('dateRange')
 }) }}
 
 
-{% set userGroups = craft.userGroups.getAllGroups() %}
+{% set userGroups = UserGroups.getAllGroups() %}
 
 {% if userGroups|length > 0 %}
 
@@ -42,7 +42,7 @@
         name: 'userGroupId',
         value: widget.userGroupId,
         options: userGroupsOptions,
-        errors: widget.getErrors('userGroupId')
+        errors: widget.errors.get('userGroupId')
     }) }}
 
 {% endif %}

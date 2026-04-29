@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\License;
 
-use Craft;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;

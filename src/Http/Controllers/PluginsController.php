@@ -127,14 +127,7 @@ readonly class PluginsController
             return $plugin->getReadOnlySettingsResponse();
         }
 
-        $response = $plugin->getSettingsResponse();
-
-        if ($response instanceof \craft\web\Response) {
-            $response->send();
-            $response = $response->getIlluminateResponse();
-        }
-
-        return $response;
+        return $plugin->getSettingsResponse();
     }
 
     public function saveSettings(Request $request): Response

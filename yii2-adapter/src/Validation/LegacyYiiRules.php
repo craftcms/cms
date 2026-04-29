@@ -108,7 +108,18 @@ class LegacyYiiRules
 
                 $validationTarget = $validatorTarget ? $validatorTarget() : $target;
                 $validator = Validator::createValidator($type, $validationTarget, $attributes, $options);
+
+                $currentValue = $validationTarget->$attribute ?? null;
+
+                if ($validator->skipOnEmpty && $validator->isEmpty($currentValue)) {
+                    continue;
+                }
+
                 $validator->validateAttribute($validationTarget, $attribute);
+
+                if (!$copyErrors && method_exists($validationTarget, 'clearErrors')) {
+                    $validationTarget->clearErrors($attribute);
+                }
 
                 if (!$copyErrors || !method_exists($validationTarget, 'getErrors')) {
                     continue;

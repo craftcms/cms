@@ -25,7 +25,7 @@ trait RespondsWithFlash
             return $this->asJsonFailure($message, $data);
         }
 
-        Flash::fail($message);
+        Flash::error($message);
 
         request()->flash();
 

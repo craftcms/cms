@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Nodes;
 
-use Craft;
 use CraftCms\Cms\Support\Template;
 use Override;
 use Twig\Attribute\YieldReady;
@@ -20,7 +19,7 @@ class DdNode extends Node
         $compiler->addDebugInfo($this);
 
         $compiler
-            ->write(Craft::class.'::dd(');
+            ->write('dd(');
 
         if ($this->hasNode('var')) {
             $compiler->subcompile($this->getNode('var'));

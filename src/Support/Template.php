@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Support;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Facades\ElementCaches;
@@ -24,8 +26,6 @@ use Twig\Markup;
 use Twig\Source;
 use Twig\Template as TwigTemplate;
 use Twig\TemplateWrapper;
-use yii\base\BaseObject;
-use yii\base\UnknownPropertyException;
 
 class Template
 {
@@ -71,7 +71,7 @@ class Template
         }
 
         if ($type !== TwigTemplate::METHOD_CALL) {
-            if ($object instanceof BaseObject && $object->canGetProperty($item)) {
+            if ($object instanceof Component && $object->canGetProperty($item)) {
                 if ($isDefinedTest) {
                     return true;
                 }
@@ -80,7 +80,11 @@ class Template
                     $env->getExtension(SandboxExtension::class)->checkPropertyAllowed($object, $item, $lineno, $source);
                 }
 
-                return $object->$item;
+                try {
+                    return $object->$item;
+                } catch (UnknownPropertyException) {
+                    return $object->$item();
+                }
             }
 
             if ($object instanceof BaseModel && $object->hasAttribute($item)) {

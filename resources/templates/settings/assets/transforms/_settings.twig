@@ -41,7 +41,7 @@
         id: 'name',
         name: 'name',
         value: transform.name,
-        errors: transform.getErrors('name'),
+        errors: transform.errors.get('name'),
         autofocus: true,
         required: true,
         disabled: readOnly,
@@ -55,7 +55,7 @@
         autocorrect: false,
         autocapitalize: false,
         value: transform.handle,
-        errors: transform.getErrors('handle'),
+        errors: transform.errors.get('handle'),
         required: true,
         disabled: readOnly,
     }) }}
@@ -106,7 +106,7 @@
             label: 'Fill Color',
             name: 'fill',
             value: transform.mode == 'letterbox' and transform.fill != 'transparent' ? transform.fill,
-            errors: transform.getErrors('fill'),
+            errors: transform.errors.get('fill'),
             disabled: readOnly,
         }) }}
     </div>
@@ -139,7 +139,7 @@
         name: "width",
         size: 5,
         value: transform.width,
-        errors: transform.getErrors('width'),
+        errors: transform.errors.get('width'),
         disabled: readOnly,
     }) }}
 
@@ -149,7 +149,7 @@
         name: "height",
         size: 5,
         value: transform.height,
-        errors: transform.getErrors('height'),
+        errors: transform.errors.get('height'),
         disabled: readOnly,
     }) }}
 
@@ -157,14 +157,14 @@
         label: 'Allow Upscaling'|t('app'),
         id: 'upscale',
         name: 'upscale',
-        on: transform.upscale ?? app.config.craft.general.upscaleImages,
-        errors: transform.getErrors('upscale'),
+        on: transform.upscale ?? config('craft.general.upscaleImages'),
+        errors: transform.errors.get('upscale'),
         disabled: readOnly,
     }) }}
 
     {% embed '_includes/forms/field.twig' with {
         label: 'Quality'|t('app'),
-        errors: transform.getErrors('quality'),
+        errors: transform.errors.get('quality'),
     } %}
         {% block input %}
             {% import '_includes/forms.twig' as forms %}
@@ -212,7 +212,7 @@
             {label: 'Partition'|t('app'), value: 'partition'},
         ],
         value: transform.interlace ?? 'none',
-        errors: transform.getErrors('interlace'),
+        errors: transform.errors.get('interlace'),
         disabled: readOnly,
     }) }}
 
@@ -223,11 +223,11 @@
         {label: 'gif', value: 'gif'},
     ] %}
 
-    {% if transform.format == 'webp' or craft.app.images.supportsWebP %}
+    {% if transform.format == 'webp' or Images.supportsWebP %}
         {% set formatOptions = formatOptions|merge([{label: 'webp', value: 'webp'}]) %}
     {% endif %}
 
-    {% if transform.format == 'avif' or craft.app.images.supportsAvif %}
+    {% if transform.format == 'avif' or Images.supportsAvif %}
         {% set formatOptions = formatOptions|merge([{label: 'avif', value: 'avif'}]) %}
     {% endif %}
 
@@ -237,7 +237,7 @@
         name: "format",
         instructions: "The image format that transformed images should use."|t('app'),
         value: transform.format,
-        errors: transform.getErrors('format'),
+        errors: transform.errors.get('format'),
         options: formatOptions,
         disabled: readOnly,
     }) }}

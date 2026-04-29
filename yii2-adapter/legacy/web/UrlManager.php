@@ -94,7 +94,7 @@ class UrlManager extends \yii\web\UrlManager
      */
     public function __construct(array $config = [])
     {
-        $config['showScriptName'] = !Cms::config()->omitScriptNameInUrls;
+        $config['showScriptName'] = false;
 
         parent::__construct($config);
     }
@@ -146,7 +146,7 @@ class UrlManager extends \yii\web\UrlManager
         $route = trim($params[0], '/');
         unset($params[0]);
 
-        return Url::actionUrl($route, $params, null, false);
+        return Url::actionUrl($route, $params, null);
     }
 
     /**

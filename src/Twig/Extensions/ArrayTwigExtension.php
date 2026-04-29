@@ -30,6 +30,7 @@ class ArrayTwigExtension extends AbstractExtension
             new TwigFilter('contains', Arr::contains(...)),
             new TwigFilter('diff', 'array_diff'),
             new TwigFilter('filter', $this->filterFilter(...), ['needs_environment' => true]),
+            new TwigFilter('firstWhere', Arr::first(...)),
             new TwigFilter('flatten', Arr::flatten(...)),
             new TwigFilter('group', $this->groupFilter(...)),
             new TwigFilter('indexOf', $this->indexOfFilter(...)),

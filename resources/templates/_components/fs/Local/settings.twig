@@ -11,7 +11,7 @@
     value: filesystem.path,
     required: true,
     placeholder: "/path/to/folder"|t('app'),
-    errors: filesystem.getErrors('path'),
+    errors: filesystem.errors.get('path'),
     data: {'error-key': 'path'},
     disabled: readOnly,
 }) }}

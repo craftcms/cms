@@ -387,9 +387,6 @@ class EditElementController
 
         $baseParams = $this->request->query();
         unset($baseParams['draftId'], $baseParams['revisionId'], $baseParams['siteId'], $baseParams['fresh']);
-        if (isset(Cms::config()->pathParam)) {
-            unset($baseParams[Cms::config()->pathParam]);
-        }
 
         $isDraft = $element->getIsDraft();
         $isRevision = $element->getIsRevision();

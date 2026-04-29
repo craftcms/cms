@@ -6,8 +6,6 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
-use yii\web\NotFoundHttpException;
 
 readonly class HandleActionRequest
 {
@@ -27,19 +25,6 @@ readonly class HandleActionRequest
             'REQUEST_URI' => $route,
         ]));
 
-        try {
-            /** @var Response $response */
-            $response = $next($newRequest);
-
-            return $response;
-        } catch (NotFoundHttpException) {
-            /**
-             * If Yii returned with a Page not found. It needs to handle the
-             * original request with an action body parameter.
-             *
-             * @todo Remove when cms is fully ported.
-             */
-            return $next($request);
-        }
+        return $next($newRequest);
     }
 }

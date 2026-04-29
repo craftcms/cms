@@ -2,9 +2,15 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\Events\DefineSourceSortOptions;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use Illuminate\Support\Facades\Event;
+use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
 beforeEach(function () {
     $this->elementSources = app(ElementSources::class);
@@ -60,7 +66,120 @@ it('can find nested source configs by key path', function () {
     ]);
 });
 
+it('can get source sort options', function () {
+    TestElementSourceSortOptionsElement::$requestedSources = [];
+    $expressionA = new stdClass;
+    $expressionB = new stdClass;
+
+    Event::listen(DefineSourceSortOptions::class, function (DefineSourceSortOptions $event) use ($expressionA, $expressionB) {
+        $event->sortOptions = collect(match ($event->source) {
+            '__IMP__' => [
+                [
+                    'label' => 'Important',
+                    'attribute' => 'important',
+                    'orderBy' => 'important',
+                    'defaultDir' => 'desc',
+                ],
+            ],
+            'regular' => [
+                [
+                    'label' => 'Title',
+                    'attribute' => 'title',
+                    'orderBy' => 'title',
+                    'defaultDir' => 'asc',
+                ],
+                [
+                    'label' => 'First duplicate',
+                    'attribute' => 'duplicate',
+                    'orderBy' => 'firstColumn',
+                    'defaultDir' => 'asc',
+                ],
+                [
+                    'label' => 'Second duplicate',
+                    'attribute' => 'duplicate',
+                    'orderBy' => 'secondColumn',
+                    'defaultDir' => 'desc',
+                ],
+                [
+                    'label' => 'First expression duplicate',
+                    'attribute' => 'expressionDuplicate',
+                    'orderBy' => $expressionA,
+                    'defaultDir' => 'asc',
+                ],
+                [
+                    'label' => 'Second expression duplicate',
+                    'attribute' => 'expressionDuplicate',
+                    'orderBy' => $expressionB,
+                    'defaultDir' => 'desc',
+                ],
+            ],
+        });
+    });
+
+    expect($this->elementSources->getSourceSortOptions(TestElementSourceSortOptionsElement::class, '__IMP__')->all())
+        ->toBe([
+            'important' => [
+                'label' => 'Important',
+                'attribute' => 'important',
+                'orderBy' => 'important',
+                'defaultDir' => 'desc',
+            ],
+        ])
+        ->and(TestElementSourceSortOptionsElement::$requestedSources)->toBe([null]);
+
+    $sortOptions = $this->elementSources
+        ->getSourceSortOptions(TestElementSourceSortOptionsElement::class, 'regular');
+
+    expect(TestElementSourceSortOptionsElement::$requestedSources)->toBe([null, 'regular'])
+        ->and($sortOptions->get('title'))->toBe([
+            'label' => 'Title',
+            'attribute' => 'title',
+            'orderBy' => 'title',
+            'defaultDir' => 'asc',
+        ])
+        ->and($sortOptions->get('duplicate')['orderBy'])->toBeInstanceOf(Coalesce::class)
+        ->and($sortOptions->get('expressionDuplicate'))->toBe([
+            'label' => 'First expression duplicate',
+            'attribute' => 'expressionDuplicate',
+            'orderBy' => $expressionA,
+            'defaultDir' => 'asc',
+        ]);
+});
+
 it('can generate a page name id', function () {
     expect($this->elementSources->pageNameId('foo'))->toBe('foo');
     expect($this->elementSources->pageNameId('Another page'))->toBe('anotherpage');
 });
+
+class TestElementSourceSortOptionsElement extends Element
+{
+    public static array $requestedSources = [];
+
+    #[Override]
+    public static function displayName(): string
+    {
+        return 'Test Element';
+    }
+
+    #[Override]
+    public static function pluralDisplayName(): string
+    {
+        return 'Test Elements';
+    }
+
+    #[Override]
+    protected static function defineFieldLayouts(?string $source): array
+    {
+        self::$requestedSources[] = $source;
+
+        return [new FieldLayout([
+            'type' => static::class,
+        ])];
+    }
+
+    #[Override]
+    public function getCanonical(bool $anySite = false): ElementInterface
+    {
+        return $this;
+    }
+}

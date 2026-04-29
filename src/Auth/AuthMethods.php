@@ -34,7 +34,7 @@ use Webauthn\Exception\InvalidUserHandleException;
 use function CraftCms\Cms\t;
 
 #[Scoped]
-class Auth
+class AuthMethods
 {
     public private(set) ?AuthError $authError = null;
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use craft\db\CoalesceColumnsExpression;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
@@ -27,6 +26,7 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
 use function CraftCms\Cms\t;
 
@@ -605,10 +605,8 @@ class ElementSources
                     return $group->first();
                 }
 
-                $expression = new CoalesceColumnsExpression($orderBys->all());
-
                 return array_merge($group->first(), [
-                    'orderBy' => $expression,
+                    'orderBy' => new Coalesce($orderBys->all()),
                 ]);
             });
     }

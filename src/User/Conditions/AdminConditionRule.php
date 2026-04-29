@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Conditions;
 
-use craft\elements\db\UserQuery;
 use CraftCms\Cms\Condition\BaseLightswitchConditionRule;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\User\Elements\User;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -21,7 +22,7 @@ class AdminConditionRule extends BaseLightswitchConditionRule implements Element
         return t('Admin');
     }
 
-    #[\Override]
+    #[Override]
     public static function isSelectable(): bool
     {
         return Edition::isAtLeast(Edition::Pro);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Mixins;
 
 use Closure;
+use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Session\SessionManager;
@@ -60,5 +61,20 @@ class SessionMixin
             $scripts[] = [$js, $position->value, $key];
             $this->flash('__js', $scripts);
         };
+    }
+
+    public function getSuccess(): Closure
+    {
+        return fn () => Flash::getSuccess();
+    }
+
+    public function getError(): Closure
+    {
+        return fn () => Flash::getError();
+    }
+
+    public function getNotice(): Closure
+    {
+        return fn () => Flash::getNotice();
     }
 }

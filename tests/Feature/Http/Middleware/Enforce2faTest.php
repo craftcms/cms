@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Middleware\Enforce2fa;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
@@ -59,7 +59,7 @@ test('allows user through when 2fa is required and active', function () {
     ProjectConfig::set('users.require2fa', 'all');
 
     // Mock active method
-    $auth = Mockery::mock(app(Auth::class))->makePartial();
+    $auth = Mockery::mock(app(AuthMethods::class))->makePartial();
     $auth->shouldReceive('hasActiveMethod')->andReturn(true);
 
     $this->actingAs($user, 'craft')

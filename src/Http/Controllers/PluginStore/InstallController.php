@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\PluginStore;
 
-use Craft;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Plugin\Plugins;
@@ -12,6 +11,7 @@ use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Override;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -89,13 +89,13 @@ class InstallController extends BaseUpdaterController
         return $this->runMigrations([$this->data['handle']]) ?? $this->sendFinished();
     }
 
-    #[\Override]
+    #[Override]
     protected function pageTitle(): string
     {
         return t('Plugin Installer');
     }
 
-    #[\Override]
+    #[Override]
     protected function initialData(): array
     {
         $this->request->validate([
@@ -131,7 +131,7 @@ class InstallController extends BaseUpdaterController
         ];
     }
 
-    #[\Override]
+    #[Override]
     protected function actionStatus(string $action): string
     {
         return match ($action) {
@@ -142,7 +142,7 @@ class InstallController extends BaseUpdaterController
         };
     }
 
-    #[\Override]
+    #[Override]
     protected function initialState(bool $force = false): array
     {
         // Make sure we can find composer.json
@@ -153,7 +153,7 @@ class InstallController extends BaseUpdaterController
         return $this->actionState(self::ACTION_COMPOSER_INSTALL);
     }
 
-    #[\Override]
+    #[Override]
     protected function postComposerInstallState(): array
     {
         // Was this after a remove?
@@ -176,7 +176,7 @@ class InstallController extends BaseUpdaterController
         return $this->actionState(self::ACTION_CRAFT_INSTALL);
     }
 
-    #[\Override]
+    #[Override]
     protected function sendFinished(array $state = []): Response
     {
         // Set the license key
@@ -192,7 +192,7 @@ class InstallController extends BaseUpdaterController
         return parent::sendFinished($state);
     }
 
-    #[\Override]
+    #[Override]
     protected function returnUrl(): string
     {
         return $this->data['returnUrl'] ?? 'plugin-store';

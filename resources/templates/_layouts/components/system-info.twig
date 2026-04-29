@@ -6,8 +6,8 @@
     title: siteUrl ? 'View site'|t('app') : false,
 } %}
     <div id="site-icon">
-        {% if app.config.craft.general.cpIconUrl %}
-            <img src="{{ alias(app.config.craft.general.cpIconUrl) }}" alt="">
+        {% if config('craft.general.cpIconUrl') %}
+            <img src="{{ alias(config('craft.general.cpIconUrl')) }}" alt="">
         {% else %}
             {{ iconSvg('c-outline') }}
         {% endif %}

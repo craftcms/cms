@@ -20,6 +20,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Typecast;
 use Illuminate\Support\Facades\DB;
 use PDO;
 use yii\log\Logger;
@@ -169,6 +170,8 @@ abstract class BaseElementFixture extends DbFixture
      */
     protected function populateElement(ElementInterface $element, array $attributes): void
     {
+        Typecast::properties($element::class, $attributes);
+
         foreach ($attributes as $name => $value) {
             $element->$name = $value;
         }

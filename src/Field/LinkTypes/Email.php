@@ -4,14 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use CraftCms\Cms\Field\Link;
-use yii\validators\EmailValidator;
+use Override;
 
 use function CraftCms\Cms\t;
 
-/**
- * Email link type.
- */
 class Email extends BaseTextLinkType
 {
     public static function id(): string
@@ -19,7 +15,7 @@ class Email extends BaseTextLinkType
         return 'email';
     }
 
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Email');
@@ -30,7 +26,7 @@ class Email extends BaseTextLinkType
         return 'mailto:';
     }
 
-    #[\Override]
+    #[Override]
     public function normalizeValue(string $value): string
     {
         $value = str_replace(' ', '+', $value);
@@ -38,7 +34,7 @@ class Email extends BaseTextLinkType
         return parent::normalizeValue($value);
     }
 
-    #[\Override]
+    #[Override]
     protected function inputAttributes(): array
     {
         return [
@@ -47,10 +43,10 @@ class Email extends BaseTextLinkType
         ];
     }
 
-    #[\Override]
+    #[Override]
     protected function pattern(): string
     {
-        $emailPattern = trim((new EmailValidator)->pattern, '/^$');
+        $emailPattern = trim('/^[a-zA-Z0-9!#$%&\'*+\\/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&\'*+\\/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/', '/^$');
 
         return "^mailto:$emailPattern(\?.*)?$";
     }

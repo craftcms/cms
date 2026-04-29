@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Support;
 
 use BackedEnum;
-use Craft;
 use CraftCms\Cms\Cms;
+use Exception;
 use Illuminate\Support\Facades\Crypt;
 use InvalidArgumentException;
 use LitEmoji\LitEmoji;
@@ -15,7 +15,6 @@ use Ramsey\Uuid\Validator\GenericValidator;
 use ReflectionClass;
 use RuntimeException;
 use voku\helper\ASCII;
-use yii\base\Exception;
 
 class Str extends \Illuminate\Support\Str
 {

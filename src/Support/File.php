@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Facades\Sites;
 use ErrorException;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\Finder\Finder;
@@ -240,7 +240,7 @@ class File extends \Illuminate\Support\Facades\File
     {
         if (! array_key_exists('stripEmoji', $options)) {
             try {
-                $options['stripEmoji'] = ! Craft::$app->getDb()->getSupportsMb4();
+                $options['stripEmoji'] = ! DB::supportsMb4();
             } catch (Throwable) {
                 $options['stripEmoji'] = true;
             }

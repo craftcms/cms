@@ -10,6 +10,7 @@ namespace craft\behaviors;
 use craft\web\Session;
 use craft\web\View;
 use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\View\Enums\Position;
 use yii\base\Behavior;
 use yii\base\Exception;
@@ -50,14 +51,7 @@ class SessionBehavior extends Behavior
      */
     public function setNotice(string $message, array $settings = []): void
     {
-        if (request()->isCpRequest()) {
-            $this->_setNotificationFlash('notice', $message, $settings + [
-                    'icon' => 'info',
-                    'iconLabel' => t('Notice'),
-                ]);
-        } else {
-            session()->flash('notice', $message);
-        }
+        Flash::notice($message, $settings);
     }
 
     /**
@@ -73,14 +67,7 @@ class SessionBehavior extends Behavior
      */
     public function setSuccess(string $message, array $settings = []): void
     {
-        if (request()->isCpRequest()) {
-            $this->_setNotificationFlash('success', $message, $settings + [
-                    'icon' => 'check',
-                    'iconLabel' => t('Success'),
-                ]);
-        } else {
-            session()->flash('success', $message);
-        }
+        Flash::success($message, $settings);
     }
 
     /**
@@ -95,14 +82,7 @@ class SessionBehavior extends Behavior
      */
     public function setError(string $message, array $settings = []): void
     {
-        if (request()->isCpRequest()) {
-            $this->_setNotificationFlash('error', $message, $settings + [
-                    'icon' => 'alert',
-                    'iconLabel' => t('Error'),
-                ]);
-        } else {
-            session()->flash('error', $message);
-        }
+        Flash::error($message, $settings);
     }
 
     /**
@@ -112,11 +92,7 @@ class SessionBehavior extends Behavior
      */
     public function getNotice(): ?string
     {
-        if (request()->isCpRequest()) {
-            return $this->_getNotificationFlashMessage('notice');
-        }
-
-        return session()->get('notice');
+        return Flash::getNotice();
     }
 
     /**
@@ -127,11 +103,7 @@ class SessionBehavior extends Behavior
      */
     public function getSuccess(): ?string
     {
-        if (request()->isCpRequest()) {
-            return $this->_getNotificationFlashMessage('success');
-        }
-
-        return session()->get('success');
+        return Flash::getSuccess();
     }
 
     /**
@@ -141,21 +113,7 @@ class SessionBehavior extends Behavior
      */
     public function getError(): ?string
     {
-        if (request()->isCpRequest()) {
-            return $this->_getNotificationFlashMessage('error');
-        }
-
-        return session()->get('error');
-    }
-
-    private function _getNotificationFlashMessage(string $type)
-    {
-        return session()->get("cp-notification-$type")[0] ?? null;
-    }
-
-    private function _setNotificationFlash(string $type, string $message, array $settings = [])
-    {
-        session()->flash("cp-notification-$type", [$message, $settings]);
+        return Flash::getError();
     }
 
     /**

@@ -23,7 +23,11 @@ class InternalAssetRegistry
 
     public function __construct(
         private readonly HtmlStack $htmlStack,
-    ) {}
+    ) {
+        foreach (session()->pull('__ab', []) as $bundle) {
+            $this->register($bundle);
+        }
+    }
 
     /**
      * @param  class-string<LegacyAssetInterface>  $bundle
@@ -35,6 +39,13 @@ class InternalAssetRegistry
         }
 
         $this->pendingBundles[$bundle] = true;
+    }
+
+    public function flash(string $bundle): void
+    {
+        $bundles = session()->pull('__ab', []);
+        $bundles[] = $bundle;
+        session()->flash('__ab', $bundles);
     }
 
     public function flush(): void

@@ -101,12 +101,12 @@ describe('field helper methods', function () {
 describe('addressFieldsHtml', function () {
     it('renders required markers from the live address ruleset', function () {
         $address = new TestAddressForFormFields(['countryCode' => 'US']);
-        $originalScenario = $address->getScenario();
+        $originalScenario = $address->ruleset->getScenario();
 
         $html = FormFields::addressFieldsHtml($address);
 
         expect((bool) preg_match('/id="addressLine1-label".*?<span class="visually-hidden">Required<\/span>.*?<span class="required"/s', $html))->toBeTrue()
             ->and((bool) preg_match('/id="sortingCode-label".*?<span class="visually-hidden">Required<\/span>/s', $html))->toBeFalse()
-            ->and($address->getScenario())->toBe($originalScenario);
+            ->and($address->ruleset->getScenario())->toBe($originalScenario);
     });
 });

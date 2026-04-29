@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Address\Repositories;
 
 use CommerceGuys\Addressing\Locale;
 use CommerceGuys\Addressing\Subdivision\SubdivisionRepository as BaseSubdivisionRepository;
-use Craft;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Support\Json;
 use Override;

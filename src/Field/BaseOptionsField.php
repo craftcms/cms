@@ -21,6 +21,7 @@ use CraftCms\Cms\Gql\Resolvers\OptionField as OptionFieldResolver;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use GraphQL\Type\Definition\Type;
@@ -29,7 +30,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;
 use Override;
-use yii\db\Schema;
 
 use function CraftCms\Cms\t;
 
@@ -77,7 +77,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     #[Override]
     public static function dbType(): string
     {
-        return static::$multi ? Schema::TYPE_JSON : Schema::TYPE_STRING;
+        return static::$multi ? Query::TYPE_JSON : Query::TYPE_STRING;
     }
 
     #[Override]
@@ -108,7 +108,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                     is_string($value) &&
                     in_array(strtolower($value), [':empty:', ':notempty:', 'not :empty:'])
                 ) {
-                    $query->whereParam($valueSql, $value, columnType: Schema::TYPE_JSON, boolean: $param->operator);
+                    $query->whereParam($valueSql, $value, columnType: Query::TYPE_JSON, boolean: $param->operator);
 
                     continue;
                 }

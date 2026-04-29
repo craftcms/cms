@@ -159,7 +159,7 @@ class SsoController extends Controller
 
         if ($exception instanceof SsoFailedException) {
             $user = $exception->identity;
-            $info = app(\CraftCms\Cms\Auth\Auth::class)->getLoginFailureInfo(AuthError::tryFrom($exception->getMessage()), $user);
+            $info = app(\CraftCms\Cms\Auth\AuthMethods::class)->getLoginFailureInfo(AuthError::tryFrom($exception->getMessage()), $user);
             $message = $info[1] ?? $message;
         }
 

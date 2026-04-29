@@ -75,13 +75,6 @@ it('resolves a cloned matching exporter and returns null when missing', function
         ->and($missing)->toBeNull();
 });
 
-it('accepts legacy alias class names when resolving exporters', function () {
-    $exporters = $this->elementExporters->availableExporters(Entry::class, '*');
-
-    expect($this->elementExporters->resolveExporter($exporters, craft\elements\exporters\Raw::class))
-        ->toBeInstanceOf(Raw::class);
-});
-
 it('honors register exporters listeners when building available exporters', function () {
     $customExporter = new class extends Raw
     {

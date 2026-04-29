@@ -14,7 +14,7 @@
 {% endblock %}
 
 {% set tableData = [] %}
-{% for schema in craft.app.gql.schemas %}
+{% for schema in Gql.getSchemas() %}
 	{% set tableData = tableData|merge([{
         id: schema.id,
         title: schema.isPublic ? 'Public Schema'|t('app') : schema.name|t('site'),

@@ -14,12 +14,12 @@ use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Gql\Types\DateTime as DateTimeType;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Validation\Rules\TimeRule;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Override;
-use yii\db\Schema;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -50,7 +50,7 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     #[Override]
     public static function dbType(): string
     {
-        return Schema::TYPE_STRING;
+        return Query::TYPE_STRING;
     }
 
     /**

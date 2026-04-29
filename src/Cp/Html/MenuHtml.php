@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Html;
 
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\SiteGroups;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Container\Attributes\Singleton;
@@ -153,7 +151,7 @@ readonly class MenuHtml
             ->keyBy(fn (array $site) => $site['site']->id)
             ->all();
 
-        $path = Str::after(request()->decodedPath(), Cms::config()->cpTrigger.'/');
+        $path = request()->craftPath();
         $params = Arr::except(request()->query(), 'fresh');
 
         $totalSites = 0;

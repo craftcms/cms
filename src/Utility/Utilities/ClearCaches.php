@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use Craft;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -15,7 +14,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Events\RegisterCacheOptions;
 use CraftCms\Cms\Utility\Events\RegisterTagOptions;
 use CraftCms\Cms\Utility\Utility;
-use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Override;
@@ -128,42 +126,6 @@ class ClearCaches extends Utility
                     'path' => sprintf('`%s/`', File::relativePath($pathService->compiledClasses(create: false), Aliases::get('@root'))),
                 ]),
                 'action' => $pathService->compiledClasses(create: false),
-            ],
-            [
-                'key' => 'cp-resources',
-                'label' => t('Control panel resources'),
-                'info' => t('Contents of {path}', [
-                    'path' => sprintf('`%s/`', Cms::config()->resourceBasePath),
-                ]),
-                'action' => function () {
-                    $basePath = Cms::config()->resourceBasePath;
-                    $request = Craft::$app->getRequest();
-                    if (
-                        app()->runningInConsole() &&
-                        $request->isWebrootAliasSetDynamically &&
-                        str_starts_with($basePath, '@webroot')
-                    ) {
-                        throw new Exception("Unable to clear control panel resources because the location isn't known for console commands.\n".
-                            "Explicitly set the @webroot alias in config/general.php to avoid this error.\n".
-                            'See https://craftcms.com/docs/6.x/configure.html#aliases for more info.');
-                    }
-
-                    $basePath = Aliases::get($basePath);
-                    if ($basePath !== false && file_exists($basePath)) {
-                        if (File::exists($basePath.'/.gitignore')) {
-                            $gitignoreContents = File::get($basePath.'/.gitignore');
-                        }
-
-                        File::cleanDirectory($basePath);
-
-                        if (isset($gitignoreContents)) {
-                            File::put($basePath.'/.gitignore', $gitignoreContents);
-                        }
-                    }
-
-                    // truncate the resourcepaths table while we're at it
-                    DB::table(Table::RESOURCEPATHS)->truncate();
-                },
             ],
             [
                 'key' => 'temp-files',

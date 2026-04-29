@@ -24,6 +24,7 @@ use CraftCms\Yii2Adapter\HtmlPurifier\LegacyHtmlPurifierConfigRegistrar;
 use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
 use CraftCms\Yii2Adapter\I18N\I18NCompatibility;
 use CraftCms\Yii2Adapter\Mail\TestToEmailAddressCompatibility;
+use CraftCms\Yii2Adapter\Mixins\CraftVariableMixin;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Support\Facades\Artisan;
@@ -147,6 +148,8 @@ class Yii2ServiceProvider extends ServiceProvider
         app('Craft');
 
         new RebrandCompatibility()->boot();
+
+        \CraftCms\Cms\Twig\Variables\CraftVariable::mixin(new CraftVariableMixin());
 
         /**
          * Keep legacy CustomFieldBehavior statics in sync when field caches are invalidated.
