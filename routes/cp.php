@@ -45,6 +45,7 @@ use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
+use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
@@ -86,6 +87,10 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     Route::get('utilities/{id}/{extra?}', [UtilitiesController::class, 'show'])
         ->where('extra', '.*')
         ->name('utilities.show');
+
+    // SystemMessages
+    Route::get('system-messages/{key}', [SystemMessagesController::class, 'show']);
+    Route::post('system-messages', [SystemMessagesController::class, 'store']);
 
     Route::middleware(RequireAdminChanges::class)->group(function () {
         Route::view('settings/addresses', 'settings/addresses/_fields');
