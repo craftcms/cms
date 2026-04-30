@@ -46,25 +46,26 @@ readonly class ConditionsController
             ]);
         }
 
-        $config = $this->request->input($baseConfig['name']);
+        $name = str_replace(['[', ']'], ['.', ''], $baseConfig['name']);
+        $config = $this->request->input($name);
 
         Validator::make($this->request->all(), [
-            $baseConfig['name'] => ['required', 'array'],
-            "$baseConfig[name].class" => ['required', 'string'],
-            "$baseConfig[name].config" => ['nullable', 'json'],
-            "$baseConfig[name].conditionRules" => ['nullable', 'array'],
-            "$baseConfig[name].new-rule-type" => ['nullable'],
+            $name => ['required', 'array'],
+            "$name.class" => ['required', 'string'],
+            "$name.config" => ['nullable', 'json'],
+            "$name.conditionRules" => ['nullable', 'array'],
+            "$name.new-rule-type" => ['nullable'],
         ])->validate();
 
         if (($config['class'] ?? null) !== $baseConfig['class']) {
             throw ValidationException::withMessages([
-                "$baseConfig[name].class" => [t('The selected condition class is invalid.')],
+                "$name.class" => [t('The selected condition class is invalid.')],
             ]);
         }
 
         if (! is_subclass_of($config['class'], ConditionInterface::class)) {
             throw ValidationException::withMessages([
-                "$baseConfig[name].class" => [t('The selected condition class is invalid.')],
+                "$name.class" => [t('The selected condition class is invalid.')],
             ]);
         }
 
