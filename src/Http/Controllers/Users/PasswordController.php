@@ -196,7 +196,7 @@ readonly class PasswordController
         return new Timebox()->call(function (Timebox $timebox) use ($loginName, &$errors, $user, $users): Response {
             // Don't try to send the email if there are already errors or there is no user
             try {
-                if (empty($errors) && $user !== null && ! $users->sendPasswordResetEmail($user)) {
+                if (! empty($errors) && $user !== null && ! $users->sendPasswordResetEmail($user)) {
                     throw new Exception;
                 }
             } catch (Exception) {
