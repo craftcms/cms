@@ -582,10 +582,10 @@ class Str extends \Illuminate\Support\Str
         return Str::between((new GenericValidator)->getPattern(), '\A', '\z');
     }
 
-    public static function toDotNotation(string $key): string
+    public static function toDotNotation(int|string $key): string
     {
         // Normalize the key into dot notation
-        if (preg_match('/^[\w\-]+(?:\[[^\[\]]+\])+$/', $key)) {
+        if (is_string($key) && preg_match('/^[\w\-]+(?:\[[^\[\]]+\])+$/', $key)) {
             return rtrim((string) preg_replace('/[\[\]]+/', '.', $key), '.');
         }
 
