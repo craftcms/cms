@@ -86,7 +86,6 @@ use CraftCms\Cms\Http\Controllers\Users\ImpersonationController;
 use CraftCms\Cms\Http\Controllers\Users\PasskeysController as UserPasskeysController;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
-use CraftCms\Cms\Http\Controllers\Users\PhotoController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
 use CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController;
 use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
@@ -512,9 +511,6 @@ Route::prefix(implode('/', [
         Route::post('users/save-preferences', [PreferencesController::class, 'store']);
         Route::post('users/delete-user', [UsersController::class, 'destroy']);
         Route::post('users/user-content-summary', [UsersController::class, 'contentSummary']);
-        Route::post('users/render-photo-input', [PhotoController::class, 'renderInput']);
-        Route::post('users/upload-user-photo', [PhotoController::class, 'upload']);
-        Route::post('users/delete-user-photo', [PhotoController::class, 'destroy']);
         Route::post('users/require-password-reset', [PasswordController::class, 'requireReset']);
         Route::post('users/remove-password-reset-requirement', [PasswordController::class, 'removeResetRequirement']);
         Route::post('users/verify-password', [PasswordController::class, 'verifyPassword']);
