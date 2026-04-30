@@ -189,7 +189,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     // -------------------------------------------------------------------------
 
     /**
-     * @var array<string,string> Column alias => name mapping
+     * @var array<string,string|callable|array> Column alias => name mapping
      *
      * @see applyOrderByParams()
      * @see applySelectParam()
@@ -250,6 +250,14 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
         if ($this->elementType::hasTitles()) {
             $this->columnMap['title'] = 'elements_sites.title';
+        }
+
+        if ($this->hasElementSourceTable) {
+            foreach (DB::getSchemaBuilder()->getColumnListing($this->table) as $column) {
+                if (! isset($this->columnMap[$column])) {
+                    $this->columnMap[$column] = "$this->table.$column";
+                }
+            }
         }
 
         $this->initTraits();

@@ -219,7 +219,6 @@ describe('sortOptions', function () {
         expect($attributes)->toContain('section');
         expect($attributes)->toContain('type');
         expect($attributes)->toContain('postDate');
-        // expiryDate doesn't have an 'attribute' key, it's just orderBy => 'expiryDate'
     });
 
     test('complex sort options have proper structure', function () {

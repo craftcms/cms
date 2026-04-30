@@ -223,7 +223,7 @@ trait FormatsResults
 
         $elementQuery->query->orders = array_filter(
             array: $orders,
-            callback: fn ($order) => ! $order['column'] instanceof OrderByPlaceholderExpression,
+            callback: fn ($order) => ! isset($order['column']) || ! $order['column'] instanceof OrderByPlaceholderExpression,
         );
 
         // Order by was set
@@ -296,7 +296,7 @@ trait FormatsResults
     {
         $elementQuery->getQuery()->orders = array_filter(
             $elementQuery->getQuery()->orders ?? [],
-            fn (array $order) => isset($order['column']) && $order['column'] !== 'score',
+            fn (array $order) => ! isset($order['column']) || $order['column'] !== 'score',
         );
 
         if (! $elementQuery->searchResults) {
