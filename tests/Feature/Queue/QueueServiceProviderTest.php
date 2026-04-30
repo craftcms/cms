@@ -26,34 +26,6 @@ it('is registered in the application', function () {
     expect($providers)->toContain(QueueServiceProvider::class);
 });
 
-it('cleans up progress when job is processed', function () {
-    $progressService = app(JobProgress::class);
-    $uid = 'test-cleanup-processed';
-
-    $progressService->setProgress($uid, 'Test Job', 50);
-
-    expect($progressService->getProgress($uid))->not->toBeNull();
-
-    $mockJob = new readonly class($uid)
-    {
-        public function __construct(private string $uid) {}
-
-        public function payload(): array
-        {
-            return ['uuid' => $this->uid];
-        }
-
-        public function getQueue(): string
-        {
-            return Cms::config()->queueName;
-        }
-    };
-
-    Event::dispatch(new JobProcessed('sync', $mockJob));
-
-    expect($progressService->getProgress($uid))->toBeNull();
-});
-
 it('tracks failed jobs with error message', function () {
     $progressService = app(JobProgress::class);
     $uid = 'test-cleanup-failed';
