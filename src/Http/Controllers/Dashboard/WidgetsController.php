@@ -124,7 +124,7 @@ readonly class WidgetsController
             ],
         ]);
 
-        $this->dashboard->deleteWidgetById($request->input('id'));
+        $this->dashboard->deleteWidgetById($request->integer('id'));
 
         return new JsonResponse;
     }
