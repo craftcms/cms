@@ -8,7 +8,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
 
 afterEach(function () {
-    unset(Illuminate\Support\Env::get('CRAFT_CACHED_ENV_TEST'), $_SERVER['CRAFT_CACHED_ENV_TEST']);
+    unset($_SERVER['CRAFT_CACHED_ENV_TEST']);
     putenv('CRAFT_CACHED_ENV_TEST');
 });
 
