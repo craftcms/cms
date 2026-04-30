@@ -262,3 +262,12 @@ test('unescapeShortcodes', function (string $expected, string $str) {
 test('uuidPattern', function () {
     expect(Str::uuidPattern())->not()->toBeEmpty();
 });
+
+test('toDotNotation', function (string $expected, string $string) {
+    expect(Str::toDotNotation($string))->toBe($expected);
+})->with([
+    ['foo.bar', 'foo[bar]'],
+    ['sources.custom:5bb5537d.condition', 'sources[custom:5bb5537d][condition]'],
+    ['foo', 'foo'],
+    ['a.b.c.d', 'a[b][c][d]'],
+]);
