@@ -64,7 +64,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('vite', $this->vite(...), ['is_safe' => ['html']]),
 
             // Legacy Assets - remove once all dependencies on these are removed
-            new TwigFunction('registerLegacyAsset', app(InternalAssetRegistry::class)->register(...)),
+            new TwigFunction('registerLegacyAsset', fn (string $bundle) => app(InternalAssetRegistry::class)->register($bundle)),
         ];
     }
 

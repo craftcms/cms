@@ -158,7 +158,7 @@ class Template
             return;
         }
 
-        $position = Position::tryFrom($options['position'] ?? Position::BodyEnd->value) ?? Position::BodyEnd;
+        $position = Position::tryFrom($options['position'] ?? Position::Ready->value) ?? Position::Ready;
         HtmlStack::js($js, $position, $key);
     }
 

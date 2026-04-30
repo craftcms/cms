@@ -53,6 +53,8 @@ class InternalAssetRegistry
         while ($bundle = array_key_first($this->pendingBundles)) {
             $this->registerPendingBundle($bundle);
         }
+
+        $this->registeredBundles = [];
     }
 
     /**

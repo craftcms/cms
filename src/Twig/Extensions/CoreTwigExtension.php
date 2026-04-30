@@ -212,6 +212,8 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             'POS_HEAD' => Position::Head->value,
             'POS_BEGIN' => Position::BodyBegin->value,
             'POS_END' => Position::BodyEnd->value,
+            'POS_READY' => Position::Ready->value,
+            'POS_LOAD' => Position::Load->value,
         ]);
     }
 
