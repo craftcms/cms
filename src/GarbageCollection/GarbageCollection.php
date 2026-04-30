@@ -140,7 +140,7 @@ class GarbageCollection
 
         Artisan::call('model:prune', [
             '--model' => [JobProgress::class],
-        ]);
+        ], $this->output);
 
         // Invalidate all element caches so any hard-deleted elements don't look like they still exist
         $this->elementCaches->invalidateAll();
