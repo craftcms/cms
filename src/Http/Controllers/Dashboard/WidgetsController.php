@@ -88,7 +88,7 @@ readonly class WidgetsController
                 'integer',
                 Rule::exists('widgets', 'id')->where('userId', $request->user()->id),
             ],
-            'colspan' => ['required', 'integer', 'min:1', 'max:3'],
+            'colspan' => ['required', 'integer', 'min:1', 'max:4'],
         ]);
 
         $this->dashboard->changeWidgetColspan($request->input('id'), $request->input('colspan'));
