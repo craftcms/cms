@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
+use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -130,4 +133,30 @@ it('returns field layout data for new elements', function () {
             ->has('bodyHtml')
             ->etc()
         );
+});
+
+it('normalizes user photoId arrays from element select inputs', function () {
+    config()->set('filesystems.disks.update-field-layout-test', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/update-field-layout-test'),
+    ]);
+
+    $user = User::findOne();
+    $volume = Volume::factory()->create(['fs' => 'disk:update-field-layout-test']);
+    $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => $folder->id,
+        'kind' => 'image',
+        'filename' => 'avatar.jpg',
+    ]);
+
+    postJson(action(UpdateFieldLayoutController::class), [
+        'elementType' => User::class,
+        'elementId' => $user->id,
+        'siteId' => $user->siteId,
+        'photoId' => [$asset->id],
+    ])
+        ->assertOk()
+        ->assertJsonPath('element.photoId', $asset->id);
 });

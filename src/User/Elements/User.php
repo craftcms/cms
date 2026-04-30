@@ -868,15 +868,13 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     }
 
     #[Override]
-    public function safeAttributes(): array
-    {
-        return Arr::except(parent::safeAttributes(), ['photoId']);
-    }
-
-    #[Override]
     public function setAttributesFromRequest($values): void
     {
         unset($values['unverifiedEmail']);
+
+        if (array_key_exists('photoId', $values)) {
+            $values['photoId'] = $this->normalizePhotoId($values['photoId']);
+        }
 
         if (isset($values['email'])) {
             $values['email'] = trim($values['email']);
@@ -924,6 +922,19 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         }
 
         parent::setAttributes($values);
+    }
+
+    private function normalizePhotoId(mixed $photoId): ?int
+    {
+        if (is_array($photoId)) {
+            $photoId = end($photoId);
+        }
+
+        if ($photoId === null || $photoId === '') {
+            return null;
+        }
+
+        return (int) $photoId;
     }
 
     /**
@@ -2009,11 +2020,6 @@ JS, [
         $dirtyAttributes = array_keys($model->getDirty());
 
         $model->save();
-
-        // Make sure that the photo is located in the right place
-        if (! $isNew && $this->photoId) {
-            Users::relocateUserPhoto($this);
-        }
 
         $this->setDirtyAttributes($dirtyAttributes);
 

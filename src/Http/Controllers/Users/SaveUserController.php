@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -250,9 +251,15 @@ readonly class SaveUserController
         // ---------------------------------------------------------------------
 
         $photo = $request->file('photo');
+        $photoIdSubmitted = $request->exists('photoId');
+        $directPhotoSubmitted = $this->hasDirectPhotoPayload($request);
 
         if ($photo && ! ImageHelper::canManipulateAsImage($photo->extension())) {
             $user->errors()->add('photo', t('The user photo provided is not an image.'));
+        }
+
+        if ($photoIdSubmitted && ! $directPhotoSubmitted) {
+            $this->validatePostedPhotoId($request, $user);
         }
 
         // Don't validate required custom fields if it's public registration
@@ -303,6 +310,10 @@ readonly class SaveUserController
 
         // Save the user’s photo, if it was submitted
         $this->processUserPhoto($request, app(Elements::class), $user);
+
+        if ($photoIdSubmitted && ! $directPhotoSubmitted) {
+            $this->processPostedPhotoId($request, app(Elements::class), $user);
+        }
 
         // If this is public registration, assign the user to the default user group
         if (Edition::isAtLeast(Edition::Pro) && $isPublicRegistration) {
@@ -423,6 +434,54 @@ readonly class SaveUserController
                 throw $e;
             }
         }
+    }
+
+    private function hasDirectPhotoPayload(Request $request): bool
+    {
+        if ($request->boolean('deletePhoto')) {
+            return true;
+        }
+        if ($request->hasFile('photo')) {
+            return true;
+        }
+
+        return is_array($request->input('photo'));
+    }
+
+    private function validatePostedPhotoId(Request $request, User $user): void
+    {
+        $photoId = $this->postedPhotoId($request);
+
+        if ($photoId === null) {
+            return;
+        }
+
+        if (! Asset::find()->id($photoId)->kind('image')->one()) {
+            $user->errors()->add('photoId', t('The user photo provided is not an image.'));
+        }
+    }
+
+    private function processPostedPhotoId(Request $request, Elements $elements, User $user): void
+    {
+        $photoId = $this->postedPhotoId($request);
+        $user->setPhoto($photoId ? Asset::find()->id($photoId)->one() : null);
+
+        $elements->saveElement($user, false);
+    }
+
+    private function postedPhotoId(Request $request): ?int
+    {
+        $photoId = $request->input('photoId');
+
+        if (is_array($photoId)) {
+            $photoId = end($photoId);
+        }
+
+        if ($photoId === null || $photoId === '') {
+            return null;
+        }
+
+        return (int) $photoId;
     }
 
     /**

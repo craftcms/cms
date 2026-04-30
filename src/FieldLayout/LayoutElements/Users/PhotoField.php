@@ -4,20 +4,29 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements\Users;
 
+use CraftCms\Cms\Asset\Data\VolumeFolder;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
+use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
+use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use CraftCms\Cms\View\LegacyAssets\UserPhotoAsset;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
 use Override;
+use Throwable;
 
+use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -75,23 +84,86 @@ class PhotoField extends BaseNativeField
             return null;
         }
 
-        app(InternalAssetRegistry::class)->register(UserPhotoAsset::class);
+        $folder = $this->userPhotoFolder($element);
+
+        app(InternalAssetRegistry::class)->register(CpAsset::class);
         $inputId = sprintf('user-photo-%s', mt_rand());
+        $namespacedInputId = InputNamespace::namespaceId($inputId);
+        $uploadFs = $volume->getFs();
+        $canUpload = ! $uploadFs instanceof Temp && Gate::check("saveAssets:$volume->uid");
 
-        HtmlStack::jsWithVars(fn ($userId, $inputId, $isCurrentUser) => <<<JS
-new Craft.UserPhotoInput($userId, '#' + $inputId, {
-  isCurrentUser: $isCurrentUser,
-})
+        if ($canUpload) {
+            HtmlStack::jsWithVars(fn ($inputId, $folderId) => <<<JS
+const setUserPhotoUploadFolder = () => {
+  const userPhotoInput = $('#' + $inputId).data('elementSelect');
+  if (userPhotoInput?.uploader) {
+    userPhotoInput.uploader.setParams({folderId: $folderId});
+  } else if (!userPhotoInput || userPhotoInput.canUpload) {
+    setTimeout(setUserPhotoUploadFolder, 0);
+  } else {
+    return;
+  }
+}
+setUserPhotoUploadFolder();
 JS, [
-            $element->id,
-            InputNamespace::namespaceId($inputId),
-            $element->getIsCurrent(),
-        ]);
+                $namespacedInputId,
+                $folder->id,
+            ]);
+        }
 
-        return template('users/_photo', [
+        return template('_components/fieldtypes/Assets/input', [
             'id' => $inputId,
-            'user' => $element,
+            'name' => 'photoId',
+            'jsClass' => 'Craft.AssetSelectInput',
+            'elementType' => Asset::class,
+            'elements' => $element->getPhoto() ? [$element->getPhoto()] : [],
+            'condition' => null,
+            'criteria' => [
+                'kind' => 'image',
+                'folderId' => $folder->id,
+                'siteId' => $element->siteId ?? Sites::getCurrentSite()->id,
+            ],
+            'sources' => ["volume:$volume->uid"],
+            'storageKey' => 'userPhoto',
+            'fieldId' => null,
+            'single' => true,
+            'limit' => 1,
+            'defaultPlacement' => 'end',
+            'selectionLabel' => t('Choose a photo'),
+            'viewMode' => 'large',
+            'showActionMenu' => true,
+            'canUpload' => $canUpload,
+            'fsType' => $uploadFs::class,
+            'defaultFieldLayoutId' => $volume->fieldLayoutId ?? null,
+            'defaultSource' => "volume:$volume->uid",
+            'defaultSourcePath' => $folder->getSourcePathInfo() ? [$folder->getSourcePathInfo()] : null,
+            'showFolders' => true,
+            'showSourcePath' => true,
+            'sourceElementId' => $element->id,
+            'modalSettings' => [
+                'defaultSiteId' => $element->siteId ?? null,
+            ],
         ]);
+    }
+
+    private function userPhotoFolder(User $user): VolumeFolder
+    {
+        $volume = Volumes::getUserPhotoVolume();
+        if (! $volume) {
+            throw new InvalidArgumentException('Invalid user photo volume.');
+        }
+
+        $subpath = (string) ProjectConfig::get('users.photoSubpath');
+
+        if ($subpath !== '') {
+            try {
+                $subpath = renderObjectTemplate($subpath, $user);
+            } catch (Throwable) {
+                throw new InvalidSubpathException($subpath);
+            }
+        }
+
+        return Folders::ensureFolderByFullPathAndVolume($subpath, $volume);
     }
 
     #[Override]

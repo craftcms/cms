@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Database\Factories\UserFactory;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
@@ -176,6 +178,92 @@ it('can upload a photo for another user', function () {
     $updatedUser = User::find()->id($targetUser->id)->one();
     expect($updatedUser)->not->toBeNull();
     expect($updatedUser->getPhoto())->not->toBeNull();
+});
+
+it('can select an existing image asset as another users photo', function () {
+    $admin = UserFactory::new()->admin()->createElement();
+    $targetUser = UserFactory::new()->createElement();
+    $asset = AssetModel::factory()->createElement([
+        'kind' => 'image',
+        'filename' => 'avatar.jpg',
+    ]);
+
+    actingAs($admin)->post(action(SaveUserController::class), [
+        'userId' => $targetUser->id,
+        'photoId' => $asset->id,
+    ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $updatedUser = User::find()->id($targetUser->id)->one();
+    expect($updatedUser)->not->toBeNull();
+    expect($updatedUser->photoId)->toBe($asset->id);
+});
+
+it('can clear another users selected photo without deleting the asset', function () {
+    $admin = UserFactory::new()->admin()->createElement();
+    $asset = AssetModel::factory()->createElement([
+        'kind' => 'image',
+        'filename' => 'avatar.jpg',
+    ]);
+    $targetUser = UserFactory::new()->createElement([
+        'photoId' => $asset->id,
+    ]);
+
+    actingAs($admin)->post(action(SaveUserController::class), [
+        'userId' => $targetUser->id,
+        'photoId' => '',
+    ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $updatedUser = User::find()->id($targetUser->id)->one();
+    expect($updatedUser)->not->toBeNull();
+    expect($updatedUser->photoId)->toBeNull();
+    expect(Asset::find()->id($asset->id)->status(null)->one())->not->toBeNull();
+});
+
+it('preserves another users selected photo when photoId is not submitted', function () {
+    $admin = UserFactory::new()->admin()->createElement();
+    $asset = AssetModel::factory()->createElement([
+        'kind' => 'image',
+        'filename' => 'avatar.jpg',
+    ]);
+    $targetUser = UserFactory::new()->createElement([
+        'photoId' => $asset->id,
+    ]);
+
+    actingAs($admin)->post(action(SaveUserController::class), [
+        'userId' => $targetUser->id,
+        'firstName' => 'Updated',
+    ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $updatedUser = User::find()->id($targetUser->id)->one();
+    expect($updatedUser)->not->toBeNull();
+    expect($updatedUser->photoId)->toBe($asset->id);
+});
+
+it('rejects non-image assets selected as another users photo', function () {
+    $admin = UserFactory::new()->admin()->createElement();
+    $targetUser = UserFactory::new()->createElement();
+    $asset = AssetModel::factory()->createElement([
+        'kind' => 'pdf',
+        'filename' => 'document.pdf',
+    ]);
+
+    $response = actingAs($admin)->postJson(action(SaveUserController::class), [
+        'userId' => $targetUser->id,
+        'photoId' => $asset->id,
+    ]);
+
+    $response->assertStatus(400);
+    $response->assertJsonValidationErrorFor('photoId');
+
+    $updatedUser = User::find()->id($targetUser->id)->one();
+    expect($updatedUser)->not->toBeNull();
+    expect($updatedUser->photoId)->toBeNull();
 });
 
 it('returns proper error message on validation failure when editing another user', function () {

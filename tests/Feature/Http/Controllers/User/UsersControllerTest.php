@@ -1,9 +1,14 @@
 <?php
 
+use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Queries\UserQuery;
+use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
+use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Facades\ProjectConfig;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
 
@@ -82,6 +87,32 @@ describe('edit', function () {
 
     test('edit can show specific user by ID', function () {
         get(action([UsersController::class, 'edit'], ['userId' => User::findOne()->id]))->assertOk();
+    });
+
+    test('edit renders user photo asset picker when a user photo volume is configured', function () {
+        ProjectConfig::set('fs.test', [
+            'hasUrls' => true,
+            'name' => 'Test',
+            'settings' => [
+                'path' => public_path('test'),
+            ],
+            'type' => Local::class,
+            'url' => '/test',
+        ]);
+
+        $volume = Volume::factory()->create([
+            'fs' => 'test',
+        ]);
+
+        ProjectConfig::set('users.photoVolumeUid', $volume->uid);
+        $folder = Folders::ensureFolderByFullPathAndVolume('', Volumes::getVolumeByUid($volume->uid));
+
+        get(action([UsersController::class, 'edit']))
+            ->assertOk()
+            ->assertSee('Craft.AssetSelectInput', false)
+            ->assertSee('photoId', false)
+            ->assertSee("folderId: $folder->id", false)
+            ->assertSee('"siteId":'.User::findOne()->siteId, false);
     });
 });
 

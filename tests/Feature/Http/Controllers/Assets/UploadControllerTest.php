@@ -6,6 +6,7 @@ use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Http\Controllers\Assets\UploadController;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Http\UploadedFile;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -33,6 +34,15 @@ it('requires a file or field for upload', function () {
     postJson(action([UploadController::class, 'upload']), [
         'folderId' => $this->folder->id,
     ])->assertStatus(400);
+});
+
+it('uploads to a posted folder id', function () {
+    postJson(action([UploadController::class, 'upload']), [
+        'folderId' => $this->folder->id,
+        'assets-upload' => UploadedFile::fake()->image('avatar.jpg'),
+    ])
+        ->assertOk()
+        ->assertJsonPath('assetId', fn ($assetId) => is_int($assetId));
 });
 
 it('requires authentication for replace file', function () {
