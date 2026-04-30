@@ -14,7 +14,7 @@ use yii\helpers\Markdown as YiiMarkdown;
  * Class MailerHelper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 5.10.0
  */
 class Markdown extends YiiMarkdown
 {
