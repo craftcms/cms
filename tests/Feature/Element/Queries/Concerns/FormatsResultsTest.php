@@ -102,10 +102,10 @@ it('maps concrete element table order columns', function (Closure $query, string
             ->first()
     )->not()->toBeNull();
 })->with([
-    'asset filename' => [fn () => assetQuery(), 'filename', 'assets.filename'],
-    'asset modified date' => [fn () => assetQuery(), 'dateModified', 'assets.dateModified'],
-    'entry expiry date' => [fn () => entryQuery(), 'expiryDate', 'entries.expiryDate'],
-    'user full name' => [fn () => userQuery(), 'fullName', 'users.fullName'],
-    'user last login date' => [fn () => userQuery(), 'lastLoginDate', 'users.lastLoginDate'],
+    'asset filename' => [assetQuery(...), 'filename', 'assets.filename'],
+    'asset modified date' => [assetQuery(...), 'dateModified', 'assets.dateModified'],
+    'entry expiry date' => [entryQuery(...), 'expiryDate', 'entries.expiryDate'],
+    'user full name' => [userQuery(...), 'fullName', 'users.fullName'],
+    'user last login date' => [userQuery(...), 'lastLoginDate', 'users.lastLoginDate'],
     'address country code' => [fn () => new AddressQuery, 'countryCode', 'addresses.countryCode'],
 ]);
