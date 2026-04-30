@@ -33,7 +33,9 @@ use CraftCms\Cms\GarbageCollection\Actions\HardDeleteVolumes;
 use CraftCms\Cms\GarbageCollection\Actions\PurgePendingUsers;
 use CraftCms\Cms\GarbageCollection\Actions\PurgeUnsavedDrafts;
 use CraftCms\Cms\GarbageCollection\Actions\RemoveEmptyTempFolders;
+use CraftCms\Cms\Queue\Models\JobProgress;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Lottery;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -134,6 +136,10 @@ class GarbageCollection
             ]]],
             HardDeleteVolumes::class,
             RemoveEmptyTempFolders::class,
+        ]);
+
+        Artisan::call('model:prune', [
+            '--model' => [JobProgress::class],
         ]);
 
         // Invalidate all element caches so any hard-deleted elements don't look like they still exist
