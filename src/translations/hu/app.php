@@ -226,7 +226,7 @@ return [
     'Bad Request' => 'Hibás felkérés',
     'Base Path' => 'Alapútvonal',
     'Base URL' => 'Alap URL',
-    'Before deleting {label}, please address the following {numBlockers, plural, =1{issue} other{issues}}:' => 'Before deleting {label}, please address the following {numBlockers, plural, one {}=1{issue} other{issues}}:',
+    'Before deleting {label}, please address the following {numBlockers, plural, =1{issue} other{issues}}:' => 'A {label} törlése előtt kérjük, oldja meg a következő {numBlockers, plural, one {}=1{problémát} other{problémákat}}:',
     'Before other {type}' => 'Az első {type} elé',
     'Before…' => 'Előtt…',
     'Blank values will default to the settings above.' => 'Az üres értékek alapértelmezés szerint a fenti beállításokra állnak be.',
