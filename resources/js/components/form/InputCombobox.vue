@@ -29,6 +29,7 @@
       transformModelValue?: (newValue: SelectOption | null) => string;
       class?: HTMLAttributes['class'];
       placeholder?: string;
+      disabled?: boolean;
     }>(),
     {
       modelValue: '',
@@ -143,7 +144,7 @@
 
 <template>
   <div class="relative" ref="reference">
-    <Combobox v-model="selectedOption">
+    <Combobox v-model="selectedOption" :disabled="props.disabled">
       <ComboboxInput
         @change="query = $event.target.value"
         class="input"
