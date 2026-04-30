@@ -200,6 +200,13 @@ readonly class JobProgress
             ->delete();
     }
 
+    public function clearFailed(): void
+    {
+        JobProgressModel::query()
+            ->where('status', JobStatus::Failed->value)
+            ->delete();
+    }
+
     public function updateStatus(string $uid, JobStatus $status): void
     {
         JobProgressModel::query()

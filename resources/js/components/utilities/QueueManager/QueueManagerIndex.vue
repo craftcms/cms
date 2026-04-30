@@ -43,10 +43,7 @@
   }
 
   function isRetryable(job: JobInfo) {
-    return (
-      job.status.value == JobStatus.Reserved ||
-      job.status.value == JobStatus.Failed
-    );
+    return job.status.value == JobStatus.Failed;
   }
 
   const columns = ref([

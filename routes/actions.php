@@ -394,6 +394,10 @@ Route::prefix(implode('/', [
         // Queue
         Route::any('queue/run', [QueueController::class, 'run']);
         Route::any('queue/get-job-info', [QueueController::class, 'jobInfo']);
+        Route::any('queue/release', [QueueController::class, 'cancel']);
+        Route::any('queue/release-all', [QueueController::class, 'cancelAll']);
+        Route::any('queue/retry', [QueueController::class, 'retry']);
+        Route::any('queue/retry-all', [QueueController::class, 'retryAll']);
 
         // Relational fields
         Route::any('relational-fields/structured-input-html', [RelationalFieldsController::class, 'structuredInputHtml']);
