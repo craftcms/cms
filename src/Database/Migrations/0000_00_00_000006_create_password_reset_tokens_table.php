@@ -16,14 +16,21 @@ return new class extends Migration
         }
 
         Schema::create(Table::PASSWORD_RESET_TOKENS, function (Blueprint $table) {
-            $table->string('email')->index();
+            $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
-        Schema::table(Table::USERS, function (Blueprint $table) {
-            $table->dropColumn(['verificationCode', 'verificationCodeIssuedDate']);
-        });
+        $columns = array_filter([
+            'verificationCode',
+            'verificationCodeIssuedDate',
+        ], fn (string $column) => Schema::hasColumn(Table::USERS, $column));
+
+        if ($columns !== []) {
+            Schema::table(Table::USERS, function (Blueprint $table) use ($columns) {
+                $table->dropColumn($columns);
+            });
+        }
     }
 
     public function down(): void

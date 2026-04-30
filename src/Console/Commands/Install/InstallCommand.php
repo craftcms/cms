@@ -174,7 +174,12 @@ class InstallCommand extends Command
 
         info('Installing Craft CMS...');
 
-        $migrator->runMigration(new Install(
+        task('Running initial migrations', function (Logger $logger) {
+            $this->callSilent('migrate');
+            $logger->success('Initial migrations completed.');
+        }, keepSummary: true);
+
+        $migrator->track('craft')->runMigration(new Install(
             username: $username,
             password: $password,
             email: $email,
@@ -183,9 +188,8 @@ class InstallCommand extends Command
 
         $migrator->getRepository()->log('Install', 1);
 
-        task('Finishing up', function (Logger $logger) use ($laravelMigrations, $migrator) {
+        task('Finishing up', function (Logger $logger) use ($migrator) {
             $this->markPendingMigrationsAsApplied($migrator);
-            $laravelMigrations->install($migrator);
             $this->ensureProjectConfigFileExists();
             $logger->success('Craft CMS installed successfully!');
         }, keepSummary: true);

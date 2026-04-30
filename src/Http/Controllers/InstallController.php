@@ -219,10 +219,8 @@ readonly class InstallController
         );
 
         // Run the install migration
-        $migrator->track('craft');
-
         try {
-            $migrator->runMigration($migration, 'up');
+            $migrator->track('craft')->runMigration($migration, 'up');
             $migrator->getRepository()->log('Install', 1);
         } catch (Throwable $e) {
             return new JsonResponse([
@@ -234,8 +232,6 @@ readonly class InstallController
         foreach ($migrator->getPendingMigrations() as $file) {
             $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
         }
-
-        $laravelMigrations->install($migrator);
 
         $redirect = Cms::config()->postCpLoginRedirect;
 

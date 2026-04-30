@@ -105,11 +105,11 @@ class FakeMigrator extends Migrator
     #[\Override]
     public function getPendingMigrations($paths = []): array
     {
-        if (empty($paths)) {
-            return $this->pendingMigrations;
-        }
-
         $loggedMigrations = array_map(fn (array $migration) => $migration[0], $this->loggedMigrations);
+
+        if (empty($paths)) {
+            return array_values(array_filter($this->pendingMigrations, fn (string $path) => ! in_array($this->getMigrationName($path), $loggedMigrations, true)));
+        }
 
         return array_values(array_filter($paths, fn (string $path) => ! in_array($this->getMigrationName($path), $loggedMigrations, true)));
     }
