@@ -12,18 +12,22 @@ use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Laravel\Prompts\Support\Logger;
+use Override;
 use PDOException;
 
 use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\error;
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
+use function Laravel\Prompts\task;
 use function Laravel\Prompts\text;
 
 class DatabaseCredentialsCommand extends Command
 {
     use CraftCommand;
 
-    #[\Override]
+    #[Override]
     protected $signature = 'craft:setup:db-creds
         {--driver= : The database driver to use. Either `\'mysql\'` for MySQL, `\'mariadb\'` for MariaDB or `\'pgsql\'` for PostgreSQL.}
         {--host= : The database server name or IP address. Usually `\'localhost\'` or `\'127.0.0.1\'`.}
@@ -35,10 +39,10 @@ class DatabaseCredentialsCommand extends Command
         {--prefix= : The table prefix to add to all database tables. This can be no more than 5 characters, and must be all lowercase.}
     ';
 
-    #[\Override]
+    #[Override]
     protected $description = 'Stores new DB connection settings to the `.env` file.';
 
-    #[\Override]
+    #[Override]
     protected $aliases = ['setup/db-creds', 'setup:db', 'setup/db'];
 
     private string $driver;
@@ -83,7 +87,9 @@ class DatabaseCredentialsCommand extends Command
 
         $this->port = (int) ($this->option('port') ?? text(
             label: 'Database port:',
-            default: $this->port ?? Config::get("database.connections.{$this->driver}.port") ?? Env::get('DB_PORT', Env::get('CRAFT_DB_PORT', in_array($this->driver, ['mysql', 'mariadb']) ? '3306' : '5432')),
+            default: (string) ($this->port
+                ?? Config::get("database.connections.{$this->driver}.port")
+                ?? Env::get('DB_PORT', Env::get('CRAFT_DB_PORT', in_array($this->driver, ['mysql', 'mariadb']) ? '3306' : '5432'))),
             required: true,
         ));
 
@@ -91,7 +97,9 @@ class DatabaseCredentialsCommand extends Command
 
         $this->user = $this->option('username') ?? text(
             label: 'Database username:',
-            default: $this->user ?? Config::get("database.connections.{$this->driver}.username") ?? Env::get('DB_USERNAME', Env::get('CRAFT_DB_USER', 'root')),
+            default: $this->user
+                ?? Config::get("database.connections.{$this->driver}.username")
+                ?? Env::get('DB_USERNAME', Env::get('CRAFT_DB_USER', 'root')),
         );
 
         if (! $this->password = $this->option('password')) {
@@ -99,20 +107,18 @@ class DatabaseCredentialsCommand extends Command
             if ($envPassword && confirm('Use the password provided by $DB_PASSWORD?')) {
                 $this->password = $envPassword;
             } else {
-                $this->password = password(
-                    label: 'Database password:',
-                );
+                $this->password = password(label: 'Database password:');
             }
         }
 
         /** @phpstan-ignore-next-line */
         if ($badUserCredentials) {
             $badUserCredentials = false;
-            goto test;
+            goto startTest;
         }
 
         if (! $this->input->isInteractive() && ! $this->option('database')) {
-            $this->error('The --database option must be set.');
+            error('The --database option must be set.');
 
             return self::FAILURE;
         }
@@ -144,62 +150,79 @@ class DatabaseCredentialsCommand extends Command
             }
         );
 
-        $this->components->info('Testing database credentials...');
+        $config = [];
 
-        test:
+        startTest:
 
-        $config = array_filter([
-            'driver' => $this->driver,
-            'host' => $this->host,
-            'port' => $this->port,
-            'username' => $this->user,
-            'password' => $this->password,
-            'database' => $this->database,
-            'prefix' => $this->prefix,
-            'schema' => $this->schema ?? null,
-        ]);
+        $result = task('Testing database credentials...', function (Logger $logger) use (&$config, &$badUserCredentials) {
+            test:
 
-        try {
-            /** @var Connection $connection */
-            $connection = DB::build($config);
-            $connection->getPdo();
-        } catch (PDOException $e) {
-            // Error codes:
-            // 7:    Name or service not known (server)
-            // 7:    could not connect to server (port)
-            // 7:    password authentication failed (username)
-            // 7:    no password supplied (password)
-            // 1045: Access denied for user (username, password)
-            // 1049: Unknown database (database)
-            // 2002: Connection timed out (server)
-            $this->components->error('Failed: '.$e->getMessage());
+            $config = array_filter([
+                'driver' => $this->driver,
+                'host' => $this->host,
+                'port' => $this->port,
+                'username' => $this->user,
+                'password' => $this->password,
+                'database' => $this->database,
+                'prefix' => $this->prefix,
+                'schema' => $this->schema ?? null,
+            ]);
 
-            // Test some common issues
-            $message = $e->getMessage();
+            try {
+                /** @var Connection $connection */
+                $connection = DB::build($config);
+                $connection->getPdo();
+            } catch (PDOException $e) {
+                // Error codes:
+                // 7:    Name or service not known (server)
+                // 7:    could not connect to server (port)
+                // 7:    password authentication failed (username)
+                // 7:    no password supplied (password)
+                // 1045: Access denied for user (username, password)
+                // 1049: Unknown database (database)
+                // 2002: Connection timed out (server)
+                $logger->error('Failed: '.$e->getMessage());
 
-            if ($this->host === 'localhost' && $message === 'SQLSTATE[HY000] [2002] No such file or directory') {
-                // means the Unix socket doesn't exist - https://stackoverflow.com/a/22927341/1688568
-                // try 127.0.0.1 instead...
-                $this->warn('Trying with 127.0.0.1 instead of localhost ... ');
-                $this->host = '127.0.0.1';
-                goto test;
+                // Test some common issues
+                $message = $e->getMessage();
+
+                if ($this->host === 'localhost' && $message === 'SQLSTATE[HY000] [2002] No such file or directory') {
+                    // means the Unix socket doesn't exist - https://stackoverflow.com/a/22927341/1688568
+                    // try 127.0.0.1 instead...
+                    $logger->warning('Trying with 127.0.0.1 instead of localhost ... ');
+                    $this->host = '127.0.0.1';
+                    goto test;
+                }
+
+                if ($this->port === 3306 && $message === 'SQLSTATE[HY000] [2002] Connection refused') {
+                    // try 8889 instead (default MAMP port)...
+                    $logger->warning('Trying with port 8889 instead of 3306 ... ');
+                    $this->port = 8889;
+                    goto test;
+                }
+
+                if (
+                    str_contains($message, 'Access denied for user') ||
+                    str_contains($message, 'no password supplied') ||
+                    str_contains($message, 'password authentication failed for user') ||
+                    str_contains($message, "role \"$this->user\" does not exist")
+                ) {
+                    $logger->warning('Try with a different username and/or password.');
+                    $badUserCredentials = true;
+
+                    return false;
+                }
+
+                return false;
             }
 
-            if ($this->port === 3306 && $message === 'SQLSTATE[HY000] [2002] Connection refused') {
-                // try 8889 instead (default MAMP port)...
-                $this->warn('Trying with port 8889 instead of 3306 ... ');
-                $this->port = 8889;
-                goto test;
-            }
+            $logger->success('Success!');
 
-            if (
-                str_contains($message, 'Access denied for user') ||
-                str_contains($message, 'no password supplied') ||
-                str_contains($message, 'password authentication failed for user') ||
-                str_contains($message, "role \"$this->user\" does not exist")
-            ) {
-                $this->warn('Try with a different username and/or password.');
-                $badUserCredentials = true;
+            return true;
+        }, keepSummary: true);
+
+        if ($result === false) {
+            if ($badUserCredentials) {
                 goto userCredentials;
             }
 
@@ -210,30 +233,30 @@ class DatabaseCredentialsCommand extends Command
             goto top;
         }
 
-        $this->components->success('Success! Saving database credentials to your .env file ...');
+        task('Saving database credentials to your .env file...', function (Logger $logger) {
+            $path = app()->environmentFilePath();
 
-        $path = app()->environmentFilePath();
+            if (! is_null(Env::get('DB_URL'))) {
+                Env::writeVariable('DB_URL', "$this->driver://$this->user:$this->password@$this->host:$this->port/$this->database", app()->environmentFilePath());
+            } else {
+                Env::writeVariable('DB_CONNECTION', $this->driver, $path, true);
+                Env::writeVariable('DB_HOST', $this->host, $path, true);
+                Env::writeVariable('DB_PORT', $this->port, $path, true);
+                Env::writeVariable('DB_USERNAME', $this->user, $path, true);
+                Env::writeVariable('DB_PASSWORD', $this->password, $path, true);
+                Env::writeVariable('DB_DATABASE', $this->database, $path, true);
 
-        if (! is_null(Env::get('DB_URL'))) {
-            Env::writeVariable('DB_URL', "$this->driver://$this->user:$this->password@$this->host:$this->port/$this->database", app()->environmentFilePath());
-        } else {
-            Env::writeVariable('DB_CONNECTION', $this->driver, $path, true);
-            Env::writeVariable('DB_HOST', $this->host, $path, true);
-            Env::writeVariable('DB_PORT', $this->port, $path, true);
-            Env::writeVariable('DB_USERNAME', $this->user, $path, true);
-            Env::writeVariable('DB_PASSWORD', $this->password, $path, true);
-            Env::writeVariable('DB_DATABASE', $this->database, $path, true);
+                if ($this->prefix) {
+                    Env::writeVariable('DB_PREFIX', $this->prefix, $path, true);
+                }
 
-            if ($this->prefix) {
-                Env::writeVariable('DB_PREFIX', $this->prefix, $path, true);
+                if (isset($this->schema)) {
+                    Env::writeVariable('DB_SCHEMA', $this->schema, $path, true);
+                }
             }
 
-            if (isset($this->schema)) {
-                Env::writeVariable('DB_SCHEMA', $this->schema, $path, true);
-            }
-        }
-
-        $this->components->success('Database credentials saved successfully.');
+            $logger->success('Database credentials saved successfully.');
+        }, keepSummary: true);
 
         Config::set('database.default', $this->driver);
         Config::set("database.connections.{$this->driver}", $config);
