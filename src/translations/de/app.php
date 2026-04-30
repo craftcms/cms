@@ -226,7 +226,7 @@ return [
     'Bad Request' => 'Fehlerhafte Anfrage',
     'Base Path' => 'Basispfad',
     'Base URL' => 'Basis-URL',
-    'Before deleting {label}, please address the following {numBlockers, plural, =1{issue} other{issues}}:' => 'Before deleting {label}, please address the following {numBlockers, plural, =1{issue} other{issues}}:',
+    'Before deleting {label}, please address the following {numBlockers, plural, =1{issue} other{issues}}:' => 'Bevor Sie {label} löschen, klären Sie bitte {numBlockers, plural, =1{folgendes Problem} other{folgende Probleme}}:',
     'Before other {type}' => 'Vor anderen {type, select, Einträge{Einträgen} other{{type}}}',
     'Before…' => 'Vor…',
     'Blank values will default to the settings above.' => 'Für leere Werte werden standardmäßig die oben genannten Einstellungen verwendet.',
