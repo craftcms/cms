@@ -226,7 +226,7 @@ return [
     'Bad Request' => 'Неверный запрос',
     'Base Path' => 'Базовый путь',
     'Base URL' => 'Базовый URL',
-    'Before deleting {label}, please address the following {numBlockers, plural, =1{issue} other{issues}}:' => 'Перед удалением {label} устраните {numBlockers, plural, one {проблемы} few {проблемы} many {проблемы}=1{проблему} other{проблемы}}:',
+    'Before deleting {label}, please address the following {numBlockers, plural, =1{issue} other{issues}}:' => 'Перед удалением {label} устраните {numBlockers, plural, =1{проблему} other{проблемы}}:',
     'Before other {type}' => 'Перед другой {type}',
     'Before…' => 'До…',
     'Blank values will default to the settings above.' => 'Для пустых значений будут установлены приведенные выше настройки по умолчанию.',
