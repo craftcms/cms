@@ -5,8 +5,8 @@
 {% set staticEmail = staticEmail ?? null %}
 {% set initialError = initialError ?? null %}
 
-{% set generalConfig = app.config.craft.general %}
-{% set username = staticEmail ?? (generalConfig.rememberUsernameDuration ? craft.auth.getRememberedUsername() : '') %}
+{% set generalConfig = config('craft.general') %}
+{% set username = staticEmail ?? (generalConfig.rememberUsernameDuration ? AuthMethods.getRememberedUsername() : '') %}
 
 {% if generalConfig.useEmailAsUsername %}
   {% set usernameLabel = 'Email'|t('app') %}
@@ -118,7 +118,7 @@
 
         <div class="login-alt-container">
           {{ forms.button({
-            label: (craft.i18n.locale.getOrientation() == 'ltr' ? '← ' : ' →') ~
+            label: (I18N.getLocale().getOrientation() == 'ltr' ? '← ' : ' →') ~
               'Back to sign in'|t('app'),
             class: ['login-reset-back-btn', 'chromeless'],
             spinner: true,
@@ -141,7 +141,7 @@
     }) }}
 
     {% if CraftEdition >= CraftPro %}
-      {% for button in craft.oauth.getLoginButtons() %}
+      {% for button in OAuth.getLoginButtons() %}
         {{ button }}
       {% endfor %}
     {% endif %}

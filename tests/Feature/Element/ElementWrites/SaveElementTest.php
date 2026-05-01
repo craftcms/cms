@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Operations\ElementWrites;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\PlainText;
@@ -20,6 +21,7 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\TestClasses\TestEntryWithAfterValidate;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
@@ -306,6 +308,8 @@ it('queues search index updates for searchable dirty fields', function () {
         }
     });
 
+    Config::set('queue.default', 'null');
+
     expect($this->writes->saveElement($entry))->toBeTrue()
         ->and($beforeUpdateTriggered)->toBeTrue()
         ->and(DB::table(Table::SEARCHINDEXQUEUE)
@@ -345,6 +349,23 @@ it('fires AfterSaveElement and marks the element clean after a successful save',
 
     Event::assertDispatched(fn (AfterSaveElement $event): bool => $event->element->id === $entry->id && $event->isNew === false);
 });
+
+it('preserves the caller scenario after save', function (?string $scenario) {
+    $entry = EntryModel::factory()->createElement(['title' => 'Initial title']);
+
+    if ($scenario !== null) {
+        $entry->ruleset->useScenario($scenario);
+    }
+
+    $entry->title = 'Saved title';
+
+    expect($this->writes->saveElement($entry, updateSearchIndex: false))->toBeTrue()
+        ->and($entry->ruleset->getScenario())->toBe($scenario ?? ElementRules::SCENARIO_DEFAULT);
+})->with([
+    'default scenario' => [null],
+    'live scenario' => [ElementRules::SCENARIO_LIVE],
+    'essentials scenario' => [ElementRules::SCENARIO_ESSENTIALS],
+]);
 
 it('enables the current site when a single-site element is disabled for that site', function () {
     $element = new TestSaveElementActionElement;

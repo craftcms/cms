@@ -804,7 +804,7 @@ trait ApplicationTrait
      * @return Auth The Auth service
      *
      * @since 5.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Auth} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\AuthMethods} instead.
      */
     public function getAuth(): Auth
     {

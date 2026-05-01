@@ -243,18 +243,7 @@ class TemplateCaches
         }
 
         $isCpRequest = request()->isCpRequest();
-        $path = trim(request()->decodedPath(), '/');
-        $path = $path === '/' ? '' : $path;
-
-        if ($isCpRequest) {
-            $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
-
-            if ($cpTrigger !== '' && $path === $cpTrigger) {
-                $path = '';
-            } elseif ($cpTrigger !== '' && str_starts_with($path.'/', $cpTrigger.'/')) {
-                $path = ltrim(substr($path, strlen($cpTrigger)), '/');
-            }
-        }
+        $path = request()->craftPath();
 
         $pageParam = Cms::config()->getPageTriggerParam();
         $pageNum = AbstractPaginator::resolveCurrentPage($pageParam);

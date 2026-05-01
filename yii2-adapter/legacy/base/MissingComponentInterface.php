@@ -15,7 +15,8 @@ namespace craft\base;
  * @mixin MissingComponentTrait
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Component\Contracts\MissingComponentInterface} instead.
  */
-interface MissingComponentInterface
+interface MissingComponentInterface extends \CraftCms\Cms\Component\Contracts\MissingComponentInterface
 {
 }

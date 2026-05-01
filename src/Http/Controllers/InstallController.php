@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use craft\helpers\App;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -16,6 +15,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Rules\LanguageRule;
 use Illuminate\Database\SQLiteDatabaseDoesNotExistException;
 use Illuminate\Http\JsonResponse;
@@ -161,15 +161,15 @@ readonly class InstallController
 
             // Set and save the new DB config values
             // If there's a DB_DSN environment variable, go with that
-            Env::writeVariable('DB_CONNECTION', $data['driver'], $path);
-            Env::writeVariable('DB_HOST', $data['host'], $path);
-            Env::writeVariable('DB_PORT', (string) $data['port'], $path);
-            Env::writeVariable('DB_DATABASE', $data['database'], $path);
+            Env::writeVariable('DB_CONNECTION', $data['driver'], $path, overwrite: true);
+            Env::writeVariable('DB_HOST', $data['host'], $path, overwrite: true);
+            Env::writeVariable('DB_PORT', (string) $data['port'], $path, overwrite: true);
+            Env::writeVariable('DB_DATABASE', $data['database'], $path, overwrite: true);
 
-            Env::writeVariable('DB_USERNAME', $data['username'], $path);
-            Env::writeVariable('DB_PASSWORD', $data['password'], $path);
-            isset($data['schema']) && Env::writeVariable('DB_SCHEMA', $data['schema'], $path);
-            isset($data['prefix']) && Env::writeVariable('DB_TABLE_PREFIX', $data['prefix'], $path);
+            Env::writeVariable('DB_USERNAME', $data['username'], $path, overwrite: true);
+            Env::writeVariable('DB_PASSWORD', $data['password'], $path, overwrite: true);
+            isset($data['schema']) && Env::writeVariable('DB_SCHEMA', $data['schema'], $path, overwrite: true);
+            isset($data['prefix']) && Env::writeVariable('DB_TABLE_PREFIX', $data['prefix'], $path, overwrite: true);
 
             // Update the db component based on new values
             Config::set('database.default', $data['driver']);
@@ -195,9 +195,9 @@ readonly class InstallController
             $siteUrl = Aliases::get($siteUrl);
         }
 
-        if (! in_array($siteUrl[0], ['@', '$']) && ! App::isEphemeral()) {
+        if (! in_array($siteUrl[0], ['@', '$']) && ! app()->isEphemeral()) {
             try {
-                Env::writeVariable('APP_URL', $siteUrl, $path);
+                Env::writeVariable('APP_URL', $siteUrl, $path, overwrite: true);
                 $siteUrl = '$APP_URL';
             } catch (Throwable) {
                 // that's fine, we'll just store the entered URL
@@ -217,13 +217,11 @@ readonly class InstallController
             password: $request->input('account.password'),
             email: $email,
             site: $site,
-        );
+        )->silent();
 
         // Run the install migration
-        $migrator->track('craft');
-
         try {
-            $migrator->runMigration($migration, 'up');
+            $migrator->track('craft')->runMigration($migration, 'up');
             $migrator->getRepository()->log('Install', 1);
         } catch (Throwable $e) {
             return new JsonResponse([
@@ -236,17 +234,15 @@ readonly class InstallController
             $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
         }
 
-        $laravelMigrations->install($migrator);
-
         $redirect = Cms::config()->postCpLoginRedirect;
 
-        return new JsonResponse(['redirect' => $redirect]);
+        return new JsonResponse(['redirect' => Url::cpUrl($redirect)]);
     }
 
     private function canControlDbConfig(): bool
     {
         // If this is ephemeral storage, then we can't be writing to a .env file
-        if (App::isEphemeral()) {
+        if (app()->isEphemeral()) {
             return false;
         }
 

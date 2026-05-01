@@ -69,18 +69,21 @@ class HtmlStack
      * Registers inline JavaScript code.
      *
      * The code will be rendered inside a `<script>` tag when [[headHtml()]] or [[bodyHtml()]]
-     * is called, depending on the given position. If the same key is registered twice, the
-     * latter value overwrites the former.
+     * is called, depending on the given position. Ready/load registrations are wrapped in
+     * native DOM ready/load handlers. If the same key is registered twice, the latter
+     * value overwrites the former.
      *
      * @param  string  $js  The JavaScript code to register.
      * @param  Position  $position  Where on the page the code should appear.
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of `$js`.
      */
-    public function js(string $js, Position $position = Position::BodyEnd, ?string $key = null): void
+    public function js(string $js, Position $position = Position::Ready, ?string $key = null): void
     {
         $js = Str::finish(trim($js), ';');
 
-        $this->js[$position->value][$key ?? md5($js)] = $js;
+        $entries = $this->js[$position->value] ?? [];
+        $this->registerEntry($entries, $key ?? md5($js), $js);
+        $this->js[$position->value] = $entries;
     }
 
     /**
@@ -94,7 +97,7 @@ class HtmlStack
      * @param  Position  $position  Where on the page the code should appear.
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of the resulting JS.
      */
-    public function jsWithVars(callable $fn, array $vars, Position $position = Position::BodyEnd, ?string $key = null): void
+    public function jsWithVars(callable $fn, array $vars, Position $position = Position::Ready, ?string $key = null): void
     {
         $encodedVars = array_map(fn (mixed $var): string => Json::encode($var), $vars);
         $js = $fn(...array_values($encodedVars));
@@ -117,7 +120,9 @@ class HtmlStack
     {
         $position = Position::tryFrom((int) Arr::pull($options, 'position', Position::BodyEnd->value)) ?? Position::BodyEnd;
 
-        $this->jsFiles[$position->value][$key ?? $url] = Html::javaScriptFile($url, $options);
+        $entries = $this->jsFiles[$position->value] ?? [];
+        $this->registerEntry($entries, $key ?? $url, Html::javaScriptFile($url, $options));
+        $this->jsFiles[$position->value] = $entries;
     }
 
     /**
@@ -131,7 +136,9 @@ class HtmlStack
      */
     public function cssFile(string $url, array $options = [], ?string $key = null): void
     {
-        $this->cssFiles[$key ?? $url] = Html::cssFile($url, $options);
+        $entries = $this->cssFiles;
+        $this->registerEntry($entries, $key ?? $url, Html::cssFile($url, $options));
+        $this->cssFiles = $entries;
     }
 
     /**
@@ -145,7 +152,9 @@ class HtmlStack
      */
     public function css(string $css, array $options = [], ?string $key = null): void
     {
-        $this->css[$key ?? md5($css)] = Html::style($css, $options);
+        $entries = $this->css;
+        $this->registerEntry($entries, $key ?? md5($css), Html::style($css, $options));
+        $this->css = $entries;
     }
 
     /**
@@ -161,7 +170,9 @@ class HtmlStack
      */
     public function script(string $script, Position $position = Position::BodyEnd, array $options = [], ?string $key = null): void
     {
-        $this->scripts[$position->value][$key ?? md5($script)] = Html::script($script, $options);
+        $entries = $this->scripts[$position->value] ?? [];
+        $this->registerEntry($entries, $key ?? md5($script), Html::script($script, $options));
+        $this->scripts[$position->value] = $entries;
     }
 
     /**
@@ -193,7 +204,9 @@ class HtmlStack
      */
     public function html(string $html, Position $position = Position::BodyEnd, ?string $key = null): void
     {
-        $this->html[$position->value][$key ?? md5($html)] = $html;
+        $entries = $this->html[$position->value] ?? [];
+        $this->registerEntry($entries, $key ?? md5($html), $html);
+        $this->html[$position->value] = $entries;
     }
 
     /**
@@ -206,7 +219,9 @@ class HtmlStack
      */
     public function jsImport(string $key, string $value): void
     {
-        $this->jsImports[$key] = $value;
+        $entries = $this->jsImports;
+        $this->registerEntry($entries, $key, $value);
+        $this->jsImports = $entries;
     }
 
     /**
@@ -231,7 +246,9 @@ class HtmlStack
      */
     public function metaTag(array $attributes, ?string $key = null): void
     {
-        $this->metaTags[$key ?? md5(serialize($attributes))] = Html::tag('meta', attributes: $attributes);
+        $entries = $this->metaTags;
+        $this->registerEntry($entries, $key ?? md5(serialize($attributes)), Html::tag('meta', attributes: $attributes));
+        $this->metaTags = $entries;
     }
 
     /**
@@ -244,7 +261,9 @@ class HtmlStack
      */
     public function linkTag(array $attributes, ?string $key = null): void
     {
-        $this->linkTags[$key ?? md5(serialize($attributes))] = Html::tag('link', attributes: $attributes);
+        $entries = $this->linkTags;
+        $this->registerEntry($entries, $key ?? md5(serialize($attributes)), Html::tag('link', attributes: $attributes));
+        $this->linkTags = $entries;
     }
 
     /**
@@ -332,8 +351,8 @@ class HtmlStack
     /**
      * Renders all assets registered for the end of the `<body>` section of the page.
      *
-     * Output order: scripts, HTML, JS files, and inline JS. Registered icons are
-     * serialized into a `Craft.icons` JS assignment before rendering.
+     * Output order: scripts, HTML, JS files, inline JS, ready JS, and load JS. Registered
+     * icons are serialized into a `Craft.icons` JS assignment before rendering.
      *
      * By default, rendered assets are cleared from the registry after output.
      *
@@ -360,7 +379,14 @@ class HtmlStack
         if ($clear) {
             $this->icons = [];
 
-            unset($this->scripts[$body], $this->html[$body], $this->jsFiles[$body], $this->js[$body]);
+            unset(
+                $this->scripts[$body],
+                $this->html[$body],
+                $this->jsFiles[$body],
+                $this->js[$body],
+                $this->js[Position::Ready->value],
+                $this->js[Position::Load->value],
+            );
         }
 
         return $parts->implode(PHP_EOL);
@@ -652,24 +678,35 @@ class HtmlStack
      *
      * Position-keyed properties (`js`, `scripts`, `jsFiles`, `html`) are merged per-position.
      * Flat-keyed properties (`cssFiles`, `css`, `jsImports`, `metaTags`, `linkTags`) are
-     * merged by key. Icons are deduplicated and appended.
+     * merged by key, with overwritten entries moved to the end to reflect the latest
+     * registration order. Icons are deduplicated and appended.
      *
      * @param  array<string, mixed>  $buffer  The captured state from [[clearBuffer()]], keyed by property name.
      */
     public function applyBuffer(array $buffer): void
     {
         foreach (['js', 'scripts', 'jsFiles', 'html'] as $property) {
+            $propertyEntries = $this->{$property};
+
             foreach ($buffer[$property] ?? [] as $position => $entries) {
                 foreach ($entries as $key => $value) {
-                    $this->{$property}[$position][$key] = $value;
+                    $positionEntries = $propertyEntries[$position] ?? [];
+                    $this->registerEntry($positionEntries, $key, $value);
+                    $propertyEntries[$position] = $positionEntries;
                 }
             }
+
+            $this->{$property} = $propertyEntries;
         }
 
         foreach (['cssFiles', 'css', 'jsImports', 'metaTags', 'linkTags'] as $property) {
+            $propertyEntries = $this->{$property};
+
             foreach ($buffer[$property] ?? [] as $key => $value) {
-                $this->{$property}[$key] = $value;
+                $this->registerEntry($propertyEntries, $key, $value);
             }
+
+            $this->{$property} = $propertyEntries;
         }
 
         if (! empty($buffer['icons'])) {
@@ -707,6 +744,70 @@ class HtmlStack
                     Html::script(implode(PHP_EOL, $this->js[$position->value])),
                 ]),
             )
+            ->when(
+                $position === Position::BodyEnd && ! empty($this->js[Position::Ready->value]),
+                fn (Collection $c) => $c->concat([
+                    Html::script($this->readyJs()),
+                ]),
+            )
+            ->when(
+                $position === Position::BodyEnd && ! empty($this->js[Position::Load->value]),
+                fn (Collection $c) => $c->concat([
+                    Html::script($this->loadJs()),
+                ]),
+            )
             ->map(fn (string|Stringable $part) => (string) $part);
+    }
+
+    private function readyJs(): string
+    {
+        $js = implode(PHP_EOL, $this->js[Position::Ready->value] ?? []);
+
+        return <<<JS
+(() => {
+  const run = function () {
+$js
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => run.call(document), {once: true});
+  } else {
+    run.call(document);
+  }
+})();
+JS;
+    }
+
+    private function loadJs(): string
+    {
+        $js = implode(PHP_EOL, $this->js[Position::Load->value] ?? []);
+
+        return <<<JS
+(() => {
+  const run = function (event) {
+$js
+  };
+
+  if (document.readyState === 'complete') {
+    run.call(window);
+  } else {
+    window.addEventListener('load', (event) => run.call(window, event), {once: true});
+  }
+})();
+JS;
+    }
+
+    /**
+     * Keeps overwritten entries in their latest registration order.
+     *
+     * @param  array<string, Stringable|string>  $entries
+     */
+    private function registerEntry(array &$entries, string $key, Stringable|string $value): void
+    {
+        if (array_key_exists($key, $entries)) {
+            unset($entries[$key]);
+        }
+
+        $entries[$key] = $value;
     }
 }

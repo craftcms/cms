@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Tests;
 
-use Craft;
-use craft\test\TestSetup;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
-use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
@@ -24,6 +21,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Tests\Support\DatabaseLock;
+use CraftCms\Cms\Tests\Support\RegistersPackageAliases;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
@@ -47,6 +45,7 @@ use ReflectionProperty;
 class TestCase extends Orchestra
 {
     use RefreshDatabase;
+    use RegistersPackageAliases;
     use WithWorkbench;
 
     #[Override]
@@ -111,16 +110,6 @@ class TestCase extends Orchestra
         Gate::clearResolvedInstances();
 
         app(ProjectConfig::class)->reset();
-
-        DB::rollBack(0);
-
-        if (Craft::$app) {
-            Craft::$app->getDb()->close();
-            Craft::$app->getDb2()->close();
-            DB::disconnect();
-
-            TestSetup::tearDownCraft();
-        }
 
         self::resetStaticCaches();
 
@@ -202,11 +191,11 @@ class TestCase extends Orchestra
 
             Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
 
-            $migration->up();
-            app(LaravelMigrations::class)->ensureSessionsTable();
-
-            // Mark all existing migrations as applied
             $migrator = app(Migrator::class)->track('craft');
+            $migrator->runMigration($migration, 'up');
+            $migrator->getRepository()->log('Install', 1);
+
+            // Mark all existing Craft migrations as applied
             foreach ($migrator->getPendingMigrations() as $file) {
                 $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
             }
@@ -236,6 +225,7 @@ class TestCase extends Orchestra
 
             $config->set('database.default', $connection);
             $config->set("database.connections.{$connection}.database", env('DB_DATABASE', ':memory:'));
+            $config->set("database.connections.{$connection}.host", env('DB_HOST', '127.0.0.1'));
             $config->set("database.connections.{$connection}.username", env('DB_USERNAME', 'root'));
             $config->set("database.connections.{$connection}.password", env('DB_PASSWORD', ''));
             $config->set("database.connections.{$connection}.charset", env('DB_CHARSET', in_array($driver, ['mysql', 'mariadb']) ? 'utf8mb4' : 'utf8'));

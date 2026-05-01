@@ -56,7 +56,7 @@ use yii\base\InvalidConfigException;
  * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\EntryQuery} instead.
  * @phpstan-ignore class.missingExtends
  */
-class EntryQuery extends ElementQuery implements NestedElementQueryInterface
+class EntryQuery extends ElementQuery implements \CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface
 {
     use NestedElementQueryTrait {
         __set as nestedTraitSet;

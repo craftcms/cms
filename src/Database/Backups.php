@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database;
 
 use Closure;
-use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Events\AfterCreateBackup;
@@ -14,6 +13,7 @@ use CraftCms\Cms\Database\Events\BeforeCreateBackup;
 use CraftCms\Cms\Database\Events\BeforeRestoreBackup;
 use CraftCms\Cms\Database\Exceptions\CommandFailedException;
 use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
@@ -46,7 +46,7 @@ final readonly class Backups
         $systemName = str_replace(['\'', '"'], '', strtolower($systemName));
         $version = Info::fetch()->version ?? Cms::VERSION;
         $filename = ($systemName ? "$systemName--" : '').gmdate('Y-m-d-His')."--v$version";
-        $backupPath = Craft::$app->getPath()->getDbBackupPath();
+        $backupPath = Path::dbBackup();
         $path = $backupPath.DIRECTORY_SEPARATOR.$filename.$this->dumpExtension($connection, $backupFormat);
 
         $i = 0;
@@ -402,7 +402,7 @@ final readonly class Backups
             return;
         }
 
-        $backupPath = Craft::$app->getPath()->getDbBackupPath();
+        $backupPath = Path::dbBackup();
         $extension = $this->dumpExtension($connection, $backupFormat);
 
         /** @var string[] $files */

@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms %}
 
-{% set connection = app.config.database.default %}
-{% set dbConfig = app.config.database.connections[connection] %}
+{% set connection = config('database.default') %}
+{% set dbConfig = config("database.connections.#{connection}") %}
 
 <div id="db" class="screen hidden" data-inputs="driver,host,port,username,password,database,schema,prefix">
     <h1>{{ "Connect the database"|t('app') }}</h1>

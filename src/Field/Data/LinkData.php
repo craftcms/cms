@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Data;
 
-use craft\base\ElementInterface;
-use craft\base\Serializable;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
+use CraftCms\Cms\Shared\Contracts\Serializable;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;

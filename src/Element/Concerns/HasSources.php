@@ -86,7 +86,6 @@ trait HasSources
      * @return FieldLayout[] The associated field layouts
      *
      * @see fieldLayouts()
-     * @since 3.5.0
      */
     protected static function defineFieldLayouts(?string $source): array
     {

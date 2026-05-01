@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms %}
 
-{% if craft.sites.isMultiSite() %}
-    {% set editableSites = craft.sites.getEditableSites() %}
+{% if Sites.isMultiSite() %}
+    {% set editableSites = Sites.getEditableSites() %}
 
     {% if editableSites|length > 1 %}
         {% set siteInput %}
@@ -25,7 +25,7 @@
     <div class="select">
         <select id="section" name="section">
             <option value="*">{{ "All"|t('app') }}</option>
-            {% for section in craft.sections.getAllSections() %}
+            {% for section in Sections.getAllSections() %}
                 {% if section.type != 'single' %}
                     <option value="{{ section.id }}"{% if section.id == widget.section %} selected{% endif %}>{{ section.name|t('site') }}</option>
                 {% endif %}
@@ -46,5 +46,5 @@
     name: 'limit',
     value: widget.limit,
     size: 2,
-    errors: widget.getErrors('limit')
+    errors: widget.errors.get('limit')
 }) }}

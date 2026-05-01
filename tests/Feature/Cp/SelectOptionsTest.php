@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-use craft\fs\bridge\LegacyFsFlysystemAdapter;
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\SelectOptions;
+use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Support\Facades\Filesystems;
 
 describe('getEnvSuggestions', function () {
@@ -28,27 +29,35 @@ describe('getEnvSuggestions', function () {
     });
 
     it('filters suggestions based on filter callback', function () {
+        $_SERVER['TEST_SHORT_ENV'] = 'no';
+        $_SERVER['TEST_LONG_ENV'] = 'longer';
+
         $filter = fn ($value) => is_string($value) && strlen($value) > 5;
         $suggestions = SelectOptions::getEnvSuggestions(filter: $filter);
+        $values = array_column($suggestions[0]['options'], 'value');
 
-        expect($suggestions[0]['options'])->toBeArray();
+        expect($values)->toContain('$TEST_LONG_ENV')
+            ->not->toContain('$TEST_SHORT_ENV');
 
         foreach ($suggestions[0]['options'] as $suggestion) {
             expect($suggestion)->toHaveKey('label')
                 ->and($suggestion)->toHaveKey('data.hint');
         }
+
+        unset($_SERVER['TEST_SHORT_ENV'], $_SERVER['TEST_LONG_ENV']);
     });
 
     it('excludes HTTP_ prefixed environment variables', function () {
+        $_SERVER['TEST_NON_HTTP_VAR'] = 'test';
         $_SERVER['HTTP_TEST_VAR'] = 'test';
 
         $suggestions = SelectOptions::getEnvSuggestions();
+        $values = array_column($suggestions[0]['options'], 'value');
 
-        foreach ($suggestions[0]['options'] as $suggestion) {
-            expect($suggestion['label'])->not->toStartWith('$HTTP_');
-        }
+        expect($values)->toContain('$TEST_NON_HTTP_VAR')
+            ->not->toContain('$HTTP_TEST_VAR');
 
-        unset($_SERVER['HTTP_TEST_VAR']);
+        unset($_SERVER['TEST_NON_HTTP_VAR'], $_SERVER['HTTP_TEST_VAR']);
     });
 
     it('excludes @web aliases when includeAliases is true', function () {
@@ -63,29 +72,34 @@ describe('getEnvSuggestions', function () {
     });
 
     it('formats env var names with $ prefix', function () {
+        $_SERVER['TEST_FORMAT_ENV_VAR'] = 'test';
+
         $suggestions = SelectOptions::getEnvSuggestions();
+        $values = array_column($suggestions[0]['options'], 'value');
+
+        expect($values)->toContain('$TEST_FORMAT_ENV_VAR');
 
         foreach ($suggestions[0]['options'] as $suggestion) {
             expect($suggestion['label'])->toStartWith('$');
         }
+
+        unset($_SERVER['TEST_FORMAT_ENV_VAR']);
     });
 });
 
 describe('getEnvOptions', function () {
     it('returns environment variable options', function () {
+        $_SERVER['TEST_ENV_OPTIONS'] = 'env_option_value';
+
         $options = SelectOptions::getEnvOptions();
+        $option = collect($options[0]['options'])->firstWhere('value', '$TEST_ENV_OPTIONS');
 
-        expect($options)->toBeArray();
+        expect($option)->not->toBeNull()
+            ->and($option['label'])->toBe('$TEST_ENV_OPTIONS')
+            ->and($option['value'])->toBe('$TEST_ENV_OPTIONS')
+            ->and($option['data']['hint'])->toBe('env_option_value');
 
-        foreach ($options as $option) {
-            if (isset($option['options'])) {
-                continue;
-            }
-            expect($option)->toHaveKey('label')
-                ->and($option)->toHaveKey('value')
-                ->and($option['label'])->toStartWith('$')
-                ->and($option['value'])->toStartWith('$');
-        }
+        unset($_SERVER['TEST_ENV_OPTIONS']);
     });
 
     it('returns empty array when allowedValues is empty', function () {
@@ -96,50 +110,43 @@ describe('getEnvOptions', function () {
         $_SERVER['TEST_ENV_VAR'] = 'allowed_value';
 
         $options = SelectOptions::getEnvOptions(['allowed_value', 'other_value']);
-        $values = array_column(array_filter($options, fn ($opt) => ! isset($opt['optgroup'])), 'value');
+        $values = array_column($options[0]['options'], 'value');
 
-        if (! empty($values)) {
-            expect($values)->toContain('$TEST_ENV_VAR');
-        }
+        expect($values)->toContain('$TEST_ENV_VAR');
 
         unset($_SERVER['TEST_ENV_VAR']);
     });
 
     it('excludes HTTP_ prefixed variables', function () {
+        $_SERVER['TEST_NON_HTTP'] = 'test';
         $_SERVER['HTTP_TEST'] = 'test';
 
         $options = SelectOptions::getEnvOptions();
+        $values = array_column($options[0]['options'], 'value');
 
-        foreach ($options as $option) {
-            if (! isset($option['options'])) {
-                expect($option['value'])->not->toStartWith('$HTTP_');
-            }
-        }
+        expect($values)->toContain('$TEST_NON_HTTP')
+            ->not->toContain('$HTTP_TEST');
 
-        unset($_SERVER['HTTP_TEST']);
+        unset($_SERVER['TEST_NON_HTTP'], $_SERVER['HTTP_TEST']);
     });
 
     it('includes hint for non-empty values', function () {
         $_SERVER['TEST_ENV_WITH_VALUE'] = 'some_value';
 
         $options = SelectOptions::getEnvOptions();
+        $option = collect($options[0]['options'])->firstWhere('value', '$TEST_ENV_WITH_VALUE');
 
-        $found = false;
-        foreach ($options as $option) {
-            if (isset($option['value']) && $option['value'] === '$TEST_ENV_WITH_VALUE') {
-                expect($option)->toHaveKey('data')
-                    ->and($option['data'])->toHaveKey('hint');
-                $found = true;
-                break;
-            }
-        }
+        expect($option)->not->toBeNull()
+            ->and($option)->toHaveKey('data')
+            ->and($option['data'])->toHaveKey('hint')
+            ->and($option['data']['hint'])->toBe('some_value');
 
         unset($_SERVER['TEST_ENV_WITH_VALUE']);
     });
 
     it('sorts options alphabetically', function () {
         $options = SelectOptions::getEnvOptions();
-        $values = array_column(array_filter($options, fn ($opt) => ! isset($opt['optgroup'])), 'value');
+        $values = array_column($options[0]['options'], 'value');
         $sorted = $values;
         sort($sorted);
 
@@ -181,25 +188,29 @@ describe('getBooleanEnvOptions', function () {
     });
 
     it('excludes non-boolean values', function () {
+        $_SERVER['TEST_BOOL_INCLUDED'] = 'true';
         $_SERVER['TEST_NON_BOOL'] = 'not_a_boolean';
 
-        $options = SelectOptions::getBooleanEnvOptions();
-        $values = array_column(array_filter($options, fn ($opt) => isset($opt['value'])), 'value');
+        $groups = SelectOptions::getBooleanEnvOptions();
+        $values = array_column($groups[0]['options']->all(), 'value');
 
-        expect($values)->not->toContain('$TEST_NON_BOOL');
+        expect($values)->toContain('$TEST_BOOL_INCLUDED')
+            ->not->toContain('$TEST_NON_BOOL');
 
-        unset($_SERVER['TEST_NON_BOOL']);
+        unset($_SERVER['TEST_BOOL_INCLUDED'], $_SERVER['TEST_NON_BOOL']);
     });
 
     it('excludes empty values', function () {
+        $_SERVER['TEST_BOOL_INCLUDED'] = 'true';
         $_SERVER['TEST_EMPTY'] = '';
 
-        $options = SelectOptions::getBooleanEnvOptions();
-        $values = array_column(array_filter($options, fn ($opt) => isset($opt['value'])), 'value');
+        $groups = SelectOptions::getBooleanEnvOptions();
+        $values = array_column($groups[0]['options']->all(), 'value');
 
-        expect($values)->not->toContain('$TEST_EMPTY');
+        expect($values)->toContain('$TEST_BOOL_INCLUDED')
+            ->not->toContain('$TEST_EMPTY');
 
-        unset($_SERVER['TEST_EMPTY']);
+        unset($_SERVER['TEST_BOOL_INCLUDED'], $_SERVER['TEST_EMPTY']);
     });
 
     it('handles numeric boolean values', function () {
@@ -272,13 +283,38 @@ describe('getFsOptions', function () {
     });
 
     it('excludes temp upload filesystems', function () {
-        $options = SelectOptions::getFsOptions();
+        $previousTempAssetUploadFs = Cms::config()->tempAssetUploadFs;
 
-        foreach ($options as $option) {
-            $fs = Filesystems::getFilesystemByHandle($option['value']);
-            if ($fs) {
-                expect(AssetsHelper::isTempUploadFs($fs))->toBeFalse();
-            }
+        try {
+            $included = Filesystems::createFilesystem([
+                'type' => Local::class,
+                'name' => 'Included Select Options Filesystem',
+                'handle' => 'includedSelectOptionsFs',
+                'settings' => [
+                    'path' => storage_path('framework/testing/select-options/included-select-options-fs'),
+                ],
+            ]);
+            $excluded = Filesystems::createFilesystem([
+                'type' => Local::class,
+                'name' => 'Temp Select Options Filesystem',
+                'handle' => 'tempSelectOptionsFs',
+                'settings' => [
+                    'path' => storage_path('framework/testing/select-options/temp-select-options-fs'),
+                ],
+            ]);
+
+            expect(Filesystems::saveFilesystem($included, false))->toBeTrue()
+                ->and(Filesystems::saveFilesystem($excluded, false))->toBeTrue();
+
+            Cms::config()->tempAssetUploadFs = 'tempSelectOptionsFs';
+
+            $values = array_column(SelectOptions::getFsOptions(), 'value');
+
+            expect(AssetsHelper::isTempUploadFs($excluded))->toBeTrue()
+                ->and($values)->toContain('includedSelectOptionsFs')
+                ->not->toContain('tempSelectOptionsFs');
+        } finally {
+            Cms::config()->tempAssetUploadFs = $previousTempAssetUploadFs;
         }
     });
 
@@ -303,24 +339,14 @@ describe('getFsOptions', function () {
     });
 
     it('excludes internal and Craft-registered system disks', function () {
-        config()->set('filesystems.disks.craft-fs-internal-test', [
-            'driver' => LegacyFsFlysystemAdapter::DISK_DRIVER,
-            'fsHandle' => 'internal-test',
-        ]);
         config()->set('filesystems.disks.craft-tmp', [
             'driver' => 'local',
             'root' => storage_path('framework/testing/select-options/craft-tmp'),
         ]);
-        config()->set('filesystems.disks.rebrand', [
-            'driver' => 'local',
-            'root' => storage_path('framework/testing/select-options/rebrand'),
-        ]);
 
         $values = array_column(SelectOptions::getFsOptions(), 'value');
 
-        expect($values)->not->toContain('disk:craft-fs-internal-test')
-            ->and($values)->not->toContain('disk:craft-tmp')
-            ->and($values)->not->toContain('disk:rebrand');
+        expect($values)->not->toContain('disk:craft-tmp');
     });
 });
 
@@ -394,7 +420,7 @@ describe('formatEnvOptions', function () {
         ];
 
         $formatted = SelectOptions::formatEnvOptions($options);
-        $values = array_column(array_slice($formatted, 1), 'value');
+        $values = array_column($formatted[0]['options'], 'value');
         $sorted = $values;
         sort($sorted);
 

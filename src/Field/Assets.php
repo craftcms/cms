@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
-use craft\base\ElementInterface;
-use craft\web\UploadedFile;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\AssetQuery;
@@ -41,6 +41,7 @@ use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -495,7 +496,7 @@ class Assets extends BaseRelationField
                         $asset->setVolumeId($uploadFolder->volumeId);
                         $asset->uploaderId = Auth::id();
                         $asset->avoidFilenameConflicts = true;
-                        $asset->setScenario(Asset::SCENARIO_CREATE);
+                        $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
 
                         if (Elements::saveElement($asset)) {
                             $assetIds[] = $asset->id;
@@ -807,13 +808,21 @@ class Assets extends BaseRelationField
         $paramName = $this->requestParamName($element);
 
         if ($paramName !== null) {
-            $uploadedFiles = UploadedFile::getInstancesByName($paramName);
+            $uploadedFiles = request()->file($paramName, []);
 
-            foreach ($uploadedFiles as $uploadedFile) {
+            if ($uploadedFiles instanceof UploadedFile) {
+                $uploadedFiles = [$uploadedFiles];
+            }
+
+            foreach (Arr::flatten($uploadedFiles) as $uploadedFile) {
+                if (! $uploadedFile instanceof UploadedFile) {
+                    continue;
+                }
+
                 $files[] = [
-                    'filename' => $uploadedFile->name,
-                    'mimeType' => $uploadedFile->type,
-                    'path' => $uploadedFile->tempName,
+                    'filename' => $uploadedFile->getClientOriginalName(),
+                    'mimeType' => $uploadedFile->getMimeType(),
+                    'path' => $uploadedFile->path(),
                     'type' => 'upload',
                 ];
             }

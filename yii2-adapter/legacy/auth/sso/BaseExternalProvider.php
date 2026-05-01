@@ -112,7 +112,7 @@ abstract class BaseExternalProvider extends BaseProvider
      */
     protected function getRequestUrl(): ?string
     {
-        return Url::actionUrl('sso/request', ['provider' => $this->handle], null, false);
+        return Url::actionUrl('sso/request', ['provider' => $this->handle], null);
     }
 
     /**
@@ -122,7 +122,7 @@ abstract class BaseExternalProvider extends BaseProvider
      */
     protected function getResponseUrl(): ?string
     {
-        return Url::actionUrl('sso/response', ['provider' => $this->handle], null, false);
+        return Url::actionUrl('sso/response', ['provider' => $this->handle], null);
     }
 
     /**

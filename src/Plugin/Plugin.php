@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Plugin;
 
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Support\File;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Support\ServiceProvider;
 use Override;
 use ReflectionClass;
@@ -151,6 +152,17 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
 
     public function bootPlugin(): void {}
 
+    protected function registerSerializableClasses(array $classes): void
+    {
+        $existing = $this->app->make(Repository::class)->get('cache.serializable_classes');
+
+        if ($existing === null || $existing === true) {
+            return;
+        }
+
+        $this->app->make(Repository::class)->set('cache.serializable_classes', array_merge(is_array($existing) ? $existing : [], $classes));
+    }
+
     #[Override]
     public function getBasePath(): string
     {
@@ -159,6 +171,11 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
 
             return dirname($class->getFileName());
         });
+    }
+
+    public function getResourcesPath(): string
+    {
+        return dirname($this->getBasePath()).'/resources';
     }
 
     public function getMigrationsPath(): string

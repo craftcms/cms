@@ -76,7 +76,7 @@ class AuthServiceProvider extends ServiceProvider
         AuthFacade::provider('craft', fn (Application $app) => new UserProvider(
             $app->make(Hasher::class),
             $app->make(Users::class),
-            $app->make(Auth::class),
+            $app->make(AuthMethods::class),
         ));
 
         if (! Config::has('auth.guards.craft')) {
@@ -156,7 +156,7 @@ class AuthServiceProvider extends ServiceProvider
 
             UsersFacade::handleValidLogin($event->user);
 
-            app(Auth::class)->setRememberedUsername($event->user);
+            app(AuthMethods::class)->setRememberedUsername($event->user);
 
             Session::passwordConfirmed();
         });

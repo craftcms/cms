@@ -1,6 +1,6 @@
 {% import "_includes/forms" as forms %}
 
-{% set useEmailAsUsername = app.config.craft.general.useEmailAsUsername %}
+{% set useEmailAsUsername = config('craft.general.useEmailAsUsername') %}
 
 <div id="account" class="screen hidden" data-inputs="username,email,password">
     <h1>{{ "Create your account"|t('app') }}</h1>

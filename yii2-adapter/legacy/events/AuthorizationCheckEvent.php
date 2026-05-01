@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
-use craft\base\ElementInterface;
 use craft\base\Event;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\User\Elements\User;
 
 /**
@@ -16,6 +16,7 @@ use CraftCms\Cms\User\Elements\User;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Events\AuthorizingElement} instead.
  */
 class AuthorizationCheckEvent extends Event
 {

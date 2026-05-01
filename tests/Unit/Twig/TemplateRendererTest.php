@@ -16,6 +16,7 @@ use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Twig\Extension\EscaperExtension;
+use Twig\Sandbox\SecurityNotAllowedMethodError;
 
 beforeEach(function () {
     $this->tempDir = sys_get_temp_dir().'/craft-template-renderer-test-'.uniqid();
@@ -185,20 +186,6 @@ describe('renderTemplate', function () {
         }
 
         expect(TemplateMode::get())->toBe(TemplateMode::Site);
-    });
-
-    it('sets isRenderingTemplate during render and resets after', function () {
-        expect($this->renderer->isRenderingTemplate())->toBeFalse();
-
-        file_put_contents(
-            $this->tempDir.'/check-rendering.twig',
-            '{{ craft.app.view.isRenderingTemplate ? "yes" : "no" }}',
-        );
-
-        $result = $this->renderer->renderTemplate('check-rendering.twig');
-
-        expect($result)->toBe('yes');
-        expect($this->renderer->isRenderingTemplate())->toBeFalse();
     });
 });
 
@@ -408,6 +395,12 @@ describe('sandboxed rendering', function () {
         'sandbox disabled' => [false],
         'sandbox enabled' => [true],
     ]);
+
+    it('does not allow Facade calls in sandbox', function () {
+        Cms::config()->enableTwigSandbox = true;
+
+        $this->renderer->renderSandboxedString('{{ Config.get("app.name") }}');
+    })->throws(SecurityNotAllowedMethodError::class);
 
     it('renders sandboxed templates', function (bool $sandboxEnabled) {
         Cms::config()->enableTwigSandbox = $sandboxEnabled;

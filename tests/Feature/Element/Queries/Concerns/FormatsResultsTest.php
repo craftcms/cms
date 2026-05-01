@@ -1,5 +1,6 @@
 <?php
 
+use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Entry\Models\Entry;
 use Illuminate\Support\Collection;
 
@@ -42,7 +43,7 @@ test('it applies a default order when no orderBy is specified', function () {
 
     expect(
         collect($query->getQuery()->orders)
-            ->where('column', 'elements.id')
+            ->where('column', 'entries.id')
             ->where('direction', 'desc')
             ->first()
     )->not()->toBeNull();
@@ -89,3 +90,22 @@ it('adds a sort on structureelements.lft when the element has structures', funct
             ->first()
     )->not()->toBeNull();
 });
+
+it('maps concrete element table order columns', function (Closure $query, string $attribute, string $column) {
+    $query = $query()->orderBy($attribute);
+    $query->applyBeforeQueryCallbacks();
+
+    expect(
+        collect($query->getQuery()->orders)
+            ->where('column', $column)
+            ->where('direction', 'asc')
+            ->first()
+    )->not()->toBeNull();
+})->with([
+    'asset filename' => [assetQuery(...), 'filename', 'assets.filename'],
+    'asset modified date' => [assetQuery(...), 'dateModified', 'assets.dateModified'],
+    'entry expiry date' => [entryQuery(...), 'expiryDate', 'entries.expiryDate'],
+    'user full name' => [userQuery(...), 'fullName', 'users.fullName'],
+    'user last login date' => [userQuery(...), 'lastLoginDate', 'users.lastLoginDate'],
+    'address country code' => [fn () => new AddressQuery, 'countryCode', 'addresses.countryCode'],
+]);

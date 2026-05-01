@@ -4,15 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry\Elements;
 
-use Craft;
-use craft\base\ElementInterface;
-use craft\base\NestedElementInterface;
-use craft\base\NestedElementTrait;
-use craft\controllers\ElementIndexesController;
-use craft\controllers\ElementsController;
-use craft\elements\conditions\entries\EntryCondition;
-use craft\elements\conditions\entries\SectionConditionRule;
-use craft\elements\conditions\entries\TypeConditionRule;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
@@ -27,8 +18,12 @@ use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\DeleteForSite;
 use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Actions\Restore;
+use CraftCms\Cms\Element\Concerns\NestedElement;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
@@ -36,10 +31,14 @@ use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Revisions;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Actions\MoveToSection;
 use CraftCms\Cms\Entry\Actions\NewChild;
 use CraftCms\Cms\Entry\Actions\NewSiblingAfter;
 use CraftCms\Cms\Entry\Actions\NewSiblingBefore;
+use CraftCms\Cms\Entry\Conditions\EntryCondition;
+use CraftCms\Cms\Entry\Conditions\SectionConditionRule;
+use CraftCms\Cms\Entry\Conditions\TypeConditionRule;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Events\DefineEntryTypes;
 use CraftCms\Cms\Entry\Events\DefineMetaFields;
@@ -52,8 +51,9 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\FieldLayout\LayoutElements\entries\EntryTitleField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
+use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
@@ -81,20 +81,17 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateInterval;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\JoinClause;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Override;
-use Throwable;
+use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\Exception;
-use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
@@ -111,7 +108,7 @@ use function CraftCms\Cms\t;
 #[Ruleset(EntryRules::class)]
 class Entry extends Element implements Colorable, ExpirableElementInterface, Iconic, NestedElementInterface
 {
-    use NestedElementTrait {
+    use NestedElement {
         eagerLoadingMap as traitEagerLoadingMap;
         attributes as traitAttributes;
         extraFields as traitExtraFields;
@@ -123,6 +120,137 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     public const string STATUS_PENDING = 'pending';
 
     public const string STATUS_EXPIRED = 'expired';
+
+    /**
+     * @var int|null Section ID
+     *               ---
+     *               ```php
+     *               echo $entry->sectionId;
+     *               ```
+     *               ```twig
+     *               {{ entry.sectionId }}
+     *               ```
+     */
+    public ?int $sectionId = null;
+
+    /**
+     * @var bool Collapsed
+     */
+    public bool $collapsed = false;
+
+    /**
+     * @var DateTime|null Post date
+     *                    ---
+     *                    ```php
+     *                    echo Craft::$app->formatter->asDate($entry->postDate, 'short');
+     *                    ```
+     *                    ```twig
+     *                    {{ entry.postDate|date('short') }}
+     *                    ```
+     */
+    #[AllowedInSandbox]
+    public ?DateTime $postDate = null;
+
+    /**
+     * @var DateTime|null Expiry date
+     *                    ---
+     *                    ```php
+     *                    if ($entry->expiryDate) {
+     *                    echo Craft::$app->formatter->asDate($entry->expiryDate, 'short');
+     *                    }
+     *                    ```
+     *                    ```twig
+     *                    {% if entry.expiryDate %}
+     *                    {{ entry.expiryDate|date('short') }}
+     *                    {% endif %}
+     *                    ```
+     */
+    #[AllowedInSandbox]
+    public ?DateTime $expiryDate = null;
+
+    /**
+     * @var self::STATUS_*|null The entry’s previous status, if it had one
+     */
+    public ?string $oldStatus = null;
+
+    /**
+     * @var self::STATUS_LIVE|self::STATUS_PENDING|self::STATUS_EXPIRED
+     */
+    private string $status;
+
+    /**
+     * @var bool Whether the entry was deleted along with its entry type
+     *
+     * @see beforeDelete()
+     *
+     * @internal
+     */
+    public bool $deletedWithEntryType = false;
+
+    /**
+     * @var bool Whether the entry was deleted along with its section
+     *
+     * @see beforeDelete()
+     *
+     * @internal
+     */
+    public bool $deletedWithSection = false;
+
+    /**
+     * @var bool Whether to force-place the entry within its structure.
+     */
+    public bool $placeInStructure = false;
+
+    /**
+     * @var int[] Entry author IDs
+     *
+     * @see getAuthorIds()
+     * @see setAuthorIds()
+     */
+    private array $_authorIds;
+
+    /**
+     * @var int[] Original entry author IDs
+     *
+     * @see getOldAuthorIds()
+     * @see setAuthorIds()
+     */
+    private ?array $_oldAuthorIds = null;
+
+    /**
+     * @var User[]|null Entry authors
+     *
+     * @see getAuthors()
+     * @see setAuthors()
+     */
+    private ?array $_authors = null;
+
+    /**
+     * @var int|null Type ID
+     *
+     * @see getType()
+     */
+    private ?int $_typeId = null;
+
+    private ?int $_oldTypeId = null;
+
+    /**
+     * @var EntryType|null Entry Type
+     *
+     * @see getType()
+     */
+    private ?EntryType $_type = null;
+
+    public function __construct($config = [])
+    {
+        parent::__construct($config);
+
+        if (isset($this->id)) {
+            $this->oldStatus = $this->getStatus();
+        }
+
+        $this->_oldTypeId = $this->_typeId;
+    }
 
     #[Override]
     public static function displayName(): string
@@ -200,9 +328,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         ];
     }
 
-    /**
-     * @return EntryQuery The newly created [[EntryQuery]] instance.
-     */
     #[Override]
     public static function find(): EntryQuery
     {
@@ -215,7 +340,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     #[Override]
     public static function createCondition(): ElementConditionInterface
     {
-        return Craft::createObject(EntryCondition::class, [self::class]);
+        return new EntryCondition(self::class);
     }
 
     #[Override]
@@ -386,8 +511,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     protected static function defineActions(string $source): array
     {
         // Get the selected site
-        $elementQuery = Craft::$app->controller instanceof ElementIndexesController
-            ? Craft::$app->controller->getElementQuery()
+        $elementQuery = app(CurrentElementIndex::class)->isActive()
+            ? app(CurrentElementIndex::class)->query()
             : null;
         $site = $elementQuery && $elementQuery->siteId
             ? Sites::getSiteById($elementQuery->siteId)
@@ -442,7 +567,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 $user->can("createEntries:$section->uid") &&
                 $user->can("saveEntries:$section->uid")
             ) {
-                // Duplicate
                 $actions[] = [
                     'type' => Duplicate::class,
                     'asDrafts' => true,
@@ -456,27 +580,21 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                     ];
                 }
 
-                // Copy
                 $actions[] = Copy::class;
-
-                // Move to section
                 $actions[] = MoveToSection::class;
             }
 
-            // Delete?
             $actions[] = Delete::class;
 
-            if ($user->can("deleteEntries:$section->uid")) {
-                if (
-                    $section->type === SectionType::Structure &&
-                    $section->maxLevels != 1 &&
-                    $user->can("deletePeerEntries:$section->uid")
-                ) {
-                    $actions[] = [
-                        'type' => Delete::class,
-                        'withDescendants' => true,
-                    ];
-                }
+            if ($user->can("deleteEntries:$section->uid")
+                && $section->type === SectionType::Structure
+                && $section->maxLevels !== 1
+                && $user->can("deletePeerEntries:$section->uid")
+            ) {
+                $actions[] = [
+                    'type' => Delete::class,
+                    'withDescendants' => true,
+                ];
             }
         } else {
             $actions[] = Copy::class;
@@ -500,7 +618,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             $actions[] = DeleteForSite::class;
         }
 
-        // Restore
         $actions[] = Restore::class;
 
         return $actions;
@@ -532,9 +649,11 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 'label' => t('Section'),
                 'orderBy' => function (int $dir) {
                     $sectionIds = Sections::getAllSections()
-                        ->sort(fn (Section $a, Section $b) => $dir === SORT_ASC
-                            ? $a->name <=> $b->name
-                            : $b->name <=> $a->name)
+                        ->sort(
+                            fn (Section $a, Section $b) => $dir === SORT_ASC
+                                ? $a->name <=> $b->name
+                                : $b->name <=> $a->name
+                        )
                         ->pluck('id')
                         ->all();
 
@@ -559,18 +678,20 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             [
                 'label' => t('Post Date'),
                 'orderBy' => function (int $dir) {
+                    $postDate = DB::getQueryGrammar()->wrap('entries.postDate');
+
                     if ($dir === SORT_ASC) {
                         if (DB::isMysql()) {
-                            return DB::raw('postDate IS NOT NULL DESC, postDate ASC');
+                            return DB::raw("$postDate IS NOT NULL DESC, $postDate ASC");
                         }
 
-                        return DB::raw('postDate ASC NULLS LAST');
+                        return DB::raw("$postDate ASC NULLS LAST");
                     }
                     if (DB::isMysql()) {
-                        return DB::raw('postDate IS NULL DESC, postDate DESC');
+                        return DB::raw("$postDate IS NULL DESC, $postDate DESC");
                     }
 
-                    return DB::raw('postDate DESC NULLS FIRST');
+                    return DB::raw("$postDate DESC NULLS FIRST");
                 },
                 'attribute' => 'postDate',
                 'defaultDir' => 'desc',
@@ -716,8 +837,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
                 $map = DB::table(Table::ENTRIES_AUTHORS)
                     ->select([
-                        'source' => 'entryId',
-                        'target' => 'authorId',
+                        'entryId as source',
+                        'authorId as target',
                     ])
                     ->whereIn('entryId', $entryIds)
                     ->orderBy('sortOrder')
@@ -740,8 +861,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
     /**
      * Returns the GraphQL type name that entries should use, based on their entry type.
-     *
-     * @since 5.0.0
      */
     public static function gqlTypeName(EntryType $entryType): string
     {
@@ -763,9 +882,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         /** @var Section $section */
         $section = $context['section'];
 
-        return [
-            "sections.$section->uid",
-        ];
+        return ["sections.$section->uid"];
     }
 
     #[Override]
@@ -777,149 +894,13 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         };
     }
 
-    /**
-     * @var int|null Section ID
-     *               ---
-     *               ```php
-     *               echo $entry->sectionId;
-     *               ```
-     *               ```twig
-     *               {{ entry.sectionId }}
-     *               ```
-     */
-    public ?int $sectionId = null;
-
-    /**
-     * @var bool Collapsed
-     *
-     * @since 5.0.0
-     */
-    public bool $collapsed = false;
-
-    /**
-     * @var DateTime|null Post date
-     *                    ---
-     *                    ```php
-     *                    echo Craft::$app->formatter->asDate($entry->postDate, 'short');
-     *                    ```
-     *                    ```twig
-     *                    {{ entry.postDate|date('short') }}
-     *                    ```
-     */
-    #[AllowedInSandbox]
-    public ?DateTime $postDate = null;
-
-    /**
-     * @var DateTime|null Expiry date
-     *                    ---
-     *                    ```php
-     *                    if ($entry->expiryDate) {
-     *                    echo Craft::$app->formatter->asDate($entry->expiryDate, 'short');
-     *                    }
-     *                    ```
-     *                    ```twig
-     *                    {% if entry.expiryDate %}
-     *                    {{ entry.expiryDate|date('short') }}
-     *                    {% endif %}
-     *                    ```
-     */
-    #[AllowedInSandbox]
-    public ?DateTime $expiryDate = null;
-
-    /**
-     * @var self::STATUS_*|null The entry’s previous status, if it had one
-     */
-    public ?string $oldStatus = null;
-
-    /**
-     * @var self::STATUS_LIVE|self::STATUS_PENDING|self::STATUS_EXPIRED
-     */
-    private string $status;
-
-    /**
-     * @var bool Whether the entry was deleted along with its entry type
-     *
-     * @see beforeDelete()
-     *
-     * @internal
-     */
-    public bool $deletedWithEntryType = false;
-
-    /**
-     * @var bool Whether the entry was deleted along with its section
-     *
-     * @see beforeDelete()
-     *
-     * @internal
-     */
-    public bool $deletedWithSection = false;
-
-    /**
-     * @var bool Whether to force-place the entry within its structure.
-     *
-     * @since 5.7.0
-     */
-    public bool $placeInStructure = false;
-
-    /**
-     * @var int[] Entry author IDs
-     *
-     * @see getAuthorIds()
-     * @see setAuthorIds()
-     */
-    private array $_authorIds;
-
-    /**
-     * @var int[] Original entry author IDs
-     *
-     * @see getOldAuthorIds()
-     * @see setAuthorIds()
-     */
-    private ?array $_oldAuthorIds = null;
-
-    /**
-     * @var User[]|null Entry authors
-     *
-     * @see getAuthors()
-     * @see setAuthors()
-     */
-    private ?array $_authors = null;
-
-    /**
-     * @var int|null Type ID
-     *
-     * @see getType()
-     */
-    private ?int $_typeId = null;
-
-    private ?int $_oldTypeId = null;
-
-    /**
-     * @var EntryType|null Entry Type
-     *
-     * @see getType()
-     */
-    private ?EntryType $_type = null;
-
-    /**
-     * @since 3.5.0
-     */
-    #[Override]
-    public function init(): void
-    {
-        parent::init();
-        if (isset($this->id)) {
-            $this->oldStatus = $this->getStatus();
-        }
-        $this->_oldTypeId = $this->_typeId;
-    }
-
     #[Override]
     public function attributes(): array
     {
         $names = array_flip($this->traitAttributes());
-        unset($names['deletedWithEntryType']);
-        unset($names['deletedWithSection']);
+
+        unset($names['deletedWithEntryType'], $names['deletedWithSection']);
+
         $names['authorId'] = true;
         $names['authorIds'] = true;
         $names['typeId'] = true;
@@ -1015,7 +996,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
 
         if (! isset($this->sectionId)) {
-            throw new InvalidConfigException('Either `sectionId` or `fieldId` + `ownerId` must be set on the entry.');
+            throw new RuntimeException('Either `sectionId` or `fieldId` + `ownerId` must be set on the entry.');
         }
 
         $section = $this->getSection();
@@ -1061,33 +1042,22 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
 
         foreach ($section->getSiteSettings() as $siteSettings) {
-            switch ($section->propagationMethod) {
-                case PropagationMethod::None:
-                    $include = $siteSettings->siteId === $this->siteId;
-                    $propagate = true;
-                    break;
-                case PropagationMethod::SiteGroup:
-                    $include = $allSites[$siteSettings->siteId]->groupId === $allSites[$this->siteId]->groupId;
-                    $propagate = true;
-                    break;
-                case PropagationMethod::Language:
-                    $include = $allSites[$siteSettings->siteId]->getLanguage() === $allSites[$this->siteId]->getLanguage();
-                    $propagate = true;
-                    break;
-                case PropagationMethod::Custom:
-                    $include = true;
+            [$include, $propagate] = match ($section->propagationMethod) {
+                PropagationMethod::None => [$siteSettings->siteId === $this->siteId, true],
+                PropagationMethod::SiteGroup => [$allSites[$siteSettings->siteId]->groupId === $allSites[$this->siteId]->groupId, true],
+                PropagationMethod::Language => [$allSites[$siteSettings->siteId]->getLanguage() === $allSites[$this->siteId]->getLanguage(), true],
+                PropagationMethod::Custom => [
+                    true,
                     // Only actually propagate to this site if it's the current site, or the entry has been assigned
                     // a status for this site, or the entry already exists for this site
-                    $propagate = (
+                    (
                         $siteSettings->siteId === $this->siteId ||
                         $this->getEnabledForSite($siteSettings->siteId) !== null ||
                         isset($currentSites[$siteSettings->siteId])
-                    );
-                    break;
-                default:
-                    $include = $propagate = true;
-                    break;
-            }
+                    ),
+                ],
+                default => [true, true],
+            };
 
             if ($include) {
                 $sites[] = [
@@ -1101,18 +1071,17 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $sites;
     }
 
-    /**
-     * @since 3.5.0
-     */
     #[Override]
     protected function cacheTags(): array
     {
+        $type = $this->getType();
+
         $tags = [
-            sprintf('entryType:%s', $this->getType()->id),
+            sprintf('entryType:%s', $type->id),
         ];
 
         // Did the entry type just change?
-        if ($this->getType()->id !== $this->_oldTypeId) {
+        if ($type->id !== $this->_oldTypeId) {
             $tags[] = "entryType:$this->_oldTypeId";
         }
 
@@ -1126,7 +1095,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     /**
-     * @throws InvalidConfigException if [[siteId]] is not set to a site ID that the entry’s section is enabled for
+     * @throws RuntimeException if [[siteId]] is not set to a site ID that the entry’s section is enabled for
      */
     public function getUriFormat(): ?string
     {
@@ -1135,13 +1104,13 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
 
         if (! isset($this->sectionId)) {
-            throw new InvalidConfigException('Either `sectionId` or `fieldId` + `ownerId` must be set on the entry.');
+            throw new RuntimeException('Either `sectionId` or `fieldId` + `ownerId` must be set on the entry.');
         }
 
         $sectionSiteSettings = $this->getSection()->getSiteSettings();
 
         if (! isset($sectionSiteSettings[$this->siteId])) {
-            throw new InvalidConfigException('Entry’s section ('.$this->sectionId.') is not enabled for site '.$this->siteId);
+            throw new RuntimeException('Entry’s section ('.$this->sectionId.') is not enabled for site '.$this->siteId);
         }
 
         return $sectionSiteSettings[$this->siteId]->uriFormat;
@@ -1150,13 +1119,11 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     protected function route(): ?array
     {
         // Make sure that the entry is actually live
-        if (! $this->previewing && $this->getStatus() != self::STATUS_LIVE) {
+        if (! $this->previewing && $this->getStatus() !== self::STATUS_LIVE) {
             return null;
         }
 
-        $section = $this->getSection();
-
-        if (! $section) {
+        if (! $section = $this->getSection()) {
             return null;
         }
 
@@ -1214,7 +1181,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 return isset($sourceKeys[$key]);
             });
 
-            /** @var Collection $sectionOptions */
             $sectionOptions = $sections
                 ->filter(fn (Section $s) => $s->type !== SectionType::Single)
                 ->map(fn (Section $s) => [
@@ -1258,15 +1224,13 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 $ancestors->status(null);
             }
 
-            foreach ($ancestors->all() as $ancestor) {
-                if ($user->can('view', $ancestor)) {
-                    $crumbs[] = [
-                        'html' => app(ElementHtml::class)->elementChipHtml($ancestor, [
-                            'class' => 'chromeless',
-                            'hyperlink' => true,
-                        ]),
-                    ];
-                }
+            foreach ($ancestors->get()->filter(fn ($ancestor) => $user->can('view', $ancestor)) as $ancestor) {
+                $crumbs[] = [
+                    'html' => app(ElementHtml::class)->elementChipHtml($ancestor, [
+                        'class' => 'chromeless',
+                        'hyperlink' => true,
+                    ]),
+                ];
             }
         }
 
@@ -1313,6 +1277,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     public function getChipLabelHtml(): string
     {
         $html = parent::getChipLabelHtml();
+
         if ($html !== '') {
             return $html;
         }
@@ -1409,7 +1374,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     {
         try {
             return $this->getType()->getFieldLayout();
-        } catch (InvalidConfigException) {
+        } catch (RuntimeException) {
             // The entry type was probably deleted
             return null;
         }
@@ -1431,7 +1396,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * {% set section = entry.section %}
      * ```
      *
-     * @throws InvalidConfigException if [[sectionId]] is missing or invalid
+     * @throws RuntimeException if [[sectionId]] is missing or invalid
      */
     public function getSection(): ?Section
     {
@@ -1439,29 +1404,18 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             return null;
         }
 
-        $section = Sections::getSectionById($this->sectionId);
-        if (! $section) {
-            throw new InvalidConfigException("Invalid section ID: $this->sectionId");
+        if (! $section = Sections::getSectionById($this->sectionId)) {
+            throw new RuntimeException("Invalid section ID: $this->sectionId");
         }
 
         return $section;
     }
 
-    /**
-     * Returns the entry type ID.
-     *
-     * @since 4.0.0
-     */
     public function getTypeId(): int
     {
         return $this->getType()->id;
     }
 
-    /**
-     * Sets the entry type ID.
-     *
-     * @since 4.0.0
-     */
     public function setTypeId(int $typeId): void
     {
         $this->_typeId = $typeId;
@@ -1474,23 +1428,18 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *
      * @return EntryType[]
      *
-     * @throws InvalidConfigException
-     *
-     * @since 3.6.0
+     * @throws RuntimeException
      */
     public function getAvailableEntryTypes(bool $triggerEvent = true): array
     {
-        if (isset($this->fieldId)) {
-            /** @var EntryType[] $entryTypes */
-            $entryTypes = array_values(array_filter(
+        $entryTypes = match (true) {
+            isset($this->fieldId) => array_values(array_filter(
                 $this->getField()->getFieldLayoutProviders(),
                 fn ($provider) => $provider instanceof EntryType,
-            ));
-        } elseif (isset($this->sectionId)) {
-            $entryTypes = $this->getSection()->getEntryTypes();
-        } else {
-            throw new InvalidConfigException('Either `sectionId` or `fieldId` + `ownerId` must be set on the entry.');
-        }
+            )),
+            isset($this->sectionId) => $this->getSection()->getEntryTypes(),
+            default => throw new RuntimeException('Either `sectionId` or `fieldId` + `ownerId` must be set on the entry.'),
+        };
 
         if ($triggerEvent) {
             event($event = new DefineEntryTypes($this, $entryTypes));
@@ -1517,42 +1466,37 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * {% endswitch %}
      * ```
      *
-     * @throws InvalidConfigException if [[typeId]] is invalid, or the section has no entry types
+     * @throws RuntimeException if [[typeId]] is invalid, or the section has no entry types
      */
     public function getType(): EntryType
     {
-        if (! isset($this->_type)) {
-            if (isset($this->_typeId)) {
-                $entryType = Arr::first(
-                    $this->getAvailableEntryTypes(false),
-                    fn (EntryType $entryType) => $entryType->id === $this->_typeId,
-                );
-                if (! $entryType) {
-                    // Maybe the section/field no longer allows this type,
-                    // so get it directly from the Entries service instead
-                    $entryType = EntryTypes::getEntryTypeById($this->_typeId, true);
-                    if (! $entryType) {
-                        throw new InvalidConfigException("Invalid entry type ID: $this->_typeId");
-                    }
-                }
-            } else {
-                // Default to the section/field's first entry type
-                $entryType = Arr::first($this->getAvailableEntryTypes());
-                if (! $entryType) {
-                    throw new InvalidConfigException('Entry is missing its type ID');
-                }
-            }
-            $this->_type = $entryType;
+        if (isset($this->_type)) {
+            return $this->_type;
         }
 
-        return $this->_type;
+        if (isset($this->_typeId)) {
+            $entryType = Arr::first(
+                $this->getAvailableEntryTypes(false),
+                fn (EntryType $entryType) => $entryType->id === $this->_typeId,
+            );
+
+            // Maybe the section/field no longer allows this type,
+            // so get it directly from the Entries service instead
+            if (! $entryType && ! $entryType = EntryTypes::getEntryTypeById($this->_typeId, true)) {
+                throw new RuntimeException("Invalid entry type ID: $this->_typeId");
+            }
+
+            return $this->_type = $entryType;
+        }
+
+        // Default to the section/field's first entry type
+        if (! $entryType = Arr::first($this->getAvailableEntryTypes())) {
+            throw new RuntimeException('Entry is missing its type ID');
+        }
+
+        return $this->_type = $entryType;
     }
 
-    /**
-     * Returns the entry author’s ID.
-     *
-     * @since 4.0.0
-     */
     #[AllowedInSandbox]
     public function getAuthorId(): ?int
     {
@@ -1563,8 +1507,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * Sets the entry author’s ID.
      *
      * @param  int|array{0:int}|string|null  $authorId
-     *
-     * @since 4.0.0
      */
     public function setAuthorId(array|int|string|null $authorId): void
     {
@@ -1576,17 +1518,11 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * Returns the primary entry authors’ IDs.
      *
      * @return int[]
-     *
-     * @since 5.0.0
      */
     #[AllowedInSandbox]
     public function getAuthorIds(): array
     {
-        if (! isset($this->_authorIds)) {
-            $this->_authorIds = array_map(fn (User $author) => $author->id, $this->getAuthors());
-        }
-
-        return $this->_authorIds;
+        return $this->_authorIds ??= array_map(fn (User $author) => $author->id, $this->getAuthors());
     }
 
     public function getOldAuthorIds(): ?array
@@ -1598,17 +1534,13 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * Sets the entry authors’ IDs.
      *
      * @param  User[]|int[]|string|int|null  $authorIds
-     *
-     * @since 5.0.0
      */
     public function setAuthorIds(array|string|int|null $authorIds): void
     {
         $authorIds = $this->normalizeAuthorIds($authorIds);
 
-        if (isset($this->_authorIds)) {
-            if ($authorIds === $this->_authorIds) {
-                return;
-            }
+        if (isset($this->_authorIds) && $authorIds === $this->_authorIds) {
+            return;
         }
 
         $this->_authorIds = $authorIds;
@@ -1638,7 +1570,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * <p>By {{ entry.author.name }}</p>
      * ```
      *
-     * @throws InvalidConfigException if [[authorId]] is set but invalid
+     * @throws RuntimeException if [[authorId]] is set but invalid
      */
     #[AllowedInSandbox]
     public function getAuthor(): ?User
@@ -1668,45 +1600,49 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * ```
      *
      * @return User[]
-     *
-     * @since 5.0.0
      */
     #[AllowedInSandbox]
     public function getAuthors(): array
     {
-        if (! isset($this->_authors)) {
-            if (! isset($this->sectionId)) {
-                $authors = [];
-            } elseif (isset($this->_authorIds)) {
-                $authors = User::find()
-                    ->id($this->_authorIds)
-                    ->fixedOrder()
-                    ->status(null)
-                    ->all();
-            } else {
-                if (isset($this->elementQueryResult) && count($this->elementQueryResult) > 1) {
-                    // eager-load authors for all queried entries
-                    Elements::eagerLoadElements(self::class, $this->elementQueryResult, ['authors']);
-
-                    return $this->_authors ?? [];
-                }
-
-                $authors = User::find()
-                    ->authorOf($this)
-                    ->status(null)
-                    ->join(
-                        new Alias(Table::ENTRIES_AUTHORS, 'entries_authors'),
-                        function (JoinClause $join) {
-                            $join->on('entries_authors.authorId', '=', 'users.id')
-                                ->where('entries_authors.entryId', '=', $this->id);
-                        }
-                    )
-                    ->orderBy('entries_authors.sortOrder')
-                    ->all();
-            }
-
-            $this->setAuthors($authors);
+        if (isset($this->_authors)) {
+            return $this->_authors;
         }
+
+        if (! isset($this->sectionId)) {
+            $this->setAuthors([]);
+
+            return $this->_authors;
+        }
+
+        if (isset($this->_authorIds)) {
+            $this->setAuthors(User::find()
+                ->id($this->_authorIds)
+                ->fixedOrder()
+                ->status(null)
+                ->all());
+
+            return $this->_authors;
+        }
+
+        if (isset($this->elementQueryResult) && count($this->elementQueryResult) > 1) {
+            // eager-load authors for all queried entries
+            Elements::eagerLoadElements(self::class, $this->elementQueryResult, ['authors']);
+
+            return [];
+        }
+
+        $this->setAuthors(User::find()
+            ->authorOf($this)
+            ->status(null)
+            ->join(
+                new Alias(Table::ENTRIES_AUTHORS, 'entries_authors'),
+                function (JoinClause $join) {
+                    $join->on('entries_authors.authorId', '=', 'users.id')
+                        ->where('entries_authors.entryId', '=', $this->id);
+                }
+            )
+            ->orderBy('entries_authors.sortOrder')
+            ->all());
 
         return $this->_authors;
     }
@@ -1715,8 +1651,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * Sets the entry authors.
      *
      * @param  User[]  $authors
-     *
-     * @since 5.0.0
      */
     public function setAuthors(array $authors): void
     {
@@ -1754,8 +1688,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * Sets the status, if it’s stored statically.
      *
      * @param  self::STATUS_LIVE|self::STATUS_PENDING|self::STATUS_EXPIRED  $status
-     *
-     * @since 5.7.0
      */
     public function setStatus(string $status): void
     {
@@ -1764,9 +1696,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
     public function createAnother(): self
     {
-        /** @var self $entry */
-        $entry = Craft::createObject([
-            'class' => self::class,
+        $entry = new self([
             'sectionId' => $this->sectionId,
             'fieldId' => $this->fieldId,
             'primaryOwnerId' => $this->getPrimaryOwnerId(),
@@ -1777,11 +1707,10 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             'authorIds' => $this->getAuthorIds(),
         ]);
 
-        $section = $this->getSection();
-        if ($section) {
+        if ($section = $this->getSection()) {
             // Set the default status based on the section's settings
             /** @var SectionSiteSettings $siteSettings */
-            $siteSettings = Collection::make($section->getSiteSettings())->firstWhere('siteId', $this->siteId);
+            $siteSettings = collect($section->getSiteSettings())->firstWhere('siteId', $this->siteId);
             $enabled = $siteSettings->enabledByDefault;
         } else {
             $enabled = true;
@@ -1806,8 +1735,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     #[Override]
     public function hasRevisions(): bool
     {
-        $section = $this->getSection();
-        if ($section) {
+        if ($section = $this->getSection()) {
             return $section->enableVersioning;
         }
 
@@ -1818,9 +1746,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
     protected function cpEditUrl(): string
     {
-        $section = $this->getSection();
-
-        if (! $section) {
+        if (! $section = $this->getSection()) {
             // use the generic element editor URL
             return ElementHelper::elementEditorUrl($this, false);
         }
@@ -1837,7 +1763,9 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
     public function getPostEditUrl(): string
     {
-        return Url::cpUrl('entries');
+        $page = $this->getSection()?->getPage();
+
+        return Url::cpUrl(sprintf('content/%s', $page ? Str::slug($page) : 'entries'));
     }
 
     protected function cpRevisionsUrl(): string
@@ -1909,14 +1837,13 @@ JS, [
             // Field settings
             if (
                 ! empty($this->fieldId) &&
-                Craft::$app->controller instanceof ElementsController &&
-                Craft::$app->controller->element === $this
+                app(ElementRequest::class)->element === $this
             ) {
                 $fieldEditId = sprintf('edit-field-%s', mt_rand());
                 $actions[] = [
                     'id' => $fieldEditId,
                     'icon' => 'gear',
-                    'label' => Craft::t('app', 'Field settings'),
+                    'label' => t('Field settings'),
                 ];
 
                 HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
@@ -1935,9 +1862,6 @@ JS, [
         return $actions;
     }
 
-    /**
-     * @since 3.3.0
-     */
     #[Override]
     public function getGqlTypeName(): string
     {
@@ -1987,7 +1911,7 @@ JS, [
                         'class' => 'chromeless',
                         'showThumb' => $this->viewMode !== 'cards',
                     ]);
-                } catch (InvalidConfigException) {
+                } catch (RuntimeException) {
                     return t('Unknown');
                 }
             default:
@@ -2054,21 +1978,16 @@ JS, [
 
     /**
      * Returns whether the given user is authorized to move this entry to a different section.
-     *
-     * @since 5.9.14
      */
     public function canMove(?User $user = null): bool
     {
+        $user ??= Auth::user();
+
         if (! $user) {
-            $user = Auth::user();
-            if (! $user) {
-                return false;
-            }
+            return false;
         }
 
-        $section = $this->getSection();
-
-        if (! $section) {
+        if (! $section = $this->getSection()) {
             return false;
         }
 
@@ -2083,18 +2002,14 @@ JS, [
         }
 
         if ($this->getIsDraft()) {
-            return
-                $this->draftCreatorId === $user->id ||
-                $user->can("savePeerEntryDrafts:$section->uid");
+            return $this->draftCreatorId === $user->id || $user->can("savePeerEntryDrafts:$section->uid");
         }
 
         if (! $user->can("saveEntries:$section->uid")) {
             return false;
         }
 
-        return
-            in_array($user->id, $this->getAuthorIds(), true) ||
-            $user->can("savePeerEntries:$section->uid");
+        return in_array($user->id, $this->getAuthorIds(), true) || $user->can("savePeerEntries:$section->uid");
     }
 
     /**
@@ -2107,17 +2022,12 @@ JS, [
 
         // get sections all editable sections without singles and without the section this entry belongs to
         // get all entry types for them
-        $sections = Sections::getEditableSections()
+        return Sections::getEditableSections()
             ->filter(fn (Section $s) => $s->type !== SectionType::Single && $s->id !== $this->sectionId)
-            ->map(fn (Section $s) => [
-                'entryTypes' => $s->getEntryTypes(),
-            ]);
-
-        // get sections that use the same entry type as this entry
-        $compatibleSections = $sections
-            ->filter(fn (array $s) => collect($s['entryTypes'])->contains('id', $entryTypeId));
-
-        return $compatibleSections->count();
+            ->map(fn (Section $s) => ['entryTypes' => $s->getEntryTypes()])
+            // get sections that use the same entry type as this entry
+            ->filter(fn (array $s) => collect($s['entryTypes'])->contains('id', $entryTypeId))
+            ->count();
     }
 
     #[Override]
@@ -2132,7 +2042,7 @@ JS, [
         // Type
         $fields['type'] = (function () use ($static) {
             $entryTypes = $this->getAvailableEntryTypes();
-            if (Collection::make($entryTypes)->doesntContain(fn (EntryType $entryType) => $entryType->id === $this->typeId)) {
+            if (collect($entryTypes)->doesntContain(fn (EntryType $entryType) => $entryType->id === $this->typeId)) {
                 $entryTypes[] = $this->getType();
             }
             if (count($entryTypes) <= 1 && $this->isEntryTypeAllowed($entryTypes)) {
@@ -2269,8 +2179,6 @@ JS, [
     /**
      * Checks if the "Apply Draft" and "Revert to a revision" buttons should be disabled and if so
      * applies the tooltip message.
-     *
-     * @throws InvalidConfigException
      */
     private function _applyActionBtnEntryTypeCompatibility(): void
     {
@@ -2329,7 +2237,7 @@ JS;
     {
         try {
             $showStatusField = $this->getType()->showStatusField;
-        } catch (InvalidConfigException) {
+        } catch (RuntimeException) {
             $showStatusField = true;
         }
 
@@ -2382,8 +2290,6 @@ JS;
 
     /**
      * Updates the entry’s title, if its entry type has a dynamic title format.
-     *
-     * @since 3.0.3
      */
     public function updateTitle(): void
     {
@@ -2429,9 +2335,6 @@ JS;
     // Events
     // -------------------------------------------------------------------------
 
-    /**
-     * @throws Exception if reasons
-     */
     #[Override]
     public function beforeSave(bool $isNew): bool
     {
@@ -2462,8 +2365,7 @@ JS;
             }
         }
 
-        $section = $this->getSection();
-        if ($section) {
+        if ($section = $this->getSection()) {
             // Set the structure ID for Element::attributes() and afterSave()
             if ($section->type === SectionType::Structure) {
                 $this->structureId = $section->structureId;
@@ -2478,7 +2380,7 @@ JS;
                         ]);
 
                         if (! $parentEntry) {
-                            throw new InvalidConfigException("Invalid parent ID: $parentId");
+                            throw new RuntimeException("Invalid parent ID: $parentId");
                         }
                     } else {
                         $parentEntry = null;
@@ -2513,20 +2415,18 @@ JS;
         }
 
         $section = $this->getSection();
-        if (
-            $section?->type !== SectionType::Single &&
-            $section?->maxAuthors !== 0 &&
-            empty($this->getAuthors())
+        if ($section?->type !== SectionType::Single
+            && $section?->maxAuthors !== 0
+            && empty($this->getAuthors())
+            && $user = Auth::user()
         ) {
-            if ($user = Auth::user()) {
-                $this->setAuthor($user);
-            }
+            $this->setAuthor($user);
         }
 
         if (
             ! $this->_userPostDate() &&
             (
-                in_array($this->scenario, [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]) ||
+                $this->ruleset->inScenarios(ElementRules::SCENARIO_LIVE, ElementRules::SCENARIO_DEFAULT) ||
                 ! $this->getIsDraft()
             )
         ) {
@@ -2541,9 +2441,6 @@ JS;
         }
     }
 
-    /**
-     * @throws InvalidConfigException
-     */
     #[Override]
     public function afterSave(bool $isNew): void
     {
@@ -2593,7 +2490,7 @@ JS;
             if (
                 (! $this->duplicateOf || $this->updatingFromDerivative || $this->placeInStructure) &&
                 isset($this->sectionId) &&
-                $section->type == SectionType::Structure
+                $section->type === SectionType::Structure
             ) {
                 // Has the parent changed?
                 if ($this->placeInStructure || $this->hasNewParent()) {
@@ -2610,12 +2507,6 @@ JS;
         parent::afterSave($isNew);
     }
 
-    /**
-     * Save authors
-     *
-     * @throws Throwable
-     * @throws \yii\db\Exception
-     */
     private function _saveAuthors(): void
     {
         if (! isset($this->_oldAuthorIds)) {
@@ -2662,7 +2553,7 @@ JS;
                 ->unique()
                 ->value('id');
 
-            if ($parentId == $canonicalParentId) {
+            if ($parentId === $canonicalParentId) {
                 Structures::remove($this->structureId, $this);
 
                 return;
@@ -2672,17 +2563,13 @@ JS;
         $mode = $isNew ? Mode::Insert : Mode::Auto;
 
         if (! $parentId) {
-            if ($section->defaultPlacement === DefaultPlacement::Beginning) {
-                Structures::prependToRoot($this->structureId, $this, $mode);
-            } else {
-                Structures::appendToRoot($this->structureId, $this, $mode);
-            }
+            $section->defaultPlacement === DefaultPlacement::Beginning
+                ? Structures::prependToRoot($this->structureId, $this, $mode)
+                : Structures::appendToRoot($this->structureId, $this, $mode);
         } else {
-            if ($section->defaultPlacement === DefaultPlacement::Beginning) {
-                Structures::prepend($this->structureId, $this, $this->getParent(), $mode);
-            } else {
-                Structures::append($this->structureId, $this, $this->getParent(), $mode);
-            }
+            $section->defaultPlacement === DefaultPlacement::Beginning
+                ? Structures::prepend($this->structureId, $this, $this->getParent(), $mode)
+                : Structures::append($this->structureId, $this, $this->getParent(), $mode);
         }
     }
 
@@ -2744,6 +2631,7 @@ JS;
             ]);
 
         $section = $this->getSection();
+
         if ($section?->type === SectionType::Structure) {
             // Add the entry back into its structure
             /** @var self|null $parent */
@@ -2753,11 +2641,9 @@ JS;
                 ->where('j.id', $this->id)
                 ->first();
 
-            if (! $parent) {
-                Structures::appendToRoot($section->structureId, $this);
-            } else {
-                Structures::append($section->structureId, $this, $parent);
-            }
+            $parent
+                ? Structures::append($section->structureId, $this, $parent)
+                : Structures::appendToRoot($section->structureId, $this);
         }
 
         parent::afterRestore();
@@ -2769,7 +2655,7 @@ JS;
         // Was the entry moved within its section's structure?
         $section = $this->getSection();
 
-        if ($section->type === SectionType::Structure && $section->structureId == $structureId) {
+        if ($section->type === SectionType::Structure && $section->structureId === $structureId) {
             Elements::updateElementSlugAndUri(
                 element: $this,
                 updateOtherSites: true,
@@ -2814,10 +2700,6 @@ JS;
 
     /**
      * Returns whether the entry’s type is allowed in its section.
-     *
-     * @throws InvalidConfigException
-     *
-     * @since 5.3.0
      */
     public function isEntryTypeCompatible(): bool
     {
@@ -2828,7 +2710,7 @@ JS;
             return true;
         }
 
-        $sectionEntryTypes = Collection::make($section->getEntryTypes())
+        $sectionEntryTypes = collect($section->getEntryTypes())
             ->map(fn (EntryType $et) => $et->id)
             ->all();
 
@@ -2838,8 +2720,6 @@ JS;
     /**
      * Check if current typeId is in the array of passed in entry types.
      * If no entry types are passed, check get all the available ones.
-     *
-     * @throws InvalidConfigException
      */
     public function isEntryTypeAllowed(?array $entryTypes = null): bool
     {
@@ -2852,8 +2732,7 @@ JS;
 
     private function handleChangedTypeId(): void
     {
-        $oldLayout = EntryTypes::getEntryTypeById($this->_oldTypeId)?->getFieldLayout();
-        if (! $oldLayout) {
+        if (! $oldLayout = EntryTypes::getEntryTypeById($this->_oldTypeId)?->getFieldLayout()) {
             return;
         }
 
@@ -2886,6 +2765,7 @@ JS;
         $templates = parent::partialTemplatePathCandidates();
 
         $entryType = $this->getType();
+
         if (isset($entryType->original) && $entryType->original->handle !== $entryType->handle) {
             $templates[] = [
                 'template' => sprintf(

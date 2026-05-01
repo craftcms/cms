@@ -7,7 +7,7 @@
 
 namespace craft\events;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 
 /**
@@ -15,6 +15,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Events\DefineEntryTypesForField} instead.
  */
 class DefineEntryTypesForFieldEvent extends DefineEntryTypesEvent
 {

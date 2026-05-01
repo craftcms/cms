@@ -7,8 +7,8 @@
 
 namespace craft\helpers;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Contracts\ElementActionInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\ElementHelper as LaravelElementHelper;
@@ -19,7 +19,7 @@ use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Users;
 use Illuminate\Support\Facades\Context;
 
-use Twig\Markup;
+use Illuminate\Support\HtmlString;
 use function CraftCms\Cms\renderObjectTemplate;
 
 /**
@@ -563,13 +563,13 @@ class ElementHelper
      * @param ElementInterface[] $elements
      * @param array $variables
      *
-     * @return \Twig\Markup
+     * @return HtmlString
      * @throws \yii\base\InvalidConfigException
      * @throws \yii\base\NotSupportedException
      * @since 5.0.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::renderElements()} instead.
      */
-    public static function renderElements(array $elements, array $variables = []): Markup
+    public static function renderElements(array $elements, array $variables = []): HtmlString
     {
         return LaravelElementHelper::renderElements($elements, $variables);
     }

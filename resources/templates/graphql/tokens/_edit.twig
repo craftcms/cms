@@ -22,7 +22,7 @@
         id: 'name',
         name: 'name',
         value: token.name,
-        errors: token.getErrors('name'),
+        errors: token.errors.get('name'),
         autofocus: true,
         required: true,
     }) }}
@@ -60,7 +60,7 @@
                     id: 'auth-header',
                     buttonId: 'copy-btn',
                     value: 'Authorization: Bearer ' ~ (accessToken ?? '••••••••••••••••••••••••••••••••'),
-                    errors: token.getErrors('accessToken'),
+                    errors: token.errors.get('accessToken'),
                     class: ['code', not accessToken ? 'disabled']|filter,
                     size: 54,
                 } %}
@@ -92,7 +92,7 @@
             id: 'expiryDate',
             name: 'expiryDate',
             value: (token.expiryDate ? token.expiryDate : null),
-            errors: token.getErrors('expiryDate')
+            errors: token.errors.get('expiryDate')
         }) }}
     </div>
 {% endblock %}

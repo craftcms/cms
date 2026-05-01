@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Commands;
 
-use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Console\CraftCommand;
@@ -28,7 +28,7 @@ class Remove2faCommand extends Command implements PromptsForMissingInput
     #[\Override]
     protected $aliases = ['users/remove-2fa'];
 
-    public function handle(Auth $auth): int
+    public function handle(AuthMethods $auth): int
     {
         if (! $user = $this->getUser()) {
             return self::FAILURE;
@@ -60,7 +60,7 @@ class Remove2faCommand extends Command implements PromptsForMissingInput
         return self::SUCCESS;
     }
 
-    private function remove2faMethod(Auth $auth, AuthMethodInterface $method, User $user): void
+    private function remove2faMethod(AuthMethods $auth, AuthMethodInterface $method, User $user): void
     {
         $this->components->task(
             "Removing “{$method::displayName()}” two-step verification method for the user ...",

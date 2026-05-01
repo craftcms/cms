@@ -12,7 +12,7 @@ namespace craft\controllers;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -83,7 +83,7 @@ class AssetsController extends Controller
         $asset->setFieldValuesFromRequest($fieldsLocation);
 
         // Save the asset
-        $asset->setScenario(Element::SCENARIO_LIVE);
+        $asset->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
 
         if (!Elements::saveElement($asset)) {
             return $this->asModelFailure(

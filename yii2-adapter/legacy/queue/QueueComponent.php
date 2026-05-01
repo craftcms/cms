@@ -134,7 +134,7 @@ class QueueComponent extends Component implements QueueInterface
      */
     public function getHasReservedJobs(): bool
     {
-        return app(JobProgress::class)->getByStatus(JobStatus::Reserved)->isNotEmpty();
+        return app(JobProgress::class)->hasReservedJobs();
     }
 
     /**

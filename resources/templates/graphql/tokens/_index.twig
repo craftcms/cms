@@ -3,9 +3,9 @@
 
 {% set selectedSubnavItem = 'tokens' %}
 
-{% set tokens = craft.app.gql.tokens %}
+{% set tokens = Gql.getTokens() %}
 
-{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+{% do registerLegacyAsset('CraftCms\\Cms\\View\\LegacyAssets\\AdminTableAsset') -%}
 
 {% block actionButton %}
     <a class="btn submit add icon" href="{{ url('graphql/tokens/new') }}">{{ "New token"|t('app') }}</a>

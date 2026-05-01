@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use craft\helpers\DateTimeHelper as LegacyDateTimeHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\DateTimeHelper;
 
@@ -560,29 +559,4 @@ describe('timestamps and times', function () {
     test('returns the configured first weekday', function () {
         expect(DateTimeHelper::firstWeekDay())->toBe(1);
     });
-});
-
-describe('legacy compatibility cases retained from the old suite', function () {
-    test('validates legacy interval strings', function (bool $expected, string $intervalString) {
-        expect(LegacyDateTimeHelper::isValidIntervalString($intervalString))->toBe($expected);
-    })->with([
-        'one day' => [true, '1 day'],
-        'one hour' => [true, '1 hour'],
-        'compound' => [true, '1 hour + 1 day'],
-        'one second' => [true, '1 second'],
-        'one year' => [true, '1 year'],
-        'one month' => [true, '1 month'],
-        'one minutes' => [true, '1 minutes'],
-    ]);
-
-    test('creates legacy intervals from seconds', function (int $secondsResult, int $formattedResult, int $input) {
-        $interval = LegacyDateTimeHelper::secondsToInterval($input);
-
-        expect($interval->s)->toBe($secondsResult)
-            ->and((int) $interval->format('%s%d%h%m'))->toBe($formattedResult);
-    })->with([
-        'ten seconds' => [10, 10000, 10],
-        'zero seconds' => [0, 0, 0],
-        'large interval' => [928172, 928172000, 928172],
-    ]);
 });

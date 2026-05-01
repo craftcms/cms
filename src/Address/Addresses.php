@@ -13,7 +13,6 @@ use CommerceGuys\Addressing\AddressFormat\PostalCodeType;
 use CommerceGuys\Addressing\Country\CountryRepository;
 use CommerceGuys\Addressing\Formatter\DefaultFormatter;
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
-use Craft;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Address\Events\DefineAddressCountries;
 use CraftCms\Cms\Address\Events\DefineAddressFieldLabel;

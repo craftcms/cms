@@ -7,14 +7,15 @@
 
 namespace craft\events;
 
-use craft\base\ElementInterface;
 use craft\base\Event;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * Index keywords event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.2.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Search\Events\BeforeIndexKeywords} instead.
  */
 class IndexKeywordsEvent extends CancelableEvent
 {

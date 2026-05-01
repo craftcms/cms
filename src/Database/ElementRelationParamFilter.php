@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -201,10 +201,6 @@ class ElementRelationParamFilter
 
         if (empty($relatedToParam)) {
             return $query;
-        }
-
-        if (count($relatedToParam) === 1) {
-            return $this->subparse($query, $relatedToParam[0]);
         }
 
         return $query->where(function (Builder $query) use ($relatedToParam, $glue) {

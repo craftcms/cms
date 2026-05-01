@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
-use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\User\Elements\User;
@@ -30,7 +30,7 @@ readonly class VerifyEmailController extends AuthenticationController
         /** @var string $code */
         [$user, $uid, $code] = $info;
 
-        app(Auth::class)->setRememberedUsername($user);
+        app(AuthMethods::class)->setRememberedUsername($user);
 
         // Send them to the set verify-email template
         return $this->renderViewWithFallback('verify-email', [

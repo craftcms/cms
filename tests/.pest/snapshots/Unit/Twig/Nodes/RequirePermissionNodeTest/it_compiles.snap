@@ -1,2 +1,2 @@
 // line 1
-Craft::$app->controller->requirePermission("editEntries");
+Illuminate\Support\Facades\Gate::authorize("editEntries");

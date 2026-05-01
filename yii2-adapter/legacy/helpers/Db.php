@@ -8,7 +8,6 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\base\Serializable;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
@@ -16,6 +15,8 @@ use craft\db\Query;
 use craft\db\Table;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Shared\Contracts\Serializable;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Money as MoneyHelper;
 use CraftCms\Cms\Support\Query as QueryHelper;
@@ -26,7 +27,6 @@ use Money\Money;
 use PDO;
 use Throwable;
 use yii\base\Exception;
-use yii\base\NotSupportedException;
 use yii\db\BatchQueryResult;
 use yii\db\Exception as DbException;
 use yii\db\ExpressionInterface;

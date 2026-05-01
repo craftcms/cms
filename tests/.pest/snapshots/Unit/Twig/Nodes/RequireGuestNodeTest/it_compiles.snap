@@ -1,2 +1,4 @@
 // line 1
-Craft::$app->controller->requireGuest();
+if (Illuminate\Support\Facades\Auth::check()) {
+    redirect(Illuminate\Support\Facades\URL::returnUrl())->throwResponse();
+}

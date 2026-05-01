@@ -5,17 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
-use Craft;
-use craft\base\ElementInterface;
-use craft\helpers\ArrayHelper;
-use craft\web\assets\tablesettings\TableSettingsAsset;
-use craft\web\assets\timepicker\TimepickerAsset;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\Types\Generators\TableRowType;
 use CraftCms\Cms\Gql\Types\TableRow;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -25,14 +22,17 @@ use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use CraftCms\Cms\Validation\Rules\HandleRule;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\TableSettingsAsset;
+use CraftCms\Cms\View\LegacyAssets\TimepickerAsset;
 use DateTime;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 use Override;
-use yii\db\Schema;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -90,7 +90,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
     #[Override]
     public static function dbType(): string
     {
-        return Schema::TYPE_JSON;
+        return Query::TYPE_JSON;
     }
 
     /**
@@ -338,8 +338,8 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
             return $column;
         }, $this->columns);
 
-        Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
-        Craft::$app->getView()->registerAssetBundle(TableSettingsAsset::class);
+        app(InternalAssetRegistry::class)->register(TimepickerAsset::class);
+        app(InternalAssetRegistry::class)->register(TableSettingsAsset::class);
         HtmlStack::js('new Craft.TableFieldSettings('.
             Json::encode(InputNamespace::namespaceInputName('columns')).', '.
             Json::encode(InputNamespace::namespaceInputName('defaults')).', '.
@@ -412,7 +412,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
+        app(InternalAssetRegistry::class)->register(TimepickerAsset::class);
 
         return $this->_getInputHtml($value, $element, false);
     }
@@ -500,19 +500,19 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
 
         if ($this->staticRows) {
             // get the order of the default rows
-            $order = ArrayHelper::getColumn($this->defaults ?? [], 'rowId');
+            $order = Arr::pluck($this->defaults ?? [], 'rowId');
             $missingValueRowIds = null;
 
             if (! empty($order)) {
                 // if there's no rowIds, add them
-                if (ArrayHelper::containsRecursive($value, 'rowId') === false) {
+                if (Arr::containsRecursive($value, 'rowId') === false) {
                     foreach ($value as $key => &$row) {
                         $row['rowId'] = $order[$key];
                     }
                 }
 
                 // the rowIds present in the $value array
-                $usedValueRowIds = ArrayHelper::getColumn($value, 'rowId');
+                $usedValueRowIds = Arr::pluck($value, 'rowId');
 
                 // if the field has a set order
                 $missingValueRowIds = array_values(array_diff($order, $usedValueRowIds));
@@ -591,7 +591,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
         }
 
         $serialized = [];
-        $supportsMb4 = Craft::$app->getDb()->getSupportsMb4();
+        $supportsMb4 = DB::supportsMb4();
 
         foreach ($value as $row) {
             $serializedRow = [];
@@ -625,7 +625,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
         }
 
         $serialized = [];
-        $supportsMb4 = Craft::$app->getDb()->getSupportsMb4();
+        $supportsMb4 = DB::supportsMb4();
 
         foreach ($value as $row) {
             $serializedRow = [];

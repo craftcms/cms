@@ -285,7 +285,7 @@ class CategoryGroup extends Model implements
                 'maxLevels' => (int)$this->maxLevels ?: null,
             ],
             'siteSettings' => [],
-            'defaultPlacement' => $this->defaultPlacement ?? self::DEFAULT_PLACEMENT_END,
+            'defaultPlacement' => $this->defaultPlacement,
         ];
 
         $fieldLayout = $this->getFieldLayout();

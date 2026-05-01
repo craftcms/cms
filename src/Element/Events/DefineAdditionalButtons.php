@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Events;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Concerns\HasControlPanelUI;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
  * @event DefineAdditionalButtons The event that is triggered when defining additional buttons

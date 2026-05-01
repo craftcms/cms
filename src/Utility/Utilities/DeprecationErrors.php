@@ -43,9 +43,9 @@ class DeprecationErrors extends Utility
     #[Override]
     public static function toolbarHtml(): string
     {
-        return view('utilities.deprecation-errors.toolbar', [
-            'logs' => Deprecator::getLogs(),
-        ])->toHtml();
+        return Html::tag('DeprecationErrorsToolbar', attributes: [
+            ':disabled' => Deprecator::getTotalLogs() === 0,
+        ]);
     }
 
     /**

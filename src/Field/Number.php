@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use craft\base\ElementInterface;
-use craft\helpers\Localization;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\NumberFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -28,7 +27,6 @@ use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use Override;
 use Throwable;
-use yii\db\Schema;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -204,7 +202,7 @@ class Number extends Field implements CrossSiteCopyableFieldInterface, InlineEdi
     {
         // Was this submitted with a locale ID?
         if (isset($value['locale'], $value['value'])) {
-            $value = Localization::normalizeNumber($value['value'], $value['locale']);
+            $value = I18N::normalizeNumber($value['value'], $value['locale']);
         }
 
         if (is_int($value) || is_float($value) || (is_string($value) && $value !== '')) {
@@ -316,14 +314,14 @@ JS;
     protected function dbTypeForValueSql(): string
     {
         if (! $this->decimals) {
-            return Schema::TYPE_INTEGER;
+            return Query::TYPE_INTEGER;
         }
 
         if (DB::isMysql()) {
-            return sprintf('%s(65,%s)', Schema::TYPE_DECIMAL, $this->decimals);
+            return sprintf('%s(65,%s)', Query::TYPE_DECIMAL, $this->decimals);
         }
 
-        return Schema::TYPE_DECIMAL;
+        return Query::TYPE_DECIMAL;
     }
 
     #[Override]

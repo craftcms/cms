@@ -15,6 +15,7 @@ use CraftCms\Cms\Support\Facades\BulkOps;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp} or {@see \CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp} instead.
  */
 class BulkOpEvent extends ElementQueryEvent
 {

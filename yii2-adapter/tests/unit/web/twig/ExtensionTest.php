@@ -23,6 +23,7 @@ use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
@@ -45,7 +46,6 @@ use UnitTester;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
 use yii\web\ServerErrorHttpException;
 use function CraftCms\Cms\renderString;
 use function CraftCms\Cms\t;
@@ -895,14 +895,6 @@ class ExtensionTest extends TestCase
         $this->testRenderResult(
             'https://domain/fr/offices/gen%C3%AAve',
             '{{ encodeUrl("https://domain/fr/offices/genêve") }}',
-        );
-    }
-
-    public function test_expression_function(): void
-    {
-        $this->testRenderResult(
-            'Im an expression | var | Im an expression',
-            '{% set expression =  expression("Im an expression", ["var"]) %}{{ expression }} | {{ expression.params[0] }} | {{ expression.expression }}'
         );
     }
 

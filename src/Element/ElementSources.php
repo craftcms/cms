@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use craft\base\ElementInterface;
-use craft\db\CoalesceColumnsExpression;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\DefineSourceSortOptions;
 use CraftCms\Cms\Element\Events\DefineSourceTableAttributes;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
@@ -27,6 +26,7 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
 use function CraftCms\Cms\t;
 
@@ -46,6 +46,8 @@ class ElementSources
     public const string CONTEXT_MODAL = 'modal';
 
     public const string CONTEXT_SETTINGS = 'settings';
+
+    public const string CONTEXT_EMBEDDED_INDEX = 'embeddedIndex';
 
     /**
      * @see defineSources()
@@ -603,10 +605,8 @@ class ElementSources
                     return $group->first();
                 }
 
-                $expression = new CoalesceColumnsExpression($orderBys->all());
-
                 return array_merge($group->first(), [
-                    'orderBy' => $expression,
+                    'orderBy' => new Coalesce($orderBys->all()),
                 ]);
             });
     }

@@ -7,7 +7,7 @@
 
 namespace craft\behaviors;
 
-use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use yii\base\Behavior;
 

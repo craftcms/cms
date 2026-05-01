@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Craft;
-use craft\web\assets\authmethodsetup\AuthMethodSetupAsset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -15,6 +13,9 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
+use CraftCms\Cms\User\Validation\UserRules;
+use CraftCms\Cms\View\LegacyAssets\AuthMethodSetupAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -39,7 +40,7 @@ readonly class PasswordController
 
         $response = $this->asEditUserScreen($user, self::SCREEN_PASSWORD);
 
-        Craft::$app->getView()->registerAssetBundle(AuthMethodSetupAsset::class);
+        app(InternalAssetRegistry::class)->register(AuthMethodSetupAsset::class);
 
         $response->action('users/save-password');
         $response->contentTemplate('users/_password', compact('user'));
@@ -65,7 +66,7 @@ readonly class PasswordController
         }
 
         $user->newPassword = $validated['newPassword'];
-        $user->setScenario(User::SCENARIO_PASSWORD);
+        $user->ruleset->useScenario(UserRules::SCENARIO_PASSWORD);
 
         if (! $elements->saveElement($user)) {
             return $this->asFailure(
@@ -195,7 +196,7 @@ readonly class PasswordController
         return new Timebox()->call(function (Timebox $timebox) use ($loginName, &$errors, $user, $users): Response {
             // Don't try to send the email if there are already errors or there is no user
             try {
-                if (empty($errors) && $user !== null && ! $users->sendPasswordResetEmail($user)) {
+                if (! empty($errors) && $user !== null && ! $users->sendPasswordResetEmail($user)) {
                     throw new Exception;
                 }
             } catch (Exception) {

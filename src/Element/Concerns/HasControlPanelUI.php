@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use Craft;
-use craft\base\NestedElementInterface;
-use craft\controllers\ElementsController;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\MenuHtml;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\DefineActionMenuItems;
@@ -21,6 +19,7 @@ use CraftCms\Cms\Element\Events\DefineMetadata;
 use CraftCms\Cms\Element\Events\DefineMetaFieldsHtml;
 use CraftCms\Cms\Element\Events\DefineSidebarHtml;
 use CraftCms\Cms\Element\Events\RegisterHtmlAttributes;
+use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
@@ -32,7 +31,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Translation\Formatter;
 use Illuminate\Support\Facades\Gate;
 use Stringable;
-use yii\web\Response;
+use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
@@ -156,7 +155,6 @@ trait HasControlPanelUI
      *
      * @see getActionMenuItems()
      * @see MenuHtml::disclosureMenu()
-     * @since 5.0.0
      */
     protected function safeActionMenuItems(): array
     {
@@ -166,8 +164,7 @@ trait HasControlPanelUI
         if (
             ! $this->getIsRevision() &&
             ! request()->headers->has('X-Craft-Container-Id') &&
-            Craft::$app->controller instanceof ElementsController &&
-            Craft::$app->controller->element === $this
+            app(ElementRequest::class)->element === $this
         ) {
             $validateId = sprintf('action-validate-%s', mt_rand());
             $items[] = [
@@ -292,7 +289,6 @@ JS, [
      *
      * @see getActionMenuItems()
      * @see MenuHtml::disclosureMenu()
-     * @since 5.0.0
      */
     protected function destructiveActionMenuItems(): array
     {
@@ -472,7 +468,6 @@ JS, [
      * @return string The HTML that should be shown for a given attribute in table and card views.
      *
      * @see getAttributeHtml()
-     * @since 5.0.0
      */
     protected function attributeHtml(string $attribute): string|Stringable
     {
@@ -486,7 +481,6 @@ JS, [
      * @return string The HTML that should be shown for a given attribute's inline input.
      *
      * @see getInlineAttributeInputHtml()
-     * @since 5.0.0
      */
     protected function inlineAttributeInputHtml(string $attribute): string|Stringable
     {
@@ -522,8 +516,6 @@ JS, [
      * Returns the HTML for any meta fields that should be shown within the editor sidebar.
      *
      * @param  bool  $static  Whether the fields should be static (non-interactive)
-     *
-     * @since 3.7.0
      */
     protected function metaFieldsHtml(bool $static): string|Stringable
     {
@@ -536,8 +528,6 @@ JS, [
      * Returns the HTML for the element's Slug field.
      *
      * @param  bool  $static  Whether the fields should be static (non-interactive)
-     *
-     * @since 3.7.0
      */
     protected function slugFieldHtml(bool $static): string|Stringable
     {
@@ -562,9 +552,7 @@ JS, [
     /**
      * Returns whether the Status field should be shown for this element.
      *
-     *  If set to `false`, the element's status can't be updated via edit forms, the Set Status action, or `resave/*` commands.
-     *
-     * @since 4.5.0
+     * If set to `false`, the element's status can't be updated via edit forms, the Set Status action, or `resave/*` commands.
      */
     protected function showStatusField(): bool
     {
@@ -573,8 +561,6 @@ JS, [
 
     /**
      * Returns the status field HTML for the sidebar.
-     *
-     * @since 4.0.0
      */
     protected function statusFieldHtml(): string|Stringable
     {
@@ -628,8 +614,6 @@ JS, [
 
     /**
      * Returns the notes field HTML for the sidebar.
-     *
-     * @since 4.0.0
      */
     protected function notesFieldHtml(): string|Stringable
     {
@@ -653,8 +637,6 @@ JS, [
      * Returns whether the element has a field layout with at least one tab.
      *
      * @return bool Returns whether the element has a field layout with at least one tab.
-     *
-     * @since 3.7.0
      */
     protected function hasFieldLayout(): bool
     {
@@ -725,8 +707,6 @@ JS, [
      *
      * @return array The data, with keys representing the labels. The values can either be strings or callables.
      *               If a value is `false`, it will be omitted.
-     *
-     * @since 3.7.0
      */
     protected function metadata(): array
     {
@@ -761,7 +741,6 @@ JS, [
     /**
      * Returns the breadcrumbs that lead up to the element.
      *
-     * @since 5.0.0
      * @see getCrumbs()
      */
     protected function crumbs(): array
@@ -791,8 +770,6 @@ JS, [
 
     /**
      * Returns what the element should be called within the control panel.
-     *
-     * @since 3.6.4
      */
     protected function uiLabel(): ?string
     {

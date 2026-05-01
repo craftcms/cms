@@ -9,6 +9,7 @@ use CraftCms\Cms\Asset\Data\IndexingSession;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\AssetNotIndexableException;
@@ -16,6 +17,7 @@ use CraftCms\Cms\Asset\Exceptions\MissingAssetException;
 use CraftCms\Cms\Asset\Exceptions\MissingVolumeFolderException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
 use CraftCms\Cms\Asset\Models\AssetIndexingSession as AssetIndexingSessionModel;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements;
@@ -630,14 +632,14 @@ class AssetIndexer
         $asset->size = $indexEntry->size;
         $timeModified = $indexEntry->timestamp;
 
-        $asset->setScenario(Asset::SCENARIO_INDEX);
+        $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
 
         try {
             if ($isLocalFs) {
                 $asset->setMimeType($asset->getMimeType());
             }
 
-            if ($asset->kind === Asset::KIND_IMAGE) {
+            if ($asset->kind === FileKind::Image->value) {
                 $dimensions = null;
                 $tempPath = null;
 

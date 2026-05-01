@@ -9,7 +9,7 @@ use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\MenuHtml;
-use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Markdown;
@@ -18,8 +18,10 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\ViewErrorBag;
+use Illuminate\Validation\ConditionalRules;
+use Illuminate\Validation\Rules\RequiredIf;
 use InvalidArgumentException;
-use yii\validators\RequiredValidator;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -41,6 +43,9 @@ readonly class FormFields
         $tip = $config['tip'] ?? null;
         $warning = $config['warning'] ?? null;
         $errors = $config['errors'] ?? null;
+        if ($errors instanceof ViewErrorBag) {
+            $errors = $errors->get($attribute);
+        }
         $status = $config['status'] ?? null;
         $disabled = $config['disabled'] ?? false;
         $static = $config['static'] ?? false;
@@ -563,21 +568,23 @@ readonly class FormFields
     public static function addressFieldsHtml(Address $address, bool $static = false): string
     {
         $requiredFields = [];
-        $scenario = $address->getScenario();
-        $address->setScenario(Element::SCENARIO_LIVE);
-        $activeValidators = $address->getActiveValidators();
-        $address->setScenario($scenario);
-        $belongsToCurrentUser = $address->getBelongsToCurrentUser();
+        $scenario = $address->ruleset->getScenario();
+        $address->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
 
-        foreach ($activeValidators as $validator) {
-            if ($validator instanceof RequiredValidator) {
-                foreach ($validator->getAttributeNames() as $attr) {
-                    if ($validator->when === null || call_user_func($validator->when, $address, $attr)) {
-                        $requiredFields[$attr] = true;
-                    }
+        $activeRules = $address->ruleset->rules();
+
+        foreach ($activeRules as $attribute => $rules) {
+            foreach (Arr::wrap($rules) as $rule) {
+                if (self::isRequiredRule($rule)) {
+                    $requiredFields[$attribute] = true;
+
+                    break;
                 }
             }
         }
+
+        $address->ruleset->useScenario($scenario);
+        $belongsToCurrentUser = $address->getBelongsToCurrentUser();
 
         $addressesService = app(Addresses::class);
         $visibleFields = array_flip(array_merge(
@@ -695,6 +702,29 @@ readonly class FormFields
                 ],
                 'disabled' => $static,
             ]);
+    }
+
+    private static function isRequiredRule(mixed $rule): bool
+    {
+        if ($rule === 'required') {
+            return true;
+        }
+
+        if ($rule instanceof RequiredIf) {
+            return (string) $rule === 'required';
+        }
+
+        if ($rule instanceof ConditionalRules) {
+            $conditionalRules = $rule->passes() ? $rule->rules() : $rule->defaultRules();
+
+            foreach (Arr::wrap($conditionalRules) as $conditionalRule) {
+                if (self::isRequiredRule($conditionalRule)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private static function subdivisionParents(Address $address, array $visibleFields): array

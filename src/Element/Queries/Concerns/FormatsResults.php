@@ -15,7 +15,7 @@ use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
 use Tpetry\QueryExpressions\Operator\Logical\CondAnd;
 use Tpetry\QueryExpressions\Value\Value;
-use yii\base\InvalidValueException;
+use UnexpectedValueException;
 
 /**
  * @internal
@@ -211,7 +211,6 @@ trait FormatsResults
         }
 
         $this->parseOrderColumnMappings($elementQuery, $this->query);
-        $this->parseOrderColumnMappings($elementQuery, $this->subQuery);
     }
 
     private function applyDefaultOrder(ElementQuery $elementQuery): void
@@ -224,7 +223,7 @@ trait FormatsResults
 
         $elementQuery->query->orders = array_filter(
             array: $orders,
-            callback: fn ($order) => ! $order['column'] instanceof OrderByPlaceholderExpression,
+            callback: fn ($order) => ! isset($order['column']) || ! $order['column'] instanceof OrderByPlaceholderExpression,
         );
 
         // Order by was set
@@ -255,14 +254,18 @@ trait FormatsResults
         }
 
         foreach ($elementQuery->defaultOrderBy as $column => $direction) {
+            if ($direction instanceof Expression) {
+                $elementQuery->getQuery()->orderByRaw($direction->getValue($elementQuery->query->getGrammar()));
+
+                continue;
+            }
+
             $direction = match ($direction) {
-                SORT_ASC, 'asc' => 'asc',
                 SORT_DESC, 'desc' => 'desc',
-                default => throw new QueryAbortedException('Invalid sort direction: '.$direction),
+                default => 'asc',
             };
 
-            $elementQuery->query->orderBy($column, $direction);
-            $elementQuery->subQuery->orderBy($column, $direction);
+            $elementQuery->getQuery()->orderBy($column, $direction);
         }
     }
 
@@ -275,6 +278,10 @@ trait FormatsResults
         }
 
         $query->orders = array_map(function ($order) use ($elementQuery) {
+            if (! isset($order['column'])) {
+                return $order;
+            }
+
             if (! is_string($order['column'])) {
                 return $order;
             }
@@ -287,14 +294,9 @@ trait FormatsResults
 
     private function orderBySearchResults(ElementQuery $elementQuery): void
     {
-        $elementQuery->query->orders = array_filter(
-            $elementQuery->query->orders ?? [],
-            fn (array $order) => $order['column'] !== 'score',
-        );
-
-        $elementQuery->subQuery->orders = array_filter(
-            $elementQuery->subQuery->orders ?? [],
-            fn (array $order) => isset($order['column']) && $order['column'] !== 'score',
+        $elementQuery->getQuery()->orders = array_filter(
+            $elementQuery->getQuery()->orders ?? [],
+            fn (array $order) => ! isset($order['column']) || $order['column'] !== 'score',
         );
 
         if (! $elementQuery->searchResults) {
@@ -311,7 +313,7 @@ trait FormatsResults
             [$elementId, $siteId] = array_pad(explode('-', (string) $key, 2), 2, null);
 
             if ($siteId === null) {
-                throw new InvalidValueException("Invalid element search score key: \"$key\". Search scores should be indexed by element ID and site ID (e.g. \"100-1\").");
+                throw new UnexpectedValueException("Invalid element search score key: \"$key\". Search scores should be indexed by element ID and site ID (e.g. \"100-1\").");
             }
 
             $rules[] = new CaseRule(
@@ -324,6 +326,5 @@ trait FormatsResults
         }
 
         $elementQuery->query->orderBy(new CaseGroup($rules, new Value($i + 1)));
-        $elementQuery->subQuery->orderBy(new CaseGroup($rules, new Value($i + 1)));
     }
 }

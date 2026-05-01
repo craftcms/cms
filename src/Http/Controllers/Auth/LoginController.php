@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
-use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Impersonation;
@@ -69,7 +69,7 @@ readonly class LoginController extends AuthenticationController
         ]);
     }
 
-    public function attemptLogin(Request $request, Auth $auth, Impersonation $impersonation): Response
+    public function attemptLogin(Request $request, AuthMethods $auth, Impersonation $impersonation): Response
     {
         $request->validate([
             'loginName' => ['required', 'string'],

@@ -23,10 +23,12 @@ use CraftCms\Cms\Http\Middleware\HandleMatchedElementRoute;
 use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
+use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\RunQueue;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
 use CraftCms\Cms\Http\Middleware\SetCraftGuard;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
+use CraftCms\Cms\Http\Middleware\ShowBrokenImage;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Site\Events\SiteDeleted;
@@ -136,12 +138,14 @@ class RouteServiceProvider extends ServiceProvider
         collect([
             AddLogContext::class,
             SetCraftGuard::class,
+            ResolveSite::class,
             UpdateLocale::class,
             CheckSchemaVersion::class,
             CheckForUpdates::class,
             SendPoweredByHeader::class,
             Enforce2fa::class,
             SetHeaders::class,
+            ShowBrokenImage::class,
         ])->each(fn (string $middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
 
         collect([

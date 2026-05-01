@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Elements;
 
-use Craft;
-use craft\base\ElementInterface;
-use craft\elements\conditions\users\UserCondition;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\OAuth\OAuth;
@@ -17,7 +15,7 @@ use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Actions\Restore;
-use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
@@ -30,7 +28,6 @@ use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
@@ -42,6 +39,7 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Users;
@@ -54,6 +52,7 @@ use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Actions\DeleteUsers;
 use CraftCms\Cms\User\Actions\SuspendUsers;
 use CraftCms\Cms\User\Actions\UnsuspendUsers;
+use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Events\DefineFriendlyName;
 use CraftCms\Cms\User\Events\DefineName;
@@ -61,11 +60,11 @@ use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Notifications\ResetPasswordNotification;
 use CraftCms\Cms\User\Notifications\VerifyEmailNotification;
 use CraftCms\Cms\User\Validation\UserRules;
-use CraftCms\Cms\Validation\Attributes\Ruleset;
+use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
-use Deprecated;
+use Exception;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Auth\Passwords\PasswordBroker;
@@ -75,7 +74,6 @@ use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB as DbFacade;
@@ -86,9 +84,6 @@ use Illuminate\Support\Traits\Macroable;
 use Override;
 use Stringable;
 use Throwable;
-use yii\base\Exception;
-use yii\base\InvalidConfigException;
-use yii\web\BadRequestHttpException;
 
 use function CraftCms\Cms\t;
 
@@ -119,9 +114,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     use Macroable;
     use Notifiable;
 
-    /**
-     * @since 5.0.0
-     */
     public const string GQL_TYPE_NAME = 'User';
 
     private static array $photoColors = [
@@ -147,9 +139,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     // User statuses
     // -------------------------------------------------------------------------
 
-    /**
-     * @since 4.0.0
-     */
     public const string STATUS_INACTIVE = 'inactive';
 
     public const string STATUS_ACTIVE = 'active';
@@ -160,26 +149,201 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
 
     public const string STATUS_LOCKED = 'locked';
 
-    // Validation scenarios
-    // -------------------------------------------------------------------------
+    /**
+     * @var int|null Photo asset ID
+     */
+    #[AllowedInSandbox]
+    public ?int $photoId = null;
 
     /**
-     * @since 4.4.8
+     * @var bool Active
      */
-    public const string SCENARIO_ACTIVATION = 'activation';
+    #[AllowedInSandbox]
+    public bool $active = false;
 
-    public const string SCENARIO_REGISTRATION = 'registration';
+    /**
+     * @var bool Pending
+     */
+    #[AllowedInSandbox]
+    public bool $pending = false;
 
-    public const string SCENARIO_PASSWORD = 'password';
+    /**
+     * @var bool Locked
+     */
+    #[AllowedInSandbox]
+    public bool $locked = false;
 
-    #[Override]
-    public function scenarios(): array
+    /**
+     * @var bool Suspended
+     */
+    #[AllowedInSandbox]
+    public bool $suspended = false;
+
+    /**
+     * @var bool Admin
+     */
+    #[AllowedInSandbox]
+    public bool $admin = false;
+
+    /**
+     * @var string|null Username
+     */
+    #[AllowedInSandbox]
+    public ?string $username = null;
+
+    /**
+     * @var string|null Email
+     */
+    #[AllowedInSandbox]
+    public ?string $email = null;
+
+    /**
+     * @var string|null Password
+     */
+    public ?string $password = null;
+
+    /**
+     * @var int|null Affiliated site ID
+     */
+    #[AllowedInSandbox]
+    public ?int $affiliatedSiteId = null;
+
+    /**
+     * @var DateTime|null Last login date
+     */
+    #[AllowedInSandbox]
+    public ?DateTime $lastLoginDate = null;
+
+    /**
+     * @var int|null Invalid login count
+     */
+    public ?int $invalidLoginCount = null;
+
+    /**
+     * @var DateTime|null Last invalid login date
+     */
+    public ?DateTime $lastInvalidLoginDate = null;
+
+    /**
+     * @var DateTime|null Lockout date
+     */
+    public ?DateTime $lockoutDate = null;
+
+    /**
+     * @var bool Whether the user has a dashboard
+     */
+    public bool $hasDashboard = false;
+
+    /**
+     * @var bool Password reset required
+     */
+    public bool $passwordResetRequired = false;
+
+    /**
+     * @var DateTime|null Last password change date
+     */
+    public ?DateTime $lastPasswordChangeDate = null;
+
+    /**
+     * @var string|null Unverified email
+     */
+    public ?string $unverifiedEmail = null;
+
+    /**
+     * @var string|null New password
+     */
+    public ?string $newPassword = null;
+
+    /**
+     * @var string|null Current password
+     */
+    public ?string $currentPassword = null;
+
+    /**
+     * @var string|null Last login attempt IP address.
+     */
+    public ?string $lastLoginAttemptIp = null;
+
+    /**
+     * @var string|null Session remember token
+     */
+    public ?string $remember_token = null;
+
+    /**
+     * @var self|null The user who should take over the user’s content if the user is deleted.
+     */
+    public ?User $inheritorOnDelete = null;
+
+    /**
+     * @var ElementCollection<Address> Addresses
+     *
+     * @see getAddresses()
+     */
+    private ElementCollection $_addresses;
+
+    /**
+     * @see getAddressManager()
+     */
+    private NestedElementManager $_addressManager;
+
+    /**
+     * @see getName()
+     * @see setName()
+     */
+    private ?string $_name = null;
+
+    /**
+     * @see getFriendlyName()
+     * @see setFriendlyName()
+     */
+    private string|bool|null $_friendlyName = null;
+
+    /**
+     * @var Asset|false|null user photo
+     */
+    private Asset|null|false $_photo = null;
+
+    /**
+     * @var UserGroup[]|null The cached list of groups the user belongs to. Set by [[getGroups()]].
+     */
+    private ?array $_groups = null;
+
+    /**
+     * @see setAttributesFromRequest()
+     * @see afterSave()
+     */
+    private bool $sendVerificationEmailAfterRequest = false;
+
+    public function __construct($config = [])
     {
-        return array_merge(parent::scenarios(), [
-            self::SCENARIO_PASSWORD => ['newPassword'],
-            self::SCENARIO_REGISTRATION => ['username', 'email', 'newPassword'],
-            self::SCENARIO_ACTIVATION => ['username', 'email'],
-        ]);
+        parent::__construct($config);
+
+        // Is this user in cooldown mode, and are they past their window?
+        if (
+            $this->locked &&
+            Cms::config()->cooldownDuration &&
+            ! $this->getRemainingCooldownTime()
+        ) {
+            Users::unlockUser($this);
+        }
+
+        // Convert IDNA ASCII to Unicode
+        if ($this->username) {
+            $this->username = Str::idnToUtf8Email($this->username);
+        }
+        if ($this->email) {
+            $this->email = Str::idnToUtf8Email($this->email);
+        }
+
+        if (empty($this->username) && Cms::config()->useEmailAsUsername) {
+            $this->username = $this->email;
+        }
+
+        if ($this->password === '') {
+            $this->password = null;
+        }
+
+        $this->normalizeNames();
     }
 
     public function getAuthIdentifierName(): string
@@ -270,13 +434,10 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return new UserQuery;
     }
 
-    /**
-     * @return UserCondition
-     */
     #[Override]
-    public static function createCondition(): ElementConditionInterface
+    public static function createCondition(): UserCondition
     {
-        return Craft::createObject(UserCondition::class, [self::class]);
+        return new UserCondition(self::class);
     }
 
     #[Override]
@@ -356,25 +517,11 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[Override]
     protected static function defineActions(string $source): array
     {
-        $actions = [];
-
-        if (Gate::check('moderateUsers')) {
-            // Suspend
-            $actions[] = SuspendUsers::class;
-
-            // Unsuspend
-            $actions[] = UnsuspendUsers::class;
-        }
-
-        if (Gate::check('deleteUsers')) {
-            // Delete
-            $actions[] = DeleteUsers::class;
-        }
-
-        // Restore
-        $actions[] = Restore::class;
-
-        return $actions;
+        return collect()
+            ->when(Gate::check('moderateUsers'), fn ($actions) => $actions->push(SuspendUsers::class, UnsuspendUsers::class))
+            ->when(Gate::check('deleteUsers'), fn ($actions) => $actions->push(DeleteUsers::class))
+            ->push(Restore::class)
+            ->all();
     }
 
     #[Override]
@@ -584,177 +731,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return parent::eagerLoadingMap($sourceElements, $handle);
     }
 
-    /**
-     * @var int|null Photo asset ID
-     */
-    #[AllowedInSandbox]
-    public ?int $photoId = null;
-
-    /**
-     * @var bool Active
-     *
-     * @since 4.0.0
-     */
-    #[AllowedInSandbox]
-    public bool $active = false;
-
-    /**
-     * @var bool Pending
-     */
-    #[AllowedInSandbox]
-    public bool $pending = false;
-
-    /**
-     * @var bool Locked
-     */
-    #[AllowedInSandbox]
-    public bool $locked = false;
-
-    /**
-     * @var bool Suspended
-     */
-    #[AllowedInSandbox]
-    public bool $suspended = false;
-
-    /**
-     * @var bool Admin
-     */
-    #[AllowedInSandbox]
-    public bool $admin = false;
-
-    /**
-     * @var string|null Username
-     */
-    #[AllowedInSandbox]
-    public ?string $username = null;
-
-    /**
-     * @var string|null Email
-     */
-    #[AllowedInSandbox]
-    public ?string $email = null;
-
-    /**
-     * @var string|null Password
-     */
-    public ?string $password = null;
-
-    /**
-     * @var int|null Affiliated site ID
-     *
-     * @since 5.6.0
-     */
-    #[AllowedInSandbox]
-    public ?int $affiliatedSiteId = null;
-
-    /**
-     * @var DateTime|null Last login date
-     */
-    #[AllowedInSandbox]
-    public ?DateTime $lastLoginDate = null;
-
-    /**
-     * @var int|null Invalid login count
-     */
-    public ?int $invalidLoginCount = null;
-
-    /**
-     * @var DateTime|null Last invalid login date
-     */
-    public ?DateTime $lastInvalidLoginDate = null;
-
-    /**
-     * @var DateTime|null Lockout date
-     */
-    public ?DateTime $lockoutDate = null;
-
-    /**
-     * @var bool Whether the user has a dashboard
-     *
-     * @since 3.0.4
-     */
-    public bool $hasDashboard = false;
-
-    /**
-     * @var bool Password reset required
-     */
-    public bool $passwordResetRequired = false;
-
-    /**
-     * @var DateTime|null Last password change date
-     */
-    public ?DateTime $lastPasswordChangeDate = null;
-
-    /**
-     * @var string|null Unverified email
-     */
-    public ?string $unverifiedEmail = null;
-
-    /**
-     * @var string|null New password
-     */
-    public ?string $newPassword = null;
-
-    /**
-     * @var string|null Current password
-     */
-    public ?string $currentPassword = null;
-
-    /**
-     * @var string|null Last login attempt IP address.
-     */
-    public ?string $lastLoginAttemptIp = null;
-
-    /**
-     * @var string|null Session remember token
-     */
-    public ?string $remember_token = null;
-
-    /**
-     * @var self|null The user who should take over the user’s content if the user is deleted.
-     */
-    public ?User $inheritorOnDelete = null;
-
-    /**
-     * @var ElementCollection<Address> Addresses
-     *
-     * @see getAddresses()
-     */
-    private ElementCollection $_addresses;
-
-    /**
-     * @see getAddressManager()
-     */
-    private NestedElementManager $_addressManager;
-
-    /**
-     * @see getName()
-     * @see setName()
-     */
-    private ?string $_name = null;
-
-    /**
-     * @see getFriendlyName()
-     * @see setFriendlyName()
-     */
-    private string|bool|null $_friendlyName = null;
-
-    /**
-     * @var Asset|false|null user photo
-     */
-    private Asset|null|false $_photo = null;
-
-    /**
-     * @var UserGroup[]|null The cached list of groups the user belongs to. Set by [[getGroups()]].
-     */
-    private ?array $_groups = null;
-
-    /**
-     * @see setAttributesFromRequest()
-     * @see afterSave()
-     */
-    private bool $sendVerificationEmailAfterRequest = false;
-
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new ResetPasswordNotification($token));
@@ -800,39 +776,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return $this->unverifiedEmail ?? $this->email;
     }
 
-    #[Override]
-    public function init(): void
-    {
-        parent::init();
-
-        // Is this user in cooldown mode, and are they past their window?
-        if (
-            $this->locked &&
-            Cms::config()->cooldownDuration &&
-            ! $this->getRemainingCooldownTime()
-        ) {
-            Users::unlockUser($this);
-        }
-
-        // Convert IDNA ASCII to Unicode
-        if ($this->username) {
-            $this->username = Str::idnToUtf8Email($this->username);
-        }
-        if ($this->email) {
-            $this->email = Str::idnToUtf8Email($this->email);
-        }
-
-        if (empty($this->username) && Cms::config()->useEmailAsUsername) {
-            $this->username = $this->email;
-        }
-
-        if ($this->password === '') {
-            $this->password = null;
-        }
-
-        $this->normalizeNames();
-    }
-
     /**
      * Use the full name or username as the string representation.
      */
@@ -840,6 +783,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public function __toString(): string
     {
         $name = $this->getName();
+
         if ($name !== '') {
             return $name;
         }
@@ -944,7 +888,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         if (isset($values['email'])) {
             // make sure they have an elevated session
             if (! $this->isPasswordConfirmed()) {
-                throw new BadRequestHttpException(t('An elevated session is required to change a user’s email.'));
+                abort(400, t('An elevated session is required to change a user’s email.'));
             }
 
             if ($this->email !== null) {
@@ -952,7 +896,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
                 if ($this->getIsCurrent() || Gate::check('administrateUsers')) {
                     if (
                         Edition::get()->value >= Edition::Pro->value &&
-                        app(ProjectConfig::class)->get('users.requireEmailVerification') &&
+                        ProjectConfig::get('users.requireEmailVerification') &&
                         ! Gate::check('administrateUsers')
                     ) {
                         // set it as the unverified email instead, and
@@ -969,7 +913,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     }
 
     #[Override]
-    public function setAttributes($values, $safeOnly = true): void
+    public function setAttributes($values): void
     {
         if (array_key_exists('firstName', $values) || array_key_exists('lastName', $values)) {
             // Unset fullName so NameTrait::prepareNamesForSave() can set it
@@ -979,13 +923,11 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             $this->firstName = $this->lastName = null;
         }
 
-        parent::setAttributes($values, $safeOnly);
+        parent::setAttributes($values);
     }
 
     /**
      * Returns whether the user account can be logged into.
-     *
-     * @since 4.0.0
      */
     public function getIsCredentialed(): bool
     {
@@ -994,8 +936,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
 
     /**
      * Returns whether the user has a password.
-     *
-     * @since 5.6.0
      */
     #[AllowedInSandbox]
     public function getHasPassword(): bool
@@ -1011,8 +951,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
 
     /**
      * Returns whether the user has an associated SSO identity.
-     *
-     * @since 5.7.8
      */
     #[AllowedInSandbox]
     public function getHasSsoIdentity(): bool
@@ -1027,7 +965,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[Override]
     public function getFieldLayout(): ?FieldLayout
     {
-        // @TODO: Field layout for non-legacy
         return app(Fields::class)->getLayoutByType(User::class);
     }
 
@@ -1035,51 +972,43 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * Gets the user’s addresses.
      *
      * @return ElementCollection<Address>
-     *
-     * @since 4.0.0
      */
     #[AllowedInSandbox]
     public function getAddresses(): ElementCollection
     {
-        if (! isset($this->_addresses)) {
-            if (! $this->id) {
-                /** @var ElementCollection<Address> */
-                return ElementCollection::make();
-            }
-
-            $this->_addresses = $this->createAddressQuery()
-                ->whereNull('fieldId')
-                ->get();
+        if (isset($this->_addresses)) {
+            return $this->_addresses;
         }
 
-        return $this->_addresses;
+        if (! $this->id) {
+            return new ElementCollection;
+        }
+
+        return $this->_addresses = $this->createAddressQuery()
+            ->whereNull('fieldId')
+            ->get();
     }
 
     /**
      * Returns a nested element manager for the user’s addresses.
-     *
-     * @since 5.0.0
      */
     public function getAddressManager(): NestedElementManager
     {
-        if (! isset($this->_addressManager)) {
-            $this->_addressManager = new NestedElementManager(
-                Address::class,
-                fn () => $this->createAddressQuery(),
-                [
-                    'attribute' => 'addresses',
-                    'propagationMethod' => PropagationMethod::None,
-                ],
-            );
-        }
-
-        return $this->_addressManager;
+        return $this->_addressManager ??= new NestedElementManager(
+            Address::class,
+            fn () => $this->createAddressQuery(),
+            [
+                'attribute' => 'addresses',
+                'propagationMethod' => PropagationMethod::None,
+            ],
+        );
     }
 
     #[Override]
     public function afterRestore(): void
     {
         $this->getAddressManager()->restoreNestedElements($this);
+
         parent::afterRestore();
     }
 
@@ -1087,7 +1016,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     {
         return Address::find()
             ->owner($this)
-            ->orderBy(['id' => SORT_ASC]);
+            ->orderBy('id');
     }
 
     /**
@@ -1120,11 +1049,11 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * Sets an array of user groups on the user.
      *
-     * @param  UserGroup[]|UserGroup[]  $groups  An array of UserGroup objects.
+     * @param  UserGroup[]  $groups  An array of UserGroup objects.
      */
     public function setGroups(array $groups): void
     {
-        if (Edition::get()->value >= Edition::Pro->value) {
+        if (Edition::isAtLeast(Edition::Pro)) {
             $this->_groups = $groups;
         }
     }
@@ -1146,11 +1075,11 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         }
 
         if (is_numeric($group)) {
-            return Collection::make($this->getGroups())->contains('id', $group);
+            return collect($this->getGroups())->contains('id', $group);
         }
 
         /** @phpstan-ignore argument.type */
-        return Collection::make($this->getGroups())->containsStrict('handle', $group);
+        return collect($this->getGroups())->containsStrict('handle', $group);
     }
 
     /**
@@ -1161,8 +1090,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      *
      * @param  array<int|string|UserGroup>  $groups  The user groups, handles, or IDs
      * @param  bool  $all  Whether to only return `true` if the user is in *all* of the provided groups
-     *
-     * @since 5.9.0
      */
     #[AllowedInSandbox]
     public function isInGroups(array $groups, bool $all = false): bool
@@ -1175,26 +1102,12 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     }
 
     /**
-     * Returns the user’s full name.
-     */
-    #[Deprecated(message: 'in 4.0.0. [[fullName]] should be used instead.')]
-    #[AllowedInSandbox]
-    public function getFullName(): ?string
-    {
-        return $this->fullName;
-    }
-
-    /**
      * Returns the user’s full name or username.
      */
     #[AllowedInSandbox]
     public function getName(): string
     {
-        if (! isset($this->_name)) {
-            $this->_name = $this->_defineName();
-        }
-
-        return $this->_name;
+        return $this->_name ??= $this->_defineName();
     }
 
     private function _defineName(): string
@@ -1206,8 +1119,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
 
     /**
      * Sets the user’s name.
-     *
-     * @since 3.7.0
      */
     public function setName(string $name): void
     {
@@ -1236,8 +1147,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
 
     /**
      * Sets the user’s friendly name.
-     *
-     * @since 3.7.0
      */
     public function setFriendlyName(string $friendlyName): void
     {
@@ -1246,8 +1155,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
 
     /**
      * Returns the user’s affiliated site, if they have one.
-     *
-     * @since 5.6.0
      */
     #[AllowedInSandbox]
     public function getAffiliatedSite(): ?Site
@@ -1260,38 +1167,24 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     }
 
     #[Override]
-    public function getStatus(): ?string
+    public function getStatus(): string
     {
         // If they're disabled or archived, go with that
         $status = parent::getStatus();
-        if ($status !== self::STATUS_ENABLED) {
-            return $status;
-        }
 
-        if ($this->suspended) {
-            return self::STATUS_SUSPENDED;
-        }
-
-        if ($this->archived) {
-            return self::STATUS_ARCHIVED;
-        }
-
-        if ($this->pending) {
-            return self::STATUS_PENDING;
-        }
-
-        if ($this->active) {
-            return self::STATUS_ACTIVE;
-        }
-
-        return self::STATUS_INACTIVE;
+        return match (true) {
+            $status !== self::STATUS_ENABLED => $status,
+            $this->suspended => self::STATUS_SUSPENDED,
+            $this->archived => self::STATUS_ARCHIVED,
+            $this->pending => self::STATUS_PENDING,
+            $this->active => self::STATUS_ACTIVE,
+            default => self::STATUS_INACTIVE,
+        };
     }
 
     protected function thumbUrl(int $size): ?string
     {
-        $photo = $this->getPhoto();
-
-        if ($photo) {
+        if ($photo = $this->getPhoto()) {
             return AssetsService::getThumbUrl($photo, $size, iconFallback: false);
         }
 
@@ -1371,24 +1264,18 @@ XML;
 
     /**
      * Returns whether the user can register additional users.
-     *
-     * @since 5.0.0
      */
     final public function canRegisterUsers(): bool
     {
-        return
-            $this->can('registerUsers') &&
-            Users::canCreateUsers();
+        return $this->can('registerUsers') && Users::canCreateUsers();
     }
 
     /**
      * Returns whether the user is authorized to assign any user groups to users.
-     *
-     * @since 4.0.0
      */
     public function canAssignUserGroups(): bool
     {
-        if (Edition::get()->value < Edition::Pro->value) {
+        if (! Edition::isAtLeast(Edition::Pro)) {
             return false;
         }
 
@@ -1822,8 +1709,6 @@ JS, [
      * If the user doesn’t have a preferred locale, their preferred language will be used instead.
      *
      * @return string|null The preferred locale
-     *
-     * @since 3.5.0
      */
     public function getPreferredLocale(): ?string
     {
@@ -1832,8 +1717,6 @@ JS, [
 
     /**
      * Returns whether the user prefers to have form fields autofocused on page load.
-     *
-     * @since 5.0.0
      */
     public function getAutofocusPreferred(): bool
     {
@@ -1924,7 +1807,7 @@ JS, [
                 return $locale ? I18N::getLocaleById($locale)->getDisplayName(app()->getLocale()) : '';
 
             case 'is2faEnabled':
-                $enabled = app(\CraftCms\Cms\Auth\Auth::class)->hasActiveMethod($this);
+                $enabled = app(AuthMethods::class)->hasActiveMethod($this);
                 if ($this->viewMode === 'cards') {
                     return app(StatusHtml::class)->statusLabelHtml([
                         'color' => $enabled ? Color::Teal : Color::Gray,
@@ -2025,9 +1908,6 @@ JS, [
         ];
     }
 
-    /**
-     * @since 3.3.0
-     */
     #[Override]
     public function getGqlTypeName(): string
     {
@@ -2054,10 +1934,6 @@ JS, [
         return parent::beforeSave($isNew);
     }
 
-    /**
-     * @throws InvalidConfigException
-     * @throws Exception
-     */
     #[Override]
     public function afterSave(bool $isNew): void
     {

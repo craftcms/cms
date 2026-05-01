@@ -3,10 +3,7 @@ import {usePage} from '@inertiajs/vue3';
 export interface CraftData {
   system: {
     name: string;
-    icon: {
-      url: string;
-      name: string;
-    } | null;
+    icon: string | null;
   };
   app: {
     version: string;
@@ -40,8 +37,8 @@ export function useHelpers() {
   return {
     // @TODO move to NPM package
     getActionUrl(action: string) {
-      return `${craftData.actionUrl}${action}`;
-      // return getUrl(craftData.actionUrl, action);
+      //return `${craftData.actionUrl}${action}`;
+      return getUrl(craftData.actionUrl, action);
     },
     // @TODO move to NPM package
     getCpUrl(action: string) {

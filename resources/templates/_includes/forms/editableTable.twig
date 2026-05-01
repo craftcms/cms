@@ -72,9 +72,9 @@
 {% for col in cols %}
     {%- switch col.type %}
         {%- case 'time' %}
-            {%- do view.registerAssetBundle('craft\\web\\assets\\timepicker\\TimepickerAsset') %}
+            {%- do registerLegacyAsset('CraftCms\\Cms\\View\\LegacyAssets\\TimepickerAsset') %}
         {%- case 'template' %}
-            {%- do view.registerAssetBundle("craft\\web\\assets\\vue\\VueAsset") %}
+            {%- do registerLegacyAsset("CraftCms\\Cms\\View\\LegacyAssets\\VueAsset") %}
     {%- endswitch %}
 {% endfor %}
 
@@ -134,7 +134,7 @@
                         <td class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}"{% if col.width ?? false %} width="{{ col.width }}"{% endif %}>{{ value|raw }}</td>
                     {% else %}
                         {% set headingId = "#{id}-heading-#{loop.index}" %}
-                        {% set hasErrors = cell.hasErrors ?? false %}
+                        {% set hasErrors = cell.errors.isNotEmpty() ?? false %}
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
                         {% set isCode = (col.code ?? false) or col.type == 'color' %}
                         <td class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width ?? false %} width="{{ col.width }}"{% endif %}>

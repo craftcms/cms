@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig;
 
-use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Twig\Contracts\SafeHtml;
@@ -15,6 +14,7 @@ use CraftCms\Cms\Twig\Extensions\CpExtension;
 use CraftCms\Cms\Twig\Extensions\DateTwigExtension;
 use CraftCms\Cms\Twig\Extensions\FeExtension;
 use CraftCms\Cms\Twig\Extensions\HtmlTwigExtension;
+use CraftCms\Cms\Twig\Extensions\LaravelExtension;
 use CraftCms\Cms\Twig\Extensions\SinglePreloaderExtension;
 use CraftCms\Cms\Twig\Extensions\TextTwigExtension;
 use CraftCms\Cms\View\TemplateMode;
@@ -90,6 +90,7 @@ class Twig
 
             // Craft Twig Extensions
             CoreTwigExtension::class,
+            LaravelExtension::class,
             DateTwigExtension::class,
             ArrayTwigExtension::class,
             TextTwigExtension::class,

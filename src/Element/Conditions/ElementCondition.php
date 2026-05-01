@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Conditions;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Condition\BaseCondition;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
@@ -19,7 +19,7 @@ use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use Override;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 class ElementCondition extends BaseCondition implements ElementConditionInterface
 {
@@ -82,7 +82,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             $elementType !== null &&
             (! class_exists($elementType) || ! is_subclass_of($elementType, ElementInterface::class))
         ) {
-            throw new InvalidConfigException("Invalid element type: $elementType");
+            throw new RuntimeException("Invalid element type: $elementType");
         }
 
         if ($elementType !== null) {

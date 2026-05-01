@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\View\HtmlStack;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Twig\Environment;
 use Twig\Error\RuntimeError;
 use Twig\Loader\ArrayLoader;
 use Twig\Markup;
 use Twig\Source;
-use yii\base\BaseObject;
 
 beforeEach(function () {
     TestTemplate::resetFallbacks();
@@ -137,7 +138,7 @@ class TestTemplate extends Template
     }
 }
 
-class TemplateAttributeTarget extends BaseObject
+class TemplateAttributeTarget extends Component
 {
     public string $title = 'Default';
 
@@ -147,8 +148,5 @@ class TemplateAttributeTarget extends BaseObject
     }
 }
 
-class TemplateModelAttributeTarget extends BaseModel
-{
-    #[Override]
-    protected $table = 'template_test_models';
-}
+#[Table(name: 'template_test_models')]
+class TemplateModelAttributeTarget extends BaseModel {}

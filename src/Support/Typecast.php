@@ -76,6 +76,19 @@ class Typecast
         }
     }
 
+    public static function isDateTimeProperty(string $class, string $property): bool
+    {
+        $type = self::propertyType($class, $property);
+
+        if ($type === false) {
+            return false;
+        }
+
+        [$typeName] = $type;
+
+        return is_a($typeName, DateTimeInterface::class, true);
+    }
+
     public static function isInt(float|int|string $value): bool
     {
         if (! is_numeric($value)) {

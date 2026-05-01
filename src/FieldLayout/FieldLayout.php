@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout;
 
 use Closure;
-use Craft;
-use craft\base\ElementInterface;
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
@@ -40,14 +39,14 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use InvalidArgumentException;
 use Override;
-use yii\base\InvalidConfigException;
+use RuntimeException;
 
 use function CraftCms\Cms\t;
 
 class FieldLayout extends Component
 {
     use Validates {
-        getAttributes as traitGetAttributes;
+        validationData as traitValidationData;
     }
 
     public ?int $id = null;
@@ -189,9 +188,9 @@ class FieldLayout extends Component
     }
 
     #[Override]
-    public function getAttributes(): array
+    public function validationData(): array
     {
-        return array_merge($this->traitGetAttributes(), [
+        return array_merge($this->traitValidationData(), [
             'customFields' => $this->getCustomFields(),
         ]);
     }
@@ -421,10 +420,9 @@ class FieldLayout extends Component
             return $this->_availableCustomFields;
         }
 
-        $customFields = Fields::getAllFields()->map(fn (FieldInterface $field) => Craft::createObject([
-            'class' => CustomField::class,
+        $customFields = Fields::getAllFields()->map(fn (FieldInterface $field) => new CustomField($field, [
             'layout' => $this,
-        ], [$field]))->all();
+        ]))->all();
 
         $this->_availableCustomFields = [
             t('Custom Fields') => $customFields,
@@ -452,12 +450,14 @@ class FieldLayout extends Component
 
         // Instantiate them
         foreach ($event->fields as $field) {
-            if (is_string($field) || is_array($field)) {
-                $field = Craft::createObject($field);
-            }
+            $field = match (true) {
+                is_string($field) => app()->make($field),
+                is_array($field) => app()->make(Arr::pull($field, 'class'), ['config' => $field]),
+                default => $field,
+            };
 
             if (! $field instanceof BaseField) {
-                throw new InvalidConfigException('Invalid standard field config');
+                throw new RuntimeException('Invalid standard field config');
             }
 
             $field->setLayout($this);
@@ -491,12 +491,14 @@ class FieldLayout extends Component
 
         // Instantiate them
         foreach ($elements as &$element) {
-            if (is_string($element) || is_array($element)) {
-                $element = Craft::createObject($element);
-            }
+            $element = match (true) {
+                is_string($element) => app()->make($element),
+                is_array($element) => app()->make(Arr::pull($element, 'class'), ['config' => $element]),
+                default => $element,
+            };
 
             if (! $element instanceof FieldLayoutElement) {
-                throw new InvalidConfigException('Invalid UI element config');
+                throw new RuntimeException('Invalid UI element config');
             }
         }
 

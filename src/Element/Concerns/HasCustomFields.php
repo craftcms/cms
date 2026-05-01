@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use craft\web\UploadedFile;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Elements\ContentBlock;
@@ -13,8 +12,8 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 use UnitEnum;
-use yii\base\InvalidConfigException;
 
 /**
  * HasCustomFields provides custom field handling for elements.
@@ -306,7 +305,7 @@ trait HasCustomFields
         }
 
         return $this->_fieldParamNamePrefix
-            && UploadedFile::getInstancesByName("{$this->_fieldParamNamePrefix}.{$field->handle}");
+            && request()->hasFile("{$this->_fieldParamNamePrefix}.{$field->handle}");
     }
 
     public function getFieldParamNamespace(): ?string
@@ -394,7 +393,7 @@ trait HasCustomFields
     {
         try {
             $fieldLayout = $this->getFieldLayout();
-        } catch (InvalidConfigException) {
+        } catch (RuntimeException) {
             return [];
         }
 

@@ -8,23 +8,16 @@
 namespace craft\web\assets\xregexp;
 
 use craft\web\AssetBundle;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Xregexp asset bundle.
+ * @deprecated 6.0.0
  */
 class XregexpAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
+    public function registerAssetFiles($view)
     {
-        $this->sourcePath = __dir__ . '/dist';
-
-        $this->js = [
-            'xregexp-all.js',
-        ];
-
-        parent::init();
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\XregexpAsset::class);
     }
 }

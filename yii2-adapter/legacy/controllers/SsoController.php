@@ -32,6 +32,7 @@ use function CraftCms\Cms\t;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @internal
  * @since 5.3.0
+ * @deprecated 6.0.0.
  */
 class SsoController extends Controller
 {
@@ -158,7 +159,7 @@ class SsoController extends Controller
 
         if ($exception instanceof SsoFailedException) {
             $user = $exception->identity;
-            $info = app(\CraftCms\Cms\Auth\Auth::class)->getLoginFailureInfo(AuthError::tryFrom($exception->getMessage()), $user);
+            $info = app(\CraftCms\Cms\Auth\AuthMethods::class)->getLoginFailureInfo(AuthError::tryFrom($exception->getMessage()), $user);
             $message = $info[1] ?? $message;
         }
 

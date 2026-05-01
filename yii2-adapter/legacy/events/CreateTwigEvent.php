@@ -15,6 +15,7 @@ use CraftCms\Cms\Twig\Environment;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.3.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Twig\Events\TwigCreated} instead.
  */
 class CreateTwigEvent extends Event
 {

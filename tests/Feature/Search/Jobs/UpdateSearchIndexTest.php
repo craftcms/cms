@@ -2,10 +2,13 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Search\Jobs\UpdateSearchIndex;
+use CraftCms\Cms\Support\Facades\Sites;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 
 it('extends Job', function () {
@@ -107,6 +110,35 @@ it('can execute on entries', function () {
     $job->handle();
 
     expect(true)->toBeTrue();
+});
+
+it('can execute queued updates on the sync queue', function () {
+    $entry = Entry::factory()->create();
+    $siteId = Sites::getCurrentSite()->id;
+
+    DB::table(Table::SEARCHINDEX)
+        ->where('elementId', $entry->id)
+        ->delete();
+
+    $jobId = DB::table(Table::SEARCHINDEXQUEUE)->insertGetId([
+        'elementId' => $entry->id,
+        'siteId' => $siteId,
+        'reserved' => false,
+    ]);
+
+    dispatch_sync(new UpdateSearchIndex(
+        elementType: EntryElement::class,
+        elementId: $entry->id,
+        siteId: $siteId,
+        queued: true,
+    ));
+
+    expect(DB::table(Table::SEARCHINDEX)
+        ->where('elementId', $entry->id)
+        ->exists())->toBeTrue()
+        ->and(DB::table(Table::SEARCHINDEXQUEUE)
+            ->where('id', $jobId)
+            ->exists())->toBeFalse();
 });
 
 it('handles case with no matching elements', function () {

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Operations;
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\AfterMergeCanonicalChanges;
 use CraftCms\Cms\Element\Events\BeforeMergeCanonicalChanges;
@@ -97,8 +97,7 @@ readonly class ElementCanonicalChanges
             throw new InvalidArgumentException('Element was already canonical');
         }
 
-        /** @phpstan-ignore-next-line */
-        if ($element->hasMethod('isEntryTypeCompatible') && ! $element->isEntryTypeCompatible()) {
+        if (method_exists($element, 'isEntryTypeCompatible') && ! $element->isEntryTypeCompatible()) {
             throw new InvalidArgumentException('Entry Type is no longer allowed in this section.');
         }
 

@@ -17,11 +17,13 @@ use Illuminate\Contracts\Console\Isolatable;
 use Illuminate\Foundation\Console\DownCommand;
 use Illuminate\Foundation\Console\UpCommand;
 use Laravel\Prompts\Concerns\Colors;
+use Laravel\Prompts\Support\Logger;
 use Laravel\Prompts\Themes\Default\Concerns\DrawsBoxes;
 use Override;
 use Throwable;
 
 use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\task;
 
 class MigrateCommand extends Command implements Isolatable
 {
@@ -239,10 +241,9 @@ class MigrateCommand extends Command implements Isolatable
             return;
         }
 
-        $this->components->info('Preparing database.');
-
-        $this->components->task('Creating migration table', fn () => $this->callSilent('migrate:install') === 0);
-
-        $this->newLine();
+        task('Preparing database', function (Logger $logger) {
+            $logger->subLabel('Creating migration table');
+            $this->callSilent('migrate:install');
+        }, keepSummary: true);
     }
 }

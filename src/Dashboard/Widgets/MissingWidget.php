@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use craft\base\MissingComponentInterface;
-use craft\base\MissingComponentTrait;
+use CraftCms\Cms\Component\Concerns\MissingComponentTrait;
+use CraftCms\Cms\Component\Contracts\MissingComponentInterface;
+use Override;
 
 class MissingWidget extends Widget implements MissingComponentInterface
 {
     use MissingComponentTrait;
 
-    #[\Override]
+    #[Override]
     public function getBodyHtml(): ?string
     {
         return null;

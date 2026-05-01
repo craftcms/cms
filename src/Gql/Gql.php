@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql;
 
-use Craft;
-use craft\base\ElementInterface as BaseElementInterface;
-use craft\behaviors\FieldLayoutBehavior;
+use BadMethodCallException;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Contracts\ElementInterface as BaseElementInterface;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Gql\Contracts\GeneratorInterface;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
@@ -72,6 +72,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
+use Exception;
 use GraphQL\Error\ClientAware;
 use GraphQL\Error\DebugFlag;
 use GraphQL\Error\Error;
@@ -95,8 +96,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Throwable;
-use yii\base\Exception;
-use yii\base\UnknownMethodException;
 
 use function CraftCms\Cms\t;
 
@@ -288,12 +287,8 @@ class Gql
         bool $debugMode = false,
     ): array {
         $context = [
-            'conditionBuilder' => Craft::createObject([
-                'class' => ElementQueryConditionBuilder::class,
-            ]),
-            'argumentManager' => Craft::createObject([
-                'class' => ArgumentManager::class,
-            ]),
+            'conditionBuilder' => new ElementQueryConditionBuilder,
+            'argumentManager' => new ArgumentManager,
         ];
         $result = $rootValue = null;
         $dep = null;
@@ -923,7 +918,7 @@ class Gql
      */
     public function getContentArguments(array $contexts, string $elementType): array
     {
-        /** @var FieldLayoutBehavior[] $contexts */
+        /** @var FieldLayoutProviderInterface[] $contexts */
         return $this->getOrSetContentArguments($elementType, function () use ($contexts, $elementType): array {
             $fields = [];
             $generatedFields = [];
@@ -934,7 +929,7 @@ class Gql
                     try {
                         array_push($fields, ...$layout->getCustomFields());
                         array_push($generatedFields, ...$layout->getGeneratedFields());
-                    } catch (UnknownMethodException) {
+                    } catch (BadMethodCallException) {
                     }
                 }
             }
@@ -975,7 +970,7 @@ class Gql
             }
 
             // Log it.
-            Craft::$app->getErrorHandler()->logException($originException);
+            report($originException);
         }
 
         return array_map($formatter, $errors);
@@ -985,7 +980,7 @@ class Gql
     {
         if (! array_key_exists($typeName, $this->_typeDefinitions)) {
             if ($this->_typeManager === null) {
-                $this->_typeManager = Craft::createObject(TypeManager::class);
+                $this->_typeManager = new TypeManager;
             }
 
             $this->_typeDefinitions[$typeName] = $this->_typeManager->registerFieldDefinitions($fields, $typeName);
@@ -1028,7 +1023,7 @@ class Gql
                 '::'.serialize($variables).
                 ($operationName ? "::$operationName" : '');
         } catch (Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
+            report($e);
             $cacheKey = null;
         }
 
@@ -1123,10 +1118,7 @@ class Gql
                 $directiveClasses[] = ParseRefs::class;
             }
 
-            if (
-                ! Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective &&
-                in_array('directive:transform', $schema->scope)
-            ) {
+            if (in_array('directive:transform', $schema->scope)) {
                 $directiveClasses[] = Transform::class;
             }
         }

@@ -10,10 +10,10 @@ use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
+use CraftCms\Cms\Support\Facades\Assets;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use yii\base\InvalidConfigException;
 
 it('resolves explicit disk targets to Laravel disk wrappers', function () {
     config()->set('filesystems.disks.explicit-disk', [
@@ -111,7 +111,7 @@ it('validates literal filesystem references and permits unresolved env values', 
     ]);
 
     expect($invalid->validate(['fsHandle']))->toBeFalse();
-    expect($invalid->hasErrors('fsHandle'))->toBeTrue();
+    expect($invalid->errors()->has('fsHandle'))->toBeTrue();
 
     $unresolved = new Volume([
         'name' => 'Unresolved',
@@ -120,7 +120,7 @@ it('validates literal filesystem references and permits unresolved env values', 
     ]);
 
     expect($unresolved->validate(['fsHandle']))->toBeTrue();
-    expect($unresolved->hasErrors('fsHandle'))->toBeFalse();
+    expect($unresolved->errors()->has('fsHandle'))->toBeFalse();
 });
 
 it('normalizes subpath uniqueness checks by resolved storage target', function () {
@@ -147,7 +147,7 @@ it('normalizes subpath uniqueness checks by resolved storage target', function (
     ]);
 
     expect($volume->validate(['subpath']))->toBeFalse();
-    expect($volume->hasErrors('subpath'))->toBeTrue();
+    expect($volume->errors()->has('subpath'))->toBeTrue();
 });
 
 it('rejects internal disk targets', function () {
@@ -163,7 +163,7 @@ it('rejects internal disk targets', function () {
     ]);
 
     expect($prefixed->validate(['fsHandle']))->toBeFalse();
-    expect($prefixed->hasErrors('fsHandle'))->toBeTrue();
+    expect($prefixed->errors()->has('fsHandle'))->toBeTrue();
 
     $plain = new Volume([
         'name' => 'Plain Internal',
@@ -172,7 +172,7 @@ it('rejects internal disk targets', function () {
     ]);
 
     expect($plain->validate(['fsHandle']))->toBeFalse();
-    expect($plain->hasErrors('fsHandle'))->toBeTrue();
+    expect($plain->errors()->has('fsHandle'))->toBeTrue();
 });
 
 it('resolves tempAssetUploadFs for Craft handles and disk targets', function () {
@@ -183,21 +183,21 @@ it('resolves tempAssetUploadFs for Craft handles and disk targets', function () 
 
     Cms::config()->tempAssetUploadFs = 'disk:temp-disk';
 
-    $diskTarget = Craft::$app->getAssets()->getTempAssetUploadFs();
+    $diskTarget = Assets::getTempAssetUploadFs();
     expect($diskTarget)->toBeInstanceOf(DiskFilesystem::class)
         ->and($diskTarget->disk)->toBe('temp-disk')
         ->and(AssetsHelper::isTempUploadFs($diskTarget))->toBeTrue();
 
     Cms::config()->tempAssetUploadFs = 'temp-disk';
 
-    $plainFallbackTarget = Craft::$app->getAssets()->getTempAssetUploadFs();
+    $plainFallbackTarget = Assets::getTempAssetUploadFs();
     expect($plainFallbackTarget)->toBeInstanceOf(DiskFilesystem::class)
         ->and($plainFallbackTarget->disk)->toBe('temp-disk')
         ->and(AssetsHelper::isTempUploadFs($plainFallbackTarget))->toBeTrue();
 
     createVolumeLocalFilesystem('temp-disk');
 
-    $fsFirstTarget = Craft::$app->getAssets()->getTempAssetUploadFs();
+    $fsFirstTarget = Assets::getTempAssetUploadFs();
     expect($fsFirstTarget)->not->toBeInstanceOf(DiskFilesystem::class)
         ->and(AssetsHelper::isTempUploadFs($fsFirstTarget))->toBeTrue();
 });
@@ -363,7 +363,7 @@ it('throws when getFs() is called without a filesystem handle', function () {
     ]);
 
     $volume->getFs();
-})->throws(InvalidConfigException::class, 'Volume is missing its filesystem handle.');
+})->throws(RuntimeException::class, 'Volume is missing its filesystem handle.');
 
 it('returns MissingFs when the filesystem handle cannot be resolved', function () {
     $volume = new Volume([

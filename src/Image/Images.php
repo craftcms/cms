@@ -10,6 +10,7 @@ use CraftCms\Cms\Image\Enums\ImageDriver;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\PHP;
 use enshrined\svgSanitize\Sanitizer;
+use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Log;
 use Imagick;
@@ -17,7 +18,6 @@ use Imagine\Gd\Imagine as GdImagine;
 use Imagine\Image\Format;
 use Imagine\Imagick\Imagine as ImagickImagine;
 use Throwable;
-use yii\base\Exception;
 
 use function CraftCms\Cms\maxPowerCaptain;
 

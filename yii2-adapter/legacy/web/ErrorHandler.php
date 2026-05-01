@@ -10,7 +10,6 @@ namespace craft\web;
 use Craft;
 use craft\events\ExceptionEvent;
 use craft\events\RedirectEvent;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Twig\TwigExceptionMapper;
 use GuzzleHttp\Exception\ClientException;
@@ -26,7 +25,6 @@ use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\UserException;
 use yii\web\HttpException;
-use yii\web\NotFoundHttpException;
 use function CraftCms\Cms\t;
 
 /**
@@ -209,18 +207,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
             $response->format = Response::FORMAT_HTML;
         }
 
-        // Show a broken image for image requests
-        if (
-            $exception instanceof NotFoundHttpException &&
-            $request &&
-            $request->getWantsImage() &&
-            Cms::config()->brokenImagePath
-        ) {
-            $this->errorAction = 'app/broken-image';
-        }
-        // Show the full exception view for all exceptions when Dev Mode is enabled (don't skip `UserException`s)
-        // or if the user is an admin and has indicated they want to see it
-        elseif ($this->showExceptionDetails()) {
+        if ($this->showExceptionDetails()) {
             $this->errorAction = null;
             $this->errorView = $this->exceptionView;
         }

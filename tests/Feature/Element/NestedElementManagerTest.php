@@ -2,15 +2,17 @@
 
 declare(strict_types=1);
 
-use craft\base\ElementInterface;
 use CraftCms\Cms\Address\Elements\Address as AddressElement;
 use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
+use CraftCms\Cms\Field\Addresses;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -278,4 +280,83 @@ it('deletes and restores attribute-backed user addresses with owner state', func
     expect($restoredAddress)->not->toBeNull()
         ->and(DB::table(Table::ELEMENTS)->where('id', $address->id)->value('deletedWithOwner'))->toBeNull()
         ->and(DB::table(Table::ELEMENTS)->where('id', $address->id)->value('dateDeleted'))->toBeNull();
+});
+
+it('applies draft-owned field addresses to canonical entries', function () {
+    $entryType = EntryTypeModel::factory()->withFieldLayout()->create();
+    $section = SectionModel::factory()->withEntryTypes($entryType)->create();
+    $result = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($entryType)
+        ->withField('addressesField', Addresses::class)
+        ->createElementWithFields();
+
+    Sections::refreshSections();
+
+    /** @var Addresses $field */
+    $field = Fields::getFieldById($result->field('addressesField')->id);
+    /** @var EntryElement $entry */
+    $entry = EntryElement::find()->id($result->element->id)->one();
+    /** @var EntryElement $draft */
+    $draft = app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
+
+    $address = AddressModel::factory()
+        ->withOwnedElement($draft, 1)
+        ->createElement([
+            'fieldId' => $field->id,
+            'countryCode' => 'US',
+            'addressLine1' => '123 Main St',
+        ]);
+
+    app(Drafts::class)->applyDraft($draft);
+
+    /** @var EntryElement $canonical */
+    $canonical = EntryElement::find()->id($entry->id)->one();
+    $addresses = $canonical->getFieldValue($field->handle)->status(null)->all();
+
+    expect($addresses)->toHaveCount(1)
+        ->and($addresses[0]->id)->not->toBe($address->id)
+        ->and($addresses[0]->getPrimaryOwnerId())->toBe($canonical->id)
+        ->and($addresses[0]->addressLine1)->toBe('123 Main St');
+
+    expect(AddressElement::find()->id($address->id)->drafts(null)->status(null)->one())->toBeNull();
+});
+
+it('scopes field addresses to their draft owner', function () {
+    $entryType = EntryTypeModel::factory()->withFieldLayout()->create();
+    $section = SectionModel::factory()->withEntryTypes($entryType)->create();
+    $firstResult = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($entryType)
+        ->withField('addressesField', Addresses::class)
+        ->createElementWithFields();
+
+    Sections::refreshSections();
+
+    /** @var Addresses $field */
+    $field = Fields::getFieldById($firstResult->field('addressesField')->id);
+    /** @var EntryElement $firstEntry */
+    $firstEntry = EntryElement::find()->id($firstResult->element->id)->one();
+    /** @var EntryElement $firstDraft */
+    $firstDraft = app(Drafts::class)->createDraft($firstEntry, auth()->id(), provisional: true);
+    $secondEntry = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($entryType)
+        ->createElement();
+    /** @var EntryElement $secondDraft */
+    $secondDraft = app(Drafts::class)->createDraft($secondEntry, auth()->id(), provisional: true);
+
+    AddressModel::factory()
+        ->withOwnedElement($firstDraft, 1)
+        ->createElement([
+            'fieldId' => $field->id,
+            'countryCode' => 'US',
+            'addressLine1' => '123 Main St',
+        ]);
+
+    $firstAddresses = $firstDraft->getFieldValue($field->handle)->status(null)->all();
+    $secondAddresses = $secondDraft->getFieldValue($field->handle)->status(null)->all();
+
+    expect($firstAddresses)->toHaveCount(1)
+        ->and($secondAddresses)->toHaveCount(0);
 });

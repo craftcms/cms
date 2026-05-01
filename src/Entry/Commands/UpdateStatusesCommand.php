@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\AfterResaveElement;
 use CraftCms\Cms\Element\Events\AfterResaveElements;
@@ -13,6 +12,7 @@ use CraftCms\Cms\Element\Events\BeforeResaveElement;
 use CraftCms\Cms\Element\Events\BeforeResaveElements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -116,7 +116,7 @@ final class UpdateStatusesCommand extends Command implements Isolatable
             }
 
             if ($event->element->errors()->isNotEmpty()) {
-                $summary = implode(', ', $event->element->getErrorSummary(true));
+                $summary = implode(', ', $event->element->errors()->all());
                 $this->output->writeln("failed: $summary");
 
                 return;
@@ -139,7 +139,7 @@ final class UpdateStatusesCommand extends Command implements Isolatable
 
         foreach ($query->cursor() as $entry) {
             $position++;
-            $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+            $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
             $entry->resaving = true;
 
             event(new BeforeResaveElement($query, $entry, $position));

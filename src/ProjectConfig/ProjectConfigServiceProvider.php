@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\ProjectConfig;
 
-use Craft;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Filesystems;
@@ -21,6 +20,7 @@ use CraftCms\Cms\ProjectConfig\Commands\WriteCommand;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\ImageTransforms;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
@@ -127,25 +127,11 @@ class ProjectConfigServiceProvider extends ServiceProvider
             ->onUpdate(ProjectConfig::PATH_ENTRY_TYPES.'.{uid}', fn (ConfigEvent $event) => EntryTypes::handleChangedEntryType($event))
             ->onRemove(ProjectConfig::PATH_ENTRY_TYPES.'.{uid}', fn (ConfigEvent $event) => EntryTypes::handleDeletedEntryType($event))
             // GraphQL schemas
-            ->onAdd(ProjectConfig::PATH_GRAPHQL_SCHEMAS.'.{uid}', $this->proxy('gql', 'handleChangedSchema'))
-            ->onUpdate(ProjectConfig::PATH_GRAPHQL_SCHEMAS.'.{uid}', $this->proxy('gql', 'handleChangedSchema'))
-            ->onRemove(ProjectConfig::PATH_GRAPHQL_SCHEMAS.'.{uid}', $this->proxy('gql', 'handleDeletedSchema'))
+            ->onAdd(ProjectConfig::PATH_GRAPHQL_SCHEMAS.'.{uid}', fn (ConfigEvent $event) => Gql::handleChangedSchema($event))
+            ->onUpdate(ProjectConfig::PATH_GRAPHQL_SCHEMAS.'.{uid}', fn (ConfigEvent $event) => Gql::handleChangedSchema($event))
+            ->onRemove(ProjectConfig::PATH_GRAPHQL_SCHEMAS.'.{uid}', fn (ConfigEvent $event) => Gql::handleDeletedSchema($event))
             // GraphQL public token
-            ->onAdd(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $this->proxy('gql', 'handleChangedPublicToken'))
-            ->onUpdate(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $this->proxy('gql', 'handleChangedPublicToken'));
-    }
-
-    /**
-     * Returns a proxy function for calling a component method, based on its ID.
-     *
-     * The component won’t be fetched until the method is called, avoiding unnecessary component instantiation, and ensuring the correct component
-     * is called if it happens to get swapped out (e.g. for a test).
-     *
-     * @param  string  $id  The component ID
-     * @param  string  $method  The method name
-     */
-    private function proxy(string $id, string $method): callable
-    {
-        return fn () => Craft::$app->get($id)->$method(...func_get_args());
+            ->onAdd(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, fn (ConfigEvent $event) => Gql::handleChangedPublicToken($event))
+            ->onUpdate(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, fn (ConfigEvent $event) => Gql::handleChangedPublicToken($event));
     }
 }

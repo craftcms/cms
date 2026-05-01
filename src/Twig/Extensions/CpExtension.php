@@ -18,6 +18,7 @@ use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Foundation\ViteException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Vite;
@@ -32,6 +33,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
     public function getGlobals(): array
     {
         return [
+            'Edition' => Edition::get(),
             'CraftEdition' => Edition::get()->value,
             'CraftSolo' => Edition::Solo->value,
             'CraftTeam' => Edition::Team->value,
@@ -60,6 +62,9 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('statusIndicator', app(StatusHtml::class)->statusIndicatorHtml(...), ['is_safe' => ['html']]),
             new TwigFunction('readOnlyNotice', app(ContentHtml::class)->readOnlyNoticeHtml(...), ['is_safe' => ['html']]),
             new TwigFunction('vite', $this->vite(...), ['is_safe' => ['html']]),
+
+            // Legacy Assets - remove once all dependencies on these are removed
+            new TwigFunction('registerLegacyAsset', fn (string $bundle) => app(InternalAssetRegistry::class)->register($bundle)),
         ];
     }
 

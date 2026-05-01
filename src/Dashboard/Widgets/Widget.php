@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use Craft;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
@@ -14,6 +13,8 @@ use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Support\Arr;
 use Override;
+
+use function CraftCms\Cms\craftAsset;
 
 /**
  * Provides a base implementation for dashboard widgets.
@@ -116,7 +117,7 @@ abstract class Widget extends Component implements WidgetInterface
     #[Override]
     public function getBodyHtml(): ?string
     {
-        $url = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/prg.jpg');
+        $url = craftAsset('legacy/cp/dist/images/prg.jpg');
 
         return <<<EOD
 <div style="margin: 0 -24px -24px;">
@@ -126,15 +127,9 @@ EOD;
     }
 
     #[Override]
-    public function getAttributes(): array
+    public function validationData(): array
     {
         return $this->getSettings();
-    }
-
-    #[Override]
-    public function attributes(): array
-    {
-        return array_keys($this->getSettings());
     }
 
     public static function fromConfig(array|WidgetModel $config): WidgetInterface

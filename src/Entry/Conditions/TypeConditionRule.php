@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry\Conditions;
 
-use craft\base\ElementInterface;
-use craft\elements\db\EntryQuery;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Facades\EntryTypes;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -34,7 +35,7 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
         return ['type', 'typeId'];
     }
 
-    #[\Override]
+    #[Override]
     public function setAttributes($values, $safeOnly = true): void
     {
         if (array_key_exists('entryTypeUid', $values)) {
@@ -42,7 +43,7 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
             unset($values['entryTypeUid'], $values['sectionUid']);
         }
 
-        parent::setAttributes($values, $safeOnly);
+        parent::setAttributes($values);
     }
 
     protected function options(): array

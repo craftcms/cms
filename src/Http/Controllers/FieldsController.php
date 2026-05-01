@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use Craft;
-use craft\base\ElementInterface;
-use craft\web\assets\fieldsettings\FieldSettingsAsset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Chippable;
@@ -18,6 +15,7 @@ use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
@@ -40,6 +38,8 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlStack;
+use CraftCms\Cms\View\LegacyAssets\FieldSettingsAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -182,7 +182,7 @@ class FieldsController
         ]);
 
         if (! $this->fieldsService->saveField($field)) {
-            Flash::fail(t('Couldn’t save field.'));
+            Flash::error(t('Couldn’t save field.'));
 
             return $this->edit($request, $field);
         }
@@ -514,7 +514,7 @@ class FieldsController
 
         $response
             ->prepareScreen(function () {
-                Craft::$app->getView()->registerAssetBundle(FieldSettingsAsset::class);
+                app(InternalAssetRegistry::class)->register(FieldSettingsAsset::class);
                 $this->HtmlStack->jsWithVars(fn ($typeId, $settingsId, $namespace) => <<<JS
 new Craft.FieldSettingsToggle('#' + $typeId, '#' + $settingsId, $namespace, {
   wrapWithTypeClassDiv: true

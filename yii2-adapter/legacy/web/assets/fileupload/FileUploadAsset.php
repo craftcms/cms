@@ -8,28 +8,16 @@
 namespace craft\web\assets\fileupload;
 
 use craft\web\AssetBundle;
-use craft\web\assets\jqueryui\JqueryUiAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * File Upload asset bundle.
+ * @deprecated 6.0.0
  */
 class FileUploadAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
+    public function registerAssetFiles($view)
     {
-        $this->sourcePath = __DIR__ . '/dist';
-
-        $this->depends = [
-            JqueryUiAsset::class,
-        ];
-
-        $this->js = [
-            'jquery.fileupload.js',
-        ];
-
-        parent::init();
+        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\FileUploadAsset::class);
     }
 }
