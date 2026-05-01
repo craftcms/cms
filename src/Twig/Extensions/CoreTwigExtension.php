@@ -84,6 +84,7 @@ use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
 
+use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
@@ -252,6 +253,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('clone', $this->cloneFunction(...)),
             new TwigFunction('configure', Typecast::configure(...)),
             new TwigFunction('cpUrl', Url::cpUrl(...)),
+            new TwigFunction('craftAsset', craftAsset(...)),
             new TwigFunction('create', $this->createFunction(...)),
             new TwigFunction('dump', $this->dumpFunction(...), ['is_safe' => ['html'], 'needs_context' => true, 'is_variadic' => true]),
             new TwigFunction('encodeUrl', Url::encodeUrl(...)),
