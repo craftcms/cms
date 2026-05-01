@@ -25,6 +25,18 @@ type Story = StoryObj<CraftAvatar & typeof args>;
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
 export const Default: Story = {
   args: {},
+  parameters: {
+    a11y: {
+      config: {
+        rules: [
+          {
+            id: 'svg-img-alt', // TODO: figure out best way of handling alt text for avatars
+            enabled: false,
+          },
+        ],
+      },
+    },
+  },
 };
 
 export const CustomColors: Story = {

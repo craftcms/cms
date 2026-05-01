@@ -1,1 +1,1 @@
-var e={validationError:`Hiba`,validationWarning:`Figyelmeztetés`,validationSuccess:`Sikeres`,validationInfo:`Információ`};export{e as default};
+var e={validationError:`Hiba,`,validationWarning:`Figyelmeztetés,`,validationSuccess:`Sikeres,`,validationInfo:`Információ,`};export{e as default};

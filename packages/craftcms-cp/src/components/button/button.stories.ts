@@ -77,10 +77,10 @@ export const Icon: Story = {
   render: (args) => html`
     <div class="flex gap-2 items-center">
       <craft-button icon>
-        <craft-icon name="location"></craft-icon>
+        <craft-icon name="location" label="Location"></craft-icon>
       </craft-button>
       <craft-button icon size="small">
-        <craft-icon name="location"></craft-icon>
+        <craft-icon name="location" label="Location"></craft-icon>
       </craft-button>
     </div>
   `,

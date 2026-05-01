@@ -8,16 +8,16 @@
   --c-leading-normal: 1.42;
 
   /* Surface tokens (replaces --c-bg-*) */
-  --c-surface-default: var(--color-slate-50);
-  --c-surface-raised: #fff;
-  --c-surface-sunken: var(--color-slate-100);
-  --c-surface-form: hsla(212, 50%, 90%, 0.05);
-  --c-surface-overlay: #fff;
+  --c-surface-default: var(--color-base-100);
+  --c-surface-raised: var(--color-base-50);
+  --c-surface-sunken: var(--color-slate-200);
+  --c-surface-form: var(--color-base-100);
+  --c-surface-overlay: var(--color-base-50);
 
   /* Text tokens (replaces --c-fg-*) */
   --c-text-white: var(--color-white);
-  --c-text-default: hsl(209 18% 30%);
-  --c-text-quiet: var(--color-slate-500);
+  --c-text-default: var(--color-slate-900);
+  --c-text-quiet: var(--color-slate-600);
   --c-text-link: var(--color-blue-600);
 
   /* Shadows */
@@ -28,83 +28,6 @@
   /* Color mixes */
   --c-color-mix-hover: currentColor 10%;
   --c-color-mix-active: currentColor 20%;
-
-  /* Semantic colors — neutral */
-  --c-color-neutral-fill-loud: var(--color-slate-600);
-  --c-color-neutral-fill-normal: var(--color-slate-200);
-  --c-color-neutral-fill-quiet: var(--color-slate-100);
-  --c-color-neutral-border-loud: var(--color-slate-800);
-  --c-color-neutral-border-normal: var(--color-slate-600);
-  --c-color-neutral-border-quiet: var(--color-slate-300);
-  --c-color-neutral-on-loud: var(--color-slate-50);
-  --c-color-neutral-on-normal: var(--color-slate-700);
-  --c-color-neutral-on-quiet: var(--color-slate-800);
-
-  /* Semantic colors — brand */
-  --c-color-brand-fill-loud: var(--color-red-600);
-  --c-color-brand-fill-normal: var(--color-red-200);
-  --c-color-brand-fill-quiet: var(--color-red-100);
-  --c-color-brand-border-loud: var(--color-red-600);
-  --c-color-brand-border-normal: var(--color-red-500);
-  --c-color-brand-border-quiet: var(--color-red-600);
-  --c-color-brand-on-loud: var(--color-red-100);
-  --c-color-brand-on-normal: var(--color-red-700);
-  --c-color-brand-on-quiet: var(--color-red-800);
-
-  /* Semantic colors — accent (interactive blue) */
-  --c-color-accent-fill-loud: var(--color-blue-600);
-  --c-color-accent-fill-normal: var(--color-blue-100);
-  --c-color-accent-fill-quiet: var(--color-blue-50);
-  --c-color-accent-border-loud: var(--color-blue-800);
-  --c-color-accent-border-normal: var(--color-blue-600);
-  --c-color-accent-border-quiet: var(--color-blue-400);
-  --c-color-accent-on-loud: var(--color-blue-50);
-  --c-color-accent-on-normal: var(--color-blue-900);
-  --c-color-accent-on-quiet: var(--color-blue-900);
-
-  /* Semantic colors — info */
-  --c-color-info-fill-loud: var(--color-blue-600);
-  --c-color-info-fill-normal: var(--color-blue-100);
-  --c-color-info-fill-quiet: var(--color-blue-50);
-  --c-color-info-border-loud: var(--color-blue-800);
-  --c-color-info-border-normal: var(--color-blue-600);
-  --c-color-info-border-quiet: var(--color-blue-400);
-  --c-color-info-on-loud: var(--color-blue-50);
-  --c-color-info-on-normal: var(--color-blue-700);
-  --c-color-info-on-quiet: var(--color-blue-800);
-
-  /* Semantic colors — success */
-  --c-color-success-fill-loud: var(--color-emerald-600);
-  --c-color-success-fill-normal: var(--color-emerald-100);
-  --c-color-success-fill-quiet: var(--color-emerald-50);
-  --c-color-success-border-loud: var(--color-emerald-800);
-  --c-color-success-border-normal: var(--color-emerald-600);
-  --c-color-success-border-quiet: var(--color-emerald-400);
-  --c-color-success-on-loud: var(--color-emerald-50);
-  --c-color-success-on-normal: var(--color-emerald-700);
-  --c-color-success-on-quiet: var(--color-emerald-800);
-
-  /* Semantic colors — warning */
-  --c-color-warning-fill-loud: var(--color-yellow-600);
-  --c-color-warning-fill-normal: var(--color-yellow-100);
-  --c-color-warning-fill-quiet: var(--color-yellow-50);
-  --c-color-warning-border-loud: var(--color-yellow-800);
-  --c-color-warning-border-normal: var(--color-yellow-600);
-  --c-color-warning-border-quiet: var(--color-yellow-400);
-  --c-color-warning-on-loud: var(--color-yellow-50);
-  --c-color-warning-on-normal: var(--color-yellow-700);
-  --c-color-warning-on-quiet: var(--color-yellow-800);
-
-  /* Semantic colors — danger */
-  --c-color-danger-fill-loud: var(--color-red-600);
-  --c-color-danger-fill-normal: var(--color-red-100);
-  --c-color-danger-fill-quiet: var(--color-red-50);
-  --c-color-danger-border-loud: var(--color-red-800);
-  --c-color-danger-border-normal: var(--color-red-600);
-  --c-color-danger-border-quiet: var(--color-red-400);
-  --c-color-danger-on-loud: var(--color-red-50);
-  --c-color-danger-on-normal: var(--color-red-700);
-  --c-color-danger-on-quiet: var(--color-red-800);
 
   --c-font-body:
     system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto',
@@ -290,77 +213,4 @@
   --wa-panel-border-radius: var(--c-radius-md);
   --wa-color-surface-raised: var(--c-surface-raised);
   --wa-shadow-l: var(--c-shadow-lg);
-}
-
-[data-theme='dark'] {
-  color-scheme: dark;
-  --c-surface-default: var(--color-slate-800);
-  --c-surface-sunken: #091120;
-  --c-surface-raised: var(--color-slate-900);
-  --c-surface-form: var(--color-slate-900);
-  --c-surface-overlay: var(--color-slate-950);
-
-  --c-text-default: var(--color-slate-50);
-  --c-text-quiet: var(--color-slate-400);
-  --c-text-link: var(--color-blue-400);
-
-  /* Semantic colors — neutral */
-  --c-color-neutral-fill-loud: var(--color-slate-400);
-  --c-color-neutral-fill-normal: var(--color-slate-900);
-  --c-color-neutral-fill-quiet: var(--color-slate-950);
-  --c-color-neutral-border-loud: var(--color-slate-400);
-  --c-color-neutral-border-quiet: #1a2744;
-  --c-color-neutral-on-loud: var(--color-slate-900);
-  --c-color-neutral-on-quiet: var(--color-slate-300);
-
-  /* Semantic colors — accent */
-  --c-color-accent-fill-loud: var(--color-blue-400);
-  --c-color-accent-fill-quiet: var(--color-blue-900);
-  --c-color-accent-border-loud: var(--color-blue-400);
-  --c-color-accent-border-quiet: var(--color-blue-400);
-  --c-color-accent-on-loud: var(--color-slate-950);
-  --c-color-accent-on-quiet: var(--color-blue-200);
-
-  /* Semantic colors — info */
-  --c-color-info-fill-loud: var(--color-blue-600);
-  --c-color-info-fill-quiet: var(--color-blue-950);
-  --c-color-info-border-loud: var(--color-blue-600);
-  --c-color-info-border-quiet: var(--color-blue-600);
-  --c-color-info-on-loud: var(--color-blue-100);
-  --c-color-info-on-quiet: var(--color-blue-200);
-
-  /* Semantic colors — success */
-  --c-color-success-fill-loud: var(--color-emerald-400);
-  --c-color-success-fill-normal: var(--color-emerald-800);
-  --c-color-success-fill-quiet: var(--color-emerald-900);
-  --c-color-success-border-loud: var(--color-emerald-400);
-  --c-color-success-border-normal: var(--color-emerald-900);
-  --c-color-success-border-quiet: var(--color-emerald-400);
-  --c-color-success-on-loud: var(--color-emerald-950);
-  --c-color-success-on-normal: var(--color-emerald-200);
-  --c-color-success-on-quiet: var(--color-emerald-400);
-
-  /* Semantic colors — warning */
-  --c-color-warning-fill-loud: var(--color-yellow-400);
-  --c-color-warning-fill-quiet: var(--color-yellow-900);
-  --c-color-warning-border-loud: var(--color-yellow-400);
-  --c-color-warning-border-quiet: var(--color-yellow-400);
-  --c-color-warning-on-loud: var(--color-yellow-950);
-  --c-color-warning-on-quiet: var(--color-yellow-100);
-
-  /* Semantic colors — danger */
-  --c-color-danger-fill-loud: var(--color-red-500);
-  --c-color-danger-fill-normal: var(--color-red-800);
-  --c-color-danger-fill-quiet: var(--color-red-900);
-  --c-color-danger-border-loud: var(--color-red-600);
-  --c-color-danger-border-normal: var(--color-red-900);
-  --c-color-danger-border-quiet: var(--color-red-900);
-  --c-color-danger-on-loud: var(--color-red-100);
-  --c-color-danger-on-normal: var(--color-red-200);
-  --c-color-danger-on-quiet: var(--color-red-400);
-
-  /* Button */
-  --c-button-default-fill: var(--color-slate-800);
-  --c-button-default-border: var(--color-slate-700);
-  --c-button-default-fill-hover: var(--color-slate-700);
 }
