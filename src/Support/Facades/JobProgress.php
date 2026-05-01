@@ -27,6 +27,7 @@ use Override;
  * @method static void delete(string $uid)
  * @method static void clear()
  * @method static void clearCompleted()
+ * @method static void clearFailed()
  * @method static void updateStatus(string $uid, \CraftCms\Cms\Queue\Enums\JobStatus $status)
  * @method static void cancel(string $uid)
  * @method static bool exists(string $uid)

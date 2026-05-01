@@ -25,27 +25,45 @@ readonly class JobProgress
     {
         $status = $delay && $delay > 0 ? JobStatus::Delayed : JobStatus::Pending;
 
-        $this->upsertJob($uid, $status, 0, $description, delay: $delay);
+        $this->upsertJob($uid, $status, [
+            'progress' => 0,
+            'description' => $description,
+            'delay' => $delay,
+        ]);
     }
 
     public function processing(string $uid): void
     {
-        $this->upsertJob($uid, JobStatus::Reserved, 0);
+        $this->upsertJob($uid, JobStatus::Reserved, [
+            'progress' => 0,
+        ]);
     }
 
     public function completed(string $uid): void
     {
-        $this->delete($uid);
+        $this->upsertJob($uid, JobStatus::Done, [
+            'progress' => 100,
+            'dateCompleted' => now('utc'),
+        ]);
     }
 
     public function failed(string $uid, ?string $description = null, ?string $error = null): void
     {
-        $this->upsertJob($uid, JobStatus::Failed, 0, $description, null, $error);
+        $this->upsertJob($uid, JobStatus::Failed, [
+            'progress' => 0,
+            'description' => $description,
+            'error' => $error,
+            'dateFailed' => now('utc'),
+        ]);
     }
 
     public function setProgress(string $uid, string $description, int $progress, ?string $label = null): void
     {
-        $this->upsertJob($uid, JobStatus::Reserved, $progress, $description, $label);
+        $this->upsertJob($uid, JobStatus::Reserved, [
+            'progress' => $progress,
+            'progressLabel' => $label,
+            'description' => $description,
+        ]);
     }
 
     public function getProgress(string $uid): ?JobProgressModel
@@ -183,12 +201,23 @@ readonly class JobProgress
 
     public function clear(): void
     {
-        JobProgressModel::query()->delete();
+        JobProgressModel::query()
+            ->whereIn('status', [
+                JobStatus::Pending->value,
+                JobStatus::Reserved->value,
+                JobStatus::Delayed->value,
+            ])
+            ->delete();
 
         $queue = Queue::connection();
 
-        if ($queue instanceof ClearableQueue) {
-            $queue->clear(Cms::config()->queueName);
+        if (! $queue instanceof ClearableQueue) {
+            return;
+        }
+
+        $queue->clear(Cms::config()->queueName);
+
+        if (Cms::config()->queueName !== Cms::config()->lowPriorityQueueName) {
             $queue->clear(Cms::config()->lowPriorityQueueName);
         }
     }
@@ -197,6 +226,13 @@ readonly class JobProgress
     {
         JobProgressModel::query()
             ->where('status', JobStatus::Done->value)
+            ->delete();
+    }
+
+    public function clearFailed(): void
+    {
+        JobProgressModel::query()
+            ->where('status', JobStatus::Failed->value)
             ->delete();
     }
 
@@ -237,11 +273,7 @@ readonly class JobProgress
     private function upsertJob(
         string $uid,
         JobStatus $status,
-        int $progress,
-        ?string $description = null,
-        ?string $label = null,
-        ?string $error = null,
-        ?int $delay = null,
+        array $attributes = [],
     ): void {
         DB::beginTransaction();
 
@@ -249,34 +281,22 @@ readonly class JobProgress
         $exists = JobProgressModel::query()->where('uid', $uid)->exists();
 
         if (! $exists) {
-            JobProgressModel::create([
+            JobProgressModel::create(array_merge($attributes, [
                 'uid' => $uid,
                 'status' => $status->value,
-                'description' => $description,
-                'progress' => $progress,
-                'progressLabel' => $label,
-                'delay' => $delay,
-                'error' => $error,
                 'dateCreated' => $now,
                 'dateUpdated' => $now,
-            ]);
+            ]));
 
             DB::commit();
 
             return;
         }
 
-        $data = [
+        $data = array_merge($attributes, [
             'status' => $status->value,
-            'progress' => $progress,
-            'progressLabel' => $label,
-            'error' => $error,
             'dateUpdated' => $now,
-        ];
-
-        if (! is_null($description)) {
-            $data['description'] = $description;
-        }
+        ]);
 
         JobProgressModel::query()->where('uid', $uid)->update($data);
 

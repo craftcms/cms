@@ -59,11 +59,11 @@ trait ManagesDatabaseTables
                 if (! isset($foreignKey['foreign_table'], $foreignKey['name'])) {
                     continue;
                 }
-                if ($this->rawTableName((string) $foreignKey['foreign_table']) !== $rawTableName) {
+                if ($this->rawTableName($foreignKey['foreign_table']) !== $rawTableName) {
                     continue;
                 }
                 $schema->table($otherTableName, function (Blueprint $blueprint) use ($foreignKey) {
-                    $blueprint->dropForeign((string) $foreignKey['name']);
+                    $blueprint->dropForeign($foreignKey['name']);
                 });
             }
         }

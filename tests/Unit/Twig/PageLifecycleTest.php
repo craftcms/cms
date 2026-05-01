@@ -140,6 +140,21 @@ describe('placeholder replacement', function () {
             ->toContain('content');
     });
 
+    it('renders head JS before body-end JS', function () {
+        $this->registry->js('window.Craft = {};', Position::Head);
+        $this->registry->js('Craft.icons = {};', Position::BodyEnd);
+
+        $output = $this->lifecycle->wrap(function () {
+            echo '<head>'.PageLifecycle::HEAD_PLACEHOLDER.'</head>';
+            echo '<body>'.PageLifecycle::BODY_END_PLACEHOLDER.'</body>';
+
+            return '';
+        });
+
+        expect(strpos($output, 'window.Craft = {};'))
+            ->toBeLessThan(strpos($output, 'Craft.icons = {};'));
+    });
+
     it('uses EndPage event overrides when set', function (string $property, string $placeholder, string $html) {
         Event::listen(EndPage::class, function (EndPage $event) use ($property, $html) {
             $event->$property = $html;

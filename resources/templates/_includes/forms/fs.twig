@@ -7,6 +7,7 @@
         createOption({
             text: ev.data.name,
             value: ev.data.handle,
+            hint: ev.data.handle,
         });
     });
     slideout.on('close', () => {
@@ -18,7 +19,34 @@
 }
 {% endset %}
 
+{% set options = options ?? craft.cp.getFsOptions() %}
+{% set addOption = {
+    label: 'Create a new filesystem…'|t('app'),
+    value: '__add__',
+    data: {
+        addOption: true,
+        hint: '',
+    },
+} %}
+
+{% set groupedOptions = [] %}
+{% set inFirstOptgroup = false %}
+{% set inserted = false %}
+{% for option in options %}
+    {% if option.optgroup is defined %}
+        {% if inFirstOptgroup and not inserted %}
+            {% set groupedOptions = groupedOptions|push(addOption) %}
+            {% set inserted = true %}
+        {% endif %}
+        {% set inFirstOptgroup = not inserted %}
+    {% endif %}
+    {% set groupedOptions = groupedOptions|push(option) %}
+{% endfor %}
+{% if inFirstOptgroup and not inserted %}
+    {% set groupedOptions = groupedOptions|push(addOption) %}
+{% endif %}
+{% set options = groupedOptions %}
+
 {% include '_includes/forms/selectize' with {
-    options: options ?? craft.cp.getFsOptions(),
-    addOptionLabel: 'Create a new filesystem…'|t('app'),
+    options: options,
 } %}
