@@ -191,3 +191,13 @@ test('containsRecursive', function (bool $expected, array $array, string $key, m
         'rowId',
     ],
 ]);
+
+test('dotifyKey', function (string|int $expected, string|int $string) {
+    expect(Arr::dotifyKey($string))->toBe($expected);
+})->with([
+    ['foo.bar', 'foo[bar]'],
+    ['sources.custom:5bb5537d.condition', 'sources[custom:5bb5537d][condition]'],
+    ['foo', 'foo'],
+    ['a.b.c.d', 'a[b][c][d]'],
+    [0, 0],
+]);

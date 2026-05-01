@@ -9,7 +9,6 @@ use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -47,7 +46,7 @@ readonly class ConditionsController
             ]);
         }
 
-        $name = Str::toDotNotation($baseConfig['name']);
+        $name = Arr::dotifyKey($baseConfig['name']);
         $config = $this->request->input($name);
 
         Validator::make($this->request->all(), [

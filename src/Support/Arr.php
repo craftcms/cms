@@ -176,7 +176,7 @@ class Arr extends \Illuminate\Support\Arr
     public static function get($array, $key, $default = null)
     {
         // Normalize the key into dot notation
-        $key = Str::toDotNotation($key);
+        $key = self::dotifyKey($key);
 
         return parent::get($array, $key, $default);
     }
@@ -251,5 +251,15 @@ class Arr extends \Illuminate\Support\Arr
         }
 
         return false;
+    }
+
+    public static function dotifyKey(int|string $key): string|int
+    {
+        // Normalize the key into dot notation
+        if (is_string($key) && preg_match('/^[\w\-]+(?:\[[^\[\]]+\])+$/', $key)) {
+            return rtrim((string) preg_replace('/[\[\]]+/', '.', $key), '.');
+        }
+
+        return $key;
     }
 }
