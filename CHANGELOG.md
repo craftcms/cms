@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where nested elements would get soft-deleted after running the `entrify/global-set` command on subsequent environments. ([#18767](https://github.com/craftcms/cms/issues/18767))
+
 ## 5.9.22 - 2026-04-29
 
 - Fixed a bug where dependencies required by `composer.json` were getting updated when installing/updating plugins. ([#18755](https://github.com/craftcms/cms/issues/18755))
