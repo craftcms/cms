@@ -50,7 +50,7 @@
   const state = ref<'idle' | 'loading' | 'error'>('idle');
 
   watchEffect(() => {
-    possibleSteps.value.db.hidden = props.showDbScreen;
+    possibleSteps.value.db.hidden = !props.showDbScreen;
   });
 
   function beginInstall() {

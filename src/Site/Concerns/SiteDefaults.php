@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Site\Concerns;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
 
@@ -39,8 +38,8 @@ trait SiteDefaults
             return $primarySite['baseUrl'];
         }
 
-        // Is there a APP_URL environment variable set?
-        if ($envValue = Env::get('APP_URL')) {
+        // Is there a APP_URL environment variable set that is not just Laravel's default?
+        if (($envValue = Env::get('APP_URL')) && ($envValue !== 'http://localhost')) {
             return $envValue;
         }
 
@@ -49,8 +48,7 @@ trait SiteDefaults
             return null;
         }
 
-        // Return the URL to the web directory
-        return Aliases::get('@web');
+        return request()->schemeAndHttpHost();
     }
 
     protected function defaultSiteLanguage(): string
