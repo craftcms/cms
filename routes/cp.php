@@ -52,6 +52,8 @@ use CraftCms\Cms\Http\Middleware\RequireEdition;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
+use function CraftCms\Cms\cp_url;
+
 /**
  * Admin requests that do not require a login
  */
@@ -258,9 +260,15 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
                     ->name('settings.site-groups.destroy');
             });
 
+        // User settings index
+        if (Edition::isAtLeast(Edition::Team)) {
+            Route::get('settings/users', [UserGroupsController::class, 'index']);
+        } else {
+            Route::get('settings/users', fn () => redirect(cp_url('settings/users/fields')));
+        }
+
         // User groups
         Route::middleware([RequireEdition::class.':'.Edition::Team->value])->group(function () {
-            Route::get('settings/users', [UserGroupsController::class, 'index']);
             Route::middleware([
                 RequireEdition::class.':'.Edition::Pro->value,
                 RequireAdminChanges::class,
