@@ -19,8 +19,6 @@ use RuntimeException;
 /** @phpstan-require-implements ConfigurableComponentInterface */
 trait ConfigurableComponent
 {
-    use HasComponentEvents;
-
     /**
      * @event {@see DefineSettingsAttributes} The event triggered when defining the component’s settings attributes, as returned by {@see settingsAttributes()}.
      */
@@ -30,7 +28,7 @@ trait ConfigurableComponent
     {
         $attributes = array_keys(Utils::getPublicProperties($this, fn (ReflectionProperty $property) => $property->class === static::class));
 
-        $this->dispatchComponentEvent(self::EVENT_DEFINE_SETTINGS_ATTRIBUTES, $event = new DefineSettingsAttributes(
+        event($event = new DefineSettingsAttributes(
             component: $this instanceof ConfigurableComponentInterface ? $this : throw new RuntimeException(sprintf('%s must implement %s.', static::class, ConfigurableComponentInterface::class)),
             attributes: $attributes,
         ));
@@ -40,7 +38,13 @@ trait ConfigurableComponent
 
     public static function onDefineSettingsAttributes(callable $callback): void
     {
-        static::listen(self::EVENT_DEFINE_SETTINGS_ATTRIBUTES, $callback);
+        $class = static::class;
+
+        Event::listen(function (DefineSettingsAttributes $event) use ($callback, $class): void {
+            if ($event->component instanceof $class) {
+                $callback($event);
+            }
+        });
     }
 
     public function getSettings(): array

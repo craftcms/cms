@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace craft\fields;
 
 use Craft;
+use craft\base\FieldEventConstants;
 use craft\base\LegacyEventConstants;
 use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
@@ -31,6 +32,7 @@ use function CraftCms\Cms\t;
  */
 class Categories extends \CraftCms\Cms\Field\BaseRelationField
 {
+    use FieldEventConstants;
     use LegacyEventConstants;
 
     /**

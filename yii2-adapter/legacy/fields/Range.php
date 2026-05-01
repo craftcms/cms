@@ -14,5 +14,6 @@ namespace craft\fields;
  */
 class Range extends \CraftCms\Cms\Field\Range
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 }

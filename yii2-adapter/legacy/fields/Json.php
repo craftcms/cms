@@ -14,5 +14,6 @@ namespace craft\fields;
  */
 class Json extends \CraftCms\Cms\Field\Json
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 }

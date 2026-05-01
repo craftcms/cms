@@ -4,49 +4,22 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Component\Concerns;
 
-use CraftCms\Cms\Component\Events\ComponentEvent;
+use CraftCms\Cms\Component\Events\ApplyingComponentDelete;
+use CraftCms\Cms\Component\Events\ComponentDeleted;
+use CraftCms\Cms\Component\Events\ComponentSaved;
+use CraftCms\Cms\Component\Events\DeletingComponent;
+use CraftCms\Cms\Component\Events\SavingComponent;
 use DateTimeInterface;
 use Illuminate\Events\QueuedClosure;
 use Illuminate\Support\Facades\Event;
 
 trait SavableComponent
 {
-    use HasComponentEvents;
-
     public int|string|null $id = null;
 
     public ?DateTimeInterface $dateCreated = null;
 
     public ?DateTimeInterface $dateUpdated = null;
-
-    /**
-     * @event {@see ComponentEvent} The event triggered before the component is saved.
-     *
-     * You may set {@see ComponentEvent::$isValid} to `false` to prevent the component from getting saved.
-     */
-    public const string EVENT_BEFORE_SAVE = 'beforeSave';
-
-    /**
-     * @event {@see ComponentEvent} The event triggered after the component is saved.
-     */
-    public const string EVENT_AFTER_SAVE = 'afterSave';
-
-    /**
-     * @event {@see ComponentEvent} The event triggered before the component is deleted.
-     *
-     * You may set {@see ComponentEvent::$isValid} to `false` to prevent the component from getting deleted.
-     */
-    public const string EVENT_BEFORE_DELETE = 'beforeDelete';
-
-    /**
-     * @event {@see ComponentEvent} The event triggered before the delete is applied to the database.
-     */
-    public const string EVENT_BEFORE_APPLY_DELETE = 'beforeApplyDelete';
-
-    /**
-     * @event {@see ComponentEvent} The event triggered after the component is deleted.
-     */
-    public const string EVENT_AFTER_DELETE = 'afterDelete';
 
     public function getIsNew(): bool
     {
@@ -55,61 +28,72 @@ trait SavableComponent
 
     public static function onBeforeSave(QueuedClosure|callable|array|string $callback): void
     {
-        static::listen(self::EVENT_BEFORE_SAVE, $callback);
+        self::listenForComponentEvent(SavingComponent::class, $callback);
     }
 
     public function beforeSave(bool $isNew): bool
     {
-        event(
-            self::componentEventName(self::EVENT_BEFORE_SAVE),
-            $event = new ComponentEvent($this, $isNew),
-        );
+        event($event = new SavingComponent($this, $isNew));
 
         return $event->isValid;
     }
 
     public static function onAfterSave(QueuedClosure|callable|array|string $callback): void
     {
-        static::listen(self::EVENT_AFTER_SAVE, $callback);
+        self::listenForComponentEvent(ComponentSaved::class, $callback);
     }
 
     public function afterSave(bool $isNew): void
     {
-        event(self::componentEventName(self::EVENT_AFTER_SAVE), new ComponentEvent($this, $isNew));
+        event(new ComponentSaved($this, $isNew));
     }
 
     public static function onBeforeDelete(QueuedClosure|callable|array|string $callback): void
     {
-        static::listen(self::EVENT_BEFORE_DELETE, $callback);
+        self::listenForComponentEvent(DeletingComponent::class, $callback);
     }
 
     public function beforeDelete(): bool
     {
-        event(
-            self::componentEventName(self::EVENT_BEFORE_DELETE),
-            $event = new ComponentEvent($this),
-        );
+        event($event = new DeletingComponent($this));
 
         return $event->isValid;
     }
 
     public static function onBeforeApplyDelete(QueuedClosure|callable|array|string $callback): void
     {
-        static::listen(self::EVENT_BEFORE_APPLY_DELETE, $callback);
+        self::listenForComponentEvent(ApplyingComponentDelete::class, $callback);
     }
 
     public function beforeApplyDelete(): void
     {
-        event(self::componentEventName(self::EVENT_BEFORE_APPLY_DELETE), new ComponentEvent($this));
+        event(new ApplyingComponentDelete($this));
     }
 
     public static function onAfterDelete(QueuedClosure|callable|array|string $callback): void
     {
-        static::listen(self::EVENT_AFTER_DELETE, $callback);
+        self::listenForComponentEvent(ComponentDeleted::class, $callback);
     }
 
     public function afterDelete(): void
     {
-        event(self::componentEventName(self::EVENT_AFTER_DELETE), new ComponentEvent($this));
+        event(new ComponentDeleted($this));
+    }
+
+    /**
+     * @param  class-string  $event
+     */
+    private static function listenForComponentEvent(string $event, QueuedClosure|callable|array|string $callback): void
+    {
+        $class = static::class;
+        $listener = Event::getFacadeRoot()->makeListener(
+            $callback instanceof QueuedClosure ? $callback->resolve() : $callback,
+        );
+
+        Event::listen($event, function ($event) use ($class, $listener): void {
+            if ($event->component instanceof $class) {
+                $listener($event::class, [$event]);
+            }
+        });
     }
 }

@@ -14,5 +14,6 @@ namespace craft\fields;
  */
 class Country extends \CraftCms\Cms\Field\Country
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 }

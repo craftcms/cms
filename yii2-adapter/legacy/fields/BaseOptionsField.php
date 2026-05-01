@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Event;
  */
 abstract class BaseOptionsField extends \CraftCms\Cms\Field\BaseOptionsField
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 
     /**
@@ -31,7 +32,11 @@ abstract class BaseOptionsField extends \CraftCms\Cms\Field\BaseOptionsField
 
     public static function registerEvents(): void
     {
-        Event::listen(\CraftCms\Cms\Field\BaseOptionsField::componentEventName(\CraftCms\Cms\Field\BaseOptionsField::EVENT_DEFINE_OPTIONS), function(DefineInputOptions $event) {
+        Event::listen(function(DefineInputOptions $event) {
+            if (!$event->field instanceof \CraftCms\Cms\Field\BaseOptionsField) {
+                return;
+            }
+
             if (!YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_OPTIONS)) {
                 return;
             }

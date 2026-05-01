@@ -62,12 +62,6 @@ class Assets extends BaseRelationField
 
     public const string PREVIEW_MODE_THUMBS = 'thumbs';
 
-    /**
-     * @event {@see LocateUploadedFiles} The event that is triggered when identifying any uploaded files that
-     * should be stored as assets and related by the field.
-     */
-    public const string EVENT_LOCATE_UPLOADED_FILES = 'locateUploadedFiles';
-
     #[Override]
     public static function displayName(): string
     {
@@ -834,7 +828,7 @@ class Assets extends BaseRelationField
             files: $files,
         );
 
-        $this->dispatchComponentEvent(self::EVENT_LOCATE_UPLOADED_FILES, $event);
+        event($event);
 
         return $event->files;
     }
