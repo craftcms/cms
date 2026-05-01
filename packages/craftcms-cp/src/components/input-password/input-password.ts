@@ -1,7 +1,8 @@
 import {css, html} from 'lit';
 import {state} from 'lit/decorators.js';
 import {LionInput} from '@lion/ui/input.js';
-import {inputStyles} from '../../styles/form.styles.js';
+import {inputStyles} from '@src/styles/form.styles';
+import {t} from '@src/utilities/translate';
 import '../icon/icon.js';
 import '../button/button.js';
 
@@ -50,8 +51,14 @@ export default class CraftInputPassword extends LionInput {
       >
         <span class="icon"
           >${this._visible
-            ? html`<craft-icon name="eye-slash"></craft-icon>`
-            : html`<craft-icon name="eye"></craft-icon>`}
+            ? html`<craft-icon
+                name="eye-slash"
+                label="${t('Hide password')}"
+              ></craft-icon>`
+            : html`<craft-icon
+                name="eye"
+                label="${t('Show password')}"
+              ></craft-icon>`}
         </span>
       </craft-button>
     `;

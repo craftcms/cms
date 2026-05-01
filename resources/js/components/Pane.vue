@@ -36,6 +36,7 @@
       slots.footer ||
       slots.actions ||
       slots.feedback ||
+      slots['footer-content'] ||
       slots['primary-action'] ||
       slots['secondary-action']
     );
@@ -50,7 +51,7 @@
       return `calc(${props.padding}rem / 16)`;
     }
 
-    if (['sm', 'md', 'lg', 'xl'].includes(props.padding)) {
+    if (['sm', 'md', 'lg', 'xl'].includes(props.padding as string)) {
       return `var(--c-spacing-${props.padding})`;
     }
 
@@ -91,13 +92,15 @@
     </slot>
     <slot name="footer" v-if="showFooter">
       <div class="pane__footer">
-        <slot name="feedback"></slot>
-        <div class="flex-1"></div>
-        <slot name="actions">
-          <div class="actions">
-            <slot name="secondary-action"></slot>
-            <slot name="primary-action"></slot>
-          </div>
+        <slot name="footer-content">
+          <slot name="feedback"></slot>
+          <div class="flex-1"></div>
+          <slot name="actions">
+            <div class="actions">
+              <slot name="secondary-action"></slot>
+              <slot name="primary-action"></slot>
+            </div>
+          </slot>
         </slot>
       </div>
     </slot>

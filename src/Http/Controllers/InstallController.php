@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
@@ -48,7 +49,7 @@ readonly class InstallController
         }
     }
 
-    public function index(): \Inertia\Response
+    public function index(GeneralConfig $generalConfig): \Inertia\Response
     {
         try {
             DB::reconnect()->getPdo();
@@ -77,7 +78,8 @@ readonly class InstallController
         $localeOptions = collect($locales)
             ->map(fn ($locale) => [
                 'id' => $locale->id,
-                'name' => $locale->getDisplayName(app()->getLocale()),
+                'value' => $locale->id,
+                'label' => $locale->getDisplayName(app()->getLocale()),
                 'selected' => $locale->id === $defaultSiteLanguage,
             ]);
 
@@ -86,9 +88,11 @@ readonly class InstallController
             'postCpLoginRedirect' => $postCpLoginRedirect,
             'licenseHtml' => Inertia::defer(fn () => $licenseHtml),
             'localeOptions' => Inertia::defer(fn () => $localeOptions),
+            'baseUrlSuggestions' => SelectOptions::getEnvSuggestions(true, fn ($value) => Str::isUrl($value)),
             'defaultSystemName' => $defaultSystemName,
             'defaultSiteUrl' => $defaultSiteUrl,
             'defaultSiteLanguage' => $defaultSiteLanguage,
+            'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
             'dbConfig' => $dbConfig,
         ]);
     }
@@ -128,7 +132,7 @@ readonly class InstallController
     {
         $request->validate([
             'email' => ['required', 'email:strict'],
-            'username' => [Rule::requiredIf(! $generalConfig->useEmailAsUsername), 'string', 'max:255', 'alpha_num'],
+            'username' => [Rule::excludeIf($generalConfig->useEmailAsUsername), 'required', 'string', 'max:255', 'alpha_num'],
             'password' => ['required', Password::default()],
         ]);
 

@@ -1,11 +1,13 @@
-export interface CheckboxOption {
+export interface BaseOption {
   label: string;
   value: string;
+}
+export interface CheckboxOption extends BaseOption {
   info?: string;
 }
 export interface SelectOption<
   T = Record<string, any> | null | undefined,
-> extends CheckboxOption {
+> extends BaseOption {
   type?: 'option';
   data?: T;
 }
