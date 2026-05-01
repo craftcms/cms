@@ -1,4 +1,4 @@
-import{n as e}from"./rolldown-runtime.js";import{c as t,f as n,r,t as i}from"./lit.js";import{a,o}from"./decorators.js";import{n as s,t as c}from"./Queue-wGK97jCw.js";import{t as l}from"./queue.js";import{t as u}from"./decorate.js";var d=e({default:()=>p}),f=class extends i{constructor(...e){super(...e),this.displayedJob=null,this.hasReservedJobs=!1,this.hasWaitingJobs=!1,this.#e=c.getInstance(),this.#t=s.getInstance(),this.#n=e=>{this.displayedJob=e.detail.displayedJob}}static{this.styles=n`
+import{n as e}from"./rolldown-runtime.js";import{c as t,f as n,r,t as i}from"./lit.js";import{a,o}from"./decorators.js";import{n as s,t as c}from"./Queue.ts.js";import{t as l}from"./queue.js";import{t as u}from"./decorate.js";var d=e({default:()=>p}),f=class extends i{constructor(...e){super(...e),this.displayedJob=null,this.hasReservedJobs=!1,this.hasWaitingJobs=!1,this.#e=c.getInstance(),this.#t=s.getInstance(),this.#n=e=>{this.displayedJob=e.detail.displayedJob}}static{this.styles=n`
     :host {
       display: contents;
     }
