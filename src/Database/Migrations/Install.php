@@ -38,6 +38,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Prompts\Support\Logger;
 use ReflectionClass;
+use RuntimeException;
 use Throwable;
 
 use function Laravel\Prompts\error;
@@ -87,9 +88,13 @@ class Install extends Migration
         }
 
         $this->task('Set up database', function (?Logger $logger = null) {
+            $logger?->subLabel('Ensuring Laravel tables exist...');
+            $this->createLaravelTables();
+            $logger?->success('Laravel tables created.');
+
             $logger?->subLabel('Creating tables...');
             $this->createTables($logger);
-            $logger?->success('Tables created.');
+            $logger?->success('Craft tables created.');
 
             $logger?->subLabel('Creating indexes...');
             $this->createIndexes();
@@ -113,10 +118,93 @@ class Install extends Migration
     }
 
     /**
+     * Creates Laravel tables we rely on
+     * if they don't exist yet.
+     */
+    public function createLaravelTables(): void
+    {
+        if (! Schema::hasTable('password_reset_tokens')) {
+            Schema::create('password_reset_tokens', function (Blueprint $table) {
+                $table->string('email')->primary();
+                $table->string('token');
+                $table->timestamp('created_at')->nullable();
+            });
+        }
+
+        if (! Schema::hasTable('cache')) {
+            Schema::create('cache', function (Blueprint $table) {
+                $table->string('key')->primary();
+                $table->mediumText('value');
+                $table->bigInteger('expiration')->index();
+            });
+        }
+
+        if (! Schema::hasTable('cache_locks')) {
+            Schema::create('cache_locks', function (Blueprint $table) {
+                $table->string('key')->primary();
+                $table->string('owner');
+                $table->bigInteger('expiration')->index();
+            });
+        }
+
+        if (! Schema::hasTable('jobs')) {
+            Schema::create('jobs', function (Blueprint $table) {
+                $table->id();
+                $table->string('queue')->index();
+                $table->longText('payload');
+                $table->unsignedSmallInteger('attempts');
+                $table->unsignedInteger('reserved_at')->nullable();
+                $table->unsignedInteger('available_at');
+                $table->unsignedInteger('created_at');
+            });
+        }
+
+        if (! Schema::hasTable('job_batches')) {
+            Schema::create('job_batches', function (Blueprint $table) {
+                $table->string('id')->primary();
+                $table->string('name');
+                $table->integer('total_jobs');
+                $table->integer('pending_jobs');
+                $table->integer('failed_jobs');
+                $table->longText('failed_job_ids');
+                $table->mediumText('options')->nullable();
+                $table->integer('cancelled_at')->nullable();
+                $table->integer('created_at');
+                $table->integer('finished_at')->nullable();
+            });
+        }
+
+        if (! Schema::hasTable('failed_jobs')) {
+            Schema::create('failed_jobs', function (Blueprint $table) {
+                $table->id();
+                $table->string('uuid')->unique();
+                $table->text('connection');
+                $table->text('queue');
+                $table->longText('payload');
+                $table->longText('exception');
+                $table->timestamp('failed_at')->useCurrent();
+            });
+        }
+
+        if (! Schema::hasTable('sessions')) {
+            Schema::create('sessions', function (Blueprint $table) {
+                $table->string('id')->primary();
+                $table->foreignId('user_id')->nullable()->index();
+                $table->string('ip_address', 45)->nullable();
+                $table->text('user_agent')->nullable();
+                $table->longText('payload');
+                $table->integer('last_activity')->index();
+            });
+        }
+    }
+
+    /**
      * Creates the tables.
      */
     public function createTables(?Logger $logger = null): void
     {
+        $this->dropEmptyStarterTable(Table::USERS);
+
         $logger?->subLabel('addresses');
         Schema::create('addresses', function (Blueprint $table) {
             $table->integer('id', true);
@@ -890,12 +978,6 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::PASSWORD_RESET_TOKENS, function (Blueprint $table) {
-            $table->string('email')->index();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
-        });
-
         $logger?->subLabel('webauthn');
         Schema::create('webauthn', function (Blueprint $table) {
             $table->integer('id', true);
@@ -921,6 +1003,19 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
             $table->char('uid', 36)->default('0');
         });
+    }
+
+    private function dropEmptyStarterTable(string $table): void
+    {
+        if (! Schema::hasTable($table)) {
+            return;
+        }
+
+        if (DB::table($table)->exists()) {
+            throw new RuntimeException("Craft cannot be installed because the existing [$table] table contains rows.");
+        }
+
+        Schema::drop($table);
     }
 
     public function createIndexes(): void
