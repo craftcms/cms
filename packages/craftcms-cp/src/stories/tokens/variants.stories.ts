@@ -33,7 +33,7 @@ export const CalloutMatrix: Story = {
       <table class="cp-table cp-table--padded">
         <thead>
           <tr>
-            <th></th>
+            <th>variant</th>
             ${appearances.map((a) => html`<th>${a}</th>`)}
           </tr>
         </thead>
@@ -75,7 +75,7 @@ export const ButtonMatrix: Story = {
       <table class="cp-table cp-table--padded">
         <thead>
           <tr>
-            <th></th>
+            <th>variant</th>
             ${buttonAppearances.map((a) => html`<th>${a}</th>`)}
           </tr>
         </thead>

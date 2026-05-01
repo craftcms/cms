@@ -29,7 +29,7 @@
     "build:storybook": "storybook build",
     "build:manifest": "custom-elements-manifest analyze --litelement --outdir dist",
     "generate:vue-wrappers": "node ./scripts/generate-vue-wrappers.js",
-    "generate:colors": "node ./scripts/generate-colors.js"
+    "generate:colors": "node ./scripts/generate-colors.js && node scripts/generate-color-palette.js"
   },
   "exports": {
     "./package.json": "./package.json",
@@ -61,6 +61,7 @@
     "lit": "3.x"
   },
   "devDependencies": {
+    "@adobe/leonardo-contrast-colors": "^1.1.0",
     "@arethetypeswrong/cli": "^0.18.2",
     "@awesome.me/webawesome": "^3.6.0",
     "@custom-elements-manifest/analyzer": "^0.11.0",
@@ -79,6 +80,7 @@
     "@wc-toolkit/storybook-helpers": "^10.3.0",
     "del": "^8.0.1",
     "dom-accessibility-api": "^0.7.1",
+    "esbuild": "^0.28.0",
     "globby": "^16.2.0",
     "happy-dom": "^20.9.0",
     "lit": "^3.3.2",

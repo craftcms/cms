@@ -53,12 +53,9 @@ export default class CraftInputPassword extends LionInput {
           >${this._visible
             ? html`<craft-icon
                 name="eye-slash"
-                label="${t('Hide password')}"
+                label="${t('Hide')}"
               ></craft-icon>`
-            : html`<craft-icon
-                name="eye"
-                label="${t('Show password')}"
-              ></craft-icon>`}
+            : html`<craft-icon name="eye" label="${t('Show')}"></craft-icon>`}
         </span>
       </craft-button>
     `;
