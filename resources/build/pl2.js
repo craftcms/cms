@@ -1,1 +1,1 @@
-var e={validationError:`Błąd`,validationWarning:`Ostrzeżenie`,validationSuccess:`Zrealizowano pomyślnie`,validationInfo:`Informacja`};export{e as default};
+var e={validationError:`Błąd,`,validationWarning:`Ostrzeżenie,`,validationSuccess:`Zrealizowano pomyślnie,`,validationInfo:`Informacja,`};export{e as default};
