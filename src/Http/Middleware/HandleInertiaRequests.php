@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Edition;
@@ -64,6 +65,7 @@ class HandleInertiaRequests extends Middleware
         $updates = app(Updates::class);
         $nav = app(Navigation::class);
         $progressService = app(JobProgress::class);
+        $generalConfig = app(GeneralConfig::class);
 
         if (! $updates->isCraftUpdatePending()) {
             $currentUser = $request->user();
@@ -85,6 +87,9 @@ class HandleInertiaRequests extends Middleware
                 'hasWaitingJobs' => $progressService->getByStatus(JobStatus::Pending)->count() > 0,
             ],
             'craft' => fn () => [
+                'general' => [
+                    'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
+                ],
                 'system' => [
                     'name' => Cms::systemName(),
                     'icon' => $systemIcon,
@@ -97,6 +102,8 @@ class HandleInertiaRequests extends Middleware
                     'url' => $currentSite->getBaseUrl(),
                 ],
                 'currentUser' => [
+                    'id' => $currentUser->id ?? null,
+                    'username' => $currentUser->username ?? null,
                     'email' => $currentUser->email ?? null,
                 ],
                 'cpUrl' => cp_url(),

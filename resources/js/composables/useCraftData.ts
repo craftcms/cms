@@ -16,7 +16,16 @@ export interface CraftData {
   site: {
     url: string;
   };
-  currentUser: any;
+  currentUser: {
+    username: string | null;
+    email: string | null;
+    id: number | null;
+    thumbHtml: string | null
+    photo: any;
+  };
+  general: {
+    useEmailAsUsername: boolean;
+  }
   nav: any[];
   [key: string]: any;
 }

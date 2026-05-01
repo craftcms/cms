@@ -113,6 +113,16 @@ export default css`
   Appearances 
    */
 
+  /* None */
+  :host([appearance~='none']),
+  :host([appearance~='none']:hover),
+  :host([appearance~='none']:not(:disabled):not(.loading):active) {
+    background-color: transparent;
+    border-color: transparent;
+    color: inherit;
+    padding: 0;
+  }
+
   /* Plain */
   :host([appearance~='plain']) {
     background-color: transparent;
@@ -120,7 +130,7 @@ export default css`
     color: inherit;
   }
 
-  :host([appearance~='plain']:hover) {
+  :host([appearance~='plain']:not(:disabled):not(.loading):hover) {
     background-color: color-mix(
       in oklab,
       var(--c-color-fill-quiet, var(--c-button-default-fill)),
@@ -129,7 +139,7 @@ export default css`
     color: var(--c-color-on-quiet);
   }
 
-  :host([appearance~='plain']:active) {
+  :host([appearance~='plain']:not(:disabled):not(.loading):active) {
     color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
     background-color: color-mix(
       in oklab,
@@ -148,7 +158,7 @@ export default css`
     color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
   }
 
-  :host([appearance~='filled']:hover) {
+  :host([appearance~='filled']:not(:disabled):not(.loading):hover) {
     background-color: color-mix(
       in oklab,
       var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)),
@@ -157,7 +167,7 @@ export default css`
     color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
   }
 
-  :host([appearance~='filled']:active) {
+  :host([appearance~='filled']:not(:disabled):not(.loading):active) {
     color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
     background-color: color-mix(
       in oklab,
@@ -174,7 +184,7 @@ export default css`
     color: var(--c-color-on-quiet);
   }
 
-  :host([appearance~='dashed']:hover) {
+  :host([appearance~='dashed']:not(:disabled):not(.loading):hover) {
     background-color: color-mix(
       in oklab,
       var(--c-color-fill-quiet, var(--c-button-default-fill)),
@@ -183,7 +193,7 @@ export default css`
     color: var(--c-color-on-quiet);
   }
 
-  :host([appearance~='dashed']:active) {
+  :host([appearance~='dashed']:not(:disabled):not(.loading):active) {
     color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
     background-color: color-mix(
       in oklab,
