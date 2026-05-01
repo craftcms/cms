@@ -96,6 +96,7 @@
     "vitest": "^4.1.5"
   },
   "dependencies": {
+    "@chromatic-com/storybook": "^5.1.2",
     "@github/relative-time-element": "^5.0.0",
     "axios": "^1.15.2"
   },
