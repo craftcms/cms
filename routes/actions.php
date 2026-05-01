@@ -101,7 +101,6 @@ use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
 use CraftCms\Cms\Http\Controllers\Utilities\FindAndReplaceController;
 use CraftCms\Cms\Http\Controllers\Utilities\MigrationsController;
 use CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController;
-use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
@@ -480,10 +479,6 @@ Route::prefix(implode('/', [
         // Structures
         Route::post('structures/get-element-level-delta', [StructuresController::class, 'getElementLevelDelta']);
         Route::post('structures/move-element', [StructuresController::class, 'moveElement']);
-
-        // SystemMessages
-        Route::post('system-messages/get-message-modal', [SystemMessagesController::class, 'show']);
-        Route::post('system-messages/save-message', [SystemMessagesController::class, 'store']);
 
         // Updates
         Route::post('app/check-for-updates', [UpdatesController::class, 'check']);

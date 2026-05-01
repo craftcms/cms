@@ -1,27 +1,20 @@
 <script setup lang="ts">
+  import {t} from '@craftcms/cp';
   import {ref} from 'vue';
   import SystemMessageEditModal from './SystemMessageEditModal.vue';
   import Pane from '@/components/Pane.vue';
-
-  interface SystemMessageData {
-    key: string;
-    heading: string;
-    subject: string;
-    body: string;
-  }
-
-  interface LocaleOption {
-    value: string;
-    label: string;
-  }
+  import type {SelectOption} from '@/types';
+  import type {SystemMessageData} from '@/types/utilities';
+  import {useFlashMessages} from '@/composables/useFlashMessages';
 
   const props = defineProps<{
     messages: Array<SystemMessageData>;
-    locales: Array<LocaleOption>;
+    locales: Array<SelectOption>;
     isMultiSite: boolean;
     primaryLanguage: string;
   }>();
 
+  const {flash} = useFlashMessages();
   const localMessages = ref<Array<SystemMessageData>>([...props.messages]);
   const isModalOpen = ref(false);
   const editingMessage = ref<SystemMessageData | null>(null);
@@ -48,7 +41,6 @@
         message.body = data.body;
       }
     }
-    closeModal();
   }
 
   function formatBody(body: string): string {
@@ -74,7 +66,7 @@
             size="small"
             @click="openEditModal(message)"
           >
-            <craft-icon name="pencil"></craft-icon>
+            <craft-icon name="pencil" :label="t('Edit message')"></craft-icon>
           </craft-button>
         </template>
 

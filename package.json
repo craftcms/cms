@@ -10,6 +10,7 @@
     "prebuild": "npm run fix-prettier",
     "build": "vite build",
     "dev": "vite",
+    "lint:styles": "stylelint \"resources/**/*.css\"",
     "build:bundles": "cd ./packages/craftcms-legacy && npm run build",
     "dev:bundles": "cd ./packages/craftcms-legacy && npm run dev",
     "serve:bundles": "cd ./packages/craftcms-legacy && npm run serve",
@@ -43,7 +44,7 @@
     "stylelint-config-standard": "^40.0.0",
     "stylelint-config-standard-scss": "^17.0.0",
     "stylelint-prettier": "^5.0.3",
-    "stylelint-use-logical-spec": "^5.0.1",
+    "stylelint-use-logical": "^2.1.3",
     "typescript": "^6.0.3",
     "vite": "^8.0.10",
     "vue-tsc": "^3.2.7"

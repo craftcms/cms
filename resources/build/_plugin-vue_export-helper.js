@@ -1462,7 +1462,7 @@ import{n as e}from"./rolldown-runtime.js";import{t}from"./decorate-EVKP5RjP.js";
     }
 
     ::slotted(.form-control) {
-      width: auto;
+      width: 100%;
       flex: 0 0 auto;
     }
   }

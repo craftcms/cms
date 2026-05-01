@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  import {Deferred, Head} from '@inertiajs/vue3';
+  import {Deferred, Head, useHttp} from '@inertiajs/vue3';
   import {t} from '@craftcms/cp';
   import backgroundUrl from '../../images/install/installer-bg.png';
-  import {computed, reactive, ref, watchEffect} from 'vue';
+  import {computed, reactive, watchEffect} from 'vue';
   import AccountFields from '@/components/install/AccountFields.vue';
   import SiteFields from '@/components/install/SiteFields.vue';
   import {useInstall} from '@/composables/useInstall';
@@ -10,7 +10,6 @@
   import siteBg from '../../images/install/site.png';
   import dbBg from '../../images/install/db.png';
   import DbFields from '@/components/install/DbFields.vue';
-  import axios from 'axios';
   import InstallingScreen from '@/components/install/InstallingScreen.vue';
   import Pane from '@/components/Pane.vue';
   import Modal from '@/components/Modal.vue';
@@ -47,8 +46,6 @@
     possibleSteps,
   } = useInstall();
 
-  const state = ref<'idle' | 'loading' | 'error'>('idle');
-
   watchEffect(() => {
     possibleSteps.value.db.hidden = !props.showDbScreen;
   });
@@ -63,7 +60,7 @@
     site: {},
   });
 
-  const formData = reactive<Record<string, object>>({
+  const formData = useHttp({
     account: {
       username: '',
       email: '',
@@ -87,23 +84,25 @@
 
   const modalActive = computed(() => !isCurrent('start'));
 
-  async function handleSubmit(e: Event) {
-    if (state.value === 'loading') {
+  function handleSubmit(evt: Event) {
+    if (formData.processing) {
       return;
     }
 
-    errors[currentId.value!] = null;
+    errors[currentId.value!] = {};
 
-    const form = e.currentTarget as HTMLFormElement;
-    try {
-      state.value = 'loading';
-      await axios.post(form.action, formData[currentId.value!]);
-      goToNext();
-      state.value = 'idle';
-    } catch (e: any) {
-      errors[currentId.value!] = e.response.data.errors;
-      state.value = 'error';
-    }
+    const form = evt.currentTarget as HTMLFormElement;
+    formData
+      // @ts-expect-error
+      .transform((data) => data[currentId.value!] as Record<string, any>)
+      .post(form.action, {
+        onSuccess: () => {
+          goToNext();
+        },
+        onError: (validationErrors) => {
+          errors[currentId.value!] = validationErrors;
+        },
+      });
   }
 </script>
 
@@ -123,7 +122,7 @@
       </craft-button>
     </template>
 
-    <Modal :is-active="modalActive" :overlay="false">
+    <Modal :is-active="modalActive" :overlay="false" width="2xl">
       <!-- License screen -->
       <template v-if="isCurrent('license')">
         <Pane class="max-w-[80ch] mx-auto">
@@ -158,7 +157,7 @@
 
       <!-- Form screens -->
       <template v-else>
-        <div class="max-w-[80ch]">
+        <div>
           <Pane
             as="form"
             :action="current.action"
@@ -204,8 +203,8 @@
               </Deferred>
             </StepScreen>
 
-            <template #actions>
-              <div class="grid grid-cols-3 items-center gap-2">
+            <template #footer-content>
+              <div class="grid grid-cols-3 items-center gap-2 w-full">
                 <craft-button
                   type="button"
                   @click="goToPrevious"
@@ -233,7 +232,7 @@
                   class="justify-self-end"
                   type="submit"
                   variant="primary"
-                  :loading="state === 'loading'"
+                  :loading="formData.processing"
                 >
                   {{ current.submitLabel ?? t('Next') }}
                   <craft-icon name="arrow-right" slot="suffix"></craft-icon>

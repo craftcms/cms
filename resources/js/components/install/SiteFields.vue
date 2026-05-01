@@ -2,6 +2,11 @@
   import {t} from '@craftcms/cp';
   import {computed} from 'vue';
   import {useFocusField} from '@/composables/useFocusField';
+  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import CraftCombobox from '@/components/form/CraftCombobox.vue';
+  import Select from '@/components/form/Select.vue';
+  import {usePage} from '@inertiajs/vue3';
+  import type {BaseOption, SelectItem} from '@/types';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', data: any): void;
@@ -9,11 +14,16 @@
   const props = withDefaults(
     defineProps<{
       modelValue?: any;
-      localeOptions?: Array<{id: string; name: string; selected: boolean}>;
-      errors?: Record<string, string[]>;
+      localeOptions: Array<BaseOption & {id: string}>;
+      errors?: Record<string, string>;
     }>(),
     {modelValue: () => ({}), errors: () => ({}), localeOptions: () => []}
   );
+
+  const page = usePage<{
+    baseUrlSuggestions: Array<SelectItem>;
+    languageOptions: Array<SelectItem>;
+  }>();
 
   const model = computed({
     get() {
@@ -24,51 +34,56 @@
     },
   });
 
-  function handleUpdate(event: CustomEvent) {
-    const target = event.target as HTMLSelectElement & {modelValue: string};
-    emit('update:modelValue', {
-      ...model.value,
-      language: target?.modelValue,
-    });
-  }
-
   useFocusField('site-name');
 </script>
 
 <template>
-  <!-- @TODO add error output -->
-  <craft-input
+  <CraftInput
     name="name"
     :label="t('System Name')"
     id="site-name"
     v-model="model.name"
     maxlength="255"
     ref="site-name"
+    :error="errors?.name"
+  />
+
+  <CraftCombobox
+    v-model="model.baseUrl"
+    :label="t('Base URL')"
+    :help-text="t('The base URL for the site.')"
+    id="base-url"
+    name="baseUrl"
+    :error="errors?.baseUrl"
+    :options="page.props.baseUrlSuggestions"
   >
-  </craft-input>
+    <template #after>
+      <craft-callout
+        variant="info"
+        appearance="plain"
+        class="p-0"
+        icon="lightbulb"
+      >
+        {{ t('This can begin with an environment variable or alias.') }}
+        <a
+          href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
+          >{{ t('Learn more') }}</a
+        >
+      </craft-callout>
+    </template>
+  </CraftCombobox>
 
-  <!-- @TODO this should be autocomplete -->
-  <craft-input name="baseUrl" :label="t('Base URL')" v-model="model.baseUrl">
-  </craft-input>
-
-  <craft-select
+  <Select
+    v-model="model.language"
+    :options="localeOptions"
     :label="t('Language')"
     id="site-language"
     name="language"
-    .modelValue="model.language"
-    @model-value-changed="handleUpdate"
   >
-    <select slot="input">
-      <option
-        v-for="locale in localeOptions"
-        :key="locale.id"
-        :selected="locale.id === model.language"
-        :value="locale.id"
-      >
-        {{ locale.id }} ({{ locale.name }})
-      </option>
-    </select>
-  </craft-select>
+    <template #option-label="{option}">
+      {{ option.value }} ({{ option.label }})
+    </template>
+  </Select>
 </template>
 
 <style scoped lang="scss"></style>
