@@ -260,7 +260,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
                     ->name('settings.site-groups.destroy');
             });
 
-        // User settings
+        // User settings index
         if (Edition::isAtLeast(Edition::Team)) {
             Route::get('settings/users', [UserGroupsController::class, 'index']);
         } else {
@@ -278,6 +278,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
             Route::get('settings/users/groups/{userGroup}', [UserGroupsController::class, 'edit']);
         });
 
+        // User settings
         Route::get('settings/users/settings', [UserSettingsController::class, 'index']);
     });
 
