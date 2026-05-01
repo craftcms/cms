@@ -226,7 +226,7 @@ return [
     'Bad Request' => 'Zlá požiadavka',
     'Base Path' => 'Základná cesta',
     'Base URL' => 'Základná adresa URL',
-    'Before deleting {label}, please address the following {numBlockers, plural, =1{issue} other{issues}}:' => 'Before deleting {label}, please address the following {numBlockers, plural, =1{issue} other{issues}}:',
+    'Before deleting {label}, please address the following {numBlockers, plural, =1{issue} other{issues}}:' => 'Skôr ako odstránite {label}, vyriešte prosím {numBlockers, plural, one {} few {nasledujúce problémy} many {nasledujúce problémy}=1{nasledujúci problém} other{nasledujúce problémy}}:',
     'Before other {type}' => 'Pred ďalším {type}',
     'Before…' => 'Pred…',
     'Blank values will default to the settings above.' => 'Prázdne hodnoty budú predvolené na vyššie uvedené nastavenia.',
