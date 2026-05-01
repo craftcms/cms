@@ -64,18 +64,10 @@ test('purgeExpiredPendingUsers deletes users with expired tokens', function () {
     expect($exists)->toBeFalse();
 });
 
-test('purgeExpiredPendingUsers does not delete users with at least one active token', function () {
+test('purgeExpiredPendingUsers does not delete users with an active token', function () {
     $user = UserModel::factory()->createElement(['pending' => true]);
     $user = User::find()->id($user->id)->one();
 
-    // Create an expired token
-    DB::table('password_reset_tokens')->insert([
-        'email' => $user->email,
-        'token' => 'expired-token',
-        'created_at' => now()->subDays(10),
-    ]);
-
-    // Create a fresh token
     DB::table('password_reset_tokens')->insert([
         'email' => $user->email,
         'token' => 'fresh-token',

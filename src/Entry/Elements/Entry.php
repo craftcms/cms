@@ -678,18 +678,20 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             [
                 'label' => t('Post Date'),
                 'orderBy' => function (int $dir) {
+                    $postDate = DB::getQueryGrammar()->wrap('entries.postDate');
+
                     if ($dir === SORT_ASC) {
                         if (DB::isMysql()) {
-                            return DB::raw('postDate IS NOT NULL DESC, postDate ASC');
+                            return DB::raw("$postDate IS NOT NULL DESC, $postDate ASC");
                         }
 
-                        return DB::raw('postDate ASC NULLS LAST');
+                        return DB::raw("$postDate ASC NULLS LAST");
                     }
                     if (DB::isMysql()) {
-                        return DB::raw('postDate IS NULL DESC, postDate DESC');
+                        return DB::raw("$postDate IS NULL DESC, $postDate DESC");
                     }
 
-                    return DB::raw('postDate DESC NULLS FIRST');
+                    return DB::raw("$postDate DESC NULLS FIRST");
                 },
                 'attribute' => 'postDate',
                 'defaultDir' => 'desc',

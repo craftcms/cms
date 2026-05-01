@@ -114,7 +114,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         'page' => '[^\/]+',
     ]);
     Route::get('assets/edit/{id}{slug}', EditElementController::class)->where($idSlugParams);
-    Route::get('entries/{section}/{id}{slug}', EditElementController::class)->where($idSlugParams);
+    Route::get('entries/{section}/{id}{slug?}', EditElementController::class)->where($idSlugParams);
     Route::get('content/{page}/{section}/{id}{slug?}', EditElementController::class)->where([
         ...$idSlugParams,
         'page' => '[^\/]+',

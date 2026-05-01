@@ -106,8 +106,11 @@ use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
 use CraftCms\Cms\Http\Middleware\RequireToken;
+use CraftCms\Cms\Http\Middleware\StartSessionWithoutPersistence;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 /**
  * Actions that are accessible both with and without CP can be registered here.
@@ -131,7 +134,9 @@ foreach ([
         Route::post('users/login-with-passkey', [PasskeyController::class, 'login']);
         Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
         Route::any('users/redirect', [LoginController::class, 'redirect']);
-        Route::any('users/session-info', [SessionInfoController::class, 'show'])->withoutMiddleware(StartSession::class);
+        Route::any('users/session-info', [SessionInfoController::class, 'show'])
+            ->middleware(StartSessionWithoutPersistence::class)
+            ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class]);
         Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout']);
         Route::middleware('throttle:1,1')->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
         Route::post('users/save-user', SaveUserController::class);
@@ -388,6 +393,10 @@ Route::prefix(implode('/', [
         // Queue
         Route::any('queue/run', [QueueController::class, 'run']);
         Route::any('queue/get-job-info', [QueueController::class, 'jobInfo']);
+        Route::any('queue/release', [QueueController::class, 'cancel']);
+        Route::any('queue/release-all', [QueueController::class, 'cancelAll']);
+        Route::any('queue/retry', [QueueController::class, 'retry']);
+        Route::any('queue/retry-all', [QueueController::class, 'retryAll']);
 
         // Relational fields
         Route::any('relational-fields/structured-input-html', [RelationalFieldsController::class, 'structuredInputHtml']);

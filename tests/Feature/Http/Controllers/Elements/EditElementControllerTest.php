@@ -44,6 +44,20 @@ dataset('editElementEntryRoutes', [
             $entry->slug,
         )),
     ],
+    'entries route without slug' => [
+        fn (Entry $entry) => cp_url(sprintf(
+            'entries/%s/%d',
+            $entry->getSection()->handle,
+            $entry->id,
+        )),
+    ],
+    'content route without slug' => [
+        fn (Entry $entry) => cp_url(sprintf(
+            'content/entries/%s/%d',
+            $entry->getSection()->handle,
+            $entry->id,
+        )),
+    ],
 ]);
 
 beforeEach(function () {
