@@ -26,6 +26,7 @@
 - Generated field values are no longer truncated within element cards. ([#18646](https://github.com/craftcms/cms/discussions/18646))
 - Assets’ Alternative Text values are now automatically set on upload, based on descriptive text data found in the uploaded file’s metadata. ([#18744](https://github.com/craftcms/cms/pull/18744))
 - When deleting elements, a modal window is now shown alerting the user of any potential issues, such as existing relationships. ([#18728](https://github.com/craftcms/cms/pull/18728))
+- “Verification Code” and “Recovery Code” forms no longer get auto-submitted when entering a value.
 
 ### Administration
 - Sections now have a “Min Authors” setting. ([#18662](https://github.com/craftcms/cms/pull/18662))

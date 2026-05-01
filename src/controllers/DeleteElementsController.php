@@ -38,12 +38,12 @@ class DeleteElementsController extends Controller
     /**
      * @var class-string<ElementInterface>
      */
-    private string $elementType;
+    protected string $elementType;
     /**
      * @var ElementCollection
      */
-    private ElementCollection $elements;
-    private bool $hardDelete;
+    protected ElementCollection $elements;
+    protected bool $hardDelete;
 
     /**
      * @inheritdoc
