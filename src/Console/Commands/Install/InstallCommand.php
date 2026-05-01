@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Console\Commands\Install;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
-use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Site\Concerns\SiteDefaults;
@@ -55,7 +54,6 @@ class InstallCommand extends Command
         GeneralConfig $generalConfig,
         I18N $i18n,
         Migrator $migrator,
-        LaravelMigrations $laravelMigrations,
     ): int {
         if (Cms::isInstalled(true)) {
             warning('Craft is already installed!');
@@ -163,9 +161,10 @@ class InstallCommand extends Command
 
         // Try to save the site URL to a APP_URL environment variable
         // if it’s not already set to an alias or environment variable
+
         if (! in_array($site->getBaseUrl(false)[0], ['@', '$'])) {
             try {
-                Env::writeVariable('APP_URL', $site->getBaseUrl(), app()->environmentFilePath());
+                Env::writeVariable('APP_URL', $site->getBaseUrl(), app()->environmentFilePath(), overwrite: true);
                 $site->setBaseUrl('$APP_URL');
             } catch (Throwable) {
                 // that's fine, we'll just store the entered URL

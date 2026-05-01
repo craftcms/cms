@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
+ * @method static \CraftCms\Cms\ProjectConfig\ProjectConfig writeYamlAutomatically(bool $writeYamlAutomatically = true)
  * @method static void flush()
  * @method static mixed get(string|null $path = null, bool $getFromExternalConfig = false)
  * @method static array find(callable $callback, bool $fromExternalConfig = false)

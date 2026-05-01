@@ -2,6 +2,9 @@
   import {t} from '@craftcms/cp';
   import {computed} from 'vue';
   import {useFocusField} from '@/composables/useFocusField';
+  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import CraftInputPassword from '@craftcms/cp/vue/CraftInputPassword.vue';
+  import {usePage} from '@inertiajs/vue3';
 
   const emit = defineEmits<{
     (e: 'success'): void;
@@ -11,18 +14,43 @@
 
   const props = withDefaults(
     defineProps<{
-      modelValue?: any;
-      errors?: Record<string, string[]>;
-      showUsername?: boolean;
+      modelValue?: {
+        email?: string;
+        username?: string;
+        password?: string;
+      };
+      errors?: {
+        email?: string;
+        username?: string;
+        password?: string;
+      };
     }>(),
-    {showUsername: true, modelValue: () => ({}), errors: () => ({})}
+    {
+      modelValue: () => ({
+        email: '',
+        username: '',
+        password: '',
+      }),
+      errors: () => ({
+        email: '',
+        username: '',
+        password: '',
+      }),
+    }
   );
+
+  const page = usePage<{
+    useEmailAsUsername: boolean;
+  }>();
+  const showUsername = computed(() => !page.props.useEmailAsUsername);
 
   const model = computed({
     get() {
+      console.log(props.modelValue);
       return props.modelValue;
     },
     set(value) {
+      console.log('value', value);
       emit('update:modelValue', value);
     },
   });
@@ -31,46 +59,37 @@
 </script>
 
 <template>
-  <craft-input
+  <CraftInput
     v-if="showUsername"
     :label="t('Username')"
     id="account-username"
     name="username"
     v-model="model.username"
-    :has-feedback-for="errors?.username ? 'error' : ''"
+    :error="errors?.username"
     maxlength="255"
-    ref="username-input"
-  >
-    <ul class="error-list" v-if="errors?.username" slot="feedback">
-      <li v-for="error in errors?.username">{{ error }}</li>
-    </ul>
-  </craft-input>
-  <craft-input
+    required
+    autofocus
+  />
+  <CraftInput
     :label="t('Email')"
     id="account-email"
     name="email"
     v-model="model.email"
     maxlength="255"
     autocomplete="email"
-    :has-feedback-for="errors?.email ? 'error' : ''"
+    :error="errors?.email"
+    required
     type="email"
-  >
-    <ul class="error-list" v-if="errors?.email" slot="feedback">
-      <li v-for="error in errors?.email">{{ error }}</li>
-    </ul>
-  </craft-input>
-  <craft-input-password
+  />
+  <CraftInputPassword
     :label="t('Password')"
     id="account-password"
     name="password"
     v-model="model.password"
-    :has-feedback-for="errors?.password ? 'error' : ''"
+    :error="errors?.password"
+    required
     autocomplete="new-password"
-  >
-    <ul class="error-list" v-if="errors?.password" slot="feedback">
-      <li v-for="error in errors?.password">{{ error }}</li>
-    </ul>
-  </craft-input-password>
+  />
 </template>
 
 <style scoped lang="scss"></style>

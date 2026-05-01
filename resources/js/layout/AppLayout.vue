@@ -10,6 +10,7 @@
   import Breadcrumbs from '@/components/Breadcrumbs.vue';
   import {useAnnouncer} from '@/composables/useAnnouncer';
   import LiveRegion from '@/components/LiveRegion.vue';
+  import {useFlashMessages} from '@/composables/useFlashMessages';
 
   const props = withDefaults(
     defineProps<{
@@ -22,6 +23,7 @@
   );
 
   const {system} = useCraftData();
+  const {messages} = useFlashMessages();
 
   const page = usePage<{
     flash: {
@@ -33,8 +35,12 @@
       label: string;
     }> | null;
   }>();
-  const errorFlash = computed(() => page.props.flash?.error);
-  const successFlash = computed(() => page.props.flash?.success);
+  const errorFlash = computed(
+    () => page.props.flash?.error ?? messages.value.error ?? null
+  );
+  const successFlash = computed(
+    () => page.props.flash?.success ?? messages.value.success ?? null
+  );
   const crumbs = computed(() => page.props.crumbs ?? null);
   const skipLinks = computed(() => [
     {label: t('Skip to main section'), url: '#main'},

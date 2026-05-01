@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\HtmlStack;
 
 beforeEach(function () {
@@ -41,9 +42,10 @@ describe('js tag', function () {
 
         $this->renderer->renderString('{% js %}console.log("hello");{% endjs %}');
 
-        $registered = $this->assets->clearJsBuffer(scriptTag: false, combine: true);
+        $registered = $this->assets->clearJsBuffer(scriptTag: false, combine: false);
 
-        expect($registered)->toContain('console.log("hello");');
+        expect($registered)->toHaveKey(Position::BodyEnd->value)
+            ->and($registered[Position::BodyEnd->value])->toContain('console.log("hello");');
     });
 
     it('registers JS from a string expression', function () {
@@ -54,5 +56,16 @@ describe('js tag', function () {
         $registered = $this->assets->clearJsBuffer(scriptTag: false, combine: true);
 
         expect($registered)->toContain('alert(1);');
+    });
+
+    it('registers ready JS separately from body end JS', function () {
+        $this->assets->startJsBuffer();
+
+        $this->renderer->renderString('{% js on ready %}console.log("ready");{% endjs %}');
+
+        $registered = $this->assets->clearJsBuffer(scriptTag: false, combine: false);
+
+        expect($registered)->toHaveKey(Position::Ready->value)
+            ->and($registered[Position::Ready->value])->toContain('console.log("ready");');
     });
 });

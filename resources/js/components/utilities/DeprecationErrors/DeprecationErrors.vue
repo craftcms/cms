@@ -9,6 +9,7 @@
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
   import DeleteLogButton from '@/components/utilities/DeprecationErrors/DeleteLogButton.vue';
   import StackTraceButton from '@/components/utilities/DeprecationErrors/StackTraceButton.vue';
+  import Empty from '@/components/Empty.vue';
 
   interface LogData {
     id: number;
@@ -78,7 +79,7 @@
 
 <template>
   <template v-if="!logs.length">
-    <p>{{ t('No deprecation warnings to report!') }}</p>
+    <Empty :label="t('No deprecation warnings to report!')" />
   </template>
   <template v-else>
     <AdminTable

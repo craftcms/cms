@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Support\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static void js(string $js, \CraftCms\Cms\View\Enums\Position $position = 3, string|null $key = null)
- * @method static void jsWithVars(callable $fn, array $vars, \CraftCms\Cms\View\Enums\Position $position = 3, string|null $key = null)
+ * @method static void js(string $js, \CraftCms\Cms\View\Enums\Position $position = 4, string|null $key = null)
+ * @method static void jsWithVars(callable $fn, array $vars, \CraftCms\Cms\View\Enums\Position $position = 4, string|null $key = null)
  * @method static void jsFile(string $url, array $options = [], string|null $key = null)
  * @method static void cssFile(string $url, array $options = [], string|null $key = null)
  * @method static void css(string $css, array $options = [], string|null $key = null)

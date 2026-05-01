@@ -14,6 +14,8 @@ use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
 use CraftCms\Cms\GarbageCollection\Actions\GarbageCollectionAction;
 use CraftCms\Cms\GarbageCollection\Actions\HardDelete;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
+use CraftCms\Cms\Queue\Enums\JobStatus;
+use CraftCms\Cms\Queue\Models\JobProgress;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
@@ -118,6 +120,30 @@ it('uses null output by default for garbage collection actions', function () {
     $output = new ReflectionProperty($action, 'output')->getValue($action);
 
     expect($output->getOutput())->toBeInstanceOf(NullOutput::class);
+});
+
+it('prunes job progress records', function () {
+    $jobProgress = JobProgress::create([
+        'uid' => 'stale-job-progress',
+        'description' => 'Stale job progress',
+        'status' => JobStatus::Done,
+        'progress' => 100,
+        'dateCreated' => now()->subDays(8),
+        'dateUpdated' => now()->subDays(8),
+    ]);
+    $recentJobProgress = JobProgress::create([
+        'uid' => 'recent-job-progress',
+        'description' => 'Recent job progress',
+        'status' => JobStatus::Done,
+        'progress' => 100,
+        'dateCreated' => now()->subDays(6),
+        'dateUpdated' => now()->subDays(6),
+    ]);
+
+    runGarbageCollectionForTest(fn (array $actions) => null);
+
+    expect(JobProgress::query()->whereKey($jobProgress->getKey())->exists())->toBeFalse()
+        ->and(JobProgress::query()->whereKey($recentJobProgress->getKey())->exists())->toBeTrue();
 });
 
 function findActionCall(array $actions, string $action): Collection

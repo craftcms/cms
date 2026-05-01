@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Path;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Http\Kernel;
@@ -55,7 +56,13 @@ class DynamicRoute
             return view($template, $variables)->render();
         }
 
-        abort_if(app(TemplateResolver::class)->resolve($template, publicOnly: true) === false, 404);
+        if (app(TemplateResolver::class)->resolve($template, publicOnly: true) === false) {
+            if (app()->hasDebugModeEnabled()) {
+                throw new TemplateLoaderException($template, "Template {$template} not found.");
+            }
+
+            abort(404);
+        }
 
         return pageTemplate($template, $variables);
     }

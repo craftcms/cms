@@ -7,7 +7,11 @@
   import InputCombobox from '@/components/form/InputCombobox.vue';
   import {useInputGenerator} from '@/composables/useInputGenerator';
   import {toHandle} from '@craftcms/cp/utilities/string.ts.mjs';
+<<<<<<< brian/pt-3106-allowadminchangesfalse-is-not-affecting-some-parts-of-the-cp
   import useCraftData from '@/composables/useCraftData';
+=======
+  import CraftCombobox from '@/components/form/CraftCombobox.vue';
+>>>>>>> 6.x
 
   const props = defineProps<{
     inertiaForm: InertiaForm<any>;
@@ -191,22 +195,17 @@
     </div>
   </craft-input-handle>
 
-  <craft-input
+  <CraftCombobox
+    v-model="form.language"
     :label="t('Language')"
     name="language"
     id="site-language"
     :help-text="t('The language content in this site will use.')"
     :disabled="readOnly"
-    :has-feedback-for="form.errors?.language ? 'error' : ''"
+    :error="form.errors?.language"
+    :options="languageOptions"
   >
-    <InputCombobox
-      slot="input"
-      v-model="form.language"
-      :options="languageOptions"
-      :require-option-match="true"
-    />
-
-    <div slot="after">
+    <template #after>
       <craft-callout
         variant="info"
         appearance="plain"
@@ -222,14 +221,8 @@
         "
       >
       </craft-callout>
-    </div>
-
-    <div slot="feedback">
-      <ul class="error-list" v-if="form.errors?.language">
-        <li>{{ form.errors.language }}</li>
-      </ul>
-    </div>
-  </craft-input>
+    </template>
+  </CraftCombobox>
 
   <template v-if="isMultisite || !site.id">
     <craft-input
@@ -328,21 +321,17 @@
   </craft-switch>
 
   <template v-if="form.hasUrls">
-    <craft-input
+    <CraftCombobox
+      v-model="form.baseUrl"
       :label="t('Base URL')"
       :help-text="t('The base URL for the site.')"
       id="base-url"
       name="baseUrl"
       :error="form.errors?.baseUrl"
       :disabled="readOnly"
+      :options="baseUrlSuggestions"
     >
-      <InputCombobox
-        slot="input"
-        v-model="form.baseUrl"
-        :options="baseUrlSuggestions"
-      />
-
-      <div slot="after">
+      <template #after>
         <craft-callout
           variant="info"
           appearance="plain"
@@ -355,8 +344,8 @@
             >{{ t('Learn more') }}</a
           >
         </craft-callout>
-      </div>
-    </craft-input>
+      </template>
+    </CraftCombobox>
   </template>
 </template>
 
