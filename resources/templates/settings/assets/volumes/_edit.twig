@@ -43,6 +43,7 @@
     errors: volume.errors.get('fsHandle'),
     data: {'error-key': 'fsHandle'},
     disabled: readOnly,
+    showSelectedHint: true,
 }) }}
 
 {{ forms.autosuggestField({
@@ -64,10 +65,11 @@
     name: 'transformFsHandle',
     includeEnvVars: true,
     value: volume.transformFsHandle(false),
-    options: [{label: 'Same as asset filesystem'|t('app'), value: null}]|merge(craft.cp.getFsOptions()),
+    options: [{label: 'Same as asset filesystem'|t('app'), value: null, data: {hint: ''}}]|merge(groupedFsOptions),
     errors: volume.errors.get('transformFsHandle'),
     data: {'error-key': 'transformFsHandle'},
     disabled: readOnly,
+    showSelectedHint: true,
     selectizeOptions: {
         extraPlugins: false,
         allowEmptyOption: true,

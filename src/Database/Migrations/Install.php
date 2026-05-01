@@ -674,6 +674,8 @@ class Install extends Migration
             $table->unsignedInteger('delay')->nullable();
             $table->string('progressLabel')->nullable();
             $table->text('error')->nullable();
+            $table->dateTime('dateCompleted')->nullable();
+            $table->dateTime('dateFailed')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
         });

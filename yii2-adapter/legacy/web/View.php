@@ -744,10 +744,8 @@ class View extends \yii\web\View
      * - [[POS_HEAD]]: in the head section
      * - [[POS_BEGIN]]: at the beginning of the body section
      * - [[POS_END]]: at the end of the body section
-     * - [[POS_LOAD]]: enclosed within jQuery(window).load().
-     *   Note that by using this position, the method will automatically register the jQuery js file.
-     * - [[POS_READY]]: enclosed within jQuery(document).ready(). This is the default value.
-     *   Note that by using this position, the method will automatically register the jQuery js file.
+     * - [[POS_LOAD]]: executed once the window load event fires.
+     * - [[POS_READY]]: executed once the DOMContentLoaded event fires. This is the default value.
      * @param  string|null  $key  the key that identifies the JS code block. If null, it will use
      *                            $js as the key. If two JS code blocks are registered with the same key, the latter
      *                            will overwrite the former.
@@ -845,6 +843,18 @@ class View extends \yii\web\View
         if (!empty($registryState[Position::BodyEnd->value])) {
             foreach ($registryState[Position::BodyEnd->value] as $key => $js) {
                 $originalPos = $bufferedPositions[$key] ?? self::POS_END;
+                $bufferedJs[$originalPos][$key] = $js;
+            }
+        }
+        if (!empty($registryState[Position::Ready->value])) {
+            foreach ($registryState[Position::Ready->value] as $key => $js) {
+                $originalPos = $bufferedPositions[$key] ?? self::POS_READY;
+                $bufferedJs[$originalPos][$key] = $js;
+            }
+        }
+        if (!empty($registryState[Position::Load->value])) {
+            foreach ($registryState[Position::Load->value] as $key => $js) {
+                $originalPos = $bufferedPositions[$key] ?? self::POS_LOAD;
                 $bufferedJs[$originalPos][$key] = $js;
             }
         }
@@ -1986,16 +1996,54 @@ class View extends \yii\web\View
             }
         } else {
             if (!empty($this->_readyJs)) {
-                $js = "jQuery(function ($) {\n" . implode("\n", $this->_readyJs) . "\n});";
+                $js = $this->readyJs($this->_readyJs);
                 $html .= ($html !== '' ? "\n" : '') . Html::script($js)->render();
             }
             if (!empty($this->_loadJs)) {
-                $js = "jQuery(window).on('load', function () {\n" . implode("\n", $this->_loadJs) . "\n});";
+                $js = $this->loadJs($this->_loadJs);
                 $html .= ($html !== '' ? "\n" : '') . Html::script($js)->render();
             }
         }
 
         return $html;
+    }
+
+    private function readyJs(array $scripts): string
+    {
+        $js = implode("\n", $scripts);
+
+        return <<<JS
+(() => {
+  const run = function () {
+$js
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => run.call(document), {once: true});
+  } else {
+    run.call(document);
+  }
+})();
+JS;
+    }
+
+    private function loadJs(array $scripts): string
+    {
+        $js = implode("\n", $scripts);
+
+        return <<<JS
+(() => {
+  const run = function (event) {
+$js
+  };
+
+  if (document.readyState === 'complete') {
+    run.call(window);
+  } else {
+    window.addEventListener('load', (event) => run.call(window, event), {once: true});
+  }
+})();
+JS;
     }
 
     /**
@@ -2063,13 +2111,13 @@ class View extends \yii\web\View
     {
         if (!empty($this->_readyJs)) {
             foreach ($this->_readyJs as $key => $js) {
-                $this->registry()->js($js, Position::BodyEnd, is_string($key) ? $key : null);
+                $this->registry()->js($js, Position::Ready, is_string($key) ? $key : null);
             }
             $this->_readyJs = [];
         }
         if (!empty($this->_loadJs)) {
             foreach ($this->_loadJs as $key => $js) {
-                $this->registry()->js($js, Position::BodyEnd, is_string($key) ? $key : null);
+                $this->registry()->js($js, Position::Load, is_string($key) ? $key : null);
             }
             $this->_loadJs = [];
         }

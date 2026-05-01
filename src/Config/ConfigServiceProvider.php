@@ -8,6 +8,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 use Override;
@@ -27,6 +28,8 @@ class ConfigServiceProvider extends ServiceProvider
     {
         Env::extend(fn () => ConstAdapter::class, 'CraftConstAdapter');
 
+        $this->loadEnvironmentVariablesWhenConfigIsCached();
+
         $this->app->singleton(GeneralConfig::class, fn () => $this->app->make(ConfigRepository::class)->get('craft.general'));
 
         collect($this->configFiles)->each(function (string $file) {
@@ -42,6 +45,21 @@ class ConfigServiceProvider extends ServiceProvider
     {
         $this->bootPublishables();
         $this->loadGeneralConfig();
+    }
+
+    private function loadEnvironmentVariablesWhenConfigIsCached(): void
+    {
+        if (! $this->app->configurationIsCached()) {
+            return;
+        }
+
+        $this->app->instance('config_loaded_from_cache', false);
+
+        try {
+            new LoadEnvironmentVariables()->bootstrap($this->app);
+        } finally {
+            $this->app->instance('config_loaded_from_cache', true);
+        }
     }
 
     private function bootPublishables(): void

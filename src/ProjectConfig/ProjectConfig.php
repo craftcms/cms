@@ -336,6 +336,13 @@ class ProjectConfig
         $this->writeYamlAutomatically = ! app()->isEphemeral();
     }
 
+    public function writeYamlAutomatically(bool $writeYamlAutomatically = true): self
+    {
+        $this->writeYamlAutomatically = $writeYamlAutomatically;
+
+        return $this;
+    }
+
     /**
      * Saves the modified project config state and writes out updated YAML files, if needed.
      */

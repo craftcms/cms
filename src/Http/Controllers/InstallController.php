@@ -216,7 +216,7 @@ readonly class InstallController
             password: $request->input('account.password'),
             email: $email,
             site: $site,
-        );
+        )->silent();
 
         // Run the install migration
         try {
