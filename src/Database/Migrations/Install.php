@@ -1312,7 +1312,7 @@ class Install extends Migration
             ]);
 
             if (! app()->runningInConsole()) {
-                Auth::guard('craft')->loginUsingId($user->id);
+                Auth::guard('craft')->login($user);
             }
 
             $logger?->success('Saved.');

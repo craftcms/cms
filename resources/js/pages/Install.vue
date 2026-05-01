@@ -47,7 +47,7 @@
   } = useInstall();
 
   watchEffect(() => {
-    possibleSteps.value.db.hidden = props.showDbScreen;
+    possibleSteps.value.db.hidden = !props.showDbScreen;
   });
 
   function beginInstall() {
