@@ -2053,7 +2053,7 @@ return [
     'Volume - {volume}' => 'Том — {volume}',
     'Volume path' => 'Путь к тому',
     'Volume saved.' => 'Том сохранен.',
-    'Volume settings' => 'Настройки громкости',
+    'Volume settings' => 'Настройки тома',
     'Volume' => 'Том',
     'Volumes' => 'Тома',
     'Warning' => 'Предупреждение',
