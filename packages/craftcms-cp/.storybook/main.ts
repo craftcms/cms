@@ -10,9 +10,7 @@ import tsconfigPaths from 'vite-tsconfig-paths';
  * It is needed in projects that use Yarn PnP or are set up within a monorepo.
  */
 function getAbsolutePath(value: string): string {
-  return dirname(
-    fileURLToPath(import.meta.resolve(`${value}/package.json`)),
-  );
+  return dirname(fileURLToPath(import.meta.resolve(`${value}/package.json`)));
 }
 
 const config: StorybookConfig = {

@@ -9,7 +9,8 @@
     "imports": [
       "__plugin-vue_export-helper.js",
       "_rolldown-runtime.js",
-      "_nav-item-BjRAT6qT.js"
+      "_nav-item-9g3ebwBJ.js",
+      "_Select.js"
     ],
     "css": [
       "assets/AdminTable.css"
@@ -25,7 +26,7 @@
     "imports": [
       "__plugin-vue_export-helper.js",
       "_dist.js",
-      "_nav-item-BjRAT6qT.js",
+      "_nav-item-9g3ebwBJ.js",
       "_useAnnouncer.js"
     ],
     "css": [
@@ -37,7 +38,7 @@
     "name": "CalloutReadOnly",
     "imports": [
       "__plugin-vue_export-helper.js",
-      "_nav-item-BjRAT6qT.js"
+      "_nav-item-9g3ebwBJ.js"
     ]
   },
   "_CpGlobalSidebar.js": {
@@ -62,12 +63,28 @@
       "_queue.js"
     ]
   },
+  "_CraftCombobox.js": {
+    "file": "CraftCombobox.js",
+    "name": "CraftCombobox",
+    "imports": [
+      "__plugin-vue_export-helper.js",
+      "_InputCombobox.js",
+      "_nav-item-9g3ebwBJ.js"
+    ]
+  },
+  "_CraftInput.js": {
+    "file": "CraftInput.js",
+    "name": "CraftInput",
+    "imports": [
+      "__plugin-vue_export-helper.js"
+    ]
+  },
   "_DeleteSiteModal.js": {
     "file": "DeleteSiteModal.js",
     "name": "DeleteSiteModal",
     "imports": [
       "__plugin-vue_export-helper.js",
-      "_nav-item-BjRAT6qT.js",
+      "_nav-item-9g3ebwBJ.js",
       "_ModalForm.js",
       "_wayfinder.js"
     ]
@@ -82,7 +99,7 @@
     "imports": [
       "__plugin-vue_export-helper.js",
       "_dist.js",
-      "_nav-item-BjRAT6qT.js",
+      "_nav-item-9g3ebwBJ.js",
       "_AppLayout.js"
     ],
     "css": [
@@ -131,7 +148,7 @@
     "name": "ModalForm",
     "imports": [
       "__plugin-vue_export-helper.js",
-      "_nav-item-BjRAT6qT.js",
+      "_nav-item-9g3ebwBJ.js",
       "_Modal.js",
       "_Pane.js"
     ]
@@ -167,6 +184,13 @@
       "_wayfinder.js"
     ]
   },
+  "_Select.js": {
+    "file": "Select.js",
+    "name": "Select",
+    "imports": [
+      "__plugin-vue_export-helper.js"
+    ]
+  },
   "__plugin-vue_export-helper.js": {
     "file": "_plugin-vue_export-helper.js",
     "name": "_plugin-vue_export-helper",
@@ -175,7 +199,7 @@
       "_lit.js",
       "_decorators.js",
       "_Queue.ts.js",
-      "_nav-item-BjRAT6qT.js",
+      "_nav-item-9g3ebwBJ.js",
       "_nav-list.ts.js",
       "_decorate-EVKP5RjP.js"
     ],
@@ -281,7 +305,9 @@
       "_keyboard.js",
       "_dist.js",
       "_Queue.ts.js",
-      "_nav-item-BjRAT6qT.js",
+      "_nav-item-9g3ebwBJ.js",
+      "_CraftInput.js",
+      "_Select.js",
       "_queue.js",
       "_ModalForm.js",
       "_useAnnouncer.js",
@@ -340,9 +366,9 @@
     "file": "lit.js",
     "name": "lit"
   },
-  "_nav-item-BjRAT6qT.js": {
-    "file": "nav-item-BjRAT6qT.js",
-    "name": "nav-item-BjRAT6qT",
+  "_nav-item-9g3ebwBJ.js": {
+    "file": "nav-item-9g3ebwBJ.js",
+    "name": "nav-item-9g3ebwBJ",
     "imports": [
       "_lit.js",
       "_decorators.js",
@@ -1044,7 +1070,7 @@
     "src": "packages/craftcms-cp/dist/components/nav-item/nav-item.ts.mjs",
     "isDynamicEntry": true,
     "imports": [
-      "_nav-item-BjRAT6qT.js"
+      "_nav-item-9g3ebwBJ.js"
     ]
   },
   "resources/css/cp.css": {
@@ -1109,11 +1135,14 @@
       "__plugin-vue_export-helper.js",
       "_lit.js",
       "_dist.js",
-      "_Queue.ts.js",
-      "_nav-item-BjRAT6qT.js",
+      "_nav-item-9g3ebwBJ.js",
+      "_CraftInput.js",
+      "_Select.js",
       "_Modal.js",
       "_Pane.js",
-      "_useFetch.js"
+      "_CraftCombobox.js",
+      "_useFetch.js",
+      "_wayfinder.js"
     ],
     "css": [
       "assets/Install.css"
@@ -1133,14 +1162,14 @@
     "imports": [
       "__plugin-vue_export-helper.js",
       "_AdminTable.js",
-      "_InputCombobox.js",
       "_dist.js",
-      "_nav-item-BjRAT6qT.js",
+      "_nav-item-9g3ebwBJ.js",
       "_useEditableTable.js",
       "_AppLayout.js",
       "_CalloutReadOnly.js",
       "_useAnnouncer.js",
       "_Pane.js",
+      "_CraftCombobox.js",
       "_Input.js",
       "_wayfinder.js"
     ]
@@ -1153,7 +1182,7 @@
     "imports": [
       "__plugin-vue_export-helper.js",
       "_dist.js",
-      "_nav-item-BjRAT6qT.js",
+      "_nav-item-9g3ebwBJ.js",
       "_AppLayout.js",
       "_CalloutReadOnly.js",
       "_useAnnouncer.js",
@@ -1170,7 +1199,7 @@
     "isDynamicEntry": true,
     "imports": [
       "__plugin-vue_export-helper.js",
-      "_nav-item-BjRAT6qT.js",
+      "_nav-item-9g3ebwBJ.js",
       "_AppLayout.js",
       "_CalloutReadOnly.js"
     ],
@@ -1187,7 +1216,9 @@
       "__plugin-vue_export-helper.js",
       "_AdminTable.js",
       "_dist.js",
-      "_nav-item-BjRAT6qT.js",
+      "_nav-item-9g3ebwBJ.js",
+      "_CraftInput.js",
+      "_Select.js",
       "_useEditableTable.js",
       "_SectionsController.js",
       "_AppLayout.js",
@@ -1209,7 +1240,7 @@
     "imports": [
       "__plugin-vue_export-helper.js",
       "_AdminTable.js",
-      "_nav-item-BjRAT6qT.js",
+      "_nav-item-9g3ebwBJ.js",
       "_SectionsController.js",
       "_AppLayout.js",
       "_useAnnouncer.js",
@@ -1225,12 +1256,13 @@
       "__plugin-vue_export-helper.js",
       "_InputCombobox.js",
       "_dist.js",
-      "_nav-item-BjRAT6qT.js",
+      "_nav-item-9g3ebwBJ.js",
       "_DeleteSiteModal.js",
       "_ModalForm.js",
       "_AppLayout.js",
       "_CalloutReadOnly.js",
       "_useAnnouncer.js",
+      "_CraftCombobox.js",
       "_useInputGenerator.js"
     ]
   },
@@ -1243,7 +1275,7 @@
       "__plugin-vue_export-helper.js",
       "_AdminTable.js",
       "_InputCombobox.js",
-      "_nav-item-BjRAT6qT.js",
+      "_nav-item-9g3ebwBJ.js",
       "_DeleteSiteModal.js",
       "_ModalForm.js",
       "_CalloutReadOnly.js",
@@ -1263,7 +1295,7 @@
     "imports": [
       "__plugin-vue_export-helper.js",
       "_Queue.ts.js",
-      "_nav-item-BjRAT6qT.js"
+      "_nav-item-9g3ebwBJ.js"
     ],
     "css": [
       "assets/Updater.css"
