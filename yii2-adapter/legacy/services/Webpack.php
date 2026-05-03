@@ -114,10 +114,10 @@ class Webpack extends Component
      * Load the environment variables.
      *
      * @param class-string<AssetBundle> $class
-     * @return array|null
+     * @return array
      * @throws ReflectionException
      */
-    private function _getEnvVars(string $class): ?array
+    private function _getEnvVars(string $class): array
     {
         $settings = $this->_envFileVariables[$class] ?? null;
 

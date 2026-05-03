@@ -31,10 +31,10 @@ class ModelWrapper extends Model
             $this->object->$name = $value;
         } catch (Throwable $e) {
             match (true) {
-                str_contains($error->getMessage(), 'Cannot modify private(set)') => true,
-                str_contains($error->getMessage(), 'Cannot modify protected(set)') => true,
-                str_contains($error->getMessage(), 'is read-only') => true,
-                default => throw $error,
+                str_contains($e->getMessage(), 'Cannot modify private(set)') => true,
+                str_contains($e->getMessage(), 'Cannot modify protected(set)') => true,
+                str_contains($e->getMessage(), 'is read-only') => true,
+                default => throw $e,
             };
         }
     }
