@@ -33,9 +33,29 @@ readonly class Cms
 
     public const string MIN_VERSION_REQUIRED = '5.9.0';
 
+    public static function name(): string
+    {
+        return self::NAME;
+    }
+
     public static function config(): GeneralConfig
     {
         return app(GeneralConfig::class) ?? GeneralConfig::create();
+    }
+
+    public static function version(): string
+    {
+        return self::VERSION;
+    }
+
+    public static function schemaVersion(): string
+    {
+        return self::SCHEMA_VERSION;
+    }
+
+    public static function minVersionRequired(): string
+    {
+        return self::MIN_VERSION_REQUIRED;
     }
 
     public static function timezone(): string
