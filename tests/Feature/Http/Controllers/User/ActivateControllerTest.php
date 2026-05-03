@@ -127,6 +127,8 @@ test('sendActivationEmail requires moderateUsers for inactive (non-pending) user
     postJson(action([ActivateController::class, 'sendActivationEmail']), [
         'userId' => $inactiveUser->id,
     ])->assertOk();
+
+    expect($inactiveUser->fresh()->pending)->toBeTrue();
 });
 
 it('returns 400 for non-existent user on sendActivationEmail', function () {
