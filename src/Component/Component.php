@@ -217,6 +217,6 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
 
     public function __unserialize(array $data): void
     {
-        self::configure($this, $data);
+        self::configure($this, Arr::except($data, ['ruleset', 'errors']));
     }
 }

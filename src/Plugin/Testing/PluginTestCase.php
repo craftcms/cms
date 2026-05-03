@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Testing;
 
-use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Providers\CraftServiceProvider;
@@ -50,7 +49,6 @@ abstract class PluginTestCase extends BaseTestCase
             $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
         }
 
-        app(LaravelMigrations::class)->install($migrator);
     }
 
     #[Override]

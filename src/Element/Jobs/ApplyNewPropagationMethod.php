@@ -104,7 +104,7 @@ class ApplyNewPropagationMethod extends BatchedJob
             ->status(null)
             ->drafts(null)
             ->provisionalDrafts(null)
-            ->orderBy([])
+            ->reorder()
             ->indexBy('siteId');
 
         if (! empty($this->criteria)) {

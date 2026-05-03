@@ -58,7 +58,7 @@ readonly class Drafts
             ->draftOf($element)
             ->siteId($element->siteId)
             ->status(null)
-            ->orderBy(['dateUpdated' => SORT_DESC]);
+            ->orderByDesc('dateUpdated');
 
         if (! $permission || ! $user->can($permission)) {
             $query->draftCreator($user->id);

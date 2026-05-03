@@ -19,7 +19,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTime;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
@@ -71,7 +70,6 @@ abstract class Element extends Component implements ElementInterface
     use Macroable {
         __call as macroCall;
     }
-    use Validates;
 
     /**
      * @since 3.3.6

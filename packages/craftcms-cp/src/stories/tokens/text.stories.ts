@@ -6,7 +6,10 @@ import '../../components/copy-attribute/copy-attribute.js';
 
 const meta: Meta = {
   title: 'Tokens/Text',
-  parameters: sharedParameters,
+  parameters: {
+    ...sharedParameters,
+    a11y: {test: 'todo'},
+  },
 };
 
 export default meta;

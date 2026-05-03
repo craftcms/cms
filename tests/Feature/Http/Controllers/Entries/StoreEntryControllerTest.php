@@ -153,7 +153,7 @@ it('can duplicate an entry', function () {
 
     // The new entry should have the same title (or copied title logic)
     // and should be disabled if original was enabled
-    $newEntry = Entry::find()->status(null)->orderBy(['dateCreated' => SORT_DESC])->one();
+    $newEntry = Entry::find()->status(null)->orderByDesc('dateCreated')->one();
     expect($newEntry->id)->not->toBe($entryModel->id)
         ->and($newEntry->enabled)->toBeTrue();
 });

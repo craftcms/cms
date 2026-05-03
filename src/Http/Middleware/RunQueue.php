@@ -38,6 +38,10 @@ readonly class RunQueue
 
     private function shouldInjectQueueRunner(Request $request, Response $response): bool
     {
+        if (! Cms::isInstalled()) {
+            return false;
+        }
+
         if (! Cms::config()->runQueueAutomatically) {
             return false;
         }

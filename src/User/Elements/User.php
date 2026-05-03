@@ -65,7 +65,6 @@ use DateTimeZone;
 use Exception;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;
-use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
@@ -76,7 +75,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Traits\Macroable;
 use Override;
 use Stringable;
@@ -756,10 +754,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
 
     public function sendEmailVerificationNotification(): void
     {
-        /** @var PasswordBroker $broker */
-        $broker = Password::broker('craft');
-
-        $this->notify(new VerifyEmailNotification($broker->createToken($this)));
+        $this->notify(new VerifyEmailNotification(Users::setVerificationCodeOnUser($this)));
     }
 
     public function getEmailForVerification(): string

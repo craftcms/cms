@@ -1,2 +1,4 @@
-_shame.scss
-/packages/craftcms-sass/_mixins.scss
+# Packages
+/packages/*
+/resources/legacy/*
+/resources/build/*

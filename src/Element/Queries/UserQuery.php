@@ -79,7 +79,7 @@ class UserQuery extends ElementQuery
 
             $orders = array_filter(
                 array: $orders,
-                callback: fn ($order) => ! $order['column'] instanceof OrderByPlaceholderExpression,
+                callback: fn ($order) => ! isset($order['column']) || ! $order['column'] instanceof OrderByPlaceholderExpression,
             );
 
             // Order by was not set so we can fall back to the applyDefaultOrder logic in FormatsResults

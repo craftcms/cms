@@ -32,7 +32,6 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Generator;
 use Illuminate\Support\Collection;
@@ -45,10 +44,6 @@ use function CraftCms\Cms\t;
 
 class FieldLayout extends Component
 {
-    use Validates {
-        validationData as traitValidationData;
-    }
-
     public ?int $id = null;
 
     public string $uid;
@@ -190,7 +185,7 @@ class FieldLayout extends Component
     #[Override]
     public function validationData(): array
     {
-        return array_merge($this->traitValidationData(), [
+        return array_merge(parent::validationData(), [
             'customFields' => $this->getCustomFields(),
         ]);
     }

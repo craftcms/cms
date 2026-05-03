@@ -9,4 +9,6 @@ enum Position: int
     case Head = 1;
     case BodyBegin = 2;
     case BodyEnd = 3;
+    case Ready = 4;
+    case Load = 5;
 }

@@ -51,8 +51,8 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
                 'head', 'POS_HEAD' => Position::Head->value,
                 'beginBody', 'POS_BEGIN' => Position::BodyBegin->value,
                 'endBody', 'POS_END' => Position::BodyEnd->value,
-                'ready', 'POS_READY' => Position::BodyEnd->value,
-                'load', 'POS_LOAD' => Position::BodyEnd->value,
+                'ready', 'POS_READY' => Position::Ready->value,
+                'load', 'POS_LOAD' => Position::Load->value,
                 default => throw new InvalidArgumentException($position.' is not a valid position'),
             };
         }
