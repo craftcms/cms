@@ -20,7 +20,9 @@ trait Validates
 
     public private(set) MessageBag $errors {
         get => $this->errors();
-        set(MessageBag $value) => $this->_errors = $value;
+        set(MessageBag $value) {
+            $this->_errors = $value;
+        }
     }
 
     public function getFirstErrors(): array
