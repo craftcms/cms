@@ -160,7 +160,7 @@ trait Revisionable
                 ->revisionOf($canonical->id)
                 ->dateCreated($canonical->dateUpdated)
                 ->status(null)
-                ->orderBy(['num' => SORT_DESC])
+                ->orderByDesc('num')
                 ->one() ?: false;
         }
 

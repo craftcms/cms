@@ -101,14 +101,16 @@ use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
 use CraftCms\Cms\Http\Controllers\Utilities\FindAndReplaceController;
 use CraftCms\Cms\Http\Controllers\Utilities\MigrationsController;
 use CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController;
-use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
 use CraftCms\Cms\Http\Middleware\RequireToken;
+use CraftCms\Cms\Http\Middleware\StartSessionWithoutPersistence;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 /**
  * Actions that are accessible both with and without CP can be registered here.
@@ -132,7 +134,9 @@ foreach ([
         Route::post('users/login-with-passkey', [PasskeyController::class, 'login']);
         Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
         Route::any('users/redirect', [LoginController::class, 'redirect']);
-        Route::any('users/session-info', [SessionInfoController::class, 'show'])->withoutMiddleware(StartSession::class);
+        Route::any('users/session-info', [SessionInfoController::class, 'show'])
+            ->middleware(StartSessionWithoutPersistence::class)
+            ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class]);
         Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout']);
         Route::middleware('throttle:1,1')->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
         Route::post('users/save-user', SaveUserController::class);
@@ -225,11 +229,6 @@ Route::prefix(implode('/', [
 
         Route::post('auth/generate-recovery-codes', [RecoveryCodesController::class, 'generate']);
         Route::post('auth/download-recovery-codes', [RecoveryCodesController::class, 'download']);
-
-        // DeprecationErrors
-        Route::post('utilities/get-deprecation-error-traces-modal', [DeprecationErrorsController::class, 'getDeprecationErrorTracesModal']);
-        Route::post('utilities/delete-deprecation-error', [DeprecationErrorsController::class, 'deleteDeprecationError']);
-        Route::post('utilities/delete-all-deprecation-errors', [DeprecationErrorsController::class, 'deleteAllDeprecationErrors']);
 
         // ClearCaches
         Route::post('utilities/clear-caches-perform-action', [ClearCachesController::class, 'clearCaches']);
@@ -394,6 +393,10 @@ Route::prefix(implode('/', [
         // Queue
         Route::any('queue/run', [QueueController::class, 'run']);
         Route::any('queue/get-job-info', [QueueController::class, 'jobInfo']);
+        Route::any('queue/release', [QueueController::class, 'cancel']);
+        Route::any('queue/release-all', [QueueController::class, 'cancelAll']);
+        Route::any('queue/retry', [QueueController::class, 'retry']);
+        Route::any('queue/retry-all', [QueueController::class, 'retryAll']);
 
         // Relational fields
         Route::any('relational-fields/structured-input-html', [RelationalFieldsController::class, 'structuredInputHtml']);
@@ -476,10 +479,6 @@ Route::prefix(implode('/', [
         // Structures
         Route::post('structures/get-element-level-delta', [StructuresController::class, 'getElementLevelDelta']);
         Route::post('structures/move-element', [StructuresController::class, 'moveElement']);
-
-        // SystemMessages
-        Route::post('system-messages/get-message-modal', [SystemMessagesController::class, 'show']);
-        Route::post('system-messages/save-message', [SystemMessagesController::class, 'store']);
 
         // Updates
         Route::post('app/check-for-updates', [UpdatesController::class, 'check']);

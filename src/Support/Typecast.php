@@ -14,6 +14,7 @@ use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionUnionType;
 use RuntimeException;
+use Throwable;
 
 class Typecast
 {
@@ -57,7 +58,16 @@ class Typecast
         self::properties($object::class, $properties);
 
         foreach ($properties as $name => $value) {
-            $object->$name = $value;
+            try {
+                $object->$name = $value;
+            } catch (Throwable $error) {
+                match (true) {
+                    str_contains($error->getMessage(), 'Cannot modify private(set)') => true,
+                    str_contains($error->getMessage(), 'Cannot modify protected(set)') => true,
+                    str_contains($error->getMessage(), 'is read-only') => true,
+                    default => throw $error,
+                };
+            }
         }
 
         return $object;

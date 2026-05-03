@@ -14,6 +14,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\t;
+
 readonly class SystemMessagesController
 {
     use RespondsWithFlash;
@@ -29,14 +31,13 @@ readonly class SystemMessagesController
         Edition::require(Edition::Pro);
     }
 
-    public function show(Request $request): Response
+    public function show(Request $request, string $key): Response
     {
         $data = $request->validate([
-            'key' => ['required'],
             'language' => ['nullable'],
         ]);
 
-        $message = $this->systemMessages->getMessage($data['key'], $data['language'] ?? null);
+        $message = $this->systemMessages->getMessage($key, $data['language'] ?? null);
 
         return new JsonResponse([
             'message' => $message,
@@ -54,8 +55,9 @@ readonly class SystemMessagesController
 
         $this->systemMessages->saveMessage($message);
 
-        return $this->asSuccess(data: [
+        return $this->asSuccess(t('Message saved.'), data: [
             'subject' => $message->subject,
+            'language' => $message->language,
             'body' => $message->body,
         ]);
     }

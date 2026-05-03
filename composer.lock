@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "32d5d21113da19876cd97fe9fb221d64",
+    "content-hash": "2f1c3e9264a5791b86a56d51b81672d7",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -483,16 +483,16 @@
         },
         {
             "name": "craftcms/laravel-dependency-aware-cache",
-            "version": "1.2.0",
+            "version": "1.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/craftcms/laravel-dependency-aware-cache.git",
-                "reference": "f9822f820144a8c361b7aa40568b483a0cf625c0"
+                "reference": "5d5352c6a56b901d1c61f87bf912301785c7f350"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/laravel-dependency-aware-cache/zipball/f9822f820144a8c361b7aa40568b483a0cf625c0",
-                "reference": "f9822f820144a8c361b7aa40568b483a0cf625c0",
+                "url": "https://api.github.com/repos/craftcms/laravel-dependency-aware-cache/zipball/5d5352c6a56b901d1c61f87bf912301785c7f350",
+                "reference": "5d5352c6a56b901d1c61f87bf912301785c7f350",
                 "shasum": ""
             },
             "require": {
@@ -547,9 +547,9 @@
             ],
             "support": {
                 "issues": "https://github.com/craftcms/laravel-dependency-aware-cache/issues",
-                "source": "https://github.com/craftcms/laravel-dependency-aware-cache/tree/1.2.0"
+                "source": "https://github.com/craftcms/laravel-dependency-aware-cache/tree/1.2.3"
             },
-            "time": "2026-03-17T14:55:31+00:00"
+            "time": "2026-05-01T12:08:11+00:00"
         },
         {
             "name": "craftcms/laravel-ruleset-validation",

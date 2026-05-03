@@ -22,7 +22,7 @@
   }>();
   const props = withDefaults(
     defineProps<{
-      label: string;
+      label?: string;
       options?: Array<SelectItem>;
       modelValue?: string;
       requireOptionMatch?: boolean;

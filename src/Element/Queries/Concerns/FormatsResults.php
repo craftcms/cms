@@ -223,7 +223,7 @@ trait FormatsResults
 
         $elementQuery->query->orders = array_filter(
             array: $orders,
-            callback: fn ($order) => ! $order['column'] instanceof OrderByPlaceholderExpression,
+            callback: fn ($order) => ! isset($order['column']) || ! $order['column'] instanceof OrderByPlaceholderExpression,
         );
 
         // Order by was set
@@ -254,13 +254,18 @@ trait FormatsResults
         }
 
         foreach ($elementQuery->defaultOrderBy as $column => $direction) {
+            if ($direction instanceof Expression) {
+                $elementQuery->getQuery()->orderByRaw($direction->getValue($elementQuery->query->getGrammar()));
+
+                continue;
+            }
+
             $direction = match ($direction) {
-                SORT_ASC, 'asc' => 'asc',
                 SORT_DESC, 'desc' => 'desc',
-                default => throw new QueryAbortedException('Invalid sort direction: '.$direction),
+                default => 'asc',
             };
 
-            $elementQuery->query->orderBy($column, $direction);
+            $elementQuery->getQuery()->orderBy($column, $direction);
         }
     }
 
@@ -273,6 +278,10 @@ trait FormatsResults
         }
 
         $query->orders = array_map(function ($order) use ($elementQuery) {
+            if (! isset($order['column'])) {
+                return $order;
+            }
+
             if (! is_string($order['column'])) {
                 return $order;
             }
@@ -287,7 +296,7 @@ trait FormatsResults
     {
         $elementQuery->getQuery()->orders = array_filter(
             $elementQuery->getQuery()->orders ?? [],
-            fn (array $order) => isset($order['column']) && $order['column'] !== 'score',
+            fn (array $order) => ! isset($order['column']) || $order['column'] !== 'score',
         );
 
         if (! $elementQuery->searchResults) {

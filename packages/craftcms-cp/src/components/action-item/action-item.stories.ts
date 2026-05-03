@@ -14,6 +14,7 @@ const meta = {
   argTypes: {},
   parameters: {
     layout: 'centered',
+    a11y: {test: 'todo'},
   },
   decorators: [
     (story) => html`

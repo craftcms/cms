@@ -15,7 +15,7 @@
     </div>
     <div>
       <h2 class="mb-4">{{ heading }}</h2>
-      <div class="grid gap-3 pr-6">
+      <div class="grid gap-3 md:pr-6">
         <slot></slot>
       </div>
     </div>

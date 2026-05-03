@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Config;
 use Override;
 
 use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\info;
 
 class WelcomeCommand extends Command
 {
@@ -34,7 +35,7 @@ class WelcomeCommand extends Command
         }
 
         if (! $this->input->isInteractive() || ! confirm('Are you ready to begin the setup?')) {
-            $this->info('Run the following command if you want to setup Craft from your terminal: <fg=cyan>php craft setup</>');
+            info('Run the following command if you want to setup Craft from your terminal: `<fg=cyan>php craft setup</>`');
 
             return;
         }

@@ -1,6 +1,11 @@
 import {computed, ref} from 'vue';
 import {useStepper} from '@vueuse/core';
 import {t} from '@craftcms/cp';
+import {
+  validateAccount,
+  validateDb,
+  validateSite,
+} from '@actions/InstallController';
 
 export const useInstall = () => {
   const possibleSteps = ref<Record<string, any>>({
@@ -12,19 +17,19 @@ export const useInstall = () => {
     account: {
       id: 'account',
       label: 'Account',
-      action: '/admin/actions/install/validate-account',
+      action: validateAccount().url,
       heading: t('Create your account'),
     },
     db: {
       id: 'db',
       label: 'Database',
-      action: '/admin/actions/install/validate-db',
+      action: validateDb().url,
       heading: t('Connect to your database'),
     },
     site: {
       id: 'site',
       label: 'Site',
-      action: '/admin/actions/install/validate-site',
+      action: validateSite().url,
       heading: t('Set up your site'),
       submitLabel: t('Finish up'),
     },

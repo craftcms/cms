@@ -1,44 +1,55 @@
 <script setup lang="ts">
   import {ref, watch} from 'vue';
   import {t} from '@craftcms/cp';
-  import {useForm} from '@inertiajs/vue3';
+  import {useHttp} from '@inertiajs/vue3';
   import {useEventListener} from '@vueuse/core';
   import ModalForm from '@/components/ModalForm.vue';
-  import {useActionClient} from '@/composables/useFetch';
   import {useAnnouncer} from '@/composables/useAnnouncer';
-  import {store} from '@actions/Utilities/SystemMessagesController';
-
-  interface SystemMessageData {
-    key: string;
-    heading: string;
-    subject: string;
-    body: string;
-  }
-
-  interface LocaleOption {
-    value: string;
-    label: string;
-  }
+  import SystemMessagesController, {
+    store,
+  } from '@actions/Utilities/SystemMessagesController';
+  import Select from '@/components/form/Select.vue';
+  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import CraftTextarea from '@craftcms/cp/vue/CraftTextarea.vue';
+  import type {SelectOption} from '@/types';
+  import type {SystemMessageData} from '@/types/utilities';
+  import {useFlashMessages} from '@/composables/useFlashMessages';
 
   const props = defineProps<{
     isActive: boolean;
     message: SystemMessageData;
-    locales: Array<LocaleOption>;
+    locales: Array<SelectOption>;
     isMultiSite: boolean;
     initialLanguage: string;
   }>();
 
   const emit = defineEmits<{
     (e: 'close'): void;
-    (e: 'save', data: {subject: string; body: string; language: string}): void;
+    (
+      e: 'save',
+      data: Pick<SystemMessageData, 'subject' | 'body' | 'language'>
+    ): void;
   }>();
 
+  const {flash} = useFlashMessages();
   const {announce} = useAnnouncer();
+  const feedback = ref<{
+    icon?: string;
+    variant: string;
+    message: string;
+  } | null>(null);
 
-  const currentLanguage = ref(props.initialLanguage);
+  const messageForm = useHttp<{language: string}, {message: SystemMessageData}>(
+    {
+      language: props.initialLanguage,
+    }
+  );
 
   // Form for saving message
-  const form = useForm({
+  const form = useHttp<
+    Pick<SystemMessageData, 'key' | 'subject' | 'body' | 'language'>,
+    Pick<SystemMessageData, 'subject' | 'body' | 'language'>
+  >({
     key: props.message.key,
     language: props.initialLanguage,
     subject: props.message.subject,
@@ -46,28 +57,20 @@
   });
 
   // Fetch message data for a specific language
-  const {execute: fetchMessage, isLoading: isLoadingMessage} = useActionClient<{
-    message: SystemMessageData;
-  }>('system-messages/get-message-modal', {
-    immediate: false,
-    onSuccess: (data) => {
-      if (data.message) {
-        form.subject = data.message.subject;
-        form.body = data.message.body;
+  function fetchMessage() {
+    messageForm.get(
+      SystemMessagesController.show({key: props.message.key}).url,
+      {
+        onSuccess: ({message}) => {
+          if (message) {
+            form.language = message.language;
+            form.subject = message.subject;
+            form.body = message.body;
+          }
+        },
       }
-    },
-  });
-
-  // Watch for language changes to fetch new message data
-  watch(currentLanguage, async (newLanguage, oldLanguage) => {
-    if (newLanguage !== oldLanguage && props.isActive) {
-      form.language = newLanguage;
-      await fetchMessage({
-        key: props.message.key,
-        language: newLanguage,
-      });
-    }
-  });
+    );
+  }
 
   // Reset form when modal opens with new message
   watch(
@@ -77,45 +80,68 @@
       form.subject = newMessage.subject;
       form.body = newMessage.body;
       form.language = props.initialLanguage;
-      currentLanguage.value = props.initialLanguage;
     }
   );
 
-  function handleSubmit() {
+  function save({closeOnSuccess = true}: {closeOnSuccess?: boolean} = {}) {
     if (!form.subject.trim() || !form.body.trim()) {
       return;
     }
 
+    feedback.value = null;
     form.post(store().url, {
-      preserveScroll: true,
-      onSuccess: () => {
-        announce(t('Message saved.'));
+      onHttpException: (error) => {
+        feedback.value = {
+          icon: 'triangle-exclamation',
+          message: t('Failed to save message.'),
+          variant: 'danger',
+        };
+      },
+      onSuccess: (data) => {
         emit('save', {
-          subject: form.subject,
-          body: form.body,
-          language: form.language,
+          subject: data.subject,
+          body: data.body,
+          language: data.language,
         });
+
+        if (closeOnSuccess) {
+          flash('success', t('Message saved.'), {duration: -1});
+          emit('close');
+        } else {
+          feedback.value = {
+            icon: 'circle-check',
+            message: t('Message saved'),
+            variant: 'success',
+          };
+        }
       },
       onError: () => {
-        announce(t("Couldn't save message."));
+        feedback.value = {
+          icon: 'triangle-exclamation',
+          message: t('Failed to save'),
+          variant: 'danger',
+        };
       },
     });
   }
 
-  function handleLanguageChange(event: Event) {
-    const target = event.target as HTMLSelectElement;
-    currentLanguage.value = target.value;
+  function handleSubmit() {
+    save();
   }
 
   // Handle Cmd/Ctrl + Enter to submit
   useEventListener('keydown', (event) => {
-    if (
-      props.isActive &&
-      (event.metaKey || event.ctrlKey) &&
-      event.key === 'Enter'
-    ) {
+    if (!props.isActive) {
+      return;
+    }
+    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
       event.preventDefault();
       handleSubmit();
+    }
+
+    if ((event.metaKey || event.ctrlKey) && event.key === 's') {
+      event.preventDefault();
+      save({closeOnSuccess: false});
     }
   });
 </script>
@@ -127,50 +153,50 @@
     :loading="form.processing"
     @close="emit('close')"
     @submit="handleSubmit"
-    width="4xl"
+    width="2xl"
   >
     <template #header-actions>
       <div class="flex items-center gap-2">
-        <craft-spinner :visible="isLoadingMessage" style="--size: 1rem" />
-        <craft-select :label="t('Locale')" v-if="isMultiSite" label-sr-only>
-          <select
-            :value="currentLanguage"
-            @change="handleLanguageChange"
-            slot="input"
-          >
-            <option
-              v-for="locale in locales"
-              :key="locale.value"
-              :value="locale.value"
-              :selected="currentLanguage === locale.value"
-            >
-              {{ locale.label }}
-            </option>
-          </select>
-        </craft-select>
+        <craft-spinner :visible="messageForm.processing" style="--size: 1rem" />
+        <Select
+          v-model="messageForm.language"
+          :options="locales"
+          @change="fetchMessage"
+        />
       </div>
     </template>
     <div class="grid gap-3">
-      <craft-input
+      <CraftInput
         :label="t('Subject')"
         :help-text="t('Evaluated as a twig template, then parsed as markdown.')"
         v-model="form.subject"
         maxlength="1000"
         required
-        :disabled="isLoadingMessage"
+        :disabled="messageForm.processing"
       >
-      </craft-input>
-      <craft-textarea
+      </CraftInput>
+      <CraftTextarea
         :label="t('Body')"
         :help-text="t('Evaluated as a twig template, then parsed as markdown.')"
         v-model="form.body"
         monospace
         required
-        :disabled="isLoadingMessage"
+        :disabled="messageForm.processing"
         max-rows="25"
       >
-      </craft-textarea>
+      </CraftTextarea>
     </div>
+
+    <template #feedback v-if="feedback">
+      <craft-callout
+        :variant="feedback.variant"
+        :icon="feedback.icon"
+        appearance="plain"
+        inline
+        class="p-0"
+        >{{ feedback.message }}</craft-callout
+      >
+    </template>
   </ModalForm>
 </template>
 
