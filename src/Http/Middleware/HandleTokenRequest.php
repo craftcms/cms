@@ -34,7 +34,11 @@ readonly class HandleTokenRequest
 
         abort_unless(preg_match('/^[A-Za-z0-9_-]+$/', (string) $token), 400, 'Invalid token');
 
-        Context::addHidden(self::TOKEN_KEY, $token);
+        $tokenRoute = $this->tokens->getTokenRoute($token);
+
+        if ($tokenRoute === false) {
+            return $next($request);
+        }
 
         /**
          * If we POST to a route with a valid token, we don't
@@ -44,11 +48,7 @@ readonly class HandleTokenRequest
             $request->path(),
         ]);
 
-        $tokenRoute = $this->tokens->getTokenRoute($token);
-
-        if ($tokenRoute === false) {
-            return $next($request);
-        }
+        Context::addHidden(self::TOKEN_KEY, $token);
 
         Context::addHidden(self::ORIGINAL_URI_KEY, $request->uri()->withoutQuery([
             'token',
