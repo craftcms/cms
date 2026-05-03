@@ -258,6 +258,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('craftAsset', craftAsset(...)),
             new TwigFunction('create', $this->createFunction(...)),
             new TwigFunction('dump', $this->dumpFunction(...), ['is_safe' => ['html'], 'needs_context' => true, 'is_variadic' => true]),
+            new TwigFunction('dd', dd(...)),
             new TwigFunction('encodeUrl', Url::encodeUrl(...)),
             new TwigFunction('entryType', $this->entryTypeFunction(...)),
             new TwigFunction('expression', $this->expressionFunction(...)),
