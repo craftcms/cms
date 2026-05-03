@@ -12,6 +12,7 @@ use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Auth\Methods\TOTP;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -410,7 +411,14 @@ class AuthMethods
             $authError = $this->getAuthError($user);
         }
 
-        if ($authError === AuthError::InvalidCredentials || ! $authError) {
+        if (
+            $authError === AuthError::InvalidCredentials || ! $authError ||
+            // if preventUserEnumeration is true and the account is locked, still show the same message
+            (
+                Cms::config()->preventUserEnumeration &&
+                in_array($authError, [AuthError::AccountLocked, AuthError::AccountCooldown])
+            )
+        ) {
             return $defaultMessage ?? t('Invalid verification code.');
         }
 

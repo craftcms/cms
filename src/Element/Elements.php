@@ -44,6 +44,16 @@ class Elements
      */
     private array $elementTypesByRefHandle = [];
 
+    public const string REF_TAG_PATTERN = '/
+        \{                                      # Tags always begin with a `{`
+            (?P<elementType>[\w\\\\]+)          # Ref handle or element type class
+            \:(?P<ref>[^@\:\}\|]+)              # Identifier (ID, or another format supported by the element type)
+            (?:@(?P<site>[^\:\}\|]+))?          # [Optional] Site handle, ID, or UUID
+            (?:\:(?P<attr>[^\}\| ]+))?          # [Optional] Attribute, property, or field
+            (?:\ *\|\|\ *(?P<fallback>[^\}]+))? # [Optional] Fallback text (if the ref fails to resolve)
+        \}                                      # Tags always close with a `}`
+    /x';
+
     public function __construct(
         private readonly ElementPlaceholders $placeholders,
     ) {}

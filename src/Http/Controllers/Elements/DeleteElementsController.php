@@ -32,14 +32,14 @@ readonly class DeleteElementsController
     use RespondsWithFlash;
 
     /** @var class-string<ElementInterface> */
-    private string $elementType;
+    protected string $elementType;
 
-    private bool $hardDelete;
+    protected bool $hardDelete;
 
-    private ElementCollection $elements;
+    protected ElementCollection $elements;
 
     public function __construct(
-        private ElementRequest $request,
+        protected ElementRequest $request,
     ) {
         $this->elementType = $this->request->elementType();
         $this->hardDelete = $this->request->boolean('hardDelete');

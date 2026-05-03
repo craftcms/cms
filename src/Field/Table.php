@@ -486,7 +486,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         foreach ($defaults as &$row) {
             foreach ($this->columns as $colId => $col) {
                 if ($col['type'] === 'heading' && isset($row[$colId])) {
-                    $row[$colId] = t($row[$colId], category: 'site');
+                    $row[$colId] = t($row[$colId], category: 'site', locale: $element?->getLanguage());
                 }
             }
         }

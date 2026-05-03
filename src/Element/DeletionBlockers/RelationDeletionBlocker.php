@@ -83,7 +83,7 @@ class RelationDeletionBlocker extends BaseDeletionBlocker
 
         return [
             [
-                'icon' => 'user-plus',
+                'icon' => 'swap',
                 'label' => t('Replace {numRelations, plural, =1{relation} other{relations}}', [
                     'numRelations' => $this->relationCount,
                 ]),
@@ -115,7 +115,7 @@ JS, [
                 ]),
             ],
             [
-                'icon' => 'user-minus',
+                'icon' => 'xmark',
                 'label' => t('Remove {numRelations, plural, =1{relation} other{relations}}', [
                     'numRelations' => $this->relationCount,
                 ]),

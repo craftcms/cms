@@ -14,14 +14,14 @@ class DeleteAssets extends Delete
     {
         // Only enable for deletable elements, per canDelete()
         HtmlStack::jsWithVars(fn (
-            $type,
+            $triggerId,
             $elementType,
             $hardDelete,
             $confirmationMessage,
         ) => <<<JS
 (() => {
   new Craft.ElementActionTrigger({
-    type: $type,
+    triggerId: $triggerId,
     requireId: false,
     validateSelection: (selectedItems, elementIndex) => {
       for (let i = 0; i < selectedItems.length; i++) {
@@ -73,7 +73,7 @@ class DeleteAssets extends Delete
   });
 })();
 JS, [
-            static::class,
+            $this->getTriggerId(),
             $this->elementType,
             $this->hard,
             $this->confirmationMessage,
