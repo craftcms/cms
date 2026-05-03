@@ -18,8 +18,9 @@ trait Validates
 
     private ?MessageBag $_errors = null;
 
-    public MessageBag $errors {
+    public private(set) MessageBag $errors {
         get => $this->errors();
+        set(MessageBag $value) => $this->_errors = $value;
     }
 
     public function getFirstErrors(): array
