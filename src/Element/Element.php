@@ -461,6 +461,7 @@ abstract class Element extends Component implements ElementInterface
     {
         $attributes = $this->attributes();
         $fields = array_combine($attributes, $attributes);
+        $fields = array_merge($fields, parent::fields());
 
         foreach ($this->fieldLayoutFields() as $field) {
             if (! isset($fields[$field->handle])) {
