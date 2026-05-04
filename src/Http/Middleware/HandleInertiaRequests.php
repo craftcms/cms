@@ -69,6 +69,7 @@ class HandleInertiaRequests extends Middleware
         $nav = app(Navigation::class);
         $progressService = app(JobProgress::class);
         $generalConfig = app(GeneralConfig::class);
+        $currentUser = null;
 
         if (! $updates->isCraftUpdatePending()) {
             $currentUser = $request->user();
@@ -111,7 +112,7 @@ class HandleInertiaRequests extends Middleware
                 'currentUser' => [
                     'id' => $currentUser->id ?? null,
                     'username' => $currentUser->username ?? null,
-                    'email' => $currentUser->email ?? \NUNLL,
+                    'email' => $currentUser->email ?? null,
                     'name' => $currentUser->name ?? null,
                     'thumbHtml' => $currentUser->getThumbHtml(30),
                 ],
