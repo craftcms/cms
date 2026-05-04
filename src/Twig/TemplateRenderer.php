@@ -373,10 +373,6 @@ class TemplateRenderer
      */
     private function sandbox(callable $callback, ?TemplateMode $templateMode): string
     {
-        if (! $this->generalConfig->enableTwigSandbox) {
-            return $callback();
-        }
-
         $extension = $this->twig->get($templateMode)->getExtension(SandboxExtension::class);
 
         if ($extension->isSandboxed()) {
