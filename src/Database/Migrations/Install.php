@@ -79,7 +79,7 @@ class Install extends Migration
     public function up(): void
     {
         if (! $this->_validateProjectConfig($error)) {
-            $message = "Project config validation failed: $error Run `composer install` or remove your `config/project/` folder and try again.";
+            $message = "Project config validation failed: $error Run `composer install` or remove your `config/craft/project/` folder and try again.";
 
             error($message);
             error('Aborting install.');
