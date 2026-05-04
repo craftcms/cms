@@ -70,7 +70,6 @@
 </script>
 
 <template>
-  <VarDump :data="newMigrations" />
   <template v-if="!newMigrations">
     <Empty :label="t('No pending content migrations.')" />
   </template>
