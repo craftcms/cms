@@ -1,7 +1,7 @@
 import {writeFileSync} from 'fs';
 import {dirname, resolve} from 'path';
 import {fileURLToPath} from 'url';
-import {stops, lightTheme, darkTheme} from '../src/styles/color-definitions.js';
+import {stops, lightTheme, darkTheme, staticTheme} from '../src/styles/color-definitions.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -35,7 +35,7 @@ function printStyles() {
   const lightColors = colorsToCssVariables(lightTheme.contrastColors);
   const darkColors = colorsToCssVariables(darkTheme.contrastColors);
   const staticColors = colorsToCssVariables(
-    lightTheme.contrastColors,
+    staticTheme.contrastColors,
     'color-static'
   );
 

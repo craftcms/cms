@@ -1,5 +1,5 @@
 import {Meta, ColorPalette, ColorItem} from '@storybook/addon-docs/blocks';
-import {stops, lightTheme, darkTheme} from '../../styles/color-definitions.js';
+import {stops, staticTheme, lightTheme, darkTheme} from '../../styles/color-definitions.js';
 
 <Meta title="Tokens/Color Palette" />
 
@@ -21,6 +21,20 @@ The palette also includes a set of static colors that are not affected by the ac
 Static colors are based on the colors generated for the light theme, and can be used in both light and dark themes without modification.
 
 The color variables are used by prefixing the desired color with `--color-static-`. For example, the `blue-500` color can be used with the following variable: `--color-static-blue-500`.
+
+<ColorPalette>
+  {staticTheme.contrastColors
+    .filter((scale) => scale.values)
+    .map((scale) => (
+      <ColorItem
+        key={scale.name}
+        title={scale.name}
+        colors={Object.fromEntries(
+          scale.values.map((val, i) => [`${stops[i]}`, val.value])
+        )}
+      />
+    ))}
+</ColorPalette>
 
 ## Theme Colors
 
