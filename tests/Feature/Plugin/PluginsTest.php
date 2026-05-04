@@ -285,5 +285,6 @@ it('can get the plugin license key status', function () {
 });
 
 it('can get the plugin icon', function () {
-    expect($this->plugins->getPluginIconSvg('test-plugin'))->not()->toBeEmpty();
+    expect($this->plugins->getPluginIconSvg('test-plugin'))
+        ->toBe(file_get_contents(dirname(__DIR__, 2).'/TestClasses/TestPlugin/src/icon.svg'));
 });
