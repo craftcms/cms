@@ -209,14 +209,4 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
     {
         $this->$offset = null;
     }
-
-    public function __serialize(): array
-    {
-        return $this->toArray();
-    }
-
-    public function __unserialize(array $data): void
-    {
-        self::configure($this, Arr::except($data, ['ruleset', 'errors']));
-    }
 }
