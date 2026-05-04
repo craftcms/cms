@@ -7,11 +7,8 @@
   import InputCombobox from '@/components/form/InputCombobox.vue';
   import {useInputGenerator} from '@/composables/useInputGenerator';
   import {toHandle} from '@craftcms/cp/utilities/string.ts.mjs';
-<<<<<<< brian/pt-3106-allowadminchangesfalse-is-not-affecting-some-parts-of-the-cp
   import useCraftData from '@/composables/useCraftData';
-=======
   import CraftCombobox from '@/components/form/CraftCombobox.vue';
->>>>>>> 6.x
 
   const props = defineProps<{
     inertiaForm: InertiaForm<any>;
