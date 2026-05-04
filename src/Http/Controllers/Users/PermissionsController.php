@@ -103,7 +103,7 @@ readonly class PermissionsController
             $request->boolean('sendActivationEmail')
         ) {
             try {
-                $user->sendEmailVerificationNotification();
+                Users::sendActivationEmail($user);
             } catch (Throwable $e) {
                 Flash::error(t('Couldn’t send the activation email: {error}', [
                     'error' => $e->getMessage(),

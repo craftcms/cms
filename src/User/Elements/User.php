@@ -57,6 +57,7 @@ use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Events\DefineFriendlyName;
 use CraftCms\Cms\User\Events\DefineName;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Notifications\ActivationNotification;
 use CraftCms\Cms\User\Notifications\ResetPasswordNotification;
 use CraftCms\Cms\User\Notifications\VerifyEmailNotification;
 use CraftCms\Cms\User\Validation\UserRules;
@@ -732,6 +733,11 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new ResetPasswordNotification($token));
+    }
+
+    public function sendActivationNotification(string $token): void
+    {
+        $this->notify(new ActivationNotification($token));
     }
 
     public function hasVerifiedEmail(): bool
@@ -2038,7 +2044,9 @@ JS, [
             $originalEmail = $this->email;
             $this->email = $this->unverifiedEmail;
 
-            $this->sendEmailVerificationNotification();
+            $isNew
+                ? Users::sendActivationEmail($this)
+                : Users::sendNewEmailVerifyEmail($this);
 
             // Put the original email back into place
             $this->email = $originalEmail;

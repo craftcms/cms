@@ -253,19 +253,43 @@ class Users
     }
 
     /**
+     * Sends a new account activation email to a user.
+     *
+     * @throws InvalidElementException if the user doesn't validate
+     */
+    public function sendActivationEmail(User $user): bool
+    {
+        $user->sendActivationNotification($this->setVerificationCodeOnUser($user));
+
+        return true;
+    }
+
+    /**
+     * Sends a new email verification email to a user.
+     *
+     * @throws InvalidElementException if the user doesn't validate
+     */
+    public function sendNewEmailVerifyEmail(User $user): bool
+    {
+        $user->sendEmailVerificationNotification();
+
+        return true;
+    }
+
+    /**
      * Sets a new verification code on a user, and returns their activation URL.
      *
      *
      * @throws InvalidElementException if the user doesn't validate
      */
-    public function getActivationUrl(User $user): string
+    public function getActivationUrl(User $user, ?string $token = null): string
     {
         // If the user doesn't have a password yet, use a Password Reset URL
-        if (! $user->password) {
-            return $this->getPasswordResetUrl($user);
+        if (! $user->getHasPassword()) {
+            return $this->getPasswordResetUrl($user, $token);
         }
 
-        return $this->getEmailVerifyUrl($user);
+        return $this->getEmailVerifyUrl($user, $token);
     }
 
     /**
