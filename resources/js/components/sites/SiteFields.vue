@@ -5,16 +5,14 @@
   import {computed, useTemplateRef} from 'vue';
   import type {SelectItem, SelectOption, Site} from '@/types';
   import InputCombobox from '@/components/form/InputCombobox.vue';
+  import CraftCombobox from '@/components/form/CraftCombobox.vue';
   import {useInputGenerator} from '@/composables/useInputGenerator';
   import {toHandle} from '@craftcms/cp/utilities/string.ts.mjs';
+  import useCraftData from '@/composables/useCraftData';
 
-  const props = withDefaults(
-    defineProps<{
-      inertiaForm: InertiaForm<any>;
-      readOnly?: boolean;
-    }>(),
-    {readOnly: false}
-  );
+  const props = defineProps<{
+    inertiaForm: InertiaForm<any>;
+  }>();
 
   const page = usePage<{
     isMultisite: boolean;
@@ -25,6 +23,7 @@
     booleanEnvOptions: Array<SelectItem>;
     groupOptions: Array<SelectOption>;
   }>();
+  const {readOnly} = useCraftData();
 
   function addBooleanHints(option: SelectOption) {
     const isEnvVar =
@@ -118,6 +117,7 @@
     id="group"
     .modelValue="form.group"
     @model-value-changed="form.group = $event.target?.modelValue"
+    :disabled="readOnly"
   >
     <select slot="input">
       <option
@@ -182,6 +182,7 @@
     id="handle"
     name="handle"
     :has-feedback-for="form.errors?.handle ? 'error' : ''"
+    :disabled="readOnly"
     v-model="form.handle"
   >
     <div slot="feedback">
@@ -191,22 +192,17 @@
     </div>
   </craft-input-handle>
 
-  <craft-input
+  <CraftCombobox
+    v-model="form.language"
     :label="t('Language')"
     name="language"
     id="site-language"
     :help-text="t('The language content in this site will use.')"
     :disabled="readOnly"
-    :has-feedback-for="form.errors?.language ? 'error' : ''"
+    :error="form.errors?.language"
+    :options="languageOptions"
   >
-    <InputCombobox
-      slot="input"
-      v-model="form.language"
-      :options="languageOptions"
-      :require-option-match="true"
-    />
-
-    <div slot="after">
+    <template #after>
       <craft-callout
         variant="info"
         appearance="plain"
@@ -222,14 +218,8 @@
         "
       >
       </craft-callout>
-    </div>
-
-    <div slot="feedback">
-      <ul class="error-list" v-if="form.errors?.language">
-        <li>{{ form.errors.language }}</li>
-      </ul>
-    </div>
-  </craft-input>
+    </template>
+  </CraftCombobox>
 
   <template v-if="isMultisite || !site.id">
     <craft-input
@@ -328,21 +318,17 @@
   </craft-switch>
 
   <template v-if="form.hasUrls">
-    <craft-input
+    <CraftCombobox
+      v-model="form.baseUrl"
       :label="t('Base URL')"
       :help-text="t('The base URL for the site.')"
       id="base-url"
       name="baseUrl"
       :error="form.errors?.baseUrl"
       :disabled="readOnly"
+      :options="baseUrlSuggestions"
     >
-      <InputCombobox
-        slot="input"
-        v-model="form.baseUrl"
-        :options="baseUrlSuggestions"
-      />
-
-      <div slot="after">
+      <template #after>
         <craft-callout
           variant="info"
           appearance="plain"
@@ -355,8 +341,8 @@
             >{{ t('Learn more') }}</a
           >
         </craft-callout>
-      </div>
-    </craft-input>
+      </template>
+    </CraftCombobox>
   </template>
 </template>
 

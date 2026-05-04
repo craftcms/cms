@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate.ts';
+  import {t} from '@craftcms/cp';
   import migrationsController from '@actions/Utilities/MigrationsController';
   import {
     createColumnHelper,
@@ -10,6 +10,7 @@
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
   import Empty from '@/components/Empty.vue';
   import {Form} from '@inertiajs/vue3';
+  import VarDump from '@/components/VarDump.vue';
 
   interface Migration {
     id?: number;
@@ -21,7 +22,7 @@
   }
 
   const props = defineProps<{
-    newMigrations: Array<Migration>;
+    newMigrations: Array<string>;
     migrationHistory: Array<Migration>;
   }>();
 
@@ -69,6 +70,7 @@
 </script>
 
 <template>
+  <VarDump :data="newMigrations" />
   <template v-if="!newMigrations">
     <Empty :label="t('No pending content migrations.')" />
   </template>
@@ -83,32 +85,6 @@
 
     <AdminTable :table="migrationsTable" :reorderable="false" />
   </template>
-
-  <!--  <table class="data fullwidth">-->
-  <!--    <thead>-->
-  <!--      <tr>-->
-  <!--        <th>{{ 'Name' | t('app') }}</th>-->
-  <!--        <th>{{ 'Status' | t('app') }}</th>-->
-  <!--        <th>{{ 'Batch' | t('app') }}</th>-->
-  <!--      </tr>-->
-  <!--    </thead>-->
-  <!--    <tbody>-->
-  <!--      {% for newMigration in newMigrations %}-->
-  <!--      <tr>-->
-  <!--        <td>{{ newMigration }}</td>-->
-  <!--        <td>{{ 'New' | t('app') }}</td>-->
-  <!--        <td></td>-->
-  <!--      </tr>-->
-  <!--      {% endfor %} {% for migration in migrationHistory %}-->
-  <!--      <tr>-->
-  <!--        <td>{{ migration.migration }}</td>-->
-  <!--        <td>{{ 'Applied' | t('app') }}</td>-->
-  <!--        <td>{{ migration.batch }}</td>-->
-  <!--      </tr>-->
-  <!--      {% endfor %}-->
-  <!--    </tbody>-->
-  <!--  </table>-->
-  <!--  {% endif %}-->
 </template>
 
 <style scoped lang="scss"></style>

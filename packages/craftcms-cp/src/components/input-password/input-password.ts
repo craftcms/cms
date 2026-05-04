@@ -1,10 +1,10 @@
 import {css, html} from 'lit';
 import {state} from 'lit/decorators.js';
 import {LionInput} from '@lion/ui/input.js';
-import {inputStyles} from '../../styles/form.styles.js';
+import {inputStyles} from '@src/styles/form.styles';
+import {t} from '@src/utilities/translate';
 import '../icon/icon.js';
 import '../button/button.js';
-import {t} from '../../utilities/translate.js';
 
 export default class CraftInputPassword extends LionInput {
   @state()

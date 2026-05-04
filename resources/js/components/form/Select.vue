@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import type {SelectOption} from '@/types';
+  import type {BaseOption} from '@/types';
   import CraftSelect from '@craftcms/cp/vue/CraftSelect.vue';
   import {computed} from 'vue';
 
@@ -8,7 +8,7 @@
   }>();
   const props = defineProps<{
     modelValue: string | number;
-    options: Array<SelectOption> | Array<string> | Array<number>;
+    options: Array<BaseOption> | Array<string> | Array<number>;
     error?: string;
   }>();
 
@@ -43,7 +43,13 @@
         :key="option.value"
         :value="option.value"
       >
-        {{ option.label }}
+        <slot
+          name="option-label"
+          :option="option"
+          :selected="option.value === modelProxy"
+        >
+          {{ option.label }}
+        </slot>
       </option>
     </select>
 

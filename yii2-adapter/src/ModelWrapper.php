@@ -7,6 +7,7 @@ namespace CraftCms\Yii2Adapter;
 use craft\base\Model;
 use CraftCms\Cms\Support\Utils;
 use Illuminate\Support\Traits\ForwardsCalls;
+use Throwable;
 
 class ModelWrapper extends Model
 {
@@ -26,7 +27,16 @@ class ModelWrapper extends Model
 
     public function __set($name, $value): void
     {
-        $this->object->$name = $value;
+        try {
+            $this->object->$name = $value;
+        } catch (Throwable $e) {
+            match (true) {
+                str_contains($e->getMessage(), 'Cannot modify private(set)') => true,
+                str_contains($e->getMessage(), 'Cannot modify protected(set)') => true,
+                str_contains($e->getMessage(), 'is read-only') => true,
+                default => throw $e,
+            };
+        }
     }
 
     public function __isset($name): bool

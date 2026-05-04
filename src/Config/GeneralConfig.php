@@ -1145,24 +1145,6 @@ class GeneralConfig extends BaseConfig
     public bool $enableTemplateCaching = true;
 
     /**
-     * @var bool Whether user-defined Twig templates should be sandboxed.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->enableTwigSandbox()
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ENABLE_TWIG_SANDBOX=true
-     * ```
-     * :::
-     *
-     * @see enableTwigSandbox()
-     *
-     * @group Security
-     */
-    public bool $enableTwigSandbox = false;
-
-    /**
      * @var string[]|null List of file extensions that will be merged into the <config5:allowedFileExtensions> config setting.
      *
      * ::: code

@@ -14,5 +14,6 @@ namespace craft\fields;
  */
 class Url extends \CraftCms\Cms\Field\Link
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 }

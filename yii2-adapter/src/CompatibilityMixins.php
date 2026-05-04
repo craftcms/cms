@@ -47,8 +47,6 @@ readonly class CompatibilityMixins
             $event ??= new YiiEvent();
 
             YiiEvent::trigger($this, $name, $event);
-
-            $this->dispatchComponentEvent($name, $event);
         });
 
         foreach (LegacyBehaviorCatalog::mixinTargets() as $class) {

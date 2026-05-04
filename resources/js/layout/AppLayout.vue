@@ -14,6 +14,7 @@
   import LoginController from '@actions/Auth/LoginController';
   import PermissionsController from '@actions/Users/PermissionsController';
   import PreferencesController from '@actions/Users/PreferencesController';
+  import {useFlashMessages} from '@/composables/useFlashMessages';
 
   const props = withDefaults(
     defineProps<{
@@ -26,6 +27,7 @@
   );
 
   const {system, currentUser, general} = useCraftData();
+  const {messages} = useFlashMessages();
 
   const page = usePage<{
     flash: {
@@ -37,8 +39,12 @@
       label: string;
     }> | null;
   }>();
-  const errorFlash = computed(() => page.props.flash?.error);
-  const successFlash = computed(() => page.props.flash?.success);
+  const errorFlash = computed(
+    () => page.props.flash?.error ?? messages.value.error ?? null
+  );
+  const successFlash = computed(
+    () => page.props.flash?.success ?? messages.value.success ?? null
+  );
   const crumbs = computed(() => page.props.crumbs ?? null);
   const skipLinks = computed(() => [
     {label: t('Skip to main section'), url: '#main'},

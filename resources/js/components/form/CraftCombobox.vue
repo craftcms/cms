@@ -45,19 +45,21 @@
     />
 
     <div slot="after">
-      <craft-callout
-        v-if="callouts?.includes('envVars')"
-        variant="info"
-        appearance="plain"
-        class="p-0"
-        icon="lightbulb"
-      >
-        {{ t('This can begin with an environment variable.') }}
-        <a
-          href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
-          >{{ t('Learn more') }}</a
+      <slot name="after">
+        <craft-callout
+          v-if="callouts?.includes('envVars')"
+          variant="info"
+          appearance="plain"
+          class="p-0"
+          icon="lightbulb"
         >
-      </craft-callout>
+          {{ t('This can begin with an environment variable.') }}
+          <a
+            href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
+            >{{ t('Learn more') }}</a
+          >
+        </craft-callout>
+      </slot>
     </div>
 
     <div slot="feedback">

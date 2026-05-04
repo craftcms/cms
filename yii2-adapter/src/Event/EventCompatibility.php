@@ -6,6 +6,7 @@ namespace CraftCms\Yii2Adapter\Event;
 
 use Craft;
 use craft\base\Element;
+use craft\base\Field as LegacyField;
 use craft\base\FieldLayoutComponent;
 use craft\console\controllers\ResaveController;
 use craft\controllers\ElementsController;
@@ -90,6 +91,7 @@ readonly class EventCompatibility
         /**
          * Fields
          */
+        LegacyField::registerEvents();
         LegacyAssetsField::registerEvents();
         LegacyBaseOptionsField::registerEvents();
         LegacyLinkField::registerEvents();
@@ -166,13 +168,13 @@ readonly class EventCompatibility
             ]));
         });
 
-        Event::listen(Authenticated::class, function(Authenticated $event) {
+        Event::listen(function(Authenticated $event) {
             /** @var User $user */
             $user = $event->user;
             app('Craft')->getUser()->setIdentity(new IdentityWrapper($user));
         });
 
-        Event::listen(Login::class, function(Login $event) {
+        Event::listen(function(Login $event) {
             /** @var User $user */
             $user = $event->user;
             app('Craft')->getUser()->setIdentity(new IdentityWrapper($user));
@@ -182,11 +184,11 @@ readonly class EventCompatibility
             app('Craft')->getUser()->setIdentity(null);
         });
 
-        Event::listen(TagsInvalidated::class, function(TagsInvalidated $event) {
+        Event::listen(function(TagsInvalidated $event) {
             YiiTagDependency::invalidate(Craft::$app->getCache(), $event->tags);
         });
 
-        Event::listen(RegisterTemplateCacheCollectors::class, function(RegisterTemplateCacheCollectors $event) {
+        Event::listen(function(RegisterTemplateCacheCollectors $event) {
             $event->types->add(LegacyAssetBundleCollector::class);
         });
 

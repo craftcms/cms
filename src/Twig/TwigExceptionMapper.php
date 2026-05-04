@@ -69,7 +69,15 @@ readonly class TwigExceptionMapper
             return false;
         }
 
-        $contents = file_get_contents($path);
+        if (! is_file($path)) {
+            return false;
+        }
+
+        $contents = @file_get_contents($path);
+
+        if ($contents === false) {
+            return false;
+        }
 
         if (! preg_match('/^class (\w+)/m', $contents, $match)) {
             return false;

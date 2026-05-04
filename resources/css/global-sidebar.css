@@ -15,7 +15,7 @@
   isolation: isolate;
   z-index: 1;
 
-  @media only screen and (max-width: calc(1999rem / 16)) {
+  @media only screen and (width <= 1999px) {
     --is-always-visible: false;
   }
 }

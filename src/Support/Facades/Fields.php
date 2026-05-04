@@ -47,7 +47,7 @@ use Override;
  * @method static \Illuminate\Support\Collection<\CraftCms\Cms\FieldLayout\FieldLayout> getLayoutsByIds(int[] $layoutIds)
  * @method static \CraftCms\Cms\FieldLayout\FieldLayout|null getLayoutByType(class-string<\CraftCms\Cms\Element\Contracts\ElementInterface> $type, bool $create = true)
  * @method static \Illuminate\Support\Collection<\CraftCms\Cms\FieldLayout\FieldLayout> getLayoutsByType(class-string<\CraftCms\Cms\Element\Contracts\ElementInterface> $type)
- * @method static \CraftCms\Cms\FieldLayout\FieldLayout createLayout(array $config)
+ * @method static \CraftCms\Cms\FieldLayout\FieldLayout createLayout(array|string $config)
  * @method static \CraftCms\Cms\FieldLayout\FieldLayoutElement createLayoutElement(array $config)
  * @method static \CraftCms\Cms\FieldLayout\FieldLayout assembleLayoutFromPost(string|null $namespace = null)
  * @method static bool saveLayout(\CraftCms\Cms\FieldLayout\FieldLayout $layout, bool $runValidation = true)

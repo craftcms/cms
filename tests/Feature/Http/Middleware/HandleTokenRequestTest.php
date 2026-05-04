@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Http\Middleware\RequireToken;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Http\Request;
@@ -27,8 +28,10 @@ it('throws if an invalid token is passed', function () {
 });
 
 it('adds the token to the context', function () {
+    $token = app(RouteTokens::class)->createToken('token/route');
+
     $this->middleware->handle(Request::create('foo', parameters: [
-        Cms::config()->tokenParam => Str::random(32),
+        Cms::config()->tokenParam => $token,
     ]), fn () => 'bar');
 
     expect(Context::getHidden(HandleTokenRequest::TOKEN_KEY))
@@ -42,6 +45,18 @@ it('does nothing more when the token does not return a route', function () {
     ]), fn () => 'bar');
 
     expect($result)->toBe('bar');
+    expect(Context::getHidden(HandleTokenRequest::TOKEN_KEY))->toBeNull();
+    expect(Context::getHidden(HandleTokenRequest::ORIGINAL_URI_KEY))->toBeNull();
+});
+
+it('does not let an unknown token satisfy token-required routes', function () {
+    $this->middleware->handle(Request::create('foo', parameters: [
+        Cms::config()->tokenParam => Str::random(32),
+    ]), fn () => 'bar');
+
+    $this->expectExceptionMessage('Valid token required');
+
+    app(RequireToken::class)->handle(Request::create('users/impersonate-with-token'), fn () => 'bar');
 });
 
 it('returns the response of the token route', function () {

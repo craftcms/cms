@@ -9,7 +9,7 @@ export default css`
     }
 
     ::slotted(.form-control) {
-      width: auto;
+      width: 100%;
       flex: 0 0 auto;
     }
   }

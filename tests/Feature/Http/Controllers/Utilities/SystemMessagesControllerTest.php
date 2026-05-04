@@ -9,6 +9,7 @@ use CraftCms\Cms\User\Elements\User;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\getJson;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
@@ -23,25 +24,25 @@ afterEach(function () {
     Edition::set($this->edition);
 });
 
-it('needs authentication for the routes', function (string $method, array $route) {
+it('needs authentication for the routes', function (string $method, array $route, array $params = []) {
     auth()->logout();
 
-    $this->$method(action($route))->assertUnauthorized();
+    $this->$method(action($route, $params))->assertUnauthorized();
 
     CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
 
     actingAs(User::find()->one());
 
-    $this->$method(action($route))->assertForbidden();
+    $this->$method(action($route, $params))->assertForbidden();
 })->with([
-    ['postJson', [SystemMessagesController::class, 'show']],
-    ['postJson', [SystemMessagesController::class, 'store']],
+    ['getJson', [SystemMessagesController::class, 'show'], ['key' => 'account_activation']],
+    ['postJson', [SystemMessagesController::class, 'store'], ['key' => 'account_activation']],
 ]);
 
 it('can get a modal for a system message', function () {
-    postJson(action([SystemMessagesController::class, 'show']), [
+    getJson(action([SystemMessagesController::class, 'show'], [
         'key' => 'account_activation',
-    ])
+    ]))
         ->assertOk()
         ->assertSee(t('account_activation_subject'));
 });

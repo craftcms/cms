@@ -11,6 +11,7 @@ namespace craft\elements;
 
 use craft\base\ElementEventConstants;
 use craft\base\Event as YiiEvent;
+use craft\base\LegacyEventConstants;
 use craft\events\AuthenticateUserEvent;
 use craft\events\DefineValueEvent;
 use CraftCms\Cms\Auth\Events\Authenticating;
@@ -28,6 +29,7 @@ use Illuminate\Support\Facades\Event;
  */
 class User extends UserElement
 {
+    use LegacyEventConstants;
     use ElementEventConstants;
 
     public const string SCENARIO_DEFAULT = ElementRules::SCENARIO_DEFAULT;

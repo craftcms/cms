@@ -15,7 +15,7 @@
   const props = withDefaults(defineProps<ModalProps>(), {
     isActive: false,
     overlay: true,
-    size: 'md',
+    width: 'md',
   });
 
   onKeyStroke('Escape', (e) => {

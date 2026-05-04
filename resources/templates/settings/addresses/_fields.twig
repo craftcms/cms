@@ -15,7 +15,9 @@
 
     {{ forms.fieldLayoutDesignerField({
       first: true,
-      fieldLayout: fieldLayout ?? Addresses.getFieldLayout(),
+      fieldLayout: old('fieldLayout')
+        ? Fields.createLayout(old('fieldLayout'))
+        : (fieldLayout ?? Addresses.getFieldLayout()),
       withGeneratedFields: true,
       withCardViewDesigner: true,
     }) }}

@@ -45,12 +45,15 @@ use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
+use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+
+use function CraftCms\Cms\cp_url;
 
 /**
  * Admin requests that do not require a login
@@ -86,6 +89,10 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     Route::get('utilities/{id}/{extra?}', [UtilitiesController::class, 'show'])
         ->where('extra', '.*')
         ->name('utilities.show');
+
+    // SystemMessages
+    Route::get('system-messages/{key}', [SystemMessagesController::class, 'show']);
+    Route::post('system-messages', [SystemMessagesController::class, 'store']);
 
     Route::middleware(RequireAdminChanges::class)->group(function () {
         Route::view('settings/addresses', 'settings/addresses/_fields');
@@ -258,9 +265,15 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
                     ->name('settings.site-groups.destroy');
             });
 
+        // User settings index
+        if (Edition::isAtLeast(Edition::Team)) {
+            Route::get('settings/users', [UserGroupsController::class, 'index']);
+        } else {
+            Route::get('settings/users', fn () => redirect(cp_url('settings/users/fields')));
+        }
+
         // User groups
         Route::middleware([RequireEdition::class.':'.Edition::Team->value])->group(function () {
-            Route::get('settings/users', [UserGroupsController::class, 'index']);
             Route::middleware([
                 RequireEdition::class.':'.Edition::Pro->value,
                 RequireAdminChanges::class,

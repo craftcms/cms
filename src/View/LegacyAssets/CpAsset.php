@@ -188,6 +188,7 @@ class CpAsset implements LegacyAssetInterface
             'allowAdminChanges' => $generalConfig->allowAdminChanges,
             'allowUpdates' => $generalConfig->allowUpdates,
             'allowUppercaseInSlug' => $generalConfig->allowUppercaseInSlug,
+            'autosaveDrafts' => true, // @TODO: This should always be true in the frontend
             'apiParams' => app(Api::class)->apiParams,
             'appId' => config('app.name'),
             'autofocusPreferred' => $currentUser->getAutofocusPreferred(),

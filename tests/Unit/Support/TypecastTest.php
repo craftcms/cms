@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Typecast;
+use Illuminate\Support\MessageBag;
 
 test('scalar properties', function (string $class, string $property, mixed $expected, mixed $value) {
     $config = [
@@ -97,6 +99,44 @@ test('enum properties', function () {
         'anotherSuit' => Suit::Hearts,
         'nullableSuit' => null,
     ]);
+});
+
+test('configure skips properties without public setters', function () {
+    class AsymmetricSetterModel
+    {
+        public string $public = 'original';
+
+        public private(set) string $privateSet = 'original';
+
+        public protected(set) string $protectedSet = 'original';
+
+        public string $readOnly {
+            get => 'original';
+        }
+    }
+
+    $model = Typecast::configure(new AsymmetricSetterModel, [
+        'public' => 'updated',
+        'privateSet' => 'updated',
+        'protectedSet' => 'updated',
+        'readOnly' => 'updated',
+    ]);
+
+    expect($model)
+        ->public->toBe('updated')
+        ->privateSet->toBe('original')
+        ->protectedSet->toBe('original')
+        ->readOnly->toBe('original');
+});
+
+test('configure skips component validation errors', function () {
+    class TypecastComponent extends Component {}
+
+    $component = new TypecastComponent([
+        'errors' => new MessageBag(['title' => ['Invalid title.']]),
+    ]);
+
+    expect($component->errors()->isEmpty())->toBeTrue();
 });
 
 test('isIntOrFloat', function (bool $expected, mixed $value) {

@@ -249,12 +249,17 @@ trait DisplayedInIndex
     {
         foreach (Arr::wrap($orderBy) as $column => $direction) {
             if ($direction instanceof ExpressionInterface) {
-                $elementQuery->orderByRaw($direction->getValue(DB::getQueryGrammar()));
+                $elementQuery->getQuery()->orderByRaw(
+                    $direction->getValue(DB::getQueryGrammar()),
+                );
 
                 continue;
             }
 
-            $elementQuery->orderBy([$column => $direction]);
+            $elementQuery->getQuery()->orderBy($column, match ($direction) {
+                'desc', SORT_DESC => 'desc',
+                default => 'asc',
+            });
         }
     }
 

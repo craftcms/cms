@@ -16,7 +16,14 @@ trait Validates
 {
     use HasRuleset;
 
-    private ?MessageBag $errors = null;
+    private ?MessageBag $_errors = null;
+
+    public private(set) MessageBag $errors {
+        get => $this->errors();
+        set(MessageBag $value) {
+            $this->_errors = $value;
+        }
+    }
 
     public function getFirstErrors(): array
     {
@@ -25,7 +32,14 @@ trait Validates
 
     public function errors(): MessageBag
     {
-        return $this->errors ??= new MessageBag;
+        if (isset($this->_errors)) {
+            return $this->_errors;
+        }
+
+        $this->_errors = new MessageBag;
+        $this->_errors->merge(session('errors', new MessageBag)->getMessages());
+
+        return $this->_errors;
     }
 
     public function clearErrors(?string $attribute = null): void
@@ -36,7 +50,7 @@ trait Validates
             return;
         }
 
-        $this->errors = new MessageBag;
+        $this->_errors = new MessageBag;
     }
 
     public function addModelErrors(Validatable $model, string $attrPrefix = ''): void

@@ -14,5 +14,6 @@ namespace craft\fields;
  */
 class Dropdown extends \CraftCms\Cms\Field\Dropdown
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 }

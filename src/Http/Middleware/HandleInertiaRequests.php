@@ -9,6 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\Navigation;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
@@ -16,6 +17,7 @@ use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Middleware;
 use Override;
 
@@ -62,6 +64,7 @@ class HandleInertiaRequests extends Middleware
         }
 
         $currentSite = Sites::getCurrentSite();
+        $generalConfig = app(GeneralConfig::class);
         $updates = app(Updates::class);
         $nav = app(Navigation::class);
         $progressService = app(JobProgress::class);
@@ -81,10 +84,14 @@ class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
             ],
-            'queue' => fn () => [
+            'queue' => fn () => Schema::hasTable(Table::JOBPROGRESS) ? [
                 'displayedJob' => $progressService->getDisplayedJob(),
                 'hasReservedJobs' => $progressService->getByStatus(JobStatus::Reserved)->count() > 0,
                 'hasWaitingJobs' => $progressService->getByStatus(JobStatus::Pending)->count() > 0,
+            ] : [
+                'displayedJob' => null,
+                'hasReservedJobs' => false,
+                'hasWaitingJobs' => false,
             ],
             'craft' => fn () => [
                 'general' => [
@@ -106,6 +113,8 @@ class HandleInertiaRequests extends Middleware
                     'username' => $currentUser->username ?? null,
                     'email' => $currentUser->email ?? null,
                 ],
+                'readOnly' => ! $generalConfig->allowAdminChanges,
+                'allowAdminChanges' => $generalConfig->allowAdminChanges,
                 'cpUrl' => cp_url(),
                 'actionUrl' => action_url(),
                 'baseApiUrl' => Api::craftApiEndpoint(),

@@ -14,5 +14,6 @@ namespace craft\fields;
  */
 class Email extends \CraftCms\Cms\Field\Email
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 }
