@@ -14,5 +14,6 @@ namespace craft\fields;
  */
 class Money extends \CraftCms\Cms\Field\Money
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 }

@@ -14,5 +14,6 @@ namespace craft\fields;
  */
 class Users extends \CraftCms\Cms\Field\Users
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 }

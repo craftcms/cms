@@ -14,5 +14,6 @@ namespace craft\fields;
  */
 class Icon extends \CraftCms\Cms\Field\Icon
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 }

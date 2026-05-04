@@ -74,11 +74,6 @@ use function CraftCms\Cms\template;
  */
 abstract class BaseRelationField extends Field implements CrossSiteCopyableFieldInterface, EagerLoadingFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, RelationalFieldInterface, ThumbableFieldInterface
 {
-    /**
-     * @event ElementCriteriaEvent The event that is triggered when defining the selection criteria for this field.
-     */
-    public const EVENT_DEFINE_SELECTION_CRITERIA = 'defineSelectionCriteria';
-
     public const VIEW_MODE_LIST = 'list';
 
     public const VIEW_MODE_LIST_INLINE = 'list-inline';
@@ -1577,10 +1572,7 @@ JS, [
      */
     public function getInputSelectionCriteria(): array
     {
-        $this->dispatchComponentEvent(
-            self::EVENT_DEFINE_SELECTION_CRITERIA,
-            $event = new DefineElementCriteria,
-        );
+        event($event = new DefineElementCriteria(field: $this));
 
         return $event->criteria;
     }

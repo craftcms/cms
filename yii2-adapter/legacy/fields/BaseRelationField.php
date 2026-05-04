@@ -29,7 +29,13 @@ use Override;
  */
 abstract class BaseRelationField extends \CraftCms\Cms\Field\BaseRelationField
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
+
+    /**
+     * @event ElementCriteriaEvent The event that is triggered when defining the selection criteria for this field.
+     */
+    public const EVENT_DEFINE_SELECTION_CRITERIA = 'defineSelectionCriteria';
 
     /**
      * {@inheritdoc}

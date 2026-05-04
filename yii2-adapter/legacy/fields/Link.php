@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Event;
  */
 class Link extends \CraftCms\Cms\Field\Link
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 
     /**

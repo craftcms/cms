@@ -14,5 +14,6 @@ namespace craft\fields;
  */
 class RadioButtons extends \CraftCms\Cms\Field\RadioButtons
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 }
