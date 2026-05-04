@@ -127,7 +127,7 @@ class VolumesController
             );
     }
 
-    public function save(Request $request, Volumes $volumes, Fields $fields): Response|CpScreenResponse
+    public function save(Request $request, Volumes $volumes, Fields $fields): Response
     {
         $volumeId = $request->input('volumeId') ?: null;
         $oldVolume = null;
@@ -166,7 +166,7 @@ class VolumesController
         $volume->setFieldLayout($fieldLayout);
 
         if (! $volumes->saveVolume($volume)) {
-            return $this->edit($volumes, $volume);
+            return $this->asModelFailure($volume, t("Couldn\u{2019}t save volume."), 'volume');
         }
 
         return $this->asModelSuccess($volume, t('Volume saved.'), 'volume');

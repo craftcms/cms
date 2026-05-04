@@ -100,7 +100,7 @@
       {% if 'custom' in translationMethods %}
         {% tag 'div' with {
           id: 'translation-method-custom',
-          class: field.translationMethodValue != 'custom' ? 'hidden' : null,
+          class: old('translationMethod', field.translationMethodValue) != 'custom' ? 'hidden' : null,
         } %}
           {{ forms.textField({
             label: "Translation Key Format"|t('app'),
