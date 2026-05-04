@@ -47,13 +47,11 @@ class VolumesController
         return $this->edit($volumes);
     }
 
-    public function edit(Volumes $volumes, ?int $volumeId = null): CpScreenResponse
+    public function edit(Volumes $volumes, ?Volume $volume = null, ?int $volumeId = null): CpScreenResponse
     {
         if ($volumeId === null && $this->readOnly) {
             abort(403, 'Administrative changes are disallowed in this environment.');
         }
-
-        $volume = null;
 
         if ($volumeId !== null) {
             $volume = $volumes->getVolumeById($volumeId);
@@ -129,7 +127,7 @@ class VolumesController
             );
     }
 
-    public function save(Request $request, Volumes $volumes, Fields $fields): Response
+    public function save(Request $request, Volumes $volumes, Fields $fields): Response|CpScreenResponse
     {
         $volumeId = $request->input('volumeId') ?: null;
         $oldVolume = null;
@@ -168,7 +166,7 @@ class VolumesController
         $volume->setFieldLayout($fieldLayout);
 
         if (! $volumes->saveVolume($volume)) {
-            return $this->asModelFailure($volume, t("Couldn\u{2019}t save volume."), 'volume');
+            return $this->edit($volumes, $volume);
         }
 
         return $this->asModelSuccess($volume, t('Volume saved.'), 'volume');
