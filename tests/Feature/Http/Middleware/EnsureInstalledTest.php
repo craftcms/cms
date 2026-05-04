@@ -16,6 +16,8 @@ it('redirects installer page requests to the dashboard when Craft is installed',
 });
 
 it('allows non-installer control panel requests through when Craft is installed', function () {
+    Cms::setIsInstalled();
+
     get(cp_url('login'))->assertOk();
 });
 
@@ -40,6 +42,7 @@ it('aborts site requests with a bare 503 when Craft is not installed', function 
 
 it('aborts control panel requests with the Craft 5 install message when Craft is not installed outside debug mode', function () {
     Cms::setIsInstalled(false);
+    config()->set('app.debug', false);
 
     get(cp_url('login'))->assertServiceUnavailable();
 });
