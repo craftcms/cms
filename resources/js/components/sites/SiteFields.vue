@@ -7,15 +7,15 @@
   import InputCombobox from '@/components/form/InputCombobox.vue';
   import {useInputGenerator} from '@/composables/useInputGenerator';
   import {toHandle} from '@craftcms/cp/utilities/string.ts.mjs';
+<<<<<<< brian/pt-3106-allowadminchangesfalse-is-not-affecting-some-parts-of-the-cp
+  import useCraftData from '@/composables/useCraftData';
+=======
   import CraftCombobox from '@/components/form/CraftCombobox.vue';
+>>>>>>> 6.x
 
-  const props = withDefaults(
-    defineProps<{
-      inertiaForm: InertiaForm<any>;
-      readOnly?: boolean;
-    }>(),
-    {readOnly: false}
-  );
+  const props = defineProps<{
+    inertiaForm: InertiaForm<any>;
+  }>();
 
   const page = usePage<{
     isMultisite: boolean;
@@ -26,6 +26,7 @@
     booleanEnvOptions: Array<SelectItem>;
     groupOptions: Array<SelectOption>;
   }>();
+  const {readOnly} = useCraftData();
 
   function addBooleanHints(option: SelectOption) {
     const isEnvVar =
@@ -119,6 +120,7 @@
     id="group"
     .modelValue="form.group"
     @model-value-changed="form.group = $event.target?.modelValue"
+    :disabled="readOnly"
   >
     <select slot="input">
       <option
@@ -183,6 +185,7 @@
     id="handle"
     name="handle"
     :has-feedback-for="form.errors?.handle ? 'error' : ''"
+    :disabled="readOnly"
     v-model="form.handle"
   >
     <div slot="feedback">

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Database\Table;
@@ -63,6 +64,7 @@ class HandleInertiaRequests extends Middleware
         }
 
         $currentSite = Sites::getCurrentSite();
+        $generalConfig = app(GeneralConfig::class);
         $updates = app(Updates::class);
         $nav = app(Navigation::class);
         $progressService = app(JobProgress::class);
@@ -105,6 +107,8 @@ class HandleInertiaRequests extends Middleware
                 'currentUser' => [
                     'email' => $currentUser->email ?? null,
                 ],
+                'readOnly' => ! $generalConfig->allowAdminChanges,
+                'allowAdminChanges' => $generalConfig->allowAdminChanges,
                 'cpUrl' => cp_url(),
                 'actionUrl' => action_url(),
                 'baseApiUrl' => Api::craftApiEndpoint(),

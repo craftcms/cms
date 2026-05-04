@@ -7,6 +7,7 @@
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import Text from '@/components/Text.vue';
   import {create} from '@actions/Settings/EntryTypesController';
+  import useCraftData from '@/composables/useCraftData';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<number>): void;
@@ -16,6 +17,8 @@
     types: Array<EntryType>;
     actions?: Array<any>;
   }>();
+
+  const {readOnly} = useCraftData();
 
   const selectedTypes = computed(() => {
     return props.modelValue
@@ -75,15 +78,15 @@
                 label: t('Settings'),
                 icon: 'gear',
               },
-              {
+              ...[(readOnly ? null : {
                 label: t('Remove'),
                 variant: 'danger',
                 icon: 'x',
                 onClick: () => removeItem(type.id),
-              },
+              })],
             ]"
           />
-          <ReorderButton variant="inherit"></ReorderButton>
+          <ReorderButton v-if="!readOnly" variant="inherit"></ReorderButton>
         </div>
       </craft-chip>
     </template>
@@ -91,7 +94,7 @@
 
   <div class="flex gap-2 mt-3 items-center">
     <craft-action-menu v-if="types?.length">
-      <craft-button type="button" slot="invoker" appearance="filled">
+      <craft-button type="button" slot="invoker" appearance="filled" v-if="!readOnly">
         <craft-icon name="chevron-down" slot="prefix"></craft-icon>
         {{ t('Choose') }}
       </craft-button>
@@ -133,7 +136,7 @@
         </template>
       </div>
     </craft-action-menu>
-    <a :href="create['/admin/settings/entry-types/new']().url" class="">
+    <a :href="create['/admin/settings/entry-types/new']().url" class="" v-if="!readOnly">
       <craft-icon name="plus" slot="prefix"></craft-icon>
       {{ t('Create') }}
     </a>

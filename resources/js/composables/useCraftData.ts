@@ -15,7 +15,9 @@ export interface CraftData {
   };
   site: {
     url: string;
-  };
+  }
+  readOnly: boolean;
+  allowAdminChanges: boolean;
   currentUser: any;
   nav: any[];
   [key: string]: any;
