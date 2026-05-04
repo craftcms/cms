@@ -14,5 +14,6 @@ namespace craft\fields;
  */
 class Entries extends \CraftCms\Cms\Field\Entries
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 }

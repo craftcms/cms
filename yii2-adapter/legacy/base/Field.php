@@ -9,12 +9,33 @@ namespace craft\base;
 
 use Closure;
 use Craft;
+use craft\base\Event as YiiEvent;
+use craft\events\FieldElementEvent as YiiFieldElementEvent;
+use craft\events\FieldEvent as YiiFieldEvent;
+use craft\events\ModelEvent;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
+use CraftCms\Cms\Field\Events\AfterFieldDelete;
+use CraftCms\Cms\Field\Events\AfterFieldElementDelete;
+use CraftCms\Cms\Field\Events\AfterFieldElementPropagate;
+use CraftCms\Cms\Field\Events\AfterFieldElementRestore;
+use CraftCms\Cms\Field\Events\AfterFieldElementSave;
+use CraftCms\Cms\Field\Events\AfterFieldMergeFrom;
+use CraftCms\Cms\Field\Events\AfterFieldMergeInto;
+use CraftCms\Cms\Field\Events\AfterFieldSave;
+use CraftCms\Cms\Field\Events\BeforeApplyFieldDelete;
+use CraftCms\Cms\Field\Events\BeforeFieldDelete;
+use CraftCms\Cms\Field\Events\BeforeFieldElementDelete;
+use CraftCms\Cms\Field\Events\BeforeFieldElementRestore;
+use CraftCms\Cms\Field\Events\BeforeFieldElementSave;
+use CraftCms\Cms\Field\Events\BeforeFieldSave;
+use CraftCms\Cms\Field\Events\FieldElementEvent;
+use CraftCms\Cms\Field\Events\FieldEvent;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Support\Facades\Event;
 use yii\base\InvalidConfigException;
 use yii\validators\Validator;
 
@@ -23,6 +44,7 @@ use yii\validators\Validator;
  */
 abstract class Field extends \CraftCms\Cms\Field\Field
 {
+    use FieldEventConstants;
     use LegacyEventConstants;
 
     public string $translationMethod {
@@ -46,6 +68,137 @@ abstract class Field extends \CraftCms\Cms\Field\Field
     public function __construct($config = [])
     {
         parent::__construct(Arr::except($config, ['fieldLimit', 'limitUnit']));
+    }
+
+    public static function registerEvents(): void
+    {
+        Event::listen(function(BeforeFieldSave $event) {
+            self::triggerModelEvent($event, self::EVENT_BEFORE_SAVE, $event->isNew);
+        });
+
+        Event::listen(function(AfterFieldSave $event) {
+            self::triggerModelEvent($event, self::EVENT_AFTER_SAVE, $event->isNew);
+        });
+
+        Event::listen(function(BeforeFieldDelete $event) {
+            self::triggerModelEvent($event, self::EVENT_BEFORE_DELETE);
+        });
+
+        Event::listen(function(BeforeApplyFieldDelete $event) {
+            self::triggerEvent($event, self::EVENT_BEFORE_APPLY_DELETE);
+        });
+
+        Event::listen(function(AfterFieldDelete $event) {
+            self::triggerEvent($event, self::EVENT_AFTER_DELETE);
+        });
+
+        Event::listen(function(BeforeFieldElementSave $event) {
+            self::triggerFieldElementEvent($event, self::EVENT_BEFORE_ELEMENT_SAVE);
+        });
+
+        Event::listen(function(AfterFieldElementSave $event) {
+            self::triggerFieldElementEvent($event, self::EVENT_AFTER_ELEMENT_SAVE);
+        });
+
+        Event::listen(function(AfterFieldElementPropagate $event) {
+            self::triggerFieldElementEvent($event, self::EVENT_AFTER_ELEMENT_PROPAGATE);
+        });
+
+        Event::listen(function(BeforeFieldElementDelete $event) {
+            self::triggerFieldElementEvent($event, self::EVENT_BEFORE_ELEMENT_DELETE);
+        });
+
+        Event::listen(function(AfterFieldElementDelete $event) {
+            self::triggerFieldElementEvent($event, self::EVENT_AFTER_ELEMENT_DELETE);
+        });
+
+        Event::listen(function(BeforeFieldElementRestore $event) {
+            self::triggerFieldElementEvent($event, self::EVENT_BEFORE_ELEMENT_RESTORE);
+        });
+
+        Event::listen(function(AfterFieldElementRestore $event) {
+            self::triggerFieldElementEvent($event, self::EVENT_AFTER_ELEMENT_RESTORE);
+        });
+
+        Event::listen(function(AfterFieldMergeInto $event) {
+            self::triggerFieldEvent($event, self::EVENT_AFTER_MERGE_INTO, $event->persistingField);
+        });
+
+        Event::listen(function(AfterFieldMergeFrom $event) {
+            self::triggerFieldEvent($event, self::EVENT_AFTER_MERGE_FROM, $event->outgoingField);
+        });
+    }
+
+    private static function triggerModelEvent(FieldEvent $event, string $name, bool $isNew = false): void
+    {
+        foreach (self::eventClasses($event->field) as $class) {
+            if (!YiiEvent::hasHandlers($class, $name)) {
+                continue;
+            }
+
+            $yiiEvent = new ModelEvent([
+                'sender' => $event->field,
+                'isNew' => $isNew,
+            ]);
+
+            YiiEvent::trigger($class, $name, $yiiEvent);
+
+            if (property_exists($event, 'isValid') && !$yiiEvent->isValid) {
+                $event->isValid = false;
+            }
+        }
+    }
+
+    private static function triggerEvent(FieldEvent $event, string $name): void
+    {
+        foreach (self::eventClasses($event->field) as $class) {
+            if (YiiEvent::hasHandlers($class, $name)) {
+                YiiEvent::trigger($class, $name, new \craft\base\Event(['sender' => $event->field]));
+            }
+        }
+    }
+
+    private static function triggerFieldElementEvent(FieldElementEvent $event, string $name): void
+    {
+        foreach (self::eventClasses($event->field) as $class) {
+            if (!YiiEvent::hasHandlers($class, $name)) {
+                continue;
+            }
+
+            $yiiEvent = new YiiFieldElementEvent([
+                'sender' => $event->field,
+                'element' => $event->element,
+                'isNew' => $event->isNew,
+            ]);
+
+            YiiEvent::trigger($class, $name, $yiiEvent);
+
+            if (!$yiiEvent->isValid) {
+                $event->isValid = false;
+            }
+        }
+    }
+
+    private static function triggerFieldEvent(FieldEvent $event, string $name, \CraftCms\Cms\Field\Contracts\FieldInterface $field): void
+    {
+        foreach (self::eventClasses($event->field) as $class) {
+            if (YiiEvent::hasHandlers($class, $name)) {
+                YiiEvent::trigger($class, $name, new YiiFieldEvent([
+                    'sender' => $event->field,
+                    'field' => $field,
+                ]));
+            }
+        }
+    }
+
+    private static function eventClasses(\CraftCms\Cms\Field\Contracts\FieldInterface $field): array
+    {
+        return array_unique([
+            $field::class,
+            ...class_parents($field),
+            ...class_implements($field),
+            self::class,
+        ]);
     }
 
     public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder

@@ -14,5 +14,6 @@ namespace craft\fields;
  */
 class MissingField extends \CraftCms\Cms\Field\MissingField
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 }

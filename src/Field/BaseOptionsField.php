@@ -39,11 +39,6 @@ use function CraftCms\Cms\t;
 abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldInterface, MergeableFieldInterface, PreviewableFieldInterface
 {
     /**
-     * @event {@see DefineInputOptions} Event triggered when defining the options for the field's input.
-     */
-    public const string EVENT_DEFINE_OPTIONS = 'defineOptions';
-
-    /**
      * @var bool Whether the field should support multiple selections
      */
     protected static bool $multi = false;
@@ -667,15 +662,12 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         $options = $this->options();
         $translatedOptions = [];
 
-        $this->dispatchComponentEvent(
-            self::EVENT_DEFINE_OPTIONS,
-            $event = new DefineInputOptions(
-                field: $this,
-                options: $options,
-                value: $value,
-                element: $element,
-            ),
-        );
+        event($event = new DefineInputOptions(
+            field: $this,
+            options: $options,
+            value: $value,
+            element: $element,
+        ));
 
         foreach ($event->options as $option) {
             if (isset($option['optgroup'])) {

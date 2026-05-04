@@ -47,13 +47,11 @@ class VolumesController
         return $this->edit($volumes);
     }
 
-    public function edit(Volumes $volumes, ?int $volumeId = null): CpScreenResponse
+    public function edit(Volumes $volumes, ?Volume $volume = null, ?int $volumeId = null): CpScreenResponse
     {
         if ($volumeId === null && $this->readOnly) {
             abort(403, 'Administrative changes are disallowed in this environment.');
         }
-
-        $volume = null;
 
         if ($volumeId !== null) {
             $volume = $volumes->getVolumeById($volumeId);

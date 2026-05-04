@@ -37,7 +37,7 @@
         id: 'photoVolumeId',
         name: 'photoVolumeId',
         options: volumeOptions,
-        value: photoVolume.id ?? null,
+        value: old('photoVolumeId', photoVolume.id ?? null),
         disabled: disabled,
       }) }}
     </div>
@@ -46,7 +46,7 @@
         id: 'photoSubpath',
         class: 'ltr',
         name: 'photoSubpath',
-        value: subpath,
+        value: old('photoSubpath', subpath),
         placeholder: "path/to/subfolder"|t('app'),
         disabled: disabled,
       }) }}
@@ -100,7 +100,7 @@
       showAllOption: true,
       allLabel: 'All users'|t('app'),
       allValue: 'all',
-      values: settings.require2fa ?? false,
+      values: old('require2fa', settings.require2fa ?? false),
       disabled: readOnly,
     }) }}
   {% endif %}
@@ -111,7 +111,7 @@
       label: 'Verify email addresses'|t('app'),
       instructions: 'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)'|t('app'),
       name: 'requireEmailVerification',
-      on: settings.requireEmailVerification,
+      on: old('requireEmailVerification', settings.requireEmailVerification),
       disabled: readOnly,
     }) }}
 
@@ -122,17 +122,17 @@
       fieldClass: 'first',
       label: 'Allow public registration'|t('app'),
       name: 'allowPublicRegistration',
-      on: settings.allowPublicRegistration,
+      on: old('allowPublicRegistration', settings.allowPublicRegistration),
       toggle: 'publicRegistrationSettings',
       disabled: readOnly,
     }) }}
 
-    <div id="publicRegistrationSettings" class="nested-fields{% if not settings.allowPublicRegistration %} hidden{% endif %}">
+    <div id="publicRegistrationSettings" class="nested-fields{% if not old('allowPublicRegistration', settings.allowPublicRegistration) %} hidden{% endif %}">
       {{ forms.lightswitchField({
         label: 'Validate custom fields on public registration'|t('app'),
         instructions: 'Whether custom fields should be validated during public registration.'|t('app'),
         name: 'validateOnPublicRegistration',
-        on: settings.validateOnPublicRegistration,
+        on: old('validateOnPublicRegistration', settings.validateOnPublicRegistration),
         disabled: readOnly,
       }) }}
 
@@ -140,7 +140,7 @@
         label: 'Deactivate users by default'|t('app'),
         instructions: 'Should users who register their own accounts be deactivated by default? This will prevent them from receiving an activation email or logging in.'|t('app'),
         name: 'deactivateByDefault',
-        on: settings.deactivateByDefault,
+        on: old('deactivateByDefault', settings.deactivateByDefault),
         disabled: readOnly,
       }) }}
 
@@ -154,7 +154,7 @@
         instructions: "Choose a user group that publicly-registered members will be added to by default."|t('app'),
         name: 'defaultGroup',
         options: groups,
-        value: settings.defaultGroup,
+        value: old('defaultGroup', settings.defaultGroup),
         disabled: readOnly,
       }) }}
     </div>

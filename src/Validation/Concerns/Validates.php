@@ -32,7 +32,14 @@ trait Validates
 
     public function errors(): MessageBag
     {
-        return $this->_errors ??= new MessageBag;
+        if (isset($this->_errors)) {
+            return $this->_errors;
+        }
+
+        $this->_errors = new MessageBag;
+        $this->_errors->merge(session('errors', new MessageBag)->getMessages());
+
+        return $this->_errors;
     }
 
     public function clearErrors(?string $attribute = null): void

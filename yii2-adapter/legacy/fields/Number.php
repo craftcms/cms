@@ -14,5 +14,6 @@ namespace craft\fields;
  */
 class Number extends \CraftCms\Cms\Field\Number
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 }

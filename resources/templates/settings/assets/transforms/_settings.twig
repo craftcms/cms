@@ -20,6 +20,15 @@
 
 {% set defaultPositionLabel = "Default Focal Point"|t('app') %}
 {% set letterboxPositionLabel = "Image Position"|t('app') %}
+{% set mode = old('mode', transform.mode) %}
+{% set fill = old('fill', transform.fill) %}
+{% set quality = old('quality', transform.quality) %}
+{% set format = old('format', transform.format) %}
+{% set qualityPickerValue = 0 %}
+{% if quality %}
+    {% set matchingQualityOption = qualityPickerOptions|filter(o => quality >= o.value)|last %}
+    {% set qualityPickerValue = matchingQualityOption ? matchingQualityOption.value : 10 %}
+{% endif %}
 
 {% import '_includes/forms.twig' as forms %}
 
@@ -40,7 +49,7 @@
         label: "Name"|t('app'),
         id: 'name',
         name: 'name',
-        value: transform.name,
+        value: old('name', transform.name),
         errors: transform.errors.get('name'),
         autofocus: true,
         required: true,
@@ -54,7 +63,7 @@
         class: 'code',
         autocorrect: false,
         autocapitalize: false,
-        value: transform.handle,
+        value: old('handle', transform.handle),
         errors: transform.errors.get('handle'),
         required: true,
         disabled: readOnly,
@@ -68,7 +77,7 @@
                 <label class="nowrap">
                     <img class="mb-xs" src="{{ baseIconsUrl }}/crop.svg" width="80" height="60" alt="">
                     {{ input('radio', 'mode', 'crop', {
-                        checked: transform.mode == 'crop',
+                        checked: mode == 'crop',
                         disabled: readOnly,
                     }) }}
                     {{ "Crop"|t('app') }}
@@ -76,7 +85,7 @@
                 <label class="nowrap">
                     <img class="mb-xs" src="{{ baseIconsUrl }}/fit.svg" width="80" height="60" alt="">
                     {{ input('radio', 'mode', 'fit', {
-                        checked: transform.mode == 'fit',
+                        checked: mode == 'fit',
                         disabled: readOnly,
                     }) }}
                     {{ "Fit"|t('app') }}
@@ -84,7 +93,7 @@
                 <label class="nowrap">
                     <img class="mb-xs" src="{{ baseIconsUrl }}/letterbox.svg" width="80" height="60" alt="">
                     {{ input('radio', 'mode', 'letterbox', {
-                        checked: transform.mode == 'letterbox',
+                        checked: mode == 'letterbox',
                         disabled: readOnly,
                     }) }}
                     {{ "Letterbox"|t('app') }}
@@ -92,7 +101,7 @@
                 <label class="nowrap">
                     <img class="mb-xs" src="{{ baseIconsUrl }}/stretch.svg" width="80" height="60" alt="">
                     {{ input('radio', 'mode', 'stretch', {
-                        checked: transform.mode == 'stretch',
+                        checked: mode == 'stretch',
                         disabled: readOnly,
                     }) }}
                     {{ "Stretch"|t('app') }}
@@ -101,18 +110,18 @@
         {% endblock %}
     {% endembed %}
 
-    <div id="fill-color" class="field {% if transform.mode != 'letterbox' or transform.fill is null %}hidden{% endif %}">
+    <div id="fill-color" class="field {% if mode != 'letterbox' or fill is null %}hidden{% endif %}">
         {{ forms.colorField({
             label: 'Fill Color',
             name: 'fill',
-            value: transform.mode == 'letterbox' and transform.fill != 'transparent' ? transform.fill,
+            value: mode == 'letterbox' and fill != 'transparent' ? fill,
             errors: transform.errors.get('fill'),
             disabled: readOnly,
         }) }}
     </div>
 
-    <div id="position-container"{% if transform.mode not in ['crop', 'letterbox'] %} class="hidden"{% endif %}>
-        {% set positionLabel = transform.mode == 'letterbox' ? letterboxPositionLabel : defaultPositionLabel %}
+    <div id="position-container"{% if mode not in ['crop', 'letterbox'] %} class="hidden"{% endif %}>
+        {% set positionLabel = mode == 'letterbox' ? letterboxPositionLabel : defaultPositionLabel %}
         {{ forms.selectField({
             label: positionLabel,
             id: 'position',
@@ -128,7 +137,7 @@
                 'bottom-center': "Bottom-Center"|t('app'),
                 'bottom-right': "Bottom-Right"|t('app')
             },
-            value: transform.mode in ['crop', 'letterbox'] ? transform.position : 'center-center',
+            value: mode in ['crop', 'letterbox'] ? old('position', transform.position) : 'center-center',
             disabled: readOnly,
         }) }}
     </div>
@@ -138,7 +147,7 @@
         id: "width",
         name: "width",
         size: 5,
-        value: transform.width,
+        value: old('width', transform.width),
         errors: transform.errors.get('width'),
         disabled: readOnly,
     }) }}
@@ -148,7 +157,7 @@
         id: "height",
         name: "height",
         size: 5,
-        value: transform.height,
+        value: old('height', transform.height),
         errors: transform.errors.get('height'),
         disabled: readOnly,
     }) }}
@@ -157,7 +166,7 @@
         label: 'Allow Upscaling'|t('app'),
         id: 'upscale',
         name: 'upscale',
-        on: transform.upscale ?? config('craft.general.upscaleImages'),
+        on: old('upscale', transform.upscale ?? config('craft.general.upscaleImages')),
         errors: transform.errors.get('upscale'),
         disabled: readOnly,
     }) }}
@@ -185,10 +194,10 @@
                         id: 'quality',
                         class: [
                             'ltr',
-                            transform.quality == 0 ? 'hidden',
+                            quality == 0 ? 'hidden',
                         ]|filter,
                         name: 'quality',
-                        value: transform.quality,
+                        value: quality,
                         size: 5,
                         type: 'number',
                         min: 1,
@@ -211,7 +220,7 @@
             {label: 'Plane'|t('app'), value: 'plane'},
             {label: 'Partition'|t('app'), value: 'partition'},
         ],
-        value: transform.interlace ?? 'none',
+        value: old('interlace', transform.interlace ?? 'none'),
         errors: transform.errors.get('interlace'),
         disabled: readOnly,
     }) }}
@@ -223,11 +232,11 @@
         {label: 'gif', value: 'gif'},
     ] %}
 
-    {% if transform.format == 'webp' or Images.supportsWebP %}
+    {% if format == 'webp' or Images.supportsWebP %}
         {% set formatOptions = formatOptions|merge([{label: 'webp', value: 'webp'}]) %}
     {% endif %}
 
-    {% if transform.format == 'avif' or Images.supportsAvif %}
+    {% if format == 'avif' or Images.supportsAvif %}
         {% set formatOptions = formatOptions|merge([{label: 'avif', value: 'avif'}]) %}
     {% endif %}
 
@@ -236,7 +245,7 @@
         id: "format",
         name: "format",
         instructions: "The image format that transformed images should use."|t('app'),
-        value: transform.format,
+        value: format,
         errors: transform.errors.get('format'),
         options: formatOptions,
         disabled: readOnly,
@@ -246,7 +255,7 @@
 
 
 {% js %}
-    {% if not transform.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
+    {% if not old('handle', transform.handle) %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
 
     $('#mode input').change(function() {
         const value = $(this).val();

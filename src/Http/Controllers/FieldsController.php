@@ -43,6 +43,7 @@ use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use ReflectionException;
 use ReflectionProperty;
 use Symfony\Component\HttpFoundation\Response;
@@ -184,7 +185,7 @@ class FieldsController
         if (! $this->fieldsService->saveField($field)) {
             Flash::error(t('Couldn’t save field.'));
 
-            return $this->edit($request, $field);
+            throw ValidationException::withMessages($field->errors()->getMessages());
         }
 
         if ($request->input('addAnother')) {
