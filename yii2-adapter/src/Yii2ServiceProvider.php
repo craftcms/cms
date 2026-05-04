@@ -8,6 +8,7 @@ use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Twig\Variables\CraftVariable;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
 use CraftCms\Yii2Adapter\Console\AddCategoriesSupportCommand;
 use CraftCms\Yii2Adapter\Console\AddGlobalSetsSupportCommand;
@@ -149,7 +150,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
         new RebrandCompatibility()->boot();
 
-        \CraftCms\Cms\Twig\Variables\CraftVariable::mixin(new CraftVariableMixin());
+        CraftVariable::mixin(new CraftVariableMixin());
 
         /**
          * Keep legacy CustomFieldBehavior statics in sync when field caches are invalidated.

@@ -2,6 +2,9 @@
 
 namespace craft\elements\conditions\users;
 
+use craft\base\LegacyConditionEvents;
+use craft\base\LegacyEventConstants;
+
 /**
  * Credentialed condition rule.
  *
@@ -11,5 +14,6 @@ namespace craft\elements\conditions\users;
  */
 class CredentialedConditionRule extends \CraftCms\Cms\User\Conditions\CredentialedConditionRule
 {
-    use \craft\base\LegacyEventConstants;
+    use LegacyConditionEvents;
+    use LegacyEventConstants;
 }
