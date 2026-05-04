@@ -84,9 +84,9 @@
     "name": "DeleteSiteModal",
     "imports": [
       "__plugin-vue_export-helper.js",
+      "_dist.js",
       "_nav-item-9g3ebwBJ.js",
-      "_ModalForm.js",
-      "_wayfinder.js"
+      "_ModalForm.js"
     ]
   },
   "_IndexLayout.css": {
@@ -181,7 +181,7 @@
     "file": "SectionsController.js",
     "name": "SectionsController",
     "imports": [
-      "_wayfinder.js"
+      "_dist.js"
     ]
   },
   "_Select.js": {
@@ -314,8 +314,7 @@
       "_Modal.js",
       "_Pane.js",
       "_Input.js",
-      "_useFetch.js",
-      "_wayfinder.js"
+      "_useFetch.js"
     ],
     "dynamicImports": [
       "resources/js/pages/Install.vue",
@@ -411,7 +410,8 @@
     "imports": [
       "__plugin-vue_export-helper.js",
       "_AdminTable.js",
-      "_InputCombobox.js"
+      "_InputCombobox.js",
+      "_dist.js"
     ]
   },
   "_useFetch.js": {
@@ -429,10 +429,6 @@
     "imports": [
       "__plugin-vue_export-helper.js"
     ]
-  },
-  "_wayfinder.js": {
-    "file": "wayfinder.js",
-    "name": "wayfinder"
   },
   "node_modules/@lion/ui/components/combobox/translations/bg.js": {
     "file": "bg.js",
@@ -1141,8 +1137,7 @@
       "_Modal.js",
       "_Pane.js",
       "_CraftCombobox.js",
-      "_useFetch.js",
-      "_wayfinder.js"
+      "_useFetch.js"
     ],
     "css": [
       "assets/Install.css"
@@ -1170,8 +1165,7 @@
       "_useAnnouncer.js",
       "_Pane.js",
       "_CraftCombobox.js",
-      "_Input.js",
-      "_wayfinder.js"
+      "_Input.js"
     ]
   },
   "resources/js/pages/SettingsGeneralPage.vue": {
@@ -1185,8 +1179,7 @@
       "_nav-item-9g3ebwBJ.js",
       "_AppLayout.js",
       "_CalloutReadOnly.js",
-      "_useAnnouncer.js",
-      "_wayfinder.js"
+      "_useAnnouncer.js"
     ],
     "css": [
       "assets/SettingsGeneralPage.css"
@@ -1220,13 +1213,12 @@
       "_CraftInput.js",
       "_Select.js",
       "_useEditableTable.js",
-      "_SectionsController.js",
       "_AppLayout.js",
+      "_SectionsController.js",
       "_CalloutReadOnly.js",
       "_useAnnouncer.js",
       "_Pane.js",
-      "_useInputGenerator.js",
-      "_wayfinder.js"
+      "_useInputGenerator.js"
     ],
     "css": [
       "assets/SettingsSectionsEditPage.css"
@@ -1240,9 +1232,11 @@
     "imports": [
       "__plugin-vue_export-helper.js",
       "_AdminTable.js",
+      "_dist.js",
       "_nav-item-9g3ebwBJ.js",
-      "_SectionsController.js",
       "_AppLayout.js",
+      "_SectionsController.js",
+      "_CalloutReadOnly.js",
       "_useAnnouncer.js",
       "_Pane.js"
     ]
@@ -1257,9 +1251,9 @@
       "_InputCombobox.js",
       "_dist.js",
       "_nav-item-9g3ebwBJ.js",
+      "_AppLayout.js",
       "_DeleteSiteModal.js",
       "_ModalForm.js",
-      "_AppLayout.js",
       "_CalloutReadOnly.js",
       "_useAnnouncer.js",
       "_CraftCombobox.js",
@@ -1275,13 +1269,13 @@
       "__plugin-vue_export-helper.js",
       "_AdminTable.js",
       "_InputCombobox.js",
+      "_dist.js",
       "_nav-item-9g3ebwBJ.js",
       "_DeleteSiteModal.js",
       "_ModalForm.js",
       "_CalloutReadOnly.js",
       "_useAnnouncer.js",
-      "_IndexLayout.js",
-      "_wayfinder.js"
+      "_IndexLayout.js"
     ],
     "css": [
       "assets/SettingsSitesIndex.css"
