@@ -80,7 +80,8 @@ it('can render the index', function () {
 
 it('can create a new field', function () {
     $this->get(action([FieldsController::class, 'create']))
-        ->assertSee('Create a new field');
+        ->assertSee('Create a new field')
+        ->assertSee('<span class="icon">', false);
 });
 
 it('404s when a field isn\'t found', function () {

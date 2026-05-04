@@ -1064,19 +1064,29 @@ class Plugins
      */
     public function getPluginIconSvg(string $handle): string
     {
+        $basePaths = [];
+
         // If it's installed, let the plugin say where it lives
         if (($plugin = $this->getPlugin($handle)) !== null) {
-            $basePath = $plugin->getResourcesPath();
-        } else {
-            if (($basePath = $this->composerPluginInfo[$handle]['basePath'] ?? false) !== false) {
-                $basePath = Aliases::get($basePath);
-            }
+            $basePaths[] = $plugin->getBasePath();
+            $basePaths[] = $plugin->getResourcesPath();
         }
 
-        $iconPath = ($basePath !== false) ? $basePath.'/icon.svg' : false;
+        if (($basePath = $this->composerPluginInfo[$handle]['basePath'] ?? false) !== false) {
+            $basePath = Aliases::get($basePath);
+            $basePaths[] = $basePath;
+            $basePaths[] = dirname($basePath).'/resources';
+        }
 
-        if ($iconPath === false || ! is_file($iconPath) || ! File::isSvg($iconPath)) {
+        $iconPath = Arr::first(
+            array_unique($basePaths),
+            fn (string $basePath) => is_file($basePath.'/icon.svg') && File::isSvg($basePath.'/icon.svg'),
+        );
+
+        if ($iconPath === null) {
             $iconPath = Aliases::get('@appicons/default-plugin.svg');
+        } else {
+            $iconPath .= '/icon.svg';
         }
 
         return file_get_contents($iconPath);

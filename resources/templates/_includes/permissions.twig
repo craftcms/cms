@@ -7,7 +7,7 @@
 
 {% set disabled = disabled ?? false %}
 
-{% macro permissionList(subject, groupPermissions, permissions, id, disabled) %}
+{% macro permissionList(subject, groupPermissions, permissions, id, disabled, oldPermissions) %}
     {% from "_includes/forms" import checkbox %}
     {% from _self import permissionList %}
 
@@ -17,6 +17,8 @@
 
             {% if (isInGroupPermissions) %}
                 {% set checked = true %}
+            {% elseif oldPermissions is not null %}
+                {% set checked = permission.key in oldPermissions %}
             {% else %}
                 {% if subject %}
                     {% if Request.actionSegments() == ['users', 'save-user'] %}
@@ -48,7 +50,7 @@
                 {% endif %}
 
                 {% if permission.nested ?? false %}
-                    {{ permissionList(subject, groupPermissions, permission.nested, permission.key~'-nested', disabled or not checked) }}
+                    {{ permissionList(subject, groupPermissions, permission.nested, permission.key~'-nested', disabled or not checked, oldPermissions) }}
                 {% endif %}
             </li>
         {% endfor %}
@@ -56,6 +58,7 @@
 {% endmacro %}
 
 {% from _self import permissionList %}
+{% set oldPermissions = session('_old_input') ? old('permissions', []) : null %}
 
 {% for group in permissions %}
     {% set headingId = "content-heading-#{random()}" %}
@@ -88,7 +91,7 @@
                 },
             }) }}
         {% endif %}
-        {{ permissionList(subject, groupPermissions ?? [], group.permissions, null, disabled) }}
+        {{ permissionList(subject, groupPermissions ?? [], group.permissions, null, disabled, oldPermissions) }}
     </div>
 {% endfor %}
 

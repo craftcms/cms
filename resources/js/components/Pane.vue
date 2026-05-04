@@ -35,6 +35,8 @@
     return (
       slots.footer ||
       slots.actions ||
+      slots.feedback ||
+      slots['footer-content'] ||
       slots['primary-action'] ||
       slots['secondary-action']
     );
@@ -49,7 +51,7 @@
       return `calc(${props.padding}rem / 16)`;
     }
 
-    if (['sm', 'md', 'lg', 'xl'].includes(props.padding)) {
+    if (['sm', 'md', 'lg', 'xl'].includes(props.padding as string)) {
       return `var(--c-spacing-${props.padding})`;
     }
 
@@ -90,11 +92,15 @@
     </slot>
     <slot name="footer" v-if="showFooter">
       <div class="cp-pane__footer">
-        <slot name="actions">
-          <div class="actions">
-            <slot name="secondary-action"></slot>
-            <slot name="primary-action"></slot>
-          </div>
+        <slot name="footer-content">
+          <slot name="feedback"></slot>
+          <div class="flex-1"></div>
+          <slot name="actions">
+            <div class="actions">
+              <slot name="secondary-action"></slot>
+              <slot name="primary-action"></slot>
+            </div>
+          </slot>
         </slot>
       </div>
     </slot>
@@ -151,6 +157,8 @@
   }
 
   .cp-pane__footer {
+    display: flex;
+    align-items: center;
     background-color: var(--_bg-color);
     border-top: 1px solid var(--c-color-neutral-border-quiet);
     padding-inline: var(--_pane-spacing);
@@ -167,5 +175,6 @@
     gap: var(--c-spacing-md);
     justify-content: end;
     align-items: center;
+    align-self: end;
   }
 </style>

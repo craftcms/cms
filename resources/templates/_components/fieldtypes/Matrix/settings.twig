@@ -334,7 +334,7 @@
       const $entryTypesContainer = $("#{{ 'entry-type-manager'|namespaceInputId }}");
       new Craft.GroupedEntryTypeManager($entryTypesContainer, {
         $defaultColumnsContainer,
-        namespace: {{ view.getNamespace()|json_encode|raw }},
+        namespace: {{ InputNamespace.get()|json_encode|raw }},
         entryTypeSelectHtml: {{ entryTypeSelectHtml|json_encode|raw }},
         entryTypeSelectJs: {{ entryTypeSelectJs|json_encode|raw }},
       });

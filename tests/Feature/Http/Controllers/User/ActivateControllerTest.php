@@ -5,6 +5,7 @@ use CraftCms\Cms\Http\Controllers\Users\ActivateController;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Notifications\ActivationNotification;
 use Illuminate\Support\Facades\Notification;
 
 use function Pest\Laravel\actingAs;
@@ -99,6 +100,8 @@ test('sendActivationEmail requires moderateUsers for pending users', function ()
     postJson(action([ActivateController::class, 'sendActivationEmail']), [
         'userId' => $pendingUser->id,
     ])->assertOk();
+
+    Notification::assertSentTimes(ActivationNotification::class, 1);
 });
 
 test('sendActivationEmail requires moderateUsers for inactive (non-pending) users', function () {
@@ -127,6 +130,8 @@ test('sendActivationEmail requires moderateUsers for inactive (non-pending) user
     postJson(action([ActivateController::class, 'sendActivationEmail']), [
         'userId' => $inactiveUser->id,
     ])->assertOk();
+
+    expect($inactiveUser->fresh()->pending)->toBeTrue();
 });
 
 it('returns 400 for non-existent user on sendActivationEmail', function () {

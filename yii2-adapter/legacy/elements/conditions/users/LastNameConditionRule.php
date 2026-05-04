@@ -2,6 +2,9 @@
 
 namespace craft\elements\conditions\users;
 
+use craft\base\LegacyConditionEvents;
+use craft\base\LegacyEventConstants;
+
 /**
  * Last name condition rule.
  *
@@ -11,5 +14,6 @@ namespace craft\elements\conditions\users;
  */
 class LastNameConditionRule extends \CraftCms\Cms\User\Conditions\LastNameConditionRule
 {
-    use \craft\base\LegacyEventConstants;
+    use LegacyConditionEvents;
+    use LegacyEventConstants;
 }

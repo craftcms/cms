@@ -68,7 +68,7 @@ export default css`
   .action-item__suffix {
     align-self: center;
   }
-  
+
   craft-shortcut {
     margin-inline-start: var(--c-spacing-sm);
   }

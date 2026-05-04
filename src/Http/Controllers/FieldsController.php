@@ -42,6 +42,7 @@ use CraftCms\Cms\View\LegacyAssets\FieldSettingsAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use ReflectionException;
 use ReflectionProperty;
@@ -213,7 +214,7 @@ class FieldsController
         if (! $this->fieldsService->saveField($field)) {
             Flash::error(t('Couldn’t save field.'));
 
-            return $this->edit($request, $field);
+            throw ValidationException::withMessages($field->errors()->getMessages());
         }
 
         if ($request->input('addAnother')) {
@@ -467,7 +468,7 @@ class FieldsController
                 $compatible = $isCurrent || $compatibleFieldTypes->contains($class);
                 $name = $class::displayName();
                 $option = [
-                    $isCurrent && $field instanceof Iconic ? $field->getIcon() : $class::icon(),
+                    'icon' => $isCurrent && $field instanceof Iconic ? $field->getIcon() : $class::icon(),
                     'value' => $class,
                 ];
                 if ($compatible) {

@@ -14,5 +14,6 @@ namespace craft\fields;
  */
 class Lightswitch extends \CraftCms\Cms\Field\Lightswitch
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 }

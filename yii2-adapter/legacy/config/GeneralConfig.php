@@ -368,6 +368,24 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     public bool $usePathInfo = false;
 
     /**
+     * @var bool Whether user-defined Twig templates should be sandboxed.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->enableTwigSandbox()
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ENABLE_TWIG_SANDBOX=true
+     * ```
+     * :::
+     *
+     * @see enableTwigSandbox()
+     *
+     * @group Security
+     */
+    public bool $enableTwigSandbox = true;
+
+    /**
      * @inheritdoc
      * @throws InvalidConfigException
      */

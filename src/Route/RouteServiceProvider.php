@@ -16,6 +16,7 @@ use CraftCms\Cms\Http\Middleware\CheckRequirements;
 use CraftCms\Cms\Http\Middleware\CheckSchemaVersion;
 use CraftCms\Cms\Http\Middleware\Enforce2fa;
 use CraftCms\Cms\Http\Middleware\EnforceLicenses;
+use CraftCms\Cms\Http\Middleware\EnsureInstalled;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
@@ -136,6 +137,7 @@ class RouteServiceProvider extends ServiceProvider
     private function bootMiddleware(Router $router): void
     {
         collect([
+            EnsureInstalled::class,
             AddLogContext::class,
             SetCraftGuard::class,
             ResolveSite::class,

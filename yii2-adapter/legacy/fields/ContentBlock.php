@@ -14,5 +14,6 @@ namespace craft\fields;
  */
 class ContentBlock extends \CraftCms\Cms\Field\ContentBlock
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 }

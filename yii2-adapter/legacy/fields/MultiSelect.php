@@ -14,5 +14,6 @@ namespace craft\fields;
  */
 class MultiSelect extends \CraftCms\Cms\Field\MultiSelect
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 }

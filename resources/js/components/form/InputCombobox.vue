@@ -22,13 +22,14 @@
   }>();
   const props = withDefaults(
     defineProps<{
-      label: string;
+      label?: string;
       options?: Array<SelectItem>;
       modelValue?: string;
       requireOptionMatch?: boolean;
       transformModelValue?: (newValue: SelectOption | null) => string;
       class?: HTMLAttributes['class'];
       placeholder?: string;
+      disabled?: boolean;
     }>(),
     {
       modelValue: '',
@@ -143,7 +144,7 @@
 
 <template>
   <div class="relative w-full" ref="reference">
-    <Combobox v-model="selectedOption">
+    <Combobox v-model="selectedOption" :disabled="props.disabled">
       <ComboboxInput
         @change="query = $event.target.value"
         class="input"

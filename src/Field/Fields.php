@@ -951,8 +951,12 @@ class Fields
     /**
      * Creates a field layout from the given config.
      */
-    public function createLayout(array $config): FieldLayout
+    public function createLayout(array|string $config): FieldLayout
     {
+        if (is_string($config)) {
+            $config = JsonHelper::decode($config);
+        }
+
         unset($config['class']);
 
         return new FieldLayout($config);
@@ -991,8 +995,8 @@ class Fields
     {
         $paramPrefix = $namespace ? rtrim($namespace, '.').'.' : '';
 
-        $config = JsonHelper::decode(Request::get("{$paramPrefix}fieldLayout"));
-        $config['generatedFields'] = Request::get("{$paramPrefix}generatedFields") ?: null;
+        $config = JsonHelper::decode(Request::input("{$paramPrefix}fieldLayout"));
+        $config['generatedFields'] = Request::input("{$paramPrefix}generatedFields") ?: null;
 
         $layout = $this->createLayout($config);
 

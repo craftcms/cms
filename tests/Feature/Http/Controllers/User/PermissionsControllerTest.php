@@ -5,8 +5,10 @@ use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Models\UserGroup;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 
 use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
@@ -168,4 +170,23 @@ test('store returns success message', function () {
     ])
         ->assertOk()
         ->assertJsonStructure(['message']);
+});
+
+test('store sends activation email and marks inactive user as pending', function () {
+    Notification::fake();
+    session()->passwordConfirmed();
+    Edition::set(Edition::Pro);
+
+    $inactiveUser = UserModel::factory()->create([
+        'active' => false,
+        'pending' => false,
+    ]);
+
+    postJson(action([PermissionsController::class, 'store']), [
+        'userId' => $inactiveUser->id,
+        'admin' => true,
+        'sendActivationEmail' => true,
+    ])->assertOk();
+
+    expect($inactiveUser->fresh()->pending)->toBeTrue();
 });

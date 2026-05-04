@@ -12,6 +12,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -43,7 +44,7 @@ readonly class EmailSettingsController
         return new CpScreenResponse()
             ->title(t('Email Settings'))
             ->crumbs([
-                ['label' => t('Settings'), 'url' => UrlHelper::cpUrl('settings')],
+                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Email')],
             ])
             ->redirectUrl('settings')

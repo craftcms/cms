@@ -19,7 +19,7 @@
 
 {% import "_includes/forms" as forms %}
 
-{% macro permissionList(schema, permissions, id, disabled) %}
+{% macro permissionList(schema, permissions, id, disabled, oldPermissions) %}
 
     {% from "_includes/forms" import checkbox %}
     {% from _self import permissionList %}
@@ -27,7 +27,9 @@
     <ul{% if id %} id="{{ id|replace(':', '-') }}"{% endif %}>
 
         {% for permissionName, props in permissions %}
-            {% if schema.has(permissionName) %}
+            {% if oldPermissions is not null %}
+                {% set checked = permissionName in oldPermissions %}
+            {% elseif schema.has(permissionName) %}
                 {% set checked = true %}
             {% else %}
                 {% set checked = false %}
@@ -51,7 +53,7 @@
                 {% endif %}
 
                 {% if props.nested ?? false %}
-                    {{ permissionList(schema, props.nested, permissionName~'-nested', not checked) }}
+                    {{ permissionList(schema, props.nested, permissionName~'-nested', not checked, oldPermissions) }}
                 {% endif %}
             </li>
         {% endfor %}
@@ -59,6 +61,7 @@
 {% endmacro %}
 
 {% from _self import permissionList %}
+{% set oldPermissions = session('_old_input') ? old('permissions', []) : null %}
 
 
 {% do registerLegacyAsset("CraftCms\\Cms\\View\\LegacyAssets\\UserPermissionsAsset") %}
@@ -75,7 +78,7 @@
             instructions: "What this schema will be called in the control panel."|t('app'),
             id: 'name',
             name: 'name',
-            value: schema.name,
+            value: old('name', schema.name),
             errors: schema.errors.get('name'),
             autofocus: true,
             required: true
@@ -94,7 +97,7 @@
             <h3 id="{{ headingId }}">{{ category }}</h3>
             <button type="button" class="select-all" aria-describedby="{{ headingId }}"></button>
 
-            {{ permissionList(schema, catPermissions) }}
+            {{ permissionList(schema, catPermissions, null, false, oldPermissions) }}
         </div>
     {% endfor %}
 
@@ -107,7 +110,7 @@
             <h3 id="{{ headingId }}">{{ category }}</h3>
             <button type="button" class="select-all" aria-describedby="{{ headingId }}"></button>
 
-            {{ permissionList(schema, catPermissions) }}
+            {{ permissionList(schema, catPermissions, null, false, oldPermissions) }}
         </div>
     {% endfor %}
 
@@ -128,7 +131,7 @@
         }),
         warning: 'Can be exploited by DoS attacks.'|t('app'),
       },
-    }|filter) }}
+    }|filter, null, false, oldPermissions) }}
   </div>
 
 {% endblock %}
@@ -140,14 +143,14 @@
                 label: 'Enabled'|t('app'),
                 id: 'enabled',
                 name: 'enabled',
-                on: token.enabled,
+                on: old('enabled', token.enabled),
             }) }}
 
             {{ forms.dateTimeField({
                 label: "Expiry Date"|t('app'),
                 id: 'expiryDate',
                 name: 'expiryDate',
-                value: (token.expiryDate ? token.expiryDate : null),
+                value: old('expiryDate', token.expiryDate ? token.expiryDate : null),
                 errors: token.errors.get('expiryDate')
             }) }}
         </div>

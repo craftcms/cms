@@ -1,9 +1,14 @@
+const path = require('path');
+
 module.exports = {
   prefix: 'tw-',
   corePlugins: {
     preflight: false,
   },
-  content: ['./src/**/*.{vue,js}', '../../../templates/plugin-store/**/*.twig'],
+  content: [
+    path.join(__dirname, 'src/**/*.{vue,js}'),
+    path.join(__dirname, '../../../resources/templates/plugin-store/**/*.twig'),
+  ],
   theme: {
     extend: {
       screens: {

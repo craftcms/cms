@@ -101,7 +101,7 @@ it('orders elements by id ascending', function () {
     Entry::factory()->count(3)->create();
 
     $expectedOrder = EntryElement::find()
-        ->orderBy(['elements.id' => SORT_ASC])
+        ->orderBy('elements.id')
         ->collect()
         ->pluck('id')
         ->toArray();

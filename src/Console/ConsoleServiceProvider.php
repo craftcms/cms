@@ -14,6 +14,7 @@ use CraftCms\Cms\Console\Commands\Install\InstallCommand;
 use CraftCms\Cms\Console\Commands\InvalidateTagsCommand;
 use CraftCms\Cms\Console\Commands\Setup\CloudCommand;
 use CraftCms\Cms\Console\Commands\Setup\DatabaseCredentialsCommand;
+use CraftCms\Cms\Console\Commands\Setup\PublishCommand;
 use CraftCms\Cms\Console\Commands\Setup\SetupCommand;
 use CraftCms\Cms\Console\Commands\Setup\WelcomeCommand;
 use CraftCms\Cms\Console\Commands\System\OffCommand;
@@ -49,6 +50,7 @@ class ConsoleServiceProvider extends ServiceProvider
         DatabaseCredentialsCommand::class,
         SetupCommand::class,
         CloudCommand::class,
+        PublishCommand::class,
 
         // System
         OffCommand::class,
@@ -116,6 +118,6 @@ class ConsoleServiceProvider extends ServiceProvider
 
         $this->publishes([
             __DIR__.'/craft.stub' => base_path('craft'),
-        ], 'craftcms');
+        ], ['craftcms', 'craftcms-console']);
     }
 }

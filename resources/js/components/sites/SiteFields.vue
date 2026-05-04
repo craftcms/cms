@@ -6,16 +6,13 @@
   import type {SelectItem, SelectOption, Site} from '@/types';
   import {useInputGenerator} from '@/composables/useInputGenerator';
   import {toHandle} from '@craftcms/cp/utilities/string.ts.mjs';
-  import {transformBooleanOptions} from '@/utils/transformBooleanOptions';
+  import useCraftData from '@/composables/useCraftData';
   import CraftCombobox from '@/components/form/CraftCombobox.vue';
+  import {transformBooleanOptions} from '@/utils/transformBooleanOptions';
 
-  const props = withDefaults(
-    defineProps<{
-      inertiaForm: InertiaForm<any>;
-      readOnly?: boolean;
-    }>(),
-    {readOnly: false}
-  );
+  const props = defineProps<{
+    inertiaForm: InertiaForm<any>;
+  }>();
 
   const page = usePage<{
     isMultisite: boolean;
@@ -26,6 +23,7 @@
     booleanEnvOptions: Array<SelectItem>;
     groupOptions: Array<SelectOption>;
   }>();
+  const {readOnly} = useCraftData();
 
   const form = computed(() => props.inertiaForm);
   const isMultisite = computed(() => page.props.isMultisite);
@@ -74,6 +72,7 @@
     id="group"
     .modelValue="form.group"
     @model-value-changed="form.group = $event.target?.modelValue"
+    :disabled="readOnly"
   >
     <select slot="input">
       <option
@@ -134,6 +133,7 @@
     id="handle"
     name="handle"
     :has-feedback-for="form.errors?.handle ? 'error' : ''"
+    :disabled="readOnly"
     v-model="form.handle"
   >
     <div slot="feedback">
@@ -250,7 +250,7 @@
       :options="baseUrlSuggestions"
       :disabled="readOnly"
     >
-      <div slot="after">
+      <template #after>
         <craft-callout
           variant="info"
           appearance="plain"
@@ -263,7 +263,7 @@
             >{{ t('Learn more') }}</a
           >
         </craft-callout>
-      </div>
+      </template>
     </CraftCombobox>
   </template>
 </template>

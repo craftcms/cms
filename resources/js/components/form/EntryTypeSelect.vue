@@ -25,6 +25,16 @@
     actions?: Array<any>;
   }>();
 
+  const {readOnly} = useCraftData();
+
+  const selectedTypes = computed(() => {
+    return props.modelValue
+      .map((id) => {
+        return props.types?.find((type) => type.id === id) ?? null;
+      })
+      .filter(Boolean);
+  });
+
   const entryTypeQuery = ref('');
 
   const selectableTypes = computed(() => {
@@ -257,17 +267,22 @@
               icon: 'gear',
               onClick: () => openSlideout(entryType.id),
             },
-            {
-              label: t('Remove'),
-              variant: 'danger',
-              icon: 'x',
-              onClick: () => removeItem(entryType.id),
-            },
+            ...[
+              readOnly
+                ? null
+                : {
+                    label: t('Remove'),
+                    variant: 'danger',
+                    icon: 'x',
+                    onClick: () => removeItem(entryType.id),
+                  },
+            ],
           ]"
           @handle-ref="(el) => setHandleRef(el, entryType.id)"
         >
           <template #drag-handle>
             <ReorderButton
+              v-if="!readOnly"
               variant="inherit"
               :position="getRowPosition(index)"
               @click:up="reorder(index, index - 1)"
@@ -290,7 +305,12 @@
 
   <div class="flex gap-2 mt-3 items-center">
     <craft-action-menu v-if="entryTypes?.length">
-      <craft-button type="button" slot="invoker" appearance="filled">
+      <craft-button
+        type="button"
+        slot="invoker"
+        appearance="filled"
+        v-if="!readOnly"
+      >
         <craft-icon name="chevron-down" slot="prefix"></craft-icon>
         {{ t('Choose') }}
       </craft-button>
@@ -334,7 +354,10 @@
         </template>
       </div>
     </craft-action-menu>
-    <CreateEntryTypeButton @success="router.reload({only: ['entryTypes']})" />
+    <CreateEntryTypeButton
+      v-if="!readOnly"
+      @success="router.reload({only: ['entryTypes']})"
+    />
   </div>
 </template>
 

@@ -6,6 +6,7 @@
 
   defineProps<{
     logs: Array<LogData>;
+    disabled?: boolean;
   }>();
 </script>
 
@@ -17,7 +18,7 @@
       :action="deleteAllDeprecationErrors()"
       method="post"
     >
-      <craft-button :loading="processing" type="submit">{{
+      <craft-button :disabled="disabled" :loading="processing" type="submit">{{
         t('Clear All')
       }}</craft-button>
     </Form>

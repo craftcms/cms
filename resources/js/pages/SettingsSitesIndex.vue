@@ -15,11 +15,11 @@
   import {index} from '@routes/cp/settings/sites';
   import InputCombobox from '@/components/form/InputCombobox.vue';
   import IndexLayout from '@/layout/IndexLayout.vue';
+  import useCraftData from '@/composables/useCraftData';
   import {createCraftColumnHelper} from '@/components/AdminTable/createCraftColumnHelper';
   import Empty from '@/components/Empty.vue';
 
   const props = defineProps<{
-    readOnly: boolean;
     group: SiteGroup | null;
     groups: Array<SiteGroup>;
     sites: Array<Site>;
@@ -32,6 +32,7 @@
 
   const modalActive = ref(false);
   const columnHelper = createCraftColumnHelper<Site>();
+  const {readOnly} = useCraftData();
 
   const form = useForm({
     id: props.group?.id ?? null,
@@ -168,6 +169,13 @@
     get columns() {
       return columns.value;
     },
+    state: {
+      get columnVisibility() {
+        return {
+          actions: !readOnly,
+        };
+      },
+    },
     getCoreRowModel: getCoreRowModel<Site>(),
     getRowId: (row) => row.id.toString(),
     enableSorting: false,
@@ -206,7 +214,7 @@
           {{ pageTitle }}
         </h1>
 
-        <craft-action-menu v-if="group?.id">
+        <craft-action-menu v-if="group?.id && !readOnly">
           <craft-button type="button" icon size="small" slot="invoker">
             <craft-icon
               name="gear"
@@ -231,6 +239,7 @@
     </template>
     <template #actions>
       <CpLink
+        v-if="!readOnly"
         as="craft-button"
         :href="create({query: {groupId: group?.id}}).url"
         variant="primary"
@@ -258,7 +267,7 @@
         </CpLink>
       </craft-nav-list>
 
-      <div class="mt-4 flex gap-2">
+      <div class="mt-4 flex gap-2" v-if="!readOnly">
         <craft-button type="button" @click="openModal('create')" size="small">
           <craft-icon name="plus" slot="prefix"></craft-icon>
           {{ t('New Group') }}
@@ -281,6 +290,7 @@
         <template #empty-row>
           <Empty icon="light/earth-americas" :label="t('No sites exist yet.')">
             <CpLink
+              v-if="!readOnly"
               as="craft-button"
               :href="create({query: {groupId: group?.id}}).url"
               appearance="button"

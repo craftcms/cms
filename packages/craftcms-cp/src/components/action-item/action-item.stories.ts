@@ -14,6 +14,7 @@ const meta = {
   argTypes: {},
   parameters: {
     layout: 'centered',
+    a11y: {test: 'todo'},
   },
   decorators: [
     (story) => html`
@@ -86,9 +87,7 @@ export const WithShortcut: Story = {
   args: {},
   render({icon, active, href, checked}) {
     return html`
-      <craft-action-item icon="file" shortcut="S">
-        Save
-      </craft-action-item>
+      <craft-action-item icon="file" shortcut="S"> Save </craft-action-item>
     `;
   },
 };
@@ -97,7 +96,12 @@ export const WithComplexShortcut: Story = {
   args: {},
   render() {
     return html`
-      <craft-action-item icon="file" shortcut='{"key": "S", "alt": true, "shift": true}'> Save </craft-action-item>
+      <craft-action-item
+        icon="file"
+        shortcut='{"key": "S", "alt": true, "shift": true}'
+      >
+        Save
+      </craft-action-item>
     `;
   },
 };

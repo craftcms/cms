@@ -10,15 +10,15 @@
 {% set siteId = (translatable and (element.isLocalized() ?? true)) ? (siteId ?? element.siteId ?? Sites.currentSite.id) %}
 
 {% if not static %}
-    {% set isDeltaRegistrationActive = deltaRegistry.isActive() %}
+    {% set isDeltaRegistrationActive = DeltaRegistry.isActive() %}
     {% set registerDeltas = (element.id ?? false) and isDeltaRegistrationActive and (registerDeltas ?? false) %}
-    {% do deltaRegistry.setActive(registerDeltas) %}
-    {% do deltaRegistry.registerName(field.handle) %}
+    {% do DeltaRegistry.setActive(registerDeltas) %}
+    {% do DeltaRegistry.registerName(field.handle) %}
     {% if not element or not element.id or element.isFieldEmpty(field.handle) %}
-        {% do deltaRegistry.setInitialValue(field.handle, null) %}
+        {% do DeltaRegistry.setInitialValue(field.handle, null) %}
     {% endif %}
     {% set input = field.getInputHtml(value, element) %}
-    {% do deltaRegistry.setActive(isDeltaRegistrationActive) %}
+    {% do DeltaRegistry.setActive(isDeltaRegistrationActive) %}
 {% else %}
     {% set input = field.getStaticHtml(value, element) %}
 {% endif %}

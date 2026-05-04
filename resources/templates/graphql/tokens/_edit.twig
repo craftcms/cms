@@ -21,7 +21,7 @@
         instructions: "What this token will be called in the control panel."|t('app'),
         id: 'name',
         name: 'name',
-        value: token.name,
+        value: old('name', token.name),
         errors: token.errors.get('name'),
         autofocus: true,
         required: true,
@@ -32,7 +32,7 @@
             name: 'schema',
             id: 'schema',
             options: schemaOptions,
-            value: token.schemaId,
+            value: old('schema', token.schemaId),
         })
         : tag('p', {
             class: ['warning', 'with-icon'],
@@ -84,14 +84,14 @@
             label: 'Enabled'|t('app'),
             id: 'enabled',
             name: 'enabled',
-            on: token.enabled,
+            on: old('enabled', token.enabled),
         }) }}
 
         {{ forms.dateTimeField({
             label: "Expiry Date"|t('app'),
             id: 'expiryDate',
             name: 'expiryDate',
-            value: (token.expiryDate ? token.expiryDate : null),
+            value: old('expiryDate', token.expiryDate ? token.expiryDate : null),
             errors: token.errors.get('expiryDate')
         }) }}
     </div>

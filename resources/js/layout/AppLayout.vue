@@ -17,6 +17,7 @@
   import InlineFlash from '@/components/InlineFlash.vue';
   import ErrorSummary from '@/components/form/ErrorSummary.vue';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
+  import {useFlashMessages} from '@/composables/useFlashMessages';
 
   interface SaveOptions {
     redirect?: boolean;
@@ -41,6 +42,7 @@
   });
 
   const {system} = useCraftData();
+  const {messages} = useFlashMessages();
 
   const page = usePage<{
     title: string;

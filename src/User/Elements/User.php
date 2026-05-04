@@ -57,6 +57,7 @@ use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Events\DefineFriendlyName;
 use CraftCms\Cms\User\Events\DefineName;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Notifications\ActivationNotification;
 use CraftCms\Cms\User\Notifications\ResetPasswordNotification;
 use CraftCms\Cms\User\Notifications\VerifyEmailNotification;
 use CraftCms\Cms\User\Validation\UserRules;
@@ -67,7 +68,6 @@ use DateTimeZone;
 use Exception;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;
-use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
@@ -79,7 +79,6 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Traits\Macroable;
 use Override;
 use Stringable;
@@ -736,6 +735,11 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         $this->notify(new ResetPasswordNotification($token));
     }
 
+    public function sendActivationNotification(string $token): void
+    {
+        $this->notify(new ActivationNotification($token));
+    }
+
     public function hasVerifiedEmail(): bool
     {
         return is_null($this->unverifiedEmail);
@@ -765,10 +769,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
 
     public function sendEmailVerificationNotification(): void
     {
-        /** @var PasswordBroker $broker */
-        $broker = Password::broker('craft');
-
-        $this->notify(new VerifyEmailNotification($broker->createToken($this)));
+        $this->notify(new VerifyEmailNotification(Users::setVerificationCodeOnUser($this)));
     }
 
     public function getEmailForVerification(): string
@@ -981,7 +982,14 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         }
 
         if (! $this->id) {
-            return new ElementCollection;
+            /**
+             * @var ElementCollection<Address> $addresses
+             *
+             * @noRector
+             */
+            $addresses = new ElementCollection;
+
+            return $addresses;
         }
 
         return $this->_addresses = $this->createAddressQuery()
@@ -2036,7 +2044,9 @@ JS, [
             $originalEmail = $this->email;
             $this->email = $this->unverifiedEmail;
 
-            $this->sendEmailVerificationNotification();
+            $isNew
+                ? Users::sendActivationEmail($this)
+                : Users::sendNewEmailVerifyEmail($this);
 
             // Put the original email back into place
             $this->email = $originalEmail;

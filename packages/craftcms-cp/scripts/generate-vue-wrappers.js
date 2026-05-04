@@ -226,9 +226,8 @@ function generateValueWrapper(component) {
 
   defineOptions({
     name: '${component.className}',
-    inheritAttrs: false,
   });
-
+  
   const model = defineModel<${component.modelType}>();
   
   defineProps<{
@@ -266,8 +265,11 @@ function generateCheckedWrapper(component) {
 
   defineOptions({
     name: '${component.className}',
-    inheritAttrs: false,
   });
+  
+  defineProps<{
+    error?: null | string
+  }>()
 
   const model = defineModel<boolean>();
 </script>
@@ -277,8 +279,15 @@ function generateCheckedWrapper(component) {
     v-bind="$attrs"
     .checked="model"
     @model-value-changed="model = ($event.target as ${component.className})?.checked"
+    :has-feedbck-for="error ? 'error' : ''"
   >
     <slot></slot>
+    
+    <div slot="feedback">
+      <ul class="error-list" v-if="error">
+        <li>{{ error }}</li>
+      </ul>
+    </div>
   </${component.tagName}>
 </template>
 `;
@@ -295,8 +304,11 @@ function generateGroupWrapper(component) {
 
   defineOptions({
     name: '${component.className}',
-    inheritAttrs: false,
   });
+  
+  defineProps<{
+    error?: null | string
+  }>()
 
   const model = defineModel<${component.modelType}>();
 </script>
@@ -306,8 +318,15 @@ function generateGroupWrapper(component) {
     v-bind="$attrs"
     .modelValue="model"
     @model-value-changed="model = ($event.target as ${component.className})?.modelValue"
+    :has-feedbck-for="error ? 'error' : ''"
   >
     <slot></slot>
+    
+    <div slot="feedback">
+      <ul class="error-list" v-if="error">
+        <li>{{ error }}</li>
+      </ul>
+    </div>
   </${component.tagName}>
 </template>
 `;

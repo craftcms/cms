@@ -13,7 +13,7 @@
     label: "Name"|t('app'),
     id: 'name',
     name: 'name',
-    value: group.name,
+    value: old('name', group.name),
     errors: errors.get('name'),
     data: {'error-key': 'name'},
     autofocus: true,
@@ -28,7 +28,7 @@
     class: 'code',
     autocorrect: false,
     autocapitalize: false,
-    value: group.handle,
+    value: old('handle', group.handle),
     errors: errors.get('handle'),
     data: {'error-key': 'handle'},
     required: true,
@@ -40,7 +40,7 @@
     id: 'description',
     class: 'nicetext',
     name: 'description',
-    value: group.description ?? null,
+    value: old('description', group.description ?? null),
     errors: errors.get('description'),
     data: {'error-key': 'description'},
     disabled: readOnly,
@@ -59,7 +59,7 @@
     } only %}
 </div>
 
-{% if not group.handle %}
+{% if not old('handle', group.handle) %}
     {% js %}
         new Craft.HandleGenerator("#{{ 'name'|namespaceInputId }}", "#{{ 'handle'|namespaceInputId }}");
     {% endjs %}

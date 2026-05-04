@@ -10,11 +10,12 @@
   import Badge from '@/components/Badge.vue';
   import {useSettingsSave} from '@/composables/useSettingsSave';
   import Pane from '@/components/Pane.vue';
+  import useCraftData from '@/composables/useCraftData';
+  import {useEventListener} from '@vueuse/core';
 
   const props = defineProps<{
     title: string;
     crumbs: Array<any>; // @TODO
-    readOnly?: boolean;
     site: Site;
     groupId?: number | string;
     flash?: Record<any, any>;
@@ -32,6 +33,16 @@
     hasUrls: props.site.hasUrls,
     primary: props.site.primary,
     baseUrl: props.site.baseUrlRaw ?? '',
+  });
+
+  const {readOnly} = useCraftData();
+
+  // Handle cmd + s events
+  useEventListener('keydown', (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key === 's') {
+      event.preventDefault();
+      save();
+    }
   });
 
   const {save} = useSettingsSave(form, store);
@@ -52,7 +63,7 @@
 
     <Pane appearance="raised">
       <div class="grid gap-3">
-        <SiteFields :inertia-form="form" :read-only="readOnly" />
+        <SiteFields :inertia-form="form" />
       </div>
     </Pane>
   </AppLayout>

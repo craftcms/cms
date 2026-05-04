@@ -19,6 +19,7 @@
   import {useSettingsSave} from '@/composables/useSettingsSave';
   import Pane from '@/components/Pane.vue';
   import {store} from '@actions/Settings/SectionsController';
+  import useCraftData from '@/composables/useCraftData';
 
   const props = defineProps<{
     title: string;
@@ -32,10 +33,11 @@
     siteSettings: Array<SectionSiteSettingsData>;
     isMultiSite: boolean;
     headlessMode: boolean;
-    readOnly?: boolean;
     flash?: Record<any, any>;
     errors: Record<any, any> | null;
   }>();
+
+  const {readOnly} = useCraftData();
 
   const form = useForm({
     sectionId: props.section.id,

@@ -134,7 +134,7 @@ it('can update the colspan of a widget', function () {
     expect(WidgetModel::first()->colspan)->toBe(2);
 });
 
-it('colspan must be between 1 and 3', function () {
+it('colspan must be between 1 and 4', function () {
     $dashboard = app(Dashboard::class);
     $dashboard->saveWidget($widget = $dashboard->createWidget(Updates::class));
 
@@ -145,7 +145,7 @@ it('colspan must be between 1 and 3', function () {
 
     postJson(action([WidgetsController::class, 'updateColspan']), [
         'id' => $widget->id,
-        'colspan' => 4,
+        'colspan' => 5,
     ])->assertJsonValidationErrorFor('colspan');
 });
 

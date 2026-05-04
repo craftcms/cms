@@ -15,14 +15,18 @@
     }
   );
 
+  const validActions = computed(() =>
+    props.actions.filter((action) => action && Boolean(action.label))
+  );
+
   const dangerousActions = computed(() =>
-    props.actions.filter(
+    validActions.value.filter(
       (action) => action.variant && action.variant === 'danger'
     )
   );
 
   const safeActions = computed(() =>
-    props.actions.filter(
+    validActions.value.filter(
       (action) => !action.variant || action.variant !== 'danger'
     )
   );

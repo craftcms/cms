@@ -17,6 +17,8 @@
 
   async function deleteLog() {
     form.submit(deleteDeprecationError(), {
+      preserveScroll: true,
+      preserveState: true,
       onSuccess: () => {
         flash('success', t('Log deleted.'));
       },

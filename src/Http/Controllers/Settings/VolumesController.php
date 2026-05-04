@@ -68,13 +68,11 @@ class VolumesController
         return $this->edit($volumes);
     }
 
-    public function edit(Volumes $volumes, ?int $volumeId = null): CpScreenResponse
+    public function edit(Volumes $volumes, ?Volume $volume = null, ?int $volumeId = null): CpScreenResponse
     {
         if ($volumeId === null && $this->readOnly) {
             abort(403, 'Administrative changes are disallowed in this environment.');
         }
-
-        $volume = null;
 
         if ($volumeId !== null) {
             $volume = $volumes->getVolumeById($volumeId);
@@ -107,11 +105,13 @@ class VolumesController
 
                 return $option;
             })
-            ->sortBy(fn (array $option) => $option['label'])
-            ->values()
-            ->all();
+            ->partition(fn (array $option): bool => str_starts_with((string) $option['value'], Volume::STORAGE_DISK_PREFIX));
 
-        array_unshift($fsOptions, ['label' => t('Select a filesystem'), 'value' => '']);
+        [$diskOptions, $craftFilesystemOptions] = $fsOptions;
+
+        $groupedFsOptions = $this->groupFsOptions($craftFilesystemOptions, $diskOptions);
+        $fsOptions = $groupedFsOptions;
+        array_unshift($fsOptions, ['label' => t('Select a filesystem'), 'value' => '', 'data' => ['hint' => '']]);
 
         return new CpScreenResponse()
             ->title($title)
@@ -125,6 +125,7 @@ class VolumesController
                 'typeName' => Asset::displayName(),
                 'lowerTypeName' => Asset::lowerDisplayName(),
                 'fsOptions' => $fsOptions,
+                'groupedFsOptions' => $groupedFsOptions,
                 'readOnly' => $this->readOnly,
             ])
             ->unless(
@@ -205,6 +206,29 @@ class VolumesController
         $volumes->deleteVolumeById($volumeId);
 
         return $this->asSuccess();
+    }
+
+    private function groupFsOptions(Collection $craftFilesystemOptions, Collection $diskOptions): array
+    {
+        $options = [];
+
+        $options[] = ['optgroup' => t('Craft Filesystems')];
+        array_push($options, ...$this->sortFsOptions($craftFilesystemOptions));
+
+        if ($diskOptions->isNotEmpty()) {
+            $options[] = ['optgroup' => t('Laravel Disks')];
+            array_push($options, ...$this->sortFsOptions($diskOptions));
+        }
+
+        return $options;
+    }
+
+    private function sortFsOptions(Collection $options): array
+    {
+        return $options
+            ->sortBy(fn (array $option) => $option['label'])
+            ->values()
+            ->all();
     }
 
     private function fsOptionTargetKey(mixed $value): ?string

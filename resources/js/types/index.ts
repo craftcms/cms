@@ -1,14 +1,16 @@
 import type {VariantKey} from '@craftcms/cp';
 import type {Component} from 'vue';
 
-export interface CheckboxOption {
+export interface BaseOption {
   label: string;
   value: string;
+}
+export interface CheckboxOption extends BaseOption {
   info?: string;
 }
 export interface SelectOption<
   T = Record<string, any> | null | undefined,
-> extends CheckboxOption {
+> extends BaseOption {
   type?: 'option';
   data?: T;
 }
@@ -175,6 +177,23 @@ export interface Site {
   dateCreated: string;
   dateUpdated: string;
 }
+
+/**
+ * These are mostly here so tailwind sees them and makes sure the classes
+ * are around, but you can use it if you want.
+ */
+export const Width = {
+  sm: 'w-sm',
+  md: 'w-md',
+  lg: 'w-lg',
+  xl: 'w-xl',
+  '2xl': 'w-2xl',
+  '3xl': 'w-3xl',
+  '4xl': 'w-4xl',
+  '5xl': 'w-5xl',
+  '6xl': 'w-6xl',
+  '7xl': 'w-7xl',
+} as const;
 
 export interface SortItem {
   field: string;

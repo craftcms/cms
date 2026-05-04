@@ -15,7 +15,7 @@ class Utils
     public static function getPublicReflectionProperties(object|string $target, ?Closure $filter = null): Collection
     {
         return collect(new ReflectionClass($target)->getProperties())
-            ->filter(fn (ReflectionProperty $property) => $property->isPublic() && ! $property->isStatic() && $property->isDefault())
+            ->filter(fn (ReflectionProperty $property) => $property->isPublic() && ! $property->isPrivateSet() && ! $property->isStatic() && $property->isDefault())
             ->filter($filter ?? fn () => true);
     }
 

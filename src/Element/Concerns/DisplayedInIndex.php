@@ -165,20 +165,12 @@ trait DisplayedInIndex
                     unset($viewState['order']);
                 }
             } elseif ($orderBy = self::_indexOrderBy($sourceKey, $viewState['order'], $viewState['sort'] ?? 'asc')) {
-                if ($orderBy instanceof ExpressionInterface) {
-                    $elementQuery->orderByRaw($orderBy->getValue(DB::getQueryGrammar()));
-                } else {
-                    $elementQuery->orderBy($orderBy);
-                }
+                self::applyIndexOrderBy($elementQuery, $orderBy);
 
                 if ((! is_array($orderBy) || ! isset($orderBy['score'])) && ! empty($viewState['orderHistory'])) {
                     foreach ($viewState['orderHistory'] as $order) {
                         if ($order[0] && $orderBy = self::_indexOrderBy($sourceKey, $order[0], $order[1])) {
-                            if ($orderBy[0] instanceof ExpressionInterface) {
-                                $elementQuery->orderByRaw($orderBy[0]->getValue(DB::getQueryGrammar()));
-                            } else {
-                                $elementQuery->orderBy($orderBy[0]);
-                            }
+                            self::applyIndexOrderBy($elementQuery, $orderBy);
                         } else {
                             break;
                         }
@@ -248,6 +240,27 @@ trait DisplayedInIndex
         $template = '_elements/'.$viewState['mode'].'view/'.($includeContainer ? 'container' : 'elements');
 
         return template($template, $variables);
+    }
+
+    /**
+     * Applies a normalized element index ordering to the element query.
+     */
+    private static function applyIndexOrderBy(ElementQueryInterface $elementQuery, ExpressionInterface|array $orderBy): void
+    {
+        foreach (Arr::wrap($orderBy) as $column => $direction) {
+            if ($direction instanceof ExpressionInterface) {
+                $elementQuery->getQuery()->orderByRaw(
+                    $direction->getValue(DB::getQueryGrammar()),
+                );
+
+                continue;
+            }
+
+            $elementQuery->getQuery()->orderBy($column, match ($direction) {
+                'desc', SORT_DESC => 'desc',
+                default => 'asc',
+            });
+        }
     }
 
     /**

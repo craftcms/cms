@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
-use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\DeprecationErrors;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -30,14 +28,15 @@ readonly class DeprecationErrorsController
         }
     }
 
-    public function getDeprecationErrorTracesModal(Request $request): JsonResponse
+    public function show(Request $request, int $logId): JsonResponse
     {
-        $request->validate([
-            'logId' => ['required', 'integer', Rule::exists(Table::DEPRECATIONERRORS, 'id')],
-        ]);
+        $log = $this->deprecator->getLogById($logId);
+        if (! $log) {
+            abort(404);
+        }
 
         $html = template('_components/utilities/DeprecationErrors/traces_modal', [
-            'log' => $this->deprecator->getLogById($request->integer('logId')),
+            'log' => $log,
         ]);
 
         return new JsonResponse([
@@ -45,28 +44,23 @@ readonly class DeprecationErrorsController
         ]);
     }
 
-    public function deleteDeprecationError(Request $request): Response
+    public function destroy(int $logId): Response
     {
-        $request->validate([
-            'logId' => ['required', 'integer', Rule::exists(Table::DEPRECATIONERRORS, 'id')],
-        ]);
-
-        $success = $this->deprecator->deleteLogById($request->integer('logId'));
+        $success = $this->deprecator->deleteLogById($logId);
         if (! $success) {
-            return $this->asFailure(t('Failed to delete log.'));
+            return $this->asFailure(t('Could not remove deprecation error.'));
         }
 
-        return $this->asSuccess(t('Log deleted.'));
+        return $this->asSuccess(t('Deprecation error removed.'));
     }
 
-    public function deleteAllDeprecationErrors(Request $request): Response
+    public function destroyAll(): Response
     {
-        $this->deprecator->deleteAllLogs();
-
-        if ($request->wantsJson()) {
-            return new JsonResponse;
+        $success = $this->deprecator->deleteAllLogs();
+        if (! $success) {
+            return $this->asFailure(t('Could not remove deprecation errors.'));
         }
 
-        return back()->with('success', t('Deprecation errors removed.'));
+        return $this->asSuccess(t('Deprecation errors removed.'));
     }
 }

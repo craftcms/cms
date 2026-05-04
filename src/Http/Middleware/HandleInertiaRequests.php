@@ -10,6 +10,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\Navigation;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
@@ -20,6 +21,7 @@ use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Inertia\Middleware;
 use Override;
@@ -103,10 +105,14 @@ class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
             ],
-            'queue' => fn () => [
+            'queue' => fn () => Schema::hasTable(Table::JOBPROGRESS) ? [
                 'displayedJob' => $progressService->getDisplayedJob(),
                 'hasReservedJobs' => $progressService->getByStatus(JobStatus::Reserved)->count() > 0,
                 'hasWaitingJobs' => $progressService->getByStatus(JobStatus::Pending)->count() > 0,
+            ] : [
+                'displayedJob' => null,
+                'hasReservedJobs' => false,
+                'hasWaitingJobs' => false,
             ],
             'isMultiSite' => fn () => Sites::isMultiSite(),
             'readOnly' => fn () => ! $generalConfig->allowAdminChanges,
@@ -126,6 +132,8 @@ class HandleInertiaRequests extends Middleware
                 'currentUser' => [
                     'email' => $currentUser->email ?? null,
                 ],
+                'readOnly' => ! $generalConfig->allowAdminChanges,
+                'allowAdminChanges' => $generalConfig->allowAdminChanges,
                 'cpUrl' => cp_url(),
                 'actionUrl' => action_url(),
                 'baseApiUrl' => Api::craftApiEndpoint(),

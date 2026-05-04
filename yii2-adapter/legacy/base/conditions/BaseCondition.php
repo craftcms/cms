@@ -2,9 +2,19 @@
 
 namespace craft\base\conditions;
 
+use craft\base\LegacyConditionEvents;
+use craft\base\LegacyEventConstants;
+use craft\elements\conditions\users\AffiliatedSiteConditionRule;
+use craft\elements\conditions\users\CredentialedConditionRule;
+use craft\elements\conditions\users\EmailConditionRule;
+use craft\elements\conditions\users\FirstNameConditionRule;
+use craft\elements\conditions\users\LastNameConditionRule;
 use craft\events\RegisterConditionRulesEvent;
 use craft\helpers\Html;
 use CraftCms\Cms\Condition\Events\RegisterConditionRules;
+use CraftCms\Cms\User\Conditions\AdminConditionRule;
+use CraftCms\Cms\User\Conditions\UserCondition;
+use CraftCms\Cms\User\Conditions\UsernameConditionRule;
 use CraftCms\Yii2Adapter\ModelWrapper;
 use CraftCms\Yii2Adapter\Validation\LegacyYiiRules;
 use Illuminate\Support\Facades\Event;
@@ -23,13 +33,8 @@ use Illuminate\Support\Facades\Event;
  */
 abstract class BaseCondition extends \CraftCms\Cms\Condition\BaseCondition
 {
-    use \craft\base\LegacyEventConstants;
-
-    /**
-     * @event RegisterConditionRulesEvent The event that is triggered when defining the selectable condition rules.
-     * @see getSelectableConditionRules()
-     */
-    public const EVENT_REGISTER_CONDITION_RULES = 'registerConditionRules';
+    use LegacyEventConstants;
+    use LegacyConditionEvents;
 
     public function getRules(): array
     {
@@ -49,12 +54,29 @@ abstract class BaseCondition extends \CraftCms\Cms\Condition\BaseCondition
     public static function registerEvents(): void
     {
         Event::listen(function(RegisterConditionRules $event) {
+            $map = [
+                AdminConditionRule::class => \craft\elements\conditions\users\AdminConditionRule::class,
+                \CraftCms\Cms\User\Conditions\AffiliatedSiteConditionRule::class => AffiliatedSiteConditionRule::class,
+                \CraftCms\Cms\User\Conditions\CredentialedConditionRule::class => CredentialedConditionRule::class,
+                \CraftCms\Cms\User\Conditions\EmailConditionRule::class => EmailConditionRule::class,
+                \CraftCms\Cms\User\Conditions\FirstNameConditionRule::class => FirstNameConditionRule::class,
+                \CraftCms\Cms\User\Conditions\LastNameConditionRule::class => LastNameConditionRule::class,
+                UserCondition::class => \craft\elements\conditions\users\UserCondition::class,
+                UsernameConditionRule::class => \craft\elements\conditions\users\UsernameConditionRule::class,
+            ];
+
+            $oldClass = $map[$event->condition::class] ?? null;
+
+            if (!$oldClass) {
+                return;
+            }
+
             // Fire a 'registerConditionRules' event
-            if (\craft\base\Event::hasHandlers(static::class, self::EVENT_REGISTER_CONDITION_RULES)) {
+            if (\craft\base\Event::hasHandlers($oldClass, self::EVENT_REGISTER_CONDITION_RULES)) {
                 $yiiEvent = new RegisterConditionRulesEvent([
                     'conditionRules' => $event->conditionRules,
                 ]);
-                \craft\base\Event::trigger(static::class, self::EVENT_REGISTER_CONDITION_RULES, $yiiEvent);
+                \craft\base\Event::trigger($oldClass, self::EVENT_REGISTER_CONDITION_RULES, $yiiEvent);
                 $event->conditionRules = $yiiEvent->conditionRules;
             }
         });

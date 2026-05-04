@@ -11,6 +11,7 @@ import {
 import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
 import InputCombobox from '@/components/form/InputCombobox.vue';
 import type {SelectItem, SelectOption} from '@/types';
+import useCraftData from '@/composables/useCraftData';
 
 type MaybeGetter<T> = T | (() => T);
 
@@ -115,6 +116,7 @@ export function useEditableTable<T extends Record<string, any>>(
   options: UseEditableTableOptions<T>
 ) {
   const key = options.key ?? 'id';
+  const {readOnly} = useCraftData();
 
   function isRecord(data: T[] | Record<string, T>): data is Record<string, T> {
     return !Array.isArray(data);
@@ -160,13 +162,17 @@ export function useEditableTable<T extends Record<string, any>>(
     disabled: BaseColumnOptions<T>['disabled'],
     row: Row<T>
   ): boolean | undefined {
-    if (disabled === undefined) return undefined;
-    if (typeof disabled === 'boolean') return disabled;
+    let value = disabled;
+    if (typeof disabled === 'boolean') {
+      value = disabled;
+    }
+
     if (typeof disabled === 'function') {
       // Check if it's a row-aware function (has parameters) or a simple getter
-      return (disabled as (row: Row<T>) => boolean)(row);
+      value = (disabled as (row: Row<T>) => boolean)(row);
     }
-    return undefined;
+
+    return readOnly ? true : Boolean(value);
   }
 
   function textInputCell(
@@ -272,6 +278,9 @@ export function useEditableTable<T extends Record<string, any>>(
         ...(cellOptions?.transformModelValue !== undefined && {
           transformModelValue: cellOptions.transformModelValue,
         }),
+        requireOptionMatch: cellOptions?.requireOptionMatch,
+        transformModelValue: cellOptions?.transformModelValue,
+        disabled: resolveDisabled(cellOptions?.disabled, row),
         'onUpdate:modelValue': (value: string) => {
           if (typeof cellOptions?.onChange === 'function') {
             cellOptions.onChange(value, {row, column});

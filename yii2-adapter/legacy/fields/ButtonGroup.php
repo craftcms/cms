@@ -14,5 +14,6 @@ namespace craft\fields;
  */
 class ButtonGroup extends \CraftCms\Cms\Field\ButtonGroup
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 }

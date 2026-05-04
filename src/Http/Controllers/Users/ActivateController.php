@@ -112,7 +112,7 @@ readonly class ActivateController
         $userVariable = $request->getSigned('userVariable') ?? 'user';
 
         try {
-            $user->sendEmailVerificationNotification();
+            $this->users->sendActivationEmail($user);
         } catch (Throwable $e) {
             return $this->asModelFailure(
                 $user,

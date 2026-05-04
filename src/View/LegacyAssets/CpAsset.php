@@ -104,7 +104,7 @@ class CpAsset implements LegacyAssetInterface
         // Define the Craft object
         $craftJson = Json::encode($this->_craftData());
         $js = <<<JS
-        window.Craft = $craftJson;
+        window.Craft = Object.assign(window.Craft || {}, $craftJson);
         JS;
         $htmlStack->js($js, Position::Head);
     }
@@ -188,6 +188,7 @@ class CpAsset implements LegacyAssetInterface
             'allowAdminChanges' => $generalConfig->allowAdminChanges,
             'allowUpdates' => $generalConfig->allowUpdates,
             'allowUppercaseInSlug' => $generalConfig->allowUppercaseInSlug,
+            'autosaveDrafts' => true, // @TODO: This should always be true in the frontend
             'apiParams' => app(Api::class)->apiParams,
             'appId' => config('app.name'),
             'autofocusPreferred' => $currentUser->getAutofocusPreferred(),

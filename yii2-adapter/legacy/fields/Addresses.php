@@ -14,5 +14,6 @@ namespace craft\fields;
  */
 class Addresses extends \CraftCms\Cms\Field\Addresses
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 }

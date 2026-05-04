@@ -16,6 +16,8 @@ export interface CraftData {
   site: {
     url: string;
   };
+  readOnly: boolean;
+  allowAdminChanges: boolean;
   currentUser: any;
   nav: any[];
   [key: string]: any;
@@ -37,8 +39,8 @@ export function useHelpers() {
   return {
     // @TODO move to NPM package
     getActionUrl(action: string) {
-      return `${craftData.actionUrl}${action}`;
-      // return getUrl(craftData.actionUrl, action);
+      //return `${craftData.actionUrl}${action}`;
+      return getUrl(craftData.actionUrl, action);
     },
     // @TODO move to NPM package
     getCpUrl(action: string) {

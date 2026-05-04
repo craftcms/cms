@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Twig\Events\BeginPage;
 use CraftCms\Cms\Twig\Events\EndPage;
 use CraftCms\Cms\Twig\Events\PageTemplateRendered;
@@ -385,45 +384,23 @@ describe('normalizeObjectTemplate', function () {
 });
 
 describe('sandboxed rendering', function () {
-    it('renders sandboxed strings', function (bool $sandboxEnabled) {
-        Cms::config()->enableTwigSandbox = $sandboxEnabled;
-
+    it('renders sandboxed strings', function () {
         $result = $this->renderer->renderSandboxedString('{{ 1 + 1 }}');
 
         expect($result)->toBe('2');
-    })->with([
-        'sandbox disabled' => [false],
-        'sandbox enabled' => [true],
-    ]);
+    });
 
     it('does not allow Facade calls in sandbox', function () {
-        Cms::config()->enableTwigSandbox = true;
-
         $this->renderer->renderSandboxedString('{{ Config.get("app.name") }}');
     })->throws(SecurityNotAllowedMethodError::class);
 
-    it('renders sandboxed templates', function (bool $sandboxEnabled) {
-        Cms::config()->enableTwigSandbox = $sandboxEnabled;
-
+    it('renders sandboxed templates', function () {
         $result = $this->renderer->renderSandboxedTemplate('test-template.twig');
 
         expect($result)->toBe('Hello from test template');
-    })->with([
-        'sandbox disabled' => [false],
-        'sandbox enabled' => [true],
-    ]);
-
-    it('renders sandboxed object templates when sandbox is disabled', function () {
-        Cms::config()->enableTwigSandbox = false;
-
-        $result = $this->renderer->renderSandboxedObjectTemplate('hello {name}', (object) ['name' => 'Craft']);
-
-        expect($result)->toBe('hello Craft');
     });
 
     it('returns the template as-is when sandbox is enabled and there are no dynamic tags', function () {
-        Cms::config()->enableTwigSandbox = true;
-
         $result = $this->renderer->renderSandboxedObjectTemplate('hello world', new stdClass);
 
         expect($result)->toBe('hello world');
