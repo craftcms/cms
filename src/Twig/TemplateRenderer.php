@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig;
 
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Events\PageTemplateRendered;
 use CraftCms\Cms\Twig\Events\RenderingPageTemplate;
@@ -38,7 +37,6 @@ class TemplateRenderer
 
     public function __construct(
         private readonly Twig $twig,
-        private readonly GeneralConfig $generalConfig,
         private readonly PageLifecycle $pageLifecycle,
     ) {}
 
