@@ -74,6 +74,11 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
     {
         $fields = Arr::except($this->traitFields(), ['ruleset']);
 
+        return $this->formatDateFields($fields);
+    }
+
+    protected function formatDateFields(array $fields): array
+    {
         foreach ($fields as $field => $definition) {
             if (! is_string($definition)) {
                 continue;
