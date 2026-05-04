@@ -10,11 +10,8 @@
   import Breadcrumbs from '@/components/Breadcrumbs.vue';
   import {useAnnouncer} from '@/composables/useAnnouncer';
   import LiveRegion from '@/components/LiveRegion.vue';
-  import UsersController from '@actions/Users/UsersController';
-  import LoginController from '@actions/Auth/LoginController';
-  import PermissionsController from '@actions/Users/PermissionsController';
-  import PreferencesController from '@actions/Users/PreferencesController';
   import {useFlashMessages} from '@/composables/useFlashMessages';
+  import UserMenu from '@/components/UserMenu.vue';
 
   const props = withDefaults(
     defineProps<{
@@ -148,54 +145,7 @@
         <craft-button icon appearance="plain" type="button">
           <craft-icon name="search" :label="t('Search')"></craft-icon>
         </craft-button>
-        <craft-action-menu>
-          <craft-button
-            slot="invoker"
-            type="button"
-            aria-label="User menu"
-            appearance="none"
-          >
-            <craft-avatar :label="currentUser.username"></craft-avatar>
-          </craft-button>
-
-          <div slot="content">
-            <div class="flex gap-2 items-center">
-              <div class="avatar">
-                <craft-avatar :label="currentUser.username"></craft-avatar>
-              </div>
-              <div class="grid col-span-2">
-                <span :class="{'font-bold': !general.useEmailAsUsername}"
-                  >{{currentUser.username}}</span
-                >
-                <div v-if="!general.useEmailAsUsername" class="text-xs">
-                  {{ currentUser.email }}
-                </div>
-              </div>
-            </div>
-            <craft-action-item
-              :href="UsersController.edit['/admin/myaccount']().url"
-            >
-              {{ t('Profile') }}
-            </craft-action-item>
-            <craft-action-item
-              :href="
-                PermissionsController.index['/admin/myaccount/permissions']()
-                  .url
-              "
-              >{{ t('Permissions') }}</craft-action-item
-            >
-            <craft-action-item :href="PreferencesController.index().url">{{
-              t('Preferences')
-            }}</craft-action-item>
-            <hr class="m-0" />
-            <craft-action-item
-              variant="danger"
-              :href="LoginController.logout().url"
-            >
-              {{ t('Sign out') }}
-            </craft-action-item>
-          </div>
-        </craft-action-menu>
+        <UserMenu />
       </div>
       <!-- TODO: this is just temporary placement -->
       <template v-if="errorFlash">

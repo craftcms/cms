@@ -111,7 +111,9 @@ class HandleInertiaRequests extends Middleware
                 'currentUser' => [
                     'id' => $currentUser->id ?? null,
                     'username' => $currentUser->username ?? null,
-                    'email' => $currentUser->email ?? null,
+                    'email' => $currentUser->email ?? \NUNLL,
+                    'name' => $currentUser->name ?? null,
+                    'thumbHtml' => $currentUser->getThumbHtml(30),
                 ],
                 'readOnly' => ! $generalConfig->allowAdminChanges,
                 'allowAdminChanges' => $generalConfig->allowAdminChanges,
