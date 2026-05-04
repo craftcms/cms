@@ -5,6 +5,7 @@
 
   interface SettingItem {
     icon?: string;
+    iconName?: string;
     label: string;
     url?: string;
     handle: string;
@@ -42,9 +43,15 @@
                     <div class="settings-content">
                       <div class="settings-icon">
                         <craft-icon
-                          :name="item.icon"
+                          v-if="item.iconName"
+                          :name="item.iconName"
                           style="font-size: calc(40rem / 16)"
                         ></craft-icon>
+                        <div
+                          v-else-if="item.icon"
+                          v-html="item.icon"
+                          class="w-[40px] h-[40px] inline-block align-self-center"
+                        ></div>
                       </div>
                       {{ item.label
                       }}<span class="sr-only"> - {{ t('Settings') }}</span>
@@ -65,6 +72,11 @@
     display: grid;
     justify-content: center;
     align-items: center;
+  }
+
+  .settings-icon :deep(svg) {
+    width: 100%;
+    height: 100%;
   }
 
   .settings-grid {
