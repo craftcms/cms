@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\RouteToken\RouteTokens;
-use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 
@@ -39,14 +38,6 @@ readonly class HandleTokenRequest
         if ($tokenRoute === false) {
             return $next($request);
         }
-
-        /**
-         * If we POST to a route with a valid token, we don't
-         * need to verify the CSRF token as well.
-         */
-        PreventRequestForgery::except([
-            $request->path(),
-        ]);
 
         Context::addHidden(self::TOKEN_KEY, $token);
 
