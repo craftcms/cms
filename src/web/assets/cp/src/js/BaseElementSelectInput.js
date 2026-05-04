@@ -851,7 +851,20 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       const ids = [];
 
       for (let i = 0; i < this.$elements.length; i++) {
-        ids.push(this.$elements.eq(i).data('id'));
+        // if modal is set to
+        if (
+          this.settings.modalSettings.matchSiteBeforeDisablingElement &&
+          this.settings.modalSettings.siteId
+        ) {
+          if (
+            this.$elements.eq(i).data('siteId') ==
+            this.settings.modalSettings.siteId
+          ) {
+            ids.push(this.$elements.eq(i).data('id'));
+          }
+        } else {
+          ids.push(this.$elements.eq(i).data('id'));
+        }
       }
 
       return ids;
