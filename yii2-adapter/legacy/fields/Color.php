@@ -14,5 +14,6 @@ namespace craft\fields;
  */
 class Color extends \CraftCms\Cms\Field\Color
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 }

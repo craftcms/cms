@@ -83,7 +83,7 @@
 {% set siteErrors = errors.get('sites') %}
 
 {% for site in Sites.getAllSites() %}
-    {% set siteSettings = old('sites.' ~ site.id, section.siteSettings[site.id] ?? null) %}
+    {% set siteSettings = old('sites.' ~ site.handle, section.siteSettings[site.id] ?? null) %}
     {% if siteSettings %}
         {% for attribute, errors in errors.get('sites.' ~ site.id) %}
             {% set siteErrors = siteErrors|merge(errors) %}

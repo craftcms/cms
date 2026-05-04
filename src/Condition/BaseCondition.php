@@ -138,6 +138,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
             $rules = $this->selectableConditionRules();
 
             event($event = new RegisterConditionRules(
+                condition: $this,
                 conditionRules: $rules,
             ));
 

@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Event;
  */
 class Assets extends \CraftCms\Cms\Field\Assets
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 
     /**
@@ -32,7 +33,11 @@ class Assets extends \CraftCms\Cms\Field\Assets
 
     public static function registerEvents(): void
     {
-        Event::listen(\CraftCms\Cms\Field\Assets::componentEventName(\CraftCms\Cms\Field\Assets::EVENT_LOCATE_UPLOADED_FILES), function(LocateUploadedFiles $event) {
+        Event::listen(function(LocateUploadedFiles $event) {
+            if (!$event->field instanceof \CraftCms\Cms\Field\Assets) {
+                return;
+            }
+
             if (!YiiEvent::hasHandlers(self::class, self::EVENT_LOCATE_UPLOADED_FILES)) {
                 return;
             }

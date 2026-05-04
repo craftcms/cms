@@ -6,16 +6,26 @@ namespace CraftCms\Yii2Adapter\Event;
 
 use craft\base\Event as YiiEvent;
 use craft\events\ElementCriteriaEvent;
+use craft\fields\BaseRelationField as LegacyBaseRelationField;
 use CraftCms\Cms\Element\Events\DefineElementCriteria;
 use CraftCms\Cms\Field\BaseRelationField;
+use Illuminate\Support\Facades\Event;
 
 readonly class FieldEvents
 {
     public static function registerEvents(): void
     {
-        BaseRelationField::listen(BaseRelationField::EVENT_DEFINE_SELECTION_CRITERIA, function(DefineElementCriteria $event) {
+        Event::listen(function(DefineElementCriteria $event) {
+            if (!$event->field instanceof BaseRelationField) {
+                return;
+            }
+
+            if (!YiiEvent::hasHandlers(LegacyBaseRelationField::class, LegacyBaseRelationField::EVENT_DEFINE_SELECTION_CRITERIA)) {
+                return;
+            }
+
             $yiiEvent = new ElementCriteriaEvent();
-            YiiEvent::trigger(\craft\fields\BaseRelationField::class, BaseRelationField::EVENT_DEFINE_SELECTION_CRITERIA, $yiiEvent);
+            YiiEvent::trigger(LegacyBaseRelationField::class, LegacyBaseRelationField::EVENT_DEFINE_SELECTION_CRITERIA, $yiiEvent);
             $event->criteria = $yiiEvent->criteria;
         });
     }

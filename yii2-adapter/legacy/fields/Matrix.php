@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Event;
  */
 class Matrix extends \CraftCms\Cms\Field\Matrix
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 
     /**
@@ -31,7 +32,11 @@ class Matrix extends \CraftCms\Cms\Field\Matrix
 
     public static function registerEvents(): void
     {
-        Event::listen(\CraftCms\Cms\Field\Matrix::componentEventName(\CraftCms\Cms\Field\Matrix::EVENT_DEFINE_ENTRY_TYPES), function(DefineEntryTypesForField $event) {
+        Event::listen(function(DefineEntryTypesForField $event) {
+            if (!$event->field instanceof \CraftCms\Cms\Field\Matrix) {
+                return;
+            }
+
             if (!YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_ENTRY_TYPES)) {
                 return;
             }

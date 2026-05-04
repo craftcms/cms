@@ -82,11 +82,6 @@ use function CraftCms\Cms\template;
  */
 class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, MergeableFieldInterface
 {
-    /**
-     * @event DefineEntryTypesForFieldEvent The event that is triggered when defining the available entry types.
-     */
-    public const string EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
-
     public const string VIEW_MODE_CARDS = 'cards';
 
     public const string VIEW_MODE_CARDS_GRID = 'cards-grid';
@@ -396,7 +391,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         $entryTypes = $this->_entryTypes;
 
-        $this->dispatchComponentEvent(self::EVENT_DEFINE_ENTRY_TYPES, $event = new DefineEntryTypesForField(
+        event($event = new DefineEntryTypesForField(
             field: $this,
             entryTypes: $entryTypes,
             element: $element,

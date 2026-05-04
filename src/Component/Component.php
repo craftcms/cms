@@ -74,6 +74,11 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
     {
         $fields = Arr::except($this->traitFields(), ['ruleset']);
 
+        return $this->formatDateFields($fields);
+    }
+
+    protected function formatDateFields(array $fields): array
+    {
         foreach ($fields as $field => $definition) {
             if (! is_string($definition)) {
                 continue;
@@ -208,15 +213,5 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
     public function offsetUnset(mixed $offset): void
     {
         $this->$offset = null;
-    }
-
-    public function __serialize(): array
-    {
-        return $this->toArray();
-    }
-
-    public function __unserialize(array $data): void
-    {
-        self::configure($this, Arr::except($data, ['ruleset', 'errors']));
     }
 }

@@ -10,6 +10,7 @@
 namespace CraftCms\Yii2Adapter\Web;
 
 use Craft;
+use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\Response as IlluminateResponse;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -57,7 +58,7 @@ use Yii2tech\Illuminate\Http\YiiApplicationMiddleware;
  *
  * @since 1.0
  */
-class Response extends \yii\web\Response
+class Response extends \yii\web\Response implements Responsable
 {
     /**
      * @var SymfonyResponse|null related Laravel response.
@@ -206,5 +207,14 @@ class Response extends \yii\web\Response
             }
             throw $e;
         }
+    }
+
+    public function toResponse($request): IlluminateResponse
+    {
+        return new IlluminateResponse(
+            content: $this->content,
+            status: $this->getStatusCode(),
+            headers: $this->getHeaders()->toArray()
+        );
     }
 }

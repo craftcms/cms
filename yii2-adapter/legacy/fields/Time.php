@@ -14,5 +14,6 @@ namespace craft\fields;
  */
 class Time extends \CraftCms\Cms\Field\Time
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 }

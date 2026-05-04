@@ -187,6 +187,8 @@ it('requires loginName when not providing userId for sendPasswordResetEmail', fu
 });
 
 it('returns error for invalid loginName on sendPasswordResetEmail', function () {
+    Cms::config()->preventUserEnumeration = false;
+
     $response = postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [
         'loginName' => 'nonexistent@example.com',
     ]);

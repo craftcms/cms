@@ -470,6 +470,8 @@ abstract class Element extends Component implements ElementInterface
         $attributes = $this->attributes();
         $fields = array_combine($attributes, $attributes);
 
+        $fields = $this->formatDateFields($fields);
+
         foreach ($this->fieldLayoutFields() as $field) {
             if (! isset($fields[$field->handle])) {
                 if ($this->_serializeFields) {

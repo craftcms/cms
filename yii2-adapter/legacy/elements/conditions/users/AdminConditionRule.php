@@ -2,6 +2,9 @@
 
 namespace craft\elements\conditions\users;
 
+use craft\base\LegacyConditionEvents;
+use craft\base\LegacyEventConstants;
+
 /**
  * Admin condition rule.
  *
@@ -11,5 +14,6 @@ namespace craft\elements\conditions\users;
  */
 class AdminConditionRule extends \CraftCms\Cms\User\Conditions\AdminConditionRule
 {
-    use \craft\base\LegacyEventConstants;
+    use LegacyConditionEvents;
+    use LegacyEventConstants;
 }

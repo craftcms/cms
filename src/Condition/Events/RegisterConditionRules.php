@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition\Events;
 
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+
 class RegisterConditionRules
 {
     public function __construct(
+        public ConditionInterface $condition,
+
         /**
          * @var string[]|array[] The condition rules types.
          *

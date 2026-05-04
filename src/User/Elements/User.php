@@ -967,7 +967,11 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         }
 
         if (! $this->id) {
-            /** @var ElementCollection<Address> $addresses */
+            /**
+             * @var ElementCollection<Address> $addresses
+             *
+             * @noRector
+             */
             $addresses = new ElementCollection;
 
             return $addresses;

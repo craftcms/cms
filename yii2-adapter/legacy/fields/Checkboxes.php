@@ -14,5 +14,6 @@ namespace craft\fields;
  */
 class Checkboxes extends \CraftCms\Cms\Field\Checkboxes
 {
+    use \craft\base\FieldEventConstants;
     use \craft\base\LegacyEventConstants;
 }

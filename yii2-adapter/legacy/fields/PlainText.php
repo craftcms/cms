@@ -13,5 +13,6 @@ namespace craft\fields;
  */
 class PlainText extends \CraftCms\Cms\Field\PlainText
 {
-    public const string EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+    use \craft\base\FieldEventConstants;
+    use \craft\base\LegacyEventConstants;
 }
