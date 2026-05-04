@@ -15,6 +15,7 @@ import ProjectConfig from '@/components/utilities/ProjectConfig/ProjectConfig.vu
 import AssetIndexes from '@/components/utilities/AssetIndexes/AssetIndexes.vue';
 import SystemMessages from '@/components/utilities/SystemMessages/SystemMessages.vue';
 import DeprecationErrorsToolbar from '@/components/utilities/DeprecationErrors/DeprecationErrorsToolbar.vue';
+import {setTranslations} from '@craftcms/cp/utilities/translate.ts.mjs';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -58,6 +59,8 @@ const Cp = {
       appId: config.get('systemUid', ''),
       canAccessQueueManager: config.get('canAccessQueueManager', false),
     });
+
+    setTranslations(this.initialConfig.translations);
   },
 
   async start() {
