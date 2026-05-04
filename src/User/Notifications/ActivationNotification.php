@@ -16,7 +16,7 @@ use Illuminate\Notifications\Channels\MailChannel;
 use Illuminate\Notifications\Notification;
 use SensitiveParameter;
 
-class VerifyEmailNotification extends Notification implements ShouldQueue
+class ActivationNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -34,10 +34,10 @@ class VerifyEmailNotification extends Notification implements ShouldQueue
 
     public function toMail(User $user): SystemMessageMailable
     {
-        $url = Users::getEmailVerifyUrl($user, $this->token);
+        $url = Users::getActivationUrl($user, $this->token);
 
         return app(SystemMessages::class)->mailable(
-            key: 'verify_new_email',
+            key: 'account_activation',
             user: $user,
             variables: ['link' => Template::raw($url)],
         );

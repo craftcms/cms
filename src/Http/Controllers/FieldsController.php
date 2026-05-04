@@ -444,7 +444,7 @@ class FieldsController
                 $compatible = $isCurrent || $compatibleFieldTypes->contains($class);
                 $name = $class::displayName();
                 $option = [
-                    $isCurrent && $field instanceof Iconic ? $field->getIcon() : $class::icon(),
+                    'icon' => $isCurrent && $field instanceof Iconic ? $field->getIcon() : $class::icon(),
                     'value' => $class,
                 ];
                 if ($compatible) {
