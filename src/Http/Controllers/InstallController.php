@@ -89,6 +89,11 @@ readonly class InstallController
             'postCpLoginRedirect' => $postCpLoginRedirect,
             'licenseHtml' => Inertia::defer(fn () => $licenseHtml),
             'localeOptions' => Inertia::defer(fn () => $localeOptions),
+            'timezone' => Inertia::defer(function () {
+                $timezoneOptions = SelectOptions::getTimeZoneOptions();
+
+                return array_merge($timezoneOptions, SelectOptions::getEnvOptions(array_column($timezoneOptions, 'value')));
+            }),
             'baseUrlSuggestions' => SelectOptions::getEnvSuggestions(true, fn ($value) => Str::isUrl($value)),
             'defaultSystemName' => $defaultSystemName,
             'defaultSiteUrl' => $defaultSiteUrl,
