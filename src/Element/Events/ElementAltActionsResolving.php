@@ -8,11 +8,11 @@ use CraftCms\Cms\Element\Concerns\HasControlPanelUI;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
- * @event DefineAltActions The event that is triggered when defining alternative form actions for the element.
+ * @event ElementAltActionsResolving The event that is triggered when defining alternative form actions for the element.
  *
  * {@see HasControlPanelUI::getAltActions()}
  */
-class DefineAltActions
+class ElementAltActionsResolving
 {
     public function __construct(
         public ElementInterface $element,

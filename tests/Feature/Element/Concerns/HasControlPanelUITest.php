@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Element\Events\DefineAltActions;
 use CraftCms\Cms\Element\Events\DefineAttributeHtml;
 use CraftCms\Cms\Element\Events\DefineInlineAttributeInputHtml;
 use CraftCms\Cms\Element\Events\DefineMetadata;
 use CraftCms\Cms\Element\Events\DefineSidebarHtml;
 use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
 use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
+use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
 use CraftCms\Cms\Element\Events\RegisterHtmlAttributes;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -93,14 +93,14 @@ describe('getAltActions', function () {
         expect($continueEditingAction)->toHaveKey('redirect');
     });
 
-    test('triggers DefineAltActions event', function () {
+    test('triggers ElementAltActionsResolving event', function () {
         $eventTriggered = false;
         $customAction = [
             'label' => 'Custom Action',
             'action' => 'custom/action',
         ];
 
-        Event::listen(function (DefineAltActions $event) use (&$eventTriggered, $customAction) {
+        Event::listen(function (ElementAltActionsResolving $event) use (&$eventTriggered, $customAction) {
             $eventTriggered = true;
             $event->altActions[] = $customAction;
         });
@@ -112,7 +112,7 @@ describe('getAltActions', function () {
     });
 
     test('event can modify alt actions', function () {
-        Event::listen(function (DefineAltActions $event) {
+        Event::listen(function (ElementAltActionsResolving $event) {
             $event->altActions = [
                 [
                     'label' => 'Only Action',
