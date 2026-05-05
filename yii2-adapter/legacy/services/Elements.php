@@ -39,7 +39,6 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
-use CraftCms\Cms\Element\Events\AfterRestoreElement;
 use CraftCms\Cms\Element\Events\AfterSaveElement;
 use CraftCms\Cms\Element\Events\AfterUpdateSlugAndUri;
 use CraftCms\Cms\Element\Events\BeforeDeleteElement;
@@ -61,6 +60,7 @@ use CraftCms\Cms\Element\Events\ElementDeleted;
 use CraftCms\Cms\Element\Events\ElementDeletedForSite;
 use CraftCms\Cms\Element\Events\ElementPropagated;
 use CraftCms\Cms\Element\Events\ElementResaved;
+use CraftCms\Cms\Element\Events\ElementRestored;
 use CraftCms\Cms\Element\Events\ElementsMerged;
 use CraftCms\Cms\Element\Events\InvalidateElementCaches;
 use CraftCms\Cms\Element\Events\RegisterElementTypes;
@@ -1780,7 +1780,7 @@ class Elements extends Component
             BeforeDeleteForSite::class => self::EVENT_BEFORE_DELETE_FOR_SITE,
             ElementDeletedForSite::class => self::EVENT_AFTER_DELETE_FOR_SITE,
             BeforeRestoreElement::class => self::EVENT_BEFORE_RESTORE_ELEMENT,
-            AfterRestoreElement::class => self::EVENT_AFTER_RESTORE_ELEMENT,
+            ElementRestored::class => self::EVENT_AFTER_RESTORE_ELEMENT,
         ];
 
         foreach ($elementEvents as $newEventClass => $yiiEventClass) {

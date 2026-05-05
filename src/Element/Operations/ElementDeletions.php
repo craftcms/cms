@@ -11,12 +11,12 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\AfterRestoreElement;
 use CraftCms\Cms\Element\Events\BeforeDeleteElement;
 use CraftCms\Cms\Element\Events\BeforeDeleteForSite;
 use CraftCms\Cms\Element\Events\BeforeRestoreElement;
 use CraftCms\Cms\Element\Events\ElementDeleted;
 use CraftCms\Cms\Element\Events\ElementDeletedForSite;
+use CraftCms\Cms\Element\Events\ElementRestored;
 use CraftCms\Cms\Element\Events\ElementsMerged;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
@@ -447,7 +447,7 @@ readonly class ElementDeletions
                 $element->dateDeleted = null;
                 $element->deletedWithOwner = null;
 
-                event(new AfterRestoreElement($element));
+                event(new ElementRestored($element));
             }
 
             DB::commit();
