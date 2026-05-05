@@ -22,9 +22,9 @@ use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
 use CraftCms\Cms\Plugin\Events\PluginsLoaded;
 use CraftCms\Cms\Plugin\Events\PluginsLoading;
 use CraftCms\Cms\Plugin\Events\PluginUninstalled;
+use CraftCms\Cms\Plugin\Events\PluginUninstalling;
 use CraftCms\Cms\Plugin\Events\PluginUnregistered;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
-use CraftCms\Cms\Plugin\Events\UninstallingPlugin;
 use CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -564,7 +564,7 @@ class Plugins
             throw new InvalidPluginException($handle);
         }
 
-        event(new UninstallingPlugin($plugin));
+        event(new PluginUninstalling($plugin));
 
         DB::beginTransaction();
         try {

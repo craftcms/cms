@@ -21,9 +21,9 @@ use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
 use CraftCms\Cms\Plugin\Events\PluginsLoaded;
 use CraftCms\Cms\Plugin\Events\PluginsLoading;
 use CraftCms\Cms\Plugin\Events\PluginUninstalled;
+use CraftCms\Cms\Plugin\Events\PluginUninstalling;
 use CraftCms\Cms\Plugin\Events\PluginUnregistered;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
-use CraftCms\Cms\Plugin\Events\UninstallingPlugin;
 use CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins as PluginsService;
@@ -546,8 +546,8 @@ class Plugins extends Component
         );
 
         Event::listen(
-            UninstallingPlugin::class,
-            fn(UninstallingPlugin $event) => $pluginService->trigger(self::EVENT_BEFORE_UNINSTALL_PLUGIN, new PluginEvent([
+            PluginUninstalling::class,
+            fn(PluginUninstalling $event) => $pluginService->trigger(self::EVENT_BEFORE_UNINSTALL_PLUGIN, new PluginEvent([
                 'plugin' => $event->plugin,
             ])),
         );

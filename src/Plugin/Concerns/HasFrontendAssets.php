@@ -8,7 +8,7 @@ use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Events\PluginDisabling;
 use CraftCms\Cms\Plugin\Events\PluginEnabling;
 use CraftCms\Cms\Plugin\Events\PluginEvent;
-use CraftCms\Cms\Plugin\Events\UninstallingPlugin;
+use CraftCms\Cms\Plugin\Events\PluginUninstalling;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\File;
@@ -60,7 +60,7 @@ trait HasFrontendAssets
             }
         });
 
-        Event::listen([PluginDisabling::class, UninstallingPlugin::class], function (PluginEvent $event) {
+        Event::listen([PluginDisabling::class, PluginUninstalling::class], function (PluginEvent $event) {
             if (! $event->plugin instanceof static) {
                 return;
             }
