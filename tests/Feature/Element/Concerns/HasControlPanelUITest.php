@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Element\Events\DefineSidebarHtml;
 use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
 use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
 use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
 use CraftCms\Cms\Element\Events\ElementAttributeHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementInlineAttributeInputHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementMetadataResolving;
+use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
 use CraftCms\Cms\Element\Events\RegisterHtmlAttributes;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -313,11 +313,11 @@ describe('getSidebarHtml', function () {
         expect($html)->toBeString();
     });
 
-    test('triggers DefineSidebarHtml event', function () {
+    test('triggers ElementSidebarHtmlResolving event', function () {
         $eventTriggered = false;
         $customHtml = '<div class="custom-sidebar">Custom</div>';
 
-        Event::listen(function (DefineSidebarHtml $event) use (&$eventTriggered, $customHtml) {
+        Event::listen(function (ElementSidebarHtmlResolving $event) use (&$eventTriggered, $customHtml) {
             $eventTriggered = true;
             $event->html = $customHtml;
         });
@@ -329,7 +329,7 @@ describe('getSidebarHtml', function () {
     });
 
     test('event can append to existing html', function () {
-        Event::listen(function (DefineSidebarHtml $event) {
+        Event::listen(function (ElementSidebarHtmlResolving $event) {
             $event->html .= '<div class="appended">Appended</div>';
         });
 

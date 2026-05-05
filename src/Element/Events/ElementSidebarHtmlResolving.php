@@ -8,11 +8,11 @@ use CraftCms\Cms\Element\Concerns\HasControlPanelUI;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
- * @event DefineSidebarHtml The event that is triggered when defining the HTML for the editor sidebar.
+ * @event ElementSidebarHtmlResolving The event that is triggered when defining the HTML for the editor sidebar.
  *
  * {@see HasControlPanelUI::getSidebarHtml()}
  */
-class DefineSidebarHtml
+class ElementSidebarHtmlResolving
 {
     /**
      * @param  ElementInterface  $element  The element
