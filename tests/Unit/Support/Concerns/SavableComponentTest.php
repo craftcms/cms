@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Component\Events\ComponentDeleteApplying;
 use CraftCms\Cms\Component\Events\ComponentDeleted;
+use CraftCms\Cms\Component\Events\ComponentDeleting;
 use CraftCms\Cms\Component\Events\ComponentSaved;
-use CraftCms\Cms\Component\Events\DeletingComponent;
 use CraftCms\Cms\Component\Events\SavingComponent;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
 use Illuminate\Support\Facades\Event;
@@ -88,7 +88,7 @@ class SavableComponentTestListener
 it('can register before delete callback', function () {
     $triggered = false;
 
-    Event::listen(function (DeletingComponent $event) use (&$triggered) {
+    Event::listen(function (ComponentDeleting $event) use (&$triggered) {
         $triggered = true;
         expect($event->component)->toBe($this->component);
         expect($event->isNew)->toBeFalse();

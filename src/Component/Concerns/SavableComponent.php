@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Component\Concerns;
 
 use CraftCms\Cms\Component\Events\ComponentDeleteApplying;
 use CraftCms\Cms\Component\Events\ComponentDeleted;
+use CraftCms\Cms\Component\Events\ComponentDeleting;
 use CraftCms\Cms\Component\Events\ComponentSaved;
-use CraftCms\Cms\Component\Events\DeletingComponent;
 use CraftCms\Cms\Component\Events\SavingComponent;
 use DateTimeInterface;
 use Illuminate\Events\QueuedClosure;
@@ -50,12 +50,12 @@ trait SavableComponent
 
     public static function onBeforeDelete(QueuedClosure|callable|array|string $callback): void
     {
-        self::listenForComponentEvent(DeletingComponent::class, $callback);
+        self::listenForComponentEvent(ComponentDeleting::class, $callback);
     }
 
     public function beforeDelete(): bool
     {
-        event($event = new DeletingComponent($this));
+        event($event = new ComponentDeleting($this));
 
         return $event->isValid;
     }
