@@ -4,4 +4,4 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Events;
 
-class BeforeApplyFieldDelete extends FieldEvent {}
+class FieldDeletionApplying extends FieldEvent {}

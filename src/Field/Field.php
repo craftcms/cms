@@ -22,7 +22,6 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Events\BeforeApplyFieldDelete;
 use CraftCms\Cms\Field\Events\BeforeFieldDelete;
 use CraftCms\Cms\Field\Events\BeforeFieldElementDelete;
 use CraftCms\Cms\Field\Events\BeforeFieldElementRestore;
@@ -31,6 +30,7 @@ use CraftCms\Cms\Field\Events\BeforeFieldSave;
 use CraftCms\Cms\Field\Events\DefineFieldActionMenuItems;
 use CraftCms\Cms\Field\Events\DefineFieldHtml;
 use CraftCms\Cms\Field\Events\DefineFieldKeywords;
+use CraftCms\Cms\Field\Events\FieldDeletionApplying;
 use CraftCms\Cms\Field\Events\FieldElementDeleted;
 use CraftCms\Cms\Field\Events\FieldElementPropagated;
 use CraftCms\Cms\Field\Events\FieldElementRestored;
@@ -1008,7 +1008,7 @@ JS, [
 
     public function beforeApplyDelete(): void
     {
-        event(new BeforeApplyFieldDelete($this));
+        event(new FieldDeletionApplying($this));
     }
 
     public function afterDelete(): void

@@ -16,10 +16,10 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
-use CraftCms\Cms\Field\Events\BeforeApplyFieldDelete;
 use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
 use CraftCms\Cms\Field\Events\FieldDeleted;
 use CraftCms\Cms\Field\Events\FieldDeleting;
+use CraftCms\Cms\Field\Events\FieldDeletionApplying;
 use CraftCms\Cms\Field\Events\FieldLayoutDeleted;
 use CraftCms\Cms\Field\Events\FieldLayoutDeleting;
 use CraftCms\Cms\Field\Events\FieldLayoutSaved;
@@ -770,7 +770,7 @@ class Fields extends Component
             }
         });
 
-        Event::listen(function(BeforeApplyFieldDelete $event) {
+        Event::listen(function(FieldDeletionApplying $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_APPLY_FIELD_DELETE)) {
                 $yiiEvent = new FieldEvent(['field' => $event->field]);
                 Craft::$app->getFields()->trigger(self::EVENT_BEFORE_APPLY_FIELD_DELETE, $yiiEvent);
