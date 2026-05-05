@@ -11,12 +11,17 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
+use CraftCms\Cms\Element\Events\ElementPropagated;
 use CraftCms\Cms\Element\Events\ElementPropagating;
 use CraftCms\Cms\Element\Events\ElementResaved;
 use CraftCms\Cms\Element\Events\ElementResaving;
 use CraftCms\Cms\Element\Events\ElementSaved;
 use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Element\Events\ElementSearchIndexUpdating;
+use CraftCms\Cms\Element\Events\ElementsPropagated;
+use CraftCms\Cms\Element\Events\ElementsPropagating;
+use CraftCms\Cms\Element\Events\ElementsResaved;
+use CraftCms\Cms\Element\Events\ElementsResaving;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
@@ -128,7 +133,7 @@ readonly class ElementWrites
         ?bool $updateSearchIndex = null,
         bool $touch = false,
     ): void {
-        event(new BeforeResaveElements($query));
+        event(new ElementsResaving($query));
 
         BulkOps::ensure(function () use ($query, $skipRevisions, $touch, $updateSearchIndex, $continueOnError) {
             $position = 0;
@@ -179,7 +184,7 @@ readonly class ElementWrites
             }
         });
 
-        event(new AfterResaveElements($query));
+        event(new ElementsResaved($query));
     }
 
     public function propagateElements(
@@ -187,7 +192,7 @@ readonly class ElementWrites
         array|int|null $siteIds = null,
         bool $continueOnError = false,
     ): void {
-        event(new BeforePropagateElements($query));
+        event(new ElementsPropagating($query));
 
         if ($siteIds !== null) {
             $siteIds = array_map(fn ($siteId) => $siteId, (array) $siteIds);
@@ -235,7 +240,7 @@ readonly class ElementWrites
                         report($throwable);
                     }
 
-                    event(new AfterPropagateElement($query, $element, $position, $throwable));
+                    event(new ElementPropagated($query, $element, $position, $throwable));
 
                     BulkOps::trackElement($element);
                     $this->elementCaches->invalidateForElement($element);
@@ -246,7 +251,7 @@ readonly class ElementWrites
             }
         });
 
-        event(new AfterPropagateElements($query));
+        event(new ElementsPropagated($query));
     }
 
     public function propagateElement(

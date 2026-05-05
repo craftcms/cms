@@ -10,7 +10,7 @@ namespace craft\base;
 use Closure;
 use Craft;
 use craft\base\Event as YiiEvent;
-use craft\events\FieldElementOccurred as YiiFieldElementEvent;
+use craft\events\FieldElementEvent as YiiFieldElementEvent;
 use craft\events\FieldEvent as YiiFieldEvent;
 use craft\events\ModelEvent;
 use CraftCms\Cms\Element\Contracts\ElementInterface;

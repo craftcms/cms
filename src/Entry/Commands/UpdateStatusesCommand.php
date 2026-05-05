@@ -8,6 +8,8 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\ElementResaved;
 use CraftCms\Cms\Element\Events\ElementResaving;
+use CraftCms\Cms\Element\Events\ElementsResaved;
+use CraftCms\Cms\Element\Events\ElementsResaving;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -131,7 +133,7 @@ final class UpdateStatusesCommand extends Command implements Isolatable
 
     private function resaveQuery(EntryQuery $query): void
     {
-        event(new BeforeResaveElements($query));
+        event(new ElementsResaving($query));
 
         $position = 0;
 
@@ -158,7 +160,7 @@ final class UpdateStatusesCommand extends Command implements Isolatable
             event(new ElementResaved($query, $entry, $position, $exception));
         }
 
-        event(new AfterResaveElements($query));
+        event(new ElementsResaved($query));
     }
 
     private function ensureEntryCanBeResaved(Entry $entry): void

@@ -26,7 +26,9 @@ use CraftCms\Cms\Site\Events\SavedSiteGroup;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Site\Events\SiteDeleting;
 use CraftCms\Cms\Site\Events\SiteDeletionApplying;
+use CraftCms\Cms\Site\Events\SiteGroupDeleting;
 use CraftCms\Cms\Site\Events\SiteGroupDeletionApplying;
+use CraftCms\Cms\Site\Events\SiteGroupSaving;
 use CraftCms\Cms\Site\Events\SiteSaved;
 use CraftCms\Cms\Site\Events\SiteSaving;
 use CraftCms\Cms\Site\Events\SitesReordered;
@@ -568,7 +570,7 @@ class Sites extends Component
 
     public static function registerEvents(): void
     {
-        Event::listen(SavingSiteGroup::class, function(SavingSiteGroup $event) {
+        Event::listen(SiteGroupSaving::class, function(SiteGroupSaving $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_BEFORE_SAVE_SITE_GROUP)) {
                 Craft::$app->getSites()->trigger(self::EVENT_BEFORE_SAVE_SITE_GROUP, $yiiEvent = new SiteGroupEvent([
                     'group' => self::siteGroupToLegacySiteGroup($event->siteGroup),
@@ -596,7 +598,7 @@ class Sites extends Component
             }
         });
 
-        Event::listen(DeletingSiteGroup::class, function(DeletingSiteGroup $event) {
+        Event::listen(SiteGroupDeleting::class, function(SiteGroupDeleting $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_BEFORE_DELETE_SITE_GROUP)) {
                 Craft::$app->getSites()->trigger(self::EVENT_BEFORE_DELETE_SITE_GROUP, new SiteGroupEvent([
                     'group' => self::siteGroupToLegacySiteGroup($event->siteGroup),

@@ -61,6 +61,10 @@ use CraftCms\Cms\Element\Events\ElementSearchIndexUpdating;
 use CraftCms\Cms\Element\Events\ElementSlugAndUriUpdated;
 use CraftCms\Cms\Element\Events\ElementSlugAndUriUpdating;
 use CraftCms\Cms\Element\Events\ElementsMerged;
+use CraftCms\Cms\Element\Events\ElementsPropagated;
+use CraftCms\Cms\Element\Events\ElementsPropagating;
+use CraftCms\Cms\Element\Events\ElementsResaved;
+use CraftCms\Cms\Element\Events\ElementsResaving;
 use CraftCms\Cms\Element\Events\ElementTypesResolving;
 use CraftCms\Cms\Element\Events\SetElementUri;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
@@ -1807,7 +1811,7 @@ class Elements extends Component
             });
         }
 
-        Event::listen(function(BeforeResaveElements $event) {
+        Event::listen(function(ElementsResaving $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENTS)) {
                 return;
             }
@@ -1842,7 +1846,7 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(AfterResaveElements $event) {
+        Event::listen(function(ElementsResaved $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_RESAVE_ELEMENTS)) {
                 return;
             }
@@ -1852,7 +1856,7 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(BeforePropagateElements $event) {
+        Event::listen(function(ElementsPropagating $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_PROPAGATE_ELEMENTS)) {
                 return;
             }
@@ -1887,7 +1891,7 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(AfterPropagateElements $event) {
+        Event::listen(function(ElementsPropagated $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_PROPAGATE_ELEMENTS)) {
                 return;
             }
