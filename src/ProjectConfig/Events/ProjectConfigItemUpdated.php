@@ -10,12 +10,12 @@ namespace CraftCms\Cms\ProjectConfig\Events;
  * ---
  *
  * ```php
- * use CraftCms\Cms\ProjectConfig\Events\UpdatingItem;
+ * use CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemUpdated;
  * use CraftCms\Cms\ProjectConfig\ProjectConfig;
  *
- * Event::listen(UpdatingItem::class, function(UpdatingItem $e) {
+ * Event::listen(ProjectConfigItemUpdated::class, function(ProjectConfigItemUpdated $e) {
  *     // Ensure the item is also updated in the database...
  * });
  * ```
  */
-class UpdatingItem extends ConfigEvent {}
+class ProjectConfigItemUpdated extends ConfigEvent {}

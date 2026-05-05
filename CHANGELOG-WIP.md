@@ -832,7 +832,7 @@ Moved the following controllers:
 - Deprecated `craft\events\ConfigEvent` in favor of the following events:
   - `CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemAdding`
   - `CraftCms\Cms\ProjectConfig\Events\ItemAdded`
-  - `CraftCms\Cms\ProjectConfig\Events\UpdatingItem`
+  - `CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemUpdated`
   - `CraftCms\Cms\ProjectConfig\Events\ItemUpdated`
   - `CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemRemoved`
   - `CraftCms\Cms\ProjectConfig\Events\ItemRemoved`
