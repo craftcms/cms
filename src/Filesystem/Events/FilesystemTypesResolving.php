@@ -8,9 +8,9 @@ use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use Illuminate\Support\Collection;
 
 /**
- * @event RegisterFilesystemTypes The event that is triggered when registering filesystem types.
+ * @event FilesystemTypesResolving The event that is triggered when registering filesystem types.
  */
-class RegisterFilesystemTypes
+class FilesystemTypesResolving
 {
     public function __construct(
         /** @var Collection<class-string<FsInterface>> */
