@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Gql\Events;
 
 /**
- * @event DefineGqlTypeFields The event that is triggered when defining GraphQL type fields.
+ * @event GqlTypeFieldsResolving The event that is triggered when defining GraphQL type fields.
  */
-class DefineGqlTypeFields
+class GqlTypeFieldsResolving
 {
     public function __construct(
         /** @var array<string, mixed> */
