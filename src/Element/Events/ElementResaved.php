@@ -8,7 +8,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use Throwable;
 
-class AfterResaveElement
+class ElementResaved
 {
     public function __construct(
         public ElementQueryInterface $query,

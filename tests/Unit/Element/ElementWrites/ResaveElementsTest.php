@@ -8,10 +8,9 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\AfterResaveElement;
-use CraftCms\Cms\Element\Events\AfterResaveElements;
 use CraftCms\Cms\Element\Events\BeforeResaveElement;
 use CraftCms\Cms\Element\Events\BeforeResaveElements;
+use CraftCms\Cms\Element\Events\ElementResaved;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
 use CraftCms\Cms\Element\Operations\ElementUris;
@@ -28,7 +27,7 @@ beforeEach(function () {
     Event::fake([
         BeforeResaveElements::class,
         BeforeResaveElement::class,
-        AfterResaveElement::class,
+        ElementResaved::class,
         AfterResaveElements::class,
     ]);
 
@@ -69,9 +68,9 @@ it('resaves matching elements and dispatches lifecycle events', function () {
     Event::assertDispatchedTimes(BeforeResaveElement::class, 2);
     Event::assertDispatched(fn (BeforeResaveElement $event) => $event->element === $firstElement && $event->position === 1);
     Event::assertDispatched(fn (BeforeResaveElement $event) => $event->element === $secondElement && $event->position === 2);
-    Event::assertDispatchedTimes(AfterResaveElement::class, 2);
-    Event::assertDispatched(fn (AfterResaveElement $event) => $event->element === $firstElement && $event->position === 1 && $event->exception === null);
-    Event::assertDispatched(fn (AfterResaveElement $event) => $event->element === $secondElement && $event->position === 2 && $event->exception === null);
+    Event::assertDispatchedTimes(ElementResaved::class, 2);
+    Event::assertDispatched(fn (ElementResaved $event) => $event->element === $firstElement && $event->position === 1 && $event->exception === null);
+    Event::assertDispatched(fn (ElementResaved $event) => $event->element === $secondElement && $event->position === 2 && $event->exception === null);
     Event::assertDispatchedTimes(AfterResaveElements::class, 1);
     Event::assertDispatched(fn (AfterResaveElements $event) => $event->query === $query);
 });
@@ -90,12 +89,12 @@ it('reports save errors and continues when continueOnError is enabled', function
 
     expect($this->saveElementAction->calls)->toHaveCount(2);
 
-    Event::assertDispatched(fn (AfterResaveElement $event) => $event->element === $firstElement &&
+    Event::assertDispatched(fn (ElementResaved $event) => $event->element === $firstElement &&
         $event->position === 1 &&
         $event->exception instanceof RuntimeException &&
         $event->exception->getMessage() === 'First save failed.');
 
-    Event::assertDispatched(fn (AfterResaveElement $event) => $event->element === $secondElement && $event->position === 2 && $event->exception === null);
+    Event::assertDispatched(fn (ElementResaved $event) => $event->element === $secondElement && $event->position === 2 && $event->exception === null);
     Event::assertDispatchedTimes(AfterResaveElements::class, 1);
 });
 
@@ -113,7 +112,7 @@ it('rethrows save errors when continueOnError is disabled', function () {
 
     Event::assertDispatchedTimes(BeforeResaveElements::class, 1);
     Event::assertDispatchedTimes(BeforeResaveElement::class, 1);
-    Event::assertNotDispatched(AfterResaveElement::class);
+    Event::assertNotDispatched(ElementResaved::class);
     Event::assertNotDispatched(AfterResaveElements::class);
 });
 
@@ -129,7 +128,7 @@ it('wraps revision skips with a fallback label when no UI label exists', functio
 
     expect($this->saveElementAction->calls)->toBeEmpty();
 
-    Event::assertDispatched(fn (AfterResaveElement $event) => $event->element === $element &&
+    Event::assertDispatched(fn (ElementResaved $event) => $event->element === $element &&
         $event->position === 1 &&
         $event->exception instanceof InvalidElementException &&
         $event->exception->getMessage() === "Skipped resaving test element 42 due to an error obtaining its root element: Skipped resaving test element 42 because it's a revision.");
@@ -148,7 +147,7 @@ it('wraps root lookup errors with the element UI label', function () {
 
     expect($this->saveElementAction->calls)->toBeEmpty();
 
-    Event::assertDispatched(fn (AfterResaveElement $event) => $event->element === $element &&
+    Event::assertDispatched(fn (ElementResaved $event) => $event->element === $element &&
         $event->position === 1 &&
         $event->exception instanceof InvalidElementException &&
         $event->exception->getMessage() === 'Skipped resaving Block A (13) due to an error obtaining its root element: Owner lookup failed');
@@ -167,7 +166,7 @@ it('resaves revisions when skipRevisions is disabled', function () {
     expect($this->saveElementAction->calls)->toHaveCount(1);
     expect($this->saveElementAction->calls[0]['element'])->toBe($element);
 
-    Event::assertDispatched(fn (AfterResaveElement $event) => $event->element === $element && $event->exception === null);
+    Event::assertDispatched(fn (ElementResaved $event) => $event->element === $element && $event->exception === null);
 });
 
 it('fails silently when the query aborts', function () {
@@ -180,7 +179,7 @@ it('fails silently when the query aborts', function () {
     Event::assertDispatchedTimes(BeforeResaveElements::class, 1);
     Event::assertDispatchedTimes(AfterResaveElements::class, 1);
     Event::assertNotDispatched(BeforeResaveElement::class);
-    Event::assertNotDispatched(AfterResaveElement::class);
+    Event::assertNotDispatched(ElementResaved::class);
 });
 
 function mockResaveQuery(array $elements): ElementQueryInterface
