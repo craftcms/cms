@@ -17,9 +17,9 @@ use CraftCms\Cms\Element\Actions\MoveUp;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Element\Events\AfterSaveNestedElements;
 use CraftCms\Cms\Element\Events\CreateNestedElementRevisions;
 use CraftCms\Cms\Element\Events\DuplicateNestedElementsEvent;
+use CraftCms\Cms\Element\Events\NestedElementsSaved;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -825,7 +825,7 @@ JS, [
             throw $e;
         }
 
-        event(new AfterSaveNestedElements(
+        event(new NestedElementsSaved(
             manager: $this,
             elements: $elements,
         ));
