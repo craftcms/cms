@@ -36,6 +36,7 @@ use CraftCms\Cms\Entry\Actions\MoveToSection;
 use CraftCms\Cms\Entry\Actions\NewChild;
 use CraftCms\Cms\Entry\Actions\NewSiblingAfter;
 use CraftCms\Cms\Entry\Actions\NewSiblingBefore;
+use CraftCms\Cms\Entry\Concerns\LegacyConstants;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Conditions\SectionConditionRule;
 use CraftCms\Cms\Entry\Conditions\TypeConditionRule;
@@ -108,6 +109,7 @@ use function CraftCms\Cms\t;
 #[Ruleset(EntryRules::class)]
 class Entry extends Element implements Colorable, ExpirableElementInterface, Iconic, NestedElementInterface
 {
+    use LegacyConstants;
     use NestedElement {
         eagerLoadingMap as traitEagerLoadingMap;
         attributes as traitAttributes;

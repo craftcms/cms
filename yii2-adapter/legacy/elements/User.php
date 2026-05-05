@@ -11,6 +11,7 @@ namespace craft\elements;
 
 use CraftCms\Cms\User\Elements\User as UserElement;
 
+/** @phpstan-ignore-next-line */
 if (false) {
     /**
      * @deprecated 6.0.0 use {@see UserElement} instead.
