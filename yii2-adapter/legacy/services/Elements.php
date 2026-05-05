@@ -39,7 +39,6 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
-use CraftCms\Cms\Element\Events\BeforeDeleteElement;
 use CraftCms\Cms\Element\Events\BeforeDeleteForSite;
 use CraftCms\Cms\Element\Events\BeforeEagerLoadElements;
 use CraftCms\Cms\Element\Events\BeforeMergeCanonicalChanges;
@@ -56,6 +55,7 @@ use CraftCms\Cms\Element\Events\CanonicalChangesMerged;
 use CraftCms\Cms\Element\Events\ElementActionPerformed;
 use CraftCms\Cms\Element\Events\ElementDeleted;
 use CraftCms\Cms\Element\Events\ElementDeletedForSite;
+use CraftCms\Cms\Element\Events\ElementDeleting;
 use CraftCms\Cms\Element\Events\ElementPropagated;
 use CraftCms\Cms\Element\Events\ElementResaved;
 use CraftCms\Cms\Element\Events\ElementRestored;
@@ -1910,7 +1910,7 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(BeforeDeleteElement $event) {
+        Event::listen(function(ElementDeleting $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_DELETE_ELEMENT)) {
                 return;
             }
