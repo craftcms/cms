@@ -12,9 +12,9 @@ use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
 use CraftCms\Cms\Gql\Events\GqlDirectivesResolving;
 use CraftCms\Cms\Gql\Events\GqlMutationsResolving;
+use CraftCms\Cms\Gql\Events\GqlQueriesResolving;
 use CraftCms\Cms\Gql\Events\GqlQueryExecuting;
 use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
-use CraftCms\Cms\Gql\Events\RegisterGqlQueries;
 use CraftCms\Cms\Gql\Events\RegisterGqlSchemaComponents;
 use CraftCms\Cms\Gql\Events\RegisterGqlTypes;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
@@ -53,7 +53,7 @@ it('throws when no active schema is set', function () {
 })->throws(GqlException::class, 'No schema is active.');
 
 it('dispatches query registration events', function () {
-    Event::listen(RegisterGqlQueries::class, function (RegisterGqlQueries $event) {
+    Event::listen(GqlQueriesResolving::class, function (GqlQueriesResolving $event) {
         $event->queries['mockQuery'] = [
             'type' => Type::string(),
             'args' => [],
@@ -118,7 +118,7 @@ it('dispatches validation rule events', function () {
 });
 
 it('validates schemas when a registered field definition is invalid', function () {
-    Event::listen(RegisterGqlQueries::class, function (RegisterGqlQueries $event) {
+    Event::listen(GqlQueriesResolving::class, function (GqlQueriesResolving $event) {
         $event->queries['mockQuery'] = [
             'type' => 'no bueno',
         ];

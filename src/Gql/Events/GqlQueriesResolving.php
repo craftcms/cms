@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Gql\Events;
 
 /**
- * @event RegisterGqlQueries The event that is triggered when registering GraphQL queries.
+ * @event GqlQueriesResolving The event that is triggered when registering GraphQL queries.
  */
-class RegisterGqlQueries
+class GqlQueriesResolving
 {
     public function __construct(
         /** @var array<string, mixed> */

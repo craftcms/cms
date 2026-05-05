@@ -9,7 +9,7 @@ use CraftCms\Cms\Gql\ArgumentManager;
 use CraftCms\Cms\Gql\Contracts\ArgumentHandlerInterface;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Events\GqlArgumentHandlersResolving;
-use CraftCms\Cms\Gql\Events\RegisterGqlQueries;
+use CraftCms\Cms\Gql\Events\GqlQueriesResolving;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\Handlers\RelatedAssets;
 use CraftCms\Cms\Gql\Handlers\RelatedEntries;
@@ -24,7 +24,7 @@ beforeEach(function () {
 });
 
 it('registers custom argument handlers for gql execution', function () {
-    Event::listen(RegisterGqlQueries::class, function (RegisterGqlQueries $event) {
+    Event::listen(GqlQueriesResolving::class, function (GqlQueriesResolving $event) {
         $event->queries['integrationQuery'] = [
             'type' => Type::string(),
             'args' => [

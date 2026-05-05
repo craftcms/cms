@@ -32,9 +32,9 @@ use CraftCms\Cms\Gql\Directives\Trim;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
 use CraftCms\Cms\Gql\Events\GqlDirectivesResolving;
 use CraftCms\Cms\Gql\Events\GqlMutationsResolving;
+use CraftCms\Cms\Gql\Events\GqlQueriesResolving;
 use CraftCms\Cms\Gql\Events\GqlQueryExecuting;
 use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
-use CraftCms\Cms\Gql\Events\RegisterGqlQueries;
 use CraftCms\Cms\Gql\Events\RegisterGqlSchemaComponents;
 use CraftCms\Cms\Gql\Events\RegisterGqlTypes;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
@@ -1074,7 +1074,7 @@ class Gql
         // Flatten them
         $queries = array_merge(...$queryList);
 
-        event($event = new RegisterGqlQueries(queries: $queries));
+        event($event = new GqlQueriesResolving(queries: $queries));
         $queries = $event->queries;
 
         TypeLoader::registerType('Query', fn () => call_user_func(Query::class.'::getType', $queries));
