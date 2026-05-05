@@ -8,11 +8,11 @@ use CraftCms\Cms\Element\Concerns\HasControlPanelUI;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
- * @event DefineActionMenuItems The event that is triggered when defining action menu items.
+ * @event ElementActionMenuItemsResolving The event that is triggered when defining action menu items.
  *
  * {@see HasControlPanelUI::getActionMenuItems()}
  */
-class DefineActionMenuItems
+class ElementActionMenuItemsResolving
 {
     public function __construct(
         public ElementInterface $element,

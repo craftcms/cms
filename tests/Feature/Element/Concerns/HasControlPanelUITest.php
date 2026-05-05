@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Element\Events\DefineActionMenuItems;
 use CraftCms\Cms\Element\Events\DefineAdditionalButtons;
 use CraftCms\Cms\Element\Events\DefineAltActions;
 use CraftCms\Cms\Element\Events\DefineAttributeHtml;
 use CraftCms\Cms\Element\Events\DefineInlineAttributeInputHtml;
 use CraftCms\Cms\Element\Events\DefineMetadata;
 use CraftCms\Cms\Element\Events\DefineSidebarHtml;
+use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
 use CraftCms\Cms\Element\Events\RegisterHtmlAttributes;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -145,7 +145,7 @@ describe('getActionMenuItems', function () {
         expect($hasDestructiveItems)->toBeTrue();
     });
 
-    test('triggers DefineActionMenuItems event', function () {
+    test('triggers ElementActionMenuItemsResolving event', function () {
         $eventTriggered = false;
         $customItem = [
             'id' => 'custom-action',
@@ -153,7 +153,7 @@ describe('getActionMenuItems', function () {
             'icon' => 'wand',
         ];
 
-        Event::listen(function (DefineActionMenuItems $event) use (&$eventTriggered, $customItem) {
+        Event::listen(function (ElementActionMenuItemsResolving $event) use (&$eventTriggered, $customItem) {
             $eventTriggered = true;
             $event->items[] = $customItem;
         });
@@ -165,7 +165,7 @@ describe('getActionMenuItems', function () {
     });
 
     test('event can modify menu items', function () {
-        Event::listen(function (DefineActionMenuItems $event) {
+        Event::listen(function (ElementActionMenuItemsResolving $event) {
             $event->items = [
                 [
                     'id' => 'only-item',
