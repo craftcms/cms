@@ -9,11 +9,11 @@ use CraftCms\Cms\Element\Events\DefineUrl;
 use CraftCms\Cms\Image\Data\ImageTransform;
 
 /**
- * @event DefineAssetUrl The event that is triggered when defining the asset’s URL.
+ * @event AssetUrlDefined The event that is triggered when defining the asset’s URL.
  *
  * @see getUrl()
  */
-class DefineAssetUrl extends DefineUrl
+class AssetUrlDefined extends DefineUrl
 {
     public function __construct(
         public Asset $asset,
