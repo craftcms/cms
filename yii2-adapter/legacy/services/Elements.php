@@ -39,7 +39,6 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
-use CraftCms\Cms\Element\Events\BeforePerformAction;
 use CraftCms\Cms\Element\Events\BeforePropagateElement;
 use CraftCms\Cms\Element\Events\BeforePropagateElements;
 use CraftCms\Cms\Element\Events\BeforeResaveElement;
@@ -51,6 +50,7 @@ use CraftCms\Cms\Element\Events\BeforeUpdateSlugAndUri;
 use CraftCms\Cms\Element\Events\CanonicalChangesMerged;
 use CraftCms\Cms\Element\Events\CanonicalChangesMerging;
 use CraftCms\Cms\Element\Events\ElementActionPerformed;
+use CraftCms\Cms\Element\Events\ElementActionPerforming;
 use CraftCms\Cms\Element\Events\ElementDeleted;
 use CraftCms\Cms\Element\Events\ElementDeletedForSite;
 use CraftCms\Cms\Element\Events\ElementDeleting;
@@ -1923,7 +1923,7 @@ class Elements extends Component
             $event->hardDelete = $yiiEvent->hardDelete;
         });
 
-        Event::listen(function(BeforePerformAction $event) {
+        Event::listen(function(ElementActionPerforming $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_PERFORM_ACTION)) {
                 return;
             }
