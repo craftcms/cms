@@ -73,6 +73,7 @@ use CraftCms\Cms\Element\Events\ElementMetaFieldsHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementMovedInStructure;
 use CraftCms\Cms\Element\Events\ElementMovingInStructure;
 use CraftCms\Cms\Element\Events\ElementPreviewTargetsResolving;
+use CraftCms\Cms\Element\Events\ElementRendering;
 use CraftCms\Cms\Element\Events\ElementSearchableAttributesResolving;
 use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementSortOptionsResolving;
@@ -81,7 +82,6 @@ use CraftCms\Cms\Element\Events\ElementTableAttributesResolving;
 use CraftCms\Cms\Element\Events\ElementUrlResolved;
 use CraftCms\Cms\Element\Events\ElementUrlResolving;
 use CraftCms\Cms\Element\Events\QueryForTableAttributePreparing;
-use CraftCms\Cms\Element\Events\Render;
 use CraftCms\Cms\Element\Events\SetEagerLoadedElements;
 use CraftCms\Cms\Element\Events\SetRoute;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -277,7 +277,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
             }
         });
 
-        Event::listen(function(Render $event) use ($elementClasses) {
+        Event::listen(function(ElementRendering $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_RENDER)) {
                     continue;
