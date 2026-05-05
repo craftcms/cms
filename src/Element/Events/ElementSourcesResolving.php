@@ -8,11 +8,11 @@ use CraftCms\Cms\Element\Concerns\HasSources;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
- * @event RegisterSources The event that is triggered when registering the available sources for the element type.
+ * @event ElementSourcesResolving The event that is triggered when registering the available sources for the element type.
  *
  * {@see HasSources::sources()}
  */
-class RegisterSources
+class ElementSourcesResolving
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Events\ElementFieldLayoutsResolving;
-use CraftCms\Cms\Element\Events\RegisterSources;
+use CraftCms\Cms\Element\Events\ElementSourcesResolving;
 use CraftCms\Cms\Entry\Elements\Entry;
 use Illuminate\Support\Facades\Event;
 
@@ -35,10 +35,10 @@ describe('sources', function () {
         expect($sources1)->toBe($sources2);
     });
 
-    test('triggers RegisterSources event', function () {
+    test('triggers ElementSourcesResolving event', function () {
         $eventTriggered = false;
 
-        Event::listen(function (RegisterSources $event) use (&$eventTriggered) {
+        Event::listen(function (ElementSourcesResolving $event) use (&$eventTriggered) {
             if ($event->elementType === TestHasSourcesElement::class) {
                 $eventTriggered = true;
                 $event->sources = [];
