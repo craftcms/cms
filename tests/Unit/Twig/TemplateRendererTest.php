@@ -6,7 +6,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Twig\Events\PageEnded;
 use CraftCms\Cms\Twig\Events\PageStarting;
 use CraftCms\Cms\Twig\Events\PageTemplateRendered;
-use CraftCms\Cms\Twig\Events\RenderingPageTemplate;
+use CraftCms\Cms\Twig\Events\PageTemplateRendering;
 use CraftCms\Cms\Twig\Events\RenderingTemplate;
 use CraftCms\Cms\Twig\Events\TemplateRendered;
 use CraftCms\Cms\Twig\TemplateRenderer;
@@ -192,8 +192,8 @@ describe('renderPageTemplate', function () {
     it('dispatches lifecycle events in order', function () {
         $events = [];
 
-        Event::listen(RenderingPageTemplate::class, function () use (&$events) {
-            $events[] = 'RenderingPageTemplate';
+        Event::listen(PageTemplateRendering::class, function () use (&$events) {
+            $events[] = 'PageTemplateRendering';
         });
         Event::listen(PageStarting::class, function () use (&$events) {
             $events[] = 'PageStarting';
@@ -214,7 +214,7 @@ describe('renderPageTemplate', function () {
         $this->renderer->renderPageTemplate('test-template.twig');
 
         expect($events)->toBe([
-            'RenderingPageTemplate',
+            'PageTemplateRendering',
             'PageStarting',
             'RenderingTemplate',
             'TemplateRendered',
@@ -223,8 +223,8 @@ describe('renderPageTemplate', function () {
         ]);
     });
 
-    it('returns empty string when RenderingPageTemplate event is cancelled', function () {
-        Event::listen(RenderingPageTemplate::class, function (RenderingPageTemplate $event) {
+    it('returns empty string when PageTemplateRendering event is cancelled', function () {
+        Event::listen(PageTemplateRendering::class, function (PageTemplateRendering $event) {
             $event->isValid = false;
         });
 

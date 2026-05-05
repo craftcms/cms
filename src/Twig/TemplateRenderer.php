@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Twig;
 
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Events\PageTemplateRendered;
-use CraftCms\Cms\Twig\Events\RenderingPageTemplate;
+use CraftCms\Cms\Twig\Events\PageTemplateRendering;
 use CraftCms\Cms\Twig\Events\RenderingTemplate;
 use CraftCms\Cms\Twig\Events\TemplateRendered;
 use CraftCms\Cms\View\TemplateMode;
@@ -120,7 +120,7 @@ class TemplateRenderer
     ): string {
         $templateMode ??= TemplateMode::get();
 
-        event($event = new RenderingPageTemplate($template, $variables, $templateMode));
+        event($event = new PageTemplateRendering($template, $variables, $templateMode));
 
         if (! $event->isValid) {
             return '';

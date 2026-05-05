@@ -27,7 +27,7 @@ use CraftCms\Cms\Twig\Environment;
 use CraftCms\Cms\Twig\Events\PageEnded;
 use CraftCms\Cms\Twig\Events\PageStarting;
 use CraftCms\Cms\Twig\Events\PageTemplateRendered;
-use CraftCms\Cms\Twig\Events\RenderingPageTemplate;
+use CraftCms\Cms\Twig\Events\PageTemplateRendering;
 use CraftCms\Cms\Twig\Events\RenderingTemplate;
 use CraftCms\Cms\Twig\Events\TemplateRendered;
 use CraftCms\Cms\Twig\Events\TwigCreated;
@@ -2261,7 +2261,7 @@ JS;
             $event->templateMode = TemplateMode::from($yiiEvent->templateMode);
         });
 
-        Event::listen(function(RenderingPageTemplate $event) {
+        Event::listen(function(PageTemplateRendering $event) {
             if (!Craft::$app->getView()->hasEventHandlers(self::EVENT_BEFORE_RENDER_PAGE_TEMPLATE)) {
                 return;
             }
