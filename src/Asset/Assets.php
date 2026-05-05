@@ -10,7 +10,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AssetReplaced;
 use CraftCms\Cms\Asset\Events\AssetReplacing;
-use CraftCms\Cms\Asset\Events\RegisterPreviewHandler;
+use CraftCms\Cms\Asset\Events\PreviewHandlerResolving;
 use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Exceptions\AssetNotPreviewableException;
 use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
@@ -286,7 +286,7 @@ class Assets
 
     public function getAssetPreviewHandler(Asset $asset): ?AssetPreviewHandlerInterface
     {
-        event($event = new RegisterPreviewHandler(asset: $asset));
+        event($event = new PreviewHandlerResolving(asset: $asset));
 
         if ($event->previewHandler instanceof AssetPreviewHandlerInterface) {
             return $event->previewHandler;

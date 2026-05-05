@@ -224,7 +224,7 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
   - `craft\services\Assets::EVENT_BEFORE_REPLACE_ASSET` => `CraftCms\Cms\Asset\Events\AssetReplacing`
   - `craft\services\Assets::EVENT_AFTER_REPLACE_ASSET` => `CraftCms\Cms\Asset\Events\AssetReplaced`
 - Deprecated `craft\events\DefineAssetThumbUrlEvent`. `CraftCms\Cms\Asset\Events\ThumbUrlResolving` should be used instead.
-- Deprecated `craft\events\AssetPreviewEvent`. `CraftCms\Cms\Asset\Events\RegisterPreviewHandler` should be used instead.
+- Deprecated `craft\events\AssetPreviewEvent`. `CraftCms\Cms\Asset\Events\PreviewHandlerResolving` should be used instead.
 
 ## Auth
 

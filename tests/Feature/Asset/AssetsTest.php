@@ -6,7 +6,7 @@ use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AssetReplacing;
-use CraftCms\Cms\Asset\Events\RegisterPreviewHandler;
+use CraftCms\Cms\Asset\Events\PreviewHandlerResolving;
 use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
@@ -100,8 +100,8 @@ it('uses ThumbUrlResolving event url when set', function () {
     expect($url)->toBe('https://example.com/custom-thumb.jpg');
 });
 
-it('dispatches RegisterPreviewHandler event', function () {
-    Event::fake([RegisterPreviewHandler::class]);
+it('dispatches PreviewHandlerResolving event', function () {
+    Event::fake([PreviewHandlerResolving::class]);
 
     $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
@@ -114,7 +114,7 @@ it('dispatches RegisterPreviewHandler event', function () {
 
     $this->assets->getAssetPreviewHandler($asset);
 
-    Event::assertDispatched(RegisterPreviewHandler::class);
+    Event::assertDispatched(PreviewHandlerResolving::class);
 });
 
 it('returns default preview handler for known asset kinds', function () {

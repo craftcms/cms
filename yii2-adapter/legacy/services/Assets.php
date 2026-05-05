@@ -25,7 +25,7 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\AssetReplaced;
 use CraftCms\Cms\Asset\Events\AssetReplacing;
-use CraftCms\Cms\Asset\Events\RegisterPreviewHandler;
+use CraftCms\Cms\Asset\Events\PreviewHandlerResolving;
 use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
@@ -337,7 +337,7 @@ class Assets extends Component
             }
         });
 
-        EventFacade::listen(RegisterPreviewHandler::class, function(RegisterPreviewHandler $event) {
+        EventFacade::listen(PreviewHandlerResolving::class, function(PreviewHandlerResolving $event) {
             if (!Craft::$app->getAssets()->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_HANDLER)) {
                 return;
             }
