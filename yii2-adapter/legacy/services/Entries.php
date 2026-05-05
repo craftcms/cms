@@ -16,10 +16,10 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Entry\Events\ApplyingDeleteEntryType;
 use CraftCms\Cms\Entry\Events\DeletingEntryType;
 use CraftCms\Cms\Entry\Events\EntryMovedToSection;
 use CraftCms\Cms\Entry\Events\EntryTypeDeleted;
+use CraftCms\Cms\Entry\Events\EntryTypeDeletionApplying;
 use CraftCms\Cms\Entry\Events\EntryTypeSaved;
 use CraftCms\Cms\Entry\Events\MovingEntryToSection;
 use CraftCms\Cms\Entry\Events\SavingEntryType;
@@ -838,7 +838,7 @@ class Entries extends Component
             }
         });
 
-        Event::listen(ApplyingDeleteEntryType::class, function(ApplyingDeleteEntryType $event) {
+        Event::listen(EntryTypeDeletionApplying::class, function(EntryTypeDeletionApplying $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE, new EntryTypeEvent([
                     'entryType' => $event->entryType,

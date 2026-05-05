@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Entry\Data\EntryType as EntryTypeData;
 use CraftCms\Cms\Entry\EntryTypes;
-use CraftCms\Cms\Entry\Events\ApplyingDeleteEntryType;
 use CraftCms\Cms\Entry\Events\DeletingEntryType;
 use CraftCms\Cms\Entry\Events\EntryTypeDeleted;
+use CraftCms\Cms\Entry\Events\EntryTypeDeletionApplying;
 use CraftCms\Cms\Entry\Events\EntryTypeSaved;
 use CraftCms\Cms\Entry\Events\SavingEntryType;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -113,12 +113,12 @@ it('can save an entry type', function () {
 it('can delete an entry type by id', function () {
     Event::fake([
         DeletingEntryType::class,
-        ApplyingDeleteEntryType::class,
+        EntryTypeDeletionApplying::class,
         EntryTypeDeleted::class,
     ]);
 
     Event::listen(DeletingEntryType::class, fn () => null);
-    Event::listen(ApplyingDeleteEntryType::class, fn () => null);
+    Event::listen(EntryTypeDeletionApplying::class, fn () => null);
     Event::listen(EntryTypeDeleted::class, fn () => null);
 
     $this->entryTypes->saveEntryType($entryType = new EntryTypeData([
@@ -132,7 +132,7 @@ it('can delete an entry type by id', function () {
     expect(EntryType::count())->toBe(0);
 
     Event::assertDispatchedOnce(DeletingEntryType::class);
-    Event::assertDispatchedOnce(ApplyingDeleteEntryType::class);
+    Event::assertDispatchedOnce(EntryTypeDeletionApplying::class);
     Event::assertDispatchedOnce(EntryTypeDeleted::class);
 });
 

@@ -12,9 +12,9 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Entry\Events\ApplyingDeleteEntryType;
 use CraftCms\Cms\Entry\Events\DeletingEntryType;
 use CraftCms\Cms\Entry\Events\EntryTypeDeleted;
+use CraftCms\Cms\Entry\Events\EntryTypeDeletionApplying;
 use CraftCms\Cms\Entry\Events\EntryTypeSaved;
 use CraftCms\Cms\Entry\Events\SavingEntryType;
 use CraftCms\Cms\Entry\Exceptions\EntryTypeNotFoundException;
@@ -493,7 +493,7 @@ class EntryTypes
         /** @var EntryType $entryType */
         $entryType = $this->getEntryTypeById($entryTypeModel->id);
 
-        event(new ApplyingDeleteEntryType($entryType));
+        event(new EntryTypeDeletionApplying($entryType));
 
         DB::beginTransaction();
 

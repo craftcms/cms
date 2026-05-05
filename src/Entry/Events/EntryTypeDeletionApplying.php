@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Entry\Events;
 
 use CraftCms\Cms\Entry\Data\EntryType;
 
-class ApplyingDeleteEntryType
+class EntryTypeDeletionApplying
 {
     public function __construct(
         public EntryType $entryType,
