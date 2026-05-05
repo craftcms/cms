@@ -17,8 +17,8 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Statusable;
 use CraftCms\Cms\Cp\Alerts;
-use CraftCms\Cms\Cp\Events\DefineElementCardHtml;
 use CraftCms\Cms\Cp\Events\DefineElementChipHtml;
+use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\RegisterCpAlerts;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
@@ -895,7 +895,7 @@ class Cp
             }
         });
 
-        Event::listen(function(DefineElementCardHtml $event) {
+        Event::listen(function(ElementCardHtmlResolving $event) {
             if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_ELEMENT_CARD_HTML)) {
                 $yiiEvent = new DefineElementHtmlEvent([
                     'element' => $event->element,

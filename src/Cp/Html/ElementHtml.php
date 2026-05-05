@@ -14,8 +14,8 @@ use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Contracts\Indicative;
 use CraftCms\Cms\Component\Contracts\Statusable;
 use CraftCms\Cms\Component\Contracts\Thumbable;
-use CraftCms\Cms\Cp\Events\DefineElementCardHtml;
 use CraftCms\Cms\Cp\Events\DefineElementChipHtml;
+use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -511,7 +511,7 @@ JS, [
 
         $html .= Html::endTag('div'); // .card
 
-        event($event = new DefineElementCardHtml($element, $config['context'], $html));
+        event($event = new ElementCardHtmlResolving($element, $config['context'], $html));
 
         return $event->html;
     }
