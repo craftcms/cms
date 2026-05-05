@@ -5,8 +5,8 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Backups;
 use CraftCms\Cms\Database\Events\BackupCreated;
+use CraftCms\Cms\Database\Events\BackupCreating;
 use CraftCms\Cms\Database\Events\BackupRestored;
-use CraftCms\Cms\Database\Events\BeforeCreateBackup;
 use CraftCms\Cms\Database\Events\BeforeRestoreBackup;
 use CraftCms\Cms\Database\Exceptions\CommandFailedException;
 use Illuminate\Database\MySqlConnection;
@@ -85,7 +85,7 @@ it('runs configured backup command and dispatches backup events', function () {
     $beforeEvent = null;
     $afterEvent = null;
 
-    Event::listen(BeforeCreateBackup::class, function (BeforeCreateBackup $event) use (&$beforeEvent) {
+    Event::listen(BackupCreating::class, function (BackupCreating $event) use (&$beforeEvent) {
         $beforeEvent = $event;
     });
 
@@ -200,7 +200,7 @@ it('uses mysql default command generation for closure commands and respects even
     $capturedDefaultCommand = null;
     $connection = backupsTestMysqlConnection();
 
-    Event::listen(BeforeCreateBackup::class, function (BeforeCreateBackup $event) {
+    Event::listen(BackupCreating::class, function (BackupCreating $event) {
         $event->ignoreTables = ['cache'];
     });
 

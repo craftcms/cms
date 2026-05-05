@@ -8,8 +8,8 @@ use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Events\BackupCreated;
+use CraftCms\Cms\Database\Events\BackupCreating;
 use CraftCms\Cms\Database\Events\BackupRestored;
-use CraftCms\Cms\Database\Events\BeforeCreateBackup;
 use CraftCms\Cms\Database\Events\BeforeRestoreBackup;
 use CraftCms\Cms\Database\Exceptions\CommandFailedException;
 use CraftCms\Cms\Shared\Models\Info;
@@ -83,7 +83,7 @@ final readonly class Backups
         $connection ??= DB::connection();
         $ignoreTables ??= self::DEFAULT_IGNORED_TABLES;
 
-        event($event = new BeforeCreateBackup(
+        event($event = new BackupCreating(
             connection: $connection,
             file: $filePath,
             ignoreTables: $ignoreTables,
