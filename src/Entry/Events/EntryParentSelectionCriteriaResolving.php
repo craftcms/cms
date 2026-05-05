@@ -7,11 +7,11 @@ namespace CraftCms\Cms\Entry\Events;
 use CraftCms\Cms\Entry\Elements\Entry;
 
 /**
- * @event DefineParentSelectionCriteria The event that is triggered when defining the parent selection criteria.
+ * @event EntryParentSelectionCriteriaResolving The event that is triggered when defining the parent selection criteria.
  *
  * @see Entry::_parentOptionCriteria()
  */
-class DefineParentSelectionCriteria
+class EntryParentSelectionCriteriaResolving
 {
     public function __construct(
         public Entry $entry,

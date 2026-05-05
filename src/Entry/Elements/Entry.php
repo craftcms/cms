@@ -40,8 +40,8 @@ use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Conditions\SectionConditionRule;
 use CraftCms\Cms\Entry\Conditions\TypeConditionRule;
 use CraftCms\Cms\Entry\Data\EntryType;
-use CraftCms\Cms\Entry\Events\DefineParentSelectionCriteria;
 use CraftCms\Cms\Entry\Events\EntryMetaFieldsResolving;
+use CraftCms\Cms\Entry\Events\EntryParentSelectionCriteriaResolving;
 use CraftCms\Cms\Entry\Events\EntryTypesResolving;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Validation\EntryRules;
@@ -2283,7 +2283,7 @@ JS;
             $parentOptionCriteria['level'] = sprintf('<=%s', $section->maxLevels - $depth);
         }
 
-        event($event = new DefineParentSelectionCriteria($this, $parentOptionCriteria));
+        event($event = new EntryParentSelectionCriteriaResolving($this, $parentOptionCriteria));
 
         return $event->criteria;
     }
