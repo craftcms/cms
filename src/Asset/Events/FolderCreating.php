@@ -8,9 +8,9 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
 /**
- * @event CreatingFolder The event that is triggered before a folder is created.
+ * @event FolderCreating The event that is triggered before a folder is created.
  */
-class CreatingFolder
+class FolderCreating
 {
     use ValidatableEvent;
 
