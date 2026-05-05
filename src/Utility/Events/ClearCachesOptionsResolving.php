@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Utility\Events;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
 
 /**
- * @event RegisterCacheOptions The event that is triggered when registering cache options.
+ * @event ClearCachesOptionsResolving The event that is triggered when registering cache options.
  *
- * Each option added to {@see RegisterCacheOptions::$options} should be an array that has the following keys:
+ * Each option added to {@see ClearCachesOptionsResolving::$options} should be an array that has the following keys:
  *
  * - `key` – An identifying key for the cache option.
  * - `label` – A human-facing label for the cache option.
@@ -18,7 +18,7 @@ use CraftCms\Cms\Utility\Utilities\ClearCaches;
  *
  * @see ClearCaches::cacheOptions()
  */
-class RegisterCacheOptions
+class ClearCachesOptionsResolving
 {
     public function __construct(
         /**
