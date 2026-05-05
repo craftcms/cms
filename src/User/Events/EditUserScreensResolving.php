@@ -7,10 +7,10 @@ namespace CraftCms\Cms\User\Events;
 use CraftCms\Cms\User\Elements\User;
 
 /**
- * @event DefineEditUserScreens The event that is triggered when defining the screens that should be
+ * @event EditUserScreensResolving The event that is triggered when defining the screens that should be
  * shown for the user being edited.
  */
-class DefineEditUserScreens
+class EditUserScreensResolving
 {
     public function __construct(
         public ?User $currentUser,

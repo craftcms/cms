@@ -18,8 +18,8 @@ use craft\web\Controller;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieving;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\DefineEditUserScreens;
 use CraftCms\Cms\User\Events\DefineUserContentSummary;
+use CraftCms\Cms\User\Events\EditUserScreensResolving;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
 use CraftCms\Cms\User\Events\UserGroupsAndPermissionsAssigning;
 use CraftCms\Cms\View\TemplateMode;
@@ -145,7 +145,7 @@ class UsersController extends Controller
 
     public static function registerEvents(): void
     {
-        Event::listen(DefineEditUserScreens::class, function(DefineEditUserScreens $event) {
+        Event::listen(EditUserScreensResolving::class, function(EditUserScreensResolving $event) {
             if (YiiEvent::hasHandlers(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS)) {
                 $currentUser = User::find()->id($event->currentUser->id)->one();
                 $editedUser = User::find()->id($event->editedUser->id)->one();
