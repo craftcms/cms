@@ -10,8 +10,8 @@ namespace craft\services;
 use Craft;
 use craft\events\RevisionEvent;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Events\ElementRevertingToRevision;
 use CraftCms\Cms\Element\Events\RevertedToRevision;
-use CraftCms\Cms\Element\Events\RevertingToRevision;
 use CraftCms\Cms\Element\Events\RevisionCreated;
 use CraftCms\Cms\Element\Events\RevisionCreating;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
@@ -95,7 +95,7 @@ class Revisions extends Component
         foreach ([
             self::EVENT_BEFORE_CREATE_REVISION => RevisionCreating::class,
             self::EVENT_AFTER_CREATE_REVISION => RevisionCreated::class,
-            self::EVENT_BEFORE_REVERT_TO_REVISION => RevertingToRevision::class,
+            self::EVENT_BEFORE_REVERT_TO_REVISION => ElementRevertingToRevision::class,
             self::EVENT_AFTER_REVERT_TO_REVISION => RevertedToRevision::class,
         ] as $old => $new) {
             Event::listen($new, function(\CraftCms\Cms\Element\Events\RevisionEvent $event) use ($old) {

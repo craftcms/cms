@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Element;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Events\ElementRevertingToRevision;
 use CraftCms\Cms\Element\Events\RevertedToRevision;
-use CraftCms\Cms\Element\Events\RevertingToRevision;
 use CraftCms\Cms\Element\Events\RevisionCreated;
 use CraftCms\Cms\Element\Events\RevisionCreating;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
@@ -191,7 +191,7 @@ readonly class Revisions
     {
         $canonical = $revision->getCanonical();
 
-        event(new RevertingToRevision(
+        event(new ElementRevertingToRevision(
             canonical: $canonical,
             revisionNum: $revision->revisionNum,
             creatorId: $creatorId,

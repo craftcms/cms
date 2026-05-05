@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Events\ElementRevertingToRevision;
 use CraftCms\Cms\Element\Events\RevertedToRevision;
-use CraftCms\Cms\Element\Events\RevertingToRevision;
 use CraftCms\Cms\Element\Events\RevisionCreated;
 use CraftCms\Cms\Element\Events\RevisionCreating;
 use CraftCms\Cms\Element\Revisions;
@@ -49,11 +49,11 @@ it('can create a revision', function () {
 
 it('can revert an element to a revision', function () {
     Event::fake([
-        RevertingToRevision::class,
+        ElementRevertingToRevision::class,
         RevertedToRevision::class,
     ]);
 
-    Event::listen(RevertingToRevision::class, fn () => true);
+    Event::listen(ElementRevertingToRevision::class, fn () => true);
     Event::listen(RevertedToRevision::class, fn () => true);
 
     Entry::factory()->create();
@@ -69,6 +69,6 @@ it('can revert an element to a revision', function () {
 
     expect($element->getIsRevision())->toBeFalse();
 
-    Event::assertDispatchedOnce(RevertingToRevision::class);
+    Event::assertDispatchedOnce(ElementRevertingToRevision::class);
     Event::assertDispatchedOnce(RevertedToRevision::class);
 });
