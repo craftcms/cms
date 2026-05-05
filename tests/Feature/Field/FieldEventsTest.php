@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Dropdown;
-use CraftCms\Cms\Field\Events\AfterFieldMergeFrom;
 use CraftCms\Cms\Field\Events\AfterFieldMergeInto;
 use CraftCms\Cms\Field\Events\AfterFieldSave;
 use CraftCms\Cms\Field\Events\BeforeApplyFieldDelete;
@@ -21,6 +20,7 @@ use CraftCms\Cms\Field\Events\FieldElementPropagated;
 use CraftCms\Cms\Field\Events\FieldElementRestored;
 use CraftCms\Cms\Field\Events\FieldElementSaved;
 use CraftCms\Cms\Field\Events\FieldLifecycleDeleted;
+use CraftCms\Cms\Field\Events\FieldMergeFromCompleted;
 use CraftCms\Cms\Field\PlainText;
 use Illuminate\Support\Facades\Event;
 
@@ -205,11 +205,11 @@ it('can dispatch field merge events', function () {
         $events[] = AfterFieldMergeInto::class;
     });
 
-    Event::listen(function (AfterFieldMergeFrom $event) use ($outgoingField, $persistingField, &$events) {
+    Event::listen(function (FieldMergeFromCompleted $event) use ($outgoingField, $persistingField, &$events) {
         expect($event->field)->toBe($persistingField);
         expect($event->outgoingField)->toBe($outgoingField);
 
-        $events[] = AfterFieldMergeFrom::class;
+        $events[] = FieldMergeFromCompleted::class;
     });
 
     $outgoingField->afterMergeInto($persistingField);
@@ -217,6 +217,6 @@ it('can dispatch field merge events', function () {
 
     expect($events)->toBe([
         AfterFieldMergeInto::class,
-        AfterFieldMergeFrom::class,
+        FieldMergeFromCompleted::class,
     ]);
 });
