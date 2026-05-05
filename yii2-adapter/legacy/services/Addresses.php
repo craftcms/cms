@@ -18,7 +18,7 @@ use craft\events\DefineAddressFieldsEvent;
 use craft\events\DefineAddressSubdivisionsEvent;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Address\Events\AddressCountriesResolving;
-use CraftCms\Cms\Address\Events\DefineAddressFieldLabel;
+use CraftCms\Cms\Address\Events\AddressFieldLabelResolving;
 use CraftCms\Cms\Address\Events\DefineAddressSubdivisions;
 use CraftCms\Cms\Address\Events\DefineAddressUsedFields;
 use CraftCms\Cms\Address\Events\DefineAddressUsedSubdivisionFields;
@@ -312,7 +312,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
             $event->fields = $yiiEvent->fields;
         });
 
-        Event::listen(DefineAddressFieldLabel::class, function(DefineAddressFieldLabel $event) {
+        Event::listen(AddressFieldLabelResolving::class, function(AddressFieldLabelResolving $event) {
             if (!Craft::$app->getAddresses()->hasEventHandlers(self::EVENT_DEFINE_FIELD_LABEL)) {
                 return;
             }

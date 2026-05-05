@@ -15,7 +15,7 @@ use CommerceGuys\Addressing\Formatter\DefaultFormatter;
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Address\Events\AddressCountriesResolving;
-use CraftCms\Cms\Address\Events\DefineAddressFieldLabel;
+use CraftCms\Cms\Address\Events\AddressFieldLabelResolving;
 use CraftCms\Cms\Address\Events\DefineAddressSubdivisions;
 use CraftCms\Cms\Address\Events\DefineAddressUsedFields;
 use CraftCms\Cms\Address\Events\DefineAddressUsedSubdivisionFields;
@@ -148,7 +148,7 @@ readonly class Addresses implements FieldLayoutProviderInterface
             AddressField::FAMILY_NAME => t('Last Name'),
         };
 
-        event($event = new DefineAddressFieldLabel($countryCode, $field, $label));
+        event($event = new AddressFieldLabelResolving($countryCode, $field, $label));
 
         return $event->label;
     }

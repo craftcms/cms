@@ -10,7 +10,7 @@ use CommerceGuys\Addressing\AddressFormat\PostalCodeType;
 use CommerceGuys\Addressing\Country\CountryRepository;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Events\AddressCountriesResolving;
-use CraftCms\Cms\Address\Events\DefineAddressFieldLabel;
+use CraftCms\Cms\Address\Events\AddressFieldLabelResolving;
 use CraftCms\Cms\Address\Events\DefineAddressSubdivisions;
 use CraftCms\Cms\Address\Events\DefineAddressUsedFields;
 use CraftCms\Cms\Address\Events\DefineAddressUsedSubdivisionFields;
@@ -93,7 +93,7 @@ it('can get a field label for a field and country code', function () {
 });
 
 it('can change the field label with an event', function () {
-    Event::listen(DefineAddressFieldLabel::class, function (DefineAddressFieldLabel $event) {
+    Event::listen(AddressFieldLabelResolving::class, function (AddressFieldLabelResolving $event) {
         $event->label = 'foo';
     });
 

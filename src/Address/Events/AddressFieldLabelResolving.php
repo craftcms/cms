@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Address\Events;
 
-class DefineAddressFieldLabel
+class AddressFieldLabelResolving
 {
     public function __construct(
         public string $countryCode,
