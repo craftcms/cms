@@ -11,7 +11,6 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\RegistersPackageAliases;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
-use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -35,7 +34,7 @@ class UnitTestCase extends Orchestra
     {
         parent::setUp();
 
-        unset($_SERVER['CRAFT_EDITION'], Env::get('CRAFT_EDITION'));
+        unset($_SERVER['CRAFT_EDITION']);
         putenv('CRAFT_EDITION');
 
         Context::forgetHidden(Edition::class);
