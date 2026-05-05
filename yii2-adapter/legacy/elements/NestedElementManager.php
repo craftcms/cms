@@ -5,8 +5,8 @@ namespace craft\elements;
 use craft\base\Event as YiiEvent;
 use craft\events\BulkElementsEvent;
 use craft\events\DuplicateNestedElementsEvent;
-use CraftCms\Cms\Element\Events\CreateNestedElementRevisions;
 use CraftCms\Cms\Element\Events\DuplicateNestedElementsEvent as NewDuplicateNestedElementsEvent;
+use CraftCms\Cms\Element\Events\NestedElementRevisionsCreated;
 use CraftCms\Cms\Element\Events\NestedElementsSaved;
 use Illuminate\Support\Facades\Event;
 
@@ -49,7 +49,7 @@ class NestedElementManager extends \CraftCms\Cms\Element\NestedElementManager
             ]));
         });
 
-        Event::listen(function(CreateNestedElementRevisions $event) {
+        Event::listen(function(NestedElementRevisionsCreated $event) {
             if (!YiiEvent::hasHandlers(self::class, self::EVENT_AFTER_CREATE_REVISIONS)) {
                 return;
             }
