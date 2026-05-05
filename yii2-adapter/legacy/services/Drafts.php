@@ -12,9 +12,9 @@ use craft\events\DraftEvent;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Element\Events\ApplyingDraft;
 use CraftCms\Cms\Element\Events\CreatingDraft;
 use CraftCms\Cms\Element\Events\DraftApplied;
+use CraftCms\Cms\Element\Events\DraftApplying;
 use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use Illuminate\Support\Facades\Event;
@@ -187,7 +187,7 @@ class Drafts extends Component
         foreach ([
             self::EVENT_BEFORE_CREATE_DRAFT => CreatingDraft::class,
             self::EVENT_AFTER_CREATE_DRAFT => DraftCreated::class,
-            self::EVENT_BEFORE_APPLY_DRAFT => ApplyingDraft::class,
+            self::EVENT_BEFORE_APPLY_DRAFT => DraftApplying::class,
             self::EVENT_AFTER_APPLY_DRAFT => DraftApplied::class,
         ] as $old => $new) {
             Event::listen($new, function(\CraftCms\Cms\Element\Events\DraftEvent $event) use ($old) {

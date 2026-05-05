@@ -5,9 +5,9 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Events\ApplyingDraft;
 use CraftCms\Cms\Element\Events\CreatingDraft;
 use CraftCms\Cms\Element\Events\DraftApplied;
+use CraftCms\Cms\Element\Events\DraftApplying;
 use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
@@ -96,11 +96,11 @@ it('can apply a draft', function () {
     actingAs(User::findOne());
 
     Event::fake([
-        ApplyingDraft::class,
+        DraftApplying::class,
         DraftApplied::class,
     ]);
 
-    Event::listen(ApplyingDraft::class, fn () => true);
+    Event::listen(DraftApplying::class, fn () => true);
     Event::listen(DraftApplied::class, fn () => true);
 
     Entry::factory()->create();
@@ -120,7 +120,7 @@ it('can apply a draft', function () {
 
     expect($element->revisionNotes)->toBe('Some notes');
 
-    Event::assertDispatchedOnce(ApplyingDraft::class);
+    Event::assertDispatchedOnce(DraftApplying::class);
     Event::assertDispatchedOnce(DraftApplied::class);
 });
 
