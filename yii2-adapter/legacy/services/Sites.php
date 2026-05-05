@@ -23,13 +23,12 @@ use CraftCms\Cms\Site\Data\SiteGroup;
 use CraftCms\Cms\Site\Events\DeletedSiteGroup;
 use CraftCms\Cms\Site\Events\PrimarySiteChanged;
 use CraftCms\Cms\Site\Events\SavedSiteGroup;
-use CraftCms\Cms\Site\Events\SavingSite;
-use CraftCms\Cms\Site\Events\SavingSiteGroup;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Site\Events\SiteDeleting;
 use CraftCms\Cms\Site\Events\SiteDeletionApplying;
 use CraftCms\Cms\Site\Events\SiteGroupDeletionApplying;
 use CraftCms\Cms\Site\Events\SiteSaved;
+use CraftCms\Cms\Site\Events\SiteSaving;
 use CraftCms\Cms\Site\Events\SitesReordered;
 use CraftCms\Cms\Site\Events\SitesReordering;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
@@ -613,7 +612,7 @@ class Sites extends Component
             }
         });
 
-        Event::listen(SavingSite::class, function(SavingSite $event) {
+        Event::listen(SiteSaving::class, function(SiteSaving $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_BEFORE_SAVE_SITE)) {
                 Craft::$app->getSites()->trigger(self::EVENT_BEFORE_SAVE_SITE, $yiiEvent = new SiteEvent([
                     'site' => self::siteToLegacySite($event->site),

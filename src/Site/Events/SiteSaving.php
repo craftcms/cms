@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Site\Events;
 use CraftCms\Cms\Site\Data\Site;
 
 /**
- * @event SavingSite The event that is triggered before a site is saved.
+ * @event SiteSaving The event that is triggered before a site is saved.
  */
-class SavingSite
+class SiteSaving
 {
     public function __construct(
         public Site $site,

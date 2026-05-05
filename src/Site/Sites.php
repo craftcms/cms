@@ -15,11 +15,11 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Events\PrimarySiteChanged;
-use CraftCms\Cms\Site\Events\SavingSite;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Site\Events\SiteDeleting;
 use CraftCms\Cms\Site\Events\SiteDeletionApplying;
 use CraftCms\Cms\Site\Events\SiteSaved;
+use CraftCms\Cms\Site\Events\SiteSaving;
 use CraftCms\Cms\Site\Events\SitesReordered;
 use CraftCms\Cms\Site\Events\SitesReordering;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
@@ -411,7 +411,7 @@ class Sites
 
         $primarySite = $this->allSitesById->isEmpty() ? null : $this->getPrimarySite();
 
-        event(new SavingSite(
+        event(new SiteSaving(
             site: $site,
             isNew: $isNewSite,
             oldPrimarySiteId: $primarySite->id ?? null,

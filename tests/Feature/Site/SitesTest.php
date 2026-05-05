@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\Site as SiteData;
-use CraftCms\Cms\Site\Events\SavingSite;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Site\Events\SiteDeleting;
 use CraftCms\Cms\Site\Events\SiteDeletionApplying;
 use CraftCms\Cms\Site\Events\SiteSaved;
+use CraftCms\Cms\Site\Events\SiteSaving;
 use CraftCms\Cms\Site\Events\SitesReordered;
 use CraftCms\Cms\Site\Events\SitesReordering;
 use CraftCms\Cms\Site\Models\Site;
@@ -202,7 +202,7 @@ it('can save a site', function () {
     $siteModel = Site::firstOrFail();
 
     Event::fake([
-        SavingSite::class,
+        SiteSaving::class,
         SiteSaved::class,
     ]);
 
@@ -213,7 +213,7 @@ it('can save a site', function () {
     $this->sites->saveSite($site);
 
     expect($this->sites->getSiteByHandle($siteModel->handle)->getName())->toBe('Edited name');
-    Event::assertDispatchedOnce(SavingSite::class);
+    Event::assertDispatchedOnce(SiteSaving::class);
     Event::assertDispatchedOnce(SiteSaved::class);
 });
 
