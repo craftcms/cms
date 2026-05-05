@@ -10,6 +10,8 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Events\ElementResaved;
 use CraftCms\Cms\Element\Events\ElementResaving;
+use CraftCms\Cms\Element\Events\ElementsResaved;
+use CraftCms\Cms\Element\Events\ElementsResaving;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
 use CraftCms\Cms\Element\Operations\ElementUris;
@@ -24,10 +26,10 @@ use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
     Event::fake([
-        BeforeResaveElements::class,
+        ElementsResaving::class,
         ElementResaving::class,
         ElementResaved::class,
-        AfterResaveElements::class,
+        ElementsResaved::class,
     ]);
 
     app(BulkOpsService::class)->resume('test-bulk-op');
@@ -62,16 +64,16 @@ it('resaves matching elements and dispatches lifecycle events', function () {
     expect($this->saveElementAction->calls[0]['resaving'])->toBeTrue();
     expect($this->saveElementAction->calls[1]['element'])->toBe($secondElement);
 
-    Event::assertDispatchedTimes(BeforeResaveElements::class, 1);
-    Event::assertDispatched(fn (BeforeResaveElements $event) => $event->query === $query);
+    Event::assertDispatchedTimes(ElementsResaving::class, 1);
+    Event::assertDispatched(fn (ElementsResaving $event) => $event->query === $query);
     Event::assertDispatchedTimes(ElementResaving::class, 2);
     Event::assertDispatched(fn (ElementResaving $event) => $event->element === $firstElement && $event->position === 1);
     Event::assertDispatched(fn (ElementResaving $event) => $event->element === $secondElement && $event->position === 2);
     Event::assertDispatchedTimes(ElementResaved::class, 2);
     Event::assertDispatched(fn (ElementResaved $event) => $event->element === $firstElement && $event->position === 1 && $event->exception === null);
     Event::assertDispatched(fn (ElementResaved $event) => $event->element === $secondElement && $event->position === 2 && $event->exception === null);
-    Event::assertDispatchedTimes(AfterResaveElements::class, 1);
-    Event::assertDispatched(fn (AfterResaveElements $event) => $event->query === $query);
+    Event::assertDispatchedTimes(ElementsResaved::class, 1);
+    Event::assertDispatched(fn (ElementsResaved $event) => $event->query === $query);
 });
 
 it('reports save errors and continues when continueOnError is enabled', function () {
@@ -94,7 +96,7 @@ it('reports save errors and continues when continueOnError is enabled', function
         $event->exception->getMessage() === 'First save failed.');
 
     Event::assertDispatched(fn (ElementResaved $event) => $event->element === $secondElement && $event->position === 2 && $event->exception === null);
-    Event::assertDispatchedTimes(AfterResaveElements::class, 1);
+    Event::assertDispatchedTimes(ElementsResaved::class, 1);
 });
 
 it('rethrows save errors when continueOnError is disabled', function () {
@@ -109,10 +111,10 @@ it('rethrows save errors when continueOnError is disabled', function () {
 
     expect($this->saveElementAction->calls)->toHaveCount(1);
 
-    Event::assertDispatchedTimes(BeforeResaveElements::class, 1);
+    Event::assertDispatchedTimes(ElementsResaving::class, 1);
     Event::assertDispatchedTimes(ElementResaving::class, 1);
     Event::assertNotDispatched(ElementResaved::class);
-    Event::assertNotDispatched(AfterResaveElements::class);
+    Event::assertNotDispatched(ElementsResaved::class);
 });
 
 it('wraps revision skips with a fallback label when no UI label exists', function () {
@@ -175,8 +177,8 @@ it('fails silently when the query aborts', function () {
 
     expect($this->saveElementAction->calls)->toBeEmpty();
 
-    Event::assertDispatchedTimes(BeforeResaveElements::class, 1);
-    Event::assertDispatchedTimes(AfterResaveElements::class, 1);
+    Event::assertDispatchedTimes(ElementsResaving::class, 1);
+    Event::assertDispatchedTimes(ElementsResaved::class, 1);
     Event::assertNotDispatched(ElementResaving::class);
     Event::assertNotDispatched(ElementResaved::class);
 });
