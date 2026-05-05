@@ -13,11 +13,11 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\SavingUserGroup;
 use CraftCms\Cms\User\Events\UserGroupDeleted;
 use CraftCms\Cms\User\Events\UserGroupDeleting;
 use CraftCms\Cms\User\Events\UserGroupDeletionApplying;
 use CraftCms\Cms\User\Events\UserGroupSaved;
+use CraftCms\Cms\User\Events\UserGroupSaving;
 use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
@@ -251,7 +251,7 @@ readonly class UserGroups
 
         $isNewGroup = ! $group->id;
 
-        event(new SavingUserGroup($group, $isNewGroup));
+        event(new UserGroupSaving($group, $isNewGroup));
 
         $group->uid ??= $isNewGroup
             ? Str::uuid()->toString()

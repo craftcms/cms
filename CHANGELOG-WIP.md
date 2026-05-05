@@ -1012,7 +1012,7 @@ Moved the following controllers:
   - `CraftCms\Cms\Http\Controllers\Settings\UserGroupsController`
   - `CraftCms\Cms\Http\Controllers\Settings\UserSettingsController`
 - Deprecated `UserGroupEvent` in favor of:
-  - `CraftCms\Cms\User\Events\SavingUserGroup`
+  - `CraftCms\Cms\User\Events\UserGroupSaving`
   - `CraftCms\Cms\User\Events\UserGroupSaved`
   - `CraftCms\Cms\User\Events\UserGroupDeletionApplying`
   - `CraftCms\Cms\User\Events\UserGroupDeleting`

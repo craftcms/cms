@@ -13,11 +13,11 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\Support\Facades\UserGroups as UserGroupsFacade;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\SavingUserGroup;
 use CraftCms\Cms\User\Events\UserGroupDeleted;
 use CraftCms\Cms\User\Events\UserGroupDeleting;
 use CraftCms\Cms\User\Events\UserGroupDeletionApplying;
 use CraftCms\Cms\User\Events\UserGroupSaved;
+use CraftCms\Cms\User\Events\UserGroupSaving;
 use Illuminate\Support\Facades\Event;
 use yii\base\Component;
 
@@ -211,7 +211,7 @@ class UserGroups extends Component
 
     public static function registerEvents(): void
     {
-        Event::listen(SavingUserGroup::class, function(SavingUserGroup $event) {
+        Event::listen(UserGroupSaving::class, function(UserGroupSaving $event) {
             if (Craft::$app->getUserGroups()->hasEventHandlers(self::EVENT_BEFORE_SAVE_USER_GROUP)) {
                 Craft::$app->getUserGroups()->trigger(self::EVENT_BEFORE_SAVE_USER_GROUP, $yiiEvent = new UserGroupEvent([
                     'userGroup' => $event->userGroup,

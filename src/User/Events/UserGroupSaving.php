@@ -7,9 +7,9 @@ namespace CraftCms\Cms\User\Events;
 use CraftCms\Cms\User\Data\UserGroup;
 
 /**
- * @event SavingUserGroup The event that is triggered before a user group is saved.
+ * @event UserGroupSaving The event that is triggered before a user group is saved.
  */
-class SavingUserGroup
+class UserGroupSaving
 {
     public function __construct(
         public UserGroup $userGroup,
