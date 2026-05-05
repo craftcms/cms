@@ -10,7 +10,7 @@ namespace craft\utilities;
 use craft\base\Utility;
 use craft\events\RegisterCacheOptionsEvent;
 use CraftCms\Cms\Utility\Events\ClearCachesOptionsResolving;
-use CraftCms\Cms\Utility\Events\RegisterTagOptions;
+use CraftCms\Cms\Utility\Events\ClearCachesTagOptionsResolving;
 use yii\base\Event;
 
 /**
@@ -117,7 +117,7 @@ class ClearCaches extends Utility
         });
 
         // Fire a 'registerTagOptions' event
-        \Illuminate\Support\Facades\Event::listen(RegisterTagOptions::class, function(RegisterTagOptions $event) {
+        \Illuminate\Support\Facades\Event::listen(ClearCachesTagOptionsResolving::class, function(ClearCachesTagOptionsResolving $event) {
             $yiiEvent = new RegisterCacheOptionsEvent(['options' => $event->options]);
             Event::trigger(self::class, self::EVENT_REGISTER_TAG_OPTIONS, $yiiEvent);
 
