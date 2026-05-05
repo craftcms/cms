@@ -11,11 +11,11 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\BeforeDeleteForSite;
 use CraftCms\Cms\Element\Events\BeforeRestoreElement;
 use CraftCms\Cms\Element\Events\ElementDeleted;
 use CraftCms\Cms\Element\Events\ElementDeletedForSite;
 use CraftCms\Cms\Element\Events\ElementDeleting;
+use CraftCms\Cms\Element\Events\ElementDeletingForSite;
 use CraftCms\Cms\Element\Events\ElementRestored;
 use CraftCms\Cms\Element\Events\ElementsMerged;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
@@ -322,7 +322,7 @@ readonly class ElementDeletions
 
         if (! empty($multiSiteElements)) {
             foreach ($multiSiteElements as $element) {
-                event(new BeforeDeleteForSite($element));
+                event(new ElementDeletingForSite($element));
             }
 
             foreach ($multiSiteElements as $element) {
