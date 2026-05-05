@@ -8,9 +8,9 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use Illuminate\Support\Collection;
 
 /**
- * @event DefineSourceTableAttributes The event that is triggered when defining the available table attributes for a source.
+ * @event ElementSourceTableAttributesResolving The event that is triggered when defining the available table attributes for a source.
  */
-class DefineSourceTableAttributes
+class ElementSourceTableAttributesResolving
 {
     public function __construct(
         /**

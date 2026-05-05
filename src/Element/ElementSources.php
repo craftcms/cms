@@ -9,8 +9,8 @@ use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Events\DefineSourceTableAttributes;
 use CraftCms\Cms\Element\Events\ElementSourceSortOptionsResolving;
+use CraftCms\Cms\Element\Events\ElementSourceTableAttributesResolving;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
@@ -669,7 +669,7 @@ class ElementSources
         $fieldLayouts = $this->getFieldLayoutsForSource($elementType, $sourceKey);
         $attributes = $this->getTableAttributesForFieldLayouts($fieldLayouts);
 
-        event($event = new DefineSourceTableAttributes(
+        event($event = new ElementSourceTableAttributesResolving(
             elementType: $elementType,
             source: $sourceKey,
             attributes: $attributes,
