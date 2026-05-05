@@ -17,9 +17,9 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Statusable;
 use CraftCms\Cms\Cp\Alerts;
+use CraftCms\Cms\Cp\Events\CpAlertsResolving;
 use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
-use CraftCms\Cms\Cp\Events\RegisterCpAlerts;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
 use CraftCms\Cms\Cp\FormFields;
@@ -872,7 +872,7 @@ class Cp
 
     public static function registerEvents(): void
     {
-        Event::listen(function(RegisterCpAlerts $event) {
+        Event::listen(function(CpAlertsResolving $event) {
             // Fire legacy Yii2 'registerAlerts' event
             if (YiiEvent::hasHandlers(self::class, self::EVENT_REGISTER_ALERTS)) {
                 $yiiEvent = new RegisterCpAlertsEvent();
