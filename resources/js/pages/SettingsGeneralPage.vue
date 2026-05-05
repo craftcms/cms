@@ -46,14 +46,14 @@
     return [
       {
         label: t('Online'),
-        value: true,
+        value: '1',
         data: {
           indicator: {variant: 'success'},
         },
       },
       {
         label: t('Offline'),
-        value: false,
+        value: '0',
         data: {
           indicator: {variant: 'empty'},
         },
