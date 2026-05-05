@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Element\Events;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
- * @event DefineElementEditorContent The event that is triggered when rendering an element editor’s content.
+ * @event ElementEditorContentResolving The event that is triggered when rendering an element editor’s content.
  */
-class DefineElementEditorContent
+class ElementEditorContentResolving
 {
     public function __construct(
         public ElementInterface $element,
