@@ -7,11 +7,11 @@ namespace CraftCms\Cms\Element\Events;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
- * DefineEagerLoadingMap event is triggered when defining an eager-loading map.
+ * ElementEagerLoadingMapResolving event is triggered when defining an eager-loading map.
  *
  * Set `elementType` and `map` to define a custom eager-loading map for the handle.
  */
-class DefineEagerLoadingMap
+class ElementEagerLoadingMapResolving
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class being queried
