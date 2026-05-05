@@ -28,69 +28,68 @@ readonly class Settings
 
         $settings[$label]['general'] = [
             'url' => route('craft.cp.settings.general.index'),
-            'icon' => 'light/sliders',
+            'iconName' => 'light/sliders',
             'label' => t('General'),
         ];
 
         $settings[$label]['sites'] = [
-            'icon' => sprintf('light/%s', Icons::earth()),
+            'iconName' => sprintf('light/%s', Icons::earth()),
             'label' => t('Sites'),
         ];
 
         if (! $this->generalConfig->headlessMode) {
             $settings[$label]['routes'] = [
-                'icon' => 'light/signs-post',
+                'iconName' => 'light/signs-post',
                 'label' => t('Routes'),
             ];
         }
 
         $settings[$label]['users'] = [
-            'icon' => 'light/user-group',
-            // 'iconMask' => '@craftcms/resources/icons/light/user-group.svg',
+            'iconName' => 'light/user-group',
             'label' => t('Users'),
         ];
 
         if ($this->generalConfig->allowAdminChanges) {
             $settings[$label]['addresses'] = [
-                'icon' => 'light/map-location',
+                'iconName' => 'light/map-location',
                 'label' => t('Addresses'),
             ];
 
             $settings[$label]['email'] = [
                 'url' => route('craft.cp.settings.email.index'),
-                'icon' => 'light/envelope',
+                'iconName' => 'light/envelope',
                 'label' => t('Email'),
             ];
         }
 
         $settings[$label]['plugins'] = [
-            'icon' => 'light/plug',
+            'iconName' => 'light/plug',
             'label' => t('Plugins'),
         ];
 
         $label = t('Content');
 
         $settings[$label]['sections'] = [
-            'icon' => 'light/newspaper',
+            'iconName' => 'light/newspaper',
             'label' => t('Sections'),
         ];
         $settings[$label]['entry-types'] = [
-            'icon' => 'light/files',
+            'iconName' => 'light/files',
             'label' => t('Entry Types'),
         ];
         $settings[$label]['fields'] = [
-            'icon' => 'light/pen-to-square',
+            'iconName' => 'light/pen-to-square',
             'label' => t('Fields'),
         ];
 
         $label = t('Media');
 
         $settings[$label]['assets'] = [
-            'icon' => 'light/image',
+            'iconName' => 'light/image',
             'label' => t('Assets'),
         ];
         $settings[$label]['filesystems'] = [
-            'icon' => 'light/folder-open',
+            'iconName' => 'light/folder-open',
             'label' => t('Filesystems'),
         ];
 
