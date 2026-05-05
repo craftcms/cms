@@ -39,7 +39,6 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
-use CraftCms\Cms\Element\Events\BeforeRestoreElement;
 use CraftCms\Cms\Element\Events\BeforeSaveElement;
 use CraftCms\Cms\Element\Events\BeforeUpdateSearchIndex;
 use CraftCms\Cms\Element\Events\BeforeUpdateSlugAndUri;
@@ -56,6 +55,7 @@ use CraftCms\Cms\Element\Events\ElementPropagating;
 use CraftCms\Cms\Element\Events\ElementResaved;
 use CraftCms\Cms\Element\Events\ElementResaving;
 use CraftCms\Cms\Element\Events\ElementRestored;
+use CraftCms\Cms\Element\Events\ElementRestoring;
 use CraftCms\Cms\Element\Events\ElementSaved;
 use CraftCms\Cms\Element\Events\ElementsEagerLoading;
 use CraftCms\Cms\Element\Events\ElementSlugAndUriUpdated;
@@ -1777,7 +1777,7 @@ class Elements extends Component
             ElementDeleted::class => self::EVENT_AFTER_DELETE_ELEMENT,
             ElementDeletingForSite::class => self::EVENT_BEFORE_DELETE_FOR_SITE,
             ElementDeletedForSite::class => self::EVENT_AFTER_DELETE_FOR_SITE,
-            BeforeRestoreElement::class => self::EVENT_BEFORE_RESTORE_ELEMENT,
+            ElementRestoring::class => self::EVENT_BEFORE_RESTORE_ELEMENT,
             ElementRestored::class => self::EVENT_AFTER_RESTORE_ELEMENT,
         ];
 

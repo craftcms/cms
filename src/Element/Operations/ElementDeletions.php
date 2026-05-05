@@ -11,12 +11,12 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\BeforeRestoreElement;
 use CraftCms\Cms\Element\Events\ElementDeleted;
 use CraftCms\Cms\Element\Events\ElementDeletedForSite;
 use CraftCms\Cms\Element\Events\ElementDeleting;
 use CraftCms\Cms\Element\Events\ElementDeletingForSite;
 use CraftCms\Cms\Element\Events\ElementRestored;
+use CraftCms\Cms\Element\Events\ElementRestoring;
 use CraftCms\Cms\Element\Events\ElementsMerged;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
@@ -367,7 +367,7 @@ readonly class ElementDeletions
     public function restoreElements(array $elements): bool
     {
         foreach ($elements as $element) {
-            event(new BeforeRestoreElement($element));
+            event(new ElementRestoring($element));
 
             if (! $element->beforeRestore()) {
                 return false;

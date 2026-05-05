@@ -7,8 +7,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\BeforeRestoreElement;
 use CraftCms\Cms\Element\Events\ElementRestored;
+use CraftCms\Cms\Element\Events\ElementRestoring;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Models\Draft;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
 it('restores a trashed entry and updates restore side effects', function () {
-    Event::fake([BeforeRestoreElement::class, ElementRestored::class]);
+    Event::fake([ElementRestoring::class, ElementRestored::class]);
 
     $entry = Entry::factory()->createElement();
     app(Elements::class)->deleteElement($entry);
@@ -48,7 +48,7 @@ it('restores a trashed entry and updates restore side effects', function () {
         ->and($entry->dateDeleted)->toBeNull()
         ->and($entry->deletedWithOwner)->toBeNull();
 
-    Event::assertDispatched(fn (BeforeRestoreElement $event) => $event->element->id === $entry->id);
+    Event::assertDispatched(fn (ElementRestoring $event) => $event->element->id === $entry->id);
     Event::assertDispatched(fn (ElementRestored $event) => $event->element->id === $entry->id);
 });
 
@@ -124,7 +124,7 @@ it('throws and rolls back when another supported site fails essential validation
 });
 
 it('restores drafts and revisions, reindexes supported sites, and invalidates caches for each element', function () {
-    Event::fake([BeforeRestoreElement::class, ElementRestored::class]);
+    Event::fake([ElementRestoring::class, ElementRestored::class]);
 
     $otherSite = Site::factory()->create(['handle' => 'localized-site']);
 
