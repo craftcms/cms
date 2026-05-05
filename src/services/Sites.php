@@ -730,10 +730,14 @@ class Sites extends Component
             ]));
         }
 
+        // the trim chars taken from vendor/yiisoft/yii2/validators/TrimValidator.php trimValue() method
+        $originalSiteName = trim($site->getName(false), " \n\r\t\v\x00");
         if ($runValidation && !$site->validate()) {
             Craft::info('Site not saved due to validation error.', __METHOD__);
             return false;
         }
+        // if we passed validation, set the site name to what it was before validation parsed it
+        $site->setName($originalSiteName);
 
         if ($isNewSite) {
             $site->uid = StringHelper::UUID();
