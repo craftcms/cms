@@ -6,11 +6,11 @@ namespace CraftCms\Cms\Asset;
 
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Asset\Events\SavingVolume;
 use CraftCms\Cms\Asset\Events\VolumeDeleted;
 use CraftCms\Cms\Asset\Events\VolumeDeleting;
 use CraftCms\Cms\Asset\Events\VolumeDeletionApplied;
 use CraftCms\Cms\Asset\Events\VolumeSaved;
+use CraftCms\Cms\Asset\Events\VolumeSaving;
 use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Database\Table;
@@ -124,7 +124,7 @@ class Volumes
     {
         $isNewVolume = ! $volume->id;
 
-        event(new SavingVolume(
+        event(new VolumeSaving(
             volume: $volume,
             isNew: $isNewVolume,
         ));

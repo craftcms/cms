@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
-use CraftCms\Cms\Asset\Events\SavingVolume;
 use CraftCms\Cms\Asset\Events\VolumeDeleted;
 use CraftCms\Cms\Asset\Events\VolumeDeleting;
 use CraftCms\Cms\Asset\Events\VolumeDeletionApplied;
 use CraftCms\Cms\Asset\Events\VolumeSaved;
+use CraftCms\Cms\Asset\Events\VolumeSaving;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
@@ -83,11 +83,11 @@ it('can get a volume by handle', function () {
 
 it('can save a new volume', function () {
     Event::fake([
-        SavingVolume::class,
+        VolumeSaving::class,
         VolumeSaved::class,
     ]);
 
-    Event::listen(SavingVolume::class, fn () => null);
+    Event::listen(VolumeSaving::class, fn () => null);
     Event::listen(VolumeSaved::class, fn () => null);
 
     expect(Volume::count())->toBe(0);
@@ -105,7 +105,7 @@ it('can save a new volume', function () {
         expect($volume->handle)->toBe('testVolume');
     });
 
-    Event::assertDispatchedOnce(SavingVolume::class);
+    Event::assertDispatchedOnce(VolumeSaving::class);
     Event::assertDispatchedOnce(VolumeSaved::class);
 });
 

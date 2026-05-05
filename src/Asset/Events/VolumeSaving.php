@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Asset\Events;
 use CraftCms\Cms\Asset\Data\Volume;
 
 /**
- * @event SavingVolume The event that is triggered before a volume is saved.
+ * @event VolumeSaving The event that is triggered before a volume is saved.
  */
-class SavingVolume
+class VolumeSaving
 {
     public function __construct(
         public Volume $volume,
