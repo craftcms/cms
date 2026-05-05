@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image\Events;
 
-class RegisterImageTransformers
+class ImageTransformersResolving
 {
     /**
      * @param  class-string[]  $types

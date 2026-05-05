@@ -6,7 +6,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
-use CraftCms\Cms\Image\Events\RegisterImageTransformers;
+use CraftCms\Cms\Image\Events\ImageTransformersResolving;
 use CraftCms\Cms\Image\Events\SavingTransform;
 use CraftCms\Cms\Image\Events\TransformDeleted;
 use CraftCms\Cms\Image\Events\TransformDeleting;
@@ -352,12 +352,12 @@ describe('getAllImageTransformers', function () {
         expect($transformers)->toContain(ImageTransformer::class);
     });
 
-    it('fires RegisterImageTransformers event', function () {
-        Event::fake([RegisterImageTransformers::class]);
+    it('fires ImageTransformersResolving event', function () {
+        Event::fake([ImageTransformersResolving::class]);
 
         $this->service->getAllImageTransformers();
 
-        Event::assertDispatchedOnce(RegisterImageTransformers::class);
+        Event::assertDispatchedOnce(ImageTransformersResolving::class);
     });
 
     it('allows adding custom transformers via event', function () {
@@ -371,7 +371,7 @@ describe('getAllImageTransformers', function () {
             public function invalidateAssetTransforms(Asset $asset): void {}
         })::class;
 
-        Event::listen(RegisterImageTransformers::class, function (RegisterImageTransformers $event) use ($customTransformer) {
+        Event::listen(ImageTransformersResolving::class, function (ImageTransformersResolving $event) use ($customTransformer) {
             $event->types[] = $customTransformer;
         });
 
