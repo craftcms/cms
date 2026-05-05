@@ -10,7 +10,7 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
-use CraftCms\Cms\Element\Events\PrepQueryForTableAttribute;
+use CraftCms\Cms\Element\Events\QueryForTableAttributePreparing;
 use CraftCms\Cms\Element\Events\RegisterCardAttributes;
 use CraftCms\Cms\Element\Events\RegisterDefaultCardAttributes;
 use CraftCms\Cms\Element\Events\RegisterDefaultTableAttributes;
@@ -190,7 +190,7 @@ trait DisplayedInIndex
 
             // Prepare the element query for each of the table attributes
             foreach ($variables['attributes'] as $attribute) {
-                event($event = new PrepQueryForTableAttribute(
+                event($event = new QueryForTableAttributePreparing(
                     elementType: static::class,
                     query: $elementQuery,
                     attribute: $attribute[0],

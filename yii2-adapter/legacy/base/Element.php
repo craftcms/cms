@@ -68,7 +68,7 @@ use CraftCms\Cms\Element\Events\ElementMovingInStructure;
 use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementUrlResolved;
 use CraftCms\Cms\Element\Events\ElementUrlResolving;
-use CraftCms\Cms\Element\Events\PrepQueryForTableAttribute;
+use CraftCms\Cms\Element\Events\QueryForTableAttributePreparing;
 use CraftCms\Cms\Element\Events\RegisterActions;
 use CraftCms\Cms\Element\Events\RegisterCardAttributes;
 use CraftCms\Cms\Element\Events\RegisterDefaultCardAttributes;
@@ -450,7 +450,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
             }
         });
 
-        Event::listen(function(PrepQueryForTableAttribute $event) use ($elementClasses) {
+        Event::listen(function(QueryForTableAttributePreparing $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE)) {
                     continue;

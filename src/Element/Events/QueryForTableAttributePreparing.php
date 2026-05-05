@@ -8,11 +8,11 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 /**
- * PrepQueryForTableAttribute event is triggered when preparing an element query for a table attribute.
+ * QueryForTableAttributePreparing event is triggered when preparing an element query for a table attribute.
  *
  * If `handled` is set to `true`, the default query preparation will be skipped.
  */
-class PrepQueryForTableAttribute
+class QueryForTableAttributePreparing
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class
