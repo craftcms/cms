@@ -39,7 +39,6 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
-use CraftCms\Cms\Element\Events\BeforeUpdateSlugAndUri;
 use CraftCms\Cms\Element\Events\CanonicalChangesMerged;
 use CraftCms\Cms\Element\Events\CanonicalChangesMerging;
 use CraftCms\Cms\Element\Events\ElementActionPerformed;
@@ -59,6 +58,7 @@ use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Element\Events\ElementsEagerLoading;
 use CraftCms\Cms\Element\Events\ElementSearchIndexUpdating;
 use CraftCms\Cms\Element\Events\ElementSlugAndUriUpdated;
+use CraftCms\Cms\Element\Events\ElementSlugAndUriUpdating;
 use CraftCms\Cms\Element\Events\ElementsMerged;
 use CraftCms\Cms\Element\Events\InvalidateElementCaches;
 use CraftCms\Cms\Element\Events\RegisterElementTypes;
@@ -1772,7 +1772,7 @@ class Elements extends Component
             SetElementUri::class => self::EVENT_SET_ELEMENT_URI,
             CanonicalChangesMerging::class => self::EVENT_BEFORE_MERGE_CANONICAL_CHANGES,
             CanonicalChangesMerged::class => self::EVENT_AFTER_MERGE_CANONICAL_CHANGES,
-            BeforeUpdateSlugAndUri::class => self::EVENT_BEFORE_UPDATE_SLUG_AND_URI,
+            ElementSlugAndUriUpdating::class => self::EVENT_BEFORE_UPDATE_SLUG_AND_URI,
             ElementSlugAndUriUpdated::class => self::EVENT_AFTER_UPDATE_SLUG_AND_URI,
             ElementDeleted::class => self::EVENT_AFTER_DELETE_ELEMENT,
             ElementDeletingForSite::class => self::EVENT_BEFORE_DELETE_FOR_SITE,
