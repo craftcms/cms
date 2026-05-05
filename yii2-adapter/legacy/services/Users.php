@@ -27,7 +27,6 @@ use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\DefaultUserGroupsResolving;
 use CraftCms\Cms\User\Events\EmailVerified;
-use CraftCms\Cms\User\Events\SuspendingUser;
 use CraftCms\Cms\User\Events\UnlockingUser;
 use CraftCms\Cms\User\Events\UnsuspendingUser;
 use CraftCms\Cms\User\Events\UserActivated;
@@ -44,6 +43,7 @@ use CraftCms\Cms\User\Events\UserPhotoDeleting;
 use CraftCms\Cms\User\Events\UserPhotoSaved;
 use CraftCms\Cms\User\Events\UserPhotoSaving;
 use CraftCms\Cms\User\Events\UserSuspended;
+use CraftCms\Cms\User\Events\UserSuspending;
 use CraftCms\Cms\User\Events\UserUnlocked;
 use CraftCms\Cms\User\Events\UserUnsuspended;
 use CraftCms\Cms\User\Events\VerifyingEmail;
@@ -859,7 +859,7 @@ class Users extends Component
              UnlockingUser::class => self::EVENT_BEFORE_UNLOCK_USER,
              UserActivating::class => self::EVENT_BEFORE_ACTIVATE_USER,
              UserDeactivating::class => self::EVENT_BEFORE_DEACTIVATE_USER,
-             SuspendingUser::class => self::EVENT_BEFORE_SUSPEND_USER,
+             UserSuspending::class => self::EVENT_BEFORE_SUSPEND_USER,
              UnsuspendingUser::class => self::EVENT_BEFORE_UNSUSPEND_USER,
          ] as $new => $old) {
             Event::listen($new, function(\CraftCms\Cms\User\Events\UserEvent $event) use ($old) {
