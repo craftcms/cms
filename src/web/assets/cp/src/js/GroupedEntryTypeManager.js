@@ -320,6 +320,8 @@
           })
         );
 
+        this.componentSelect.settings.addItemsToActionMenus = true;
+
         this.componentSelect.$components.each((i, chip) => {
           const $input = $(chip).find('input');
           $input.val(
