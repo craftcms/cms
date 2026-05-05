@@ -12,8 +12,8 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Entry\Events\DeletingEntryType;
 use CraftCms\Cms\Entry\Events\EntryTypeDeleted;
+use CraftCms\Cms\Entry\Events\EntryTypeDeleting;
 use CraftCms\Cms\Entry\Events\EntryTypeDeletionApplying;
 use CraftCms\Cms\Entry\Events\EntryTypeSaved;
 use CraftCms\Cms\Entry\Events\SavingEntryType;
@@ -468,7 +468,7 @@ class EntryTypes
      */
     public function deleteEntryType(EntryType $entryType): bool
     {
-        event(new DeletingEntryType($entryType));
+        event(new EntryTypeDeleting($entryType));
 
         $this->projectConfig->remove(
             path: ProjectConfig::PATH_ENTRY_TYPES.'.'.$entryType->uid,
