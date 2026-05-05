@@ -60,7 +60,7 @@
 
       if (!selectedItem && !props.requireOptionMatch) {
         selectedItem = {
-          label: props.modelValue,
+          label: String(props.modelValue),
           value: props.modelValue,
         };
       }
