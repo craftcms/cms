@@ -8,12 +8,12 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 
 /**
- * @event DefineCacheTags The event that is triggered when defining the cache tags that should be cleared when
+ * @event ElementCacheTagsResolving The event that is triggered when defining the cache tags that should be cleared when
  * an element is saved.
  *
  * {@see Element::getCacheTags()}
  */
-class DefineCacheTags
+class ElementCacheTagsResolving
 {
     public function __construct(
         public ElementInterface $element,
