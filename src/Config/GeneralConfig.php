@@ -2144,7 +2144,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group Security
      */
-    public bool $preventUserEnumeration = false;
+    public bool $preventUserEnumeration = true;
 
     /**
      * @var array Custom [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) that should be used for preview iframes.
