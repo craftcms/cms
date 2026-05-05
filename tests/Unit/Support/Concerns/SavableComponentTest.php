@@ -6,7 +6,7 @@ use CraftCms\Cms\Component\Events\ComponentDeleteApplying;
 use CraftCms\Cms\Component\Events\ComponentDeleted;
 use CraftCms\Cms\Component\Events\ComponentDeleting;
 use CraftCms\Cms\Component\Events\ComponentSaved;
-use CraftCms\Cms\Component\Events\SavingComponent;
+use CraftCms\Cms\Component\Events\ComponentSaving;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
 use Illuminate\Support\Facades\Event;
 
@@ -27,7 +27,7 @@ it('can determine if it is new', function (int|string|null $id, bool $expected) 
 it('can register before save callback', function () {
     $triggered = false;
 
-    Event::listen(function (SavingComponent $event) use (&$triggered) {
+    Event::listen(function (ComponentSaving $event) use (&$triggered) {
         $triggered = true;
         expect($event->component)->toBe($this->component);
         expect($event->isNew)->toBeTrue();
@@ -47,7 +47,7 @@ it('filters component helper listeners and supports Laravel listener classes', f
 
     CraftSupport::onBeforeSave(SavableComponentTestListener::class);
 
-    event(new SavingComponent(new stdClass, true));
+    event(new ComponentSaving(new stdClass, true));
 
     expect(SavableComponentTestListener::$events)->toBeEmpty();
 
@@ -76,10 +76,10 @@ it('can register after save callback', function () {
 
 class SavableComponentTestListener
 {
-    /** @var array<int, SavingComponent> */
+    /** @var array<int, ComponentSaving> */
     public static array $events = [];
 
-    public function handle(SavingComponent $event): void
+    public function handle(ComponentSaving $event): void
     {
         self::$events[] = $event;
     }

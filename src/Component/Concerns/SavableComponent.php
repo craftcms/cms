@@ -8,7 +8,7 @@ use CraftCms\Cms\Component\Events\ComponentDeleteApplying;
 use CraftCms\Cms\Component\Events\ComponentDeleted;
 use CraftCms\Cms\Component\Events\ComponentDeleting;
 use CraftCms\Cms\Component\Events\ComponentSaved;
-use CraftCms\Cms\Component\Events\SavingComponent;
+use CraftCms\Cms\Component\Events\ComponentSaving;
 use DateTimeInterface;
 use Illuminate\Events\QueuedClosure;
 use Illuminate\Support\Facades\Event;
@@ -28,12 +28,12 @@ trait SavableComponent
 
     public static function onBeforeSave(QueuedClosure|callable|array|string $callback): void
     {
-        self::listenForComponentEvent(SavingComponent::class, $callback);
+        self::listenForComponentEvent(ComponentSaving::class, $callback);
     }
 
     public function beforeSave(bool $isNew): bool
     {
-        event($event = new SavingComponent($this, $isNew));
+        event($event = new ComponentSaving($this, $isNew));
 
         return $event->isValid;
     }
