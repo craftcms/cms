@@ -8,10 +8,10 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
-use CraftCms\Cms\Element\Events\CreatingDraft;
 use CraftCms\Cms\Element\Events\DraftApplied;
 use CraftCms\Cms\Element\Events\DraftApplying;
 use CraftCms\Cms\Element\Events\DraftCreated;
+use CraftCms\Cms\Element\Events\DraftCreating;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -97,7 +97,7 @@ readonly class Drafts
 
         $markAsSaved = Arr::pull($newAttributes, 'markAsSaved', true);
 
-        event($event = new CreatingDraft(
+        event($event = new DraftCreating(
             canonical: $canonical,
             creatorId: $creatorId,
             provisional: $provisional,

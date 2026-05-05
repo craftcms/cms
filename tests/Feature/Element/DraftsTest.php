@@ -5,10 +5,10 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Events\CreatingDraft;
 use CraftCms\Cms\Element\Events\DraftApplied;
 use CraftCms\Cms\Element\Events\DraftApplying;
 use CraftCms\Cms\Element\Events\DraftCreated;
+use CraftCms\Cms\Element\Events\DraftCreating;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -47,11 +47,11 @@ it('can create a draft', function () {
     actingAs(User::findOne());
 
     Event::fake([
-        CreatingDraft::class,
+        DraftCreating::class,
         DraftCreated::class,
     ]);
 
-    Event::listen(CreatingDraft::class, fn () => true);
+    Event::listen(DraftCreating::class, fn () => true);
     Event::listen(DraftCreated::class, fn () => true);
 
     Entry::factory()->create();
@@ -66,7 +66,7 @@ it('can create a draft', function () {
     expect($draft->draftName)->toBe('My draft');
     expect($draft->draftNotes)->toBe('Some notes');
 
-    Event::assertDispatchedOnce(CreatingDraft::class);
+    Event::assertDispatchedOnce(DraftCreating::class);
     Event::assertDispatchedOnce(DraftCreated::class);
 });
 
