@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Element\Events\BeforeUpdateSearchIndex;
 use CraftCms\Cms\Element\Events\ElementSaved;
 use CraftCms\Cms\Element\Events\ElementSaving;
+use CraftCms\Cms\Element\Events\ElementSearchIndexUpdating;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Operations\ElementWrites;
 use CraftCms\Cms\Element\Queries\ElementQuery;
@@ -302,7 +302,7 @@ it('queues search index updates for searchable dirty fields', function () {
     $entry->setFieldValue($field->handle, 'Search me');
 
     $beforeUpdateTriggered = false;
-    Event::listen(function (BeforeUpdateSearchIndex $event) use ($entry, &$beforeUpdateTriggered) {
+    Event::listen(function (ElementSearchIndexUpdating $event) use ($entry, &$beforeUpdateTriggered) {
         if ($event->element->id === $entry->id) {
             $beforeUpdateTriggered = true;
         }
@@ -321,11 +321,11 @@ it('queues search index updates for searchable dirty fields', function () {
             ->exists())->toBeTrue();
 });
 
-it('can cancel search index updates with BeforeUpdateSearchIndex', function () {
+it('can cancel search index updates with ElementSearchIndexUpdating', function () {
     $entry = EntryModel::factory()->createElement(['title' => 'Before search event']);
     $entry->title = 'Changed title';
 
-    Event::listen(function (BeforeUpdateSearchIndex $event) use ($entry) {
+    Event::listen(function (ElementSearchIndexUpdating $event) use ($entry) {
         if ($event->element->id === $entry->id) {
             $event->isValid = false;
         }

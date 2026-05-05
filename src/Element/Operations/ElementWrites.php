@@ -10,13 +10,13 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\BeforeUpdateSearchIndex;
 use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
 use CraftCms\Cms\Element\Events\ElementPropagating;
 use CraftCms\Cms\Element\Events\ElementResaved;
 use CraftCms\Cms\Element\Events\ElementResaving;
 use CraftCms\Cms\Element\Events\ElementSaved;
 use CraftCms\Cms\Element\Events\ElementSaving;
+use CraftCms\Cms\Element\Events\ElementSearchIndexUpdating;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
@@ -653,7 +653,7 @@ readonly class ElementWrites
                         ! empty($searchableDirtyFields) ||
                         ! empty(array_intersect($dirtyAttributes, ElementHelper::searchableAttributes($element)))
                     ) {
-                        event($event = new BeforeUpdateSearchIndex($element));
+                        event($event = new ElementSearchIndexUpdating($element));
 
                         if ($event->isValid) {
                             $this->updateElementSearchIndex($element, $searchableDirtyFields, $propagate);
