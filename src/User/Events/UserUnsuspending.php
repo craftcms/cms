@@ -8,11 +8,11 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 use CraftCms\Cms\User\Elements\User;
 
 /**
- * @event UnsuspendingUser The event that is triggered before a user is unsuspended.
+ * @event UserUnsuspending The event that is triggered before a user is unsuspended.
  *
  * You may set [[$isValid]] to `false` to prevent the user from getting unsuspended.
  */
-class UnsuspendingUser extends UserEvent
+class UserUnsuspending extends UserEvent
 {
     use ValidatableEvent;
 }

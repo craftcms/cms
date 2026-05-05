@@ -27,7 +27,6 @@ use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\DefaultUserGroupsResolving;
 use CraftCms\Cms\User\Events\EmailVerified;
-use CraftCms\Cms\User\Events\UnsuspendingUser;
 use CraftCms\Cms\User\Events\UserActivated;
 use CraftCms\Cms\User\Events\UserActivating;
 use CraftCms\Cms\User\Events\UserAssignedToDefaultGroups;
@@ -46,6 +45,7 @@ use CraftCms\Cms\User\Events\UserSuspending;
 use CraftCms\Cms\User\Events\UserUnlocked;
 use CraftCms\Cms\User\Events\UserUnlocking;
 use CraftCms\Cms\User\Events\UserUnsuspended;
+use CraftCms\Cms\User\Events\UserUnsuspending;
 use CraftCms\Cms\User\Events\VerifyingEmail;
 use CraftCms\Cms\User\Models\User as UserModel;
 use DateTime;
@@ -860,7 +860,7 @@ class Users extends Component
              UserActivating::class => self::EVENT_BEFORE_ACTIVATE_USER,
              UserDeactivating::class => self::EVENT_BEFORE_DEACTIVATE_USER,
              UserSuspending::class => self::EVENT_BEFORE_SUSPEND_USER,
-             UnsuspendingUser::class => self::EVENT_BEFORE_UNSUSPEND_USER,
+             UserUnsuspending::class => self::EVENT_BEFORE_UNSUSPEND_USER,
          ] as $new => $old) {
             Event::listen($new, function(\CraftCms\Cms\User\Events\UserEvent $event) use ($old) {
                 if (Craft::$app->getUsers()->hasEventHandlers($old)) {

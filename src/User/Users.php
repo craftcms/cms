@@ -37,7 +37,6 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\DefaultUserGroupsResolving;
-use CraftCms\Cms\User\Events\UnsuspendingUser;
 use CraftCms\Cms\User\Events\UserActivated;
 use CraftCms\Cms\User\Events\UserActivating;
 use CraftCms\Cms\User\Events\UserAssignedToDefaultGroups;
@@ -56,6 +55,7 @@ use CraftCms\Cms\User\Events\UserSuspending;
 use CraftCms\Cms\User\Events\UserUnlocked;
 use CraftCms\Cms\User\Events\UserUnlocking;
 use CraftCms\Cms\User\Events\UserUnsuspended;
+use CraftCms\Cms\User\Events\UserUnsuspending;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Validation\UserRules;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
@@ -842,7 +842,7 @@ class Users
      */
     public function unsuspendUser(User $user): void
     {
-        event($event = new UnsuspendingUser($user));
+        event($event = new UserUnsuspending($user));
 
         if (! $event->isValid) {
             throw new InvalidElementException($user);
