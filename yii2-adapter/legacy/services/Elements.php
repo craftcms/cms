@@ -39,7 +39,6 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
-use CraftCms\Cms\Element\Events\AfterPerformAction;
 use CraftCms\Cms\Element\Events\AfterPropagateElement;
 use CraftCms\Cms\Element\Events\AfterPropagateElements;
 use CraftCms\Cms\Element\Events\AfterResaveElement;
@@ -61,6 +60,7 @@ use CraftCms\Cms\Element\Events\BeforeSaveElement;
 use CraftCms\Cms\Element\Events\BeforeUpdateSearchIndex;
 use CraftCms\Cms\Element\Events\BeforeUpdateSlugAndUri;
 use CraftCms\Cms\Element\Events\CanonicalChangesMerged;
+use CraftCms\Cms\Element\Events\ElementActionPerformed;
 use CraftCms\Cms\Element\Events\ElementDeleted;
 use CraftCms\Cms\Element\Events\ElementDeletedForSite;
 use CraftCms\Cms\Element\Events\ElementsMerged;
@@ -1940,7 +1940,7 @@ class Elements extends Component
             $event->message = $yiiEvent->message;
         });
 
-        Event::listen(function(AfterPerformAction $event) {
+        Event::listen(function(ElementActionPerformed $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_PERFORM_ACTION)) {
                 return;
             }

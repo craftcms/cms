@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Element\Events;
 use CraftCms\Cms\Element\Contracts\ElementActionInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
-class AfterPerformAction
+class ElementActionPerformed
 {
     public function __construct(
         public ElementActionInterface $action,
