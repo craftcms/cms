@@ -24,7 +24,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Environment;
-use CraftCms\Cms\Twig\Events\EndPage;
+use CraftCms\Cms\Twig\Events\PageEnded;
 use CraftCms\Cms\Twig\Events\PageStarting;
 use CraftCms\Cms\Twig\Events\PageTemplateRendered;
 use CraftCms\Cms\Twig\Events\RenderingPageTemplate;
@@ -1832,7 +1832,7 @@ class View extends \yii\web\View
      * Returns HTML that should replace page placeholders after page template rendering.
      *
      * This method renders all registered assets (head, body-begin, body-end) into
-     * HTML strings and returns them as an array. It is called by the `EndPage` event
+     * HTML strings and returns them as an array. It is called by the `PageEnded` event
      * listener in {@see self::registerEvents()} to populate the event properties
      * that `TemplateRenderer::renderPageTemplate()` uses for placeholder replacement.
      *
@@ -2318,7 +2318,7 @@ JS;
             Craft::$app->getView()->trigger(self::EVENT_BEGIN_PAGE);
         });
 
-        Event::listen(function(EndPage $event) {
+        Event::listen(function(PageEnded $event) {
             Craft::$app->getView()->trigger(self::EVENT_END_PAGE);
 
             $html = Craft::$app->getView()->placeholderHtml();

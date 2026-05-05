@@ -20,7 +20,7 @@ use CraftCms\Cms\View\HtmlStack;
  * so the `HtmlStack` fallback only applies in a pure Laravel
  * context (without the yii2-adapter).
  */
-class EndPage
+class PageEnded
 {
     public function __construct(
         /** Override for `<head>` assets. `null` = fall back to HtmlStack. */

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
-use CraftCms\Cms\Twig\Events\EndPage;
+use CraftCms\Cms\Twig\Events\PageEnded;
 use CraftCms\Cms\Twig\Events\PageStarting;
 use CraftCms\Cms\Twig\Events\PageTemplateRendered;
 use CraftCms\Cms\Twig\Events\RenderingPageTemplate;
@@ -204,8 +204,8 @@ describe('renderPageTemplate', function () {
         Event::listen(TemplateRendered::class, function () use (&$events) {
             $events[] = 'TemplateRendered';
         });
-        Event::listen(EndPage::class, function () use (&$events) {
-            $events[] = 'EndPage';
+        Event::listen(PageEnded::class, function () use (&$events) {
+            $events[] = 'PageEnded';
         });
         Event::listen(PageTemplateRendered::class, function () use (&$events) {
             $events[] = 'PageTemplateRendered';
@@ -218,7 +218,7 @@ describe('renderPageTemplate', function () {
             'PageStarting',
             'RenderingTemplate',
             'TemplateRendered',
-            'EndPage',
+            'PageEnded',
             'PageTemplateRendered',
         ]);
     });
@@ -249,7 +249,7 @@ describe('renderPageTemplate', function () {
         $renderer = $this->renderer;
         $wasRendering = false;
 
-        Event::listen(EndPage::class, function () use (&$wasRendering, $renderer) {
+        Event::listen(PageEnded::class, function () use (&$wasRendering, $renderer) {
             $wasRendering = $renderer->isRenderingPageTemplate();
         });
 
