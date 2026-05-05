@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
-use CraftCms\Cms\Asset\Events\ApplyingVolumeDelete;
 use CraftCms\Cms\Asset\Events\DeletingVolume;
 use CraftCms\Cms\Asset\Events\SavingVolume;
 use CraftCms\Cms\Asset\Events\VolumeDeleted;
+use CraftCms\Cms\Asset\Events\VolumeDeletionApplied;
 use CraftCms\Cms\Asset\Events\VolumeSaved;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Volumes;
@@ -143,12 +143,12 @@ it('returns false when validation fails on save', function () {
 it('can delete a volume by id', function () {
     Event::fake([
         DeletingVolume::class,
-        ApplyingVolumeDelete::class,
+        VolumeDeletionApplied::class,
         VolumeDeleted::class,
     ]);
 
     Event::listen(DeletingVolume::class, fn () => null);
-    Event::listen(ApplyingVolumeDelete::class, fn () => null);
+    Event::listen(VolumeDeletionApplied::class, fn () => null);
     Event::listen(VolumeDeleted::class, fn () => null);
 
     $this->volumes->saveVolume(new VolumeData([
@@ -171,19 +171,19 @@ it('can delete a volume by id', function () {
     expect(Volume::withTrashed()->count())->toBe(1);
 
     Event::assertDispatchedOnce(DeletingVolume::class);
-    Event::assertDispatchedOnce(ApplyingVolumeDelete::class);
+    Event::assertDispatchedOnce(VolumeDeletionApplied::class);
     Event::assertDispatchedOnce(VolumeDeleted::class);
 });
 
 it('can delete a volume', function () {
     Event::fake([
         DeletingVolume::class,
-        ApplyingVolumeDelete::class,
+        VolumeDeletionApplied::class,
         VolumeDeleted::class,
     ]);
 
     Event::listen(DeletingVolume::class, fn () => null);
-    Event::listen(ApplyingVolumeDelete::class, fn () => null);
+    Event::listen(VolumeDeletionApplied::class, fn () => null);
     Event::listen(VolumeDeleted::class, fn () => null);
 
     $this->volumes->saveVolume(new VolumeData([
@@ -206,7 +206,7 @@ it('can delete a volume', function () {
     expect(Volume::withTrashed()->count())->toBe(1);
 
     Event::assertDispatchedOnce(DeletingVolume::class);
-    Event::assertDispatchedOnce(ApplyingVolumeDelete::class);
+    Event::assertDispatchedOnce(VolumeDeletionApplied::class);
     Event::assertDispatchedOnce(VolumeDeleted::class);
 });
 

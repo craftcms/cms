@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Asset\Events;
 use CraftCms\Cms\Asset\Data\Volume;
 
 /**
- * @event ApplyingVolumeDelete The event that is triggered before a volume delete is applied to the database.
+ * @event VolumeDeletionApplied The event that is triggered before a volume delete is applied to the database.
  */
-class ApplyingVolumeDelete
+class VolumeDeletionApplied
 {
     public function __construct(
         public Volume $volume,

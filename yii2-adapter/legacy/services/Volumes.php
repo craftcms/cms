@@ -11,10 +11,10 @@ use Craft;
 use craft\events\VolumeEvent;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
-use CraftCms\Cms\Asset\Events\ApplyingVolumeDelete;
 use CraftCms\Cms\Asset\Events\DeletingVolume;
 use CraftCms\Cms\Asset\Events\SavingVolume;
 use CraftCms\Cms\Asset\Events\VolumeDeleted;
+use CraftCms\Cms\Asset\Events\VolumeDeletionApplied;
 use CraftCms\Cms\Asset\Events\VolumeSaved;
 use CraftCms\Cms\Asset\Volumes as VolumesService;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -337,7 +337,7 @@ class Volumes extends Component
             ]));
         });
 
-        EventFacade::listen(ApplyingVolumeDelete::class, function(ApplyingVolumeDelete $event) {
+        EventFacade::listen(VolumeDeletionApplied::class, function(VolumeDeletionApplied $event) {
             if (!Craft::$app->getVolumes()->hasEventHandlers(self::EVENT_BEFORE_APPLY_VOLUME_DELETE)) {
                 return;
             }

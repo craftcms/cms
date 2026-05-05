@@ -6,10 +6,10 @@ namespace CraftCms\Cms\Asset;
 
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Asset\Events\ApplyingVolumeDelete;
 use CraftCms\Cms\Asset\Events\DeletingVolume;
 use CraftCms\Cms\Asset\Events\SavingVolume;
 use CraftCms\Cms\Asset\Events\VolumeDeleted;
+use CraftCms\Cms\Asset\Events\VolumeDeletionApplied;
 use CraftCms\Cms\Asset\Events\VolumeSaved;
 use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
@@ -294,7 +294,7 @@ class Volumes
 
         $volume = $this->getVolumeById($volumeModel->id);
 
-        event(new ApplyingVolumeDelete(volume: $volume));
+        event(new VolumeDeletionApplied(volume: $volume));
 
         DB::beginTransaction();
         try {
