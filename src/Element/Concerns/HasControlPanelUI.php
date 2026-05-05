@@ -14,11 +14,11 @@ use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
 use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
 use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
 use CraftCms\Cms\Element\Events\ElementAttributeHtmlResolving;
+use CraftCms\Cms\Element\Events\ElementHtmlAttributesResolving;
 use CraftCms\Cms\Element\Events\ElementInlineAttributeInputHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementMetadataResolving;
 use CraftCms\Cms\Element\Events\ElementMetaFieldsHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
-use CraftCms\Cms\Element\Events\RegisterHtmlAttributes;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Shared\Enums\Color;
@@ -409,7 +409,7 @@ JS, [
             ],
         ]);
 
-        event($event = new RegisterHtmlAttributes($this, $context, $htmlAttributes));
+        event($event = new ElementHtmlAttributesResolving($this, $context, $htmlAttributes));
 
         return $event->htmlAttributes;
     }

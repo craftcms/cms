@@ -8,12 +8,12 @@ use CraftCms\Cms\Element\Concerns\HasControlPanelUI;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
- * @event RegisterHtmlAttributes The event that is triggered when registering the HTML attributes
+ * @event ElementHtmlAttributesResolving The event that is triggered when registering the HTML attributes
  * that should be included in the element's DOM representation in the control panel.
  *
  * {@see HasControlPanelUI::getHtmlAttributes()}
  */
-class RegisterHtmlAttributes
+class ElementHtmlAttributesResolving
 {
     /**
      * @param  ElementInterface  $element  The element

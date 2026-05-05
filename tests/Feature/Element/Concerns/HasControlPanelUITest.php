@@ -7,10 +7,10 @@ use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
 use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
 use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
 use CraftCms\Cms\Element\Events\ElementAttributeHtmlResolving;
+use CraftCms\Cms\Element\Events\ElementHtmlAttributesResolving;
 use CraftCms\Cms\Element\Events\ElementInlineAttributeInputHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementMetadataResolving;
 use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
-use CraftCms\Cms\Element\Events\RegisterHtmlAttributes;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -194,11 +194,11 @@ describe('getHtmlAttributes', function () {
         expect($attributes['data'])->toHaveKey('disallow-status');
     });
 
-    test('triggers RegisterHtmlAttributes event', function () {
+    test('triggers ElementHtmlAttributesResolving event', function () {
         $eventTriggered = false;
         $customAttribute = 'custom-value';
 
-        Event::listen(function (RegisterHtmlAttributes $event) use (&$eventTriggered, $customAttribute) {
+        Event::listen(function (ElementHtmlAttributesResolving $event) use (&$eventTriggered, $customAttribute) {
             $eventTriggered = true;
             $event->htmlAttributes['data']['custom'] = $customAttribute;
         });
@@ -210,7 +210,7 @@ describe('getHtmlAttributes', function () {
     });
 
     test('event can modify html attributes', function () {
-        Event::listen(function (RegisterHtmlAttributes $event) {
+        Event::listen(function (ElementHtmlAttributesResolving $event) {
             $event->htmlAttributes = [
                 'class' => 'custom-class',
                 'data' => [
