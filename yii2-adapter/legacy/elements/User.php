@@ -18,8 +18,8 @@ use CraftCms\Cms\Auth\Events\UserAuthenticating;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User as UserElement;
-use CraftCms\Cms\User\Events\DefineFriendlyName;
 use CraftCms\Cms\User\Events\DefineName;
+use CraftCms\Cms\User\Events\UserFriendlyNameResolving;
 use CraftCms\Cms\User\Validation\UserRules;
 use Deprecated;
 use Illuminate\Support\Facades\Event;
@@ -91,7 +91,7 @@ class User extends UserElement
             }
         });
 
-        Event::listen(function(DefineFriendlyName $event) {
+        Event::listen(function(UserFriendlyNameResolving $event) {
             if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_FRIENDLY_NAME)) {
                 $yiiEvent = new DefineValueEvent();
                 $yiiEvent->sender = $event->user;

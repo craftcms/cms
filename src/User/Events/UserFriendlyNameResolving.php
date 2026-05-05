@@ -7,9 +7,9 @@ namespace CraftCms\Cms\User\Events;
 use CraftCms\Cms\User\Elements\User;
 
 /**
- * @event DefineFriendlyName The event that is triggered when defining the user’s friendly name, as returned by {@see User::getFriendlyName()}.
+ * @event UserFriendlyNameResolving The event that is triggered when defining the user’s friendly name, as returned by {@see User::getFriendlyName()}.
  */
-class DefineFriendlyName
+class UserFriendlyNameResolving
 {
     public function __construct(
         public User $user,
