@@ -10,11 +10,11 @@ use CraftCms\Cms\FieldLayout\FieldLayoutForm;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 
 /**
- * @event CreateFieldLayoutForm The event that is triggered when creating a new field layout form.
+ * @event FieldLayoutFormCreating The event that is triggered when creating a new field layout form.
  *
  * ```php
  * use CraftCms\Cms\Entry\Elements\Entry;
- * use CraftCms\Cms\FieldLayout\Events\CreateFieldLayoutForm;
+ * use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormCreating;
  * use CraftCms\Cms\FieldLayout\LayoutElements\HorizontalRule;
  * use CraftCms\Cms\FieldLayout\LayoutElements\StandardTextField;
  * use CraftCms\Cms\FieldLayout\LayoutElements\Template;
@@ -22,7 +22,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutTab;
  * use CraftCms\Cms\FieldLayout\FieldLayoutTab;
  * use Illuminate\Support\Facades\Event;
  *
- * Event::listen(function (CreateFieldLayoutForm $event) {
+ * Event::listen(function (FieldLayoutFormCreating $event) {
  *     if (! $event->element instanceof Entry) {
  *         return;
  *     }
@@ -45,7 +45,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutTab;
  *
  * @see FieldLayout::createForm()
  */
-class CreateFieldLayoutForm
+class FieldLayoutFormCreating
 {
     public function __construct(
         public FieldLayout $fieldLayout,
