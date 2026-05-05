@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Arguments;
 
-use CraftCms\Cms\Gql\Events\DefineGqlArguments;
+use CraftCms\Cms\Gql\Events\GqlArgumentsResolving;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Types\Input\Criteria\AssetRelation;
@@ -170,7 +170,7 @@ abstract class ElementArguments extends Arguments
             ],
         ]);
 
-        event($event = new DefineGqlArguments(
+        event($event = new GqlArgumentsResolving(
             arguments: $arguments,
             argumentClass: static::class,
         ));

@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Gql\Events;
 use CraftCms\Cms\Gql\Arguments\Arguments;
 
 /**
- * @event DefineGqlArguments The event that is triggered when defining GraphQL arguments.
+ * @event GqlArgumentsResolving The event that is triggered when defining GraphQL arguments.
  */
-class DefineGqlArguments
+class GqlArgumentsResolving
 {
     public function __construct(
         /** @var array<string, mixed> */
