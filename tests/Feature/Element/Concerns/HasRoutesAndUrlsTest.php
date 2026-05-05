@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Element\Events\DefineUrl;
+use CraftCms\Cms\Element\Events\ElementUrlResolved;
 use CraftCms\Cms\Element\Events\ElementUrlResolving;
 use CraftCms\Cms\Element\Events\SetRoute;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -159,12 +159,12 @@ describe('getUrl', function () {
         expect($element->getUrl())->toBe('https://custom-url.com/path');
     });
 
-    test('DefineUrl event can modify URL', function () {
+    test('ElementUrlResolved event can modify URL', function () {
         $element = new TestRoutableElement;
         $element->siteId = $this->primarySiteId;
         $element->uri = 'test-path';
 
-        Event::listen(function (DefineUrl $event) {
+        Event::listen(function (ElementUrlResolved $event) {
             $event->url = $event->url.'?modified=true';
         });
 

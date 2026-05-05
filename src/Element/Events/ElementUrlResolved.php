@@ -9,14 +9,14 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Shared\Concerns\HandleableEvent;
 
 /**
- * @event DefineUrl The event that is triggered when defining the element's URL.
+ * @event ElementUrlResolved The event that is triggered when defining the element's URL.
  *
  * To prevent the element from getting a URL, ensure `$url` is set to `null`,
  * and set `$handled` to `true`.
  *
  * {@see HasRoutesAndUrls::getUrl()}
  */
-class DefineUrl
+class ElementUrlResolved
 {
     use HandleableEvent;
 

@@ -46,7 +46,6 @@ use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\RenderElementEvent;
 use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
-use CraftCms\Cms\Element\Events\DefineUrl;
 use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
 use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
 use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
@@ -67,6 +66,7 @@ use CraftCms\Cms\Element\Events\ElementMetaFieldsHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementMovedInStructure;
 use CraftCms\Cms\Element\Events\ElementMovingInStructure;
 use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
+use CraftCms\Cms\Element\Events\ElementUrlResolved;
 use CraftCms\Cms\Element\Events\ElementUrlResolving;
 use CraftCms\Cms\Element\Events\PrepQueryForTableAttribute;
 use CraftCms\Cms\Element\Events\RegisterActions;
@@ -906,7 +906,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
             }
         });
 
-        Event::listen(function(DefineUrl $event) use ($elementClasses) {
+        Event::listen(function(ElementUrlResolved $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_DEFINE_URL)) {
                     continue;

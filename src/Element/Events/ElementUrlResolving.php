@@ -16,7 +16,7 @@ use CraftCms\Cms\Shared\Concerns\HandleableEvent;
  * To prevent the element from getting a URL, ensure `$url` is set to `null`,
  * and set `$handled` to `true`.
  *
- * Note that DefineUrl will still be called regardless of what happens with this event.
+ * Note that ElementUrlResolved will still be called regardless of what happens with this event.
  *
  * {@see HasRoutesAndUrls::getUrl()}
  */
