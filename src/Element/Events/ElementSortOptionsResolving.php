@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Element\Events;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
- * @event RegisterSortOptions event is triggered when registering the sort options for an element type.
+ * @event ElementSortOptionsResolving event is triggered when registering the sort options for an element type.
  */
-class RegisterSortOptions
+class ElementSortOptionsResolving
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class
