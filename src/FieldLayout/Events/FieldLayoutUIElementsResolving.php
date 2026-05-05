@@ -8,21 +8,21 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 
 /**
- * @event DefineUIElements The event that is triggered when defining UI elements for the layout.
+ * @event FieldLayoutUIElementsResolving The event that is triggered when defining UI elements for the layout.
  *
  * ```php
  * use CraftCms\Cms\FieldLayout\FieldLayout;
- * use CraftCms\Cms\FieldLayout\FieldLayout\Events\DefineUIElements;
+ * use CraftCms\Cms\FieldLayout\FieldLayout\Events\FieldLayoutUIElementsResolving;
  * use Illuminate\Support\Facades\Event;
  *
- * Event::listen(function (DefineUIElements $event) {
+ * Event::listen(function (FieldLayoutUIElementsResolving $event) {
  *     $event->elements[] = MyUiElement::class;
  * });
  * ```
  *
  * @see FieldLayout::getAvailableUiElements()
  */
-class DefineUIElements
+class FieldLayoutUIElementsResolving
 {
     public function __construct(
         public FieldLayout $fieldLayout,
