@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Element\Events\BeforeRestore;
 use CraftCms\Cms\Element\Events\ElementLifecycleRestored;
+use CraftCms\Cms\Element\Events\ElementLifecycleRestoring;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Facades\Event;
 
 it('restores a soft-deleted element', function () {
-    Event::fake([BeforeRestore::class, ElementLifecycleRestored::class]);
+    Event::fake([ElementLifecycleRestoring::class, ElementLifecycleRestored::class]);
 
     $entry = EntryModel::factory()->createElement();
     Elements::deleteElement($entry);
@@ -21,7 +21,7 @@ it('restores a soft-deleted element', function () {
 
     expect(ElementModel::withTrashed()->find($entry->id)?->dateDeleted)->toBeNull();
 
-    Event::assertDispatchedOnce(BeforeRestore::class);
+    Event::assertDispatchedOnce(ElementLifecycleRestoring::class);
     Event::assertDispatchedOnce(ElementLifecycleRestored::class);
 });
 

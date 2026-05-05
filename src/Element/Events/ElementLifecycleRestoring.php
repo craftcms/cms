@@ -9,13 +9,13 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
 /**
- * @event BeforeRestore The event that is triggered before the element is restored.
+ * @event ElementLifecycleRestoring The event that is triggered before the element is restored.
  *
  * Set `$isValid` to `false` to prevent the element from getting restored.
  *
  * {@see Element::beforeRestore()}
  */
-class BeforeRestore
+class ElementLifecycleRestoring
 {
     use ValidatableEvent;
 

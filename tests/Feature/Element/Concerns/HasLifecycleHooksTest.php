@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Element\Events\BeforeRestore;
 use CraftCms\Cms\Element\Events\BeforeSave;
 use CraftCms\Cms\Element\Events\ElementLifecycleDeleted;
 use CraftCms\Cms\Element\Events\ElementLifecycleDeleting;
 use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
 use CraftCms\Cms\Element\Events\ElementLifecycleRestored;
+use CraftCms\Cms\Element\Events\ElementLifecycleRestoring;
 use CraftCms\Cms\Element\Events\ElementLifecycleSaved;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -135,7 +135,7 @@ test('afterDelete triggers event', function () {
 
 test('beforeRestore triggers event', function () {
     $triggered = false;
-    Event::listen(function (BeforeRestore $event) use (&$triggered) {
+    Event::listen(function (ElementLifecycleRestoring $event) use (&$triggered) {
         $triggered = true;
     });
 
@@ -145,7 +145,7 @@ test('beforeRestore triggers event', function () {
 });
 
 test('beforeRestore event can prevent restore', function () {
-    Event::listen(function (BeforeRestore $event) {
+    Event::listen(function (ElementLifecycleRestoring $event) {
         $event->isValid = false;
     });
 
