@@ -78,12 +78,16 @@
                 label: t('Settings'),
                 icon: 'gear',
               },
-              ...[(readOnly ? null : {
-                label: t('Remove'),
-                variant: 'danger',
-                icon: 'x',
-                onClick: () => removeItem(type.id),
-              })],
+              ...[
+                readOnly
+                  ? null
+                  : {
+                      label: t('Remove'),
+                      variant: 'danger',
+                      icon: 'x',
+                      onClick: () => removeItem(type.id),
+                    },
+              ],
             ]"
           />
           <ReorderButton v-if="!readOnly" variant="inherit"></ReorderButton>
@@ -94,7 +98,12 @@
 
   <div class="flex gap-2 mt-3 items-center">
     <craft-action-menu v-if="types?.length">
-      <craft-button type="button" slot="invoker" appearance="filled" v-if="!readOnly">
+      <craft-button
+        type="button"
+        slot="invoker"
+        appearance="filled"
+        v-if="!readOnly"
+      >
         <craft-icon name="chevron-down" slot="prefix"></craft-icon>
         {{ t('Choose') }}
       </craft-button>
@@ -136,7 +145,11 @@
         </template>
       </div>
     </craft-action-menu>
-    <a :href="create['/admin/settings/entry-types/new']().url" class="" v-if="!readOnly">
+    <a
+      :href="create['/admin/settings/entry-types/new']().url"
+      class=""
+      v-if="!readOnly"
+    >
       <craft-icon name="plus" slot="prefix"></craft-icon>
       {{ t('Create') }}
     </a>

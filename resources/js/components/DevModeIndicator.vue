@@ -12,7 +12,9 @@
 
 <style scoped lang="scss">
   .dev-mode {
-    --dev-mode-stripe-background-color: var(--c-warning-background-color-default);
+    --dev-mode-stripe-background-color: var(
+      --c-warning-background-color-default
+    );
     padding: calc(var(--spacing) * 2);
     text-align: center;
     background-image: repeating-linear-gradient(

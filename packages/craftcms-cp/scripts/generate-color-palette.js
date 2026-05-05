@@ -1,7 +1,12 @@
 import {writeFileSync} from 'fs';
 import {dirname, resolve} from 'path';
 import {fileURLToPath} from 'url';
-import {stops, lightTheme, darkTheme, staticTheme} from '../src/styles/color-definitions.js';
+import {
+  stops,
+  lightTheme,
+  darkTheme,
+  staticTheme,
+} from '../src/styles/color-definitions.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');

@@ -187,9 +187,9 @@
     state: {
       get columnVisibility() {
         return {
-          actions: !readOnly
-        }
-      }
+          actions: !readOnly,
+        };
+      },
     },
     getCoreRowModel: getCoreRowModel<Site>(),
     getRowId: (row) => row.id.toString(),

@@ -2719,6 +2719,10 @@ import{n as e}from"./rolldown-runtime.js";import{t}from"./decorate-EVKP5RjP.js";
           --c-switch-thumb-height: calc(
             var(--c-switch-height) - var(--c-switch-thumb-offset)
           );
+          --c-switch-track-background-off: var(--c-color-neutral-fill-quiet);
+          --c-switch-track-background-on: var(
+            --c-success-background-color-default
+          );
           display: flex;
           height: var(--c-switch-height);
           width: calc(var(--c-switch-height) * 2);
@@ -2737,7 +2741,7 @@ import{n as e}from"./rolldown-runtime.js";import{t}from"./decorate-EVKP5RjP.js";
         .switch-button__track {
           --tw-inset-shadow-color: var(--color-slate-300);
           margin-inline: -1px;
-          background-color: var(--c-color-neutral-fill-quiet);
+          background-color: var(--c-switch-track-background-off);
           border-radius: var(--c-radius-full);
           border: 1px solid var(--c-form-control-border-color);
           box-shadow: var(--c-input-shadow);
@@ -2756,7 +2760,7 @@ import{n as e}from"./rolldown-runtime.js";import{t}from"./decorate-EVKP5RjP.js";
         }
 
         :host([checked]) .switch-button__track {
-          background-color: var(--c-color-success-fill-loud);
+          background-color: var(--c-switch-track-background-on);
         }
 
         :host([checked]) .switch-button__thumb {
@@ -4843,15 +4847,35 @@ import{n as e}from"./rolldown-runtime.js";import{t}from"./decorate-EVKP5RjP.js";
         width: var(--c-indicator-size, 0.5em);
         border-radius: var(--c-radius-full);
         color: var(--c-color-on-loud);
-        background-color: var(--c-color-fill-loud);
-        border: 1px solid var(--c-color-border-loud);
+        background-color: var(--indicator-background-color);
+        border: 1px solid var(--indicator-border-color);
       }
 
       .indicator--empty {
-        background-color: var(--c-color-neutral-fill-quiet);
-        border: 1px solid var(--c-color-neutral-border-normal);
+        --indicator-background-color: none;
+        --indicator-border-color: var(--c-text-default);
       }
-    `],t([u({reflect:!0})],eu.prototype,`variant`,void 0),t([u()],eu.prototype,`label`,void 0),customElements.get(`craft-indicator`)||customElements.define(`craft-indicator`,eu);var tu=class extends l{constructor(){super(),this.alt=!1,this.shift=!1,this.os=`Unknown`,this.os=this.detectOS()}connectedCallback(){super.connectedCallback(),this.os===`Unknown`&&(this.os=this.detectOS())}detectOS(){let e=navigator.platform.toLowerCase();return e.includes(`mac`)||/iphone|ipad|ipod/.test(e)?`Mac`:e.includes(`win`)?`Windows`:e.includes(`linux`)?`Linux`:`Unknown`}renderShortcutPrefix(){switch(this.os){case`Mac`:return`${this.alt?`⌥`:``}${this.shift?`⇧`:``}⌘`;case`Linux`:return`Super+${this.alt?`Alt+`:``}${this.shift?`Shift+`:``}`;default:return`Ctrl+${this.alt?`Alt+`:``}${this.shift?`Shift+`:``}`}}render(){return r`<span class="shortcut"
+
+      .indicator--success {
+        --indicator-background-color: var(--c-success-background-color-default);
+        --indicator-border-color: var(--c-success-border-color);
+      }
+
+      .indicator--danger {
+        --indicator-background-color: var(--c-danger-background-color-default);
+        --indicator-border-color: var(--c-danger-border-color);
+      }
+
+      .indicator--warning {
+        --indicator-background-color: var(--c-warning-background-color-default);
+        --indicator-border-color: var(--c-warning-border-color);
+      }
+
+      .indicator--info {
+        --indicator-background-color: var(--c-info-background-color-default);
+        --indicator-border-color: var(--c-info-border-color);
+      }
+    `],t([u()],eu.prototype,`variant`,void 0),t([u()],eu.prototype,`label`,void 0),customElements.get(`craft-indicator`)||customElements.define(`craft-indicator`,eu);var tu=class extends l{constructor(){super(),this.alt=!1,this.shift=!1,this.os=`Unknown`,this.os=this.detectOS()}connectedCallback(){super.connectedCallback(),this.os===`Unknown`&&(this.os=this.detectOS())}detectOS(){let e=navigator.platform.toLowerCase();return e.includes(`mac`)||/iphone|ipad|ipod/.test(e)?`Mac`:e.includes(`win`)?`Windows`:e.includes(`linux`)?`Linux`:`Unknown`}renderShortcutPrefix(){switch(this.os){case`Mac`:return`${this.alt?`⌥`:``}${this.shift?`⇧`:``}⌘`;case`Linux`:return`Super+${this.alt?`Alt+`:``}${this.shift?`Shift+`:``}`;default:return`Ctrl+${this.alt?`Alt+`:``}${this.shift?`Shift+`:``}`}}render(){return r`<span class="shortcut"
       >${this.renderShortcutPrefix()}<slot></slot
     ></span>`}};tu.styles=a`
     :host {
