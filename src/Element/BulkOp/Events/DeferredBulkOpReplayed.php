@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\BulkOp\Events;
 
-class DeferredBulkOpReplay
+class DeferredBulkOpReplayed
 {
     public function __construct(
         public string $key,

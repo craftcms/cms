@@ -5,7 +5,7 @@ declare(strict_types=1);
 use craft\events\BulkOpEvent;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\BulkOpDeferrals;
-use CraftCms\Cms\Element\BulkOp\Events\DeferredBulkOpReplay;
+use CraftCms\Cms\Element\BulkOp\Events\DeferredBulkOpReplayed;
 use CraftCms\Cms\Tests\TestCase as CmsTestCase;
 use Illuminate\Support\Facades\DB;
 
@@ -27,7 +27,7 @@ beforeEach(function() {
 it('replays native deferred handlers when a legacy bulk op ends', function() {
     $replays = [];
 
-    $this->deferrals->defer(AdapterDeferredBulkEvent::class, function(DeferredBulkOpReplay $event) use (&$replays) {
+    $this->deferrals->defer(AdapterDeferredBulkEvent::class, function(DeferredBulkOpReplayed $event) use (&$replays) {
         $replays[] = $event;
     }, data: ['source' => 'legacy']);
 
