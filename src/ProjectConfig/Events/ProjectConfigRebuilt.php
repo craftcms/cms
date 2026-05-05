@@ -5,21 +5,21 @@ declare(strict_types=1);
 namespace CraftCms\Cms\ProjectConfig\Events;
 
 /**
- * @event RebuildConfig The event that is triggered when the project config is being rebuilt.
+ * @event ProjectConfigRebuilt The event that is triggered when the project config is being rebuilt.
  *
  * ---
  *
  * ```php
- * use CraftCms\Cms\ProjectConfig\Events\RebuildConfig;
+ * use CraftCms\Cms\ProjectConfig\Events\ProjectConfigRebuilt;
  * use CraftCms\Cms\ProjectConfig\ProjectConfig;
  *
- * Event::listen(RebuildConfig::class, function(RebuildConfig $e) {
+ * Event::listen(ProjectConfigRebuilt::class, function(ProjectConfigRebuilt $e) {
  *     // Add plugin’s project config data...
  *    $e->config['myPlugin']['key'] = $value;
  * });
  * ```
  */
-class RebuildConfig
+class ProjectConfigRebuilt
 {
     public function __construct(
         public array $config,

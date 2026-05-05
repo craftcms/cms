@@ -63,7 +63,7 @@ use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
 use CraftCms\Cms\GarbageCollection\Actions\HardDelete;
 use CraftCms\Cms\GarbageCollection\Events\RunningGarbageCollection;
-use CraftCms\Cms\ProjectConfig\Events\RebuildConfig;
+use CraftCms\Cms\ProjectConfig\Events\ProjectConfigRebuilt;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Events\SiteSaved;
 use CraftCms\Cms\Support\Facades\Twig;
@@ -206,7 +206,7 @@ class DeprecatedConcepts
             }
         });
 
-        Event::listen(RebuildConfig::class, function(RebuildConfig $event) {
+        Event::listen(ProjectConfigRebuilt::class, function(ProjectConfigRebuilt $event) {
             if (DeprecatedConcepts::supportsCategories()) {
                 $event->config[LegacyProjectConfig::PATH_CATEGORY_GROUPS] = $this->_getCategoryGroupData();
             }

@@ -841,7 +841,7 @@ Moved the following controllers:
 - Deprecated `craft\services\ProjectConfig::EVENT_AFTER_WRITE_YAML_FILES`
 - Added `CraftCms\Cms\ProjectConfig\Events\YamlFilesWritten`
 - Deprecated `craft\services\ProjectConfig::EVENT_REBUILD`
-  - Added `CraftCms\Cms\ProjectConfig\Events\RebuildConfig`
+  - Added `CraftCms\Cms\ProjectConfig\Events\ProjectConfigRebuilt`
 - Removed `craft\errors\BusyResourceException` in favor of `CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException`
 - Removed `craft\errors\StaleResourceException` in favor of `CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException`
 - Added `CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException`
