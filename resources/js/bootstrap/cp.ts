@@ -100,24 +100,49 @@ const Cp = {
       },
     });
 
-    // Handle normal responses as page visits
-    let activeVisitUrl = '';
-
-    router.on('start', (event) => {
-      activeVisitUrl = event.detail.visit.url.href;
-    });
-
-    router.on('httpException', (event) => {
-      if (event.detail.response.status === 200) {
-        event.preventDefault();
-        window.location.href = activeVisitUrl;
-      }
-    });
+    handleNonInertiaRequests();
 
     console.log('Calling booted callbacks', bootedCallbacks);
     bootedCallbacks.forEach((callback) => callback(this));
     bootedCallbacks = [];
   },
 };
+
+function handleNonInertiaRequests() {
+  let fallbackUrl = '';
+
+  router.on('start', (event) => {
+    const visit = event.detail.visit;
+
+    if (visit.prefetch || visit.async || visit.method !== 'get') {
+      return;
+    }
+
+    fallbackUrl = visit.url.href;
+  });
+
+  router.on('finish', (event) => {
+    const visit = event.detail.visit;
+
+    if (fallbackUrl === visit.url.href) {
+      fallbackUrl = '';
+    }
+  });
+
+  router.on('httpException', (event) => {
+    const response = event.detail.response;
+
+    const shouldReload =
+      response.status === 200 &&
+      response.headers['content-type']?.includes('text/html');
+
+    if (!fallbackUrl || !shouldReload) {
+      return;
+    }
+
+    event.preventDefault();
+    window.location.assign(fallbackUrl);
+  });
+}
 
 export default Cp;
