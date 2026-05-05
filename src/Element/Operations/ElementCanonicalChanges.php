@@ -8,8 +8,8 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Element\Events\BeforeMergeCanonicalChanges;
 use CraftCms\Cms\Element\Events\CanonicalChangesMerged;
+use CraftCms\Cms\Element\Events\CanonicalChangesMerging;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
@@ -44,7 +44,7 @@ readonly class ElementCanonicalChanges
             throw new Exception('Attempting to merge source changes for a draft in an unsupported site.');
         }
 
-        event(new BeforeMergeCanonicalChanges($element));
+        event(new CanonicalChangesMerging($element));
 
         $this->bulkOps->ensure(function () use ($element, $supportedSites) {
             DB::transaction(function () use ($element, $supportedSites) {

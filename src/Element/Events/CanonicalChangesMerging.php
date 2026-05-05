@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Element\Events;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
-class BeforeMergeCanonicalChanges
+class CanonicalChangesMerging
 {
     public function __construct(
         public ElementInterface $element,
