@@ -54,8 +54,8 @@ use CraftCms\Cms\User\Actions\SuspendUsers;
 use CraftCms\Cms\User\Actions\UnsuspendUsers;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Data\UserGroup;
-use CraftCms\Cms\User\Events\DefineName;
 use CraftCms\Cms\User\Events\UserFriendlyNameResolving;
+use CraftCms\Cms\User\Events\UserNameResolving;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Notifications\ActivationNotification;
 use CraftCms\Cms\User\Notifications\ResetPasswordNotification;
@@ -1120,7 +1120,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
 
     private function _defineName(): string
     {
-        event($event = new DefineName($this));
+        event($event = new UserNameResolving($this));
 
         return $event->name ?? $this->fullName ?? (string) $this->username;
     }

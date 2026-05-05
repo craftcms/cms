@@ -18,8 +18,8 @@ use CraftCms\Cms\Auth\Events\UserAuthenticating;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User as UserElement;
-use CraftCms\Cms\User\Events\DefineName;
 use CraftCms\Cms\User\Events\UserFriendlyNameResolving;
+use CraftCms\Cms\User\Events\UserNameResolving;
 use CraftCms\Cms\User\Validation\UserRules;
 use Deprecated;
 use Illuminate\Support\Facades\Event;
@@ -78,7 +78,7 @@ class User extends UserElement
 
     public static function registerEvents(): void
     {
-        Event::listen(function(DefineName $event) {
+        Event::listen(function(UserNameResolving $event) {
             if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_NAME)) {
                 $yiiEvent = new DefineValueEvent();
                 $yiiEvent->sender = $event->user;

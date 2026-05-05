@@ -7,9 +7,9 @@ namespace CraftCms\Cms\User\Events;
 use CraftCms\Cms\User\Elements\User;
 
 /**
- * @event DefineName The event that is triggered when defining the user’s name, as returned by {@see User::getName()} or {@see User::__toString()}.
+ * @event UserNameResolving The event that is triggered when defining the user’s name, as returned by {@see User::getName()} or {@see User::__toString()}.
  */
-class DefineName
+class UserNameResolving
 {
     public function __construct(
         public User $user,
