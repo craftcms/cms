@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Element\Events;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
-class AfterUpdateSlugAndUri
+class ElementSlugAndUriUpdated
 {
     public function __construct(
         public ElementInterface $element,
