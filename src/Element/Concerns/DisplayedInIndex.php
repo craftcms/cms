@@ -15,8 +15,8 @@ use CraftCms\Cms\Element\Events\ElementDefaultCardAttributesResolving;
 use CraftCms\Cms\Element\Events\ElementDefaultTableAttributesResolving;
 use CraftCms\Cms\Element\Events\ElementSearchableAttributesResolving;
 use CraftCms\Cms\Element\Events\ElementSortOptionsResolving;
+use CraftCms\Cms\Element\Events\ElementTableAttributesResolving;
 use CraftCms\Cms\Element\Events\QueryForTableAttributePreparing;
-use CraftCms\Cms\Element\Events\RegisterTableAttributes;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ExcludeDescendantIdsExpression;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -403,7 +403,7 @@ trait DisplayedInIndex
 
     public static function tableAttributes(): array
     {
-        event($event = new RegisterTableAttributes(
+        event($event = new ElementTableAttributesResolving(
             elementType: static::class,
             tableAttributes: static::defineTableAttributes(),
         ));

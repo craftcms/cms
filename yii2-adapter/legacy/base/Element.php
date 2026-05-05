@@ -77,10 +77,10 @@ use CraftCms\Cms\Element\Events\ElementSearchableAttributesResolving;
 use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementSortOptionsResolving;
 use CraftCms\Cms\Element\Events\ElementSourcesResolving;
+use CraftCms\Cms\Element\Events\ElementTableAttributesResolving;
 use CraftCms\Cms\Element\Events\ElementUrlResolved;
 use CraftCms\Cms\Element\Events\ElementUrlResolving;
 use CraftCms\Cms\Element\Events\QueryForTableAttributePreparing;
-use CraftCms\Cms\Element\Events\RegisterTableAttributes;
 use CraftCms\Cms\Element\Events\Render;
 use CraftCms\Cms\Element\Events\SetEagerLoadedElements;
 use CraftCms\Cms\Element\Events\SetRoute;
@@ -348,7 +348,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
             }
         });
 
-        Event::listen(function(RegisterTableAttributes $event) use ($elementClasses) {
+        Event::listen(function(ElementTableAttributesResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_REGISTER_TABLE_ATTRIBUTES)) {
                     continue;

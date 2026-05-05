@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Element\Events;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
- * RegisterTableAttributes event is triggered when registering the table attributes for an element type.
+ * ElementTableAttributesResolving event is triggered when registering the table attributes for an element type.
  */
-class RegisterTableAttributes
+class ElementTableAttributesResolving
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class

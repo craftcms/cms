@@ -5,7 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Element\Events\ElementDefaultCardAttributesResolving;
 use CraftCms\Cms\Element\Events\ElementDefaultTableAttributesResolving;
 use CraftCms\Cms\Element\Events\ElementSortOptionsResolving;
-use CraftCms\Cms\Element\Events\RegisterTableAttributes;
+use CraftCms\Cms\Element\Events\ElementTableAttributesResolving;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ExcludeDescendantIdsExpression;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -575,7 +575,7 @@ describe('events', function () {
         $eventTriggered = false;
         $capturedAttributes = null;
 
-        Event::listen(function (RegisterTableAttributes $event) use (&$eventTriggered, &$capturedAttributes) {
+        Event::listen(function (ElementTableAttributesResolving $event) use (&$eventTriggered, &$capturedAttributes) {
             if ($event->elementType !== Entry::class) {
                 return;
             }
