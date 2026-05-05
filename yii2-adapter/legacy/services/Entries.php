@@ -22,7 +22,7 @@ use CraftCms\Cms\Entry\Events\EntryTypeDeleted;
 use CraftCms\Cms\Entry\Events\EntryTypeDeleting;
 use CraftCms\Cms\Entry\Events\EntryTypeDeletionApplying;
 use CraftCms\Cms\Entry\Events\EntryTypeSaved;
-use CraftCms\Cms\Entry\Events\SavingEntryType;
+use CraftCms\Cms\Entry\Events\EntryTypeSaving;
 use CraftCms\Cms\Entry\Exceptions\EntryTypeNotFoundException;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\Section\Data\Section;
@@ -812,7 +812,7 @@ class Entries extends Component
             }
         });
 
-        Event::listen(SavingEntryType::class, function(SavingEntryType $event) {
+        Event::listen(EntryTypeSaving::class, function(EntryTypeSaving $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_SAVE_ENTRY_TYPE)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_SAVE_ENTRY_TYPE, new EntryTypeEvent([
                     'entryType' => $event->entryType,

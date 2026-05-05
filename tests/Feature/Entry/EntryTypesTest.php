@@ -8,7 +8,7 @@ use CraftCms\Cms\Entry\Events\EntryTypeDeleted;
 use CraftCms\Cms\Entry\Events\EntryTypeDeleting;
 use CraftCms\Cms\Entry\Events\EntryTypeDeletionApplying;
 use CraftCms\Cms\Entry\Events\EntryTypeSaved;
-use CraftCms\Cms\Entry\Events\SavingEntryType;
+use CraftCms\Cms\Entry\Events\EntryTypeSaving;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes as EntryTypesFacade;
@@ -84,11 +84,11 @@ it('can get an entry type mixed', function () {
 
 it('can save an entry type', function () {
     Event::fake([
-        SavingEntryType::class,
+        EntryTypeSaving::class,
         EntryTypeSaved::class,
     ]);
 
-    Event::listen(SavingEntryType::class, fn () => null);
+    Event::listen(EntryTypeSaving::class, fn () => null);
     Event::listen(EntryTypeSaved::class, fn () => null);
 
     expect(EntryType::count())->toBe(0);
@@ -106,7 +106,7 @@ it('can save an entry type', function () {
         expect($entryType->handle)->toBe('pages');
     });
 
-    Event::assertDispatchedOnce(SavingEntryType::class);
+    Event::assertDispatchedOnce(EntryTypeSaving::class);
     Event::assertDispatchedOnce(EntryTypeSaved::class);
 });
 

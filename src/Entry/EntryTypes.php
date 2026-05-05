@@ -16,7 +16,7 @@ use CraftCms\Cms\Entry\Events\EntryTypeDeleted;
 use CraftCms\Cms\Entry\Events\EntryTypeDeleting;
 use CraftCms\Cms\Entry\Events\EntryTypeDeletionApplying;
 use CraftCms\Cms\Entry\Events\EntryTypeSaved;
-use CraftCms\Cms\Entry\Events\SavingEntryType;
+use CraftCms\Cms\Entry\Events\EntryTypeSaving;
 use CraftCms\Cms\Entry\Exceptions\EntryTypeNotFoundException;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -283,7 +283,7 @@ class EntryTypes
     {
         $isNewEntryType = ! $entryType->id;
 
-        event(new SavingEntryType($entryType, $isNewEntryType));
+        event(new EntryTypeSaving($entryType, $isNewEntryType));
 
         $entryType->hasTitleField = $entryType->getFieldLayout()->isFieldIncluded('title');
 
