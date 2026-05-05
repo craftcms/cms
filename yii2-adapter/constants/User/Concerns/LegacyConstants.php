@@ -7,6 +7,7 @@ namespace CraftCms\Cms\User\Concerns;
 use craft\base\ElementEventConstants;
 use craft\base\Event as YiiEvent;
 use craft\base\LegacyEventConstants;
+use craft\elements\User;
 use craft\events\AuthenticateUserEvent;
 use craft\events\DefineValueEvent;
 use CraftCms\Cms\Auth\Events\UserAuthenticating;
@@ -84,11 +85,11 @@ trait LegacyConstants
     public static function registerEvents(): void
     {
         Event::listen(function(UserNameResolving $event) {
-            if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_NAME)) {
+            if (YiiEvent::hasHandlers(User::class, self::EVENT_DEFINE_NAME)) {
                 $yiiEvent = new DefineValueEvent();
                 $yiiEvent->sender = $event->user;
 
-                YiiEvent::trigger(self::class, self::EVENT_DEFINE_NAME, $yiiEvent);
+                YiiEvent::trigger(User::class, self::EVENT_DEFINE_NAME, $yiiEvent);
 
                 if ($yiiEvent->value !== null) {
                     $event->name = $yiiEvent->value;
@@ -97,11 +98,11 @@ trait LegacyConstants
         });
 
         Event::listen(function(UserFriendlyNameResolving $event) {
-            if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_FRIENDLY_NAME)) {
+            if (YiiEvent::hasHandlers(User::class, self::EVENT_DEFINE_FRIENDLY_NAME)) {
                 $yiiEvent = new DefineValueEvent();
                 $yiiEvent->sender = $event->user;
 
-                YiiEvent::trigger(self::class, self::EVENT_DEFINE_FRIENDLY_NAME, $yiiEvent);
+                YiiEvent::trigger(User::class, self::EVENT_DEFINE_FRIENDLY_NAME, $yiiEvent);
 
                 if ($yiiEvent->value !== null) {
                     $event->name = $yiiEvent->value;
@@ -110,10 +111,10 @@ trait LegacyConstants
         });
 
         Event::listen(UserAuthenticating::class, function(UserAuthenticating $event) {
-            if (YiiEvent::hasHandlers(self::class, self::EVENT_BEFORE_AUTHENTICATE)) {
+            if (YiiEvent::hasHandlers(User::class, self::EVENT_BEFORE_AUTHENTICATE)) {
                 $yiiEvent = new AuthenticateUserEvent(['password' => $event->credentials['password']]);
 
-                YiiEvent::trigger(self::class, self::EVENT_BEFORE_AUTHENTICATE, $yiiEvent);
+                YiiEvent::trigger(User::class, self::EVENT_BEFORE_AUTHENTICATE, $yiiEvent);
 
                 $event->performAuthentication = $yiiEvent->performAuthentication;
             }

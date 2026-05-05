@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Element\Concerns;
 
 use craft\base\Event as YiiEvent;
 use craft\base\LegacyEventConstants;
+use craft\elements\NestedElementManager;
 use craft\events\BulkElementsEvent;
 use craft\events\DuplicateNestedElementsEvent;
 use CraftCms\Cms\Element\Events\NestedElementRevisionsCreated;
@@ -29,22 +30,22 @@ trait LegacyNestedElementManager
     public static function registerEvents(): void
     {
         Event::listen(function(NestedElementsSaved $event) {
-            if (!YiiEvent::hasHandlers(self::class, self::EVENT_AFTER_SAVE_ELEMENTS)) {
+            if (!YiiEvent::hasHandlers(NestedElementManager::class, self::EVENT_AFTER_SAVE_ELEMENTS)) {
                 return;
             }
 
-            YiiEvent::trigger(self::class, self::EVENT_AFTER_SAVE_ELEMENTS, new BulkElementsEvent([
+            YiiEvent::trigger(NestedElementManager::class, self::EVENT_AFTER_SAVE_ELEMENTS, new BulkElementsEvent([
                 'elements' => $event->elements,
                 'sender' => $event->manager,
             ]));
         });
 
         Event::listen(function(NewDuplicateNestedElementsEvent $event) {
-            if (!YiiEvent::hasHandlers(self::class, self::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS)) {
+            if (!YiiEvent::hasHandlers(NestedElementManager::class, self::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS)) {
                 return;
             }
 
-            YiiEvent::trigger(self::class, self::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS, new DuplicateNestedElementsEvent([
+            YiiEvent::trigger(NestedElementManager::class, self::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS, new DuplicateNestedElementsEvent([
                 'source' => $event->source,
                 'target' => $event->target,
                 'newElementIds' => $event->newElementIds,
@@ -53,11 +54,11 @@ trait LegacyNestedElementManager
         });
 
         Event::listen(function(NestedElementRevisionsCreated $event) {
-            if (!YiiEvent::hasHandlers(self::class, self::EVENT_AFTER_CREATE_REVISIONS)) {
+            if (!YiiEvent::hasHandlers(NestedElementManager::class, self::EVENT_AFTER_CREATE_REVISIONS)) {
                 return;
             }
 
-            YiiEvent::trigger(self::class, self::EVENT_AFTER_CREATE_REVISIONS, new DuplicateNestedElementsEvent([
+            YiiEvent::trigger(NestedElementManager::class, self::EVENT_AFTER_CREATE_REVISIONS, new DuplicateNestedElementsEvent([
                 'source' => $event->source,
                 'target' => $event->target,
                 'newElementIds' => $event->newElementIds,

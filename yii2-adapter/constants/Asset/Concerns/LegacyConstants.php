@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Asset\Concerns;
 
 use craft\base\ElementEventConstants;
 use craft\base\Event as YiiEvent;
+use craft\elements\Asset;
 use craft\events\AssetEvent;
 use craft\events\DefineAssetUrlEvent;
 use craft\events\GenerateTransformEvent;
@@ -125,14 +126,14 @@ trait LegacyConstants
     public static function registerEvents(): void
     {
         Event::listen(function(AssetUrlResolving $event) {
-            if (YiiEvent::hasHandlers(self::class, self::EVENT_BEFORE_DEFINE_URL)) {
+            if (YiiEvent::hasHandlers(Asset::class, self::EVENT_BEFORE_DEFINE_URL)) {
                 $yiiEvent = new DefineAssetUrlEvent([
                     'transform' => $event->transform,
                     'asset' => $event->asset,
                     'sender' => $event->asset,
                 ]);
 
-                YiiEvent::trigger(self::class, self::EVENT_BEFORE_DEFINE_URL, $yiiEvent);
+                YiiEvent::trigger(Asset::class, self::EVENT_BEFORE_DEFINE_URL, $yiiEvent);
 
                 $event->url = $yiiEvent->url;
                 $event->handled = $yiiEvent->handled;
@@ -140,14 +141,14 @@ trait LegacyConstants
         });
 
         Event::listen(function(AssetUrlDefined $event) {
-            if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_URL)) {
+            if (YiiEvent::hasHandlers(Asset::class, self::EVENT_DEFINE_URL)) {
                 $yiiEvent = new DefineAssetUrlEvent([
                     'transform' => $event->transform,
                     'asset' => $event->asset,
                     'sender' => $event->asset,
                 ]);
 
-                YiiEvent::trigger(self::class, self::EVENT_DEFINE_URL, $yiiEvent);
+                YiiEvent::trigger(Asset::class, self::EVENT_DEFINE_URL, $yiiEvent);
 
                 $event->url = $yiiEvent->url;
                 $event->handled = $yiiEvent->handled;
@@ -155,7 +156,7 @@ trait LegacyConstants
         });
 
         Event::listen(function(TransformGenerating $event) {
-            if (YiiEvent::hasHandlers(self::class, self::EVENT_BEFORE_GENERATE_TRANSFORM)) {
+            if (YiiEvent::hasHandlers(Asset::class, self::EVENT_BEFORE_GENERATE_TRANSFORM)) {
                 $yiiEvent = new GenerateTransformEvent([
                     'transform' => $event->transform,
                     'asset' => $event->asset,
@@ -163,14 +164,14 @@ trait LegacyConstants
                     'sender' => $event->asset,
                 ]);
 
-                YiiEvent::trigger(self::class, self::EVENT_BEFORE_GENERATE_TRANSFORM, $yiiEvent);
+                YiiEvent::trigger(Asset::class, self::EVENT_BEFORE_GENERATE_TRANSFORM, $yiiEvent);
 
                 $event->url = $yiiEvent->url;
             }
         });
 
         Event::listen(function(AfterGenerateTransform $event) {
-            if (YiiEvent::hasHandlers(self::class, self::EVENT_AFTER_GENERATE_TRANSFORM)) {
+            if (YiiEvent::hasHandlers(Asset::class, self::EVENT_AFTER_GENERATE_TRANSFORM)) {
                 $yiiEvent = new GenerateTransformEvent([
                     'transform' => $event->transform,
                     'asset' => $event->asset,
@@ -178,18 +179,18 @@ trait LegacyConstants
                     'sender' => $event->asset,
                 ]);
 
-                YiiEvent::trigger(self::class, self::EVENT_AFTER_GENERATE_TRANSFORM, $yiiEvent);
+                YiiEvent::trigger(Asset::class, self::EVENT_AFTER_GENERATE_TRANSFORM, $yiiEvent);
             }
         });
 
         Event::listen(function(AssetFileHandling $event) {
-            if (YiiEvent::hasHandlers(self::class, self::EVENT_BEFORE_HANDLE_FILE)) {
+            if (YiiEvent::hasHandlers(Asset::class, self::EVENT_BEFORE_HANDLE_FILE)) {
                 $yiiEvent = new AssetEvent([
                     'asset' => $event->asset,
                     'isNew' => $event->isNew,
                 ]);
 
-                YiiEvent::trigger(self::class, self::EVENT_BEFORE_HANDLE_FILE, $yiiEvent);
+                YiiEvent::trigger(Asset::class, self::EVENT_BEFORE_HANDLE_FILE, $yiiEvent);
             }
         });
     }

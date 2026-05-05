@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Entry\Concerns;
 
 use craft\base\ElementEventConstants;
 use craft\base\Event as YiiEvent;
+use craft\elements\Entry;
 use craft\events\DefineEntryTypesEvent;
 use craft\events\DefineMetaFields;
 use craft\events\ElementCriteriaEvent;
@@ -50,20 +51,20 @@ trait LegacyConstants
     public static function registerEvents(): void
     {
         Event::listen(function(EntryTypesResolving $event) {
-            if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_ENTRY_TYPES)) {
+            if (YiiEvent::hasHandlers(Entry::class, self::EVENT_DEFINE_ENTRY_TYPES)) {
                 $yiiEvent = new DefineEntryTypesEvent([
                     'entryTypes' => $event->entryTypes,
                     'sender' => $event->entry,
                 ]);
 
-                YiiEvent::trigger(self::class, self::EVENT_DEFINE_ENTRY_TYPES, $yiiEvent);
+                YiiEvent::trigger(Entry::class, self::EVENT_DEFINE_ENTRY_TYPES, $yiiEvent);
 
                 $event->entryTypes = $yiiEvent->entryTypes;
             }
         });
 
         Event::listen(function(EntryMetaFieldsResolving $event) {
-            if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_META_FIELDS)) {
+            if (YiiEvent::hasHandlers(Entry::class, self::EVENT_DEFINE_META_FIELDS)) {
                 $yiiEvent = new DefineMetaFields([
                     'element' => $event->entry,
                     'sender' => $event->entry,
@@ -71,20 +72,20 @@ trait LegacyConstants
                     'fields' => $event->fields,
                 ]);
 
-                YiiEvent::trigger(self::class, self::EVENT_DEFINE_META_FIELDS, $yiiEvent);
+                YiiEvent::trigger(Entry::class, self::EVENT_DEFINE_META_FIELDS, $yiiEvent);
 
                 $event->fields = $yiiEvent->fields;
             }
         });
 
         Event::listen(function(EntryParentSelectionCriteriaResolving $event) {
-            if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_PARENT_SELECTION_CRITERIA)) {
+            if (YiiEvent::hasHandlers(Entry::class, self::EVENT_DEFINE_PARENT_SELECTION_CRITERIA)) {
                 $yiiEvent = new ElementCriteriaEvent([
                     'sender' => $event->entry,
                     'criteria' => $event->criteria,
                 ]);
 
-                YiiEvent::trigger(self::class, self::EVENT_DEFINE_PARENT_SELECTION_CRITERIA, $yiiEvent);
+                YiiEvent::trigger(Entry::class, self::EVENT_DEFINE_PARENT_SELECTION_CRITERIA, $yiiEvent);
 
                 $event->criteria = $yiiEvent->criteria;
             }
