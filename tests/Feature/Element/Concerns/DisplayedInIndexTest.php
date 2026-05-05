@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Events\ElementDefaultCardAttributesResolving;
-use CraftCms\Cms\Element\Events\RegisterDefaultTableAttributes;
+use CraftCms\Cms\Element\Events\ElementDefaultTableAttributesResolving;
 use CraftCms\Cms\Element\Events\RegisterSortOptions;
 use CraftCms\Cms\Element\Events\RegisterTableAttributes;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -609,7 +609,7 @@ describe('events', function () {
         $eventTriggered = false;
         $capturedSource = null;
 
-        Event::listen(function (RegisterDefaultTableAttributes $event) use (&$eventTriggered, &$capturedSource) {
+        Event::listen(function (ElementDefaultTableAttributesResolving $event) use (&$eventTriggered, &$capturedSource) {
             if ($event->elementType !== Entry::class) {
                 return;
             }
