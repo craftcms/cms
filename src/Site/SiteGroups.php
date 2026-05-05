@@ -10,9 +10,9 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\SiteGroup;
 use CraftCms\Cms\Site\Events\DeletedSiteGroup;
 use CraftCms\Cms\Site\Events\SavedSiteGroup;
-use CraftCms\Cms\Site\Events\SavingSiteGroup;
 use CraftCms\Cms\Site\Events\SiteGroupDeleting;
 use CraftCms\Cms\Site\Events\SiteGroupDeletionApplying;
+use CraftCms\Cms\Site\Events\SiteGroupSaving;
 use CraftCms\Cms\Site\Models\SiteGroup as SiteGroupModel;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\MemoizableArray;
@@ -79,7 +79,7 @@ class SiteGroups
     {
         $isNewGroup = ! $group->id;
 
-        event(new SavingSiteGroup($group, $isNewGroup));
+        event(new SiteGroupSaving($group, $isNewGroup));
 
         if ($runValidation && ! $group->validate()) {
             Log::info('Site group not saved due to validation error.', [__METHOD__]);

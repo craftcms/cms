@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Site\Events;
 use CraftCms\Cms\Site\Data\SiteGroup;
 
 /**
- * @event SavingSiteGroup The event that is triggered before a site group is saved.
+ * @event SiteGroupSaving The event that is triggered before a site group is saved.
  */
-class SavingSiteGroup
+class SiteGroupSaving
 {
     public function __construct(
         public SiteGroup $siteGroup,
