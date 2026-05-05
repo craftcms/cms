@@ -7,9 +7,9 @@ namespace CraftCms\Yii2Adapter\Event;
 use craft\base\Event as YiiEvent;
 use craft\events\DefineGqlArgumentsEvent;
 use craft\events\DefineGqlTypeFieldsEvent;
+use craft\events\GqlEagerLoadableFieldsResolving as LegacyRegisterGqlEagerLoadableFields;
 use craft\events\MutationPopulateElementEvent;
 use craft\events\RegisterGqlArgumentHandlersEvent;
-use craft\events\RegisterGqlEagerLoadableFields as LegacyRegisterGqlEagerLoadableFields;
 use craft\gql\ArgumentManager as LegacyArgumentManager;
 use craft\gql\base\ElementArguments as LegacyElementArguments;
 use craft\gql\base\ElementMutationResolver as LegacyElementMutationResolver;
@@ -19,8 +19,8 @@ use CraftCms\Cms\Gql\Events\ElementPopulated;
 use CraftCms\Cms\Gql\Events\ElementPopulating;
 use CraftCms\Cms\Gql\Events\GqlArgumentHandlersResolving;
 use CraftCms\Cms\Gql\Events\GqlArgumentsResolving;
+use CraftCms\Cms\Gql\Events\GqlEagerLoadableFieldsResolving;
 use CraftCms\Cms\Gql\Events\GqlTypeFieldsResolving;
-use CraftCms\Cms\Gql\Events\RegisterGqlEagerLoadableFields;
 use Illuminate\Support\Facades\Event;
 
 class LegacyGqlEvents
@@ -52,7 +52,7 @@ class LegacyGqlEvents
             $event->handlers = $yiiEvent->handlers;
         });
 
-        Event::listen(RegisterGqlEagerLoadableFields::class, function(RegisterGqlEagerLoadableFields $event) {
+        Event::listen(GqlEagerLoadableFieldsResolving::class, function(GqlEagerLoadableFieldsResolving $event) {
             if (!YiiEvent::hasHandlers(LegacyElementQueryConditionBuilder::class, LegacyElementQueryConditionBuilder::EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS)) {
                 return;
             }
