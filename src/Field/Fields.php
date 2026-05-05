@@ -19,7 +19,6 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Events\ApplyingFieldDelete;
 use CraftCms\Cms\Field\Events\ApplyingFieldSave;
 use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
@@ -745,8 +744,6 @@ class Fields
         }
 
         $field = $this->getFieldById($fieldRecord->id);
-
-        event(new ApplyingFieldDelete($field));
 
         DB::beginTransaction();
 
