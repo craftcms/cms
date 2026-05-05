@@ -16,7 +16,7 @@ use craft\events\UserEvent;
 use craft\web\assets\authmethodsetup\AuthMethodSetupAsset;
 use craft\web\Controller;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
-use CraftCms\Cms\Auth\Events\RetrievingLoginUser;
+use CraftCms\Cms\Auth\Events\LoginUserRetrieving;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\AssigningGroupsAndPermissions;
 use CraftCms\Cms\User\Events\DefineEditUserScreens;
@@ -68,7 +68,7 @@ class UsersController extends Controller
      * ```
      *
      * @since 4.2.0
-     * @deprecated 6.0.0 use {@see RetrievingLoginUser} instead.
+     * @deprecated 6.0.0 use {@see LoginUserRetrieving} instead.
      */
     public const EVENT_BEFORE_FIND_LOGIN_USER = 'beforeFindLoginUser';
 
@@ -183,7 +183,7 @@ class UsersController extends Controller
             }
         });
 
-        Event::listen(RetrievingLoginUser::class, function(RetrievingLoginUser $event) {
+        Event::listen(LoginUserRetrieving::class, function(LoginUserRetrieving $event) {
             if (YiiEvent::hasHandlers(UsersController::class, UsersController::EVENT_BEFORE_FIND_LOGIN_USER)) {
                 $yiiEvent = new FindLoginUserEvent([
                     'loginName' => $event->loginName,
