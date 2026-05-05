@@ -15,7 +15,7 @@ use CraftCms\Cms\Structure\Enums\Action;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Structure\Events\ElementInserted;
 use CraftCms\Cms\Structure\Events\ElementUpdated;
-use CraftCms\Cms\Structure\Events\InsertingElement;
+use CraftCms\Cms\Structure\Events\StructureElementInserted;
 use CraftCms\Cms\Structure\Events\UpdateElementEvent;
 use CraftCms\Cms\Structure\Events\UpdatingElement;
 use CraftCms\Cms\Support\Facades\Structures as StructuresFacade;
@@ -340,7 +340,7 @@ class Structures extends Component
     public static function registerEvents(): void
     {
         foreach ([
-            self::EVENT_BEFORE_INSERT_ELEMENT => InsertingElement::class,
+            self::EVENT_BEFORE_INSERT_ELEMENT => StructureElementInserted::class,
             self::EVENT_AFTER_INSERT_ELEMENT => ElementInserted::class,
             self::EVENT_BEFORE_MOVE_ELEMENT => UpdatingElement::class,
             self::EVENT_AFTER_MOVE_ELEMENT => ElementUpdated::class,
