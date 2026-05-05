@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Condition\Events;
 
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 
-class RegisterConditionRules
+class ConditionRulesResolving
 {
     public function __construct(
         public ConditionInterface $condition,

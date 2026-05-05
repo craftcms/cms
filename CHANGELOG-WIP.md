@@ -407,7 +407,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 
 #### Events
 
-- Deprecated `craft\events\RegisterConditionRulesEvent`. `CraftCms\Cms\Condition\Events\RegisterConditionRules` should be used instead.
+- Deprecated `craft\events\RegisterConditionRulesEvent`. `CraftCms\Cms\Condition\Events\ConditionRulesResolving` should be used instead.
 
 ## Drafts
 
