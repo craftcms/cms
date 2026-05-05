@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Events;
 
 /**
- * @event RegisterCpNavItems The event that is triggered when registering control panel nav items.
+ * @event CpNavItemsResolving The event that is triggered when registering control panel nav items.
  *
  * ```php
- * use CraftCms\Cms\Cp\Events\RegisterCpNavItems;
+ * use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
  * use Illuminate\Support\Facades\Event;
  *
  * Event::listen(
- *     function(RegisterCpNavItems $e) {
+ *     function(CpNavItemsResolving $e) {
  *         $e->navItems[] = [
  *             'label' => 'Item Label',
  *             'url' => 'my-module',
@@ -22,7 +22,7 @@ namespace CraftCms\Cms\Cp\Events;
  * );
  * ```
  *
- * [[RegisterCpNavItems::$navItems]] is an array whose values are sub-arrays that define the nav items. Each sub-array can have the following keys:
+ * [[CpNavItemsResolving::$navItems]] is an array whose values are sub-arrays that define the nav items. Each sub-array can have the following keys:
  *
  * - `label` – The item’s label.
  * - `url` – The URL or path of the control panel page the item should link to.
@@ -38,7 +38,7 @@ namespace CraftCms\Cms\Cp\Events;
  * If a subnav is defined, subpages can specify which subnav item should be selected by defining a `selectedSubnavItem` variable that is set to
  * the selected item’s ID (its key in the `subnav` array).
  */
-class RegisterCpNavItems
+class CpNavItemsResolving
 {
     public function __construct(
         public array $navItems,
