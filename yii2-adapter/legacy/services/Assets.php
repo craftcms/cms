@@ -25,8 +25,8 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\AssetReplaced;
 use CraftCms\Cms\Asset\Events\AssetReplacing;
-use CraftCms\Cms\Asset\Events\DefineThumbUrl;
 use CraftCms\Cms\Asset\Events\RegisterPreviewHandler;
+use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Support\Json;
@@ -320,7 +320,7 @@ class Assets extends Component
             ]));
         });
 
-        EventFacade::listen(DefineThumbUrl::class, function(DefineThumbUrl $event) {
+        EventFacade::listen(ThumbUrlResolving::class, function(ThumbUrlResolving $event) {
             if (!Craft::$app->getAssets()->hasEventHandlers(self::EVENT_DEFINE_THUMB_URL)) {
                 return;
             }

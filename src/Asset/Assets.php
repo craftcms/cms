@@ -10,8 +10,8 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AssetReplaced;
 use CraftCms\Cms\Asset\Events\AssetReplacing;
-use CraftCms\Cms\Asset\Events\DefineThumbUrl;
 use CraftCms\Cms\Asset\Events\RegisterPreviewHandler;
+use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Exceptions\AssetNotPreviewableException;
 use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
@@ -132,7 +132,7 @@ class Assets
     {
         $height ??= $width;
 
-        event($event = new DefineThumbUrl(
+        event($event = new ThumbUrlResolving(
             asset: $asset,
             width: $width,
             height: $height,

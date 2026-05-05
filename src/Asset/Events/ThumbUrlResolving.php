@@ -8,9 +8,9 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Shared\Concerns\HandleableEvent;
 
 /**
- * @event DefineThumbUrl The event that is triggered when a thumbnail is being requested for an asset.
+ * @event ThumbUrlResolving The event that is triggered when a thumbnail is being requested for an asset.
  */
-class DefineThumbUrl
+class ThumbUrlResolving
 {
     use HandleableEvent;
 
