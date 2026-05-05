@@ -10,6 +10,7 @@
   import {useEventListener} from '@vueuse/core';
   import type {SelectOption, SuggestionGroup} from '@/types';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
+  import CraftCombobox from '@/components/form/CraftCombobox.vue';
 
   const props = defineProps<{
     readOnly?: boolean;
@@ -249,43 +250,34 @@
             </ul>
           </craft-input>
 
-          <craft-combobox
+          <CraftCombobox
             :label="t('Time Zone')"
             id="time-zone"
             name="timeZone"
-            .modelValue="form.timeZone"
-            @model-value-changed="handleUpdate"
-            :has-feedback-for="errors?.timeZone ? 'error' : ''"
+            v-model="form.timeZone"
+            :error="errors.timeZone"
             :disabled="readOnly"
             show-all-on-empty
+            :options="timezoneOptions"
           >
-            <craft-option
-              v-for="timezone in timezoneOptions"
-              :key="timezone.value"
-              .choiceValue="timezone.value"
-            >
-              {{ timezone.label
-              }}{{ timezone.data?.hint ? ` — ${timezone.data.hint}` : '' }}
-            </craft-option>
-            <craft-callout
-              slot="after"
-              variant="info"
-              appearance="plain"
-              class="p-0"
-              icon="lightbulb"
-            >
-              This can be set to an environment variable with a value of a
-              <a
-                href="https://www.php.net/manual/en/timezones.php"
-                rel="noopener"
-                target="_blank"
-                >supported time zone</a
-              >.
-            </craft-callout>
-            <ul class="error-list" v-if="errors?.timeZone" slot="feedback">
-              <li>{{ errors.timeZone }}</li>
-            </ul>
-          </craft-combobox>
+            <template #after>
+              <craft-callout
+                slot="after"
+                variant="info"
+                appearance="plain"
+                class="p-0"
+                icon="lightbulb"
+              >
+                This can be set to an environment variable with a value of a
+                <a
+                  href="https://www.php.net/manual/en/timezones.php"
+                  rel="noopener"
+                  target="_blank"
+                  >supported time zone</a
+                >.
+              </craft-callout>
+            </template>
+          </CraftCombobox>
         </div>
       </div>
     </AppLayout>
