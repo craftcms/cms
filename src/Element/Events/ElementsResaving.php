@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Element\Events;
 
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
-class BeforeResaveElements
+class ElementsResaving
 {
     public function __construct(
         public ElementQueryInterface $query,
