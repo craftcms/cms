@@ -18,8 +18,8 @@ use craft\events\BackupEvent;
 use craft\events\RestoreEvent;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Backups;
-use CraftCms\Cms\Database\Events\AfterRestoreBackup;
 use CraftCms\Cms\Database\Events\BackupCreated;
+use CraftCms\Cms\Database\Events\BackupRestored;
 use CraftCms\Cms\Database\Events\BeforeCreateBackup;
 use CraftCms\Cms\Database\Events\BeforeRestoreBackup;
 use CraftCms\Cms\Database\Exceptions\CommandFailedException;
@@ -124,7 +124,7 @@ class Connection extends DatabaseConnection
             ]));
         });
 
-        EventFacade::listen(function(AfterRestoreBackup $event) {
+        EventFacade::listen(function(BackupRestored $event) {
             $db = Craft::$app->getDb();
             if ($event->connection->getName() !== $db->getLaravelConnection()->getName()) {
                 return;

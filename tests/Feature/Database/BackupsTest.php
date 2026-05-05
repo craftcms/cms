@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Backups;
-use CraftCms\Cms\Database\Events\AfterRestoreBackup;
 use CraftCms\Cms\Database\Events\BackupCreated;
+use CraftCms\Cms\Database\Events\BackupRestored;
 use CraftCms\Cms\Database\Events\BeforeCreateBackup;
 use CraftCms\Cms\Database\Events\BeforeRestoreBackup;
 use CraftCms\Cms\Database\Exceptions\CommandFailedException;
@@ -152,7 +152,7 @@ it('runs configured restore command and dispatches restore events', function () 
         $beforeEvent = $event;
     });
 
-    Event::listen(AfterRestoreBackup::class, function (AfterRestoreBackup $event) use (&$afterEvent) {
+    Event::listen(BackupRestored::class, function (BackupRestored $event) use (&$afterEvent) {
         $afterEvent = $event;
     });
 

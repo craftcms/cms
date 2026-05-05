@@ -5,7 +5,7 @@ declare(strict_types=1);
 use craft\base\Event as YiiEvent;
 use craft\db\Connection;
 use craft\events\BackupEvent;
-use CraftCms\Cms\Database\Events\AfterRestoreBackup;
+use CraftCms\Cms\Database\Events\BackupRestored;
 use CraftCms\Cms\Database\Events\BeforeCreateBackup;
 
 it('bridges before create backup events to legacy handlers', function() {
@@ -54,7 +54,7 @@ it('keeps after restore backup legacy event payload compatibility', function() {
     try {
         $connection = \Craft::$app->getDb()->getLaravelConnection();
 
-        event(new AfterRestoreBackup(
+        event(new BackupRestored(
             connection: $connection,
             file: '/tmp/restore.sql',
         ));
