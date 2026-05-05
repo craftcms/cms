@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Database\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Commands\Concerns\BackupTrait;
-use CraftCms\Cms\Database\Events\RegisterMigrators;
+use CraftCms\Cms\Database\Events\MigratorsResolving;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Str;
@@ -205,7 +205,7 @@ class MigrateCommand extends Command implements Isolatable
             }
         }
 
-        event($event = new RegisterMigrators);
+        event($event = new MigratorsResolving);
 
         foreach ($event->migrators as $migrator) {
             if (! $migrator instanceof Migrator) {

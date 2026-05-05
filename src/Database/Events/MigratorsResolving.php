@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Database\Events;
 
 use CraftCms\Cms\Database\Migrator;
 
-class RegisterMigrators
+class MigratorsResolving
 {
     public function __construct(
         /** @var Migrator[] */
