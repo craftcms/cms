@@ -8,11 +8,11 @@ use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 
 /**
- * @event DefineEntryTypes The event that is triggered when defining the available entry types for the entry
+ * @event EntryTypesResolving The event that is triggered when defining the available entry types for the entry
  *
  * @see Entry::getAvailableEntryTypes()
  */
-class DefineEntryTypes
+class EntryTypesResolving
 {
     public function __construct(
         public Entry $entry,

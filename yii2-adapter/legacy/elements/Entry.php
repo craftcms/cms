@@ -13,9 +13,9 @@ use craft\base\ElementEventConstants;
 use craft\base\Event as YiiEvent;
 use craft\events\DefineEntryTypesEvent;
 use craft\events\ElementCriteriaEvent;
-use CraftCms\Cms\Entry\Events\DefineEntryTypes;
 use CraftCms\Cms\Entry\Events\DefineMetaFields;
 use CraftCms\Cms\Entry\Events\DefineParentSelectionCriteria;
+use CraftCms\Cms\Entry\Events\EntryTypesResolving;
 use Illuminate\Support\Facades\Event;
 
 /**
@@ -52,7 +52,7 @@ class Entry extends \CraftCms\Cms\Entry\Elements\Entry
 
     public static function registerEvents(): void
     {
-        Event::listen(function(DefineEntryTypes $event) {
+        Event::listen(function(EntryTypesResolving $event) {
             if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_ENTRY_TYPES)) {
                 $yiiEvent = new DefineEntryTypesEvent([
                     'entryTypes' => $event->entryTypes,
