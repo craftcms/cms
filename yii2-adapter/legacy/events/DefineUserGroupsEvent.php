@@ -14,7 +14,7 @@ use CraftCms\Cms\User\Data\UserGroup;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.4
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\Events\DefineDefaultUserGroups} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\Events\DefaultUserGroupsResolving} instead.
  */
 class DefineUserGroupsEvent extends UserEvent
 {

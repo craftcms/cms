@@ -25,7 +25,7 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Users as UsersFacade;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\DefineDefaultUserGroups;
+use CraftCms\Cms\User\Events\DefaultUserGroupsResolving;
 use CraftCms\Cms\User\Events\DeletingUserPhoto;
 use CraftCms\Cms\User\Events\EmailVerified;
 use CraftCms\Cms\User\Events\SavingUserPhoto;
@@ -932,7 +932,7 @@ class Users extends Component
             }
         });
 
-        Event::listen(DefineDefaultUserGroups::class, function(DefineDefaultUserGroups $event) {
+        Event::listen(DefaultUserGroupsResolving::class, function(DefaultUserGroupsResolving $event) {
             if (Craft::$app->getUsers()->hasEventHandlers(self::EVENT_DEFINE_DEFAULT_USER_GROUPS)) {
                 $yiiEvent = new DefineUserGroupsEvent([
                     'user' => $event->user,

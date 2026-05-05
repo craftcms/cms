@@ -9,11 +9,11 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 
 /**
- * @event DefineDefaultUserGroups The event that is triggered when defining the default user groups to assign to a publicly-registered user.
+ * @event DefaultUserGroupsResolving The event that is triggered when defining the default user groups to assign to a publicly-registered user.
  *
  * {@see Users::getDefaultUserGroups()}
  */
-class DefineDefaultUserGroups
+class DefaultUserGroupsResolving
 {
     public function __construct(
         public User $user,

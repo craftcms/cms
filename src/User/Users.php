@@ -36,7 +36,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\DefineDefaultUserGroups;
+use CraftCms\Cms\User\Events\DefaultUserGroupsResolving;
 use CraftCms\Cms\User\Events\DeletingUserPhoto;
 use CraftCms\Cms\User\Events\SavingUserPhoto;
 use CraftCms\Cms\User\Events\SuspendingUser;
@@ -1111,7 +1111,7 @@ class Users
             }
         }
 
-        event($event = new DefineDefaultUserGroups($user, $groups));
+        event($event = new DefaultUserGroupsResolving($user, $groups));
 
         return $event->userGroups;
     }
