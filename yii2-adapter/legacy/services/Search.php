@@ -17,10 +17,10 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Search\Events\AfterSearch;
 use CraftCms\Cms\Search\Events\BeforeIndexKeywords;
 use CraftCms\Cms\Search\Events\BeforeScoreResults;
 use CraftCms\Cms\Search\Events\BeforeSearch;
+use CraftCms\Cms\Search\Events\SearchPerformed;
 use CraftCms\Cms\Search\Search as LaravelSearch;
 use CraftCms\Cms\Search\SearchQuery;
 use CraftCms\Cms\Search\SearchQueryTerm;
@@ -341,7 +341,7 @@ class Search extends Component
             }
         });
 
-        Event::listen(AfterSearch::class, function(AfterSearch $event) {
+        Event::listen(SearchPerformed::class, function(SearchPerformed $event) {
             if (Craft::$app->getSearch()->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {
                 $yiiEvent = new SearchEvent([
                     'elementQuery' => $event->elementQuery,

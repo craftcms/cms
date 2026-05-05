@@ -12,7 +12,7 @@ use CraftCms\Cms\Search\SearchQuery;
  *
  * Any modifications to [[$scores]] will be respected.
  */
-class AfterSearch
+class SearchPerformed
 {
     public function __construct(
         public ElementQueryInterface $elementQuery,

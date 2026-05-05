@@ -11,10 +11,10 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Search\Events\AfterSearch;
 use CraftCms\Cms\Search\Events\BeforeIndexKeywords;
 use CraftCms\Cms\Search\Events\BeforeScoreResults;
 use CraftCms\Cms\Search\Events\BeforeSearch;
+use CraftCms\Cms\Search\Events\SearchPerformed;
 use CraftCms\Cms\Search\Jobs\UpdateSearchIndex;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -339,7 +339,7 @@ class Search
 
         $scores = $this->scoreResults($results, $searchQuery, $elementQuery);
 
-        event($event = new AfterSearch($elementQuery, $searchQuery, $results, $scores));
+        event($event = new SearchPerformed($elementQuery, $searchQuery, $results, $scores));
 
         $scores = $event->scores ?? $scores;
 

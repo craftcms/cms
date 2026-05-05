@@ -870,7 +870,7 @@ Moved the following controllers:
 - Deprecated `craft\search\SearchQueryTermGroup`. `CraftCms\Cms\Search\SearchQueryTermGroup` should be used instead.
 - Deprecated `craft\events\SearchEvent` in favor of the following new events:
   - `craft\services\Search::EVENT_BEFORE_SEARCH` => `CraftCms\Cms\Search\Events\BeforeSearch`
-  - `craft\services\Search::EVENT_AFTER_SEARCH` => `CraftCms\Cms\Search\Events\AfterSearch`
+  - `craft\services\Search::EVENT_AFTER_SEARCH` => `CraftCms\Cms\Search\Events\SearchPerformed`
   - `craft\services\Search::EVENT_BEFORE_SCORE_RESULTS` => `CraftCms\Cms\Search\Events\BeforeScoreResults`
 - Deprecated `craft\events\IndexKeywordsEvent`. `CraftCms\Cms\Search\Events\BeforeIndexKeywords` should be used instead.
 

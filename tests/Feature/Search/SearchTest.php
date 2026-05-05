@@ -5,10 +5,10 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
-use CraftCms\Cms\Search\Events\AfterSearch;
 use CraftCms\Cms\Search\Events\BeforeIndexKeywords;
 use CraftCms\Cms\Search\Events\BeforeScoreResults;
 use CraftCms\Cms\Search\Events\BeforeSearch;
+use CraftCms\Cms\Search\Events\SearchPerformed;
 use CraftCms\Cms\Search\Jobs\UpdateSearchIndex;
 use CraftCms\Cms\Search\SearchQuery;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -183,24 +183,24 @@ describe('searchElements', function () {
         Event::assertDispatched(BeforeScoreResults::class);
     });
 
-    test('fires AfterSearch event', function () {
+    test('fires SearchPerformed event', function () {
         createIndexedEntry('Test');
 
-        Event::fake([AfterSearch::class]);
+        Event::fake([SearchPerformed::class]);
 
         $elementQuery = entryQuery()->search('Test');
         Search::searchElements($elementQuery);
 
-        Event::assertDispatched(AfterSearch::class);
+        Event::assertDispatched(SearchPerformed::class);
     });
 
-    test('AfterSearch event can override scores', function () {
+    test('SearchPerformed event can override scores', function () {
         $entry1 = createIndexedEntry('Apple');
         $entry2 = createIndexedEntry('Banana');
 
         $siteId = Sites::getCurrentSite()->id;
 
-        Event::listen(function (AfterSearch $event) use ($entry1, $entry2, $siteId) {
+        Event::listen(function (SearchPerformed $event) use ($entry1, $entry2, $siteId) {
             $event->scores = [
                 "{$entry2->id}-{$siteId}" => 100,
                 "{$entry1->id}-{$siteId}" => 1,
