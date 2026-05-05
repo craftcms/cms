@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Route;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Route\Data\Route;
-use CraftCms\Cms\Route\Events\DeletingRoute;
 use CraftCms\Cms\Route\Events\RouteDeleted;
+use CraftCms\Cms\Route\Events\RouteDeleting;
 use CraftCms\Cms\Route\Events\RouteSaved;
 use CraftCms\Cms\Route\Events\SavingRoute;
 use CraftCms\Cms\Site\Events\SiteDeleted;
@@ -138,7 +138,7 @@ class Routes
             return true;
         }
 
-        event(new DeletingRoute(new Route(
+        event(new RouteDeleting(new Route(
             uriParts: $route['uriParts'],
             template: $route['template'],
             siteUid: $route['siteUid'],
