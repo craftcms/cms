@@ -39,7 +39,6 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
-use CraftCms\Cms\Element\Events\BeforeEagerLoadElements;
 use CraftCms\Cms\Element\Events\BeforeMergeCanonicalChanges;
 use CraftCms\Cms\Element\Events\BeforePerformAction;
 use CraftCms\Cms\Element\Events\BeforePropagateElement;
@@ -60,6 +59,7 @@ use CraftCms\Cms\Element\Events\ElementPropagated;
 use CraftCms\Cms\Element\Events\ElementResaved;
 use CraftCms\Cms\Element\Events\ElementRestored;
 use CraftCms\Cms\Element\Events\ElementSaved;
+use CraftCms\Cms\Element\Events\ElementsEagerLoading;
 use CraftCms\Cms\Element\Events\ElementSlugAndUriUpdated;
 use CraftCms\Cms\Element\Events\ElementsMerged;
 use CraftCms\Cms\Element\Events\InvalidateElementCaches;
@@ -1962,7 +1962,7 @@ class Elements extends Component
             $event->types = $yiiEvent->types;
         });
 
-        Event::listen(function(BeforeEagerLoadElements $event) {
+        Event::listen(function(ElementsEagerLoading $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_EAGER_LOAD_ELEMENTS)) {
                 return;
             }
