@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Auth\Events;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use SensitiveParameter;
 
-class Authenticating
+class UserAuthenticating
 {
     public function __construct(
         #[SensitiveParameter]

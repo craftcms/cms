@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Enums\AuthError;
-use CraftCms\Cms\Auth\Events\Authenticating;
+use CraftCms\Cms\Auth\Events\UserAuthenticating;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Json;
@@ -83,7 +83,7 @@ test('authenticateWithPasskey with user without passkeys', function () {
 test('authenticateWithPasskey event blocking', function () {
     $user = User::factory()->withPasskey('valid-credential-id')->createElement();
 
-    Event::listen(Authenticating::class, function (Authenticating $event) {
+    Event::listen(UserAuthenticating::class, function (UserAuthenticating $event) {
         $event->authError = AuthError::InvalidCredentials;
     });
 
@@ -99,7 +99,7 @@ test('authenticateWithPasskey event blocking', function () {
 test('authenticateWithPasskey event can skip verification', function () {
     $user = User::factory()->createElement();
 
-    Event::listen(Authenticating::class, function (Authenticating $event) {
+    Event::listen(UserAuthenticating::class, function (UserAuthenticating $event) {
         $event->performAuthentication = false;
     });
 

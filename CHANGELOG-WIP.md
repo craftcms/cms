@@ -233,7 +233,7 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Added `CraftCms\Cms\User\Notifications\ResetPasswordNotification`.
 - Deprecated `craft\services\Auth`. `CraftCms\Cms\Auth\Auth` should be used instead.
 - Deprecated `craft\web\User`. `auth('craft')->user()` or `CraftCms\Cms\User\Elements\User` methods should be used instead.
-- Deprecated `craft\events\AuthenticateUserEvent`. `CraftCms\Cms\Auth\Events\Authenticating` should be used instead.
+- Deprecated `craft\events\AuthenticateUserEvent`. `CraftCms\Cms\Auth\Events\UserAuthenticating` should be used instead.
 - Deprecated `\craft\records\Authenticator`. `\CraftCms\Cms\Auth\Models\Authenticator` should be used instead.
 - Deprecated `\craft\records\RecoveryCodes`. `\CraftCms\Cms\Auth\Models\RecoveryCodes` should be used instead.
 - Deprecated `\craft\records\SsoIdentity`. `\CraftCms\Cms\Auth\Models\SsoIdentity` should be used instead.

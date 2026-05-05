@@ -14,7 +14,7 @@ use craft\base\Event as YiiEvent;
 use craft\base\LegacyEventConstants;
 use craft\events\AuthenticateUserEvent;
 use craft\events\DefineValueEvent;
-use CraftCms\Cms\Auth\Events\Authenticating;
+use CraftCms\Cms\Auth\Events\UserAuthenticating;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User as UserElement;
@@ -104,7 +104,7 @@ class User extends UserElement
             }
         });
 
-        Event::listen(Authenticating::class, function(Authenticating $event) {
+        Event::listen(UserAuthenticating::class, function(UserAuthenticating $event) {
             if (YiiEvent::hasHandlers(self::class, self::EVENT_BEFORE_AUTHENTICATE)) {
                 $yiiEvent = new AuthenticateUserEvent(['password' => $event->credentials['password']]);
 
