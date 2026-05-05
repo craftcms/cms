@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Element\Events;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
- * RegisterExporters event is triggered when registering the available exporters for an element type.
+ * ElementExportersResolving event is triggered when registering the available exporters for an element type.
  */
-class RegisterExporters
+class ElementExportersResolving
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class

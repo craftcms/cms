@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use CraftCms\Cms\Element\Events\RegisterExporters;
+use CraftCms\Cms\Element\Events\ElementExportersResolving;
 use CraftCms\Cms\Element\Exporters\Expanded;
 use CraftCms\Cms\Element\Exporters\Raw;
 
@@ -26,7 +26,7 @@ trait Exportable
      */
     public static function exporters(string $source): array
     {
-        event($event = new RegisterExporters(
+        event($event = new ElementExportersResolving(
             elementType: static::class,
             source: $source,
             exporters: static::defineExporters($source),

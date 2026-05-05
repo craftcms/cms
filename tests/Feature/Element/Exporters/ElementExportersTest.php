@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\Contracts\ElementExporterInterface;
 use CraftCms\Cms\Element\ElementExporters;
-use CraftCms\Cms\Element\Events\RegisterExporters;
+use CraftCms\Cms\Element\Events\ElementExportersResolving;
 use CraftCms\Cms\Element\Exporters\Expanded;
 use CraftCms\Cms\Element\Exporters\Raw;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -84,7 +84,7 @@ it('honors register exporters listeners when building available exporters', func
         }
     };
 
-    Event::listen(function (RegisterExporters $event) use ($customExporter) {
+    Event::listen(function (ElementExportersResolving $event) use ($customExporter) {
         if ($event->elementType === Entry::class) {
             $event->exporters[] = clone $customExporter;
         }
