@@ -43,6 +43,7 @@ use CraftCms\Cms\Element\Events\CanonicalChangesMerged;
 use CraftCms\Cms\Element\Events\CanonicalChangesMerging;
 use CraftCms\Cms\Element\Events\ElementActionPerformed;
 use CraftCms\Cms\Element\Events\ElementActionPerforming;
+use CraftCms\Cms\Element\Events\ElementCachesInvalidated;
 use CraftCms\Cms\Element\Events\ElementDeleted;
 use CraftCms\Cms\Element\Events\ElementDeletedForSite;
 use CraftCms\Cms\Element\Events\ElementDeleting;
@@ -60,7 +61,6 @@ use CraftCms\Cms\Element\Events\ElementSearchIndexUpdating;
 use CraftCms\Cms\Element\Events\ElementSlugAndUriUpdated;
 use CraftCms\Cms\Element\Events\ElementSlugAndUriUpdating;
 use CraftCms\Cms\Element\Events\ElementsMerged;
-use CraftCms\Cms\Element\Events\InvalidateElementCaches;
 use CraftCms\Cms\Element\Events\RegisterElementTypes;
 use CraftCms\Cms\Element\Events\SetElementUri;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
@@ -1755,7 +1755,7 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(InvalidateElementCaches $event) {
+        Event::listen(function(ElementCachesInvalidated $event) {
             // Fire a 'invalidateCaches' event
             if (Craft::$app->getElements()->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
                 Craft::$app->getElements()->trigger(self::EVENT_INVALIDATE_CACHES, new InvalidateElementCachesEvent([
