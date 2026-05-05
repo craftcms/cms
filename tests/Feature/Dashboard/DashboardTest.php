@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Dashboard\Dashboard;
-use CraftCms\Cms\Dashboard\Events\RegisterWidgetTypes;
 use CraftCms\Cms\Dashboard\Events\WidgetDeleting;
 use CraftCms\Cms\Dashboard\Events\WidgetSaved;
 use CraftCms\Cms\Dashboard\Events\WidgetSaving;
+use CraftCms\Cms\Dashboard\Events\WidgetTypesResolving;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
 use CraftCms\Cms\Dashboard\Widgets\Feed;
@@ -31,7 +31,7 @@ it('can get all widget types', function () {
 it('can register additional widgets', function () {
     class MyWidget extends Widget {}
 
-    Event::listen(RegisterWidgetTypes::class, function (RegisterWidgetTypes $event) {
+    Event::listen(WidgetTypesResolving::class, function (WidgetTypesResolving $event) {
         $event->types[] = MyWidget::class;
     });
 
