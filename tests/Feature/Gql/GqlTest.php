@@ -11,9 +11,9 @@ use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
 use CraftCms\Cms\Gql\Events\GqlDirectivesResolving;
+use CraftCms\Cms\Gql\Events\GqlMutationsResolving;
 use CraftCms\Cms\Gql\Events\GqlQueryExecuting;
 use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
-use CraftCms\Cms\Gql\Events\RegisterGqlMutations;
 use CraftCms\Cms\Gql\Events\RegisterGqlQueries;
 use CraftCms\Cms\Gql\Events\RegisterGqlSchemaComponents;
 use CraftCms\Cms\Gql\Events\RegisterGqlTypes;
@@ -67,7 +67,7 @@ it('dispatches query registration events', function () {
 });
 
 it('dispatches mutation registration events', function () {
-    Event::listen(RegisterGqlMutations::class, function (RegisterGqlMutations $event) {
+    Event::listen(GqlMutationsResolving::class, function (GqlMutationsResolving $event) {
         $event->mutations['mockMutation'] = [
             'type' => Type::string(),
             'args' => [],

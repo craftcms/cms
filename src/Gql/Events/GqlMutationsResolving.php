@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Gql\Events;
 
 /**
- * @event RegisterGqlMutations The event that is triggered when registering GraphQL mutations.
+ * @event GqlMutationsResolving The event that is triggered when registering GraphQL mutations.
  */
-class RegisterGqlMutations
+class GqlMutationsResolving
 {
     public function __construct(
         /** @var array<string, mixed> */

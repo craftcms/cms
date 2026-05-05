@@ -31,9 +31,9 @@ use CraftCms\Cms\Gql\Directives\Transform;
 use CraftCms\Cms\Gql\Directives\Trim;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
 use CraftCms\Cms\Gql\Events\GqlDirectivesResolving;
+use CraftCms\Cms\Gql\Events\GqlMutationsResolving;
 use CraftCms\Cms\Gql\Events\GqlQueryExecuting;
 use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
-use CraftCms\Cms\Gql\Events\RegisterGqlMutations;
 use CraftCms\Cms\Gql\Events\RegisterGqlQueries;
 use CraftCms\Cms\Gql\Events\RegisterGqlSchemaComponents;
 use CraftCms\Cms\Gql\Events\RegisterGqlTypes;
@@ -1092,7 +1092,7 @@ class Gql
         // Flatten them
         $mutations = array_merge(...$mutationList);
 
-        event($event = new RegisterGqlMutations(mutations: $mutations));
+        event($event = new GqlMutationsResolving(mutations: $mutations));
         $mutations = $event->mutations;
 
         TypeLoader::registerType('Mutation', fn () => call_user_func(Mutation::class.'::getType', $mutations));
