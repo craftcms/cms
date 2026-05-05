@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Element\Events\BeforeDelete;
 use CraftCms\Cms\Element\Events\ElementLifecycleDeleted;
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleting;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Section\Enums\SectionType;
@@ -12,7 +12,7 @@ use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Facades\Event;
 
 it('soft deletes an element', function () {
-    Event::fake([BeforeDelete::class, ElementLifecycleDeleted::class]);
+    Event::fake([ElementLifecycleDeleting::class, ElementLifecycleDeleted::class]);
 
     $entry = EntryModel::factory()->createElement();
 
@@ -22,7 +22,7 @@ it('soft deletes an element', function () {
 
     expect(ElementModel::withTrashed()->find($entry->id)?->dateDeleted)->not()->toBeNull();
 
-    Event::assertDispatchedOnce(BeforeDelete::class);
+    Event::assertDispatchedOnce(ElementLifecycleDeleting::class);
     Event::assertDispatchedOnce(ElementLifecycleDeleted::class);
 });
 

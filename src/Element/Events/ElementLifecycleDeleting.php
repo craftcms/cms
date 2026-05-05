@@ -9,13 +9,13 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
 /**
- * @event BeforeDelete The event that is triggered before the element is deleted.
+ * @event ElementLifecycleDeleting The event that is triggered before the element is deleted.
  *
  * Set `$isValid` to `false` to prevent the element from getting deleted.
  *
  * {@see Element::beforeDelete()}
  */
-class BeforeDelete
+class ElementLifecycleDeleting
 {
     use ValidatableEvent;
 

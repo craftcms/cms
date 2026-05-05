@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Events\BeforeDelete;
 use CraftCms\Cms\Element\Events\ElementLifecycleDeleted;
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleting;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -45,7 +45,7 @@ it('prompts for a type when the argument is missing', function () {
 });
 
 it('deletes matching elements and their search indexes without dispatching delete events', function () {
-    Event::fake([BeforeDelete::class, ElementLifecycleDeleted::class]);
+    Event::fake([ElementLifecycleDeleting::class, ElementLifecycleDeleted::class]);
 
     $entry = EntryModel::factory()->createElement();
 
@@ -58,7 +58,7 @@ it('deletes matching elements and their search indexes without dispatching delet
     expect(ElementModel::withTrashed()->find($entry->id))->toBeNull();
     expect(searchIndexExistsFor($entry->id))->toBeFalse();
 
-    Event::assertNotDispatched(BeforeDelete::class);
+    Event::assertNotDispatched(ElementLifecycleDeleting::class);
     Event::assertNotDispatched(ElementLifecycleDeleted::class);
 });
 

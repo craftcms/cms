@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Element\Events\BeforeDelete;
 use CraftCms\Cms\Element\Events\BeforeRestore;
 use CraftCms\Cms\Element\Events\BeforeSave;
 use CraftCms\Cms\Element\Events\ElementLifecycleDeleted;
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleting;
 use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
 use CraftCms\Cms\Element\Events\ElementLifecycleRestored;
 use CraftCms\Cms\Element\Events\ElementLifecycleSaved;
@@ -103,7 +103,7 @@ test('afterPropagate event receives isNew parameter', function () {
 
 test('beforeDelete triggers event', function () {
     $triggered = false;
-    Event::listen(function (BeforeDelete $event) use (&$triggered) {
+    Event::listen(function (ElementLifecycleDeleting $event) use (&$triggered) {
         $triggered = true;
     });
 
@@ -113,7 +113,7 @@ test('beforeDelete triggers event', function () {
 });
 
 test('beforeDelete event can prevent delete', function () {
-    Event::listen(function (BeforeDelete $event) {
+    Event::listen(function (ElementLifecycleDeleting $event) {
         $event->isValid = false;
     });
 

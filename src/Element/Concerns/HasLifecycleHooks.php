@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use CraftCms\Cms\Element\ElementRelations;
-use CraftCms\Cms\Element\Events\BeforeDelete;
 use CraftCms\Cms\Element\Events\BeforeRestore;
 use CraftCms\Cms\Element\Events\BeforeSave;
 use CraftCms\Cms\Element\Events\ElementLifecycleDeleted;
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleting;
 use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
 use CraftCms\Cms\Element\Events\ElementLifecycleRestored;
 use CraftCms\Cms\Element\Events\ElementLifecycleSaved;
@@ -78,7 +78,7 @@ trait HasLifecycleHooks
             return false;
         }
 
-        event($event = new BeforeDelete($this));
+        event($event = new ElementLifecycleDeleting($this));
 
         return $event->isValid;
     }

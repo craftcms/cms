@@ -46,7 +46,6 @@ use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\RenderElementEvent;
 use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
-use CraftCms\Cms\Element\Events\BeforeDelete;
 use CraftCms\Cms\Element\Events\BeforeMoveInStructure;
 use CraftCms\Cms\Element\Events\BeforeRestore;
 use CraftCms\Cms\Element\Events\BeforeSave;
@@ -63,6 +62,7 @@ use CraftCms\Cms\Element\Events\DefineMetaFieldsHtml;
 use CraftCms\Cms\Element\Events\DefineSidebarHtml;
 use CraftCms\Cms\Element\Events\DefineUrl;
 use CraftCms\Cms\Element\Events\ElementLifecycleDeleted;
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleting;
 use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
 use CraftCms\Cms\Element\Events\ElementLifecycleRestored;
 use CraftCms\Cms\Element\Events\ElementLifecycleSaved;
@@ -584,7 +584,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
             }
         });
 
-        Event::listen(function(BeforeDelete $event) use ($elementClasses) {
+        Event::listen(function(ElementLifecycleDeleting $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_BEFORE_DELETE)) {
                     continue;
