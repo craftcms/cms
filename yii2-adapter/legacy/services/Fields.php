@@ -16,7 +16,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
-use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
+use CraftCms\Cms\Field\Events\CompatibleFieldTypesResolving;
 use CraftCms\Cms\Field\Events\FieldDeleted;
 use CraftCms\Cms\Field\Events\FieldDeleting;
 use CraftCms\Cms\Field\Events\FieldDeletionApplying;
@@ -738,7 +738,7 @@ class Fields extends Component
             }
         });
 
-        Event::listen(function(DefineCompatibleFieldTypes $event) {
+        Event::listen(function(CompatibleFieldTypesResolving $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES)) {
                 $yiiEvent = new DefineCompatibleFieldTypesEvent(['field' => $event->field, 'compatibleTypes' => $event->compatibleTypes->all()]);
                 Craft::$app->getFields()->trigger(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES, $yiiEvent);

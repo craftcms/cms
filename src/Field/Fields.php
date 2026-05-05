@@ -19,7 +19,7 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
+use CraftCms\Cms\Field\Events\CompatibleFieldTypesResolving;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Field\Events\FieldDeleted;
 use CraftCms\Cms\Field\Events\FieldDeleting;
@@ -298,7 +298,7 @@ class Fields
             $types->add($field::class);
         }
 
-        event($event = new DefineCompatibleFieldTypes($field, $types));
+        event($event = new CompatibleFieldTypesResolving($field, $types));
 
         return $event->compatibleTypes;
     }

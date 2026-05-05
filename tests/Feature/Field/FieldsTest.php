@@ -6,7 +6,7 @@ use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Color;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
+use CraftCms\Cms\Field\Events\CompatibleFieldTypesResolving;
 use CraftCms\Cms\Field\Events\RegisterFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
 use CraftCms\Cms\Field\Field;
@@ -94,8 +94,8 @@ it('can define additional compatible field types with an event', function () {
     expect($this->fields->getCompatibleFieldTypes($plainText))->not()->toContain(CustomCompatibleField::class);
 
     Event::listen(
-        DefineCompatibleFieldTypes::class,
-        fn (DefineCompatibleFieldTypes $event) => $event->compatibleTypes->add(CustomCompatibleField::class),
+        CompatibleFieldTypesResolving::class,
+        fn (CompatibleFieldTypesResolving $event) => $event->compatibleTypes->add(CustomCompatibleField::class),
     );
 
     expect($this->fields->getCompatibleFieldTypes($plainText))->toContain(CustomCompatibleField::class);
