@@ -18,8 +18,8 @@ use craft\fields\Matrix as LegacyMatrix;
 use craft\fields\PlainText as LegacyPlainText;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Dropdown;
+use CraftCms\Cms\Field\Events\AssetsUploadedFilesLocating;
 use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
-use CraftCms\Cms\Field\Events\LocateUploadedFiles;
 
 class TestLegacyOptionsEventField extends Dropdown
 {
@@ -113,7 +113,7 @@ it('bridges legacy asset upload location events', function() {
             return 'Test Element';
         }
     };
-    $event = new LocateUploadedFiles(
+    $event = new AssetsUploadedFilesLocating(
         field: $field,
         element: $element,
         files: [],

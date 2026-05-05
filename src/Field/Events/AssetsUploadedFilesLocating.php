@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Field\Events;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 
-class LocateUploadedFiles
+class AssetsUploadedFilesLocating
 {
     public function __construct(
         public FieldInterface $field,
