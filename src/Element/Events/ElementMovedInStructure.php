@@ -8,11 +8,11 @@ use CraftCms\Cms\Element\Concerns\Structurable;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
- * @event AfterMoveInStructure The event that is triggered after the element is moved in a structure.
+ * @event ElementMovedInStructure The event that is triggered after the element is moved in a structure.
  *
  * {@see Structurable::afterMoveInStructure()}
  */
-class AfterMoveInStructure
+class ElementMovedInStructure
 {
     public function __construct(
         public ElementInterface $element,
