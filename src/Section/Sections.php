@@ -23,9 +23,9 @@ use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\Section\Events\DeletingSection;
 use CraftCms\Cms\Section\Events\SavingSection;
 use CraftCms\Cms\Section\Events\SectionDeleted;
+use CraftCms\Cms\Section\Events\SectionDeleting;
 use CraftCms\Cms\Section\Events\SectionDeletionApplying;
 use CraftCms\Cms\Section\Events\SectionSaved;
 use CraftCms\Cms\Section\Exceptions\SectionNotFoundException;
@@ -983,7 +983,7 @@ class Sections
      */
     public function deleteSection(Section $section): bool
     {
-        event(new DeletingSection($section));
+        event(new SectionDeleting($section));
 
         // Remove the section from the project config
         $this->projectConfig->remove(
