@@ -86,6 +86,7 @@ use CraftCms\Cms\Element\Events\SetEagerLoadedElements;
 use CraftCms\Cms\Element\Events\SetRoute;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use Illuminate\Support\Facades\Event;
+use ReflectionClass;
 
 /**
  * @since 3.0.0
@@ -984,7 +985,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
         return false;
     }
 
-    private static function triggerEvent(string $class, string $name, YiiEvent $event): void
+    private static function triggerEvent(string $class, string $name, \yii\base\Event $event): void
     {
         foreach (self::eventTargetClasses($class) as $targetClass) {
             if (!YiiEvent::hasHandlers($targetClass, $name)) {
@@ -1038,6 +1039,6 @@ abstract class Element extends \CraftCms\Cms\Element\Element
             return $class;
         }
 
-        return (new \ReflectionClass($class))->getName();
+        return (new ReflectionClass($class))->getName();
     }
 }
