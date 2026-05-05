@@ -8,9 +8,9 @@ use CraftCms\Cms\User\Data\PermissionGroup;
 use Illuminate\Support\Collection;
 
 /**
- * @event RegisterUserPermissions The event that is triggered when registering user permissions.
+ * @event UserPermissionsResolving The event that is triggered when registering user permissions.
  */
-class RegisterUserPermissions
+class UserPermissionsResolving
 {
     public function __construct(
         /** @var Collection<PermissionGroup> */
