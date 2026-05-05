@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Element\Events;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
- * RegisterDefaultCardAttributes event is triggered when registering the default card attributes for an element type.
+ * ElementDefaultCardAttributesResolving event is triggered when registering the default card attributes for an element type.
  */
-class RegisterDefaultCardAttributes
+class ElementDefaultCardAttributesResolving
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class

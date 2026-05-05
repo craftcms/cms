@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Element\Events\RegisterDefaultCardAttributes;
+use CraftCms\Cms\Element\Events\ElementDefaultCardAttributesResolving;
 use CraftCms\Cms\Element\Events\RegisterDefaultTableAttributes;
 use CraftCms\Cms\Element\Events\RegisterSortOptions;
 use CraftCms\Cms\Element\Events\RegisterTableAttributes;
@@ -626,7 +626,7 @@ describe('events', function () {
     test('registerDefaultCardAttributes event is triggered', function () {
         $eventTriggered = false;
 
-        Event::listen(function (RegisterDefaultCardAttributes $event) use (&$eventTriggered) {
+        Event::listen(function (ElementDefaultCardAttributesResolving $event) use (&$eventTriggered) {
             if ($event->elementType !== Entry::class) {
                 return;
             }

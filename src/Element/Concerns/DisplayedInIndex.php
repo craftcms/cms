@@ -11,8 +11,8 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Events\ElementCardAttributesResolving;
+use CraftCms\Cms\Element\Events\ElementDefaultCardAttributesResolving;
 use CraftCms\Cms\Element\Events\QueryForTableAttributePreparing;
-use CraftCms\Cms\Element\Events\RegisterDefaultCardAttributes;
 use CraftCms\Cms\Element\Events\RegisterDefaultTableAttributes;
 use CraftCms\Cms\Element\Events\RegisterSearchableAttributes;
 use CraftCms\Cms\Element\Events\RegisterSortOptions;
@@ -564,7 +564,7 @@ trait DisplayedInIndex
      */
     public static function defaultCardAttributes(): array
     {
-        event($event = new RegisterDefaultCardAttributes(
+        event($event = new ElementDefaultCardAttributesResolving(
             elementType: static::class,
             cardAttributes: static::defineDefaultCardAttributes(),
         ));
