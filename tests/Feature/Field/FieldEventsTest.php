@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Dropdown;
-use CraftCms\Cms\Field\Events\DefineInputOptions;
 use CraftCms\Cms\Field\Events\FieldDeletionApplying;
 use CraftCms\Cms\Field\Events\FieldElementDeleted;
 use CraftCms\Cms\Field\Events\FieldElementDeleting;
@@ -21,6 +20,7 @@ use CraftCms\Cms\Field\Events\FieldLifecycleSaved;
 use CraftCms\Cms\Field\Events\FieldLifecycleSaving;
 use CraftCms\Cms\Field\Events\FieldMergeFromCompleted;
 use CraftCms\Cms\Field\Events\FieldMergeIntoCompleted;
+use CraftCms\Cms\Field\Events\InputOptionsResolving;
 use CraftCms\Cms\Field\PlainText;
 use Illuminate\Support\Facades\Event;
 
@@ -108,7 +108,7 @@ it('can mutate field rendering option and keyword events', function () {
         ['label' => 'Original', 'value' => 'original'],
     ];
 
-    Event::listen(function (DefineInputOptions $event) use ($optionsField) {
+    Event::listen(function (InputOptionsResolving $event) use ($optionsField) {
         expect($event->field)->toBe($optionsField);
 
         $event->options[] = ['label' => 'Extra', 'value' => 'extra'];
