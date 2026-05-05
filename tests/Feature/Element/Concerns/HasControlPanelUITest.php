@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Element\Events\DefineAttributeHtml;
 use CraftCms\Cms\Element\Events\DefineInlineAttributeInputHtml;
 use CraftCms\Cms\Element\Events\DefineMetadata;
 use CraftCms\Cms\Element\Events\DefineSidebarHtml;
 use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
 use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
 use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
+use CraftCms\Cms\Element\Events\ElementAttributeHtmlResolving;
 use CraftCms\Cms\Element\Events\RegisterHtmlAttributes;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -233,11 +233,11 @@ describe('getAttributeHtml', function () {
         expect($html)->toBeString();
     });
 
-    test('triggers DefineAttributeHtml event', function () {
+    test('triggers ElementAttributeHtmlResolving event', function () {
         $eventTriggered = false;
         $customHtml = '<span class="custom">Custom HTML</span>';
 
-        Event::listen(function (DefineAttributeHtml $event) use (&$eventTriggered, $customHtml) {
+        Event::listen(function (ElementAttributeHtmlResolving $event) use (&$eventTriggered, $customHtml) {
             $eventTriggered = true;
             if ($event->attribute === 'title') {
                 $event->html = $customHtml;
@@ -253,7 +253,7 @@ describe('getAttributeHtml', function () {
     test('event receives correct attribute name', function () {
         $capturedAttribute = null;
 
-        Event::listen(function (DefineAttributeHtml $event) use (&$capturedAttribute) {
+        Event::listen(function (ElementAttributeHtmlResolving $event) use (&$capturedAttribute) {
             $capturedAttribute = $event->attribute;
         });
 

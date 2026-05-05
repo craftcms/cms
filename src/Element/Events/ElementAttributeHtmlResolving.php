@@ -9,14 +9,14 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use Stringable;
 
 /**
- * @event DefineAttributeHtml The event that is triggered when defining an attribute's HTML
+ * @event ElementAttributeHtmlResolving The event that is triggered when defining an attribute's HTML
  * for table and card views.
  *
  * If `html` is set, it will be used instead of the default attribute HTML.
  *
  * {@see HasControlPanelUI::getAttributeHtml()}
  */
-class DefineAttributeHtml
+class ElementAttributeHtmlResolving
 {
     public function __construct(
         public ElementInterface $element,
