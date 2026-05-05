@@ -17,7 +17,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Events\AfterFieldDelete;
 use CraftCms\Cms\Field\Events\AfterFieldElementDelete;
 use CraftCms\Cms\Field\Events\AfterFieldElementPropagate;
 use CraftCms\Cms\Field\Events\AfterFieldElementRestore;
@@ -33,6 +32,7 @@ use CraftCms\Cms\Field\Events\BeforeFieldElementSave;
 use CraftCms\Cms\Field\Events\BeforeFieldSave;
 use CraftCms\Cms\Field\Events\FieldElementEvent;
 use CraftCms\Cms\Field\Events\FieldEvent;
+use CraftCms\Cms\Field\Events\FieldLifecycleDeleted;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\Event;
@@ -88,7 +88,7 @@ abstract class Field extends \CraftCms\Cms\Field\Field
             self::triggerEvent($event, self::EVENT_BEFORE_APPLY_DELETE);
         });
 
-        Event::listen(function(AfterFieldDelete $event) {
+        Event::listen(function(FieldLifecycleDeleted $event) {
             self::triggerEvent($event, self::EVENT_AFTER_DELETE);
         });
 
