@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\User\Concerns;
+namespace CraftCms\Cms\Address\Concerns;
 
 use Deprecated;
 
