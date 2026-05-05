@@ -36,7 +36,7 @@ use CraftCms\Cms\Twig\TemplateRenderer;
 use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\Enums\Position;
-use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
+use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
 use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
 use CraftCms\Cms\View\Events\RenderingAssets;
 use CraftCms\Cms\View\HtmlStack;
@@ -88,7 +88,7 @@ class View extends \yii\web\View
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering control panel template roots
      *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\RegisterCpTemplateRoots} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\CpTemplateRootsResolving} instead.
      */
     public const EVENT_REGISTER_CP_TEMPLATE_ROOTS = 'registerCpTemplateRoots';
 
@@ -2211,7 +2211,7 @@ JS;
 
     public static function registerEvents(): void
     {
-        Event::listen(RegisterCpTemplateRoots::class, function(RegisterCpTemplateRoots $event) {
+        Event::listen(CpTemplateRootsResolving::class, function(CpTemplateRootsResolving $event) {
             if (!Craft::$app->getView()->hasEventHandlers(self::EVENT_REGISTER_CP_TEMPLATE_ROOTS)) {
                 return;
             }

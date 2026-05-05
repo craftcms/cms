@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
+use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
 use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Context;
@@ -120,15 +120,15 @@ it('has the correct backing values', function () {
 
 it('dispatches the correct event for template roots', function () {
     Once::flush();
-    Event::fake([RegisterCpTemplateRoots::class, RegisterSiteTemplateRoots::class]);
+    Event::fake([CpTemplateRootsResolving::class, RegisterSiteTemplateRoots::class]);
 
     TemplateMode::Cp->templateRoots();
 
-    Event::assertDispatched(RegisterCpTemplateRoots::class);
+    Event::assertDispatched(CpTemplateRootsResolving::class);
     Event::assertNotDispatched(RegisterSiteTemplateRoots::class);
 
     TemplateMode::Site->templateRoots();
 
-    Event::assertDispatchedOnce(RegisterCpTemplateRoots::class);
+    Event::assertDispatchedOnce(CpTemplateRootsResolving::class);
     Event::assertDispatchedOnce(RegisterSiteTemplateRoots::class);
 });

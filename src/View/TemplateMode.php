@@ -6,7 +6,7 @@ namespace CraftCms\Cms\View;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Path;
-use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
+use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
 use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
 use Illuminate\Support\Facades\Context;
 
@@ -95,7 +95,7 @@ enum TemplateMode: string
             $templateRoots = [];
 
             event($event = match ($this) {
-                self::Cp => new RegisterCpTemplateRoots,
+                self::Cp => new CpTemplateRootsResolving,
                 self::Site => new RegisterSiteTemplateRoots,
             });
 

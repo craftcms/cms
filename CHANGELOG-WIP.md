@@ -1040,7 +1040,7 @@ Moved the following controllers:
 - Added `CraftCms\Cms\View\DeltaRegistry`.
 - Added `CraftCms\Cms\Support\Facades\DeltaRegistry`.
 - Added `CraftCms\Cms\View\TemplateMode` enum.
-- Added `CraftCms\Cms\View\Events\RegisterCpTemplateRoots`.
+- Added `CraftCms\Cms\View\Events\CpTemplateRootsResolving`.
 - Added `CraftCms\Cms\View\Events\RegisterSiteTemplateRoots`.
 - Added `CraftCms\Cms\View\TemplateCaches`.
 - Added `CraftCms\Cms\View\CacheCollectors\DependencyCollector`.
@@ -1090,7 +1090,7 @@ Moved the following controllers:
 - Deprecated `craft\web\View::getTemplatesPath()`. `CraftCms\Cms\View\TemplateMode::templatesPath()` should be used instead.
 - Deprecated `craft\web\View::getCpTemplateRoots()`. `CraftCms\Cms\View\TemplateMode::templateRoots()` should be used instead.
 - Deprecated `craft\web\View::getSiteTemplateRoots()`. `CraftCms\Cms\View\TemplateMode::templateRoots()` should be used instead.
-- Deprecated `craft\web\View::EVENT_REGISTER_CP_TEMPLATE_ROOTS`. `CraftCms\Cms\View\Events\RegisterCpTemplateRoots` should be used instead.
+- Deprecated `craft\web\View::EVENT_REGISTER_CP_TEMPLATE_ROOTS`. `CraftCms\Cms\View\Events\CpTemplateRootsResolving` should be used instead.
 - Deprecated `craft\web\View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS`. `CraftCms\Cms\View\Events\RegisterSiteTemplateRoots` should be used instead.
 - Deprecated `craft\web\View::registerDeltaName()`. `CraftCms\Cms\View\DeltaRegistry::registerName()` should be used instead.
 - Deprecated `craft\web\View::getDeltaNames()`. `CraftCms\Cms\View\DeltaRegistry::getNames()` should be used instead.
