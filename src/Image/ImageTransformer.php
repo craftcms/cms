@@ -18,7 +18,7 @@ use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
 use CraftCms\Cms\Image\Events\DeletingTransformedImage;
-use CraftCms\Cms\Image\Events\TransformingImage;
+use CraftCms\Cms\Image\Events\ImageTransforming;
 use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
@@ -315,7 +315,7 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
             $this->storeTransformIndexData($index);
         }, $image);
 
-        event($event = new TransformingImage(
+        event($event = new ImageTransforming(
             asset: $asset,
             imageTransformIndex: $index,
             transform: $index->getTransform(),
