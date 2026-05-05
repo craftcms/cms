@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Dropdown;
-use CraftCms\Cms\Field\Events\AfterFieldElementRestore;
 use CraftCms\Cms\Field\Events\AfterFieldElementSave;
 use CraftCms\Cms\Field\Events\AfterFieldMergeFrom;
 use CraftCms\Cms\Field\Events\AfterFieldMergeInto;
@@ -20,6 +19,7 @@ use CraftCms\Cms\Field\Events\DefineFieldKeywords;
 use CraftCms\Cms\Field\Events\DefineInputOptions;
 use CraftCms\Cms\Field\Events\FieldElementDeleted;
 use CraftCms\Cms\Field\Events\FieldElementPropagated;
+use CraftCms\Cms\Field\Events\FieldElementRestored;
 use CraftCms\Cms\Field\Events\FieldLifecycleDeleted;
 use CraftCms\Cms\Field\PlainText;
 use Illuminate\Support\Facades\Event;
@@ -165,8 +165,8 @@ it('can mutate and cancel field element lifecycle events', function () {
         $event->isValid = false;
     });
 
-    Event::listen(function (AfterFieldElementRestore $event) use (&$events) {
-        $events[] = AfterFieldElementRestore::class;
+    Event::listen(function (FieldElementRestored $event) use (&$events) {
+        $events[] = FieldElementRestored::class;
     });
 
     expect($field->beforeElementSave($element, true))->toBeFalse();
@@ -189,7 +189,7 @@ it('can mutate and cancel field element lifecycle events', function () {
         BeforeFieldElementDelete::class,
         FieldElementDeleted::class,
         BeforeFieldElementRestore::class,
-        AfterFieldElementRestore::class,
+        FieldElementRestored::class,
     ]);
 });
 
