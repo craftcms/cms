@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use CraftCms\Cms\Element\ElementRelations;
-use CraftCms\Cms\Element\Events\AfterRestore;
 use CraftCms\Cms\Element\Events\AfterSave;
 use CraftCms\Cms\Element\Events\BeforeDelete;
 use CraftCms\Cms\Element\Events\BeforeRestore;
 use CraftCms\Cms\Element\Events\BeforeSave;
 use CraftCms\Cms\Element\Events\ElementLifecycleDeleted;
 use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
+use CraftCms\Cms\Element\Events\ElementLifecycleRestored;
 
 /**
  * HasLifecycleHooks provides the lifecycle hooks for the element.
@@ -146,6 +146,6 @@ trait HasLifecycleHooks
             $field->afterElementRestore($this);
         }
 
-        event(new AfterRestore($this));
+        event(new ElementLifecycleRestored($this));
     }
 }
