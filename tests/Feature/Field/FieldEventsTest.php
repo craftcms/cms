@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Dropdown;
-use CraftCms\Cms\Field\Events\AfterFieldSave;
 use CraftCms\Cms\Field\Events\BeforeApplyFieldDelete;
 use CraftCms\Cms\Field\Events\BeforeFieldDelete;
 use CraftCms\Cms\Field\Events\BeforeFieldElementDelete;
@@ -19,6 +18,7 @@ use CraftCms\Cms\Field\Events\FieldElementPropagated;
 use CraftCms\Cms\Field\Events\FieldElementRestored;
 use CraftCms\Cms\Field\Events\FieldElementSaved;
 use CraftCms\Cms\Field\Events\FieldLifecycleDeleted;
+use CraftCms\Cms\Field\Events\FieldLifecycleSaved;
 use CraftCms\Cms\Field\Events\FieldMergeFromCompleted;
 use CraftCms\Cms\Field\Events\FieldMergeIntoCompleted;
 use CraftCms\Cms\Field\PlainText;
@@ -53,9 +53,9 @@ it('can mutate and cancel field save and delete lifecycle events', function () {
         $event->isValid = false;
     });
 
-    Event::listen(function (AfterFieldSave $event) use (&$events) {
+    Event::listen(function (FieldLifecycleSaved $event) use (&$events) {
         expect($event->isNew)->toBeFalse();
-        $events[] = AfterFieldSave::class;
+        $events[] = FieldLifecycleSaved::class;
     });
 
     Event::listen(function (BeforeFieldDelete $event) use (&$events) {
@@ -83,7 +83,7 @@ it('can mutate and cancel field save and delete lifecycle events', function () {
 
     expect($events)->toBe([
         BeforeFieldSave::class,
-        AfterFieldSave::class,
+        FieldLifecycleSaved::class,
         BeforeFieldDelete::class,
         BeforeApplyFieldDelete::class,
         FieldLifecycleDeleted::class,
