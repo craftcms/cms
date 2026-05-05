@@ -8,10 +8,10 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Element\Events\BeforeResaveElement;
 use CraftCms\Cms\Element\Events\ElementPropagated;
 use CraftCms\Cms\Element\Events\ElementPropagating;
 use CraftCms\Cms\Element\Events\ElementResaved;
+use CraftCms\Cms\Element\Events\ElementResaving;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Jobs\ResaveElements as ResaveElementsJob;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -334,7 +334,7 @@ abstract class ResaveCommand extends Command
             $setEnabledForSite = (bool) normalizeValue($setEnabledForSite);
         }
 
-        $beforeCallback = function (BeforeResaveElement|ElementPropagating $e) use ($count, $query, $to, $set, $ifEmpty, $ifInvalid, $setEnabledForSite) {
+        $beforeCallback = function (ElementResaving|ElementPropagating $e) use ($count, $query, $to, $set, $ifEmpty, $ifInvalid, $setEnabledForSite) {
             if ($e->query !== $query) {
                 return;
             }
@@ -405,7 +405,7 @@ abstract class ResaveCommand extends Command
             Event::listen(fn (ElementPropagated $event) => $afterCallback($event));
             Elements::propagateElements($query, $this->resolvedPropagateTo, true);
         } else {
-            Event::listen(fn (BeforeResaveElement $event) => $beforeCallback($event));
+            Event::listen(fn (ElementResaving $event) => $beforeCallback($event));
             Event::listen(fn (ElementResaved $event) => $afterCallback($event));
             Elements::resaveElements($query, true, $this->resolvedRevisions === false, (bool) $this->option('update-search-index'), (bool) $this->option('touch'));
         }

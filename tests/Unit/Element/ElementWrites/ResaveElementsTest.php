@@ -8,9 +8,8 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\BeforeResaveElement;
-use CraftCms\Cms\Element\Events\BeforeResaveElements;
 use CraftCms\Cms\Element\Events\ElementResaved;
+use CraftCms\Cms\Element\Events\ElementResaving;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
 use CraftCms\Cms\Element\Operations\ElementUris;
@@ -26,7 +25,7 @@ use Illuminate\Support\Facades\Event;
 beforeEach(function () {
     Event::fake([
         BeforeResaveElements::class,
-        BeforeResaveElement::class,
+        ElementResaving::class,
         ElementResaved::class,
         AfterResaveElements::class,
     ]);
@@ -65,9 +64,9 @@ it('resaves matching elements and dispatches lifecycle events', function () {
 
     Event::assertDispatchedTimes(BeforeResaveElements::class, 1);
     Event::assertDispatched(fn (BeforeResaveElements $event) => $event->query === $query);
-    Event::assertDispatchedTimes(BeforeResaveElement::class, 2);
-    Event::assertDispatched(fn (BeforeResaveElement $event) => $event->element === $firstElement && $event->position === 1);
-    Event::assertDispatched(fn (BeforeResaveElement $event) => $event->element === $secondElement && $event->position === 2);
+    Event::assertDispatchedTimes(ElementResaving::class, 2);
+    Event::assertDispatched(fn (ElementResaving $event) => $event->element === $firstElement && $event->position === 1);
+    Event::assertDispatched(fn (ElementResaving $event) => $event->element === $secondElement && $event->position === 2);
     Event::assertDispatchedTimes(ElementResaved::class, 2);
     Event::assertDispatched(fn (ElementResaved $event) => $event->element === $firstElement && $event->position === 1 && $event->exception === null);
     Event::assertDispatched(fn (ElementResaved $event) => $event->element === $secondElement && $event->position === 2 && $event->exception === null);
@@ -111,7 +110,7 @@ it('rethrows save errors when continueOnError is disabled', function () {
     expect($this->saveElementAction->calls)->toHaveCount(1);
 
     Event::assertDispatchedTimes(BeforeResaveElements::class, 1);
-    Event::assertDispatchedTimes(BeforeResaveElement::class, 1);
+    Event::assertDispatchedTimes(ElementResaving::class, 1);
     Event::assertNotDispatched(ElementResaved::class);
     Event::assertNotDispatched(AfterResaveElements::class);
 });
@@ -178,7 +177,7 @@ it('fails silently when the query aborts', function () {
 
     Event::assertDispatchedTimes(BeforeResaveElements::class, 1);
     Event::assertDispatchedTimes(AfterResaveElements::class, 1);
-    Event::assertNotDispatched(BeforeResaveElement::class);
+    Event::assertNotDispatched(ElementResaving::class);
     Event::assertNotDispatched(ElementResaved::class);
 });
 
