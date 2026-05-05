@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Element\Events;
 
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 
-class DefineElementCriteria
+class ElementCriteriaResolving
 {
     public function __construct(
         /** @var array The criteria that should be used to query for elements. */

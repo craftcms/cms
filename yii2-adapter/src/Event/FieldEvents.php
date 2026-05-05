@@ -7,7 +7,7 @@ namespace CraftCms\Yii2Adapter\Event;
 use craft\base\Event as YiiEvent;
 use craft\events\ElementCriteriaEvent;
 use craft\fields\BaseRelationField as LegacyBaseRelationField;
-use CraftCms\Cms\Element\Events\DefineElementCriteria;
+use CraftCms\Cms\Element\Events\ElementCriteriaResolving;
 use CraftCms\Cms\Field\BaseRelationField;
 use Illuminate\Support\Facades\Event;
 
@@ -15,7 +15,7 @@ readonly class FieldEvents
 {
     public static function registerEvents(): void
     {
-        Event::listen(function(DefineElementCriteria $event) {
+        Event::listen(function(ElementCriteriaResolving $event) {
             if (!$event->field instanceof BaseRelationField) {
                 return;
             }
