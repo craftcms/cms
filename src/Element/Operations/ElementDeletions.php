@@ -11,13 +11,13 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\AfterDeleteElement;
 use CraftCms\Cms\Element\Events\AfterDeleteForSite;
 use CraftCms\Cms\Element\Events\AfterMergeElements;
 use CraftCms\Cms\Element\Events\AfterRestoreElement;
 use CraftCms\Cms\Element\Events\BeforeDeleteElement;
 use CraftCms\Cms\Element\Events\BeforeDeleteForSite;
 use CraftCms\Cms\Element\Events\BeforeRestoreElement;
+use CraftCms\Cms\Element\Events\ElementDeleted;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -271,7 +271,7 @@ readonly class ElementDeletions
             }
         });
 
-        event(new AfterDeleteElement($element));
+        event(new ElementDeleted($element));
 
         return true;
     }

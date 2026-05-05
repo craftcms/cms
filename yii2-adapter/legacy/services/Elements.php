@@ -39,7 +39,6 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
-use CraftCms\Cms\Element\Events\AfterDeleteElement;
 use CraftCms\Cms\Element\Events\AfterDeleteForSite;
 use CraftCms\Cms\Element\Events\AfterMergeCanonicalChanges;
 use CraftCms\Cms\Element\Events\AfterMergeElements;
@@ -64,6 +63,7 @@ use CraftCms\Cms\Element\Events\BeforeRestoreElement;
 use CraftCms\Cms\Element\Events\BeforeSaveElement;
 use CraftCms\Cms\Element\Events\BeforeUpdateSearchIndex;
 use CraftCms\Cms\Element\Events\BeforeUpdateSlugAndUri;
+use CraftCms\Cms\Element\Events\ElementDeleted;
 use CraftCms\Cms\Element\Events\InvalidateElementCaches;
 use CraftCms\Cms\Element\Events\RegisterElementTypes;
 use CraftCms\Cms\Element\Events\SetElementUri;
@@ -1778,7 +1778,7 @@ class Elements extends Component
             AfterMergeCanonicalChanges::class => self::EVENT_AFTER_MERGE_CANONICAL_CHANGES,
             BeforeUpdateSlugAndUri::class => self::EVENT_BEFORE_UPDATE_SLUG_AND_URI,
             AfterUpdateSlugAndUri::class => self::EVENT_AFTER_UPDATE_SLUG_AND_URI,
-            AfterDeleteElement::class => self::EVENT_AFTER_DELETE_ELEMENT,
+            ElementDeleted::class => self::EVENT_AFTER_DELETE_ELEMENT,
             BeforeDeleteForSite::class => self::EVENT_BEFORE_DELETE_FOR_SITE,
             AfterDeleteForSite::class => self::EVENT_AFTER_DELETE_FOR_SITE,
             BeforeRestoreElement::class => self::EVENT_BEFORE_RESTORE_ELEMENT,
