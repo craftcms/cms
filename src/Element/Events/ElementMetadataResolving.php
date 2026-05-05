@@ -8,11 +8,11 @@ use CraftCms\Cms\Element\Concerns\HasControlPanelUI;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
- * @event DefineMetadata The event that is triggered when defining the element's metadata info.
+ * @event ElementMetadataResolving The event that is triggered when defining the element's metadata info.
  *
  * {@see HasControlPanelUI::getMetadata()}
  */
-class DefineMetadata
+class ElementMetadataResolving
 {
     /**
      * @param  ElementInterface  $element  The element

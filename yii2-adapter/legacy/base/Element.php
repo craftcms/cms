@@ -46,7 +46,6 @@ use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\RenderElementEvent;
 use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
-use CraftCms\Cms\Element\Events\DefineMetadata;
 use CraftCms\Cms\Element\Events\DefineSidebarHtml;
 use CraftCms\Cms\Element\Events\DefineUrl;
 use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
@@ -64,6 +63,7 @@ use CraftCms\Cms\Element\Events\ElementLifecycleRestored;
 use CraftCms\Cms\Element\Events\ElementLifecycleRestoring;
 use CraftCms\Cms\Element\Events\ElementLifecycleSaved;
 use CraftCms\Cms\Element\Events\ElementLifecycleSaving;
+use CraftCms\Cms\Element\Events\ElementMetadataResolving;
 use CraftCms\Cms\Element\Events\ElementMetaFieldsHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementMovedInStructure;
 use CraftCms\Cms\Element\Events\ElementMovingInStructure;
@@ -770,7 +770,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
             }
         });
 
-        Event::listen(function(DefineMetadata $event) use ($elementClasses) {
+        Event::listen(function(ElementMetadataResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_DEFINE_METADATA)) {
                     continue;
