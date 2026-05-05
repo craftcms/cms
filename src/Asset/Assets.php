@@ -9,7 +9,7 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AssetReplaced;
-use CraftCms\Cms\Asset\Events\BeforeReplaceAsset;
+use CraftCms\Cms\Asset\Events\AssetReplacing;
 use CraftCms\Cms\Asset\Events\DefineThumbUrl;
 use CraftCms\Cms\Asset\Events\RegisterPreviewHandler;
 use CraftCms\Cms\Asset\Exceptions\AssetNotPreviewableException;
@@ -83,7 +83,7 @@ class Assets
 
     public function replaceAssetFile(Asset $asset, string $pathOnServer, string $filename, ?string $mimeType = null): void
     {
-        event($event = new BeforeReplaceAsset(
+        event($event = new AssetReplacing(
             asset: $asset,
             replaceWith: $pathOnServer,
             filename: $filename,

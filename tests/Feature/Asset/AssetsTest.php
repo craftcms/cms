@@ -5,7 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
-use CraftCms\Cms\Asset\Events\BeforeReplaceAsset;
+use CraftCms\Cms\Asset\Events\AssetReplacing;
 use CraftCms\Cms\Asset\Events\DefineThumbUrl;
 use CraftCms\Cms\Asset\Events\RegisterPreviewHandler;
 use CraftCms\Cms\Asset\Folders;
@@ -173,8 +173,8 @@ it('can get name replacement in folder when no conflict', function () {
     expect($result)->toBe('unique-file.jpg');
 });
 
-it('dispatches BeforeReplaceAsset event with filename', function () {
-    Event::fake([BeforeReplaceAsset::class]);
+it('dispatches AssetReplacing event with filename', function () {
+    Event::fake([AssetReplacing::class]);
 
     $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
@@ -192,7 +192,7 @@ it('dispatches BeforeReplaceAsset event with filename', function () {
         // The save may fail due to missing filesystem setup, but the event should still fire
     }
 
-    Event::assertDispatched(fn (BeforeReplaceAsset $event) => $event->asset->id === $asset->id
+    Event::assertDispatched(fn (AssetReplacing $event) => $event->asset->id === $asset->id
         && $event->filename === 'new-filename.jpg');
 
     @unlink($tempFile);

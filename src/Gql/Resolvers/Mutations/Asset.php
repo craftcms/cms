@@ -8,7 +8,7 @@ use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Events\AssetReplaced;
-use CraftCms\Cms\Asset\Events\BeforeReplaceAsset;
+use CraftCms\Cms\Asset\Events\AssetReplacing;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
@@ -103,7 +103,7 @@ class Asset extends ElementMutationResolver
         $triggerReplaceEvents = $asset->ruleset->getScenario() === AssetRules::SCENARIO_REPLACE;
 
         if ($triggerReplaceEvents) {
-            event($event = new BeforeReplaceAsset(
+            event($event = new AssetReplacing(
                 asset: $asset,
                 replaceWith: $asset->tempFilePath,
                 filename: $this->filename,

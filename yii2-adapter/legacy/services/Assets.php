@@ -24,7 +24,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\AssetReplaced;
-use CraftCms\Cms\Asset\Events\BeforeReplaceAsset;
+use CraftCms\Cms\Asset\Events\AssetReplacing;
 use CraftCms\Cms\Asset\Events\DefineThumbUrl;
 use CraftCms\Cms\Asset\Events\RegisterPreviewHandler;
 use CraftCms\Cms\Asset\Folders;
@@ -295,7 +295,7 @@ class Assets extends Component
 
     public static function registerEvents(): void
     {
-        EventFacade::listen(BeforeReplaceAsset::class, function(BeforeReplaceAsset $event) {
+        EventFacade::listen(AssetReplacing::class, function(AssetReplacing $event) {
             if (!Craft::$app->getAssets()->hasEventHandlers(self::EVENT_BEFORE_REPLACE_ASSET)) {
                 return;
             }
