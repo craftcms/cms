@@ -18,13 +18,13 @@
   import InputComboboxOption from '@/components/form/InputComboboxOption.vue';
 
   const emit = defineEmits<{
-    (e: 'update:modelValue', value: string): void;
+    (e: 'update:modelValue', value: string | number): void;
   }>();
   const props = withDefaults(
     defineProps<{
       label?: string;
       options?: Array<SelectItem>;
-      modelValue?: string;
+      modelValue?: string | number | boolean;
       requireOptionMatch?: boolean;
       transformModelValue?: (newValue: SelectOption | null) => string;
       class?: HTMLAttributes['class'];
@@ -93,7 +93,7 @@
 
     return (
       option.label.toLowerCase().includes(lowerQuery) ||
-      option.value.toLowerCase().includes(lowerQuery) ||
+      option.value.toString().toLowerCase().includes(lowerQuery) ||
       (option.data?.keywords?.toLowerCase().includes(lowerQuery) ?? false)
     );
   }

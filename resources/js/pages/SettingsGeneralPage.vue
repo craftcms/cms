@@ -8,38 +8,31 @@
   import TransitionFade from '@/components/TransitionFade.vue';
   import {computed} from 'vue';
   import {useEventListener} from '@vueuse/core';
-  import type {SelectOption, SuggestionGroup} from '@/types';
+  import type {SelectOption} from '@/types';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
   import CraftCombobox from '@/components/form/CraftCombobox.vue';
+  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import {transformBooleanOptions} from '@/utils/transformBooleanOptions';
 
   const props = defineProps<{
-    readOnly?: boolean;
     system: SystemData;
-    nameSuggestions?: Array<SuggestionGroup>;
+    nameSuggestions?: Array<SelectOption>;
     timezoneOptions?: Array<TimezoneOption>;
     systemStatusOptions?: Array<SelectOption>;
-    saveUrl: string;
     flash?: Record<any, any>;
     errors: Record<any, any>;
   }>();
 
   const flash = computed(() => props.flash);
   const errors = computed(() => props.errors);
+  const {readOnly} = useCraftData();
 
   const form = useForm({
-    name: props.system.name,
+    name: props.system.name ?? '',
     live: props.system.live,
     retryDuration: props.system.retryDuration,
     timeZone: props.system.timeZone,
   });
-
-  function handleUpdate(event: CustomEvent) {
-    const target = event.target as HTMLSelectElement & {modelValue: string};
-    if (target) {
-      // @ts-ignore we're just going to trust that `name` is a key of `form` for now
-      form[target.name] = target.modelValue;
-    }
-  }
 
   // Handle cmd + s events
   useEventListener('keydown', (event) => {
@@ -47,6 +40,29 @@
       event.preventDefault();
       save();
     }
+  });
+
+  const statusOptions = computed(() => {
+    return [
+      {
+        label: t('Online'),
+        value: true,
+        data: {
+          indicator: {variant: 'success'},
+        },
+      },
+      {
+        label: t('Offline'),
+        value: false,
+        data: {
+          indicator: {variant: 'empty'},
+        },
+      },
+      ...transformBooleanOptions(props.systemStatusOptions ?? [], {
+        trueLabel: t('Online'),
+        falseLabel: t('Offline'),
+      }),
+    ];
   });
 
   function save() {
@@ -124,26 +140,19 @@
               </ul>
             </craft-callout>
           </template>
-          <craft-combobox
+
+          <CraftCombobox
             :label="t('System Name')"
             id="name"
             name="name"
             v-model="form.name"
-            :has-feedback-for="errors?.name ? 'error' : ''"
+            :error="errors.name"
             :disabled="readOnly"
             :require-option-match="false"
             show-all-on-empty
+            :options="nameSuggestions"
           >
-            <template v-for="(group, idx) in nameSuggestions" :key="idx">
-              <craft-option
-                v-for="suggestion in group.data"
-                :key="suggestion.name"
-                .choiceValue="suggestion.name"
-                .hint="suggestion.hint"
-                >{{ suggestion.name }}</craft-option
-              >
-            </template>
-            <div slot="after">
+            <template #after>
               <craft-callout
                 variant="info"
                 appearance="plain"
@@ -156,83 +165,45 @@
                   >{{ t('Learn more') }}</a
                 >
               </craft-callout>
-            </div>
+            </template>
+          </CraftCombobox>
 
-            <div slot="feedback">
-              <ul class="error-list" v-if="errors?.name">
-                <li>{{ errors.name }}</li>
-              </ul>
-            </div>
-          </craft-combobox>
-
-          <craft-combobox
+          <CraftCombobox
             :label="t('System Status')"
             id="live"
             name="live"
-            .modelValue="system.live ? '1' : '0'"
-            :has-feedback-for="errors?.live ? 'error' : ''"
-            @model-value-changed="handleUpdate"
+            v-model="form.live"
+            :error="errors?.live"
             :disabled="readOnly"
             show-all-on-empty
+            :options="statusOptions"
           >
-            <craft-option .choiceValue="'1'">
-              <div class="tw:flex tw:items-center tw:gap-1">
-                <craft-indicator variant="success"></craft-indicator>
-                <span>{{ t('Online') }}</span>
-              </div>
-            </craft-option>
-            <craft-option .choiceValue="'0'">
-              <div class="tw:flex tw:items-center tw:gap-1">
-                <craft-indicator variant="danger"></craft-indicator>
-                <span>{{ t('Offline') }}</span>
-              </div>
-            </craft-option>
-
-            <template v-for="option in systemStatusOptions" :key="option.label">
-              <template v-if="option.optgroup"></template>
-              <template v-else>
-                <craft-option .choiceValue="option.value">
-                  <div class="tw:flex tw:items-center tw:gap-1">
-                    <craft-indicator
-                      :variant="Boolean(option.value) ? 'success' : 'error'"
-                    ></craft-indicator>
-                    <span class="tw:font-mono">{{ option.label }}</span>
-                  </div>
-                </craft-option>
-              </template>
+            <template #after>
+              <craft-callout
+                variant="info"
+                appearance="plain"
+                class="p-0"
+                icon="lightbulb"
+                v-html="
+                  t(
+                    'This can be set to an environment variable with a boolean value ({examples})',
+                    {
+                      examples:
+                        '<code>yes</code>/<code>no</code>/<code>true</code>/<code>false</code>/<code>on</code>/<code>off</code>/<code>0</code>/<code>1</code>',
+                    }
+                  )
+                "
+              >
+              </craft-callout>
             </template>
+          </CraftCombobox>
 
-            <craft-callout
-              slot="after"
-              variant="info"
-              appearance="plain"
-              class="p-0"
-              icon="lightbulb"
-              v-html="
-                t(
-                  'This can be set to an environment variable with a boolean value ({examples})',
-                  {
-                    examples:
-                      '<code>yes</code>/<code>no</code>/<code>true</code>/<code>false</code>/<code>on</code>/<code>off</code>/<code>0</code>/<code>1</code>',
-                  }
-                )
-              "
-            >
-            </craft-callout>
-
-            <div slot="feedback">
-              <ul class="error-list" v-if="errors.live">
-                <li>{{ errors.live }}</li>
-              </ul>
-            </div>
-          </craft-combobox>
-
-          <craft-input
+          <CraftInput
             :label="t('Retry Duration')"
             id="retry-duration"
             name="retryDuration"
             v-model="form.retryDuration"
-            :has-feedback-for="errors?.retryDuration ? 'error' : ''"
+            :error="errors?.retryDuration"
             inputmode="numeric"
             maxlength="4"
             :disabled="readOnly"
@@ -245,10 +216,7 @@
                 )
               "
             ></div>
-            <ul class="error-list" v-if="errors?.retryDuration" slot="feedback">
-              <li>{{ errors.retryDuration }}</li>
-            </ul>
-          </craft-input>
+          </CraftInput>
 
           <CraftCombobox
             :label="t('Time Zone')"
