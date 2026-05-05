@@ -9,7 +9,7 @@ use CommerceGuys\Addressing\AddressFormat\LocalityType;
 use CommerceGuys\Addressing\AddressFormat\PostalCodeType;
 use CommerceGuys\Addressing\Country\CountryRepository;
 use CraftCms\Cms\Address\Addresses;
-use CraftCms\Cms\Address\Events\DefineAddressCountries;
+use CraftCms\Cms\Address\Events\AddressCountriesResolving;
 use CraftCms\Cms\Address\Events\DefineAddressFieldLabel;
 use CraftCms\Cms\Address\Events\DefineAddressSubdivisions;
 use CraftCms\Cms\Address\Events\DefineAddressUsedFields;
@@ -51,7 +51,7 @@ it('can get the country list', function () {
 });
 
 it('can add countries through the event', function () {
-    Event::listen(DefineAddressCountries::class, function (DefineAddressCountries $event) {
+    Event::listen(AddressCountriesResolving::class, function (AddressCountriesResolving $event) {
         $event->countries['ME'] = 'Middle Earth';
     });
 

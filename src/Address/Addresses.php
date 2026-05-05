@@ -14,7 +14,7 @@ use CommerceGuys\Addressing\Country\CountryRepository;
 use CommerceGuys\Addressing\Formatter\DefaultFormatter;
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Address\Events\DefineAddressCountries;
+use CraftCms\Cms\Address\Events\AddressCountriesResolving;
 use CraftCms\Cms\Address\Events\DefineAddressFieldLabel;
 use CraftCms\Cms\Address\Events\DefineAddressSubdivisions;
 use CraftCms\Cms\Address\Events\DefineAddressUsedFields;
@@ -87,7 +87,7 @@ readonly class Addresses implements FieldLayoutProviderInterface
         $locale ??= app()->getLocale();
         $countries = $this->countryRepository->getList($locale);
 
-        event($event = new DefineAddressCountries($locale, $countries));
+        event($event = new AddressCountriesResolving($locale, $countries));
 
         return $event->countries;
     }

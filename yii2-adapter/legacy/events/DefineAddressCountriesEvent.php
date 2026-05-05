@@ -14,7 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.5.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Address\Events\DefineAddressCountries} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Address\Events\AddressCountriesResolving} instead.
  */
 class DefineAddressCountriesEvent extends Event
 {
