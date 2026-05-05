@@ -7,8 +7,8 @@ use CraftCms\Cms\Twig\Events\PageEnded;
 use CraftCms\Cms\Twig\Events\PageStarting;
 use CraftCms\Cms\Twig\Events\PageTemplateRendered;
 use CraftCms\Cms\Twig\Events\PageTemplateRendering;
-use CraftCms\Cms\Twig\Events\RenderingTemplate;
 use CraftCms\Cms\Twig\Events\TemplateRendered;
+use CraftCms\Cms\Twig\Events\TemplateRendering;
 use CraftCms\Cms\Twig\TemplateRenderer;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\TemplateMode;
@@ -119,12 +119,12 @@ describe('renderTemplate', function () {
         expect($result)->toBe('Hello, World!');
     });
 
-    it('dispatches RenderingTemplate event before rendering', function () {
-        Event::fake([RenderingTemplate::class, TemplateRendered::class]);
+    it('dispatches TemplateRendering event before rendering', function () {
+        Event::fake([TemplateRendering::class, TemplateRendered::class]);
 
         $this->renderer->renderTemplate('test-template.twig', ['name' => 'world']);
 
-        Event::assertDispatched(fn (RenderingTemplate $event) => $event->template === 'test-template.twig'
+        Event::assertDispatched(fn (TemplateRendering $event) => $event->template === 'test-template.twig'
             && $event->variables === ['name' => 'world']);
     });
 
@@ -136,8 +136,8 @@ describe('renderTemplate', function () {
         Event::assertDispatched(fn (TemplateRendered $event) => $event->template === 'test-template.twig');
     });
 
-    it('returns empty string when RenderingTemplate event is cancelled', function () {
-        Event::listen(RenderingTemplate::class, function (RenderingTemplate $event) {
+    it('returns empty string when TemplateRendering event is cancelled', function () {
+        Event::listen(TemplateRendering::class, function (TemplateRendering $event) {
             $event->isValid = false;
         });
 
@@ -156,8 +156,8 @@ describe('renderTemplate', function () {
         expect($result)->toBe('modified output');
     });
 
-    it('allows the RenderingTemplate event to modify the template name', function () {
-        Event::listen(RenderingTemplate::class, function (RenderingTemplate $event) {
+    it('allows the TemplateRendering event to modify the template name', function () {
+        Event::listen(TemplateRendering::class, function (TemplateRendering $event) {
             $event->template = 'other-template.twig';
         });
 
@@ -198,8 +198,8 @@ describe('renderPageTemplate', function () {
         Event::listen(PageStarting::class, function () use (&$events) {
             $events[] = 'PageStarting';
         });
-        Event::listen(RenderingTemplate::class, function () use (&$events) {
-            $events[] = 'RenderingTemplate';
+        Event::listen(TemplateRendering::class, function () use (&$events) {
+            $events[] = 'TemplateRendering';
         });
         Event::listen(TemplateRendered::class, function () use (&$events) {
             $events[] = 'TemplateRendered';
@@ -216,7 +216,7 @@ describe('renderPageTemplate', function () {
         expect($events)->toBe([
             'PageTemplateRendering',
             'PageStarting',
-            'RenderingTemplate',
+            'TemplateRendering',
             'TemplateRendered',
             'PageEnded',
             'PageTemplateRendered',

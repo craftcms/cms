@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Twig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Events\PageTemplateRendered;
 use CraftCms\Cms\Twig\Events\PageTemplateRendering;
-use CraftCms\Cms\Twig\Events\RenderingTemplate;
 use CraftCms\Cms\Twig\Events\TemplateRendered;
+use CraftCms\Cms\Twig\Events\TemplateRendering;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Support\Arrayable;
@@ -63,7 +63,7 @@ class TemplateRenderer
     ): string {
         $templateMode ??= TemplateMode::get();
 
-        event($event = new RenderingTemplate($template, $variables, $templateMode));
+        event($event = new TemplateRendering($template, $variables, $templateMode));
 
         if (! $event->isValid) {
             return '';

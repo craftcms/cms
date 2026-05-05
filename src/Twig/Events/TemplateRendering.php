@@ -8,9 +8,9 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 use CraftCms\Cms\View\TemplateMode;
 
 /**
- * @event RenderingTemplate The event that is triggered before a template gets rendered
+ * @event TemplateRendering The event that is triggered before a template gets rendered
  */
-class RenderingTemplate
+class TemplateRendering
 {
     use ValidatableEvent;
 

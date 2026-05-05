@@ -28,8 +28,8 @@ use CraftCms\Cms\Twig\Events\PageEnded;
 use CraftCms\Cms\Twig\Events\PageStarting;
 use CraftCms\Cms\Twig\Events\PageTemplateRendered;
 use CraftCms\Cms\Twig\Events\PageTemplateRendering;
-use CraftCms\Cms\Twig\Events\RenderingTemplate;
 use CraftCms\Cms\Twig\Events\TemplateRendered;
+use CraftCms\Cms\Twig\Events\TemplateRendering;
 use CraftCms\Cms\Twig\Events\TwigCreated;
 use CraftCms\Cms\Twig\PageLifecycle;
 use CraftCms\Cms\Twig\TemplateRenderer;
@@ -101,7 +101,7 @@ class View extends \yii\web\View
 
     /**
      * @event TemplateEvent The event that is triggered before a template gets rendered
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Twig\Events\RenderingTemplate} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Twig\Events\TemplateRendering} instead.
      */
     public const EVENT_BEFORE_RENDER_TEMPLATE = 'beforeRenderTemplate';
 
@@ -2242,7 +2242,7 @@ JS;
             ]));
         });
 
-        Event::listen(function(RenderingTemplate $event) {
+        Event::listen(function(TemplateRendering $event) {
             if (!Craft::$app->getView()->hasEventHandlers(self::EVENT_BEFORE_RENDER_TEMPLATE)) {
                 return;
             }
