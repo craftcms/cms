@@ -17,11 +17,11 @@ use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Events\EntryMovedToSection;
+use CraftCms\Cms\Entry\Events\EntryMovingToSection;
 use CraftCms\Cms\Entry\Events\EntryTypeDeleted;
 use CraftCms\Cms\Entry\Events\EntryTypeDeleting;
 use CraftCms\Cms\Entry\Events\EntryTypeDeletionApplying;
 use CraftCms\Cms\Entry\Events\EntryTypeSaved;
-use CraftCms\Cms\Entry\Events\MovingEntryToSection;
 use CraftCms\Cms\Entry\Events\SavingEntryType;
 use CraftCms\Cms\Entry\Exceptions\EntryTypeNotFoundException;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -854,7 +854,7 @@ class Entries extends Component
             }
         });
 
-        Event::listen(MovingEntryToSection::class, function(MovingEntryToSection $event) {
+        Event::listen(EntryMovingToSection::class, function(EntryMovingToSection $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_MOVE_TO_SECTION)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_MOVE_TO_SECTION, new MoveEntryEvent([
                     'entry' => $event->entry,
