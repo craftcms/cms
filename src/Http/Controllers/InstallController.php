@@ -17,7 +17,9 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Validation\Rules\EnvValueRule;
 use CraftCms\Cms\Validation\Rules\LanguageRule;
+use CraftCms\Cms\Validation\Rules\TimezoneRule;
 use Illuminate\Database\SQLiteDatabaseDoesNotExistException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -149,13 +151,10 @@ readonly class InstallController
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'baseUrl' => ['nullable', 'string', 'max:255'],
+            'baseUrl' => [new EnvValueRule(['nullable', 'string', 'max:255'])],
             'language' => ['required', 'string', 'max:255', new LanguageRule(onlySiteLanguages: false)],
+            'timezone' => [new EnvValueRule([new TimezoneRule])],
         ]);
-
-        $baseUrl = Env::parse($request->input('baseUrl'));
-
-        Validator::validate(compact('baseUrl'), ['baseUrl' => 'url']);
 
         return new JsonResponse;
     }
@@ -226,6 +225,7 @@ readonly class InstallController
             password: $request->input('account.password'),
             email: $email,
             site: $site,
+            timezone: $request->input('site.timezone'),
         )->silent();
 
         // Run the install migration
