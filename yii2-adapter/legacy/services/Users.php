@@ -34,6 +34,7 @@ use CraftCms\Cms\User\Events\UserAssignedToGroups;
 use CraftCms\Cms\User\Events\UserDeactivated;
 use CraftCms\Cms\User\Events\UserDeactivating;
 use CraftCms\Cms\User\Events\UserDefaultGroupsAssigning;
+use CraftCms\Cms\User\Events\UserEmailVerifying;
 use CraftCms\Cms\User\Events\UserGroupsAssigning;
 use CraftCms\Cms\User\Events\UserLocked;
 use CraftCms\Cms\User\Events\UserPhotoDeleted;
@@ -46,7 +47,6 @@ use CraftCms\Cms\User\Events\UserUnlocked;
 use CraftCms\Cms\User\Events\UserUnlocking;
 use CraftCms\Cms\User\Events\UserUnsuspended;
 use CraftCms\Cms\User\Events\UserUnsuspending;
-use CraftCms\Cms\User\Events\VerifyingEmail;
 use CraftCms\Cms\User\Models\User as UserModel;
 use DateTime;
 use Illuminate\Support\Facades\Event;
@@ -886,7 +886,7 @@ class Users extends Component
             UserUnlocked::class => self::EVENT_AFTER_UNLOCK_USER,
             UserSuspended::class => self::EVENT_AFTER_SUSPEND_USER,
             UserUnsuspended::class => self::EVENT_AFTER_UNSUSPEND_USER,
-            VerifyingEmail::class => self::EVENT_BEFORE_VERIFY_EMAIL,
+            UserEmailVerifying::class => self::EVENT_BEFORE_VERIFY_EMAIL,
             EmailVerified::class => self::EVENT_AFTER_VERIFY_EMAIL,
         ] as $new => $old) {
             Event::listen($new, function(\CraftCms\Cms\User\Events\UserEvent $event) use ($old) {
