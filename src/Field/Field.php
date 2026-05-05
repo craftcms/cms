@@ -22,7 +22,6 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Events\AfterFieldElementSave;
 use CraftCms\Cms\Field\Events\AfterFieldMergeFrom;
 use CraftCms\Cms\Field\Events\AfterFieldMergeInto;
 use CraftCms\Cms\Field\Events\AfterFieldSave;
@@ -38,6 +37,7 @@ use CraftCms\Cms\Field\Events\DefineFieldKeywords;
 use CraftCms\Cms\Field\Events\FieldElementDeleted;
 use CraftCms\Cms\Field\Events\FieldElementPropagated;
 use CraftCms\Cms\Field\Events\FieldElementRestored;
+use CraftCms\Cms\Field\Events\FieldElementSaved;
 use CraftCms\Cms\Field\Events\FieldLifecycleDeleted;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Gql\Data\GqlSchema;
@@ -1029,7 +1029,7 @@ JS, [
 
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
-        event(new AfterFieldElementSave(
+        event(new FieldElementSaved(
             field: $this,
             element: $element,
             isNew: $isNew
