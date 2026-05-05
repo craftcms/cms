@@ -17,9 +17,9 @@ use craft\events\GenerateTransformEvent;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
 use CraftCms\Cms\Asset\Events\AssetUrlResolving;
-use CraftCms\Cms\Asset\Events\BeforeGenerateTransform;
 use CraftCms\Cms\Asset\Events\BeforeHandleFile;
 use CraftCms\Cms\Asset\Events\DefineAssetUrl;
+use CraftCms\Cms\Asset\Events\TransformGenerating;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use Illuminate\Support\Facades\Event;
@@ -158,7 +158,7 @@ class Asset extends \CraftCms\Cms\Asset\Elements\Asset
             }
         });
 
-        Event::listen(function(BeforeGenerateTransform $event) {
+        Event::listen(function(TransformGenerating $event) {
             if (YiiEvent::hasHandlers(self::class, self::EVENT_BEFORE_GENERATE_TRANSFORM)) {
                 $yiiEvent = new GenerateTransformEvent([
                     'transform' => $event->transform,

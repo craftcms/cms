@@ -22,9 +22,9 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
 use CraftCms\Cms\Asset\Events\AssetUrlResolving;
-use CraftCms\Cms\Asset\Events\BeforeGenerateTransform;
 use CraftCms\Cms\Asset\Events\BeforeHandleFile;
 use CraftCms\Cms\Asset\Events\DefineAssetUrl;
+use CraftCms\Cms\Asset\Events\TransformGenerating;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\FileException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
@@ -1904,7 +1904,7 @@ JS, [
                 $immediately = Cms::config()->generateTransformsBeforePageLoad;
             }
 
-            event($event = new BeforeGenerateTransform($this, $transform));
+            event($event = new TransformGenerating($this, $transform));
 
             // If a plugin set the url, we'll just use that.
             if ($event->url !== null) {
