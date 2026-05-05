@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\Events\BeginPage;
 use CraftCms\Cms\Twig\Events\EndPage;
+use CraftCms\Cms\Twig\Events\PageStarting;
 use CraftCms\Cms\Twig\PageLifecycle;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\HtmlStack;
@@ -31,11 +31,11 @@ describe('head, beginBody, endBody', function () {
 });
 
 describe('event dispatching', function () {
-    it('fires BeginPage and EndPage events in order', function () {
+    it('fires PageStarting and EndPage events in order', function () {
         $events = [];
 
-        Event::listen(BeginPage::class, function () use (&$events) {
-            $events[] = 'BeginPage';
+        Event::listen(PageStarting::class, function () use (&$events) {
+            $events[] = 'PageStarting';
         });
         Event::listen(EndPage::class, function () use (&$events) {
             $events[] = 'EndPage';
@@ -43,14 +43,14 @@ describe('event dispatching', function () {
 
         $this->lifecycle->wrap(fn () => 'content');
 
-        expect($events)->toBe(['BeginPage', 'EndPage']);
+        expect($events)->toBe(['PageStarting', 'EndPage']);
     });
 
-    it('fires BeginPage before the render callback executes', function () {
+    it('fires PageStarting before the render callback executes', function () {
         $beginPageFired = false;
         $beginPageFiredBeforeRender = false;
 
-        Event::listen(BeginPage::class, function () use (&$beginPageFired) {
+        Event::listen(PageStarting::class, function () use (&$beginPageFired) {
             $beginPageFired = true;
         });
 

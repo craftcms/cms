@@ -979,7 +979,7 @@ Moved the following controllers:
 - Added `CraftCms\Cms\Twig\Events\TemplateRendered`, dispatched after a template is rendered. Has a mutable `output` property.
 - Added `CraftCms\Cms\Twig\Events\RenderingPageTemplate`, dispatched before a page template is rendered. Supports cancellation via `ValidatableEvent`.
 - Added `CraftCms\Cms\Twig\Events\PageTemplateRendered`, dispatched after a page template is rendered. Has a mutable `output` property.
-- Added `CraftCms\Cms\Twig\Events\BeginPage`, dispatched when page rendering begins.
+- Added `CraftCms\Cms\Twig\Events\PageStarting`, dispatched when page rendering begins.
 - Added `CraftCms\Cms\Twig\Events\EndPage`, dispatched when page rendering ends. Has nullable `headHtml`, `bodyBeginHtml`, and `bodyEndHtml` properties for overriding `HtmlStack` output.
 - Deprecated `craft\web\View::EVENT_BEFORE_RENDER_TEMPLATE`. `CraftCms\Cms\Twig\Events\RenderingTemplate` should be used instead.
 - Deprecated `craft\web\View::EVENT_AFTER_RENDER_TEMPLATE`. `CraftCms\Cms\Twig\Events\TemplateRendered` should be used instead.

@@ -24,8 +24,8 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Environment;
-use CraftCms\Cms\Twig\Events\BeginPage;
 use CraftCms\Cms\Twig\Events\EndPage;
+use CraftCms\Cms\Twig\Events\PageStarting;
 use CraftCms\Cms\Twig\Events\PageTemplateRendered;
 use CraftCms\Cms\Twig\Events\RenderingPageTemplate;
 use CraftCms\Cms\Twig\Events\RenderingTemplate;
@@ -2314,7 +2314,7 @@ JS;
             $event->output = $yiiEvent->output;
         });
 
-        Event::listen(function(BeginPage $event) {
+        Event::listen(function(PageStarting $event) {
             Craft::$app->getView()->trigger(self::EVENT_BEGIN_PAGE);
         });
 
