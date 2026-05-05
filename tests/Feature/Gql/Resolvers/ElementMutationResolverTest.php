@@ -5,8 +5,8 @@ declare(strict_types=1);
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
-use CraftCms\Cms\Gql\Events\AfterPopulateElement;
 use CraftCms\Cms\Gql\Events\BeforePopulateElement;
+use CraftCms\Cms\Gql\Events\ElementPopulated;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\Resolvers\ElementMutationResolver;
 use CraftCms\Cms\Section\Models\Section;
@@ -94,8 +94,8 @@ it('strips immutable attributes during population', function () {
         ->and($populated->title)->toBe('Modified');
 });
 
-it('dispatches BeforePopulateElement and AfterPopulateElement events', function () {
-    Event::fake([BeforePopulateElement::class, AfterPopulateElement::class]);
+it('dispatches BeforePopulateElement and ElementPopulated events', function () {
+    Event::fake([BeforePopulateElement::class, ElementPopulated::class]);
 
     $fixture = createElementMutationResolverEntryFixture();
 
@@ -109,7 +109,7 @@ it('dispatches BeforePopulateElement and AfterPopulateElement events', function 
 
     Event::assertDispatched(fn (BeforePopulateElement $event) => $event->arguments === ['title' => 'New']);
 
-    Event::assertDispatched(AfterPopulateElement::class);
+    Event::assertDispatched(ElementPopulated::class);
 });
 
 it('allows BeforePopulateElement to modify arguments', function () {
