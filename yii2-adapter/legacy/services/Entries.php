@@ -28,10 +28,10 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\Section\Events\ApplyingSectionDelete;
 use CraftCms\Cms\Section\Events\DeletingSection;
 use CraftCms\Cms\Section\Events\SavingSection;
 use CraftCms\Cms\Section\Events\SectionDeleted;
+use CraftCms\Cms\Section\Events\SectionDeletionApplying;
 use CraftCms\Cms\Section\Events\SectionSaved;
 use CraftCms\Cms\Section\Exceptions\SectionNotFoundException;
 use CraftCms\Cms\Site\Data\Site;
@@ -796,7 +796,7 @@ class Entries extends Component
             }
         });
 
-        Event::listen(ApplyingSectionDelete::class, function(ApplyingSectionDelete $event) {
+        Event::listen(SectionDeletionApplying::class, function(SectionDeletionApplying $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_APPLY_SECTION_DELETE)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_APPLY_SECTION_DELETE, new SectionEvent([
                     'section' => $event->section,

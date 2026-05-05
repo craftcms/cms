@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Section\Events;
 
 use CraftCms\Cms\Section\Data\Section;
 
-class ApplyingSectionDelete
+class SectionDeletionApplying
 {
     public function __construct(
         public Section $section,

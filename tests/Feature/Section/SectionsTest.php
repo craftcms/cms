@@ -7,10 +7,10 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Section\Data\Section as SectionData;
 use CraftCms\Cms\Section\Data\SectionSiteSettings as SectionSiteSettingsData;
 use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\Section\Events\ApplyingSectionDelete;
 use CraftCms\Cms\Section\Events\DeletingSection;
 use CraftCms\Cms\Section\Events\SavingSection;
 use CraftCms\Cms\Section\Events\SectionDeleted;
+use CraftCms\Cms\Section\Events\SectionDeletionApplying;
 use CraftCms\Cms\Section\Events\SectionSaved;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
@@ -139,12 +139,12 @@ it('can save a section', function () {
 it('can delete a section by id', function () {
     Event::fake([
         DeletingSection::class,
-        ApplyingSectionDelete::class,
+        SectionDeletionApplying::class,
         SectionDeleted::class,
     ]);
 
     Event::listen(DeletingSection::class, fn () => null);
-    Event::listen(ApplyingSectionDelete::class, fn () => null);
+    Event::listen(SectionDeletionApplying::class, fn () => null);
     Event::listen(SectionDeleted::class, fn () => null);
 
     $section = Section::factory()->create();
@@ -158,7 +158,7 @@ it('can delete a section by id', function () {
     expect(Section::count())->toBe(0);
 
     Event::assertDispatchedOnce(DeletingSection::class);
-    Event::assertDispatchedOnce(ApplyingSectionDelete::class);
+    Event::assertDispatchedOnce(SectionDeletionApplying::class);
     Event::assertDispatchedOnce(SectionDeleted::class);
 });
 
