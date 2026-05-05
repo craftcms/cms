@@ -26,7 +26,6 @@ use CraftCms\Cms\Support\Facades\Users as UsersFacade;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\DefaultUserGroupsResolving;
-use CraftCms\Cms\User\Events\DeletingUserPhoto;
 use CraftCms\Cms\User\Events\EmailVerified;
 use CraftCms\Cms\User\Events\SavingUserPhoto;
 use CraftCms\Cms\User\Events\SuspendingUser;
@@ -42,6 +41,7 @@ use CraftCms\Cms\User\Events\UserDefaultGroupsAssigning;
 use CraftCms\Cms\User\Events\UserGroupsAssigning;
 use CraftCms\Cms\User\Events\UserLocked;
 use CraftCms\Cms\User\Events\UserPhotoDeleted;
+use CraftCms\Cms\User\Events\UserPhotoDeleting;
 use CraftCms\Cms\User\Events\UserPhotoSaved;
 use CraftCms\Cms\User\Events\UserSuspended;
 use CraftCms\Cms\User\Events\UserUnlocked;
@@ -833,7 +833,7 @@ class Users extends Component
             }
         });
 
-        Event::listen(DeletingUserPhoto::class, function(DeletingUserPhoto $event) {
+        Event::listen(UserPhotoDeleting::class, function(UserPhotoDeleting $event) {
             if (Craft::$app->getUsers()->hasEventHandlers(self::EVENT_BEFORE_DELETE_USER_PHOTO)) {
                 $yiiEvent = new UserPhotoEvent([
                     'user' => $event->user,

@@ -7,9 +7,9 @@ namespace CraftCms\Cms\User\Events;
 use CraftCms\Cms\User\Elements\User;
 
 /**
- * @event DeletingUserPhoto The event that is triggered before a user photo is deleted.
+ * @event UserPhotoDeleting The event that is triggered before a user photo is deleted.
  */
-class DeletingUserPhoto
+class UserPhotoDeleting
 {
     public function __construct(
         public User $user,
