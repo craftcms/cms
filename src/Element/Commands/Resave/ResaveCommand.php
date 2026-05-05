@@ -8,9 +8,9 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Element\Events\BeforePropagateElement;
 use CraftCms\Cms\Element\Events\BeforeResaveElement;
 use CraftCms\Cms\Element\Events\ElementPropagated;
+use CraftCms\Cms\Element\Events\ElementPropagating;
 use CraftCms\Cms\Element\Events\ElementResaved;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Jobs\ResaveElements as ResaveElementsJob;
@@ -334,7 +334,7 @@ abstract class ResaveCommand extends Command
             $setEnabledForSite = (bool) normalizeValue($setEnabledForSite);
         }
 
-        $beforeCallback = function (BeforeResaveElement|BeforePropagateElement $e) use ($count, $query, $to, $set, $ifEmpty, $ifInvalid, $setEnabledForSite) {
+        $beforeCallback = function (BeforeResaveElement|ElementPropagating $e) use ($count, $query, $to, $set, $ifEmpty, $ifInvalid, $setEnabledForSite) {
             if ($e->query !== $query) {
                 return;
             }
@@ -401,7 +401,7 @@ abstract class ResaveCommand extends Command
         };
 
         if (isset($this->resolvedPropagateTo)) {
-            Event::listen(fn (BeforePropagateElement $event) => $beforeCallback($event));
+            Event::listen(fn (ElementPropagating $event) => $beforeCallback($event));
             Event::listen(fn (ElementPropagated $event) => $afterCallback($event));
             Elements::propagateElements($query, $this->resolvedPropagateTo, true);
         } else {

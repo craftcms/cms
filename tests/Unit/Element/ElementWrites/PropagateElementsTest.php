@@ -7,9 +7,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\BeforePropagateElement;
-use CraftCms\Cms\Element\Events\BeforePropagateElements;
 use CraftCms\Cms\Element\Events\ElementPropagated;
+use CraftCms\Cms\Element\Events\ElementPropagating;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
 use CraftCms\Cms\Element\Operations\ElementUris;
 use CraftCms\Cms\Element\Operations\ElementWrites;
@@ -188,7 +187,7 @@ it('propagates elements to supported target sites and dispatches lifecycle event
     fakeBulkOps();
     Event::fake([
         BeforePropagateElements::class,
-        BeforePropagateElement::class,
+        ElementPropagating::class,
         ElementPropagated::class,
         AfterPropagateElements::class,
     ]);
@@ -233,7 +232,7 @@ it('propagates elements to supported target sites and dispatches lifecycle event
         ->and($this->writes->propagateCalls[1]['siteElement'])->toBeFalse();
 
     Event::assertDispatched(fn (BeforePropagateElements $event): bool => $event->query === $query);
-    Event::assertDispatched(fn (BeforePropagateElement $event): bool => $event->query === $query
+    Event::assertDispatched(fn (ElementPropagating $event): bool => $event->query === $query
         && $event->element === $element
         && $event->position === 1);
     Event::assertDispatched(fn (ElementPropagated $event): bool => $event->query === $query

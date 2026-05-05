@@ -39,8 +39,6 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
-use CraftCms\Cms\Element\Events\BeforePropagateElement;
-use CraftCms\Cms\Element\Events\BeforePropagateElements;
 use CraftCms\Cms\Element\Events\BeforeResaveElement;
 use CraftCms\Cms\Element\Events\BeforeResaveElements;
 use CraftCms\Cms\Element\Events\BeforeRestoreElement;
@@ -56,6 +54,7 @@ use CraftCms\Cms\Element\Events\ElementDeletedForSite;
 use CraftCms\Cms\Element\Events\ElementDeleting;
 use CraftCms\Cms\Element\Events\ElementDeletingForSite;
 use CraftCms\Cms\Element\Events\ElementPropagated;
+use CraftCms\Cms\Element\Events\ElementPropagating;
 use CraftCms\Cms\Element\Events\ElementResaved;
 use CraftCms\Cms\Element\Events\ElementRestored;
 use CraftCms\Cms\Element\Events\ElementSaved;
@@ -1864,7 +1863,7 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(BeforePropagateElement $event) {
+        Event::listen(function(ElementPropagating $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_PROPAGATE_ELEMENT)) {
                 return;
             }

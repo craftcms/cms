@@ -10,13 +10,12 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\BeforePropagateElement;
-use CraftCms\Cms\Element\Events\BeforePropagateElements;
 use CraftCms\Cms\Element\Events\BeforeResaveElement;
 use CraftCms\Cms\Element\Events\BeforeResaveElements;
 use CraftCms\Cms\Element\Events\BeforeSaveElement;
 use CraftCms\Cms\Element\Events\BeforeUpdateSearchIndex;
 use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
+use CraftCms\Cms\Element\Events\ElementPropagating;
 use CraftCms\Cms\Element\Events\ElementResaved;
 use CraftCms\Cms\Element\Events\ElementSaved;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
@@ -202,7 +201,7 @@ readonly class ElementWrites
                 $query->each(function (ElementInterface $element) use ($continueOnError, $query, &$position, $siteIds) {
                     $position++;
 
-                    event(new BeforePropagateElement($query, $element, $position));
+                    event(new ElementPropagating($query, $element, $position));
 
                     $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
                     $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
