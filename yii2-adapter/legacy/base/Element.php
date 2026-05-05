@@ -57,6 +57,7 @@ use CraftCms\Cms\Element\Events\ElementDefaultCardAttributesResolving;
 use CraftCms\Cms\Element\Events\ElementDefaultTableAttributesResolving;
 use CraftCms\Cms\Element\Events\ElementEagerLoadingMapResolving;
 use CraftCms\Cms\Element\Events\ElementExportersResolving;
+use CraftCms\Cms\Element\Events\ElementFieldLayoutsResolving;
 use CraftCms\Cms\Element\Events\ElementInlineAttributeInputHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementKeywordsResolving;
 use CraftCms\Cms\Element\Events\ElementLifecycleDeleted;
@@ -74,7 +75,6 @@ use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementUrlResolved;
 use CraftCms\Cms\Element\Events\ElementUrlResolving;
 use CraftCms\Cms\Element\Events\QueryForTableAttributePreparing;
-use CraftCms\Cms\Element\Events\RegisterFieldLayouts;
 use CraftCms\Cms\Element\Events\RegisterHtmlAttributes;
 use CraftCms\Cms\Element\Events\RegisterPreviewTargets;
 use CraftCms\Cms\Element\Events\RegisterSearchableAttributes;
@@ -193,7 +193,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
             }
         });
 
-        Event::listen(function(RegisterFieldLayouts $event) use ($elementClasses) {
+        Event::listen(function(ElementFieldLayoutsResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_REGISTER_FIELD_LAYOUTS)) {
                     continue;

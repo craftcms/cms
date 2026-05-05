@@ -9,12 +9,12 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 
 /**
- * @event RegisterFieldLayouts The event that is triggered when registering all of the field layouts
+ * @event ElementFieldLayoutsResolving The event that is triggered when registering all of the field layouts
  * associated with elements from a given source.
  *
  * {@see HasSources::fieldLayouts()}
  */
-class RegisterFieldLayouts
+class ElementFieldLayoutsResolving
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class

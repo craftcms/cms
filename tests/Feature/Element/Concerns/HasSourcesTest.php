@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Element\Events\RegisterFieldLayouts;
+use CraftCms\Cms\Element\Events\ElementFieldLayoutsResolving;
 use CraftCms\Cms\Element\Events\RegisterSources;
 use CraftCms\Cms\Entry\Elements\Entry;
 use Illuminate\Support\Facades\Event;
@@ -83,10 +83,10 @@ describe('fieldLayouts', function () {
         expect($layouts)->toBeArray();
     });
 
-    test('triggers RegisterFieldLayouts event', function () {
+    test('triggers ElementFieldLayoutsResolving event', function () {
         $eventTriggered = false;
 
-        Event::listen(function (RegisterFieldLayouts $event) use (&$eventTriggered) {
+        Event::listen(function (ElementFieldLayoutsResolving $event) use (&$eventTriggered) {
             if ($event->elementType === Entry::class) {
                 $eventTriggered = true;
                 $event->fieldLayouts = [];
