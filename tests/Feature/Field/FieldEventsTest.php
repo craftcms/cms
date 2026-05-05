@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Dropdown;
-use CraftCms\Cms\Field\Events\DefineFieldKeywords;
 use CraftCms\Cms\Field\Events\DefineInputOptions;
 use CraftCms\Cms\Field\Events\FieldDeletionApplying;
 use CraftCms\Cms\Field\Events\FieldElementDeleted;
@@ -15,6 +14,7 @@ use CraftCms\Cms\Field\Events\FieldElementRestoring;
 use CraftCms\Cms\Field\Events\FieldElementSaved;
 use CraftCms\Cms\Field\Events\FieldElementSaving;
 use CraftCms\Cms\Field\Events\FieldHtmlResolving;
+use CraftCms\Cms\Field\Events\FieldKeywordsResolving;
 use CraftCms\Cms\Field\Events\FieldLifecycleDeleted;
 use CraftCms\Cms\Field\Events\FieldLifecycleDeleting;
 use CraftCms\Cms\Field\Events\FieldLifecycleSaved;
@@ -118,7 +118,7 @@ it('can mutate field rendering option and keyword events', function () {
 
     $element = new TestFieldEventElement;
 
-    Event::listen(function (DefineFieldKeywords $event) use ($plainText, $element) {
+    Event::listen(function (FieldKeywordsResolving $event) use ($plainText, $element) {
         expect($event->field)->toBe($plainText);
         expect($event->element)->toBe($element);
 
