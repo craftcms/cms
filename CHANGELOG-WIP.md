@@ -834,7 +834,7 @@ Moved the following controllers:
   - `CraftCms\Cms\ProjectConfig\Events\ItemAdded`
   - `CraftCms\Cms\ProjectConfig\Events\UpdatingItem`
   - `CraftCms\Cms\ProjectConfig\Events\ItemUpdated`
-  - `CraftCms\Cms\ProjectConfig\Events\RemovingItem`
+  - `CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemRemoved`
   - `CraftCms\Cms\ProjectConfig\Events\ItemRemoved`
 - Deprecated `craft\services\ProjectConfig::EVENT_AFTER_APPLY_CHANGES`
   - Added `CraftCms\Cms\ProjectConfig\Events\ChangesApplied`

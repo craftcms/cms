@@ -11,7 +11,7 @@ use CraftCms\Cms\ProjectConfig\Events\ItemAdded;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
 use CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemAdding;
-use CraftCms\Cms\ProjectConfig\Events\RemovingItem;
+use CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\UpdatingItem;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Update\Updates;
@@ -103,7 +103,7 @@ class ApplyCommand extends Command
 
             Event::listen(ProjectConfigItemAdding::class, $this->onStartProcessingItem(...));
             Event::listen(ItemAdded::class, $this->onFinishProcessingItem(...));
-            Event::listen(RemovingItem::class, $this->onStartProcessingItem(...));
+            Event::listen(ProjectConfigItemRemoved::class, $this->onStartProcessingItem(...));
             Event::listen(ItemRemoved::class, $this->onFinishProcessingItem(...));
             Event::listen(UpdatingItem::class, $this->onStartProcessingItem(...));
             Event::listen(ItemUpdated::class, $this->onFinishProcessingItem(...));

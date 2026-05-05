@@ -10,12 +10,12 @@ namespace CraftCms\Cms\ProjectConfig\Events;
  * ---
  *
  * ```php
- * use CraftCms\Cms\ProjectConfig\Events\RemovingItem;
+ * use CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemRemoved;
  * use CraftCms\Cms\ProjectConfig\ProjectConfig;
  *
- * Event::listen(RemovingItem::class, function(RemovingItem $e) {
+ * Event::listen(ProjectConfigItemRemoved::class, function(ProjectConfigItemRemoved $e) {
  *     // Ensure the item is also removed in the database...
  * });
  * ```
  */
-class RemovingItem extends ConfigEvent {}
+class ProjectConfigItemRemoved extends ConfigEvent {}
