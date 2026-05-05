@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Element\Events\DefineInlineAttributeInputHtml;
 use CraftCms\Cms\Element\Events\DefineMetadata;
 use CraftCms\Cms\Element\Events\DefineSidebarHtml;
 use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
 use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
 use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
 use CraftCms\Cms\Element\Events\ElementAttributeHtmlResolving;
+use CraftCms\Cms\Element\Events\ElementInlineAttributeInputHtmlResolving;
 use CraftCms\Cms\Element\Events\RegisterHtmlAttributes;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -270,11 +270,11 @@ describe('getInlineAttributeInputHtml', function () {
         expect($html)->toBeString();
     });
 
-    test('triggers DefineInlineAttributeInputHtml event', function () {
+    test('triggers ElementInlineAttributeInputHtmlResolving event', function () {
         $eventTriggered = false;
         $customHtml = '<input type="text" value="Custom">';
 
-        Event::listen(function (DefineInlineAttributeInputHtml $event) use (&$eventTriggered, $customHtml) {
+        Event::listen(function (ElementInlineAttributeInputHtmlResolving $event) use (&$eventTriggered, $customHtml) {
             $eventTriggered = true;
             if ($event->attribute === 'title') {
                 $event->html = $customHtml;
@@ -290,7 +290,7 @@ describe('getInlineAttributeInputHtml', function () {
     test('event receives correct attribute name', function () {
         $capturedAttribute = null;
 
-        Event::listen(function (DefineInlineAttributeInputHtml $event) use (&$capturedAttribute) {
+        Event::listen(function (ElementInlineAttributeInputHtmlResolving $event) use (&$capturedAttribute) {
             $capturedAttribute = $event->attribute;
         });
 

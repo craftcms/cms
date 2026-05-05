@@ -9,14 +9,14 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use Stringable;
 
 /**
- * @event DefineInlineAttributeInputHtml The event that is triggered when defining an attribute's
+ * @event ElementInlineAttributeInputHtmlResolving The event that is triggered when defining an attribute's
  * inline input HTML.
  *
  * If `html` is set, it will be used instead of the default inline input HTML.
  *
  * {@see HasControlPanelUI::getInlineAttributeInputHtml()}
  */
-class DefineInlineAttributeInputHtml
+class ElementInlineAttributeInputHtmlResolving
 {
     /**
      * @param  ElementInterface  $element  The element
