@@ -11,9 +11,9 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Search\Events\BeforeScoreResults;
 use CraftCms\Cms\Search\Events\BeforeSearch;
 use CraftCms\Cms\Search\Events\KeywordsIndexing;
+use CraftCms\Cms\Search\Events\ScoringResults;
 use CraftCms\Cms\Search\Events\SearchPerformed;
 use CraftCms\Cms\Search\Jobs\UpdateSearchIndex;
 use CraftCms\Cms\Support\Arr;
@@ -387,7 +387,7 @@ class Search
 
     private function scoreResults(array $results, SearchQuery $searchQuery, ElementQueryInterface $elementQuery): array
     {
-        event($event = new BeforeScoreResults($elementQuery, $searchQuery, $results));
+        event($event = new ScoringResults($elementQuery, $searchQuery, $results));
 
         if ($event->scores !== null) {
             return $event->scores;
