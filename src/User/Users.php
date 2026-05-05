@@ -36,7 +36,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\AssigningUserToGroups;
 use CraftCms\Cms\User\Events\DeactivatingUser;
 use CraftCms\Cms\User\Events\DefineDefaultUserGroups;
 use CraftCms\Cms\User\Events\DeletingUserPhoto;
@@ -50,6 +49,7 @@ use CraftCms\Cms\User\Events\UserAssignedToDefaultGroups;
 use CraftCms\Cms\User\Events\UserAssignedToGroups;
 use CraftCms\Cms\User\Events\UserDeactivated;
 use CraftCms\Cms\User\Events\UserDefaultGroupsAssigning;
+use CraftCms\Cms\User\Events\UserGroupsAssigning;
 use CraftCms\Cms\User\Events\UserLocked;
 use CraftCms\Cms\User\Events\UserPhotoDeleted;
 use CraftCms\Cms\User\Events\UserPhotoSaved;
@@ -1036,7 +1036,7 @@ class Users
 
         $newGroupIds = array_keys($newGroupIds);
 
-        event($event = new AssigningUserToGroups(
+        event($event = new UserGroupsAssigning(
             userId: $userId,
             groupIds: $groupIds,
             removedGroupIds: $removedGroupIds,
