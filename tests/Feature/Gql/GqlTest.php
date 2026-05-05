@@ -14,8 +14,8 @@ use CraftCms\Cms\Gql\Events\GqlDirectivesResolving;
 use CraftCms\Cms\Gql\Events\GqlMutationsResolving;
 use CraftCms\Cms\Gql\Events\GqlQueriesResolving;
 use CraftCms\Cms\Gql\Events\GqlQueryExecuting;
+use CraftCms\Cms\Gql\Events\GqlSchemaComponentsResolving;
 use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
-use CraftCms\Cms\Gql\Events\RegisterGqlSchemaComponents;
 use CraftCms\Cms\Gql\Events\RegisterGqlTypes;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Gql;
@@ -98,7 +98,7 @@ it('dispatches directive and type registration events', function () {
 });
 
 it('dispatches schema component registration events', function () {
-    Event::listen(RegisterGqlSchemaComponents::class, function (RegisterGqlSchemaComponents $event) {
+    Event::listen(GqlSchemaComponentsResolving::class, function (GqlSchemaComponentsResolving $event) {
         $event->queries['Custom'] = [
             'custom.permission:read' => ['label' => 'Query custom data'],
         ];

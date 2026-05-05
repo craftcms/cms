@@ -34,8 +34,8 @@ use CraftCms\Cms\Gql\Events\GqlDirectivesResolving;
 use CraftCms\Cms\Gql\Events\GqlMutationsResolving;
 use CraftCms\Cms\Gql\Events\GqlQueriesResolving;
 use CraftCms\Cms\Gql\Events\GqlQueryExecuting;
+use CraftCms\Cms\Gql\Events\GqlSchemaComponentsResolving;
 use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
-use CraftCms\Cms\Gql\Events\RegisterGqlSchemaComponents;
 use CraftCms\Cms\Gql\Events\RegisterGqlTypes;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Interfaces\Element as ElementInterface;
@@ -486,7 +486,7 @@ class Gql
         $label = t('Users');
         [$queries[$label], $mutations[$label]] = $this->userSchemaComponents();
 
-        event($event = new RegisterGqlSchemaComponents(
+        event($event = new GqlSchemaComponentsResolving(
             queries: $queries,
             mutations: $mutations,
         ));

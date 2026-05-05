@@ -26,8 +26,8 @@ use CraftCms\Cms\Gql\Events\GqlDirectivesResolving;
 use CraftCms\Cms\Gql\Events\GqlMutationsResolving;
 use CraftCms\Cms\Gql\Events\GqlQueriesResolving;
 use CraftCms\Cms\Gql\Events\GqlQueryExecuting;
+use CraftCms\Cms\Gql\Events\GqlSchemaComponentsResolving;
 use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
-use CraftCms\Cms\Gql\Events\RegisterGqlSchemaComponents;
 use CraftCms\Cms\Gql\Events\RegisterGqlTypes;
 use CraftCms\Cms\Gql\Gql as NewGql;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -329,7 +329,7 @@ class Gql extends Component
             $event->directives = $yiiEvent->directives;
         });
 
-        Event::listen(RegisterGqlSchemaComponents::class, function(RegisterGqlSchemaComponents $event) {
+        Event::listen(GqlSchemaComponentsResolving::class, function(GqlSchemaComponentsResolving $event) {
             $service = self::service();
             if (!$service->hasEventHandlers(self::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS)) {
                 return;

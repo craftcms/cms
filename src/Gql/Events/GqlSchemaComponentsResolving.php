@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Gql\Events;
 
 /**
- * @event RegisterGqlSchemaComponents The event that is triggered when registering GraphQL schema components.
+ * @event GqlSchemaComponentsResolving The event that is triggered when registering GraphQL schema components.
  */
-class RegisterGqlSchemaComponents
+class GqlSchemaComponentsResolving
 {
     public function __construct(
         /** @var array<string, mixed> */
