@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Element\Queries\Events;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
-class HydratingElement
+class ElementHydrating
 {
     public function __construct(
         public array $row,
