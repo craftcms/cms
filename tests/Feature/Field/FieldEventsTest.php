@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Dropdown;
-use CraftCms\Cms\Field\Events\BeforeFieldElementDelete;
 use CraftCms\Cms\Field\Events\BeforeFieldElementRestore;
 use CraftCms\Cms\Field\Events\BeforeFieldElementSave;
 use CraftCms\Cms\Field\Events\BeforeFieldSave;
@@ -13,6 +12,7 @@ use CraftCms\Cms\Field\Events\DefineFieldKeywords;
 use CraftCms\Cms\Field\Events\DefineInputOptions;
 use CraftCms\Cms\Field\Events\FieldDeletionApplying;
 use CraftCms\Cms\Field\Events\FieldElementDeleted;
+use CraftCms\Cms\Field\Events\FieldElementDeleting;
 use CraftCms\Cms\Field\Events\FieldElementPropagated;
 use CraftCms\Cms\Field\Events\FieldElementRestored;
 use CraftCms\Cms\Field\Events\FieldElementSaved;
@@ -151,8 +151,8 @@ it('can mutate and cancel field element lifecycle events', function () {
         $events[] = FieldElementPropagated::class;
     });
 
-    Event::listen(function (BeforeFieldElementDelete $event) use (&$events) {
-        $events[] = BeforeFieldElementDelete::class;
+    Event::listen(function (FieldElementDeleting $event) use (&$events) {
+        $events[] = FieldElementDeleting::class;
         $event->isValid = false;
     });
 
@@ -186,7 +186,7 @@ it('can mutate and cancel field element lifecycle events', function () {
         BeforeFieldElementSave::class,
         FieldElementSaved::class,
         FieldElementPropagated::class,
-        BeforeFieldElementDelete::class,
+        FieldElementDeleting::class,
         FieldElementDeleted::class,
         BeforeFieldElementRestore::class,
         FieldElementRestored::class,
