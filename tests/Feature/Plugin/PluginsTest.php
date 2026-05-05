@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Plugin\Events\LoadingPlugins;
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
 use CraftCms\Cms\Plugin\Events\PluginsLoaded;
+use CraftCms\Cms\Plugin\Events\PluginsLoading;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
@@ -53,7 +53,7 @@ it('dispatches a loading event', function () {
     $triggeredLoading = false;
     $triggeredLoaded = false;
 
-    Event::listen(LoadingPlugins::class, function () use (&$triggeredLoading) {
+    Event::listen(PluginsLoading::class, function () use (&$triggeredLoading) {
         $triggeredLoading = true;
     });
 
@@ -63,7 +63,7 @@ it('dispatches a loading event', function () {
 
     $this->plugins->loadPlugins();
 
-    expect($triggeredLoading)->toBeTrue('LoadingPlugins not triggered');
+    expect($triggeredLoading)->toBeTrue('PluginsLoading not triggered');
     expect($triggeredLoaded)->toBeTrue('PluginsLoaded not triggered');
 });
 

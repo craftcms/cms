@@ -10,7 +10,6 @@ namespace craft\services;
 use Craft;
 use craft\events\PluginEvent;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
-use CraftCms\Cms\Plugin\Events\LoadingPlugins;
 use CraftCms\Cms\Plugin\Events\PluginDisabled;
 use CraftCms\Cms\Plugin\Events\PluginDisabling;
 use CraftCms\Cms\Plugin\Events\PluginEnabled;
@@ -20,6 +19,7 @@ use CraftCms\Cms\Plugin\Events\PluginInstalling;
 use CraftCms\Cms\Plugin\Events\PluginRegistered;
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
 use CraftCms\Cms\Plugin\Events\PluginsLoaded;
+use CraftCms\Cms\Plugin\Events\PluginsLoading;
 use CraftCms\Cms\Plugin\Events\PluginUninstalled;
 use CraftCms\Cms\Plugin\Events\PluginUnregistered;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
@@ -494,7 +494,7 @@ class Plugins extends Component
         $pluginService = Craft::$app->getPlugins();
 
         Event::listen(
-            LoadingPlugins::class,
+            PluginsLoading::class,
             fn() => $pluginService->trigger(self::EVENT_BEFORE_LOAD_PLUGINS),
         );
 

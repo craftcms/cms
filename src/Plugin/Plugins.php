@@ -11,7 +11,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
-use CraftCms\Cms\Plugin\Events\LoadingPlugins;
 use CraftCms\Cms\Plugin\Events\PluginDisabled;
 use CraftCms\Cms\Plugin\Events\PluginDisabling;
 use CraftCms\Cms\Plugin\Events\PluginEnabled;
@@ -21,6 +20,7 @@ use CraftCms\Cms\Plugin\Events\PluginInstalling;
 use CraftCms\Cms\Plugin\Events\PluginRegistered;
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
 use CraftCms\Cms\Plugin\Events\PluginsLoaded;
+use CraftCms\Cms\Plugin\Events\PluginsLoading;
 use CraftCms\Cms\Plugin\Events\PluginUninstalled;
 use CraftCms\Cms\Plugin\Events\PluginUnregistered;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
@@ -157,7 +157,7 @@ class Plugins
         // Prevent this function from getting called twice.
         $this->loadingPlugins = true;
 
-        event(new LoadingPlugins);
+        event(new PluginsLoading);
 
         // Find all of the installed plugins
         $this->storedPluginInfo = DB::table(Table::PLUGINS)
