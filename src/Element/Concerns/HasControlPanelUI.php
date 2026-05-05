@@ -11,13 +11,13 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\DefineMetadata;
-use CraftCms\Cms\Element\Events\DefineMetaFieldsHtml;
 use CraftCms\Cms\Element\Events\DefineSidebarHtml;
 use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
 use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
 use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
 use CraftCms\Cms\Element\Events\ElementAttributeHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementInlineAttributeInputHtmlResolving;
+use CraftCms\Cms\Element\Events\ElementMetaFieldsHtmlResolving;
 use CraftCms\Cms\Element\Events\RegisterHtmlAttributes;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -519,7 +519,7 @@ JS, [
      */
     protected function metaFieldsHtml(bool $static): string|Stringable
     {
-        event($event = new DefineMetaFieldsHtml($this, $static));
+        event($event = new ElementMetaFieldsHtmlResolving($this, $static));
 
         return $event->html;
     }

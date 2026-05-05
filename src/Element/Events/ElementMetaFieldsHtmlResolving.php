@@ -8,12 +8,12 @@ use CraftCms\Cms\Element\Concerns\HasControlPanelUI;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
- * @event DefineMetaFieldsHtml The event that is triggered when defining the HTML for meta fields
+ * @event ElementMetaFieldsHtmlResolving The event that is triggered when defining the HTML for meta fields
  * within the editor sidebar.
  *
  * {@see HasControlPanelUI::metaFieldsHtml()}
  */
-class DefineMetaFieldsHtml
+class ElementMetaFieldsHtmlResolving
 {
     /**
      * @param  ElementInterface  $element  The element
