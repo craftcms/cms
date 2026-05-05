@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Image\Events;
 
 use CraftCms\Cms\Image\Data\ImageTransform;
 
-class ApplyingTransformDelete
+class TransformDeletionApplying
 {
     public function __construct(
         public ImageTransform $transform,

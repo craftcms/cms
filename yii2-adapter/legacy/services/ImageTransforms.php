@@ -14,12 +14,12 @@ use craft\events\ImageTransformEvent;
 use craft\events\RegisterComponentTypesEvent;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Image\Data\ImageTransform as ImageTransformData;
-use CraftCms\Cms\Image\Events\ApplyingTransformDelete;
 use CraftCms\Cms\Image\Events\DeletingTransform;
 use CraftCms\Cms\Image\Events\InvalidatingAssetTransforms;
 use CraftCms\Cms\Image\Events\RegisterImageTransformers;
 use CraftCms\Cms\Image\Events\SavingTransform;
 use CraftCms\Cms\Image\Events\TransformDeleted;
+use CraftCms\Cms\Image\Events\TransformDeletionApplying;
 use CraftCms\Cms\Image\Events\TransformSaved;
 use CraftCms\Cms\Image\ImageTransforms as ImageTransformsService;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -275,7 +275,7 @@ class ImageTransforms extends Component
             ]));
         });
 
-        EventFacade::listen(ApplyingTransformDelete::class, function(ApplyingTransformDelete $event) {
+        EventFacade::listen(TransformDeletionApplying::class, function(TransformDeletionApplying $event) {
             if (!Craft::$app->getImageTransforms()->hasEventHandlers(self::EVENT_BEFORE_APPLY_TRANSFORM_DELETE)) {
                 return;
             }

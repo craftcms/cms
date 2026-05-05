@@ -6,11 +6,11 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
-use CraftCms\Cms\Image\Events\ApplyingTransformDelete;
 use CraftCms\Cms\Image\Events\DeletingTransform;
 use CraftCms\Cms\Image\Events\RegisterImageTransformers;
 use CraftCms\Cms\Image\Events\SavingTransform;
 use CraftCms\Cms\Image\Events\TransformDeleted;
+use CraftCms\Cms\Image\Events\TransformDeletionApplying;
 use CraftCms\Cms\Image\Events\TransformSaved;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransforms;
@@ -296,9 +296,9 @@ describe('saveTransform', function () {
 
 describe('deleteTransform', function () {
     it('deletes a transform', function () {
-        Event::fake([DeletingTransform::class, ApplyingTransformDelete::class, TransformDeleted::class]);
+        Event::fake([DeletingTransform::class, TransformDeletionApplying::class, TransformDeleted::class]);
         Event::listen(DeletingTransform::class, fn () => null);
-        Event::listen(ApplyingTransformDelete::class, fn () => null);
+        Event::listen(TransformDeletionApplying::class, fn () => null);
         Event::listen(TransformDeleted::class, fn () => null);
 
         $this->service->saveTransform(new ImageTransform([
@@ -320,7 +320,7 @@ describe('deleteTransform', function () {
             ->and(ImageTransformModel::count())->toBe(0);
 
         Event::assertDispatchedOnce(DeletingTransform::class);
-        Event::assertDispatchedOnce(ApplyingTransformDelete::class);
+        Event::assertDispatchedOnce(TransformDeletionApplying::class);
         Event::assertDispatchedOnce(TransformDeleted::class);
     });
 

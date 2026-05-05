@@ -12,12 +12,12 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Image\Contracts\EagerImageTransformerInterface;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
-use CraftCms\Cms\Image\Events\ApplyingTransformDelete;
 use CraftCms\Cms\Image\Events\DeletingTransform;
 use CraftCms\Cms\Image\Events\InvalidatingAssetTransforms;
 use CraftCms\Cms\Image\Events\RegisterImageTransformers;
 use CraftCms\Cms\Image\Events\SavingTransform;
 use CraftCms\Cms\Image\Events\TransformDeleted;
+use CraftCms\Cms\Image\Events\TransformDeletionApplying;
 use CraftCms\Cms\Image\Events\TransformSaved;
 use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -186,7 +186,7 @@ class ImageTransforms
             return;
         }
 
-        event(new ApplyingTransformDelete(transform: $transform));
+        event(new TransformDeletionApplying(transform: $transform));
 
         DB::table(Table::IMAGETRANSFORMS)->where('uid', $transformUid)->delete();
 
