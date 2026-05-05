@@ -8,11 +8,11 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 
 /**
- * @event AfterSave The event that is triggered after the element is saved.
+ * @event ElementLifecycleSaved The event that is triggered after the element is saved.
  *
  * {@see Element::afterSave()}
  */
-class AfterSave
+class ElementLifecycleSaved
 {
     public function __construct(
         public ElementInterface $element,
