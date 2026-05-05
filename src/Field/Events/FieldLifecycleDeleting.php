@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Field\Events;
 
 use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
-class BeforeFieldDelete extends FieldEvent
+class FieldLifecycleDeleting extends FieldEvent
 {
     use ValidatableEvent;
 }
