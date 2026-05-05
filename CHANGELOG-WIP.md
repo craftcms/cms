@@ -830,7 +830,7 @@ Moved the following controllers:
   - `CraftCms\Cms\ProjectConfig\Commands\WriteCommand`
   - All commands can be called using either `php craft project-config` or `php craft pc`
 - Deprecated `craft\events\ConfigEvent` in favor of the following events:
-  - `CraftCms\Cms\ProjectConfig\Events\AddingItem`
+  - `CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemAdding`
   - `CraftCms\Cms\ProjectConfig\Events\ItemAdded`
   - `CraftCms\Cms\ProjectConfig\Events\UpdatingItem`
   - `CraftCms\Cms\ProjectConfig\Events\ItemUpdated`
