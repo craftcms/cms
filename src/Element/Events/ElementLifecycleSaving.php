@@ -9,13 +9,13 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
 /**
- * @event BeforeSave The event that is triggered before the element is saved.
+ * @event ElementLifecycleSaving The event that is triggered before the element is saved.
  *
  * Set `$isValid` to `false` to prevent the element from getting saved.
  *
  * {@see Element::beforeSave()}
  */
-class BeforeSave
+class ElementLifecycleSaving
 {
     use ValidatableEvent;
 

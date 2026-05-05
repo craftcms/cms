@@ -46,7 +46,6 @@ use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\RenderElementEvent;
 use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
-use CraftCms\Cms\Element\Events\BeforeSave;
 use CraftCms\Cms\Element\Events\DefineActionMenuItems;
 use CraftCms\Cms\Element\Events\DefineAdditionalButtons;
 use CraftCms\Cms\Element\Events\DefineAltActions;
@@ -65,6 +64,7 @@ use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
 use CraftCms\Cms\Element\Events\ElementLifecycleRestored;
 use CraftCms\Cms\Element\Events\ElementLifecycleRestoring;
 use CraftCms\Cms\Element\Events\ElementLifecycleSaved;
+use CraftCms\Cms\Element\Events\ElementLifecycleSaving;
 use CraftCms\Cms\Element\Events\ElementMovedInStructure;
 use CraftCms\Cms\Element\Events\ElementMovingInStructure;
 use CraftCms\Cms\Element\Events\ElementUrlResolving;
@@ -523,7 +523,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
             }
         });
 
-        Event::listen(function(BeforeSave $event) use ($elementClasses) {
+        Event::listen(function(ElementLifecycleSaving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_BEFORE_SAVE)) {
                     continue;

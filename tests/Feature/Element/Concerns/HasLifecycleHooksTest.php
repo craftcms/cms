@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Element\Events\BeforeSave;
 use CraftCms\Cms\Element\Events\ElementLifecycleDeleted;
 use CraftCms\Cms\Element\Events\ElementLifecycleDeleting;
 use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
 use CraftCms\Cms\Element\Events\ElementLifecycleRestored;
 use CraftCms\Cms\Element\Events\ElementLifecycleRestoring;
 use CraftCms\Cms\Element\Events\ElementLifecycleSaved;
+use CraftCms\Cms\Element\Events\ElementLifecycleSaving;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\User\Elements\User;
@@ -24,7 +24,7 @@ beforeEach(function () {
 
 test('beforeSave triggers event', function () {
     $triggered = false;
-    Event::listen(function (BeforeSave $event) use (&$triggered) {
+    Event::listen(function (ElementLifecycleSaving $event) use (&$triggered) {
         $triggered = true;
     });
 
@@ -34,7 +34,7 @@ test('beforeSave triggers event', function () {
 });
 
 test('beforeSave event can prevent save', function () {
-    Event::listen(function (BeforeSave $event) {
+    Event::listen(function (ElementLifecycleSaving $event) {
         $event->isValid = false;
     });
 
@@ -48,7 +48,7 @@ test('beforeSave event can prevent save', function () {
 
 test('beforeSave event receives isNew parameter', function () {
     $receivedIsNew = [];
-    Event::listen(function (BeforeSave $event) use (&$receivedIsNew) {
+    Event::listen(function (ElementLifecycleSaving $event) use (&$receivedIsNew) {
         $receivedIsNew[] = $event->isNew;
     });
 
