@@ -7,10 +7,9 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\AfterPropagateElement;
-use CraftCms\Cms\Element\Events\AfterPropagateElements;
 use CraftCms\Cms\Element\Events\BeforePropagateElement;
 use CraftCms\Cms\Element\Events\BeforePropagateElements;
+use CraftCms\Cms\Element\Events\ElementPropagated;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
 use CraftCms\Cms\Element\Operations\ElementUris;
 use CraftCms\Cms\Element\Operations\ElementWrites;
@@ -190,7 +189,7 @@ it('propagates elements to supported target sites and dispatches lifecycle event
     Event::fake([
         BeforePropagateElements::class,
         BeforePropagateElement::class,
-        AfterPropagateElement::class,
+        ElementPropagated::class,
         AfterPropagateElements::class,
     ]);
 
@@ -237,7 +236,7 @@ it('propagates elements to supported target sites and dispatches lifecycle event
     Event::assertDispatched(fn (BeforePropagateElement $event): bool => $event->query === $query
         && $event->element === $element
         && $event->position === 1);
-    Event::assertDispatched(fn (AfterPropagateElement $event): bool => $event->query === $query
+    Event::assertDispatched(fn (ElementPropagated $event): bool => $event->query === $query
         && $event->element === $element
         && $event->position === 1
         && $event->exception === null);
@@ -297,7 +296,7 @@ it('rethrows propagation errors when continueOnError is false', function () {
 
 it('continues after propagation errors when continueOnError is true', function () {
     fakeBulkOps();
-    Event::fake([AfterPropagateElement::class]);
+    Event::fake([ElementPropagated::class]);
 
     $element = createElement(400);
     $query = createQueryMock([$element]);
@@ -323,7 +322,7 @@ it('continues after propagation errors when continueOnError is true', function (
     expect($bulkOps->trackedElements)->toBe([$element])
         ->and($element->afterPropagateCalled)->toBeFalse();
 
-    Event::assertDispatched(fn (AfterPropagateElement $event): bool => $event->element === $element
+    Event::assertDispatched(fn (ElementPropagated $event): bool => $event->element === $element
         && $event->exception === $exception);
 });
 

@@ -8,7 +8,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use Throwable;
 
-class AfterPropagateElement
+class ElementPropagated
 {
     public function __construct(
         public ElementQueryInterface $query,
