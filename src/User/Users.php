@@ -36,7 +36,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\ActivatingUser;
 use CraftCms\Cms\User\Events\AssigningUserToDefaultGroups;
 use CraftCms\Cms\User\Events\AssigningUserToGroups;
 use CraftCms\Cms\User\Events\DeactivatingUser;
@@ -47,6 +46,7 @@ use CraftCms\Cms\User\Events\SuspendingUser;
 use CraftCms\Cms\User\Events\UnlockingUser;
 use CraftCms\Cms\User\Events\UnsuspendingUser;
 use CraftCms\Cms\User\Events\UserActivated;
+use CraftCms\Cms\User\Events\UserActivating;
 use CraftCms\Cms\User\Events\UserAssignedToDefaultGroups;
 use CraftCms\Cms\User\Events\UserAssignedToGroups;
 use CraftCms\Cms\User\Events\UserDeactivated;
@@ -594,7 +594,7 @@ class Users
      */
     public function activateUser(User $user): void
     {
-        event($event = new ActivatingUser($user));
+        event($event = new UserActivating($user));
 
         if (! $event->isValid) {
             throw new InvalidElementException($user);
