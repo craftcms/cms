@@ -9,7 +9,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Shared\Concerns\HandleableEvent;
 
 /**
- * @event BeforeDefineUrl The event that is triggered before defining the element's URL.
+ * @event ElementUrlResolving The event that is triggered before defining the element's URL.
  *
  * It can be used to provide a custom URL, completely bypassing the default URL generation.
  *
@@ -20,7 +20,7 @@ use CraftCms\Cms\Shared\Concerns\HandleableEvent;
  *
  * {@see HasRoutesAndUrls::getUrl()}
  */
-class BeforeDefineUrl
+class ElementUrlResolving
 {
     use HandleableEvent;
 

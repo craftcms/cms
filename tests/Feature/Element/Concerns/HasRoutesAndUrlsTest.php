@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Element\Events\BeforeDefineUrl;
 use CraftCms\Cms\Element\Events\DefineUrl;
+use CraftCms\Cms\Element\Events\ElementUrlResolving;
 use CraftCms\Cms\Element\Events\SetRoute;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -147,12 +147,12 @@ describe('getUrl', function () {
         expect($url)->not->toContain(Element::HOMEPAGE_URI);
     });
 
-    test('BeforeDefineUrl event can set custom URL', function () {
+    test('ElementUrlResolving event can set custom URL', function () {
         $element = new TestRoutableElement;
         $element->siteId = $this->primarySiteId;
         $element->uri = 'test-path';
 
-        Event::listen(function (BeforeDefineUrl $event) {
+        Event::listen(function (ElementUrlResolving $event) {
             $event->url = 'https://custom-url.com/path';
         });
 

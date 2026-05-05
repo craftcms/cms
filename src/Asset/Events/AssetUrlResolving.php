@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Events;
 
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Element\Events\BeforeDefineUrl;
+use CraftCms\Cms\Element\Events\ElementUrlResolving;
 use CraftCms\Cms\Image\Data\ImageTransform;
 
 /**
@@ -13,7 +13,7 @@ use CraftCms\Cms\Image\Data\ImageTransform;
  *
  * @see getUrl()
  */
-class AssetUrlResolving extends BeforeDefineUrl
+class AssetUrlResolving extends ElementUrlResolving
 {
     public function __construct(
         public Asset $asset,
