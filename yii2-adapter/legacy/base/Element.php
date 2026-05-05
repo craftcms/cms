@@ -46,7 +46,6 @@ use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\RenderElementEvent;
 use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
-use CraftCms\Cms\Element\Events\AfterDelete;
 use CraftCms\Cms\Element\Events\AfterMoveInStructure;
 use CraftCms\Cms\Element\Events\AfterPropagate;
 use CraftCms\Cms\Element\Events\AfterRestore;
@@ -68,6 +67,7 @@ use CraftCms\Cms\Element\Events\DefineMetadata;
 use CraftCms\Cms\Element\Events\DefineMetaFieldsHtml;
 use CraftCms\Cms\Element\Events\DefineSidebarHtml;
 use CraftCms\Cms\Element\Events\DefineUrl;
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleted;
 use CraftCms\Cms\Element\Events\PrepQueryForTableAttribute;
 use CraftCms\Cms\Element\Events\RegisterActions;
 use CraftCms\Cms\Element\Events\RegisterCardAttributes;
@@ -606,7 +606,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
             }
         });
 
-        Event::listen(function(AfterDelete $event) use ($elementClasses) {
+        Event::listen(function(ElementLifecycleDeleted $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_AFTER_DELETE)) {
                     continue;

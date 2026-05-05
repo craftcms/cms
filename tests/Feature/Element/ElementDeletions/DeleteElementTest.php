@@ -5,10 +5,9 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Events\AfterDelete;
-use CraftCms\Cms\Element\Events\AfterDeleteElement;
 use CraftCms\Cms\Element\Events\BeforeDelete;
 use CraftCms\Cms\Element\Events\BeforeDeleteElement;
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleted;
 use CraftCms\Cms\Element\Events\InvalidateElementCaches;
 use CraftCms\Cms\Element\Operations\ElementDeletions;
 use CraftCms\Cms\Element\Revisions;
@@ -92,7 +91,7 @@ it('soft deletes an element, cascades drafts and revisions, and tracks it in the
 
     Event::fake([
         BeforeDelete::class,
-        AfterDelete::class,
+        ElementLifecycleDeleted::class,
         BeforeDeleteElement::class,
         AfterDeleteElement::class,
         InvalidateElementCaches::class,
@@ -117,7 +116,7 @@ it('soft deletes an element, cascades drafts and revisions, and tracks it in the
         Event::assertDispatched(fn (BeforeDeleteElement $event): bool => $event->element->id === $entry->id && $event->hardDelete === false);
         Event::assertDispatched(fn (AfterDeleteElement $event): bool => $event->element->id === $entry->id);
         Event::assertDispatched(fn (BeforeDelete $event): bool => $event->element->id === $entry->id);
-        Event::assertDispatched(fn (AfterDelete $event): bool => $event->element->id === $entry->id);
+        Event::assertDispatched(fn (ElementLifecycleDeleted $event): bool => $event->element->id === $entry->id);
         Event::assertDispatched(fn (InvalidateElementCaches $event): bool => $event->element?->id === $entry->id);
     } finally {
         $this->bulkOps->end($key);
@@ -131,7 +130,7 @@ it('hard deletes an element and removes its search indexes without tracking it',
 
     Event::fake([
         BeforeDelete::class,
-        AfterDelete::class,
+        ElementLifecycleDeleted::class,
         BeforeDeleteElement::class,
         AfterDeleteElement::class,
         InvalidateElementCaches::class,
@@ -151,7 +150,7 @@ it('hard deletes an element and removes its search indexes without tracking it',
         Event::assertDispatched(fn (BeforeDeleteElement $event): bool => $event->element->id === $entry->id && $event->hardDelete === true);
         Event::assertDispatched(fn (AfterDeleteElement $event): bool => $event->element->id === $entry->id);
         Event::assertDispatched(fn (BeforeDelete $event): bool => $event->element->id === $entry->id);
-        Event::assertDispatched(fn (AfterDelete $event): bool => $event->element->id === $entry->id);
+        Event::assertDispatched(fn (ElementLifecycleDeleted $event): bool => $event->element->id === $entry->id);
         Event::assertDispatched(fn (InvalidateElementCaches $event): bool => $event->element?->id === $entry->id);
     } finally {
         $this->bulkOps->end($key);
@@ -255,7 +254,7 @@ it('rolls back the delete when afterDelete throws', function () {
         $beforeDeleteElementDispatched = true;
     });
 
-    Event::listen(AfterDelete::class, function (AfterDelete $event) use ($entry) {
+    Event::listen(ElementLifecycleDeleted::class, function (ElementLifecycleDeleted $event) use ($entry) {
         if ($event->element->id !== $entry->id) {
             return;
         }
