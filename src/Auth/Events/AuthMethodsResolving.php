@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Auth\Events;
 use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
 use Illuminate\Support\Collection;
 
-class RegisterAuthMethods
+class AuthMethodsResolving
 {
     public function __construct(
         /**

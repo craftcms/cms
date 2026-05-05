@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Auth;
 
 use CraftCms\Cms\Auth\Enums\AuthError;
-use CraftCms\Cms\Auth\Events\RegisterAuthMethods;
+use CraftCms\Cms\Auth\Events\AuthMethodsResolving;
 use CraftCms\Cms\Auth\Events\UserAuthenticating;
 use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
@@ -79,7 +79,7 @@ class AuthMethods
             RecoveryCodes::class,
         ]);
 
-        event($event = new RegisterAuthMethods($methods));
+        event($event = new AuthMethodsResolving($methods));
 
         $this->methods[$user->id] = $event->methods->map(function (string $class) use ($user) {
             if (! is_subclass_of($class, AuthMethodInterface::class)) {
