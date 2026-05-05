@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Gql\Events;
 
 /**
- * @event RegisterGqlDirectives The event that is triggered when registering GraphQL directives.
+ * @event GqlDirectivesResolving The event that is triggered when registering GraphQL directives.
  */
-class RegisterGqlDirectives
+class GqlDirectivesResolving
 {
     public function __construct(
         /** @var array<int, class-string> */

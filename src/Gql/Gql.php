@@ -30,9 +30,9 @@ use CraftCms\Cms\Gql\Directives\StripTags;
 use CraftCms\Cms\Gql\Directives\Transform;
 use CraftCms\Cms\Gql\Directives\Trim;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
+use CraftCms\Cms\Gql\Events\GqlDirectivesResolving;
 use CraftCms\Cms\Gql\Events\GqlQueryExecuting;
 use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
-use CraftCms\Cms\Gql\Events\RegisterGqlDirectives;
 use CraftCms\Cms\Gql\Events\RegisterGqlMutations;
 use CraftCms\Cms\Gql\Events\RegisterGqlQueries;
 use CraftCms\Cms\Gql\Events\RegisterGqlSchemaComponents;
@@ -1123,7 +1123,7 @@ class Gql
             }
         }
 
-        event($event = new RegisterGqlDirectives(directives: $directiveClasses));
+        event($event = new GqlDirectivesResolving(directives: $directiveClasses));
         $directiveClasses = $event->directives;
 
         $directives = GraphQL::getStandardDirectives();

@@ -10,9 +10,9 @@ use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
+use CraftCms\Cms\Gql\Events\GqlDirectivesResolving;
 use CraftCms\Cms\Gql\Events\GqlQueryExecuting;
 use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
-use CraftCms\Cms\Gql\Events\RegisterGqlDirectives;
 use CraftCms\Cms\Gql\Events\RegisterGqlMutations;
 use CraftCms\Cms\Gql\Events\RegisterGqlQueries;
 use CraftCms\Cms\Gql\Events\RegisterGqlSchemaComponents;
@@ -81,7 +81,7 @@ it('dispatches mutation registration events', function () {
 });
 
 it('dispatches directive and type registration events', function () {
-    Event::listen(RegisterGqlDirectives::class, function (RegisterGqlDirectives $event) {
+    Event::listen(GqlDirectivesResolving::class, function (GqlDirectivesResolving $event) {
         $event->directives[] = MockDirective::class;
     });
 
