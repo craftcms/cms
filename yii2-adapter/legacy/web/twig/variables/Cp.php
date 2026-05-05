@@ -15,8 +15,8 @@ use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
 use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
+use CraftCms\Cms\Cp\Events\FormActionsResolving;
 use CraftCms\Cms\Cp\Events\RegisterCpSettings;
-use CraftCms\Cms\Cp\Events\RegisterFormActions;
 use CraftCms\Cms\Cp\Events\RegisterReadonlyCpSettings;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -176,7 +176,7 @@ class Cp extends Component
             }
         });
 
-        Event::listen(function(RegisterFormActions $event) {
+        Event::listen(function(FormActionsResolving $event) {
             if (\yii\base\Event::hasHandlers(self::class, self::EVENT_REGISTER_FORM_ACTIONS)) {
                 $yiiEvent = new FormActionsEvent(['formActions' => &$event->formActions]);
 

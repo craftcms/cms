@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Events;
 
 /**
- * @event RegisterFormActions The event that is triggered when preparing the page’s form actions.
+ * @event FormActionsResolving The event that is triggered when preparing the page’s form actions.
  *
  * ```php
- * use CraftCms\Cms\Cp\Events\RegisterFormActions;
+ * use CraftCms\Cms\Cp\Events\FormActionsResolving;
  * use Illuminate\Support\Facades\Crypt;
  * use Illuminate\Support\Facades\Event;
  *
- * Event::listen(function(RegisterFormActions $event) {
+ * Event::listen(function(FormActionsResolving $event) {
  *     if (request()->craftPath() == 'entries/edit-entry') {
  *         $event->formActions[] = [
  *             'label' => 'Save and view entry',
@@ -22,7 +22,7 @@ namespace CraftCms\Cms\Cp\Events;
  * });
  * ```
  */
-class RegisterFormActions
+class FormActionsResolving
 {
     public function __construct(
         /**
