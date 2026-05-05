@@ -462,7 +462,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Added `CraftCms\Cms\Validation\Concerns\HasScenarios` trait for scenario-based validation filtering.
 - Added `CraftCms\Cms\Validation\Concerns\InteractsWithValidator` trait providing common validator interactions.
 - Added `CraftCms\Cms\Element\Validation\ElementRules` abstract class for defining element-specific validation rules.
-- Added `CraftCms\Cms\Element\Validation\Events\DefineValidationRules` event for plugins to modify element validation rules.
+- Added `CraftCms\Cms\Element\Validation\Events\ValidationRulesResolving` event for plugins to modify element validation rules.
 - Added `CraftCms\Cms\Element\Validation\Rules\ElementUriRule` for validating element URIs.
 - Added element-specific ruleset classes:
   - `CraftCms\Cms\Address\Validation\AddressRules`
