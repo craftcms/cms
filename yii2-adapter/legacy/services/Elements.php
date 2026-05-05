@@ -39,7 +39,6 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
-use CraftCms\Cms\Element\Events\AfterMergeElements;
 use CraftCms\Cms\Element\Events\AfterPerformAction;
 use CraftCms\Cms\Element\Events\AfterPropagateElement;
 use CraftCms\Cms\Element\Events\AfterPropagateElements;
@@ -64,6 +63,7 @@ use CraftCms\Cms\Element\Events\BeforeUpdateSlugAndUri;
 use CraftCms\Cms\Element\Events\CanonicalChangesMerged;
 use CraftCms\Cms\Element\Events\ElementDeleted;
 use CraftCms\Cms\Element\Events\ElementDeletedForSite;
+use CraftCms\Cms\Element\Events\ElementsMerged;
 use CraftCms\Cms\Element\Events\InvalidateElementCaches;
 use CraftCms\Cms\Element\Events\RegisterElementTypes;
 use CraftCms\Cms\Element\Events\SetElementUri;
@@ -1901,7 +1901,7 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(AfterMergeElements $event) {
+        Event::listen(function(ElementsMerged $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_MERGE_ELEMENTS)) {
                 return;
             }

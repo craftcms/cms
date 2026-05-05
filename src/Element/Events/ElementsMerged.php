@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Events;
 
-class AfterMergeElements
+class ElementsMerged
 {
     public function __construct(
         public int $mergedElementId,
