@@ -37,7 +37,6 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\DefaultUserGroupsResolving;
-use CraftCms\Cms\User\Events\UnlockingUser;
 use CraftCms\Cms\User\Events\UnsuspendingUser;
 use CraftCms\Cms\User\Events\UserActivated;
 use CraftCms\Cms\User\Events\UserActivating;
@@ -55,6 +54,7 @@ use CraftCms\Cms\User\Events\UserPhotoSaving;
 use CraftCms\Cms\User\Events\UserSuspended;
 use CraftCms\Cms\User\Events\UserSuspending;
 use CraftCms\Cms\User\Events\UserUnlocked;
+use CraftCms\Cms\User\Events\UserUnlocking;
 use CraftCms\Cms\User\Events\UserUnsuspended;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Validation\UserRules;
@@ -764,7 +764,7 @@ class Users
      */
     public function unlockUser(User $user): void
     {
-        event($event = new UnlockingUser($user));
+        event($event = new UserUnlocking($user));
 
         if (! $event->isValid) {
             throw new InvalidElementException($user);

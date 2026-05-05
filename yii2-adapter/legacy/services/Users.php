@@ -27,7 +27,6 @@ use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\DefaultUserGroupsResolving;
 use CraftCms\Cms\User\Events\EmailVerified;
-use CraftCms\Cms\User\Events\UnlockingUser;
 use CraftCms\Cms\User\Events\UnsuspendingUser;
 use CraftCms\Cms\User\Events\UserActivated;
 use CraftCms\Cms\User\Events\UserActivating;
@@ -45,6 +44,7 @@ use CraftCms\Cms\User\Events\UserPhotoSaving;
 use CraftCms\Cms\User\Events\UserSuspended;
 use CraftCms\Cms\User\Events\UserSuspending;
 use CraftCms\Cms\User\Events\UserUnlocked;
+use CraftCms\Cms\User\Events\UserUnlocking;
 use CraftCms\Cms\User\Events\UserUnsuspended;
 use CraftCms\Cms\User\Events\VerifyingEmail;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -856,7 +856,7 @@ class Users extends Component
         });
 
         foreach ([
-             UnlockingUser::class => self::EVENT_BEFORE_UNLOCK_USER,
+             UserUnlocking::class => self::EVENT_BEFORE_UNLOCK_USER,
              UserActivating::class => self::EVENT_BEFORE_ACTIVATE_USER,
              UserDeactivating::class => self::EVENT_BEFORE_DEACTIVATE_USER,
              UserSuspending::class => self::EVENT_BEFORE_SUSPEND_USER,
