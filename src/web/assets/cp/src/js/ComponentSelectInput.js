@@ -383,6 +383,18 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         destructive: true,
       });
 
+      if (this.$addBtn.length) {
+        actions.push({
+          icon: async () => await Craft.ui.icon('arrows-rotate'),
+          label: Craft.t('app', 'Replace'),
+          callback: () => {
+            this.removeComponent($component, () => {
+              this.$addBtn.disclosureMenu().data('disclosureMenu').show();
+            });
+          },
+        });
+      }
+
       return actions;
     },
 
@@ -450,12 +462,15 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       this.onChange();
     },
 
-    removeComponent: function ($component) {
+    removeComponent: function ($component, callback = null) {
       // Remove any inputs from the form data
       $('[name]', $component).removeAttr('name');
       this.removeComponents($component);
       this.animateComponentAway($component, () => {
         $component.parent('li').remove();
+        if (callback) {
+          callback();
+        }
       });
     },
 
