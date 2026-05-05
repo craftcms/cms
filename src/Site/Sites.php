@@ -14,12 +14,12 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Cms\Site\Events\ApplyingSiteDelete;
 use CraftCms\Cms\Site\Events\DeletingSite;
 use CraftCms\Cms\Site\Events\PrimarySiteChanged;
 use CraftCms\Cms\Site\Events\ReorderingSites;
 use CraftCms\Cms\Site\Events\SavingSite;
 use CraftCms\Cms\Site\Events\SiteDeleted;
+use CraftCms\Cms\Site\Events\SiteDeletionApplying;
 use CraftCms\Cms\Site\Events\SiteSaved;
 use CraftCms\Cms\Site\Events\SitesReordered;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
@@ -759,7 +759,7 @@ class Sites
         /** @var Site $site */
         $site = $this->getSiteById($siteRecord->id);
 
-        event(new ApplyingSiteDelete($site));
+        event(new SiteDeletionApplying($site));
 
         DB::transaction(function () use ($siteRecord) {
             DB::table(Table::SITES)->softDelete($siteRecord->id);

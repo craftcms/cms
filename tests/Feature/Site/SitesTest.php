@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\Site as SiteData;
-use CraftCms\Cms\Site\Events\ApplyingSiteDelete;
 use CraftCms\Cms\Site\Events\DeletingSite;
 use CraftCms\Cms\Site\Events\ReorderingSites;
 use CraftCms\Cms\Site\Events\SavingSite;
 use CraftCms\Cms\Site\Events\SiteDeleted;
+use CraftCms\Cms\Site\Events\SiteDeletionApplying;
 use CraftCms\Cms\Site\Events\SiteSaved;
 use CraftCms\Cms\Site\Events\SitesReordered;
 use CraftCms\Cms\Site\Models\Site;
@@ -285,7 +285,7 @@ it('can delete a site by id', function () {
 it('can delete a site', function () {
     Event::fake([
         DeletingSite::class,
-        ApplyingSiteDelete::class,
+        SiteDeletionApplying::class,
         SiteDeleted::class,
     ]);
 
@@ -304,7 +304,7 @@ it('can delete a site', function () {
     expect(Site::withTrashed()->count())->toBe(2);
 
     Event::assertDispatchedOnce(DeletingSite::class);
-    Event::assertDispatchedOnce(ApplyingSiteDelete::class);
+    Event::assertDispatchedOnce(SiteDeletionApplying::class);
     Event::assertDispatchedOnce(SiteDeleted::class);
 });
 
