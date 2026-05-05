@@ -6,9 +6,9 @@ namespace CraftCms\Cms\Asset;
 
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Asset\Events\DeletingVolume;
 use CraftCms\Cms\Asset\Events\SavingVolume;
 use CraftCms\Cms\Asset\Events\VolumeDeleted;
+use CraftCms\Cms\Asset\Events\VolumeDeleting;
 use CraftCms\Cms\Asset\Events\VolumeDeletionApplied;
 use CraftCms\Cms\Asset\Events\VolumeSaved;
 use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
@@ -273,7 +273,7 @@ class Volumes
 
     public function deleteVolume(Volume $volume): bool
     {
-        event(new DeletingVolume(volume: $volume));
+        event(new VolumeDeleting(volume: $volume));
 
         $this->projectConfig->remove(
             ProjectConfig::PATH_VOLUMES.'.'.$volume->uid,
