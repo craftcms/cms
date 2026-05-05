@@ -31,13 +31,13 @@ readonly class GeneralSettingsController
 
     public function index(GeneralConfig $generalConfig): Response|View
     {
+        $timezoneOptions = SelectOptions::getTimeZoneOptions();
+        $timezoneOptions = array_merge($timezoneOptions, SelectOptions::getEnvOptions(array_column($timezoneOptions, 'value')));
+
         return Inertia::render('SettingsGeneralPage', [
             'system' => $this->projectConfig->get('system') ?? [],
             'nameSuggestions' => SelectOptions::getEnvSuggestions(),
-            'timezoneOptions' => [
-                ...SelectOptions::getTimeZoneOptions(),
-                ...SelectOptions::getEnvOptions(),
-            ],
+            'timezoneOptions' => $timezoneOptions,
             'crumbs' => [
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('General Settings')],
