@@ -4,4 +4,4 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Address\Events;
 
-class DefineAddressUsedFields extends AddressFieldsResolving {}
+class AddressUsedFieldsResolving extends AddressFieldsResolving {}
