@@ -76,7 +76,7 @@
   });
 
   const reference = useTemplateRef<HTMLElement | null>('reference');
-  const query = ref(props.modelValue ?? '');
+  const query = ref(String(props.modelValue ?? ''));
 
   const referenceCoordinates = computed(() => {
     const coordinates = reference.value?.getBoundingClientRect();
@@ -88,7 +88,7 @@
   });
 
   function matchesQuery(query: MaybeRef<string>, item: MaybeRef<SelectOption>) {
-    const lowerQuery = unref(query).toLowerCase();
+    const lowerQuery = String(unref(query)).toLowerCase();
     const option = unref(item);
 
     return (

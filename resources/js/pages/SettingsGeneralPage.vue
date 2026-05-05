@@ -2,13 +2,13 @@
   import {t} from '@craftcms/cp';
   import AppLayout from '@/layout/AppLayout.vue';
   import {store} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/GeneralSettingsController';
-  import {type SystemData, type TimezoneOption} from '@/types/settings';
+  import {type SystemData} from '@/types/settings';
   import {useForm} from '@inertiajs/vue3';
   import useCraftData from '@/composables/useCraftData';
   import TransitionFade from '@/components/TransitionFade.vue';
   import {computed} from 'vue';
   import {useEventListener} from '@vueuse/core';
-  import type {SelectOption} from '@/types';
+  import type {SelectItem} from '@/types';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
   import CraftCombobox from '@/components/form/CraftCombobox.vue';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
@@ -16,9 +16,9 @@
 
   const props = defineProps<{
     system: SystemData;
-    nameSuggestions?: Array<SelectOption>;
-    timezoneOptions?: Array<TimezoneOption>;
-    systemStatusOptions?: Array<SelectOption>;
+    nameSuggestions?: Array<SelectItem>;
+    timezoneOptions?: Array<SelectItem>;
+    systemStatusOptions?: Array<SelectItem>;
     flash?: Record<any, any>;
     errors: Record<any, any>;
   }>();
@@ -46,14 +46,14 @@
     return [
       {
         label: t('Online'),
-        value: '1',
+        value: true,
         data: {
           indicator: {variant: 'success'},
         },
       },
       {
         label: t('Offline'),
-        value: '0',
+        value: false,
         data: {
           indicator: {variant: 'empty'},
         },
