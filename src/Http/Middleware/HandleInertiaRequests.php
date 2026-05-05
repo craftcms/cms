@@ -68,6 +68,8 @@ class HandleInertiaRequests extends Middleware
         $updates = app(Updates::class);
         $nav = app(Navigation::class);
         $progressService = app(JobProgress::class);
+        $generalConfig = app(GeneralConfig::class);
+        $currentUser = null;
 
         if (! $updates->isCraftUpdatePending()) {
             $currentUser = $request->user();
@@ -93,6 +95,9 @@ class HandleInertiaRequests extends Middleware
                 'hasWaitingJobs' => false,
             ],
             'craft' => fn () => [
+                'general' => [
+                    'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
+                ],
                 'system' => [
                     'name' => Cms::systemName(),
                     'icon' => $systemIcon,
@@ -105,7 +110,11 @@ class HandleInertiaRequests extends Middleware
                     'url' => $currentSite->getBaseUrl(),
                 ],
                 'currentUser' => [
+                    'id' => $currentUser->id ?? null,
+                    'username' => $currentUser->username ?? null,
                     'email' => $currentUser->email ?? null,
+                    'name' => $currentUser->name ?? null,
+                    'thumbHtml' => $currentUser->getThumbHtml(30),
                 ],
                 'readOnly' => ! $generalConfig->allowAdminChanges,
                 'allowAdminChanges' => $generalConfig->allowAdminChanges,

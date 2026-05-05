@@ -15,10 +15,19 @@ export interface CraftData {
   };
   site: {
     url: string;
-  }
+  };
   readOnly: boolean;
   allowAdminChanges: boolean;
-  currentUser: any;
+  currentUser: {
+    username: string | null;
+    email: string | null;
+    id: number | null;
+    thumbHtml: string | null;
+    name: string | null;
+  };
+  general: {
+    useEmailAsUsername: boolean;
+  };
   nav: any[];
   [key: string]: any;
 }

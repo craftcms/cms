@@ -125,9 +125,9 @@
       },
       get columnVisibility() {
         return {
-          actions: !readOnly
-        }
-      }
+          actions: !readOnly,
+        };
+      },
     },
 
     onSortingChange: (updater) => {
@@ -190,7 +190,12 @@
   <AppLayout :title="title">
     <CalloutReadOnly v-if="readOnly"></CalloutReadOnly>
     <template #actions>
-      <CpLink as="craft-button" variant="primary" :href="create()" v-if="!readOnly">
+      <CpLink
+        as="craft-button"
+        variant="primary"
+        :href="create()"
+        v-if="!readOnly"
+      >
         <craft-icon name="plus" slot="prefix"></craft-icon>
         {{ t('New section') }}
       </CpLink>
