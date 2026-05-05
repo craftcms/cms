@@ -8,8 +8,8 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Element\Events\AfterMergeCanonicalChanges;
 use CraftCms\Cms\Element\Events\BeforeMergeCanonicalChanges;
+use CraftCms\Cms\Element\Events\CanonicalChangesMerged;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
@@ -88,7 +88,7 @@ readonly class ElementCanonicalChanges
             $element->mergingCanonicalChanges = false;
         });
 
-        event(new AfterMergeCanonicalChanges($element));
+        event(new CanonicalChangesMerged($element));
     }
 
     public function updateCanonicalElement(ElementInterface $element, array $newAttributes = []): ElementInterface
