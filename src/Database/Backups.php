@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Database;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Database\Events\AfterCreateBackup;
 use CraftCms\Cms\Database\Events\AfterRestoreBackup;
+use CraftCms\Cms\Database\Events\BackupCreated;
 use CraftCms\Cms\Database\Events\BeforeCreateBackup;
 use CraftCms\Cms\Database\Events\BeforeRestoreBackup;
 use CraftCms\Cms\Database\Exceptions\CommandFailedException;
@@ -98,7 +98,7 @@ final readonly class Backups
 
         $this->executeCommandWithMysqlDefaults($connection, $command);
 
-        event(new AfterCreateBackup(
+        event(new BackupCreated(
             connection: $connection,
             file: $filePath,
         ));
