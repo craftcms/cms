@@ -8,16 +8,16 @@ use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use Illuminate\Support\Collection;
 
 /**
- * @event RegisterSystemMessages The event that is triggered when registering system messages.
+ * @event SystemMessagesResolving The event that is triggered when registering system messages.
  *
  * ```php
  * use Illuminate\Support\Facades\Event;
  * use CraftCms\Cms\SystemMessage\Data\SystemMessage;
- * use CraftCms\Cms\SystemMessage\Events\RegisterSystemMessages;
+ * use CraftCms\Cms\SystemMessage\Events\SystemMessagesResolving;
  *
  * Event::listen(
- *     RegisterSystemMessages::class,
- *     function(RegisterSystemMessages $event) {
+ *     SystemMessagesResolving::class,
+ *     function(SystemMessagesResolving $event) {
  *         $event->messages->push(new SystemMessage(
  *             key: 'account_approved',
  *             heading: 'When a member’s account is approved',
@@ -43,7 +43,7 @@ use Illuminate\Support\Collection;
  * );
  * ```
  */
-class RegisterSystemMessages
+class SystemMessagesResolving
 {
     public function __construct(
         /** @var Collection<SystemMessage> */
