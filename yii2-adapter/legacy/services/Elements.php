@@ -61,7 +61,7 @@ use CraftCms\Cms\Element\Events\ElementSearchIndexUpdating;
 use CraftCms\Cms\Element\Events\ElementSlugAndUriUpdated;
 use CraftCms\Cms\Element\Events\ElementSlugAndUriUpdating;
 use CraftCms\Cms\Element\Events\ElementsMerged;
-use CraftCms\Cms\Element\Events\RegisterElementTypes;
+use CraftCms\Cms\Element\Events\ElementTypesResolving;
 use CraftCms\Cms\Element\Events\SetElementUri;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
@@ -1948,7 +1948,7 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(RegisterElementTypes $event) {
+        Event::listen(function(ElementTypesResolving $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_REGISTER_ELEMENT_TYPES)) {
                 return;
             }
