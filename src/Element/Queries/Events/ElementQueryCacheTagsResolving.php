@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Element\Queries\Events;
 
 use CraftCms\Cms\Element\Queries\ElementQuery;
 
-class DefineCacheTags
+class ElementQueryCacheTagsResolving
 {
     public function __construct(
         public ElementQuery $query,
