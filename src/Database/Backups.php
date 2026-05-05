@@ -10,7 +10,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Events\BackupCreated;
 use CraftCms\Cms\Database\Events\BackupCreating;
 use CraftCms\Cms\Database\Events\BackupRestored;
-use CraftCms\Cms\Database\Events\BeforeRestoreBackup;
+use CraftCms\Cms\Database\Events\BackupRestoring;
 use CraftCms\Cms\Database\Exceptions\CommandFailedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Facades\Path;
@@ -113,7 +113,7 @@ final readonly class Backups
     ): void {
         $connection ??= DB::connection();
 
-        event(new BeforeRestoreBackup(
+        event(new BackupRestoring(
             connection: $connection,
             file: $filePath,
         ));

@@ -7,7 +7,7 @@ use CraftCms\Cms\Database\Backups;
 use CraftCms\Cms\Database\Events\BackupCreated;
 use CraftCms\Cms\Database\Events\BackupCreating;
 use CraftCms\Cms\Database\Events\BackupRestored;
-use CraftCms\Cms\Database\Events\BeforeRestoreBackup;
+use CraftCms\Cms\Database\Events\BackupRestoring;
 use CraftCms\Cms\Database\Exceptions\CommandFailedException;
 use Illuminate\Database\MySqlConnection;
 use Illuminate\Database\PostgresConnection;
@@ -148,7 +148,7 @@ it('runs configured restore command and dispatches restore events', function () 
     $beforeEvent = null;
     $afterEvent = null;
 
-    Event::listen(BeforeRestoreBackup::class, function (BeforeRestoreBackup $event) use (&$beforeEvent) {
+    Event::listen(BackupRestoring::class, function (BackupRestoring $event) use (&$beforeEvent) {
         $beforeEvent = $event;
     });
 
