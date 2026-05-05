@@ -73,11 +73,11 @@ use CraftCms\Cms\Element\Events\ElementMetaFieldsHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementMovedInStructure;
 use CraftCms\Cms\Element\Events\ElementMovingInStructure;
 use CraftCms\Cms\Element\Events\ElementPreviewTargetsResolving;
+use CraftCms\Cms\Element\Events\ElementSearchableAttributesResolving;
 use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementUrlResolved;
 use CraftCms\Cms\Element\Events\ElementUrlResolving;
 use CraftCms\Cms\Element\Events\QueryForTableAttributePreparing;
-use CraftCms\Cms\Element\Events\RegisterSearchableAttributes;
 use CraftCms\Cms\Element\Events\RegisterSortOptions;
 use CraftCms\Cms\Element\Events\RegisterSources;
 use CraftCms\Cms\Element\Events\RegisterTableAttributes;
@@ -430,7 +430,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
             }
         });
 
-        Event::listen(function(RegisterSearchableAttributes $event) use ($elementClasses) {
+        Event::listen(function(ElementSearchableAttributesResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES)) {
                     continue;

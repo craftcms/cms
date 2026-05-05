@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Element\Events;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
- * @event RegisterSearchableAttributes event is triggered when registering the searchable attributes for an element type.
+ * @event ElementSearchableAttributesResolving event is triggered when registering the searchable attributes for an element type.
  */
-class RegisterSearchableAttributes
+class ElementSearchableAttributesResolving
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class
