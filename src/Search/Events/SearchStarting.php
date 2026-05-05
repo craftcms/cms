@@ -10,7 +10,7 @@ use CraftCms\Cms\Search\SearchQuery;
 /**
  * @event The event that is triggered before a search is performed.
  */
-class BeforeSearch
+class SearchStarting
 {
     public function __construct(
         public ElementQueryInterface $elementQuery,

@@ -5,10 +5,10 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
-use CraftCms\Cms\Search\Events\BeforeSearch;
 use CraftCms\Cms\Search\Events\KeywordsIndexing;
 use CraftCms\Cms\Search\Events\ScoringResults;
 use CraftCms\Cms\Search\Events\SearchPerformed;
+use CraftCms\Cms\Search\Events\SearchStarting;
 use CraftCms\Cms\Search\Jobs\UpdateSearchIndex;
 use CraftCms\Cms\Search\SearchQuery;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -161,15 +161,15 @@ describe('searchElements', function () {
         expect($results[0]->id)->toBe($entry2->id);
     });
 
-    test('fires BeforeSearch event', function () {
+    test('fires SearchStarting event', function () {
         createIndexedEntry('Test');
 
-        Event::fake([BeforeSearch::class]);
+        Event::fake([SearchStarting::class]);
 
         $elementQuery = entryQuery()->search('Test');
         Search::searchElements($elementQuery);
 
-        Event::assertDispatched(BeforeSearch::class);
+        Event::assertDispatched(SearchStarting::class);
     });
 
     test('fires ScoringResults event', function () {
