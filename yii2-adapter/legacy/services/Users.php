@@ -27,7 +27,6 @@ use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\DefaultUserGroupsResolving;
 use CraftCms\Cms\User\Events\EmailVerified;
-use CraftCms\Cms\User\Events\SavingUserPhoto;
 use CraftCms\Cms\User\Events\SuspendingUser;
 use CraftCms\Cms\User\Events\UnlockingUser;
 use CraftCms\Cms\User\Events\UnsuspendingUser;
@@ -43,6 +42,7 @@ use CraftCms\Cms\User\Events\UserLocked;
 use CraftCms\Cms\User\Events\UserPhotoDeleted;
 use CraftCms\Cms\User\Events\UserPhotoDeleting;
 use CraftCms\Cms\User\Events\UserPhotoSaved;
+use CraftCms\Cms\User\Events\UserPhotoSaving;
 use CraftCms\Cms\User\Events\UserSuspended;
 use CraftCms\Cms\User\Events\UserUnlocked;
 use CraftCms\Cms\User\Events\UserUnsuspended;
@@ -809,7 +809,7 @@ class Users extends Component
 
     public static function registerEvents(): void
     {
-        Event::listen(SavingUserPhoto::class, function(SavingUserPhoto $event) {
+        Event::listen(UserPhotoSaving::class, function(UserPhotoSaving $event) {
             if (Craft::$app->getUsers()->hasEventHandlers(self::EVENT_BEFORE_SAVE_USER_PHOTO)) {
                 $yiiEvent = new UserPhotoEvent([
                     'user' => $event->user,

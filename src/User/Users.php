@@ -37,7 +37,6 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\DefaultUserGroupsResolving;
-use CraftCms\Cms\User\Events\SavingUserPhoto;
 use CraftCms\Cms\User\Events\SuspendingUser;
 use CraftCms\Cms\User\Events\UnlockingUser;
 use CraftCms\Cms\User\Events\UnsuspendingUser;
@@ -53,6 +52,7 @@ use CraftCms\Cms\User\Events\UserLocked;
 use CraftCms\Cms\User\Events\UserPhotoDeleted;
 use CraftCms\Cms\User\Events\UserPhotoDeleting;
 use CraftCms\Cms\User\Events\UserPhotoSaved;
+use CraftCms\Cms\User\Events\UserPhotoSaving;
 use CraftCms\Cms\User\Events\UserSuspended;
 use CraftCms\Cms\User\Events\UserUnlocked;
 use CraftCms\Cms\User\Events\UserUnsuspended;
@@ -378,7 +378,7 @@ class Users
 
         $photoId = $user->photoId;
 
-        event($event = new SavingUserPhoto($user, $photoId));
+        event($event = new UserPhotoSaving($user, $photoId));
 
         // If the photo exists, just replace the file.
         if ($event->photoId && ($photo = AssetsService::getAssetById($event->photoId)) !== null) {
