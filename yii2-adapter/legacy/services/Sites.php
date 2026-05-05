@@ -21,14 +21,13 @@ use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Data\SiteGroup;
 use CraftCms\Cms\Site\Events\DeletedSiteGroup;
-use CraftCms\Cms\Site\Events\DeletingSite;
-use CraftCms\Cms\Site\Events\DeletingSiteGroup;
 use CraftCms\Cms\Site\Events\PrimarySiteChanged;
 use CraftCms\Cms\Site\Events\ReorderingSites;
 use CraftCms\Cms\Site\Events\SavedSiteGroup;
 use CraftCms\Cms\Site\Events\SavingSite;
 use CraftCms\Cms\Site\Events\SavingSiteGroup;
 use CraftCms\Cms\Site\Events\SiteDeleted;
+use CraftCms\Cms\Site\Events\SiteDeleting;
 use CraftCms\Cms\Site\Events\SiteDeletionApplying;
 use CraftCms\Cms\Site\Events\SiteGroupDeletionApplying;
 use CraftCms\Cms\Site\Events\SiteSaved;
@@ -652,7 +651,7 @@ class Sites extends Component
             }
         });
 
-        Event::listen(DeletingSite::class, function(DeletingSite $event) {
+        Event::listen(SiteDeleting::class, function(SiteDeleting $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_BEFORE_DELETE_SITE)) {
                 Craft::$app->getSites()->trigger(self::EVENT_BEFORE_DELETE_SITE, $yiiEvent = new DeleteSiteEvent([
                     'site' => self::siteToLegacySite($event->site),

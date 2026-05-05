@@ -8,9 +8,9 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 use CraftCms\Cms\Site\Data\Site;
 
 /**
- * @event DeletingSite The event that is triggered before a site is deleted.
+ * @event SiteDeleting The event that is triggered before a site is deleted.
  */
-class DeletingSite
+class SiteDeleting
 {
     use ValidatableEvent;
 

@@ -14,11 +14,11 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Cms\Site\Events\DeletingSite;
 use CraftCms\Cms\Site\Events\PrimarySiteChanged;
 use CraftCms\Cms\Site\Events\ReorderingSites;
 use CraftCms\Cms\Site\Events\SavingSite;
 use CraftCms\Cms\Site\Events\SiteDeleted;
+use CraftCms\Cms\Site\Events\SiteDeleting;
 use CraftCms\Cms\Site\Events\SiteDeletionApplying;
 use CraftCms\Cms\Site\Events\SiteSaved;
 use CraftCms\Cms\Site\Events\SitesReordered;
@@ -621,7 +621,7 @@ class Sites
             throw new Exception('You cannot delete the primary site.');
         }
 
-        event($event = new DeletingSite(site: $site, transferContentTo: $transferContentTo));
+        event($event = new SiteDeleting(site: $site, transferContentTo: $transferContentTo));
 
         if (! $event->isValid) {
             return false;
