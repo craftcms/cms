@@ -8,7 +8,6 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Events\RegisterCpSettings;
 use CraftCms\Cms\Cp\Events\RegisterReadonlyCpSettings;
 use CraftCms\Cms\Plugin\Plugins;
-use Illuminate\Support\Facades\Event;
 
 use function CraftCms\Cms\t;
 
@@ -105,16 +104,10 @@ readonly class Settings
             }
         }
 
-        $event = $readOnly
+        event($event = $readOnly
             ? new RegisterReadonlyCpSettings($settings)
-            : new RegisterCpSettings($settings);
+            : new RegisterCpSettings($settings));
 
-        if (Event::hasListeners($event::class)) {
-            Event::dispatch($event);
-
-            return $event->settings;
-        }
-
-        return $settings;
+        return $event->settings;
     }
 }
