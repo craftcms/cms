@@ -8,9 +8,9 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use Illuminate\Support\Collection;
 
 /**
- * @event DefineSourceSortOptions The event that is triggered when defining the available sort options for a source.
+ * @event ElementSourceSortOptionsResolving The event that is triggered when defining the available sort options for a source.
  */
-class DefineSourceSortOptions
+class ElementSourceSortOptionsResolving
 {
     public function __construct(
         /**
