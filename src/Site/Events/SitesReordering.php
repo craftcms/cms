@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Site\Events;
 
 /**
- * @event ReorderingSites The event that is triggered before the sites are reordered.
+ * @event SitesReordering The event that is triggered before the sites are reordered.
  */
-class ReorderingSites
+class SitesReordering
 {
     public function __construct(
         /** @var int[] */

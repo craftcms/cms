@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\Site as SiteData;
-use CraftCms\Cms\Site\Events\ReorderingSites;
 use CraftCms\Cms\Site\Events\SavingSite;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Site\Events\SiteDeleting;
 use CraftCms\Cms\Site\Events\SiteDeletionApplying;
 use CraftCms\Cms\Site\Events\SiteSaved;
 use CraftCms\Cms\Site\Events\SitesReordered;
+use CraftCms\Cms\Site\Events\SitesReordering;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Site\Models\SiteGroup;
 use CraftCms\Cms\Site\Sites;
@@ -251,7 +251,7 @@ it('can reorder sites', function () {
     $defaultSite = Site::first();
 
     Event::fake([
-        ReorderingSites::class,
+        SitesReordering::class,
         SitesReordered::class,
     ]);
 
@@ -259,7 +259,7 @@ it('can reorder sites', function () {
 
     $this->sites->reorderSites([$otherSite->id, $defaultSite->id]);
 
-    Event::assertDispatchedOnce(ReorderingSites::class);
+    Event::assertDispatchedOnce(SitesReordering::class);
     Event::assertDispatchedOnce(SitesReordered::class);
 
     expect($defaultSite->fresh()->sortOrder)->toBe(2);

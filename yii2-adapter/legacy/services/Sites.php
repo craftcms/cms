@@ -22,7 +22,6 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Data\SiteGroup;
 use CraftCms\Cms\Site\Events\DeletedSiteGroup;
 use CraftCms\Cms\Site\Events\PrimarySiteChanged;
-use CraftCms\Cms\Site\Events\ReorderingSites;
 use CraftCms\Cms\Site\Events\SavedSiteGroup;
 use CraftCms\Cms\Site\Events\SavingSite;
 use CraftCms\Cms\Site\Events\SavingSiteGroup;
@@ -32,6 +31,7 @@ use CraftCms\Cms\Site\Events\SiteDeletionApplying;
 use CraftCms\Cms\Site\Events\SiteGroupDeletionApplying;
 use CraftCms\Cms\Site\Events\SiteSaved;
 use CraftCms\Cms\Site\Events\SitesReordered;
+use CraftCms\Cms\Site\Events\SitesReordering;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\SiteGroups;
@@ -635,7 +635,7 @@ class Sites extends Component
             }
         });
 
-        Event::listen(ReorderingSites::class, function(ReorderingSites $event) {
+        Event::listen(SitesReordering::class, function(SitesReordering $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_BEFORE_REORDER_SITES)) {
                 Craft::$app->getSites()->trigger(self::EVENT_BEFORE_REORDER_SITES, new ReorderSitesEvent([
                     'siteIds' => $event->siteIds,

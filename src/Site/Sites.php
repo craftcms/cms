@@ -15,13 +15,13 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Events\PrimarySiteChanged;
-use CraftCms\Cms\Site\Events\ReorderingSites;
 use CraftCms\Cms\Site\Events\SavingSite;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Site\Events\SiteDeleting;
 use CraftCms\Cms\Site\Events\SiteDeletionApplying;
 use CraftCms\Cms\Site\Events\SiteSaved;
 use CraftCms\Cms\Site\Events\SitesReordered;
+use CraftCms\Cms\Site\Events\SitesReordering;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Support\Arr;
@@ -563,7 +563,7 @@ class Sites
      */
     public function reorderSites(array $siteIds): bool
     {
-        event(new ReorderingSites(siteIds: $siteIds));
+        event(new SitesReordering(siteIds: $siteIds));
 
         $uidsByIds = DB::table(Table::SITES)->uidsByIds($siteIds);
 
