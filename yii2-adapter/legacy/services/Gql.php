@@ -21,9 +21,9 @@ use craft\models\GqlToken;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Gql\Data\GqlSchema as NewGqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken as NewGqlToken;
-use CraftCms\Cms\Gql\Events\DefineGqlValidationRules;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
 use CraftCms\Cms\Gql\Events\ExecutingGqlQuery;
+use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
 use CraftCms\Cms\Gql\Events\RegisterGqlDirectives;
 use CraftCms\Cms\Gql\Events\RegisterGqlMutations;
 use CraftCms\Cms\Gql\Events\RegisterGqlQueries;
@@ -344,7 +344,7 @@ class Gql extends Component
             $event->mutations = $yiiEvent->mutations;
         });
 
-        Event::listen(DefineGqlValidationRules::class, function(DefineGqlValidationRules $event) {
+        Event::listen(GqlValidationRulesResolving::class, function(GqlValidationRulesResolving $event) {
             $service = self::service();
             if (!$service->hasEventHandlers(self::EVENT_DEFINE_GQL_VALIDATION_RULES)) {
                 return;

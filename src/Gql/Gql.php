@@ -29,9 +29,9 @@ use CraftCms\Cms\Gql\Directives\ParseRefs;
 use CraftCms\Cms\Gql\Directives\StripTags;
 use CraftCms\Cms\Gql\Directives\Transform;
 use CraftCms\Cms\Gql\Directives\Trim;
-use CraftCms\Cms\Gql\Events\DefineGqlValidationRules;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
 use CraftCms\Cms\Gql\Events\ExecutingGqlQuery;
+use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
 use CraftCms\Cms\Gql\Events\RegisterGqlDirectives;
 use CraftCms\Cms\Gql\Events\RegisterGqlMutations;
 use CraftCms\Cms\Gql\Events\RegisterGqlQueries;
@@ -263,7 +263,7 @@ class Gql
             $validationRules[DisableIntrospection::class] = new DisableIntrospection;
         }
 
-        event($event = new DefineGqlValidationRules(
+        event($event = new GqlValidationRulesResolving(
             validationRules: $validationRules,
             debug: $debug,
         ));

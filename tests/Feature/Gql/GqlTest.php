@@ -9,9 +9,9 @@ use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
-use CraftCms\Cms\Gql\Events\DefineGqlValidationRules;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
 use CraftCms\Cms\Gql\Events\ExecutingGqlQuery;
+use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
 use CraftCms\Cms\Gql\Events\RegisterGqlDirectives;
 use CraftCms\Cms\Gql\Events\RegisterGqlMutations;
 use CraftCms\Cms\Gql\Events\RegisterGqlQueries;
@@ -110,7 +110,7 @@ it('dispatches schema component registration events', function () {
 });
 
 it('dispatches validation rule events', function () {
-    Event::listen(DefineGqlValidationRules::class, function (DefineGqlValidationRules $event) {
+    Event::listen(GqlValidationRulesResolving::class, function (GqlValidationRulesResolving $event) {
         $event->validationRules = [];
     });
 
