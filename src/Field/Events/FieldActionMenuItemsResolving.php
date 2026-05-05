@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Field\Events;
 
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 
-class DefineFieldActionMenuItems extends FieldEvent
+class FieldActionMenuItemsResolving extends FieldEvent
 {
     public function __construct(
         FieldInterface $field,

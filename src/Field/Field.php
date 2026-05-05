@@ -22,9 +22,9 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Events\DefineFieldActionMenuItems;
 use CraftCms\Cms\Field\Events\DefineFieldHtml;
 use CraftCms\Cms\Field\Events\DefineFieldKeywords;
+use CraftCms\Cms\Field\Events\FieldActionMenuItemsResolving;
 use CraftCms\Cms\Field\Events\FieldDeletionApplying;
 use CraftCms\Cms\Field\Events\FieldElementDeleted;
 use CraftCms\Cms\Field\Events\FieldElementDeleting;
@@ -458,7 +458,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     {
         $items = $this->actionMenuItems();
 
-        event($event = new DefineFieldActionMenuItems($this, $items));
+        event($event = new FieldActionMenuItemsResolving($this, $items));
 
         return $event->items;
     }
