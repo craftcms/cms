@@ -56,7 +56,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Jobs\PropagateElements;
 use CraftCms\Cms\Field\Events\FieldTypesResolving;
-use CraftCms\Cms\Field\Events\RegisterLinkTypes;
+use CraftCms\Cms\Field\Events\LinkTypesResolving;
 use CraftCms\Cms\FieldLayout\Events\DefineNativeFields;
 use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
@@ -144,7 +144,7 @@ class DeprecatedConcepts
             }
         });
 
-        Event::listen(RegisterLinkTypes::class, function(RegisterLinkTypes $event) {
+        Event::listen(LinkTypesResolving::class, function(LinkTypesResolving $event) {
             if (DeprecatedConcepts::supportsCategories()) {
                 $event->types[] = CategoryLinkType::class;
             }

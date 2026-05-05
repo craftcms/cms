@@ -11,7 +11,7 @@ namespace craft\fields;
 
 use craft\base\Event as YiiEvent;
 use craft\events\RegisterComponentTypesEvent;
-use CraftCms\Cms\Field\Events\RegisterLinkTypes;
+use CraftCms\Cms\Field\Events\LinkTypesResolving;
 use Illuminate\Support\Facades\Event;
 
 /**
@@ -32,7 +32,7 @@ class Link extends \CraftCms\Cms\Field\Link
 
     public static function registerEvents(): void
     {
-        Event::listen(function(RegisterLinkTypes $event) {
+        Event::listen(function(LinkTypesResolving $event) {
             if (!YiiEvent::hasHandlers(self::class, self::EVENT_REGISTER_LINK_TYPES)) {
                 return;
             }
