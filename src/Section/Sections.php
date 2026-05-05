@@ -23,11 +23,11 @@ use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\Section\Events\SavingSection;
 use CraftCms\Cms\Section\Events\SectionDeleted;
 use CraftCms\Cms\Section\Events\SectionDeleting;
 use CraftCms\Cms\Section\Events\SectionDeletionApplying;
 use CraftCms\Cms\Section\Events\SectionSaved;
+use CraftCms\Cms\Section\Events\SectionSaving;
 use CraftCms\Cms\Section\Exceptions\SectionNotFoundException;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Section\Models\SectionSiteSettings as SectionSiteSettingsModel;
@@ -444,7 +444,7 @@ class Sections
     {
         $isNewSection = ! $section->id;
 
-        event(new SavingSection($section, $isNewSection));
+        event(new SectionSaving($section, $isNewSection));
 
         if ($runValidation && ! $section->validate()) {
             Log::info('Section not saved due to validation error.', [__METHOD__]);
