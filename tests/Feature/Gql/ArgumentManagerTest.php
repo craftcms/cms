@@ -8,7 +8,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Gql\ArgumentManager;
 use CraftCms\Cms\Gql\Contracts\ArgumentHandlerInterface;
 use CraftCms\Cms\Gql\Data\GqlSchema;
-use CraftCms\Cms\Gql\Events\RegisterGqlArgumentHandlers;
+use CraftCms\Cms\Gql\Events\GqlArgumentHandlersResolving;
 use CraftCms\Cms\Gql\Events\RegisterGqlQueries;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\Handlers\RelatedAssets;
@@ -61,7 +61,7 @@ it('registers custom argument handlers for gql execution', function () {
         public function setArgumentManager(ArgumentManager $argumentManager): void {}
     };
 
-    Event::listen(RegisterGqlArgumentHandlers::class, function (RegisterGqlArgumentHandlers $event) use ($handler) {
+    Event::listen(GqlArgumentHandlersResolving::class, function (GqlArgumentHandlersResolving $event) use ($handler) {
         $event->handlers['initial'] = $handler;
     });
 

@@ -17,9 +17,9 @@ use craft\gql\ElementQueryConditionBuilder as LegacyElementQueryConditionBuilder
 use craft\gql\TypeManager as LegacyTypeManager;
 use CraftCms\Cms\Gql\Events\ElementPopulated;
 use CraftCms\Cms\Gql\Events\ElementPopulating;
+use CraftCms\Cms\Gql\Events\GqlArgumentHandlersResolving;
 use CraftCms\Cms\Gql\Events\GqlArgumentsResolving;
 use CraftCms\Cms\Gql\Events\GqlTypeFieldsResolving;
-use CraftCms\Cms\Gql\Events\RegisterGqlArgumentHandlers;
 use CraftCms\Cms\Gql\Events\RegisterGqlEagerLoadableFields;
 use Illuminate\Support\Facades\Event;
 
@@ -40,7 +40,7 @@ class LegacyGqlEvents
             $event->fields = $yiiEvent->fields;
         });
 
-        Event::listen(RegisterGqlArgumentHandlers::class, function(RegisterGqlArgumentHandlers $event) {
+        Event::listen(GqlArgumentHandlersResolving::class, function(GqlArgumentHandlersResolving $event) {
             if (!YiiEvent::hasHandlers(LegacyArgumentManager::class, LegacyArgumentManager::EVENT_DEFINE_GQL_ARGUMENT_HANDLERS)) {
                 return;
             }
