@@ -1,6 +1,8 @@
 import {usePage} from '@inertiajs/vue3';
 
 export interface CraftData {
+  csrfTokenValue: string;
+  csrfTokenName: string;
   system: {
     name: string;
     icon: string | null;

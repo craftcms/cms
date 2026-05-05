@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use CraftCms\Cms\Database\Backups;
+use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\DbBackup;
-use Exception;
 use Illuminate\Http\Request;
 use Throwable;
 
@@ -16,6 +16,8 @@ use function CraftCms\Cms\t;
 
 readonly class DbBackupController
 {
+    use RespondsWithFlash;
+
     public function __construct(Utilities $utilitiesService)
     {
         if (! $utilitiesService->checkAuthorization(DbBackup::class)) {
@@ -28,11 +30,11 @@ readonly class DbBackupController
         try {
             $backupPath = $backups->backup();
         } catch (Throwable $e) {
-            throw new Exception('Could not create backup: '.$e->getMessage());
+            return $this->asFailure(t('Could not create backup: '.$e->getMessage()));
         }
 
         if (! is_file($backupPath)) {
-            throw new Exception("Could not create backup: the backup file doesn't exist.");
+            return $this->asFailure(t('Could not create backup: the backup file doesn\'t exist.'));
         }
 
         // Zip it up and delete the SQL file
@@ -40,8 +42,8 @@ readonly class DbBackupController
 
         File::delete($backupPath);
 
-        if (! $request->input('downloadBackup')) {
-            return back()->with('success', t('Backup created.'));
+        if (! $request->boolean('downloadBackup')) {
+            return $this->asSuccess(t('Backup created.'));
         }
 
         return response()->download($zipPath);
