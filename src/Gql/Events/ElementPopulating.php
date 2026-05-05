@@ -8,9 +8,9 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Gql\Resolvers\ElementMutationResolver;
 
 /**
- * @event BeforePopulateElement The event that is triggered before GraphQL mutation arguments are applied to an element.
+ * @event ElementPopulating The event that is triggered before GraphQL mutation arguments are applied to an element.
  */
-class BeforePopulateElement
+class ElementPopulating
 {
     public function __construct(
         /** @var class-string<ElementMutationResolver> */

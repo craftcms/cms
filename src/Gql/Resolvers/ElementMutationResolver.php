@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Gql\Resolvers;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Validation\ElementRules;
-use CraftCms\Cms\Gql\Events\BeforePopulateElement;
 use CraftCms\Cms\Gql\Events\ElementPopulated;
+use CraftCms\Cms\Gql\Events\ElementPopulating;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Support\Facades\Elements;
 use GraphQL\Error\UserError;
@@ -60,7 +60,7 @@ abstract class ElementMutationResolver extends MutationResolver
         }
 
         // Fire a 'beforeMutationPopulateElement' event
-        event($event = new BeforePopulateElement(
+        event($event = new ElementPopulating(
             resolverClass: static::class,
             arguments: $arguments,
             element: $element,
