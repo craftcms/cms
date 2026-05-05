@@ -22,7 +22,6 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Events\BeforeFieldElementRestore;
 use CraftCms\Cms\Field\Events\BeforeFieldElementSave;
 use CraftCms\Cms\Field\Events\BeforeFieldSave;
 use CraftCms\Cms\Field\Events\DefineFieldActionMenuItems;
@@ -33,6 +32,7 @@ use CraftCms\Cms\Field\Events\FieldElementDeleted;
 use CraftCms\Cms\Field\Events\FieldElementDeleting;
 use CraftCms\Cms\Field\Events\FieldElementPropagated;
 use CraftCms\Cms\Field\Events\FieldElementRestored;
+use CraftCms\Cms\Field\Events\FieldElementRestoring;
 use CraftCms\Cms\Field\Events\FieldElementSaved;
 use CraftCms\Cms\Field\Events\FieldLifecycleDeleted;
 use CraftCms\Cms\Field\Events\FieldLifecycleDeleting;
@@ -1075,7 +1075,7 @@ JS, [
 
     public function beforeElementRestore(ElementInterface $element): bool
     {
-        event($event = new BeforeFieldElementRestore(
+        event($event = new FieldElementRestoring(
             field: $this,
             element: $element,
         ));
