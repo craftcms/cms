@@ -7,11 +7,11 @@ namespace CraftCms\Cms\Entry\Events;
 use CraftCms\Cms\Entry\Elements\Entry;
 
 /**
- * @event DefineMetaFields The event that is triggered when defining the meta fields.
+ * @event EntryMetaFieldsResolving The event that is triggered when defining the meta fields.
  *
  * @see Entry::metaFieldsHtml()
  */
-class DefineMetaFields
+class EntryMetaFieldsResolving
 {
     public function __construct(
         public Entry $entry,

@@ -16,7 +16,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.9.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Entry\Events\DefineMetaFields} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Entry\Events\EntryMetaFieldsResolving} instead.
  */
 
 class DefineMetaFields extends Event
