@@ -5,9 +5,9 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
-use CraftCms\Cms\Search\Events\BeforeIndexKeywords;
 use CraftCms\Cms\Search\Events\BeforeScoreResults;
 use CraftCms\Cms\Search\Events\BeforeSearch;
+use CraftCms\Cms\Search\Events\KeywordsIndexing;
 use CraftCms\Cms\Search\Events\SearchPerformed;
 use CraftCms\Cms\Search\Jobs\UpdateSearchIndex;
 use CraftCms\Cms\Search\SearchQuery;
@@ -77,16 +77,16 @@ describe('indexElementAttributes', function () {
         expect($keywords)->not->toContain('original title');
     });
 
-    test('fires BeforeIndexKeywords event', function () {
-        Event::fake([BeforeIndexKeywords::class]);
+    test('fires KeywordsIndexing event', function () {
+        Event::fake([KeywordsIndexing::class]);
 
         createIndexedEntry('Test Entry');
 
-        Event::assertDispatched(BeforeIndexKeywords::class);
+        Event::assertDispatched(KeywordsIndexing::class);
     });
 
-    test('BeforeIndexKeywords event can cancel indexing', function () {
-        Event::listen(function (BeforeIndexKeywords $event) {
+    test('KeywordsIndexing event can cancel indexing', function () {
+        Event::listen(function (KeywordsIndexing $event) {
             if ($event->attribute === 'title') {
                 $event->isValid = false;
             }
@@ -101,8 +101,8 @@ describe('indexElementAttributes', function () {
         )->toBeFalse();
     });
 
-    test('BeforeIndexKeywords event can modify keywords', function () {
-        Event::listen(function (BeforeIndexKeywords $event) {
+    test('KeywordsIndexing event can modify keywords', function () {
+        Event::listen(function (KeywordsIndexing $event) {
             if ($event->attribute === 'title') {
                 $event->keywords = 'custom keywords';
             }

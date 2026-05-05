@@ -17,9 +17,9 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Search\Events\BeforeIndexKeywords;
 use CraftCms\Cms\Search\Events\BeforeScoreResults;
 use CraftCms\Cms\Search\Events\BeforeSearch;
+use CraftCms\Cms\Search\Events\KeywordsIndexing;
 use CraftCms\Cms\Search\Events\SearchPerformed;
 use CraftCms\Cms\Search\Search as LaravelSearch;
 use CraftCms\Cms\Search\SearchQuery;
@@ -293,7 +293,7 @@ class Search extends Component
 
     public static function registerEvents(): void
     {
-        Event::listen(BeforeIndexKeywords::class, function(BeforeIndexKeywords $event) {
+        Event::listen(KeywordsIndexing::class, function(KeywordsIndexing $event) {
             if (Craft::$app->getSearch()->hasEventHandlers(self::EVENT_BEFORE_INDEX_KEYWORDS)) {
                 $yiiEvent = new IndexKeywordsEvent([
                     'element' => $event->element,

@@ -872,7 +872,7 @@ Moved the following controllers:
   - `craft\services\Search::EVENT_BEFORE_SEARCH` => `CraftCms\Cms\Search\Events\BeforeSearch`
   - `craft\services\Search::EVENT_AFTER_SEARCH` => `CraftCms\Cms\Search\Events\SearchPerformed`
   - `craft\services\Search::EVENT_BEFORE_SCORE_RESULTS` => `CraftCms\Cms\Search\Events\BeforeScoreResults`
-- Deprecated `craft\events\IndexKeywordsEvent`. `CraftCms\Cms\Search\Events\BeforeIndexKeywords` should be used instead.
+- Deprecated `craft\events\IndexKeywordsEvent`. `CraftCms\Cms\Search\Events\KeywordsIndexing` should be used instead.
 
 ## Sections
 

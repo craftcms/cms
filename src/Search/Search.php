@@ -11,9 +11,9 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Search\Events\BeforeIndexKeywords;
 use CraftCms\Cms\Search\Events\BeforeScoreResults;
 use CraftCms\Cms\Search\Events\BeforeSearch;
+use CraftCms\Cms\Search\Events\KeywordsIndexing;
 use CraftCms\Cms\Search\Events\SearchPerformed;
 use CraftCms\Cms\Search\Jobs\UpdateSearchIndex;
 use CraftCms\Cms\Support\Arr;
@@ -460,7 +460,7 @@ class Search
         $site = $element->getSite();
         $keywords = SearchHelper::normalizeKeywords($keywords, [], true, $site->getLanguage());
 
-        $event = new BeforeIndexKeywords($element, $attribute, $fieldId, $keywords);
+        $event = new KeywordsIndexing($element, $attribute, $fieldId, $keywords);
         event($event);
 
         if (! $event->isValid) {
