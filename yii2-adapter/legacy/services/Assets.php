@@ -23,7 +23,7 @@ use CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Asset\Events\AfterReplaceAsset;
+use CraftCms\Cms\Asset\Events\AssetReplaced;
 use CraftCms\Cms\Asset\Events\BeforeReplaceAsset;
 use CraftCms\Cms\Asset\Events\DefineThumbUrl;
 use CraftCms\Cms\Asset\Events\RegisterPreviewHandler;
@@ -309,7 +309,7 @@ class Assets extends Component
             $event->filename = $yiiEvent->filename;
         });
 
-        EventFacade::listen(AfterReplaceAsset::class, function(AfterReplaceAsset $event) {
+        EventFacade::listen(AssetReplaced::class, function(AssetReplaced $event) {
             if (!Craft::$app->getAssets()->hasEventHandlers(self::EVENT_AFTER_REPLACE_ASSET)) {
                 return;
             }

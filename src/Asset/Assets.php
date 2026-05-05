@@ -8,7 +8,7 @@ use CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
-use CraftCms\Cms\Asset\Events\AfterReplaceAsset;
+use CraftCms\Cms\Asset\Events\AssetReplaced;
 use CraftCms\Cms\Asset\Events\BeforeReplaceAsset;
 use CraftCms\Cms\Asset\Events\DefineThumbUrl;
 use CraftCms\Cms\Asset\Events\RegisterPreviewHandler;
@@ -99,7 +99,7 @@ class Assets
         $asset->ruleset->useScenario(AssetRules::SCENARIO_REPLACE);
         $this->elements->saveElement($asset);
 
-        event(new AfterReplaceAsset(
+        event(new AssetReplaced(
             asset: $asset,
             filename: $filename,
         ));

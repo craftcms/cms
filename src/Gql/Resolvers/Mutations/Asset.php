@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Gql\Resolvers\Mutations;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
-use CraftCms\Cms\Asset\Events\AfterReplaceAsset;
+use CraftCms\Cms\Asset\Events\AssetReplaced;
 use CraftCms\Cms\Asset\Events\BeforeReplaceAsset;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Validation\AssetRules;
@@ -115,7 +115,7 @@ class Asset extends ElementMutationResolver
         $asset = $this->saveElement($asset);
 
         if ($triggerReplaceEvents) {
-            event(new AfterReplaceAsset(
+            event(new AssetReplaced(
                 asset: $asset,
                 filename: $this->filename,
             ));

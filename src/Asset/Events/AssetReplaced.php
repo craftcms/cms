@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Asset\Events;
 use CraftCms\Cms\Asset\Elements\Asset;
 
 /**
- * @event AfterReplaceAsset The event that is triggered after an asset's file is replaced.
+ * @event AssetReplaced The event that is triggered after an asset's file is replaced.
  */
-class AfterReplaceAsset
+class AssetReplaced
 {
     public function __construct(
         public Asset $asset,
