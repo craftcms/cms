@@ -10,7 +10,7 @@ use CraftCms\Cms\Element\Actions\Edit;
 use CraftCms\Cms\Element\Actions\SetStatus;
 use CraftCms\Cms\Element\Actions\View as ViewAction;
 use CraftCms\Cms\Element\Contracts\DeleteActionInterface;
-use CraftCms\Cms\Element\Events\RegisterActions;
+use CraftCms\Cms\Element\Events\ElementActionsResolving;
 use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
@@ -77,7 +77,7 @@ trait HasActions
             $actions->push(Delete::class);
         }
 
-        event($event = new RegisterActions(
+        event($event = new ElementActionsResolving(
             elementType: static::class,
             source: $source,
             actions: $actions->all(),

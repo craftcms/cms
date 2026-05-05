@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Element\Events;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
- * RegisterActions event is triggered when registering the available bulk actions for an element type.
+ * ElementActionsResolving event is triggered when registering the available bulk actions for an element type.
  */
-class RegisterActions
+class ElementActionsResolving
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class
