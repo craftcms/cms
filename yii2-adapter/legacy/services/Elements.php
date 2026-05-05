@@ -39,7 +39,6 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
-use CraftCms\Cms\Element\Events\BeforeSaveElement;
 use CraftCms\Cms\Element\Events\BeforeUpdateSearchIndex;
 use CraftCms\Cms\Element\Events\BeforeUpdateSlugAndUri;
 use CraftCms\Cms\Element\Events\CanonicalChangesMerged;
@@ -57,6 +56,7 @@ use CraftCms\Cms\Element\Events\ElementResaving;
 use CraftCms\Cms\Element\Events\ElementRestored;
 use CraftCms\Cms\Element\Events\ElementRestoring;
 use CraftCms\Cms\Element\Events\ElementSaved;
+use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Element\Events\ElementsEagerLoading;
 use CraftCms\Cms\Element\Events\ElementSlugAndUriUpdated;
 use CraftCms\Cms\Element\Events\ElementsMerged;
@@ -1766,7 +1766,7 @@ class Elements extends Component
         });
 
         $elementEvents = [
-            BeforeSaveElement::class => self::EVENT_BEFORE_SAVE_ELEMENT,
+            ElementSaving::class => self::EVENT_BEFORE_SAVE_ELEMENT,
             ElementSaved::class => self::EVENT_AFTER_SAVE_ELEMENT,
             BeforeUpdateSearchIndex::class => self::EVENT_BEFORE_UPDATE_SEARCH_INDEX,
             SetElementUri::class => self::EVENT_SET_ELEMENT_URI,

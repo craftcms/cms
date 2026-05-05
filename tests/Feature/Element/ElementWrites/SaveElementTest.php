@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Element\Events\BeforeSaveElement;
 use CraftCms\Cms\Element\Events\BeforeUpdateSearchIndex;
 use CraftCms\Cms\Element\Events\ElementSaved;
+use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Operations\ElementWrites;
 use CraftCms\Cms\Element\Queries\ElementQuery;
@@ -161,12 +161,12 @@ function createEntryWithPlainTextField(array $entryAttributes = []): array
     return [$entry, $field, $fieldLayout];
 }
 
-it('returns false when BeforeSaveElement vetoes the save', function () {
+it('returns false when ElementSaving vetoes the save', function () {
     $element = new TestSaveElementActionElement;
     $element->siteId = Sites::getPrimarySite()->id;
     $element->title = 'Blocked element';
 
-    Event::listen(function (BeforeSaveElement $event) use ($element) {
+    Event::listen(function (ElementSaving $event) use ($element) {
         if ($event->element !== $element) {
             return;
         }

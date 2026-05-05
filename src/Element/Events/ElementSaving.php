@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Element\Events;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
-class BeforeSaveElement
+class ElementSaving
 {
     use ValidatableEvent;
 
