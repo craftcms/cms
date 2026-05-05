@@ -8,20 +8,20 @@ use CraftCms\Cms\View\Contracts\CacheCollectorInterface;
 use Illuminate\Support\Collection;
 
 /**
- * @event RegisterTemplateCacheCollectors The event that is triggered when registering template cache collectors.
+ * @event TemplateCacheCollectorsResolving The event that is triggered when registering template cache collectors.
  *
  * CacheCollectors must implement {@see CacheCollectorInterface}.
  * ---
  * ```php
- * use CraftCms\Cms\View\Events\RegisterTemplateCacheCollectors;
+ * use CraftCms\Cms\View\Events\TemplateCacheCollectorsResolving;
  * use Illuminate\Support\Facades\Event;
  *
- * Event::listen(RegisterTemplateCacheCollectors::class, function(RegisterTemplateCacheCollectors $event) {
+ * Event::listen(TemplateCacheCollectorsResolving::class, function(TemplateCacheCollectorsResolving $event) {
  *     $event->types->add(MyCollector::class);
  * });
  * ```
  */
-class RegisterTemplateCacheCollectors
+class TemplateCacheCollectorsResolving
 {
     /**
      * @param  Collection<class-string<CacheCollectorInterface>>  $types

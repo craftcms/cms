@@ -7,7 +7,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use CraftCms\Cms\View\Contracts\CacheCollectorInterface;
 use CraftCms\Cms\View\Data\TemplateCacheContext;
-use CraftCms\Cms\View\Events\RegisterTemplateCacheCollectors;
+use CraftCms\Cms\View\Events\TemplateCacheCollectorsResolving;
 use CraftCms\Cms\View\TemplateCaches;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
@@ -53,15 +53,15 @@ beforeEach(function () {
 });
 
 it('dispatches the collector registration event', function () {
-    Event::fake(RegisterTemplateCacheCollectors::class);
+    Event::fake(TemplateCacheCollectorsResolving::class);
 
     app(TemplateCaches::class)->startTemplateCache(global: true);
 
-    Event::assertDispatched(RegisterTemplateCacheCollectors::class);
+    Event::assertDispatched(TemplateCacheCollectorsResolving::class);
 });
 
 it('runs event-registered collectors', function () {
-    Event::listen(RegisterTemplateCacheCollectors::class, function (RegisterTemplateCacheCollectors $event) {
+    Event::listen(TemplateCacheCollectorsResolving::class, function (TemplateCacheCollectorsResolving $event) {
         if ($event->types->doesntContain(TestTemplateCacheCollector::class)) {
             $event->types->add(TestTemplateCacheCollector::class);
         }
