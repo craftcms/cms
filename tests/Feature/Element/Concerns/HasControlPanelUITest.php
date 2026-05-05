@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Element\Events\DefineAdditionalButtons;
 use CraftCms\Cms\Element\Events\DefineAltActions;
 use CraftCms\Cms\Element\Events\DefineAttributeHtml;
 use CraftCms\Cms\Element\Events\DefineInlineAttributeInputHtml;
 use CraftCms\Cms\Element\Events\DefineMetadata;
 use CraftCms\Cms\Element\Events\DefineSidebarHtml;
 use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
+use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
 use CraftCms\Cms\Element\Events\RegisterHtmlAttributes;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -56,11 +56,11 @@ describe('getAdditionalButtons', function () {
         expect((string) $this->entry->getAdditionalButtons())->toBe('');
     });
 
-    test('triggers DefineAdditionalButtons event', function () {
+    test('triggers ElementAdditionalButtonsResolving event', function () {
         $eventTriggered = false;
         $customHtml = '<button>Custom Button</button>';
 
-        Event::listen(function (DefineAdditionalButtons $event) use (&$eventTriggered, $customHtml) {
+        Event::listen(function (ElementAdditionalButtonsResolving $event) use (&$eventTriggered, $customHtml) {
             $eventTriggered = true;
             $event->html = $customHtml;
         });
