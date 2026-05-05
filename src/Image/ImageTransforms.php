@@ -14,11 +14,11 @@ use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Image\Events\ImageTransformersResolving;
-use CraftCms\Cms\Image\Events\SavingTransform;
 use CraftCms\Cms\Image\Events\TransformDeleted;
 use CraftCms\Cms\Image\Events\TransformDeleting;
 use CraftCms\Cms\Image\Events\TransformDeletionApplying;
 use CraftCms\Cms\Image\Events\TransformSaved;
+use CraftCms\Cms\Image\Events\TransformSaving;
 use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -77,7 +77,7 @@ class ImageTransforms
     {
         $isNewTransform = ! $transform->id;
 
-        event(new SavingTransform(
+        event(new TransformSaving(
             transform: $transform,
             isNew: $isNewTransform,
         ));

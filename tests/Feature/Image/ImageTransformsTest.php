@@ -7,11 +7,11 @@ use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Events\ImageTransformersResolving;
-use CraftCms\Cms\Image\Events\SavingTransform;
 use CraftCms\Cms\Image\Events\TransformDeleted;
 use CraftCms\Cms\Image\Events\TransformDeleting;
 use CraftCms\Cms\Image\Events\TransformDeletionApplying;
 use CraftCms\Cms\Image\Events\TransformSaved;
+use CraftCms\Cms\Image\Events\TransformSaving;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
@@ -144,8 +144,8 @@ describe('getTransformByUid', function () {
 
 describe('saveTransform', function () {
     it('saves a new transform', function () {
-        Event::fake([SavingTransform::class, TransformSaved::class]);
-        Event::listen(SavingTransform::class, fn () => null);
+        Event::fake([TransformSaving::class, TransformSaved::class]);
+        Event::listen(TransformSaving::class, fn () => null);
         Event::listen(TransformSaved::class, fn () => null);
 
         expect(ImageTransformModel::count())->toBe(0);
@@ -171,7 +171,7 @@ describe('saveTransform', function () {
                 ->and($model->mode)->toBe('crop');
         });
 
-        Event::assertDispatchedOnce(SavingTransform::class);
+        Event::assertDispatchedOnce(TransformSaving::class);
         Event::assertDispatchedOnce(TransformSaved::class);
     });
 
@@ -247,9 +247,9 @@ describe('saveTransform', function () {
             ->and(ImageTransformModel::count())->toBe(1);
     });
 
-    it('fires SavingTransform with isNew true for new transforms', function () {
-        Event::fake([SavingTransform::class, TransformSaved::class]);
-        Event::listen(SavingTransform::class, fn () => null);
+    it('fires TransformSaving with isNew true for new transforms', function () {
+        Event::fake([TransformSaving::class, TransformSaved::class]);
+        Event::listen(TransformSaving::class, fn () => null);
         Event::listen(TransformSaved::class, fn () => null);
 
         $this->service->saveTransform(new ImageTransform([
@@ -257,12 +257,12 @@ describe('saveTransform', function () {
             'handle' => 'test',
         ]));
 
-        Event::assertDispatchedOnce(SavingTransform::class);
+        Event::assertDispatchedOnce(TransformSaving::class);
     });
 
     it('fires TransformSaved with isNew true for new transforms', function () {
-        Event::fake([SavingTransform::class, TransformSaved::class]);
-        Event::listen(SavingTransform::class, fn () => null);
+        Event::fake([TransformSaving::class, TransformSaved::class]);
+        Event::listen(TransformSaving::class, fn () => null);
         Event::listen(TransformSaved::class, fn () => null);
 
         $this->service->saveTransform(new ImageTransform([
@@ -281,8 +281,8 @@ describe('saveTransform', function () {
 
         $this->service->reset();
 
-        Event::fake([SavingTransform::class, TransformSaved::class]);
-        Event::listen(SavingTransform::class, fn () => null);
+        Event::fake([TransformSaving::class, TransformSaved::class]);
+        Event::listen(TransformSaving::class, fn () => null);
         Event::listen(TransformSaved::class, fn () => null);
 
         $transform = $this->service->getTransformByHandle('test');
