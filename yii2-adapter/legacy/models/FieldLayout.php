@@ -10,10 +10,10 @@ use craft\events\DefineFieldLayoutCustomFieldsEvent;
 use craft\events\DefineFieldLayoutElementsEvent;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\FieldLayout\Events\DefineNativeFields;
 use CraftCms\Cms\FieldLayout\Events\DefineUIElements;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutCustomFieldsResolving;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormCreating;
+use CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use Deprecated;
@@ -150,7 +150,7 @@ class FieldLayout extends \CraftCms\Cms\FieldLayout\FieldLayout
             }
         });
 
-        Event::listen(function(DefineNativeFields $event) {
+        Event::listen(function(NativeFieldsResolving $event) {
             if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_NATIVE_FIELDS)) {
                 $yiiEvent = new DefineFieldLayoutFieldsEvent(['fields' => $event->fields]);
                 $yiiEvent->sender = $event->fieldLayout;

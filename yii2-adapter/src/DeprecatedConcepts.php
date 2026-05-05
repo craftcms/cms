@@ -57,7 +57,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Jobs\PropagateElements;
 use CraftCms\Cms\Field\Events\FieldTypesResolving;
 use CraftCms\Cms\Field\Events\LinkTypesResolving;
-use CraftCms\Cms\FieldLayout\Events\DefineNativeFields;
+use CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving;
 use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
@@ -524,7 +524,7 @@ class DeprecatedConcepts
         // Legacy `view` global remains available through the adapter layer only.
         Twig::registerExtension(new Extension());
 
-        Event::listen(function(DefineNativeFields $event) {
+        Event::listen(function(NativeFieldsResolving $event) {
             switch ($event->fieldLayout->type) {
                 case Category::class:
                 case Tag::class:

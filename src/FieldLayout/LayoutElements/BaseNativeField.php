@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\FieldLayout\Events\DefineNativeFields;
+use CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving;
 use CraftCms\Cms\Support\Arr;
 use Override;
 
 /**
  * BaseNativeField is the base class for native fields that can be included in field layouts.
  *
- * Native fields can be registered using {@see DefineNativeFields}.
+ * Native fields can be registered using {@see NativeFieldsResolving}.
  */
 abstract class BaseNativeField extends BaseField
 {

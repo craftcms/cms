@@ -8,17 +8,17 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 
 /**
- * @event DefineNativeFields The event that is triggered when defining the native (not custom) fields for the layout.
+ * @event NativeFieldsResolving The event that is triggered when defining the native (not custom) fields for the layout.
  *
- * Note that fields set on [[DefineNativeFields::$fields]] will be grouped by field group, indexed by the group names.
+ * Note that fields set on [[NativeFieldsResolving::$fields]] will be grouped by field group, indexed by the group names.
  *
  * ```php
  * use CraftCms\Cms\FieldLayout\FieldLayout;
- * use CraftCms\Cms\FieldLayout\FieldLayout\Events\DefineNativeFields;
+ * use CraftCms\Cms\FieldLayout\FieldLayout\Events\NativeFieldsResolving;
  * use CraftCms\Cms\Field\PlainText;
  * use Illuminate\Support\Facades\Event;
  *
- * Event::listen(function (DefineNativeFields $event) {
+ * Event::listen(function (NativeFieldsResolving $event) {
  *     $layout = $event->fieldLayout;
  *
  *     if ($layout->type === MyElementType::class) {
@@ -29,7 +29,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
  *
  * @see FieldLayout::getAvailableNativeFields()
  */
-class DefineNativeFields
+class NativeFieldsResolving
 {
     public function __construct(
         public FieldLayout $fieldLayout,
