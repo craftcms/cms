@@ -8,7 +8,7 @@ use CraftCms\Cms\Utility\Utility;
 use Illuminate\Support\Collection;
 
 /**
- * @event RegisterUtilities The event that is triggered when registering utilities.
+ * @event UtilitiesResolving The event that is triggered when registering utilities.
  *
  * Utilities must extend {@see Utility}.
  *
@@ -16,14 +16,14 @@ use Illuminate\Support\Collection;
  * ---
  * ```php
  * use Illuminate\Support\Facades\Event;
- * use CraftCms\Cms\Utility\Events\RegisterUtilities;
+ * use CraftCms\Cms\Utility\Events\UtilitiesResolving;
  *
- * Event::listen(RegisterUtilities::class, function(RegisterUtilities $event) {
+ * Event::listen(UtilitiesResolving::class, function(UtilitiesResolving $event) {
  *     $event->types[] = MyUtilityType::class;
  * });
  * ```
  */
-class RegisterUtilities
+class UtilitiesResolving
 {
     public function __construct(
         public Collection $types,

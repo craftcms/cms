@@ -11,7 +11,7 @@ use Craft;
 use craft\base\Component;
 use craft\base\Event;
 use craft\events\RegisterComponentTypesEvent;
-use CraftCms\Cms\Utility\Events\RegisterUtilities;
+use CraftCms\Cms\Utility\Events\UtilitiesResolving;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event as EventFacade;
 
@@ -97,7 +97,7 @@ class Utilities extends Component
 
     public static function registerEvents(): void
     {
-        EventFacade::listen(RegisterUtilities::class, function(RegisterUtilities $event) {
+        EventFacade::listen(UtilitiesResolving::class, function(UtilitiesResolving $event) {
             $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->types->all()]);
 
             Craft::$app->getUtilities()->trigger(self::EVENT_REGISTER_UTILITIES, $yiiEvent);
