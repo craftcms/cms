@@ -11,11 +11,11 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
-use CraftCms\Cms\Plugin\Events\DisablingPlugin;
 use CraftCms\Cms\Plugin\Events\EnablingPlugin;
 use CraftCms\Cms\Plugin\Events\InstallingPlugin;
 use CraftCms\Cms\Plugin\Events\LoadingPlugins;
 use CraftCms\Cms\Plugin\Events\PluginDisabled;
+use CraftCms\Cms\Plugin\Events\PluginDisabling;
 use CraftCms\Cms\Plugin\Events\PluginEnabled;
 use CraftCms\Cms\Plugin\Events\PluginInstalled;
 use CraftCms\Cms\Plugin\Events\PluginRegistered;
@@ -395,7 +395,7 @@ class Plugins
             throw new InvalidPluginException($handle);
         }
 
-        event(new DisablingPlugin($plugin));
+        event(new PluginDisabling($plugin));
 
         // Disable the plugin in the project config
         app(ProjectConfig::class)->set(

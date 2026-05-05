@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Concerns;
 
-use CraftCms\Cms\Plugin\Events\DisablingPlugin;
 use CraftCms\Cms\Plugin\Events\EnablingPlugin;
+use CraftCms\Cms\Plugin\Events\PluginDisabling;
 use CraftCms\Cms\Plugin\Events\PluginEvent;
 use CraftCms\Cms\Plugin\Events\UninstallingPlugin;
 use CraftCms\Cms\Plugin\Plugin;
@@ -46,7 +46,7 @@ trait PublishesFiles
             }
         });
 
-        Event::listen([DisablingPlugin::class, UninstallingPlugin::class], function (PluginEvent $event) {
+        Event::listen([PluginDisabling::class, UninstallingPlugin::class], function (PluginEvent $event) {
             if (! $event->plugin instanceof static) {
                 return;
             }

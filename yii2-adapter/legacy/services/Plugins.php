@@ -10,11 +10,11 @@ namespace craft\services;
 use Craft;
 use craft\events\PluginEvent;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
-use CraftCms\Cms\Plugin\Events\DisablingPlugin;
 use CraftCms\Cms\Plugin\Events\EnablingPlugin;
 use CraftCms\Cms\Plugin\Events\InstallingPlugin;
 use CraftCms\Cms\Plugin\Events\LoadingPlugins;
 use CraftCms\Cms\Plugin\Events\PluginDisabled;
+use CraftCms\Cms\Plugin\Events\PluginDisabling;
 use CraftCms\Cms\Plugin\Events\PluginEnabled;
 use CraftCms\Cms\Plugin\Events\PluginInstalled;
 use CraftCms\Cms\Plugin\Events\PluginRegistered;
@@ -518,8 +518,8 @@ class Plugins extends Component
         );
 
         Event::listen(
-            DisablingPlugin::class,
-            fn(DisablingPlugin $event) => $pluginService->trigger(self::EVENT_BEFORE_DISABLE_PLUGIN, new PluginEvent([
+            PluginDisabling::class,
+            fn(PluginDisabling $event) => $pluginService->trigger(self::EVENT_BEFORE_DISABLE_PLUGIN, new PluginEvent([
                 'plugin' => $event->plugin,
             ])),
         );
