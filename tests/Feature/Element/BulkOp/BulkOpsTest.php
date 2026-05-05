@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
-use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
 use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
+use CraftCms\Cms\Element\BulkOp\Events\BulkOpCompleted;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use Illuminate\Http\Request;
@@ -92,7 +92,7 @@ it('dispatches after event before cleaning up persisted rows', function () {
 
     $rowsVisibleDuringAfterEvent = null;
 
-    Event::listen(AfterBulkOp::class, function (AfterBulkOp $event) use (&$rowsVisibleDuringAfterEvent, $key) {
+    Event::listen(BulkOpCompleted::class, function (BulkOpCompleted $event) use (&$rowsVisibleDuringAfterEvent, $key) {
         if ($event->key !== $key) {
             return;
         }
@@ -113,7 +113,7 @@ it('dispatches after event before cleaning up persisted rows', function () {
 it('ensures a bulk op around a callback when none is active', function () {
     Event::fake([
         BeforeBulkOp::class,
-        AfterBulkOp::class,
+        BulkOpCompleted::class,
     ]);
 
     $key = $this->bulkOps->ensure(fn (): string => $this->bulkOps->activeKeys()[0]);
@@ -122,7 +122,7 @@ it('ensures a bulk op around a callback when none is active', function () {
         ->and($this->bulkOps->activeKeys())->toBe([]);
 
     Event::assertDispatched(fn (BeforeBulkOp $event): bool => $event->key === $key);
-    Event::assertDispatched(fn (AfterBulkOp $event): bool => $event->key === $key);
+    Event::assertDispatched(fn (BulkOpCompleted $event): bool => $event->key === $key);
 });
 
 it('reuses the outer bulk op for nested ensure calls', function () {
@@ -133,7 +133,7 @@ it('reuses the outer bulk op for nested ensure calls', function () {
         $startedKeys[] = $event->key;
     });
 
-    Event::listen(AfterBulkOp::class, function (AfterBulkOp $event) use (&$endedKeys) {
+    Event::listen(BulkOpCompleted::class, function (BulkOpCompleted $event) use (&$endedKeys) {
         $endedKeys[] = $event->key;
     });
 
@@ -162,7 +162,7 @@ it('reuses the outer bulk op for nested ensure calls', function () {
 it('cleans up the active key when ensure throws', function () {
     $endedKeys = [];
 
-    Event::listen(AfterBulkOp::class, function (AfterBulkOp $event) use (&$endedKeys) {
+    Event::listen(BulkOpCompleted::class, function (BulkOpCompleted $event) use (&$endedKeys) {
         $endedKeys[] = $event->key;
     });
 

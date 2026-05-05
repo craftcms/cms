@@ -24,8 +24,8 @@ use craft\events\MultiElementActionEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\models\ElementActivity;
 use CraftCms\Cms\Component\ComponentHelper;
-use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
 use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
+use CraftCms\Cms\Element\BulkOp\Events\BulkOpCompleted;
 use CraftCms\Cms\Element\Contracts\ElementActionInterface;
 use CraftCms\Cms\Element\Contracts\ElementExporterInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -1749,7 +1749,7 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(AfterBulkOp $event) {
+        Event::listen(function(BulkOpCompleted $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_BULK_OP)) {
                 return;
             }
