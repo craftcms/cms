@@ -36,7 +36,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\AssigningUserToDefaultGroups;
 use CraftCms\Cms\User\Events\AssigningUserToGroups;
 use CraftCms\Cms\User\Events\DeactivatingUser;
 use CraftCms\Cms\User\Events\DefineDefaultUserGroups;
@@ -50,6 +49,7 @@ use CraftCms\Cms\User\Events\UserActivating;
 use CraftCms\Cms\User\Events\UserAssignedToDefaultGroups;
 use CraftCms\Cms\User\Events\UserAssignedToGroups;
 use CraftCms\Cms\User\Events\UserDeactivated;
+use CraftCms\Cms\User\Events\UserDefaultGroupsAssigning;
 use CraftCms\Cms\User\Events\UserLocked;
 use CraftCms\Cms\User\Events\UserPhotoDeleted;
 use CraftCms\Cms\User\Events\UserPhotoSaved;
@@ -1132,7 +1132,7 @@ class Users
             return false;
         }
 
-        event($event = new AssigningUserToDefaultGroups($user, $groups));
+        event($event = new UserDefaultGroupsAssigning($user, $groups));
 
         if (! $event->isValid) {
             return false;

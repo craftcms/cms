@@ -25,7 +25,6 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Users as UsersFacade;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\AssigningUserToDefaultGroups;
 use CraftCms\Cms\User\Events\AssigningUserToGroups;
 use CraftCms\Cms\User\Events\DeactivatingUser;
 use CraftCms\Cms\User\Events\DefineDefaultUserGroups;
@@ -40,6 +39,7 @@ use CraftCms\Cms\User\Events\UserActivating;
 use CraftCms\Cms\User\Events\UserAssignedToDefaultGroups;
 use CraftCms\Cms\User\Events\UserAssignedToGroups;
 use CraftCms\Cms\User\Events\UserDeactivated;
+use CraftCms\Cms\User\Events\UserDefaultGroupsAssigning;
 use CraftCms\Cms\User\Events\UserLocked;
 use CraftCms\Cms\User\Events\UserPhotoDeleted;
 use CraftCms\Cms\User\Events\UserPhotoSaved;
@@ -945,7 +945,7 @@ class Users extends Component
             }
         });
 
-        Event::listen(AssigningUserToDefaultGroups::class, function(AssigningUserToDefaultGroups $event) {
+        Event::listen(UserDefaultGroupsAssigning::class, function(UserDefaultGroupsAssigning $event) {
             if (Craft::$app->getUsers()->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP)) {
                 $yiiEvent = new UserAssignGroupEvent([
                     'user' => $event->user,

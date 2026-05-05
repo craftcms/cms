@@ -9,11 +9,11 @@ use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 
 /**
- * @event AssigningUserToDefaultGroups The event that is triggered before a user is assigned to the default user group.
+ * @event UserDefaultGroupsAssigning The event that is triggered before a user is assigned to the default user group.
  *
  * You may set [[$isValid]] to `false` to prevent the user from getting assigned to the default user group.
  */
-class AssigningUserToDefaultGroups
+class UserDefaultGroupsAssigning
 {
     use ValidatableEvent;
 
