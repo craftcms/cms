@@ -12,7 +12,7 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
  * You may set [[$isValid]] to `false` to prevent the
  * element from getting moved.
  */
-class UpdatingElement extends UpdateElementEvent
+class StructureElementUpdating extends UpdateElementEvent
 {
     use ValidatableEvent;
 }
