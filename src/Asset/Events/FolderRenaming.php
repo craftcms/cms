@@ -8,9 +8,9 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
 /**
- * @event RenamingFolder The event that is triggered before a folder is renamed.
+ * @event FolderRenaming The event that is triggered before a folder is renamed.
  */
-class RenamingFolder
+class FolderRenaming
 {
     use ValidatableEvent;
 
