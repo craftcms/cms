@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Element\Events\AfterSaveElement;
 use CraftCms\Cms\Element\Events\BeforeSaveElement;
 use CraftCms\Cms\Element\Events\BeforeUpdateSearchIndex;
+use CraftCms\Cms\Element\Events\ElementSaved;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Operations\ElementWrites;
 use CraftCms\Cms\Element\Queries\ElementQuery;
@@ -175,7 +175,7 @@ it('returns false when BeforeSaveElement vetoes the save', function () {
     });
 
     $afterSaveTriggered = false;
-    Event::listen(function (AfterSaveElement $event) use ($element, &$afterSaveTriggered) {
+    Event::listen(function (ElementSaved $event) use ($element, &$afterSaveTriggered) {
         if ($event->element === $element) {
             $afterSaveTriggered = true;
         }
@@ -234,12 +234,12 @@ it('assigns a default title when validation is skipped and title is invalid', fu
         ->and($savedEntry->errors()->isEmpty())->toBeTrue();
 });
 
-it('returns false when validation fails and does not dispatch AfterSaveElement', function () {
+it('returns false when validation fails and does not dispatch ElementSaved', function () {
     $entry = EntryModel::factory()->createElement();
     $entry->title = str_repeat('a', 256);
 
     $afterSaveTriggered = false;
-    Event::listen(function (AfterSaveElement $event) use ($entry, &$afterSaveTriggered) {
+    Event::listen(function (ElementSaved $event) use ($entry, &$afterSaveTriggered) {
         if ($event->element->id === $entry->id) {
             $afterSaveTriggered = true;
         }
@@ -337,17 +337,17 @@ it('can cancel search index updates with BeforeUpdateSearchIndex', function () {
             ->exists())->toBeFalse();
 });
 
-it('fires AfterSaveElement and marks the element clean after a successful save', function () {
+it('fires ElementSaved and marks the element clean after a successful save', function () {
     $entry = EntryModel::factory()->createElement(['title' => 'Initial title']);
     $entry->title = 'Saved title';
 
-    Event::fake([AfterSaveElement::class]);
+    Event::fake([ElementSaved::class]);
 
     expect($this->writes->saveElement($entry, updateSearchIndex: false))->toBeTrue()
         ->and($entry->getDirtyAttributes())->toBeEmpty()
         ->and($entry->getDirtyFields())->toBeEmpty();
 
-    Event::assertDispatched(fn (AfterSaveElement $event): bool => $event->element->id === $entry->id && $event->isNew === false);
+    Event::assertDispatched(fn (ElementSaved $event): bool => $event->element->id === $entry->id && $event->isNew === false);
 });
 
 it('preserves the caller scenario after save', function (?string $scenario) {
