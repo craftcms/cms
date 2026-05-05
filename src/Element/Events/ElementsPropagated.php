@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Element\Events;
 
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
-class AfterPropagateElements
+class ElementsPropagated
 {
     public function __construct(
         public ElementQueryInterface $query,
