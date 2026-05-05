@@ -7,7 +7,7 @@ use CraftCms\Cms\Field\Color;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\CompatibleFieldTypesResolving;
-use CraftCms\Cms\Field\Events\RegisterFieldTypes;
+use CraftCms\Cms\Field\Events\FieldTypesResolving;
 use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
@@ -51,8 +51,8 @@ it('can add extra field types through an event', function () {
     class CustomField extends Field {}
 
     Event::listen(
-        RegisterFieldTypes::class,
-        fn (RegisterFieldTypes $event) => $event->types->add(CustomField::class),
+        FieldTypesResolving::class,
+        fn (FieldTypesResolving $event) => $event->types->add(CustomField::class),
     );
 
     expect($this->fields->getAllFieldTypes())->toContain(CustomField::class);
@@ -69,8 +69,8 @@ it('can get all field types that have content', function () {
     }
 
     Event::listen(
-        RegisterFieldTypes::class,
-        fn (RegisterFieldTypes $event) => $event->types->add(CustomFieldWithoutContent::class),
+        FieldTypesResolving::class,
+        fn (FieldTypesResolving $event) => $event->types->add(CustomFieldWithoutContent::class),
     );
 
     expect($this->fields->getFieldTypesWithContent())->toContain(PlainText::class);

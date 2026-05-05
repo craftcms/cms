@@ -27,7 +27,7 @@ use CraftCms\Cms\Field\Events\FieldLayoutSaving;
 use CraftCms\Cms\Field\Events\FieldSaveApplying;
 use CraftCms\Cms\Field\Events\FieldSaved;
 use CraftCms\Cms\Field\Events\FieldSaving;
-use CraftCms\Cms\Field\Events\RegisterFieldTypes;
+use CraftCms\Cms\Field\Events\FieldTypesResolving;
 use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
@@ -730,7 +730,7 @@ class Fields extends Component
 
     public static function registerEvents(): void
     {
-        Event::listen(function(RegisterFieldTypes $event) {
+        Event::listen(function(FieldTypesResolving $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_REGISTER_FIELD_TYPES)) {
                 $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->types->all()]);
                 Craft::$app->getFields()->trigger(self::EVENT_REGISTER_FIELD_TYPES, $yiiEvent);

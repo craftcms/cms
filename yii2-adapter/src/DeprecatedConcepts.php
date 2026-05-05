@@ -55,7 +55,7 @@ use craft\web\View;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Jobs\PropagateElements;
-use CraftCms\Cms\Field\Events\RegisterFieldTypes;
+use CraftCms\Cms\Field\Events\FieldTypesResolving;
 use CraftCms\Cms\Field\Events\RegisterLinkTypes;
 use CraftCms\Cms\FieldLayout\Events\DefineNativeFields;
 use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
@@ -135,7 +135,7 @@ class DeprecatedConcepts
 
     public function boot(): void
     {
-        Event::listen(RegisterFieldTypes::class, function(RegisterFieldTypes $event) {
+        Event::listen(FieldTypesResolving::class, function(FieldTypesResolving $event) {
             if (DeprecatedConcepts::supportsCategories()) {
                 $event->types->add(CategoriesField::class);
             }
