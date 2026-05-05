@@ -9,9 +9,9 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\SiteGroup;
 use CraftCms\Cms\Site\Events\DeletedSiteGroup;
-use CraftCms\Cms\Site\Events\DeletingSiteGroup;
 use CraftCms\Cms\Site\Events\SavedSiteGroup;
 use CraftCms\Cms\Site\Events\SavingSiteGroup;
+use CraftCms\Cms\Site\Events\SiteGroupDeleting;
 use CraftCms\Cms\Site\Events\SiteGroupDeletionApplying;
 use CraftCms\Cms\Site\Models\SiteGroup as SiteGroupModel;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -190,7 +190,7 @@ class SiteGroups
             return false;
         }
 
-        event(new DeletingSiteGroup($group));
+        event(new SiteGroupDeleting($group));
 
         $this->projectConfig->remove(
             path: ProjectConfig::PATH_SITE_GROUPS.'.'.$group->uid,

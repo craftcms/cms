@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Site\Events;
 use CraftCms\Cms\Site\Data\SiteGroup;
 
 /**
- * @event DeletingSiteGroup The event that is triggered before a site group is deleted.
+ * @event SiteGroupDeleting The event that is triggered before a site group is deleted.
  */
-class DeletingSiteGroup
+class SiteGroupDeleting
 {
     public function __construct(
         public SiteGroup $siteGroup,
