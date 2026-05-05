@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
-use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
 use CraftCms\Cms\Element\BulkOp\Events\BulkOpCompleted;
+use CraftCms\Cms\Element\BulkOp\Events\BulkOpStarting;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use Illuminate\Http\Request;
@@ -23,14 +23,14 @@ it('is scoped within a request', function () {
 });
 
 it('starts a bulk op and dispatches before event', function () {
-    Event::fake([BeforeBulkOp::class]);
+    Event::fake([BulkOpStarting::class]);
 
     $key = $this->bulkOps->start();
 
     expect($key)->toHaveLength(10)
         ->and($this->bulkOps->activeKeys())->toBe([$key]);
 
-    Event::assertDispatched(fn (BeforeBulkOp $event): bool => $event->key === $key);
+    Event::assertDispatched(fn (BulkOpStarting $event): bool => $event->key === $key);
 });
 
 it('can resume a supplied bulk op key', function () {
@@ -112,7 +112,7 @@ it('dispatches after event before cleaning up persisted rows', function () {
 
 it('ensures a bulk op around a callback when none is active', function () {
     Event::fake([
-        BeforeBulkOp::class,
+        BulkOpStarting::class,
         BulkOpCompleted::class,
     ]);
 
@@ -121,7 +121,7 @@ it('ensures a bulk op around a callback when none is active', function () {
     expect($key)->toHaveLength(10)
         ->and($this->bulkOps->activeKeys())->toBe([]);
 
-    Event::assertDispatched(fn (BeforeBulkOp $event): bool => $event->key === $key);
+    Event::assertDispatched(fn (BulkOpStarting $event): bool => $event->key === $key);
     Event::assertDispatched(fn (BulkOpCompleted $event): bool => $event->key === $key);
 });
 
@@ -129,7 +129,7 @@ it('reuses the outer bulk op for nested ensure calls', function () {
     $startedKeys = [];
     $endedKeys = [];
 
-    Event::listen(BeforeBulkOp::class, function (BeforeBulkOp $event) use (&$startedKeys) {
+    Event::listen(BulkOpStarting::class, function (BulkOpStarting $event) use (&$startedKeys) {
         $startedKeys[] = $event->key;
     });
 

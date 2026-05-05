@@ -24,8 +24,8 @@ use craft\events\MultiElementActionEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\models\ElementActivity;
 use CraftCms\Cms\Component\ComponentHelper;
-use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
 use CraftCms\Cms\Element\BulkOp\Events\BulkOpCompleted;
+use CraftCms\Cms\Element\BulkOp\Events\BulkOpStarting;
 use CraftCms\Cms\Element\Contracts\ElementActionInterface;
 use CraftCms\Cms\Element\Contracts\ElementExporterInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -1739,7 +1739,7 @@ class Elements extends Component
 
     public static function registerEvents(): void
     {
-        Event::listen(function(BeforeBulkOp $event) {
+        Event::listen(function(BulkOpStarting $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_BULK_OP)) {
                 return;
             }
