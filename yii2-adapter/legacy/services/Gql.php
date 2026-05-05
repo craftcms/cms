@@ -27,8 +27,8 @@ use CraftCms\Cms\Gql\Events\GqlMutationsResolving;
 use CraftCms\Cms\Gql\Events\GqlQueriesResolving;
 use CraftCms\Cms\Gql\Events\GqlQueryExecuting;
 use CraftCms\Cms\Gql\Events\GqlSchemaComponentsResolving;
+use CraftCms\Cms\Gql\Events\GqlTypesResolving;
 use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
-use CraftCms\Cms\Gql\Events\RegisterGqlTypes;
 use CraftCms\Cms\Gql\Gql as NewGql;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
@@ -285,7 +285,7 @@ class Gql extends Component
 
     public static function registerEvents(): void
     {
-        Event::listen(RegisterGqlTypes::class, function(RegisterGqlTypes $event) {
+        Event::listen(GqlTypesResolving::class, function(GqlTypesResolving $event) {
             $service = self::service();
             if (!$service->hasEventHandlers(self::EVENT_REGISTER_GQL_TYPES)) {
                 return;

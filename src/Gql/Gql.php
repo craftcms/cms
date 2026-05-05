@@ -35,8 +35,8 @@ use CraftCms\Cms\Gql\Events\GqlMutationsResolving;
 use CraftCms\Cms\Gql\Events\GqlQueriesResolving;
 use CraftCms\Cms\Gql\Events\GqlQueryExecuting;
 use CraftCms\Cms\Gql\Events\GqlSchemaComponentsResolving;
+use CraftCms\Cms\Gql\Events\GqlTypesResolving;
 use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
-use CraftCms\Cms\Gql\Events\RegisterGqlTypes;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Interfaces\Element as ElementInterface;
 use CraftCms\Cms\Gql\Interfaces\Elements\Address as AddressInterface;
@@ -1049,7 +1049,7 @@ class Gql
             UserInterface::class,
         ];
 
-        event($event = new RegisterGqlTypes(types: $types));
+        event($event = new GqlTypesResolving(types: $types));
         $types = $event->types;
 
         foreach ($types as $type) {

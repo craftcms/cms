@@ -15,8 +15,8 @@ use CraftCms\Cms\Gql\Events\GqlMutationsResolving;
 use CraftCms\Cms\Gql\Events\GqlQueriesResolving;
 use CraftCms\Cms\Gql\Events\GqlQueryExecuting;
 use CraftCms\Cms\Gql\Events\GqlSchemaComponentsResolving;
+use CraftCms\Cms\Gql\Events\GqlTypesResolving;
 use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
-use CraftCms\Cms\Gql\Events\RegisterGqlTypes;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
@@ -85,7 +85,7 @@ it('dispatches directive and type registration events', function () {
         $event->directives[] = MockDirective::class;
     });
 
-    Event::listen(RegisterGqlTypes::class, function (RegisterGqlTypes $event) {
+    Event::listen(GqlTypesResolving::class, function (GqlTypesResolving $event) {
         $event->types[] = MockType::class;
     });
 
