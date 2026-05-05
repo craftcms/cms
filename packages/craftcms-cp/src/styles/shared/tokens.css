@@ -108,6 +108,26 @@
   /**
   Components
    */
+  --c-success-background-color-default: var(--color-static-emerald-400);
+  --c-success-border-color: var(--color-static-emerald-500);
+
+  --c-warning-background-color-default: var(--color-static-yellow-100);
+  --c-warning-border-color: var(--color-static-yellow-300);
+
+  --c-info-background-color-default: var(--color-static-blue-400);
+  --c-info-border-color: var(--color-static-blue-500);
+
+  --c-brand-background-color-default: var(--color-static-red-500);
+  --c-brand-border-color: var(--color-static-red-600);
+
+  --c-danger-background-color-default: var(--color-static-red-500);
+  --c-danger-border-color: var(--color-static-red-600);
+
+  --c-accent-background-color-default: var(--color-static-blue-400);
+  --c-accent-border-color: var(--color-static-blue-500);
+
+  --c-neutral-background-color-default: var(--color-static-slate-300);
+  --c-neutral-border-color: var(--color-static-slate-400);
 
   /**
   Form controls

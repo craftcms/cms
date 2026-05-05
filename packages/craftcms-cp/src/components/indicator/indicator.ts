@@ -14,18 +14,38 @@ export default class CraftIndicator extends LitElement {
         width: var(--c-indicator-size, 0.5em);
         border-radius: var(--c-radius-full);
         color: var(--c-color-on-loud);
-        background-color: var(--c-color-fill-loud);
-        border: 1px solid var(--c-color-border-loud);
+        background-color: var(--indicator-background-color);
+        border: 1px solid var(--indicator-border-color);
       }
 
       .indicator--empty {
-        background-color: var(--c-color-neutral-fill-quiet);
-        border: 1px solid var(--c-color-neutral-border-normal);
+        --indicator-background-color: none;
+        --indicator-border-color: var(--c-text-default);
+      }
+
+      .indicator--success {
+        --indicator-background-color: var(--c-success-background-color-default);
+        --indicator-border-color: var(--c-success-border-color);
+      }
+
+      .indicator--danger {
+        --indicator-background-color: var(--c-danger-background-color-default);
+        --indicator-border-color: var(--c-danger-border-color);
+      }
+
+      .indicator--warning {
+        --indicator-background-color: var(--c-warning-background-color-default);
+        --indicator-border-color: var(--c-warning-border-color);
+      }
+
+      .indicator--info {
+        --indicator-background-color: var(--c-info-background-color-default);
+        --indicator-border-color: var(--c-info-border-color);
       }
     `,
   ];
 
-  @property({reflect: true})
+  @property()
   variant: VariantKey | 'empty' = Variant.Default;
 
   @property()
