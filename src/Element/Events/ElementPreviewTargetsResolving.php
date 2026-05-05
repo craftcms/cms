@@ -8,11 +8,11 @@ use CraftCms\Cms\Element\Concerns\HasPreviewTargets;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
- * @event RegisterPreviewTargets The event that is triggered when registering the element's preview targets.
+ * @event ElementPreviewTargetsResolving The event that is triggered when registering the element's preview targets.
  *
  * {@see HasPreviewTargets::getPreviewTargets()}
  */
-class RegisterPreviewTargets
+class ElementPreviewTargetsResolving
 {
     /**
      * @param  ElementInterface  $element  The element
