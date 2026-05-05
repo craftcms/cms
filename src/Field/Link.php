@@ -19,7 +19,7 @@ use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Data\LinkData;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Events\RegisterLinkTypes;
+use CraftCms\Cms\Field\Events\LinkTypesResolving;
 use CraftCms\Cms\Field\LinkTypes\Asset;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseTextLinkType;
@@ -109,7 +109,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             ];
 
             // Fire a registerLinkTypes event
-            event($event = new RegisterLinkTypes($types));
+            event($event = new LinkTypesResolving($types));
 
             $types = $event->types;
 

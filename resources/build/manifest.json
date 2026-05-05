@@ -106,9 +106,9 @@
     "name": "DeleteSiteModal",
     "imports": [
       "__plugin-vue_export-helper.js",
+      "_dist.js",
       "_nav-item-ixoxjtrg.js",
-      "_ModalForm.js",
-      "_wayfinder.js"
+      "_ModalForm.js"
     ]
   },
   "_DynamicHtmlRenderer.js": {
@@ -122,7 +122,7 @@
     "file": "EntryTypesController.js",
     "name": "EntryTypesController",
     "imports": [
-      "_wayfinder.js"
+      "_dist.js"
     ]
   },
   "_IndexLayout.css": {
@@ -214,7 +214,7 @@
     "file": "SectionsController.js",
     "name": "SectionsController",
     "imports": [
-      "_wayfinder.js"
+      "_dist.js"
     ]
   },
   "_Select.js": {
@@ -228,14 +228,14 @@
     "file": "UserGroupsController.js",
     "name": "UserGroupsController",
     "imports": [
-      "_wayfinder.js"
+      "_dist.js"
     ]
   },
   "_VolumesController.js": {
     "file": "VolumesController.js",
     "name": "VolumesController",
     "imports": [
-      "_wayfinder.js"
+      "_dist.js"
     ]
   },
   "__plugin-vue_export-helper.js": {
@@ -364,8 +364,7 @@
       "_Modal.js",
       "_ModalForm.js",
       "_Pane.js",
-      "_useFetch.js",
-      "_wayfinder.js"
+      "_useFetch.js"
     ],
     "dynamicImports": [
       "resources/js/pages/GraphQlSchemasPage.vue",
@@ -522,10 +521,6 @@
       "__plugin-vue_export-helper.js",
       "_dist.js"
     ]
-  },
-  "_wayfinder.js": {
-    "file": "wayfinder.js",
-    "name": "wayfinder"
   },
   "node_modules/@lion/ui/components/combobox/translations/bg.js": {
     "file": "bg.js",
@@ -1227,13 +1222,13 @@
     "imports": [
       "__plugin-vue_export-helper.js",
       "_AdminTable.js",
+      "_dist.js",
       "_nav-item-ixoxjtrg.js",
       "_AppLayout.js",
       "_DeleteButton.js",
       "_createCraftColumnHelper.js",
       "_InlineFlash.js",
-      "_Pane.js",
-      "_wayfinder.js"
+      "_Pane.js"
     ]
   },
   "resources/js/pages/GraphQlTokensPage.vue": {
@@ -1244,13 +1239,13 @@
     "imports": [
       "__plugin-vue_export-helper.js",
       "_AdminTable.js",
+      "_dist.js",
       "_nav-item-ixoxjtrg.js",
       "_AppLayout.js",
       "_DeleteButton.js",
       "_createCraftColumnHelper.js",
       "_InlineFlash.js",
-      "_Pane.js",
-      "_wayfinder.js"
+      "_Pane.js"
     ]
   },
   "resources/js/pages/Install.vue": {
@@ -1268,8 +1263,7 @@
       "_Modal.js",
       "_Pane.js",
       "_CraftCombobox.js",
-      "_useFetch.js",
-      "_wayfinder.js"
+      "_useFetch.js"
     ],
     "css": [
       "assets/Install.css"
@@ -1289,6 +1283,7 @@
     "imports": [
       "__plugin-vue_export-helper.js",
       "_AdminTable.js",
+      "_dist.js",
       "_nav-item-ixoxjtrg.js",
       "_CraftInput.js",
       "_useEditableTable.js",
@@ -1296,8 +1291,7 @@
       "_InlineFlash.js",
       "_Pane.js",
       "_CraftCombobox.js",
-      "_useSettingsSave.js",
-      "_wayfinder.js"
+      "_useSettingsSave.js"
     ]
   },
   "resources/js/pages/SettingsEntryTypesIndexPage.vue": {
@@ -1309,8 +1303,8 @@
       "__plugin-vue_export-helper.js",
       "_AdminTable.js",
       "_nav-item-ixoxjtrg.js",
-      "_EntryTypesController.js",
       "_AppLayout.js",
+      "_EntryTypesController.js",
       "_DeleteButton.js",
       "_useServerSort.js",
       "_createCraftColumnHelper.js",
@@ -1327,13 +1321,13 @@
     "imports": [
       "__plugin-vue_export-helper.js",
       "_AdminTable.js",
+      "_dist.js",
       "_nav-item-ixoxjtrg.js",
       "_AppLayout.js",
       "_DeleteButton.js",
       "_useServerSort.js",
       "_InlineFlash.js",
-      "_Pane.js",
-      "_wayfinder.js"
+      "_Pane.js"
     ]
   },
   "resources/js/pages/SettingsFilesystemsIndexPage.vue": {
@@ -1344,14 +1338,14 @@
     "imports": [
       "__plugin-vue_export-helper.js",
       "_AdminTable.js",
+      "_dist.js",
       "_nav-item-ixoxjtrg.js",
       "_AppLayout.js",
       "_DeleteButton.js",
       "_createCraftColumnHelper.js",
       "_InlineFlash.js",
       "_Pane.js",
-      "_IndexLayout.js",
-      "_wayfinder.js"
+      "_IndexLayout.js"
     ]
   },
   "resources/js/pages/SettingsGeneralPage.vue": {
@@ -1361,14 +1355,14 @@
     "isDynamicEntry": true,
     "imports": [
       "__plugin-vue_export-helper.js",
+      "_dist.js",
       "_nav-item-ixoxjtrg.js",
       "_CraftInput.js",
       "_AppLayout.js",
       "_Pane.js",
       "_CraftCombobox.js",
       "_useSettingsSave.js",
-      "_transformBooleanOptions.js",
-      "_wayfinder.js"
+      "_transformBooleanOptions.js"
     ],
     "css": [
       "assets/SettingsGeneralPage.css"
@@ -1412,6 +1406,7 @@
     "imports": [
       "__plugin-vue_export-helper.js",
       "_AdminTable.js",
+      "_dist.js",
       "_nav-item-ixoxjtrg.js",
       "_CraftInput.js",
       "_AppLayout.js",
@@ -1419,8 +1414,7 @@
       "_Badge.js",
       "_InlineFlash.js",
       "_Pane.js",
-      "_useFetch.js",
-      "_wayfinder.js"
+      "_useFetch.js"
     ],
     "css": [
       "assets/SettingsPluginsIndexPage.css"
@@ -1440,9 +1434,9 @@
       "_CraftInputHandle.js",
       "_Select.js",
       "_useEditableTable.js",
+      "_AppLayout.js",
       "_EntryTypesController.js",
       "_SectionsController.js",
-      "_AppLayout.js",
       "_DeleteButton.js",
       "_Pane.js",
       "_useInputGenerator.js",
@@ -1462,8 +1456,8 @@
       "_AdminTable.js",
       "_dist.js",
       "_nav-item-ixoxjtrg.js",
-      "_SectionsController.js",
       "_AppLayout.js",
+      "_SectionsController.js",
       "_useServerSort.js",
       "_createCraftColumnHelper.js",
       "_InlineFlash.js",
@@ -1479,8 +1473,8 @@
       "__plugin-vue_export-helper.js",
       "_dist.js",
       "_nav-item-ixoxjtrg.js",
-      "_DeleteSiteModal.js",
       "_AppLayout.js",
+      "_DeleteSiteModal.js",
       "_Badge.js",
       "_Pane.js",
       "_CraftCombobox.js",
@@ -1500,14 +1494,13 @@
       "_InputCombobox.js",
       "_dist.js",
       "_nav-item-ixoxjtrg.js",
-      "_DeleteSiteModal.js",
       "_AppLayout.js",
+      "_DeleteSiteModal.js",
       "_createCraftColumnHelper.js",
       "_Badge.js",
       "_InlineFlash.js",
       "_ModalForm.js",
-      "_IndexLayout.js",
-      "_wayfinder.js"
+      "_IndexLayout.js"
     ],
     "css": [
       "assets/SettingsSitesIndex.css"
@@ -1524,8 +1517,8 @@
       "_CraftInput.js",
       "_CraftInputHandle.js",
       "_CraftTextarea.js",
-      "_UserGroupsController.js",
       "_AppLayout.js",
+      "_UserGroupsController.js",
       "_Pane.js",
       "_useSettingsSave.js"
     ],

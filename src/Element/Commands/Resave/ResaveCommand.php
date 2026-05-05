@@ -8,10 +8,10 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Element\Events\AfterPropagateElement;
-use CraftCms\Cms\Element\Events\AfterResaveElement;
-use CraftCms\Cms\Element\Events\BeforePropagateElement;
-use CraftCms\Cms\Element\Events\BeforeResaveElement;
+use CraftCms\Cms\Element\Events\ElementPropagated;
+use CraftCms\Cms\Element\Events\ElementPropagating;
+use CraftCms\Cms\Element\Events\ElementResaved;
+use CraftCms\Cms\Element\Events\ElementResaving;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Jobs\ResaveElements as ResaveElementsJob;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -334,7 +334,7 @@ abstract class ResaveCommand extends Command
             $setEnabledForSite = (bool) normalizeValue($setEnabledForSite);
         }
 
-        $beforeCallback = function (BeforeResaveElement|BeforePropagateElement $e) use ($count, $query, $to, $set, $ifEmpty, $ifInvalid, $setEnabledForSite) {
+        $beforeCallback = function (ElementResaving|ElementPropagating $e) use ($count, $query, $to, $set, $ifEmpty, $ifInvalid, $setEnabledForSite) {
             if ($e->query !== $query) {
                 return;
             }
@@ -382,7 +382,7 @@ abstract class ResaveCommand extends Command
             }
         };
 
-        $afterCallback = function (AfterPropagateElement|AfterResaveElement $e) use ($query, &$fail) {
+        $afterCallback = function (ElementPropagated|ElementResaved $e) use ($query, &$fail) {
             if ($e->query !== $query) {
                 return;
             }
@@ -401,12 +401,12 @@ abstract class ResaveCommand extends Command
         };
 
         if (isset($this->resolvedPropagateTo)) {
-            Event::listen(fn (BeforePropagateElement $event) => $beforeCallback($event));
-            Event::listen(fn (AfterPropagateElement $event) => $afterCallback($event));
+            Event::listen(fn (ElementPropagating $event) => $beforeCallback($event));
+            Event::listen(fn (ElementPropagated $event) => $afterCallback($event));
             Elements::propagateElements($query, $this->resolvedPropagateTo, true);
         } else {
-            Event::listen(fn (BeforeResaveElement $event) => $beforeCallback($event));
-            Event::listen(fn (AfterResaveElement $event) => $afterCallback($event));
+            Event::listen(fn (ElementResaving $event) => $beforeCallback($event));
+            Event::listen(fn (ElementResaved $event) => $afterCallback($event));
             Elements::resaveElements($query, true, $this->resolvedRevisions === false, (bool) $this->option('update-search-index'), (bool) $this->option('touch'));
         }
 

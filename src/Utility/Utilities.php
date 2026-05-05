@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Utility;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\Volumes;
-use CraftCms\Cms\Utility\Events\RegisterUtilities;
+use CraftCms\Cms\Utility\Events\UtilitiesResolving;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use CraftCms\Cms\Utility\Utilities\DbBackup;
@@ -67,7 +67,7 @@ readonly class Utilities
                 Migrations::class,
             );
 
-        event($event = new RegisterUtilities($utilityTypes));
+        event($event = new UtilitiesResolving($utilityTypes));
 
         $disabledUtilities = array_flip($this->generalConfig->disabledUtilities);
 

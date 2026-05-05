@@ -11,7 +11,7 @@ namespace craft\fields;
 
 use craft\base\Event as YiiEvent;
 use craft\events\DefineEntryTypesForFieldEvent;
-use CraftCms\Cms\Field\Events\DefineEntryTypesForField;
+use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
 use Illuminate\Support\Facades\Event;
 
 /**
@@ -32,7 +32,7 @@ class Matrix extends \CraftCms\Cms\Field\Matrix
 
     public static function registerEvents(): void
     {
-        Event::listen(function(DefineEntryTypesForField $event) {
+        Event::listen(function(EntryTypesForFieldResolving $event) {
             if (!$event->field instanceof \CraftCms\Cms\Field\Matrix) {
                 return;
             }

@@ -14,7 +14,7 @@ use CraftCms\Cms\ProjectConfig\Events\ChangesApplied;
 use CraftCms\Cms\ProjectConfig\Events\ItemAdded;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
-use CraftCms\Cms\ProjectConfig\Events\RebuildConfig;
+use CraftCms\Cms\ProjectConfig\Events\ProjectConfigRebuilt;
 use CraftCms\Cms\ProjectConfig\Events\YamlFilesWritten;
 use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
@@ -224,7 +224,7 @@ class ProjectConfig extends Component
      * ```
      *
      * @since 3.1.20
-     * @deprecated 6.0.0 use {@see RebuildConfig} instead.
+     * @deprecated 6.0.0 use {@see ProjectConfigRebuilt} instead.
      */
     public const EVENT_REBUILD = 'rebuild';
 
@@ -875,7 +875,7 @@ class ProjectConfig extends Component
             Craft::$app->getProjectConfig()->trigger(self::EVENT_AFTER_WRITE_YAML_FILES);
         });
 
-        Event::listen(RebuildConfig::class, function(RebuildConfig $event) {
+        Event::listen(ProjectConfigRebuilt::class, function(ProjectConfigRebuilt $event) {
             $yiiEvent = new RebuildConfigEvent(['config' => $event->config]);
 
             Craft::$app->getProjectConfig()->trigger(self::EVENT_REBUILD, $yiiEvent);

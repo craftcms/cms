@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Component\Concerns;
 
-use CraftCms\Cms\Component\Events\ApplyingComponentDelete;
+use CraftCms\Cms\Component\Events\ComponentDeleteApplying;
 use CraftCms\Cms\Component\Events\ComponentDeleted;
+use CraftCms\Cms\Component\Events\ComponentDeleting;
 use CraftCms\Cms\Component\Events\ComponentSaved;
-use CraftCms\Cms\Component\Events\DeletingComponent;
-use CraftCms\Cms\Component\Events\SavingComponent;
+use CraftCms\Cms\Component\Events\ComponentSaving;
 use DateTimeInterface;
 use Illuminate\Events\QueuedClosure;
 use Illuminate\Support\Facades\Event;
@@ -28,12 +28,12 @@ trait SavableComponent
 
     public static function onBeforeSave(QueuedClosure|callable|array|string $callback): void
     {
-        self::listenForComponentEvent(SavingComponent::class, $callback);
+        self::listenForComponentEvent(ComponentSaving::class, $callback);
     }
 
     public function beforeSave(bool $isNew): bool
     {
-        event($event = new SavingComponent($this, $isNew));
+        event($event = new ComponentSaving($this, $isNew));
 
         return $event->isValid;
     }
@@ -50,24 +50,24 @@ trait SavableComponent
 
     public static function onBeforeDelete(QueuedClosure|callable|array|string $callback): void
     {
-        self::listenForComponentEvent(DeletingComponent::class, $callback);
+        self::listenForComponentEvent(ComponentDeleting::class, $callback);
     }
 
     public function beforeDelete(): bool
     {
-        event($event = new DeletingComponent($this));
+        event($event = new ComponentDeleting($this));
 
         return $event->isValid;
     }
 
     public static function onBeforeApplyDelete(QueuedClosure|callable|array|string $callback): void
     {
-        self::listenForComponentEvent(ApplyingComponentDelete::class, $callback);
+        self::listenForComponentEvent(ComponentDeleteApplying::class, $callback);
     }
 
     public function beforeApplyDelete(): void
     {
-        event(new ApplyingComponentDelete($this));
+        event(new ComponentDeleteApplying($this));
     }
 
     public static function onAfterDelete(QueuedClosure|callable|array|string $callback): void

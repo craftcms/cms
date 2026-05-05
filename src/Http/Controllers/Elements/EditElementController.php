@@ -13,7 +13,7 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Enums\MenuItemType;
-use CraftCms\Cms\Element\Events\DefineElementEditorContent;
+use CraftCms\Cms\Element\Events\ElementEditorContentResolving;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\FieldLayoutForm;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
@@ -712,7 +712,7 @@ JS, [
     {
         $html = $form?->render() ?? '';
 
-        event($event = new DefineElementEditorContent($element, $html, ! $canSave));
+        event($event = new ElementEditorContentResolving($element, $html, ! $canSave));
 
         return trim($event->html);
     }

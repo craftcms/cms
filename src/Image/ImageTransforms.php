@@ -12,13 +12,13 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Image\Contracts\EagerImageTransformerInterface;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
-use CraftCms\Cms\Image\Events\ApplyingTransformDelete;
-use CraftCms\Cms\Image\Events\DeletingTransform;
-use CraftCms\Cms\Image\Events\InvalidatingAssetTransforms;
-use CraftCms\Cms\Image\Events\RegisterImageTransformers;
-use CraftCms\Cms\Image\Events\SavingTransform;
+use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
+use CraftCms\Cms\Image\Events\ImageTransformersResolving;
 use CraftCms\Cms\Image\Events\TransformDeleted;
+use CraftCms\Cms\Image\Events\TransformDeleting;
+use CraftCms\Cms\Image\Events\TransformDeletionApplying;
 use CraftCms\Cms\Image\Events\TransformSaved;
+use CraftCms\Cms\Image\Events\TransformSaving;
 use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -77,7 +77,7 @@ class ImageTransforms
     {
         $isNewTransform = ! $transform->id;
 
-        event(new SavingTransform(
+        event(new TransformSaving(
             transform: $transform,
             isNew: $isNewTransform,
         ));
@@ -166,7 +166,7 @@ class ImageTransforms
 
     public function deleteTransform(ImageTransform $transform): bool
     {
-        event(new DeletingTransform(transform: $transform));
+        event(new TransformDeleting(transform: $transform));
 
         $this->projectConfig->remove(
             ProjectConfig::PATH_IMAGE_TRANSFORMS.'.'.$transform->uid,
@@ -186,7 +186,7 @@ class ImageTransforms
             return;
         }
 
-        event(new ApplyingTransformDelete(transform: $transform));
+        event(new TransformDeletionApplying(transform: $transform));
 
         DB::table(Table::IMAGETRANSFORMS)->where('uid', $transformUid)->delete();
 
@@ -311,7 +311,7 @@ class ImageTransforms
             ImageTransformer::class,
         ];
 
-        event($event = new RegisterImageTransformers(types: $transformers));
+        event($event = new ImageTransformersResolving(types: $transformers));
 
         return $event->types;
     }
@@ -356,7 +356,7 @@ class ImageTransforms
 
     public function deleteCreatedTransformsForAsset(Asset $asset): void
     {
-        event(new InvalidatingAssetTransforms(asset: $asset));
+        event(new AssetTransformsInvalidating(asset: $asset));
 
         $transformers = $this->getAllImageTransformers();
 

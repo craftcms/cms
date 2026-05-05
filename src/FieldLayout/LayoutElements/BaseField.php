@@ -8,7 +8,7 @@ use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
-use CraftCms\Cms\FieldLayout\Events\DefineActionMenuItems;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutActionMenuItemsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -347,7 +347,7 @@ abstract class BaseField extends FieldLayoutElement
         $translatable = $this->translatable($element, $static);
         $actionMenuItems = $this->actionMenuItems($element, $static);
 
-        event($event = new DefineActionMenuItems($element, $actionMenuItems, $static));
+        event($event = new FieldLayoutActionMenuItemsResolving($element, $actionMenuItems, $static));
         $actionMenuItems = $event->items;
 
         if (

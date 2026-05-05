@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Element\Queries\Events\DefineCacheTags;
+use CraftCms\Cms\Element\Queries\Events\ElementQueryCacheTagsResolving;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Support\Facades\ElementCaches;
@@ -45,7 +45,7 @@ it('only adds ids when less than 100 ids have been requested', function () {
 it('can define extra cache tags', function () {
     ElementCaches::startCollectingCacheInfo();
 
-    Event::listen(DefineCacheTags::class, function (DefineCacheTags $event) {
+    Event::listen(ElementQueryCacheTagsResolving::class, function (ElementQueryCacheTagsResolving $event) {
         $event->tags[] = 'foo';
     });
 

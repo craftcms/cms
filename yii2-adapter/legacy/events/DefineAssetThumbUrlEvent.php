@@ -15,7 +15,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Events\DefineThumbUrl} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Events\ThumbUrlResolving} instead.
  */
 class DefineAssetThumbUrlEvent extends Event
 {

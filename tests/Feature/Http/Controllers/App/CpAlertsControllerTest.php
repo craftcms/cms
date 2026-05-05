@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Cp\Events\RegisterCpAlerts;
+use CraftCms\Cms\Cp\Events\CpAlertsResolving;
 use CraftCms\Cms\Http\Controllers\App\CpAlertsController;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
@@ -22,7 +22,7 @@ test('get cp alerts validates required path', function () {
 });
 
 test('get cp alerts returns alerts for the requested path', function () {
-    Event::listen(function (RegisterCpAlerts $event) {
+    Event::listen(function (CpAlertsResolving $event) {
         $event->alerts[] = 'Test alert';
     });
 

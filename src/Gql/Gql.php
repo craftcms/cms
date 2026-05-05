@@ -29,14 +29,14 @@ use CraftCms\Cms\Gql\Directives\ParseRefs;
 use CraftCms\Cms\Gql\Directives\StripTags;
 use CraftCms\Cms\Gql\Directives\Transform;
 use CraftCms\Cms\Gql\Directives\Trim;
-use CraftCms\Cms\Gql\Events\DefineGqlValidationRules;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
-use CraftCms\Cms\Gql\Events\ExecutingGqlQuery;
-use CraftCms\Cms\Gql\Events\RegisterGqlDirectives;
-use CraftCms\Cms\Gql\Events\RegisterGqlMutations;
-use CraftCms\Cms\Gql\Events\RegisterGqlQueries;
-use CraftCms\Cms\Gql\Events\RegisterGqlSchemaComponents;
-use CraftCms\Cms\Gql\Events\RegisterGqlTypes;
+use CraftCms\Cms\Gql\Events\GqlDirectivesResolving;
+use CraftCms\Cms\Gql\Events\GqlMutationsResolving;
+use CraftCms\Cms\Gql\Events\GqlQueriesResolving;
+use CraftCms\Cms\Gql\Events\GqlQueryExecuting;
+use CraftCms\Cms\Gql\Events\GqlSchemaComponentsResolving;
+use CraftCms\Cms\Gql\Events\GqlTypesResolving;
+use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Interfaces\Element as ElementInterface;
 use CraftCms\Cms\Gql\Interfaces\Elements\Address as AddressInterface;
@@ -263,7 +263,7 @@ class Gql
             $validationRules[DisableIntrospection::class] = new DisableIntrospection;
         }
 
-        event($event = new DefineGqlValidationRules(
+        event($event = new GqlValidationRulesResolving(
             validationRules: $validationRules,
             debug: $debug,
         ));
@@ -294,7 +294,7 @@ class Gql
         $dep = null;
         $duration = null;
 
-        event($event = new ExecutingGqlQuery(
+        event($event = new GqlQueryExecuting(
             schema: $schema,
             query: $query,
             variables: $variables,
@@ -486,7 +486,7 @@ class Gql
         $label = t('Users');
         [$queries[$label], $mutations[$label]] = $this->userSchemaComponents();
 
-        event($event = new RegisterGqlSchemaComponents(
+        event($event = new GqlSchemaComponentsResolving(
             queries: $queries,
             mutations: $mutations,
         ));
@@ -1049,7 +1049,7 @@ class Gql
             UserInterface::class,
         ];
 
-        event($event = new RegisterGqlTypes(types: $types));
+        event($event = new GqlTypesResolving(types: $types));
         $types = $event->types;
 
         foreach ($types as $type) {
@@ -1074,7 +1074,7 @@ class Gql
         // Flatten them
         $queries = array_merge(...$queryList);
 
-        event($event = new RegisterGqlQueries(queries: $queries));
+        event($event = new GqlQueriesResolving(queries: $queries));
         $queries = $event->queries;
 
         TypeLoader::registerType('Query', fn () => call_user_func(Query::class.'::getType', $queries));
@@ -1092,7 +1092,7 @@ class Gql
         // Flatten them
         $mutations = array_merge(...$mutationList);
 
-        event($event = new RegisterGqlMutations(mutations: $mutations));
+        event($event = new GqlMutationsResolving(mutations: $mutations));
         $mutations = $event->mutations;
 
         TypeLoader::registerType('Mutation', fn () => call_user_func(Mutation::class.'::getType', $mutations));
@@ -1123,7 +1123,7 @@ class Gql
             }
         }
 
-        event($event = new RegisterGqlDirectives(directives: $directiveClasses));
+        event($event = new GqlDirectivesResolving(directives: $directiveClasses));
         $directiveClasses = $event->directives;
 
         $directives = GraphQL::getStandardDirectives();

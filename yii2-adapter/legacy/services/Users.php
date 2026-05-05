@@ -25,28 +25,28 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Users as UsersFacade;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\ActivatingUser;
-use CraftCms\Cms\User\Events\AssigningUserToDefaultGroups;
-use CraftCms\Cms\User\Events\AssigningUserToGroups;
-use CraftCms\Cms\User\Events\DeactivatingUser;
-use CraftCms\Cms\User\Events\DefineDefaultUserGroups;
-use CraftCms\Cms\User\Events\DeletingUserPhoto;
+use CraftCms\Cms\User\Events\DefaultUserGroupsResolving;
 use CraftCms\Cms\User\Events\EmailVerified;
-use CraftCms\Cms\User\Events\SavingUserPhoto;
-use CraftCms\Cms\User\Events\SuspendingUser;
-use CraftCms\Cms\User\Events\UnlockingUser;
-use CraftCms\Cms\User\Events\UnsuspendingUser;
 use CraftCms\Cms\User\Events\UserActivated;
+use CraftCms\Cms\User\Events\UserActivating;
 use CraftCms\Cms\User\Events\UserAssignedToDefaultGroups;
 use CraftCms\Cms\User\Events\UserAssignedToGroups;
 use CraftCms\Cms\User\Events\UserDeactivated;
+use CraftCms\Cms\User\Events\UserDeactivating;
+use CraftCms\Cms\User\Events\UserDefaultGroupsAssigning;
+use CraftCms\Cms\User\Events\UserEmailVerifying;
+use CraftCms\Cms\User\Events\UserGroupsAssigning;
 use CraftCms\Cms\User\Events\UserLocked;
 use CraftCms\Cms\User\Events\UserPhotoDeleted;
+use CraftCms\Cms\User\Events\UserPhotoDeleting;
 use CraftCms\Cms\User\Events\UserPhotoSaved;
+use CraftCms\Cms\User\Events\UserPhotoSaving;
 use CraftCms\Cms\User\Events\UserSuspended;
+use CraftCms\Cms\User\Events\UserSuspending;
 use CraftCms\Cms\User\Events\UserUnlocked;
+use CraftCms\Cms\User\Events\UserUnlocking;
 use CraftCms\Cms\User\Events\UserUnsuspended;
-use CraftCms\Cms\User\Events\VerifyingEmail;
+use CraftCms\Cms\User\Events\UserUnsuspending;
 use CraftCms\Cms\User\Models\User as UserModel;
 use DateTime;
 use Illuminate\Support\Facades\Event;
@@ -809,7 +809,7 @@ class Users extends Component
 
     public static function registerEvents(): void
     {
-        Event::listen(SavingUserPhoto::class, function(SavingUserPhoto $event) {
+        Event::listen(UserPhotoSaving::class, function(UserPhotoSaving $event) {
             if (Craft::$app->getUsers()->hasEventHandlers(self::EVENT_BEFORE_SAVE_USER_PHOTO)) {
                 $yiiEvent = new UserPhotoEvent([
                     'user' => $event->user,
@@ -833,7 +833,7 @@ class Users extends Component
             }
         });
 
-        Event::listen(DeletingUserPhoto::class, function(DeletingUserPhoto $event) {
+        Event::listen(UserPhotoDeleting::class, function(UserPhotoDeleting $event) {
             if (Craft::$app->getUsers()->hasEventHandlers(self::EVENT_BEFORE_DELETE_USER_PHOTO)) {
                 $yiiEvent = new UserPhotoEvent([
                     'user' => $event->user,
@@ -856,11 +856,11 @@ class Users extends Component
         });
 
         foreach ([
-             UnlockingUser::class => self::EVENT_BEFORE_UNLOCK_USER,
-             ActivatingUser::class => self::EVENT_BEFORE_ACTIVATE_USER,
-             DeactivatingUser::class => self::EVENT_BEFORE_DEACTIVATE_USER,
-             SuspendingUser::class => self::EVENT_BEFORE_SUSPEND_USER,
-             UnsuspendingUser::class => self::EVENT_BEFORE_UNSUSPEND_USER,
+             UserUnlocking::class => self::EVENT_BEFORE_UNLOCK_USER,
+             UserActivating::class => self::EVENT_BEFORE_ACTIVATE_USER,
+             UserDeactivating::class => self::EVENT_BEFORE_DEACTIVATE_USER,
+             UserSuspending::class => self::EVENT_BEFORE_SUSPEND_USER,
+             UserUnsuspending::class => self::EVENT_BEFORE_UNSUSPEND_USER,
          ] as $new => $old) {
             Event::listen($new, function(\CraftCms\Cms\User\Events\UserEvent $event) use ($old) {
                 if (Craft::$app->getUsers()->hasEventHandlers($old)) {
@@ -886,7 +886,7 @@ class Users extends Component
             UserUnlocked::class => self::EVENT_AFTER_UNLOCK_USER,
             UserSuspended::class => self::EVENT_AFTER_SUSPEND_USER,
             UserUnsuspended::class => self::EVENT_AFTER_UNSUSPEND_USER,
-            VerifyingEmail::class => self::EVENT_BEFORE_VERIFY_EMAIL,
+            UserEmailVerifying::class => self::EVENT_BEFORE_VERIFY_EMAIL,
             EmailVerified::class => self::EVENT_AFTER_VERIFY_EMAIL,
         ] as $new => $old) {
             Event::listen($new, function(\CraftCms\Cms\User\Events\UserEvent $event) use ($old) {
@@ -900,7 +900,7 @@ class Users extends Component
             });
         }
 
-        Event::listen(AssigningUserToGroups::class, function(AssigningUserToGroups $event) {
+        Event::listen(UserGroupsAssigning::class, function(UserGroupsAssigning $event) {
             // Fire a 'beforeAssignUserToGroups' event
             if (Craft::$app->getUsers()->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_USER_TO_GROUPS)) {
                 $yiiEvent = new UserGroupsAssignEvent([
@@ -932,7 +932,7 @@ class Users extends Component
             }
         });
 
-        Event::listen(DefineDefaultUserGroups::class, function(DefineDefaultUserGroups $event) {
+        Event::listen(DefaultUserGroupsResolving::class, function(DefaultUserGroupsResolving $event) {
             if (Craft::$app->getUsers()->hasEventHandlers(self::EVENT_DEFINE_DEFAULT_USER_GROUPS)) {
                 $yiiEvent = new DefineUserGroupsEvent([
                     'user' => $event->user,
@@ -945,7 +945,7 @@ class Users extends Component
             }
         });
 
-        Event::listen(AssigningUserToDefaultGroups::class, function(AssigningUserToDefaultGroups $event) {
+        Event::listen(UserDefaultGroupsAssigning::class, function(UserDefaultGroupsAssigning $event) {
             if (Craft::$app->getUsers()->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP)) {
                 $yiiEvent = new UserAssignGroupEvent([
                     'user' => $event->user,

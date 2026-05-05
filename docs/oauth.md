@@ -207,7 +207,7 @@ class CustomIdentityResolver implements ResolvesOAuthIdentity
 
 Use `userResolver` to take full control over how a Craft user is matched from OAuth data.
 
-If you only need to augment the default matching sequence, listen for `\CraftCms\Cms\Auth\OAuth\Events\ResolvingOAuthUserLink` and set `$event->user`.
+If you only need to augment the default matching sequence, listen for `\CraftCms\Cms\Auth\OAuth\Events\OAuthUserLinkResolving` and set `$event->user`.
 
 ### Custom User Populator
 

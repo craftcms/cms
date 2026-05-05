@@ -12,11 +12,11 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Entry\Events\ApplyingDeleteEntryType;
-use CraftCms\Cms\Entry\Events\DeletingEntryType;
 use CraftCms\Cms\Entry\Events\EntryTypeDeleted;
+use CraftCms\Cms\Entry\Events\EntryTypeDeleting;
+use CraftCms\Cms\Entry\Events\EntryTypeDeletionApplying;
 use CraftCms\Cms\Entry\Events\EntryTypeSaved;
-use CraftCms\Cms\Entry\Events\SavingEntryType;
+use CraftCms\Cms\Entry\Events\EntryTypeSaving;
 use CraftCms\Cms\Entry\Exceptions\EntryTypeNotFoundException;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -283,7 +283,7 @@ class EntryTypes
     {
         $isNewEntryType = ! $entryType->id;
 
-        event(new SavingEntryType($entryType, $isNewEntryType));
+        event(new EntryTypeSaving($entryType, $isNewEntryType));
 
         $entryType->hasTitleField = $entryType->getFieldLayout()->isFieldIncluded('title');
 
@@ -468,7 +468,7 @@ class EntryTypes
      */
     public function deleteEntryType(EntryType $entryType): bool
     {
-        event(new DeletingEntryType($entryType));
+        event(new EntryTypeDeleting($entryType));
 
         $this->projectConfig->remove(
             path: ProjectConfig::PATH_ENTRY_TYPES.'.'.$entryType->uid,
@@ -493,7 +493,7 @@ class EntryTypes
         /** @var EntryType $entryType */
         $entryType = $this->getEntryTypeById($entryTypeModel->id);
 
-        event(new ApplyingDeleteEntryType($entryType));
+        event(new EntryTypeDeletionApplying($entryType));
 
         DB::beginTransaction();
 

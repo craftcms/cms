@@ -14,11 +14,11 @@ use CommerceGuys\Addressing\Country\CountryRepository;
 use CommerceGuys\Addressing\Formatter\DefaultFormatter;
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Address\Events\DefineAddressCountries;
-use CraftCms\Cms\Address\Events\DefineAddressFieldLabel;
-use CraftCms\Cms\Address\Events\DefineAddressSubdivisions;
-use CraftCms\Cms\Address\Events\DefineAddressUsedFields;
-use CraftCms\Cms\Address\Events\DefineAddressUsedSubdivisionFields;
+use CraftCms\Cms\Address\Events\AddressCountriesResolving;
+use CraftCms\Cms\Address\Events\AddressFieldLabelResolving;
+use CraftCms\Cms\Address\Events\AddressSubdivisionsResolving;
+use CraftCms\Cms\Address\Events\AddressUsedFieldsResolving;
+use CraftCms\Cms\Address\Events\AddressUsedSubdivisionFieldsResolving;
 use CraftCms\Cms\Address\Repositories\SubdivisionRepository;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Field\Fields;
@@ -74,7 +74,7 @@ readonly class Addresses implements FieldLayoutProviderInterface
      */
     public function defineAddressSubdivisions(array $parents, array $options = []): array
     {
-        event($event = new DefineAddressSubdivisions($parents, $options));
+        event($event = new AddressSubdivisionsResolving($parents, $options));
 
         return $event->subdivisions;
     }
@@ -87,7 +87,7 @@ readonly class Addresses implements FieldLayoutProviderInterface
         $locale ??= app()->getLocale();
         $countries = $this->countryRepository->getList($locale);
 
-        event($event = new DefineAddressCountries($locale, $countries));
+        event($event = new AddressCountriesResolving($locale, $countries));
 
         return $event->countries;
     }
@@ -103,7 +103,7 @@ readonly class Addresses implements FieldLayoutProviderInterface
     {
         $fields = $this->addressFormatRepository->get($countryCode)->getUsedFields();
 
-        event($event = new DefineAddressUsedFields($countryCode, $fields));
+        event($event = new AddressUsedFieldsResolving($countryCode, $fields));
 
         return $event->fields;
     }
@@ -119,7 +119,7 @@ readonly class Addresses implements FieldLayoutProviderInterface
     {
         $fields = $this->addressFormatRepository->get($countryCode)->getUsedSubdivisionFields();
 
-        event($event = new DefineAddressUsedSubdivisionFields($countryCode, $fields));
+        event($event = new AddressUsedSubdivisionFieldsResolving($countryCode, $fields));
 
         return $event->fields;
     }
@@ -148,7 +148,7 @@ readonly class Addresses implements FieldLayoutProviderInterface
             AddressField::FAMILY_NAME => t('Last Name'),
         };
 
-        event($event = new DefineAddressFieldLabel($countryCode, $field, $label));
+        event($event = new AddressFieldLabelResolving($countryCode, $field, $label));
 
         return $event->label;
     }

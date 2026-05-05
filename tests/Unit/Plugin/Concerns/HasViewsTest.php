@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
-use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
+use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\File;
 
@@ -12,7 +12,7 @@ beforeEach(function () {
 });
 
 afterEach(function () {
-    app(Dispatcher::class)->forget(RegisterCpTemplateRoots::class);
+    app(Dispatcher::class)->forget(CpTemplateRootsResolving::class);
     app()->forgetInstance(TestPlugin::class);
 });
 
@@ -25,7 +25,7 @@ it('registers the plugin template root when templates exist', function () {
     $plugin->useBasePath(dirname(__DIR__, 3).'/TestClasses/TestPlugin/src');
     $plugin->bootHasViews();
 
-    $event = new RegisterCpTemplateRoots;
+    $event = new CpTemplateRootsResolving;
     event($event);
 
     expect($event->roots)->toHaveKey('test-plugin', dirname(__DIR__, 3).'/TestClasses/TestPlugin/resources/views');
@@ -43,7 +43,7 @@ it('does not register a template root when no templates directory exists', funct
     $plugin->useBasePath($emptyPluginPath);
     $plugin->bootHasViews();
 
-    $event = new RegisterCpTemplateRoots;
+    $event = new CpTemplateRootsResolving;
     event($event);
 
     expect($event->roots)->not->toHaveKey('other-plugin');

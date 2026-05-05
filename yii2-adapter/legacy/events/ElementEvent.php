@@ -14,7 +14,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\BeforeSaveElement} or {@see \CraftCms\Cms\Element\Events\AfterSaveElement} instead.
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementLifecycleSavingElement} or {@see \CraftCms\Cms\Element\Events\ElementLifecycleSavedElement} instead.
  */
 class ElementEvent extends CancelableEvent
 {

@@ -151,6 +151,16 @@ export default css`
     );
   }
 
+  /* None */
+  :host([appearance~='none']),
+  :host([appearance~='none']:hover),
+  :host([appearance~='none']:not(:disabled):not(.loading):active) {
+    background-color: transparent;
+    border-color: transparent;
+    color: inherit;
+    padding: 0;
+  }
+
   /* Plain */
   :host([appearance~='plain']) {
     background-color: transparent;

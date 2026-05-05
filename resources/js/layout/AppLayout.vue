@@ -18,6 +18,7 @@
   import ErrorSummary from '@/components/form/ErrorSummary.vue';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
   import {useFlashMessages} from '@/composables/useFlashMessages';
+  import UserMenu from '@/components/UserMenu.vue';
 
   interface SaveOptions {
     redirect?: boolean;
@@ -41,7 +42,7 @@
     form: null,
   });
 
-  const {system} = useCraftData();
+  const {system, currentUser, general} = useCraftData();
   const {messages} = useFlashMessages();
 
   const page = usePage<{
@@ -158,9 +159,10 @@
         <SystemInfo v-if="isLargeScreen" />
 
         <div class="ml-auto"></div>
-        <craft-button icon appearance="plain">
+        <craft-button icon appearance="plain" type="button">
           <craft-icon name="search" :label="t('Search')"></craft-icon>
         </craft-button>
+        <UserMenu />
       </div>
       <!-- TODO: this is just temporary placement -->
       <template v-if="errorFlash">

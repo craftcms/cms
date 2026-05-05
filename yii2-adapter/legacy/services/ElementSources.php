@@ -11,8 +11,8 @@ use Craft;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Events\DefineSourceSortOptions;
-use CraftCms\Cms\Element\Events\DefineSourceTableAttributes;
+use CraftCms\Cms\Element\Events\ElementSourceSortOptionsResolving;
+use CraftCms\Cms\Element\Events\ElementSourceTableAttributesResolving;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
@@ -254,7 +254,7 @@ class ElementSources extends Component
 
     public static function registerEvents(): void
     {
-        Event::listen(DefineSourceTableAttributes::class, function(DefineSourceTableAttributes $event) {
+        Event::listen(ElementSourceTableAttributesResolving::class, function(ElementSourceTableAttributesResolving $event) {
             // Fire a 'defineSourceTableAttributes' event
             if (Craft::$app->getElementSources()->hasEventHandlers(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES)) {
                 $yiiEvent = new DefineSourceTableAttributesEvent([
@@ -267,7 +267,7 @@ class ElementSources extends Component
             }
         });
 
-        Event::listen(DefineSourceSortOptions::class, function(DefineSourceSortOptions $event) {
+        Event::listen(ElementSourceSortOptionsResolving::class, function(ElementSourceSortOptionsResolving $event) {
             // Fire a 'defineSourceTableAttributes' event
             if (Craft::$app->getElementSources()->hasEventHandlers(self::EVENT_DEFINE_SOURCE_SORT_OPTIONS)) {
                 $yiiEvent = new DefineSourceSortOptionsEvent([

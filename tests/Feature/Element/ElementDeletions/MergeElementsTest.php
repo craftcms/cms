@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\AfterMergeElements;
+use CraftCms\Cms\Element\Events\ElementsMerged;
 use CraftCms\Cms\Element\Operations\ElementDeletions;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -83,7 +83,7 @@ test('replaces related field values with the prevailing element id', function ()
     app(Elements::class)->saveElement($source);
 
     Queue::fake();
-    Event::fake([AfterMergeElements::class]);
+    Event::fake([ElementsMerged::class]);
 
     $success = app(ElementDeletions::class)->mergeElements($this->mergedEntry, $this->prevailingEntry);
 
@@ -99,7 +99,7 @@ test('replaces related field values with the prevailing element id', function ()
         ->and($relations)->toBe([$this->prevailingEntry->id])
         ->and(DB::table(Table::ELEMENTS)->where('id', $this->mergedEntry->id)->value('dateDeleted'))->not->toBeNull();
 
-    Event::assertDispatched(fn (AfterMergeElements $event) => $event->mergedElementId === $this->mergedEntry->id
+    Event::assertDispatched(fn (ElementsMerged $event) => $event->mergedElementId === $this->mergedEntry->id
         && $event->prevailingElementId === $this->prevailingEntry->id);
 });
 

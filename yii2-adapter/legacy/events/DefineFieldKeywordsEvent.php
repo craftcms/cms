@@ -15,7 +15,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Events\DefineFieldKeywords} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Events\FieldKeywordsResolving} instead.
  */
 class DefineFieldKeywordsEvent extends Event
 {

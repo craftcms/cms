@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View;
 
-use CraftCms\Cms\View\Events\RenderingAssets;
+use CraftCms\Cms\View\Events\ViewAssetsRendering;
 use CraftCms\Cms\View\Hooks\PrepareElementIndexVariables;
 use CraftCms\Cms\View\Hooks\PrepareElementSourcesVariables;
 use CraftCms\Cms\View\Hooks\PrepareElementToolbarVariables;
@@ -38,7 +38,7 @@ class ViewServiceProvider extends ServiceProvider
 
     public function boot(TemplateHooks $hooks): void
     {
-        Event::listen(function (RenderingAssets $event) {
+        Event::listen(function (ViewAssetsRendering $event) {
             app(InternalAssetRegistry::class)->flush();
         });
 

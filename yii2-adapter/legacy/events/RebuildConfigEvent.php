@@ -14,7 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.20
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\ProjectConfig\Events\RebuildConfig} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\ProjectConfig\Events\ProjectConfigRebuilt} instead.
  */
 class RebuildConfigEvent extends Event
 {

@@ -12,10 +12,11 @@ namespace craft\elements;
 use craft\base\ElementEventConstants;
 use craft\base\Event as YiiEvent;
 use craft\events\DefineEntryTypesEvent;
+use craft\events\DefineMetaFields;
 use craft\events\ElementCriteriaEvent;
-use CraftCms\Cms\Entry\Events\DefineEntryTypes;
-use CraftCms\Cms\Entry\Events\DefineMetaFields;
-use CraftCms\Cms\Entry\Events\DefineParentSelectionCriteria;
+use CraftCms\Cms\Entry\Events\EntryMetaFieldsResolving;
+use CraftCms\Cms\Entry\Events\EntryParentSelectionCriteriaResolving;
+use CraftCms\Cms\Entry\Events\EntryTypesResolving;
 use Illuminate\Support\Facades\Event;
 
 /**
@@ -52,7 +53,7 @@ class Entry extends \CraftCms\Cms\Entry\Elements\Entry
 
     public static function registerEvents(): void
     {
-        Event::listen(function(DefineEntryTypes $event) {
+        Event::listen(function(EntryTypesResolving $event) {
             if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_ENTRY_TYPES)) {
                 $yiiEvent = new DefineEntryTypesEvent([
                     'entryTypes' => $event->entryTypes,
@@ -65,9 +66,9 @@ class Entry extends \CraftCms\Cms\Entry\Elements\Entry
             }
         });
 
-        Event::listen(function(DefineMetaFields $event) {
+        Event::listen(function(EntryMetaFieldsResolving $event) {
             if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_META_FIELDS)) {
-                $yiiEvent = new \craft\events\DefineMetaFields([
+                $yiiEvent = new DefineMetaFields([
                     'element' => $event->entry,
                     'sender' => $event->entry,
                     'static' => $event->static,
@@ -80,7 +81,7 @@ class Entry extends \CraftCms\Cms\Entry\Elements\Entry
             }
         });
 
-        Event::listen(function(DefineParentSelectionCriteria $event) {
+        Event::listen(function(EntryParentSelectionCriteriaResolving $event) {
             if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_PARENT_SELECTION_CRITERIA)) {
                 $yiiEvent = new ElementCriteriaEvent([
                     'sender' => $event->entry,

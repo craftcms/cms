@@ -6,9 +6,9 @@ use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Color;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
-use CraftCms\Cms\Field\Events\RegisterFieldTypes;
-use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
+use CraftCms\Cms\Field\Events\CompatibleFieldTypesResolving;
+use CraftCms\Cms\Field\Events\FieldTypesResolving;
+use CraftCms\Cms\Field\Events\NestedEntryFieldTypesResolving;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
@@ -51,8 +51,8 @@ it('can add extra field types through an event', function () {
     class CustomField extends Field {}
 
     Event::listen(
-        RegisterFieldTypes::class,
-        fn (RegisterFieldTypes $event) => $event->types->add(CustomField::class),
+        FieldTypesResolving::class,
+        fn (FieldTypesResolving $event) => $event->types->add(CustomField::class),
     );
 
     expect($this->fields->getAllFieldTypes())->toContain(CustomField::class);
@@ -69,8 +69,8 @@ it('can get all field types that have content', function () {
     }
 
     Event::listen(
-        RegisterFieldTypes::class,
-        fn (RegisterFieldTypes $event) => $event->types->add(CustomFieldWithoutContent::class),
+        FieldTypesResolving::class,
+        fn (FieldTypesResolving $event) => $event->types->add(CustomFieldWithoutContent::class),
     );
 
     expect($this->fields->getFieldTypesWithContent())->toContain(PlainText::class);
@@ -94,8 +94,8 @@ it('can define additional compatible field types with an event', function () {
     expect($this->fields->getCompatibleFieldTypes($plainText))->not()->toContain(CustomCompatibleField::class);
 
     Event::listen(
-        DefineCompatibleFieldTypes::class,
-        fn (DefineCompatibleFieldTypes $event) => $event->compatibleTypes->add(CustomCompatibleField::class),
+        CompatibleFieldTypesResolving::class,
+        fn (CompatibleFieldTypesResolving $event) => $event->compatibleTypes->add(CustomCompatibleField::class),
     );
 
     expect($this->fields->getCompatibleFieldTypes($plainText))->toContain(CustomCompatibleField::class);
@@ -113,8 +113,8 @@ it('can get nested entry field types', function () {
     expect($this->fields->getNestedEntryFieldTypes())->not()->toContain(CustomNestedEntryField::class);
 
     Event::listen(
-        RegisterNestedEntryFieldTypes::class,
-        fn (RegisterNestedEntryFieldTypes $event) => $event->types->add(CustomNestedEntryField::class),
+        NestedEntryFieldTypesResolving::class,
+        fn (NestedEntryFieldTypesResolving $event) => $event->types->add(CustomNestedEntryField::class),
     );
 
     expect($this->fields->getNestedEntryFieldTypes())->toContain(CustomNestedEntryField::class);

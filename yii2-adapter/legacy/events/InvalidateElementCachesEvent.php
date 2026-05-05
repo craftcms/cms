@@ -17,7 +17,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.2.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Events\InvalidateElementCaches} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Events\ElementCachesInvalidated} instead.
  */
 class InvalidateElementCachesEvent extends Event
 {

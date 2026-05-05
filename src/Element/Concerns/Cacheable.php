@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use CraftCms\Cms\Element\Events\DefineCacheTags;
+use CraftCms\Cms\Element\Events\ElementCacheTagsResolving;
 
 /**
  * Cacheable provides cache tag management for elements.
@@ -23,7 +23,7 @@ trait Cacheable
      */
     public function getCacheTags(): array
     {
-        event($event = new DefineCacheTags($this, $this->cacheTags()));
+        event($event = new ElementCacheTagsResolving($this, $this->cacheTags()));
 
         return $event->tags;
     }

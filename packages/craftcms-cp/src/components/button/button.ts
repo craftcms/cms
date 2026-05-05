@@ -55,6 +55,7 @@ export default class CraftButton extends LionButtonSubmit {
     | 'inline'
     | 'plain'
     | 'filled'
+    | 'none'
     | 'dashed' = 'accent';
 
   /**

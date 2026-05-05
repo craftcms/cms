@@ -21,7 +21,7 @@ use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Element\Events\DefineElementCriteria;
+use CraftCms\Cms\Element\Events\ElementCriteriaResolving;
 use CraftCms\Cms\Element\Jobs\LocalizeRelations;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
@@ -1572,7 +1572,7 @@ JS, [
      */
     public function getInputSelectionCriteria(): array
     {
-        event($event = new DefineElementCriteria(field: $this));
+        event($event = new ElementCriteriaResolving(field: $this));
 
         return $event->criteria;
     }

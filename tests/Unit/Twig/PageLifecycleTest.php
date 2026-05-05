@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\Events\BeginPage;
-use CraftCms\Cms\Twig\Events\EndPage;
+use CraftCms\Cms\Twig\Events\PageEnded;
+use CraftCms\Cms\Twig\Events\PageStarting;
 use CraftCms\Cms\Twig\PageLifecycle;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\HtmlStack;
@@ -31,26 +31,26 @@ describe('head, beginBody, endBody', function () {
 });
 
 describe('event dispatching', function () {
-    it('fires BeginPage and EndPage events in order', function () {
+    it('fires PageStarting and PageEnded events in order', function () {
         $events = [];
 
-        Event::listen(BeginPage::class, function () use (&$events) {
-            $events[] = 'BeginPage';
+        Event::listen(PageStarting::class, function () use (&$events) {
+            $events[] = 'PageStarting';
         });
-        Event::listen(EndPage::class, function () use (&$events) {
-            $events[] = 'EndPage';
+        Event::listen(PageEnded::class, function () use (&$events) {
+            $events[] = 'PageEnded';
         });
 
         $this->lifecycle->wrap(fn () => 'content');
 
-        expect($events)->toBe(['BeginPage', 'EndPage']);
+        expect($events)->toBe(['PageStarting', 'PageEnded']);
     });
 
-    it('fires BeginPage before the render callback executes', function () {
+    it('fires PageStarting before the render callback executes', function () {
         $beginPageFired = false;
         $beginPageFiredBeforeRender = false;
 
-        Event::listen(BeginPage::class, function () use (&$beginPageFired) {
+        Event::listen(PageStarting::class, function () use (&$beginPageFired) {
             $beginPageFired = true;
         });
 
@@ -63,11 +63,11 @@ describe('event dispatching', function () {
         expect($beginPageFiredBeforeRender)->toBeTrue();
     });
 
-    it('fires EndPage after the render callback executes', function () {
+    it('fires PageEnded after the render callback executes', function () {
         $renderExecuted = false;
         $renderExecutedBeforeEndPage = false;
 
-        Event::listen(EndPage::class, function () use (&$renderExecuted, &$renderExecutedBeforeEndPage) {
+        Event::listen(PageEnded::class, function () use (&$renderExecuted, &$renderExecutedBeforeEndPage) {
             $renderExecutedBeforeEndPage = $renderExecuted;
         });
 
@@ -82,7 +82,7 @@ describe('event dispatching', function () {
 });
 
 describe('placeholder replacement', function () {
-    it('replaces head placeholder with HtmlStack output when EndPage is not overridden', function () {
+    it('replaces head placeholder with HtmlStack output when PageEnded is not overridden', function () {
         $this->registry->css('body { color: red }');
 
         $output = $this->lifecycle->wrap(function () {
@@ -155,8 +155,8 @@ describe('placeholder replacement', function () {
             ->toBeLessThan(strpos($output, 'Craft.icons = {};'));
     });
 
-    it('uses EndPage event overrides when set', function (string $property, string $placeholder, string $html) {
-        Event::listen(EndPage::class, function (EndPage $event) use ($property, $html) {
+    it('uses PageEnded event overrides when set', function (string $property, string $placeholder, string $html) {
+        Event::listen(PageEnded::class, function (PageEnded $event) use ($property, $html) {
             $event->$property = $html;
         });
 
@@ -173,10 +173,10 @@ describe('placeholder replacement', function () {
         'body end html' => ['bodyEndHtml', PageLifecycle::BODY_END_PLACEHOLDER, '<script>console.log("end")</script>'],
     ]);
 
-    it('prefers EndPage overrides over HtmlStack output', function () {
+    it('prefers PageEnded overrides over HtmlStack output', function () {
         $this->registry->css('.from-registry {}');
 
-        Event::listen(EndPage::class, function (EndPage $event) {
+        Event::listen(PageEnded::class, function (PageEnded $event) {
             $event->headHtml = '<meta name="from-event">';
         });
 
@@ -191,7 +191,7 @@ describe('placeholder replacement', function () {
             ->not->toContain('.from-registry');
     });
 
-    it('falls back to HtmlStack when EndPage properties are null', function () {
+    it('falls back to HtmlStack when PageEnded properties are null', function () {
         $this->registry->css('.fallback {}');
 
         $output = $this->lifecycle->wrap(function () {
@@ -203,7 +203,7 @@ describe('placeholder replacement', function () {
         expect($output)->toContain('.fallback');
     });
 
-    it('produces empty strings when no assets registered and no EndPage overrides', function () {
+    it('produces empty strings when no assets registered and no PageEnded overrides', function () {
         $output = $this->lifecycle->wrap(function () {
             echo '<head>'.PageLifecycle::HEAD_PLACEHOLDER.'</head>';
             echo '<body>'.PageLifecycle::BODY_BEGIN_PLACEHOLDER;
@@ -265,10 +265,10 @@ describe('output buffering', function () {
         }))->toThrow(RuntimeException::class, 'render failed');
     });
 
-    it('does not fire EndPage when the render callback throws', function () {
+    it('does not fire PageEnded when the render callback throws', function () {
         $endPageFired = false;
 
-        Event::listen(EndPage::class, function () use (&$endPageFired) {
+        Event::listen(PageEnded::class, function () use (&$endPageFired) {
             $endPageFired = true;
         });
 

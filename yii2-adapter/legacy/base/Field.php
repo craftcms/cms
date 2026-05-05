@@ -17,22 +17,22 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Events\AfterFieldDelete;
-use CraftCms\Cms\Field\Events\AfterFieldElementDelete;
-use CraftCms\Cms\Field\Events\AfterFieldElementPropagate;
-use CraftCms\Cms\Field\Events\AfterFieldElementRestore;
-use CraftCms\Cms\Field\Events\AfterFieldElementSave;
-use CraftCms\Cms\Field\Events\AfterFieldMergeFrom;
-use CraftCms\Cms\Field\Events\AfterFieldMergeInto;
-use CraftCms\Cms\Field\Events\AfterFieldSave;
-use CraftCms\Cms\Field\Events\BeforeApplyFieldDelete;
-use CraftCms\Cms\Field\Events\BeforeFieldDelete;
-use CraftCms\Cms\Field\Events\BeforeFieldElementDelete;
-use CraftCms\Cms\Field\Events\BeforeFieldElementRestore;
-use CraftCms\Cms\Field\Events\BeforeFieldElementSave;
-use CraftCms\Cms\Field\Events\BeforeFieldSave;
-use CraftCms\Cms\Field\Events\FieldElementEvent;
+use CraftCms\Cms\Field\Events\FieldDeletionApplying;
+use CraftCms\Cms\Field\Events\FieldElementDeleted;
+use CraftCms\Cms\Field\Events\FieldElementDeleting;
+use CraftCms\Cms\Field\Events\FieldElementOccurred;
+use CraftCms\Cms\Field\Events\FieldElementPropagated;
+use CraftCms\Cms\Field\Events\FieldElementRestored;
+use CraftCms\Cms\Field\Events\FieldElementRestoring;
+use CraftCms\Cms\Field\Events\FieldElementSaved;
+use CraftCms\Cms\Field\Events\FieldElementSaving;
 use CraftCms\Cms\Field\Events\FieldEvent;
+use CraftCms\Cms\Field\Events\FieldLifecycleDeleted;
+use CraftCms\Cms\Field\Events\FieldLifecycleDeleting;
+use CraftCms\Cms\Field\Events\FieldLifecycleSaved;
+use CraftCms\Cms\Field\Events\FieldLifecycleSaving;
+use CraftCms\Cms\Field\Events\FieldMergeFromCompleted;
+use CraftCms\Cms\Field\Events\FieldMergeIntoCompleted;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\Event;
@@ -72,59 +72,59 @@ abstract class Field extends \CraftCms\Cms\Field\Field
 
     public static function registerEvents(): void
     {
-        Event::listen(function(BeforeFieldSave $event) {
+        Event::listen(function(FieldLifecycleSaving $event) {
             self::triggerModelEvent($event, self::EVENT_BEFORE_SAVE, $event->isNew);
         });
 
-        Event::listen(function(AfterFieldSave $event) {
+        Event::listen(function(FieldLifecycleSaved $event) {
             self::triggerModelEvent($event, self::EVENT_AFTER_SAVE, $event->isNew);
         });
 
-        Event::listen(function(BeforeFieldDelete $event) {
+        Event::listen(function(FieldLifecycleDeleting $event) {
             self::triggerModelEvent($event, self::EVENT_BEFORE_DELETE);
         });
 
-        Event::listen(function(BeforeApplyFieldDelete $event) {
+        Event::listen(function(FieldDeletionApplying $event) {
             self::triggerEvent($event, self::EVENT_BEFORE_APPLY_DELETE);
         });
 
-        Event::listen(function(AfterFieldDelete $event) {
+        Event::listen(function(FieldLifecycleDeleted $event) {
             self::triggerEvent($event, self::EVENT_AFTER_DELETE);
         });
 
-        Event::listen(function(BeforeFieldElementSave $event) {
+        Event::listen(function(FieldElementSaving $event) {
             self::triggerFieldElementEvent($event, self::EVENT_BEFORE_ELEMENT_SAVE);
         });
 
-        Event::listen(function(AfterFieldElementSave $event) {
+        Event::listen(function(FieldElementSaved $event) {
             self::triggerFieldElementEvent($event, self::EVENT_AFTER_ELEMENT_SAVE);
         });
 
-        Event::listen(function(AfterFieldElementPropagate $event) {
+        Event::listen(function(FieldElementPropagated $event) {
             self::triggerFieldElementEvent($event, self::EVENT_AFTER_ELEMENT_PROPAGATE);
         });
 
-        Event::listen(function(BeforeFieldElementDelete $event) {
+        Event::listen(function(FieldElementDeleting $event) {
             self::triggerFieldElementEvent($event, self::EVENT_BEFORE_ELEMENT_DELETE);
         });
 
-        Event::listen(function(AfterFieldElementDelete $event) {
+        Event::listen(function(FieldElementDeleted $event) {
             self::triggerFieldElementEvent($event, self::EVENT_AFTER_ELEMENT_DELETE);
         });
 
-        Event::listen(function(BeforeFieldElementRestore $event) {
+        Event::listen(function(FieldElementRestoring $event) {
             self::triggerFieldElementEvent($event, self::EVENT_BEFORE_ELEMENT_RESTORE);
         });
 
-        Event::listen(function(AfterFieldElementRestore $event) {
+        Event::listen(function(FieldElementRestored $event) {
             self::triggerFieldElementEvent($event, self::EVENT_AFTER_ELEMENT_RESTORE);
         });
 
-        Event::listen(function(AfterFieldMergeInto $event) {
+        Event::listen(function(FieldMergeIntoCompleted $event) {
             self::triggerFieldEvent($event, self::EVENT_AFTER_MERGE_INTO, $event->persistingField);
         });
 
-        Event::listen(function(AfterFieldMergeFrom $event) {
+        Event::listen(function(FieldMergeFromCompleted $event) {
             self::triggerFieldEvent($event, self::EVENT_AFTER_MERGE_FROM, $event->outgoingField);
         });
     }
@@ -158,7 +158,7 @@ abstract class Field extends \CraftCms\Cms\Field\Field
         }
     }
 
-    private static function triggerFieldElementEvent(FieldElementEvent $event, string $name): void
+    private static function triggerFieldElementEvent(FieldElementOccurred $event, string $name): void
     {
         foreach (self::eventClasses($event->field) as $class) {
             if (!YiiEvent::hasHandlers($class, $name)) {

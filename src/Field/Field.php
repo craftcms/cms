@@ -22,23 +22,23 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Events\AfterFieldDelete;
-use CraftCms\Cms\Field\Events\AfterFieldElementDelete;
-use CraftCms\Cms\Field\Events\AfterFieldElementPropagate;
-use CraftCms\Cms\Field\Events\AfterFieldElementRestore;
-use CraftCms\Cms\Field\Events\AfterFieldElementSave;
-use CraftCms\Cms\Field\Events\AfterFieldMergeFrom;
-use CraftCms\Cms\Field\Events\AfterFieldMergeInto;
-use CraftCms\Cms\Field\Events\AfterFieldSave;
-use CraftCms\Cms\Field\Events\BeforeApplyFieldDelete;
-use CraftCms\Cms\Field\Events\BeforeFieldDelete;
-use CraftCms\Cms\Field\Events\BeforeFieldElementDelete;
-use CraftCms\Cms\Field\Events\BeforeFieldElementRestore;
-use CraftCms\Cms\Field\Events\BeforeFieldElementSave;
-use CraftCms\Cms\Field\Events\BeforeFieldSave;
-use CraftCms\Cms\Field\Events\DefineFieldActionMenuItems;
-use CraftCms\Cms\Field\Events\DefineFieldHtml;
-use CraftCms\Cms\Field\Events\DefineFieldKeywords;
+use CraftCms\Cms\Field\Events\FieldActionMenuItemsResolving;
+use CraftCms\Cms\Field\Events\FieldDeletionApplying;
+use CraftCms\Cms\Field\Events\FieldElementDeleted;
+use CraftCms\Cms\Field\Events\FieldElementDeleting;
+use CraftCms\Cms\Field\Events\FieldElementPropagated;
+use CraftCms\Cms\Field\Events\FieldElementRestored;
+use CraftCms\Cms\Field\Events\FieldElementRestoring;
+use CraftCms\Cms\Field\Events\FieldElementSaved;
+use CraftCms\Cms\Field\Events\FieldElementSaving;
+use CraftCms\Cms\Field\Events\FieldHtmlResolving;
+use CraftCms\Cms\Field\Events\FieldKeywordsResolving;
+use CraftCms\Cms\Field\Events\FieldLifecycleDeleted;
+use CraftCms\Cms\Field\Events\FieldLifecycleDeleting;
+use CraftCms\Cms\Field\Events\FieldLifecycleSaved;
+use CraftCms\Cms\Field\Events\FieldLifecycleSaving;
+use CraftCms\Cms\Field\Events\FieldMergeFromCompleted;
+use CraftCms\Cms\Field\Events\FieldMergeIntoCompleted;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Types\QueryArgument;
@@ -458,7 +458,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     {
         $items = $this->actionMenuItems();
 
-        event($event = new DefineFieldActionMenuItems($this, $items));
+        event($event = new FieldActionMenuItemsResolving($this, $items));
 
         return $event->items;
     }
@@ -590,7 +590,7 @@ JS, [
     {
         $html = $this->inputHtml($value, $element, false);
 
-        event($event = new DefineFieldHtml(
+        event($event = new FieldHtmlResolving(
             field: $this,
             value: $value,
             inline: false,
@@ -608,7 +608,7 @@ JS, [
     {
         $html = $this->inputHtml($value, $element, true);
 
-        event($event = new DefineFieldHtml(
+        event($event = new FieldHtmlResolving(
             field: $this,
             value: $value,
             inline: true,
@@ -659,7 +659,7 @@ JS, [
 
     public function getSearchKeywords(mixed $value, ElementInterface $element): string
     {
-        event($event = new DefineFieldKeywords(
+        event($event = new FieldKeywordsResolving(
             field: $this,
             element: $element,
             value: $value,
@@ -767,7 +767,7 @@ JS, [
      */
     public function afterMergeInto(FieldInterface $persistingField)
     {
-        event(new AfterFieldMergeInto($this, $persistingField));
+        event(new FieldMergeIntoCompleted($this, $persistingField));
     }
 
     /**
@@ -784,7 +784,7 @@ JS, [
                 ]);
         }
 
-        event(new AfterFieldMergeFrom($this, $outgoingField));
+        event(new FieldMergeFromCompleted($this, $outgoingField));
     }
 
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
@@ -989,36 +989,36 @@ JS, [
             $this->context = Fields::getFieldContext();
         }
 
-        event($event = new BeforeFieldSave($this, $isNew));
+        event($event = new FieldLifecycleSaving($this, $isNew));
 
         return $event->isValid;
     }
 
     public function afterSave(bool $isNew): void
     {
-        event(new AfterFieldSave($this, $isNew));
+        event(new FieldLifecycleSaved($this, $isNew));
     }
 
     public function beforeDelete(): bool
     {
-        event($event = new BeforeFieldDelete($this));
+        event($event = new FieldLifecycleDeleting($this));
 
         return $event->isValid;
     }
 
     public function beforeApplyDelete(): void
     {
-        event(new BeforeApplyFieldDelete($this));
+        event(new FieldDeletionApplying($this));
     }
 
     public function afterDelete(): void
     {
-        event(new AfterFieldDelete($this));
+        event(new FieldLifecycleDeleted($this));
     }
 
     public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
-        event($event = new BeforeFieldElementSave(
+        event($event = new FieldElementSaving(
             field: $this,
             element: $element,
             isNew: $isNew
@@ -1029,7 +1029,7 @@ JS, [
 
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
-        event(new AfterFieldElementSave(
+        event(new FieldElementSaved(
             field: $this,
             element: $element,
             isNew: $isNew
@@ -1038,7 +1038,7 @@ JS, [
 
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
-        event(new AfterFieldElementPropagate(
+        event(new FieldElementPropagated(
             field: $this,
             element: $element,
             isNew: $isNew
@@ -1047,7 +1047,7 @@ JS, [
 
     public function beforeElementDelete(ElementInterface $element): bool
     {
-        event($event = new BeforeFieldElementDelete(
+        event($event = new FieldElementDeleting(
             field: $this,
             element: $element,
         ));
@@ -1057,7 +1057,7 @@ JS, [
 
     public function afterElementDelete(ElementInterface $element): void
     {
-        event(new AfterFieldElementDelete(
+        event(new FieldElementDeleted(
             field: $this,
             element: $element,
         ));
@@ -1075,7 +1075,7 @@ JS, [
 
     public function beforeElementRestore(ElementInterface $element): bool
     {
-        event($event = new BeforeFieldElementRestore(
+        event($event = new FieldElementRestoring(
             field: $this,
             element: $element,
         ));
@@ -1085,7 +1085,7 @@ JS, [
 
     public function afterElementRestore(ElementInterface $element): void
     {
-        event(new AfterFieldElementRestore(
+        event(new FieldElementRestored(
             field: $this,
             element: $element,
         ));

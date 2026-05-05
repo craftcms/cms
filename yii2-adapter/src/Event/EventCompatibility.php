@@ -56,7 +56,7 @@ use craft\web\twig\variables\Cp;
 use craft\web\View;
 use CraftCms\Cms\Edition\Events\EditionChanged;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\View\Events\RegisterTemplateCacheCollectors;
+use CraftCms\Cms\View\Events\TemplateCacheCollectorsResolving;
 use CraftCms\DependencyAwareCache\Events\TagsInvalidated;
 use CraftCms\Yii2Adapter\IdentityWrapper;
 use CraftCms\Yii2Adapter\View\LegacyAssetBundleCollector;
@@ -188,7 +188,7 @@ readonly class EventCompatibility
             YiiTagDependency::invalidate(Craft::$app->getCache(), $event->tags);
         });
 
-        Event::listen(function(RegisterTemplateCacheCollectors $event) {
+        Event::listen(function(TemplateCacheCollectorsResolving $event) {
             $event->types->add(LegacyAssetBundleCollector::class);
         });
 

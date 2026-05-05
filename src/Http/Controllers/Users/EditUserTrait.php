@@ -11,7 +11,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\DefineEditUserScreens;
+use CraftCms\Cms\User\Events\EditUserScreensResolving;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -81,7 +81,7 @@ trait EditUserTrait
 
         $currentUser = Auth::user();
 
-        event($event = new DefineEditUserScreens($currentUser, $user, $screens));
+        event($event = new EditUserScreensResolving($currentUser, $user, $screens));
 
         $screens = $event->screens;
 

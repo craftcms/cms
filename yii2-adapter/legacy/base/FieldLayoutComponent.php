@@ -6,7 +6,7 @@ namespace craft\base;
 
 use craft\base\Event as YiiEvent;
 use craft\events\DefineShowFieldLayoutComponentInFormEvent;
-use CraftCms\Cms\FieldLayout\Events\DefineShowInForm;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentShowInFormResolving;
 use Illuminate\Support\Facades\Event;
 
 /**
@@ -29,7 +29,7 @@ abstract class FieldLayoutComponent extends \CraftCms\Cms\FieldLayout\FieldLayou
 
     public static function registerEvents(): void
     {
-        Event::listen(function(DefineShowInForm $event) {
+        Event::listen(function(FieldLayoutComponentShowInFormResolving $event) {
             if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_SHOW_IN_FORM)) {
                 $yiiEvent = new DefineShowFieldLayoutComponentInFormEvent([
                     'fieldLayout' => $event->fieldLayout,

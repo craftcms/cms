@@ -40,9 +40,9 @@ use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Conditions\SectionConditionRule;
 use CraftCms\Cms\Entry\Conditions\TypeConditionRule;
 use CraftCms\Cms\Entry\Data\EntryType;
-use CraftCms\Cms\Entry\Events\DefineEntryTypes;
-use CraftCms\Cms\Entry\Events\DefineMetaFields;
-use CraftCms\Cms\Entry\Events\DefineParentSelectionCriteria;
+use CraftCms\Cms\Entry\Events\EntryMetaFieldsResolving;
+use CraftCms\Cms\Entry\Events\EntryParentSelectionCriteriaResolving;
+use CraftCms\Cms\Entry\Events\EntryTypesResolving;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Validation\EntryRules;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -1442,7 +1442,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         };
 
         if ($triggerEvent) {
-            event($event = new DefineEntryTypes($this, $entryTypes));
+            event($event = new EntryTypesResolving($this, $entryTypes));
 
             return $event->entryTypes;
         }
@@ -2171,7 +2171,7 @@ JS, [
 
         $fields[] = parent::metaFieldsHtml($static);
 
-        event($event = new DefineMetaFields($this, $static, $fields));
+        event($event = new EntryMetaFieldsResolving($this, $static, $fields));
 
         return implode("\n", $event->fields);
     }
@@ -2283,7 +2283,7 @@ JS;
             $parentOptionCriteria['level'] = sprintf('<=%s', $section->maxLevels - $depth);
         }
 
-        event($event = new DefineParentSelectionCriteria($this, $parentOptionCriteria));
+        event($event = new EntryParentSelectionCriteriaResolving($this, $parentOptionCriteria));
 
         return $event->criteria;
     }

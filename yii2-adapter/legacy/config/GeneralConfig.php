@@ -637,7 +637,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      *
      * @see $enableTwigSandbox
      */
-    #[Deprecated(message: 'in 6.0.0. Sandbox is always enabled.')]
+    #[Deprecated(message: 'in 6.0.0. The Twig sandbox is always enabled for untrusted templates.')]
     public function enableTwigSandbox(bool $value = true): self
     {
         $this->enableTwigSandbox = $value;

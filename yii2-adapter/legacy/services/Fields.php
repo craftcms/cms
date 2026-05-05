@@ -16,19 +16,19 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
-use CraftCms\Cms\Field\Events\ApplyingFieldDelete;
-use CraftCms\Cms\Field\Events\ApplyingFieldSave;
-use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
+use CraftCms\Cms\Field\Events\CompatibleFieldTypesResolving;
 use CraftCms\Cms\Field\Events\FieldDeleted;
 use CraftCms\Cms\Field\Events\FieldDeleting;
+use CraftCms\Cms\Field\Events\FieldDeletionApplying;
 use CraftCms\Cms\Field\Events\FieldLayoutDeleted;
 use CraftCms\Cms\Field\Events\FieldLayoutDeleting;
 use CraftCms\Cms\Field\Events\FieldLayoutSaved;
 use CraftCms\Cms\Field\Events\FieldLayoutSaving;
+use CraftCms\Cms\Field\Events\FieldSaveApplying;
 use CraftCms\Cms\Field\Events\FieldSaved;
 use CraftCms\Cms\Field\Events\FieldSaving;
-use CraftCms\Cms\Field\Events\RegisterFieldTypes;
-use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
+use CraftCms\Cms\Field\Events\FieldTypesResolving;
+use CraftCms\Cms\Field\Events\NestedEntryFieldTypesResolving;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -730,7 +730,7 @@ class Fields extends Component
 
     public static function registerEvents(): void
     {
-        Event::listen(function(RegisterFieldTypes $event) {
+        Event::listen(function(FieldTypesResolving $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_REGISTER_FIELD_TYPES)) {
                 $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->types->all()]);
                 Craft::$app->getFields()->trigger(self::EVENT_REGISTER_FIELD_TYPES, $yiiEvent);
@@ -738,7 +738,7 @@ class Fields extends Component
             }
         });
 
-        Event::listen(function(DefineCompatibleFieldTypes $event) {
+        Event::listen(function(CompatibleFieldTypesResolving $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES)) {
                 $yiiEvent = new DefineCompatibleFieldTypesEvent(['field' => $event->field, 'compatibleTypes' => $event->compatibleTypes->all()]);
                 Craft::$app->getFields()->trigger(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES, $yiiEvent);
@@ -746,7 +746,7 @@ class Fields extends Component
             }
         });
 
-        Event::listen(function(RegisterNestedEntryFieldTypes $event) {
+        Event::listen(function(NestedEntryFieldTypesResolving $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES)) {
                 $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->types->all()]);
                 Craft::$app->getFields()->trigger(self::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES, $yiiEvent);
@@ -770,7 +770,7 @@ class Fields extends Component
             }
         });
 
-        Event::listen(function(ApplyingFieldDelete $event) {
+        Event::listen(function(FieldDeletionApplying $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_APPLY_FIELD_DELETE)) {
                 $yiiEvent = new FieldEvent(['field' => $event->field]);
                 Craft::$app->getFields()->trigger(self::EVENT_BEFORE_APPLY_FIELD_DELETE, $yiiEvent);
@@ -820,7 +820,7 @@ class Fields extends Component
             }
         });
 
-        Event::listen(function(ApplyingFieldSave $event) {
+        Event::listen(function(FieldSaveApplying $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_APPLY_FIELD_SAVE)) {
                 Craft::$app->getFields()->trigger(self::EVENT_BEFORE_APPLY_FIELD_SAVE, new ApplyFieldSaveEvent([
                     'field' => $event->field,

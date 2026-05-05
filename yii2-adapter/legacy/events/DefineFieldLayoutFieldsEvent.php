@@ -15,7 +15,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\Events\DefineNativeFields} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving} instead.
  */
 class DefineFieldLayoutFieldsEvent extends Event
 {

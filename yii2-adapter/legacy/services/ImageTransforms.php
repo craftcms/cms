@@ -14,13 +14,13 @@ use craft\events\ImageTransformEvent;
 use craft\events\RegisterComponentTypesEvent;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Image\Data\ImageTransform as ImageTransformData;
-use CraftCms\Cms\Image\Events\ApplyingTransformDelete;
-use CraftCms\Cms\Image\Events\DeletingTransform;
-use CraftCms\Cms\Image\Events\InvalidatingAssetTransforms;
-use CraftCms\Cms\Image\Events\RegisterImageTransformers;
-use CraftCms\Cms\Image\Events\SavingTransform;
+use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
+use CraftCms\Cms\Image\Events\ImageTransformersResolving;
 use CraftCms\Cms\Image\Events\TransformDeleted;
+use CraftCms\Cms\Image\Events\TransformDeleting;
+use CraftCms\Cms\Image\Events\TransformDeletionApplying;
 use CraftCms\Cms\Image\Events\TransformSaved;
+use CraftCms\Cms\Image\Events\TransformSaving;
 use CraftCms\Cms\Image\ImageTransforms as ImageTransformsService;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use Illuminate\Support\Facades\Event as EventFacade;
@@ -243,7 +243,7 @@ class ImageTransforms extends Component
 
     public static function registerEvents(): void
     {
-        EventFacade::listen(SavingTransform::class, function(SavingTransform $event) {
+        EventFacade::listen(TransformSaving::class, function(TransformSaving $event) {
             if (!Craft::$app->getImageTransforms()->hasEventHandlers(self::EVENT_BEFORE_SAVE_IMAGE_TRANSFORM)) {
                 return;
             }
@@ -265,7 +265,7 @@ class ImageTransforms extends Component
             ]));
         });
 
-        EventFacade::listen(DeletingTransform::class, function(DeletingTransform $event) {
+        EventFacade::listen(TransformDeleting::class, function(TransformDeleting $event) {
             if (!Craft::$app->getImageTransforms()->hasEventHandlers(self::EVENT_BEFORE_DELETE_IMAGE_TRANSFORM)) {
                 return;
             }
@@ -275,7 +275,7 @@ class ImageTransforms extends Component
             ]));
         });
 
-        EventFacade::listen(ApplyingTransformDelete::class, function(ApplyingTransformDelete $event) {
+        EventFacade::listen(TransformDeletionApplying::class, function(TransformDeletionApplying $event) {
             if (!Craft::$app->getImageTransforms()->hasEventHandlers(self::EVENT_BEFORE_APPLY_TRANSFORM_DELETE)) {
                 return;
             }
@@ -295,7 +295,7 @@ class ImageTransforms extends Component
             ]));
         });
 
-        EventFacade::listen(InvalidatingAssetTransforms::class, function(InvalidatingAssetTransforms $event) {
+        EventFacade::listen(AssetTransformsInvalidating::class, function(AssetTransformsInvalidating $event) {
             if (!Craft::$app->getImageTransforms()->hasEventHandlers(self::EVENT_BEFORE_INVALIDATE_ASSET_TRANSFORMS)) {
                 return;
             }
@@ -305,7 +305,7 @@ class ImageTransforms extends Component
             ]));
         });
 
-        EventFacade::listen(RegisterImageTransformers::class, function(RegisterImageTransformers $event) {
+        EventFacade::listen(ImageTransformersResolving::class, function(ImageTransformersResolving $event) {
             if (!Craft::$app->getImageTransforms()->hasEventHandlers(self::EVENT_REGISTER_IMAGE_TRANSFORMERS)) {
                 return;
             }

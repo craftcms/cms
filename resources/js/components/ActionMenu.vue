@@ -1,7 +1,39 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import {computed} from 'vue';
-  import type {ActionItem} from '@craftcms/cp/actions';
+  import type {VariantKey} from '@craftcms/cp/types/index.ts';
+  import {type Component, computed, type VNode} from 'vue';
+
+  interface ActionItemHr {
+    type: 'hr';
+  }
+
+  interface ActionItemDisplay {
+    type: 'display';
+    is: () => VNode | 'string' | Component;
+  }
+
+  interface ActionItemButton {
+    type?: 'button';
+    label: string;
+    variant?: VariantKey;
+    icon?: string;
+    onClick?: () => void;
+  }
+
+  interface ActionItemLink {
+    type?: 'link';
+    href: string;
+    label: string;
+    variant?: VariantKey;
+  }
+
+  export type ActionItem =
+    | ActionItemDisplay
+    | ActionItemHr
+    | ActionItemButton
+    | ActionItemLink;
+
+  export type ActionItems = Array<ActionItem>;
 
   const props = withDefaults(
     defineProps<{
@@ -15,31 +47,27 @@
     }
   );
 
-  const validActions = computed(() =>
-    props.actions.filter((action) => action && Boolean(action.label))
-  );
+  const normalizedActions = computed((): ActionItems => {
+    return props.actions.map((action): ActionItem => {
+      if (action.type === 'hr' || action.type === 'display') {
+        return action;
+      }
 
-  const dangerousActions = computed(() =>
-    validActions.value.filter(
-      (action) => action.variant && action.variant === 'danger'
-    )
-  );
-
-  const safeActions = computed(() =>
-    validActions.value.filter(
-      (action) => !action.variant || action.variant !== 'danger'
-    )
-  );
+      return {
+        ...action,
+        type:
+          action.type ??
+          (('href' in action ? 'link' : 'button') as 'link' | 'button'),
+      };
+    });
+  });
 
   const sortedActions = computed(() => {
-    const actions = safeActions.value;
-
-    if (dangerousActions.value.length) {
-      actions.push({type: 'hr'});
-      actions.push(...dangerousActions.value);
-    }
-
-    return actions;
+    return normalizedActions.value.sort((a, b) => {
+      const aDanger = 'variant' in a && a.variant === 'danger' ? 1 : 0;
+      const bDanger = 'variant' in b && b.variant === 'danger' ? 1 : 0;
+      return aDanger - bDanger;
+    });
   });
 </script>
 
@@ -60,14 +88,18 @@
 
     <div slot="content" class="m-sm">
       <template v-for="(action, idx) in sortedActions" :key="idx">
-        <template v-if="action.type && action.type === 'hr'">
-          <hr class="m-0" />
-        </template>
-        <template v-else>
-          <craft-action-item @click="action.onClick" v-bind="action">{{
-            action.label
-          }}</craft-action-item>
-        </template>
+        <hr class="m-0" v-if="action.type === 'hr'" />
+        <component v-else-if="action.type === 'display'" :is="action.is" />
+        <craft-action-item
+          v-else-if="action.type === 'link'"
+          v-bind="action"
+          :href="action.href"
+        >
+          {{ action.label }}
+        </craft-action-item>
+        <craft-action-item v-else @click="action.onClick?.()" v-bind="action">{{
+          action.label
+        }}</craft-action-item>
       </template>
     </div>
   </craft-action-menu>

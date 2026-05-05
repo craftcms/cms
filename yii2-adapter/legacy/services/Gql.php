@@ -21,14 +21,14 @@ use craft\models\GqlToken;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Gql\Data\GqlSchema as NewGqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken as NewGqlToken;
-use CraftCms\Cms\Gql\Events\DefineGqlValidationRules;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
-use CraftCms\Cms\Gql\Events\ExecutingGqlQuery;
-use CraftCms\Cms\Gql\Events\RegisterGqlDirectives;
-use CraftCms\Cms\Gql\Events\RegisterGqlMutations;
-use CraftCms\Cms\Gql\Events\RegisterGqlQueries;
-use CraftCms\Cms\Gql\Events\RegisterGqlSchemaComponents;
-use CraftCms\Cms\Gql\Events\RegisterGqlTypes;
+use CraftCms\Cms\Gql\Events\GqlDirectivesResolving;
+use CraftCms\Cms\Gql\Events\GqlMutationsResolving;
+use CraftCms\Cms\Gql\Events\GqlQueriesResolving;
+use CraftCms\Cms\Gql\Events\GqlQueryExecuting;
+use CraftCms\Cms\Gql\Events\GqlSchemaComponentsResolving;
+use CraftCms\Cms\Gql\Events\GqlTypesResolving;
+use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
 use CraftCms\Cms\Gql\Gql as NewGql;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
@@ -285,7 +285,7 @@ class Gql extends Component
 
     public static function registerEvents(): void
     {
-        Event::listen(RegisterGqlTypes::class, function(RegisterGqlTypes $event) {
+        Event::listen(GqlTypesResolving::class, function(GqlTypesResolving $event) {
             $service = self::service();
             if (!$service->hasEventHandlers(self::EVENT_REGISTER_GQL_TYPES)) {
                 return;
@@ -296,7 +296,7 @@ class Gql extends Component
             $event->types = $yiiEvent->types;
         });
 
-        Event::listen(RegisterGqlQueries::class, function(RegisterGqlQueries $event) {
+        Event::listen(GqlQueriesResolving::class, function(GqlQueriesResolving $event) {
             $service = self::service();
             if (!$service->hasEventHandlers(self::EVENT_REGISTER_GQL_QUERIES)) {
                 return;
@@ -307,7 +307,7 @@ class Gql extends Component
             $event->queries = $yiiEvent->queries;
         });
 
-        Event::listen(RegisterGqlMutations::class, function(RegisterGqlMutations $event) {
+        Event::listen(GqlMutationsResolving::class, function(GqlMutationsResolving $event) {
             $service = self::service();
             if (!$service->hasEventHandlers(self::EVENT_REGISTER_GQL_MUTATIONS)) {
                 return;
@@ -318,7 +318,7 @@ class Gql extends Component
             $event->mutations = $yiiEvent->mutations;
         });
 
-        Event::listen(RegisterGqlDirectives::class, function(RegisterGqlDirectives $event) {
+        Event::listen(GqlDirectivesResolving::class, function(GqlDirectivesResolving $event) {
             $service = self::service();
             if (!$service->hasEventHandlers(self::EVENT_REGISTER_GQL_DIRECTIVES)) {
                 return;
@@ -329,7 +329,7 @@ class Gql extends Component
             $event->directives = $yiiEvent->directives;
         });
 
-        Event::listen(RegisterGqlSchemaComponents::class, function(RegisterGqlSchemaComponents $event) {
+        Event::listen(GqlSchemaComponentsResolving::class, function(GqlSchemaComponentsResolving $event) {
             $service = self::service();
             if (!$service->hasEventHandlers(self::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS)) {
                 return;
@@ -344,7 +344,7 @@ class Gql extends Component
             $event->mutations = $yiiEvent->mutations;
         });
 
-        Event::listen(DefineGqlValidationRules::class, function(DefineGqlValidationRules $event) {
+        Event::listen(GqlValidationRulesResolving::class, function(GqlValidationRulesResolving $event) {
             $service = self::service();
             if (!$service->hasEventHandlers(self::EVENT_DEFINE_GQL_VALIDATION_RULES)) {
                 return;
@@ -358,7 +358,7 @@ class Gql extends Component
             $event->validationRules = $yiiEvent->validationRules;
         });
 
-        Event::listen(ExecutingGqlQuery::class, function(ExecutingGqlQuery $event) {
+        Event::listen(GqlQueryExecuting::class, function(GqlQueryExecuting $event) {
             $service = self::service();
             if (!$service->hasEventHandlers(self::EVENT_BEFORE_EXECUTE_GQL_QUERY)) {
                 return;
