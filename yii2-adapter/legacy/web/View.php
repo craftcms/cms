@@ -37,8 +37,8 @@ use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
-use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
 use CraftCms\Cms\View\Events\RenderingAssets;
+use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateHooks;
 use CraftCms\Cms\View\TemplateMode;
@@ -95,7 +95,7 @@ class View extends \yii\web\View
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering site template roots
      *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\RegisterSiteTemplateRoots} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\SiteTemplateRootsResolving} instead.
      */
     public const EVENT_REGISTER_SITE_TEMPLATE_ROOTS = 'registerSiteTemplateRoots';
 
@@ -2221,7 +2221,7 @@ JS;
             $event->roots = array_merge($event->roots, $yiiEvent->roots);
         });
 
-        Event::listen(RegisterSiteTemplateRoots::class, function(RegisterSiteTemplateRoots $event) {
+        Event::listen(SiteTemplateRootsResolving::class, function(SiteTemplateRootsResolving $event) {
             if (!Craft::$app->getView()->hasEventHandlers(self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS)) {
                 return;
             }
