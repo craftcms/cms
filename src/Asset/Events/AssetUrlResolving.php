@@ -9,11 +9,11 @@ use CraftCms\Cms\Element\Events\BeforeDefineUrl;
 use CraftCms\Cms\Image\Data\ImageTransform;
 
 /**
- * @event BeforeDefineAssetUrl The event that is triggered before defining the asset’s URL.
+ * @event AssetUrlResolving The event that is triggered before defining the asset’s URL.
  *
  * @see getUrl()
  */
-class BeforeDefineAssetUrl extends BeforeDefineUrl
+class AssetUrlResolving extends BeforeDefineUrl
 {
     public function __construct(
         public Asset $asset,

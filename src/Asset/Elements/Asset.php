@@ -21,7 +21,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
-use CraftCms\Cms\Asset\Events\BeforeDefineAssetUrl;
+use CraftCms\Cms\Asset\Events\AssetUrlResolving;
 use CraftCms\Cms\Asset\Events\BeforeGenerateTransform;
 use CraftCms\Cms\Asset\Events\BeforeHandleFile;
 use CraftCms\Cms\Asset\Events\DefineAssetUrl;
@@ -1849,11 +1849,11 @@ JS, [
 
         $transform ??= $this->_transform;
 
-        event($event = new BeforeDefineAssetUrl($this, $transform));
+        event($event = new AssetUrlResolving($this, $transform));
 
         $url = $event->url;
 
-        // If BeforeDefineAssetUrl::$url is set to null, only respect that if $handled is true
+        // If AssetUrlResolving::$url is set to null, only respect that if $handled is true
         if ($event->url === null && ! $event->handled) {
             $url = $this->_url($transform, $immediately);
         }
