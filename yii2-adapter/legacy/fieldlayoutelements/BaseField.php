@@ -11,7 +11,7 @@ namespace craft\fieldlayoutelements;
 
 use craft\base\Event as YiiEvent;
 use craft\events\DefineFieldActionsEvent;
-use CraftCms\Cms\FieldLayout\Events\DefineActionMenuItems;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutActionMenuItemsResolving;
 use Illuminate\Support\Facades\Event;
 
 /**
@@ -36,7 +36,7 @@ abstract class BaseField extends \CraftCms\Cms\FieldLayout\LayoutElements\BaseFi
 
     public static function registerEvents(): void
     {
-        Event::listen(function(DefineActionMenuItems $event) {
+        Event::listen(function(FieldLayoutActionMenuItemsResolving $event) {
             if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
                 $yiiEvent = new DefineFieldActionsEvent([
                     'element' => $event->element,
