@@ -20,7 +20,6 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Data\SiteGroup;
-use CraftCms\Cms\Site\Events\ApplyingSiteGroupDelete;
 use CraftCms\Cms\Site\Events\DeletedSiteGroup;
 use CraftCms\Cms\Site\Events\DeletingSite;
 use CraftCms\Cms\Site\Events\DeletingSiteGroup;
@@ -31,6 +30,7 @@ use CraftCms\Cms\Site\Events\SavingSite;
 use CraftCms\Cms\Site\Events\SavingSiteGroup;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Site\Events\SiteDeletionApplying;
+use CraftCms\Cms\Site\Events\SiteGroupDeletionApplying;
 use CraftCms\Cms\Site\Events\SiteSaved;
 use CraftCms\Cms\Site\Events\SitesReordered;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
@@ -590,7 +590,7 @@ class Sites extends Component
             }
         });
 
-        Event::listen(ApplyingSiteGroupDelete::class, function(ApplyingSiteGroupDelete $event) {
+        Event::listen(SiteGroupDeletionApplying::class, function(SiteGroupDeletionApplying $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_BEFORE_APPLY_GROUP_DELETE)) {
                 Craft::$app->getSites()->trigger(self::EVENT_BEFORE_APPLY_GROUP_DELETE, new SiteGroupEvent([
                     'group' => self::siteGroupToLegacySiteGroup($event->siteGroup),

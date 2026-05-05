@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Site\Events;
 use CraftCms\Cms\Site\Data\SiteGroup;
 
 /*
- * @event ApplyingSiteGroupDelete The event that is triggered before a site group delete is applied to the database.
+ * @event SiteGroupDeletionApplying The event that is triggered before a site group delete is applied to the database.
  */
-class ApplyingSiteGroupDelete
+class SiteGroupDeletionApplying
 {
     public function __construct(
         public SiteGroup $siteGroup,

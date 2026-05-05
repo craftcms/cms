@@ -8,11 +8,11 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\SiteGroup;
-use CraftCms\Cms\Site\Events\ApplyingSiteGroupDelete;
 use CraftCms\Cms\Site\Events\DeletedSiteGroup;
 use CraftCms\Cms\Site\Events\DeletingSiteGroup;
 use CraftCms\Cms\Site\Events\SavedSiteGroup;
 use CraftCms\Cms\Site\Events\SavingSiteGroup;
+use CraftCms\Cms\Site\Events\SiteGroupDeletionApplying;
 use CraftCms\Cms\Site\Models\SiteGroup as SiteGroupModel;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\MemoizableArray;
@@ -147,7 +147,7 @@ class SiteGroups
 
         $group = $this->getGroupById($groupModel->id);
 
-        event(new ApplyingSiteGroupDelete($group));
+        event(new SiteGroupDeletionApplying($group));
 
         $groupModel->delete();
 
