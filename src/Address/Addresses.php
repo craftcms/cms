@@ -16,7 +16,7 @@ use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Address\Events\AddressCountriesResolving;
 use CraftCms\Cms\Address\Events\AddressFieldLabelResolving;
-use CraftCms\Cms\Address\Events\DefineAddressSubdivisions;
+use CraftCms\Cms\Address\Events\AddressSubdivisionsResolving;
 use CraftCms\Cms\Address\Events\DefineAddressUsedFields;
 use CraftCms\Cms\Address\Events\DefineAddressUsedSubdivisionFields;
 use CraftCms\Cms\Address\Repositories\SubdivisionRepository;
@@ -74,7 +74,7 @@ readonly class Addresses implements FieldLayoutProviderInterface
      */
     public function defineAddressSubdivisions(array $parents, array $options = []): array
     {
-        event($event = new DefineAddressSubdivisions($parents, $options));
+        event($event = new AddressSubdivisionsResolving($parents, $options));
 
         return $event->subdivisions;
     }

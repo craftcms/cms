@@ -11,7 +11,7 @@ use CommerceGuys\Addressing\Country\CountryRepository;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Events\AddressCountriesResolving;
 use CraftCms\Cms\Address\Events\AddressFieldLabelResolving;
-use CraftCms\Cms\Address\Events\DefineAddressSubdivisions;
+use CraftCms\Cms\Address\Events\AddressSubdivisionsResolving;
 use CraftCms\Cms\Address\Events\DefineAddressUsedFields;
 use CraftCms\Cms\Address\Events\DefineAddressUsedSubdivisionFields;
 use CraftCms\Cms\Address\Repositories\SubdivisionRepository;
@@ -39,7 +39,7 @@ it('can get the address format repository', function () {
 });
 
 it('can define address subdivisions with an event', function () {
-    Event::listen(DefineAddressSubdivisions::class, function (DefineAddressSubdivisions $event) {
+    Event::listen(AddressSubdivisionsResolving::class, function (AddressSubdivisionsResolving $event) {
         $event->subdivisions = ['foo'];
     });
 
