@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Utility\Events;
 use CraftCms\Cms\Asset\Data\Volume;
 
 /**
- * @event ListVolumes The event that is triggered when listing the available volumes to index.
+ * @event AssetIndexVolumesResolving The event that is triggered when listing the available volumes to index.
  */
-class ListVolumes
+class AssetIndexVolumesResolving
 {
     public function __construct(
         /** @var Volume[] The volumes to be listed. */
