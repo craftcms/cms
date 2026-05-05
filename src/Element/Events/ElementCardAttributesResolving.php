@@ -8,9 +8,9 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 
 /**
- * RegisterCardAttributes event is triggered when registering the card attributes for an element type.
+ * ElementCardAttributesResolving event is triggered when registering the card attributes for an element type.
  */
-class RegisterCardAttributes
+class ElementCardAttributesResolving
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class

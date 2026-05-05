@@ -10,8 +10,8 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
+use CraftCms\Cms\Element\Events\ElementCardAttributesResolving;
 use CraftCms\Cms\Element\Events\QueryForTableAttributePreparing;
-use CraftCms\Cms\Element\Events\RegisterCardAttributes;
 use CraftCms\Cms\Element\Events\RegisterDefaultCardAttributes;
 use CraftCms\Cms\Element\Events\RegisterDefaultTableAttributes;
 use CraftCms\Cms\Element\Events\RegisterSearchableAttributes;
@@ -482,7 +482,7 @@ trait DisplayedInIndex
      */
     public static function cardAttributes(?FieldLayout $fieldLayout = null): array
     {
-        event($event = new RegisterCardAttributes(
+        event($event = new ElementCardAttributesResolving(
             elementType: static::class,
             cardAttributes: static::defineCardAttributes(),
             fieldLayout: $fieldLayout,
