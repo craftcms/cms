@@ -95,8 +95,8 @@ class HandleInertiaRequests extends Middleware
                 'hasWaitingJobs' => false,
             ],
             'craft' => fn () => [
-                'csrfTokenValue' => csrf_token(),
-                'csrfTokenName' => Cms::config()->csrfTokenName,
+                'csrfTokenValue' => $generalConfig->enableCsrfProtection ? csrf_token() : null,
+                'csrfTokenName' => $generalConfig->enableCsrfProtection ? $generalConfig->csrfTokenName : null,
                 'general' => [
                     'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
                 ],

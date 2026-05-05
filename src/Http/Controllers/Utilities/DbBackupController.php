@@ -30,11 +30,13 @@ readonly class DbBackupController
         try {
             $backupPath = $backups->backup();
         } catch (Throwable $e) {
-            return $this->asFailure(t('Could not create backup: '.$e->getMessage()));
+            report($e);
+
+            return $this->asFailure(t('Could not create backup: {error}', ['error' => $e->getMessage()]));
         }
 
         if (! is_file($backupPath)) {
-            return $this->asFailure(t('Could not create backup: the backup file doesn\'t exist.'));
+            return $this->asFailure(t('Could not create backup: the backup file doesn’t exist.'));
         }
 
         // Zip it up and delete the SQL file

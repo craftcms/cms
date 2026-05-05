@@ -39,7 +39,12 @@
       id="db-backup"
       method="post"
     >
-      <input type="hidden" :name="csrfTokenName" :value="csrfTokenValue" />
+      <input
+        v-if="csrfTokenName && csrfTokenValue"
+        type="hidden"
+        :name="csrfTokenName"
+        :value="csrfTokenValue"
+      />
       <CraftCheckbox
         :label="t('Download backup')"
         name="downloadBackup"
