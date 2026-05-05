@@ -4,4 +4,4 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Events;
 
-class FieldElementSaving extends FieldElementEvent {}
+class FieldElementSaving extends FieldElementOccurred {}

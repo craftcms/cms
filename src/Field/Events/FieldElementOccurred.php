@@ -8,7 +8,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
-class FieldElementEvent
+class FieldElementOccurred
 {
     use ValidatableEvent;
 

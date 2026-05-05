@@ -10,7 +10,7 @@ namespace craft\base;
 use Closure;
 use Craft;
 use craft\base\Event as YiiEvent;
-use craft\events\FieldElementEvent as YiiFieldElementEvent;
+use craft\events\FieldElementOccurred as YiiFieldElementEvent;
 use craft\events\FieldEvent as YiiFieldEvent;
 use craft\events\ModelEvent;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -20,7 +20,7 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\FieldDeletionApplying;
 use CraftCms\Cms\Field\Events\FieldElementDeleted;
 use CraftCms\Cms\Field\Events\FieldElementDeleting;
-use CraftCms\Cms\Field\Events\FieldElementEvent;
+use CraftCms\Cms\Field\Events\FieldElementOccurred;
 use CraftCms\Cms\Field\Events\FieldElementPropagated;
 use CraftCms\Cms\Field\Events\FieldElementRestored;
 use CraftCms\Cms\Field\Events\FieldElementRestoring;
@@ -158,7 +158,7 @@ abstract class Field extends \CraftCms\Cms\Field\Field
         }
     }
 
-    private static function triggerFieldElementEvent(FieldElementEvent $event, string $name): void
+    private static function triggerFieldElementEvent(FieldElementOccurred $event, string $name): void
     {
         foreach (self::eventClasses($event->field) as $class) {
             if (!YiiEvent::hasHandlers($class, $name)) {
