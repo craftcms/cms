@@ -256,7 +256,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 
 #### Added
 
-- Added `CraftCms\Cms\Auth\Events\AuthorizingElement` event for customizing element authorization.
+- Added `CraftCms\Cms\Auth\Events\ElementAuthorizing` event for customizing element authorization.
 - Added `CraftCms\Cms\Element\Policies\ElementPolicy` base policy for element authorization.
 - Added element-specific authorization policies:
   - `CraftCms\Cms\Address\Policies\AddressPolicy`
