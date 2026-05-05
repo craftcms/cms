@@ -19,7 +19,6 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Events\ApplyingFieldSave;
 use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Field\Events\FieldDeleted;
@@ -28,6 +27,7 @@ use CraftCms\Cms\Field\Events\FieldLayoutDeleted;
 use CraftCms\Cms\Field\Events\FieldLayoutDeleting;
 use CraftCms\Cms\Field\Events\FieldLayoutSaved;
 use CraftCms\Cms\Field\Events\FieldLayoutSaving;
+use CraftCms\Cms\Field\Events\FieldSaveApplying;
 use CraftCms\Cms\Field\Events\FieldSaved;
 use CraftCms\Cms\Field\Events\FieldSaving;
 use CraftCms\Cms\Field\Events\RegisterFieldTypes;
@@ -1169,7 +1169,7 @@ class Fields
         // For control panel save requests, make sure we have all the custom data already saved on the object.
         $field = $this->_savingFields[$fieldUid] ?? null;
 
-        event(new ApplyingFieldSave($oldField, $data));
+        event(new FieldSaveApplying($oldField, $data));
 
         DB::beginTransaction();
 

@@ -16,7 +16,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
-use CraftCms\Cms\Field\Events\ApplyingFieldSave;
 use CraftCms\Cms\Field\Events\BeforeApplyFieldDelete;
 use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
 use CraftCms\Cms\Field\Events\FieldDeleted;
@@ -25,6 +24,7 @@ use CraftCms\Cms\Field\Events\FieldLayoutDeleted;
 use CraftCms\Cms\Field\Events\FieldLayoutDeleting;
 use CraftCms\Cms\Field\Events\FieldLayoutSaved;
 use CraftCms\Cms\Field\Events\FieldLayoutSaving;
+use CraftCms\Cms\Field\Events\FieldSaveApplying;
 use CraftCms\Cms\Field\Events\FieldSaved;
 use CraftCms\Cms\Field\Events\FieldSaving;
 use CraftCms\Cms\Field\Events\RegisterFieldTypes;
@@ -820,7 +820,7 @@ class Fields extends Component
             }
         });
 
-        Event::listen(function(ApplyingFieldSave $event) {
+        Event::listen(function(FieldSaveApplying $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_APPLY_FIELD_SAVE)) {
                 Craft::$app->getFields()->trigger(self::EVENT_BEFORE_APPLY_FIELD_SAVE, new ApplyFieldSaveEvent([
                     'field' => $event->field,

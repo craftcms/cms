@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Field\Events;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 
 /**
- * @event ApplyingFieldSave The event that is triggered before a field save is applied to the database.
+ * @event FieldSaveApplying The event that is triggered before a field save is applied to the database.
  */
-class ApplyingFieldSave
+class FieldSaveApplying
 {
     public function __construct(
         /**
