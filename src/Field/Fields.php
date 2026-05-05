@@ -31,7 +31,7 @@ use CraftCms\Cms\Field\Events\FieldSaveApplying;
 use CraftCms\Cms\Field\Events\FieldSaved;
 use CraftCms\Cms\Field\Events\FieldSaving;
 use CraftCms\Cms\Field\Events\FieldTypesResolving;
-use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
+use CraftCms\Cms\Field\Events\NestedEntryFieldTypesResolving;
 use CraftCms\Cms\Field\Matrix as MatrixField;
 use CraftCms\Cms\Field\Table as TableField;
 use CraftCms\Cms\Field\Users as UsersField;
@@ -339,7 +339,7 @@ class Fields
             MatrixField::class,
         ]);
 
-        event($event = new RegisterNestedEntryFieldTypes($fieldTypes));
+        event($event = new NestedEntryFieldTypesResolving($fieldTypes));
 
         return $event->types;
     }

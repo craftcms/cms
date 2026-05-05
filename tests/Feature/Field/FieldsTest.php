@@ -8,7 +8,7 @@ use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\CompatibleFieldTypesResolving;
 use CraftCms\Cms\Field\Events\FieldTypesResolving;
-use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
+use CraftCms\Cms\Field\Events\NestedEntryFieldTypesResolving;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
@@ -113,8 +113,8 @@ it('can get nested entry field types', function () {
     expect($this->fields->getNestedEntryFieldTypes())->not()->toContain(CustomNestedEntryField::class);
 
     Event::listen(
-        RegisterNestedEntryFieldTypes::class,
-        fn (RegisterNestedEntryFieldTypes $event) => $event->types->add(CustomNestedEntryField::class),
+        NestedEntryFieldTypesResolving::class,
+        fn (NestedEntryFieldTypesResolving $event) => $event->types->add(CustomNestedEntryField::class),
     );
 
     expect($this->fields->getNestedEntryFieldTypes())->toContain(CustomNestedEntryField::class);

@@ -8,11 +8,11 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use Illuminate\Support\Collection;
 
 /**
- * @event RegisterNestedEntryFieldTypes The event that is triggered when registering field types which manage nested entries.
+ * @event NestedEntryFieldTypesResolving The event that is triggered when registering field types which manage nested entries.
  *
  * These field types must implement [[ElementContainerFieldInterface]].
  */
-class RegisterNestedEntryFieldTypes
+class NestedEntryFieldTypesResolving
 {
     public function __construct(
         /** @var Collection<class-string<ElementContainerFieldInterface>> */
