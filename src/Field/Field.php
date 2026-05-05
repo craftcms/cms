@@ -22,7 +22,6 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Events\BeforeFieldSave;
 use CraftCms\Cms\Field\Events\DefineFieldActionMenuItems;
 use CraftCms\Cms\Field\Events\DefineFieldHtml;
 use CraftCms\Cms\Field\Events\DefineFieldKeywords;
@@ -37,6 +36,7 @@ use CraftCms\Cms\Field\Events\FieldElementSaving;
 use CraftCms\Cms\Field\Events\FieldLifecycleDeleted;
 use CraftCms\Cms\Field\Events\FieldLifecycleDeleting;
 use CraftCms\Cms\Field\Events\FieldLifecycleSaved;
+use CraftCms\Cms\Field\Events\FieldLifecycleSaving;
 use CraftCms\Cms\Field\Events\FieldMergeFromCompleted;
 use CraftCms\Cms\Field\Events\FieldMergeIntoCompleted;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -989,7 +989,7 @@ JS, [
             $this->context = Fields::getFieldContext();
         }
 
-        event($event = new BeforeFieldSave($this, $isNew));
+        event($event = new FieldLifecycleSaving($this, $isNew));
 
         return $event->isValid;
     }

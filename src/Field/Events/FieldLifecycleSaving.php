@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Field\Events;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
-class BeforeFieldSave extends FieldEvent
+class FieldLifecycleSaving extends FieldEvent
 {
     use ValidatableEvent;
 
