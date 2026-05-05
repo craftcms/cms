@@ -10,7 +10,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\Enums\Position;
-use CraftCms\Cms\View\Events\RenderingAssets;
+use CraftCms\Cms\View\Events\ViewAssetsRendering;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
 use Stringable;
@@ -279,7 +279,7 @@ class HtmlStack
      */
     public function headHtml(bool $clear = true): string
     {
-        event(new RenderingAssets);
+        event(new ViewAssetsRendering);
 
         $head = Position::Head->value;
 
@@ -335,7 +335,7 @@ class HtmlStack
      */
     public function bodyBeginHtml(bool $clear = true): string
     {
-        event(new RenderingAssets);
+        event(new ViewAssetsRendering);
 
         $body = Position::BodyBegin->value;
 
@@ -361,7 +361,7 @@ class HtmlStack
      */
     public function bodyEndHtml(bool $clear = true): string
     {
-        event(new RenderingAssets);
+        event(new ViewAssetsRendering);
 
         $body = Position::BodyEnd->value;
 

@@ -37,8 +37,8 @@ use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
-use CraftCms\Cms\View\Events\RenderingAssets;
 use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
+use CraftCms\Cms\View\Events\ViewAssetsRendering;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateHooks;
 use CraftCms\Cms\View\TemplateMode;
@@ -236,7 +236,7 @@ class View extends \yii\web\View
     private array $_readyLoadBuffers = [];
 
     /**
-     * When true, the RenderingAssets listener skips flushing _readyJs/_loadJs
+     * When true, the ViewAssetsRendering listener skips flushing _readyJs/_loadJs
      * so that placeholderHtml() can handle jQuery wrapping itself.
      */
     private bool $_skipReadyLoadFlush = false;
@@ -1856,7 +1856,7 @@ class View extends \yii\web\View
             $this->_setJsProperty('registeredAssetBundles', $this->_registeredAssetBundles);
         }
 
-        // Prevent the RenderingAssets listener from flushing _readyJs/_loadJs,
+        // Prevent the ViewAssetsRendering listener from flushing _readyJs/_loadJs,
         // since renderBodyEndHtml() handles jQuery wrapping for page renders.
         $this->_skipReadyLoadFlush = true;
 
@@ -2089,7 +2089,7 @@ JS;
     /**
      * Flushes all pending asset registrations into the HtmlStack.
      *
-     * Called by the {@see \CraftCms\Cms\View\Events\RenderingAssets} listener to ensure
+     * Called by the {@see \CraftCms\Cms\View\Events\ViewAssetsRendering} listener to ensure
      * Yii2 asset bundles and POS_READY/POS_LOAD JS are pushed into the registry
      * before it renders.
      */
@@ -2327,7 +2327,7 @@ JS;
             $event->bodyEndHtml = $html['bodyEndHtml'];
         });
 
-        Event::listen(function(RenderingAssets $event) {
+        Event::listen(function(ViewAssetsRendering $event) {
             Craft::$app->getView()->flushPendingAssets();
         });
     }
