@@ -18,9 +18,9 @@ use craft\web\Controller;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieving;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\DefineUserContentSummary;
 use CraftCms\Cms\User\Events\EditUserScreensResolving;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
+use CraftCms\Cms\User\Events\UserContentSummaryResolving;
 use CraftCms\Cms\User\Events\UserGroupsAndPermissionsAssigning;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Auth\Events\Failed;
@@ -217,7 +217,7 @@ class UsersController extends Controller
             }
         });
 
-        Event::listen(DefineUserContentSummary::class, function(DefineUserContentSummary $event) {
+        Event::listen(UserContentSummaryResolving::class, function(UserContentSummaryResolving $event) {
             // Fire a 'defineContentSummary' event
             if (YiiEvent::hasHandlers(UsersController::class, UsersController::EVENT_DEFINE_CONTENT_SUMMARY)) {
                 $yiiEvent = new DefineUserContentSummaryEvent([
