@@ -10,14 +10,14 @@ namespace CraftCms\Cms\Element\Events;
  * Plugins should listen for this event and add already-registered command signatures:
  *
  * ```php
- * Event::listen(DefineResaveCommands::class, function (DefineResaveCommands $event) {
+ * Event::listen(ElementResaveCommandsResolving::class, function (ElementResaveCommandsResolving $event) {
  *     $event->commands['craft:resave:products'] = [
  *         'description' => 'Resave products',
  *     ];
  * });
  * ```
  */
-class DefineResaveCommands
+class ElementResaveCommandsResolving
 {
     /**
      * @var array<string, array{description?: string}> Command signatures mapped to metadata.
