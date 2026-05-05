@@ -6,9 +6,9 @@ use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Element\Events\AfterPropagate;
 use CraftCms\Cms\Element\Events\BeforeMergeCanonicalChanges;
 use CraftCms\Cms\Element\Events\CanonicalChangesMerged;
+use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
 use CraftCms\Cms\Element\Operations\ElementCanonicalChanges;
 use CraftCms\Cms\Element\Operations\ElementDuplicates;
 use CraftCms\Cms\Element\Operations\ElementWrites;
@@ -147,7 +147,7 @@ it('throws when the derivative site is unsupported', function () {
 it('merges and saves localized derivatives before the requested site', function () {
     Event::fake([
         CanonicalChangesMerged::class,
-        AfterPropagate::class,
+        ElementLifecyclePropagated::class,
         BeforeMergeCanonicalChanges::class,
     ]);
 
@@ -248,13 +248,13 @@ it('merges and saves localized derivatives before the requested site', function 
     Event::assertDispatchedTimes(CanonicalChangesMerged::class, 1);
     Event::assertDispatched(fn (BeforeMergeCanonicalChanges $event) => $event->element === $draft);
     Event::assertDispatched(fn (CanonicalChangesMerged $event) => $event->element === $draft);
-    Event::assertDispatched(fn (AfterPropagate $event) => $event->element === $draft && $event->isNew === false);
+    Event::assertDispatched(fn (ElementLifecyclePropagated $event) => $event->element === $draft && $event->isNew === false);
 });
 
 it('merges localized elements, sets dateLastMerged, and resets the merging flag', function () {
     Event::fake([
         CanonicalChangesMerged::class,
-        AfterPropagate::class,
+        ElementLifecyclePropagated::class,
         BeforeMergeCanonicalChanges::class,
     ]);
 
@@ -295,5 +295,5 @@ it('merges localized elements, sets dateLastMerged, and resets the merging flag'
 
     Event::assertDispatchedOnce(BeforeMergeCanonicalChanges::class);
     Event::assertDispatchedOnce(CanonicalChangesMerged::class);
-    Event::assertDispatchedOnce(AfterPropagate::class);
+    Event::assertDispatchedOnce(ElementLifecyclePropagated::class);
 });

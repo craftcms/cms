@@ -10,9 +10,6 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\AfterPropagate;
-use CraftCms\Cms\Element\Events\AfterPropagateElement;
-use CraftCms\Cms\Element\Events\AfterPropagateElements;
 use CraftCms\Cms\Element\Events\AfterResaveElement;
 use CraftCms\Cms\Element\Events\AfterResaveElements;
 use CraftCms\Cms\Element\Events\AfterSaveElement;
@@ -22,6 +19,7 @@ use CraftCms\Cms\Element\Events\BeforeResaveElement;
 use CraftCms\Cms\Element\Events\BeforeResaveElements;
 use CraftCms\Cms\Element\Events\BeforeSaveElement;
 use CraftCms\Cms\Element\Events\BeforeUpdateSearchIndex;
+use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
@@ -568,7 +566,7 @@ readonly class ElementWrites
                         $siteElements[$element->siteId] = $element;
                         $siteSettingsRecords[$element->siteId] = $siteSettingsRecord;
 
-                        Event::listen(function (AfterPropagate $event) use ($element, $generatedFields, $siteElements, $siteSettingsRecords) {
+                        Event::listen(function (ElementLifecyclePropagated $event) use ($element, $generatedFields, $siteElements, $siteSettingsRecords) {
                             if ($event->element->id !== $element->id) {
                                 return;
                             }

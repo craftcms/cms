@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Element\Events\AfterPropagate;
 use CraftCms\Cms\Element\Events\AfterRestore;
 use CraftCms\Cms\Element\Events\AfterSave;
 use CraftCms\Cms\Element\Events\BeforeDelete;
 use CraftCms\Cms\Element\Events\BeforeRestore;
 use CraftCms\Cms\Element\Events\BeforeSave;
 use CraftCms\Cms\Element\Events\ElementLifecycleDeleted;
+use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\User\Elements\User;
@@ -81,7 +81,7 @@ test('afterSave event receives isNew parameter', function () {
 
 test('afterPropagate triggers event', function () {
     $triggered = false;
-    Event::listen(function (AfterPropagate $event) use (&$triggered) {
+    Event::listen(function (ElementLifecyclePropagated $event) use (&$triggered) {
         $triggered = true;
     });
 
@@ -92,7 +92,7 @@ test('afterPropagate triggers event', function () {
 
 test('afterPropagate event receives isNew parameter', function () {
     $receivedIsNew = [];
-    Event::listen(function (AfterPropagate $event) use (&$receivedIsNew) {
+    Event::listen(function (ElementLifecyclePropagated $event) use (&$receivedIsNew) {
         $receivedIsNew[] = $event->isNew;
     });
 
