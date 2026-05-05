@@ -4,6 +4,7 @@
 
 - Fixed a bug where nested elements would get soft-deleted after running the `entrify/global-set` command on subsequent environments. ([#18767](https://github.com/craftcms/cms/issues/18767))
 - Fixed a bug where row headings within Table fields weren’t getting statically translated in the control panel. ([#13703](https://github.com/craftcms/cms/discussions/13703))
+- Fixed a bug where entry type chips within Matrix settings could be missing their action items.
 
 ## 5.9.22 - 2026-04-29
 
