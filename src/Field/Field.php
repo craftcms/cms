@@ -22,7 +22,6 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Events\DefineFieldHtml;
 use CraftCms\Cms\Field\Events\DefineFieldKeywords;
 use CraftCms\Cms\Field\Events\FieldActionMenuItemsResolving;
 use CraftCms\Cms\Field\Events\FieldDeletionApplying;
@@ -33,6 +32,7 @@ use CraftCms\Cms\Field\Events\FieldElementRestored;
 use CraftCms\Cms\Field\Events\FieldElementRestoring;
 use CraftCms\Cms\Field\Events\FieldElementSaved;
 use CraftCms\Cms\Field\Events\FieldElementSaving;
+use CraftCms\Cms\Field\Events\FieldHtmlResolving;
 use CraftCms\Cms\Field\Events\FieldLifecycleDeleted;
 use CraftCms\Cms\Field\Events\FieldLifecycleDeleting;
 use CraftCms\Cms\Field\Events\FieldLifecycleSaved;
@@ -590,7 +590,7 @@ JS, [
     {
         $html = $this->inputHtml($value, $element, false);
 
-        event($event = new DefineFieldHtml(
+        event($event = new FieldHtmlResolving(
             field: $this,
             value: $value,
             inline: false,
@@ -608,7 +608,7 @@ JS, [
     {
         $html = $this->inputHtml($value, $element, true);
 
-        event($event = new DefineFieldHtml(
+        event($event = new FieldHtmlResolving(
             field: $this,
             value: $value,
             inline: true,
