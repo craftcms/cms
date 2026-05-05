@@ -18,7 +18,7 @@ use CraftCms\Cms\Address\Events\AddressCountriesResolving;
 use CraftCms\Cms\Address\Events\AddressFieldLabelResolving;
 use CraftCms\Cms\Address\Events\AddressSubdivisionsResolving;
 use CraftCms\Cms\Address\Events\AddressUsedFieldsResolving;
-use CraftCms\Cms\Address\Events\DefineAddressUsedSubdivisionFields;
+use CraftCms\Cms\Address\Events\AddressUsedSubdivisionFieldsResolving;
 use CraftCms\Cms\Address\Repositories\SubdivisionRepository;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Field\Fields;
@@ -119,7 +119,7 @@ readonly class Addresses implements FieldLayoutProviderInterface
     {
         $fields = $this->addressFormatRepository->get($countryCode)->getUsedSubdivisionFields();
 
-        event($event = new DefineAddressUsedSubdivisionFields($countryCode, $fields));
+        event($event = new AddressUsedSubdivisionFieldsResolving($countryCode, $fields));
 
         return $event->fields;
     }

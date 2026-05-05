@@ -13,7 +13,7 @@ use CraftCms\Cms\Address\Events\AddressCountriesResolving;
 use CraftCms\Cms\Address\Events\AddressFieldLabelResolving;
 use CraftCms\Cms\Address\Events\AddressSubdivisionsResolving;
 use CraftCms\Cms\Address\Events\AddressUsedFieldsResolving;
-use CraftCms\Cms\Address\Events\DefineAddressUsedSubdivisionFields;
+use CraftCms\Cms\Address\Events\AddressUsedSubdivisionFieldsResolving;
 use CraftCms\Cms\Address\Repositories\SubdivisionRepository;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use Illuminate\Support\Facades\Event;
@@ -81,7 +81,7 @@ it('can get used subdivision fields for a country code', function () {
 });
 
 it('can change the used subdivisionfields with an event', function () {
-    Event::listen(DefineAddressUsedSubdivisionFields::class, function (DefineAddressUsedSubdivisionFields $event) {
+    Event::listen(AddressUsedSubdivisionFieldsResolving::class, function (AddressUsedSubdivisionFieldsResolving $event) {
         $event->fields = ['changed'];
     });
 
