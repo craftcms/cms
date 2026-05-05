@@ -14,7 +14,7 @@ use craft\events\ImageTransformEvent;
 use craft\events\RegisterComponentTypesEvent;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Image\Data\ImageTransform as ImageTransformData;
-use CraftCms\Cms\Image\Events\InvalidatingAssetTransforms;
+use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Image\Events\RegisterImageTransformers;
 use CraftCms\Cms\Image\Events\SavingTransform;
 use CraftCms\Cms\Image\Events\TransformDeleted;
@@ -295,7 +295,7 @@ class ImageTransforms extends Component
             ]));
         });
 
-        EventFacade::listen(InvalidatingAssetTransforms::class, function(InvalidatingAssetTransforms $event) {
+        EventFacade::listen(AssetTransformsInvalidating::class, function(AssetTransformsInvalidating $event) {
             if (!Craft::$app->getImageTransforms()->hasEventHandlers(self::EVENT_BEFORE_INVALIDATE_ASSET_TRANSFORMS)) {
                 return;
             }

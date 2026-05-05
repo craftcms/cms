@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Image\Events;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
-class InvalidatingAssetTransforms
+class AssetTransformsInvalidating
 {
     use ValidatableEvent;
 

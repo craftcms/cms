@@ -12,7 +12,7 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Image\Contracts\EagerImageTransformerInterface;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
-use CraftCms\Cms\Image\Events\InvalidatingAssetTransforms;
+use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Image\Events\RegisterImageTransformers;
 use CraftCms\Cms\Image\Events\SavingTransform;
 use CraftCms\Cms\Image\Events\TransformDeleted;
@@ -356,7 +356,7 @@ class ImageTransforms
 
     public function deleteCreatedTransformsForAsset(Asset $asset): void
     {
-        event(new InvalidatingAssetTransforms(asset: $asset));
+        event(new AssetTransformsInvalidating(asset: $asset));
 
         $transformers = $this->getAllImageTransformers();
 
