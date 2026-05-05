@@ -7,10 +7,10 @@ namespace CraftCms\Cms\Element;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Events\CreatingRevision;
 use CraftCms\Cms\Element\Events\RevertedToRevision;
 use CraftCms\Cms\Element\Events\RevertingToRevision;
 use CraftCms\Cms\Element\Events\RevisionCreated;
+use CraftCms\Cms\Element\Events\RevisionCreating;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Jobs\PruneRevisions;
 use CraftCms\Cms\Support\Arr;
@@ -100,7 +100,7 @@ readonly class Revisions
                 $creatorId = Auth::user()?->id;
             }
 
-            event($event = new CreatingRevision(
+            event($event = new RevisionCreating(
                 canonical: $canonical,
                 revisionNum: $num,
                 creatorId: $creatorId,
