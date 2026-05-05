@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Component\Events\ApplyingComponentDelete;
+use CraftCms\Cms\Component\Events\ComponentDeleteApplying;
 use CraftCms\Cms\Component\Events\ComponentDeleted;
 use CraftCms\Cms\Component\Events\ComponentSaved;
 use CraftCms\Cms\Component\Events\DeletingComponent;
@@ -106,7 +106,7 @@ it('can register before delete callback', function () {
 it('can register before apply delete callback', function () {
     $triggered = false;
 
-    Event::listen(function (ApplyingComponentDelete $event) use (&$triggered) {
+    Event::listen(function (ComponentDeleteApplying $event) use (&$triggered) {
         $triggered = true;
         expect($event->component)->toBe($this->component);
         expect($event->isNew)->toBeFalse();
