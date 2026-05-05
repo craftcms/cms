@@ -4,9 +4,9 @@ namespace craft\elements;
 
 use craft\base\Event as YiiEvent;
 use craft\events\BulkElementsEvent;
-use craft\events\DuplicateNestedElementsEvent;
-use CraftCms\Cms\Element\Events\DuplicateNestedElementsEvent as NewDuplicateNestedElementsEvent;
+use craft\events\NestedElementsDuplicated;
 use CraftCms\Cms\Element\Events\NestedElementRevisionsCreated;
+use CraftCms\Cms\Element\Events\NestedElementsDuplicated as NewDuplicateNestedElementsEvent;
 use CraftCms\Cms\Element\Events\NestedElementsSaved;
 use Illuminate\Support\Facades\Event;
 
@@ -41,7 +41,7 @@ class NestedElementManager extends \CraftCms\Cms\Element\NestedElementManager
                 return;
             }
 
-            YiiEvent::trigger(self::class, self::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS, new DuplicateNestedElementsEvent([
+            YiiEvent::trigger(self::class, self::EVENT_AFTER_DUPLICATE_NESTED_ELEMENTS, new NestedElementsDuplicated([
                 'source' => $event->source,
                 'target' => $event->target,
                 'newElementIds' => $event->newElementIds,
@@ -54,7 +54,7 @@ class NestedElementManager extends \CraftCms\Cms\Element\NestedElementManager
                 return;
             }
 
-            YiiEvent::trigger(self::class, self::EVENT_AFTER_CREATE_REVISIONS, new DuplicateNestedElementsEvent([
+            YiiEvent::trigger(self::class, self::EVENT_AFTER_CREATE_REVISIONS, new NestedElementsDuplicated([
                 'source' => $event->source,
                 'target' => $event->target,
                 'newElementIds' => $event->newElementIds,

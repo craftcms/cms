@@ -4,4 +4,4 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Events;
 
-class NestedElementRevisionsCreated extends DuplicateNestedElementsEvent {}
+class NestedElementRevisionsCreated extends NestedElementsDuplicated {}
