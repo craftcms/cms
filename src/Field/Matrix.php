@@ -29,7 +29,7 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Events\DefineEntryTypesForField;
+use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
@@ -391,7 +391,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         $entryTypes = $this->_entryTypes;
 
-        event($event = new DefineEntryTypesForField(
+        event($event = new EntryTypesForFieldResolving(
             field: $this,
             entryTypes: $entryTypes,
             element: $element,

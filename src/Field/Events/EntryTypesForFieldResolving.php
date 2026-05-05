@@ -12,7 +12,7 @@ use CraftCms\Cms\Field\Matrix;
 /**
  * @see Matrix::getEntryTypesForField()
  */
-class DefineEntryTypesForField
+class EntryTypesForFieldResolving
 {
     public function __construct(
         /** @var FieldInterface The current field */
