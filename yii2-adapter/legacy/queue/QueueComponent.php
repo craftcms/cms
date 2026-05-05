@@ -55,7 +55,7 @@ class QueueComponent extends Queue
      *
      * @deprecated Use Laravel's `php artisan queue:work` command instead.
      */
-    public function run(bool $repeat = false, int $timeout = 0): mixed
+    public function run(bool $repeat = false, int $timeout = 0): ?int
     {
         Artisan::call('queue:work', Arr::whereNotNull([
             '--queue' => implode(',', array_unique([Cms::config()->queueName, Cms::config()->lowPriorityQueueName])),
