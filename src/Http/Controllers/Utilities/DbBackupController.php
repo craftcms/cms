@@ -30,7 +30,7 @@ readonly class DbBackupController
         try {
             $backupPath = $backups->backup();
         } catch (Throwable $e) {
-            return $this->asFailure(t('Could not create backup: '.$e->getMessage()));
+            return $this->asFailure(t('Could not create backup: {error}', ['error' => $e->getMessage()]));
         }
 
         if (! is_file($backupPath)) {
