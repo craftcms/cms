@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Element\Events;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
-class AfterDeleteForSite
+class ElementDeletedForSite
 {
     public function __construct(
         public ElementInterface $element,
