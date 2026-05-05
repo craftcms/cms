@@ -8,17 +8,17 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 
 /**
- * @event DefineCustomFields The event that is triggered when defining the custom fields for the layout.
+ * @event FieldLayoutCustomFieldsResolving The event that is triggered when defining the custom fields for the layout.
  *
- * Note that fields set on [[DefineCustomFields::$fields]] will be grouped by field group, indexed by the group names.
+ * Note that fields set on [[FieldLayoutCustomFieldsResolving::$fields]] will be grouped by field group, indexed by the group names.
  *
  * ```php
  * use CraftCms\Cms\FieldLayout\FieldLayout;
- * use CraftCms\Cms\FieldLayout\FieldLayout\Events\DefineCustomFields;
+ * use CraftCms\Cms\FieldLayout\FieldLayout\Events\FieldLayoutCustomFieldsResolving;
  * use CraftCms\Cms\Field\PlainText;
  * use Illuminate\Support\Facades\Event;
  *
- * Event::listen(function (DefineCustomFields $event) {
+ * Event::listen(function (FieldLayoutCustomFieldsResolving $event) {
  *     $layout = $event->fieldLayout;
  *
  *     if ($layout->type === MyElementType::class) {
@@ -32,7 +32,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
  *
  * @see FieldLayout::getAvailableCustomFields()
  */
-class DefineCustomFields
+class FieldLayoutCustomFieldsResolving
 {
     public function __construct(
         public FieldLayout $fieldLayout,

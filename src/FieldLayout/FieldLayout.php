@@ -13,9 +13,9 @@ use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
-use CraftCms\Cms\FieldLayout\Events\DefineCustomFields;
 use CraftCms\Cms\FieldLayout\Events\DefineNativeFields;
 use CraftCms\Cms\FieldLayout\Events\DefineUIElements;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutCustomFieldsResolving;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormCreating;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseUiElement;
@@ -423,7 +423,7 @@ class FieldLayout extends Component
             t('Custom Fields') => $customFields,
         ];
 
-        event($event = new DefineCustomFields($this, $this->_availableCustomFields));
+        event($event = new FieldLayoutCustomFieldsResolving($this, $this->_availableCustomFields));
 
         return $this->_availableCustomFields = $event->fields;
     }
