@@ -1,6 +1,6 @@
 import {ConfigService} from '@craftcms/cp/services/Config.ts.mjs';
 import {QueueService} from '@craftcms/cp/services/Queue.ts.mjs';
-import {createInertiaApp} from '@inertiajs/vue3';
+import {createInertiaApp, router} from '@inertiajs/vue3';
 import QueueManager from '@/components/utilities/QueueManager/QueueManager.vue';
 import {Axios, Config, Queue} from '@/types/keys';
 import axios from 'axios';
@@ -98,6 +98,20 @@ const Cp = {
         app.component('AssetIndexes', AssetIndexes);
         app.component('SystemMessages', SystemMessages);
       },
+    });
+
+    // Handle normal responses as page visits
+    let activeVisitUrl = '';
+
+    router.on('start', (event) => {
+      activeVisitUrl = event.detail.visit.url.href;
+    });
+
+    router.on('httpException', (event) => {
+      if (event.detail.response.status === 200) {
+        event.preventDefault();
+        window.location.href = activeVisitUrl;
+      }
     });
 
     console.log('Calling booted callbacks', bootedCallbacks);
