@@ -25,7 +25,6 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Users as UsersFacade;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\DeactivatingUser;
 use CraftCms\Cms\User\Events\DefineDefaultUserGroups;
 use CraftCms\Cms\User\Events\DeletingUserPhoto;
 use CraftCms\Cms\User\Events\EmailVerified;
@@ -38,6 +37,7 @@ use CraftCms\Cms\User\Events\UserActivating;
 use CraftCms\Cms\User\Events\UserAssignedToDefaultGroups;
 use CraftCms\Cms\User\Events\UserAssignedToGroups;
 use CraftCms\Cms\User\Events\UserDeactivated;
+use CraftCms\Cms\User\Events\UserDeactivating;
 use CraftCms\Cms\User\Events\UserDefaultGroupsAssigning;
 use CraftCms\Cms\User\Events\UserGroupsAssigning;
 use CraftCms\Cms\User\Events\UserLocked;
@@ -858,7 +858,7 @@ class Users extends Component
         foreach ([
              UnlockingUser::class => self::EVENT_BEFORE_UNLOCK_USER,
              UserActivating::class => self::EVENT_BEFORE_ACTIVATE_USER,
-             DeactivatingUser::class => self::EVENT_BEFORE_DEACTIVATE_USER,
+             UserDeactivating::class => self::EVENT_BEFORE_DEACTIVATE_USER,
              SuspendingUser::class => self::EVENT_BEFORE_SUSPEND_USER,
              UnsuspendingUser::class => self::EVENT_BEFORE_UNSUSPEND_USER,
          ] as $new => $old) {

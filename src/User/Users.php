@@ -36,7 +36,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\DeactivatingUser;
 use CraftCms\Cms\User\Events\DefineDefaultUserGroups;
 use CraftCms\Cms\User\Events\DeletingUserPhoto;
 use CraftCms\Cms\User\Events\SavingUserPhoto;
@@ -48,6 +47,7 @@ use CraftCms\Cms\User\Events\UserActivating;
 use CraftCms\Cms\User\Events\UserAssignedToDefaultGroups;
 use CraftCms\Cms\User\Events\UserAssignedToGroups;
 use CraftCms\Cms\User\Events\UserDeactivated;
+use CraftCms\Cms\User\Events\UserDeactivating;
 use CraftCms\Cms\User\Events\UserDefaultGroupsAssigning;
 use CraftCms\Cms\User\Events\UserGroupsAssigning;
 use CraftCms\Cms\User\Events\UserLocked;
@@ -662,7 +662,7 @@ class Users
      */
     public function deactivateUser(User $user): void
     {
-        event($event = new DeactivatingUser($user));
+        event($event = new UserDeactivating($user));
 
         if (! $event->isValid) {
             throw new InvalidElementException($user);
