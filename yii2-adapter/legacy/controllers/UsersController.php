@@ -16,12 +16,12 @@ use craft\events\UserEvent;
 use craft\web\assets\authmethodsetup\AuthMethodSetupAsset;
 use craft\web\Controller;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
-use CraftCms\Cms\Auth\Events\RetrievingLoginUser;
+use CraftCms\Cms\Auth\Events\LoginUserRetrieving;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\AssigningGroupsAndPermissions;
-use CraftCms\Cms\User\Events\DefineEditUserScreens;
-use CraftCms\Cms\User\Events\DefineUserContentSummary;
+use CraftCms\Cms\User\Events\EditUserScreensResolving;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
+use CraftCms\Cms\User\Events\UserContentSummaryResolving;
+use CraftCms\Cms\User\Events\UserGroupsAndPermissionsAssigning;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Support\Collection;
@@ -68,7 +68,7 @@ class UsersController extends Controller
      * ```
      *
      * @since 4.2.0
-     * @deprecated 6.0.0 use {@see RetrievingLoginUser} instead.
+     * @deprecated 6.0.0 use {@see LoginUserRetrieving} instead.
      */
     public const EVENT_BEFORE_FIND_LOGIN_USER = 'beforeFindLoginUser';
 
@@ -145,7 +145,7 @@ class UsersController extends Controller
 
     public static function registerEvents(): void
     {
-        Event::listen(DefineEditUserScreens::class, function(DefineEditUserScreens $event) {
+        Event::listen(EditUserScreensResolving::class, function(EditUserScreensResolving $event) {
             if (YiiEvent::hasHandlers(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS)) {
                 $currentUser = User::find()->id($event->currentUser->id)->one();
                 $editedUser = User::find()->id($event->editedUser->id)->one();
@@ -161,7 +161,7 @@ class UsersController extends Controller
             }
         });
 
-        Event::listen(AssigningGroupsAndPermissions::class, function(AssigningGroupsAndPermissions $event) {
+        Event::listen(UserGroupsAndPermissionsAssigning::class, function(UserGroupsAndPermissionsAssigning $event) {
             if (YiiEvent::hasHandlers(UsersController::class, UsersController::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
                 $user = User::find()->id($event->user->id)->one();
 
@@ -183,7 +183,7 @@ class UsersController extends Controller
             }
         });
 
-        Event::listen(RetrievingLoginUser::class, function(RetrievingLoginUser $event) {
+        Event::listen(LoginUserRetrieving::class, function(LoginUserRetrieving $event) {
             if (YiiEvent::hasHandlers(UsersController::class, UsersController::EVENT_BEFORE_FIND_LOGIN_USER)) {
                 $yiiEvent = new FindLoginUserEvent([
                     'loginName' => $event->loginName,
@@ -217,7 +217,7 @@ class UsersController extends Controller
             }
         });
 
-        Event::listen(DefineUserContentSummary::class, function(DefineUserContentSummary $event) {
+        Event::listen(UserContentSummaryResolving::class, function(UserContentSummaryResolving $event) {
             // Fire a 'defineContentSummary' event
             if (YiiEvent::hasHandlers(UsersController::class, UsersController::EVENT_DEFINE_CONTENT_SUMMARY)) {
                 $yiiEvent = new DefineUserContentSummaryEvent([

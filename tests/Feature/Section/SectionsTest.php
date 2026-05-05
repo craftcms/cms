@@ -7,11 +7,11 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Section\Data\Section as SectionData;
 use CraftCms\Cms\Section\Data\SectionSiteSettings as SectionSiteSettingsData;
 use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\Section\Events\ApplyingSectionDelete;
-use CraftCms\Cms\Section\Events\DeletingSection;
-use CraftCms\Cms\Section\Events\SavingSection;
 use CraftCms\Cms\Section\Events\SectionDeleted;
+use CraftCms\Cms\Section\Events\SectionDeleting;
+use CraftCms\Cms\Section\Events\SectionDeletionApplying;
 use CraftCms\Cms\Section\Events\SectionSaved;
+use CraftCms\Cms\Section\Events\SectionSaving;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Section\Sections;
@@ -109,11 +109,11 @@ it('can get a section\'s site settings', function () {
 
 it('can save a section', function () {
     Event::fake([
-        SavingSection::class,
+        SectionSaving::class,
         SectionSaved::class,
     ]);
 
-    Event::listen(SavingSection::class, fn () => null);
+    Event::listen(SectionSaving::class, fn () => null);
     Event::listen(SectionSaved::class, fn () => null);
 
     expect(Section::count())->toBe(0);
@@ -132,19 +132,19 @@ it('can save a section', function () {
 
     expect(Section::count())->toBe(1);
 
-    Event::assertDispatchedOnce(SavingSection::class);
+    Event::assertDispatchedOnce(SectionSaving::class);
     Event::assertDispatchedOnce(SectionSaved::class);
 });
 
 it('can delete a section by id', function () {
     Event::fake([
-        DeletingSection::class,
-        ApplyingSectionDelete::class,
+        SectionDeleting::class,
+        SectionDeletionApplying::class,
         SectionDeleted::class,
     ]);
 
-    Event::listen(DeletingSection::class, fn () => null);
-    Event::listen(ApplyingSectionDelete::class, fn () => null);
+    Event::listen(SectionDeleting::class, fn () => null);
+    Event::listen(SectionDeletionApplying::class, fn () => null);
     Event::listen(SectionDeleted::class, fn () => null);
 
     $section = Section::factory()->create();
@@ -157,8 +157,8 @@ it('can delete a section by id', function () {
 
     expect(Section::count())->toBe(0);
 
-    Event::assertDispatchedOnce(DeletingSection::class);
-    Event::assertDispatchedOnce(ApplyingSectionDelete::class);
+    Event::assertDispatchedOnce(SectionDeleting::class);
+    Event::assertDispatchedOnce(SectionDeletionApplying::class);
     Event::assertDispatchedOnce(SectionDeleted::class);
 });
 

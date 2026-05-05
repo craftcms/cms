@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Gql;
 
 use CraftCms\Cms\Component\Component;
-use CraftCms\Cms\Gql\Events\DefineGqlTypeFields;
+use CraftCms\Cms\Gql\Events\GqlTypeFieldsResolving;
 
 class TypeManager extends Component
 {
     public function registerFieldDefinitions(array $fields, string $typeName): array
     {
-        event($event = new DefineGqlTypeFields(
+        event($event = new GqlTypeFieldsResolving(
             fields: $fields,
             typeName: $typeName,
         ));

@@ -10,7 +10,7 @@ namespace craft\utilities;
 use craft\base\Utility;
 use craft\events\ListVolumesEvent;
 use CraftCms\Cms\Asset\Data\Volume;
-use CraftCms\Cms\Utility\Events\ListVolumes;
+use CraftCms\Cms\Utility\Events\AssetIndexVolumesResolving;
 use Illuminate\Support\Facades\Event as EventFacade;
 use yii\base\Event;
 
@@ -73,7 +73,7 @@ class AssetIndexes extends Utility
 
     public static function registerEvents(): void
     {
-        EventFacade::listen(ListVolumes::class, function(ListVolumes $event) {
+        EventFacade::listen(AssetIndexVolumesResolving::class, function(AssetIndexVolumesResolving $event) {
             $yiiEvent = new ListVolumesEvent(['volumes' => $event->volumes]);
 
             Event::trigger(self::class, self::EVENT_LIST_VOLUMES, $yiiEvent);

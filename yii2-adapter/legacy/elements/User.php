@@ -14,12 +14,12 @@ use craft\base\Event as YiiEvent;
 use craft\base\LegacyEventConstants;
 use craft\events\AuthenticateUserEvent;
 use craft\events\DefineValueEvent;
-use CraftCms\Cms\Auth\Events\Authenticating;
+use CraftCms\Cms\Auth\Events\UserAuthenticating;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User as UserElement;
-use CraftCms\Cms\User\Events\DefineFriendlyName;
-use CraftCms\Cms\User\Events\DefineName;
+use CraftCms\Cms\User\Events\UserFriendlyNameResolving;
+use CraftCms\Cms\User\Events\UserNameResolving;
 use CraftCms\Cms\User\Validation\UserRules;
 use Deprecated;
 use Illuminate\Support\Facades\Event;
@@ -78,7 +78,7 @@ class User extends UserElement
 
     public static function registerEvents(): void
     {
-        Event::listen(function(DefineName $event) {
+        Event::listen(function(UserNameResolving $event) {
             if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_NAME)) {
                 $yiiEvent = new DefineValueEvent();
                 $yiiEvent->sender = $event->user;
@@ -91,7 +91,7 @@ class User extends UserElement
             }
         });
 
-        Event::listen(function(DefineFriendlyName $event) {
+        Event::listen(function(UserFriendlyNameResolving $event) {
             if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_FRIENDLY_NAME)) {
                 $yiiEvent = new DefineValueEvent();
                 $yiiEvent->sender = $event->user;
@@ -104,7 +104,7 @@ class User extends UserElement
             }
         });
 
-        Event::listen(Authenticating::class, function(Authenticating $event) {
+        Event::listen(UserAuthenticating::class, function(UserAuthenticating $event) {
             if (YiiEvent::hasHandlers(self::class, self::EVENT_BEFORE_AUTHENTICATE)) {
                 $yiiEvent = new AuthenticateUserEvent(['password' => $event->credentials['password']]);
 

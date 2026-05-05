@@ -16,7 +16,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Events\BeforeDefineAssetUrl} or {@see \CraftCms\Cms\Asset\Events\DefineAssetUrl} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Events\AssetUrlResolving} or {@see \CraftCms\Cms\Asset\Events\AssetUrlDefined} instead.
  */
 class DefineAssetUrlEvent extends DefineUrlEvent
 {

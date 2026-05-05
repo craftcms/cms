@@ -8,7 +8,7 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\FieldLayout\Events\DefineNativeFields;
+use CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving;
 use CraftCms\Cms\FieldLayout\LayoutElements\Addresses\AddressField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Addresses\CountryCodeField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Addresses\LabelField;
@@ -33,7 +33,7 @@ class FieldLayoutServiceProvider extends ServiceProvider
 {
     public function boot(Sites $sites): void
     {
-        Event::listen(function (DefineNativeFields $event) use ($sites) {
+        Event::listen(function (NativeFieldsResolving $event) use ($sites) {
             switch ($event->fieldLayout->type) {
                 case Address::class:
                     $event->fields[] = LabelField::class;

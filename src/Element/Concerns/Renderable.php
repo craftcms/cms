@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Element\Events\Render;
+use CraftCms\Cms\Element\Events\ElementRendering;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Twig\TemplateResolver;
@@ -32,7 +32,7 @@ trait Renderable
             $variables[$refHandle] = $this;
         }
 
-        event($event = new Render(
+        event($event = new ElementRendering(
             element: $this,
             templates: $templates,
             variables: $variables,

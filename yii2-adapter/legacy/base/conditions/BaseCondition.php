@@ -11,7 +11,7 @@ use craft\elements\conditions\users\FirstNameConditionRule;
 use craft\elements\conditions\users\LastNameConditionRule;
 use craft\events\RegisterConditionRulesEvent;
 use craft\helpers\Html;
-use CraftCms\Cms\Condition\Events\RegisterConditionRules;
+use CraftCms\Cms\Condition\Events\ConditionRulesResolving;
 use CraftCms\Cms\User\Conditions\AdminConditionRule;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Conditions\UsernameConditionRule;
@@ -53,7 +53,7 @@ abstract class BaseCondition extends \CraftCms\Cms\Condition\BaseCondition
 
     public static function registerEvents(): void
     {
-        Event::listen(function(RegisterConditionRules $event) {
+        Event::listen(function(ConditionRulesResolving $event) {
             $map = [
                 AdminConditionRule::class => \craft\elements\conditions\users\AdminConditionRule::class,
                 \CraftCms\Cms\User\Conditions\AffiliatedSiteConditionRule::class => AffiliatedSiteConditionRule::class,

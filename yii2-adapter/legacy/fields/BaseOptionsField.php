@@ -11,7 +11,7 @@ namespace craft\fields;
 
 use craft\base\Event as YiiEvent;
 use craft\events\DefineInputOptionsEvent;
-use CraftCms\Cms\Field\Events\DefineInputOptions;
+use CraftCms\Cms\Field\Events\InputOptionsResolving;
 use Illuminate\Support\Facades\Event;
 
 /**
@@ -32,7 +32,7 @@ abstract class BaseOptionsField extends \CraftCms\Cms\Field\BaseOptionsField
 
     public static function registerEvents(): void
     {
-        Event::listen(function(DefineInputOptions $event) {
+        Event::listen(function(InputOptionsResolving $event) {
             if (!$event->field instanceof \CraftCms\Cms\Field\BaseOptionsField) {
                 return;
             }

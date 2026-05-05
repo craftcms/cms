@@ -11,6 +11,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\RegistersPackageAliases;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Orchestra\Testbench\Concerns\WithWorkbench;
@@ -33,6 +34,13 @@ class UnitTestCase extends Orchestra
     {
         parent::setUp();
 
+        unset($_SERVER['CRAFT_EDITION']);
+        putenv('CRAFT_EDITION');
+
+        Context::forgetHidden(Edition::class);
+        Context::forgetHidden('craft.isInstalled');
+        Context::forgetHidden('craft.info');
+
         tap(app(ConfigRepository::class), function (ConfigRepository $config) {
             $config->set('database.default', 'sqlite');
             $config->set('database.connections.sqlite', array_merge(
@@ -48,6 +56,12 @@ class UnitTestCase extends Orchestra
         DB::purge('sqlite');
         DB::setDefaultConnection('sqlite');
 
+        File::cleanDirectory(config_path('craft/project'));
+        File::cleanDirectory(storage_path('runtime/compiled_classes'));
+        File::cleanDirectory(storage_path('runtime/compiled_templates'));
+
+        Cms::setIsInstalled(false);
+
         Edition::set(Edition::Pro);
         TemplateMode::set(TemplateMode::Cp);
 
@@ -57,9 +71,5 @@ class UnitTestCase extends Orchestra
 
         Cms::config()->timezone('America/Los_Angeles');
         date_default_timezone_set('America/Los_Angeles');
-
-        File::cleanDirectory(config_path('craft/project'));
-        File::cleanDirectory(storage_path('runtime/compiled_classes'));
-        File::cleanDirectory(storage_path('runtime/compiled_templates'));
     }
 }

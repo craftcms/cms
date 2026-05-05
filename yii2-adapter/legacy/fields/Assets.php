@@ -11,7 +11,7 @@ namespace craft\fields;
 
 use craft\base\Event as YiiEvent;
 use craft\events\LocateUploadedFilesEvent;
-use CraftCms\Cms\Field\Events\LocateUploadedFiles;
+use CraftCms\Cms\Field\Events\AssetsUploadedFilesLocating;
 use Illuminate\Support\Facades\Event;
 
 /**
@@ -33,7 +33,7 @@ class Assets extends \CraftCms\Cms\Field\Assets
 
     public static function registerEvents(): void
     {
-        Event::listen(function(LocateUploadedFiles $event) {
+        Event::listen(function(AssetsUploadedFilesLocating $event) {
             if (!$event->field instanceof \CraftCms\Cms\Field\Assets) {
                 return;
             }

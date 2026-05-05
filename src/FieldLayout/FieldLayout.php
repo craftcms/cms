@@ -13,10 +13,10 @@ use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
-use CraftCms\Cms\FieldLayout\Events\CreateFieldLayoutForm;
-use CraftCms\Cms\FieldLayout\Events\DefineCustomFields;
-use CraftCms\Cms\FieldLayout\Events\DefineNativeFields;
-use CraftCms\Cms\FieldLayout\Events\DefineUIElements;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutCustomFieldsResolving;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormCreating;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutUIElementsResolving;
+use CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseUiElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -423,7 +423,7 @@ class FieldLayout extends Component
             t('Custom Fields') => $customFields,
         ];
 
-        event($event = new DefineCustomFields($this, $this->_availableCustomFields));
+        event($event = new FieldLayoutCustomFieldsResolving($this, $this->_availableCustomFields));
 
         return $this->_availableCustomFields = $event->fields;
     }
@@ -441,7 +441,7 @@ class FieldLayout extends Component
 
         $this->_availableNativeFields = [];
 
-        event($event = new DefineNativeFields($this, $this->_availableNativeFields));
+        event($event = new NativeFieldsResolving($this, $this->_availableNativeFields));
 
         // Instantiate them
         foreach ($event->fields as $field) {
@@ -477,7 +477,7 @@ class FieldLayout extends Component
             new Template,
         ];
 
-        event($event = new DefineUIElements($this, $elements));
+        event($event = new FieldLayoutUIElementsResolving($this, $elements));
         $elements = $event->elements;
 
         // HR and Line Break should always be last
@@ -1136,7 +1136,7 @@ class FieldLayout extends Component
             $form = new FieldLayoutForm($config);
             $tabs = $this->getTabs();
 
-            event($event = new CreateFieldLayoutForm(
+            event($event = new FieldLayoutFormCreating(
                 fieldLayout: $this,
                 form: $form,
                 element: $element,

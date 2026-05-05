@@ -17,8 +17,8 @@ use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User as UserElement;
-use CraftCms\Cms\User\Events\AssigningGroupsAndPermissions;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
+use CraftCms\Cms\User\Events\UserGroupsAndPermissionsAssigning;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
@@ -88,7 +88,7 @@ readonly class PermissionsController
         }
 
         if (Edition::get()->value >= Edition::Pro->value) {
-            event(new AssigningGroupsAndPermissions($user));
+            event(new UserGroupsAndPermissionsAssigning($user));
 
             // Assign user groups and permissions if the current user is allowed to do that
             $this->saveUserGroups($request, $user, $currentUser);

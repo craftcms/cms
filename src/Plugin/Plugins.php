@@ -11,20 +11,20 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
-use CraftCms\Cms\Plugin\Events\DisablingPlugin;
-use CraftCms\Cms\Plugin\Events\EnablingPlugin;
-use CraftCms\Cms\Plugin\Events\InstallingPlugin;
-use CraftCms\Cms\Plugin\Events\LoadingPlugins;
 use CraftCms\Cms\Plugin\Events\PluginDisabled;
+use CraftCms\Cms\Plugin\Events\PluginDisabling;
 use CraftCms\Cms\Plugin\Events\PluginEnabled;
+use CraftCms\Cms\Plugin\Events\PluginEnabling;
 use CraftCms\Cms\Plugin\Events\PluginInstalled;
+use CraftCms\Cms\Plugin\Events\PluginInstalling;
 use CraftCms\Cms\Plugin\Events\PluginRegistered;
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
 use CraftCms\Cms\Plugin\Events\PluginsLoaded;
+use CraftCms\Cms\Plugin\Events\PluginsLoading;
 use CraftCms\Cms\Plugin\Events\PluginUninstalled;
+use CraftCms\Cms\Plugin\Events\PluginUninstalling;
 use CraftCms\Cms\Plugin\Events\PluginUnregistered;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
-use CraftCms\Cms\Plugin\Events\UninstallingPlugin;
 use CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -157,7 +157,7 @@ class Plugins
         // Prevent this function from getting called twice.
         $this->loadingPlugins = true;
 
-        event(new LoadingPlugins);
+        event(new PluginsLoading);
 
         // Find all of the installed plugins
         $this->storedPluginInfo = DB::table(Table::PLUGINS)
@@ -356,7 +356,7 @@ class Plugins
             throw new InvalidPluginException($handle);
         }
 
-        event(new EnablingPlugin($plugin));
+        event(new PluginEnabling($plugin));
 
         // Enable the plugin in the project config
         app(ProjectConfig::class)->set(
@@ -395,7 +395,7 @@ class Plugins
             throw new InvalidPluginException($handle);
         }
 
-        event(new DisablingPlugin($plugin));
+        event(new PluginDisabling($plugin));
 
         // Disable the plugin in the project config
         app(ProjectConfig::class)->set(
@@ -457,7 +457,7 @@ class Plugins
 
         $plugin->edition = $edition;
 
-        event(new InstallingPlugin($plugin));
+        event(new PluginInstalling($plugin));
 
         DB::beginTransaction();
 
@@ -564,7 +564,7 @@ class Plugins
             throw new InvalidPluginException($handle);
         }
 
-        event(new UninstallingPlugin($plugin));
+        event(new PluginUninstalling($plugin));
 
         DB::beginTransaction();
         try {

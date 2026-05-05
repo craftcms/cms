@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
-use CraftCms\Cms\Asset\Events\ApplyingVolumeDelete;
-use CraftCms\Cms\Asset\Events\DeletingVolume;
-use CraftCms\Cms\Asset\Events\SavingVolume;
 use CraftCms\Cms\Asset\Events\VolumeDeleted;
+use CraftCms\Cms\Asset\Events\VolumeDeleting;
+use CraftCms\Cms\Asset\Events\VolumeDeletionApplied;
 use CraftCms\Cms\Asset\Events\VolumeSaved;
+use CraftCms\Cms\Asset\Events\VolumeSaving;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
@@ -83,11 +83,11 @@ it('can get a volume by handle', function () {
 
 it('can save a new volume', function () {
     Event::fake([
-        SavingVolume::class,
+        VolumeSaving::class,
         VolumeSaved::class,
     ]);
 
-    Event::listen(SavingVolume::class, fn () => null);
+    Event::listen(VolumeSaving::class, fn () => null);
     Event::listen(VolumeSaved::class, fn () => null);
 
     expect(Volume::count())->toBe(0);
@@ -105,7 +105,7 @@ it('can save a new volume', function () {
         expect($volume->handle)->toBe('testVolume');
     });
 
-    Event::assertDispatchedOnce(SavingVolume::class);
+    Event::assertDispatchedOnce(VolumeSaving::class);
     Event::assertDispatchedOnce(VolumeSaved::class);
 });
 
@@ -142,13 +142,13 @@ it('returns false when validation fails on save', function () {
 
 it('can delete a volume by id', function () {
     Event::fake([
-        DeletingVolume::class,
-        ApplyingVolumeDelete::class,
+        VolumeDeleting::class,
+        VolumeDeletionApplied::class,
         VolumeDeleted::class,
     ]);
 
-    Event::listen(DeletingVolume::class, fn () => null);
-    Event::listen(ApplyingVolumeDelete::class, fn () => null);
+    Event::listen(VolumeDeleting::class, fn () => null);
+    Event::listen(VolumeDeletionApplied::class, fn () => null);
     Event::listen(VolumeDeleted::class, fn () => null);
 
     $this->volumes->saveVolume(new VolumeData([
@@ -170,20 +170,20 @@ it('can delete a volume by id', function () {
     expect(Volume::count())->toBe(0);
     expect(Volume::withTrashed()->count())->toBe(1);
 
-    Event::assertDispatchedOnce(DeletingVolume::class);
-    Event::assertDispatchedOnce(ApplyingVolumeDelete::class);
+    Event::assertDispatchedOnce(VolumeDeleting::class);
+    Event::assertDispatchedOnce(VolumeDeletionApplied::class);
     Event::assertDispatchedOnce(VolumeDeleted::class);
 });
 
 it('can delete a volume', function () {
     Event::fake([
-        DeletingVolume::class,
-        ApplyingVolumeDelete::class,
+        VolumeDeleting::class,
+        VolumeDeletionApplied::class,
         VolumeDeleted::class,
     ]);
 
-    Event::listen(DeletingVolume::class, fn () => null);
-    Event::listen(ApplyingVolumeDelete::class, fn () => null);
+    Event::listen(VolumeDeleting::class, fn () => null);
+    Event::listen(VolumeDeletionApplied::class, fn () => null);
     Event::listen(VolumeDeleted::class, fn () => null);
 
     $this->volumes->saveVolume(new VolumeData([
@@ -205,8 +205,8 @@ it('can delete a volume', function () {
     expect(Volume::count())->toBe(0);
     expect(Volume::withTrashed()->count())->toBe(1);
 
-    Event::assertDispatchedOnce(DeletingVolume::class);
-    Event::assertDispatchedOnce(ApplyingVolumeDelete::class);
+    Event::assertDispatchedOnce(VolumeDeleting::class);
+    Event::assertDispatchedOnce(VolumeDeletionApplied::class);
     Event::assertDispatchedOnce(VolumeDeleted::class);
 });
 

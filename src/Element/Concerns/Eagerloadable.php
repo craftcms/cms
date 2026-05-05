@@ -10,7 +10,7 @@ use CraftCms\Cms\Element\Data\EagerLoadInfo;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Element\Events\DefineEagerLoadingMap;
+use CraftCms\Cms\Element\Events\ElementEagerLoadingMapResolving;
 use CraftCms\Cms\Element\Events\SetEagerLoadedElements;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -153,7 +153,7 @@ trait Eagerloadable
         }
 
         // Fire a 'defineEagerLoadingMap' event
-        event($event = new DefineEagerLoadingMap(
+        event($event = new ElementEagerLoadingMapResolving(
             elementType: static::class,
             sourceElements: $sourceElements,
             handle: $handle,

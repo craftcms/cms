@@ -16,7 +16,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Events\BeforeGenerateTransform} or {@see \CraftCms\Cms\Asset\Events\AfterGenerateTransform} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Events\TransformGenerating} or {@see \CraftCms\Cms\Asset\Events\AfterGenerateTransform} instead.
  */
 class GenerateTransformEvent extends Event
 {

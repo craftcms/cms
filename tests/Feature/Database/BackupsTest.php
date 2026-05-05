@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Backups;
-use CraftCms\Cms\Database\Events\AfterCreateBackup;
-use CraftCms\Cms\Database\Events\AfterRestoreBackup;
-use CraftCms\Cms\Database\Events\BeforeCreateBackup;
-use CraftCms\Cms\Database\Events\BeforeRestoreBackup;
+use CraftCms\Cms\Database\Events\BackupCreated;
+use CraftCms\Cms\Database\Events\BackupCreating;
+use CraftCms\Cms\Database\Events\BackupRestored;
+use CraftCms\Cms\Database\Events\BackupRestoring;
 use CraftCms\Cms\Database\Exceptions\CommandFailedException;
 use Illuminate\Database\MySqlConnection;
 use Illuminate\Database\PostgresConnection;
@@ -85,11 +85,11 @@ it('runs configured backup command and dispatches backup events', function () {
     $beforeEvent = null;
     $afterEvent = null;
 
-    Event::listen(BeforeCreateBackup::class, function (BeforeCreateBackup $event) use (&$beforeEvent) {
+    Event::listen(BackupCreating::class, function (BackupCreating $event) use (&$beforeEvent) {
         $beforeEvent = $event;
     });
 
-    Event::listen(AfterCreateBackup::class, function (AfterCreateBackup $event) use (&$afterEvent) {
+    Event::listen(BackupCreated::class, function (BackupCreated $event) use (&$afterEvent) {
         $afterEvent = $event;
     });
 
@@ -148,11 +148,11 @@ it('runs configured restore command and dispatches restore events', function () 
     $beforeEvent = null;
     $afterEvent = null;
 
-    Event::listen(BeforeRestoreBackup::class, function (BeforeRestoreBackup $event) use (&$beforeEvent) {
+    Event::listen(BackupRestoring::class, function (BackupRestoring $event) use (&$beforeEvent) {
         $beforeEvent = $event;
     });
 
-    Event::listen(AfterRestoreBackup::class, function (AfterRestoreBackup $event) use (&$afterEvent) {
+    Event::listen(BackupRestored::class, function (BackupRestored $event) use (&$afterEvent) {
         $afterEvent = $event;
     });
 
@@ -200,7 +200,7 @@ it('uses mysql default command generation for closure commands and respects even
     $capturedDefaultCommand = null;
     $connection = backupsTestMysqlConnection();
 
-    Event::listen(BeforeCreateBackup::class, function (BeforeCreateBackup $event) {
+    Event::listen(BackupCreating::class, function (BackupCreating $event) {
         $event->ignoreTables = ['cache'];
     });
 

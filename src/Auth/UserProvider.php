@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Auth;
 
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
-use CraftCms\Cms\Auth\Events\RetrievingLoginUser;
+use CraftCms\Cms\Auth\Events\LoginUserRetrieving;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
@@ -69,7 +69,7 @@ readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProvider
 
         $loginName = $credentials['loginName'];
 
-        event($event = new RetrievingLoginUser($loginName));
+        event($event = new LoginUserRetrieving($loginName));
 
         $user = $event->user ?? $this->users->getUserByUsernameOrEmail($loginName);
 

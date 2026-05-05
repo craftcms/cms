@@ -11,10 +11,10 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Search\Events\AfterSearch;
-use CraftCms\Cms\Search\Events\BeforeIndexKeywords;
-use CraftCms\Cms\Search\Events\BeforeScoreResults;
-use CraftCms\Cms\Search\Events\BeforeSearch;
+use CraftCms\Cms\Search\Events\KeywordsIndexing;
+use CraftCms\Cms\Search\Events\ScoringResults;
+use CraftCms\Cms\Search\Events\SearchPerformed;
+use CraftCms\Cms\Search\Events\SearchStarting;
 use CraftCms\Cms\Search\Jobs\UpdateSearchIndex;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -313,7 +313,7 @@ class Search
             ->offset(null)
             ->limit(null);
 
-        event(new BeforeSearch($elementQuery, $searchQuery));
+        event(new SearchStarting($elementQuery, $searchQuery));
 
         $query = $this->createDbQuery($searchQuery, $elementQuery);
 
@@ -339,7 +339,7 @@ class Search
 
         $scores = $this->scoreResults($results, $searchQuery, $elementQuery);
 
-        event($event = new AfterSearch($elementQuery, $searchQuery, $results, $scores));
+        event($event = new SearchPerformed($elementQuery, $searchQuery, $results, $scores));
 
         $scores = $event->scores ?? $scores;
 
@@ -387,7 +387,7 @@ class Search
 
     private function scoreResults(array $results, SearchQuery $searchQuery, ElementQueryInterface $elementQuery): array
     {
-        event($event = new BeforeScoreResults($elementQuery, $searchQuery, $results));
+        event($event = new ScoringResults($elementQuery, $searchQuery, $results));
 
         if ($event->scores !== null) {
             return $event->scores;
@@ -460,7 +460,7 @@ class Search
         $site = $element->getSite();
         $keywords = SearchHelper::normalizeKeywords($keywords, [], true, $site->getLanguage());
 
-        $event = new BeforeIndexKeywords($element, $attribute, $fieldId, $keywords);
+        $event = new KeywordsIndexing($element, $attribute, $fieldId, $keywords);
         event($event);
 
         if (! $event->isValid) {

@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Condition;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
-use CraftCms\Cms\Condition\Events\RegisterConditionRules;
+use CraftCms\Cms\Condition\Events\ConditionRulesResolving;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
@@ -137,7 +137,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         if (! isset($this->_selectableConditionRules)) {
             $rules = $this->selectableConditionRules();
 
-            event($event = new RegisterConditionRules(
+            event($event = new ConditionRulesResolving(
                 condition: $this,
                 conditionRules: $rules,
             ));
@@ -158,7 +158,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
      * Returns the selectable rules for this condition.
      *
      * Conditions should override this method instead of {@see getSelectableConditionRules()}
-     * so {@see RegisterConditionRules} handlers can modify the class-defined rules.
+     * so {@see ConditionRulesResolving} handlers can modify the class-defined rules.
      *
      * Rules should be defined as either the class name or an array with a `class` key set to the class name.
      *

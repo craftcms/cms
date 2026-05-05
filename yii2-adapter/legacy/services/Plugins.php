@@ -10,20 +10,20 @@ namespace craft\services;
 use Craft;
 use craft\events\PluginEvent;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
-use CraftCms\Cms\Plugin\Events\DisablingPlugin;
-use CraftCms\Cms\Plugin\Events\EnablingPlugin;
-use CraftCms\Cms\Plugin\Events\InstallingPlugin;
-use CraftCms\Cms\Plugin\Events\LoadingPlugins;
 use CraftCms\Cms\Plugin\Events\PluginDisabled;
+use CraftCms\Cms\Plugin\Events\PluginDisabling;
 use CraftCms\Cms\Plugin\Events\PluginEnabled;
+use CraftCms\Cms\Plugin\Events\PluginEnabling;
 use CraftCms\Cms\Plugin\Events\PluginInstalled;
+use CraftCms\Cms\Plugin\Events\PluginInstalling;
 use CraftCms\Cms\Plugin\Events\PluginRegistered;
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
 use CraftCms\Cms\Plugin\Events\PluginsLoaded;
+use CraftCms\Cms\Plugin\Events\PluginsLoading;
 use CraftCms\Cms\Plugin\Events\PluginUninstalled;
+use CraftCms\Cms\Plugin\Events\PluginUninstalling;
 use CraftCms\Cms\Plugin\Events\PluginUnregistered;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
-use CraftCms\Cms\Plugin\Events\UninstallingPlugin;
 use CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins as PluginsService;
@@ -494,7 +494,7 @@ class Plugins extends Component
         $pluginService = Craft::$app->getPlugins();
 
         Event::listen(
-            LoadingPlugins::class,
+            PluginsLoading::class,
             fn() => $pluginService->trigger(self::EVENT_BEFORE_LOAD_PLUGINS),
         );
 
@@ -504,8 +504,8 @@ class Plugins extends Component
         );
 
         Event::listen(
-            EnablingPlugin::class,
-            fn(EnablingPlugin $event) => $pluginService->trigger(self::EVENT_BEFORE_ENABLE_PLUGIN, new PluginEvent([
+            PluginEnabling::class,
+            fn(PluginEnabling $event) => $pluginService->trigger(self::EVENT_BEFORE_ENABLE_PLUGIN, new PluginEvent([
                 'plugin' => $event->plugin,
             ])),
         );
@@ -518,8 +518,8 @@ class Plugins extends Component
         );
 
         Event::listen(
-            DisablingPlugin::class,
-            fn(DisablingPlugin $event) => $pluginService->trigger(self::EVENT_BEFORE_DISABLE_PLUGIN, new PluginEvent([
+            PluginDisabling::class,
+            fn(PluginDisabling $event) => $pluginService->trigger(self::EVENT_BEFORE_DISABLE_PLUGIN, new PluginEvent([
                 'plugin' => $event->plugin,
             ])),
         );
@@ -532,8 +532,8 @@ class Plugins extends Component
         );
 
         Event::listen(
-            InstallingPlugin::class,
-            fn(InstallingPlugin $event) => $pluginService->trigger(self::EVENT_BEFORE_INSTALL_PLUGIN, new PluginEvent([
+            PluginInstalling::class,
+            fn(PluginInstalling $event) => $pluginService->trigger(self::EVENT_BEFORE_INSTALL_PLUGIN, new PluginEvent([
                 'plugin' => $event->plugin,
             ])),
         );
@@ -546,8 +546,8 @@ class Plugins extends Component
         );
 
         Event::listen(
-            UninstallingPlugin::class,
-            fn(UninstallingPlugin $event) => $pluginService->trigger(self::EVENT_BEFORE_UNINSTALL_PLUGIN, new PluginEvent([
+            PluginUninstalling::class,
+            fn(PluginUninstalling $event) => $pluginService->trigger(self::EVENT_BEFORE_UNINSTALL_PLUGIN, new PluginEvent([
                 'plugin' => $event->plugin,
             ])),
         );

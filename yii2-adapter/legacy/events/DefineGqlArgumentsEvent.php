@@ -14,7 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.9.0
- * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Gql\Events\DefineGqlArguments} instead.
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Gql\Events\GqlArgumentsResolving} instead.
  */
 class DefineGqlArgumentsEvent extends Event
 {

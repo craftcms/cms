@@ -17,10 +17,10 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Search\Events\AfterSearch;
-use CraftCms\Cms\Search\Events\BeforeIndexKeywords;
-use CraftCms\Cms\Search\Events\BeforeScoreResults;
-use CraftCms\Cms\Search\Events\BeforeSearch;
+use CraftCms\Cms\Search\Events\KeywordsIndexing;
+use CraftCms\Cms\Search\Events\ScoringResults;
+use CraftCms\Cms\Search\Events\SearchPerformed;
+use CraftCms\Cms\Search\Events\SearchStarting;
 use CraftCms\Cms\Search\Search as LaravelSearch;
 use CraftCms\Cms\Search\SearchQuery;
 use CraftCms\Cms\Search\SearchQueryTerm;
@@ -293,7 +293,7 @@ class Search extends Component
 
     public static function registerEvents(): void
     {
-        Event::listen(BeforeIndexKeywords::class, function(BeforeIndexKeywords $event) {
+        Event::listen(KeywordsIndexing::class, function(KeywordsIndexing $event) {
             if (Craft::$app->getSearch()->hasEventHandlers(self::EVENT_BEFORE_INDEX_KEYWORDS)) {
                 $yiiEvent = new IndexKeywordsEvent([
                     'element' => $event->element,
@@ -311,7 +311,7 @@ class Search extends Component
             }
         });
 
-        Event::listen(BeforeSearch::class, function(BeforeSearch $event) {
+        Event::listen(SearchStarting::class, function(SearchStarting $event) {
             if (Craft::$app->getSearch()->hasEventHandlers(self::EVENT_BEFORE_SEARCH)) {
                 Craft::$app->getSearch()->trigger(self::EVENT_BEFORE_SEARCH, new SearchEvent([
                     'elementQuery' => $event->elementQuery,
@@ -321,7 +321,7 @@ class Search extends Component
             }
         });
 
-        Event::listen(BeforeScoreResults::class, function(BeforeScoreResults $event) {
+        Event::listen(ScoringResults::class, function(ScoringResults $event) {
             if (Craft::$app->getSearch()->hasEventHandlers(self::EVENT_BEFORE_SCORE_RESULTS)) {
                 $yiiEvent = new SearchEvent([
                     'elementQuery' => $event->elementQuery,
@@ -341,7 +341,7 @@ class Search extends Component
             }
         });
 
-        Event::listen(AfterSearch::class, function(AfterSearch $event) {
+        Event::listen(SearchPerformed::class, function(SearchPerformed $event) {
             if (Craft::$app->getSearch()->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {
                 $yiiEvent = new SearchEvent([
                     'elementQuery' => $event->elementQuery,

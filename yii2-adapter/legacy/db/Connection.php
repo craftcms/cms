@@ -18,10 +18,10 @@ use craft\events\BackupEvent;
 use craft\events\RestoreEvent;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Backups;
-use CraftCms\Cms\Database\Events\AfterCreateBackup;
-use CraftCms\Cms\Database\Events\AfterRestoreBackup;
-use CraftCms\Cms\Database\Events\BeforeCreateBackup;
-use CraftCms\Cms\Database\Events\BeforeRestoreBackup;
+use CraftCms\Cms\Database\Events\BackupCreated;
+use CraftCms\Cms\Database\Events\BackupCreating;
+use CraftCms\Cms\Database\Events\BackupRestored;
+use CraftCms\Cms\Database\Events\BackupRestoring;
 use CraftCms\Cms\Database\Exceptions\CommandFailedException;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Env;
@@ -79,7 +79,7 @@ class Connection extends DatabaseConnection
 
     public static function registerEvents(): void
     {
-        EventFacade::listen(function(BeforeCreateBackup $event) {
+        EventFacade::listen(function(BackupCreating $event) {
             $db = Craft::$app->getDb();
             if ($event->connection->getName() !== $db->getLaravelConnection()->getName()) {
                 return;
@@ -96,7 +96,7 @@ class Connection extends DatabaseConnection
             $event->ignoreTables = self::_normalizeLegacyTableNames($yiiEvent->ignoreTables ?? []);
         });
 
-        EventFacade::listen(function(AfterCreateBackup $event) {
+        EventFacade::listen(function(BackupCreated $event) {
             $db = Craft::$app->getDb();
             if ($event->connection->getName() !== $db->getLaravelConnection()->getName()) {
                 return;
@@ -110,7 +110,7 @@ class Connection extends DatabaseConnection
             ]));
         });
 
-        EventFacade::listen(function(BeforeRestoreBackup $event) {
+        EventFacade::listen(function(BackupRestoring $event) {
             $db = Craft::$app->getDb();
             if ($event->connection->getName() !== $db->getLaravelConnection()->getName()) {
                 return;
@@ -124,7 +124,7 @@ class Connection extends DatabaseConnection
             ]));
         });
 
-        EventFacade::listen(function(AfterRestoreBackup $event) {
+        EventFacade::listen(function(BackupRestored $event) {
             $db = Craft::$app->getDb();
             if ($event->connection->getName() !== $db->getLaravelConnection()->getName()) {
                 return;

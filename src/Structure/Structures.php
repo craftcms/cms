@@ -13,8 +13,8 @@ use CraftCms\Cms\Structure\Enums\Action;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Structure\Events\ElementInserted;
 use CraftCms\Cms\Structure\Events\ElementUpdated;
-use CraftCms\Cms\Structure\Events\InsertingElement;
-use CraftCms\Cms\Structure\Events\UpdatingElement;
+use CraftCms\Cms\Structure\Events\StructureElementInserted;
+use CraftCms\Cms\Structure\Events\StructureElementUpdating;
 use CraftCms\Cms\Structure\Models\Structure as StructureModel;
 use CraftCms\Cms\Structure\Models\StructureElement as StructureElementModel;
 use Exception;
@@ -413,8 +413,8 @@ class Structures
 
         /** @var Mode::Insert|Mode::Update $mode */
         [$beforeEvent, $afterEvent] = match ($mode) {
-            Mode::Insert => [InsertingElement::class, ElementInserted::class],
-            Mode::Update => [UpdatingElement::class, ElementUpdated::class],
+            Mode::Insert => [StructureElementInserted::class, ElementInserted::class],
+            Mode::Update => [StructureElementUpdating::class, ElementUpdated::class],
         };
 
         $targetElementId = $targetElementModel->isRoot() ? null : $targetElementModel->elementId;

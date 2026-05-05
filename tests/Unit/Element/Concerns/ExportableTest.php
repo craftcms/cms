@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Element\Events\RegisterExporters;
+use CraftCms\Cms\Element\Events\ElementExportersResolving;
 use CraftCms\Cms\Element\Exporters\Expanded;
 use CraftCms\Cms\Element\Exporters\Raw;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -27,7 +27,7 @@ describe('exporters', function () {
         ]);
     });
 
-    test('RegisterExporters event allows adding custom exporters', function () {
+    test('ElementExportersResolving event allows adding custom exporters', function () {
         $customExporter = new class
         {
             public static function displayName(): string
@@ -36,7 +36,7 @@ describe('exporters', function () {
             }
         };
 
-        Event::listen(function (RegisterExporters $event) use ($customExporter) {
+        Event::listen(function (ElementExportersResolving $event) use ($customExporter) {
             if ($event->elementType === Entry::class) {
                 $event->exporters[] = $customExporter::class;
             }
@@ -52,7 +52,7 @@ describe('exporters', function () {
     test('event provides source key', function () {
         $capturedSource = null;
 
-        Event::listen(function (RegisterExporters $event) use (&$capturedSource) {
+        Event::listen(function (ElementExportersResolving $event) use (&$capturedSource) {
             $capturedSource = $event->source;
         });
 
@@ -62,7 +62,7 @@ describe('exporters', function () {
     });
 
     test('event can modify exporters', function () {
-        Event::listen(function (RegisterExporters $event) {
+        Event::listen(function (ElementExportersResolving $event) {
             if ($event->elementType === Entry::class) {
                 $event->exporters = [Raw::class];
             }
@@ -74,7 +74,7 @@ describe('exporters', function () {
     });
 
     test('event can remove all exporters', function () {
-        Event::listen(function (RegisterExporters $event) {
+        Event::listen(function (ElementExportersResolving $event) {
             if ($event->elementType === Entry::class) {
                 $event->exporters = [];
             }

@@ -11,8 +11,8 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Utility\Events\RegisterCacheOptions;
-use CraftCms\Cms\Utility\Events\RegisterTagOptions;
+use CraftCms\Cms\Utility\Events\ClearCachesOptionsResolving;
+use CraftCms\Cms\Utility\Events\ClearCachesTagOptionsResolving;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -166,7 +166,7 @@ class ClearCaches extends Utility
             ],
         ];
 
-        event($event = new RegisterCacheOptions($options));
+        event($event = new ClearCachesOptionsResolving($options));
 
         return Arr::sort($event->options, 'label');
     }
@@ -190,7 +190,7 @@ class ClearCaches extends Utility
             ];
         }
 
-        event($event = new RegisterTagOptions($options));
+        event($event = new ClearCachesTagOptionsResolving($options));
 
         return Arr::sort($event->options, 'label');
     }

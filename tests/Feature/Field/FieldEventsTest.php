@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Dropdown;
-use CraftCms\Cms\Field\Events\AfterFieldDelete;
-use CraftCms\Cms\Field\Events\AfterFieldElementDelete;
-use CraftCms\Cms\Field\Events\AfterFieldElementPropagate;
-use CraftCms\Cms\Field\Events\AfterFieldElementRestore;
-use CraftCms\Cms\Field\Events\AfterFieldElementSave;
-use CraftCms\Cms\Field\Events\AfterFieldMergeFrom;
-use CraftCms\Cms\Field\Events\AfterFieldMergeInto;
-use CraftCms\Cms\Field\Events\AfterFieldSave;
-use CraftCms\Cms\Field\Events\BeforeApplyFieldDelete;
-use CraftCms\Cms\Field\Events\BeforeFieldDelete;
-use CraftCms\Cms\Field\Events\BeforeFieldElementDelete;
-use CraftCms\Cms\Field\Events\BeforeFieldElementRestore;
-use CraftCms\Cms\Field\Events\BeforeFieldElementSave;
-use CraftCms\Cms\Field\Events\BeforeFieldSave;
-use CraftCms\Cms\Field\Events\DefineFieldHtml;
-use CraftCms\Cms\Field\Events\DefineFieldKeywords;
-use CraftCms\Cms\Field\Events\DefineInputOptions;
+use CraftCms\Cms\Field\Events\FieldDeletionApplying;
+use CraftCms\Cms\Field\Events\FieldElementDeleted;
+use CraftCms\Cms\Field\Events\FieldElementDeleting;
+use CraftCms\Cms\Field\Events\FieldElementPropagated;
+use CraftCms\Cms\Field\Events\FieldElementRestored;
+use CraftCms\Cms\Field\Events\FieldElementRestoring;
+use CraftCms\Cms\Field\Events\FieldElementSaved;
+use CraftCms\Cms\Field\Events\FieldElementSaving;
+use CraftCms\Cms\Field\Events\FieldHtmlResolving;
+use CraftCms\Cms\Field\Events\FieldKeywordsResolving;
+use CraftCms\Cms\Field\Events\FieldLifecycleDeleted;
+use CraftCms\Cms\Field\Events\FieldLifecycleDeleting;
+use CraftCms\Cms\Field\Events\FieldLifecycleSaved;
+use CraftCms\Cms\Field\Events\FieldLifecycleSaving;
+use CraftCms\Cms\Field\Events\FieldMergeFromCompleted;
+use CraftCms\Cms\Field\Events\FieldMergeIntoCompleted;
+use CraftCms\Cms\Field\Events\InputOptionsResolving;
 use CraftCms\Cms\Field\PlainText;
 use Illuminate\Support\Facades\Event;
 
@@ -45,31 +45,31 @@ it('can mutate and cancel field save and delete lifecycle events', function () {
     $field = new PlainText;
     $events = [];
 
-    Event::listen(function (BeforeFieldSave $event) use ($field, &$events) {
+    Event::listen(function (FieldLifecycleSaving $event) use ($field, &$events) {
         expect($event->field)->toBe($field);
         expect($event->isNew)->toBeTrue();
 
-        $events[] = BeforeFieldSave::class;
+        $events[] = FieldLifecycleSaving::class;
         $event->isValid = false;
     });
 
-    Event::listen(function (AfterFieldSave $event) use (&$events) {
+    Event::listen(function (FieldLifecycleSaved $event) use (&$events) {
         expect($event->isNew)->toBeFalse();
-        $events[] = AfterFieldSave::class;
+        $events[] = FieldLifecycleSaved::class;
     });
 
-    Event::listen(function (BeforeFieldDelete $event) use (&$events) {
+    Event::listen(function (FieldLifecycleDeleting $event) use (&$events) {
         expect($event->field)->toBeInstanceOf(PlainText::class);
-        $events[] = BeforeFieldDelete::class;
+        $events[] = FieldLifecycleDeleting::class;
         $event->isValid = false;
     });
 
-    Event::listen(function (BeforeApplyFieldDelete $event) use (&$events) {
-        $events[] = BeforeApplyFieldDelete::class;
+    Event::listen(function (FieldDeletionApplying $event) use (&$events) {
+        $events[] = FieldDeletionApplying::class;
     });
 
-    Event::listen(function (AfterFieldDelete $event) use (&$events) {
-        $events[] = AfterFieldDelete::class;
+    Event::listen(function (FieldLifecycleDeleted $event) use (&$events) {
+        $events[] = FieldLifecycleDeleted::class;
     });
 
     expect($field->beforeSave(true))->toBeFalse();
@@ -82,11 +82,11 @@ it('can mutate and cancel field save and delete lifecycle events', function () {
     $field->afterDelete();
 
     expect($events)->toBe([
-        BeforeFieldSave::class,
-        AfterFieldSave::class,
-        BeforeFieldDelete::class,
-        BeforeApplyFieldDelete::class,
-        AfterFieldDelete::class,
+        FieldLifecycleSaving::class,
+        FieldLifecycleSaved::class,
+        FieldLifecycleDeleting::class,
+        FieldDeletionApplying::class,
+        FieldLifecycleDeleted::class,
     ]);
 });
 
@@ -94,7 +94,7 @@ it('can mutate field rendering option and keyword events', function () {
     $plainText = new PlainText;
     $plainText->handle = 'body';
 
-    Event::listen(function (DefineFieldHtml $event) use ($plainText) {
+    Event::listen(function (FieldHtmlResolving $event) use ($plainText) {
         expect($event->field)->toBe($plainText);
         expect($event->value)->toBe('Original');
 
@@ -108,7 +108,7 @@ it('can mutate field rendering option and keyword events', function () {
         ['label' => 'Original', 'value' => 'original'],
     ];
 
-    Event::listen(function (DefineInputOptions $event) use ($optionsField) {
+    Event::listen(function (InputOptionsResolving $event) use ($optionsField) {
         expect($event->field)->toBe($optionsField);
 
         $event->options[] = ['label' => 'Extra', 'value' => 'extra'];
@@ -118,7 +118,7 @@ it('can mutate field rendering option and keyword events', function () {
 
     $element = new TestFieldEventElement;
 
-    Event::listen(function (DefineFieldKeywords $event) use ($plainText, $element) {
+    Event::listen(function (FieldKeywordsResolving $event) use ($plainText, $element) {
         expect($event->field)->toBe($plainText);
         expect($event->element)->toBe($element);
 
@@ -134,39 +134,39 @@ it('can mutate and cancel field element lifecycle events', function () {
     $element = new TestFieldEventElement;
     $events = [];
 
-    Event::listen(function (BeforeFieldElementSave $event) use ($field, $element, &$events) {
+    Event::listen(function (FieldElementSaving $event) use ($field, $element, &$events) {
         expect($event->field)->toBe($field);
         expect($event->element)->toBe($element);
         expect($event->isNew)->toBeTrue();
 
-        $events[] = BeforeFieldElementSave::class;
+        $events[] = FieldElementSaving::class;
         $event->isValid = false;
     });
 
-    Event::listen(function (AfterFieldElementSave $event) use (&$events) {
-        $events[] = AfterFieldElementSave::class;
+    Event::listen(function (FieldElementSaved $event) use (&$events) {
+        $events[] = FieldElementSaved::class;
     });
 
-    Event::listen(function (AfterFieldElementPropagate $event) use (&$events) {
-        $events[] = AfterFieldElementPropagate::class;
+    Event::listen(function (FieldElementPropagated $event) use (&$events) {
+        $events[] = FieldElementPropagated::class;
     });
 
-    Event::listen(function (BeforeFieldElementDelete $event) use (&$events) {
-        $events[] = BeforeFieldElementDelete::class;
+    Event::listen(function (FieldElementDeleting $event) use (&$events) {
+        $events[] = FieldElementDeleting::class;
         $event->isValid = false;
     });
 
-    Event::listen(function (AfterFieldElementDelete $event) use (&$events) {
-        $events[] = AfterFieldElementDelete::class;
+    Event::listen(function (FieldElementDeleted $event) use (&$events) {
+        $events[] = FieldElementDeleted::class;
     });
 
-    Event::listen(function (BeforeFieldElementRestore $event) use (&$events) {
-        $events[] = BeforeFieldElementRestore::class;
+    Event::listen(function (FieldElementRestoring $event) use (&$events) {
+        $events[] = FieldElementRestoring::class;
         $event->isValid = false;
     });
 
-    Event::listen(function (AfterFieldElementRestore $event) use (&$events) {
-        $events[] = AfterFieldElementRestore::class;
+    Event::listen(function (FieldElementRestored $event) use (&$events) {
+        $events[] = FieldElementRestored::class;
     });
 
     expect($field->beforeElementSave($element, true))->toBeFalse();
@@ -183,13 +183,13 @@ it('can mutate and cancel field element lifecycle events', function () {
     $field->afterElementRestore($element);
 
     expect($events)->toBe([
-        BeforeFieldElementSave::class,
-        AfterFieldElementSave::class,
-        AfterFieldElementPropagate::class,
-        BeforeFieldElementDelete::class,
-        AfterFieldElementDelete::class,
-        BeforeFieldElementRestore::class,
-        AfterFieldElementRestore::class,
+        FieldElementSaving::class,
+        FieldElementSaved::class,
+        FieldElementPropagated::class,
+        FieldElementDeleting::class,
+        FieldElementDeleted::class,
+        FieldElementRestoring::class,
+        FieldElementRestored::class,
     ]);
 });
 
@@ -198,25 +198,25 @@ it('can dispatch field merge events', function () {
     $persistingField = new PlainText;
     $events = [];
 
-    Event::listen(function (AfterFieldMergeInto $event) use ($outgoingField, $persistingField, &$events) {
+    Event::listen(function (FieldMergeIntoCompleted $event) use ($outgoingField, $persistingField, &$events) {
         expect($event->field)->toBe($outgoingField);
         expect($event->persistingField)->toBe($persistingField);
 
-        $events[] = AfterFieldMergeInto::class;
+        $events[] = FieldMergeIntoCompleted::class;
     });
 
-    Event::listen(function (AfterFieldMergeFrom $event) use ($outgoingField, $persistingField, &$events) {
+    Event::listen(function (FieldMergeFromCompleted $event) use ($outgoingField, $persistingField, &$events) {
         expect($event->field)->toBe($persistingField);
         expect($event->outgoingField)->toBe($outgoingField);
 
-        $events[] = AfterFieldMergeFrom::class;
+        $events[] = FieldMergeFromCompleted::class;
     });
 
     $outgoingField->afterMergeInto($persistingField);
     $persistingField->afterMergeFrom($outgoingField);
 
     expect($events)->toBe([
-        AfterFieldMergeInto::class,
-        AfterFieldMergeFrom::class,
+        FieldMergeIntoCompleted::class,
+        FieldMergeFromCompleted::class,
     ]);
 });

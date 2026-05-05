@@ -12,7 +12,7 @@ namespace craft\events;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Events\BeforeReplaceAsset} or {@see \CraftCms\Cms\Asset\Events\AfterReplaceAsset} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Events\AssetReplacing} or {@see \CraftCms\Cms\Asset\Events\AssetReplaced} instead.
  */
 class ReplaceAssetEvent extends AssetEvent
 {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Gql\Data\GqlSchema;
-use CraftCms\Cms\Gql\Events\DefineGqlTypeFields;
+use CraftCms\Cms\Gql\Events\GqlTypeFieldsResolving;
 use CraftCms\Cms\Gql\Gql;
 use Illuminate\Support\Facades\Event;
 
@@ -15,7 +15,7 @@ beforeEach(function () {
 });
 
 it('allows type field definitions to be modified', function () {
-    Event::listen(DefineGqlTypeFields::class, function (DefineGqlTypeFields $event) {
+    Event::listen(GqlTypeFieldsResolving::class, function (GqlTypeFieldsResolving $event) {
         $event->fields['otherField'] = 'otherThing';
     });
 

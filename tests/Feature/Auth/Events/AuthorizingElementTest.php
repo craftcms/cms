@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Tests\Feature\Auth\Events;
 
-use CraftCms\Cms\Auth\Events\AuthorizingElement;
+use CraftCms\Cms\Auth\Events\ElementAuthorizing;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Cms\User\Elements\User;
@@ -16,7 +16,7 @@ class AuthorizingElementTest extends TestCase
         $user = User::findOne();
         $entry = new Entry;
 
-        $event = new AuthorizingElement(
+        $event = new ElementAuthorizing(
             user: $user,
             element: $entry,
             ability: 'save',
@@ -33,7 +33,7 @@ class AuthorizingElementTest extends TestCase
         $user = User::findOne();
         $entry = new Entry;
 
-        $event = new AuthorizingElement(
+        $event = new ElementAuthorizing(
             user: $user,
             element: $entry,
             ability: 'save',
@@ -49,7 +49,7 @@ class AuthorizingElementTest extends TestCase
         $user = User::findOne();
         $entry = new Entry;
 
-        $event = new AuthorizingElement(
+        $event = new ElementAuthorizing(
             user: $user,
             element: $entry,
             ability: 'save',

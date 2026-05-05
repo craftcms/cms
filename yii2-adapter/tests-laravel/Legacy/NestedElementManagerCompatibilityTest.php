@@ -9,7 +9,7 @@ use craft\elements\NestedElementManager as LegacyNestedElementManager;
 use craft\events\BulkElementsEvent as LegacyBulkElementsEvent;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Events\AfterSaveNestedElements;
+use CraftCms\Cms\Element\Events\NestedElementsSaved;
 use CraftCms\Yii2Adapter\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 
@@ -30,7 +30,7 @@ class NestedElementManagerCompatibilityTest extends TestCase
         });
 
         try {
-            Event::dispatch(new AfterSaveNestedElements($manager, []));
+            Event::dispatch(new NestedElementsSaved($manager, []));
 
             self::assertInstanceOf(LegacyBulkElementsEvent::class, $receivedEvent);
             self::assertSame([], $receivedEvent->elements);

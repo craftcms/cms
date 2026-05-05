@@ -17,7 +17,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Twig\TemplateResolver;
-use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
+use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateMode;
 use crafttests\fixtures\SitesFixture;
@@ -298,7 +298,7 @@ class ViewTest extends TestCase
     {
         Once::flush();
 
-        LaravelEvent::listen(RegisterSiteTemplateRoots::class, function(RegisterSiteTemplateRoots $event) use ($roots) {
+        LaravelEvent::listen(SiteTemplateRootsResolving::class, function(SiteTemplateRootsResolving $event) use ($roots) {
             $event->roots = $roots;
         });
 

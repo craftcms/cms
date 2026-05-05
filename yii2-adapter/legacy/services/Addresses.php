@@ -17,11 +17,11 @@ use craft\events\DefineAddressFieldLabelEvent;
 use craft\events\DefineAddressFieldsEvent;
 use craft\events\DefineAddressSubdivisionsEvent;
 use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Address\Events\DefineAddressCountries;
-use CraftCms\Cms\Address\Events\DefineAddressFieldLabel;
-use CraftCms\Cms\Address\Events\DefineAddressSubdivisions;
-use CraftCms\Cms\Address\Events\DefineAddressUsedFields;
-use CraftCms\Cms\Address\Events\DefineAddressUsedSubdivisionFields;
+use CraftCms\Cms\Address\Events\AddressCountriesResolving;
+use CraftCms\Cms\Address\Events\AddressFieldLabelResolving;
+use CraftCms\Cms\Address\Events\AddressSubdivisionsResolving;
+use CraftCms\Cms\Address\Events\AddressUsedFieldsResolving;
+use CraftCms\Cms\Address\Events\AddressUsedSubdivisionFieldsResolving;
 use CraftCms\Cms\Address\Repositories\SubdivisionRepository;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -268,7 +268,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
 
     public static function registerEvents(): void
     {
-        Event::listen(DefineAddressSubdivisions::class, function(DefineAddressSubdivisions $event) {
+        Event::listen(AddressSubdivisionsResolving::class, function(AddressSubdivisionsResolving $event) {
             if (!Craft::$app->getAddresses()->hasEventHandlers(self::EVENT_DEFINE_ADDRESS_SUBDIVISIONS)) {
                 return;
             }
@@ -279,7 +279,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
             $event->subdivisions = $yiiEvent->subdivisions;
         });
 
-        Event::listen(DefineAddressCountries::class, function(DefineAddressCountries $event) {
+        Event::listen(AddressCountriesResolving::class, function(AddressCountriesResolving $event) {
             if (!Craft::$app->getAddresses()->hasEventHandlers(self::EVENT_DEFINE_ADDRESS_COUNTRIES)) {
                 return;
             }
@@ -290,7 +290,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
             $event->countries = $yiiEvent->countries;
         });
 
-        Event::listen(DefineAddressUsedFields::class, function(DefineAddressUsedFields $event) {
+        Event::listen(AddressUsedFieldsResolving::class, function(AddressUsedFieldsResolving $event) {
             if (!Craft::$app->getAddresses()->hasEventHandlers(self::EVENT_DEFINE_USED_FIELDS)) {
                 return;
             }
@@ -301,7 +301,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
             $event->fields = $yiiEvent->fields;
         });
 
-        Event::listen(DefineAddressUsedSubdivisionFields::class, function(DefineAddressUsedSubdivisionFields $event) {
+        Event::listen(AddressUsedSubdivisionFieldsResolving::class, function(AddressUsedSubdivisionFieldsResolving $event) {
             if (!Craft::$app->getAddresses()->hasEventHandlers(self::EVENT_DEFINE_USED_SUBDIVISION_FIELDS)) {
                 return;
             }
@@ -312,7 +312,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
             $event->fields = $yiiEvent->fields;
         });
 
-        Event::listen(DefineAddressFieldLabel::class, function(DefineAddressFieldLabel $event) {
+        Event::listen(AddressFieldLabelResolving::class, function(AddressFieldLabelResolving $event) {
             if (!Craft::$app->getAddresses()->hasEventHandlers(self::EVENT_DEFINE_FIELD_LABEL)) {
                 return;
             }

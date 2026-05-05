@@ -10,10 +10,10 @@ use craft\events\DefineFieldLayoutCustomFieldsEvent;
 use craft\events\DefineFieldLayoutElementsEvent;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\FieldLayout\Events\CreateFieldLayoutForm;
-use CraftCms\Cms\FieldLayout\Events\DefineCustomFields;
-use CraftCms\Cms\FieldLayout\Events\DefineNativeFields;
-use CraftCms\Cms\FieldLayout\Events\DefineUIElements;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutCustomFieldsResolving;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormCreating;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutUIElementsResolving;
+use CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use Deprecated;
@@ -141,7 +141,7 @@ class FieldLayout extends \CraftCms\Cms\FieldLayout\FieldLayout
 
     public static function registerEvents(): void
     {
-        Event::listen(function(DefineCustomFields $event) {
+        Event::listen(function(FieldLayoutCustomFieldsResolving $event) {
             if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_CUSTOM_FIELDS)) {
                 $yiiEvent = new DefineFieldLayoutCustomFieldsEvent(['fields' => $event->fields]);
                 $yiiEvent->sender = $event->fieldLayout;
@@ -150,7 +150,7 @@ class FieldLayout extends \CraftCms\Cms\FieldLayout\FieldLayout
             }
         });
 
-        Event::listen(function(DefineNativeFields $event) {
+        Event::listen(function(NativeFieldsResolving $event) {
             if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_NATIVE_FIELDS)) {
                 $yiiEvent = new DefineFieldLayoutFieldsEvent(['fields' => $event->fields]);
                 $yiiEvent->sender = $event->fieldLayout;
@@ -161,7 +161,7 @@ class FieldLayout extends \CraftCms\Cms\FieldLayout\FieldLayout
             }
         });
 
-        Event::listen(function(DefineUIElements $event) {
+        Event::listen(function(FieldLayoutUIElementsResolving $event) {
             if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_UI_ELEMENTS)) {
                 $yiiEvent = new DefineFieldLayoutElementsEvent(['elements' => $event->elements]);
                 $yiiEvent->sender = $event->fieldLayout;
@@ -172,7 +172,7 @@ class FieldLayout extends \CraftCms\Cms\FieldLayout\FieldLayout
             }
         });
 
-        Event::listen(function(CreateFieldLayoutForm $event) {
+        Event::listen(function(FieldLayoutFormCreating $event) {
             if (YiiEvent::hasHandlers(self::class, self::EVENT_CREATE_FORM)) {
                 $yiiEvent = new CreateFieldLayoutFormEvent([
                     'form' => $event->form,

@@ -10,7 +10,7 @@ use Closure;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Migration;
-use CraftCms\Cms\Database\Migrations\Event\PostCreateTables;
+use CraftCms\Cms\Database\Migrations\Event\TablesCreated;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -105,7 +105,7 @@ class Install extends Migration
             $logger?->success('Foreign keys added.');
         });
 
-        event(new PostCreateTables);
+        event(new TablesCreated);
 
         DB::afterCommit(function () {
             try {

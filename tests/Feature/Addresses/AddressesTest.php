@@ -9,11 +9,11 @@ use CommerceGuys\Addressing\AddressFormat\LocalityType;
 use CommerceGuys\Addressing\AddressFormat\PostalCodeType;
 use CommerceGuys\Addressing\Country\CountryRepository;
 use CraftCms\Cms\Address\Addresses;
-use CraftCms\Cms\Address\Events\DefineAddressCountries;
-use CraftCms\Cms\Address\Events\DefineAddressFieldLabel;
-use CraftCms\Cms\Address\Events\DefineAddressSubdivisions;
-use CraftCms\Cms\Address\Events\DefineAddressUsedFields;
-use CraftCms\Cms\Address\Events\DefineAddressUsedSubdivisionFields;
+use CraftCms\Cms\Address\Events\AddressCountriesResolving;
+use CraftCms\Cms\Address\Events\AddressFieldLabelResolving;
+use CraftCms\Cms\Address\Events\AddressSubdivisionsResolving;
+use CraftCms\Cms\Address\Events\AddressUsedFieldsResolving;
+use CraftCms\Cms\Address\Events\AddressUsedSubdivisionFieldsResolving;
 use CraftCms\Cms\Address\Repositories\SubdivisionRepository;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use Illuminate\Support\Facades\Event;
@@ -39,7 +39,7 @@ it('can get the address format repository', function () {
 });
 
 it('can define address subdivisions with an event', function () {
-    Event::listen(DefineAddressSubdivisions::class, function (DefineAddressSubdivisions $event) {
+    Event::listen(AddressSubdivisionsResolving::class, function (AddressSubdivisionsResolving $event) {
         $event->subdivisions = ['foo'];
     });
 
@@ -51,7 +51,7 @@ it('can get the country list', function () {
 });
 
 it('can add countries through the event', function () {
-    Event::listen(DefineAddressCountries::class, function (DefineAddressCountries $event) {
+    Event::listen(AddressCountriesResolving::class, function (AddressCountriesResolving $event) {
         $event->countries['ME'] = 'Middle Earth';
     });
 
@@ -67,7 +67,7 @@ it('can get used fields for a country code', function () {
 });
 
 it('can change the used fields with an event', function () {
-    Event::listen(DefineAddressUsedFields::class, function (DefineAddressUsedFields $event) {
+    Event::listen(AddressUsedFieldsResolving::class, function (AddressUsedFieldsResolving $event) {
         $event->fields = ['changed'];
     });
 
@@ -81,7 +81,7 @@ it('can get used subdivision fields for a country code', function () {
 });
 
 it('can change the used subdivisionfields with an event', function () {
-    Event::listen(DefineAddressUsedSubdivisionFields::class, function (DefineAddressUsedSubdivisionFields $event) {
+    Event::listen(AddressUsedSubdivisionFieldsResolving::class, function (AddressUsedSubdivisionFieldsResolving $event) {
         $event->fields = ['changed'];
     });
 
@@ -93,7 +93,7 @@ it('can get a field label for a field and country code', function () {
 });
 
 it('can change the field label with an event', function () {
-    Event::listen(DefineAddressFieldLabel::class, function (DefineAddressFieldLabel $event) {
+    Event::listen(AddressFieldLabelResolving::class, function (AddressFieldLabelResolving $event) {
         $event->label = 'foo';
     });
 

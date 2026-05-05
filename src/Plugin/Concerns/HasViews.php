@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Plugin\Concerns;
 
 use CraftCms\Cms\Plugin\Plugin;
-use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
+use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
 use Illuminate\Support\Facades\Event;
 
 /**
@@ -17,7 +17,7 @@ trait HasViews
 {
     public function bootHasViews(): void
     {
-        Event::listen(function (RegisterCpTemplateRoots $event) {
+        Event::listen(function (CpTemplateRootsResolving $event) {
             $basePath = self::getInstance()->getBasePath();
             $resourcesPath = self::getInstance()->getResourcesPath();
             $handle = self::getInstance()->handle;

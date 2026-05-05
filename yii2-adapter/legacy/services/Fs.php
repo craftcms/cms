@@ -14,7 +14,7 @@ use craft\events\FsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
-use CraftCms\Cms\Filesystem\Events\RegisterFilesystemTypes;
+use CraftCms\Cms\Filesystem\Events\FilesystemTypesResolving;
 use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
@@ -170,7 +170,7 @@ class Fs extends Component
 
     public static function registerEvents(): void
     {
-        EventFacade::listen(RegisterFilesystemTypes::class, function(RegisterFilesystemTypes $event) {
+        EventFacade::listen(FilesystemTypesResolving::class, function(FilesystemTypesResolving $event) {
             if (!Craft::$app->getFs()->hasEventHandlers(self::EVENT_REGISTER_FILESYSTEM_TYPES)) {
                 return;
             }

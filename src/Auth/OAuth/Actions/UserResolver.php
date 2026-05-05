@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Auth\OAuth\Actions;
 
 use CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthUser;
 use CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition;
-use CraftCms\Cms\Auth\OAuth\Events\ResolvingOAuthUserLink;
+use CraftCms\Cms\Auth\OAuth\Events\OAuthUserLinkResolving;
 use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
@@ -25,7 +25,7 @@ class UserResolver implements ResolvesOAuthUser
             return $user;
         }
 
-        event($event = new ResolvingOAuthUserLink($provider, $socialiteUser, $identity));
+        event($event = new OAuthUserLinkResolving($provider, $socialiteUser, $identity));
 
         if ($event->user) {
             return $event->user;
