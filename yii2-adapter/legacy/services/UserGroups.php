@@ -13,9 +13,9 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\Support\Facades\UserGroups as UserGroupsFacade;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\DeletingUserGroup;
 use CraftCms\Cms\User\Events\SavingUserGroup;
 use CraftCms\Cms\User\Events\UserGroupDeleted;
+use CraftCms\Cms\User\Events\UserGroupDeleting;
 use CraftCms\Cms\User\Events\UserGroupDeletionApplying;
 use CraftCms\Cms\User\Events\UserGroupSaved;
 use Illuminate\Support\Facades\Event;
@@ -237,7 +237,7 @@ class UserGroups extends Component
             }
         });
 
-        Event::listen(DeletingUserGroup::class, function(DeletingUserGroup $event) {
+        Event::listen(UserGroupDeleting::class, function(UserGroupDeleting $event) {
             if (Craft::$app->getUserGroups()->hasEventHandlers(self::EVENT_BEFORE_DELETE_USER_GROUP)) {
                 Craft::$app->getUserGroups()->trigger(self::EVENT_BEFORE_DELETE_USER_GROUP, new UserGroupEvent([
                     'userGroup' => $event->userGroup,

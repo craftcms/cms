@@ -13,9 +13,9 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\DeletingUserGroup;
 use CraftCms\Cms\User\Events\SavingUserGroup;
 use CraftCms\Cms\User\Events\UserGroupDeleted;
+use CraftCms\Cms\User\Events\UserGroupDeleting;
 use CraftCms\Cms\User\Events\UserGroupDeletionApplying;
 use CraftCms\Cms\User\Events\UserGroupSaved;
 use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
@@ -336,7 +336,7 @@ readonly class UserGroups
     {
         Edition::require(Edition::Pro);
 
-        event(new DeletingUserGroup($group));
+        event(new UserGroupDeleting($group));
 
         $this->projectConfig->remove(
             ProjectConfig::PATH_USER_GROUPS.'.'.$group->uid,

@@ -7,9 +7,9 @@ namespace CraftCms\Cms\User\Events;
 use CraftCms\Cms\User\Data\UserGroup;
 
 /**
- * @event DeletingUserGroup The event that is triggered before a user group is deleted.
+ * @event UserGroupDeleting The event that is triggered before a user group is deleted.
  */
-class DeletingUserGroup
+class UserGroupDeleting
 {
     public function __construct(
         public UserGroup $userGroup
