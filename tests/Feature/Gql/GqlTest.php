@@ -10,7 +10,7 @@ use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
-use CraftCms\Cms\Gql\Events\ExecutingGqlQuery;
+use CraftCms\Cms\Gql\Events\GqlQueryExecuting;
 use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
 use CraftCms\Cms\Gql\Events\RegisterGqlDirectives;
 use CraftCms\Cms\Gql\Events\RegisterGqlMutations;
@@ -137,7 +137,7 @@ it('executes a query through the new service', function () {
 it('allows pre-execution listeners to short-circuit query execution', function () {
     $schema = app(Gql::class)->getPublicSchema();
 
-    Event::listen(ExecutingGqlQuery::class, function (ExecutingGqlQuery $event) {
+    Event::listen(GqlQueryExecuting::class, function (GqlQueryExecuting $event) {
         $event->result = ['data' => 'override'];
     });
 

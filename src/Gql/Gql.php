@@ -30,7 +30,7 @@ use CraftCms\Cms\Gql\Directives\StripTags;
 use CraftCms\Cms\Gql\Directives\Transform;
 use CraftCms\Cms\Gql\Directives\Trim;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
-use CraftCms\Cms\Gql\Events\ExecutingGqlQuery;
+use CraftCms\Cms\Gql\Events\GqlQueryExecuting;
 use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
 use CraftCms\Cms\Gql\Events\RegisterGqlDirectives;
 use CraftCms\Cms\Gql\Events\RegisterGqlMutations;
@@ -294,7 +294,7 @@ class Gql
         $dep = null;
         $duration = null;
 
-        event($event = new ExecutingGqlQuery(
+        event($event = new GqlQueryExecuting(
             schema: $schema,
             query: $query,
             variables: $variables,

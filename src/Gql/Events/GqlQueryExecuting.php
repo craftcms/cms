@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Gql\Events;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 
 /**
- * @event ExecutingGqlQuery The event that is triggered before a GraphQL query is executed.
+ * @event GqlQueryExecuting The event that is triggered before a GraphQL query is executed.
  */
-class ExecutingGqlQuery
+class GqlQueryExecuting
 {
     public function __construct(
         public GqlSchema $schema,
