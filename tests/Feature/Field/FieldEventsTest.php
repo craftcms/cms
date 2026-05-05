@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Dropdown;
-use CraftCms\Cms\Field\Events\BeforeFieldElementSave;
 use CraftCms\Cms\Field\Events\BeforeFieldSave;
 use CraftCms\Cms\Field\Events\DefineFieldHtml;
 use CraftCms\Cms\Field\Events\DefineFieldKeywords;
@@ -16,6 +15,7 @@ use CraftCms\Cms\Field\Events\FieldElementPropagated;
 use CraftCms\Cms\Field\Events\FieldElementRestored;
 use CraftCms\Cms\Field\Events\FieldElementRestoring;
 use CraftCms\Cms\Field\Events\FieldElementSaved;
+use CraftCms\Cms\Field\Events\FieldElementSaving;
 use CraftCms\Cms\Field\Events\FieldLifecycleDeleted;
 use CraftCms\Cms\Field\Events\FieldLifecycleDeleting;
 use CraftCms\Cms\Field\Events\FieldLifecycleSaved;
@@ -134,12 +134,12 @@ it('can mutate and cancel field element lifecycle events', function () {
     $element = new TestFieldEventElement;
     $events = [];
 
-    Event::listen(function (BeforeFieldElementSave $event) use ($field, $element, &$events) {
+    Event::listen(function (FieldElementSaving $event) use ($field, $element, &$events) {
         expect($event->field)->toBe($field);
         expect($event->element)->toBe($element);
         expect($event->isNew)->toBeTrue();
 
-        $events[] = BeforeFieldElementSave::class;
+        $events[] = FieldElementSaving::class;
         $event->isValid = false;
     });
 
@@ -183,7 +183,7 @@ it('can mutate and cancel field element lifecycle events', function () {
     $field->afterElementRestore($element);
 
     expect($events)->toBe([
-        BeforeFieldElementSave::class,
+        FieldElementSaving::class,
         FieldElementSaved::class,
         FieldElementPropagated::class,
         FieldElementDeleting::class,
