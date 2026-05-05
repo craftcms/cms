@@ -21,8 +21,8 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
+use CraftCms\Cms\Asset\Events\AssetFileHandling;
 use CraftCms\Cms\Asset\Events\AssetUrlResolving;
-use CraftCms\Cms\Asset\Events\BeforeHandleFile;
 use CraftCms\Cms\Asset\Events\DefineAssetUrl;
 use CraftCms\Cms\Asset\Events\TransformGenerating;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
@@ -2803,7 +2803,7 @@ JS;
 
         // Fire a 'beforeHandleFile' event if we're going to be doing any file operations in afterSave()
         if (isset($this->newLocation) || isset($this->tempFilePath)) {
-            event(new BeforeHandleFile($this, isNew: ! $this->id));
+            event(new AssetFileHandling($this, isNew: ! $this->id));
         }
 
         // Set the kind based on filename

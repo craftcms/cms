@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Asset\Events;
 use CraftCms\Cms\Asset\Elements\Asset;
 
 /**
- * @event BeforeHandleFile The event that is triggered before an asset is uploaded to volume.
+ * @event AssetFileHandling The event that is triggered before an asset is uploaded to volume.
  */
-class BeforeHandleFile
+class AssetFileHandling
 {
     public function __construct(
         public Asset $asset,
