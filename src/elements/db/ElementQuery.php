@@ -2829,7 +2829,9 @@ class ElementQuery extends Query implements ElementQueryInterface
                 if (isset($fieldsByHandle[$handle])) {
                     foreach ($fieldsByHandle[$handle] as $instances) {
                         $firstInstance = $instances[0];
+                        $params['__siteId'] = $this->siteId !== '*' ? $this->siteId : null;
                         $condition = $firstInstance::queryCondition($instances, $fieldAttributes->$handle, $params);
+                        unset($params['__siteId']);
 
                         // aborting?
                         if ($condition === false) {
