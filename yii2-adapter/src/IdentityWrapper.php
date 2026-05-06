@@ -8,6 +8,7 @@ use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Throwable;
@@ -18,15 +19,13 @@ class IdentityWrapper extends User implements IdentityInterface
 {
     public function __construct(User $user)
     {
-        foreach ($user->toArray() as $attribute => $value) {
+        foreach (Utils::getPublicProperties($user) as $attribute => $value) {
             try {
                 $this->$attribute = $value;
             } catch (Throwable) {
                 // Ignore
             }
         }
-
-        parent::__construct();
     }
 
     public static function findIdentity($id): ?self
