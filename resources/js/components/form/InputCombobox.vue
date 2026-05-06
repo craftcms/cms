@@ -18,13 +18,13 @@
   import InputComboboxOption from '@/components/form/InputComboboxOption.vue';
 
   const emit = defineEmits<{
-    (e: 'update:modelValue', value: string): void;
+    (e: 'update:modelValue', value: string | number): void;
   }>();
   const props = withDefaults(
     defineProps<{
       label?: string;
       options?: Array<SelectItem>;
-      modelValue?: string;
+      modelValue?: string | number | boolean;
       requireOptionMatch?: boolean;
       transformModelValue?: (newValue: SelectOption | null) => string;
       class?: HTMLAttributes['class'];
@@ -60,7 +60,7 @@
 
       if (!selectedItem && !props.requireOptionMatch) {
         selectedItem = {
-          label: props.modelValue,
+          label: String(props.modelValue),
           value: props.modelValue,
         };
       }
@@ -76,7 +76,7 @@
   });
 
   const reference = useTemplateRef<HTMLElement | null>('reference');
-  const query = ref(props.modelValue ?? '');
+  const query = ref(String(props.modelValue ?? ''));
 
   const referenceCoordinates = computed(() => {
     const coordinates = reference.value?.getBoundingClientRect();
@@ -88,12 +88,12 @@
   });
 
   function matchesQuery(query: MaybeRef<string>, item: MaybeRef<SelectOption>) {
-    const lowerQuery = unref(query).toLowerCase();
+    const lowerQuery = String(unref(query)).toLowerCase();
     const option = unref(item);
 
     return (
       option.label.toLowerCase().includes(lowerQuery) ||
-      option.value.toLowerCase().includes(lowerQuery) ||
+      option.value.toString().toLowerCase().includes(lowerQuery) ||
       (option.data?.keywords?.toLowerCase().includes(lowerQuery) ?? false)
     );
   }

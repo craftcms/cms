@@ -37,7 +37,7 @@ it('shows a readonly settings screen when admin changes is disabled', function (
     Cms::config()->allowAdminChanges = false;
 
     get(action([GeneralSettingsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->where('readOnly', true))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.readOnly', true))
         ->assertOk();
 });
 
