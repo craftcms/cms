@@ -120,6 +120,8 @@ class HandleInertiaRequests extends Middleware
             'readOnly' => fn () => ! $generalConfig->allowAdminChanges,
             'locale' => fn () => app()->getLocale(),
             'craft' => fn () => [
+                'csrfTokenValue' => $generalConfig->enableCsrfProtection ? csrf_token() : null,
+                'csrfTokenName' => $generalConfig->enableCsrfProtection ? $generalConfig->csrfTokenName : null,
                 'general' => [
                     'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
                 ],

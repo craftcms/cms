@@ -13,5 +13,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Http\Controllers\Users\EditUserTrait::class, EditUserTrait::class);

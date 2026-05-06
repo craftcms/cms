@@ -14,5 +14,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException::class, InvalidHtmlTagException::class);

@@ -1,0 +1,1 @@
+import e from"./bg-DVAt4mMM.js";var t={...e};export{t as default};

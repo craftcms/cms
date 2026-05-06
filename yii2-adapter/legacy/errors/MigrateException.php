@@ -14,5 +14,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Database\Exceptions\MigrateException::class, MigrateException::class);

@@ -12,5 +12,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\ProjectConfig\Data\ProjectConfigData::class, ProjectConfigData::class);

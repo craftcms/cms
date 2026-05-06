@@ -16,5 +16,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Component\Contracts\Describable::class, Describable::class);

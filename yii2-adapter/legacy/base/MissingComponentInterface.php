@@ -23,5 +23,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Component\Contracts\MissingComponentInterface::class, MissingComponentInterface::class);

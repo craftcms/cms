@@ -19,5 +19,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Element\Contracts\ElementExporterInterface::class, ElementExporterInterface::class);

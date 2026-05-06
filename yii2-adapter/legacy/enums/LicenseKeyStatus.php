@@ -14,5 +14,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Shared\Enums\LicenseKeyStatus::class, LicenseKeyStatus::class);

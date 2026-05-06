@@ -8,6 +8,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Events\RegisterCpSettings;
 use CraftCms\Cms\Cp\Events\RegisterReadonlyCpSettings;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Url;
 
 use function CraftCms\Cms\t;
 
@@ -97,7 +98,7 @@ readonly class Settings
         foreach ($this->pluginsService->getAllPlugins() as $plugin) {
             if ($plugin->hasCpSettings && (! $readOnly || $plugin->hasReadOnlyCpSettings)) {
                 $settings[$label][$plugin->handle] = [
-                    'url' => 'settings/plugins/'.$plugin->handle,
+                    'url' => Url::cpUrl('settings/plugins/'.$plugin->handle),
                     'icon' => $this->pluginsService->getPluginIconSvg($plugin->handle),
                     'label' => $plugin->name,
                 ];

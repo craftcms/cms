@@ -21,5 +21,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Element\Contracts\NestedElementInterface::class, NestedElementInterface::class);

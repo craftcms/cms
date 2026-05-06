@@ -12,5 +12,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Asset\Exceptions\MissingVolumeFolderException::class, MissingVolumeFolderException::class);

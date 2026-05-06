@@ -56,4 +56,14 @@ class UserMixin
             app(AuthMethods::class)->handleInvalidLogin($this);
         };
     }
+
+    public function getFullName(): Closure
+    {
+        return function(): ?string {
+            Deprecator::log('User-getFullName', 'Calling ->getFullName on a User is deprecated. Use $user->fullName instead.');
+
+            /** @phpstan-ignore-next-line */
+            return $this->fullName;
+        };
+    }
 }

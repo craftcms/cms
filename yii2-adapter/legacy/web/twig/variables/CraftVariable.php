@@ -8,7 +8,6 @@
 namespace craft\web\twig\variables;
 
 use BadMethodCallException;
-use craft\base\LegacyEventConstants;
 use craft\events\DefineBehaviorsEvent;
 use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Twig\Variables\Io;
@@ -27,7 +26,7 @@ use yii\di\ServiceLocator;
  */
 class CraftVariable extends ServiceLocator
 {
-    use LegacyEventConstants;
+    public const string EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
     /**
      * @event \yii\base\Event The event that is triggered after the component's init cycle

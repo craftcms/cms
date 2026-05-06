@@ -74,19 +74,19 @@ use function CraftCms\Cms\template;
  */
 abstract class BaseRelationField extends Field implements CrossSiteCopyableFieldInterface, EagerLoadingFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, RelationalFieldInterface, ThumbableFieldInterface
 {
-    public const VIEW_MODE_LIST = 'list';
+    public const string VIEW_MODE_LIST = 'list';
 
-    public const VIEW_MODE_LIST_INLINE = 'list-inline';
+    public const string VIEW_MODE_LIST_INLINE = 'list-inline';
 
-    public const VIEW_MODE_THUMBS = 'thumbs';
+    public const string VIEW_MODE_THUMBS = 'thumbs';
 
-    public const VIEW_MODE_CARDS = 'cards';
+    public const string VIEW_MODE_CARDS = 'cards';
 
-    public const VIEW_MODE_CARDS_GRID = 'cards-grid';
+    public const string VIEW_MODE_CARDS_GRID = 'cards-grid';
 
-    public const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
+    public const string DEFAULT_PLACEMENT_BEGINNING = 'beginning';
 
-    public const DEFAULT_PLACEMENT_END = 'end';
+    public const string DEFAULT_PLACEMENT_END = 'end';
 
     private static bool $validatingRelatedElements = false;
 

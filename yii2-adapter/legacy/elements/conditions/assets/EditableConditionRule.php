@@ -11,5 +11,3 @@ if (false) {
     {
     }
 }
-
-class_alias(SavableConditionRule::class, EditableConditionRule::class);

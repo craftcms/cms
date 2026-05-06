@@ -4,9 +4,7 @@
   import type {SelectItem} from '@/types';
   import {computed, useSlots} from 'vue';
 
-  const emit = defineEmits<{
-    (e: 'update:modelValue', value: string): void;
-  }>();
+  const modelValue = defineModel<string | number | boolean>();
   const props = defineProps<{
     modelValue: string | boolean | number;
     label: string;
@@ -18,15 +16,6 @@
     error?: string;
     requireOptionMatch?: boolean;
   }>();
-
-  const valueProxy = computed({
-    get() {
-      return props.modelValue;
-    },
-    set(newValue) {
-      emit('update:modelValue', newValue);
-    },
-  });
 
   const slots = useSlots();
   const forwardedSlots = computed(() => {
@@ -42,14 +31,14 @@
     :name="name"
     :disabled="disabled"
     :has-feedback-for="error ? 'error' : ''"
+    :require-options-match="requireOptionMatch"
     v-bind="$attrs"
   >
     <InputCombobox
       slot="input"
-      v-model="valueProxy"
+      v-model="modelValue"
       :options="options"
       :label="label"
-      :require-option-match="requireOptionMatch"
     >
       <!-- Forward all other slots -->
       <template v-for="(_, name) in forwardedSlots" #[name]="slotData">

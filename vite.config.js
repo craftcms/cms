@@ -36,13 +36,7 @@ export default defineConfig(({mode}) => {
 
     build: {
       emptyOutDir: true,
-      rollupOptions: {
-        output: {
-          entryFileNames: '[name].js',
-          chunkFileNames: '[name].js',
-          assetFileNames: 'assets/[name].[ext]',
-        },
-      },
+
     },
 
     plugins: [

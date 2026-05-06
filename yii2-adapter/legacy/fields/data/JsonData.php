@@ -8,11 +8,13 @@
 
 namespace craft\fields\data;
 
-/**
- * @since 5.7.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Data\JsonData} instead.
- */
-class JsonData extends \CraftCms\Cms\Field\Data\JsonData
-{
-    use \craft\base\LegacyEventConstants;
+/** @phpstan-ignore-next-line */
+if (false) {
+    /**
+     * @since 5.7.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Data\JsonData} instead.
+     */
+    class JsonData extends \CraftCms\Cms\Field\Data\JsonData
+    {
+    }
 }

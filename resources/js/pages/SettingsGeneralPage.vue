@@ -2,7 +2,7 @@
   import {t} from '@craftcms/cp';
   import AppLayout from '@/layout/AppLayout.vue';
   import {store} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/GeneralSettingsController';
-  import {type SystemData, type TimezoneOption} from '@/types/settings';
+  import {type SystemData} from '@/types/settings';
   import {useForm} from '@inertiajs/vue3';
   import {computed} from 'vue';
   import type {SelectItem} from '@/types';
@@ -12,18 +12,18 @@
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import {transformBooleanOptions} from '@/utils/transformBooleanOptions';
 
-  const props = withDefaults(
-    defineProps<{
-      readOnly?: boolean;
-      system: SystemData;
-      nameSuggestions?: Array<any>;
-      timezoneOptions?: Array<TimezoneOption>;
-      systemStatusOptions?: Array<SelectItem>;
-      saveUrl: string;
-      errors: Record<any, any>;
-    }>(),
-    {systemStatusOptions: () => []}
-  );
+  const props = defineProps<{
+    system: SystemData;
+    nameSuggestions?: Array<SelectItem>;
+    timezoneOptions?: Array<SelectItem>;
+    systemStatusOptions?: Array<SelectItem>;
+    flash?: Record<any, any>;
+    errors: Record<any, any>;
+  }>();
+
+  const flash = computed(() => props.flash);
+  const errors = computed(() => props.errors);
+  const {readOnly} = useCraftData();
 
   const form = useForm({
     name: props.system.name ?? '',
@@ -129,11 +129,10 @@
           id="retry-duration"
           name="retryDuration"
           v-model="form.retryDuration"
-          :has-feedback-for="errors?.retryDuration ? 'error' : ''"
+          :error="errors?.retryDuration"
           inputmode="numeric"
           maxlength="4"
           :disabled="readOnly"
-          :error="errors?.retryDuration"
         >
           <div
             slot="help-text"

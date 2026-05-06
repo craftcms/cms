@@ -8,7 +8,6 @@
 namespace craft\elements;
 
 use Craft;
-use craft\base\LegacyEventConstants;
 use craft\db\Table;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
@@ -57,8 +56,6 @@ use function CraftCms\Cms\t;
 #[Ruleset(LegacyElementRules::class)]
 class Category extends Element
 {
-    use LegacyEventConstants;
-
     /**
      * @inheritdoc
      */
