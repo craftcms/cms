@@ -11,6 +11,7 @@
   import CraftCombobox from '@/components/form/CraftCombobox.vue';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import {transformBooleanOptions} from '@/utils/transformBooleanOptions';
+  import useCraftData from '@/composables/useCraftData';
 
   const props = defineProps<{
     system: SystemData;

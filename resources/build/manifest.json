@@ -343,8 +343,8 @@
     "file": "assets/cp-BtCr9zs8.css",
     "src": "_cp-BtCr9zs8.css"
   },
-  "_cp-CYZ2OmPx.js": {
-    "file": "assets/cp-CYZ2OmPx.js",
+  "_cp-DUnIV8bU.js": {
+    "file": "assets/cp-DUnIV8bU.js",
     "name": "cp",
     "imports": [
       "__plugin-vue_export-helper-dbacm3jE.js",
@@ -1187,25 +1187,25 @@
     "src": "resources/images/install/site.png"
   },
   "resources/js/cp.ts": {
-    "file": "assets/cp-D_cEh9B7.js",
+    "file": "assets/cp-9iLXoJy6.js",
     "name": "cp",
     "src": "resources/js/cp.ts",
     "isEntry": true,
     "imports": [
       "__plugin-vue_export-helper-dbacm3jE.js",
-      "_cp-CYZ2OmPx.js",
+      "_cp-DUnIV8bU.js",
       "_CpGlobalSidebar-CwLSFqmn.js",
       "_CpQueueIndicator-CbYJIwds.js"
     ]
   },
   "resources/js/legacy.ts": {
-    "file": "assets/legacy-D_0k93kg.js",
+    "file": "assets/legacy-za2aevmR.js",
     "name": "legacy",
     "src": "resources/js/legacy.ts",
     "isEntry": true,
     "imports": [
       "__plugin-vue_export-helper-dbacm3jE.js",
-      "_cp-CYZ2OmPx.js"
+      "_cp-DUnIV8bU.js"
     ],
     "dynamicImports": [
       "_nav-list.ts-DYPVfMBK.js",
@@ -1349,7 +1349,7 @@
     ]
   },
   "resources/js/pages/SettingsGeneralPage.vue": {
-    "file": "assets/SettingsGeneralPage-CuUfUShU.js",
+    "file": "assets/SettingsGeneralPage-DeQ_sj9f.js",
     "name": "SettingsGeneralPage",
     "src": "resources/js/pages/SettingsGeneralPage.vue",
     "isDynamicEntry": true,
@@ -1365,7 +1365,7 @@
       "_transformBooleanOptions-CGgQFXrR.js"
     ],
     "css": [
-      "assets/SettingsGeneralPage-BNGOX1Wg.css"
+      "assets/SettingsGeneralPage-BM7QKzj5.css"
     ]
   },
   "resources/js/pages/SettingsImageTransformsIndexPage.vue": {
