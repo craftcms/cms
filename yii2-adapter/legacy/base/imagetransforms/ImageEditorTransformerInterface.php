@@ -11,5 +11,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Image\Contracts\ImageEditorTransformerInterface::class, ImageEditorTransformerInterface::class);

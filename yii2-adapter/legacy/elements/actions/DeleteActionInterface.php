@@ -24,5 +24,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Element\Contracts\DeleteActionInterface::class, DeleteActionInterface::class);

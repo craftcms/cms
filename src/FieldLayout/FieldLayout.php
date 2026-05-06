@@ -12,6 +12,7 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\FieldLayout\Concerns\LegacyConstants;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutCustomFieldsResolving;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormCreating;
@@ -44,6 +45,8 @@ use function CraftCms\Cms\t;
 
 class FieldLayout extends Component
 {
+    use LegacyConstants;
+
     public ?int $id = null;
 
     public string $uid;

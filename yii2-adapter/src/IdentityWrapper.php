@@ -10,45 +10,23 @@ use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB as DbFacade;
-use Illuminate\Support\Traits\ForwardsCalls;
+use Throwable;
 use yii\base\Exception;
 use yii\web\IdentityInterface;
 
-/**
- * @mixin User
- */
 class IdentityWrapper extends User implements IdentityInterface
 {
-    use ForwardsCalls;
-
-    public function __construct(
-        private readonly User $user,
-    ) {
-    }
-
-    public static function __callStatic($method, $parameters)
+    public function __construct(User $user)
     {
-        return User::$method($parameters);
-    }
+        foreach ($user->toArray() as $attribute => $value) {
+            try {
+                $this->$attribute = $value;
+            } catch (Throwable) {
+                // Ignore
+            }
+        }
 
-    public function __get($name)
-    {
-        return $this->user->$name;
-    }
-
-    public function __set($name, $value): void
-    {
-        $this->user->$name = $value;
-    }
-
-    public function __isset($name): bool
-    {
-        return isset($this->user->$name);
-    }
-
-    public function __call($name, $params)
-    {
-        return $this->forwardDecoratedCallTo($this->user, $name, $params);
+        parent::__construct();
     }
 
     public static function findIdentity($id): ?self
@@ -77,11 +55,6 @@ class IdentityWrapper extends User implements IdentityInterface
     public static function findIdentityByAccessToken($token, $type = null)
     {
         throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
-    }
-
-    public function getId(): ?int
-    {
-        return $this->user->getId();
     }
 
     public function getAuthKey(): string

@@ -12,5 +12,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Address\Repositories\SubdivisionRepository::class, SubdivisionRepository::class);

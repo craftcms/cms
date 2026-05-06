@@ -20,5 +20,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Component\Concerns\MissingComponentTrait::class, MissingComponentTrait::class);

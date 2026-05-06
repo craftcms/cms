@@ -19,5 +19,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Entry\Elements\Entry::class, Entry::class);

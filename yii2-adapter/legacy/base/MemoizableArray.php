@@ -16,5 +16,3 @@ if (false) {
     {
     }
 }
-
-class_alias(BaseMemoizableArray::class, MemoizableArray::class);

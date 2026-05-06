@@ -17,5 +17,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Field\LinkTypes\BaseElementLinkType::class, BaseElementLinkType::class);

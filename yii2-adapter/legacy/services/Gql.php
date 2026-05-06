@@ -19,8 +19,6 @@ use craft\events\RegisterGqlTypesEvent;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\Gql\Data\GqlSchema as NewGqlSchema;
-use CraftCms\Cms\Gql\Data\GqlToken as NewGqlToken;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
 use CraftCms\Cms\Gql\Events\GqlDirectivesResolving;
 use CraftCms\Cms\Gql\Events\GqlMutationsResolving;
@@ -108,7 +106,7 @@ class Gql extends Component
      */
     public function getActiveSchema(): GqlSchema
     {
-        return self::schemaToLegacySchema(app(NewGql::class)->getActiveSchema());
+        return app(NewGql::class)->getActiveSchema();
     }
 
     public function setActiveSchema(?GqlSchema $schema = null): void
@@ -118,10 +116,7 @@ class Gql extends Component
 
     public function getTokens(): array
     {
-        return array_map(
-            fn(NewGqlToken $token) => self::tokenToLegacyToken($token),
-            app(NewGql::class)->getTokens(),
-        );
+        return app(NewGql::class)->getTokens();
     }
 
     /**
@@ -129,9 +124,7 @@ class Gql extends Component
      */
     public function getPublicSchema(): ?GqlSchema
     {
-        $schema = app(NewGql::class)->getPublicSchema();
-
-        return $schema ? self::schemaToLegacySchema($schema) : null;
+        return app(NewGql::class)->getPublicSchema();
     }
 
     public function getAllSchemaComponents(): array
@@ -146,33 +139,27 @@ class Gql extends Component
 
     public function getTokenById(int $id): ?GqlToken
     {
-        $token = app(NewGql::class)->getTokenById($id);
-
-        return $token ? self::tokenToLegacyToken($token) : null;
+        return app(NewGql::class)->getTokenById($id);
     }
 
     public function getTokenByName(string $tokenName): ?GqlToken
     {
-        $token = app(NewGql::class)->getTokenByName($tokenName);
-
-        return $token ? self::tokenToLegacyToken($token) : null;
+        return app(NewGql::class)->getTokenByName($tokenName);
     }
 
     public function getTokenByUid(string $uid): GqlToken
     {
-        return self::tokenToLegacyToken(app(NewGql::class)->getTokenByUid($uid));
+        return app(NewGql::class)->getTokenByUid($uid);
     }
 
     public function getTokenByAccessToken(string $token): GqlToken
     {
-        return self::tokenToLegacyToken(app(NewGql::class)->getTokenByAccessToken($token));
+        return app(NewGql::class)->getTokenByAccessToken($token);
     }
 
     public function getPublicToken(): ?GqlToken
     {
-        $token = app(NewGql::class)->getPublicToken();
-
-        return $token ? self::tokenToLegacyToken($token) : null;
+        return app(NewGql::class)->getPublicToken();
     }
 
     /**
@@ -223,24 +210,17 @@ class Gql extends Component
 
     public function getSchemaById(int $id): ?GqlSchema
     {
-        $schema = app(NewGql::class)->getSchemaById($id);
-
-        return $schema ? self::schemaToLegacySchema($schema) : null;
+        return app(NewGql::class)->getSchemaById($id);
     }
 
     public function getSchemaByUid(string $uid): ?GqlSchema
     {
-        $schema = app(NewGql::class)->getSchemaByUid($uid);
-
-        return $schema ? self::schemaToLegacySchema($schema) : null;
+        return app(NewGql::class)->getSchemaByUid($uid);
     }
 
     public function getSchemas(): array
     {
-        return array_map(
-            fn(NewGqlSchema $schema) => self::schemaToLegacySchema($schema),
-            app(NewGql::class)->getSchemas(),
-        );
+        return app(NewGql::class)->getSchemas();
     }
 
     public function getOrSetContentArguments(string $elementType, callable $setter): array
@@ -414,36 +394,5 @@ class Gql extends Component
     private static function service(): self
     {
         return Craft::$app->getGql();
-    }
-
-    private static function schemaToLegacySchema(NewGqlSchema $schema): GqlSchema
-    {
-        if ($schema instanceof GqlSchema) {
-            return $schema;
-        }
-
-        return new GqlSchema($schema->toArray());
-    }
-
-    private static function tokenToLegacyToken(NewGqlToken $token): GqlToken
-    {
-        $config = [
-            'id' => $token->id,
-            'name' => $token->name,
-            'schemaId' => $token->schemaId,
-            'accessToken' => $token->accessToken,
-            'enabled' => $token->enabled,
-            'expiryDate' => $token->expiryDate,
-            'lastUsed' => $token->lastUsed,
-            'dateCreated' => $token->dateCreated,
-            'uid' => $token->uid,
-            'isTemporary' => $token->isTemporary,
-        ];
-
-        if ($schema = $token->getSchema()) {
-            $config['schema'] = self::schemaToLegacySchema($schema);
-        }
-
-        return new GqlToken($config);
     }
 }

@@ -20,5 +20,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Field\Exceptions\FieldNotFoundException::class, FieldNotFoundException::class);

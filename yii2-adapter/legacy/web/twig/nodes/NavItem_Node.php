@@ -16,5 +16,3 @@ if (false) {
     {
     }
 }
-
-class_alias(NavItemNode::class, NavItem_Node::class);

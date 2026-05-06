@@ -32,5 +32,3 @@ if (false) {
         }
     }
 }
-
-class_alias(\CraftCms\Cms\Filesystem\Exceptions\FsObjectExistsException::class, FsObjectExistsException::class);

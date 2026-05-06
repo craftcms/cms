@@ -11,5 +11,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Asset\Actions\ReplaceFile::class, ReplaceFile::class);

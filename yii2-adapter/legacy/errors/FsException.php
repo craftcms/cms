@@ -19,5 +19,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Filesystem\Exceptions\FilesystemException::class, FsException::class);

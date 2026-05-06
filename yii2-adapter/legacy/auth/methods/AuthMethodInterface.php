@@ -12,5 +12,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Auth\Methods\AuthMethodInterface::class, AuthMethodInterface::class);

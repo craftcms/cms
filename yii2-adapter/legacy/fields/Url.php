@@ -8,12 +8,13 @@
 
 namespace craft\fields;
 
-/**
- * @since 3.0.0
- * @deprecated in 5.3.0
- */
-class Url extends \CraftCms\Cms\Field\Link
-{
-    use \craft\base\FieldEventConstants;
-    use \craft\base\LegacyEventConstants;
+/** @phpstan-ignore-next-line */
+if (false) {
+    /**
+     * @since 3.0.0
+     * @deprecated in 5.3.0
+     */
+    class Url extends \CraftCms\Cms\Field\Link
+    {
+    }
 }

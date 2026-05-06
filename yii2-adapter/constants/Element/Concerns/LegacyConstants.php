@@ -92,6 +92,8 @@ trait LegacyConstants
 {
     use ElementEventConstants;
 
+    public const string EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+
     public const string SCENARIO_DEFAULT = ElementRules::SCENARIO_DEFAULT;
 
     public const string SCENARIO_ESSENTIALS = ElementRules::SCENARIO_ESSENTIALS;
@@ -121,7 +123,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementCacheTagsResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_DEFINE_CACHE_TAGS)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_CACHE_TAGS)) {
                     continue;
                 }
 
@@ -134,7 +136,7 @@ trait LegacyConstants
                     'value' => $event->tags,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_DEFINE_CACHE_TAGS, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_DEFINE_CACHE_TAGS, $yiiEvent);
 
                 $event->tags = $yiiEvent->value;
             }
@@ -142,7 +144,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementSourcesResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_REGISTER_SOURCES)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_SOURCES)) {
                     continue;
                 }
 
@@ -155,7 +157,7 @@ trait LegacyConstants
                     'sources' => $event->sources,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_REGISTER_SOURCES, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_REGISTER_SOURCES, $yiiEvent);
 
                 $event->sources = $yiiEvent->sources;
             }
@@ -163,7 +165,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementFieldLayoutsResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_REGISTER_FIELD_LAYOUTS)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_FIELD_LAYOUTS)) {
                     continue;
                 }
 
@@ -176,7 +178,7 @@ trait LegacyConstants
                     'fieldLayouts' => $event->fieldLayouts,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_REGISTER_FIELD_LAYOUTS, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_REGISTER_FIELD_LAYOUTS, $yiiEvent);
 
                 $event->fieldLayouts = $yiiEvent->fieldLayouts;
             }
@@ -184,7 +186,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementPreviewTargetsResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_REGISTER_PREVIEW_TARGETS)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_PREVIEW_TARGETS)) {
                     continue;
                 }
 
@@ -197,7 +199,7 @@ trait LegacyConstants
                     'previewTargets' => $event->previewTargets,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_REGISTER_PREVIEW_TARGETS, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_REGISTER_PREVIEW_TARGETS, $yiiEvent);
 
                 $event->previewTargets = $yiiEvent->previewTargets;
             }
@@ -205,7 +207,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementActionsResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_REGISTER_ACTIONS)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_ACTIONS)) {
                     continue;
                 }
 
@@ -218,7 +220,7 @@ trait LegacyConstants
                     'actions' => $event->actions,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_REGISTER_ACTIONS, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_REGISTER_ACTIONS, $yiiEvent);
 
                 $event->actions = $yiiEvent->actions;
             }
@@ -226,7 +228,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementExportersResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_REGISTER_EXPORTERS)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_EXPORTERS)) {
                     continue;
                 }
 
@@ -239,7 +241,7 @@ trait LegacyConstants
                     'exporters' => $event->exporters,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_REGISTER_EXPORTERS, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_REGISTER_EXPORTERS, $yiiEvent);
 
                 $event->exporters = $yiiEvent->exporters;
             }
@@ -247,7 +249,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementRendering $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_RENDER)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_RENDER)) {
                     continue;
                 }
 
@@ -261,7 +263,7 @@ trait LegacyConstants
                     'variables' => $event->variables,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_RENDER, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_RENDER, $yiiEvent);
 
                 if (isset($yiiEvent->output)) {
                     $event->output = $yiiEvent->output;
@@ -273,7 +275,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementKeywordsResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_DEFINE_KEYWORDS)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_KEYWORDS)) {
                     continue;
                 }
 
@@ -287,7 +289,7 @@ trait LegacyConstants
                     'keywords' => $event->keywords,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_DEFINE_KEYWORDS, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_DEFINE_KEYWORDS, $yiiEvent);
 
                 if ($yiiEvent->handled) {
                     $event->keywords = $yiiEvent->keywords;
@@ -298,7 +300,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementSortOptionsResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_REGISTER_SORT_OPTIONS)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_SORT_OPTIONS)) {
                     continue;
                 }
 
@@ -310,7 +312,7 @@ trait LegacyConstants
                     'sortOptions' => $event->sortOptions,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_REGISTER_SORT_OPTIONS, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_REGISTER_SORT_OPTIONS, $yiiEvent);
 
                 $event->sortOptions = $yiiEvent->sortOptions;
             }
@@ -318,7 +320,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementTableAttributesResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_REGISTER_TABLE_ATTRIBUTES)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_TABLE_ATTRIBUTES)) {
                     continue;
                 }
 
@@ -330,7 +332,7 @@ trait LegacyConstants
                     'tableAttributes' => $event->tableAttributes,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_REGISTER_TABLE_ATTRIBUTES, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_REGISTER_TABLE_ATTRIBUTES, $yiiEvent);
 
                 $event->tableAttributes = $yiiEvent->tableAttributes;
             }
@@ -338,7 +340,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementDefaultTableAttributesResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES)) {
                     continue;
                 }
 
@@ -351,7 +353,7 @@ trait LegacyConstants
                     'tableAttributes' => $event->tableAttributes,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES, $yiiEvent);
 
                 $event->tableAttributes = $yiiEvent->tableAttributes;
             }
@@ -359,7 +361,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementCardAttributesResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_REGISTER_CARD_ATTRIBUTES)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_CARD_ATTRIBUTES)) {
                     continue;
                 }
 
@@ -372,7 +374,7 @@ trait LegacyConstants
                     'fieldLayout' => $event->fieldLayout,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_REGISTER_CARD_ATTRIBUTES, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_REGISTER_CARD_ATTRIBUTES, $yiiEvent);
 
                 $event->cardAttributes = $yiiEvent->cardAttributes;
             }
@@ -380,7 +382,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementDefaultCardAttributesResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES)) {
                     continue;
                 }
 
@@ -392,7 +394,7 @@ trait LegacyConstants
                     'cardAttributes' => $event->cardAttributes,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES, $yiiEvent);
 
                 $event->cardAttributes = $yiiEvent->cardAttributes;
             }
@@ -400,7 +402,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementSearchableAttributesResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES)) {
                     continue;
                 }
 
@@ -412,7 +414,7 @@ trait LegacyConstants
                     'attributes' => $event->attributes,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES, $yiiEvent);
 
                 $event->attributes = $yiiEvent->attributes;
             }
@@ -420,7 +422,7 @@ trait LegacyConstants
 
         Event::listen(function(QueryForTableAttributePreparing $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE)) {
                     continue;
                 }
 
@@ -433,7 +435,7 @@ trait LegacyConstants
                     'attribute' => $event->attribute,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE, $yiiEvent);
 
                 if ($yiiEvent->handled) {
                     $event->handled = true;
@@ -443,7 +445,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementEagerLoadingMapResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_DEFINE_EAGER_LOADING_MAP)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_EAGER_LOADING_MAP)) {
                     continue;
                 }
 
@@ -456,7 +458,7 @@ trait LegacyConstants
                     'handle' => $event->handle,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_DEFINE_EAGER_LOADING_MAP, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_DEFINE_EAGER_LOADING_MAP, $yiiEvent);
 
                 if ($yiiEvent->elementType !== null) {
                     $event->targetElementType = $yiiEvent->elementType;
@@ -468,7 +470,7 @@ trait LegacyConstants
 
         Event::listen(function(SetEagerLoadedElements $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_SET_EAGER_LOADED_ELEMENTS)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_SET_EAGER_LOADED_ELEMENTS)) {
                     continue;
                 }
 
@@ -483,7 +485,7 @@ trait LegacyConstants
                     'plan' => $event->plan,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_SET_EAGER_LOADED_ELEMENTS, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_SET_EAGER_LOADED_ELEMENTS, $yiiEvent);
 
                 if ($yiiEvent->handled) {
                     $event->handled = true;
@@ -493,7 +495,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementLifecycleSaving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_BEFORE_SAVE)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_BEFORE_SAVE)) {
                     continue;
                 }
 
@@ -506,7 +508,7 @@ trait LegacyConstants
                     'isNew' => $event->isNew,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_BEFORE_SAVE, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_BEFORE_SAVE, $yiiEvent);
 
                 if (!$yiiEvent->isValid) {
                     $event->isValid = false;
@@ -516,7 +518,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementLifecycleSaved $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_AFTER_SAVE)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_AFTER_SAVE)) {
                     continue;
                 }
 
@@ -529,13 +531,13 @@ trait LegacyConstants
                     'isNew' => $event->isNew,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_AFTER_SAVE, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_AFTER_SAVE, $yiiEvent);
             }
         });
 
         Event::listen(function(ElementLifecyclePropagated $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_AFTER_PROPAGATE)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_AFTER_PROPAGATE)) {
                     continue;
                 }
 
@@ -548,13 +550,13 @@ trait LegacyConstants
                     'isNew' => $event->isNew,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_AFTER_PROPAGATE, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_AFTER_PROPAGATE, $yiiEvent);
             }
         });
 
         Event::listen(function(ElementLifecycleDeleting $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_BEFORE_DELETE)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_BEFORE_DELETE)) {
                     continue;
                 }
 
@@ -566,7 +568,7 @@ trait LegacyConstants
                     'sender' => $event->element,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_BEFORE_DELETE, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_BEFORE_DELETE, $yiiEvent);
 
                 if (!$yiiEvent->isValid) {
                     $event->isValid = false;
@@ -576,7 +578,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementLifecycleDeleted $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_AFTER_DELETE)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_AFTER_DELETE)) {
                     continue;
                 }
 
@@ -588,13 +590,13 @@ trait LegacyConstants
                     'sender' => $event->element,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_AFTER_DELETE, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_AFTER_DELETE, $yiiEvent);
             }
         });
 
         Event::listen(function(ElementLifecycleRestoring $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_BEFORE_RESTORE)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_BEFORE_RESTORE)) {
                     continue;
                 }
 
@@ -606,7 +608,7 @@ trait LegacyConstants
                     'sender' => $event->element,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_BEFORE_RESTORE, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_BEFORE_RESTORE, $yiiEvent);
 
                 if (!$yiiEvent->isValid) {
                     $event->isValid = false;
@@ -616,7 +618,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementLifecycleRestored $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_AFTER_RESTORE)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_AFTER_RESTORE)) {
                     continue;
                 }
 
@@ -628,13 +630,13 @@ trait LegacyConstants
                     'sender' => $event->element,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_AFTER_RESTORE, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_AFTER_RESTORE, $yiiEvent);
             }
         });
 
         Event::listen(function(ElementAdditionalButtonsResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_DEFINE_ADDITIONAL_BUTTONS)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_ADDITIONAL_BUTTONS)) {
                     continue;
                 }
 
@@ -647,7 +649,7 @@ trait LegacyConstants
                     'html' => $event->html,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_DEFINE_ADDITIONAL_BUTTONS, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_DEFINE_ADDITIONAL_BUTTONS, $yiiEvent);
 
                 $event->html = $yiiEvent->html;
             }
@@ -655,7 +657,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementAltActionsResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_DEFINE_ALT_ACTIONS)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_ALT_ACTIONS)) {
                     continue;
                 }
 
@@ -668,7 +670,7 @@ trait LegacyConstants
                     'altActions' => $event->altActions,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_DEFINE_ALT_ACTIONS, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_DEFINE_ALT_ACTIONS, $yiiEvent);
 
                 $event->altActions = $yiiEvent->altActions;
             }
@@ -676,7 +678,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementActionMenuItemsResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
                     continue;
                 }
 
@@ -689,7 +691,7 @@ trait LegacyConstants
                     'items' => $event->items,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_DEFINE_ACTION_MENU_ITEMS, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_DEFINE_ACTION_MENU_ITEMS, $yiiEvent);
 
                 $event->items = $yiiEvent->items;
             }
@@ -697,7 +699,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementSidebarHtmlResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_DEFINE_SIDEBAR_HTML)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_SIDEBAR_HTML)) {
                     continue;
                 }
 
@@ -710,7 +712,7 @@ trait LegacyConstants
                     'html' => $event->html,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_DEFINE_SIDEBAR_HTML, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_DEFINE_SIDEBAR_HTML, $yiiEvent);
 
                 $event->html = $yiiEvent->html;
             }
@@ -718,7 +720,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementMetaFieldsHtmlResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_DEFINE_META_FIELDS_HTML)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_META_FIELDS_HTML)) {
                     continue;
                 }
 
@@ -732,7 +734,7 @@ trait LegacyConstants
                     'html' => $event->html,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_DEFINE_META_FIELDS_HTML, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_DEFINE_META_FIELDS_HTML, $yiiEvent);
 
                 $event->html = $yiiEvent->html;
             }
@@ -740,7 +742,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementMetadataResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_DEFINE_METADATA)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_METADATA)) {
                     continue;
                 }
 
@@ -753,7 +755,7 @@ trait LegacyConstants
                     'metadata' => $event->metadata,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_DEFINE_METADATA, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_DEFINE_METADATA, $yiiEvent);
 
                 $event->metadata = $yiiEvent->metadata;
             }
@@ -761,7 +763,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementHtmlAttributesResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_REGISTER_HTML_ATTRIBUTES)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_HTML_ATTRIBUTES)) {
                     continue;
                 }
 
@@ -774,7 +776,7 @@ trait LegacyConstants
                     'htmlAttributes' => $event->htmlAttributes,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_REGISTER_HTML_ATTRIBUTES, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_REGISTER_HTML_ATTRIBUTES, $yiiEvent);
 
                 $event->htmlAttributes = $yiiEvent->htmlAttributes;
             }
@@ -782,7 +784,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementAttributeHtmlResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_DEFINE_ATTRIBUTE_HTML)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_ATTRIBUTE_HTML)) {
                     continue;
                 }
 
@@ -795,7 +797,7 @@ trait LegacyConstants
                     'attribute' => $event->attribute,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_DEFINE_ATTRIBUTE_HTML, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_DEFINE_ATTRIBUTE_HTML, $yiiEvent);
 
                 if (isset($yiiEvent->html)) {
                     $event->html = $yiiEvent->html;
@@ -805,7 +807,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementInlineAttributeInputHtmlResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML)) {
                     continue;
                 }
 
@@ -818,7 +820,7 @@ trait LegacyConstants
                     'attribute' => $event->attribute,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML, $yiiEvent);
 
                 if (isset($yiiEvent->html)) {
                     $event->html = $yiiEvent->html;
@@ -828,7 +830,7 @@ trait LegacyConstants
 
         Event::listen(function(SetRoute $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_SET_ROUTE)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_SET_ROUTE)) {
                     continue;
                 }
 
@@ -841,7 +843,7 @@ trait LegacyConstants
                     'route' => $event->route,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_SET_ROUTE, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_SET_ROUTE, $yiiEvent);
 
                 $event->route = $yiiEvent->route;
                 if ($yiiEvent->handled) {
@@ -852,7 +854,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementUrlResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_BEFORE_DEFINE_URL)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_BEFORE_DEFINE_URL)) {
                     continue;
                 }
 
@@ -865,7 +867,7 @@ trait LegacyConstants
                     'url' => $event->url,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_BEFORE_DEFINE_URL, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_BEFORE_DEFINE_URL, $yiiEvent);
 
                 $event->url = $yiiEvent->url;
                 if ($yiiEvent->handled) {
@@ -876,7 +878,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementUrlResolved $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_DEFINE_URL)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_URL)) {
                     continue;
                 }
 
@@ -889,7 +891,7 @@ trait LegacyConstants
                     'url' => $event->url,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_DEFINE_URL, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_DEFINE_URL, $yiiEvent);
 
                 $event->url = $yiiEvent->url;
                 if ($yiiEvent->handled) {
@@ -900,7 +902,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementMovingInStructure $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_BEFORE_MOVE_IN_STRUCTURE)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_BEFORE_MOVE_IN_STRUCTURE)) {
                     continue;
                 }
 
@@ -913,7 +915,7 @@ trait LegacyConstants
                     'structureId' => $event->structureId,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_BEFORE_MOVE_IN_STRUCTURE, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_BEFORE_MOVE_IN_STRUCTURE, $yiiEvent);
 
                 if (!$yiiEvent->isValid) {
                     $event->isValid = false;
@@ -923,7 +925,7 @@ trait LegacyConstants
 
         Event::listen(function(ElementMovedInStructure $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, self::EVENT_AFTER_MOVE_IN_STRUCTURE)) {
+                if (!self::hasEventHandlers($class, $class::EVENT_AFTER_MOVE_IN_STRUCTURE)) {
                     continue;
                 }
 
@@ -936,7 +938,7 @@ trait LegacyConstants
                     'structureId' => $event->structureId,
                 ]);
 
-                self::triggerEvent($class, self::EVENT_AFTER_MOVE_IN_STRUCTURE, $yiiEvent);
+                self::triggerEvent($class, $class::EVENT_AFTER_MOVE_IN_STRUCTURE, $yiiEvent);
             }
         });
     }
