@@ -2,8 +2,6 @@
 
 namespace craft\models;
 
-use CraftCms\Cms\Section\Data\SectionSiteSettings;
-
 /** @phpstan-ignore-next-line */
 if (false) {
     /**
@@ -14,5 +12,3 @@ if (false) {
     {
     }
 }
-
-class_alias(SectionSiteSettings::class, Section_SiteSettings::class);

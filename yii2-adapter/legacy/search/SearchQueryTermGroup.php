@@ -16,5 +16,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Search\SearchQueryTermGroup::class, SearchQueryTermGroup::class);

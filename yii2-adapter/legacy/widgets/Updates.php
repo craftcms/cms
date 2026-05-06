@@ -8,11 +8,13 @@
 
 namespace craft\widgets;
 
-/**
- * @since 3.0.0
- * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\Updates` instead.
- */
-class Updates extends \CraftCms\Cms\Dashboard\Widgets\Updates
-{
-    use \craft\base\LegacyEventConstants;
+/** @phpstan-ignore-next-line */
+if (false) {
+    /**
+     * @since 3.0.0
+     * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\Updates` instead.
+     */
+    class Updates extends \CraftCms\Cms\Dashboard\Widgets\Updates
+    {
+    }
 }

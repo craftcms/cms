@@ -14,5 +14,3 @@ if (false) {
         case Outdated = 'outdated';
     }
 }
-
-class_alias(\CraftCms\Cms\Element\Enums\AttributeStatus::class, AttributeStatus::class);

@@ -18,5 +18,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Plugin\Exceptions\InvalidPluginException::class, InvalidPluginException::class);

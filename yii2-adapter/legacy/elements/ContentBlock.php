@@ -19,5 +19,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Field\Elements\ContentBlock::class, ContentBlock::class);

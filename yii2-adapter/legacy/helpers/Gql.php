@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace craft\helpers;
 
-use craft\models\GqlSchema as LegacyGqlSchema;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\GqlHelper;
 
@@ -13,20 +12,6 @@ use CraftCms\Cms\Gql\GqlHelper;
  */
 class Gql extends GqlHelper
 {
-    /**
-     * @deprecated in 6.0.0
-     */
-    public static function createFullAccessSchema(): LegacyGqlSchema
-    {
-        $schema = parent::createFullAccessSchema();
-
-        if ($schema instanceof LegacyGqlSchema) {
-            return $schema;
-        }
-
-        return new LegacyGqlSchema($schema->toArray());
-    }
-
     /**
      * @deprecated in 6.0.0
      *

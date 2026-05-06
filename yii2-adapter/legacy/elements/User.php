@@ -20,5 +20,3 @@ if (false) {
     {
     }
 }
-
-class_alias(UserElement::class, User::class);

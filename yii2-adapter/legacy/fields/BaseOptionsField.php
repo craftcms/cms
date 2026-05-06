@@ -9,48 +9,13 @@
 
 namespace craft\fields;
 
-use craft\base\Event as YiiEvent;
-use craft\events\DefineInputOptionsEvent;
-use CraftCms\Cms\Field\Events\InputOptionsResolving;
-use Illuminate\Support\Facades\Event;
-
-/**
- * @since 3.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\BaseOptionsField} instead.
- */
-abstract class BaseOptionsField extends \CraftCms\Cms\Field\BaseOptionsField
-{
-    use \craft\base\FieldEventConstants;
-    use \craft\base\LegacyEventConstants;
-
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @event DefineInputOptionsEvent Event triggered when defining the options for the field's input.
-     *
-     * @since 4.4.0
+     * @since 3.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\BaseOptionsField} instead.
      */
-    public const string EVENT_DEFINE_OPTIONS = 'defineOptions';
-
-    public static function registerEvents(): void
+    abstract class BaseOptionsField extends \CraftCms\Cms\Field\BaseOptionsField
     {
-        Event::listen(function(InputOptionsResolving $event) {
-            if (!$event->field instanceof \CraftCms\Cms\Field\BaseOptionsField) {
-                return;
-            }
-
-            if (!YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_OPTIONS)) {
-                return;
-            }
-
-            $yiiEvent = new DefineInputOptionsEvent([
-                'options' => $event->options,
-                'value' => $event->value,
-                'element' => $event->element,
-                'sender' => $event->field,
-            ]);
-
-            YiiEvent::trigger(self::class, self::EVENT_DEFINE_OPTIONS, $yiiEvent);
-
-            $event->options = $yiiEvent->options;
-        });
     }
 }

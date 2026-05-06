@@ -11,5 +11,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Element\NestedElementManager::class, NestedElementManager::class);

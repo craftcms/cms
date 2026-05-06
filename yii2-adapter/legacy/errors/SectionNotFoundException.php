@@ -12,5 +12,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Section\Exceptions\SectionNotFoundException::class, SectionNotFoundException::class);

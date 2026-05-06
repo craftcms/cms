@@ -7,7 +7,6 @@
 
 namespace craft\elements;
 
-use craft\base\LegacyEventConstants;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\db\GlobalSetQuery;
 use craft\records\GlobalSet as GlobalSetRecord;
@@ -37,8 +36,6 @@ use function CraftCms\Cms\t;
 #[Ruleset(LegacyElementRules::class)]
 class GlobalSet extends Element implements FieldLayoutProviderInterface
 {
-    use LegacyEventConstants;
-
     /**
      * @since 4.4.6
      */

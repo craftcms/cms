@@ -8,7 +8,6 @@
 namespace craft\elements;
 
 use Craft;
-use craft\base\LegacyEventConstants;
 use craft\elements\conditions\tags\TagCondition;
 use craft\elements\db\TagQuery;
 use craft\gql\interfaces\elements\Tag as TagInterface;
@@ -38,8 +37,6 @@ use function CraftCms\Cms\t;
 #[Ruleset(LegacyElementRules::class)]
 class Tag extends Element
 {
-    use LegacyEventConstants;
-
     /**
      * @inheritdoc
      */

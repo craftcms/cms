@@ -14,5 +14,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface::class, ElementContainerFieldInterface::class);

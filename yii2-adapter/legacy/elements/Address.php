@@ -18,5 +18,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Address\Elements\Address::class, Address::class);

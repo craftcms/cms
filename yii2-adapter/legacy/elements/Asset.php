@@ -19,5 +19,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Asset\Elements\Asset::class, Asset::class);

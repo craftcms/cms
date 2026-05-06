@@ -27,5 +27,3 @@ if (false) {
         }
     }
 }
-
-class_alias(\CraftCms\Cms\Asset\Exceptions\AssetOperationException::class, AssetOperationException::class);
