@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import useCraftData from '@/composables/useCraftData';
   import {computed} from 'vue';
+  import DynamicHtmlRenderer from '@/components/DynamicHtmlRenderer.vue';
 
   const craftData = useCraftData();
   const system = computed(() => craftData.system);
@@ -22,8 +23,7 @@
     :target="site.url ? '_blank' : null"
   >
     <div class="system-info__icon">
-      <img v-if="systemIconIsUrl && system.icon" :src="system.icon" alt="" />
-      <div v-else-if="system.icon" v-html="system.icon"></div>
+      <span v-html="system.icon"></span>
     </div>
     <div class="system-info__name">{{ system.name }}</div>
   </component>
