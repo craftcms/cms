@@ -1,18 +1,11 @@
 <script setup lang="ts">
   import useCraftData from '@/composables/useCraftData';
   import {computed} from 'vue';
-  import DynamicHtmlRenderer from '@/components/DynamicHtmlRenderer.vue';
 
   const craftData = useCraftData();
   const system = computed(() => craftData.system);
   const site = computed(() => craftData.site);
   const tag = computed(() => (site.value.url ? 'a' : 'div'));
-  const systemIconIsUrl = computed(
-    () =>
-      (system.value.icon?.trimStart().startsWith('http') ||
-        system.value.icon?.trimStart().startsWith('/')) ??
-      false
-  );
 </script>
 
 <template>
