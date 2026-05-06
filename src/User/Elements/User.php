@@ -52,6 +52,7 @@ use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Actions\DeleteUsers;
 use CraftCms\Cms\User\Actions\SuspendUsers;
 use CraftCms\Cms\User\Actions\UnsuspendUsers;
+use CraftCms\Cms\User\Concerns\LegacyConstants;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Events\UserFriendlyNameResolving;
@@ -110,6 +111,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     use CanResetPassword;
     use ConfirmsPasswords;
     use HasNames;
+    use LegacyConstants;
     use Macroable;
     use Notifiable;
 

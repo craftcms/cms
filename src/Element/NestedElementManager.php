@@ -14,6 +14,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\ChangeSortOrder;
 use CraftCms\Cms\Element\Actions\MoveDown;
 use CraftCms\Cms\Element\Actions\MoveUp;
+use CraftCms\Cms\Element\Concerns\LegacyNestedElementManager;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
@@ -50,6 +51,8 @@ use function CraftCms\Cms\t;
  */
 class NestedElementManager extends Component
 {
+    use LegacyNestedElementManager;
+
     private const string VIEW_MODE_CARDS = 'cards';
 
     private const string VIEW_MODE_INDEX = 'index';

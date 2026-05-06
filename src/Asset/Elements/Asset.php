@@ -16,6 +16,7 @@ use CraftCms\Cms\Asset\Actions\RenameFile;
 use CraftCms\Cms\Asset\Actions\ReplaceFile;
 use CraftCms\Cms\Asset\Actions\ShowInFolder;
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Asset\Concerns\LegacyConstants;
 use CraftCms\Cms\Asset\Conditions\AssetCondition;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
@@ -138,6 +139,8 @@ use function CraftCms\Cms\t;
 #[Ruleset(AssetRules::class)]
 class Asset extends Element
 {
+    use LegacyConstants;
+
     // Location error codes
     // -------------------------------------------------------------------------
 

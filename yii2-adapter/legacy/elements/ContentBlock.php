@@ -9,13 +9,15 @@
 
 namespace craft\elements;
 
-use craft\base\ElementEventConstants;
-
-/**
- * @since 5.8.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Elements\ContentBlock} instead.
- */
-class ContentBlock extends \CraftCms\Cms\Field\Elements\ContentBlock
-{
-    use ElementEventConstants;
+/** @phpstan-ignore-next-line */
+if (false) {
+    /**
+     * @since 5.8.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Elements\ContentBlock} instead.
+     */
+    class ContentBlock extends \CraftCms\Cms\Field\Elements\ContentBlock
+    {
+    }
 }
+
+class_alias(\CraftCms\Cms\Field\Elements\ContentBlock::class, ContentBlock::class);

@@ -87,23 +87,21 @@ test('legacy behavior mixins are applied to every discovered compatibility targe
         ->toBe([]);
 });
 
-test('discovered legacy behavior targets are real wrappers rather than class aliases', function() {
-    $unexpectedAliasTargets = collect(LegacyBehaviorCatalog::discoveredTargets())
+test('discovered class alias behavior targets resolve to their migrated classes', function() {
+    $aliasTargets = collect(LegacyBehaviorCatalog::discoveredTargets())
         ->filter(function(array $target) {
             $contents = (string) file_get_contents($target['path']);
 
-            if (!str_contains($contents, 'class_alias(')) {
-                return false;
-            }
-
-            return !str_contains($target['path'], '/legacy/elements/actions/')
-                && !str_contains($target['path'], '/legacy/elements/exporters/');
+            return str_contains($contents, 'class_alias(');
         })
-        ->pluck('legacyClass')
-        ->values()
-        ->all();
+        ->values();
 
-    expect($unexpectedAliasTargets)->toBe([]);
+    expect($aliasTargets)->not->toBeEmpty();
+
+    $aliasTargets->each(function(array $target) {
+        expect((new ReflectionClass($target['legacyClass']))->getName())
+            ->toBe($target['targetClass']);
+    });
 });
 
 test('component-backed classes inherit behaviors from base model, base component, and concrete legacy classes', function() {
