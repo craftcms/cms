@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Event;
 /**
  * @internal
  * @deprecated 6.0.0
+ * @phpstan-ignore trait.unused
  */
 trait LegacyNestedElementManager
 {

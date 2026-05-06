@@ -9,6 +9,7 @@ use Deprecated;
 /**
  * @internal
  * @deprecated 6.0.0
+ * @phpstan-ignore trait.unused
  */
 trait LegacyConstants
 {

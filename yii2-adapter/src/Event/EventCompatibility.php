@@ -12,6 +12,7 @@ use craft\console\controllers\ResaveController;
 use craft\controllers\ElementsController;
 use craft\controllers\UsersController;
 use craft\db\Connection;
+use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\NestedElementManager;
@@ -55,6 +56,7 @@ use craft\web\Application;
 use craft\web\twig\variables\Cp;
 use craft\web\View;
 use CraftCms\Cms\Edition\Events\EditionChanged;
+use CraftCms\Cms\Element\Events\ElementTypesResolving;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\Events\TemplateCacheCollectorsResolving;
 use CraftCms\DependencyAwareCache\Events\TagsInvalidated;
@@ -80,6 +82,13 @@ readonly class EventCompatibility
         Entry::registerEvents();
         NestedElementManager::registerEvents();
         \craft\elements\User::registerEvents();
+
+        Event::listen(function(ElementTypesResolving $event) {
+            $event->types[] = Address::class;
+            $event->types[] = Asset::class;
+            $event->types[] = Entry::class;
+            $event->types[] = \craft\elements\User::class;
+        });
 
         /**
          * FieldLayouts

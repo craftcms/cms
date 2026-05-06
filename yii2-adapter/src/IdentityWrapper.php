@@ -17,7 +17,7 @@ use yii\web\IdentityInterface;
 /**
  * @mixin User
  */
-class IdentityWrapper implements IdentityInterface
+class IdentityWrapper extends User implements IdentityInterface
 {
     use ForwardsCalls;
 
@@ -26,9 +26,9 @@ class IdentityWrapper implements IdentityInterface
     ) {
     }
 
-    public static function __callStatic(string $name, array $arguments)
+    public static function __callStatic($method, $parameters)
     {
-        return User::$name($arguments);
+        return User::$method($parameters);
     }
 
     public function __get($name)
