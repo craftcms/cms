@@ -133,8 +133,12 @@ function handleNonInertiaRequests() {
     const response = event.detail.response;
 
     const shouldReload =
-      response.status === 200 &&
+      [200, 302, 301].includes(response.status) &&
       response.headers['content-type']?.includes('text/html');
+
+    if (response.headers['x-redirect']) {
+      fallbackUrl = response.headers['x-redirect'];
+    }
 
     if (!fallbackUrl || !shouldReload) {
       return;
