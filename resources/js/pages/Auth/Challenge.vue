@@ -7,6 +7,7 @@
   import TwoFactorAuthenticationController from '@actions/Auth/TwoFactorAuthenticationController';
   import {useFlashMessages} from '@/composables/useFlashMessages';
   import {usePage} from '@inertiajs/vue3';
+  import DynamicHtmlRenderer from '@/components/DynamicHtmlRenderer.vue';
 
   const props = defineProps<{
     authFormData: {
@@ -43,14 +44,14 @@
 
 <template>
   <AuthBase>
-    <TwoFactorForm :auth-form-data="authFormData" />
+    <DynamicHtmlRenderer :html="authFormData.authForm" />
 
     <template v-if="page.props.flash.error">
       {{ page.props.flash.error }}
     </template>
 
     <template v-if="actions.length > 0">
-      <hr class="mt-4 mb-2">
+      <hr class="mt-4 mb-2" />
       <ActionMenu :actions="actions" :label="t('Try another way')">
         <template #invoker="{label, attributes}">
           <craft-button
