@@ -1,6 +1,6 @@
 import {ConfigService} from '@craftcms/cp/services/Config.ts.mjs';
 import {QueueService} from '@craftcms/cp/services/Queue.ts.mjs';
-import {createInertiaApp} from '@inertiajs/vue3';
+import {createInertiaApp, router} from '@inertiajs/vue3';
 import QueueManager from '@/components/utilities/QueueManager/QueueManager.vue';
 import {Axios, Config, Queue} from '@/types/keys';
 import axios from 'axios';
@@ -100,10 +100,49 @@ const Cp = {
       },
     });
 
+    handleNonInertiaRequests();
+
     console.log('Calling booted callbacks', bootedCallbacks);
     bootedCallbacks.forEach((callback) => callback(this));
     bootedCallbacks = [];
   },
 };
+
+function handleNonInertiaRequests() {
+  let fallbackUrl = '';
+
+  router.on('start', (event) => {
+    const visit = event.detail.visit;
+
+    if (visit.prefetch || visit.async || visit.method !== 'get') {
+      return;
+    }
+
+    fallbackUrl = visit.url.href;
+  });
+
+  router.on('finish', (event) => {
+    const visit = event.detail.visit;
+
+    if (fallbackUrl === visit.url.href) {
+      fallbackUrl = '';
+    }
+  });
+
+  router.on('httpException', (event) => {
+    const response = event.detail.response;
+
+    const shouldReload =
+      response.status === 200 &&
+      response.headers['content-type']?.includes('text/html');
+
+    if (!fallbackUrl || !shouldReload) {
+      return;
+    }
+
+    event.preventDefault();
+    window.location.assign(fallbackUrl);
+  });
+}
 
 export default Cp;

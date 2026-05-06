@@ -2,6 +2,8 @@
   import {t} from '@craftcms/cp';
   import AppLayout from '@/layout/AppLayout.vue';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
+  import {default as settingsIndex} from '@actions/Settings/SettingsIndexController';
+  import CpLink from '@/components/CpLink.vue';
 
   interface SettingItem {
     icon?: string;
@@ -36,8 +38,8 @@
             <ul class="settings-grid">
               <template v-for="(item, handle) in items">
                 <li>
-                  <a
-                    :href="item.url || `settings/${handle}`"
+                  <CpLink
+                    :href="item.url || `${settingsIndex().url}/${handle}`"
                     class="settings-item"
                   >
                     <div class="settings-content">
@@ -56,7 +58,7 @@
                       {{ item.label
                       }}<span class="sr-only"> - {{ t('Settings') }}</span>
                     </div>
-                  </a>
+                  </CpLink>
                 </li>
               </template>
             </ul>
