@@ -9,6 +9,8 @@ export interface CpUser {
 }
 
 export interface CraftData {
+  csrfTokenValue?: string | null;
+  csrfTokenName?: string | null;
   system: {
     name: string;
     icon: string | null;

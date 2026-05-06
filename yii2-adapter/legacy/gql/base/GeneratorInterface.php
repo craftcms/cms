@@ -13,5 +13,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Gql\Contracts\GeneratorInterface::class, GeneratorInterface::class);

@@ -8,6 +8,7 @@ parameters:
     paths:
         - src
         - legacy
+        - constants
     excludePaths:
         - legacy/test
         - legacy/config/mimeTypes.php
@@ -57,4 +58,4 @@ parameters:
         - vendor/craftcms/cms/src/Database/Migrations
     configDirectories:
         - tests
-    tmpDir: tmp/yii2-adapter
+    tmpDir: /tmp/yii2-adapter

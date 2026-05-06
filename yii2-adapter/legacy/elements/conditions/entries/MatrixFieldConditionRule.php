@@ -12,5 +12,3 @@ if (false) {
     {
     }
 }
-
-class_alias(FieldConditionRule::class, MatrixFieldConditionRule::class);

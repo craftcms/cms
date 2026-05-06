@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Condition;
 
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Condition\Concerns\LegacyConstants;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Condition\Events\ConditionRulesResolving;
@@ -29,6 +30,8 @@ use function CraftCms\Cms\t;
 
 abstract class BaseCondition extends Component implements ConditionInterface
 {
+    use LegacyConstants;
+
     /**
      * @var string The condition builder container tag name
      */

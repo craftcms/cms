@@ -21,5 +21,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Shared\Contracts\Serializable::class, Serializable::class);

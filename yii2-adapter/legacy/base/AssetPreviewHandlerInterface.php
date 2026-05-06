@@ -30,5 +30,3 @@ if (false) {
         public function getPreviewHtml(array $variables = []): string;
     }
 }
-
-class_alias(\CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface::class, AssetPreviewHandlerInterface::class);

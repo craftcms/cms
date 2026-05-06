@@ -12,5 +12,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Shared\Enums\TimePeriod::class, TimePeriod::class);

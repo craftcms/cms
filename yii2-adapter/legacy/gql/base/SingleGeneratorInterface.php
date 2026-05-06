@@ -13,5 +13,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Gql\Contracts\SingleGeneratorInterface::class, SingleGeneratorInterface::class);

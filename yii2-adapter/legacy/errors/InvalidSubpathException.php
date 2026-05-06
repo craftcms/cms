@@ -12,5 +12,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException::class, InvalidSubpathException::class);

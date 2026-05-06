@@ -9,18 +9,20 @@
 
 namespace craft\fs;
 
-/**
- * Local represents a local filesystem.
- *
- * @property-read mixed $settingsHtml
- * @property-read string $rootPath
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Filesystems\Local} instead.
- */
-class Local extends \CraftCms\Cms\Filesystem\Filesystems\Local
-{
-    use \craft\base\LegacyEventConstants;
+/** @phpstan-ignore-next-line */
+if (false) {
+    /**
+     * Local represents a local filesystem.
+     *
+     * @property-read mixed $settingsHtml
+     * @property-read string $rootPath
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     *
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Filesystems\Local} instead.
+     */
+    class Local extends \CraftCms\Cms\Filesystem\Filesystems\Local
+    {
+    }
 }

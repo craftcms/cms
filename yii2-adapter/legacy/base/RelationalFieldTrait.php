@@ -7,8 +7,6 @@
 
 namespace craft\base;
 
-use CraftCms\Cms\Field\Concerns\RelationalField;
-
 /** @phpstan-ignore-next-line */
 if (false) {
     /**
@@ -20,5 +18,3 @@ if (false) {
     {
     }
 }
-
-class_alias(RelationalField::class, RelationalFieldTrait::class);

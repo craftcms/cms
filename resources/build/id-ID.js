@@ -1,1 +1,0 @@
-import e from"./id.js";var t={...e};export{t as default};

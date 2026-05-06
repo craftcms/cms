@@ -14,5 +14,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Deprecator\Exceptions\DeprecationException::class, DeprecationException::class);

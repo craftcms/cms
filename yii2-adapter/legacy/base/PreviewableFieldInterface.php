@@ -19,5 +19,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Field\Contracts\PreviewableFieldInterface::class, PreviewableFieldInterface::class);

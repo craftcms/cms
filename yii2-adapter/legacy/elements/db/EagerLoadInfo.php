@@ -20,5 +20,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Element\Data\EagerLoadInfo::class, EagerLoadInfo::class);

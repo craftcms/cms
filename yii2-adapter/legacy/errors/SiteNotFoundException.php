@@ -26,5 +26,3 @@ if (false) {
         }
     }
 }
-
-class_alias(\CraftCms\Cms\Site\Exceptions\SiteNotFoundException::class, SiteNotFoundException::class);

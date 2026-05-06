@@ -41,6 +41,7 @@ class Yii2ServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        new ClassAliases()->register();
         new MultiEnvironmentConfigCompatibility()->register($this->app);
 
         $this->registerConstants();
