@@ -58,7 +58,7 @@ readonly class GeneralSettingsController
         $systemSettings = $this->projectConfig->get('system') ?? [];
         $systemSettings['name'] = $settings['name'];
         $systemSettings['live'] = $settings['live'];
-        $systemSettings['retryDuration'] = $settings['retryDuration'] ?: null;
+        $systemSettings['retryDuration'] = $settings['retryDuration'] ?? null;
         $systemSettings['timeZone'] = $settings['timeZone'];
 
         $this->projectConfig->set('system', $systemSettings, 'Update system settings.');
