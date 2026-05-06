@@ -1,12 +1,7 @@
 <script setup lang="ts">
   import useCraftData from '@/composables/useCraftData';
-  import LoginForm from '@/components/Auth/LoginForm.vue';
   import Pane from '@/components/Pane.vue';
 
-  defineProps<{
-    logo?: string;
-    errors?: Record<string, string[]>;
-  }>();
   const {general, system} = useCraftData();
 </script>
 
@@ -24,7 +19,7 @@
       </h1>
 
       <Pane appearance="raised" class="w-sm">
-        <LoginForm :show-password-reset="true" :show-remember-checkbox="true" />
+        <slot></slot>
       </Pane>
     </div>
   </div>

@@ -6,7 +6,9 @@ namespace CraftCms\Cms\Auth\Methods;
 
 use Carbon\CarbonInterface;
 use CraftCms\Cms\Auth\Models\RecoveryCodes as RecoveryCodesModel;
+use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\RecoveryCodesAsset;
 use InvalidArgumentException;
@@ -42,11 +44,14 @@ JS, [$containerId]);
         return template('_components/auth/methods/RecoveryCodes/setup');
     }
 
-    public function getAuthFormHtml(): string
+    public function getAuthFormHtml(array $data = []): string
     {
         app(InternalAssetRegistry::class)->register(RecoveryCodesAsset::class);
 
-        return template('_components/auth/methods/RecoveryCodes/form');
+        return Html::tag('RecoveryCodesForm', attributes: [
+            ...$data,
+            'action' => action([TwoFactorAuthenticationController::class, 'verifyRecoveryCode']),
+        ]);
     }
 
     #[Override]

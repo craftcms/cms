@@ -37,7 +37,7 @@ readonly class LoginController extends AuthenticationController
             return redirect()->action([TwoFactorAuthenticationController::class, 'showForm']);
         }
 
-        return Inertia::render('Login', [
+        return Inertia::render('Auth/Login', [
             'username' => $generalConfig->rememberUsernameDuration ? $authMethods->getRememberedUsername() : '',
         ]);
     }

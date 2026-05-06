@@ -11,8 +11,10 @@ use BaconQrCode\Writer;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Models\Authenticator;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\TotpAsset;
 use CraftCms\Cms\View\TemplateMode;
@@ -92,11 +94,15 @@ JS, [
         ], templateMode: TemplateMode::Cp);
     }
 
-    public function getAuthFormHtml(): string
+    public function getAuthFormHtml(array $data = []): string
     {
         app(InternalAssetRegistry::class)->register(TotpAsset::class);
 
-        return template('_components/auth/methods/TOTP/form');
+        return Html::tag('TotpForm', attributes: [
+            ...$data,
+            'action' => action([TwoFactorAuthenticationController::class, 'verify']),
+        ]);
+        // return template('_components/auth/methods/TOTP/form');
     }
 
     public function verify(mixed ...$args): bool

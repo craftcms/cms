@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Middleware;
 
+use Closure;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -20,6 +21,7 @@ use CraftCms\Cms\Update\Updates;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Middleware;
+use Inertia\Support\Header;
 use Override;
 
 use function CraftCms\Cms\action_url;
@@ -27,6 +29,32 @@ use function CraftCms\Cms\cp_url;
 
 class HandleInertiaRequests extends Middleware
 {
+    #[Override]
+    public function handle(Request $request, Closure $next)
+    {
+        $response = parent::handle($request, $next);
+
+        /*
+         * Because we have both inertia and non-inertia pages we have a bit of
+         * code in cp.ts that figures out when we need a full refresh or not.
+         * That check relies on `x-redirect` which is usually set by Yii, but
+         * sometimes we need to redirect from within laravel. This adds the
+         * header so our cp.ts code still works.
+         *
+         * Once everything is inertia, this should be able to be removed.
+         */
+        if (
+            $request->isMethod('GET') &&
+            $request->inertia() &&
+            ! $response->headers->has(Header::INERTIA) &&
+            str_contains((string) $response->headers->get('Content-Type'), 'text/html')
+        ) {
+            $response->headers->set('X-Redirect', $request->fullUrl());
+        }
+
+        return $response;
+    }
+
     /**
      * The root template that's loaded on the first page visit.
      *
@@ -69,7 +97,6 @@ class HandleInertiaRequests extends Middleware
         $updates = app(Updates::class);
         $nav = app(Navigation::class);
         $progressService = app(JobProgress::class);
-        $generalConfig = app(GeneralConfig::class);
         $currentUser = null;
 
         if (! $updates->isCraftUpdatePending()) {

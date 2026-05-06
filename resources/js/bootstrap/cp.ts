@@ -16,6 +16,8 @@ import AssetIndexes from '@/components/utilities/AssetIndexes/AssetIndexes.vue';
 import SystemMessages from '@/components/utilities/SystemMessages/SystemMessages.vue';
 import DeprecationErrorsToolbar from '@/components/utilities/DeprecationErrors/DeprecationErrorsToolbar.vue';
 import {setTranslations} from '@craftcms/cp/utilities/translate.ts.mjs';
+import TotpForm from '@/components/Auth/TotpForm.vue';
+import RecoveryCodesForm from '@/components/Auth/RecoveryCodesForm.vue';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -97,6 +99,9 @@ const Cp = {
         app.component('ProjectConfig', ProjectConfig);
         app.component('AssetIndexes', AssetIndexes);
         app.component('SystemMessages', SystemMessages);
+
+        app.component('TotpForm', TotpForm);
+        app.component('RecoveryCodesForm', RecoveryCodesForm);
       },
     });
 
