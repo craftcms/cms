@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Middleware;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Database\Table;
@@ -95,9 +96,7 @@ class HandleInertiaRequests extends Middleware
                 'hasWaitingJobs' => false,
             ],
             'craft' => fn () => [
-                'general' => [
-                    'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
-                ],
+                'general' => Cp::config()->toArray(),
                 'system' => [
                     'name' => Cms::systemName(),
                     'icon' => $systemIcon,
@@ -109,13 +108,13 @@ class HandleInertiaRequests extends Middleware
                 'site' => [
                     'url' => $currentSite->getBaseUrl(),
                 ],
-                'currentUser' => [
-                    'id' => $currentUser->id ?? null,
-                    'username' => $currentUser->username ?? null,
-                    'email' => $currentUser->email ?? null,
-                    'name' => $currentUser->name ?? null,
+                'currentUser' => $currentUser ? [
+                    'id' => $currentUser->id,
+                    'username' => $currentUser->username,
+                    'email' => $currentUser->email,
+                    'name' => $currentUser->name,
                     'thumbHtml' => $currentUser->getThumbHtml(30),
-                ],
+                ] : null,
                 'readOnly' => ! $generalConfig->allowAdminChanges,
                 'allowAdminChanges' => $generalConfig->allowAdminChanges,
                 'cpUrl' => cp_url(),
