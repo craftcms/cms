@@ -65,32 +65,30 @@ readonly class InstallController
             }
         }
 
-        // Grab the license text
-        $licensePath = Aliases::get('@craftcms/LICENSE.md');
-        $license = file_get_contents($licensePath);
-        $licenseHtml = Str::markdown($license);
-
         // Guess the site name based on the server name
         $defaultSystemName = $this->defaultSiteName();
         $defaultSiteUrl = $this->defaultSiteUrl();
         $defaultSiteLanguage = $this->defaultSiteLanguage();
-        $locales = I18N::getAllLocales();
         $dbConfig = DB::getConfig();
         $postCpLoginRedirect = Cms::config()->postCpLoginRedirect;
-
-        $localeOptions = collect($locales)
-            ->map(fn ($locale) => [
-                'id' => $locale->id,
-                'value' => $locale->id,
-                'label' => $locale->getDisplayName(app()->getLocale()),
-                'selected' => $locale->id === $defaultSiteLanguage,
-            ]);
 
         return Inertia::render('Install', [
             'showDbScreen' => $showDbScreen,
             'postCpLoginRedirect' => $postCpLoginRedirect,
-            'licenseHtml' => Inertia::defer(fn () => $licenseHtml),
-            'localeOptions' => Inertia::defer(fn () => $localeOptions),
+            'licenseHtml' => Inertia::defer(function () {
+                $licensePath = Aliases::get('@craftcms/LICENSE.md');
+                $license = file_get_contents($licensePath);
+
+                return Str::markdown($license);
+            }),
+            'localeOptions' => Inertia::defer(function () use ($defaultSiteLanguage) {
+                return I18N::getAllLocales()->map(fn ($locale) => [
+                    'id' => $locale->id,
+                    'value' => $locale->id,
+                    'label' => $locale->getDisplayName(app()->getLocale()),
+                    'selected' => $locale->id === $defaultSiteLanguage,
+                ]);
+            }),
             'timezone' => Inertia::defer(function () {
                 $timezoneOptions = SelectOptions::getTimeZoneOptions();
 
