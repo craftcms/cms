@@ -17,6 +17,7 @@ use CraftCms\Cms\Component\Contracts\Identifiable;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
@@ -57,6 +58,17 @@ abstract class Controller extends \yii\web\Controller
     public const ALLOW_ANONYMOUS_NEVER = 0;
     public const ALLOW_ANONYMOUS_LIVE = 1;
     public const ALLOW_ANONYMOUS_OFFLINE = 2;
+
+    public $enableCsrfValidation = true {
+        get => $this->enableCsrfValidation;
+        set($value) {
+            $this->enableCsrfValidation = (bool) $value;
+
+            if (!$this->enableCsrfValidation) {
+                $this->registerCsrfValidationExclusion();
+            }
+        }
+    }
 
     /**
      * @var int|bool|int[]|string[] Whether this controller’s actions can be accessed anonymously.
@@ -139,6 +151,41 @@ abstract class Controller extends \yii\web\Controller
         }
 
         parent::init();
+
+        if (!$this->enableCsrfValidation) {
+            $this->registerCsrfValidationExclusion();
+        }
+    }
+
+    public function registerCsrfValidationExclusion(): void
+    {
+        if (!isset($this->id, $this->module)) {
+            return;
+        }
+
+        PreventRequestForgery::except($this->csrfValidationExclusionUris());
+    }
+
+    private function csrfValidationExclusionUris(): array
+    {
+        $route = trim($this->getUniqueId(), '/');
+
+        if ($route === '') {
+            return [];
+        }
+
+        $actionTrigger = trim(Cms::config()->actionTrigger, '/');
+        $cpTrigger = trim(Cms::config()->cpTrigger, '/');
+
+        return collect([
+            $route,
+            implode('/', array_filter([$actionTrigger, $route], fn(string $segment) => $segment !== '')),
+            implode('/', array_filter([$cpTrigger, $actionTrigger, $route], fn(string $segment) => $segment !== '')),
+        ])
+            ->flatMap(fn(string $route) => [$route, "$route/*"])
+            ->unique()
+            ->values()
+            ->all();
     }
 
     /**
