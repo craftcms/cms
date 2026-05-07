@@ -137,7 +137,7 @@ foreach ([
             ->middleware(StartSessionWithoutPersistence::class)
             ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class]);
         Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout']);
-        Route::middleware('throttle:1,1')->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
+        Route::middleware('throttle:password-reset')->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
         Route::post('users/save-user', SaveUserController::class);
 
         // Asset Transforms (anonymous access)

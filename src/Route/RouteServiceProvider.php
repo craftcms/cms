@@ -35,6 +35,7 @@ use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
@@ -42,6 +43,7 @@ use Illuminate\Foundation\Support\Providers\RouteServiceProvider as LaravelRoute
 use Illuminate\Routing\Router;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
@@ -97,6 +99,18 @@ class RouteServiceProvider extends ServiceProvider
             }
 
             $routes->handleDeletedSite($event);
+        });
+
+        RateLimiter::for('password-reset', function ($request) {
+            $loginName = $request->input('loginName');
+
+            // Don't throttle if no loginName provided - validation will handle it
+            if (empty($loginName)) {
+                return Limit::none();
+            }
+
+            // Throttle by loginName to prevent enumeration attacks
+            return Limit::perMinute(1);
         });
     }
 
