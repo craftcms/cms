@@ -19,7 +19,11 @@ trait CraftCommand
     /** @return string[] */
     public function getAliases(): array
     {
-        return array_map(fn (string $alias) => Str::start($alias, 'craft:'), $this->aliases ?? []);
+        return array_map(
+            fn (string $alias) => Str::start($alias, 'craft:'),
+            /** @phpstan-ignore-next-line */
+            $this->aliases ?? [],
+        );
     }
 
     protected function ensureProjectConfigFileExists(): void
