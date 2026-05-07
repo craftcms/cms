@@ -20,6 +20,11 @@ use function CraftCms\Cms\template;
 
 class RecoveryCodes extends BaseAuthMethod
 {
+    public static function handle(): string
+    {
+        return 'recovery-codes';
+    }
+
     public static function displayName(): string
     {
         return t('Recovery Codes');

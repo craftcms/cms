@@ -33,6 +33,11 @@ class TOTP extends BaseAuthMethod
 {
     use ConfirmsPasswords;
 
+    public static function handle(): string
+    {
+        return 'totp';
+    }
+
     public static function displayName(): string
     {
         return t('Authenticator App');

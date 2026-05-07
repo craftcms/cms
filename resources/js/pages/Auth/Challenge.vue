@@ -13,7 +13,7 @@
       authMethod: string;
       otherMethods: Array<{
         name: string;
-        class: string;
+        handle: string;
       }>;
       authForm: string;
       returnUrl: string;
@@ -32,7 +32,7 @@
       return {
         href: TwoFactorAuthenticationController.showForm({
           query: {
-            method: method.class,
+            method: method.handle,
           },
         }).url,
         label: method.name,

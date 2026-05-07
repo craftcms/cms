@@ -61,15 +61,15 @@ readonly class TwoFactorAuthenticationController
         }
 
         $activeMethods = $auth->getActiveMethods($user);
-        $methodClass = $request->input('method');
+        $methodHandle = $request->input('method');
 
-        if ($methodClass) {
+        if ($methodHandle) {
             /** @var AuthMethodInterface|null $method */
             $method = $activeMethods->first(
-                fn (AuthMethodInterface $method) => $method::class === $methodClass,
+                fn (AuthMethodInterface $method) => $method::handle() === $methodHandle,
             );
 
-            abort_if(! $method, 400, 'Invalid method class: '.$methodClass);
+            abort_if(! $method, 400, 'Invalid method handle: '.$methodHandle);
         } else {
             abort_if($activeMethods->isEmpty(), 400, 'User has no active two-step verification methods.');
 
@@ -101,7 +101,7 @@ readonly class TwoFactorAuthenticationController
             'authMethod' => $method::class,
             'otherMethods' => $activeMethods->map(fn (AuthMethodInterface $method) => [
                 'name' => $method::displayName(),
-                'class' => $method::class,
+                'handle' => $method::handle(),
             ])->all(),
             'authForm' => $html,
             'returnUrl' => $returnUrl,
