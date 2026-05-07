@@ -664,7 +664,11 @@ JS, [
 
                     // If fieldId is set, we're replacing the selected field
                     if ($elementConfig['type'] === CustomField::class && isset($elementConfig['fieldId'])) {
-                        unset($elementConfig['fieldUid']);
+                        if (!empty($elementConfig['fieldId'])) {
+                            unset($elementConfig['fieldUid']);
+                        } else {
+                            unset($elementConfig['fieldId']);
+                        }
                     }
 
                     break 2;
