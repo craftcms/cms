@@ -8,7 +8,11 @@
   import {computed} from 'vue';
   import useCraftData from '@/composables/useCraftData';
   import {cpHumanizer} from '@craftcms/cp/utilities/format.ts.mjs';
+  import FlashMessages from '@/components/FlashMessages.vue';
 
+  const emit = defineEmits<{
+    (e: 'change:view', view: 'login' | 'set-password'): void;
+  }>();
   const props = withDefaults(
     defineProps<{
       showPasswordReset?: boolean;
@@ -36,7 +40,6 @@
   }>();
   const {general} = useCraftData();
   const fieldErrors = computed(() => page.props.errors);
-  const formError = computed(() => page.props.flash.error);
 
   const usernameProps = computed(() => {
     if (general.useEmailAsUsername) {
@@ -78,13 +81,7 @@
 <template>
   <form @submit.prevent="handleSubmit()">
     <div class="grid gap-3">
-      <template v-if="formError">
-        <div class="mt-2">
-          <craft-callout variant="danger" appearance="fill">{{
-            formError
-          }}</craft-callout>
-        </div>
-      </template>
+      <FlashMessages />
       <template v-if="staticEmail">
         <input type="hidden" name="username" :value="staticEmail" />
       </template>
@@ -111,7 +108,12 @@
         />
         <template v-if="showPasswordReset">
           <div class="mt-2">
-            <a href="">{{ t('Forgot password?') }}</a>
+            <craft-button
+              type="button"
+              appearance="none"
+              @click="emit('change:view', 'set-password')"
+              >{{ t('Forgot password?') }}</craft-button
+            >
           </div>
         </template>
       </div>

@@ -121,6 +121,12 @@ export default css`
     border-color: transparent;
     color: inherit;
     padding: 0;
+    min-height: auto;
+    min-width: auto;
+
+    &:before {
+      display: none;
+    }
   }
 
   /* Plain */

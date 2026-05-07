@@ -7,7 +7,7 @@
 
 <template>
   <div class="cp-login">
-    <div class="grid gap-3">
+    <div class="grid gap-3 justify-items-center">
       <h1 class="flex justify-center" v-if="general.cpLogoUrl">
         <img
           :src="general.cpLogoUrl"
@@ -18,9 +18,11 @@
         />
       </h1>
 
-      <Pane appearance="raised" class="w-sm">
-        <slot></slot>
-      </Pane>
+      <div class="w-sm">
+        <Pane appearance="raised">
+          <slot></slot>
+        </Pane>
+      </div>
     </div>
   </div>
 </template>

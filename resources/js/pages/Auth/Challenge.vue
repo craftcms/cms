@@ -1,11 +1,9 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
   import AuthBase from '@/layout/AuthBase.vue';
-  import TwoFactorForm from '@/components/Auth/TwoFactorForm.vue';
   import ActionMenu from '@/components/ActionMenu.vue';
   import {computed} from 'vue';
   import TwoFactorAuthenticationController from '@actions/Auth/TwoFactorAuthenticationController';
-  import {useFlashMessages} from '@/composables/useFlashMessages';
   import {usePage} from '@inertiajs/vue3';
   import DynamicHtmlRenderer from '@/components/DynamicHtmlRenderer.vue';
 
