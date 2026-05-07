@@ -1,0 +1,22 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as ButtonStories from './button.stories';
+
+<Meta of={ButtonStories} />
+
+# Button
+
+A button represents a clickable element that performs an action when activated.
+
+<Canvas of={ButtonStories.Default} />
+
+## Variants & Appearances
+
+### Semantic Buttons
+
+Buttons can be styled with different variants to indicate their purpose or importance. The available variants are:
+
+- `primary`: The primary button style, used for the most important actions.
+- `default`: A generic button style, used for less important actions.
+- `danger`: The danger button style, used for actions that may have negative consequences.
+
+Semantic buttons should only be used in the primary layout containers, and not inside **Colorable** components. This is because they rely on the variant system to apply the correct colors, and using them inside of a Colorable component may cause unexpected results.

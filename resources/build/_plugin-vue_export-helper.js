@@ -873,26 +873,24 @@ import{n as e}from"./rolldown-runtime.js";import{t}from"./decorate-EVKP5RjP.js";
     white-space: nowrap;
 
     /* Colorable styles */
-    color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
+    color: var(--button-foreground-color, var(--c-color-on-loud));
     border-width: var(--c-button-border-width, 1px);
     border-style: var(--c-button-border-style, solid);
-    border-color: var(
-      --c-color-border-loud,
-      var(--c-color-neutral-border-loud)
-    );
+    border-color: var(--button-border-color, var(--c-color-border-loud));
     background-color: var(
-      --c-color-fill-loud,
-      var(--c-color-neutral-fill-loud)
+      --button-background-color-default,
+      var(--c-color-fill-loud)
     );
   }
 
   @media (hover: hover) {
     :host(:hover) {
-      background-color: color-mix(
+      --button-background-color-hover: color-mix(
         in oklab,
         var(--c-color-fill-loud, var(--c-button-default-fill)),
         var(--c-color-mix-hover)
       );
+      background-color: var(--button-background-color-hover);
       color: var(--c-color-on-loud);
     }
   }
@@ -1049,6 +1047,24 @@ import{n as e}from"./rolldown-runtime.js";import{t}from"./decorate-EVKP5RjP.js";
   /*
   Variants (aka fill colors) 
    */
+  :host([variant~='danger']) {
+    --button-background-color-default: var(--c-danger-static-color);
+    --button-background-color-hover: var(--c-danger-static-color-darker);
+    --button-foreground-color: var(--c-danger-static-color-foreground);
+  }
+
+  :host([variant~='primary']) {
+    --button-background-color-default: var(--c-brand-static-color);
+    --button-background-color-hover: var(--c-brand-static-color-darker);
+    --button-foreground-color: var(--c-brand-static-color-foreground);
+  }
+
+  :host([variant~='default']) {
+    --button-background-color-default: var(--c-neutral-static-color);
+    --button-background-color-hover: var(--c-neutral-static-color-darker);
+    --button-foreground-color: var(--c-neutral-static-color-foreground);
+  }
+
   :host([variant~='primary']) {
     --c-color-fill-loud: var(--c-color-brand-fill-loud);
     --c-color-fill-normal: var(--c-color-brand-fill-normal);
