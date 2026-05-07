@@ -367,6 +367,63 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     public bool $usePathInfo = false;
 
     /**
+     * @var bool Whether to enable CSRF protection via hidden form inputs for all forms submitted via Craft.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->enableCsrfProtection(false)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ENABLE_CSRF_PROTECTION=false
+     * ```
+     * :::
+     *
+     * @see csrfTokenName
+     * @see enableCsrfCookie
+     *
+     * @group Security
+     */
+    public bool $enableCsrfProtection = true;
+
+    /**
+     * @var bool Whether to use a cookie to persist the CSRF token if <config5:enableCsrfProtection> is enabled. If false, the CSRF token will be
+     *           stored in session under the `csrfTokenName` config setting name. Note that while storing CSRF tokens in session increases security,
+     *           it requires starting a session for every page that a CSRF token is needed, which may degrade site performance.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->enableCsrfCookie(false)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ENABLE_CSRF_COOKIE=false
+     * ```
+     * :::
+     *
+     * @see enableCsrfProtection
+     *
+     * @group Security
+     */
+    public bool $enableCsrfCookie = true;
+
+    /**
+     * @var string The name of CSRF token used for CSRF validation if <config5:enableCsrfProtection> is set to `true`.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->csrfTokenName('MY_CSRF')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_CSRF_TOKEN_NAME=MY_CSRF
+     * ```
+     * :::
+     *
+     * @group Security
+     *
+     * @see enableCsrfProtection
+     */
+    public string $csrfTokenName = '_token';
+
+    /**
      * @var bool Whether user-defined Twig templates should be sandboxed.
      *
      * ::: code
