@@ -20,6 +20,7 @@ class FieldNotFoundException extends Exception
 {
     /**
      * @var int|string The field’s ID or UUID
+     * @since 5.10.0
      */
     public int|string $fieldId;
 
