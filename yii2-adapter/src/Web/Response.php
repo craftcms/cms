@@ -65,13 +65,26 @@ class Response extends \yii\web\Response implements Responsable
      */
     private $_illuminateResponse;
 
+    private bool $_illuminateResponseInjected = false;
+
+    private bool $_illuminateResponsePrepared = false;
+
     /**
      * @param  bool  $create  whether to create a response, if it is empty.
      */
     public function getIlluminateResponse(bool $create = false): ?SymfonyResponse
     {
-        if ($create) {
-            $this->_illuminateResponse ??= $this->createIlluminateResponse();
+        if ($create && !$this->_illuminateResponsePrepared) {
+            if ($this->_illuminateResponse === null) {
+                $this->prepare();
+            }
+
+            if (!$this->_illuminateResponseInjected && $this->_illuminateResponse !== null) {
+                $this->sendHeaders();
+                $this->sendContent();
+            }
+
+            $this->_illuminateResponsePrepared = true;
         }
 
         return $this->_illuminateResponse;
@@ -85,6 +98,8 @@ class Response extends \yii\web\Response implements Responsable
     public function setIlluminateResponse(SymfonyResponse $response): static
     {
         $this->_illuminateResponse = $response;
+        $this->_illuminateResponseInjected = true;
+        $this->_illuminateResponsePrepared = true;
 
         return $this;
     }
@@ -97,6 +112,8 @@ class Response extends \yii\web\Response implements Responsable
         parent::clear();
 
         $this->_illuminateResponse = null;
+        $this->_illuminateResponseInjected = false;
+        $this->_illuminateResponsePrepared = false;
     }
 
     /**
