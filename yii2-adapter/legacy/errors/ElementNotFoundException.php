@@ -29,5 +29,3 @@ if (false) {
         }
     }
 }
-
-class_alias(\CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException::class, ElementNotFoundException::class);

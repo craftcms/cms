@@ -69,12 +69,12 @@ it('keeps the legacy gql helper working against the new service', function() {
         ->and(LegacyGqlHelper::isSchemaAwareOf('sections.news'))->toBeTrue();
 });
 
-it('returns legacy token wrappers from the legacy gql service', function() {
+it('returns gql token aliases from the legacy gql service', function() {
     $modernToken = app(\CraftCms\Cms\Gql\Gql::class)->getPublicToken();
     $legacyToken = Craft::$app->getGql()->getPublicToken();
 
     expect($modernToken)->toBeInstanceOf(GqlToken::class)
-        ->and($modernToken)->not->toBeInstanceOf(LegacyGqlToken::class)
+        ->and($modernToken)->toBeInstanceOf(LegacyGqlToken::class)
         ->and($legacyToken)->toBeInstanceOf(LegacyGqlToken::class)
         ->and($legacyToken?->getSchema())->toBeInstanceOf(GqlSchema::class);
 });

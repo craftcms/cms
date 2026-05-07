@@ -4,18 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Rules\EnvValueRule;
 use CraftCms\Cms\Validation\Rules\TimezoneRule;
-use Illuminate\Contracts\View\View;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
@@ -27,26 +24,27 @@ readonly class GeneralSettingsController
         private ProjectConfig $projectConfig,
     ) {}
 
-    public function index(GeneralConfig $generalConfig): Response|View
+    public function index(): CpScreenResponse
     {
         $timezoneOptions = SelectOptions::getTimeZoneOptions();
         $timezoneOptions = array_merge($timezoneOptions, SelectOptions::getEnvOptions(array_column($timezoneOptions, 'value')));
 
-        return Inertia::render('SettingsGeneralPage', [
-            'system' => $this->projectConfig->get('system') ?? [],
-            'nameSuggestions' => SelectOptions::getEnvSuggestions(),
-            'timezoneOptions' => $timezoneOptions,
-            'crumbs' => [
+        return new CpScreenResponse()
+            ->title(t('General Settings'))
+            ->crumbs([
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('General Settings')],
-            ],
-            'systemStatusOptions' => SelectOptions::getBooleanEnvOptions(),
-            'readOnly' => ! $generalConfig->allowAdminChanges,
-            'saveUrl' => route('craft.cp.settings.general.store'),
-        ]);
+            ])
+            ->redirectUrl('settings')
+            ->inertiaPage('SettingsGeneralPage', [
+                'system' => $this->projectConfig->get('system') ?? [],
+                'nameSuggestions' => SelectOptions::getEnvSuggestions(),
+                'timezoneOptions' => $timezoneOptions,
+                'systemStatusOptions' => SelectOptions::getBooleanEnvOptions(),
+            ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): Response
     {
         $settings = $request->validate([
             'name' => [new EnvValueRule(['required', 'string'])],
@@ -63,6 +61,6 @@ readonly class GeneralSettingsController
 
         $this->projectConfig->set('system', $systemSettings, 'Update system settings.');
 
-        return back()->with('success', t('System settings saved.'));
+        return $this->asSuccess(t('System settings saved.'));
     }
 }

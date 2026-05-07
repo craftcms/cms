@@ -16,5 +16,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Gql\Contracts\GqlInlineFragmentInterface::class, GqlInlineFragmentInterface::class);

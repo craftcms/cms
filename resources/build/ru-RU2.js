@@ -1,1 +1,0 @@
-import e from"./ru3.js";var t={...e};export{t as default};

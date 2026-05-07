@@ -7,20 +7,15 @@ namespace CraftCms\Yii2Adapter\Event;
 use Craft;
 use craft\base\Element;
 use craft\base\Field as LegacyField;
-use craft\base\FieldLayoutComponent;
 use craft\console\controllers\ResaveController;
 use craft\controllers\ElementsController;
 use craft\controllers\UsersController;
 use craft\db\Connection;
+use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\NestedElementManager;
 use craft\events\EditionChangeEvent;
-use craft\fieldlayoutelements\BaseField;
-use craft\fields\Assets as LegacyAssetsField;
-use craft\fields\BaseOptionsField as LegacyBaseOptionsField;
-use craft\fields\Link as LegacyLinkField;
-use craft\fields\Matrix as LegacyMatrixField;
 use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
 use craft\imagetransforms\ImageTransformer;
@@ -55,6 +50,8 @@ use craft\web\Application;
 use craft\web\twig\variables\Cp;
 use craft\web\View;
 use CraftCms\Cms\Edition\Events\EditionChanged;
+use CraftCms\Cms\Element\Events\ElementTypesResolving;
+use CraftCms\Cms\Shared\Concerns\LegacyEventConstants;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\Events\TemplateCacheCollectorsResolving;
 use CraftCms\DependencyAwareCache\Events\TagsInvalidated;
@@ -81,22 +78,23 @@ readonly class EventCompatibility
         NestedElementManager::registerEvents();
         \craft\elements\User::registerEvents();
 
+        Event::listen(function(ElementTypesResolving $event) {
+            $event->types[] = Address::class;
+            $event->types[] = Asset::class;
+            $event->types[] = Entry::class;
+            $event->types[] = \craft\elements\User::class;
+        });
+
         /**
          * FieldLayouts
          */
-        BaseField::registerEvents();
+        LegacyEventConstants::registerEvents();
         FieldLayout::registerEvents();
-        FieldLayoutComponent::registerEvents();
 
         /**
          * Fields
          */
         LegacyField::registerEvents();
-        LegacyAssetsField::registerEvents();
-        LegacyBaseOptionsField::registerEvents();
-        LegacyLinkField::registerEvents();
-        LegacyMatrixField::registerEvents();
-        FieldEvents::registerEvents();
 
         /**
          * Helpers

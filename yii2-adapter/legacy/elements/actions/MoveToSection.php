@@ -11,5 +11,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Entry\Actions\MoveToSection::class, MoveToSection::class);

@@ -9,12 +9,14 @@
 
 namespace craft\fs;
 
-/**
- * @property class-string<\CraftCms\Cms\Filesystem\Contracts\FsInterface> $expectedType
- *
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Filesystems\MissingFs} instead.
- */
-class MissingFs extends \CraftCms\Cms\Filesystem\Filesystems\MissingFs
-{
-    use \craft\base\LegacyEventConstants;
+/** @phpstan-ignore-next-line */
+if (false) {
+    /**
+     * @property class-string<\CraftCms\Cms\Filesystem\Contracts\FsInterface> $expectedType
+     *
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Filesystems\MissingFs} instead.
+     */
+    class MissingFs extends \CraftCms\Cms\Filesystem\Filesystems\MissingFs
+    {
+    }
 }

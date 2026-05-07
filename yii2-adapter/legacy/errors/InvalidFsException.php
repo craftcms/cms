@@ -29,5 +29,3 @@ if (false) {
         }
     }
 }
-
-class_alias(\CraftCms\Cms\Filesystem\Exceptions\InvalidFsException::class, InvalidFsException::class);

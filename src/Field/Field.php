@@ -17,6 +17,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Field\Concerns\LegacyFieldConstants;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
@@ -43,6 +44,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Types\QueryArgument;
 use CraftCms\Cms\Shared\Contracts\Serializable;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -72,6 +74,7 @@ use function CraftCms\Cms\t;
 abstract class Field extends Component implements Actionable, FieldInterface, Iconic, Stringable
 {
     use ConfigurableComponent;
+    use LegacyFieldConstants;
     use SavableComponent;
 
     // Translation methods
@@ -272,7 +275,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
      */
     public function __construct($config = [])
     {
-        parent::__construct($config);
+        parent::__construct(Arr::except($config, ['fieldLimit', 'limitUnit']));
 
         // Validate the translation method
         $supportedTranslationMethods = static::supportedTranslationMethods() ?: [TranslationMethod::None];

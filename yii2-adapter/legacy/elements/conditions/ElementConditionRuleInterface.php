@@ -18,5 +18,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface::class, ElementConditionRuleInterface::class);

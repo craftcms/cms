@@ -8,7 +8,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Events\RegisterCpSettings;
 use CraftCms\Cms\Cp\Events\RegisterReadonlyCpSettings;
 use CraftCms\Cms\Plugin\Plugins;
-use Illuminate\Support\Facades\Event;
+use CraftCms\Cms\Support\Url;
 
 use function CraftCms\Cms\t;
 
@@ -98,23 +98,17 @@ readonly class Settings
         foreach ($this->pluginsService->getAllPlugins() as $plugin) {
             if ($plugin->hasCpSettings && (! $readOnly || $plugin->hasReadOnlyCpSettings)) {
                 $settings[$label][$plugin->handle] = [
-                    'url' => 'settings/plugins/'.$plugin->handle,
+                    'url' => Url::cpUrl('settings/plugins/'.$plugin->handle),
                     'icon' => $this->pluginsService->getPluginIconSvg($plugin->handle),
                     'label' => $plugin->name,
                 ];
             }
         }
 
-        $event = $readOnly
+        event($event = $readOnly
             ? new RegisterReadonlyCpSettings($settings)
-            : new RegisterCpSettings($settings);
+            : new RegisterCpSettings($settings));
 
-        if (Event::hasListeners($event::class)) {
-            Event::dispatch($event);
-
-            return $event->settings;
-        }
-
-        return $settings;
+        return $event->settings;
     }
 }

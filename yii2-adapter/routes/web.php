@@ -1,5 +1,6 @@
 <?php
 
+use CraftCms\Yii2Adapter\Http\ExcludeCsrfValidationForLegacyController;
 use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -11,6 +12,7 @@ Route::any('{any}', function() {
 })
     ->middleware([
         'craft',
+        ExcludeCsrfValidationForLegacyController::class,
         'craft.web',
         LegacyMiddleware::class,
     ])

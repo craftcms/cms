@@ -11,5 +11,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Element\Actions\MoveDown::class, MoveDown::class);

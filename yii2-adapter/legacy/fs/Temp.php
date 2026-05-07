@@ -9,15 +9,17 @@
 
 namespace craft\fs;
 
-/**
- * Temp represents a temporary filesystem.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Filesystems\Temp} instead.
- */
-class Temp extends \CraftCms\Cms\Filesystem\Filesystems\Temp
-{
-    use \craft\base\LegacyEventConstants;
+/** @phpstan-ignore-next-line */
+if (false) {
+    /**
+     * Temp represents a temporary filesystem.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     *
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Filesystems\Temp} instead.
+     */
+    class Temp extends \CraftCms\Cms\Filesystem\Filesystems\Temp
+    {
+    }
 }

@@ -90,6 +90,18 @@ class ResponseTest extends TestCase
         );
     }
 
+    public function testGetIlluminateResponseCopiesRedirectHeaders(): void
+    {
+        Craft::$app->getRequest()->setIsConsoleRequest(false);
+
+        $illuminateResponse = $this->response
+            ->redirect('/admin/stripe/settings')
+            ->getIlluminateResponse(true);
+
+        self::assertSame(302, $illuminateResponse->getStatusCode());
+        self::assertSame('https://localhost/admin/stripe/settings', str_replace(':80', '', $illuminateResponse->headers->get('Location')));
+    }
+
     /**
      * @return array
      */

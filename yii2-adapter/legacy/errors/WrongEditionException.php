@@ -14,5 +14,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Edition\Exceptions\WrongEditionException::class, WrongEditionException::class);

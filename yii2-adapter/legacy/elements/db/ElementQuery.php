@@ -4032,4 +4032,25 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         return collect($this->all());
     }
+
+    /**
+     * @return \Illuminate\Database\Query\Builder
+     */
+    public function getQuery(): Builder
+    {
+        return \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ELEMENTS);
+    }
+
+    public function reorder($column = null, $direction = 'asc'): self
+    {
+        if ($column) {
+            $this->orderBy([$column => $direction === 'asc' ? SORT_ASC : SORT_DESC]);
+
+            return $this;
+        }
+
+        $this->orderBy = null;
+
+        return $this;
+    }
 }

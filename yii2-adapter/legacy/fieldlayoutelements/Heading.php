@@ -11,15 +11,17 @@ declare(strict_types=1);
 
 namespace craft\fieldlayoutelements;
 
-/**
- * Heading represents an `<h2>` UI element that can be included in field layouts.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.5.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\Heading} instead.
- */
-class Heading extends \CraftCms\Cms\FieldLayout\LayoutElements\Heading
-{
-    use \craft\base\LegacyEventConstants;
+/** @phpstan-ignore-next-line */
+if (false) {
+    /**
+     * Heading represents an `<h2>` UI element that can be included in field layouts.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     *
+     * @since 3.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\Heading} instead.
+     */
+    class Heading extends \CraftCms\Cms\FieldLayout\LayoutElements\Heading
+    {
+    }
 }

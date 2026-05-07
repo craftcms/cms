@@ -28,7 +28,7 @@ it('supports a dry run without deleting extra provisional drafts', function () {
     app(Drafts::class)->createDraft($canonical, $this->user->id, provisional: true);
     app(Drafts::class)->createDraft($canonical, $this->user->id, provisional: true);
 
-    $this->artisan('utils/prune-provisional-drafts', ['--dry-run' => true])
+    $this->artisan('craft:utils/prune-provisional-drafts', ['--dry-run' => true])
         ->expectsOutputToContain('[DRY RUN] Finished pruning extra provisional drafts. 1 provisional draft matched.')
         ->assertSuccessful();
 

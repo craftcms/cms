@@ -12,5 +12,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Field\Contracts\FieldInterface::class, FieldInterface::class);

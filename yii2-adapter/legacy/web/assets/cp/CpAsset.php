@@ -18,6 +18,8 @@ class CpAsset extends AssetBundle
 {
     public function registerAssetFiles($view)
     {
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\CpAsset::class);
+        $registry = app(InternalAssetRegistry::class);
+        $registry->register(\CraftCms\Cms\View\LegacyAssets\CpAsset::class);
+        $registry->flush();
     }
 }

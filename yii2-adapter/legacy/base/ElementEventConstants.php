@@ -9,6 +9,9 @@
 
 namespace craft\base;
 
+/**
+ * @phpstan-ignore trait.unused
+ */
 trait ElementEventConstants
 {
     /**

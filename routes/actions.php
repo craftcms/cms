@@ -122,7 +122,7 @@ foreach ([
         Cms::config()->actionTrigger,
     ]) => ['craft.cp'],
 ] as $prefix => $middleware) {
-    Route::prefix($prefix)->middleware($middleware)->group(function () {
+    Route::prefix($prefix)->middleware($middleware)->group(function () use ($middleware) {
         // App
         Route::get('app/health-check', HealthCheckController::class);
 
@@ -138,7 +138,9 @@ foreach ([
             ->middleware(StartSessionWithoutPersistence::class)
             ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class]);
         Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout']);
-        Route::middleware('throttle:1,1')->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
+        Route::middleware(
+            in_array('craft.cp', $middleware) ? null : 'throttle:1,1'
+        )->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
         Route::post('users/save-user', SaveUserController::class);
 
         // Asset Transforms (anonymous access)

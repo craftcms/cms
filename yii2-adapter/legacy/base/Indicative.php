@@ -13,5 +13,3 @@ if (false) {
         public function getIndicators(): array;
     }
 }
-
-class_alias(\CraftCms\Cms\Component\Contracts\Indicative::class, Indicative::class);
