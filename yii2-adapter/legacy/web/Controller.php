@@ -159,10 +159,6 @@ abstract class Controller extends \yii\web\Controller
 
     public function registerCsrfValidationExclusion(): void
     {
-        if (!isset($this->id, $this->module)) {
-            return;
-        }
-
         PreventRequestForgery::except($this->csrfValidationExclusionUris());
     }
 
