@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Element\Concerns;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
-use CraftCms\Cms\Element\Events\AfterMoveInStructure;
-use CraftCms\Cms\Element\Events\BeforeMoveInStructure;
+use CraftCms\Cms\Element\Events\ElementMovedInStructure;
+use CraftCms\Cms\Element\Events\ElementMovingInStructure;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Support\Facades\ElementCaches;
@@ -358,14 +358,14 @@ trait Structurable
 
     public function beforeMoveInStructure(int $structureId): bool
     {
-        event($event = new BeforeMoveInStructure($this, $structureId));
+        event($event = new ElementMovingInStructure($this, $structureId));
 
         return $event->isValid;
     }
 
     public function afterMoveInStructure(int $structureId): void
     {
-        event(new AfterMoveInStructure($this, $structureId));
+        event(new ElementMovedInStructure($this, $structureId));
 
         ElementCaches::invalidateForElement($this);
     }

@@ -35,10 +35,9 @@ class VerifyEmailNotification extends Notification implements ShouldQueue
     public function toMail(User $user): SystemMessageMailable
     {
         $url = Users::getEmailVerifyUrl($user, $this->token);
-        $key = $user->pending ? 'account_activation' : 'verify_new_email';
 
         return app(SystemMessages::class)->mailable(
-            key: $key,
+            key: 'verify_new_email',
             user: $user,
             variables: ['link' => Template::raw($url)],
         );

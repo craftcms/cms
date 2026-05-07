@@ -19,5 +19,3 @@ if (false) {
         }
     }
 }
-
-class_alias(\CraftCms\Cms\Support\Attributes\EnvName::class, EnvName::class);

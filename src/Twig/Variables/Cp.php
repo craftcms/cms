@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Twig\Variables;
 
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Cp\Alerts;
-use CraftCms\Cms\Cp\Events\RegisterFormActions;
+use CraftCms\Cms\Cp\Events\FormActionsResolving;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\RequestedSite;
@@ -300,7 +300,7 @@ class Cp extends Component
 
     public function prepFormActions(?array $formActions): ?array
     {
-        event($event = new RegisterFormActions($formActions ?? []));
+        event($event = new FormActionsResolving($formActions ?? []));
 
         return $event->formActions;
     }

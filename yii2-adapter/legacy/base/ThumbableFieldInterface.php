@@ -19,5 +19,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Field\Contracts\ThumbableFieldInterface::class, ThumbableFieldInterface::class);

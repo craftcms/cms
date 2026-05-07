@@ -116,8 +116,8 @@ $config = Arr::merge(
 );
 
 $localConfig = Arr::merge(
-    $app->get('config')->get('craft.app', []),
-    $app->get('config')->get("app.{$appType}", []),
+    Arr::except($app->get('config')->get('craft.app', []), $appType),
+    $app->get('config')->get("craft.app.{$appType}", []),
 );
 
 $safeMode = Env::normalizeBooleanValue(Env::get('CRAFT_SAFE_MODE')) ?? $generalConfig->safeMode;

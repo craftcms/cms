@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2f1c3e9264a5791b86a56d51b81672d7",
+    "content-hash": "274c7558d2236a5e224d52d45fd0ca91",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -670,16 +670,16 @@
         },
         {
             "name": "craftcms/server-check",
-            "version": "5.1.0",
+            "version": "6.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/craftcms/server-check.git",
-                "reference": "7a4f1720c4fe1f0731254a82e63060a217f51cdc"
+                "reference": "8628114d482ac2c18747619b82b8d06d337145fb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/server-check/zipball/7a4f1720c4fe1f0731254a82e63060a217f51cdc",
-                "reference": "7a4f1720c4fe1f0731254a82e63060a217f51cdc",
+                "url": "https://api.github.com/repos/craftcms/server-check/zipball/8628114d482ac2c18747619b82b8d06d337145fb",
+                "reference": "8628114d482ac2c18747619b82b8d06d337145fb",
                 "shasum": ""
             },
             "type": "library",
@@ -708,7 +708,7 @@
                 "rss": "https://github.com/craftcms/server-check/releases.atom",
                 "source": "https://github.com/craftcms/server-check"
             },
-            "time": "2026-04-07T16:48:35+00:00"
+            "time": "2026-05-06T18:15:11+00:00"
         },
         {
             "name": "dasprid/enum",
@@ -4186,6 +4186,70 @@
                 "source": "https://github.com/phpstan/phpdoc-parser/tree/2.3.2"
             },
             "time": "2026-01-25T14:56:51+00:00"
+        },
+        {
+            "name": "pixelandtonic/graphql-php",
+            "version": "v14.11.10.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pixelandtonic/graphql-php.git",
+                "reference": "fdb4a288878fc9ee449245e17209d676fc7c57fd"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/pixelandtonic/graphql-php/zipball/fdb4a288878fc9ee449245e17209d676fc7c57fd",
+                "reference": "fdb4a288878fc9ee449245e17209d676fc7c57fd",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "ext-mbstring": "*",
+                "php": "^7.1 || ^8"
+            },
+            "require-dev": {
+                "amphp/amp": "^2.3",
+                "doctrine/coding-standard": "^6.0",
+                "nyholm/psr7": "^1.2",
+                "phpbench/phpbench": "^1.2",
+                "phpstan/extension-installer": "^1.0",
+                "phpstan/phpstan": "0.12.82",
+                "phpstan/phpstan-phpunit": "0.12.18",
+                "phpstan/phpstan-strict-rules": "0.12.9",
+                "phpunit/phpunit": "^7.2 || ^8.5",
+                "psr/http-message": "^1.0",
+                "react/promise": "2.*",
+                "simpod/php-coveralls-mirror": "^3.0"
+            },
+            "suggest": {
+                "psr/http-message": "To use standard GraphQL server",
+                "react/promise": "To leverage async resolving on React PHP platform"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "GraphQL\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "A PHP port of GraphQL reference implementation",
+            "homepage": "https://github.com/webonyx/graphql-php",
+            "keywords": [
+                "api",
+                "graphql"
+            ],
+            "support": {
+                "source": "https://github.com/pixelandtonic/graphql-php/tree/v14.11.10.1"
+            },
+            "funding": [
+                {
+                    "url": "https://opencollective.com/webonyx-graphql-php",
+                    "type": "open_collective"
+                }
+            ],
+            "time": "2026-04-14T15:27:52+00:00"
         },
         {
             "name": "pixelandtonic/imagine",
@@ -8939,71 +9003,6 @@
                 "source": "https://github.com/webmozarts/assert/tree/2.3.0"
             },
             "time": "2026-04-11T10:33:05+00:00"
-        },
-        {
-            "name": "webonyx/graphql-php",
-            "version": "v14.11.10",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/webonyx/graphql-php.git",
-                "reference": "d9c2fdebc6aa01d831bc2969da00e8588cffef19"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/webonyx/graphql-php/zipball/d9c2fdebc6aa01d831bc2969da00e8588cffef19",
-                "reference": "d9c2fdebc6aa01d831bc2969da00e8588cffef19",
-                "shasum": ""
-            },
-            "require": {
-                "ext-json": "*",
-                "ext-mbstring": "*",
-                "php": "^7.1 || ^8"
-            },
-            "require-dev": {
-                "amphp/amp": "^2.3",
-                "doctrine/coding-standard": "^6.0",
-                "nyholm/psr7": "^1.2",
-                "phpbench/phpbench": "^1.2",
-                "phpstan/extension-installer": "^1.0",
-                "phpstan/phpstan": "0.12.82",
-                "phpstan/phpstan-phpunit": "0.12.18",
-                "phpstan/phpstan-strict-rules": "0.12.9",
-                "phpunit/phpunit": "^7.2 || ^8.5",
-                "psr/http-message": "^1.0",
-                "react/promise": "2.*",
-                "simpod/php-coveralls-mirror": "^3.0"
-            },
-            "suggest": {
-                "psr/http-message": "To use standard GraphQL server",
-                "react/promise": "To leverage async resolving on React PHP platform"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "GraphQL\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "A PHP port of GraphQL reference implementation",
-            "homepage": "https://github.com/webonyx/graphql-php",
-            "keywords": [
-                "api",
-                "graphql"
-            ],
-            "support": {
-                "issues": "https://github.com/webonyx/graphql-php/issues",
-                "source": "https://github.com/webonyx/graphql-php/tree/v14.11.10"
-            },
-            "funding": [
-                {
-                    "url": "https://opencollective.com/webonyx-graphql-php",
-                    "type": "open_collective"
-                }
-            ],
-            "time": "2023-07-05T14:23:37+00:00"
         },
         {
             "name": "yiisoft/aliases",

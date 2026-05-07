@@ -2,9 +2,12 @@
   import {t} from '@craftcms/cp';
   import AppLayout from '@/layout/AppLayout.vue';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
+  import {default as settingsIndex} from '@actions/Settings/SettingsIndexController';
+  import CpLink from '@/components/CpLink.vue';
 
   interface SettingItem {
     icon?: string;
+    iconName?: string;
     label: string;
     url?: string;
     handle: string;
@@ -35,21 +38,27 @@
             <ul class="settings-grid">
               <template v-for="(item, handle) in items">
                 <li>
-                  <a
-                    :href="item.url || `settings/${handle}`"
+                  <CpLink
+                    :href="item.url || `${settingsIndex().url}/${handle}`"
                     class="settings-item"
                   >
                     <div class="settings-content">
                       <div class="settings-icon">
                         <craft-icon
-                          :name="item.icon"
+                          v-if="item.iconName"
+                          :name="item.iconName"
                           style="font-size: calc(40rem / 16)"
                         ></craft-icon>
+                        <div
+                          v-else-if="item.icon"
+                          v-html="item.icon"
+                          class="w-[40px] h-[40px] inline-block align-self-center"
+                        ></div>
                       </div>
                       {{ item.label
                       }}<span class="sr-only"> - {{ t('Settings') }}</span>
                     </div>
-                  </a>
+                  </CpLink>
                 </li>
               </template>
             </ul>
@@ -65,6 +74,11 @@
     display: grid;
     justify-content: center;
     align-items: center;
+  }
+
+  .settings-icon :deep(svg) {
+    width: 100%;
+    height: 100%;
   }
 
   .settings-grid {

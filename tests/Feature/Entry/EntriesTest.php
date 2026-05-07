@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Entry\Entries;
 use CraftCms\Cms\Entry\Events\EntryMovedToSection;
-use CraftCms\Cms\Entry\Events\MovingEntryToSection;
+use CraftCms\Cms\Entry\Events\EntryMovingToSection;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Enums\SectionType;
@@ -54,11 +54,11 @@ it('can get single entries by handle', function () {
 
 it('can move an entry to a different section', function () {
     Event::fake([
-        MovingEntryToSection::class,
+        EntryMovingToSection::class,
         EntryMovedToSection::class,
     ]);
 
-    Event::listen(MovingEntryToSection::class, fn () => null);
+    Event::listen(EntryMovingToSection::class, fn () => null);
     Event::listen(EntryMovedToSection::class, fn () => null);
 
     $entryType = EntryType::factory()->create();
@@ -82,7 +82,7 @@ it('can move an entry to a different section', function () {
 
     expect($this->entries->getEntryById($entry->id)->sectionId)->toBe($section2->id);
 
-    Event::assertDispatchedOnce(MovingEntryToSection::class);
+    Event::assertDispatchedOnce(EntryMovingToSection::class);
     Event::assertDispatchedOnce(EntryMovedToSection::class);
 });
 

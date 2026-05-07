@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Events\AfterDelete;
-use CraftCms\Cms\Element\Events\BeforeDelete;
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleted;
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleting;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -25,7 +25,7 @@ it('supports a dry run without deleting rows', function () {
 
     insertSearchIndexRow($entry->id);
 
-    $this->artisan('elements/delete-all-of-type', ['type' => Entry::class, '--dry-run' => true])
+    $this->artisan('craft:elements/delete-all-of-type', ['type' => Entry::class, '--dry-run' => true])
         ->expectsOutputToContain('[DRY RUN] 1 entry deleted.')
         ->assertSuccessful();
 
@@ -45,7 +45,7 @@ it('prompts for a type when the argument is missing', function () {
 });
 
 it('deletes matching elements and their search indexes without dispatching delete events', function () {
-    Event::fake([BeforeDelete::class, AfterDelete::class]);
+    Event::fake([ElementLifecycleDeleting::class, ElementLifecycleDeleted::class]);
 
     $entry = EntryModel::factory()->createElement();
 
@@ -58,8 +58,8 @@ it('deletes matching elements and their search indexes without dispatching delet
     expect(ElementModel::withTrashed()->find($entry->id))->toBeNull();
     expect(searchIndexExistsFor($entry->id))->toBeFalse();
 
-    Event::assertNotDispatched(BeforeDelete::class);
-    Event::assertNotDispatched(AfterDelete::class);
+    Event::assertNotDispatched(ElementLifecycleDeleting::class);
+    Event::assertNotDispatched(ElementLifecycleDeleted::class);
 });
 
 it('excludes single section entries from bulk deletion', function () {

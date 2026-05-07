@@ -11,11 +11,11 @@
   import DeleteSiteModal from '@/components/sites/DeleteSiteModal.vue';
   import {ref} from 'vue';
   import Badge from '@/components/Badge.vue';
+  import useCraftData from '@/composables/useCraftData';
 
   const props = defineProps<{
     title: string;
     crumbs: Array<any>; // @TODO
-    readOnly?: boolean;
     site: Site;
     groupId?: number | string;
     flash?: Record<any, any>;
@@ -34,6 +34,8 @@
     primary: props.site.primary,
     baseUrl: props.site.baseUrlRaw ?? '',
   });
+
+  const {readOnly} = useCraftData();
 
   // Handle cmd + s events
   useEventListener('keydown', (event) => {
@@ -121,7 +123,7 @@
         </template>
 
         <div class="grid gap-3 p-5">
-          <SiteFields :inertia-form="form" :read-only="readOnly" />
+          <SiteFields :inertia-form="form" />
         </div>
       </div>
     </AppLayout>

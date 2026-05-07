@@ -17,5 +17,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Shared\Nameparser\CustomLanguage::class, CustomLanguage::class);

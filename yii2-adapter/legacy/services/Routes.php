@@ -10,10 +10,10 @@ namespace craft\services;
 use Craft;
 use craft\events\RouteEvent;
 use CraftCms\Cms\Route\Data\Route;
-use CraftCms\Cms\Route\Events\DeletingRoute;
 use CraftCms\Cms\Route\Events\RouteDeleted;
+use CraftCms\Cms\Route\Events\RouteDeleting;
 use CraftCms\Cms\Route\Events\RouteSaved;
-use CraftCms\Cms\Route\Events\SavingRoute;
+use CraftCms\Cms\Route\Events\RouteSaving;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\Event;
@@ -192,9 +192,9 @@ class Routes extends Component
     public static function registerEvents(): void
     {
         foreach ([
-            self::EVENT_BEFORE_SAVE_ROUTE => SavingRoute::class,
+            self::EVENT_BEFORE_SAVE_ROUTE => RouteSaving::class,
             self::EVENT_AFTER_SAVE_ROUTE => RouteSaved::class,
-            self::EVENT_BEFORE_DELETE_ROUTE => DeletingRoute::class,
+            self::EVENT_BEFORE_DELETE_ROUTE => RouteDeleting::class,
             self::EVENT_AFTER_DELETE_ROUTE => RouteDeleted::class,
         ] as $old => $new) {
             Event::listen($new, function(\CraftCms\Cms\Route\Events\RouteEvent $event) use ($old) {

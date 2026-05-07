@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Dashboard;
 
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
-use CraftCms\Cms\Dashboard\Events\RegisterWidgetTypes;
 use CraftCms\Cms\Dashboard\Events\WidgetDeleted;
 use CraftCms\Cms\Dashboard\Events\WidgetDeleting;
 use CraftCms\Cms\Dashboard\Events\WidgetSaved;
 use CraftCms\Cms\Dashboard\Events\WidgetSaving;
+use CraftCms\Cms\Dashboard\Events\WidgetTypesResolving;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport as CraftSupportWidget;
 use CraftCms\Cms\Dashboard\Widgets\Feed as FeedWidget;
 use CraftCms\Cms\Dashboard\Widgets\MyDrafts;
@@ -21,7 +21,7 @@ use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\User\Models\User;
 use DateTimeInterface;
 use Exception;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -34,9 +34,14 @@ use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
 use Tpetry\QueryExpressions\Value\Value;
 
-#[Singleton]
-readonly class Dashboard
+#[Scoped]
+class Dashboard
 {
+    /**
+     * @var Collection<WidgetInterface>|false|null
+     */
+    private Collection|false|null $userWidgets = null;
+
     /**
      * @return Collection<class-string<WidgetInterface>>
      */
@@ -53,7 +58,7 @@ readonly class Dashboard
             UpdatesWidget::class,
         ]);
 
-        event($event = new RegisterWidgetTypes($widgetTypes));
+        event($event = new WidgetTypesResolving($widgetTypes));
 
         return $event->types;
     }
@@ -102,10 +107,7 @@ readonly class Dashboard
      */
     public function doesUserHaveWidget(string $type): bool
     {
-        return Models\Widget::query()
-            ->where('userId', Auth::user()->getAuthIdentifier())
-            ->where('type', $type)
-            ->exists();
+        return $this->getUserWidgets()->contains(fn (WidgetInterface $widget) => $widget::class === $type);
     }
 
     /**
@@ -350,11 +352,15 @@ readonly class Dashboard
             throw new Exception('No logged-in user');
         }
 
-        if (! $user->hasDashboard) {
-            return false;
+        if (isset($this->userWidgets)) {
+            return $this->userWidgets;
         }
 
-        return Models\Widget::query()
+        if (! $user->hasDashboard) {
+            return $this->userWidgets = false;
+        }
+
+        return $this->userWidgets = Models\Widget::query()
             ->where('userId', $user->id)
             ->orderBy('sortOrder')
             ->get()

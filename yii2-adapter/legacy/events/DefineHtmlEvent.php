@@ -14,7 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.7.0
- * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\DefineAdditionalButtons}, {@see \CraftCms\Cms\Element\Events\DefineSidebarHtml}, or {@see \CraftCms\Cms\Element\Events\DefineMetaFieldsHtml} instead.
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving}, {@see \CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving}, or {@see \CraftCms\Cms\Element\Events\ElementMetaFieldsHtmlResolving} instead.
  */
 class DefineHtmlEvent extends Event
 {

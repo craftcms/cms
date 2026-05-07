@@ -24,21 +24,21 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Environment;
-use CraftCms\Cms\Twig\Events\BeginPage;
-use CraftCms\Cms\Twig\Events\EndPage;
+use CraftCms\Cms\Twig\Events\PageEnded;
+use CraftCms\Cms\Twig\Events\PageStarting;
 use CraftCms\Cms\Twig\Events\PageTemplateRendered;
-use CraftCms\Cms\Twig\Events\RenderingPageTemplate;
-use CraftCms\Cms\Twig\Events\RenderingTemplate;
+use CraftCms\Cms\Twig\Events\PageTemplateRendering;
 use CraftCms\Cms\Twig\Events\TemplateRendered;
+use CraftCms\Cms\Twig\Events\TemplateRendering;
 use CraftCms\Cms\Twig\Events\TwigCreated;
 use CraftCms\Cms\Twig\PageLifecycle;
 use CraftCms\Cms\Twig\TemplateRenderer;
 use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\Enums\Position;
-use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
-use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
-use CraftCms\Cms\View\Events\RenderingAssets;
+use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
+use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
+use CraftCms\Cms\View\Events\ViewAssetsRendering;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateHooks;
 use CraftCms\Cms\View\TemplateMode;
@@ -88,20 +88,20 @@ class View extends \yii\web\View
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering control panel template roots
      *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\RegisterCpTemplateRoots} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\CpTemplateRootsResolving} instead.
      */
     public const EVENT_REGISTER_CP_TEMPLATE_ROOTS = 'registerCpTemplateRoots';
 
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering site template roots
      *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\RegisterSiteTemplateRoots} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\SiteTemplateRootsResolving} instead.
      */
     public const EVENT_REGISTER_SITE_TEMPLATE_ROOTS = 'registerSiteTemplateRoots';
 
     /**
      * @event TemplateEvent The event that is triggered before a template gets rendered
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Twig\Events\RenderingTemplate} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Twig\Events\TemplateRendering} instead.
      */
     public const EVENT_BEFORE_RENDER_TEMPLATE = 'beforeRenderTemplate';
 
@@ -236,7 +236,7 @@ class View extends \yii\web\View
     private array $_readyLoadBuffers = [];
 
     /**
-     * When true, the RenderingAssets listener skips flushing _readyJs/_loadJs
+     * When true, the ViewAssetsRendering listener skips flushing _readyJs/_loadJs
      * so that placeholderHtml() can handle jQuery wrapping itself.
      */
     private bool $_skipReadyLoadFlush = false;
@@ -1832,7 +1832,7 @@ class View extends \yii\web\View
      * Returns HTML that should replace page placeholders after page template rendering.
      *
      * This method renders all registered assets (head, body-begin, body-end) into
-     * HTML strings and returns them as an array. It is called by the `EndPage` event
+     * HTML strings and returns them as an array. It is called by the `PageEnded` event
      * listener in {@see self::registerEvents()} to populate the event properties
      * that `TemplateRenderer::renderPageTemplate()` uses for placeholder replacement.
      *
@@ -1856,7 +1856,7 @@ class View extends \yii\web\View
             $this->_setJsProperty('registeredAssetBundles', $this->_registeredAssetBundles);
         }
 
-        // Prevent the RenderingAssets listener from flushing _readyJs/_loadJs,
+        // Prevent the ViewAssetsRendering listener from flushing _readyJs/_loadJs,
         // since renderBodyEndHtml() handles jQuery wrapping for page renders.
         $this->_skipReadyLoadFlush = true;
 
@@ -2089,7 +2089,7 @@ JS;
     /**
      * Flushes all pending asset registrations into the HtmlStack.
      *
-     * Called by the {@see \CraftCms\Cms\View\Events\RenderingAssets} listener to ensure
+     * Called by the {@see \CraftCms\Cms\View\Events\ViewAssetsRendering} listener to ensure
      * Yii2 asset bundles and POS_READY/POS_LOAD JS are pushed into the registry
      * before it renders.
      */
@@ -2211,7 +2211,7 @@ JS;
 
     public static function registerEvents(): void
     {
-        Event::listen(RegisterCpTemplateRoots::class, function(RegisterCpTemplateRoots $event) {
+        Event::listen(CpTemplateRootsResolving::class, function(CpTemplateRootsResolving $event) {
             if (!Craft::$app->getView()->hasEventHandlers(self::EVENT_REGISTER_CP_TEMPLATE_ROOTS)) {
                 return;
             }
@@ -2221,7 +2221,7 @@ JS;
             $event->roots = array_merge($event->roots, $yiiEvent->roots);
         });
 
-        Event::listen(RegisterSiteTemplateRoots::class, function(RegisterSiteTemplateRoots $event) {
+        Event::listen(SiteTemplateRootsResolving::class, function(SiteTemplateRootsResolving $event) {
             if (!Craft::$app->getView()->hasEventHandlers(self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS)) {
                 return;
             }
@@ -2242,7 +2242,7 @@ JS;
             ]));
         });
 
-        Event::listen(function(RenderingTemplate $event) {
+        Event::listen(function(TemplateRendering $event) {
             if (!Craft::$app->getView()->hasEventHandlers(self::EVENT_BEFORE_RENDER_TEMPLATE)) {
                 return;
             }
@@ -2261,7 +2261,7 @@ JS;
             $event->templateMode = TemplateMode::from($yiiEvent->templateMode);
         });
 
-        Event::listen(function(RenderingPageTemplate $event) {
+        Event::listen(function(PageTemplateRendering $event) {
             if (!Craft::$app->getView()->hasEventHandlers(self::EVENT_BEFORE_RENDER_PAGE_TEMPLATE)) {
                 return;
             }
@@ -2314,11 +2314,11 @@ JS;
             $event->output = $yiiEvent->output;
         });
 
-        Event::listen(function(BeginPage $event) {
+        Event::listen(function(PageStarting $event) {
             Craft::$app->getView()->trigger(self::EVENT_BEGIN_PAGE);
         });
 
-        Event::listen(function(EndPage $event) {
+        Event::listen(function(PageEnded $event) {
             Craft::$app->getView()->trigger(self::EVENT_END_PAGE);
 
             $html = Craft::$app->getView()->placeholderHtml();
@@ -2327,7 +2327,7 @@ JS;
             $event->bodyEndHtml = $html['bodyEndHtml'];
         });
 
-        Event::listen(function(RenderingAssets $event) {
+        Event::listen(function(ViewAssetsRendering $event) {
             Craft::$app->getView()->flushPendingAssets();
         });
     }

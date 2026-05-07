@@ -10,7 +10,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Translation\Locale;
-use CraftCms\Cms\Utility\Events\ListVolumes;
+use CraftCms\Cms\Utility\Events\AssetIndexVolumesResolving;
 use CraftCms\Cms\Utility\Utility;
 use Override;
 
@@ -48,7 +48,7 @@ class AssetIndexes extends Utility
     {
         $volumes = Volumes::getAllVolumes()->all();
 
-        event($event = new ListVolumes($volumes));
+        event($event = new AssetIndexVolumesResolving($volumes));
 
         return $event->volumes;
     }

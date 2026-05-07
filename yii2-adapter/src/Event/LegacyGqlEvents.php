@@ -15,19 +15,19 @@ use craft\gql\base\ElementArguments as LegacyElementArguments;
 use craft\gql\base\ElementMutationResolver as LegacyElementMutationResolver;
 use craft\gql\ElementQueryConditionBuilder as LegacyElementQueryConditionBuilder;
 use craft\gql\TypeManager as LegacyTypeManager;
-use CraftCms\Cms\Gql\Events\AfterPopulateElement;
-use CraftCms\Cms\Gql\Events\BeforePopulateElement;
-use CraftCms\Cms\Gql\Events\DefineGqlArguments;
-use CraftCms\Cms\Gql\Events\DefineGqlTypeFields;
-use CraftCms\Cms\Gql\Events\RegisterGqlArgumentHandlers;
-use CraftCms\Cms\Gql\Events\RegisterGqlEagerLoadableFields;
+use CraftCms\Cms\Gql\Events\ElementPopulated;
+use CraftCms\Cms\Gql\Events\ElementPopulating;
+use CraftCms\Cms\Gql\Events\GqlArgumentHandlersResolving;
+use CraftCms\Cms\Gql\Events\GqlArgumentsResolving;
+use CraftCms\Cms\Gql\Events\GqlEagerLoadableFieldsResolving;
+use CraftCms\Cms\Gql\Events\GqlTypeFieldsResolving;
 use Illuminate\Support\Facades\Event;
 
 class LegacyGqlEvents
 {
     public static function register(): void
     {
-        Event::listen(DefineGqlTypeFields::class, function(DefineGqlTypeFields $event) {
+        Event::listen(GqlTypeFieldsResolving::class, function(GqlTypeFieldsResolving $event) {
             if (!YiiEvent::hasHandlers(LegacyTypeManager::class, LegacyTypeManager::EVENT_DEFINE_GQL_TYPE_FIELDS)) {
                 return;
             }
@@ -40,7 +40,7 @@ class LegacyGqlEvents
             $event->fields = $yiiEvent->fields;
         });
 
-        Event::listen(RegisterGqlArgumentHandlers::class, function(RegisterGqlArgumentHandlers $event) {
+        Event::listen(GqlArgumentHandlersResolving::class, function(GqlArgumentHandlersResolving $event) {
             if (!YiiEvent::hasHandlers(LegacyArgumentManager::class, LegacyArgumentManager::EVENT_DEFINE_GQL_ARGUMENT_HANDLERS)) {
                 return;
             }
@@ -52,7 +52,7 @@ class LegacyGqlEvents
             $event->handlers = $yiiEvent->handlers;
         });
 
-        Event::listen(RegisterGqlEagerLoadableFields::class, function(RegisterGqlEagerLoadableFields $event) {
+        Event::listen(GqlEagerLoadableFieldsResolving::class, function(GqlEagerLoadableFieldsResolving $event) {
             if (!YiiEvent::hasHandlers(LegacyElementQueryConditionBuilder::class, LegacyElementQueryConditionBuilder::EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS)) {
                 return;
             }
@@ -64,7 +64,7 @@ class LegacyGqlEvents
             $event->fieldList = $yiiEvent->fieldList;
         });
 
-        Event::listen(DefineGqlArguments::class, function(DefineGqlArguments $event) {
+        Event::listen(GqlArgumentsResolving::class, function(GqlArgumentsResolving $event) {
             if (!YiiEvent::hasHandlers(LegacyElementArguments::class, LegacyElementArguments::EVENT_DEFINE_ARGUMENTS)) {
                 return;
             }
@@ -76,7 +76,7 @@ class LegacyGqlEvents
             $event->arguments = $yiiEvent->arguments;
         });
 
-        Event::listen(BeforePopulateElement::class, function(BeforePopulateElement $event) {
+        Event::listen(ElementPopulating::class, function(ElementPopulating $event) {
             $legacyResolverClass = str_replace('CraftCms\\Cms\\Gql\\', 'craft\\gql\\', $event->resolverClass);
             if (!YiiEvent::hasHandlers($legacyResolverClass, LegacyElementMutationResolver::EVENT_BEFORE_POPULATE_ELEMENT)) {
                 return;
@@ -91,7 +91,7 @@ class LegacyGqlEvents
             $event->element = $yiiEvent->element;
         });
 
-        Event::listen(AfterPopulateElement::class, function(AfterPopulateElement $event) {
+        Event::listen(ElementPopulated::class, function(ElementPopulated $event) {
             $legacyResolverClass = str_replace('CraftCms\\Cms\\Gql\\', 'craft\\gql\\', $event->resolverClass);
             if (!YiiEvent::hasHandlers($legacyResolverClass, LegacyElementMutationResolver::EVENT_AFTER_POPULATE_ELEMENT)) {
                 return;

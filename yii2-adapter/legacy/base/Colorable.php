@@ -12,5 +12,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Component\Contracts\Colorable::class, Colorable::class);

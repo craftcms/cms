@@ -1,5 +1,9 @@
 import {formatNumber} from './format.js';
 
+type TranslationStore = Record<string, Record<string, string>>;
+
+let translationsStore: TranslationStore = {};
+
 export function tokenizePattern(
   pattern: string
 ): Array<string | string[]> | false {
@@ -202,18 +206,25 @@ export function formatMessage(pattern: string, params: object): string {
   return tokens.join('');
 }
 
+export function setTranslations(translations: TranslationStore) {
+  translationsStore = translations;
+}
+
 export function t(
   message: string,
   params?: Record<any, any>,
   category: string = 'app',
-  store?: Record<string, any>
+  store: TranslationStore = translationsStore
 ): string {
   if (
     store &&
     typeof store[category] !== 'undefined' &&
     typeof store[category][message] !== 'undefined'
   ) {
-    message = store[category][message];
+    const translated = store?.[category]?.[message];
+    if (translated !== undefined) {
+      message = translated;
+    }
   }
 
   if (params) {

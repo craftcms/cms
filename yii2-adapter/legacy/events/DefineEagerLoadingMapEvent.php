@@ -15,7 +15,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.0
- * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\DefineEagerLoadingMap} instead.
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementEagerLoadingMapResolving} instead.
  * @phpstan-import-type EagerLoadingMapItem from ElementInterface
  */
 class DefineEagerLoadingMapEvent extends Event

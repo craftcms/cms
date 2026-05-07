@@ -23,6 +23,7 @@ use Throwable;
 
 use function Laravel\Prompts\form;
 use function Laravel\Prompts\info;
+use function Laravel\Prompts\outro;
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\suggest;
 use function Laravel\Prompts\task;
@@ -190,8 +191,10 @@ class InstallCommand extends Command
         task('Finishing up', function (Logger $logger) use ($migrator) {
             $this->markPendingMigrationsAsApplied($migrator);
             $this->ensureProjectConfigFileExists();
-            $logger->success('Craft CMS installed successfully!');
+            $logger->success('Done.');
         }, keepSummary: true);
+
+        outro('Craft CMS installed successfully!');
 
         return self::SUCCESS;
     }

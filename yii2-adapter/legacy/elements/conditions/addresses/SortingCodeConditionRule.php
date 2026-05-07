@@ -2,14 +2,16 @@
 
 namespace craft\elements\conditions\addresses;
 
-/**
- * Address sorting code condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Address\Conditions\SortingCodeConditionRule} instead.
- */
-class SortingCodeConditionRule extends \CraftCms\Cms\Address\Conditions\SortingCodeConditionRule
-{
-    use \craft\base\LegacyEventConstants;
+/** @phpstan-ignore-next-line */
+if (false) {
+    /**
+     * Address sorting code condition rule.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Address\Conditions\SortingCodeConditionRule} instead.
+     */
+    class SortingCodeConditionRule extends \CraftCms\Cms\Address\Conditions\SortingCodeConditionRule
+    {
+    }
 }

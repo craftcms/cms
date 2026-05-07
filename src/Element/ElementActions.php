@@ -9,8 +9,8 @@ use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Contracts\DeleteActionInterface;
 use CraftCms\Cms\Element\Contracts\ElementActionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Events\AfterPerformAction;
-use CraftCms\Cms\Element\Events\BeforePerformAction;
+use CraftCms\Cms\Element\Events\ElementActionPerformed;
+use CraftCms\Cms\Element\Events\ElementActionPerforming;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use Illuminate\Container\Attributes\Singleton;
 
@@ -114,7 +114,7 @@ class ElementActions
             ];
         }
 
-        event($beforeEvent = new BeforePerformAction(
+        event($beforeEvent = new ElementActionPerforming(
             action: $action,
             query: $query,
         ));
@@ -131,7 +131,7 @@ class ElementActions
         $message = $action->getMessage();
 
         if ($success) {
-            event(new AfterPerformAction(
+            event(new ElementActionPerformed(
                 action: $action,
                 query: $query,
                 message: $message,

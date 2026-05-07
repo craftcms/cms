@@ -12,7 +12,7 @@ namespace craft\events;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
- * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Cp\Events\DefineElementChipHtml} or {@see \CraftCms\Cms\Cp\Events\DefineElementCardHtml} instead.
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Cp\Events\ElementChipHtmlResolving} or {@see \CraftCms\Cms\Cp\Events\ElementCardHtmlResolving} instead.
  */
 class DefineElementHtmlEvent extends ElementEvent
 {

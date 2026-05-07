@@ -17,7 +17,7 @@ use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\DefineUserContentSummary;
+use CraftCms\Cms\User\Events\UserContentSummaryResolving;
 use CraftCms\Cms\User\Users;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -182,7 +182,7 @@ readonly class UsersController
             ]);
         })->filter();
 
-        event($event = new DefineUserContentSummary($userId, $summary));
+        event($event = new UserContentSummaryResolving($userId, $summary));
 
         return new JsonResponse($event->contentSummary->all());
     }

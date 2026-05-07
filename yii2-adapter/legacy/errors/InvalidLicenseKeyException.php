@@ -12,5 +12,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException::class, InvalidLicenseKeyException::class);

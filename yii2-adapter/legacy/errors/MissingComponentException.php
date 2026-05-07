@@ -17,5 +17,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Component\Exceptions\MissingComponentException::class, MissingComponentException::class);

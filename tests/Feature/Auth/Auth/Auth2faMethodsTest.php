@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\AuthMethods;
-use CraftCms\Cms\Auth\Events\RegisterAuthMethods;
+use CraftCms\Cms\Auth\Events\AuthMethodsResolving;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Auth\Methods\TOTP;
 use CraftCms\Cms\Edition;
@@ -103,7 +103,7 @@ test('methods are sorted with RecoveryCodes last', function () {
 test('custom methods can be registered', function () {
     $user = User::factory()->createElement();
 
-    Event::listen(RegisterAuthMethods::class, function (RegisterAuthMethods $event) {
+    Event::listen(AuthMethodsResolving::class, function (AuthMethodsResolving $event) {
         $event->methods->push(TOTP::class);
     });
 

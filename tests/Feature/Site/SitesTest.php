@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\Site as SiteData;
-use CraftCms\Cms\Site\Events\ApplyingSiteDelete;
-use CraftCms\Cms\Site\Events\DeletingSite;
-use CraftCms\Cms\Site\Events\ReorderingSites;
-use CraftCms\Cms\Site\Events\SavingSite;
 use CraftCms\Cms\Site\Events\SiteDeleted;
+use CraftCms\Cms\Site\Events\SiteDeleting;
+use CraftCms\Cms\Site\Events\SiteDeletionApplying;
 use CraftCms\Cms\Site\Events\SiteSaved;
+use CraftCms\Cms\Site\Events\SiteSaving;
 use CraftCms\Cms\Site\Events\SitesReordered;
+use CraftCms\Cms\Site\Events\SitesReordering;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Site\Models\SiteGroup;
 use CraftCms\Cms\Site\Sites;
@@ -202,7 +202,7 @@ it('can save a site', function () {
     $siteModel = Site::firstOrFail();
 
     Event::fake([
-        SavingSite::class,
+        SiteSaving::class,
         SiteSaved::class,
     ]);
 
@@ -213,7 +213,7 @@ it('can save a site', function () {
     $this->sites->saveSite($site);
 
     expect($this->sites->getSiteByHandle($siteModel->handle)->getName())->toBe('Edited name');
-    Event::assertDispatchedOnce(SavingSite::class);
+    Event::assertDispatchedOnce(SiteSaving::class);
     Event::assertDispatchedOnce(SiteSaved::class);
 });
 
@@ -251,7 +251,7 @@ it('can reorder sites', function () {
     $defaultSite = Site::first();
 
     Event::fake([
-        ReorderingSites::class,
+        SitesReordering::class,
         SitesReordered::class,
     ]);
 
@@ -259,7 +259,7 @@ it('can reorder sites', function () {
 
     $this->sites->reorderSites([$otherSite->id, $defaultSite->id]);
 
-    Event::assertDispatchedOnce(ReorderingSites::class);
+    Event::assertDispatchedOnce(SitesReordering::class);
     Event::assertDispatchedOnce(SitesReordered::class);
 
     expect($defaultSite->fresh()->sortOrder)->toBe(2);
@@ -284,8 +284,8 @@ it('can delete a site by id', function () {
 
 it('can delete a site', function () {
     Event::fake([
-        DeletingSite::class,
-        ApplyingSiteDelete::class,
+        SiteDeleting::class,
+        SiteDeletionApplying::class,
         SiteDeleted::class,
     ]);
 
@@ -303,8 +303,8 @@ it('can delete a site', function () {
     expect(Site::count())->toBe(1);
     expect(Site::withTrashed()->count())->toBe(2);
 
-    Event::assertDispatchedOnce(DeletingSite::class);
-    Event::assertDispatchedOnce(ApplyingSiteDelete::class);
+    Event::assertDispatchedOnce(SiteDeleting::class);
+    Event::assertDispatchedOnce(SiteDeletionApplying::class);
     Event::assertDispatchedOnce(SiteDeleted::class);
 });
 
@@ -316,7 +316,7 @@ it('can prevent deletion through an event', function () {
         'groupId' => SiteGroup::first()->id,
     ]));
 
-    Event::listen(DeletingSite::class, function (DeletingSite $event) {
+    Event::listen(SiteDeleting::class, function (SiteDeleting $event) {
         $event->isValid = false;
 
         return false;

@@ -1,0 +1,1 @@
+import e from"./ru-BTNNoAYa.js";var t={...e};export{t as default};

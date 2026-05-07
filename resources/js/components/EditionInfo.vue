@@ -2,7 +2,7 @@
   import useCraftData from '@/composables/useCraftData';
   import {computed} from 'vue';
 
-  const {app} = useCraftData();
+  const {app, cpUrl} = useCraftData();
 
   const fullEditionName = computed(() => {
     return `${app.edition.name} Edition`;
@@ -10,17 +10,16 @@
 </script>
 
 <template>
-  <div class="flex justify-center py-4 px-2 text-muted">
-    <div>
-      <span lang="en" class="flex items-center gap-2">
-        Craft CMS
-        <span class="edition-logo">
-          <span aria-hidden="true">{{ app.edition.name }}</span>
-          <span class="sr-only">{{ fullEditionName }}</span>
-        </span>
-        {{ app.version }}
-      </span>
+  <div
+    class="flex flex-col items-center justify-center py-4 px-2 text-muted gap-1"
+  >
+    <div lang="en" class="flex items-center gap-2">
+      Craft CMS {{ app.version }}
     </div>
+    <a :href="`${cpUrl}/plugin-store/upgrade-craft`" class="edition-logo">
+      <span aria-hidden="true">{{ app.edition.name }}</span>
+      <span class="sr-only">{{ fullEditionName }}</span>
+    </a>
   </div>
 </template>
 
@@ -32,11 +31,22 @@
     display: inline-flex;
     box-sizing: content-box;
     font-size: 11px;
-    padding-block: 6px;
-    padding-inline: 7px 5px;
-    line-height: 8px;
+    padding-block: 3px;
+    padding-inline: 3px 1px;
+    line-height: 1;
     font-weight: 600;
-    letter-spacing: 1.7px;
+    letter-spacing: 2px;
     text-transform: uppercase;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+
+    @media (hover: hover) {
+      &:hover {
+        background-color: var(--c-color-accent-fill-loud);
+        color: var(--c-color-accent-on-loud);
+        border-color: var(--c-color-accent-border-loud);
+      }
+    }
   }
 </style>

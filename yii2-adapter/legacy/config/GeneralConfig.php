@@ -7,7 +7,6 @@
 
 namespace craft\config;
 
-use craft\base\LegacyEventConstants;
 use craft\services\Config;
 use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\Facades\Deprecator;
@@ -29,7 +28,7 @@ use function CraftCms\Cms\t;
  */
 class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 {
-    use LegacyEventConstants;
+    public const string EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
     /**
      * @var string|array|null|false Configures Craft to send all system emails to either a single email address or an array of email addresses
@@ -637,7 +636,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      *
      * @see $enableTwigSandbox
      */
-    #[Deprecated(message: 'in 6.0.0. Sandbox is always enabled.')]
+    #[Deprecated(message: 'in 6.0.0. The Twig sandbox is always enabled for untrusted templates.')]
     public function enableTwigSandbox(bool $value = true): self
     {
         $this->enableTwigSandbox = $value;

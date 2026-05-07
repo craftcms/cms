@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Plugin\Concerns;
 
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Element\Events\RegisterElementTypes;
+use CraftCms\Cms\Element\Events\ElementTypesResolving;
 use CraftCms\Cms\Plugin\Plugin;
 use Illuminate\Support\Facades\Event;
 
@@ -29,7 +29,7 @@ trait HasElementTypes
             return;
         }
 
-        Event::listen(function (RegisterElementTypes $event) {
+        Event::listen(function (ElementTypesResolving $event) {
             array_push($event->types, ...$this->elementTypes);
         });
     }

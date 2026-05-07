@@ -14,7 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.7.0
- * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\DefineCacheTags} instead.
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementCacheTagsResolving} instead.
  */
 class DefineValueEvent extends Event
 {

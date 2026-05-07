@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use CraftCms\Cms\Element\Events\RegisterPreviewTargets;
+use CraftCms\Cms\Element\Events\ElementPreviewTargetsResolving;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Support\Collection;
@@ -34,7 +34,7 @@ trait HasPreviewTargets
      */
     public function getPreviewTargets(): array
     {
-        event($event = new RegisterPreviewTargets($this, $this->previewTargets()));
+        event($event = new ElementPreviewTargetsResolving($this, $this->previewTargets()));
 
         // Normalize the targets
         return new Collection($event->previewTargets)

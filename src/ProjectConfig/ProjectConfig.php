@@ -23,7 +23,7 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\Events\ItemAdded;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
-use CraftCms\Cms\ProjectConfig\Events\RebuildConfig;
+use CraftCms\Cms\ProjectConfig\Events\ProjectConfigRebuilt;
 use CraftCms\Cms\ProjectConfig\Events\YamlFilesWritten;
 use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
 use CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException;
@@ -1123,7 +1123,7 @@ class ProjectConfig
         $config[self::PATH_VOLUMES] = $this->_getVolumeData();
 
         // Fire a 'rebuild' event
-        event($event = new RebuildConfig($config));
+        event($event = new ProjectConfigRebuilt($config));
 
         // Reset the component name map
         $this->_setInternal(self::PATH_META_NAMES, [], updateTimestamp: false, force: true);

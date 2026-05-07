@@ -16,7 +16,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Events\RegisterPreviewHandler} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Events\PreviewHandlerResolving} instead.
  */
 class AssetPreviewEvent extends Event
 {

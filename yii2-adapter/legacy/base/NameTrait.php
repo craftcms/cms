@@ -7,8 +7,6 @@
 
 namespace craft\base;
 
-use CraftCms\Cms\Shared\Concerns\HasNames;
-
 /** @phpstan-ignore-next-line */
 if (false) {
     /**
@@ -23,5 +21,3 @@ if (false) {
     {
     }
 }
-
-class_alias(HasNames::class, NameTrait::class);

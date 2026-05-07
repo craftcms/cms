@@ -5,7 +5,7 @@ declare(strict_types=1);
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Twig\TemplateResolver;
-use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
+use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
@@ -230,7 +230,7 @@ describe('template roots', function () {
 
         Once::flush();
 
-        Event::listen(RegisterCpTemplateRoots::class, function (RegisterCpTemplateRoots $event) use ($rootDir) {
+        Event::listen(CpTemplateRootsResolving::class, function (CpTemplateRootsResolving $event) use ($rootDir) {
             $event->roots['myroot'] = $rootDir;
         });
 
@@ -249,7 +249,7 @@ describe('template roots', function () {
 
         Once::flush();
 
-        Event::listen(RegisterCpTemplateRoots::class, function (RegisterCpTemplateRoots $event) use ($rootDir) {
+        Event::listen(CpTemplateRootsResolving::class, function (CpTemplateRootsResolving $event) use ($rootDir) {
             $event->roots[''] = $rootDir;
         });
 

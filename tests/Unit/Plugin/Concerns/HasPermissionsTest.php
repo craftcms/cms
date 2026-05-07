@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use CraftCms\Cms\User\Data\Permission;
-use CraftCms\Cms\User\Events\RegisterUserPermissions;
+use CraftCms\Cms\User\Events\UserPermissionsResolving;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Collection;
 
@@ -13,7 +13,7 @@ beforeEach(function () {
 });
 
 afterEach(function () {
-    app(Dispatcher::class)->forget(RegisterUserPermissions::class);
+    app(Dispatcher::class)->forget(UserPermissionsResolving::class);
     app()->forgetInstance(TestPlugin::class);
 });
 
@@ -29,7 +29,7 @@ it('registers a permission group for the plugin permissions', function () {
 
     $plugin->bootHasPermissions();
 
-    $event = new RegisterUserPermissions(new Collection);
+    $event = new UserPermissionsResolving(new Collection);
     event($event);
 
     expect($event->permissions)->toHaveCount(1)

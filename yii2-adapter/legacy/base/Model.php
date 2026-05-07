@@ -17,13 +17,14 @@ use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
-use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Validation\ComponentRules;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use CraftCms\RulesetValidation\Concerns\HasRuleset;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\MessageBag;
 use yii\validators\Validator;
+use Yiisoft\Arrays\ArrayableInterface;
 
 /**
  * Model base class.
@@ -33,7 +34,7 @@ use yii\validators\Validator;
  * @since 3.0.0
  */
 #[Ruleset(ComponentRules::class)]
-abstract class Model extends \yii\base\Model implements ModelInterface, Validatable
+abstract class Model extends \yii\base\Model implements ModelInterface, Validatable, Arrayable, ArrayableInterface
 {
     use ClonefixTrait;
     use HasRuleset;
@@ -470,7 +471,7 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
 
     public function validationData($names = null, $except = []): array
     {
-        return Arr::except(Utils::getPublicProperties($this), ['ruleset']);
+        return Arr::except($this->toArray($names ?? []), $except);
     }
 
     public function attributeLabels(): array
@@ -481,5 +482,10 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
     public function inScenarios(string ...$scenarios): bool
     {
         return in_array($this->ruleset->getScenario(), $scenarios, true);
+    }
+
+    public function toArray(array $fields = [], array $expand = [], $recursive = true): array
+    {
+        return parent::toArray($fields, $expand, $recursive);
     }
 }

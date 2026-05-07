@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use CraftCms\Cms\Element\ElementRelations;
-use CraftCms\Cms\Element\Events\AfterDelete;
-use CraftCms\Cms\Element\Events\AfterPropagate;
-use CraftCms\Cms\Element\Events\AfterRestore;
-use CraftCms\Cms\Element\Events\AfterSave;
-use CraftCms\Cms\Element\Events\BeforeDelete;
-use CraftCms\Cms\Element\Events\BeforeRestore;
-use CraftCms\Cms\Element\Events\BeforeSave;
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleted;
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleting;
+use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
+use CraftCms\Cms\Element\Events\ElementLifecycleRestored;
+use CraftCms\Cms\Element\Events\ElementLifecycleRestoring;
+use CraftCms\Cms\Element\Events\ElementLifecycleSaved;
+use CraftCms\Cms\Element\Events\ElementLifecycleSaving;
 
 /**
  * HasLifecycleHooks provides the lifecycle hooks for the element.
@@ -32,7 +32,7 @@ trait HasLifecycleHooks
             return false;
         }
 
-        event($event = new BeforeSave($this, $isNew));
+        event($event = new ElementLifecycleSaving($this, $isNew));
 
         return $event->isValid;
     }
@@ -50,7 +50,7 @@ trait HasLifecycleHooks
             $field->afterElementSave($this, $isNew);
         }
 
-        event(new AfterSave($this, $isNew));
+        event(new ElementLifecycleSaved($this, $isNew));
     }
 
     /**
@@ -63,7 +63,7 @@ trait HasLifecycleHooks
             $field->afterElementPropagate($this, $isNew);
         }
 
-        event(new AfterPropagate($this, $isNew));
+        event(new ElementLifecyclePropagated($this, $isNew));
 
         $this->handleDraftSave();
     }
@@ -78,7 +78,7 @@ trait HasLifecycleHooks
             return false;
         }
 
-        event($event = new BeforeDelete($this));
+        event($event = new ElementLifecycleDeleting($this));
 
         return $event->isValid;
     }
@@ -93,7 +93,7 @@ trait HasLifecycleHooks
             $field->afterElementDelete($this);
         }
 
-        event(new AfterDelete($this));
+        event(new ElementLifecycleDeleted($this));
 
         $this->handleRevisionDelete();
         $this->handleDraftDelete();
@@ -131,7 +131,7 @@ trait HasLifecycleHooks
             return false;
         }
 
-        event($event = new BeforeRestore($this));
+        event($event = new ElementLifecycleRestoring($this));
 
         return $event->isValid;
     }
@@ -146,6 +146,6 @@ trait HasLifecycleHooks
             $field->afterElementRestore($this);
         }
 
-        event(new AfterRestore($this));
+        event(new ElementLifecycleRestored($this));
     }
 }

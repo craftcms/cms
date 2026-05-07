@@ -7,7 +7,7 @@
 
 namespace craft\events;
 
-use CraftCms\Cms\Element\BulkOp\Events\DeferredBulkOpReplay;
+use CraftCms\Cms\Element\BulkOp\Events\DeferredBulkOpReplayed;
 use CraftCms\Cms\Support\Facades\BulkOps;
 
 /**
@@ -15,7 +15,7 @@ use CraftCms\Cms\Support\Facades\BulkOps;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp} or {@see \CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\BulkOp\Events\BulkOpStarting} or {@see \CraftCms\Cms\Element\BulkOp\Events\BulkOpCompleted} instead.
  */
 class BulkOpEvent extends ElementQueryEvent
 {
@@ -42,7 +42,7 @@ class BulkOpEvent extends ElementQueryEvent
         callable $handler,
         mixed $data = null,
     ): void {
-        BulkOps::defer($class, function(DeferredBulkOpReplay $replay) use ($handler) {
+        BulkOps::defer($class, function(DeferredBulkOpReplayed $replay) use ($handler) {
             $event = new self([
                 'key' => $replay->key,
                 'data' => $replay->data,

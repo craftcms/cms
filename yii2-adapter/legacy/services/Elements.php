@@ -24,8 +24,8 @@ use craft\events\MultiElementActionEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\models\ElementActivity;
 use CraftCms\Cms\Component\ComponentHelper;
-use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
-use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
+use CraftCms\Cms\Element\BulkOp\Events\BulkOpCompleted;
+use CraftCms\Cms\Element\BulkOp\Events\BulkOpStarting;
 use CraftCms\Cms\Element\Contracts\ElementActionInterface;
 use CraftCms\Cms\Element\Contracts\ElementExporterInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -39,33 +39,33 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCaches as ElementCachesService;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
-use CraftCms\Cms\Element\Events\AfterDeleteElement;
-use CraftCms\Cms\Element\Events\AfterDeleteForSite;
-use CraftCms\Cms\Element\Events\AfterMergeCanonicalChanges;
-use CraftCms\Cms\Element\Events\AfterMergeElements;
-use CraftCms\Cms\Element\Events\AfterPerformAction;
-use CraftCms\Cms\Element\Events\AfterPropagateElement;
-use CraftCms\Cms\Element\Events\AfterPropagateElements;
-use CraftCms\Cms\Element\Events\AfterResaveElement;
-use CraftCms\Cms\Element\Events\AfterResaveElements;
-use CraftCms\Cms\Element\Events\AfterRestoreElement;
-use CraftCms\Cms\Element\Events\AfterSaveElement;
-use CraftCms\Cms\Element\Events\AfterUpdateSlugAndUri;
-use CraftCms\Cms\Element\Events\BeforeDeleteElement;
-use CraftCms\Cms\Element\Events\BeforeDeleteForSite;
-use CraftCms\Cms\Element\Events\BeforeEagerLoadElements;
-use CraftCms\Cms\Element\Events\BeforeMergeCanonicalChanges;
-use CraftCms\Cms\Element\Events\BeforePerformAction;
-use CraftCms\Cms\Element\Events\BeforePropagateElement;
-use CraftCms\Cms\Element\Events\BeforePropagateElements;
-use CraftCms\Cms\Element\Events\BeforeResaveElement;
-use CraftCms\Cms\Element\Events\BeforeResaveElements;
-use CraftCms\Cms\Element\Events\BeforeRestoreElement;
-use CraftCms\Cms\Element\Events\BeforeSaveElement;
-use CraftCms\Cms\Element\Events\BeforeUpdateSearchIndex;
-use CraftCms\Cms\Element\Events\BeforeUpdateSlugAndUri;
-use CraftCms\Cms\Element\Events\InvalidateElementCaches;
-use CraftCms\Cms\Element\Events\RegisterElementTypes;
+use CraftCms\Cms\Element\Events\CanonicalChangesMerged;
+use CraftCms\Cms\Element\Events\CanonicalChangesMerging;
+use CraftCms\Cms\Element\Events\ElementActionPerformed;
+use CraftCms\Cms\Element\Events\ElementActionPerforming;
+use CraftCms\Cms\Element\Events\ElementCachesInvalidated;
+use CraftCms\Cms\Element\Events\ElementDeleted;
+use CraftCms\Cms\Element\Events\ElementDeletedForSite;
+use CraftCms\Cms\Element\Events\ElementDeleting;
+use CraftCms\Cms\Element\Events\ElementDeletingForSite;
+use CraftCms\Cms\Element\Events\ElementPropagated;
+use CraftCms\Cms\Element\Events\ElementPropagating;
+use CraftCms\Cms\Element\Events\ElementResaved;
+use CraftCms\Cms\Element\Events\ElementResaving;
+use CraftCms\Cms\Element\Events\ElementRestored;
+use CraftCms\Cms\Element\Events\ElementRestoring;
+use CraftCms\Cms\Element\Events\ElementSaved;
+use CraftCms\Cms\Element\Events\ElementSaving;
+use CraftCms\Cms\Element\Events\ElementsEagerLoading;
+use CraftCms\Cms\Element\Events\ElementSearchIndexUpdating;
+use CraftCms\Cms\Element\Events\ElementSlugAndUriUpdated;
+use CraftCms\Cms\Element\Events\ElementSlugAndUriUpdating;
+use CraftCms\Cms\Element\Events\ElementsMerged;
+use CraftCms\Cms\Element\Events\ElementsPropagated;
+use CraftCms\Cms\Element\Events\ElementsPropagating;
+use CraftCms\Cms\Element\Events\ElementsResaved;
+use CraftCms\Cms\Element\Events\ElementsResaving;
+use CraftCms\Cms\Element\Events\ElementTypesResolving;
 use CraftCms\Cms\Element\Events\SetElementUri;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
@@ -1739,7 +1739,7 @@ class Elements extends Component
 
     public static function registerEvents(): void
     {
-        Event::listen(function(BeforeBulkOp $event) {
+        Event::listen(function(BulkOpStarting $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_BULK_OP)) {
                 return;
             }
@@ -1749,7 +1749,7 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(AfterBulkOp $event) {
+        Event::listen(function(BulkOpCompleted $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_BULK_OP)) {
                 return;
             }
@@ -1759,7 +1759,7 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(InvalidateElementCaches $event) {
+        Event::listen(function(ElementCachesInvalidated $event) {
             // Fire a 'invalidateCaches' event
             if (Craft::$app->getElements()->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
                 Craft::$app->getElements()->trigger(self::EVENT_INVALIDATE_CACHES, new InvalidateElementCachesEvent([
@@ -1770,19 +1770,19 @@ class Elements extends Component
         });
 
         $elementEvents = [
-            BeforeSaveElement::class => self::EVENT_BEFORE_SAVE_ELEMENT,
-            AfterSaveElement::class => self::EVENT_AFTER_SAVE_ELEMENT,
-            BeforeUpdateSearchIndex::class => self::EVENT_BEFORE_UPDATE_SEARCH_INDEX,
+            ElementSaving::class => self::EVENT_BEFORE_SAVE_ELEMENT,
+            ElementSaved::class => self::EVENT_AFTER_SAVE_ELEMENT,
+            ElementSearchIndexUpdating::class => self::EVENT_BEFORE_UPDATE_SEARCH_INDEX,
             SetElementUri::class => self::EVENT_SET_ELEMENT_URI,
-            BeforeMergeCanonicalChanges::class => self::EVENT_BEFORE_MERGE_CANONICAL_CHANGES,
-            AfterMergeCanonicalChanges::class => self::EVENT_AFTER_MERGE_CANONICAL_CHANGES,
-            BeforeUpdateSlugAndUri::class => self::EVENT_BEFORE_UPDATE_SLUG_AND_URI,
-            AfterUpdateSlugAndUri::class => self::EVENT_AFTER_UPDATE_SLUG_AND_URI,
-            AfterDeleteElement::class => self::EVENT_AFTER_DELETE_ELEMENT,
-            BeforeDeleteForSite::class => self::EVENT_BEFORE_DELETE_FOR_SITE,
-            AfterDeleteForSite::class => self::EVENT_AFTER_DELETE_FOR_SITE,
-            BeforeRestoreElement::class => self::EVENT_BEFORE_RESTORE_ELEMENT,
-            AfterRestoreElement::class => self::EVENT_AFTER_RESTORE_ELEMENT,
+            CanonicalChangesMerging::class => self::EVENT_BEFORE_MERGE_CANONICAL_CHANGES,
+            CanonicalChangesMerged::class => self::EVENT_AFTER_MERGE_CANONICAL_CHANGES,
+            ElementSlugAndUriUpdating::class => self::EVENT_BEFORE_UPDATE_SLUG_AND_URI,
+            ElementSlugAndUriUpdated::class => self::EVENT_AFTER_UPDATE_SLUG_AND_URI,
+            ElementDeleted::class => self::EVENT_AFTER_DELETE_ELEMENT,
+            ElementDeletingForSite::class => self::EVENT_BEFORE_DELETE_FOR_SITE,
+            ElementDeletedForSite::class => self::EVENT_AFTER_DELETE_FOR_SITE,
+            ElementRestoring::class => self::EVENT_BEFORE_RESTORE_ELEMENT,
+            ElementRestored::class => self::EVENT_AFTER_RESTORE_ELEMENT,
         ];
 
         foreach ($elementEvents as $newEventClass => $yiiEventClass) {
@@ -1811,7 +1811,7 @@ class Elements extends Component
             });
         }
 
-        Event::listen(function(BeforeResaveElements $event) {
+        Event::listen(function(ElementsResaving $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENTS)) {
                 return;
             }
@@ -1821,7 +1821,7 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(BeforeResaveElement $event) {
+        Event::listen(function(ElementResaving $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENT)) {
                 return;
             }
@@ -1833,7 +1833,7 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(AfterResaveElement $event) {
+        Event::listen(function(ElementResaved $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_RESAVE_ELEMENT)) {
                 return;
             }
@@ -1846,7 +1846,7 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(AfterResaveElements $event) {
+        Event::listen(function(ElementsResaved $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_RESAVE_ELEMENTS)) {
                 return;
             }
@@ -1856,7 +1856,7 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(BeforePropagateElements $event) {
+        Event::listen(function(ElementsPropagating $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_PROPAGATE_ELEMENTS)) {
                 return;
             }
@@ -1866,7 +1866,7 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(BeforePropagateElement $event) {
+        Event::listen(function(ElementPropagating $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_PROPAGATE_ELEMENT)) {
                 return;
             }
@@ -1878,7 +1878,7 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(AfterPropagateElement $event) {
+        Event::listen(function(ElementPropagated $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_PROPAGATE_ELEMENT)) {
                 return;
             }
@@ -1891,7 +1891,7 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(AfterPropagateElements $event) {
+        Event::listen(function(ElementsPropagated $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_PROPAGATE_ELEMENTS)) {
                 return;
             }
@@ -1901,7 +1901,7 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(AfterMergeElements $event) {
+        Event::listen(function(ElementsMerged $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_MERGE_ELEMENTS)) {
                 return;
             }
@@ -1912,7 +1912,7 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(BeforeDeleteElement $event) {
+        Event::listen(function(ElementDeleting $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_DELETE_ELEMENT)) {
                 return;
             }
@@ -1925,7 +1925,7 @@ class Elements extends Component
             $event->hardDelete = $yiiEvent->hardDelete;
         });
 
-        Event::listen(function(BeforePerformAction $event) {
+        Event::listen(function(ElementActionPerforming $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_PERFORM_ACTION)) {
                 return;
             }
@@ -1940,7 +1940,7 @@ class Elements extends Component
             $event->message = $yiiEvent->message;
         });
 
-        Event::listen(function(AfterPerformAction $event) {
+        Event::listen(function(ElementActionPerformed $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_AFTER_PERFORM_ACTION)) {
                 return;
             }
@@ -1952,7 +1952,7 @@ class Elements extends Component
             ]));
         });
 
-        Event::listen(function(RegisterElementTypes $event) {
+        Event::listen(function(ElementTypesResolving $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_REGISTER_ELEMENT_TYPES)) {
                 return;
             }
@@ -1964,7 +1964,7 @@ class Elements extends Component
             $event->types = $yiiEvent->types;
         });
 
-        Event::listen(function(BeforeEagerLoadElements $event) {
+        Event::listen(function(ElementsEagerLoading $event) {
             if (!Craft::$app->getElements()->hasEventHandlers(self::EVENT_BEFORE_EAGER_LOAD_ELEMENTS)) {
                 return;
             }

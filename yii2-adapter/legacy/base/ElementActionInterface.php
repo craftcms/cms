@@ -20,5 +20,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Element\Contracts\ElementActionInterface::class, ElementActionInterface::class);

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use CraftCms\Cms\Element\Events\RegisterFieldLayouts;
-use CraftCms\Cms\Element\Events\RegisterSources;
+use CraftCms\Cms\Element\Events\ElementFieldLayoutsResolving;
+use CraftCms\Cms\Element\Events\ElementSourcesResolving;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\Fields;
 
@@ -35,7 +35,7 @@ trait HasSources
             // Memoize the results immediately, in case sources() gets called again via the event
             self::$sources[static::class][$context] = static::defineSources($context);
 
-            event($event = new RegisterSources(static::class, $context, self::$sources[static::class][$context]));
+            event($event = new ElementSourcesResolving(static::class, $context, self::$sources[static::class][$context]));
             self::$sources[static::class][$context] = $event->sources;
         }
 
@@ -74,7 +74,7 @@ trait HasSources
     {
         $fieldLayouts = static::defineFieldLayouts($source);
 
-        event($event = new RegisterFieldLayouts(static::class, $source, $fieldLayouts));
+        event($event = new ElementFieldLayoutsResolving(static::class, $source, $fieldLayouts));
 
         return $event->fieldLayouts;
     }

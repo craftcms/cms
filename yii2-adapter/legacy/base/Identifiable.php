@@ -18,5 +18,3 @@ if (false) {
         public function getId(): string|int|null;
     }
 }
-
-class_alias(\CraftCms\Cms\Component\Contracts\Identifiable::class, Identifiable::class);

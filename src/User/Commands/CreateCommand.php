@@ -152,8 +152,8 @@ class CreateCommand extends Command
             if ($this->option('send-activation-email') || confirm('Send an activation email now?')) {
                 $this->components->task(
                     'Sending activation email...',
-                    function () use ($user) {
-                        $user->sendEmailVerificationNotification();
+                    function () use ($users, $user) {
+                        $users->sendActivationEmail($user);
                     }
                 );
 

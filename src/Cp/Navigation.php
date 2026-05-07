@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp;
 
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Cp\Events\RegisterCpNavItems;
+use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -187,7 +187,7 @@ readonly class Navigation
             ];
         }
 
-        event($event = new RegisterCpNavItems($navItems));
+        event($event = new CpNavItemsResolving($navItems));
 
         $navItems = $event->navItems;
 

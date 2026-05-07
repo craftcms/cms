@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\BulkOp;
 
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\BulkOp\Events\AfterBulkOp;
-use CraftCms\Cms\Element\BulkOp\Events\BeforeBulkOp;
+use CraftCms\Cms\Element\BulkOp\Events\BulkOpCompleted;
+use CraftCms\Cms\Element\BulkOp\Events\BulkOpStarting;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
@@ -37,7 +37,7 @@ class BulkOps
     {
         $key = Str::random(10);
 
-        event(new BeforeBulkOp($key));
+        event(new BulkOpStarting($key));
 
         $this->resume($key);
 
@@ -57,7 +57,7 @@ class BulkOps
     {
         $this->activeKeys = Arr::exceptValues($this->activeKeys, $key, true);
 
-        event(new AfterBulkOp($key));
+        event(new BulkOpCompleted($key));
 
         if ($this->shouldBypassPersistence()) {
             return;

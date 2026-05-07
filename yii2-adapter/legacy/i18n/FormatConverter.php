@@ -12,5 +12,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Translation\FormatConverter::class, FormatConverter::class);
