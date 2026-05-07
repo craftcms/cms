@@ -396,8 +396,8 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string|null|false|Closure The shell command that Craft should execute to create a database backup.
      *
-     * When set to `null` (default), Craft will run `mysqldump` or `pg_dump`, provided that those libraries are in the `$PATH` variable
-     * for the system user running the web server.
+     * When set to `null` (default), Craft will run `mysqldump`, `pg_dump`, or `sqlite3`, provided that those libraries are in the `$PATH`
+     * variable for the system user running the web server.
      *
      * You may provide your own command, which can include several tokens Craft will substitute at runtime:
      *
@@ -2347,7 +2347,8 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string|null|false|Closure The shell command Craft should execute to restore a database backup.
      *
-     * By default Craft will run `mysql` or `psql`, provided those libraries are in the `$PATH` variable for the user the web server is running as.
+     * By default Craft will run `mysql`, `psql`, or `sqlite3`, provided those libraries are in the `$PATH` variable for the user the web
+     * server is running as.
      *
      * There are several tokens you can use that Craft will swap out at runtime:
      *
