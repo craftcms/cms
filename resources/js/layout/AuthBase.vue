@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import useCraftData from '@/composables/useCraftData';
-  import Pane from '@/components/Pane.vue';
 
   const {general, system} = useCraftData();
 </script>
@@ -19,9 +18,7 @@
       </h1>
 
       <div class="w-sm">
-        <Pane appearance="raised">
-          <slot></slot>
-        </Pane>
+        <slot></slot>
       </div>
     </div>
   </div>

@@ -6,6 +6,7 @@
   import TwoFactorAuthenticationController from '@actions/Auth/TwoFactorAuthenticationController';
   import {usePage} from '@inertiajs/vue3';
   import DynamicHtmlRenderer from '@/components/DynamicHtmlRenderer.vue';
+  import Pane from '@/components/Pane.vue';
 
   const props = defineProps<{
     authFormData: {
@@ -42,28 +43,30 @@
 
 <template>
   <AuthBase>
-    <DynamicHtmlRenderer :html="authFormData.authForm" />
+    <Pane appearance="raised">
+      <DynamicHtmlRenderer :html="authFormData.authForm" />
 
-    <template v-if="page.props.flash.error">
-      {{ page.props.flash.error }}
-    </template>
+      <template v-if="page.props.flash.error">
+        {{ page.props.flash.error }}
+      </template>
 
-    <template v-if="actions.length > 0">
-      <hr class="mt-4 mb-2" />
-      <ActionMenu :actions="actions" :label="t('Try another way')">
-        <template #invoker="{label, attributes}">
-          <craft-button
-            type="button"
-            appearance="plain"
-            size="zero"
-            v-bind="attributes"
-          >
-            {{ label }}
-            <craft-icon name="chevron-down"></craft-icon>
-          </craft-button>
-        </template>
-      </ActionMenu>
-    </template>
+      <template v-if="actions.length > 0">
+        <hr class="mt-4 mb-2" />
+        <ActionMenu :actions="actions" :label="t('Try another way')">
+          <template #invoker="{label, attributes}">
+            <craft-button
+              type="button"
+              appearance="plain"
+              size="zero"
+              v-bind="attributes"
+            >
+              {{ label }}
+              <craft-icon name="chevron-down"></craft-icon>
+            </craft-button>
+          </template>
+        </ActionMenu>
+      </template>
+    </Pane>
   </AuthBase>
 </template>
 
