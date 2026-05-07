@@ -258,6 +258,7 @@ class Plugins extends Component
         /**
          * We override this as the legacy service needs
          * to save with setting safeOnly to `false`.
+         * @var \craft\base\Model $pluginSettings
          */
         $pluginSettings->setAttributes($settings, false);
 
