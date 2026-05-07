@@ -81,14 +81,12 @@ readonly class InstallController
 
                 return Str::markdown($license);
             }),
-            'localeOptions' => Inertia::defer(function () use ($defaultSiteLanguage) {
-                return I18N::getAllLocales()->map(fn ($locale) => [
-                    'id' => $locale->id,
-                    'value' => $locale->id,
-                    'label' => $locale->getDisplayName(app()->getLocale()),
-                    'selected' => $locale->id === $defaultSiteLanguage,
-                ]);
-            }),
+            'localeOptions' => Inertia::defer(fn () => I18N::getAllLocales()->map(fn ($locale) => [
+                'id' => $locale->id,
+                'value' => $locale->id,
+                'label' => $locale->getDisplayName(app()->getLocale()),
+                'selected' => $locale->id === $defaultSiteLanguage,
+            ])),
             'timezone' => Inertia::defer(function () {
                 $timezoneOptions = SelectOptions::getTimeZoneOptions();
 
