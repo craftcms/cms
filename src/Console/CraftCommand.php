@@ -16,15 +16,10 @@ use function Laravel\Prompts\task;
  */
 trait CraftCommand
 {
-    public function removeCraftGroup(): void
+    /** @return string[] */
+    public function getAliases(): array
     {
-        if (empty($this->signature)) {
-            $this->signature = $this->name;
-        }
-
-        $this->signature = Str::after($this->signature, 'craft:');
-
-        parent::__construct();
+        return array_map(fn (string $alias) => Str::start($alias, 'craft:'), $this->aliases ?? []);
     }
 
     protected function ensureProjectConfigFileExists(): void
