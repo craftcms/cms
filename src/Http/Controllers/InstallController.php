@@ -151,7 +151,7 @@ readonly class InstallController
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'baseUrl' => [new EnvValueRule(['nullable', 'string', 'max:255'])],
+            'baseUrl' => [new EnvValueRule(['nullable', 'url', 'max:255'])],
             'language' => ['required', 'string', 'max:255', new LanguageRule(onlySiteLanguages: false)],
             'timezone' => [new EnvValueRule([new TimezoneRule])],
         ]);
