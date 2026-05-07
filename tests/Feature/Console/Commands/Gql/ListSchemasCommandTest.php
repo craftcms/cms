@@ -32,7 +32,7 @@ it('lists saved schemas', function () {
 it('resolves slash aliases', function () {
     $schema = saveGraphqlCommandSchema(['name' => 'Alias Schema']);
 
-    $this->artisan('graphql/list-schemas')
+    $this->artisan('craft:graphql/list-schemas')
         ->expectsTable(
             ['UID', 'Name'],
             [

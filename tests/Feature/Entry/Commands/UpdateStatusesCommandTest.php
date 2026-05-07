@@ -74,8 +74,8 @@ it('updates stale live, pending, and expired entry statuses', function () {
 it('supports the legacy aliases', function (string $command) {
     $this->artisan($command)->assertSuccessful();
 })->with([
-    'legacy alias' => 'update-statuses',
-    'legacy action alias' => 'update-statuses/index',
+    'legacy alias' => 'craft:update-statuses',
+    'legacy action alias' => 'craft:update-statuses/index',
 ]);
 
 it('continues after a save failure and still succeeds', function () {

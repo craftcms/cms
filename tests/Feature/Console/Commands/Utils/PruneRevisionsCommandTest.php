@@ -33,7 +33,7 @@ it('supports a dry run without deleting extra revisions', function () {
     app(Revisions::class)->createRevision($entry, $this->user->id);
     app(Revisions::class)->createRevision($entry, $this->user->id, force: true);
 
-    $this->artisan('utils/prune-revisions', ['--max-revisions' => 1, '--dry-run' => true, '--no-interaction' => true])
+    $this->artisan('craft:utils/prune-revisions', ['--max-revisions' => 1, '--dry-run' => true, '--no-interaction' => true])
         ->expectsOutputToContain('[DRY RUN] Finished pruning revisions. 1 revision matched.')
         ->assertSuccessful();
 

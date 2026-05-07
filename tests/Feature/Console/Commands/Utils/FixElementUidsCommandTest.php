@@ -23,7 +23,7 @@ it('reassigns duplicate element uids while keeping the first matching row unchan
         ->whereIn('id', [$firstElement->id, $secondElement->id, $thirdElement->id])
         ->update(['uid' => $duplicateUid]);
 
-    $this->artisan('utils/fix-element-uids')
+    $this->artisan('craft:utils/fix-element-uids')
         ->expectsOutputToContain('Found 3 elements with duplicate UIDs.')
         ->expectsOutputToContain("Changing $duplicateUid ({$secondElement->id})")
         ->expectsOutputToContain("Changing $duplicateUid ({$thirdElement->id})")

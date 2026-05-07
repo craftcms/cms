@@ -16,7 +16,7 @@ it('soft deletes an element', function () {
 
     $entry = EntryModel::factory()->createElement();
 
-    $this->artisan('elements/delete', ['id' => $entry->id, '--no-interaction' => true])
+    $this->artisan('craft:elements/delete', ['id' => $entry->id, '--no-interaction' => true])
         ->expectsOutputToContain('Element deleted.')
         ->assertSuccessful();
 
