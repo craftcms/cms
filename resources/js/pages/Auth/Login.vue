@@ -7,12 +7,18 @@
   import useCraftData from '@/composables/useCraftData';
   import {useUrlSearchParams} from '@vueuse/core';
   import {router} from '@inertiajs/vue3';
+  import Passkeys from '@/components/Auth/Passkeys.vue';
+  import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
 
-  defineProps<{
-    logo?: string;
-    errors?: Record<string, string[]>;
-    authFormData?: Record<string, string>;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      logo?: string;
+      errors?: Record<string, string[]>;
+      authFormData?: Record<string, string>;
+      showPasskeyBtn?: boolean;
+    }>(),
+    {showPasskeyBtn: true}
+  );
 
   const params = useUrlSearchParams();
   const {general} = useCraftData();
@@ -41,17 +47,26 @@
       type: 'text',
     };
   });
+
+  const showPasskeys = computed(
+    () => props.showPasskeyBtn && browserSupportsWebAuthn()
+  );
 </script>
 
 <template>
   <AuthBase>
-    <LoginForm
-      :show-password-reset="true"
-      :show-remember-checkbox="true"
-      :username-props="usernameProps"
-      v-if="view === 'login'"
-      @change:view="setView($event)"
-    />
+    <template v-if="view === 'login'">
+      <div class="grid gap-3">
+        <LoginForm
+          :show-password-reset="true"
+          :show-remember-checkbox="true"
+          :username-props="usernameProps"
+          @change:view="setView($event)"
+        />
+
+        <Passkeys v-if="showPasskeys" />
+      </div>
+    </template>
     <SetPasswordForm
       v-else-if="view === 'set-password'"
       :username-props="usernameProps"

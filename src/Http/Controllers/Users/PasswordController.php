@@ -214,7 +214,7 @@ readonly class PasswordController
             }
 
             if (empty($errors)) {
-                return $this->asSuccess(t('Password reset email sent.'));
+                return $this->asSuccess(t('Check your email for instructions to reset your password.'));
             }
 
             // Handle the errors.
