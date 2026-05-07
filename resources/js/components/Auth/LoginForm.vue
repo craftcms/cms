@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
   import LoginController from '@actions/Auth/LoginController';
-  import {Form, useForm, usePage} from '@inertiajs/vue3';
+  import {useForm, usePage} from '@inertiajs/vue3';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import CraftInputPassword from '@craftcms/cp/vue/CraftInputPassword.vue';
   import CraftCheckbox from '@craftcms/cp/vue/CraftCheckbox.vue';
