@@ -29,6 +29,7 @@
 - “Verification Code” and “Recovery Code” forms no longer get auto-submitted when entering a value.
 
 ### Administration
+- It’s now possible to replace the selected custom field for existing field layout elements. ([#18814](https://github.com/craftcms/cms/pull/18814))
 - Sections now have a “Min Authors” setting. ([#18662](https://github.com/craftcms/cms/pull/18662))
 - Time fields’ “Max Time” settings can now be set to an earlier time than “Min Time”, for overnight time ranges. ([#18575](https://github.com/craftcms/cms/pull/18575))
 - Component chips within component select inputs now have “Replace” actions.
@@ -62,7 +63,9 @@
 - Added `craft\elements\deletionblockers\DeletionBlockerInterface`. ([#18728](https://github.com/craftcms/cms/pull/18728))
 - Added `craft\elements\deletionblockers\EntryAuthorsBlocker`. ([#18728](https://github.com/craftcms/cms/pull/18728))
 - Added `craft\elements\deletionblockers\RelationDeletionBlocker`. ([#18728](https://github.com/craftcms/cms/pull/18728))
+- Added `craft\errors\FieldNotFoundException::$fieldId`.
 - Added `craft\events\DefineElementDeletionBlockersEvent`. ([#18728](https://github.com/craftcms/cms/pull/18728))
+- Added `craft\fieldlayoutelements\CustomField::setFieldId()`.
 - Added `craft\helpers\Html::jsWithVars()`.
 - Added `craft\helpers\Markdown`. ([#18671](https://github.com/craftcms/cms/issues/18671))
 - Added `craft\models\Section::$minAuthors`. ([#18662](https://github.com/craftcms/cms/pull/18662))

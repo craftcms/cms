@@ -78,12 +78,7 @@ export default Base.extend(
       }
 
       // Capture additional alignment element
-      const alignmentSelector = this.$container.data('align-to');
-      if (alignmentSelector) {
-        this.$alignmentElement = this.$trigger.find(alignmentSelector).first();
-      } else {
-        this.$alignmentElement = this.$trigger;
-      }
+      this.captureAlignmentElement();
 
       this.$container.appendTo(Garnish.$bod);
       // if trigger is in a slideout, we need to initialise UI elements
@@ -101,6 +96,15 @@ export default Base.extend(
       }
 
       Garnish.DisclosureMenu.instances.push(this);
+    },
+
+    captureAlignmentElement: function () {
+      const alignmentSelector = this.$container.data('align-to');
+      if (alignmentSelector) {
+        this.$alignmentElement = this.$trigger.find(alignmentSelector).first();
+      } else {
+        this.$alignmentElement = this.$trigger;
+      }
     },
 
     addSearchInput: function () {
@@ -371,6 +375,7 @@ export default Base.extend(
 
     handleTriggerClick: function () {
       if (!this.isExpanded()) {
+        this.captureAlignmentElement();
         this.show();
       } else {
         this.hide();
