@@ -96,6 +96,10 @@ class Dashboard
             $widgets = $this->getUserWidgets();
         }
 
+        if ($widgets === false) {
+            return collect();
+        }
+
         return $widgets;
     }
 
@@ -107,7 +111,13 @@ class Dashboard
      */
     public function doesUserHaveWidget(string $type): bool
     {
-        return $this->getUserWidgets()->contains(fn (WidgetInterface $widget) => $widget::class === $type);
+        $widgets = $this->getUserWidgets();
+
+        if ($widgets === false) {
+            return false;
+        }
+
+        return $widgets->contains(fn (WidgetInterface $widget) => $widget::class === $type);
     }
 
     /**
