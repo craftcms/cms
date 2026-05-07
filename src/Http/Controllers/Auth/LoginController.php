@@ -115,17 +115,6 @@ readonly class LoginController extends AuthenticationController
 
     public function logout(Request $request): Response
     {
-        // If already logged out, just redirect to the appropriate destination
-        if (auth('craft')->guest()) {
-            if ($request->wantsJson()) {
-                return $this->asSuccess();
-            }
-
-            return $request->isCpRequest()
-                ? redirect(cp_url(CpAuthPath::Login->value))
-                : redirect($this->generalConfig->getPostLogoutRedirect());
-        }
-
         auth('craft')->logout();
 
         if ($request->wantsJson()) {
