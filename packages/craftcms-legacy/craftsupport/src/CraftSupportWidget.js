@@ -377,19 +377,23 @@ import './CraftSupportWidget.scss';
 
           var max = Math.min(results.length, 20);
           for (var i = 0; i < max; i++) {
-            this.$searchResults.append(
-              $('<li>').append(
-                $('<a>', {
-                  href: this.getSearchResultUrl(results[i]),
-                  target: '_blank',
-                  html:
-                    '<span class="status ' +
-                    this.getSearchResultStatus(results[i]) +
-                    '"></span>' +
-                    this.getSearchResultText(results[i]),
+            const $resultLink = $('<a>', {
+              href: this.getSearchResultUrl(results[i]),
+              target: '_blank',
+              rel: 'noopener',
+            })
+              .append(
+                $('<span>', {
+                  class: 'status ' + this.getSearchResultStatus(results[i]),
                 })
               )
-            );
+              .append(
+                document.createTextNode(
+                  this.getSearchResultText(results[i]) || ''
+                )
+              );
+
+            this.$searchResults.append($('<li>').append($resultLink));
           }
 
           // Announce the results for SR users
