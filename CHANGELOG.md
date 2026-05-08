@@ -9,6 +9,7 @@
 - Fixed a bug where custom field override settings’ Label, Handle, and Instructions fields could be missing their placeholder values.
 - Fixed a bug where site name and language values set to environment variables were getting replaced with their resolved values when installing Craft. ([#18780](https://github.com/craftcms/cms/issues/18780))
 - Fixed a bug where site name values set to environment variables were getting replaced with their resolved values on save. ([#18789](https://github.com/craftcms/cms/pull/18789))
+- Fixed a bug where browser tabs weren’t always getting refreshed when nested elements were reordered on another browser tab.
 
 ## 5.9.22 - 2026-04-29
 
