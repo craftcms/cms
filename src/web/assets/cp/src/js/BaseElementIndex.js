@@ -1623,6 +1623,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         selectable: this.selectable,
         sortable: this.sortable && sortAttribute === 'sortOrder',
         prevalidate: this.settings.prevalidate,
+        returnUrl: document.location.href,
       };
 
       params.viewState.showHeaderColumn = this.settings.showHeaderColumn;
@@ -1675,7 +1676,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return params;
     },
 
-    updateElements: function (preservePagination, pageChanged) {
+    updateElements: function (preservePagination = false) {
       return new Promise((resolve, reject) => {
         // Ignore if we're not fully initialized yet
         if (!this.initialized) {
@@ -1695,7 +1696,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.view.disable();
         }
 
-        if (preservePagination !== true) {
+        if (!preservePagination) {
           this.prevPage = null;
           this.setPage(1);
         }
@@ -2090,6 +2091,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     getSelectedElementIds: function () {
       return this.view ? this.view.getSelectedElementIds() : [];
+    },
+
+    selectElementById: function (id) {
+      return this.view?.selectElementById(id) ?? false;
+    },
+
+    selectElementsById: function (ids) {
+      this.view?.selectElementsById(ids);
     },
 
     setStatus: function (status) {
@@ -2891,6 +2900,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this._autoSelectElements.push(id);
     },
 
+    selectElementsAfterUpdate: function (ids) {
+      if (this._autoSelectElements === null) {
+        this._autoSelectElements = [];
+      }
+
+      this._autoSelectElements.push(...ids);
+    },
+
     addButton: function ($button) {
       this.getButtonContainer().append($button);
     },
@@ -3615,9 +3632,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       if (this._autoSelectElements) {
         if (this.selectable) {
-          for (var i = 0; i < this._autoSelectElements.length; i++) {
-            this.view.selectElementById(this._autoSelectElements[i]);
-          }
+          this.selectElementsById(this._autoSelectElements);
         }
 
         this._autoSelectElements = null;
@@ -3740,7 +3755,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         if (action.trigger) {
           const $trigger = $('<div/>', {
-            id: `${this.namespaceId(action.type)}-actiontrigger`,
+            id: `${this.namespaceId(action.triggerId)}`,
           }).append(action.trigger);
           $trigger.find('.btn').addClass('secondary');
 
@@ -3978,7 +3993,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           $('<li/>')
             .append(
               $('<a/>', {
-                id: `${this.namespaceId(action.type)}-actiontrigger`,
+                id: `${this.namespaceId(action.triggerId)}`,
                 class: destructive ? 'error' : null,
                 data: {action},
                 text: action.name,
@@ -4057,6 +4072,42 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       } else {
         this.$filterBtn.attr('aria-controls', null);
       }
+    },
+
+    onBeforeMoveElementsToPage: async function (selectedItems, page) {
+      await this.settings.onBeforeMoveElementsToPage(selectedItems, page);
+    },
+    onMoveElementsToPage: async function (selectedItems, page) {
+      await this.settings.onMoveElementsToPage(selectedItems, page);
+    },
+    onBeforeReorderElements: async function (selectedItems, offset) {
+      await this.settings.onBeforeReorderElements(selectedItems, offset);
+    },
+    onReorderElements: async function (selectedItems, offset) {
+      await this.settings.onReorderElements(selectedItems, offset);
+    },
+    onBeforeDuplicateElements: async function (selectedItems) {
+      await this.settings.onBeforeDuplicateElements(selectedItems);
+    },
+    onDuplicateElements: async function (selectedItems) {
+      await this.settings.onDuplicateElements(selectedItems);
+
+      // if we’re currently searching, update elements after the queue is finished
+      if (this.searching && Craft.cp.enableQueue) {
+        const searchText = this.searchText;
+        Craft.cp.once('queueCompleted', async () => {
+          if (this.searching && this.searchText === searchText) {
+            this.selectElementsAfterUpdate(this.getSelectedElementIds());
+            await this.updateElements(true);
+          }
+        });
+      }
+    },
+    onBeforeDeleteElements: async function (selectedItems) {
+      await this.settings.onBeforeDeleteElements(selectedItems);
+    },
+    onDeleteElements: async function (selectedItems) {
+      await this.settings.onDeleteElements(selectedItems);
     },
   },
   {

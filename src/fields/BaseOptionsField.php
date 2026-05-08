@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\CrossSiteCopyableFieldInterface;
+use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\MergeableFieldInterface;
@@ -37,7 +38,11 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class BaseOptionsField extends Field implements PreviewableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
+abstract class BaseOptionsField extends Field implements
+    PreviewableFieldInterface,
+    MergeableFieldInterface,
+    CrossSiteCopyableFieldInterface,
+    DefaultableFieldInterface
 {
     /**
      * @event DefineInputOptionsEvent Event triggered when defining the options for the field's input.
@@ -346,6 +351,14 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         }
 
         return $html;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultValue(): array|string|null
+    {
+        return $this->defaultValue();
     }
 
     /**

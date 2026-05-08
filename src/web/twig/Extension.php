@@ -26,6 +26,7 @@ use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\HtmlPurifier;
 use craft\helpers\Json;
+use craft\helpers\Markdown;
 use craft\helpers\MoneyHelper;
 use craft\helpers\Sequence;
 use craft\helpers\StringHelper;
@@ -82,17 +83,18 @@ use Twig\ExpressionParser\Infix\BinaryOperatorExpressionParser;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\GlobalsInterface;
+use Twig\Node\Expression\Filter\DefaultFilter;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\base\Model;
 use yii\behaviors\AttributeTypecastBehavior;
 use yii\db\Exception;
 use yii\db\Expression;
 use yii\db\QueryInterface;
-use yii\helpers\Markdown;
 
 /**
  * Class Extension
@@ -225,6 +227,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('currency', [$this, 'currencyFilter']),
             new TwigFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
             new TwigFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),
+            new TwigFilter('default', [$this, 'defaultFilter'], ['node_class' => DefaultFilter::class]),
             new TwigFilter('diff', 'array_diff'),
             new TwigFilter('duration', [DateTimeHelper::class, 'humanDuration']),
             new TwigFilter('encenc', [$this, 'encencFilter']),
@@ -303,6 +306,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigTest('boolean', fn($obj): bool => is_bool($obj)),
             new TwigTest('callable', fn($obj): bool => is_callable($obj)),
             new TwigTest('countable', fn($obj): bool => is_countable($obj)),
+            new TwigTest('empty', function($obj): bool {
+                if ($obj instanceof Model) {
+                    // assume the IteratorAggregate implementation was not intentional
+                    return false;
+                }
+
+                return CoreExtension::testEmpty($obj);
+            }),
             new TwigTest('float', fn($obj): bool => is_float($obj)),
             new TwigTest('instance of', fn($obj, $class) => $obj instanceof $class),
             new TwigTest('integer', fn($obj): bool => is_int($obj)),
@@ -657,7 +668,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function timestampFilter(mixed $value, ?string $format = null, bool $withPreposition = false): string
     {
         if ($value === null || $value === '') {
-            return '';
+            $value = DateTimeHelper::now();
         }
 
         try {
@@ -1066,10 +1077,17 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
      * @param string|null $locale The target locale the date should be formatted for. By default, the current system locale will be used.
+     * @param bool $withTimeZone Whether the time zone abbreviation should be appended to the formatted time
      * @return string
      */
-    public function timeFilter(TwigEnvironment $env, mixed $date, ?string $format = null, mixed $timezone = null, ?string $locale = null): string
-    {
+    public function timeFilter(
+        TwigEnvironment $env,
+        mixed $date,
+        ?string $format = null,
+        mixed $timezone = null,
+        ?string $locale = null,
+        bool $withTimeZone = false,
+    ): string {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
             if (str_starts_with($format, 'icu:')) {
@@ -1079,11 +1097,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
         }
 
-        $date = $env->getExtension(CoreExtension::class)->convertDate($date, $timezone);
+        $date = DateTime::createFromInterface($env->getExtension(CoreExtension::class)->convertDate($date, $timezone));
         $formatter = $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
-        $formatted = $formatter->asTime(DateTime::createFromInterface($date), $format);
+        $formatted = $formatter->asTime($date, $format, $withTimeZone);
         $formatter->timeZone = $fmtTimeZone;
         return $formatted;
     }
@@ -1096,10 +1114,17 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param string|null $format The target format, null to use the default
      * @param DateTimeZone|string|false|null $timezone The target timezone, null to use the default, false to leave unchanged
      * @param string|null $locale The target locale the date should be formatted for. By default, the current system locale will be used.
+     * @param bool $withTimeZone Whether the time zone abbreviation should be appended to the formatted time
      * @return string
      */
-    public function datetimeFilter(TwigEnvironment $env, mixed $date, ?string $format = null, mixed $timezone = null, ?string $locale = null): string
-    {
+    public function datetimeFilter(
+        TwigEnvironment $env,
+        mixed $date,
+        ?string $format = null,
+        mixed $timezone = null,
+        ?string $locale = null,
+        bool $withTimeZone = false,
+    ): string {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
             if (str_starts_with($format, 'icu:')) {
@@ -1113,9 +1138,29 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $formatter = $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
-        $formatted = $formatter->asDatetime(DateTime::createFromInterface($date), $format);
+        $formatted = $formatter->asDatetime(DateTime::createFromInterface($date), $format, $withTimeZone);
         $formatter->timeZone = $fmtTimeZone;
         return $formatted;
+    }
+
+    /**
+     * Returns the passed-in value if it’s not empty; otherwise, the provided default value.
+     *
+     * @param mixed $value
+     * @param string $default
+     */
+    public static function defaultFilter(mixed $value, string $default = ''): mixed
+    {
+        if ($value instanceof Model) {
+            // assume the IteratorAggregate implementation was not intentional
+            return $value;
+        }
+
+        if (CoreExtension::testEmpty($value)) {
+            return $default;
+        }
+
+        return $value;
     }
 
     /**
@@ -1422,6 +1467,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('attr', [Html::class, 'renderTagAttributes'], ['is_safe' => ['html']]),
             new TwigFunction('csrfInput', [Html::class, 'csrfInput'], ['is_safe' => ['html']]),
             new TwigFunction('failMessageInput', [Html::class, 'failMessageInput'], ['is_safe' => ['html']]),
+            new TwigFunction('h', [$this, 'headingFunction'], ['is_safe' => ['html']]),
+            new TwigFunction('h1', fn(array|string $attributes = '') => $this->headingFunction(1, $attributes), ['is_safe' => ['html']]),
+            new TwigFunction('h2', fn(array|string $attributes = '') => $this->headingFunction(2, $attributes), ['is_safe' => ['html']]),
+            new TwigFunction('h3', fn(array|string $attributes = '') => $this->headingFunction(3, $attributes), ['is_safe' => ['html']]),
+            new TwigFunction('h4', fn(array|string $attributes = '') => $this->headingFunction(4, $attributes), ['is_safe' => ['html']]),
+            new TwigFunction('h5', fn(array|string $attributes = '') => $this->headingFunction(5, $attributes), ['is_safe' => ['html']]),
+            new TwigFunction('h6', fn(array|string $attributes = '') => $this->headingFunction(6, $attributes), ['is_safe' => ['html']]),
+            new TwigFunction('heading', [$this, 'headingFunction'], ['is_safe' => ['html']]),
             new TwigFunction('hiddenInput', [Html::class, 'hiddenInput'], ['is_safe' => ['html']]),
             new TwigFunction('input', [Html::class, 'input'], ['is_safe' => ['html']]),
             new TwigFunction('ol', [Html::class, 'ol'], ['is_safe' => ['html']]),
@@ -1687,6 +1740,15 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return $arr;
     }
 
+    public function headingFunction(int $level, array|string $attributes = ''): string
+    {
+        if ($level < 1 || $level > 6) {
+            throw new InvalidArgumentException("Invalid heading level: $level");
+        }
+
+        return $this->tagFunction("h$level", $attributes);
+    }
+
     /**
      * Returns the contents of a given SVG file.
      *
@@ -1729,15 +1791,17 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @return string
      * @since 3.3.0
      */
-    public function tagFunction(string $type, array $attributes = []): string
+    public function tagFunction(string $type, string|array $attributes = ''): string
     {
-        $html = ArrayHelper::remove($attributes, 'html', '');
-        $text = ArrayHelper::remove($attributes, 'text');
-
-        if ($text !== null) {
-            $html = Html::encode($text);
+        if (is_array($attributes)) {
+            $html = ArrayHelper::remove($attributes, 'html');
+            $text = ArrayHelper::remove($attributes, 'text');
+        } else {
+            $text = $attributes;
+            $attributes = [];
         }
 
+        $html ??= Html::encode($text ?? '');
         return Html::tag($type, $html, $attributes);
     }
 
