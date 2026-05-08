@@ -12,8 +12,6 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 beforeEach(function () {
     $this->updates = $this->mock(Updates::class);
 
-    Cms::config()->enableCsrfProtection = false;
-
     TemplateMode::set(TemplateMode::Cp);
 });
 

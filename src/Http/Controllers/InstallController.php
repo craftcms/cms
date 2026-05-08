@@ -44,8 +44,12 @@ readonly class InstallController
 
     public function __construct()
     {
+        if (! app()->hasDebugModeEnabled()) {
+            abort(503, 'Debug mode must be enabled to install Craft.');
+        }
+
         // Return a 404 if Craft is already installed
-        if (! app()->hasDebugModeEnabled() && Cms::isInstalled()) {
+        if (Cms::isInstalled()) {
             abort(404, 'Craft is already installed');
         }
     }

@@ -244,11 +244,15 @@ class Application extends \yii\web\Application
         try {
             $result = parent::runAction($route, $params);
         } catch (InvalidRouteException $e) {
-            if (($response = $this->runLaravelAction($route, $params)) !== null) {
-                return $response;
-            }
+            $result = $this->runDefaultControllerAction($route, $params);
 
-            throw $e;
+            if ($result === null) {
+                if (($response = $this->runLaravelAction($route, $params)) !== null) {
+                    return $response;
+                }
+
+                throw $e;
+            }
         }
 
         if ($result === null || $result instanceof BaseResponse) {
@@ -258,6 +262,21 @@ class Application extends \yii\web\Application
         $response = $this->getResponse();
         $response->data = $result;
         return $response;
+    }
+
+    private function runDefaultControllerAction(string $route, array $params = []): mixed
+    {
+        $segments = explode('/', $route);
+
+        if (count($segments) !== 2 || !$this->hasModule($segments[0])) {
+            return null;
+        }
+
+        try {
+            return parent::runAction(sprintf('%s/default/%s', $segments[0], $segments[1]), $params);
+        } catch (InvalidRouteException) {
+            return null;
+        }
     }
 
     private function runLaravelAction(string $route, array $params = []): ?BaseResponse

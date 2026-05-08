@@ -66,23 +66,16 @@ test('normalizeValue', function (mixed $money, string $value, ?string $defaultVa
 ]);
 
 test('getTableAttributeHtml', function (mixed $value, string $expected, ?string $locale = null) {
-    if ($locale) {
-        $oldLocaleId = I18N::getFormattingLocale()->id;
-        I18N::getFormattingLocale()->id = $locale;
-    }
-
-    $html = $this->field->getPreviewHtml($value, new Entry);
+    $html = $locale
+        ? I18N::withLocale('en-US', $locale, fn () => $this->field->getPreviewHtml($value, new Entry))
+        : $this->field->getPreviewHtml($value, new Entry);
 
     expect($html)->toBe($expected);
-
-    if ($locale) {
-        I18N::getFormattingLocale()->id = $oldLocaleId;
-    }
 })->with([
     [new \Money\Money('100', new Currency('USD')), '$1.00', null],
     ['$1.00', '$1.00', null],
     [new \Money\Money('100', new Currency('USD')), "US$\xc2\xa01,00", 'nl'],
-])->todo('Rewrite when Entries and Locales are ported to Laravel');
+]);
 
 test('serialize', function (?\Money\Money $value, ?string $expected) {
     $serialized = $this->field->serializeValue($value);

@@ -16,6 +16,8 @@ readonly class HandleTokenRequest
 
     public const string ORIGINAL_URI_KEY = 'craft.token.originalUri';
 
+    public const string HAD_TOKEN_KEY = 'craft.token.hadToken';
+
     public const string TOKEN_HEADER = 'X-Craft-Token';
 
     public function __construct(
@@ -40,6 +42,7 @@ readonly class HandleTokenRequest
         }
 
         Context::addHidden(self::TOKEN_KEY, $token);
+        Context::addHidden(self::HAD_TOKEN_KEY, true);
 
         Context::addHidden(self::ORIGINAL_URI_KEY, $request->uri()->withoutQuery([
             'token',

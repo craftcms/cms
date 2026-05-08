@@ -410,8 +410,8 @@ abstract class Controller extends \yii\web\Controller
                 ];
             }
             $response = $this->asJson($data);
-            if ($this->request->isCpRequest && Cms::config()->enableCsrfProtection) {
-                $response->getHeaders()->setDefault('X-CSRF-Token', $this->request->getCsrfToken());
+            if ($this->request->isCpRequest) {
+                $response->getHeaders()->setDefault('X-CSRF-Token', csrf_token());
             }
             return $response;
         }

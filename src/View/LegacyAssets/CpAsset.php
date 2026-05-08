@@ -104,7 +104,7 @@ class CpAsset implements LegacyAssetInterface
         // Define the Craft object
         $craftJson = Json::encode($this->_craftData());
         $js = <<<JS
-        window.Craft = Object.assign(window.Craft || {}, $craftJson);
+        window.Craft = Object.assign(window.Craft || {}, $craftJson)
         JS;
         $htmlStack->js($js, Position::Head);
     }
@@ -161,12 +161,10 @@ class CpAsset implements LegacyAssetInterface
             ];
         }
 
-        if ($generalConfig->enableCsrfProtection) {
-            $data += [
-                'csrfTokenName' => '_token',
-                'csrfTokenValue' => csrf_token(),
-            ];
-        }
+        $data += [
+            'csrfTokenName' => '_token',
+            'csrfTokenValue' => csrf_token(),
+        ];
 
         // If no one's logged in yet, leave it at that
         if (! $currentUser) {

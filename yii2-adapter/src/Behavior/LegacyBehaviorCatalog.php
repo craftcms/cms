@@ -20,9 +20,11 @@ use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Data\SiteGroup;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Data\UserGroup;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use ReflectionClass;
 
 class LegacyBehaviorCatalog
 {
@@ -131,11 +133,23 @@ class LegacyBehaviorCatalog
             $targets[] = $target['targetClass'];
         }
 
-        $targets = array_values(array_filter(array_unique($targets), fn(string $class) => is_callable([$class, 'macro'])));
+        $targets = array_values(array_filter(
+            array_unique($targets),
+            fn(string $class) => is_callable([$class, 'macro']) && !self::isSandboxAllowedClass($class),
+        ));
 
         sort($targets);
 
         return $targets;
+    }
+
+    private static function isSandboxAllowedClass(string $class): bool
+    {
+        if (!class_exists($class)) {
+            return false;
+        }
+
+        return (new ReflectionClass($class))->getAttributes(AllowedInSandbox::class) !== [];
     }
 
     /**

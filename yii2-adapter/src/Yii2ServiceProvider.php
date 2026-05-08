@@ -3,6 +3,7 @@
 namespace CraftCms\Yii2Adapter;
 
 use Craft;
+use craft\web\Application as WebApplication;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Table;
@@ -35,6 +36,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use PDOException;
 use RuntimeException;
+use yii\base\Application as YiiApplication;
 use yii\base\ExitException;
 
 class Yii2ServiceProvider extends ServiceProvider
@@ -163,11 +165,28 @@ class Yii2ServiceProvider extends ServiceProvider
             $this->ensureNewSessionsTable();
         });
 
+        $this->app->terminating(fn() => $this->triggerAfterRequestForLaravelRequest());
+
         if (!$this->app->runningInConsole()) {
             return;
         }
 
         new LegacyCommandCompatibility()->boot();
+    }
+
+    private function triggerAfterRequestForLaravelRequest(): void
+    {
+        if (!Craft::$app instanceof WebApplication) {
+            return;
+        }
+
+        if (Craft::$app->state >= YiiApplication::STATE_AFTER_REQUEST) {
+            return;
+        }
+
+        Craft::$app->state = YiiApplication::STATE_AFTER_REQUEST;
+        Craft::$app->trigger(YiiApplication::EVENT_AFTER_REQUEST);
+        Craft::$app->state = YiiApplication::STATE_END;
     }
 
     /**

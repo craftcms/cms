@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\FieldLayout\LayoutElements\Addresses\LabelField;
 use CraftCms\Cms\Http\Controllers\AddressesController;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
@@ -23,4 +25,24 @@ it('can list fields with a namespace and countryCode', function () {
     ]);
 });
 
-it('can save a field layout')->todo('When field layouts are ported.');
+it('can save a field layout', function () {
+    postJson(action([AddressesController::class, 'saveFieldLayout']), [
+        'fieldLayout' => json_encode([
+            'uid' => Str::uuid()->toString(),
+            'tabs' => [
+                [
+                    'uid' => Str::uuid()->toString(),
+                    'name' => 'Content',
+                    'elements' => [
+                        [
+                            'uid' => Str::uuid()->toString(),
+                            'type' => LabelField::class,
+                        ],
+                    ],
+                ],
+            ],
+        ]),
+    ])->assertOk()->assertJson([
+        'message' => 'Address fields saved.',
+    ]);
+});

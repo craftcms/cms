@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\File;
 
@@ -24,4 +25,10 @@ it('renders the homepage template through the frontend fallback route', function
     $this->get('/')
         ->assertOk()
         ->assertSeeText('homepage-template');
+});
+
+it('does not render CP views through the frontend fallback route', function () {
+    $this->get('/'.Cms::config()->cpTrigger.'/mail/system-message-text?textBody=<script>alert(1)</script>')
+        ->assertNotFound()
+        ->assertDontSee('<script>alert(1)</script>', false);
 });
