@@ -773,6 +773,7 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
 - Added `CraftCms\Cms\Http\Middleware\AddLogContext`.
 - Deprecated `Craft::$app->getSecurity()` in favor of Laravel's Hash and Crypt facades, or `CraftCms\Cms\Support\Facades\Security`.
 - Deprecated the `blowfishHashCost` general config setting in favor of Laravel's `hashing.bcrypt.rounds` config or the `BCRYPT_ROUNDS` environment variable.
+- Deprecated the `csrfTokenName`, `enableCsrfCookie`, and `enableCsrfProtection` general config settings. ([#18806](https://github.com/craftcms/cms/pull/18806))
 
 ### Updates
 
