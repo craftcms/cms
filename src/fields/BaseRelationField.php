@@ -188,7 +188,7 @@ abstract class BaseRelationField extends Field implements
         }
 
         if (!empty($value)) {
-            $siteId = $params['__siteId'] ?? null;
+            $siteId = ElementQuery::$activeQuery?->siteId;
             $parser = new ElementRelationParamParser([
                 'fields' => [
                     $field->handle => $field,
@@ -197,7 +197,7 @@ abstract class BaseRelationField extends Field implements
             $condition = $parser->parse([
                 'targetElement' => $value,
                 'field' => $field->handle,
-            ], $siteId);
+            ], $siteId !== '*' ? $siteId : null);
             if ($condition !== false) {
                 $conditions[] = $condition;
             }
