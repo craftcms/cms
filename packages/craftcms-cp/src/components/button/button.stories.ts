@@ -6,7 +6,8 @@ import './button.js';
 import '../icon/icon.js';
 import '../chip/chip.js';
 
-const buttonVariants = ['primary', 'secondary', 'tertiary'];
+const buttonVariants = ['primary', 'default', 'danger'];
+const appearance = ['filled', 'outline', 'plain'];
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {
@@ -17,10 +18,15 @@ const meta = {
   },
   args: {
     label: 'Button',
-    destructive: false,
+    variant: 'filled',
+    loading: false,
   },
   argTypes: {
-    destructive: {
+    appearance: {
+      control: {type: 'select'},
+      options: appearance,
+    },
+    loading: {
       control: {type: 'boolean'},
     },
   },
@@ -30,10 +36,10 @@ const meta = {
         (variant) => html`
           <div class="flex gap-2">
             <craft-button variant="${variant}"
-              >${variant ?? 'None'}</craft-button
+              >${variant ?? 'None'} filled</craft-button
             >
-            <craft-button appearance="filled" variant="${variant}"
-              >${variant} filled</craft-button
+            <craft-button appearance="outline" variant="${variant}"
+              >${variant} outline</craft-button
             >
             <craft-button appearance="plain" variant="${variant}"
               >${variant} plain</craft-button
@@ -44,12 +50,12 @@ const meta = {
 
       <craft-chip data-color="violet">
         <div class="flex gap-2">
-          <craft-button variant="inherit">Chip buttons</craft-button>
-          <craft-button appearance="filled" variant="inherit"
-            >Filled</craft-button
+          <craft-button variant="inherit">Chip Buttons</craft-button>
+          <craft-button appearance="outline" variant="inherit"
+            >Outline</craft-button
           >
           <craft-button appearance="plain" variant="inherit"
-            >plain</craft-button
+            >Plain</craft-button
           >
         </div>
       </craft-chip>
@@ -106,6 +112,10 @@ export const Icon: Story = {
 };
 
 export const Loading: Story = {
-  args: {},
-  render: (args) => html` <craft-button loading> Submit </craft-button> `,
+  args: {
+    loading: true,
+  },
+  render: (args) => html`
+    <craft-button loading="${args.loading}"> Submit </craft-button>
+  `,
 };

@@ -5,9 +5,10 @@ export default css`
     --button-border-color: var(--c-color-border-loud);
     --button-foreground-color: var(--c-color-on-loud);
     --button-background-color-default: var(--c-color-fill-loud);
+    --button-hover-mix-color: var(--c-color-fill-loud);
     --button-background-color-hover: color-mix(
       in oklab,
-      var(--c-color-fill-loud, var(--c-button-default-fill)),
+      var(--button-hover-mix-color),
       var(--c-color-mix-hover)
     );
 
@@ -27,11 +28,11 @@ export default css`
     min-height: var(--c-button-height, var(--c-size-control-md));
     min-width: var(--c-button-width, var(--c-size-control-md));
     white-space: nowrap;
+    border-width: var(--c-button-border-width, 1px);
+    border-style: var(--c-button-border-style, solid);
 
     /* Colorable styles */
     color: var(--button-foreground-color);
-    border-width: var(--c-button-border-width, 1px);
-    border-style: var(--c-button-border-style, solid);
     border-color: var(--button-border-color);
     background-color: var(--button-background-color-default);
   }
@@ -39,7 +40,7 @@ export default css`
   @media (hover: hover) {
     :host(:hover) {
       background-color: var(--button-background-color-hover);
-      color: var(--c-color-on-loud);
+      color: var(--button-foreground-color);
     }
   }
 
@@ -115,9 +116,9 @@ export default css`
 
   /* Plain */
   :host([appearance~='plain']) {
-    background-color: transparent;
-    border-color: transparent;
-    color: inherit;
+    --button-background-color-default: transparent;
+    --button-foreground-color: inherit;
+    --button-border-color: transparent;
   }
 
   :host([appearance~='plain']:hover) {
@@ -139,25 +140,17 @@ export default css`
   }
 
   /* Filled */
-  :host([appearance~='filled']) {
-    background-color: var(
-      --c-color-fill-normal,
-      var(--c-color-neutral-fill-normal)
-    );
-    border-color: transparent;
-    color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
+  :host([appearance~='outline']) {
+    --button-border-color: var(--c-color-border-loud);
+    --button-background-color-default: transparent;
+    --button-background-color-hover: var(--c-color-fill-quiet);
+    --button-foreground-color: var(--c-color-on-quiet);
   }
 
-  :host([appearance~='filled']:hover) {
-    background-color: color-mix(
-      in oklab,
-      var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)),
-      var(--c-color-mix-hover)
-    );
-    color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
+  :host([appearance~='outline']:hover) {
   }
 
-  :host([appearance~='filled']:active) {
+  :host([appearance~='outline']:active) {
     color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
     background-color: color-mix(
       in oklab,
@@ -194,8 +187,7 @@ export default css`
   /*
   Variants (aka fill colors) 
    */
-  :host([variant~='primary']),
-  :host([variant~='secondary']) {
+  :host([variant~='primary']) {
     --c-color-fill-loud: var(--c-color-brand-fill-loud);
     --c-color-fill-normal: var(--c-color-brand-fill-normal);
     --c-color-fill-quiet: var(--c-color-brand-fill-quiet);
