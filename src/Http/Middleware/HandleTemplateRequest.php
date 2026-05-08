@@ -45,6 +45,10 @@ readonly class HandleTemplateRequest
             return redirect()->action([InstallController::class, 'index']);
         }
 
+        if ($request->isCpRequest() && ! $request->routeIs('craft.cp.*')) {
+            return $response;
+        }
+
         $path = $request->isSiteRequest()
             ? $this->sites->getRequestPath($request)
             : $request->craftPath();
