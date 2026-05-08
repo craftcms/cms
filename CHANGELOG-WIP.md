@@ -243,11 +243,11 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Deprecated `craft\behaviors\SessionBehavior::checkAuthorization`. `CraftCms\Cms\Auth\SessionAuth::checkAuthorization` should be used instead.
 - Deprecated `craft\services\Users::isVerificationCodeValidForUser()`. `Password::broker('craft')->tokenExists($user, $code)` should be used instead.
 - Deprecated `GeneralConfig::elevatedSessionDuration()`. The `auth.password_timeout` config value should be used instead. To disable password confirmation (elevated sessions), you now set this value to `-1` instead of `0`.
-    - Elevated sessions now work through [Laravel's password confirmation](https://laravel.com/docs/12.x/authentication#password-confirmation) system.
+  - Elevated sessions now work through [Laravel's password confirmation](https://laravel.com/docs/12.x/authentication#password-confirmation) system.
 - Removed `craft\controllers\AuthController`. The following controllers now implement this functionality:
-    - `CraftCms\Cms\Http\Controllers\Users\AuthMethodController`
-    - `CraftCms\Cms\Http\Controllers\Users\PasskeysController`
-    - `CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController`
+  - `CraftCms\Cms\Http\Controllers\Users\AuthMethodController`
+  - `CraftCms\Cms\Http\Controllers\Users\PasskeysController`
+  - `CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController`
 - Removed `verificationCode` and `verificationCodeIssuedDate` columns on the `users` table in favor of the `password_reset_tokens` table.
 
 #### Authorization
@@ -532,10 +532,10 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
   - `craft\services\Entries::EVENT_BEFORE_SAVE_ENTRY_TYPE` => `CraftCms\Cms\Entry\Events\EntryTypeSaving`
   - `craft\services\Entries::EVENT_AFTER_SAVE_ENTRY_TYPE` => `CraftCms\Cms\Entry\Events\EntryTypeSaved`
 - Removed `craft\controllers\EntriesController`. The following controllers now implement this functionality:
-    - `CraftCms\Cms\Http\Controllers\Entries\CreateEntryController`
-    - `CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController`
-    - `CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController`
-    - `CraftCms\Cms\Http\Controllers\Entries\StoreEntryController`
+  - `CraftCms\Cms\Http\Controllers\Entries\CreateEntryController`
+  - `CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController`
+  - `CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController`
+  - `CraftCms\Cms\Http\Controllers\Entries\StoreEntryController`
 - Removed `craft\controllers\EntryTypesController` in favor of `CraftCms\Cms\Http\Controllers\EntryTypesController`
 - Removed `craft\console\controllers\EntryTypesController` in favor of:
   - `CraftCms\Cms\Entry\Commands\MergeEntryTypesCommand`
@@ -714,9 +714,9 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
   - `CraftCms\Cms\Console\Commands\InstallCommand`
   - `CraftCms\Cms\Console\Commands\InstallCheckCommand`
 - Removed `craft\console\controllers\MigrateController` in favor of:
-  - `CraftCms\Cms\Database\Commands\MigrateCommand` 
+  - `CraftCms\Cms\Database\Commands\MigrateCommand`
 - Removed `craft\console\controllers\UpController` in favor of:
-  - `CraftCms\Cms\Console\Commands\UpCommand` 
+  - `CraftCms\Cms\Console\Commands\UpCommand`
 
 ### Plugins
 
@@ -911,8 +911,8 @@ Moved the following controllers:
 - Deprecated `craft\errors\SiteGroupNotFoundException`.
 
 - Removed `craft\controllers\SitesController` in favor of:
-  - `CraftCms\Cms\Http\Controllers\Settings\SitesController` 
-  - `CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController` 
+  - `CraftCms\Cms\Http\Controllers\Settings\SitesController`
+  - `CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController`
 
 ### Structures
 

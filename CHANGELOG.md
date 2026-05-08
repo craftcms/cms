@@ -44,16 +44,16 @@
 - Deprecated `craft\markdown\Markdown`, `craft\markdown\GithubMarkdown`, `craft\markdown\MarkdownExtra`, and `craft\markdown\PreEncodedMarkdown`. `CraftCms\Cms\Support\Facades\Markdown` should be used instead.
 - Deprecated `craft\helpers\DateRange`. `CraftCms\Cms\Shared\Enums\DateRangeType` and `CraftCms\Cms\Shared\Enums\DateRangePeriod` should be used instead.
 - Deprecated `craft\helpers\Cp`. One of the following classes should be used instead:
-    - `CraftCms\Cms\Cp\Alerts`
-    - `CraftCms\Cms\Cp\FormFields`
-    - `CraftCms\Cms\Cp\Html\ContentHtml`
-    - `CraftCms\Cms\Cp\Html\ElementHtml`
-    - `CraftCms\Cms\Cp\Html\ElementIndexHtml`
-    - `CraftCms\Cms\Cp\Html\MenuHtml`
-    - `CraftCms\Cms\Cp\Html\PreviewHtml`
-    - `CraftCms\Cms\Cp\Html\StatusHtml`
-    - `CraftCms\Cms\Cp\Icons`
-    - `CraftCms\Cms\Cp\RequestedSite`
+  - `CraftCms\Cms\Cp\Alerts`
+  - `CraftCms\Cms\Cp\FormFields`
+  - `CraftCms\Cms\Cp\Html\ContentHtml`
+  - `CraftCms\Cms\Cp\Html\ElementHtml`
+  - `CraftCms\Cms\Cp\Html\ElementIndexHtml`
+  - `CraftCms\Cms\Cp\Html\MenuHtml`
+  - `CraftCms\Cms\Cp\Html\PreviewHtml`
+  - `CraftCms\Cms\Cp\Html\StatusHtml`
+  - `CraftCms\Cms\Cp\Icons`
+  - `CraftCms\Cms\Cp\RequestedSite`
 - Deprecated `craft\helpers\Json`. `CraftCms\Cms\Support\Json` should be used instead.
 - Deprecated `craft\services\Composer`. `CraftCms\Cms\Support\Composer` should be used instead.
 - Deprecated `craft\enums\Color`. `CraftCms\Cms\Support\Enums\Color` should be used instead.
@@ -69,35 +69,35 @@
 - Deprecated `craft\helpers\Api`. `CraftCms\Cms\Support\Api` should be used instead.
 - Deprecated `craft\nameparsing\CustomLanguage`. `CraftCms\Cms\Shared\Nameparser\CustomLanguage` should be used instead.
 - Deprecated `craft\helpers\App`. The following classes/methods should be used instead:
-    - #### General helpers
-    - `App:devMode()` -> `app()->hasDebugModeEnabled()`
-    - `App:parseBooleanEnv()` --> `\CraftCms\Cms\Support\Env::parseBoolean()`
-    - `App:normalizeValue()` --> `\CraftCms\Cms\normalizeValue()`
-    - `App:maxPowerCaptain()` --> `\CraftCms\Cms\maxPowerCaptain()`
-    - `App:silence()` --> `\CraftCms\Cms\silence()`
-    - `App:backtrace()` --> `\CraftCms\Cms\backtraceAsString()`
-    - #### Env
-    - `App:env()` --> `\CraftCms\Cms\Support\Env::get()`
-    - `App:parseEnv()` --> `\CraftCms\Cms\Support\Env::parse()`
-    - #### PHP
-    - `App:phpVersion()` --> `\CraftCms\Cms\Support\PHP::version()`
-    - `App:extensionVersion()` --> `\CraftCms\Cms\Support\PHP::extensionVersion()`
-    - `App:phpConfigValueAsBool()` --> `\CraftCms\Cms\Support\PHP::configValueAsBool()`
-    - `App:phpConfigValueInBytes()` --> `\CraftCms\Cms\Support\PHP::configValueInBytes()`
-    - `App:phpSizeToBytes()` --> `\CraftCms\Cms\Support\PHP::sizeToBytes()`
-    - `App:phpConfigValueAsPaths()` --> `\CraftCms\Cms\Support\PHP::configValueAsPaths()`
-    - `App:normalizePhpPaths()` --> `\CraftCms\Cms\Support\PHP::normalizePaths()`
-    - `App:isPathAllowed()` --> `\CraftCms\Cms\Support\PHP::isPathAllowed()`
-    - `App:phpExecutable()` --> `\CraftCms\Cms\Support\PHP::executable()`
-    - `App:testIniSet()` --> `\CraftCms\Cms\Support\PHP::testIniSet()`
-    - `App:checkForValidIconv()` --> `\CraftCms\Cms\Support\PHP::checkForValidIconv()`
-    - `App:supportsIdn()` --> `\CraftCms\Cms\Support\PHP::supportsIdn()`
-    - #### License
-    - `App:licenseKey()` --> `app(\CraftCms\Cms\License\License::class)->key()`
-    - `App:licensingIssues()` --> `app(\CraftCms\Cms\License\License::class)->issues()`
-    - `App:licenseShunCookieName()` --> `app(\CraftCms\Cms\License\License::class)->shunCookieName()`
-    - `App:licensingIssuesHash()` --> `app(\CraftCms\Cms\License\License::class)->issuesHash()`
-    -
+  - #### General helpers
+  - `App:devMode()` -> `app()->hasDebugModeEnabled()`
+  - `App:parseBooleanEnv()` --> `\CraftCms\Cms\Support\Env::parseBoolean()`
+  - `App:normalizeValue()` --> `\CraftCms\Cms\normalizeValue()`
+  - `App:maxPowerCaptain()` --> `\CraftCms\Cms\maxPowerCaptain()`
+  - `App:silence()` --> `\CraftCms\Cms\silence()`
+  - `App:backtrace()` --> `\CraftCms\Cms\backtraceAsString()`
+  - #### Env
+  - `App:env()` --> `\CraftCms\Cms\Support\Env::get()`
+  - `App:parseEnv()` --> `\CraftCms\Cms\Support\Env::parse()`
+  - #### PHP
+  - `App:phpVersion()` --> `\CraftCms\Cms\Support\PHP::version()`
+  - `App:extensionVersion()` --> `\CraftCms\Cms\Support\PHP::extensionVersion()`
+  - `App:phpConfigValueAsBool()` --> `\CraftCms\Cms\Support\PHP::configValueAsBool()`
+  - `App:phpConfigValueInBytes()` --> `\CraftCms\Cms\Support\PHP::configValueInBytes()`
+  - `App:phpSizeToBytes()` --> `\CraftCms\Cms\Support\PHP::sizeToBytes()`
+  - `App:phpConfigValueAsPaths()` --> `\CraftCms\Cms\Support\PHP::configValueAsPaths()`
+  - `App:normalizePhpPaths()` --> `\CraftCms\Cms\Support\PHP::normalizePaths()`
+  - `App:isPathAllowed()` --> `\CraftCms\Cms\Support\PHP::isPathAllowed()`
+  - `App:phpExecutable()` --> `\CraftCms\Cms\Support\PHP::executable()`
+  - `App:testIniSet()` --> `\CraftCms\Cms\Support\PHP::testIniSet()`
+  - `App:checkForValidIconv()` --> `\CraftCms\Cms\Support\PHP::checkForValidIconv()`
+  - `App:supportsIdn()` --> `\CraftCms\Cms\Support\PHP::supportsIdn()`
+  - #### License
+  - `App:licenseKey()` --> `app(\CraftCms\Cms\License\License::class)->key()`
+  - `App:licensingIssues()` --> `app(\CraftCms\Cms\License\License::class)->issues()`
+  - `App:licenseShunCookieName()` --> `app(\CraftCms\Cms\License\License::class)->shunCookieName()`
+  - `App:licensingIssuesHash()` --> `app(\CraftCms\Cms\License\License::class)->issuesHash()`
+  -
 - Deprecated `Craft::createGuzzleClient()`. `CraftCms\Cms\Support\Facades\Http::create()` should be used instead.
 - Deprecated `craft\helpers\FileHelper`. `CraftCms\Cms\Support\File` should be used instead.
 - Deprecated `craft\helpers\UrlHelper`. `CraftCms\Cms\Support\URL` should be used instead.
@@ -114,34 +114,34 @@
 - Added `php craft twig:cache` - Precompile Twig views
 - Added `php craft twig:clear` - Clear precompiled Twig views
 - `craft\console\controllers\EnvController` has been removed in favor of the classes below:
-    - `CraftCms\Cms\Console\Commands\Env\EnvRemoveCommand` => `php craft env:remove`
-    - `CraftCms\Cms\Console\Commands\Env\EnvSetCommand` => `php craft env:set`
-    - `CraftCms\Cms\Console\Commands\Env\EnvShowCommand` => `php craft env:show`
+  - `CraftCms\Cms\Console\Commands\Env\EnvRemoveCommand` => `php craft env:remove`
+  - `CraftCms\Cms\Console\Commands\Env\EnvSetCommand` => `php craft env:set`
+  - `CraftCms\Cms\Console\Commands\Env\EnvShowCommand` => `php craft env:show`
 - `craft\console\controllers\IndexAssetsController` has been removed in favor of the classes below:
-    - `CraftCms\Cms\Asset\Commands\CleanupAssetIndexesCommand` => `php craft index-assets:cleanup`
-    - `CraftCms\Cms\Asset\Commands\IndexAllAssetsCommand` => `php craft index-assets:all`
-    - `CraftCms\Cms\Asset\Commands\IndexOneAssetCommand` => `php craft index-assets:one`
+  - `CraftCms\Cms\Asset\Commands\CleanupAssetIndexesCommand` => `php craft index-assets:cleanup`
+  - `CraftCms\Cms\Asset\Commands\IndexAllAssetsCommand` => `php craft index-assets:all`
+  - `CraftCms\Cms\Asset\Commands\IndexOneAssetCommand` => `php craft index-assets:one`
 - `craft\console\controllers\BaseSystemStatusController`, `craft\console\controllers\OnController`, and `craft\console\controllers\OffController` have been removed in favor of the classes below:
-    - `CraftCms\Cms\Console\Commands\System\OnCommand` => `php craft on`
-    - `CraftCms\Cms\Console\Commands\System\OffCommand` => `php craft off`
+  - `CraftCms\Cms\Console\Commands\System\OnCommand` => `php craft on`
+  - `CraftCms\Cms\Console\Commands\System\OffCommand` => `php craft off`
 - `craft\console\controllers\ElementsController` has been removed in favor of the classes below:
-    - `CraftCms\Cms\Element\Commands\DeleteCommand` => `php craft elements:delete`
-    - `CraftCms\Cms\Element\Commands\DeleteAllOfTypeCommand` => `php craft elements:delete-all-of-type`
-    - `CraftCms\Cms\Element\Commands\RestoreCommand` => `php craft elements:restore`
+  - `CraftCms\Cms\Element\Commands\DeleteCommand` => `php craft elements:delete`
+  - `CraftCms\Cms\Element\Commands\DeleteAllOfTypeCommand` => `php craft elements:delete-all-of-type`
+  - `CraftCms\Cms\Element\Commands\RestoreCommand` => `php craft elements:restore`
 - `craft\console\controllers\UpdateStatusesController` has been removed in favor of the class below:
-    - `CraftCms\Cms\Entry\Commands\UpdateStatusesCommand` => `php craft update-statuses`
+  - `CraftCms\Cms\Entry\Commands\UpdateStatusesCommand` => `php craft update-statuses`
 - `craft\console\controllers\utils\FixElementUidsController` has been removed in favor of the class below:
-    - `CraftCms\Cms\Console\Commands\Utils\FixElementUidsCommand` => `php craft utils:fix-element-uids`
+  - `CraftCms\Cms\Console\Commands\Utils\FixElementUidsCommand` => `php craft utils:fix-element-uids`
 - `craft\console\controllers\utils\FixFieldLayoutUidsController` has been removed in favor of the class below:
-    - `CraftCms\Cms\Console\Commands\Utils\FixFieldLayoutUidsCommand` => `php craft utils:fix-field-layout-uids`
+  - `CraftCms\Cms\Console\Commands\Utils\FixFieldLayoutUidsCommand` => `php craft utils:fix-field-layout-uids`
 - `craft\console\controllers\utils\PruneOrphanedEntriesController` has been removed in favor of the class below:
-    - `CraftCms\Cms\Console\Commands\Utils\PruneOrphanedEntriesCommand` => `php craft utils:prune-orphaned-entries`
+  - `CraftCms\Cms\Console\Commands\Utils\PruneOrphanedEntriesCommand` => `php craft utils:prune-orphaned-entries`
 - `craft\console\controllers\utils\PruneProvisionalDraftsController` has been removed in favor of the class below:
-    - `CraftCms\Cms\Console\Commands\Utils\PruneProvisionalDraftsCommand` => `php craft utils:prune-provisional-drafts`
+  - `CraftCms\Cms\Console\Commands\Utils\PruneProvisionalDraftsCommand` => `php craft utils:prune-provisional-drafts`
 - `craft\console\controllers\utils\PruneRevisionsController` has been removed in favor of the class below:
-    - `CraftCms\Cms\Console\Commands\Utils\PruneRevisionsCommand` => `php craft utils:prune-revisions`
+  - `CraftCms\Cms\Console\Commands\Utils\PruneRevisionsCommand` => `php craft utils:prune-revisions`
 - `craft\console\controllers\utils\RepairController::actionProjectConfig()` has been removed in favor of the class below:
-    - `CraftCms\Cms\ProjectConfig\Commands\RepairCommand` => `php craft project-config:repair`
+  - `CraftCms\Cms\ProjectConfig\Commands\RepairCommand` => `php craft project-config:repair`
 
 #### Mutex
 
@@ -160,10 +160,10 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 
 ##### Controllers
 - Removed `craft\controllers\DashboardController`. The following controllers now implement this functionality:
-    - `CraftCms\Cms\Http\Controllers\Dashboard\DashboardController`
-    - `CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController`
-    - `CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController`
-    - `CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController`
+  - `CraftCms\Cms\Http\Controllers\Dashboard\DashboardController`
+  - `CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController`
+  - `CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController`
+  - `CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController`
 
 ##### Deprecations
 - Deprecated `Craft::$app->getDashboard()`. `app(\CraftCms\Cms\Dashboard\Dashboard::class)` should be used instead.
@@ -185,10 +185,10 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 
 - Deprecated `craft\services\Dashboard::EVENT_REGISTER_WIDGET_TYPES`. `CraftCms\Cms\Dashboard\Events\WidgetTypesResolving` should be used instead.
 - Deprecated `craft\events\WidgetEvent` in favor of the following new events:
-    - `craft\services\Dashboard::EVENT_BEFORE_SAVE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetSaving`
-    - `craft\services\Dashboard::EVENT_AFTER_SAVE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetSaved`
-    - `craft\services\Dashboard::EVENT_BEFORE_DELETE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetDeleting`
-    - `craft\services\Dashboard::EVENT_AFTER_DELETE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetDeleted`
+  - `craft\services\Dashboard::EVENT_BEFORE_SAVE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetSaving`
+  - `craft\services\Dashboard::EVENT_AFTER_SAVE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetSaved`
+  - `craft\services\Dashboard::EVENT_BEFORE_DELETE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetDeleting`
+  - `craft\services\Dashboard::EVENT_AFTER_DELETE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetDeleted`
 
 ### Address
 
@@ -228,8 +228,8 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Deprecated `craft\events\SetAssetFilenameEvent`. `CraftCms\Cms\Asset\Events\SetAssetFilename` should be used instead.
 - Deprecated `craft\events\RegisterAssetFileKindsEvent`. `CraftCms\Cms\Asset\Events\AssetFileKindsResolving` should be used instead.
 - Deprecated `craft\events\ReplaceAssetEvent` in favor of the following new events:
-    - `craft\services\Assets::EVENT_BEFORE_REPLACE_ASSET` => `CraftCms\Cms\Asset\Events\AssetReplacing`
-    - `craft\services\Assets::EVENT_AFTER_REPLACE_ASSET` => `CraftCms\Cms\Asset\Events\AssetReplaced`
+  - `craft\services\Assets::EVENT_BEFORE_REPLACE_ASSET` => `CraftCms\Cms\Asset\Events\AssetReplacing`
+  - `craft\services\Assets::EVENT_AFTER_REPLACE_ASSET` => `CraftCms\Cms\Asset\Events\AssetReplaced`
 - Deprecated `craft\events\DefineAssetThumbUrlEvent`. `CraftCms\Cms\Asset\Events\ThumbUrlResolving` should be used instead.
 - Deprecated `craft\events\AssetPreviewEvent`. `CraftCms\Cms\Asset\Events\PreviewHandlerResolving` should be used instead.
 
@@ -250,11 +250,11 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Deprecated `craft\behaviors\SessionBehavior::checkAuthorization`. `CraftCms\Cms\Auth\SessionAuth::checkAuthorization` should be used instead.
 - Deprecated `craft\services\Users::isVerificationCodeValidForUser()`. `Password::broker('craft')->tokenExists($user, $code)` should be used instead.
 - Deprecated `GeneralConfig::elevatedSessionDuration()`. The `auth.password_timeout` config value should be used instead. To disable password confirmation (elevated sessions), you now set this value to `-1` instead of `0`.
-    - Elevated sessions now work through [Laravel's password confirmation](https://laravel.com/docs/12.x/authentication#password-confirmation) system.
+  - Elevated sessions now work through [Laravel's password confirmation](https://laravel.com/docs/12.x/authentication#password-confirmation) system.
 - Removed `craft\controllers\AuthController`. The following controllers now implement this functionality:
-    - `CraftCms\Cms\Http\Controllers\Users\AuthMethodController`
-    - `CraftCms\Cms\Http\Controllers\Users\PasskeysController`
-    - `CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController`
+  - `CraftCms\Cms\Http\Controllers\Users\AuthMethodController`
+  - `CraftCms\Cms\Http\Controllers\Users\PasskeysController`
+  - `CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController`
 - Removed `verificationCode` and `verificationCodeIssuedDate` columns on the `users` table in favor of the `password_reset_tokens` table.
 
 #### Authorization
@@ -266,23 +266,23 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Added `CraftCms\Cms\Auth\Events\ElementAuthorizing` event for customizing element authorization.
 - Added `CraftCms\Cms\Element\Policies\ElementPolicy` base policy for element authorization.
 - Added element-specific authorization policies:
-    - `CraftCms\Cms\Address\Policies\AddressPolicy`
-    - `CraftCms\Cms\Asset\Policies\AssetPolicy`
-    - `CraftCms\Cms\Entry\Policies\EntryPolicy`
-    - `CraftCms\Cms\User\Policies\UserPolicy`
-    - `CraftCms\Cms\Field\Policies\ContentBlockPolicy`
+  - `CraftCms\Cms\Address\Policies\AddressPolicy`
+  - `CraftCms\Cms\Asset\Policies\AssetPolicy`
+  - `CraftCms\Cms\Entry\Policies\EntryPolicy`
+  - `CraftCms\Cms\User\Policies\UserPolicy`
+  - `CraftCms\Cms\Field\Policies\ContentBlockPolicy`
 
 #### Passkeys
 
 - Added `CraftCms\Cms\Auth\Passkeys\Passkeys`.
 - Deprecated `craft\services\Auth` passkey methods. The following should be used instead:
-    - `Auth::hasPasskeys()` -> `app(Passkeys::class)->hasPasskeys()`
-    - `Auth::getPasskeys()` -> `app(Passkeys::class)->getPasskeys()`
-    - `Auth::getPasskeyCreationOptions()` -> `app(Passkeys::class)->getPasskeyCreationOptions()`
-    - `Auth::verifyPasskeyCreationResponse()` -> `app(Passkeys::class)->verifyPasskeyCreationResponse()`
-    - `Auth::getPasskeyRequestOptions()` -> `app(Passkeys::class)->getPasskeyRequestOptions()`
-    - `Auth::verifyPasskey()` -> `app(Passkeys::class)->verifyPasskey()`
-    - `Auth::deletePasskey()` -> `app(Passkeys::class)->deletePasskey()`
+  - `Auth::hasPasskeys()` -> `app(Passkeys::class)->hasPasskeys()`
+  - `Auth::getPasskeys()` -> `app(Passkeys::class)->getPasskeys()`
+  - `Auth::getPasskeyCreationOptions()` -> `app(Passkeys::class)->getPasskeyCreationOptions()`
+  - `Auth::verifyPasskeyCreationResponse()` -> `app(Passkeys::class)->verifyPasskeyCreationResponse()`
+  - `Auth::getPasskeyRequestOptions()` -> `app(Passkeys::class)->getPasskeyRequestOptions()`
+  - `Auth::verifyPasskey()` -> `app(Passkeys::class)->verifyPasskey()`
+  - `Auth::deletePasskey()` -> `app(Passkeys::class)->deletePasskey()`
 - Deprecated `craft\auth\passkeys\CredentialRepository`. `CraftCms\Cms\Auth\Passkeys\CredentialRepository` should be used instead.
 - Deprecated `craft\auth\passkeys\WebauthnServer`. `CraftCms\Cms\Auth\Passkeys\WebauthnServer` should be used instead.
 
@@ -425,26 +425,26 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 ### Elements
 
 - Added `CraftCms\Cms\Element\ElementCaches` and `CraftCms\Cms\Support\Facades\ElementCaches`.
-    - Deprecated `craft\services\Elements::getIsCollectingCacheInfo()`. `CraftCms\Cms\Element\ElementCaches::isCollectingCacheInfo()` should be used instead.
-    - Deprecated `craft\services\Elements::startCollectingCacheInfo()`. `CraftCms\Cms\Element\ElementCaches::startCollectingCacheInfo()` should be used instead.
-    - Deprecated `craft\services\Elements::collectCacheTags()`. `CraftCms\Cms\Element\ElementCaches::collectCacheTags()` should be used instead.
-    - Deprecated `craft\services\Elements::setCacheExpiryDate()`. `CraftCms\Cms\Element\ElementCaches::setCacheExpiryDate()` should be used instead.
-    - Deprecated `craft\services\Elements::collectCacheInfoForElement()`. `CraftCms\Cms\Element\ElementCaches::collectCacheInfoForElement()` should be used instead.
-    - Deprecated `craft\services\Elements::stopCollectingCacheInfo()`. `CraftCms\Cms\Element\ElementCaches::stopCollectingCacheInfo()` should be used instead.
-    - Deprecated `craft\services\Elements::invalidateAllCaches()`. `CraftCms\Cms\Element\ElementCaches::invalidateAll()` should be used instead.
-    - Deprecated `craft\services\Elements::invalidateCachesForElementType()`. `CraftCms\Cms\Element\ElementCaches::invalidateForElementType()` should be used instead.
-    - Deprecated `craft\services\Elements::invalidateCachesForElement()`. `CraftCms\Cms\Element\ElementCaches::invalidateForElement()` should be used instead.
+  - Deprecated `craft\services\Elements::getIsCollectingCacheInfo()`. `CraftCms\Cms\Element\ElementCaches::isCollectingCacheInfo()` should be used instead.
+  - Deprecated `craft\services\Elements::startCollectingCacheInfo()`. `CraftCms\Cms\Element\ElementCaches::startCollectingCacheInfo()` should be used instead.
+  - Deprecated `craft\services\Elements::collectCacheTags()`. `CraftCms\Cms\Element\ElementCaches::collectCacheTags()` should be used instead.
+  - Deprecated `craft\services\Elements::setCacheExpiryDate()`. `CraftCms\Cms\Element\ElementCaches::setCacheExpiryDate()` should be used instead.
+  - Deprecated `craft\services\Elements::collectCacheInfoForElement()`. `CraftCms\Cms\Element\ElementCaches::collectCacheInfoForElement()` should be used instead.
+  - Deprecated `craft\services\Elements::stopCollectingCacheInfo()`. `CraftCms\Cms\Element\ElementCaches::stopCollectingCacheInfo()` should be used instead.
+  - Deprecated `craft\services\Elements::invalidateAllCaches()`. `CraftCms\Cms\Element\ElementCaches::invalidateAll()` should be used instead.
+  - Deprecated `craft\services\Elements::invalidateCachesForElementType()`. `CraftCms\Cms\Element\ElementCaches::invalidateForElementType()` should be used instead.
+  - Deprecated `craft\services\Elements::invalidateCachesForElement()`. `CraftCms\Cms\Element\ElementCaches::invalidateForElement()` should be used instead.
 - Added `CraftCms\Cms\Element\BulkOp\BulkOps`, `CraftCms\Cms\Element\BulkOp\BulkOpDeferrals`, and `CraftCms\Cms\Support\Facades\BulkOps`.
-    - Deprecated `craft\services\Elements::getBulkOpKeys()`. `CraftCms\Cms\Element\BulkOp\BulkOps::activeKeys()` should be used instead.
-    - Deprecated `craft\services\Elements::beginBulkOp()`. `CraftCms\Cms\Element\BulkOp\BulkOps::start()` should be used instead.
-    - Deprecated `craft\services\Elements::resumeBulkOp()`. `CraftCms\Cms\Element\BulkOp\BulkOps::resume()` should be used instead.
-    - Deprecated `craft\services\Elements::endBulkOp()`. `CraftCms\Cms\Element\BulkOp\BulkOps::end()` should be used instead.
-    - Deprecated `craft\services\Elements::trackElementInBulkOps()`. `CraftCms\Cms\Element\BulkOp\BulkOps::trackElement()` should be used instead.
-    - Deprecated `craft\services\Elements::ensureBulkOp()`. `CraftCms\Cms\Element\BulkOp\BulkOps::ensure()` should be used instead.
-    - Deprecated `craft\events\BulkOpEvent::defer()`. `CraftCms\Cms\Element\BulkOp\BulkOps::defer()` should be used instead.
+  - Deprecated `craft\services\Elements::getBulkOpKeys()`. `CraftCms\Cms\Element\BulkOp\BulkOps::activeKeys()` should be used instead.
+  - Deprecated `craft\services\Elements::beginBulkOp()`. `CraftCms\Cms\Element\BulkOp\BulkOps::start()` should be used instead.
+  - Deprecated `craft\services\Elements::resumeBulkOp()`. `CraftCms\Cms\Element\BulkOp\BulkOps::resume()` should be used instead.
+  - Deprecated `craft\services\Elements::endBulkOp()`. `CraftCms\Cms\Element\BulkOp\BulkOps::end()` should be used instead.
+  - Deprecated `craft\services\Elements::trackElementInBulkOps()`. `CraftCms\Cms\Element\BulkOp\BulkOps::trackElement()` should be used instead.
+  - Deprecated `craft\services\Elements::ensureBulkOp()`. `CraftCms\Cms\Element\BulkOp\BulkOps::ensure()` should be used instead.
+  - Deprecated `craft\events\BulkOpEvent::defer()`. `CraftCms\Cms\Element\BulkOp\BulkOps::defer()` should be used instead.
 - Added `CraftCms\Cms\Element\ElementActivity`, `CraftCms\Cms\Element\Data\ElementActivity`, `CraftCms\Cms\Element\Enums\ElementActivityType`, and `CraftCms\Cms\Support\Facades\ElementActivity`.
-    - Deprecated `craft\services\Elements::getRecentActivity()`. `CraftCms\Cms\Element\ElementActivity::getRecentActivity()` should be used instead.
-    - Deprecated `craft\services\Elements::trackActivity()`. `CraftCms\Cms\Element\ElementActivity::trackActivity()` should be used instead.
+  - Deprecated `craft\services\Elements::getRecentActivity()`. `CraftCms\Cms\Element\ElementActivity::getRecentActivity()` should be used instead.
+  - Deprecated `craft\services\Elements::trackActivity()`. `CraftCms\Cms\Element\ElementActivity::trackActivity()` should be used instead.
 - Added `CraftCms\Cms\Element\Actions\ElementAction`, `CraftCms\Cms\Element\ElementActions`, `CraftCms\Cms\Element\Contracts\DeleteActionInterface`, `CraftCms\Cms\Element\Contracts\ElementActionInterface`, `CraftCms\Cms\Element\Events\ElementActionPerformed`, `CraftCms\Cms\Element\Events\ElementActionPerforming`, `CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController`, and `CraftCms\Cms\Support\Facades\ElementActions`.
 - Added Laravel-native element action classes under `CraftCms\Cms\Element\Actions`, `CraftCms\Cms\Asset\Actions`, `CraftCms\Cms\Entry\Actions`, and `CraftCms\Cms\User\Actions`.
 - Added `CraftCms\Cms\Element\ElementExporters`, `CraftCms\Cms\Element\Contracts\ElementExporterInterface`, `CraftCms\Cms\Element\Exporters\ElementExporter`, `CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ExportElementIndexController`, and `CraftCms\Cms\Support\Facades\ElementExporters`.
@@ -472,11 +472,11 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Added `CraftCms\Cms\Element\Validation\Events\ValidationRulesResolving` event for plugins to modify element validation rules.
 - Added `CraftCms\Cms\Element\Validation\Rules\ElementUriRule` for validating element URIs.
 - Added element-specific ruleset classes:
-    - `CraftCms\Cms\Address\Validation\AddressRules`
-    - `CraftCms\Cms\Asset\Validation\AssetRules`
-    - `CraftCms\Cms\Entry\Validation\EntryRules`
-    - `CraftCms\Cms\User\Validation\UserRules`
-    - `CraftCms\Cms\Field\Elements\ContentBlockRules`
+  - `CraftCms\Cms\Address\Validation\AddressRules`
+  - `CraftCms\Cms\Asset\Validation\AssetRules`
+  - `CraftCms\Cms\Entry\Validation\EntryRules`
+  - `CraftCms\Cms\User\Validation\UserRules`
+  - `CraftCms\Cms\Field\Elements\ContentBlockRules`
 - Added `CraftCms\Cms\Asset\Validation\Rules\AssetLocationRule` for validating asset locations.
 - Added `CraftCms\Cms\User\Validation\Rules\UserPasswordRule` for validating user passwords.
 - Added `CraftCms\Cms\User\Validation\Rules\UsernameRule` for validating usernames.
@@ -533,19 +533,19 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Deprecated `craft\records\Entry`. `CraftCms\Cms\Entry\Models\Entry` should be used instead.
 - Deprecated `craft\errors\EntryTypeNotFoundException`. `CraftCms\Cms\Entry\Exceptions\EntryTypeNotFoundException` should be used instead.
 - Deprecated `craft\events\EntryTypeEvent`. One of these should be used instead:
-    - `craft\services\Entries::EVENT_BEFORE_DELETE_ENTRY_TYPE` => `CraftCms\Cms\Section\Events\DeletingEntryType`
-    - `craft\services\Entries::EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE` => `CraftCms\Cms\Entry\Events\ApplyingEntryTypeDelete`
-    - `craft\services\Entries::EVENT_AFTER_DELETE_ENTRY_TYPE` => `CraftCms\Cms\Entry\Events\EntryTypeDeleted`
-    - `craft\services\Entries::EVENT_BEFORE_SAVE_ENTRY_TYPE` => `CraftCms\Cms\Entry\Events\EntryTypeSaving`
-    - `craft\services\Entries::EVENT_AFTER_SAVE_ENTRY_TYPE` => `CraftCms\Cms\Entry\Events\EntryTypeSaved`
+  - `craft\services\Entries::EVENT_BEFORE_DELETE_ENTRY_TYPE` => `CraftCms\Cms\Section\Events\DeletingEntryType`
+  - `craft\services\Entries::EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE` => `CraftCms\Cms\Entry\Events\ApplyingEntryTypeDelete`
+  - `craft\services\Entries::EVENT_AFTER_DELETE_ENTRY_TYPE` => `CraftCms\Cms\Entry\Events\EntryTypeDeleted`
+  - `craft\services\Entries::EVENT_BEFORE_SAVE_ENTRY_TYPE` => `CraftCms\Cms\Entry\Events\EntryTypeSaving`
+  - `craft\services\Entries::EVENT_AFTER_SAVE_ENTRY_TYPE` => `CraftCms\Cms\Entry\Events\EntryTypeSaved`
 - Removed `craft\controllers\EntriesController`. The following controllers now implement this functionality:
-    - `CraftCms\Cms\Http\Controllers\Entries\CreateEntryController`
-    - `CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController`
-    - `CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController`
-    - `CraftCms\Cms\Http\Controllers\Entries\StoreEntryController`
+  - `CraftCms\Cms\Http\Controllers\Entries\CreateEntryController`
+  - `CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController`
+  - `CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController`
+  - `CraftCms\Cms\Http\Controllers\Entries\StoreEntryController`
 - Removed `craft\controllers\EntryTypesController` in favor of `CraftCms\Cms\Http\Controllers\EntryTypesController`
 - Removed `craft\console\controllers\EntryTypesController` in favor of:
-    - `CraftCms\Cms\Entry\Commands\MergeEntryTypesCommand`
+  - `CraftCms\Cms\Entry\Commands\MergeEntryTypesCommand`
 
 ### Component
 
@@ -718,12 +718,12 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
 - Deprecated `craft\db\MigrationManager`
 - Removed `craft\helpers\MigrationHelper` as it was deprecated since 4.0.0.
 - Removed `craft\console\controllers\InstallController` in favor of:
-    - `CraftCms\Cms\Console\Commands\InstallCommand`
-    - `CraftCms\Cms\Console\Commands\InstallCheckCommand`
+  - `CraftCms\Cms\Console\Commands\InstallCommand`
+  - `CraftCms\Cms\Console\Commands\InstallCheckCommand`
 - Removed `craft\console\controllers\MigrateController` in favor of:
-    - `CraftCms\Cms\Database\Commands\MigrateCommand`
+  - `CraftCms\Cms\Database\Commands\MigrateCommand`
 - Removed `craft\console\controllers\UpController` in favor of:
-    - `CraftCms\Cms\Console\Commands\UpCommand`
+  - `CraftCms\Cms\Console\Commands\UpCommand`
 
 ### Plugins
 
@@ -744,28 +744,28 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
 
 #### Commands
 - Removed `craft\console\controllers\PluginController` in favor of:
-    - `CraftCms\Cms\Plugin\Commands\DisableCommand` -> `php craft plugin:disable`
-    - `CraftCms\Cms\Plugin\Commands\EnableCommand` -> `php craft plugin:enable`
-    - `CraftCms\Cms\Plugin\Commands\InstallCommand` -> `php craft plugin:install`
-    - `CraftCms\Cms\Plugin\Commands\UninstallCommand` -> `php craft plugin:uninstall`
-    - `CraftCms\Cms\Plugin\Commands\ListCommand` -> `php craft plugin:list`
+  - `CraftCms\Cms\Plugin\Commands\DisableCommand` -> `php craft plugin:disable`
+  - `CraftCms\Cms\Plugin\Commands\EnableCommand` -> `php craft plugin:enable`
+  - `CraftCms\Cms\Plugin\Commands\InstallCommand` -> `php craft plugin:install`
+  - `CraftCms\Cms\Plugin\Commands\UninstallCommand` -> `php craft plugin:uninstall`
+  - `CraftCms\Cms\Plugin\Commands\ListCommand` -> `php craft plugin:list`
 
 #### Events
 - Deprecated `craft\events\PluginEvent` in favor of the following new events:
-    - `craft\base\Plugin::EVENT_BEFORE_SAVE_SETTINGS` => `CraftCms\Cms\Component\Events\ComponentEvent`
-    - `craft\base\Plugin::EVENT_AFTER_SAVE_SETTINGS` => `CraftCms\Cms\Component\Events\ComponentEvent`
-    - `craft\services\Plugins::EVENT_BEFORE_DISABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginDisabling`;
-    - `craft\services\Plugins::EVENT_BEFORE_ENABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginEnabling`;
-    - `craft\services\Plugins::EVENT_BEFORE_INSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginInstalling`;
-    - `craft\services\Plugins::EVENT_BEFORE_LOAD_PLUGINS` => `CraftCms\Cms\Plugin\Events\PluginsLoading`;
-    - `craft\services\Plugins::EVENT_BEFORE_SAVE_PLUGIN_SETTINGS` => `CraftCms\Cms\Plugin\Events\SavingPluginSettings`;
-    - `craft\services\Plugins::EVENT_BEFORE_UNINSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginUninstalling`;
-    - `craft\services\Plugins::EVENT_AFTER_DISABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginDisabled`;
-    - `craft\services\Plugins::EVENT_AFTER_ENABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginEnabled`;
-    - `craft\services\Plugins::EVENT_AFTER_INSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginInstalled`;
-    - `craft\services\Plugins::EVENT_AFTER_LOAD_PLUGINS` => `CraftCms\Cms\Plugin\Events\PluginsLoaded`;
-    - `craft\services\Plugins::EVENT_AFTER_SAVE_PLUGIN_SETTINGS` => `CraftCms\Cms\Plugin\Events\PluginSettingsSaved`;
-    - `craft\services\Plugins::EVENT_AFTER_UNINSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginUninstalled`;
+  - `craft\base\Plugin::EVENT_BEFORE_SAVE_SETTINGS` => `CraftCms\Cms\Component\Events\ComponentEvent`
+  - `craft\base\Plugin::EVENT_AFTER_SAVE_SETTINGS` => `CraftCms\Cms\Component\Events\ComponentEvent`
+  - `craft\services\Plugins::EVENT_BEFORE_DISABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginDisabling`;
+  - `craft\services\Plugins::EVENT_BEFORE_ENABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginEnabling`;
+  - `craft\services\Plugins::EVENT_BEFORE_INSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginInstalling`;
+  - `craft\services\Plugins::EVENT_BEFORE_LOAD_PLUGINS` => `CraftCms\Cms\Plugin\Events\PluginsLoading`;
+  - `craft\services\Plugins::EVENT_BEFORE_SAVE_PLUGIN_SETTINGS` => `CraftCms\Cms\Plugin\Events\SavingPluginSettings`;
+  - `craft\services\Plugins::EVENT_BEFORE_UNINSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginUninstalling`;
+  - `craft\services\Plugins::EVENT_AFTER_DISABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginDisabled`;
+  - `craft\services\Plugins::EVENT_AFTER_ENABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginEnabled`;
+  - `craft\services\Plugins::EVENT_AFTER_INSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginInstalled`;
+  - `craft\services\Plugins::EVENT_AFTER_LOAD_PLUGINS` => `CraftCms\Cms\Plugin\Events\PluginsLoaded`;
+  - `craft\services\Plugins::EVENT_AFTER_SAVE_PLUGIN_SETTINGS` => `CraftCms\Cms\Plugin\Events\PluginSettingsSaved`;
+  - `craft\services\Plugins::EVENT_AFTER_UNINSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginUninstalled`;
 
 ### Request
 
@@ -795,9 +795,9 @@ Moved the following controllers:
 - `craft\controllers\UpdaterController` => `CraftCms\Cms\Http\Controllers\Updates\UpdaterController`
 - `craft\controllers\UpdatesController` => `CraftCms\Cms\Http\Controllers\Updates\UpdatesController`
 - `craft\console\controllers\UpdateController` in favor of these commands:
-    - `CraftCms\Cms\Update\Commands\UpdateCommand`
-    - `CraftCms\Cms\Update\Commands\ComposerInstallCommand`
-    - `CraftCms\Cms\Update\Commands\InfoCommand`
+  - `CraftCms\Cms\Update\Commands\UpdateCommand`
+  - `CraftCms\Cms\Update\Commands\ComposerInstallCommand`
+  - `CraftCms\Cms\Update\Commands\InfoCommand`
 
 ##### Deprecations & removals
 - Deprecated `craft\helpers\Install`. `CraftCms\Cms\Site\Concerns\SiteDefaults` should be used instead.
@@ -810,45 +810,45 @@ Moved the following controllers:
 #### Users
 
 - Removed `craft\console\controllers\UsersController` in favor of the following commands (signatures are the same):
-    - `CraftCms\Cms\User\Commands\ActivationUrlCommand`
-    - `CraftCms\Cms\User\Commands\CreateCommand`
-    - `CraftCms\Cms\User\Commands\DeleteCommand`
-    - `CraftCms\Cms\User\Commands\ImpersonateCommand`
-    - `CraftCms\Cms\User\Commands\ListAdminsCommand`
-    - `CraftCms\Cms\User\Commands\LogoutAllCommand`
-    - `CraftCms\Cms\User\Commands\PasswordResetUrlCommand`
-    - `CraftCms\Cms\User\Commands\Remove2faCommand`
-    - `CraftCms\Cms\User\Commands\SetPasswordCommand`
-    - `CraftCms\Cms\User\Commands\UnlockCommand`
+  - `CraftCms\Cms\User\Commands\ActivationUrlCommand`
+  - `CraftCms\Cms\User\Commands\CreateCommand`
+  - `CraftCms\Cms\User\Commands\DeleteCommand`
+  - `CraftCms\Cms\User\Commands\ImpersonateCommand`
+  - `CraftCms\Cms\User\Commands\ListAdminsCommand`
+  - `CraftCms\Cms\User\Commands\LogoutAllCommand`
+  - `CraftCms\Cms\User\Commands\PasswordResetUrlCommand`
+  - `CraftCms\Cms\User\Commands\Remove2faCommand`
+  - `CraftCms\Cms\User\Commands\SetPasswordCommand`
+  - `CraftCms\Cms\User\Commands\UnlockCommand`
 
 ### Project Config
 
 - Deprecated `craft\services\ProjectConfig`. `CraftCms\Cms\ProjectConfig\ProjectConfig` should be used instead.
 - Removed `craft\controllers\ProjectConfigController` in favor of `CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController`
 - Removed `craft\console\controllers\PcController` & `craft\console\controllers\ProjectConfigController` in favor of the following commands:
-    - `CraftCms\Cms\ProjectConfig\Commands\ApplyCommand`
-    - `CraftCms\Cms\ProjectConfig\Commands\DiffCommand`
-    - `CraftCms\Cms\ProjectConfig\Commands\ExportCommand`
-    - `CraftCms\Cms\ProjectConfig\Commands\GetCommand`
-    - `CraftCms\Cms\ProjectConfig\Commands\RebuildCommand`
-    - `CraftCms\Cms\ProjectConfig\Commands\RemoveCommand`
-    - `CraftCms\Cms\ProjectConfig\Commands\SetCommand`
-    - `CraftCms\Cms\ProjectConfig\Commands\TouchCommand`
-    - `CraftCms\Cms\ProjectConfig\Commands\WriteCommand`
-    - All commands can be called using either `php craft project-config` or `php craft pc`
+  - `CraftCms\Cms\ProjectConfig\Commands\ApplyCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\DiffCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\ExportCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\GetCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\RebuildCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\RemoveCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\SetCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\TouchCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\WriteCommand`
+  - All commands can be called using either `php craft project-config` or `php craft pc`
 - Deprecated `craft\events\ConfigEvent` in favor of the following events:
-    - `CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemAdding`
-    - `CraftCms\Cms\ProjectConfig\Events\ItemAdded`
-    - `CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemUpdated`
-    - `CraftCms\Cms\ProjectConfig\Events\ItemUpdated`
-    - `CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemRemoved`
-    - `CraftCms\Cms\ProjectConfig\Events\ItemRemoved`
+  - `CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemAdding`
+  - `CraftCms\Cms\ProjectConfig\Events\ItemAdded`
+  - `CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemUpdated`
+  - `CraftCms\Cms\ProjectConfig\Events\ItemUpdated`
+  - `CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemRemoved`
+  - `CraftCms\Cms\ProjectConfig\Events\ItemRemoved`
 - Deprecated `craft\services\ProjectConfig::EVENT_AFTER_APPLY_CHANGES`
-    - Added `CraftCms\Cms\ProjectConfig\Events\ChangesApplied`
+  - Added `CraftCms\Cms\ProjectConfig\Events\ChangesApplied`
 - Deprecated `craft\services\ProjectConfig::EVENT_AFTER_WRITE_YAML_FILES`
 - Added `CraftCms\Cms\ProjectConfig\Events\YamlFilesWritten`
 - Deprecated `craft\services\ProjectConfig::EVENT_REBUILD`
-    - Added `CraftCms\Cms\ProjectConfig\Events\ProjectConfigRebuilt`
+  - Added `CraftCms\Cms\ProjectConfig\Events\ProjectConfigRebuilt`
 - Removed `craft\errors\BusyResourceException` in favor of `CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException`
 - Removed `craft\errors\StaleResourceException` in favor of `CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException`
 - Added `CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException`
@@ -876,9 +876,9 @@ Moved the following controllers:
 - Deprecated `craft\search\SearchQueryTerm`. `CraftCms\Cms\Search\SearchQueryTerm` should be used instead.
 - Deprecated `craft\search\SearchQueryTermGroup`. `CraftCms\Cms\Search\SearchQueryTermGroup` should be used instead.
 - Deprecated `craft\events\SearchEvent` in favor of the following new events:
-    - `craft\services\Search::EVENT_BEFORE_SEARCH` => `CraftCms\Cms\Search\Events\SearchStarting`
-    - `craft\services\Search::EVENT_AFTER_SEARCH` => `CraftCms\Cms\Search\Events\SearchPerformed`
-    - `craft\services\Search::EVENT_BEFORE_SCORE_RESULTS` => `CraftCms\Cms\Search\Events\ScoringResults`
+  - `craft\services\Search::EVENT_BEFORE_SEARCH` => `CraftCms\Cms\Search\Events\SearchStarting`
+  - `craft\services\Search::EVENT_AFTER_SEARCH` => `CraftCms\Cms\Search\Events\SearchPerformed`
+  - `craft\services\Search::EVENT_BEFORE_SCORE_RESULTS` => `CraftCms\Cms\Search\Events\ScoringResults`
 - Deprecated `craft\events\IndexKeywordsEvent`. `CraftCms\Cms\Search\Events\KeywordsIndexing` should be used instead.
 
 ### Sections
@@ -890,15 +890,15 @@ Moved the following controllers:
 - Deprecated `craft\models\Section_SiteSettings`. `CraftCms\Cms\Section\Data\SectionSiteSettings` should be used instead.
 - Deprecated `craft\records\Section_SiteSettings`. `CraftCms\Cms\Section\Models\SectionSiteSettings` should be used instead.
 - Deprecated `craft\events\SectionEvent`. One of these should be used instead:
-    - `craft\services\Entries::EVENT_BEFORE_DELETE_SECTION` => `CraftCms\Cms\Section\Events\SectionDeleting`
-    - `craft\services\Entries::EVENT_BEFORE_APPLY_SECTION_DELETE` => `CraftCms\Cms\Section\Events\SectionDeletionApplying`
-    - `craft\services\Entries::EVENT_AFTER_DELETE_SECTION` => `CraftCms\Cms\Section\Events\SectionDeleted`
-    - `craft\services\Entries::EVENT_BEFORE_SAVE_SECTION` => `CraftCms\Cms\Section\Events\SectionSaving`
-    - `craft\services\Entries::EVENT_AFTER_SAVE_SECTION` => `CraftCms\Cms\Section\Events\SectionSaved`
+  - `craft\services\Entries::EVENT_BEFORE_DELETE_SECTION` => `CraftCms\Cms\Section\Events\SectionDeleting`
+  - `craft\services\Entries::EVENT_BEFORE_APPLY_SECTION_DELETE` => `CraftCms\Cms\Section\Events\SectionDeletionApplying`
+  - `craft\services\Entries::EVENT_AFTER_DELETE_SECTION` => `CraftCms\Cms\Section\Events\SectionDeleted`
+  - `craft\services\Entries::EVENT_BEFORE_SAVE_SECTION` => `CraftCms\Cms\Section\Events\SectionSaving`
+  - `craft\services\Entries::EVENT_AFTER_SAVE_SECTION` => `CraftCms\Cms\Section\Events\SectionSaved`
 - Removed `craft\controllers\SectionsController` in favor of `CraftCms\Cms\Http\Controllers\SectionsController`
 - Removed `craft\console\controllers\SectionsController` in favor of:
-    - `CraftCms\Cms\Section\Commands\CreateCommand`
-    - `CraftCms\Cms\Section\Commands\DeleteCommand`
+  - `CraftCms\Cms\Section\Commands\CreateCommand`
+  - `CraftCms\Cms\Section\Commands\DeleteCommand`
 - Added `CraftCms\Cms\Section\Enums\DefaultPlacement`
 - Added `CraftCms\Cms\Section\Enums\SectionType`
 - Deprecated `craft\errors\SectionNotFoundException`. `CraftCms\Cms\Section\Exceptions\SectionNotFoundException` should be used instead.
@@ -918,8 +918,8 @@ Moved the following controllers:
 - Deprecated `craft\errors\SiteGroupNotFoundException`.
 
 - Removed `craft\controllers\SitesController` in favor of:
-    - `CraftCms\Cms\Http\Controllers\Settings\SitesController`
-    - `CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController`
+  - `CraftCms\Cms\Http\Controllers\Settings\SitesController`
+  - `CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController`
 
 ### Structures
 
@@ -929,8 +929,8 @@ Moved the following controllers:
 - Deprecated `craft\records\StructureElement`. `CraftCms\Cms\Structure\Models\StructureElement` should be used instead.
 - Replaced `craft\controllers\StructuresController`. `CraftCms\Cms\Http\Controllers\StructuresController`.
 - Replaced structure related commands in `craft\console\controllers\RepairController` with:
-    - `\CraftCms\Cms\Structure\Commands\RepairCategoryGroupStructureCommand`
-    - `\CraftCms\Cms\Structure\Commands\RepairSectionStructureCommand`
+  - `\CraftCms\Cms\Structure\Commands\RepairCategoryGroupStructureCommand`
+  - `\CraftCms\Cms\Structure\Commands\RepairSectionStructureCommand`
 
 ### System Messages
 
@@ -1012,18 +1012,18 @@ Moved the following controllers:
 - Removed `verificationCode` and `verificationCodeIssuedDate` columns on the `users` table in favor of the `password_reset_tokens` table.
 - Deprecated `craft\services\Users::isVerificationCodeValidForUser()`. `Password::broker('craft')->tokenExists($user, $code)` should be used instead.
 - Removed `craft\controllers\UsersController` in favor of:
-    - `CraftCms\Cms\Http\Controllers\Users\ActivateController`.
-    - `CraftCms\Cms\Http\Controllers\Users\PasswordController`.
-    - `CraftCms\Cms\Http\Controllers\Users\SaveUserController`.
+  - `CraftCms\Cms\Http\Controllers\Users\ActivateController`.
+  - `CraftCms\Cms\Http\Controllers\Users\PasswordController`.
+  - `CraftCms\Cms\Http\Controllers\Users\SaveUserController`.
 - Removed `\craft\controllers\UserSettingsController` in favor of:
-    - `CraftCms\Cms\Http\Controllers\Settings\UserGroupsController`
-    - `CraftCms\Cms\Http\Controllers\Settings\UserSettingsController`
+  - `CraftCms\Cms\Http\Controllers\Settings\UserGroupsController`
+  - `CraftCms\Cms\Http\Controllers\Settings\UserSettingsController`
 - Deprecated `UserGroupEvent` in favor of:
-    - `CraftCms\Cms\User\Events\UserGroupSaving`
-    - `CraftCms\Cms\User\Events\UserGroupSaved`
-    - `CraftCms\Cms\User\Events\UserGroupDeletionApplying`
-    - `CraftCms\Cms\User\Events\UserGroupDeleting`
-    - `CraftCms\Cms\User\Events\UserGroupDeleted`
+  - `CraftCms\Cms\User\Events\UserGroupSaving`
+  - `CraftCms\Cms\User\Events\UserGroupSaved`
+  - `CraftCms\Cms\User\Events\UserGroupDeletionApplying`
+  - `CraftCms\Cms\User\Events\UserGroupDeleting`
+  - `CraftCms\Cms\User\Events\UserGroupDeleted`
 - Deprecated `\craft\exceptions\UserGroupNotFoundException`.
 - Deprecated `\craft\services\UserGroups`. `CraftCms\Cms\User\UserGroups` should be used instead.
 - Deprecated `\craft\models\UserGroup`. `CraftCms\Cms\User\Data\UserGroup` should be used instead.
