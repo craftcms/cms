@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\Facades\Users;
+use Illuminate\Database\SQLiteDatabaseDoesNotExistException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Context;
@@ -149,7 +150,7 @@ readonly class Cms
 
         try {
             DB::connection()->getPdo();
-        } catch (PDOException $e) {
+        } catch (PDOException|SQLiteDatabaseDoesNotExistException $e) {
             if (! app()->runningInConsole()) {
                 Log::error('There was a problem connecting to the database: '.$e->getMessage(), [__METHOD__]);
                 report($e);
