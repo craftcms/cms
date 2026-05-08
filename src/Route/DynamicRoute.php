@@ -44,6 +44,7 @@ class DynamicRoute
     private function renderTemplate(Request $request, array $variables = []): string
     {
         $template = Arr::pull($this->params, 'template');
+        $publicOnly = Arr::pull($this->params, 'publicOnly', true);
 
         foreach (TemplateMode::get()->defaultTemplateExtensions() as $extension) {
             $template = Str::beforeLast($template, ".$extension");
@@ -51,7 +52,7 @@ class DynamicRoute
 
         abort_if(Cms::config()->headlessMode && $request->isSiteRequest(), 404);
 
-        $resolvedTemplate = app(TemplateResolver::class)->resolve($template, publicOnly: true);
+        $resolvedTemplate = app(TemplateResolver::class)->resolve($template, publicOnly: $publicOnly);
 
         if ($resolvedTemplate === false) {
             if (app()->hasDebugModeEnabled()) {
