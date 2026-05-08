@@ -13,7 +13,6 @@ use craft\mail\transportadapters\Gmail;
 use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\Smtp;
 use craft\mail\transportadapters\TransportAdapterInterface;
-use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Security;
@@ -90,7 +89,7 @@ class MailerHelper
         }
 
         try {
-            $component = ComponentHelper::createComponent([
+            $component = Component::createComponent([
                 'type' => $type,
             ], TransportAdapterInterface::class);
         } catch (MissingComponentException) {
@@ -98,6 +97,8 @@ class MailerHelper
         }
 
         if ($settings) {
+            $settings = Component::cleanseConfig($settings);
+
             if ($component instanceof Model) {
                 $component->setAttributes($settings, false);
             } else {

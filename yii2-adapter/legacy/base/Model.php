@@ -38,6 +38,7 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
 {
     use ClonefixTrait;
     use HasRuleset;
+    use RejectsUnsafeConfigKeys;
 
     /**
      * @event \yii\base\Event The event that is triggered after the model's init cycle
@@ -93,6 +94,16 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
 
         // Intentionally not passing $config along
         parent::__construct();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function __set($name, $value)
+    {
+        $this->ensureConfigKeyIsSafe($name);
+
+        parent::__set($name, $value);
     }
 
     /**
