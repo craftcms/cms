@@ -111,6 +111,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public const EVENT_AFTER_POPULATE_ELEMENTS = 'afterPopulateElements';
 
+    /**
+     * The current element query instance being prepared, for reference by fields’ `queryCondition()` methods.
+     *
+     * @since 5.10.0
+     */
+    public static ?self $activeQuery = null;
+
     // Base config attributes
     // -------------------------------------------------------------------------
 
@@ -2846,7 +2853,12 @@ class ElementQuery extends Query implements ElementQueryInterface
                 if (isset($fieldsByHandle[$handle])) {
                     foreach ($fieldsByHandle[$handle] as $instances) {
                         $firstInstance = $instances[0];
-                        $condition = $firstInstance::queryCondition($instances, $fieldAttributes->$handle, $params);
+                        static::$activeQuery = $this;
+                        try {
+                            $condition = $firstInstance::queryCondition($instances, $fieldAttributes->$handle, $params);
+                        } finally {
+                            static::$activeQuery = null;
+                        }
 
                         // aborting?
                         if ($condition === false) {
