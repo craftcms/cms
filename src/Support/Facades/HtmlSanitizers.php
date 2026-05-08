@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static void register(string $name, array|\Closure|\Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface $definition)
+ * @method static void register(string $name, \Closure|\Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface|array $definition)
  * @method static void defaults(\Closure $callback)
  * @method static bool has(string $name)
  * @method static \Illuminate\Support\Collection<string, \Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface> all()
