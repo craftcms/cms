@@ -730,13 +730,10 @@ class Sites extends Component
             ]));
         }
 
-        $originalSiteName = trim($site->getName(false));
         if ($runValidation && !$site->validate()) {
             Craft::info('Site not saved due to validation error.', __METHOD__);
             return false;
         }
-        // if we passed validation, set the site name to what it was before validation parsed it
-        $site->setName($originalSiteName);
 
         if ($isNewSite) {
             $site->uid = StringHelper::UUID();
