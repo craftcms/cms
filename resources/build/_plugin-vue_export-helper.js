@@ -855,6 +855,16 @@ import{n as e}from"./rolldown-runtime.js";import{t}from"./decorate-EVKP5RjP.js";
     border: 0; /* reset default agent styles */
   `,e}var ti=class extends Qr{get _nativeButtonNode(){return $r.get(this._form)?.helper||null}constructor(){super(),this.type=`submit`,this.__implicitSubmitHelperButton=null}_setupSubmitAndResetHelperOnConnected(){if(super._setupSubmitAndResetHelperOnConnected(),!this._form||this.type!==`submit`)return;let e=this._form;if(!$r.get(this._form)){let t=ei(),n=document.createElement(`div`);n.appendChild(t),$r.set(this._form,{lionButtons:new Set,helper:t,observer:new MutationObserver(()=>{e.appendChild(n)})}),e.appendChild(n),$r.get(e)?.observer.observe(n,{childList:!0})}$r.get(e)?.lionButtons.add(this)}_teardownSubmitAndResetHelperOnDisconnected(){if(super._teardownSubmitAndResetHelperOnDisconnected(),this._form){let e=$r.get(this._form);e&&(e.lionButtons.delete(this),e.lionButtons.size||(this._form.contains(e.helper)&&e.helper.remove(),$r.get(this._form)?.observer.disconnect(),$r.delete(this._form)))}}},ni=a`
   :host {
+    /* Colorable styles */
+    --button-border-color: var(--c-color-border-loud);
+    --button-foreground-color: var(--c-color-on-loud);
+    --button-background-color-default: var(--c-color-fill-loud);
+    --button-background-color-hover: color-mix(
+      in oklab,
+      var(--c-color-fill-loud, var(--c-button-default-fill)),
+      var(--c-color-mix-hover)
+    );
+
     cursor: pointer;
     font: inherit;
     display: inline-flex;
@@ -873,23 +883,15 @@ import{n as e}from"./rolldown-runtime.js";import{t}from"./decorate-EVKP5RjP.js";
     white-space: nowrap;
 
     /* Colorable styles */
-    color: var(--button-foreground-color, var(--c-color-on-loud));
+    color: var(--button-foreground-color);
     border-width: var(--c-button-border-width, 1px);
     border-style: var(--c-button-border-style, solid);
-    border-color: var(--button-border-color, var(--c-color-border-loud));
-    background-color: var(
-      --button-background-color-default,
-      var(--c-color-fill-loud)
-    );
+    border-color: var(--button-border-color);
+    background-color: var(--button-background-color-default);
   }
 
   @media (hover: hover) {
     :host(:hover) {
-      --button-background-color-hover: color-mix(
-        in oklab,
-        var(--c-color-fill-loud, var(--c-button-default-fill)),
-        var(--c-color-mix-hover)
-      );
       background-color: var(--button-background-color-hover);
       color: var(--c-color-on-loud);
     }
@@ -1018,15 +1020,14 @@ import{n as e}from"./rolldown-runtime.js";import{t}from"./decorate-EVKP5RjP.js";
     );
   }
 
-  /* Dashed */
-  :host([appearance~='dashed']) {
+  /* Secondary */
+  :host([variant~='secondary']) {
     background-color: transparent;
     border-color: var(--c-color-border-normal);
-    border-style: dashed;
     color: var(--c-color-on-quiet);
   }
 
-  :host([appearance~='dashed']:hover) {
+  :host([appearance~='secondary']:hover) {
     background-color: color-mix(
       in oklab,
       var(--c-color-fill-quiet, var(--c-button-default-fill)),
@@ -1035,7 +1036,7 @@ import{n as e}from"./rolldown-runtime.js";import{t}from"./decorate-EVKP5RjP.js";
     color: var(--c-color-on-quiet);
   }
 
-  :host([appearance~='dashed']:active) {
+  :host([appearance~='secondary']:active) {
     color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
     background-color: color-mix(
       in oklab,
@@ -1047,25 +1048,8 @@ import{n as e}from"./rolldown-runtime.js";import{t}from"./decorate-EVKP5RjP.js";
   /*
   Variants (aka fill colors) 
    */
-  :host([variant~='danger']) {
-    --button-background-color-default: var(--c-danger-static-color);
-    --button-background-color-hover: var(--c-danger-static-color-darker);
-    --button-foreground-color: var(--c-danger-static-color-foreground);
-  }
-
-  :host([variant~='primary']) {
-    --button-background-color-default: var(--c-brand-static-color);
-    --button-background-color-hover: var(--c-brand-static-color-darker);
-    --button-foreground-color: var(--c-brand-static-color-foreground);
-  }
-
-  :host([variant~='default']) {
-    --button-background-color-default: var(--c-neutral-static-color);
-    --button-background-color-hover: var(--c-neutral-static-color-darker);
-    --button-foreground-color: var(--c-neutral-static-color-foreground);
-  }
-
-  :host([variant~='primary']) {
+  :host([variant~='primary']),
+  :host([variant~='secondary']) {
     --c-color-fill-loud: var(--c-color-brand-fill-loud);
     --c-color-fill-normal: var(--c-color-brand-fill-normal);
     --c-color-fill-quiet: var(--c-color-brand-fill-quiet);

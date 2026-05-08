@@ -6,6 +6,8 @@ import './button.js';
 import '../icon/icon.js';
 import '../chip/chip.js';
 
+const buttonVariants = ['primary', 'secondary', 'tertiary'];
+
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {
   title: 'Components/Button',
@@ -13,7 +15,15 @@ const meta = {
   parameters: {
     layout: 'centered',
   },
-  argTypes: {},
+  args: {
+    label: 'Button',
+    destructive: false,
+  },
+  argTypes: {
+    destructive: {
+      control: {type: 'boolean'},
+    },
+  },
   render: (args) => html`
     <div class="grid gap-4">
       ${['primary', 'default', 'danger'].map(
@@ -24,9 +34,6 @@ const meta = {
             >
             <craft-button appearance="filled" variant="${variant}"
               >${variant} filled</craft-button
-            >
-            <craft-button appearance="dashed" variant="${variant}"
-              >${variant} dashed</craft-button
             >
             <craft-button appearance="plain" variant="${variant}"
               >${variant} plain</craft-button
@@ -40,9 +47,6 @@ const meta = {
           <craft-button variant="inherit">Chip buttons</craft-button>
           <craft-button appearance="filled" variant="inherit"
             >Filled</craft-button
-          >
-          <craft-button appearance="dashed" variant="inherit"
-            >Dashed</craft-button
           >
           <craft-button appearance="plain" variant="inherit"
             >plain</craft-button
@@ -59,6 +63,21 @@ type Story = StoryObj<any>;
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
 export const Default: Story = {
   args: {},
+};
+
+export const Primary: Story = {
+  args: {
+    variant: 'primary',
+  },
+  argTypes: {
+    variant: {
+      control: {type: 'select'},
+      options: buttonVariants,
+    },
+  },
+  render: (args) => html`
+    <craft-button variant="${args.variant}">${args.label}</craft-button>
+  `,
 };
 
 export const Sizes: Story = {

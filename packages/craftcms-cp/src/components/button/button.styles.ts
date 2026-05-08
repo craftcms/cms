@@ -1,6 +1,16 @@
 import {css} from 'lit';
 export default css`
   :host {
+    /* Colorable styles */
+    --button-border-color: var(--c-color-border-loud);
+    --button-foreground-color: var(--c-color-on-loud);
+    --button-background-color-default: var(--c-color-fill-loud);
+    --button-background-color-hover: color-mix(
+      in oklab,
+      var(--c-color-fill-loud, var(--c-button-default-fill)),
+      var(--c-color-mix-hover)
+    );
+
     cursor: pointer;
     font: inherit;
     display: inline-flex;
@@ -19,23 +29,15 @@ export default css`
     white-space: nowrap;
 
     /* Colorable styles */
-    color: var(--button-foreground-color, var(--c-color-on-loud));
+    color: var(--button-foreground-color);
     border-width: var(--c-button-border-width, 1px);
     border-style: var(--c-button-border-style, solid);
-    border-color: var(--button-border-color, var(--c-color-border-loud));
-    background-color: var(
-      --button-background-color-default,
-      var(--c-color-fill-loud)
-    );
+    border-color: var(--button-border-color);
+    background-color: var(--button-background-color-default);
   }
 
   @media (hover: hover) {
     :host(:hover) {
-      --button-background-color-hover: color-mix(
-        in oklab,
-        var(--c-color-fill-loud, var(--c-button-default-fill)),
-        var(--c-color-mix-hover)
-      );
       background-color: var(--button-background-color-hover);
       color: var(--c-color-on-loud);
     }
@@ -164,15 +166,14 @@ export default css`
     );
   }
 
-  /* Dashed */
-  :host([appearance~='dashed']) {
+  /* Secondary */
+  :host([variant~='secondary']) {
     background-color: transparent;
     border-color: var(--c-color-border-normal);
-    border-style: dashed;
     color: var(--c-color-on-quiet);
   }
 
-  :host([appearance~='dashed']:hover) {
+  :host([appearance~='secondary']:hover) {
     background-color: color-mix(
       in oklab,
       var(--c-color-fill-quiet, var(--c-button-default-fill)),
@@ -181,7 +182,7 @@ export default css`
     color: var(--c-color-on-quiet);
   }
 
-  :host([appearance~='dashed']:active) {
+  :host([appearance~='secondary']:active) {
     color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
     background-color: color-mix(
       in oklab,
@@ -193,25 +194,8 @@ export default css`
   /*
   Variants (aka fill colors) 
    */
-  :host([variant~='danger']) {
-    --button-background-color-default: var(--c-danger-static-color);
-    --button-background-color-hover: var(--c-danger-static-color-darker);
-    --button-foreground-color: var(--c-danger-static-color-foreground);
-  }
-
-  :host([variant~='primary']) {
-    --button-background-color-default: var(--c-brand-static-color);
-    --button-background-color-hover: var(--c-brand-static-color-darker);
-    --button-foreground-color: var(--c-brand-static-color-foreground);
-  }
-
-  :host([variant~='default']) {
-    --button-background-color-default: var(--c-neutral-static-color);
-    --button-background-color-hover: var(--c-neutral-static-color-darker);
-    --button-foreground-color: var(--c-neutral-static-color-foreground);
-  }
-
-  :host([variant~='primary']) {
+  :host([variant~='primary']),
+  :host([variant~='secondary']) {
     --c-color-fill-loud: var(--c-color-brand-fill-loud);
     --c-color-fill-normal: var(--c-color-brand-fill-normal);
     --c-color-fill-quiet: var(--c-color-brand-fill-quiet);

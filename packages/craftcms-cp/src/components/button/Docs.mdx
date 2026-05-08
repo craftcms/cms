@@ -9,14 +9,14 @@ A button represents a clickable element that performs an action when activated.
 
 <Canvas of={ButtonStories.Default} />
 
-## Variants & Appearances
+## Appearance
 
-### Semantic Buttons
+### Hierarchy
 
-Buttons can be styled with different variants to indicate their purpose or importance. The available variants are:
+Buttons can be styled to indicate their purpose or importance. The available variants are:
 
 - `primary`: The primary button style, used for the most important actions.
-- `default`: A generic button style, used for less important actions.
-- `danger`: The danger button style, used for actions that may have negative consequences.
+- `secondary`: The secondary button style, used for less important actions.
+- `tertiary`: The tertiary button style, used for the least important actions.
 
 Semantic buttons should only be used in the primary layout containers, and not inside **Colorable** components. This is because they rely on the variant system to apply the correct colors, and using them inside of a Colorable component may cause unexpected results.
