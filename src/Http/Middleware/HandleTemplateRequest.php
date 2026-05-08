@@ -9,7 +9,6 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Route\DynamicRoute;
 use CraftCms\Cms\Site\Sites;
-use CraftCms\Cms\Support\Path;
 use CraftCms\Cms\Twig\TemplateResolver;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -71,14 +70,6 @@ readonly class HandleTemplateRequest
             return false;
         }
 
-        if ($this->templateResolver->exists($path, publicOnly: true)) {
-            return true;
-        }
-
-        if (! Path::ensurePathIsContained($path)) {
-            return false;
-        }
-
-        return view()->exists($path);
+        return $this->templateResolver->exists($path, publicOnly: true);
     }
 }

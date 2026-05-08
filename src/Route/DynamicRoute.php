@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Route;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Path;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\Twig\TemplateResolver;
@@ -52,16 +51,18 @@ class DynamicRoute
 
         abort_if(Cms::config()->headlessMode && $request->isSiteRequest(), 404);
 
-        if (Path::ensurePathIsContained($template) && view()->exists($template)) {
-            return view($template, $variables)->render();
-        }
+        $resolvedTemplate = app(TemplateResolver::class)->resolve($template, publicOnly: true);
 
-        if (app(TemplateResolver::class)->resolve($template, publicOnly: true) === false) {
+        if ($resolvedTemplate === false) {
             if (app()->hasDebugModeEnabled()) {
                 throw new TemplateLoaderException($template, "Template {$template} not found.");
             }
 
             abort(404);
+        }
+
+        if (Str::endsWith($resolvedTemplate, '.blade.php')) {
+            return view()->file($resolvedTemplate, $variables)->render();
         }
 
         return pageTemplate($template, $variables);
