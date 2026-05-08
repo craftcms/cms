@@ -7,13 +7,7 @@
 
 namespace craft\web;
 
-use Craft;
 use craft\base\ApplicationTrait;
-use craft\debug\DeprecatedPanel;
-use craft\debug\DumpPanel;
-use craft\debug\Module as DebugModule;
-use craft\debug\RequestPanel;
-use craft\debug\UserPanel;
 use craft\errors\ExitException;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
@@ -21,18 +15,15 @@ use craft\queue\QueueLogBehavior;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Plugin\Plugins;
-use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Yii2Adapter\Web\Response as IlluminateBridgeResponse;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request as IlluminateRequest;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use IntlDateFormatter;
 use IntlException;
-use ReflectionClass;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Throwable;
 use yii\base\Component;
@@ -42,13 +33,6 @@ use yii\base\ExitException as YiiExitException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
-use yii\debug\Module as YiiDebugModule;
-use yii\debug\panels\AssetPanel;
-use yii\debug\panels\DbPanel;
-use yii\debug\panels\LogPanel;
-use yii\debug\panels\MailPanel;
-use yii\debug\panels\ProfilingPanel;
-use yii\debug\panels\RouterPanel;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response as BaseResponse;
@@ -116,8 +100,6 @@ class Application extends \yii\web\Application
 
         // Process resource requests before we do anything to establish the user session
         $this->_processResourceRequest();
-
-        $this->debugBootstrap();
     }
 
     /**
@@ -225,12 +207,7 @@ class Application extends \yii\web\Application
         }
 
         // If we’re still here, finally let Yii do its thing.
-        try {
-            return parent::handleRequest($request);
-        } catch (Throwable $e) {
-            $this->_unregisterDebugModule();
-            throw $e;
-        }
+        return parent::handleRequest($request);
     }
 
     /**
@@ -364,81 +341,6 @@ class Application extends \yii\web\Application
     }
 
     /**
-     * Bootstraps the Debug Toolbar if necessary.
-     */
-    protected function debugBootstrap(): void
-    {
-        $request = $this->getRequest();
-
-        if ($request->getIsLivePreview() || $request->getIsPreview()) {
-            return;
-        }
-
-        // Only load the debug toolbar if it's enabled for the user, or Dev Mode is enabled and the request wants it
-        $user = Auth::user();
-        $pref = $request->getIsCpRequest() ? 'enableDebugToolbarForCp' : 'enableDebugToolbarForSite';
-        if (!(
-            ($user && $user->admin && $user->getPreference($pref)) ||
-            (app()->hasDebugModeEnabled() && $request->getHeaders()->get('X-Debug') === 'enable')
-        )) {
-            return;
-        }
-
-        $svg = rawurlencode(file_get_contents(dirname(__DIR__) . '/icons/custom-icons/c-debug.svg'));
-        DebugModule::setYiiLogo("data:image/svg+xml;charset=utf-8,$svg");
-
-        // Determine the base path using reflection in case it wasn't loaded from @vendor
-        $ref = new ReflectionClass(YiiDebugModule::class);
-        $basePath = dirname($ref->getFileName());
-
-        $this->setModule('debug', [
-            'class' => DebugModule::class,
-            'basePath' => $basePath,
-            'allowedIPs' => ['*'],
-            'panels' => [
-                'config' => false,
-                'user' => UserPanel::class,
-                'router' => [
-                    'class' => RouterPanel::class,
-                    'categories' => [
-                        UrlManager::class . '::_getMatchedElementRoute',
-                        UrlManager::class . '::_getMatchedUrlRoute',
-                        UrlManager::class . '::_getTemplateRoute',
-                        UrlManager::class . '::_getTokenRoute',
-                    ],
-                ],
-                'request' => RequestPanel::class,
-                'log' => LogPanel::class,
-                'dump' => DumpPanel::class,
-                'deprecated' => DeprecatedPanel::class,
-                'profiling' => ProfilingPanel::class,
-                'db' => DbPanel::class,
-                'asset' => AssetPanel::class,
-                'mail' => MailPanel::class,
-            ],
-        ]);
-        /** @var DebugModule $module */
-        $module = $this->getModule('debug');
-        $module->bootstrap($this);
-
-        if ($config = Config::get('craft.debug', [])) {
-            Typecast::configure($module, $config);
-        }
-    }
-
-    /**
-     * Unregisters the Debug module's end body event.
-     */
-    private function _unregisterDebugModule(): void
-    {
-        $debug = $this->getModule('debug', false);
-
-        if ($debug !== null) {
-            $this->getView()->off(View::EVENT_END_BODY, [$debug, 'renderToolbar']);
-        }
-    }
-
-    /**
      * Processes resource requests.
      *
      * @throws BadRequestHttpException
@@ -491,10 +393,6 @@ class Application extends \yii\web\Application
     {
         $isCpRequest = $request->getIsCpRequest();
         $isInstalled = Cms::isInstalled();
-
-        if (!$isInstalled) {
-            $this->_unregisterDebugModule();
-        }
 
         // Are they requesting the installer?
         if ($isCpRequest && $request->getSegment(1) === 'install') {
@@ -560,7 +458,6 @@ class Application extends \yii\web\Application
                     ? ($response ?? $this->getResponse())
                     : $response;
             } catch (Throwable $e) {
-                $this->_unregisterDebugModule();
                 if ($e instanceof InvalidRouteException) {
                     throw new NotFoundHttpException(t('Page not found.'), $e->getCode(), $e);
                 }
