@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added support for SQLite backups and restores. ([#18803](https://github.com/craftcms/cms/pull/18803))
+- Added support for Symfony-style array config files in `config/craft/sanitizers/`. ([#18808](https://github.com/craftcms/cms/pull/18808))
 - The `craftAsset()` Twig function now resolves to Vite versioned assets. ([#18801](https://github.com/craftcms/cms/pull/18801))
 - Deprecated the `csrfTokenName`, `enableCsrfCookie`, and `enableCsrfProtection` general config settings. ([#18806](https://github.com/craftcms/cms/pull/18806))
 

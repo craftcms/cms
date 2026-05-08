@@ -83,6 +83,26 @@ use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 $cleanHtml = HtmlSanitizers::sanitizer('links-only')->sanitize($dirtyHtml);
 ```
 
+## Array Config Files
+
+Named sanitizers can also be registered with Symfony-style array config files in `config/craft/sanitizers/`. The file name becomes the sanitizer name.
+
+```php
+<?php
+
+// config/craft/sanitizers/no-headings.php
+return [
+    'allow_safe_elements' => true,
+    'block_elements' => ['h1'],
+];
+```
+
+Use it like any other named sanitizer:
+
+```twig
+{{ body|sanitize('no-headings') }}
+```
+
 ## Customizing the Default Sanitizer
 
 Use `defaults()` to modify Craft's default `HtmlSanitizerConfig`.
@@ -162,4 +182,4 @@ For new code:
 
 - prefer the `HtmlSanitizers` service or facade for application code
 - prefer `|sanitize` in Twig
-- define named sanitizers in service providers instead of config files when possible
+- define named sanitizers in service providers when they need custom PHP logic
