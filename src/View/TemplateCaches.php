@@ -200,7 +200,7 @@ class TemplateCaches
             if (! Cms::config()->enableTemplateCaching) {
                 $this->enabled = false;
                 $this->enabledGlobally = false;
-            } elseif (request()->isPreview() || request()->getToken()) {
+            } elseif (request()->isPreview() || request()->getHadToken()) {
                 $this->enabled = false;
                 $this->enabledGlobally = false;
             } else {

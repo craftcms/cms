@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
@@ -12,6 +13,7 @@ use CraftCms\Cms\View\TemplateCaches;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Event;
 
 class TestTemplateCacheCollector implements CacheCollectorInterface
@@ -139,6 +141,19 @@ it('scopes non-global caches using the paginator current page resolver', functio
 
     swapTemplateCacheRequest('/admin/news?page=2');
     expect(app(TemplateCaches::class)->getTemplateCache('resolved-page-cache', false))->toBe('cp-page-three');
+});
+
+it('does not read or write template caches when the original request had a token', function () {
+    setTemplateCacheConsoleState(false);
+    swapTemplateCacheRequest('/news');
+    Context::addHidden(HandleTokenRequest::HAD_TOKEN_KEY, true);
+
+    $service = app(TemplateCaches::class);
+
+    $service->startTemplateCache(global: false);
+    $service->endTemplateCache('preview-cache', false, null, null, 'preview body');
+
+    expect($service->getTemplateCache('preview-cache', false))->toBeNull();
 });
 
 function swapTemplateCacheRequest(string $uri): void
