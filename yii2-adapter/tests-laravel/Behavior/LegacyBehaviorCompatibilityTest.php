@@ -15,12 +15,15 @@ use craft\models\GqlSchema as LegacyGqlSchema;
 use craft\models\GqlToken as LegacyGqlToken;
 use craft\models\UserGroup as LegacyUserGroup;
 use CraftCms\Cms\Deprecator\Models\DeprecationError;
+use CraftCms\Cms\Field\Data\JsonData;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Yii2Adapter\Behavior\LegacyBehaviorCatalog;
 use CraftCms\Yii2Adapter\Tests\TestCase;
+use Illuminate\Support\Collection;
 use yii\base\Behavior;
 use yii\base\Event;
 
@@ -44,6 +47,15 @@ class TestCompatibilityBehavior extends Behavior
     {
         $this->owner->description = $description;
     }
+}
+
+function sandboxAllowedCompatibilityTargets(): Collection
+{
+    return collect(LegacyBehaviorCatalog::discoveredTargets())
+        ->pluck('targetClass')
+        ->unique()
+        ->filter(fn(string $class) => (new ReflectionClass($class))->getAttributes(AllowedInSandbox::class) !== [])
+        ->values();
 }
 
 afterEach(function() {
@@ -80,11 +92,19 @@ test('legacy behavior mixins are applied to every discovered compatibility targe
     $targetClasses = collect(LegacyBehaviorCatalog::discoveredTargets())
         ->pluck('targetClass')
         ->unique()
+        ->diff(sandboxAllowedCompatibilityTargets())
         ->values()
         ->all();
 
     expect(array_values(array_diff($targetClasses, LegacyBehaviorCatalog::mixinTargets())))
         ->toBe([]);
+});
+
+test('sandbox allowed classes are not exposed to legacy behavior mixins', function() {
+    expect(collect(LegacyBehaviorCatalog::discoveredTargets())->pluck('targetClass'))
+        ->toContain(JsonData::class)
+        ->and(sandboxAllowedCompatibilityTargets())->toContain(JsonData::class)
+        ->and(array_intersect(sandboxAllowedCompatibilityTargets()->all(), LegacyBehaviorCatalog::mixinTargets()))->toBe([]);
 });
 
 test('discovered behavior targets resolve through their legacy aliases to their migrated classes', function() {
