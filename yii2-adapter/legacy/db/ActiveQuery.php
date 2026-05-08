@@ -7,6 +7,7 @@
 
 namespace craft\db;
 
+use craft\base\RejectsUnsafeConfigKeys;
 use Illuminate\Support\Collection;
 use yii\db\Connection as YiiConnection;
 
@@ -19,6 +20,18 @@ use yii\db\Connection as YiiConnection;
  */
 class ActiveQuery extends \yii\db\ActiveQuery
 {
+    use RejectsUnsafeConfigKeys;
+
+    /**
+     * @inheritdoc
+     */
+    public function __set($name, $value)
+    {
+        $this->ensureConfigKeyIsSafe($name);
+
+        parent::__set($name, $value);
+    }
+
     /**
      * Executes the query and returns all results as a collection.
      *

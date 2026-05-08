@@ -24,7 +24,7 @@ class CacheNode extends Node
             ->addDebugInfo($this)
             ->write('$cacheService = app('.TemplateCaches::class."::class);\n")
             ->write("\$request = request();\n")
-            ->write("\$ignoreCache_$n = (\$request->isPreview() || \$request->getToken()");
+            ->write("\$ignoreCache_$n = (\$request->isPreview() || \$request->getHadToken()");
 
         if ($this->hasNode('conditions')) {
             $compiler

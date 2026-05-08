@@ -18,6 +18,7 @@ beforeEach(function () {
 
 afterEach(function () {
     Context::forgetHidden(HandleTokenRequest::TOKEN_KEY);
+    Context::forgetHidden(HandleTokenRequest::HAD_TOKEN_KEY);
 });
 
 describe('isCpRequest', function () {
@@ -39,6 +40,22 @@ describe('getToken', function () {
         expect(Request::create('/news', server: [
             'HTTP_X_CRAFT_TOKEN' => 'header-token',
         ])->getToken())->toBe('header-token');
+    });
+});
+
+describe('getHadToken', function () {
+    it('returns true when the current request has a token', function () {
+        expect(Request::create('/news?token=query-token')->getHadToken())->toBeTrue();
+    });
+
+    it('returns true when a token was previously handled', function () {
+        Context::addHidden(HandleTokenRequest::HAD_TOKEN_KEY, true);
+
+        expect(Request::create('/news')->getHadToken())->toBeTrue();
+    });
+
+    it('returns false when no token is present or has been handled', function () {
+        expect(Request::create('/news')->getHadToken())->toBeFalse();
     });
 });
 

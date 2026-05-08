@@ -337,7 +337,7 @@ readonly class SaveUserController
                 $userVariable,
                 array_filter([
                     'id' => $user->id, // todo: remove
-                    'csrfTokenValue' => $returnCsrfToken && $this->generalConfig->enableCsrfProtection
+                    'csrfTokenValue' => $returnCsrfToken
                         ? csrf_token()
                         : null,
                 ]),

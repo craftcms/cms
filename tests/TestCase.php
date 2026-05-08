@@ -64,6 +64,8 @@ class TestCase extends Orchestra
 
         parent::setUp();
 
+        config()->set('app.debug', true);
+
         app()->setLocale('en-US');
         app()->maintenanceMode()->deactivate();
 

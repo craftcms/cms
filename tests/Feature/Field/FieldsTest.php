@@ -15,6 +15,8 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\Models\Field as FieldModel;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField as CustomFieldElement;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
 use CraftCms\Cms\Support\Str;
@@ -321,7 +323,7 @@ it('can hard delete a field layout by id', function () {
                 'elements' => [
                     [
                         'uid' => Str::uuid()->toString(),
-                        'type' => CraftCms\Cms\FieldLayout\LayoutElements\CustomField::class,
+                        'type' => CustomFieldElement::class,
                         'fieldUid' => $field->uid,
                     ],
                 ],
@@ -369,4 +371,45 @@ it('returns laravel-style pagination metadata for table data', function () {
         ->and($pagination['next_page_url'])->toBeNull();
 });
 
-test('field layouts')->todo('Implement once field layouts are ported.');
+test('field layouts', function () {
+    $field = FieldModel::factory()->create([
+        'name' => 'Plain Text',
+        'handle' => 'plainTextLayoutField',
+        'type' => PlainText::class,
+    ]);
+
+    $layout = $this->fields->createLayout([
+        'uid' => Str::uuid()->toString(),
+        'type' => EntryElement::class,
+        'tabs' => [
+            [
+                'uid' => Str::uuid()->toString(),
+                'name' => 'Content',
+                'elements' => [
+                    [
+                        'uid' => Str::uuid()->toString(),
+                        'type' => CustomFieldElement::class,
+                        'fieldUid' => $field->uid,
+                    ],
+                ],
+            ],
+        ],
+    ]);
+
+    expect($this->fields->saveLayout($layout))->toBeTrue()
+        ->and($layout->id)->toBeInt()
+        ->and($this->fields->getLayoutById($layout->id)?->uid)->toBe($layout->uid)
+        ->and($this->fields->getLayoutByUid($layout->uid)?->id)->toBe($layout->id)
+        ->and($this->fields->getLayoutByType(EntryElement::class, false)?->id)->toBe($layout->id);
+
+    $layout->setTabs([
+        new FieldLayoutTab([
+            'layout' => $layout,
+            'uid' => Str::uuid()->toString(),
+            'name' => 'Updated',
+        ]),
+    ]);
+
+    expect($this->fields->saveLayout($layout))->toBeTrue()
+        ->and($this->fields->getLayoutById($layout->id)?->getTabs()[0]->name)->toBe('Updated');
+});

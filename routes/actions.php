@@ -206,7 +206,7 @@ Route::prefix(implode('/', [
     /**
      * Actions needing auth
      */
-    Route::middleware(['auth:craft'])->group(function () {
+    Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         // Addresses
         Route::post('addresses/fields', [AddressesController::class, 'fields']);
         Route::middleware(RequireAdminChanges::class)->post('addresses/save-field-layout', [AddressesController::class, 'saveFieldLayout']);

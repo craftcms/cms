@@ -15,6 +15,7 @@ use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -64,7 +65,6 @@ class HandleInertiaRequests extends Middleware
         }
 
         $currentSite = Sites::getCurrentSite();
-        $generalConfig = app(GeneralConfig::class);
         $updates = app(Updates::class);
         $nav = app(Navigation::class);
         $progressService = app(JobProgress::class);
@@ -75,8 +75,8 @@ class HandleInertiaRequests extends Middleware
             $currentUser = $request->user();
         }
 
-        $systemIcon = Cms::config()->cpIconUrl
-            ? Aliases::get(Cms::config()->cpIconUrl)
+        $systemIcon = ($generalConfig->cpIconUrl && Edition::isAtLeast(Edition::Pro))
+            ? Html::img(Aliases::get($generalConfig->cpIconUrl))->render()
             : Icons::svg('c-outline');
 
         return [
@@ -95,8 +95,8 @@ class HandleInertiaRequests extends Middleware
                 'hasWaitingJobs' => false,
             ],
             'craft' => fn () => [
-                'csrfTokenValue' => $generalConfig->enableCsrfProtection ? csrf_token() : null,
-                'csrfTokenName' => $generalConfig->enableCsrfProtection ? $generalConfig->csrfTokenName : null,
+                'csrfTokenValue' => csrf_token(),
+                'csrfTokenName' => '_token',
                 'general' => [
                     'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
                 ],
