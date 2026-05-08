@@ -900,7 +900,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           return (
             volumeHandle &&
             volumeHandle !== 'temp' &&
-            Garnish.hasAttr(source, 'data-can-to')
+            Garnish.hasAttr(source, 'data-can-move-to')
           );
         })
         .map((source) => $(source).data('key'));
