@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-24x4-j6x9-rfw5)
+
 ## 4.17.15 - 2026-04-29
 
 - Fixed a bug where dependencies required by `composer.json` were getting updated when installing/updating plugins. ([#18755](https://github.com/craftcms/cms/issues/18755))
