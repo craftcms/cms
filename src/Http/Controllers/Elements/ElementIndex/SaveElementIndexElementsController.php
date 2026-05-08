@@ -11,6 +11,7 @@ use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -109,6 +110,10 @@ readonly class SaveElementIndexElementsController
 
         foreach ($elements as $element) {
             $attributes = Arr::except($data["element-$element->id"] ?? [], 'fields');
+
+            if ($element instanceof User) {
+                $attributes = Arr::except($attributes, User::SENSITIVE_ATTRIBUTES);
+            }
 
             if (! empty($attributes)) {
                 $element->ruleset->withScenario(
