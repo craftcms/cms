@@ -789,16 +789,16 @@ class GeneralConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * ->defaultTemplateExtensions(['twig', 'html', 'txt'])
+     * ->defaultTemplateExtensions(['twig', 'html', 'blade.php', 'txt'])
      * ```
      * ```shell Environment Override
-     * CRAFT_DEFAULT_TEMPLATE_EXTENSIONS=twig,html,txt
+     * CRAFT_DEFAULT_TEMPLATE_EXTENSIONS=twig,html,blade.php,txt
      * ```
      * :::
      *
      * @group System
      */
-    public array $defaultTemplateExtensions = ['twig', 'html'];
+    public array $defaultTemplateExtensions = ['twig', 'html', 'blade.php'];
 
     /**
      * @var mixed The default amount of time tokens can be used before expiring.
@@ -3977,7 +3977,7 @@ class GeneralConfig extends BaseConfig
      * The template file extensions Craft will look for when matching a template path to a file on the front end.
      *
      * ```php
-     * ->defaultTemplateExtensions(['twig', 'html', 'txt'])
+     * ->defaultTemplateExtensions(['twig', 'html', 'blade.php', 'txt'])
      * ```
      *
      * @group System

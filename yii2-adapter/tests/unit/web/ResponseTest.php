@@ -12,6 +12,7 @@ use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\test\TestCase;
 use craft\web\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Unit tests for Response
@@ -100,6 +101,34 @@ class ResponseTest extends TestCase
 
         self::assertSame(302, $illuminateResponse->getStatusCode());
         self::assertSame('https://localhost/admin/stripe/settings', str_replace(':80', '', $illuminateResponse->headers->get('Location')));
+    }
+
+    public function testGetIlluminateResponseForStreamedResponse(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'craft-response-test-');
+        file_put_contents($path, 'streamed content');
+        $obLevel = ob_get_level();
+
+        try {
+            $illuminateResponse = $this->response
+                ->sendFile($path)
+                ->getIlluminateResponse(true);
+
+            self::assertInstanceOf(StreamedResponse::class, $illuminateResponse);
+            self::assertSame(200, $illuminateResponse->getStatusCode());
+
+            ob_start();
+            $illuminateResponse->sendContent();
+            $content = ob_get_clean();
+
+            self::assertSame('streamed content', $content);
+        } finally {
+            while (ob_get_level() > $obLevel) {
+                ob_end_clean();
+            }
+
+            @unlink($path);
+        }
     }
 
     /**

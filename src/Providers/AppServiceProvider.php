@@ -13,7 +13,6 @@ use CraftCms\Cms\Http\Mixins\RequestMixin;
 use CraftCms\Cms\Http\Mixins\SessionMixin;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Url;
@@ -31,7 +30,6 @@ use Illuminate\Http\Response;
 use Illuminate\Routing\UrlGenerator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -64,10 +62,6 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        Cache::handleUnserializableClassUsing(function (...$params) {
-            dump($params);
-        });
-
         Event::listen(LocaleUpdated::class, function (LocaleUpdated $event) {
             setlocale(
                 LC_COLLATE,

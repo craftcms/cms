@@ -21,7 +21,7 @@ use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\User\Models\User;
 use DateTimeInterface;
 use Exception;
-use Illuminate\Container\Attributes\Scoped;
+use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -34,14 +34,9 @@ use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
 use Tpetry\QueryExpressions\Value\Value;
 
-#[Scoped]
-class Dashboard
+#[Singleton]
+readonly class Dashboard
 {
-    /**
-     * @var Collection<WidgetInterface>|false|null
-     */
-    private Collection|false|null $userWidgets = null;
-
     /**
      * @return Collection<class-string<WidgetInterface>>
      */
@@ -107,7 +102,10 @@ class Dashboard
      */
     public function doesUserHaveWidget(string $type): bool
     {
-        return $this->getUserWidgets()->contains(fn (WidgetInterface $widget) => $widget::class === $type);
+        return Models\Widget::query()
+            ->where('userId', Auth::user()->getAuthIdentifier())
+            ->where('type', $type)
+            ->exists();
     }
 
     /**
@@ -352,15 +350,11 @@ class Dashboard
             throw new Exception('No logged-in user');
         }
 
-        if (isset($this->userWidgets)) {
-            return $this->userWidgets;
-        }
-
         if (! $user->hasDashboard) {
-            return $this->userWidgets = false;
+            return false;
         }
 
-        return $this->userWidgets = Models\Widget::query()
+        return Models\Widget::query()
             ->where('userId', $user->id)
             ->orderBy('sortOrder')
             ->get()
