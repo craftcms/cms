@@ -4,6 +4,7 @@
 
 - Added support for SQLite backups and restores. ([#18803](https://github.com/craftcms/cms/pull/18803))
 - The `craftAsset()` Twig function now resolves to Vite versioned assets. ([#18801](https://github.com/craftcms/cms/pull/18801))
+- Deprecated the `csrfTokenName`, `enableCsrfCookie`, and `enableCsrfProtection` general config settings. ([#18806](https://github.com/craftcms/cms/pull/18806))
 
 ## 6.0.0-alpha.1 - 2026-05-06
 
