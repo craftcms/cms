@@ -539,6 +539,9 @@ class CustomField extends BaseField
      */
     protected function settingsHtml(): ?string
     {
+        // Make sure setField() has had a chance to set the default values
+        $this->getField();
+
         return Craft::$app->getView()->renderTemplate('_includes/forms/fld/custom-field-settings.twig', [
             'field' => $this,
             'defaultLabel' => $this->defaultLabel(),
