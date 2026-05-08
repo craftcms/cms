@@ -242,7 +242,7 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Deprecated `craft\behaviors\SessionBehavior::deauthorize`. `CraftCms\Cms\Auth\SessionAuth::deauthorize` should be used instead.
 - Deprecated `craft\behaviors\SessionBehavior::checkAuthorization`. `CraftCms\Cms\Auth\SessionAuth::checkAuthorization` should be used instead.
 - Deprecated `craft\services\Users::isVerificationCodeValidForUser()`. `Password::broker('craft')->tokenExists($user, $code)` should be used instead.
-- Deprecated `GeneralConfig::elevatedSessionDuration()`. The `auth.password_timeout` config value should be used instead. To disable password confirmation (elevated sessions), you now set this value to `-1` instead of `0`.
+- Deprecated the `elevatedSessionDuration` general config setting. The `auth.password_timeout` config value should be used instead. To disable password confirmation (elevated sessions), you now set this value to `-1` instead of `0`.
   - Elevated sessions now work through [Laravel's password confirmation](https://laravel.com/docs/12.x/authentication#password-confirmation) system.
 - Removed `craft\controllers\AuthController`. The following controllers now implement this functionality:
   - `CraftCms\Cms\Http\Controllers\Users\AuthMethodController`
@@ -519,7 +519,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 
 ### Entries & Entry Types
 
-- Updated entry type table pagination to return Laravel-style pagination metadata and use the configured `GeneralConfig::$pageTrigger` query parameter.
+- Updated entry type table pagination to return Laravel-style pagination metadata and use the `pageTrigger` query parameter.
 - Deprecated `craft\services\Entries`. `CraftCms\Cms\Entry\Entries` and `CraftCms\Cms\Entry\EntryTypes` should be used instead.
 - Deprecated `craft\models\EntryType`. `CraftCms\Cms\Entry\Data\EntryType` should be used instead.
 - Deprecated `craft\records\EntryType`. `CraftCms\Cms\Entry\Models\EntryType` should be used instead.
@@ -601,7 +601,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 
 ### Fields
 
-- Updated field index pagination to return Laravel-style pagination metadata and use the configured `GeneralConfig::$pageTrigger` query parameter.
+- Updated field index pagination to return Laravel-style pagination metadata and use the configured `pageTrigger` query parameter.
 - Removed `craft\controllers\FieldsController` in favor of `CraftCms\Cms\Http\Controllers\FieldsController`.
 - Removed `craft\controllers\MatrixController`. `CraftCms\Cms\Http\Controllers\MatrixController` should be used instead.
 - Removed `craft\controllers\RelationalFieldsController`. `CraftCms\Cms\Http\Controllers\RelationalFieldsController` should be used instead.
@@ -667,7 +667,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 
 ### HTTP
 
-- Deprecated `craft\config\GeneralConfig::$errorTemplatePrefix` and `craft\config\GeneralConfig::errorTemplatePrefix()`. Configure [Laravel's custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages) instead.
+- Deprecated the `errorTemplatePrefix` general config setting. Configure [Laravel's custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages) instead.
 - Deprecated `craft\filters\BasicHttpAuthLogin`. Use the `auth.basic` middleware instead. (see https://laravel.com/docs/12.x/authentication#http-basic-authentication)
 - Deprecated `craft\filters\BasicHttpAuthStatic`. Use the `auth.basic` middleware instead. (see https://laravel.com/docs/12.x/authentication#http-basic-authentication)
 - Deprecated `craft\filters\BasicHttpAuthTrait`. Use the `auth.basic` middleware instead. (see https://laravel.com/docs/12.x/authentication#http-basic-authentication)
@@ -697,7 +697,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Deprecated `Craft::$app->getMailer()`. Laravel mailers/drivers and `CraftCms\Cms\SystemMessage\SystemMessages::mailable()` should be used instead.
 - Deprecated `craft\mail\Mailer`. Laravel mailers/drivers and `CraftCms\Cms\SystemMessage\SystemMessages::mailable()` should be used instead.
 - Deprecated `craft\helpers\MailerHelper`. Laravel mail configuration and drivers should be used instead.
-- Deprecated `craft\config\GeneralConfig::$testToEmailAddress` and `craft\config\GeneralConfig::testToEmailAddress()`. `Illuminate\Support\Facades\Mail::alwaysTo()` should be used instead.
+- Deprecated the `testToEmailAddress` general config setting. `Illuminate\Support\Facades\Mail::alwaysTo()` should be used instead.
 - Deprecated `craft\mail\Mailer::$template`, `craft\mail\Mailer::$siteOverrides`, `craft\models\MailSettings::$template`, and `craft\models\MailSettings::$siteOverrides`. Laravel mailable views and environment-specific Laravel mailers should be used instead.
 - Removed legacy `projectConfig.email` mail settings and mail transport adapter configuration in favor of Laravel's `mail` config and drivers.
 
@@ -764,7 +764,7 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
 
 - Added `Request::isPreview()` macro for detecting preview requests via `x-craft-preview` or `x-craft-live-preview` parameters.
 - Added `Request::isCpRequest()`, `Request::isSiteRequest()`, `Request::isActionRequest()`, `Request::actionSegments()`, `Request::actionSegmentsToRoute()`, `Request::duplicateWithUri()`, `Request::getToken()`, and `Request::getSigned()` macros.
-- Updated paginated requests to resolve the current page from the configured `GeneralConfig::$pageTrigger` query parameter rather than path-style pagination segments.
+- Updated paginated requests to resolve the current page from the configured `pageTrigger` query parameter rather than path-style pagination segments.
 
 ### Security
 
@@ -772,7 +772,7 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
 - Added `CraftCms\Cms\Support\Facades\Security`.
 - Added `CraftCms\Cms\Http\Middleware\AddLogContext`.
 - Deprecated `Craft::$app->getSecurity()` in favor of Laravel's Hash and Crypt facades, or `CraftCms\Cms\Support\Facades\Security`.
-- Deprecated `GeneralConfig::$blowfishHashCost` in favor of Laravel's hashing.bcrypt.rounds config or the BCRYPT_ROUNDS environment variable.
+- Deprecated the `blowfishHashCost` general config setting in favor of Laravel's `hashing.bcrypt.rounds` config or the `BCRYPT_ROUNDS` environment variable.
 
 ### Updates
 
@@ -876,7 +876,7 @@ Moved the following controllers:
 
 ### Sections
 
-- Updated section index pagination to return Laravel-style pagination metadata and use the configured `GeneralConfig::$pageTrigger` query parameter.
+- Updated section index pagination to return Laravel-style pagination metadata and use the configured `pageTrigger` query parameter.
 - Deprecated the section related methods in `craft\services\Entries`. `CraftCms\Cms\Section\Sections` should be used instead.
 - Deprecated `craft\models\Section`. `CraftCms\Cms\Section\Data\Section` should be used instead.
 - Deprecated `craft\records\Section`. `CraftCms\Cms\Section\Models\Section` should be used instead.
@@ -938,7 +938,7 @@ Moved the following controllers:
 
 ### Twig
 
-- Updated Twig `{% paginate %}` queries to use Laravel paginators and generate query-string pagination URLs based on `GeneralConfig::$pageTrigger`.
+- Updated Twig `{% paginate %}` queries to use Laravel paginators and generate query-string pagination URLs based on the `pageTrigger` general config setting.
 - Added `CraftCms\Cms\Twig\Twig` service for managing Twig environments, replacing the Twig management logic previously in `craft\web\View`.
 - Added `CraftCms\Cms\Twig\TemplateRenderer` for rendering templates, replacing the rendering logic previously in `craft\web\View`.
 - Added `CraftCms\Cms\Twig\PageLifecycle` for managing the page rendering lifecycle (head/body placeholder replacement), replacing the page lifecycle logic previously in `craft\web\View`.
