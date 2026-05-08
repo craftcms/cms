@@ -37,7 +37,12 @@ trait Validates
         }
 
         $this->_errors = new MessageBag;
-        $this->_errors->merge(session('errors', new MessageBag)->getMessages());
+        $sessionErrors = session('errors', new MessageBag);
+        $this->_errors->merge(
+            $sessionErrors instanceof MessageBag
+                ? $sessionErrors->getMessages()
+                : (is_array($sessionErrors) ? $sessionErrors : [])
+        );
 
         return $this->_errors;
     }
