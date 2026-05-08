@@ -187,7 +187,7 @@ class ViewTest extends TestCase
             CraftTest::normalizePathSeparators($this->view->templatesPath)
         );
         self::assertSame(
-            ['twig', 'html'],
+            ['twig', 'html', 'blade.php'],
             TemplateMode::get()->defaultTemplateExtensions()
         );
 

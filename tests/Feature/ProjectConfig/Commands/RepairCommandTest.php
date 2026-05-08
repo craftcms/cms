@@ -13,7 +13,7 @@ it('reports when there is nothing to repair', function () {
 it('repairs double-packed associative arrays in project config', function () {
     app(ProjectConfig::class)->set('testFixture.item', doublePackedArray());
 
-    $this->artisan('repair:project-config', ['--no-interaction' => true])
+    $this->artisan('craft:repair:project-config', ['--no-interaction' => true])
         ->expectsOutputToContain('testFixture.item')
         ->expectsOutputToContain('Finished repairing project config. 1 item was matched.')
         ->assertSuccessful();

@@ -17,6 +17,12 @@ beforeEach(function () {
     Cms::setIsInstalled(false);
 });
 
+it('503s if debug is disabled', function () {
+    config()->set('app.debug', false);
+
+    get(action([InstallController::class, 'index']))->assertServiceUnavailable();
+});
+
 it('shows the install page', function () {
     Cms::setIsInstalled(false);
 

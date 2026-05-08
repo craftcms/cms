@@ -103,11 +103,16 @@ readonly class MatrixController
             $source = Entry::find()
                 ->id($sourceId)
                 ->siteId($validated['siteId'])
+                ->fieldId($validated['fieldId'])
+                ->ownerId($validated['ownerId'])
+                ->typeId($validated['entryTypeId'])
                 ->drafts(null)
                 ->status(null)
                 ->one();
 
             abort_if(is_null($source), 400, "Invalid source element ID: $sourceId");
+
+            Gate::authorize('view', $source);
 
             // set owner so that the canDuplicateAsDraft checks the max entries on the right owner and not only the canonical
             $source->setOwner($owner);

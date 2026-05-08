@@ -25,7 +25,7 @@ it('supports a dry run without deleting rows', function () {
 
     insertSearchIndexRow($entry->id);
 
-    $this->artisan('elements/delete-all-of-type', ['type' => Entry::class, '--dry-run' => true])
+    $this->artisan('craft:elements/delete-all-of-type', ['type' => Entry::class, '--dry-run' => true])
         ->expectsOutputToContain('[DRY RUN] 1 entry deleted.')
         ->assertSuccessful();
 
