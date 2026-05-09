@@ -114,7 +114,7 @@ jobs:
 
   unit-tests:
     needs: [pint, phpstan, rector]
-    name: 'Tests / Unit'
+    name: 'Tests / Unit on ${{ matrix.os }}'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     strategy:
@@ -154,7 +154,7 @@ jobs:
 
   feature-tests:
     needs: [pint, phpstan, rector]
-    name: 'Tests / Feature on ${{ matrix.db }}'
+    name: 'Tests / Feature on ${{ matrix.os }} with ${{ matrix.db }}'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
