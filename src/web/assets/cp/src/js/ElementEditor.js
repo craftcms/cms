@@ -243,7 +243,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         // Listen on Craft.broadcaster to ignore any messages sent by this very page
         Craft.broadcaster.addEventListener('message', (ev) => {
           if (
-            (ev.data.event === 'saveDraft' &&
+            (['saveDraft', 'reorderNestedElements'].includes(ev.data.event) &&
               ev.data.canonicalId === this.settings.canonicalId &&
               (ev.data.draftId === this.settings.draftId ||
                 (ev.data.isProvisionalDraft && !this.settings.draftId))) ||

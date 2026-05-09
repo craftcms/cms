@@ -408,10 +408,12 @@ Craft.NestedElementManager = Garnish.Base.extend(
         if (Craft.broadcaster && this.elementEditor?.settings.draftId) {
           Craft.broadcaster.postMessage({
             pageId: Craft.pageId,
-            event: 'saveDraft',
+            event: 'reorderNestedElements',
             canonicalId: this.elementEditor.settings.canonicalId,
             draftId: this.elementEditor.settings.draftId,
             isProvisionalDraft: this.elementEditor.settings.isProvisionalDraft,
+            elementType: this.elementType,
+            elementIds,
           });
         }
       } catch (e) {
