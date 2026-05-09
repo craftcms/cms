@@ -52,7 +52,16 @@ class Yii2ServiceProvider extends ServiceProvider
         new CompatibilityMixins()->register();
         new FilesystemCompatibility()->register($this->app);
 
-        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+        /**
+         * Load the legacy fallback route from booted() so it registers after
+         * the CMS package's own Route::fallback(), ensuring that unmatched
+         * requests are forwarded to the legacy Yii application (where any
+         * URL rules registered via UrlManager::EVENT_REGISTER_CP_URL_RULES
+         * and EVENT_REGISTER_SITE_URL_RULES are honored).
+         */
+        $this->app->booted(function(): void {
+            $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+        });
 
         $this->setLaravelDefaults();
         $this->registerExceptionHandling();

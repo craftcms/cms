@@ -4,16 +4,43 @@
 
 - Added support for SQLite backups and restores. ([#18803](https://github.com/craftcms/cms/pull/18803))
 - Added support for Symfony-style array config files in `config/craft/sanitizers/`. ([#18808](https://github.com/craftcms/cms/pull/18808))
+- Added support for configuring the system timezone during installation. ([#18794](https://github.com/craftcms/cms/pull/18794))
+- Added the legacy `paginate` Twig variable back.
+- Added CP access permission checks to Control Panel action routes.
 - The `craftAsset()` Twig function now resolves to Vite versioned assets. ([#18801](https://github.com/craftcms/cms/pull/18801))
 - Deprecated the `csrfTokenName`, `enableCsrfCookie`, and `enableCsrfProtection` general config settings. ([#18806](https://github.com/craftcms/cms/pull/18806))
 - Removed support for the Debug Toolbar. [Laravel Debugbar](https://laraveldebugbar.com) can be used instead. ([#18812](https://github.com/craftcms/cms/pull/18812))
+- Improved Control Panel icon loading performance.
 - Fixed a PHP error that occurred when saving a Structure section with a Max Levels value. ([#18809](https://github.com/craftcms/cms/issues/18809))
 - Fixed a bug where plugin settings pages were missing registered scripts and styles. ([#18815](https://github.com/craftcms/cms/pull/18815))
 - Fixed a PHP error that occurred when saving an entry type. ([#18816](https://github.com/craftcms/cms/pull/18816))
 - Fixed an issue with Typecast where typed setters wouldn't have precedence over private properties.
 - Fixed a bug where Control Panel templates failed to load on Windows due to mismatched directory separators or drive-letter casing in `CraftCms\Cms\View\TwigEngine`. ([#18804](https://github.com/craftcms/cms/issues/18804))
+- Fixed a bug where Craft’s Vite hot file configuration could override the host application’s Vite hot file. ([#18822](https://github.com/craftcms/cms/pull/18822))
 - Fixed a bug where `CraftCms\Cms\Support\Typecast` could give private properties precedence over typed setters.
 - Fixed a bug where `runQueueAutomatically` wasn’t being respected. ([#18817](https://github.com/craftcms/cms/pull/18817))
+- Fixed a bug where `CraftCms\Cms\Validation\Rules\EnvValueRule` could parse boolean values incorrectly.
+- Fixed a bug where Blade templates weren’t resolving correctly.
+- Fixed a bug where console command aliases weren’t prefixed with `craft:`.
+- Fixed a bug where element duplication included IDs.
+- Fixed a bug where legacy action requests didn’t resolve correctly when using `DefaultController`.
+- Fixed a bug where legacy controller CSRF validation exclusions weren’t always respected.
+- Fixed a bug where legacy plugin settings weren’t saved correctly.
+- Fixed a bug where legacy redirects and streamed responses weren’t forwarded to Laravel correctly.
+- Fixed a bug where preview requests could write template caches.
+- Fixed a bug where private templates couldn’t be used as section templates.
+- Fixed a bug where the legacy `Application::EVENT_AFTER_REQUEST` event wasn’t triggered.
+- Fixed a bug where the password reset email throttle applied to Control Panel requests.
+- Fixed a bug where the Support widget could render unescaped HTML.
+- Fixed a bug where Twig macros were allowed in sandboxed templates.
+- Fixed a bug where user passkeys weren’t persisting.
+- Fixed an error that occurred when validation errors stored in the session were plain arrays.
+- Fixed compatibility issues with legacy element queries.
+- Fixed compatibility issues with legacy fallback routes.
+- Fixed legacy model behavior when unsafe config keys were provided.
+- Fixed permissions enforcement when duplicating Matrix blocks.
+- Fixed permissions enforcement when saving user fields through generic element save endpoints.
+- Fixed a `yii\base\InvalidConfigException` that occurred when a Yii2-based plugin registered an asset bundle. ([#18818](https://github.com/craftcms/cms/issues/18818))
 
 ## 6.0.0-alpha.1 - 2026-05-06
 

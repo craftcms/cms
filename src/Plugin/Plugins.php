@@ -38,12 +38,12 @@ use Illuminate\Cache\Repository;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Vite;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Vite;
 use InvalidArgumentException;
 use PDOException;
 use ReflectionClass;
@@ -1215,7 +1215,8 @@ class Plugins
         $html = '';
 
         foreach ($this->viteConfigs as $vite) {
-            $html .= Vite::useHotFile($vite['hotFile'])
+            $html .= (clone app(Vite::class))
+                ->useHotFile($vite['hotFile'])
                 ->useBuildDirectory(Str::chopEnd($vite['buildDirectory'], '/'))
                 ->withEntryPoints($vite['input'])
                 ->toHtml();

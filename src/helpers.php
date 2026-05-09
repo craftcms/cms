@@ -13,10 +13,10 @@ use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\TemplateRenderer;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Foundation\Vite;
 use Illuminate\Foundation\ViteException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Vite;
 use Stringable;
 use UnitEnum;
 
@@ -35,7 +35,8 @@ function enum_value(mixed $value, mixed $default = null): mixed
 function craftAsset(string $path, ?bool $secure = null): string
 {
     try {
-        return Vite::useHotFile(Aliases::get('@resources/hot'))
+        return (clone app(Vite::class))
+            ->useHotFile(Aliases::get('@resources/hot'))
             ->useBuildDirectory('vendor/craft/build')
             ->asset($path);
     } catch (ViteException) {

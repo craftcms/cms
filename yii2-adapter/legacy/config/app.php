@@ -73,6 +73,10 @@ return [
         'assetIndexer' => [
             'class' => AssetIndexer::class,
         ],
+        'assetManager' => function() {
+            $config = App::assetManagerConfig();
+            return Craft::createObject($config);
+        },
         'auth' => [
             'class' => Auth::class,
         ],

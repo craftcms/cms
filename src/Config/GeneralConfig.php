@@ -6025,10 +6025,8 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Configures Craft to send all system emails to either a single email address or an array of email addresses
-     * for testing purposes.
-     *
-     * The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
+     * The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General
+     * (stored in project config).
      *
      * This can be set to one of PHP’s [supported timezones](https://php.net/manual/en/timezones.php).
      *
