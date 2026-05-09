@@ -3,7 +3,6 @@ import type {StorybookConfig} from '@storybook/web-components-vite';
 import {dirname} from 'path';
 import {fileURLToPath} from 'url';
 import {mergeConfig} from 'vite';
-import tsconfigPaths from 'vite-tsconfig-paths';
 
 /**
  * This function is used to resolve the absolute path of a package.
@@ -29,7 +28,9 @@ const config: StorybookConfig = {
 
   viteFinal(config, {configType}) {
     return mergeConfig(config, {
-      plugins: [tsconfigPaths()],
+      resolve: {
+        tsconfigPaths: true,
+      },
     });
   },
 };

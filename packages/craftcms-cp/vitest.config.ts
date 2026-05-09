@@ -1,5 +1,6 @@
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {playwright} from '@vitest/browser-playwright';
 
 import {defineConfig} from 'vitest/config';
 
@@ -22,6 +23,16 @@ export default defineConfig({
         },
       },
       {
+        resolve: {
+          tsconfigPaths: true,
+        },
+        test: {
+          name: 'services',
+          root: './src/services',
+          environment: 'happy-dom',
+        },
+      },
+      {
         extends: true,
         plugins: [
           // The plugin will run tests for the stories defined in your Storybook config
@@ -33,7 +44,7 @@ export default defineConfig({
           browser: {
             enabled: true,
             headless: true,
-            provider: 'playwright',
+            provider: playwright(),
             instances: [{browser: 'chromium'}],
           },
           setupFiles: ['.storybook/vitest.setup.ts'],

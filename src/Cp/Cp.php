@@ -25,6 +25,7 @@ readonly class Cp
                 'cpTrigger',
                 'actionTrigger',
                 'csrfTokenName',
+                'runQueueAutomatically',
             ])
             ->merge([
                 'translations' => I18N::getAllTranslationsForLocale(app()->getLocale()) ?: new stdClass,
