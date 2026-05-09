@@ -115,8 +115,12 @@ jobs:
   unit-tests:
     needs: [pint, phpstan, rector]
     name: 'Tests / Unit'
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest, windows-latest]
 
     steps:
       - name: Checkout code
@@ -151,11 +155,12 @@ jobs:
   feature-tests:
     needs: [pint, phpstan, rector]
     name: 'Tests / Feature on ${{ matrix.db }}'
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
       fail-fast: true
       matrix:
+        os: [ubuntu-latest, windows-latest]
         php: [8.5]
         db: [mysql, pgsql, sqlite]
     services:
