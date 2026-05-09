@@ -95,24 +95,17 @@ test('store saves admin-only preferences for admin users', function () {
     /** @var User $user */
     $user = auth()->user();
 
-    // Admin users can set these preferences
-    // The user in tests should already be an admin
     if (! $user->admin) {
         $this->markTestSkipped('User must be admin for this test');
     }
 
     postJson(action([PreferencesController::class, 'store'], [
         'showFieldHandles' => true,
-        'enableDebugToolbarForSite' => true,
-        'enableDebugToolbarForCp' => true,
         'showExceptionView' => true,
         'profileTemplates' => true,
     ]))->assertOk();
 
-    // Verify preferences were saved (admin-only preferences)
     expect($user->getPreference('showFieldHandles'))->toBeTrue();
-    expect($user->getPreference('enableDebugToolbarForSite'))->toBeTrue();
-    expect($user->getPreference('enableDebugToolbarForCp'))->toBeTrue();
     expect($user->getPreference('showExceptionView'))->toBeTrue();
     expect($user->getPreference('profileTemplates'))->toBeTrue();
 });

@@ -1274,11 +1274,8 @@ class Users
             $url = Url::siteUrl($path, $params, $scheme, siteId: $siteId);
         }
 
-        if (Url::isRootRelativeUrl($url)) {
-            $request = request();
-            if (! app()->runningInConsole()) {
-                $url = rtrim($request->getSchemeAndHttpHost().$request->getBaseUrl(), '/').$url;
-            }
+        if (Url::isRootRelativeUrl($url) && ! app()->runningInConsole()) {
+            return url($url);
         }
 
         return $url;

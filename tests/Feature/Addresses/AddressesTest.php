@@ -9,13 +9,21 @@ use CommerceGuys\Addressing\AddressFormat\LocalityType;
 use CommerceGuys\Addressing\AddressFormat\PostalCodeType;
 use CommerceGuys\Addressing\Country\CountryRepository;
 use CraftCms\Cms\Address\Addresses;
+use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Address\Events\AddressCountriesResolving;
 use CraftCms\Cms\Address\Events\AddressFieldLabelResolving;
 use CraftCms\Cms\Address\Events\AddressSubdivisionsResolving;
 use CraftCms\Cms\Address\Events\AddressUsedFieldsResolving;
 use CraftCms\Cms\Address\Events\AddressUsedSubdivisionFieldsResolving;
+use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Address\Repositories\SubdivisionRepository;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
+use CraftCms\Cms\FieldLayout\LayoutElements\Addresses\LabelField;
+use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -100,7 +108,23 @@ it('can change the field label with an event', function () {
     expect($this->addresses->getFieldLabel(AddressField::LOCALITY, 'BE'))->toBe('foo');
 });
 
-it('can format an address')->todo('When Address Element is ported');
+it('can format an address', function () {
+    $address = AddressModel::factory()->createElement([
+        'countryCode' => 'US',
+        'administrativeArea' => 'NY',
+        'locality' => 'New York',
+        'postalCode' => '10001',
+        'addressLine1' => '20 W 34th St.',
+    ]);
+
+    expect($this->addresses->formatAddress($address))->toContain(
+        '20 W 34th St.',
+        'New York',
+        'NY',
+        '10001',
+        'United States',
+    );
+});
 
 it('can get a locality type label', function () {
     expect($this->addresses->getLocalityTypeLabel(LocalityType::DISTRICT))->toBe('District');
@@ -122,5 +146,43 @@ it('can get the fieldlayout', function () {
     expect($this->addresses->getFieldLayout())->toBeInstanceOf(FieldLayout::class);
 });
 
-it('can save the fieldlayout')->todo('When Field layouts are ported');
-it('can handle changed address field layout')->todo('When Field layouts are ported');
+it('can save the fieldlayout', function () {
+    $layout = new FieldLayout([
+        'uid' => Str::uuid()->toString(),
+        'type' => Address::class,
+        'tabs' => [
+            [
+                'uid' => Str::uuid()->toString(),
+                'name' => 'Content',
+                'elements' => [
+                    [
+                        'uid' => Str::uuid()->toString(),
+                        'type' => LabelField::class,
+                    ],
+                ],
+            ],
+        ],
+    ]);
+
+    expect($this->addresses->saveFieldLayout($layout))->toBeTrue()
+        ->and(app(Fields::class)->getLayoutByType(Address::class, false)?->uid)->toBe($layout->uid);
+});
+
+it('can handle changed address field layout', function () {
+    $layout = $this->addresses->getFieldLayout();
+    $layout->uid ??= Str::uuid()->toString();
+    $layout->setTabs([
+        new FieldLayoutTab([
+            'layout' => $layout,
+            'uid' => Str::uuid()->toString(),
+            'name' => 'Changed',
+        ]),
+    ]);
+
+    $this->addresses->handleChangedAddressFieldLayout(new ItemUpdated(
+        path: ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS,
+        newValue: [$layout->uid => $layout->getConfig()],
+    ));
+
+    expect(app(Fields::class)->getLayoutByType(Address::class, false)?->getTabs()[0]->name)->toBe('Changed');
+});

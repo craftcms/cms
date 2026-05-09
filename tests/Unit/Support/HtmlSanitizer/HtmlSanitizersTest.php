@@ -2,15 +2,21 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers as HtmlSanitizersFacade;
 use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\File;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
 beforeEach(function () {
     $this->sanitizers = app(HtmlSanitizers::class);
+});
+
+afterEach(function () {
+    File::deleteDirectory(config_path('craft/sanitizers'));
 });
 
 test('default sanitizer removes unknown attributes and keeps craft additions', function () {
@@ -75,6 +81,25 @@ test('sanitizer instances can be used directly', function () {
     $sanitized = $this->sanitizers->sanitize('<p class="lead">Hello</p>', $sanitizer);
 
     expect($sanitized)->toMatchSnapshot();
+});
+
+test('array config files register named sanitizers', function () {
+    File::ensureDirectoryExists(config_path('craft/sanitizers'));
+    File::put(config_path('craft/sanitizers/no-headings.php'), <<<'PHP'
+<?php
+
+return [
+    'allow_safe_elements' => true,
+    'block_elements' => ['h1'],
+];
+PHP);
+
+    app()->forgetInstance(HtmlSanitizers::class);
+    app(ConfigServiceProvider::class, ['app' => app()])->boot();
+
+    $sanitized = app(HtmlSanitizers::class)->sanitize('<h1>Title</h1><p>Body</p>', 'no-headings');
+
+    expect($sanitized)->toBe('Title<p>Body</p>');
 });
 
 test('facade resolves the sanitizer service', function () {

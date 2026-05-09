@@ -3,12 +3,21 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\Models\WebAuthn;
+use CraftCms\Cms\Auth\Passkeys\CredentialRepository;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
+use CraftCms\Cms\Auth\Passkeys\WebauthnServer;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Session;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Uid\Uuid;
+use Webauthn\AuthenticatorAssertionResponse;
+use Webauthn\AuthenticatorAssertionResponseValidator;
+use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialRequestOptions;
+use Webauthn\PublicKeyCredentialSource;
+use Webauthn\TrustPath\EmptyTrustPath;
 
 use function Pest\Laravel\freezeSecond;
 
@@ -97,6 +106,69 @@ test('getPasskeyRequestOptions returns PublicKeyCredentialRequestOptions', funct
     expect($options)->toBeInstanceOf(PublicKeyCredentialRequestOptions::class);
     expect($options->challenge)->not()->toBeEmpty();
     expect($options->userVerification)->toBe(PublicKeyCredentialRequestOptions::USER_VERIFICATION_REQUIREMENT_REQUIRED);
+});
+
+test('verifyPasskey persists the validated credential source', function () {
+    $requestOptionsJson = '{"challenge":"test-challenge"}';
+    $responseJson = '{"id":"test-credential-id"}';
+    $requestOptions = PublicKeyCredentialRequestOptions::create(challenge: 'test-challenge');
+    $authenticatorAssertionResponse = Mockery::mock(AuthenticatorAssertionResponse::class);
+    $publicKeyCredential = PublicKeyCredential::create(
+        type: 'public-key',
+        rawId: 'test-credential-id',
+        response: $authenticatorAssertionResponse,
+    );
+    $publicKeyCredentialSource = PublicKeyCredentialSource::create(
+        publicKeyCredentialId: 'test-credential-id',
+        type: 'public-key',
+        transports: [],
+        attestationType: 'none',
+        trustPath: EmptyTrustPath::create(),
+        aaguid: Uuid::v4(),
+        credentialPublicKey: 'credential-public-key',
+        userHandle: 'user-handle',
+        counter: 1,
+    );
+
+    $serializer = Mockery::mock(SerializerInterface::class);
+    $serializer
+        ->shouldReceive('deserialize')
+        ->once()
+        ->with($requestOptionsJson, PublicKeyCredentialRequestOptions::class, 'json')
+        ->andReturn($requestOptions);
+    $serializer
+        ->shouldReceive('deserialize')
+        ->once()
+        ->with($responseJson, PublicKeyCredential::class, 'json')
+        ->andReturn($publicKeyCredential);
+
+    $credentialRepository = Mockery::mock(CredentialRepository::class);
+    $credentialRepository
+        ->shouldReceive('findOneByCredentialId')
+        ->once()
+        ->with('test-credential-id', false)
+        ->andReturn($publicKeyCredentialSource);
+    $credentialRepository
+        ->shouldReceive('saveCredentialSource')
+        ->once()
+        ->with($publicKeyCredentialSource);
+
+    $assertionResponseValidator = Mockery::mock(AuthenticatorAssertionResponseValidator::class);
+    $assertionResponseValidator
+        ->shouldReceive('check')
+        ->once()
+        ->with($publicKeyCredentialSource, $authenticatorAssertionResponse, $requestOptions, 'localhost', $this->passkeys->passkeyUserEntity($this->user)->id)
+        ->andReturn($publicKeyCredentialSource);
+
+    $webauthnServer = Mockery::mock(WebauthnServer::class);
+    $webauthnServer->shouldReceive('getSerializer')->andReturn($serializer);
+    $webauthnServer->shouldReceive('getCredentialRepository')->andReturn($credentialRepository);
+    $webauthnServer->shouldReceive('getAuthenticatorAssertionResponseValidator')->andReturn($assertionResponseValidator);
+
+    $property = new ReflectionProperty($this->passkeys, 'webauthnServer');
+    $property->setValue($this->passkeys, $webauthnServer);
+
+    expect($this->passkeys->verifyPasskey($this->user, $requestOptionsJson, $responseJson))->toBeTrue();
 });
 
 test('deletePasskey removes passkey from database', function () {

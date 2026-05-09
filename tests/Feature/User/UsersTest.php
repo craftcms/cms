@@ -10,11 +10,15 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\UserLocked;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Models\UserGroup;
+use CraftCms\Cms\User\Notifications\ActivationNotification;
 use CraftCms\Cms\User\Users;
+use Illuminate\Notifications\Channels\MailChannel;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Password;
 
 beforeEach(function () {
     $this->users = app(Users::class);
@@ -431,9 +435,29 @@ test('handleValidLogin clears values', function () {
     expect($user->invalidLoginCount)->toBeNull();
 });
 
-test('isVerificationCodeValidForUser', function () {})->todo('Need to be able to fake verification codes');
+test('setVerificationCodeOnUser creates a valid broker token', function () {
+    $user = UserModel::factory()->createElement();
+    $token = $this->users->setVerificationCodeOnUser($user);
 
-test('sendActivationEmail', function () {})->todo('Add test after Mails are ported.');
+    expect(Password::broker('craft')->tokenExists($user, $token))->toBeTrue();
+});
+
+test('sendActivationEmail', function () {
+    Notification::fake();
+
+    $user = UserModel::factory()->createElement([
+        'active' => false,
+        'pending' => true,
+    ]);
+
+    $this->users->sendActivationEmail($user);
+
+    Notification::assertSentTo(
+        $user,
+        ActivationNotification::class,
+        fn ($notification, $channels) => in_array(MailChannel::class, $channels)
+    );
+});
 
 test('canImpersonate', function () {
     Edition::set(Edition::Pro);

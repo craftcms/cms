@@ -10,6 +10,7 @@ namespace craft\db;
 use ArrayAccess;
 use ArrayIterator;
 use craft\base\ClonefixTrait;
+use craft\base\RejectsUnsafeConfigKeys;
 use craft\events\DefineBehaviorsEvent;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
@@ -35,6 +36,7 @@ use yii\db\Connection as YiiConnection;
 class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
 {
     use ClonefixTrait;
+    use RejectsUnsafeConfigKeys;
 
     /**
      * @event \yii\base\Event The event that is triggered after the query's init cycle
@@ -58,6 +60,16 @@ class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
         if ($this->hasEventHandlers(self::EVENT_INIT)) {
             $this->trigger(self::EVENT_INIT);
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function __set($name, $value)
+    {
+        $this->ensureConfigKeyIsSafe($name);
+
+        parent::__set($name, $value);
     }
 
     /**
