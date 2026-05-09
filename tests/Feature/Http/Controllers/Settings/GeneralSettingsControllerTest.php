@@ -119,17 +119,29 @@ it('validates required fields', function (array $data, array $errors) {
 
 it('can save settings with environment variables', function () {
     putenv('GENERAL_SETTINGS_NAME=Env App');
+    putenv('GENERAL_SETTINGS_LIVE=true');
     putenv('GENERAL_SETTINGS_TIMEZONE=America/New_York');
 
     post(action([GeneralSettingsController::class, 'store']), [
         'name' => '$GENERAL_SETTINGS_NAME',
-        'live' => true,
+        'live' => '$GENERAL_SETTINGS_LIVE',
         'timeZone' => '$GENERAL_SETTINGS_TIMEZONE',
     ])->assertRedirectBack()
         ->assertSessionHasNoErrors();
 
     expect(ProjectConfig::get('system.name'))->toBe('$GENERAL_SETTINGS_NAME')
+        ->and(ProjectConfig::get('system.live'))->toBe('$GENERAL_SETTINGS_LIVE')
         ->and(ProjectConfig::get('system.timeZone'))->toBe('$GENERAL_SETTINGS_TIMEZONE');
+});
+
+it('validates resolved environment variable live values', function () {
+    putenv('GENERAL_SETTINGS_LIVE=maybe');
+
+    post(action([GeneralSettingsController::class, 'store']), [
+        'name' => 'App',
+        'live' => '$GENERAL_SETTINGS_LIVE',
+        'timeZone' => 'America/New_York',
+    ])->assertSessionHasErrors('live');
 });
 
 it('validates resolved environment variable timezone values', function () {
