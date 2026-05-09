@@ -242,7 +242,7 @@ class Path
 
     private function path(string $basePath, string $path = ''): string
     {
-        return $path === '' ? $basePath : join_paths($basePath, $path);
+        return $path === '' ? $basePath : File::normalizePath(join_paths($basePath, $path));
     }
 
     private function directory(string $basePath, string $path = '', bool $create = true, bool $writeGitignore = false): string
