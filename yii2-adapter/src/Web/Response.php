@@ -14,6 +14,7 @@ use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\Response as IlluminateResponse;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 use Yii;
 use yii\web\HeadersAlreadySentException;
@@ -79,9 +80,18 @@ class Response extends \yii\web\Response implements Responsable
                 $this->prepare();
             }
 
-            if (!$this->_illuminateResponseInjected && $this->_illuminateResponse !== null) {
+            if ($this->_illuminateResponse === null) {
+                $this->_illuminateResponse = new StreamedResponse($this->stream === null ? null : function() {
+                    parent::sendContent();
+                });
+            }
+
+            if (!$this->_illuminateResponseInjected) {
                 $this->sendHeaders();
-                $this->sendContent();
+
+                if (!$this->_illuminateResponse instanceof StreamedResponse) {
+                    $this->sendContent();
+                }
             }
 
             $this->_illuminateResponsePrepared = true;

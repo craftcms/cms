@@ -11,8 +11,8 @@ use Craft;
 use craft\errors\AuthProviderNotFoundException;
 use craft\errors\SsoFailedException;
 use craft\web\Controller;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Enums\AuthError;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Json;
@@ -129,11 +129,8 @@ class SsoController extends Controller
         if ($this->request->getAcceptsJson()) {
             $return = [
                 'returnUrl' => $returnUrl,
+                'csrfTokenValue' => csrf_token(),
             ];
-
-            if (Cms::config()->enableCsrfProtection) {
-                $return['csrfTokenValue'] = $this->request->getCsrfToken();
-            }
 
             return $this->asJson($return);
         }
@@ -159,7 +156,7 @@ class SsoController extends Controller
 
         if ($exception instanceof SsoFailedException) {
             $user = $exception->identity;
-            $info = app(\CraftCms\Cms\Auth\AuthMethods::class)->getLoginFailureInfo(AuthError::tryFrom($exception->getMessage()), $user);
+            $info = app(AuthMethods::class)->getLoginFailureInfo(AuthError::tryFrom($exception->getMessage()), $user);
             $message = $info[1] ?? $message;
         }
 

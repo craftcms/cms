@@ -194,24 +194,6 @@
         },
       ],
     }) }}
-
-    {{ forms.checkboxGroupField({
-      label: 'Debug Toolbar'|t('app'),
-      options: [
-        {
-          label: 'Show the debug toolbar on the front end'|t('app'),
-          name: 'enableDebugToolbarForSite',
-          id: 'enableDebugToolbarForSite',
-          checked: Auth.user.getPreference('enableDebugToolbarForSite')
-        },
-        {
-          label: 'Show the debug toolbar in the control panel'|t('app'),
-          name: 'enableDebugToolbarForCp',
-          id: 'enableDebugToolbarForCp',
-          checked: Auth.user.getPreference('enableDebugToolbarForCp')
-        },
-      ],
-    }) }}
   </div>
 {% endif %}
 

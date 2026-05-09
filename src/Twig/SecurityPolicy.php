@@ -185,7 +185,7 @@ class SecurityPolicy implements SecurityPolicyInterface
         }
 
         if (
-            $this->isClassAllowed($obj) ||
+            ($this->isClassAllowed($obj) && ! $this->isDynamicMacroMethod($obj, $method)) ||
             $this->checkForAllowedAttributeInMethod($obj, $method)
         ) {
             return;
@@ -200,6 +200,19 @@ class SecurityPolicy implements SecurityPolicyInterface
 
         $class = $obj::class;
         throw new SecurityNotAllowedMethodError(sprintf('Calling "%s" method on a "%s" object is not allowed.', $method, $class), $class, $method);
+    }
+
+    private function isDynamicMacroMethod($obj, string $method): bool
+    {
+        if (! is_object($obj) || ! is_callable([$obj::class, 'hasMacro']) || ! $obj::class::hasMacro($method)) {
+            return false;
+        }
+
+        try {
+            return ! new ReflectionClass($obj)->hasMethod($method);
+        } catch (ReflectionException) {
+            return true;
+        }
     }
 
     private function checkForAllowedAttributeInMethod($obj, string $method, bool $checkInterfaces = true): bool

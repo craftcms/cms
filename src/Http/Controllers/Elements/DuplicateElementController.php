@@ -113,6 +113,7 @@ readonly class DuplicateElementController
 
                     $safeNewAttributes = collect($newAttributes)
                         ->only($element->safeAttributes())
+                        ->except(['id', 'uid', 'canonicalId', 'siteSettingsId'])
                         ->all();
 
                     // if element is a revision, we need to nullify some additional attributes

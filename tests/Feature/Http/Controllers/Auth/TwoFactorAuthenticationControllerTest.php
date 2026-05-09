@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\Models\Authenticator;
+use CraftCms\Cms\Auth\Models\RecoveryCodes;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\User\Elements\User;
+use PragmaRX\Google2FA\Google2FA;
 
 use function Pest\Laravel\get;
 use function Pest\Laravel\getJson;
@@ -55,23 +57,36 @@ test('verifyRecoveryCode fails with invalid recovery code', function () {
 
 test('verify returns success with valid TOTP code', function () {
     $user = User::findOne();
+    $secret = (new Google2FA)->generateSecretKey();
+
+    Authenticator::create([
+        'userId' => $user->id,
+        'auth2faSecret' => $secret,
+    ]);
+
     withSession(['user.id' => $user->id]);
 
-    $this->withoutExceptionHandling();
-
     postJson(action([TwoFactorAuthenticationController::class, 'verify']), [
-        'code' => '123456',
-    ]);
-})->todo('Implement once Auth service is ported and can be faked.');
+        'code' => (new Google2FA)->getCurrentOtp($secret),
+    ])->assertOk();
+});
 
 test('verifyRecoveryCode returns success with valid recovery code', function () {
     $user = User::findOne();
+
+    RecoveryCodes::create([
+        'userId' => $user->id,
+        'recoveryCodes' => ['abc123-def456'],
+    ]);
+
     withSession(['user.id' => $user->id]);
 
     postJson(action([TwoFactorAuthenticationController::class, 'verifyRecoveryCode']), [
-        'code' => 'some-recovery-code',
-    ]);
-})->todo('Implement once Auth service is ported and can be faked.');
+        'code' => 'abc123-def456',
+    ])->assertOk();
+
+    expect(RecoveryCodes::where('userId', $user->id)->first()->recoveryCodes)->toBe([false]);
+});
 
 test('verify requires code parameter', function () {
     $user = User::findOne();

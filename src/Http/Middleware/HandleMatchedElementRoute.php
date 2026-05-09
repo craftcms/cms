@@ -52,6 +52,6 @@ readonly class HandleMatchedElementRoute
 
         MatchedElement::set($element, $route);
 
-        return new DynamicRoute($route[0], $routeParams)->handle($request);
+        return new DynamicRoute($route[0], $routeParams + ['publicOnly' => false])->handle($request);
     }
 }

@@ -261,6 +261,59 @@ describe('bulkDuplicate', function () {
         ])->assertForbidden();
     });
 
+    it('does not allow bulk duplicate attributes to target an existing element ID', function () {
+        $source = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->createElement([
+                'title' => 'Source Title',
+                'slug' => 'source-title',
+            ]);
+        $target = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->createElement([
+                'title' => 'Target Title',
+                'slug' => 'target-title',
+            ]);
+
+        $response = postJson(action([DuplicateElementController::class, 'bulkDuplicate']), [
+            'elements' => [[
+                'type' => Entry::class,
+                'id' => $source->id,
+                'siteId' => $source->siteId,
+            ]],
+            'newAttributes' => [
+                'id' => $target->id,
+                'sectionId' => $this->section->id,
+                'typeId' => $this->entryType->id,
+                'title' => 'Injected Title',
+            ],
+        ])->assertOk()
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->where('message', mb_ucfirst(t('{type} duplicated.', ['type' => Entry::displayName()])))
+                ->has('newElements', 1)
+                ->where('newElements.0.title', 'Injected Title')
+            );
+
+        $duplicate = Entry::find()
+            ->id($response->json('newElements.0.id'))
+            ->siteId($source->siteId)
+            ->status(null)
+            ->one();
+        $target = Entry::find()
+            ->id($target->id)
+            ->siteId($target->siteId)
+            ->status(null)
+            ->one();
+
+        expect($duplicate)->not->toBeNull()
+            ->and($duplicate->id)->not->toBe($source->id)
+            ->and($duplicate->id)->not->toBe($target->id)
+            ->and($duplicate->title)->toBe('Injected Title')
+            ->and($target->title)->toBe('Target Title');
+    });
+
     it('returns a failure response when bulk duplication raises an invalid element exception', function () {
         $entry = EntryModel::factory()
             ->forSection($this->section)
