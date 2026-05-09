@@ -307,14 +307,14 @@ class Plugins
         // Figure out the path to the folder that contains this class
         try {
             // Add a trailing slash so we don't get false positives
-            $classPath = Str::finish(File::normalizePath(dirname(new ReflectionClass($class)->getFileName())), '/');
+            $classPath = Str::finish(File::normalizePath(dirname(new ReflectionClass($class)->getFileName()), '/'), '/');
         } catch (ReflectionException) {
             return $this->classPluginHandles[$class] = null;
         }
 
         // Find the plugin that contains this path (if any)
         foreach ($this->composerPluginInfo as $handle => $info) {
-            if (isset($info['basePath']) && str_starts_with($classPath, Str::finish($info['basePath'], '/'))) {
+            if (isset($info['basePath']) && str_starts_with($classPath, Str::finish(File::normalizePath($info['basePath'], '/'), '/'))) {
                 return $this->classPluginHandles[$class] = $handle;
             }
         }

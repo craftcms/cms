@@ -23,7 +23,10 @@ beforeEach(function () {
 
     $this->tempDir = storage_path('runtime/backups-test-'.uniqid('', true));
     File::ensureDirectoryExists($this->tempDir);
-});
+})
+    // These tests rely on POSIX shell semantics (single-quote escapeshellarg, inline `php -r`,
+    // and bash-isms like `set -e` / `{ ... } > file`) which don't work under cmd.exe.
+    ->skipOnWindows();
 
 afterEach(function () {
     File::deleteDirectory($this->tempDir);

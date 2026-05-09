@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\File as Path;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\Twig\TemplateLoader;
 use CraftCms\Cms\Twig\TemplateResolver;
@@ -49,7 +50,7 @@ describe('getSourceContext', function () {
         expect($source)->toBeInstanceOf(Source::class)
             ->and($source->getCode())->toBe('Hello {{ name }}')
             ->and($source->getName())->toBe('hello')
-            ->and($source->getPath())->toBe($this->tempDir.'/hello.twig');
+            ->and($source->getPath())->toBe(Path::normalizePath($this->tempDir.'/hello.twig'));
     });
 
     it('throws TemplateLoaderException when template does not exist', function () {
@@ -62,7 +63,8 @@ describe('getSourceContext', function () {
         chmod($path, 0000);
 
         $this->loader->getSourceContext('unreadable');
-    })->throws(TemplateLoaderException::class, 'could not');
+    })->throws(TemplateLoaderException::class, 'could not')
+        ->skip(PHP_OS_FAMILY === 'Windows', 'chmod() does not affect file readability on Windows.');
 
     it('includes the template name in TemplateLoaderException', function () {
         try {
@@ -83,7 +85,7 @@ describe('getCacheKey', function () {
 
         $cacheKey = $this->loader->getCacheKey('cached');
 
-        expect($cacheKey)->toBe($this->tempDir.'/cached.twig');
+        expect($cacheKey)->toBe(Path::normalizePath($this->tempDir.'/cached.twig'));
     });
 
     it('throws TemplateLoaderException when template does not exist', function () {

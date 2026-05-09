@@ -28,7 +28,10 @@ it('creates backups for sqlite file-backed databases', function () {
 
         File::delete($backupPath);
     });
-});
+})
+    // Sqlite backup uses POSIX shell scripting (set -e, brace groups, redirection) which
+    // doesn't run under cmd.exe.
+    ->skipOnWindows();
 
 function withIsolatedSqliteConnectionForBackupCommand(callable $callback): void
 {
