@@ -13,6 +13,7 @@
 - Fixed a bug where `CraftCms\Cms\Support\Typecast` could give private properties precedence over typed setters.
 - Fixed a bug where `runQueueAutomatically` wasn’t being respected. ([#18817](https://github.com/craftcms/cms/pull/18817))
 - Make system timezone configurable during install ([#18794](https://github.com/craftcms/cms/pull/18794))
+- Fixed a `yii\base\InvalidConfigException` that occurred when a Yii2-based plugin registered an asset bundle. ([#18818](https://github.com/craftcms/cms/issues/18818))
 
 ## 6.0.0-alpha.1 - 2026-05-06
 
