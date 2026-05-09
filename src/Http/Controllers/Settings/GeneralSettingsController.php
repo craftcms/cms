@@ -8,11 +8,10 @@ use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Validation\Rules\EnvValueRule;
 use CraftCms\Cms\Validation\Rules\TimezoneRule;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -27,6 +26,9 @@ readonly class GeneralSettingsController
 
     public function index(): CpScreenResponse
     {
+        $timezoneOptions = SelectOptions::getTimeZoneOptions();
+        $timezoneOptions = array_merge($timezoneOptions, SelectOptions::getEnvOptions(array_column($timezoneOptions, 'value')));
+
         return new CpScreenResponse()
             ->title(t('General Settings'))
             ->crumbs([
@@ -37,47 +39,25 @@ readonly class GeneralSettingsController
             ->inertiaPage('SettingsGeneralPage', [
                 'system' => $this->projectConfig->get('system') ?? [],
                 'nameSuggestions' => SelectOptions::getEnvSuggestions(),
-                'timezoneOptions' => [
-                    ...SelectOptions::getTimeZoneOptions(),
-                    ...SelectOptions::getEnvOptions(),
-                ],
+                'timezoneOptions' => $timezoneOptions,
                 'systemStatusOptions' => SelectOptions::getBooleanEnvOptions(),
             ]);
     }
 
     public function store(Request $request): Response
     {
-        $resolvedValues = [];
-
-        $envAllowedKeys = ['name', 'live', 'timeZone'];
-        $booleans = ['live'];
-        foreach ($request->all() as $key => $value) {
-            if (in_array($key, $envAllowedKeys) && is_string($value) && str_starts_with($value, '$')) {
-                $resolvedValues[$key] = in_array($key, $booleans) ? Env::parseBoolean($value) : Env::parse($value);
-            } else {
-                $resolvedValues[$key] = $value;
-            }
-        }
-
-        /**
-         * We want to validate against the resolved values, but we'll store what the user provided
-         */
-        Validator::make($resolvedValues, [
-            'name' => ['required', 'string'],
-            'live' => ['required', 'boolean'],
+        $settings = $request->validate([
+            'name' => [new EnvValueRule(['required', 'string'])],
+            'live' => [new EnvValueRule(['required', 'boolean'])],
             'retryDuration' => ['nullable', 'integer'],
-            'timeZone' => ['required', 'string', new TimezoneRule],
-        ])->validate();
+            'timeZone' => [new EnvValueRule(['required', 'string', new TimezoneRule])],
+        ]);
 
         $systemSettings = $this->projectConfig->get('system') ?? [];
-        $systemSettings['name'] = $request->input('name');
-        $systemSettings['live'] = $request->input('live');
-        $systemSettings['retryDuration'] = $request->input('retryDuration') ?: null;
-        $systemSettings['timeZone'] = $request->input('timeZone');
-
-        if (! str_starts_with((string) $systemSettings['live'], '$')) {
-            $systemSettings['live'] = $request->boolean('live');
-        }
+        $systemSettings['name'] = $settings['name'];
+        $systemSettings['live'] = $settings['live'];
+        $systemSettings['retryDuration'] = $settings['retryDuration'] ?? null;
+        $systemSettings['timeZone'] = $settings['timeZone'];
 
         $this->projectConfig->set('system', $systemSettings, 'Update system settings.');
 
