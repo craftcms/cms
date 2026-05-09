@@ -12,6 +12,8 @@
 - Fixed a PHP error that occurred when saving an entry type. ([#18816](https://github.com/craftcms/cms/pull/18816))
 - Fixed an issue with Typecast where typed setters wouldn't have precedence over private properties.
 - Fixed a bug where Control Panel templates failed to load on Windows due to mismatched directory separators or drive-letter casing in `CraftCms\Cms\View\TwigEngine`. ([#18804](https://github.com/craftcms/cms/issues/18804))
+- Fixed a bug where `CraftCms\Cms\Support\Typecast` could give private properties precedence over typed setters.
+- Fixed a bug where `runQueueAutomatically` wasn’t being respected. ([#18817](https://github.com/craftcms/cms/pull/18817))
 
 ## 6.0.0-alpha.1 - 2026-05-06
 
