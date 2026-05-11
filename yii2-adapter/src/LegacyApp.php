@@ -77,7 +77,7 @@ readonly class LegacyApp
 
             DeprecatedConcepts::bootYiiEvents();
 
-            return $app;
+            return $craftApp;
         });
     }
 }
