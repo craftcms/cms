@@ -1,0 +1,1 @@
+import"./_plugin-vue_export-helper-CMsg-amg.js";import{t as e}from"./cp-9A_aBhLD.js";import"./CpGlobalSidebar-TvhDIVAC.js";import"./CpQueueIndicator-qrAT-u5H.js";window.Cp={...window.Cp||{},...e},console.log(`window.Cp defined`,window.Cp);

@@ -15,6 +15,7 @@ use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Once;
 
 use function Pest\Laravel\actingAs;
 
@@ -112,6 +113,10 @@ it('returns missing widgets for saved widget types that can no longer be resolve
 });
 
 it('can test if a user has a widget', function () {
+    $user = auth()->user();
+    UserModel::where('id', $user->id)->update(['hasDashboard' => true]);
+    $user->hasDashboard = true;
+
     expect($this->dashboard->doesUserHaveWidget(Feed::class))->toBeFalse();
 
     $this->dashboard->saveWidget($this->dashboard->createWidget([
@@ -121,6 +126,8 @@ it('can test if a user has a widget', function () {
             'url' => 'https://craftcms.com/news.rss',
         ],
     ]));
+
+    Once::flush();
 
     expect($this->dashboard->doesUserHaveWidget(Feed::class))->toBeTrue();
 });

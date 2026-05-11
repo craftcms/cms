@@ -250,7 +250,7 @@ readonly class SaveUserController
 
         $photo = $request->file('photo');
 
-        if ($photo && ! ImageHelper::canManipulateAsImage($photo->extension())) {
+        if ($photo && ! ImageHelper::canManipulateAsImage($photo->getClientOriginalExtension())) {
             $user->errors()->add('photo', t('The user photo provided is not an image.'));
         }
 

@@ -221,9 +221,9 @@ class Application extends \yii\web\Application
         try {
             $result = parent::runAction($route, $params);
         } catch (InvalidRouteException $e) {
-            $result = $this->runDefaultControllerAction($route, $params);
+            [$handled, $result] = $this->runDefaultControllerAction($route, $params);
 
-            if ($result === null) {
+            if (!$handled) {
                 if (($response = $this->runLaravelAction($route, $params)) !== null) {
                     return $response;
                 }
@@ -241,18 +241,21 @@ class Application extends \yii\web\Application
         return $response;
     }
 
-    private function runDefaultControllerAction(string $route, array $params = []): mixed
+    /**
+     * @return array{bool, mixed}
+     */
+    private function runDefaultControllerAction(string $route, array $params = []): array
     {
         $segments = explode('/', $route);
 
         if (count($segments) !== 2 || !$this->hasModule($segments[0])) {
-            return null;
+            return [false, null];
         }
 
         try {
-            return parent::runAction(sprintf('%s/default/%s', $segments[0], $segments[1]), $params);
+            return [true, parent::runAction(sprintf('%s/default/%s', $segments[0], $segments[1]), $params)];
         } catch (InvalidRouteException) {
-            return null;
+            return [false, null];
         }
     }
 
@@ -275,15 +278,10 @@ class Application extends \yii\web\Application
 
         unset($payload['action'], $payload['p']);
 
-        if ($request->hasSession()) {
-            $payload['_token'] ??= $request->session()->token();
-        }
-
         $internalRequest = $request->duplicate(
             query: [],
             request: $payload,
             server: array_merge($request->server->all(), [
-                'REQUEST_METHOD' => 'POST',
                 'REQUEST_URI' => $actionUri,
                 'HTTP_X_CRAFT_LEGACY_ACTION_BRIDGE' => '1',
             ]),

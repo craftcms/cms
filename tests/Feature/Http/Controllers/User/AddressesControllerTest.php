@@ -5,6 +5,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Http\Controllers\Users\AddressesController;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\DB;
 
 use function CraftCms\Cms\t;
@@ -51,4 +52,25 @@ test('store & destroy', function () {
     ])->assertOk();
 
     expect(new AddressQuery()->count())->toBe(0);
+});
+
+test('store ignores ownership attributes', function () {
+    $user = auth()->user();
+    $otherUser = UserModel::factory()->createElement();
+
+    postJson(action([AddressesController::class, 'store']), [
+        'userId' => $user->id,
+        'primaryOwnerId' => $otherUser->id,
+        'fieldId' => 1,
+        'title' => 'Home',
+        'addressLine1' => '123 Fake Street',
+        'administrativeArea' => 'CA',
+        'locality' => 'San Francisco',
+        'postalCode' => '94107',
+    ])->assertOk();
+
+    $address = DB::table(Table::ADDRESSES)->first();
+
+    expect($address->primaryOwnerId)->toBe($user->id)
+        ->and($address->fieldId)->toBeNull();
 });

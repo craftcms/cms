@@ -22,7 +22,15 @@ use Illuminate\Support\Facades\Route;
  * to rendering CP templates (e.g. plugin nav links pointing at paths the
  * plugin only ships templates for).
  */
-Route::middleware(['web', 'craft', 'craft.cp', ExcludeCsrfValidationForLegacyController::class, LegacyMiddleware::class])
+Route::middleware([
+    'web',
+    'craft',
+    'craft.cp',
+    'auth:craft',
+    'can:accessCp',
+    ExcludeCsrfValidationForLegacyController::class,
+    LegacyMiddleware::class,
+])
     ->name('craft.cp.legacy')
     ->prefix(Cms::config()->cpTrigger)
     ->any('{any}', fn() => abort(404))

@@ -55,7 +55,7 @@ const Cp = {
   init() {
     config.initialize(this.initialConfig);
     queue.initialize({
-      runAutomatically: config.get('runAutomatically', false),
+      runAutomatically: config.get('runQueueAutomatically', true),
       enabled: true,
       appId: config.get('systemUid', ''),
       canAccessQueueManager: config.get('canAccessQueueManager', false),
