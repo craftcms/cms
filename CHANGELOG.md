@@ -8,6 +8,7 @@
 - Added the legacy `paginate` Twig variable back.
 - Added CP access permission checks to Control Panel action routes.
 - The `craftAsset()` Twig function now resolves to Vite versioned assets. ([#18801](https://github.com/craftcms/cms/pull/18801))
+- Renamed the `|money` Twig filter’s `formatLocale` argument to `locale`.
 - Deprecated the `csrfTokenName`, `enableCsrfCookie`, and `enableCsrfProtection` general config settings. ([#18806](https://github.com/craftcms/cms/pull/18806))
 - Removed support for the Debug Toolbar. [Laravel Debugbar](https://laraveldebugbar.com) can be used instead. ([#18812](https://github.com/craftcms/cms/pull/18812))
 - Improved Control Panel icon loading performance.
