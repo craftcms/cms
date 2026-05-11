@@ -48,6 +48,7 @@
 - Fixed a bug where the site's offline status was not being enforced on matched element routes.
 - Fixed a user photo validation issue with file extensions.
 - Fixed a bug where legacy controllers could return `null` but were not considered handled.
+- Improved performance of the dashboard by reducing the amount of queries for widgets
 
 ## 6.0.0-alpha.1 - 2026-05-06
 
