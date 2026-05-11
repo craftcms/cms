@@ -44,7 +44,7 @@ return RectorConfig::configure()
         AppToResolveRector::class,
         StringClassNameToClassConstantRector::class => [
             __DIR__.'/src/Console/PromptTask.php',
-        ]
+        ],
     ])
     ->withSetProviders(LaravelSetProvider::class)
     ->withComposerBased(laravel: true)
