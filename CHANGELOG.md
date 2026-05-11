@@ -49,6 +49,7 @@
 - Fixed a user photo validation issue with file extensions.
 - Fixed a bug where legacy controllers could return `null` but were not considered handled.
 - Improved performance of the dashboard by reducing the amount of queries for widgets
+- Fixed a bug where criteria added to clones of executed element queries could be ignored. ([#18826](https://github.com/craftcms/cms/pull/18826))
 
 ## 6.0.0-alpha.1 - 2026-05-06
 
