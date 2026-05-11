@@ -113,10 +113,8 @@ class AssetLocationValidator extends Validator
         ]);
 
         if ($validator->fails()) {
-            foreach ($validator->errors()->get($attribute) as $messages) {
-                foreach ($messages as $message) {
-                    $model->addError($attribute, $message[0]);
-                }
+            foreach ($validator->errors()->get($attribute) as $message) {
+                $model->addError($attribute, $message);
             }
         }
     }
