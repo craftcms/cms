@@ -1,5 +1,6 @@
 import {css} from 'lit';
 import {CraftInput} from '@src/index';
+import {property} from 'lit/decorators.js';
 
 export default class CraftInputHandle extends CraftInput {
   static override get styles() {
@@ -14,15 +15,20 @@ export default class CraftInputHandle extends CraftInput {
     ];
   }
 
-  constructor() {
-    super();
-    this.autocorrect = false;
-  }
+  @property({reflect: true})
+  override autocorrect = false;
+
+  @property({reflect: true, type: String})
+  override autocapitalize = 'off';
 
   override firstUpdated(changedProperties: Map<string, unknown>) {
     super.firstUpdated(changedProperties);
 
-    this._inputNode?.setAttribute('autocapitalize', 'off');
+    this._inputNode?.setAttribute(
+      'autocorrect',
+      this.autocorrect ? 'on' : 'off'
+    );
+    this._inputNode?.setAttribute('autocapitalize', this.autocapitalize);
   }
 }
 

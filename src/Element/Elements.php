@@ -10,7 +10,7 @@ use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
-use CraftCms\Cms\Element\Events\RegisterElementTypes;
+use CraftCms\Cms\Element\Events\ElementTypesResolving;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Operations\ElementCanonicalChanges;
@@ -123,7 +123,7 @@ class Elements
             User::class,
         ];
 
-        event($event = new RegisterElementTypes($elementTypes));
+        event($event = new ElementTypesResolving($elementTypes));
 
         return $event->types;
     }

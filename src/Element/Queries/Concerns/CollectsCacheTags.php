@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
-use CraftCms\Cms\Element\Queries\Events\DefineCacheTags;
+use CraftCms\Cms\Element\Queries\Events\ElementQueryCacheTagsResolving;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 
@@ -66,7 +66,7 @@ trait CollectsCacheTags
 
         $queryTags = $this->cacheTags();
 
-        event($event = new DefineCacheTags($this, $queryTags));
+        event($event = new ElementQueryCacheTagsResolving($this, $queryTags));
 
         $queryTags = $event->tags;
 

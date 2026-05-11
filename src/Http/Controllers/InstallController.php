@@ -17,7 +17,9 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Validation\Rules\EnvValueRule;
 use CraftCms\Cms\Validation\Rules\LanguageRule;
+use CraftCms\Cms\Validation\Rules\TimezoneRule;
 use Illuminate\Database\SQLiteDatabaseDoesNotExistException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -44,8 +46,12 @@ readonly class InstallController
 
     public function __construct()
     {
+        if (! app()->hasDebugModeEnabled()) {
+            abort(503, 'Debug mode must be enabled to install Craft.');
+        }
+
         // Return a 404 if Craft is already installed
-        if (! app()->hasDebugModeEnabled() && Cms::isInstalled()) {
+        if (Cms::isInstalled()) {
             abort(404, 'Craft is already installed');
         }
     }
@@ -63,32 +69,33 @@ readonly class InstallController
             }
         }
 
-        // Grab the license text
-        $licensePath = Aliases::get('@craftcms/LICENSE.md');
-        $license = file_get_contents($licensePath);
-        $licenseHtml = Str::markdown($license);
-
         // Guess the site name based on the server name
         $defaultSystemName = $this->defaultSiteName();
         $defaultSiteUrl = $this->defaultSiteUrl();
         $defaultSiteLanguage = $this->defaultSiteLanguage();
-        $locales = I18N::getAllLocales();
         $dbConfig = DB::getConfig();
         $postCpLoginRedirect = Cms::config()->postCpLoginRedirect;
-
-        $localeOptions = collect($locales)
-            ->map(fn ($locale) => [
-                'id' => $locale->id,
-                'value' => $locale->id,
-                'label' => $locale->getDisplayName(app()->getLocale()),
-                'selected' => $locale->id === $defaultSiteLanguage,
-            ]);
 
         return Inertia::render('Install', [
             'showDbScreen' => $showDbScreen,
             'postCpLoginRedirect' => $postCpLoginRedirect,
-            'licenseHtml' => Inertia::defer(fn () => $licenseHtml),
-            'localeOptions' => Inertia::defer(fn () => $localeOptions),
+            'licenseHtml' => Inertia::defer(function () {
+                $licensePath = Aliases::get('@craftcms/LICENSE.md');
+                $license = file_get_contents($licensePath);
+
+                return Str::markdown($license);
+            }),
+            'localeOptions' => Inertia::defer(fn () => I18N::getAllLocales()->map(fn ($locale) => [
+                'id' => $locale->id,
+                'value' => $locale->id,
+                'label' => $locale->getDisplayName(app()->getLocale()),
+                'selected' => $locale->id === $defaultSiteLanguage,
+            ])),
+            'timezone' => Inertia::defer(function () {
+                $timezoneOptions = SelectOptions::getTimeZoneOptions();
+
+                return array_merge($timezoneOptions, SelectOptions::getEnvOptions(array_column($timezoneOptions, 'value')));
+            }),
             'baseUrlSuggestions' => SelectOptions::getEnvSuggestions(true, fn ($value) => Str::isUrl($value)),
             'defaultSystemName' => $defaultSystemName,
             'defaultSiteUrl' => $defaultSiteUrl,
@@ -144,13 +151,10 @@ readonly class InstallController
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'baseUrl' => ['nullable', 'string', 'max:255'],
+            'baseUrl' => [new EnvValueRule(['nullable', 'url', 'max:255'])],
             'language' => ['required', 'string', 'max:255', new LanguageRule(onlySiteLanguages: false)],
+            'timezone' => [new EnvValueRule([new TimezoneRule])],
         ]);
-
-        $baseUrl = Env::parse($request->input('baseUrl'));
-
-        Validator::validate(compact('baseUrl'), ['baseUrl' => 'url']);
 
         return new JsonResponse;
     }
@@ -221,6 +225,7 @@ readonly class InstallController
             password: $request->input('account.password'),
             email: $email,
             site: $site,
+            timezone: $request->input('site.timezone'),
         )->silent();
 
         // Run the install migration

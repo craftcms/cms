@@ -1136,7 +1136,6 @@ class ExtensionTest extends TestCase
      */
     public function test_csrf_input_function(): void
     {
-        Cms::config()->enableCsrfProtection = true;
         Session::start();
 
         $this->testRenderResult(

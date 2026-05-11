@@ -5,7 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
-use CraftCms\Cms\Element\Events\DefineSourceSortOptions;
+use CraftCms\Cms\Element\Events\ElementSourceSortOptionsResolving;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -71,7 +71,7 @@ it('can get source sort options', function () {
     $expressionA = new stdClass;
     $expressionB = new stdClass;
 
-    Event::listen(DefineSourceSortOptions::class, function (DefineSourceSortOptions $event) use ($expressionA, $expressionB) {
+    Event::listen(ElementSourceSortOptionsResolving::class, function (ElementSourceSortOptionsResolving $event) use ($expressionA, $expressionB) {
         $event->sortOptions = collect(match ($event->source) {
             '__IMP__' => [
                 [

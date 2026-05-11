@@ -10,15 +10,16 @@ use CraftCms\Cms\Support\File;
 use Illuminate\Support\Facades\Facade;
 
 beforeEach(function () {
-    $this->sandboxPath = storage_path('framework/testing/path-service/'.uniqid('', true));
+    $this->sandboxPath = File::normalizePath(storage_path('framework/testing/path-service/'.uniqid('', true)));
+    $ds = DIRECTORY_SEPARATOR;
     $this->aliases = [
-        '@storage' => $this->sandboxPath.'/storage',
-        '@tests' => $this->sandboxPath.'/tests',
-        '@vendor' => $this->sandboxPath.'/vendor',
-        '@templates' => $this->sandboxPath.'/templates',
-        '@translations' => $this->sandboxPath.'/translations',
-        '@contentMigrations' => $this->sandboxPath.'/content-migrations',
-        '@lib' => $this->sandboxPath.'/lib',
+        '@storage' => $this->sandboxPath.$ds.'storage',
+        '@tests' => $this->sandboxPath.$ds.'tests',
+        '@vendor' => $this->sandboxPath.$ds.'vendor',
+        '@templates' => $this->sandboxPath.$ds.'templates',
+        '@translations' => $this->sandboxPath.$ds.'translations',
+        '@contentMigrations' => $this->sandboxPath.$ds.'content-migrations',
+        '@lib' => $this->sandboxPath.$ds.'lib',
     ];
 
     File::ensureDirectoryExists($this->sandboxPath);
@@ -57,29 +58,29 @@ afterEach(function () {
 test('base getters resolve expected alias-backed and fixed paths', function () {
     $path = ($this->laravelPath)();
 
-    expect($path->config())->toBe(config_path('craft'))
+    expect($path->config())->toBe(File::normalizePath(config_path('craft')))
         ->and($path->tests())->toBe($this->aliases['@tests'])
         ->and($path->vendor())->toBe($this->aliases['@vendor'])
-        ->and($path->cpTranslations())->toBe(Aliases::get('@craftcms/resources/translations'))
+        ->and($path->cpTranslations())->toBe(File::normalizePath(Aliases::get('@craftcms/resources/translations')))
         ->and($path->siteTranslations())->toBe($this->aliases['@translations'])
-        ->and($path->cpTemplates())->toBe(Aliases::get('@craftcms/resources/templates'))
+        ->and($path->cpTemplates())->toBe(File::normalizePath(Aliases::get('@craftcms/resources/templates')))
         ->and($path->siteTemplates())->toBe($this->aliases['@templates'])
         ->and($path->licenseKey())->toBe(app(License::class)->keyPath())
-        ->and($path->projectConfigFile())->toBe(config_path('craft/project/'.ProjectConfig::CONFIG_FILENAME));
+        ->and($path->projectConfigFile())->toBe(File::normalizePath(config_path('craft/project/'.ProjectConfig::CONFIG_FILENAME)));
 });
 
 test('project config path respects folder name and create flag', function () {
     $path = ($this->laravelPath)();
     $config = app(ProjectConfig::class);
     $config->folderName = '__path-test__';
-    $expectedPath = config_path('craft/__path-test__');
+    $expectedPath = File::normalizePath(config_path('craft/__path-test__'));
 
     expect($path->projectConfig(create: false))->toBe($expectedPath)
         ->and(File::exists($expectedPath))->toBeFalse();
 
     expect($path->projectConfig())->toBe($expectedPath)
         ->and(File::isDirectory($expectedPath))->toBeTrue()
-        ->and($path->projectConfigFile())->toBe($expectedPath.'/'.ProjectConfig::CONFIG_FILENAME);
+        ->and($path->projectConfigFile())->toBe($expectedPath.DIRECTORY_SEPARATOR.ProjectConfig::CONFIG_FILENAME);
 });
 
 test('directory getters return the expected path and creation side effects', function (
@@ -88,17 +89,17 @@ test('directory getters return the expected path and creation side effects', fun
     bool $writesGitignore,
 ) {
     $path = ($this->laravelPath)();
-    $expectedPath = $this->sandboxPath.'/'.$relativePath;
+    $expectedPath = $this->sandboxPath.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
 
     File::deleteDirectory($expectedPath);
 
     expect($path->$method(create: false))->toBe($expectedPath)
         ->and(File::exists($expectedPath))->toBeFalse()
-        ->and(File::exists($expectedPath.'/.gitignore'))->toBeFalse();
+        ->and(File::exists($expectedPath.DIRECTORY_SEPARATOR.'.gitignore'))->toBeFalse();
 
     expect($path->$method())->toBe($expectedPath)
         ->and(File::isDirectory($expectedPath))->toBeTrue()
-        ->and(File::exists($expectedPath.'/.gitignore'))->toBe($writesGitignore);
+        ->and(File::exists($expectedPath.DIRECTORY_SEPARATOR.'.gitignore'))->toBe($writesGitignore);
 })->with([
     'storage path' => ['storage', 'storage', false],
     'composer backups path' => ['composerBackups', 'storage/composer-backups', true],
@@ -124,17 +125,18 @@ test('directory getters return the expected path and creation side effects', fun
 test('system paths return the expected ordered list', function () {
     $path = ($this->laravelPath)();
     $storagePath = $this->aliases['@storage'];
+    $ds = DIRECTORY_SEPARATOR;
 
     expect($path->system())->toBe([
         $this->aliases['@contentMigrations'],
         $this->aliases['@lib'],
-        $storagePath.'/composer-backups',
-        $storagePath.'/config-backups',
-        $storagePath.'/config-deltas',
-        config_path('craft'),
-        $storagePath.'/backups',
-        $storagePath.'/logs',
-        $storagePath.'/runtime',
+        $storagePath.$ds.'composer-backups',
+        $storagePath.$ds.'config-backups',
+        $storagePath.$ds.'config-deltas',
+        File::normalizePath(config_path('craft')),
+        $storagePath.$ds.'backups',
+        $storagePath.$ds.'logs',
+        $storagePath.$ds.'runtime',
         $this->aliases['@templates'],
         $this->aliases['@translations'],
         $this->aliases['@tests'],
@@ -170,26 +172,28 @@ test('laravel path service falls back to application paths when aliases are unav
 
 test('laravel path service accepts subpaths for representative roots', function () {
     $path = ($this->laravelPath)();
+    $ds = DIRECTORY_SEPARATOR;
 
-    expect($path->temp('foo.zip', create: false))->toBe($this->aliases['@storage'].'/runtime/temp/foo.zip')
-        ->and($path->assetSources('123.jpg', create: false))->toBe($this->aliases['@storage'].'/runtime/assets/sources/123.jpg')
-        ->and($path->vendor('composer/InstalledVersions.php'))->toBe($this->aliases['@vendor'].'/composer/InstalledVersions.php')
-        ->and($path->projectConfig('foo/bar.yaml', create: false))->toBe(config_path('craft/project/foo/bar.yaml'));
+    expect($path->temp('foo.zip', create: false))->toBe($this->aliases['@storage'].$ds.'runtime'.$ds.'temp'.$ds.'foo.zip')
+        ->and($path->assetSources('123.jpg', create: false))->toBe($this->aliases['@storage'].$ds.'runtime'.$ds.'assets'.$ds.'sources'.$ds.'123.jpg')
+        ->and($path->vendor('composer/InstalledVersions.php'))->toBe($this->aliases['@vendor'].$ds.'composer'.$ds.'InstalledVersions.php')
+        ->and($path->projectConfig('foo/bar.yaml', create: false))->toBe(File::normalizePath(config_path('craft/project/foo/bar.yaml')));
 });
 
 test('laravel path service only creates the base directory when a subpath is provided', function () {
     $path = ($this->laravelPath)();
+    $ds = DIRECTORY_SEPARATOR;
 
     $tempFilePath = $path->temp('foo.zip');
     $composerBackupPath = $path->composerBackups('composer.json');
 
-    expect($tempFilePath)->toBe($this->aliases['@storage'].'/runtime/temp/foo.zip')
+    expect($tempFilePath)->toBe($this->aliases['@storage'].$ds.'runtime'.$ds.'temp'.$ds.'foo.zip')
         ->and(File::isDirectory(dirname((string) $tempFilePath)))->toBeTrue()
         ->and(File::exists($tempFilePath))->toBeFalse()
-        ->and($composerBackupPath)->toBe($this->aliases['@storage'].'/composer-backups/composer.json')
+        ->and($composerBackupPath)->toBe($this->aliases['@storage'].$ds.'composer-backups'.$ds.'composer.json')
         ->and(File::isDirectory(dirname((string) $composerBackupPath)))->toBeTrue()
         ->and(File::exists($composerBackupPath))->toBeFalse()
-        ->and(File::exists(dirname((string) $composerBackupPath).'/.gitignore'))->toBeTrue();
+        ->and(File::exists(dirname((string) $composerBackupPath).$ds.'.gitignore'))->toBeTrue();
 });
 
 test('ensurePathIsContained', function (bool $expected, string $path) {

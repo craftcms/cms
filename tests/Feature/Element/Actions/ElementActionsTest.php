@@ -15,8 +15,8 @@ use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Actions\SetStatus;
 use CraftCms\Cms\Element\Actions\View;
 use CraftCms\Cms\Element\ElementActions;
-use CraftCms\Cms\Element\Events\AfterPerformAction;
-use CraftCms\Cms\Element\Events\BeforePerformAction;
+use CraftCms\Cms\Element\Events\ElementActionPerformed;
+use CraftCms\Cms\Element\Events\ElementActionPerforming;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\User\Actions\SuspendUsers;
@@ -115,8 +115,8 @@ it('resolves a cloned matching action and returns null when missing', function (
 
 it('invokes actions and dispatches before and after events on success', function () {
     Event::fake([
-        BeforePerformAction::class,
-        AfterPerformAction::class,
+        ElementActionPerforming::class,
+        ElementActionPerformed::class,
     ]);
 
     $action = new class extends ElementAction
@@ -137,8 +137,8 @@ it('invokes actions and dispatches before and after events on success', function
         'message' => 'Action succeeded.',
     ]);
 
-    Event::assertDispatched(BeforePerformAction::class);
-    Event::assertDispatched(AfterPerformAction::class);
+    Event::assertDispatched(ElementActionPerforming::class);
+    Event::assertDispatched(ElementActionPerformed::class);
 });
 
 it('returns an invalid result when action validation fails', function () {

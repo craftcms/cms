@@ -32,7 +32,7 @@ class ResetPasswordNotification extends Notification implements ShouldQueue
 
     public function toMail(User $user): SystemMessageMailable
     {
-        $url = Users::getPasswordResetUrl($user);
+        $url = Users::getPasswordResetUrl($user, $this->token);
 
         return app(SystemMessages::class)->mailable(
             key: 'forgot_password',

@@ -8,7 +8,6 @@
 namespace craft\elements;
 
 use Craft;
-use craft\base\LegacyEventConstants;
 use craft\db\Connection;
 use craft\db\FixedOrderExpression;
 use craft\db\Table;
@@ -61,8 +60,6 @@ use function CraftCms\Cms\t;
 #[Ruleset(LegacyElementRules::class)]
 class Category extends Element
 {
-    use LegacyEventConstants;
-
     /**
      * @inheritdoc
      */

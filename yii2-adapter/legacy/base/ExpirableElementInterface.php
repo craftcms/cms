@@ -28,5 +28,3 @@ if (false) {
         public function getExpiryDate(): ?DateTime;
     }
 }
-
-class_alias(\CraftCms\Cms\Element\Contracts\ExpirableElementInterface::class, ExpirableElementInterface::class);

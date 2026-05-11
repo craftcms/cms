@@ -17,7 +17,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutTab;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\Events\CreateFieldLayoutForm} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\Events\FieldLayoutFormCreating} instead.
  */
 class CreateFieldLayoutFormEvent extends Event
 {

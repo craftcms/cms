@@ -11,5 +11,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Auth\Passkeys\CredentialRepository::class, CredentialRepository::class);

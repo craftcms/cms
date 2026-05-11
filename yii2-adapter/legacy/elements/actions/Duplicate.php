@@ -11,5 +11,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Element\Actions\Duplicate::class, Duplicate::class);

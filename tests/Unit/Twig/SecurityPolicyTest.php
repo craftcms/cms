@@ -4,11 +4,18 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\Twig\SecurityPolicy;
+use Illuminate\Support\Traits\Macroable;
 use Twig\Sandbox\SecurityNotAllowedMethodError;
 use Twig\Sandbox\SecurityNotAllowedPropertyError;
 
 #[AllowedInSandbox]
 class AllowedSandboxClassTarget {}
+
+#[AllowedInSandbox]
+class AllowedSandboxMacroTarget
+{
+    use Macroable;
+}
 
 class AllowedSandboxMethodTarget
 {
@@ -42,6 +49,17 @@ describe('AllowedInSandbox attribute', function () {
 
         expect(fn () => $this->policy->checkMethodAllowed($target, 'anyMethod'))
             ->not->toThrow(SecurityNotAllowedMethodError::class);
+    });
+
+    it('blocks dynamic macro methods when the class is marked with the attribute', function () {
+        AllowedSandboxMacroTarget::macro('dynamicMethod', fn () => 'dynamic');
+
+        try {
+            expect(fn () => $this->policy->checkMethodAllowed(new AllowedSandboxMacroTarget, 'dynamicMethod'))
+                ->toThrow(SecurityNotAllowedMethodError::class);
+        } finally {
+            AllowedSandboxMacroTarget::flushMacros();
+        }
     });
 
     it('allows property access when the class is marked with the attribute', function () {

@@ -12,6 +12,7 @@ use DateTimeInterface;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionNamedType;
+use ReflectionParameter;
 use ReflectionUnionType;
 use RuntimeException;
 use Throwable;
@@ -43,6 +44,8 @@ class Typecast
     private const string TYPE_DATETIMEINTERFACE = DateTimeInterface::class;
 
     private static array $types = [];
+
+    private static array $setterTypes = [];
 
     /**
      * Configures a component with the initial property values.
@@ -235,18 +238,58 @@ class Typecast
             self::resolveClassTypes($class);
         }
 
-        return self::$types[$class][$property]
-            ?? self::$types[$class]['_'.lcfirst($property)] // Underscore prefixed private
+        if (array_key_exists($property, self::$types[$class])) {
+            return self::$types[$class][$property];
+        }
+
+        if (array_key_exists($property, self::$setterTypes[$class])) {
+            $setterType = self::$setterTypes[$class][$property];
+
+            if ($setterType !== null) {
+                return $setterType;
+            }
+        }
+
+        return self::$types[$class]['_'.lcfirst($property)] // Underscore prefixed private
             ?? false;
     }
 
     private static function resolveClassTypes(string $class): void
     {
         self::$types[$class] = [];
+        self::$setterTypes[$class] = [];
 
-        $properties = new ReflectionClass($class)->getProperties();
+        $className = $class;
+        $class = new ReflectionClass($className);
 
-        foreach ($properties as $ref) {
+        foreach ($class->getMethods() as $ref) {
+            if ($ref->isStatic()) {
+                continue;
+            }
+            if (! $ref->isPublic()) {
+                continue;
+            }
+            if (! str_starts_with($ref->getName(), 'set')) {
+                continue;
+            }
+            $parameters = $ref->getParameters();
+            if (! isset($parameters[0])) {
+                continue;
+            }
+            if (count(array_filter($parameters, fn (ReflectionParameter $parameter) => ! $parameter->isOptional())) > 1) {
+                continue;
+            }
+
+            $property = lcfirst(substr($ref->getName(), 3));
+
+            if ($property === '') {
+                continue;
+            }
+
+            self::$setterTypes[$className][$property] = self::resolveParameterType($parameters[0]);
+        }
+
+        foreach ($class->getProperties() as $ref) {
             if ($ref->isStatic()) {
                 continue;
             }
@@ -254,15 +297,34 @@ class Typecast
             $type = $ref->getType();
 
             if ($type instanceof ReflectionNamedType) {
-                self::$types[$class][$ref->getName()] = [$type->getName(), $type->allowsNull()];
+                self::$types[$className][$ref->getName()] = [$type->getName(), $type->allowsNull()];
             } elseif ($type instanceof ReflectionUnionType) {
                 $resolved = self::resolveUnionType($type);
 
                 if ($resolved !== false) {
-                    self::$types[$class][$ref->getName()] = $resolved;
+                    self::$types[$className][$ref->getName()] = $resolved;
                 }
             }
         }
+    }
+
+    private static function resolveParameterType(ReflectionParameter $parameter): array|false|null
+    {
+        $type = $parameter->getType();
+
+        if ($type instanceof ReflectionNamedType) {
+            if ($type->getName() === 'mixed') {
+                return false;
+            }
+
+            return [$type->getName(), $type->allowsNull()];
+        }
+
+        if ($type instanceof ReflectionUnionType) {
+            return self::resolveUnionType($type);
+        }
+
+        return null;
     }
 
     private static function resolveUnionType(ReflectionUnionType $type): array|false

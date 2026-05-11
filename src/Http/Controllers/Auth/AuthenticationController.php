@@ -14,7 +14,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\EmailVerified;
-use CraftCms\Cms\User\Events\VerifyingEmail;
+use CraftCms\Cms\User\Events\UserEmailVerifying;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Passwords\PasswordBroker;
@@ -128,7 +128,7 @@ abstract readonly class AuthenticationController
             auth('craft')->logout();
         }
 
-        event(new VerifyingEmail($user));
+        event(new UserEmailVerifying($user));
 
         /** @var PasswordBroker $broker */
         $broker = Password::broker('craft');

@@ -7,8 +7,7 @@ use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Events\DefineResaveCommands;
-use CraftCms\Cms\Element\Jobs\ResaveElements;
+use CraftCms\Cms\Element\Events\ElementResaveCommandsResolving;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -248,7 +247,7 @@ it('filters entries by section and can propagate to another site', function () {
 });
 
 it('ignores event-discovered commands that are not actually registered', function () {
-    Event::listen(DefineResaveCommands::class, function (DefineResaveCommands $event) {
+    Event::listen(ElementResaveCommandsResolving::class, function (ElementResaveCommandsResolving $event) {
         $event->commands['craft:resave:missing-plugin-command'] = [
             'description' => 'Missing command',
         ];

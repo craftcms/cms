@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\ProjectConfig\Data;
 
-use CraftCms\Cms\ProjectConfig\Events\AddingItem;
 use CraftCms\Cms\ProjectConfig\Events\ItemAdded;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
-use CraftCms\Cms\ProjectConfig\Events\RemovingItem;
-use CraftCms\Cms\ProjectConfig\Events\UpdatingItem;
+use CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemAdding;
+use CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemRemoved;
+use CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemUpdated;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Str;
@@ -55,9 +55,9 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
 
         if ($valueChanged && ! $this->projectConfig->muteEvents) {
             event(match (true) {
-                $newValue === null && $oldValue !== null => new RemovingItem($path, $oldValue, $newValue),
-                $oldValue === null && $newValue !== null => new AddingItem($path, $oldValue, $newValue),
-                default => new UpdatingItem($path, $oldValue, $newValue),
+                $newValue === null && $oldValue !== null => new ProjectConfigItemRemoved($path, $oldValue, $newValue),
+                $oldValue === null && $newValue !== null => new ProjectConfigItemAdding($path, $oldValue, $newValue),
+                default => new ProjectConfigItemUpdated($path, $oldValue, $newValue),
             });
         }
 

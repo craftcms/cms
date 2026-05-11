@@ -41,6 +41,8 @@ export interface QueueServiceOptions {
   appId?: string;
   /** Whether current user can access queue manager */
   canAccessQueueManager?: boolean;
+  /** Whether to run the queue automatically via HTTP requests */
+  runAutomatically?: boolean;
 }
 
 /** Detail for job-update event */

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Events\BeforeSave;
+use CraftCms\Cms\Element\Events\ElementLifecycleSaving;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -74,8 +74,8 @@ it('updates stale live, pending, and expired entry statuses', function () {
 it('supports the legacy aliases', function (string $command) {
     $this->artisan($command)->assertSuccessful();
 })->with([
-    'legacy alias' => 'update-statuses',
-    'legacy action alias' => 'update-statuses/index',
+    'legacy alias' => 'craft:update-statuses',
+    'legacy action alias' => 'craft:update-statuses/index',
 ]);
 
 it('continues after a save failure and still succeeds', function () {
@@ -97,7 +97,7 @@ it('continues after a save failure and still succeeds', function () {
             'postDate' => '2026-03-24 10:30:00',
         ]);
 
-    Event::listen(BeforeSave::class, function (BeforeSave $event) use ($failingEntry) {
+    Event::listen(ElementLifecycleSaving::class, function (ElementLifecycleSaving $event) use ($failingEntry) {
         if ($event->element->id !== $failingEntry->id) {
             return;
         }

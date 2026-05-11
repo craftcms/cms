@@ -129,6 +129,14 @@ readonly class Icons
             return null;
         }
 
+        static $cache = [];
+
+        $cacheKey = md5(serialize([$icon, $fallbackLabel, $altText]));
+
+        if (array_key_exists($cacheKey, $cache)) {
+            return $cache[$cacheKey];
+        }
+
         $attributes = [
             'focusable' => 'false',
         ];
@@ -153,10 +161,10 @@ readonly class Icons
             Log::warning("Could not load icon: {$e->getMessage()}", [__METHOD__]);
 
             if (! $fallbackLabel) {
-                return '';
+                return $cache[$cacheKey] = '';
             }
 
-            return self::fallbackSvg($fallbackLabel);
+            return $cache[$cacheKey] = self::fallbackSvg($fallbackLabel);
         }
 
         if ($altText !== null) {
@@ -176,12 +184,14 @@ readonly class Icons
         } catch (InvalidArgumentException) {
         }
 
-        return $svg;
+        return $cache[$cacheKey] = $svg;
     }
 
     public static function fallbackSvg(string $label): string
     {
-        return template('_includes/fallback-icon-svg', [
+        static $cache = [];
+
+        return $cache[$label] ??= template('_includes/fallback-icon-svg', [
             'label' => $label,
         ]);
     }

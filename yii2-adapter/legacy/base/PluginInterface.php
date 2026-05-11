@@ -27,5 +27,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Plugin\Contracts\PluginInterface::class, PluginInterface::class);

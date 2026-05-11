@@ -37,7 +37,7 @@ test('diff', function (string $expected, mixed $from, mixed $to, int $indent = 2
         0,
     ],
     [
-        rtrim(file_get_contents(dirname(__DIR__, 2).'/_data/diff/expected.diff')),
+        rtrim(str_replace("\r\n", "\n", file_get_contents(dirname(__DIR__, 2).'/_data/diff/expected.diff'))),
         include dirname(__DIR__, 2).'/_data/diff/a.php',
         include dirname(__DIR__, 2).'/_data/diff/b.php',
     ],

@@ -16,7 +16,7 @@ use CraftCms\Cms\User\Elements\User;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Events\AuthorizingElement} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Auth\Events\ElementAuthorizing} instead.
  */
 class AuthorizationCheckEvent extends Event
 {

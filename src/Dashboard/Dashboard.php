@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Dashboard;
 
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
-use CraftCms\Cms\Dashboard\Events\RegisterWidgetTypes;
 use CraftCms\Cms\Dashboard\Events\WidgetDeleted;
 use CraftCms\Cms\Dashboard\Events\WidgetDeleting;
 use CraftCms\Cms\Dashboard\Events\WidgetSaved;
 use CraftCms\Cms\Dashboard\Events\WidgetSaving;
+use CraftCms\Cms\Dashboard\Events\WidgetTypesResolving;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport as CraftSupportWidget;
 use CraftCms\Cms\Dashboard\Widgets\Feed as FeedWidget;
 use CraftCms\Cms\Dashboard\Widgets\MyDrafts;
@@ -53,7 +53,7 @@ readonly class Dashboard
             UpdatesWidget::class,
         ]);
 
-        event($event = new RegisterWidgetTypes($widgetTypes));
+        event($event = new WidgetTypesResolving($widgetTypes));
 
         return $event->types;
     }
@@ -69,7 +69,7 @@ readonly class Dashboard
     public function createWidget(string|array $config): WidgetInterface
     {
         if (is_string($config)) {
-            return app($config);
+            $config = ['type' => $config];
         }
 
         return Widget::fromConfig($config);
@@ -102,10 +102,13 @@ readonly class Dashboard
      */
     public function doesUserHaveWidget(string $type): bool
     {
-        return Models\Widget::query()
-            ->where('userId', Auth::user()->getAuthIdentifier())
-            ->where('type', $type)
-            ->exists();
+        $widgets = $this->getUserWidgets();
+
+        if ($widgets === false) {
+            return false;
+        }
+
+        return $widgets->contains(fn (WidgetInterface $widget) => $widget::class === $type);
     }
 
     /**
@@ -354,10 +357,10 @@ readonly class Dashboard
             return false;
         }
 
-        return Models\Widget::query()
+        return once(fn () => Models\Widget::query()
             ->where('userId', $user->id)
             ->orderBy('sortOrder')
             ->get()
-            ->map(fn (Models\Widget $widget) => Widget::fromConfig($widget));
+            ->map(fn (Models\Widget $widget) => Widget::fromConfig($widget)));
     }
 }

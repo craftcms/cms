@@ -15,7 +15,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Events\BeforePerformAction} or {@see \CraftCms\Cms\Element\Events\AfterPerformAction} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Events\ElementActionPerforming} or {@see \CraftCms\Cms\Element\Events\ElementActionPerformed} instead.
  */
 class ElementActionEvent extends CancelableEvent
 {

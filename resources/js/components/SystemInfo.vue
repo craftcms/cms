@@ -16,7 +16,7 @@
     :target="site.url ? '_blank' : null"
   >
     <div class="system-info__icon">
-      <img :src="system.icon" alt="" v-if="system.icon" />
+      <span v-html="system.icon"></span>
     </div>
     <div class="system-info__name">{{ system.name }}</div>
   </component>

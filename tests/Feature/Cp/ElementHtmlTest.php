@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Cp\Events\DefineElementCardHtml;
-use CraftCms\Cms\Cp\Events\DefineElementChipHtml;
+use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
+use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
@@ -60,11 +60,11 @@ describe('elementChipHtml', function () {
             ->and($trashedHtml)->toContain('data-trashed');
     });
 
-    it('dispatches and allows overriding DefineElementChipHtml', function () {
+    it('dispatches and allows overriding ElementChipHtmlResolving', function () {
         $user = User::findOne(1);
         expect($user)->toBeInstanceOf(User::class);
 
-        Event::listen(function (DefineElementChipHtml $event) {
+        Event::listen(function (ElementChipHtmlResolving $event) {
             $event->html = '<div>overridden-chip</div>';
         });
 
@@ -88,11 +88,11 @@ describe('elementCardHtml', function () {
             ->and($html)->toContain('name="myFieldName[]"');
     });
 
-    it('dispatches and allows overriding DefineElementCardHtml', function () {
+    it('dispatches and allows overriding ElementCardHtmlResolving', function () {
         $user = User::findOne(1);
         expect($user)->toBeInstanceOf(User::class);
 
-        Event::listen(function (DefineElementCardHtml $event) {
+        Event::listen(function (ElementCardHtmlResolving $event) {
             $event->html = '<div>overridden-card</div>';
         });
 

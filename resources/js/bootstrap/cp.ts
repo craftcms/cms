@@ -1,6 +1,6 @@
 import {ConfigService} from '@craftcms/cp/services/Config.ts.mjs';
 import {QueueService} from '@craftcms/cp/services/Queue.ts.mjs';
-import {createInertiaApp} from '@inertiajs/vue3';
+import {createInertiaApp, router} from '@inertiajs/vue3';
 import QueueManager from '@/components/utilities/QueueManager/QueueManager.vue';
 import {Axios, Config, Queue} from '@/types/keys';
 import axios from 'axios';
@@ -15,6 +15,7 @@ import ProjectConfig from '@/components/utilities/ProjectConfig/ProjectConfig.vu
 import AssetIndexes from '@/components/utilities/AssetIndexes/AssetIndexes.vue';
 import SystemMessages from '@/components/utilities/SystemMessages/SystemMessages.vue';
 import DeprecationErrorsToolbar from '@/components/utilities/DeprecationErrors/DeprecationErrorsToolbar.vue';
+import {setTranslations} from '@craftcms/cp/utilities/translate.ts.mjs';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -25,7 +26,7 @@ const queue = QueueService.getInstance();
 
 // Create our object
 const Cp = {
-  initialConfig: {},
+  initialConfig: {} as Record<string, any>,
 
   get $config() {
     return config;
@@ -54,10 +55,13 @@ const Cp = {
   init() {
     config.initialize(this.initialConfig);
     queue.initialize({
+      runAutomatically: config.get('runQueueAutomatically', true),
       enabled: true,
       appId: config.get('systemUid', ''),
       canAccessQueueManager: config.get('canAccessQueueManager', false),
     });
+
+    setTranslations(this.initialConfig.translations);
   },
 
   async start() {
@@ -97,10 +101,53 @@ const Cp = {
       },
     });
 
+    handleNonInertiaRequests();
+
     console.log('Calling booted callbacks', bootedCallbacks);
     bootedCallbacks.forEach((callback) => callback(this));
     bootedCallbacks = [];
   },
 };
+
+function handleNonInertiaRequests() {
+  let fallbackUrl = '';
+
+  router.on('start', (event) => {
+    const visit = event.detail.visit;
+
+    if (visit.prefetch || visit.async || visit.method !== 'get') {
+      return;
+    }
+
+    fallbackUrl = visit.url.href;
+  });
+
+  router.on('finish', (event) => {
+    const visit = event.detail.visit;
+
+    if (fallbackUrl === visit.url.href) {
+      fallbackUrl = '';
+    }
+  });
+
+  router.on('httpException', (event) => {
+    const response = event.detail.response;
+
+    const shouldReload =
+      [200, 302, 301].includes(response.status) &&
+      response.headers['content-type']?.includes('text/html');
+
+    if (response.headers['x-redirect']) {
+      fallbackUrl = response.headers['x-redirect'];
+    }
+
+    if (!fallbackUrl || !shouldReload) {
+      return;
+    }
+
+    event.preventDefault();
+    window.location.assign(fallbackUrl);
+  });
+}
 
 export default Cp;

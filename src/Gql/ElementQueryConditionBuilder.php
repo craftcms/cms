@@ -16,7 +16,7 @@ use CraftCms\Cms\Field\Entries as EntryField;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Users as UserField;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
-use CraftCms\Cms\Gql\Events\RegisterGqlEagerLoadableFields;
+use CraftCms\Cms\Gql\Events\GqlEagerLoadableFieldsResolving;
 use CraftCms\Cms\Gql\Gql as GqlService;
 use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
 use CraftCms\Cms\Support\Arr;
@@ -231,7 +231,7 @@ class ElementQueryConditionBuilder extends Component
                 self::LOCALIZED_NODENAME => [EntryField::class],
             ];
 
-            event($event = new RegisterGqlEagerLoadableFields(fieldList: $list));
+            event($event = new GqlEagerLoadableFieldsResolving(fieldList: $list));
 
             $this->_additionalEagerLoadableNodes = $event->fieldList;
         }

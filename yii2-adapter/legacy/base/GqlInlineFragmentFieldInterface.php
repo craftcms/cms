@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace craft\base;
 
-use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentInterface;
-
 /** @phpstan-ignore-next-line */
 if (false) {
     /**
@@ -16,5 +14,3 @@ if (false) {
     {
     }
 }
-
-class_alias(GqlInlineFragmentInterface::class, GqlInlineFragmentFieldInterface::class);

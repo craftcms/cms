@@ -15,7 +15,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Events\BeforeResaveElements}, {@see \CraftCms\Cms\Element\Events\AfterResaveElements}, {@see \CraftCms\Cms\Element\Events\BeforePropagateElements}, or {@see \CraftCms\Cms\Element\Events\AfterPropagateElements} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Events\ElementResavings}, {@see \CraftCms\Cms\Element\Events\ElementResaveds}, {@see \CraftCms\Cms\Element\Events\ElementPropagatings}, or {@see \CraftCms\Cms\Element\Events\ElementLifecyclePropagatedElements} instead.
  */
 class ElementQueryEvent extends Event
 {

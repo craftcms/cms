@@ -9,130 +9,14 @@
 
 namespace craft\elements;
 
-use craft\base\ElementEventConstants;
-use craft\base\Event as YiiEvent;
-use craft\base\LegacyEventConstants;
-use craft\events\AuthenticateUserEvent;
-use craft\events\DefineValueEvent;
-use CraftCms\Cms\Auth\Events\Authenticating;
-use CraftCms\Cms\Element\Validation\ElementRules;
-use CraftCms\Cms\Support\Facades\Entries;
-use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User as UserElement;
-use CraftCms\Cms\User\Events\DefineFriendlyName;
-use CraftCms\Cms\User\Events\DefineName;
-use CraftCms\Cms\User\Validation\UserRules;
-use Deprecated;
-use Illuminate\Support\Facades\Event;
 
-/**
- * @deprecated 6.0.0 use {@see UserElement} instead.
- */
-class User extends UserElement
-{
-    use LegacyEventConstants;
-    use ElementEventConstants;
-
-    public const string SCENARIO_DEFAULT = ElementRules::SCENARIO_DEFAULT;
-
-    public const string SCENARIO_ESSENTIALS = ElementRules::SCENARIO_ESSENTIALS;
-
-    public const string SCENARIO_LIVE = ElementRules::SCENARIO_LIVE;
-
-    public const string SCENARIO_ACTIVATION = UserRules::SCENARIO_ACTIVATION;
-
-    public const string SCENARIO_REGISTRATION = UserRules::SCENARIO_REGISTRATION;
-
-    public const string SCENARIO_PASSWORD = UserRules::SCENARIO_PASSWORD;
-
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @event DefineValueEvent The event that is triggered when defining the user’s name, as returned by [[getName()]] or [[__toString()]].
-     *
-     * @since 3.7.0
+     * @deprecated 6.0.0 use {@see UserElement} instead.
      */
-    public const string EVENT_DEFINE_NAME = 'defineName';
-
-    /**
-     * @event DefineValueEvent The event that is triggered when defining the user’s friendly name, as returned by [[getFriendlyName()]].
-     *
-     * @since 3.7.0
-     */
-    public const string EVENT_DEFINE_FRIENDLY_NAME = 'defineFriendlyName';
-
-    /**
-     * @event AuthenticateUserEvent The event that is triggered before a user is authenticated.
-     *
-     * If you wish to offload authentication logic, then set [[AuthenticateUserEvent::$performAuthentication]] to `false`, and set [[$authError]] to
-     * something if there is an authentication error.
-     */
-    public const string EVENT_BEFORE_AUTHENTICATE = 'beforeAuthenticate';
-
-    /**
-     * @var self|null The user who should take over the user’s content if the user is deleted.
-     * @deprecated in 5.10.0
-     */
-    public ?self $inheritorOnDelete = null;
-
-    /**
-     * Returns the user’s full name.
-     */
-    #[Deprecated(message: 'in 4.0.0. [[fullName]] should be used instead.')]
-    #[AllowedInSandbox]
-    public function getFullName(): ?string
+    class User extends UserElement
     {
-        return $this->fullName;
-    }
-
-    public function beforeDelete(): bool
-    {
-        if (!parent::beforeDelete()) {
-            return false;
-        }
-
-        // Reassign the user's entries?
-        if ($this->inheritorOnDelete) {
-            Entries::reassignEntries($this->id, $this->inheritorOnDelete->id);
-        }
-
-        return true;
-    }
-
-    public static function registerEvents(): void
-    {
-        Event::listen(function(DefineName $event) {
-            if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_NAME)) {
-                $yiiEvent = new DefineValueEvent();
-                $yiiEvent->sender = $event->user;
-
-                YiiEvent::trigger(self::class, self::EVENT_DEFINE_NAME, $yiiEvent);
-
-                if ($yiiEvent->value !== null) {
-                    $event->name = $yiiEvent->value;
-                }
-            }
-        });
-
-        Event::listen(function(DefineFriendlyName $event) {
-            if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_FRIENDLY_NAME)) {
-                $yiiEvent = new DefineValueEvent();
-                $yiiEvent->sender = $event->user;
-
-                YiiEvent::trigger(self::class, self::EVENT_DEFINE_FRIENDLY_NAME, $yiiEvent);
-
-                if ($yiiEvent->value !== null) {
-                    $event->name = $yiiEvent->value;
-                }
-            }
-        });
-
-        Event::listen(Authenticating::class, function(Authenticating $event) {
-            if (YiiEvent::hasHandlers(self::class, self::EVENT_BEFORE_AUTHENTICATE)) {
-                $yiiEvent = new AuthenticateUserEvent(['password' => $event->credentials['password']]);
-
-                YiiEvent::trigger(self::class, self::EVENT_BEFORE_AUTHENTICATE, $yiiEvent);
-
-                $event->performAuthentication = $yiiEvent->performAuthentication;
-            }
-        });
     }
 }

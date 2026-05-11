@@ -390,6 +390,8 @@ return [
     'Copy “{name}” value' => 'Copy “{name}” value',
     'Copy' => 'Copy',
     'Could not create a preview token.' => 'Could not create a preview token.',
+    'Could not create backup: check the logs for details.' => 'Could not create backup: check the logs for details.',
+    'Could not create backup: the backup file doesn’t exist.' => 'Could not create backup: the backup file doesn’t exist.',
     'Could not create the group:' => 'Could not create the group:',
     'Could not duplicate all elements due to validation errors.' => 'Could not duplicate all elements due to validation errors.',
     'Could not duplicate elements due to validation errors.' => 'Could not duplicate elements due to validation errors.',

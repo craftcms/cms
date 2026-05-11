@@ -30,7 +30,7 @@ class ArrayTwigExtension extends AbstractExtension
             new TwigFilter('contains', Arr::contains(...)),
             new TwigFilter('diff', 'array_diff'),
             new TwigFilter('filter', $this->filterFilter(...), ['needs_environment' => true]),
-            new TwigFilter('firstWhere', Arr::first(...)),
+            new TwigFilter('firstWhere', $this->firstWhereFilter(...)),
             new TwigFilter('flatten', Arr::flatten(...)),
             new TwigFilter('group', $this->groupFilter(...)),
             new TwigFilter('indexOf', $this->indexOfFilter(...)),
@@ -115,6 +115,11 @@ class ArrayTwigExtension extends AbstractExtension
         return iterator_to_array($filtered);
     }
 
+    public function firstWhereFilter(iterable $array, callable|string $key, mixed $value = true, bool $strict = false): mixed
+    {
+        return collect($array)->firstWhere($key, $strict ? '===' : '==', $value);
+    }
+
     /**
      * @throws RuntimeError
      */
@@ -184,7 +189,7 @@ class ArrayTwigExtension extends AbstractExtension
         $array = array_merge($array);
 
         return collect($array)
-            ->sortBy($key, $sortFlag, $direction === SORT_DESC)
+            ->sortBy($key, collect($sortFlag)->sum(), $direction === SORT_DESC)
             ->all();
     }
 

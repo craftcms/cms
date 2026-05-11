@@ -9,6 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Notifications\ActivationNotification;
 use CraftCms\Cms\User\Notifications\VerifyEmailNotification;
 use Illuminate\Notifications\Channels\MailChannel;
 use Illuminate\Support\Facades\DB;
@@ -19,12 +20,25 @@ beforeEach(function () {
     Notification::fake();
 });
 
-test('sendActivationEmail dispatches VerifyEmailNotification', function () {
-    $user = UserModel::factory()->createElement();
-    $user->pending = true;
-    $user = User::find()->id($user->id)->one();
+test('sendActivationEmail dispatches ActivationNotification', function () {
+    $user = UserModel::factory()->createElement([
+        'active' => false,
+        'pending' => true,
+    ]);
 
-    $user->sendEmailVerificationNotification();
+    Users::sendActivationEmail($user);
+
+    Notification::assertSentTo(
+        $user,
+        ActivationNotification::class,
+        fn ($notification, $channels) => in_array(MailChannel::class, $channels)
+    );
+});
+
+test('sendNewEmailVerifyEmail dispatches VerifyEmailNotification', function () {
+    $user = UserModel::factory()->createElement();
+
+    Users::sendNewEmailVerifyEmail($user);
 
     Notification::assertSentTo(
         $user,
@@ -33,17 +47,40 @@ test('sendActivationEmail dispatches VerifyEmailNotification', function () {
     );
 });
 
-test('sendNewEmailVerifyEmail dispatches VerifyEmailNotification', function () {
+test('activation notification uses set password link for passwordless users', function () {
+    $user = UserModel::factory()->createElement([
+        'active' => false,
+        'pending' => true,
+        'password' => null,
+    ]);
+    $token = Users::setVerificationCodeOnUser($user);
+    $mailable = new ActivationNotification($token)->toMail($user);
+
+    expect($mailable->key)->toBe('account_activation')
+        ->and((string) $mailable->variables['link'])->toContain('setpassword?code='.$token)
+        ->and((string) $mailable->variables['link'])->not->toContain('verifyemail?code=');
+});
+
+test('activation notification uses verify email link for users with passwords', function () {
+    $user = UserModel::factory()->createElement([
+        'active' => false,
+        'pending' => true,
+    ]);
+    $token = Users::setVerificationCodeOnUser($user);
+    $mailable = new ActivationNotification($token)->toMail($user);
+
+    expect($mailable->key)->toBe('account_activation')
+        ->and((string) $mailable->variables['link'])->toContain('verifyemail?code='.$token)
+        ->and((string) $mailable->variables['link'])->not->toContain('setpassword?code=');
+});
+
+test('email verification notification uses verify new email message and link', function () {
     $user = UserModel::factory()->createElement();
-    $user = User::find()->id($user->id)->one();
+    $token = Users::setVerificationCodeOnUser($user);
+    $mailable = new VerifyEmailNotification($token)->toMail($user);
 
-    $user->sendEmailVerificationNotification();
-
-    Notification::assertSentTo(
-        $user,
-        VerifyEmailNotification::class,
-        fn ($notification, $channels) => in_array(MailChannel::class, $channels)
-    );
+    expect($mailable->key)->toBe('verify_new_email')
+        ->and((string) $mailable->variables['link'])->toContain('verifyemail?code='.$token);
 });
 
 test('purgeExpiredPendingUsers deletes users with expired tokens', function () {

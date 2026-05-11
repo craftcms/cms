@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Auth\Events\AuthorizingElement;
+use CraftCms\Cms\Auth\Events\ElementAuthorizing;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
@@ -43,7 +43,7 @@ it('delegates unpublished save canonical checks to a cloned save check', functio
     $element = createElementPolicyElement();
     $element->draftId = 100;
 
-    Event::listen(AuthorizingElement::class, function (AuthorizingElement $event) use ($element): void {
+    Event::listen(ElementAuthorizing::class, function (ElementAuthorizing $event) use ($element): void {
         expect($event->ability)->toBe('save')
             ->and($event->element === $element)->toBeFalse()
             ->and($event->element->draftId)->toBeNull();
@@ -62,7 +62,7 @@ it('delegates published save canonical checks to the canonical element', functio
     $canonical = createElementPolicyElement();
     $element = createElementPolicyElement(canonical: $canonical);
 
-    Event::listen(AuthorizingElement::class, function (AuthorizingElement $event) use ($canonical): void {
+    Event::listen(ElementAuthorizing::class, function (ElementAuthorizing $event) use ($canonical): void {
         expect($event->ability)->toBe('save')
             ->and($event->element)->toBe($canonical);
 
@@ -79,7 +79,7 @@ it('allows gate save canonical checks for unpublished drafts when save is author
     $element = createElementPolicyElement();
     $element->draftId = 100;
 
-    Event::listen(AuthorizingElement::class, function (AuthorizingElement $event) use ($element): void {
+    Event::listen(ElementAuthorizing::class, function (ElementAuthorizing $event) use ($element): void {
         if ($event->ability !== 'save') {
             return;
         }
@@ -98,7 +98,7 @@ it('denies gate save canonical checks when the delegated save check is denied', 
     $element = createElementPolicyElement();
     $element->draftId = 100;
 
-    Event::listen(AuthorizingElement::class, function (AuthorizingElement $event): void {
+    Event::listen(ElementAuthorizing::class, function (ElementAuthorizing $event): void {
         if ($event->ability === 'save') {
             $event->deny();
         }
@@ -131,7 +131,7 @@ it('continues save checks when the user can edit the site', function () {
     $user = UserModel::factory()->withPermissions(["editSite:$site->uid"])->createElement();
     $element = createElementPolicyElement(siteId: $site->id);
 
-    Event::listen(AuthorizingElement::class, function (AuthorizingElement $event) use ($element): void {
+    Event::listen(ElementAuthorizing::class, function (ElementAuthorizing $event) use ($element): void {
         expect($event->ability)->toBe('save')
             ->and($event->element)->toBe($element);
 
@@ -293,7 +293,7 @@ it('allows authorizing event listeners to authorize an element', function () {
     $user = UserModel::factory()->createElement();
     $element = createElementPolicyElement();
 
-    Event::listen(AuthorizingElement::class, function (AuthorizingElement $event): void {
+    Event::listen(ElementAuthorizing::class, function (ElementAuthorizing $event): void {
         $event->authorize();
     });
 
@@ -306,7 +306,7 @@ it('allows authorizing event listeners to deny an element', function () {
     $user = UserModel::factory()->createElement();
     $element = createElementPolicyElement();
 
-    Event::listen(AuthorizingElement::class, function (AuthorizingElement $event): void {
+    Event::listen(ElementAuthorizing::class, function (ElementAuthorizing $event): void {
         $event->deny();
     });
 

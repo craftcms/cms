@@ -9,6 +9,7 @@ use CommerceGuys\Addressing\AddressInterface;
 use CommerceGuys\Addressing\Country\Country;
 use CommerceGuys\Addressing\Subdivision\SubdivisionUpdater;
 use CraftCms\Cms\Address\Addresses;
+use CraftCms\Cms\Address\Concerns\LegacyConstants;
 use CraftCms\Cms\Address\Conditions\AddressCondition;
 use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Address\Validation\AddressRules;
@@ -43,6 +44,7 @@ use function CraftCms\Cms\t;
 class Address extends Element implements AddressInterface, NestedElementInterface
 {
     use HasNames;
+    use LegacyConstants;
     use NestedElement;
 
     public const string GQL_TYPE_NAME = 'Address';
@@ -289,6 +291,16 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             'organizationTaxId',
             'fullName',
         ];
+    }
+
+    #[Override]
+    public function safeAttributes(): array
+    {
+        return array_values(array_diff(parent::safeAttributes(), [
+            'fieldId',
+            'ownerId',
+            'primaryOwnerId',
+        ]));
     }
 
     #[Override]

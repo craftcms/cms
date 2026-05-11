@@ -18,8 +18,8 @@ use craft\fields\Matrix as LegacyMatrix;
 use craft\fields\PlainText as LegacyPlainText;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Dropdown;
-use CraftCms\Cms\Field\Events\DefineEntryTypesForField;
-use CraftCms\Cms\Field\Events\LocateUploadedFiles;
+use CraftCms\Cms\Field\Events\AssetsUploadedFilesLocating;
+use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
 
 class TestLegacyOptionsEventField extends Dropdown
 {
@@ -85,7 +85,7 @@ it('bridges legacy matrix entry type events', function() {
     $field = new LegacyMatrix();
     $entryType = new EntryType();
     $entryType->handle = 'article';
-    $event = new DefineEntryTypesForField(
+    $event = new EntryTypesForFieldResolving(
         field: $field,
         entryTypes: [$entryType],
         element: null,
@@ -113,7 +113,7 @@ it('bridges legacy asset upload location events', function() {
             return 'Test Element';
         }
     };
-    $event = new LocateUploadedFiles(
+    $event = new AssetsUploadedFilesLocating(
         field: $field,
         element: $element,
         files: [],

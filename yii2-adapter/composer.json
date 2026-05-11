@@ -82,6 +82,7 @@
   "autoload": {
     "psr-4": {
       "craft\\": "legacy/",
+      "CraftCms\\Cms\\": "constants/",
       "CraftCms\\Yii2Adapter\\": "src/",
       "yii2tech\\ar\\softdelete\\": "lib/ar-softdelete/src/"
     }

@@ -14,7 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\RegisterSortOptions} instead.
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\ElementSortOptionsResolving} instead.
  */
 class RegisterElementSortOptionsEvent extends Event
 {

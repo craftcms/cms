@@ -50,11 +50,13 @@ use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Actions\SuspendUsers;
 use CraftCms\Cms\User\Actions\UnsuspendUsers;
+use CraftCms\Cms\User\Concerns\LegacyConstants;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Data\UserGroup;
-use CraftCms\Cms\User\Events\DefineFriendlyName;
-use CraftCms\Cms\User\Events\DefineName;
+use CraftCms\Cms\User\Events\UserFriendlyNameResolving;
+use CraftCms\Cms\User\Events\UserNameResolving;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Notifications\ActivationNotification;
 use CraftCms\Cms\User\Notifications\ResetPasswordNotification;
 use CraftCms\Cms\User\Notifications\VerifyEmailNotification;
 use CraftCms\Cms\User\Validation\UserRules;
@@ -106,6 +108,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     use CanResetPassword;
     use ConfirmsPasswords;
     use HasNames;
+    use LegacyConstants;
     use Macroable;
     use Notifiable;
 
@@ -143,6 +146,33 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public const string STATUS_SUSPENDED = 'suspended';
 
     public const string STATUS_LOCKED = 'locked';
+
+    /**
+     * These attributes can only be saved through the User
+     * routes. The generic save element routes will not
+     * allow changes to these attributes.
+     */
+    public const array SENSITIVE_ATTRIBUTES = [
+        'active',
+        'admin',
+        'affiliatedSiteId',
+        'currentPassword',
+        'email',
+        'invalidLoginCount',
+        'lastInvalidLoginDate',
+        'lastLoginAttemptIp',
+        'lastLoginDate',
+        'lastPasswordChangeDate',
+        'locked',
+        'lockoutDate',
+        'newPassword',
+        'password',
+        'passwordResetRequired',
+        'pending',
+        'photoId',
+        'suspended',
+        'unverifiedEmail',
+    ];
 
     /**
      * @var int|null Photo asset ID
@@ -725,6 +755,11 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         $this->notify(new ResetPasswordNotification($token));
     }
 
+    public function sendActivationNotification(string $token): void
+    {
+        $this->notify(new ActivationNotification($token));
+    }
+
     public function hasVerifiedEmail(): bool
     {
         return is_null($this->unverifiedEmail);
@@ -941,11 +976,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[AllowedInSandbox]
     public function getHasSsoIdentity(): bool
     {
-        if (! OAuth::isAvailable()) {
-            return false;
-        }
-
-        return app(OAuth::class)->hasIdentity($this->id);
+        return $this->id !== null && app(OAuth::class)->hasIdentity($this->id);
     }
 
     #[Override]
@@ -1105,7 +1136,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
 
     private function _defineName(): string
     {
-        event($event = new DefineName($this));
+        event($event = new UserNameResolving($this));
 
         return $event->name ?? $this->fullName ?? (string) $this->username;
     }
@@ -1133,7 +1164,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
 
     private function _defineFriendlyName(): ?string
     {
-        event($event = new DefineFriendlyName($this));
+        event($event = new UserFriendlyNameResolving($this));
 
         return $event->name ?? $this->firstName ?? $this->username;
     }
@@ -2008,7 +2039,9 @@ JS, [
             $originalEmail = $this->email;
             $this->email = $this->unverifiedEmail;
 
-            $this->sendEmailVerificationNotification();
+            $isNew
+                ? Users::sendActivationEmail($this)
+                : Users::sendNewEmailVerifyEmail($this);
 
             // Put the original email back into place
             $this->email = $originalEmail;

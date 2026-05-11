@@ -14,12 +14,13 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\ChangeSortOrder;
 use CraftCms\Cms\Element\Actions\MoveDown;
 use CraftCms\Cms\Element\Actions\MoveUp;
+use CraftCms\Cms\Element\Concerns\LegacyNestedElementManager;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Element\Events\AfterSaveNestedElements;
-use CraftCms\Cms\Element\Events\CreateNestedElementRevisions;
-use CraftCms\Cms\Element\Events\DuplicateNestedElementsEvent;
+use CraftCms\Cms\Element\Events\NestedElementRevisionsCreated;
+use CraftCms\Cms\Element\Events\NestedElementsDuplicated;
+use CraftCms\Cms\Element\Events\NestedElementsSaved;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -50,6 +51,8 @@ use function CraftCms\Cms\t;
  */
 class NestedElementManager extends Component
 {
+    use LegacyNestedElementManager;
+
     private const string VIEW_MODE_CARDS = 'cards';
 
     private const string VIEW_MODE_INDEX = 'index';
@@ -828,7 +831,7 @@ JS, [
             throw $e;
         }
 
-        event(new AfterSaveNestedElements(
+        event(new NestedElementsSaved(
             manager: $this,
             elements: $elements,
         ));
@@ -959,7 +962,7 @@ JS, [
                 $newElementIds[$element->id] = $newElementId;
             }
 
-            event(new DuplicateNestedElementsEvent(
+            event(new NestedElementsDuplicated(
                 manager: $this,
                 source: $source,
                 target: $target,
@@ -1089,7 +1092,7 @@ JS, [
         DB::table(Table::ELEMENTS_OWNERS)->insert($ownershipData);
 
         if (! empty($map)) {
-            event(new CreateNestedElementRevisions(
+            event(new NestedElementRevisionsCreated(
                 manager: $this,
                 source: $canonical,
                 target: $revision,

@@ -10,6 +10,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
+use CraftCms\Cms\Element\Concerns\LegacyConstants;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
@@ -67,6 +68,7 @@ abstract class Element extends Component implements ElementInterface
     use Concerns\Searchable;
     use Concerns\Structurable;
     use Concerns\TracksChanges;
+    use LegacyConstants;
     use Macroable {
         __call as macroCall;
     }
@@ -695,7 +697,10 @@ abstract class Element extends Component implements ElementInterface
 
     public function safeAttributes(): array
     {
-        return array_keys($this->ruleset->rules());
+        return array_values(array_diff(array_keys($this->ruleset->rules()), [
+            'id',
+            'uid',
+        ]));
     }
 
     public function getIterator(): Traversable

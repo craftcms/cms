@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
-use CraftCms\Cms\Auth\Events\RetrievingLoginUser;
+use CraftCms\Cms\Auth\Events\LoginUserRetrieving;
 use CraftCms\Cms\Auth\UserProvider;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\User\Elements\User;
@@ -87,10 +87,10 @@ test('retrieveByCredentials works with email', function () {
     expect($retrieved->id)->toBe($user->id);
 });
 
-test('retrieveByCredentials respects RetrievingLoginUser event', function () {
+test('retrieveByCredentials respects LoginUserRetrieving event', function () {
     $user = UserModel::factory()->createElement();
 
-    Event::listen(RetrievingLoginUser::class, function (RetrievingLoginUser $event) use ($user) {
+    Event::listen(LoginUserRetrieving::class, function (LoginUserRetrieving $event) use ($user) {
         $event->user = $user;
     });
 

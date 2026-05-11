@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Auth;
 
 use CraftCms\Cms\Auth\Enums\AuthError;
-use CraftCms\Cms\Auth\Events\Authenticating;
-use CraftCms\Cms\Auth\Events\RegisterAuthMethods;
+use CraftCms\Cms\Auth\Events\AuthMethodsResolving;
+use CraftCms\Cms\Auth\Events\UserAuthenticating;
 use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Auth\Methods\TOTP;
@@ -80,7 +80,7 @@ class AuthMethods
             RecoveryCodes::class,
         ]);
 
-        event($event = new RegisterAuthMethods($methods));
+        event($event = new AuthMethodsResolving($methods));
 
         $this->methods[$user->id] = $event->methods->map(function (string $class) use ($user) {
             if (! is_subclass_of($class, AuthMethodInterface::class)) {
@@ -235,7 +235,7 @@ class AuthMethods
 
     public function authenticate(User $user, #[SensitiveParameter] array $credentials): bool
     {
-        event($event = new Authenticating($credentials));
+        event($event = new UserAuthenticating($credentials));
 
         $this->authError = $event->authError;
 
@@ -282,7 +282,7 @@ class AuthMethods
 
     public function authenticateWithPasskey(User $user, string $requestOptions, string $response): bool
     {
-        event($event = new Authenticating);
+        event($event = new UserAuthenticating);
 
         $this->authError = $event->authError;
 

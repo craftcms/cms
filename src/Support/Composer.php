@@ -42,7 +42,7 @@ class Composer
             return CRAFT_COMPOSER_PATH;
         }
 
-        $jsonPath = Aliases::get('@root/composer.json');
+        $jsonPath = File::normalizePath(Aliases::get('@root/composer.json'));
 
         if (! File::exists($jsonPath)) {
             throw new FileNotFoundException("No Composer config found at $jsonPath.");

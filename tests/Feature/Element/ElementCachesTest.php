@@ -7,7 +7,7 @@ use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
-use CraftCms\Cms\Element\Events\InvalidateElementCaches;
+use CraftCms\Cms\Element\Events\ElementCachesInvalidated;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -198,24 +198,24 @@ it('throws when stopping cache collection without starting it', function () {
 })->throws(RuntimeException::class, 'Element cache invalidation tags are not currently being collected.');
 
 it('dispatches an event when invalidating all caches', function () {
-    Event::fake([InvalidateElementCaches::class]);
+    Event::fake([ElementCachesInvalidated::class]);
 
     $tags = $this->elementCaches->invalidateAll();
 
     expect($tags)->toBe(['element']);
 
-    Event::assertDispatched(fn (InvalidateElementCaches $event): bool => $event->tags === ['element']
+    Event::assertDispatched(fn (ElementCachesInvalidated $event): bool => $event->tags === ['element']
         && $event->element === null);
 });
 
 it('dispatches an event when invalidating an element type', function () {
-    Event::fake([InvalidateElementCaches::class]);
+    Event::fake([ElementCachesInvalidated::class]);
 
     $tags = $this->elementCaches->invalidateForElementType(Entry::class);
 
     expect($tags)->toBe(['element::'.Entry::class]);
 
-    Event::assertDispatched(fn (InvalidateElementCaches $event): bool => $event->tags === ['element::'.Entry::class]
+    Event::assertDispatched(fn (ElementCachesInvalidated $event): bool => $event->tags === ['element::'.Entry::class]
         && $event->element === null);
 });
 
@@ -234,7 +234,7 @@ it('invalidates cached queries for an element type', function () {
 });
 
 it('normalizes custom cache tags for an element', function () {
-    Event::fake([InvalidateElementCaches::class]);
+    Event::fake([ElementCachesInvalidated::class]);
 
     $element = new TestElementCachesElement;
     $element->id = 123;
@@ -249,7 +249,7 @@ it('normalizes custom cache tags for an element', function () {
         'element::already-prefixed',
     ]);
 
-    Event::assertDispatched(fn (InvalidateElementCaches $event): bool => $event->tags === $tags
+    Event::assertDispatched(fn (ElementCachesInvalidated $event): bool => $event->tags === $tags
         && $event->element === $element);
 });
 

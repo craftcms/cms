@@ -37,3 +37,12 @@ test('isVerificationCodeValidForUser handles Laravel tokens', function () {
 
     expect(Password::broker('craft')->tokenExists($user, $token))->toBeTrue();
 });
+
+test('reset password notification uses the broker token', function () {
+    $user = UserModel::factory()->createElement();
+    $token = Password::broker('craft')->createToken($user);
+    $mailable = new ResetPasswordNotification($token)->toMail($user);
+
+    expect((string) $mailable->variables['link'])->toContain('setpassword?code='.$token)
+        ->and(Password::broker('craft')->tokenExists($user, $token))->toBeTrue();
+});

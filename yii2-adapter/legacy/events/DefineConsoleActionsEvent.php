@@ -14,7 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Events\DefineResaveCommands} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Events\ElementResaveCommandsResolving} instead.
  */
 class DefineConsoleActionsEvent extends Event
 {

@@ -15,7 +15,7 @@ use CraftCms\Cms\Asset\Data\Volume;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Events\SavingVolume}, {@see \CraftCms\Cms\Asset\Events\VolumeSaved}, {@see \CraftCms\Cms\Asset\Events\DeletingVolume}, {@see \CraftCms\Cms\Asset\Events\ApplyingVolumeDelete}, or {@see \CraftCms\Cms\Asset\Events\VolumeDeleted} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Events\VolumeSaving}, {@see \CraftCms\Cms\Asset\Events\VolumeSaved}, {@see \CraftCms\Cms\Asset\Events\VolumeDeleting}, {@see \CraftCms\Cms\Asset\Events\VolumeDeletionApplied}, or {@see \CraftCms\Cms\Asset\Events\VolumeDeleted} instead.
  */
 class VolumeEvent extends Event
 {

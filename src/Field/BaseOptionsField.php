@@ -16,7 +16,7 @@ use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
-use CraftCms\Cms\Field\Events\DefineInputOptions;
+use CraftCms\Cms\Field\Events\InputOptionsResolving;
 use CraftCms\Cms\Gql\Arguments\OptionField as OptionFieldArguments;
 use CraftCms\Cms\Gql\Resolvers\OptionField as OptionFieldResolver;
 use CraftCms\Cms\Support\Arr;
@@ -669,7 +669,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         $options = $this->options();
         $translatedOptions = [];
 
-        event($event = new DefineInputOptions(
+        event($event = new InputOptionsResolving(
             field: $this,
             options: $options,
             value: $value,

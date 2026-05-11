@@ -60,7 +60,7 @@ use craft\web\User;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\LaravelMigrations;
-use CraftCms\Cms\Database\Migrations\Event\PostCreateTables;
+use CraftCms\Cms\Database\Migrations\Event\TablesCreated;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\Site;
@@ -445,7 +445,7 @@ class TestSetup
 
         $site = new Site($siteConfig);
 
-        LaravelEvent::listen(PostCreateTables::class, function() {
+        LaravelEvent::listen(TablesCreated::class, function() {
             Artisan::call('craft:add-categories-support', [
                 '--force' => true,
             ]);

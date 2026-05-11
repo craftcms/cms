@@ -2,8 +2,6 @@
 
 namespace craft\helpers;
 
-use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
-
 /** @phpstan-ignore-next-line */
 if (false) {
     /**
@@ -13,5 +11,3 @@ if (false) {
     {
     }
 }
-
-class_alias(ProjectConfigHelper::class, ProjectConfig::class);

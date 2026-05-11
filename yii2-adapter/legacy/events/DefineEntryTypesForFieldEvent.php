@@ -15,7 +15,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Events\DefineEntryTypesForField} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Events\EntryTypesForFieldResolving} instead.
  */
 class DefineEntryTypesForFieldEvent extends DefineEntryTypesEvent
 {

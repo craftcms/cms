@@ -12,7 +12,7 @@ use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Events\EntryMovedToSection;
-use CraftCms\Cms\Entry\Events\MovingEntryToSection;
+use CraftCms\Cms\Entry\Events\EntryMovingToSection;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
@@ -154,7 +154,7 @@ class Entries
     public function moveEntryToSection(Entry $entry, Section $section): bool
     {
         // todo: what about revisions or drafts that might be of a type that's not compatible with the new section?
-        event(new MovingEntryToSection($entry, $section));
+        event(new EntryMovingToSection($entry, $section));
 
         // Make sure the element exists
         if (! $entry->id) {

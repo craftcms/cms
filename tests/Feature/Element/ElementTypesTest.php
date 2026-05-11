@@ -6,7 +6,7 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Element as BaseElement;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\RegisterElementTypes;
+use CraftCms\Cms\Element\Events\ElementTypesResolving;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\User\Elements\User as UserElement;
@@ -52,7 +52,7 @@ test('returns distinct element types for ids', function () {
 });
 
 test('returns all built-in element types and registered element types', function () {
-    Event::listen(RegisterElementTypes::class, function (RegisterElementTypes $event) {
+    Event::listen(ElementTypesResolving::class, function (ElementTypesResolving $event) {
         $event->types[] = TestRegisteredElementType::class;
     });
 
@@ -92,7 +92,7 @@ test('returns null for unknown ref handles', function () {
 test('caches resolved ref handles', function () {
     $listenerCalls = 0;
 
-    Event::listen(RegisterElementTypes::class, function (RegisterElementTypes $event) use (&$listenerCalls) {
+    Event::listen(ElementTypesResolving::class, function (ElementTypesResolving $event) use (&$listenerCalls) {
         $listenerCalls++;
         $event->types[] = TestRegisteredElementType::class;
     });
@@ -101,7 +101,7 @@ test('caches resolved ref handles', function () {
 
     expect($elementTypes->getElementTypeByRefHandle('test-registered-element'))->toBe(TestRegisteredElementType::class);
 
-    Event::forget(RegisterElementTypes::class);
+    Event::forget(ElementTypesResolving::class);
 
     expect($elementTypes->getElementTypeByRefHandle('test-registered-element'))->toBe(TestRegisteredElementType::class)
         ->and($listenerCalls)->toBe(1);

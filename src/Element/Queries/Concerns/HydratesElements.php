@@ -9,8 +9,8 @@ use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Events\ElementHydrated;
+use CraftCms\Cms\Element\Queries\Events\ElementHydrating;
 use CraftCms\Cms\Element\Queries\Events\ElementsHydrated;
-use CraftCms\Cms\Element\Queries\Events\HydratingElement;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Json;
@@ -162,7 +162,7 @@ trait HydratesElements
             }
         }
 
-        event($event = new HydratingElement(row: $row, content: $content));
+        event($event = new ElementHydrating(row: $row, content: $content));
 
         /**
          * When using addSelect() to select extra columns, they might appear

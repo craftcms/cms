@@ -6,12 +6,15 @@ namespace CraftCms\Cms;
 
 use BackedEnum;
 use Closure;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\TemplateRenderer;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Foundation\Vite;
+use Illuminate\Foundation\ViteException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 use Stringable;
@@ -31,7 +34,14 @@ function enum_value(mixed $value, mixed $default = null): mixed
 
 function craftAsset(string $path, ?bool $secure = null): string
 {
-    return asset("vendor/craft/$path", $secure);
+    try {
+        return (clone app(Vite::class))
+            ->useHotFile(Aliases::get('@resources/hot'))
+            ->useBuildDirectory('vendor/craft/build')
+            ->asset($path);
+    } catch (ViteException) {
+        return asset("vendor/craft/$path", $secure);
+    }
 }
 
 function t(string|Stringable|null $id, array $parameters = [], ?string $category = 'app', ?string $locale = null): string

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Database\Table;
@@ -14,6 +15,7 @@ use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -66,13 +68,15 @@ class HandleInertiaRequests extends Middleware
         $updates = app(Updates::class);
         $nav = app(Navigation::class);
         $progressService = app(JobProgress::class);
+        $generalConfig = app(GeneralConfig::class);
+        $currentUser = null;
 
         if (! $updates->isCraftUpdatePending()) {
             $currentUser = $request->user();
         }
 
-        $systemIcon = Cms::config()->cpIconUrl
-            ? Aliases::get(Cms::config()->cpIconUrl)
+        $systemIcon = ($generalConfig->cpIconUrl && Edition::isAtLeast(Edition::Pro))
+            ? Html::img(Aliases::get($generalConfig->cpIconUrl))->render()
             : Icons::svg('c-outline');
 
         return [
@@ -91,6 +95,11 @@ class HandleInertiaRequests extends Middleware
                 'hasWaitingJobs' => false,
             ],
             'craft' => fn () => [
+                'csrfTokenValue' => csrf_token(),
+                'csrfTokenName' => '_token',
+                'general' => [
+                    'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
+                ],
                 'system' => [
                     'name' => Cms::systemName(),
                     'icon' => $systemIcon,
@@ -103,8 +112,14 @@ class HandleInertiaRequests extends Middleware
                     'url' => $currentSite->getBaseUrl(),
                 ],
                 'currentUser' => [
+                    'id' => $currentUser->id ?? null,
+                    'username' => $currentUser->username ?? null,
                     'email' => $currentUser->email ?? null,
+                    'name' => $currentUser->name ?? null,
+                    'thumbHtml' => $currentUser->getThumbHtml(30),
                 ],
+                'readOnly' => ! $generalConfig->allowAdminChanges,
+                'allowAdminChanges' => $generalConfig->allowAdminChanges,
                 'cpUrl' => cp_url(),
                 'actionUrl' => action_url(),
                 'baseApiUrl' => Api::craftApiEndpoint(),

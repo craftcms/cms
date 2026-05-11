@@ -10,15 +10,15 @@ use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Element\Events\DefineActionMenuItems;
-use CraftCms\Cms\Element\Events\DefineAdditionalButtons;
-use CraftCms\Cms\Element\Events\DefineAltActions;
-use CraftCms\Cms\Element\Events\DefineAttributeHtml;
-use CraftCms\Cms\Element\Events\DefineInlineAttributeInputHtml;
-use CraftCms\Cms\Element\Events\DefineMetadata;
-use CraftCms\Cms\Element\Events\DefineMetaFieldsHtml;
-use CraftCms\Cms\Element\Events\DefineSidebarHtml;
-use CraftCms\Cms\Element\Events\RegisterHtmlAttributes;
+use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
+use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
+use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
+use CraftCms\Cms\Element\Events\ElementAttributeHtmlResolving;
+use CraftCms\Cms\Element\Events\ElementHtmlAttributesResolving;
+use CraftCms\Cms\Element\Events\ElementInlineAttributeInputHtmlResolving;
+use CraftCms\Cms\Element\Events\ElementMetadataResolving;
+use CraftCms\Cms\Element\Events\ElementMetaFieldsHtmlResolving;
+use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Shared\Enums\Color;
@@ -70,7 +70,7 @@ trait HasControlPanelUI
 
     public function getAdditionalButtons(): string|Stringable
     {
-        event($event = new DefineAdditionalButtons($this));
+        event($event = new ElementAdditionalButtonsResolving($this));
 
         return $event->html;
     }
@@ -153,7 +153,7 @@ trait HasControlPanelUI
             ];
         }
 
-        event($event = new DefineAltActions($this, $altActions));
+        event($event = new ElementAltActionsResolving($this, $altActions));
 
         return $event->altActions;
     }
@@ -165,7 +165,7 @@ trait HasControlPanelUI
             ...array_map(fn (array $item) => $item + ['destructive' => true], $this->destructiveActionMenuItems()),
         ];
 
-        event($event = new DefineActionMenuItems($this, $items));
+        event($event = new ElementActionMenuItemsResolving($this, $items));
 
         return $event->items;
     }
@@ -456,7 +456,7 @@ JS,
             ],
         ]);
 
-        event($event = new RegisterHtmlAttributes($this, $context, $htmlAttributes));
+        event($event = new ElementHtmlAttributesResolving($this, $context, $htmlAttributes));
 
         return $event->htmlAttributes;
     }
@@ -475,14 +475,14 @@ JS,
 
     public function getAttributeHtml(string $attribute): string|Stringable
     {
-        event($event = new DefineAttributeHtml($this, $attribute));
+        event($event = new ElementAttributeHtmlResolving($this, $attribute));
 
         return $event->html ?? $this->attributeHtml($attribute);
     }
 
     public function getInlineAttributeInputHtml(string $attribute): string|Stringable
     {
-        event($event = new DefineInlineAttributeInputHtml($this, $attribute));
+        event($event = new ElementInlineAttributeInputHtmlResolving($this, $attribute));
 
         return $event->html ?? $this->inlineAttributeInputHtml($attribute);
     }
@@ -554,7 +554,7 @@ JS,
 
         $html = implode("\n", $components);
 
-        event($event = new DefineSidebarHtml($this, $static, $html));
+        event($event = new ElementSidebarHtmlResolving($this, $static, $html));
 
         return $event->html;
     }
@@ -566,7 +566,7 @@ JS,
      */
     protected function metaFieldsHtml(bool $static): string|Stringable
     {
-        event($event = new DefineMetaFieldsHtml($this, $static));
+        event($event = new ElementMetaFieldsHtmlResolving($this, $static));
 
         return $event->html;
     }
@@ -696,7 +696,7 @@ JS,
     {
         $metadata = $this->metadata();
 
-        event($event = new DefineMetadata($this, $metadata));
+        event($event = new ElementMetadataResolving($this, $metadata));
         $metadata = $event->metadata;
 
         $formatter = I18N::getFormatter();

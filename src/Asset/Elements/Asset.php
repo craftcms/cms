@@ -16,15 +16,16 @@ use CraftCms\Cms\Asset\Actions\RenameFile;
 use CraftCms\Cms\Asset\Actions\ReplaceFile;
 use CraftCms\Cms\Asset\Actions\ShowInFolder;
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Asset\Concerns\LegacyConstants;
 use CraftCms\Cms\Asset\Conditions\AssetCondition;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
-use CraftCms\Cms\Asset\Events\BeforeDefineAssetUrl;
-use CraftCms\Cms\Asset\Events\BeforeGenerateTransform;
-use CraftCms\Cms\Asset\Events\BeforeHandleFile;
-use CraftCms\Cms\Asset\Events\DefineAssetUrl;
+use CraftCms\Cms\Asset\Events\AssetFileHandling;
+use CraftCms\Cms\Asset\Events\AssetUrlDefined;
+use CraftCms\Cms\Asset\Events\AssetUrlResolving;
+use CraftCms\Cms\Asset\Events\TransformGenerating;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\FileException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
@@ -144,6 +145,8 @@ use function CraftCms\Cms\t;
 #[Ruleset(AssetRules::class)]
 class Asset extends Element
 {
+    use LegacyConstants;
+
     // Location error codes
     // -------------------------------------------------------------------------
 
@@ -1902,18 +1905,18 @@ JS, [
 
         $transform ??= $this->_transform;
 
-        event($event = new BeforeDefineAssetUrl($this, $transform));
+        event($event = new AssetUrlResolving($this, $transform));
 
         $url = $event->url;
 
-        // If BeforeDefineAssetUrl::$url is set to null, only respect that if $handled is true
+        // If AssetUrlResolving::$url is set to null, only respect that if $handled is true
         if ($event->url === null && ! $event->handled) {
             $url = $this->_url($transform, $immediately);
         }
 
-        event($event = new DefineAssetUrl($this, $transform, $url));
+        event($event = new AssetUrlDefined($this, $transform, $url));
 
-        // If DefineAssetUrl::$url is set to null, only respect that if $handled is true
+        // If AssetUrlDefined::$url is set to null, only respect that if $handled is true
         if ($event->url !== null || $event->handled) {
             $url = $event->url;
         }
@@ -1957,7 +1960,7 @@ JS, [
                 $immediately = Cms::config()->generateTransformsBeforePageLoad;
             }
 
-            event($event = new BeforeGenerateTransform($this, $transform));
+            event($event = new TransformGenerating($this, $transform));
 
             // If a plugin set the url, we'll just use that.
             if ($event->url !== null) {
@@ -2856,7 +2859,7 @@ JS;
 
         // Fire a 'beforeHandleFile' event if we're going to be doing any file operations in afterSave()
         if (isset($this->newLocation) || isset($this->tempFilePath)) {
-            event(new BeforeHandleFile($this, isNew: ! $this->id));
+            event(new AssetFileHandling($this, isNew: ! $this->id));
         }
 
         // Set the kind based on filename

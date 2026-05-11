@@ -96,8 +96,6 @@ readonly class PreferencesController
         if ($user->admin) {
             $preferences = array_merge($preferences, [
                 'showFieldHandles' => (bool) $request->input('showFieldHandles', $user->getPreference('showFieldHandles')),
-                'enableDebugToolbarForSite' => (bool) $request->input('enableDebugToolbarForSite', $user->getPreference('enableDebugToolbarForSite')),
-                'enableDebugToolbarForCp' => (bool) $request->input('enableDebugToolbarForCp', $user->getPreference('enableDebugToolbarForCp')),
                 'showExceptionView' => (bool) $request->input('showExceptionView', $user->getPreference('showExceptionView')),
                 'profileTemplates' => (bool) $request->input('profileTemplates', $user->getPreference('profileTemplates')),
             ]);

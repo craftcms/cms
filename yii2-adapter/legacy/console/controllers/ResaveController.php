@@ -27,7 +27,7 @@ use CraftCms\Cms\Element\Commands\Resave\ResaveCommand;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Element\Events\DefineResaveCommands;
+use CraftCms\Cms\Element\Events\ElementResaveCommandsResolving;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -528,7 +528,7 @@ class ResaveController extends Controller
 
     public static function registerEvents(): void
     {
-        Event::listen(DefineResaveCommands::class, function(DefineResaveCommands $event) {
+        Event::listen(ElementResaveCommandsResolving::class, function(ElementResaveCommandsResolving $event) {
             if (DeprecatedConcepts::supportsCategories()) {
                 $event->commands['craft:resave:categories'] = [
                     'description' => 'Re-saves categories.',

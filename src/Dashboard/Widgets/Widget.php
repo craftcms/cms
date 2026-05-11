@@ -8,6 +8,7 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
+use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
@@ -140,6 +141,14 @@ EOD;
 
         $config = Arr::except($config, ['uid', 'userId', 'sortOrder', 'enabled']);
 
-        return ComponentHelper::createComponent($config, WidgetInterface::class);
+        try {
+            return ComponentHelper::createComponent($config, WidgetInterface::class);
+        } catch (MissingComponentException $e) {
+            $config['errorMessage'] = $e->getMessage();
+            $config['expectedType'] = $config['type'];
+            unset($config['type']);
+
+            return new MissingWidget($config);
+        }
     }
 }

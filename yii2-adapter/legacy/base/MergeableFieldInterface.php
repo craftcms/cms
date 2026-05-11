@@ -19,5 +19,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Field\Contracts\MergeableFieldInterface::class, MergeableFieldInterface::class);
