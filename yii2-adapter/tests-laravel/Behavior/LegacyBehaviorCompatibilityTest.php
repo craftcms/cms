@@ -7,6 +7,7 @@ use craft\base\Component as LegacyComponent;
 use craft\base\Model as LegacyModel;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\config\GeneralConfig as LegacyGeneralConfig;
+use craft\elements\Entry as LegacyEntry;
 use craft\elements\GlobalSet as LegacyGlobalSet;
 use craft\events\DefineBehaviorsEvent;
 use craft\fields\PlainText as LegacyPlainText;
@@ -15,6 +16,7 @@ use craft\models\GqlSchema as LegacyGqlSchema;
 use craft\models\GqlToken as LegacyGqlToken;
 use craft\models\UserGroup as LegacyUserGroup;
 use CraftCms\Cms\Deprecator\Models\DeprecationError;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Data\JsonData;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Gql\Data\GqlSchema;
@@ -22,6 +24,7 @@ use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Yii2Adapter\Behavior\LegacyBehaviorCatalog;
+use CraftCms\Yii2Adapter\Behavior\LegacyBehaviorCompatibility;
 use CraftCms\Yii2Adapter\Tests\TestCase;
 use Illuminate\Support\Collection;
 use yii\base\Behavior;
@@ -67,6 +70,8 @@ afterEach(function() {
         LegacyPlainText::class,
         LegacyDeprecationError::class,
         LegacyTOTP::class,
+        LegacyEntry::class,
+        Entry::class,
     ] as $class) {
         Event::off($class, 'defineBehaviors');
     }
@@ -161,6 +166,22 @@ test('legacy element classes expose class-defined behaviors', function() {
     $globalSet = new LegacyGlobalSet();
 
     expect($globalSet->getBehavior('fieldLayout'))->toBeInstanceOf(FieldLayoutBehavior::class);
+});
+
+test('new element classes attach behaviors registered on their legacy aliases', function() {
+    Event::on(LegacyEntry::class, LegacyEntry::EVENT_DEFINE_BEHAVIORS, function(DefineBehaviorsEvent $event) {
+        $event->behaviors['entry:test'] = [
+            'class' => TestCompatibilityBehavior::class,
+            'value' => 'entry',
+        ];
+    });
+    LegacyBehaviorCompatibility::registerDefinedBehaviorMethodsFromRegisteredEvents();
+
+    $entry = new Entry();
+
+    expect($entry->getFoo())->toBe('entry')
+        ->and($entry->getBehavior('entry:test'))->toBeInstanceOf(TestCompatibilityBehavior::class)
+        ->and($entry->foo)->toBe('entry');
 });
 
 test('field aliases inherit the define behaviors constant and support delegated method and property access', function() {
