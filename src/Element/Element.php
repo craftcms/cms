@@ -689,7 +689,10 @@ abstract class Element extends Component implements ElementInterface
 
     public function safeAttributes(): array
     {
-        return array_keys($this->ruleset->rules());
+        return array_values(array_diff(array_keys($this->ruleset->rules()), [
+            'id',
+            'uid',
+        ]));
     }
 
     public function getIterator(): Traversable

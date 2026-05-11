@@ -43,6 +43,7 @@
 - Fixed a `yii\base\InvalidConfigException` that occurred when a Yii2-based plugin registered an asset bundle. ([#18818](https://github.com/craftcms/cms/issues/18818))
 - Fixed a bug where using `{{ successMessageInput() }}` would not decrypt the resulting message for the flash message.
 - Fixed a bug where a missing widget from an uninstalled plugin would throw instead of mapping to a MissingWidget.
+- Fixed a bug where an address' ownership ids could be overridden unintentionally.
 
 ## 6.0.0-alpha.1 - 2026-05-06
 
