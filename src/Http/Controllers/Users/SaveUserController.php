@@ -18,7 +18,6 @@ use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Query;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
@@ -337,7 +336,7 @@ readonly class SaveUserController
                 $userVariable,
                 array_filter([
                     'id' => $user->id, // todo: remove
-                    'csrfTokenValue' => $returnCsrfToken && $this->generalConfig->enableCsrfProtection
+                    'csrfTokenValue' => $returnCsrfToken
                         ? csrf_token()
                         : null,
                 ]),
@@ -383,7 +382,7 @@ readonly class SaveUserController
         // Did they upload a new one?
         if ($photo = $request->file('photo')) {
             $fileLocation = AssetsHelper::tempFilePath($photo->extension());
-            $photo->move(Str::beforeLast($fileLocation, '/'), Str::afterLast($fileLocation, '/'));
+            $photo->move(dirname($fileLocation), basename($fileLocation));
             $filename = $photo->getClientOriginalName();
             $mimeType = $photo->getMimeType();
             $newPhoto = true;

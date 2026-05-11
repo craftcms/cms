@@ -69,7 +69,7 @@ readonly class Dashboard
     public function createWidget(string|array $config): WidgetInterface
     {
         if (is_string($config)) {
-            return app($config);
+            $config = ['type' => $config];
         }
 
         return Widget::fromConfig($config);

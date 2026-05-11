@@ -893,9 +893,9 @@ class App
             'class' => WebRequest::class,
             'enableCookieValidation' => true,
             'cookieValidationKey' => $generalConfig->securityKey,
-            'enableCsrfValidation' => $generalConfig->enableCsrfProtection,
-            'enableCsrfCookie' => $generalConfig->enableCsrfCookie,
-            'csrfParam' => $generalConfig->csrfTokenName,
+            'enableCsrfValidation' => true,
+            'enableCsrfCookie' => true,
+            'csrfParam' => '_token',
             'trustedHosts' => $generalConfig->trustedHosts,
             'parsers' => [
                 'application/json' => JsonParser::class,

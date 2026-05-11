@@ -13,6 +13,7 @@ use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Api;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
@@ -298,10 +299,10 @@ readonly class License
                 'domain' => $domainLink,
             ]);
         } else {
-            $keyPath = $this->keyPath();
+            $keyPath = File::normalizePath($this->keyPath(), '/');
 
             // If the license key path starts with the root project path, trim the project path off
-            $rootPath = Aliases::get('@root');
+            $rootPath = File::normalizePath(Aliases::get('@root'), '/');
             if (str_starts_with($keyPath, $rootPath.'/')) {
                 $keyPath = substr($keyPath, strlen($rootPath) + 1);
             }

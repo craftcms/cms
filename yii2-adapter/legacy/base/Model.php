@@ -284,7 +284,7 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
             $attributes = Arr::except($attributes, $except);
         }
 
-        return $attributes;
+        return Arr::except($attributes, ['ruleset']);
     }
 
     public function attributes(): array

@@ -25,7 +25,7 @@ trait RespondsWithFlash
             return $this->asJsonFailure($message, $data);
         }
 
-        Flash::error($message);
+        $message = Flash::error($message);
 
         request()->flash();
 
@@ -47,7 +47,7 @@ trait RespondsWithFlash
             return $this->asJsonSuccess($message, $data);
         }
 
-        Flash::success($message, $notificationSettings);
+        $message = Flash::success($message, $notificationSettings);
 
         $redirect ??= $this->getPostedRedirectUrl();
 

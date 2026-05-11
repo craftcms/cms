@@ -7,6 +7,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\MessageBag;
 
@@ -26,6 +27,11 @@ class TestFlashController extends Controller
     public function failure()
     {
         return $this->asFailure('Failure message', ['error' => 'details']);
+    }
+
+    public function failureWithoutData()
+    {
+        return $this->asFailure('Failure message');
     }
 
     public function successWithRedirect()
@@ -69,6 +75,7 @@ class TestFlashController extends Controller
 beforeEach(function () {
     Route::middleware('web')->post('/test-flash/success', [TestFlashController::class, 'success']);
     Route::middleware('web')->post('/test-flash/failure', [TestFlashController::class, 'failure']);
+    Route::middleware('web')->post('/test-flash/failure-without-data', [TestFlashController::class, 'failureWithoutData']);
     Route::middleware('web')->post('/test-flash/success-redirect', [TestFlashController::class, 'successWithRedirect']);
     Route::middleware('web')->post('/test-flash/model-success', [TestFlashController::class, 'modelSuccess']);
     Route::middleware('web')->post('/test-flash/model-failure', [TestFlashController::class, 'modelFailure']);
@@ -90,7 +97,8 @@ it('asFailure returns JSON with 400 for API request', function () {
 
 it('asSuccess redirects with flash for HTML request', function () {
     post('/test-flash/success')
-        ->assertRedirect();
+        ->assertRedirect()
+        ->assertSessionHas('success', 'Success message');
 });
 
 it('asFailure redirects with flash for HTML request', function () {
@@ -101,6 +109,22 @@ it('asFailure redirects with flash for HTML request', function () {
 it('asSuccess with custom redirect uses the redirect URL', function () {
     post('/test-flash/success-redirect')
         ->assertRedirect('/custom-redirect');
+});
+
+it('asSuccess decrypts posted success messages before flashing them', function () {
+    post('/test-flash/success-redirect', [
+        'successMessage' => Crypt::encrypt('Thanks for filling out the survey!'),
+    ])
+        ->assertRedirect('/custom-redirect')
+        ->assertSessionHas('success', 'Thanks for filling out the survey!');
+});
+
+it('asFailure decrypts posted fail messages before flashing them', function () {
+    post('/test-flash/failure-without-data', [
+        'failMessage' => Crypt::encrypt('Something went wrong.'),
+    ])
+        ->assertRedirect()
+        ->assertSessionHas('error', 'Something went wrong.');
 });
 
 it('asModelSuccess returns JSON with model data for API request', function () {

@@ -34,6 +34,7 @@ export class QueueService extends EventTarget {
   enabled: boolean = true;
   #appId: string = '';
   canAccessQueueManager: boolean = false;
+  #runAutomatically: boolean = true;
 
   // Job state
   totalJobs: number = 0;
@@ -72,6 +73,7 @@ export class QueueService extends EventTarget {
   initialize(options: QueueServiceOptions = {}) {
     this.#appId = options.appId ?? '';
     this.canAccessQueueManager = options.canAccessQueueManager ?? false;
+    this.#runAutomatically = options.runAutomatically ?? true;
     this.#initBroadcaster();
   }
 
@@ -80,8 +82,15 @@ export class QueueService extends EventTarget {
   /**
    * Run the queue and start tracking jobs.
    * Sends a request to execute waiting jobs.
+   * Does nothing if runAutomatically is false.
    */
   async runQueue(): Promise<void> {
+    if (!this.#runAutomatically) {
+      // Just track progress without triggering queue execution
+      this.startTracking(false, true);
+      return;
+    }
+
     try {
       await axios.post(this.#config.getActionUrl('queue/run'));
     } catch (e: unknown) {
