@@ -635,10 +635,13 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $formatter = $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
 
         try {
-            return $formatter->asDecimal($value, $decimals, $options, $textOptions);
+            if (!$formatter->willBeMisrepresented($value)) {
+                return $formatter->asDecimal($value, $decimals, $options, $textOptions);
+            }
         } catch (InvalidArgumentException) {
-            return $value;
         }
+
+        return $value;
     }
 
     /**

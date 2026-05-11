@@ -501,7 +501,7 @@ Craft.EditableTable = Garnish.Base.extend(
             html: value,
           });
         } else {
-          const name = `${baseName}[${rowId}][${colId}]`;
+          let name = `${baseName}[${rowId}][${colId}]`;
 
           $cell = $('<td/>', {
             class: `${col.class ?? ''} ${col.type}-cell`,
@@ -616,6 +616,15 @@ Craft.EditableTable = Garnish.Base.extend(
               break;
 
             default:
+              if (col.type === 'number' && col.locale) {
+                $('<input/>', {
+                  type: 'hidden',
+                  name: `${name}[locale]`,
+                  value: col.locale,
+                }).appendTo($cell);
+                name = `${name}[value]`;
+              }
+
               const $textarea = $('<textarea/>', {
                 name: name,
                 rows: col.rows || 1,

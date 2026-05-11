@@ -236,6 +236,11 @@
                                             describedBy: describedBy,
                                         } only %}
                                     {%- default -%}
+                                        {% if col.type == 'number' and col.locale ?? false %}
+                                            {{ hiddenInput("#{cellName}[locale]", col.locale) }}
+                                            {% set cellName = "#{cellName}[value]" %}
+                                            {% set value = value|number(locale=col.locale) %}
+                                        {% endif %}
                                         {% if static %}
                                             <pre class="noteditable">{{ value }}</pre>
                                         {% else %}
