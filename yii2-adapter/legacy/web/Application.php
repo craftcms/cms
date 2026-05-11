@@ -278,15 +278,10 @@ class Application extends \yii\web\Application
 
         unset($payload['action'], $payload['p']);
 
-        if ($request->hasSession()) {
-            $payload['_token'] ??= $request->session()->token();
-        }
-
         $internalRequest = $request->duplicate(
             query: [],
             request: $payload,
             server: array_merge($request->server->all(), [
-                'REQUEST_METHOD' => 'POST',
                 'REQUEST_URI' => $actionUri,
                 'HTTP_X_CRAFT_LEGACY_ACTION_BRIDGE' => '1',
             ]),
