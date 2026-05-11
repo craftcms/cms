@@ -292,12 +292,8 @@
       "node_modules/@lion/ui/components/combobox/translations/zh.js"
     ]
   },
-  "_cp-CBn40uhq.css": {
-    "file": "assets/cp-CBn40uhq.css",
-    "src": "_cp-CBn40uhq.css"
-  },
-  "_cp-CjSFUyND.js": {
-    "file": "assets/cp-CjSFUyND.js",
+  "_cp-9A_aBhLD.js": {
+    "file": "assets/cp-9A_aBhLD.js",
     "name": "cp",
     "imports": [
       "__plugin-vue_export-helper-CMsg-amg.js",
@@ -331,6 +327,10 @@
     "css": [
       "assets/cp-CBn40uhq.css"
     ]
+  },
+  "_cp-CBn40uhq.css": {
+    "file": "assets/cp-CBn40uhq.css",
+    "src": "_cp-CBn40uhq.css"
   },
   "_decorate-DeIGM8H9.js": {
     "file": "assets/decorate-DeIGM8H9.js",
@@ -1095,25 +1095,25 @@
     "src": "resources/images/install/site.png"
   },
   "resources/js/cp.ts": {
-    "file": "assets/cp-CbIujIZS.js",
+    "file": "assets/cp-DACSdsib.js",
     "name": "cp",
     "src": "resources/js/cp.ts",
     "isEntry": true,
     "imports": [
       "__plugin-vue_export-helper-CMsg-amg.js",
-      "_cp-CjSFUyND.js",
+      "_cp-9A_aBhLD.js",
       "_CpGlobalSidebar-TvhDIVAC.js",
       "_CpQueueIndicator-qrAT-u5H.js"
     ]
   },
   "resources/js/legacy.ts": {
-    "file": "assets/legacy-Cw0evZqH.js",
+    "file": "assets/legacy-BppIokVk.js",
     "name": "legacy",
     "src": "resources/js/legacy.ts",
     "isEntry": true,
     "imports": [
       "__plugin-vue_export-helper-CMsg-amg.js",
-      "_cp-CjSFUyND.js"
+      "_cp-9A_aBhLD.js"
     ],
     "dynamicImports": [
       "_nav-list.ts-D6xvodLP.js",
