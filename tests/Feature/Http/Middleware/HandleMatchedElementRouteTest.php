@@ -3,22 +3,30 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\SetRoute;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Middleware\HandleMatchedElementRoute;
+use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Route\MatchedElement;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 
+use function Pest\Laravel\actingAs;
+
 beforeEach(function () {
+    Cms::config()->isSystemLive = true;
     $this->middleware = app(HandleMatchedElementRoute::class);
     TemplateMode::set(TemplateMode::Site);
     Aliases::set('@templates', dirname(__DIR__, 3).'/Support/templates');
@@ -35,6 +43,11 @@ beforeEach(function () {
         'fallback' => true,
         'path' => request()->path(),
     ]))->where('path', '.*');
+});
+
+afterEach(function () {
+    Cms::config()->isSystemLive = null;
+    Context::forgetHidden(HandleTokenRequest::HAD_TOKEN_KEY);
 });
 
 it('does nothing when no element matches the request uri', function () {
@@ -88,6 +101,70 @@ it('renders matched element template routes for a full request', function () {
     $this->get('/full-request-entry')
         ->assertOk()
         ->assertSeeText("entry-template:{$entry->id}:full-request-entry", escape: false);
+});
+
+it('denies anonymous matched element template routes when the system is offline', function () {
+    Cms::config()->isSystemLive = false;
+
+    createRoutableEntry('offline-entry', 'entries/show');
+
+    $this->get('/offline-entry')
+        ->assertServiceUnavailable();
+});
+
+it('allows matched element template routes with a site token when the system is offline', function () {
+    Cms::config()->isSystemLive = false;
+
+    $entry = createRoutableEntry('offline-site-token-entry', 'entries/show');
+
+    $this->get('/offline-site-token-entry?'.http_build_query([
+        Cms::config()->siteToken => Crypt::encrypt((string) $entry->siteId),
+    ]))
+        ->assertOk()
+        ->assertSeeText("entry-template:{$entry->id}:offline-site-token-entry", escape: false);
+});
+
+it('allows matched element template routes with a valid route token when the system is offline', function () {
+    Cms::config()->isSystemLive = false;
+
+    $entry = createRoutableEntry('offline-route-token-entry', 'entries/show');
+
+    Context::addHidden(HandleTokenRequest::HAD_TOKEN_KEY, true);
+
+    $request = Request::create('/offline-route-token-entry');
+    app()->instance('request', $request);
+
+    $response = $this->middleware->handle($request, fn () => response('next'));
+
+    expect($response->getStatusCode())->toBe(200)
+        ->and(trim((string) $response->getContent()))->toBe("entry-template:{$entry->id}:offline-route-token-entry");
+});
+
+it('denies matched element template routes for users without offline site access', function () {
+    Cms::config()->isSystemLive = false;
+
+    createRoutableEntry('offline-unpermitted-entry', 'entries/show');
+    $user = UserModel::factory()->createElement();
+
+    actingAs($user);
+
+    $this->get('/offline-unpermitted-entry')
+        ->assertServiceUnavailable();
+});
+
+it('allows matched element template routes for users with offline site access', function () {
+    Cms::config()->isSystemLive = false;
+
+    $entry = createRoutableEntry('offline-permitted-entry', 'entries/show');
+    $user = UserModel::factory()
+        ->withPermissions(['accessSiteWhenSystemIsOff'])
+        ->createElement();
+
+    actingAs($user);
+
+    $this->get('/offline-permitted-entry')
+        ->assertOk()
+        ->assertSeeText("entry-template:{$entry->id}:offline-permitted-entry", escape: false);
 });
 
 function createRoutableEntry(string $uri, string $template): Entry

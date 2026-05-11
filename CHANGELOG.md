@@ -45,6 +45,7 @@
 - Fixed a bug where a missing widget from an uninstalled plugin would throw instead of mapping to a MissingWidget.
 - Fixed a bug where an address' ownership ids could be overridden unintentionally.
 - Fixed a bug where `getHasSsoIdentity()` would return `false` when Socialite was not installed but the user had an SSO identity.
+- Fixed a bug where the site's offline status was not being enforced on matched element routes.
 
 ## 6.0.0-alpha.1 - 2026-05-06
 
