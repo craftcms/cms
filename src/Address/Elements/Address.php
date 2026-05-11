@@ -289,6 +289,16 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     #[Override]
+    public function safeAttributes(): array
+    {
+        return array_values(array_diff(parent::safeAttributes(), [
+            'fieldId',
+            'ownerId',
+            'primaryOwnerId',
+        ]));
+    }
+
+    #[Override]
     public function setAttributes($values): void
     {
         // Don't even allow setting a blank country code

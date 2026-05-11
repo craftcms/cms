@@ -372,7 +372,10 @@ class Users
     ): void {
         $filename = AssetsHelper::prepareAssetName($filename ?? pathinfo($fileLocation, PATHINFO_BASENAME), true, true);
 
-        if (! ImageHelper::canManipulateAsImage(pathinfo($fileLocation, PATHINFO_EXTENSION))) {
+        if (
+            ! ImageHelper::canManipulateAsImage(pathinfo($fileLocation, PATHINFO_EXTENSION)) ||
+            ! ImageHelper::canManipulateAsImage(pathinfo($filename, PATHINFO_EXTENSION))
+        ) {
             throw new ImageException(t('User photo must be an image that Craft can manipulate.'));
         }
 

@@ -121,10 +121,17 @@
 
 <hr>
 
+{% set fieldType = className(field)|id %}
+{% set oldTypeSettings = old("types.#{fieldType}") %}
+{% if oldTypeSettings is not null %}
+  {% do field.setAttributes(oldTypeSettings) %}
+  {% do field.errors.merge(errors.getMessages()) %}
+{% endif %}
+
 <div id="settings">
-  <div id="{{ className(field)|id }}">
+  <div id="{{ fieldType }}">
     {% include 'settings/fields/_type-settings' with {
-      namespace: 'types['~className(field)|id~']'
+      namespace: "types[#{fieldType}]"
     } %}
   </div>
 </div>

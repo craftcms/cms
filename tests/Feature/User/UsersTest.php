@@ -1,5 +1,6 @@
 <?php
 
+use CraftCms\Cms\Asset\Exceptions\ImageException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -137,6 +138,17 @@ test('removeCredentials', function () {
     expect($user->pending)->toBeFalse();
     expect($user->password)->toBeNull();
 });
+
+test('saveUserPhoto rejects non image filenames', function () {
+    $user = UserModel::factory()->pending()->createElement();
+
+    $this->users->saveUserPhoto(
+        storage_path('framework/testing/avatar.gif'),
+        $user,
+        'avatar.js',
+        'image/gif',
+    );
+})->throws(ImageException::class, 'User photo must be an image that Craft can manipulate.');
 
 test('user activation', function () {
     $user = UserModel::factory()->pending()->createElement();

@@ -196,14 +196,16 @@ it('accepts environment variables for the timezone and baseUrl when validating s
 });
 
 it('validates resolved environment variable timezone values when validating site', function () {
-    putenv('INSTALL_TIMEZONE=Not/A_Timezone');
+    putenv('INSTALL_TIMEZONE=super-secret-not-a-timezone');
 
-    postJson(action([InstallController::class, 'validateSite']), [
+    $response = postJson(action([InstallController::class, 'validateSite']), [
         'name' => 'Craft',
         'baseUrl' => 'http://localhost',
         'language' => 'en',
         'timezone' => '$INSTALL_TIMEZONE',
     ])->assertJsonValidationErrors('timezone');
+
+    $response->assertDontSee('super-secret-not-a-timezone');
 });
 
 it('validates resolved environment variable baseUrl values when validating site', function () {
