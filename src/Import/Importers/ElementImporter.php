@@ -9,8 +9,8 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
-use http\Exception\InvalidArgumentException;
 use Illuminate\Validation\Validator;
+use InvalidArgumentException;
 use League\Fractal\TransformerAbstract;
 use Override;
 
@@ -126,10 +126,10 @@ class ElementImporter extends BaseImporter
     #[Override]
     public function className(string $className): self
     {
-        $allElements = Elements::getAllElementTypes();
-        if (! in_array($className, $allElements)) {
-            throw new InvalidArgumentException("Class '{$className}' is not a valid element type.");
-        }
+        //        $allElements = Elements::getAllElementTypes();
+        //        if (! in_array($className, $allElements)) {
+        //            throw new InvalidArgumentException("Class '{$className}' is not a valid element type.");
+        //        }
 
         $this->className = $className;
 

@@ -233,18 +233,7 @@ class ImportConfigController
         abort_if(is_null($config = $this->importService->getConfigByHandle($handle)), 400, 'Import config not found.');
 
         try {
-            $file = $config->file;
-            $filePath = BaseImporter::resolvedFilePath($file);
-
-            // TEMP - start
-            $allData = $this->importService->getData($filePath);
-            $data = array_slice($allData, 0);
-            $dataCount = count($data);
-
-            for ($i = 0; $i < $dataCount; $i++) {
-                $this->importService->importItem($config, $data[$i]);
-            }
-            // TEMP - end
+            $this->importService->import($config);
         } catch (Throwable $e) {
             Log::warning("Import failed: {$e->getMessage()}");
 

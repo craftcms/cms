@@ -34,10 +34,7 @@ class Element extends Command
     #[\Override]
     protected $aliases = ['import/element'];
 
-    /**
-     * Execute the console command.
-     */
-    public function handle()
+    public function handle(): int
     {
         $responses = form()
             ->addIf(! $this->option('elementType'), fn ($form) => select(
@@ -70,29 +67,15 @@ class Element extends Command
             ->submit();
 
         // important: don't change "?:" to "??" as it'll treat an empty string passed into --optionName as valid
-        $config['elementImport'] = true;
-        $config['className'] = $this->option('elementType') ?: $responses['elementType'];
-        $config['file'] = $this->option('file') ?: $responses['file'];
-        $config['site'] = $this->option('site') ?: $responses['site'] ?? Sites::getPrimarySite()->handle;
-        $config['transformer'] = $this->option('transformer') ?: $responses['transformer'];
-
-        //        $validator = Validator::make($config, ElementImporter::getRules());
-        //
-        //        if ($validator->fails()) {
-        //            foreach ($validator->errors()->all() as $error) {
-        //                $this->error($error);
-        //            }
-        //            return self::FAILURE;
-        //        }
-        //
-        //        $importConfig = new ElementImporter($config);
-
-        $importConfig = new ElementImporter($config);
+        $importConfig = (new ElementImporter)
+            ->className($this->option('elementType') ?: $responses['elementType'])
+            ->file($this->option('file') ?: $responses['file'])
+            ->site($this->option('site') ?: $responses['site'] ?? Sites::getPrimarySite()->handle)
+            ->transformer($this->option('transformer') ?: $responses['transformer'] ?: null);
 
         $this->components->info("element type: `{$importConfig->className}`");
         $this->components->info("file: `{$importConfig->file}`");
-        $this->components->info("site: `{$importConfig->site}`");
-        $this->components->info('transformer: '.$importConfig->transformer::class);
+        $this->components->info("site: `{$importConfig->site->name}`");
 
         Import::import($importConfig);
 

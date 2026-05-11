@@ -88,7 +88,7 @@ class Import
     }
 
     // //// configs //////
-    public function createImporter($config)
+    public function createImporter(array $config): BaseImporter
     {
         $importer = new $config['type']($config);
         $importer->name($config['name']);
@@ -508,6 +508,14 @@ class Import
         }
 
         return $element;
+    }
+
+    public function import(BaseImporter $config): void
+    {
+        $filePath = BaseImporter::resolvedFilePath($config->file);
+        foreach ($this->getData($filePath) as $item) {
+            $this->importItem($config, $item);
+        }
     }
 
     public function getData(string $filePath): array

@@ -11,6 +11,7 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -18,7 +19,7 @@ use Illuminate\Validation\Validator;
 
 use function CraftCms\Cms\t;
 
-class ImportRun extends Component implements CpEditable
+class ImportRun extends Component implements CpEditable, Validatable
 {
     public ?string $name = null;
 
