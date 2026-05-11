@@ -304,13 +304,13 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         return app(Addresses::class)->formatAddress($address, $options, $formatter);
     }
 
-    public function moneyFilter(?Money $money, ?string $formatLocale = null): ?string
+    public function moneyFilter(?Money $money, ?string $locale = null): ?string
     {
         if ($money === null) {
             return null;
         }
 
-        return MoneyHelper::toString($money, $formatLocale);
+        return MoneyHelper::toString($money, $locale);
     }
 
     public function translateFilter(mixed $message, mixed $category = null, mixed $params = null, ?string $language = null): string

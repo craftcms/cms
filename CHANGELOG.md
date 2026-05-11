@@ -8,6 +8,7 @@
 - Added the legacy `paginate` Twig variable back.
 - Added CP access permission checks to Control Panel action routes.
 - The `craftAsset()` Twig function now resolves to Vite versioned assets. ([#18801](https://github.com/craftcms/cms/pull/18801))
+- Renamed the `|money` Twig filter’s `formatLocale` argument to `locale`.
 - Deprecated the `csrfTokenName`, `enableCsrfCookie`, and `enableCsrfProtection` general config settings. ([#18806](https://github.com/craftcms/cms/pull/18806))
 - Removed support for the Debug Toolbar. [Laravel Debugbar](https://laraveldebugbar.com) can be used instead. ([#18812](https://github.com/craftcms/cms/pull/18812))
 - Improved Control Panel icon loading performance.
@@ -49,6 +50,7 @@
 - Fixed a user photo validation issue with file extensions.
 - Fixed a bug where legacy controllers could return `null` but were not considered handled.
 - Improved performance of the dashboard by reducing the amount of queries for widgets
+- Fixed a bug where criteria added to clones of executed element queries could be ignored. ([#18826](https://github.com/craftcms/cms/pull/18826))
 
 ## 6.0.0-alpha.1 - 2026-05-06
 

@@ -176,7 +176,9 @@ class Arr extends \Illuminate\Support\Arr
     public static function get($array, $key, $default = null)
     {
         // Normalize the key into dot notation
-        $key = self::dotifyKey($key);
+        if (is_string($key)) {
+            $key = self::dotifyKey($key);
+        }
 
         return parent::get($array, $key, $default);
     }
