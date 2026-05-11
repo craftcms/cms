@@ -144,10 +144,14 @@ class ElementImporter extends BaseImporter
             $this->site = Sites::getPrimarySite();
         } elseif (is_numeric($site)) {
             $this->site = Sites::getAllSites()->firstWhere('id', $site);
-        } elseif (is_string($site)) {
-            $this->site = Sites::getAllSites()->firstWhere('handle', $site);
             if ($this->site === null) {
-                $this->site = Sites::getAllSites()->firstWhere('uid', $site);
+                throw new InvalidArgumentException("No site found with ID: $site");
+            }
+        } elseif (is_string($site)) {
+            $this->site = Sites::getAllSites()->firstWhere('handle', $site)
+                ?? Sites::getAllSites()->firstWhere('uid', $site);
+            if ($this->site === null) {
+                throw new InvalidArgumentException("No site found with handle or UID: \"$site\".");
             }
         }
 

@@ -15,6 +15,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -28,16 +29,12 @@ class ImportConfigController
 
     private bool $readOnly;
 
-    private ?string $cpTrigger;
-
     public function __construct(
-        Request $request,
         GeneralConfig $generalConfig,
         private HtmlStack $HtmlStack,
         private readonly Import $importService,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
-        $this->cpTrigger = $generalConfig->cpTrigger;
     }
 
     public function index(): View
@@ -51,12 +48,17 @@ class ImportConfigController
 
     public function create(Request $request): CpScreenResponse
     {
+        $validTypes = $this->importService->getAllImporterTypes();
+
         $old = $request->old() ?? $request->session()?->get('import');
         if (! empty($old)) {
-            $import = new ($old['type'])($old);
+            $type = $old['type'] ?? null;
+            abort_unless(is_string($type) && in_array($type, $validTypes, strict: true), 400, 'Invalid importer type.');
+            $import = new $type($old);
         } else {
             $type = $request->input('type');
             if ($type) {
+                abort_unless(in_array($type, $validTypes, strict: true), 400, 'Invalid importer type.');
                 $import = new $type;
             } else {
                 $import = null;
@@ -69,7 +71,7 @@ class ImportConfigController
     public function renderSettings(Request $request): JsonResponse
     {
         $request->validate([
-            'type' => ['required', 'string'],
+            'type' => ['required', 'string', Rule::in($this->importService->getAllImporterTypes())],
             'namespace' => ['nullable', 'string'],
         ]);
 
@@ -110,6 +112,12 @@ class ImportConfigController
     {
         $request->validate([
             'uid' => ['nullable', 'string', 'max:36'],
+            'type' => [
+                Rule::requiredIf(! $request->input('uid')),
+                'nullable',
+                'string',
+                Rule::in($this->importService->getAllImporterTypes()),
+            ],
         ]);
 
         $importConfigUid = $request->input('uid');

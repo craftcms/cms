@@ -231,15 +231,7 @@ class Import
             return;
         }
 
-        DB::beginTransaction();
-
-        try {
-            DB::table(Table::IMPORT_CONFIGS)->softDelete($configRecord->id);
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
+        $configRecord->delete();
 
         // invalidate caches
         $this->configs = null;
@@ -356,15 +348,7 @@ class Import
             return;
         }
 
-        DB::beginTransaction();
-
-        try {
-            DB::table(Table::IMPORT_RUNS)->softDelete($runRecord->id);
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
+        $runRecord->delete();
 
         // invalidate caches
         $this->runs = null;

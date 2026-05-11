@@ -83,7 +83,7 @@ abstract class BaseImporter
         ]);
     }
 
-    public function isElementImport()
+    public function isElementImport(): bool
     {
         return is_subclass_of($this->className, ElementInterface::class);
     }
