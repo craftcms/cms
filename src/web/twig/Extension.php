@@ -617,17 +617,25 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param int|null $decimals
      * @param array $options
      * @param array $textOptions
+     * @param string|null $locale
      * @return string
      * @since 3.6.0
      */
-    public function numberFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = []): string
-    {
+    public function numberFilter(
+        mixed $value,
+        ?int $decimals = null,
+        array $options = [],
+        array $textOptions = [],
+        ?string $locale = null,
+    ): string {
         if ($value === null || $value === '') {
             return '';
         }
 
+        $formatter = $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
+
         try {
-            return Craft::$app->getFormatter()->asDecimal($value, $decimals, $options, $textOptions);
+            return $formatter->asDecimal($value, $decimals, $options, $textOptions);
         } catch (InvalidArgumentException) {
             return $value;
         }
