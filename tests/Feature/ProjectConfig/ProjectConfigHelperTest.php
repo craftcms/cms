@@ -283,6 +283,10 @@ test('split into components', function (array $inputData, array $expectedResult)
 ]);
 
 test('touch', function (string $input, string $expected) {
+    // Normalize line endings (heredocs may have CRLF on Windows)
+    $input = str_replace(["\r\n", "\r"], "\n", $input);
+    $expected = str_replace(["\r\n", "\r"], "\n", $expected);
+
     // Make sure they both end in a newline
     $input = Str::finish($input, "\n");
     $expected = Str::finish($expected, "\n");
@@ -301,7 +305,7 @@ test('touch', function (string $input, string $expected) {
     DateTimeHelper::pause();
     $expected = str_replace('__TIMESTAMP__', (string) DateTimeHelper::currentTimeStamp(), $expected);
     ProjectConfigHelper::touch();
-    expect(file_get_contents($path))->toBe($expected);
+    expect(str_replace(["\r\n", "\r"], "\n", file_get_contents($path)))->toBe($expected);
     DateTimeHelper::resume();
 
     // Put the old project.yaml back

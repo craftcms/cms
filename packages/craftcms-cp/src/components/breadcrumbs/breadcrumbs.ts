@@ -3,6 +3,7 @@ import {property, query, queryAssignedElements, state} from 'lit/decorators.js';
 import '../icon/icon.js';
 import type CraftBreadcrumbItem from '../breadcrumb-item/breadcrumb-item.js';
 import styles from './breadcrumbs.styles.js';
+import {t} from '../../utilities/translate';
 
 type BreadcrumbItem = {
   label?: string;
@@ -24,7 +25,7 @@ export default class CraftBreadcrumbs extends LitElement {
    * The label to use for the breadcrumb control. This will not be shown on the screen, but it will be announced by
    * screen readers and other assistive devices to provide more context for users.
    */
-  @property() label = '';
+  @property() label = t('Breadcrumbs');
 
   @state()
   private items: BreadcrumbItem[] = [];
@@ -126,10 +127,6 @@ export default class CraftBreadcrumbs extends LitElement {
 
   override connectedCallback() {
     super.connectedCallback();
-
-    if (!this.hasAttribute('role')) {
-      this.setAttribute('role', 'navigation');
-    }
 
     this.resizeObserver = new ResizeObserver(() => {
       if (this.firstRender) {

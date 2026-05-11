@@ -22,5 +22,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Twig\Extensions\CpExtension::class, CpExtension::class);

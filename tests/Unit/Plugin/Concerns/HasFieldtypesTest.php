@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Field\Events\RegisterFieldTypes;
+use CraftCms\Cms\Field\Events\FieldTypesResolving;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -13,7 +13,7 @@ beforeEach(function () {
 });
 
 afterEach(function () {
-    app(Dispatcher::class)->forget(RegisterFieldTypes::class);
+    app(Dispatcher::class)->forget(FieldTypesResolving::class);
     app()->forgetInstance(TestPlugin::class);
 });
 
@@ -26,7 +26,7 @@ it('registers configured field types', function () {
     $plugin->setFieldTypes([PlainText::class]);
     $plugin->bootHasFieldTypes();
 
-    $event = new RegisterFieldTypes(new Collection);
+    $event = new FieldTypesResolving(new Collection);
     event($event);
 
     expect($event->types->all())->toContain(PlainText::class);
@@ -40,7 +40,7 @@ it('does not register field type listeners when none are configured', function (
 
     $plugin->bootHasFieldTypes();
 
-    $event = new RegisterFieldTypes(new Collection);
+    $event = new FieldTypesResolving(new Collection);
     event($event);
 
     expect($event->types->all())->toBe([]);

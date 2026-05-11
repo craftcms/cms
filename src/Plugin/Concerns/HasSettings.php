@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Concerns;
 
-use CraftCms\Cms\Component\Concerns\HasComponentEvents;
-use CraftCms\Cms\Component\Events\ComponentEvent;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 
-use function CraftCms\Cms\template;
+use function CraftCms\Cms\pageTemplate;
 
 /**
  * @mixin Plugin
@@ -23,8 +20,6 @@ use function CraftCms\Cms\template;
  */
 trait HasSettings
 {
-    use HasComponentEvents;
-
     /** @var bool Whether the plugin has a settings page in the control panel */
     public bool $hasCpSettings = false;
 
@@ -33,18 +28,6 @@ trait HasSettings
      *           can be shown when admin changes are disallowed.
      */
     public bool $hasReadOnlyCpSettings = false;
-
-    /**
-     * @event ComponentEvent The event that is triggered before the plugin’s settings are saved.
-     *
-     * You may set {@see ComponentEvent::$isValid} to `false` to prevent the plugin’s settings from saving.
-     */
-    public const string EVENT_BEFORE_SAVE_SETTINGS = 'beforeSaveSettings';
-
-    /**
-     * @event ComponentEvent The event that is triggered after the plugin’s settings are saved.
-     */
-    public const string EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
 
     /**
      * @var Validatable|bool|null The model used to store the plugin’s settings
@@ -107,7 +90,7 @@ trait HasSettings
             return (string) $this->settingsHtml();
         }, 'settings');
 
-        return response(template('settings/plugins/_settings', [
+        return response(pageTemplate('settings/plugins/_settings', [
             'plugin' => $this,
             'settingsHtml' => $settingsHtml,
             'readOnly' => $readOnly,
@@ -116,14 +99,12 @@ trait HasSettings
 
     public function beforeSaveSettings(): bool
     {
-        event(self::componentEventName(self::EVENT_BEFORE_SAVE_SETTINGS), $event = new ComponentEvent($this));
-
-        return $event->isValid;
+        return true;
     }
 
     public function afterSaveSettings(): void
     {
-        event(self::componentEventName(self::EVENT_AFTER_SAVE_SETTINGS), new ComponentEvent($this));
+        // carry on
     }
 
     /**

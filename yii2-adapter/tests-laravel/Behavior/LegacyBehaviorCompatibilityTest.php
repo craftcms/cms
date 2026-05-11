@@ -15,12 +15,15 @@ use craft\models\GqlSchema as LegacyGqlSchema;
 use craft\models\GqlToken as LegacyGqlToken;
 use craft\models\UserGroup as LegacyUserGroup;
 use CraftCms\Cms\Deprecator\Models\DeprecationError;
+use CraftCms\Cms\Field\Data\JsonData;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Yii2Adapter\Behavior\LegacyBehaviorCatalog;
 use CraftCms\Yii2Adapter\Tests\TestCase;
+use Illuminate\Support\Collection;
 use yii\base\Behavior;
 use yii\base\Event;
 
@@ -44,6 +47,15 @@ class TestCompatibilityBehavior extends Behavior
     {
         $this->owner->description = $description;
     }
+}
+
+function sandboxAllowedCompatibilityTargets(): Collection
+{
+    return collect(LegacyBehaviorCatalog::discoveredTargets())
+        ->pluck('targetClass')
+        ->unique()
+        ->filter(fn(string $class) => (new ReflectionClass($class))->getAttributes(AllowedInSandbox::class) !== [])
+        ->values();
 }
 
 afterEach(function() {
@@ -80,6 +92,7 @@ test('legacy behavior mixins are applied to every discovered compatibility targe
     $targetClasses = collect(LegacyBehaviorCatalog::discoveredTargets())
         ->pluck('targetClass')
         ->unique()
+        ->diff(sandboxAllowedCompatibilityTargets())
         ->values()
         ->all();
 
@@ -87,23 +100,24 @@ test('legacy behavior mixins are applied to every discovered compatibility targe
         ->toBe([]);
 });
 
-test('discovered legacy behavior targets are real wrappers rather than class aliases', function() {
-    $unexpectedAliasTargets = collect(LegacyBehaviorCatalog::discoveredTargets())
-        ->filter(function(array $target) {
-            $contents = (string) file_get_contents($target['path']);
+test('sandbox allowed classes are not exposed to legacy behavior mixins', function() {
+    expect(collect(LegacyBehaviorCatalog::discoveredTargets())->pluck('targetClass'))
+        ->toContain(JsonData::class)
+        ->and(sandboxAllowedCompatibilityTargets())->toContain(JsonData::class)
+        ->and(array_intersect(sandboxAllowedCompatibilityTargets()->all(), LegacyBehaviorCatalog::mixinTargets()))->toBe([]);
+});
 
-            if (!str_contains($contents, 'class_alias(')) {
-                return false;
-            }
+test('discovered behavior targets resolve through their legacy aliases to their migrated classes', function() {
+    $aliasTargets = collect(LegacyBehaviorCatalog::discoveredTargets())
+        ->filter(fn(array $target) => (new ReflectionClass($target['legacyClass']))->getName() !== $target['legacyClass'])
+        ->values();
 
-            return !str_contains($target['path'], '/legacy/elements/actions/')
-                && !str_contains($target['path'], '/legacy/elements/exporters/');
-        })
-        ->pluck('legacyClass')
-        ->values()
-        ->all();
+    expect($aliasTargets)->not->toBeEmpty();
 
-    expect($unexpectedAliasTargets)->toBe([]);
+    $aliasTargets->each(function(array $target) {
+        expect((new ReflectionClass($target['legacyClass']))->getName())
+            ->toBe($target['targetClass']);
+    });
 });
 
 test('component-backed classes inherit behaviors from base model, base component, and concrete legacy classes', function() {

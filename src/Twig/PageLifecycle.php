@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig;
 
-use CraftCms\Cms\Twig\Events\BeginPage;
-use CraftCms\Cms\Twig\Events\EndPage;
+use CraftCms\Cms\Twig\Events\PageEnded;
+use CraftCms\Cms\Twig\Events\PageStarting;
 use CraftCms\Cms\Twig\Exceptions\TemplateExitException;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Container\Attributes\Scoped;
 
 /**
- * Owns the page rendering lifecycle: output buffering, BeginPage/EndPage
+ * Owns the page rendering lifecycle: output buffering, PageStarting/PageEnded
  * events, and placeholder replacement for head/body asset injection.
  *
  * Keeps TemplateRenderer focused on template rendering without coupling
@@ -48,7 +48,7 @@ readonly class PageLifecycle
     /**
      * Wraps a template render callback in the page lifecycle.
      *
-     * Starts output buffering, fires BeginPage/EndPage events, and replaces
+     * Starts output buffering, fires PageStarting/PageEnded events, and replaces
      * the head/body placeholders in the buffered output with rendered assets.
      *
      * @param  callable(): string  $render  A callback that renders the template and returns the output.
@@ -60,11 +60,11 @@ readonly class PageLifecycle
         ob_implicit_flush(false);
 
         try {
-            event(new BeginPage);
+            event(new PageStarting);
 
             echo $render();
 
-            event($event = new EndPage);
+            event($event = new PageEnded);
 
             return strtr((string) ob_get_clean(), [
                 self::HEAD_PLACEHOLDER => $event->headHtml ?? $this->HtmlStack->headHtml(),

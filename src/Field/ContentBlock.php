@@ -488,9 +488,9 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
 
         // Existing element?
         if ($owner?->id) {
-            $query->beforeQuery(function (ContentBlockQuery $query) use ($owner) {
-                $query->owner($owner);
+            $query->owner($owner);
 
+            $query->beforeQuery(function (ContentBlockQuery $query) use ($owner) {
                 // Clear out id=false if this query was populated previously
                 if ($query->id === false) {
                     $query->id = null;

@@ -51,7 +51,7 @@ it('prunes orphaned nested entries for each site', function () {
 
     $supportedEntry->element->siteSettings->first()->update(['siteId' => $secondSite->id]);
 
-    $this->artisan('utils/prune-orphaned-entries')
+    $this->artisan('craft:utils/prune-orphaned-entries')
         ->expectsOutputToContain(sprintf('Site "%s"', Site::first()->name))
         ->expectsOutputToContain(sprintf('Site "%s"', $secondSite->name))
         ->expectsOutputToContain("Deleting entry {$orphanedEntry->id} in {$secondSite->name}")

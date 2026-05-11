@@ -15,6 +15,8 @@
   import AppLayout from '@/layout/AppLayout.vue';
   import Pane from '@/components/Pane.vue';
   import CpLink from '@/components/CpLink.vue';
+  import useCraftData from '@/composables/useCraftData';
+  import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
 
   export interface SectionModel {
     id: number;
@@ -48,9 +50,9 @@
     sort?: Array<SortItem>;
     searchTerm?: string;
     emptyMessage: string;
-    readOnly: boolean;
   }>();
 
+  const {readOnly} = useCraftData();
   const columnHelper = createColumnHelper<SectionModel>();
   const columns = ref([
     columnHelper.accessor('name', {
@@ -121,6 +123,11 @@
       get sorting() {
         return sorting.value;
       },
+      get columnVisibility() {
+        return {
+          actions: !readOnly,
+        };
+      },
     },
 
     onSortingChange: (updater) => {
@@ -181,8 +188,14 @@
 
 <template>
   <AppLayout :title="title">
+    <CalloutReadOnly v-if="readOnly"></CalloutReadOnly>
     <template #actions>
-      <CpLink as="craft-button" variant="primary" :href="create()">
+      <CpLink
+        as="craft-button"
+        variant="primary"
+        :href="create()"
+        v-if="!readOnly"
+      >
         <craft-icon name="plus" slot="prefix"></craft-icon>
         {{ t('New section') }}
       </CpLink>

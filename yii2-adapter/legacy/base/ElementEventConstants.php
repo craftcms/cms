@@ -9,6 +9,9 @@
 
 namespace craft\base;
 
+/**
+ * @phpstan-ignore trait.unused
+ */
 trait ElementEventConstants
 {
     /**
@@ -71,7 +74,7 @@ trait ElementEventConstants
      *
      * @see getCacheTags()
      * @since 4.1.0
-     * @deprecated 6.0.0 Use {@see DefineCacheTags} instead.
+     * @deprecated 6.0.0 Use {@see ElementQueryCacheTagsResolving} instead.
      */
     public const EVENT_DEFINE_CACHE_TAGS = 'defineCacheTags';
 

@@ -6,15 +6,17 @@ use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Color;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
-use CraftCms\Cms\Field\Events\RegisterFieldTypes;
-use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
+use CraftCms\Cms\Field\Events\CompatibleFieldTypesResolving;
+use CraftCms\Cms\Field\Events\FieldTypesResolving;
+use CraftCms\Cms\Field\Events\NestedEntryFieldTypesResolving;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\Models\Field as FieldModel;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField as CustomFieldElement;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
 use CraftCms\Cms\Support\Str;
@@ -51,8 +53,8 @@ it('can add extra field types through an event', function () {
     class CustomField extends Field {}
 
     Event::listen(
-        RegisterFieldTypes::class,
-        fn (RegisterFieldTypes $event) => $event->types->add(CustomField::class),
+        FieldTypesResolving::class,
+        fn (FieldTypesResolving $event) => $event->types->add(CustomField::class),
     );
 
     expect($this->fields->getAllFieldTypes())->toContain(CustomField::class);
@@ -69,8 +71,8 @@ it('can get all field types that have content', function () {
     }
 
     Event::listen(
-        RegisterFieldTypes::class,
-        fn (RegisterFieldTypes $event) => $event->types->add(CustomFieldWithoutContent::class),
+        FieldTypesResolving::class,
+        fn (FieldTypesResolving $event) => $event->types->add(CustomFieldWithoutContent::class),
     );
 
     expect($this->fields->getFieldTypesWithContent())->toContain(PlainText::class);
@@ -94,8 +96,8 @@ it('can define additional compatible field types with an event', function () {
     expect($this->fields->getCompatibleFieldTypes($plainText))->not()->toContain(CustomCompatibleField::class);
 
     Event::listen(
-        DefineCompatibleFieldTypes::class,
-        fn (DefineCompatibleFieldTypes $event) => $event->compatibleTypes->add(CustomCompatibleField::class),
+        CompatibleFieldTypesResolving::class,
+        fn (CompatibleFieldTypesResolving $event) => $event->compatibleTypes->add(CustomCompatibleField::class),
     );
 
     expect($this->fields->getCompatibleFieldTypes($plainText))->toContain(CustomCompatibleField::class);
@@ -113,8 +115,8 @@ it('can get nested entry field types', function () {
     expect($this->fields->getNestedEntryFieldTypes())->not()->toContain(CustomNestedEntryField::class);
 
     Event::listen(
-        RegisterNestedEntryFieldTypes::class,
-        fn (RegisterNestedEntryFieldTypes $event) => $event->types->add(CustomNestedEntryField::class),
+        NestedEntryFieldTypesResolving::class,
+        fn (NestedEntryFieldTypesResolving $event) => $event->types->add(CustomNestedEntryField::class),
     );
 
     expect($this->fields->getNestedEntryFieldTypes())->toContain(CustomNestedEntryField::class);
@@ -321,7 +323,7 @@ it('can hard delete a field layout by id', function () {
                 'elements' => [
                     [
                         'uid' => Str::uuid()->toString(),
-                        'type' => CraftCms\Cms\FieldLayout\LayoutElements\CustomField::class,
+                        'type' => CustomFieldElement::class,
                         'fieldUid' => $field->uid,
                     ],
                 ],
@@ -369,4 +371,45 @@ it('returns laravel-style pagination metadata for table data', function () {
         ->and($pagination['next_page_url'])->toBeNull();
 });
 
-test('field layouts')->todo('Implement once field layouts are ported.');
+test('field layouts', function () {
+    $field = FieldModel::factory()->create([
+        'name' => 'Plain Text',
+        'handle' => 'plainTextLayoutField',
+        'type' => PlainText::class,
+    ]);
+
+    $layout = $this->fields->createLayout([
+        'uid' => Str::uuid()->toString(),
+        'type' => EntryElement::class,
+        'tabs' => [
+            [
+                'uid' => Str::uuid()->toString(),
+                'name' => 'Content',
+                'elements' => [
+                    [
+                        'uid' => Str::uuid()->toString(),
+                        'type' => CustomFieldElement::class,
+                        'fieldUid' => $field->uid,
+                    ],
+                ],
+            ],
+        ],
+    ]);
+
+    expect($this->fields->saveLayout($layout))->toBeTrue()
+        ->and($layout->id)->toBeInt()
+        ->and($this->fields->getLayoutById($layout->id)?->uid)->toBe($layout->uid)
+        ->and($this->fields->getLayoutByUid($layout->uid)?->id)->toBe($layout->id)
+        ->and($this->fields->getLayoutByType(EntryElement::class, false)?->id)->toBe($layout->id);
+
+    $layout->setTabs([
+        new FieldLayoutTab([
+            'layout' => $layout,
+            'uid' => Str::uuid()->toString(),
+            'name' => 'Updated',
+        ]),
+    ]);
+
+    expect($this->fields->saveLayout($layout))->toBeTrue()
+        ->and($this->fields->getLayoutById($layout->id)?->getTabs()[0]->name)->toBe('Updated');
+});

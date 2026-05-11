@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\ElementAction;
-use CraftCms\Cms\Element\Events\RegisterActions;
+use CraftCms\Cms\Element\Events\ElementActionsResolving;
 use CraftCms\Cms\Element\Exporters\Raw;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -81,7 +81,7 @@ it('returns native Laravel download responses for download actions', function ()
         }
     };
 
-    Event::listen(function (RegisterActions $event) use ($action) {
+    Event::listen(function (ElementActionsResolving $event) use ($action) {
         if ($event->elementType === Entry::class) {
             $event->actions[] = clone $action;
         }

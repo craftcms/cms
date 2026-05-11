@@ -7,9 +7,11 @@ namespace CraftCms\Yii2Adapter;
 use Craft;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Yii2Adapter\Event\EventCompatibility;
 use CraftCms\Yii2Adapter\Http\Controller;
 use Illuminate\Contracts\Foundation\Application;
+use yii\base\Module;
 use yii\BaseYii;
 
 readonly class LegacyApp
@@ -17,6 +19,8 @@ readonly class LegacyApp
     public function register(Application $app): void
     {
         $app->singleton('Craft', function() use ($app) {
+            $laravelApp = $app;
+
             /**
              * Register the base aliases that Yii sets, this has to be after
              * the constants as composer will autoload the BaseYii class.
@@ -59,6 +63,12 @@ readonly class LegacyApp
              * the relevant Laravel event and trigger the Yii event.
              */
             new EventCompatibility()->boot();
+
+            foreach ($laravelApp->make(Plugins::class)->getAllPlugins() as $plugin) {
+                if ($plugin instanceof Module) {
+                    Craft::$app->setModule($plugin->handle, $plugin);
+                }
+            }
 
             /**
              * Globals, Categories, Tags

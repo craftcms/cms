@@ -12,5 +12,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Condition\Contracts\ConditionInterface::class, ConditionInterface::class);

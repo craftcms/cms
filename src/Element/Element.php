@@ -11,6 +11,7 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\Importable;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
+use CraftCms\Cms\Element\Concerns\LegacyConstants;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
@@ -21,7 +22,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTime;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
@@ -69,10 +69,10 @@ abstract class Element extends Component implements ElementInterface, Importable
     use Concerns\Searchable;
     use Concerns\Structurable;
     use Concerns\TracksChanges;
+    use LegacyConstants;
     use Macroable {
         __call as macroCall;
     }
-    use Validates;
 
     /**
      * @since 3.3.6
@@ -465,6 +465,8 @@ abstract class Element extends Component implements ElementInterface, Importable
     {
         $attributes = $this->attributes();
         $fields = array_combine($attributes, $attributes);
+
+        $fields = $this->formatDateFields($fields);
 
         foreach ($this->fieldLayoutFields() as $field) {
             if (! isset($fields[$field->handle])) {

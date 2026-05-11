@@ -20,5 +20,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Asset\PreviewHandlers\Text::class, Text::class);

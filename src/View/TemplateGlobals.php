@@ -10,7 +10,7 @@ use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Variables\CraftVariable;
 use CraftCms\Cms\Update\Updates;
-use CraftCms\Cms\View\Events\RegisterTemplateGlobals;
+use CraftCms\Cms\View\Events\TemplateGlobalsResolving;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
@@ -66,7 +66,7 @@ readonly class TemplateGlobals
             'yesterday' => today()->subDay(),
         ];
 
-        event($event = new RegisterTemplateGlobals($globals));
+        event($event = new TemplateGlobalsResolving($globals));
 
         return $event->globals;
     }

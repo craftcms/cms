@@ -7,8 +7,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementActivity;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\BeforeDelete;
-use CraftCms\Cms\Element\Events\BeforeSave;
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleting;
+use CraftCms\Cms\Element\Events\ElementLifecycleSaving;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -436,7 +436,7 @@ describe('store', function () {
         /** @var Entry $draft */
         $draft = app(Drafts::class)->createDraft($entry, auth()->id(), name: 'Failing Draft');
 
-        Event::listen(BeforeSave::class, function (BeforeSave $event) use ($draft) {
+        Event::listen(ElementLifecycleSaving::class, function (ElementLifecycleSaving $event) use ($draft) {
             if ($event->element->id === $draft->id) {
                 $event->isValid = false;
             }
@@ -583,7 +583,7 @@ describe('apply', function () {
 
         $failedSave = false;
 
-        Event::listen(BeforeSave::class, function (BeforeSave $event) use ($draft, &$failedSave) {
+        Event::listen(ElementLifecycleSaving::class, function (ElementLifecycleSaving $event) use ($draft, &$failedSave) {
             if ($event->element->id === $draft->id && ! $failedSave) {
                 $event->isValid = false;
                 $failedSave = true;
@@ -698,7 +698,7 @@ describe('destroy', function () {
         /** @var Entry $draft */
         $draft = app(Drafts::class)->createDraft($entry, auth()->id(), name: 'Undeletable Draft');
 
-        Event::listen(BeforeDelete::class, function (BeforeDelete $event) use ($draft) {
+        Event::listen(ElementLifecycleDeleting::class, function (ElementLifecycleDeleting $event) use ($draft) {
             if ($event->element->id === $draft->id) {
                 $event->isValid = false;
             }

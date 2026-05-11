@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Plugin\Concerns;
 
 use CraftCms\Cms\Field\Contracts\FieldInterface;
-use CraftCms\Cms\Field\Events\RegisterFieldTypes;
+use CraftCms\Cms\Field\Events\FieldTypesResolving;
 use CraftCms\Cms\Plugin\Plugin;
 use Illuminate\Support\Facades\Event;
 
@@ -29,7 +29,7 @@ trait HasFieldtypes
             return;
         }
 
-        Event::listen(RegisterFieldTypes::class, function (RegisterFieldTypes $event) {
+        Event::listen(FieldTypesResolving::class, function (FieldTypesResolving $event) {
             $event->types->push(...$this->fieldTypes);
         });
     }

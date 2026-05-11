@@ -6,20 +6,16 @@ namespace CraftCms\Yii2Adapter\Event;
 
 use Craft;
 use craft\base\Element;
-use craft\base\FieldLayoutComponent;
+use craft\base\Field as LegacyField;
 use craft\console\controllers\ResaveController;
 use craft\controllers\ElementsController;
 use craft\controllers\UsersController;
 use craft\db\Connection;
+use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\NestedElementManager;
 use craft\events\EditionChangeEvent;
-use craft\fieldlayoutelements\BaseField;
-use craft\fields\Assets as LegacyAssetsField;
-use craft\fields\BaseOptionsField as LegacyBaseOptionsField;
-use craft\fields\Link as LegacyLinkField;
-use craft\fields\Matrix as LegacyMatrixField;
 use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
 use craft\imagetransforms\ImageTransformer;
@@ -54,8 +50,10 @@ use craft\web\Application;
 use craft\web\twig\variables\Cp;
 use craft\web\View;
 use CraftCms\Cms\Edition\Events\EditionChanged;
+use CraftCms\Cms\Element\Events\ElementTypesResolving;
+use CraftCms\Cms\Shared\Concerns\LegacyEventConstants;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\View\Events\RegisterTemplateCacheCollectors;
+use CraftCms\Cms\View\Events\TemplateCacheCollectorsResolving;
 use CraftCms\DependencyAwareCache\Events\TagsInvalidated;
 use CraftCms\Yii2Adapter\IdentityWrapper;
 use CraftCms\Yii2Adapter\View\LegacyAssetBundleCollector;
@@ -80,21 +78,23 @@ readonly class EventCompatibility
         NestedElementManager::registerEvents();
         \craft\elements\User::registerEvents();
 
+        Event::listen(function(ElementTypesResolving $event) {
+            $event->types[] = Address::class;
+            $event->types[] = Asset::class;
+            $event->types[] = Entry::class;
+            $event->types[] = \craft\elements\User::class;
+        });
+
         /**
          * FieldLayouts
          */
-        BaseField::registerEvents();
+        LegacyEventConstants::registerEvents();
         FieldLayout::registerEvents();
-        FieldLayoutComponent::registerEvents();
 
         /**
          * Fields
          */
-        LegacyAssetsField::registerEvents();
-        LegacyBaseOptionsField::registerEvents();
-        LegacyLinkField::registerEvents();
-        LegacyMatrixField::registerEvents();
-        FieldEvents::registerEvents();
+        LegacyField::registerEvents();
 
         /**
          * Helpers
@@ -166,13 +166,13 @@ readonly class EventCompatibility
             ]));
         });
 
-        Event::listen(Authenticated::class, function(Authenticated $event) {
+        Event::listen(function(Authenticated $event) {
             /** @var User $user */
             $user = $event->user;
             app('Craft')->getUser()->setIdentity(new IdentityWrapper($user));
         });
 
-        Event::listen(Login::class, function(Login $event) {
+        Event::listen(function(Login $event) {
             /** @var User $user */
             $user = $event->user;
             app('Craft')->getUser()->setIdentity(new IdentityWrapper($user));
@@ -182,11 +182,11 @@ readonly class EventCompatibility
             app('Craft')->getUser()->setIdentity(null);
         });
 
-        Event::listen(TagsInvalidated::class, function(TagsInvalidated $event) {
+        Event::listen(function(TagsInvalidated $event) {
             YiiTagDependency::invalidate(Craft::$app->getCache(), $event->tags);
         });
 
-        Event::listen(RegisterTemplateCacheCollectors::class, function(RegisterTemplateCacheCollectors $event) {
+        Event::listen(function(TemplateCacheCollectorsResolving $event) {
             $event->types->add(LegacyAssetBundleCollector::class);
         });
 

@@ -6,10 +6,12 @@ use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\SlugConditionRule;
 use CraftCms\Cms\Element\Conditions\TitleConditionRule;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
+use CraftCms\Cms\Entry\Conditions\TypeConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Http\Controllers\ConditionsController;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Str;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\post;
@@ -36,6 +38,33 @@ beforeEach(function () {
                 'config' => Json::encode($condition->getBuilderConfig()),
                 'conditionRules' => $portableConfig['conditionRules'],
             ], $conditionOverrides),
+        ];
+    };
+
+    $this->sourcesPayload = function (EntryCondition $condition, array $conditionOverrides = []): array {
+        $portableConfig = $condition->getConfig();
+
+        $sourceKey = 'custom:'.Str::uuid();
+
+        return [
+            'sources' => [
+                $sourceKey => [
+                    $condition->name => array_merge([
+                        'class' => $portableConfig['class'],
+                        'config' => Json::encode($condition->getBuilderConfig()),
+                        'new-rule-type' => TypeConditionRule::class,
+                    ], $conditionOverrides),
+                ],
+            ],
+            'config' => Json::encode(array_merge($condition->getBuilderConfig(), [
+                'class' => $portableConfig['class'],
+                'id' => $condition->id,
+                'name' => "sources[$sourceKey][$condition->name]",
+                'mainTag' => $condition->mainTag,
+                'sortable' => $condition->sortable,
+                'forProjectConfig' => $condition->forProjectConfig,
+                'addRuleLabel' => $condition->addRuleLabel,
+            ])),
         ];
     };
 });
@@ -86,6 +115,14 @@ describe('show', function () {
             ->toContain('condition-main')
             ->toContain('value="Hello World"')
             ->toContain(TitleConditionRule::class);
+    });
+
+    it('handles a custom sources payload', function () {
+        $condition = new EntryCondition(Entry::class);
+        $condition->id = 'entry-condition';
+
+        $payload = ($this->sourcesPayload)($condition);
+        postJson(action([ConditionsController::class, 'show']), $payload)->assertOk();
     });
 });
 

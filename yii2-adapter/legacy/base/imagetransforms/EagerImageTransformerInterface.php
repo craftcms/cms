@@ -11,5 +11,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Image\Contracts\EagerImageTransformerInterface::class, EagerImageTransformerInterface::class);

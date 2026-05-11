@@ -1,5 +1,3 @@
-import type {SelectOption} from '@/types/index';
-
 export const Edition = {
   Solo: 0,
   Team: 1,
@@ -13,10 +11,4 @@ export interface SystemData {
   edition: (typeof Edition)[keyof typeof Edition];
   retryDuration: number;
   timeZone: string;
-}
-
-export interface TimezoneOption extends SelectOption {
-  data?: {
-    hint?: string;
-  };
 }

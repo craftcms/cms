@@ -10,6 +10,8 @@
   import Breadcrumbs from '@/components/Breadcrumbs.vue';
   import {useAnnouncer} from '@/composables/useAnnouncer';
   import LiveRegion from '@/components/LiveRegion.vue';
+  import {useFlashMessages} from '@/composables/useFlashMessages';
+  import UserMenu from '@/components/UserMenu.vue';
 
   const props = withDefaults(
     defineProps<{
@@ -21,7 +23,8 @@
     {fullWidth: false}
   );
 
-  const {system} = useCraftData();
+  const {system, currentUser, general} = useCraftData();
+  const {messages} = useFlashMessages();
 
   const page = usePage<{
     flash: {
@@ -33,8 +36,12 @@
       label: string;
     }> | null;
   }>();
-  const errorFlash = computed(() => page.props.flash?.error);
-  const successFlash = computed(() => page.props.flash?.success);
+  const errorFlash = computed(
+    () => page.props.flash?.error ?? messages.value.error ?? null
+  );
+  const successFlash = computed(
+    () => page.props.flash?.success ?? messages.value.success ?? null
+  );
   const crumbs = computed(() => page.props.crumbs ?? null);
   const skipLinks = computed(() => [
     {label: t('Skip to main section'), url: '#main'},
@@ -135,9 +142,10 @@
         <SystemInfo v-if="isLargeScreen" />
 
         <div class="ml-auto"></div>
-        <craft-button icon appearance="plain">
+        <craft-button icon appearance="plain" type="button">
           <craft-icon name="search" :label="t('Search')"></craft-icon>
         </craft-button>
+        <UserMenu />
       </div>
       <!-- TODO: this is just temporary placement -->
       <template v-if="errorFlash">

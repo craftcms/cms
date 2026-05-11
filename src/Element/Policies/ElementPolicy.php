@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Policies;
 
 use BadMethodCallException;
-use CraftCms\Cms\Auth\Events\AuthorizingElement;
+use CraftCms\Cms\Auth\Events\ElementAuthorizing;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -51,7 +51,7 @@ class ElementPolicy
             return $nestedResult;
         }
 
-        event($event = new AuthorizingElement($user, $element, $ability));
+        event($event = new ElementAuthorizing($user, $element, $ability));
 
         return $event->authorized;
     }

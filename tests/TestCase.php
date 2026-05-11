@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Tests;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
-use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
@@ -64,6 +63,8 @@ class TestCase extends Orchestra
         $_SERVER['CRAFT_EDITION'] = Edition::Pro->handle();
 
         parent::setUp();
+
+        config()->set('app.debug', true);
 
         app()->setLocale('en-US');
         app()->maintenanceMode()->deactivate();
@@ -200,8 +201,6 @@ class TestCase extends Orchestra
             foreach ($migrator->getPendingMigrations() as $file) {
                 $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
             }
-
-            app(LaravelMigrations::class)->install($migrator);
 
             RefreshDatabaseState::$migrated = true;
         }

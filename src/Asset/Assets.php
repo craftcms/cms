@@ -8,10 +8,10 @@ use CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
-use CraftCms\Cms\Asset\Events\AfterReplaceAsset;
-use CraftCms\Cms\Asset\Events\BeforeReplaceAsset;
-use CraftCms\Cms\Asset\Events\DefineThumbUrl;
-use CraftCms\Cms\Asset\Events\RegisterPreviewHandler;
+use CraftCms\Cms\Asset\Events\AssetReplaced;
+use CraftCms\Cms\Asset\Events\AssetReplacing;
+use CraftCms\Cms\Asset\Events\PreviewHandlerResolving;
+use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Exceptions\AssetNotPreviewableException;
 use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
@@ -83,7 +83,7 @@ class Assets
 
     public function replaceAssetFile(Asset $asset, string $pathOnServer, string $filename, ?string $mimeType = null): void
     {
-        event($event = new BeforeReplaceAsset(
+        event($event = new AssetReplacing(
             asset: $asset,
             replaceWith: $pathOnServer,
             filename: $filename,
@@ -99,7 +99,7 @@ class Assets
         $asset->ruleset->useScenario(AssetRules::SCENARIO_REPLACE);
         $this->elements->saveElement($asset);
 
-        event(new AfterReplaceAsset(
+        event(new AssetReplaced(
             asset: $asset,
             filename: $filename,
         ));
@@ -132,7 +132,7 @@ class Assets
     {
         $height ??= $width;
 
-        event($event = new DefineThumbUrl(
+        event($event = new ThumbUrlResolving(
             asset: $asset,
             width: $width,
             height: $height,
@@ -286,7 +286,7 @@ class Assets
 
     public function getAssetPreviewHandler(Asset $asset): ?AssetPreviewHandlerInterface
     {
-        event($event = new RegisterPreviewHandler(asset: $asset));
+        event($event = new PreviewHandlerResolving(asset: $asset));
 
         if ($event->previewHandler instanceof AssetPreviewHandlerInterface) {
             return $event->previewHandler;

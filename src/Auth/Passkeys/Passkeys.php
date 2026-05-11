@@ -226,6 +226,8 @@ class Passkeys
             return false;
         }
 
+        $this->webauthnServer()->getCredentialRepository()->saveCredentialSource($publicKeyCredentialSource);
+
         return true;
     }
 

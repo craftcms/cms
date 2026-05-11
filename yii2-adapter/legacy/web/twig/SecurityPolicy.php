@@ -20,5 +20,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Twig\SecurityPolicy::class, SecurityPolicy::class);

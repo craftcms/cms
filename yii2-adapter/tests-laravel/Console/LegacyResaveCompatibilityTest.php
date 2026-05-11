@@ -5,7 +5,7 @@ declare(strict_types=1);
 use craft\console\Controller;
 use craft\console\controllers\ResaveController;
 use craft\events\DefineConsoleActionsEvent;
-use CraftCms\Cms\Element\Events\DefineResaveCommands;
+use CraftCms\Cms\Element\Events\ElementResaveCommandsResolving;
 use CraftCms\Yii2Adapter\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use yii\base\Event as YiiEvent;
@@ -13,12 +13,12 @@ use yii\base\Event as YiiEvent;
 uses(TestCase::class);
 
 beforeEach(function() {
-    Event::forget(DefineResaveCommands::class);
+    Event::forget(ElementResaveCommandsResolving::class);
     ResaveController::registerEvents();
 });
 
 afterEach(function() {
-    Event::forget(DefineResaveCommands::class);
+    Event::forget(ElementResaveCommandsResolving::class);
     YiiEvent::off(ResaveController::class, Controller::EVENT_DEFINE_ACTIONS);
 });
 
@@ -30,7 +30,7 @@ it('bridges legacy define actions handlers into define resave commands', functio
         ];
     });
 
-    $event = new DefineResaveCommands();
+    $event = new ElementResaveCommandsResolving();
     event($event);
 
     expect($event->commands)
@@ -46,7 +46,7 @@ it('bridges legacy resave actions into command metadata', function() {
         ];
     });
 
-    $event = new DefineResaveCommands();
+    $event = new ElementResaveCommandsResolving();
     event($event);
 
     expect($event->commands)->toHaveKey('craft:resave:products');
@@ -57,7 +57,7 @@ it('bridges built-in legacy category and tag actions into command metadata', fun
     $this->artisan('craft:add-tags-support --force --no-interaction')->assertSuccessful();
     CraftCms\Yii2Adapter\DeprecatedConcepts::resetSupport();
 
-    $event = new DefineResaveCommands();
+    $event = new ElementResaveCommandsResolving();
     event($event);
 
     expect($event->commands)

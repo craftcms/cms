@@ -9,17 +9,17 @@
 
 namespace craft\fieldlayoutelements\addresses;
 
-use craft\base\LegacyEventConstants;
-
-/**
- * Class LatLongField.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\Addresses\LatLongField} instead.
- */
-class LatLongField extends \CraftCms\Cms\FieldLayout\LayoutElements\Addresses\LatLongField
-{
-    use LegacyEventConstants;
+/** @phpstan-ignore-next-line */
+if (false) {
+    /**
+     * Class LatLongField.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     *
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\Addresses\LatLongField} instead.
+     */
+    class LatLongField extends \CraftCms\Cms\FieldLayout\LayoutElements\Addresses\LatLongField
+    {
+    }
 }

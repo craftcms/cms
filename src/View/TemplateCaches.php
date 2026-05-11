@@ -11,7 +11,7 @@ use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use CraftCms\Cms\View\CacheCollectors\ResourceCollector;
 use CraftCms\Cms\View\Contracts\CacheCollectorInterface;
 use CraftCms\Cms\View\Data\TemplateCacheContext;
-use CraftCms\Cms\View\Events\RegisterTemplateCacheCollectors;
+use CraftCms\Cms\View\Events\TemplateCacheCollectorsResolving;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use DateTime;
@@ -144,7 +144,7 @@ class TemplateCaches
             return $this->collectors;
         }
 
-        event($event = new RegisterTemplateCacheCollectors(Collection::make()));
+        event($event = new TemplateCacheCollectorsResolving(Collection::make()));
 
         $this->collectors = collect([
             DependencyCollector::class,
@@ -200,7 +200,7 @@ class TemplateCaches
             if (! Cms::config()->enableTemplateCaching) {
                 $this->enabled = false;
                 $this->enabledGlobally = false;
-            } elseif (request()->isPreview() || request()->getToken()) {
+            } elseif (request()->isPreview() || request()->getHadToken()) {
                 $this->enabled = false;
                 $this->enabledGlobally = false;
             } else {

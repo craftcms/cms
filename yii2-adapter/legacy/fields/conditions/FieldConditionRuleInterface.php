@@ -17,5 +17,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface::class, FieldConditionRuleInterface::class);

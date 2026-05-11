@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Element\Events\Render;
+use CraftCms\Cms\Element\Events\ElementRendering;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
@@ -28,10 +28,10 @@ describe('render', function () {
         expect($markup)->toBeInstanceOf(HtmlString::class);
     });
 
-    test('Render event allows setting custom output', function () {
+    test('ElementRendering event allows setting custom output', function () {
         $customOutput = 'Custom Output';
 
-        Event::listen(function (Render $event) use ($customOutput) {
+        Event::listen(function (ElementRendering $event) use ($customOutput) {
             $event->output = $customOutput;
         });
 
@@ -40,10 +40,10 @@ describe('render', function () {
         expect((string) $markup)->toBe($customOutput);
     });
 
-    test('Render event can modify variables and templates', function () {
+    test('ElementRendering event can modify variables and templates', function () {
         $capturedVariables = null;
 
-        Event::listen(function (Render $event) use (&$capturedVariables) {
+        Event::listen(function (ElementRendering $event) use (&$capturedVariables) {
             $event->variables = array_merge($event->variables, ['foo' => 'bar']);
             $capturedVariables = $event->variables;
         });

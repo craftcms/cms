@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Backups;
-use CraftCms\Cms\Database\Events\AfterCreateBackup;
-use CraftCms\Cms\Database\Events\AfterRestoreBackup;
-use CraftCms\Cms\Database\Events\BeforeCreateBackup;
-use CraftCms\Cms\Database\Events\BeforeRestoreBackup;
+use CraftCms\Cms\Database\Events\BackupCreated;
+use CraftCms\Cms\Database\Events\BackupCreating;
+use CraftCms\Cms\Database\Events\BackupRestored;
+use CraftCms\Cms\Database\Events\BackupRestoring;
 use CraftCms\Cms\Database\Exceptions\CommandFailedException;
 use Illuminate\Database\MySqlConnection;
 use Illuminate\Database\PostgresConnection;
+use Illuminate\Database\SQLiteConnection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 
@@ -22,7 +23,10 @@ beforeEach(function () {
 
     $this->tempDir = storage_path('runtime/backups-test-'.uniqid('', true));
     File::ensureDirectoryExists($this->tempDir);
-});
+})
+    // These tests rely on POSIX shell semantics (single-quote escapeshellarg, inline `php -r`,
+    // and bash-isms like `set -e` / `{ ... } > file`) which don't work under cmd.exe.
+    ->skipOnWindows();
 
 afterEach(function () {
     File::deleteDirectory($this->tempDir);
@@ -81,15 +85,35 @@ function backupsTestPgsqlConnection(array $overrides = []): PostgresConnection
     );
 }
 
+function backupsTestSqliteConnection(string $databasePath, array $overrides = []): SQLiteConnection
+{
+    $config = array_merge([
+        'driver' => 'sqlite',
+        'database' => $databasePath,
+        'prefix' => 'craft_',
+    ], $overrides);
+
+    File::ensureDirectoryExists(dirname($databasePath));
+    File::delete($databasePath);
+    File::put($databasePath, '');
+
+    return new SQLiteConnection(
+        pdo: new PDO("sqlite:$databasePath"),
+        database: $config['database'],
+        tablePrefix: $config['prefix'],
+        config: $config,
+    );
+}
+
 it('runs configured backup command and dispatches backup events', function () {
     $beforeEvent = null;
     $afterEvent = null;
 
-    Event::listen(BeforeCreateBackup::class, function (BeforeCreateBackup $event) use (&$beforeEvent) {
+    Event::listen(BackupCreating::class, function (BackupCreating $event) use (&$beforeEvent) {
         $beforeEvent = $event;
     });
 
-    Event::listen(AfterCreateBackup::class, function (AfterCreateBackup $event) use (&$afterEvent) {
+    Event::listen(BackupCreated::class, function (BackupCreated $event) use (&$afterEvent) {
         $afterEvent = $event;
     });
 
@@ -148,11 +172,11 @@ it('runs configured restore command and dispatches restore events', function () 
     $beforeEvent = null;
     $afterEvent = null;
 
-    Event::listen(BeforeRestoreBackup::class, function (BeforeRestoreBackup $event) use (&$beforeEvent) {
+    Event::listen(BackupRestoring::class, function (BackupRestoring $event) use (&$beforeEvent) {
         $beforeEvent = $event;
     });
 
-    Event::listen(AfterRestoreBackup::class, function (AfterRestoreBackup $event) use (&$afterEvent) {
+    Event::listen(BackupRestored::class, function (BackupRestored $event) use (&$afterEvent) {
         $afterEvent = $event;
     });
 
@@ -200,7 +224,7 @@ it('uses mysql default command generation for closure commands and respects even
     $capturedDefaultCommand = null;
     $connection = backupsTestMysqlConnection();
 
-    Event::listen(BeforeCreateBackup::class, function (BeforeCreateBackup $event) {
+    Event::listen(BackupCreating::class, function (BackupCreating $event) {
         $event->ignoreTables = ['cache'];
     });
 
@@ -271,4 +295,94 @@ it('uses postgres default restore command variants for closure commands', functi
     expect($capturedPlainCommand)->toMatch('/^(?:\'[^\']*psql(?:\\.exe)?\'|psql(?:\\.exe)?)\\s/');
     expect($capturedCustomFormatCommand)->toMatch('/^(?:\'[^\']*pg_restore(?:\\.exe)?\'|pg_restore(?:\\.exe)?)\\s/');
     expect($capturedCustomFormatCommand)->toContain('--single-transaction');
+});
+
+it('uses sqlite default backup command generation for closure commands', function () {
+    $capturedDefaultCommand = null;
+    $connection = backupsTestSqliteConnection($this->tempDir.'/sqlite-closure.sqlite');
+    $connection->statement('create table craft_cache (id integer primary key, value text)');
+    $connection->statement('create table craft_entries (id integer primary key, title text)');
+
+    Cms::config()->backupCommand = function (string $command) use (&$capturedDefaultCommand): string {
+        $capturedDefaultCommand = $command;
+
+        return backupsTestPhpCommand(
+            script: 'file_put_contents($argv[1], "sqlite-closure-backup");',
+            args: ['{file}'],
+        );
+    };
+
+    $backupPath = $this->tempDir.'/sqlite-closure.sql';
+    app(Backups::class)->backupTo(
+        filePath: $backupPath,
+        connection: $connection,
+        ignoreTables: ['cache'],
+    );
+
+    expect(is_file($backupPath))->toBeTrue();
+    expect(file_get_contents($backupPath))->toBe('sqlite-closure-backup');
+    expect($capturedDefaultCommand)->toContain('sqlite3');
+    expect($capturedDefaultCommand)->toContain('.schema --nosys');
+    expect($capturedDefaultCommand)->toContain('.dump --data-only --nosys');
+    expect($capturedDefaultCommand)->toContain('"craft_entries"');
+    expect($capturedDefaultCommand)->not->toContain('"craft_cache"');
+});
+
+it('creates sqlite backups without data from ignored tables', function () {
+    $connection = backupsTestSqliteConnection($this->tempDir.'/sqlite-ignore.sqlite');
+    $connection->statement('create table craft_cache (id integer primary key, value text)');
+    $connection->statement('create table craft_entries (id integer primary key, title text)');
+    $connection->insert('insert into craft_cache (value) values (?)', ['cached']);
+    $connection->insert('insert into craft_entries (title) values (?)', ['Backed up']);
+
+    $backupPath = $this->tempDir.'/sqlite-ignore.sql';
+    app(Backups::class)->backupTo(
+        filePath: $backupPath,
+        connection: $connection,
+        ignoreTables: ['cache'],
+    );
+
+    $sql = file_get_contents($backupPath);
+
+    expect($sql)->toContain('CREATE TABLE craft_cache');
+    expect($sql)->toContain('CREATE TABLE craft_entries');
+    expect($sql)->toContain('INSERT INTO craft_entries');
+    expect($sql)->not->toContain('INSERT INTO craft_cache');
+});
+
+it('restores sqlite backups into a file-backed database', function () {
+    $source = backupsTestSqliteConnection($this->tempDir.'/sqlite-source.sqlite');
+    $source->statement('create table craft_cache (id integer primary key, value text)');
+    $source->statement('create table craft_entries (id integer primary key, title text)');
+    $source->insert('insert into craft_cache (value) values (?)', ['cached']);
+    $source->insert('insert into craft_entries (title) values (?)', ['Restored']);
+
+    $backupPath = $this->tempDir.'/sqlite-restore.sql';
+    app(Backups::class)->backupTo(
+        filePath: $backupPath,
+        connection: $source,
+        ignoreTables: ['cache'],
+    );
+
+    $target = backupsTestSqliteConnection($this->tempDir.'/sqlite-target.sqlite');
+    $target->statement('create table craft_entries (id integer primary key, title text)');
+    $target->insert('insert into craft_entries (title) values (?)', ['Stale']);
+
+    app(Backups::class)->restore($backupPath, $target);
+
+    expect(collect($target->select('select title from craft_entries'))->pluck('title')->all())->toBe(['Restored']);
+    expect((int) $target->selectOne('select count(*) as count from craft_cache')->count)->toBe(0);
+});
+
+it('rejects sqlite in-memory databases', function () {
+    $connection = backupsTestSqliteConnection($this->tempDir.'/unused.sqlite', [
+        'database' => ':memory:',
+    ]);
+    $backupPath = $this->tempDir.'/memory.sql';
+    file_put_contents($backupPath, '');
+
+    expect(fn () => app(Backups::class)->backupTo($backupPath, $connection))
+        ->toThrow(RuntimeException::class, 'file-backed database connection');
+    expect(fn () => app(Backups::class)->restore($backupPath, $connection))
+        ->toThrow(RuntimeException::class, 'file-backed database connection');
 });

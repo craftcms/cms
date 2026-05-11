@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View;
 
-use CraftCms\Cms\View\Events\RenderingAssets;
+use CraftCms\Cms\View\Events\ViewAssetsRendering;
 use CraftCms\Cms\View\Hooks\PrepareElementIndexVariables;
 use CraftCms\Cms\View\Hooks\PrepareElementSourcesVariables;
 use CraftCms\Cms\View\Hooks\PrepareElementToolbarVariables;
@@ -12,7 +12,6 @@ use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
-use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\Factory;
 use Override;
@@ -32,13 +31,11 @@ class ViewServiceProvider extends ServiceProvider
             'twig',
             fn () => $this->app->make(TwigEngine::class)
         );
-
-        Vite::useHotFile("{$this->root}/resources/hot");
     }
 
     public function boot(TemplateHooks $hooks): void
     {
-        Event::listen(function (RenderingAssets $event) {
+        Event::listen(function (ViewAssetsRendering $event) {
             app(InternalAssetRegistry::class)->flush();
         });
 

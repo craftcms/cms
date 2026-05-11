@@ -10,7 +10,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Middleware\HandleMatchedElementRoute;
 use CraftCms\Cms\Route\MatchedElement;
 use CraftCms\Cms\Section\Models\Section;
-use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
+use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,7 +23,7 @@ beforeEach(function () {
     TemplateMode::set(TemplateMode::Site);
     Aliases::set('@templates', dirname(__DIR__, 3).'/Support/templates');
 
-    Event::listen(function (RegisterSiteTemplateRoots $event) {
+    Event::listen(function (SiteTemplateRootsResolving $event) {
         $event->roots[''] = dirname(__DIR__, 3).'/Support/templates';
     });
 

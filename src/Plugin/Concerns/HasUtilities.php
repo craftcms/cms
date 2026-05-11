@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Plugin\Concerns;
 
 use CraftCms\Cms\Plugin\Plugin;
-use CraftCms\Cms\Utility\Events\RegisterUtilities;
+use CraftCms\Cms\Utility\Events\UtilitiesResolving;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Support\Facades\Event;
 
@@ -29,7 +29,7 @@ trait HasUtilities
             return;
         }
 
-        Event::listen(RegisterUtilities::class, function (RegisterUtilities $event) {
+        Event::listen(UtilitiesResolving::class, function (UtilitiesResolving $event) {
             $event->types->push(...$this->utilities);
         });
     }

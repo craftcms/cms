@@ -13,7 +13,7 @@ use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Element\Events\AfterSaveNestedElements;
+use CraftCms\Cms\Element\Events\NestedElementsSaved;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Element\NestedElementManager;
@@ -31,7 +31,7 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Events\DefineEntryTypesForField;
+use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
@@ -86,11 +86,6 @@ use function CraftCms\Cms\template;
 class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, ImportableElementContainerFieldInterface, MergeableFieldInterface
 {
     use ImportableElementContainerField;
-
-    /**
-     * @event DefineEntryTypesForFieldEvent The event that is triggered when defining the available entry types.
-     */
-    public const string EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
 
     public const string VIEW_MODE_CARDS = 'cards';
 
@@ -369,7 +364,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 ],
             );
 
-            Event::listen(function (AfterSaveNestedElements $event) {
+            Event::listen(function (NestedElementsSaved $event) {
                 if ($event->manager !== $this->_entryManager) {
                     return;
                 }
@@ -401,7 +396,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     {
         $entryTypes = $this->_entryTypes;
 
-        $this->dispatchComponentEvent(self::EVENT_DEFINE_ENTRY_TYPES, $event = new DefineEntryTypesForField(
+        event($event = new EntryTypesForFieldResolving(
             field: $this,
             entryTypes: $entryTypes,
             element: $element,
@@ -1573,7 +1568,7 @@ JS,
     /**
      * Handles nested entry saves.
      */
-    public function afterSaveEntries(AfterSaveNestedElements $event): void
+    public function afterSaveEntries(NestedElementsSaved $event): void
     {
         if (app()->runningInConsole()) {
             return;

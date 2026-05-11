@@ -7,7 +7,7 @@ namespace CraftCms\Cms\SystemMessage;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\SystemMessage\Events\RegisterSystemMessages;
+use CraftCms\Cms\SystemMessage\Events\SystemMessagesResolving;
 use CraftCms\Cms\SystemMessage\Mailables\SystemMessageMailable;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use CraftCms\Cms\User\Elements\User;
@@ -71,7 +71,7 @@ class SystemMessages
             ]),
         ]);
 
-        event($event = new RegisterSystemMessages($messages));
+        event($event = new SystemMessagesResolving($messages));
 
         // Sort them all by key
         $messages = $event->messages

@@ -55,15 +55,15 @@ use craft\web\View;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Jobs\PropagateElements;
-use CraftCms\Cms\Field\Events\RegisterFieldTypes;
-use CraftCms\Cms\Field\Events\RegisterLinkTypes;
-use CraftCms\Cms\FieldLayout\Events\DefineNativeFields;
+use CraftCms\Cms\Field\Events\FieldTypesResolving;
+use CraftCms\Cms\Field\Events\LinkTypesResolving;
+use CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving;
 use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
 use CraftCms\Cms\GarbageCollection\Actions\HardDelete;
 use CraftCms\Cms\GarbageCollection\Events\RunningGarbageCollection;
-use CraftCms\Cms\ProjectConfig\Events\RebuildConfig;
+use CraftCms\Cms\ProjectConfig\Events\ProjectConfigRebuilt;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Events\SiteSaved;
 use CraftCms\Cms\Support\Facades\Twig;
@@ -135,7 +135,7 @@ class DeprecatedConcepts
 
     public function boot(): void
     {
-        Event::listen(RegisterFieldTypes::class, function(RegisterFieldTypes $event) {
+        Event::listen(FieldTypesResolving::class, function(FieldTypesResolving $event) {
             if (DeprecatedConcepts::supportsCategories()) {
                 $event->types->add(CategoriesField::class);
             }
@@ -144,7 +144,7 @@ class DeprecatedConcepts
             }
         });
 
-        Event::listen(RegisterLinkTypes::class, function(RegisterLinkTypes $event) {
+        Event::listen(LinkTypesResolving::class, function(LinkTypesResolving $event) {
             if (DeprecatedConcepts::supportsCategories()) {
                 $event->types[] = CategoryLinkType::class;
             }
@@ -206,7 +206,7 @@ class DeprecatedConcepts
             }
         });
 
-        Event::listen(RebuildConfig::class, function(RebuildConfig $event) {
+        Event::listen(ProjectConfigRebuilt::class, function(ProjectConfigRebuilt $event) {
             if (DeprecatedConcepts::supportsCategories()) {
                 $event->config[LegacyProjectConfig::PATH_CATEGORY_GROUPS] = $this->_getCategoryGroupData();
             }
@@ -524,7 +524,7 @@ class DeprecatedConcepts
         // Legacy `view` global remains available through the adapter layer only.
         Twig::registerExtension(new Extension());
 
-        Event::listen(function(DefineNativeFields $event) {
+        Event::listen(function(NativeFieldsResolving $event) {
             switch ($event->fieldLayout->type) {
                 case Category::class:
                 case Tag::class:

@@ -11,5 +11,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\User\Actions\SuspendUsers::class, SuspendUsers::class);

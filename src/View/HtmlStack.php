@@ -10,7 +10,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\Enums\Position;
-use CraftCms\Cms\View\Events\RenderingAssets;
+use CraftCms\Cms\View\Events\ViewAssetsRendering;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
 use Stringable;
@@ -69,14 +69,15 @@ class HtmlStack
      * Registers inline JavaScript code.
      *
      * The code will be rendered inside a `<script>` tag when [[headHtml()]] or [[bodyHtml()]]
-     * is called, depending on the given position. If the same key is registered twice, the
-     * latter value overwrites the former.
+     * is called, depending on the given position. Ready/load registrations are wrapped in
+     * native DOM ready/load handlers. If the same key is registered twice, the latter
+     * value overwrites the former.
      *
      * @param  string  $js  The JavaScript code to register.
      * @param  Position  $position  Where on the page the code should appear.
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of `$js`.
      */
-    public function js(string $js, Position $position = Position::BodyEnd, ?string $key = null): void
+    public function js(string $js, Position $position = Position::Ready, ?string $key = null): void
     {
         $js = Str::finish(trim($js), ';');
 
@@ -96,7 +97,7 @@ class HtmlStack
      * @param  Position  $position  Where on the page the code should appear.
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of the resulting JS.
      */
-    public function jsWithVars(callable $fn, array $vars, Position $position = Position::BodyEnd, ?string $key = null): void
+    public function jsWithVars(callable $fn, array $vars, Position $position = Position::Ready, ?string $key = null): void
     {
         $encodedVars = array_map(fn (mixed $var): string => Json::encode($var), $vars);
         $js = $fn(...array_values($encodedVars));
@@ -278,7 +279,7 @@ class HtmlStack
      */
     public function headHtml(bool $clear = true): string
     {
-        event(new RenderingAssets);
+        event(new ViewAssetsRendering);
 
         $head = Position::Head->value;
 
@@ -334,7 +335,7 @@ class HtmlStack
      */
     public function bodyBeginHtml(bool $clear = true): string
     {
-        event(new RenderingAssets);
+        event(new ViewAssetsRendering);
 
         $body = Position::BodyBegin->value;
 
@@ -350,8 +351,8 @@ class HtmlStack
     /**
      * Renders all assets registered for the end of the `<body>` section of the page.
      *
-     * Output order: scripts, HTML, JS files, and inline JS. Registered icons are
-     * serialized into a `Craft.icons` JS assignment before rendering.
+     * Output order: scripts, HTML, JS files, inline JS, ready JS, and load JS. Registered
+     * icons are serialized into a `Craft.icons` JS assignment before rendering.
      *
      * By default, rendered assets are cleared from the registry after output.
      *
@@ -360,7 +361,7 @@ class HtmlStack
      */
     public function bodyEndHtml(bool $clear = true): string
     {
-        event(new RenderingAssets);
+        event(new ViewAssetsRendering);
 
         $body = Position::BodyEnd->value;
 
@@ -378,7 +379,14 @@ class HtmlStack
         if ($clear) {
             $this->icons = [];
 
-            unset($this->scripts[$body], $this->html[$body], $this->jsFiles[$body], $this->js[$body]);
+            unset(
+                $this->scripts[$body],
+                $this->html[$body],
+                $this->jsFiles[$body],
+                $this->js[$body],
+                $this->js[Position::Ready->value],
+                $this->js[Position::Load->value],
+            );
         }
 
         return $parts->implode(PHP_EOL);
@@ -736,7 +744,57 @@ class HtmlStack
                     Html::script(implode(PHP_EOL, $this->js[$position->value])),
                 ]),
             )
+            ->when(
+                $position === Position::BodyEnd && ! empty($this->js[Position::Ready->value]),
+                fn (Collection $c) => $c->concat([
+                    Html::script($this->readyJs()),
+                ]),
+            )
+            ->when(
+                $position === Position::BodyEnd && ! empty($this->js[Position::Load->value]),
+                fn (Collection $c) => $c->concat([
+                    Html::script($this->loadJs()),
+                ]),
+            )
             ->map(fn (string|Stringable $part) => (string) $part);
+    }
+
+    private function readyJs(): string
+    {
+        $js = implode(PHP_EOL, $this->js[Position::Ready->value] ?? []);
+
+        return <<<JS
+(() => {
+  const run = function () {
+$js
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => run.call(document), {once: true});
+  } else {
+    run.call(document);
+  }
+})();
+JS;
+    }
+
+    private function loadJs(): string
+    {
+        $js = implode(PHP_EOL, $this->js[Position::Load->value] ?? []);
+
+        return <<<JS
+(() => {
+  const run = function (event) {
+$js
+  };
+
+  if (document.readyState === 'complete') {
+    run.call(window);
+  } else {
+    window.addEventListener('load', (event) => run.call(window, event), {once: true});
+  }
+})();
+JS;
     }
 
     /**

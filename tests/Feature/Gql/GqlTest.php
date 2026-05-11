@@ -9,14 +9,14 @@ use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
-use CraftCms\Cms\Gql\Events\DefineGqlValidationRules;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
-use CraftCms\Cms\Gql\Events\ExecutingGqlQuery;
-use CraftCms\Cms\Gql\Events\RegisterGqlDirectives;
-use CraftCms\Cms\Gql\Events\RegisterGqlMutations;
-use CraftCms\Cms\Gql\Events\RegisterGqlQueries;
-use CraftCms\Cms\Gql\Events\RegisterGqlSchemaComponents;
-use CraftCms\Cms\Gql\Events\RegisterGqlTypes;
+use CraftCms\Cms\Gql\Events\GqlDirectivesResolving;
+use CraftCms\Cms\Gql\Events\GqlMutationsResolving;
+use CraftCms\Cms\Gql\Events\GqlQueriesResolving;
+use CraftCms\Cms\Gql\Events\GqlQueryExecuting;
+use CraftCms\Cms\Gql\Events\GqlSchemaComponentsResolving;
+use CraftCms\Cms\Gql\Events\GqlTypesResolving;
+use CraftCms\Cms\Gql\Events\GqlValidationRulesResolving;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
@@ -53,7 +53,7 @@ it('throws when no active schema is set', function () {
 })->throws(GqlException::class, 'No schema is active.');
 
 it('dispatches query registration events', function () {
-    Event::listen(RegisterGqlQueries::class, function (RegisterGqlQueries $event) {
+    Event::listen(GqlQueriesResolving::class, function (GqlQueriesResolving $event) {
         $event->queries['mockQuery'] = [
             'type' => Type::string(),
             'args' => [],
@@ -67,7 +67,7 @@ it('dispatches query registration events', function () {
 });
 
 it('dispatches mutation registration events', function () {
-    Event::listen(RegisterGqlMutations::class, function (RegisterGqlMutations $event) {
+    Event::listen(GqlMutationsResolving::class, function (GqlMutationsResolving $event) {
         $event->mutations['mockMutation'] = [
             'type' => Type::string(),
             'args' => [],
@@ -81,11 +81,11 @@ it('dispatches mutation registration events', function () {
 });
 
 it('dispatches directive and type registration events', function () {
-    Event::listen(RegisterGqlDirectives::class, function (RegisterGqlDirectives $event) {
+    Event::listen(GqlDirectivesResolving::class, function (GqlDirectivesResolving $event) {
         $event->directives[] = MockDirective::class;
     });
 
-    Event::listen(RegisterGqlTypes::class, function (RegisterGqlTypes $event) {
+    Event::listen(GqlTypesResolving::class, function (GqlTypesResolving $event) {
         $event->types[] = MockType::class;
     });
 
@@ -98,7 +98,7 @@ it('dispatches directive and type registration events', function () {
 });
 
 it('dispatches schema component registration events', function () {
-    Event::listen(RegisterGqlSchemaComponents::class, function (RegisterGqlSchemaComponents $event) {
+    Event::listen(GqlSchemaComponentsResolving::class, function (GqlSchemaComponentsResolving $event) {
         $event->queries['Custom'] = [
             'custom.permission:read' => ['label' => 'Query custom data'],
         ];
@@ -110,7 +110,7 @@ it('dispatches schema component registration events', function () {
 });
 
 it('dispatches validation rule events', function () {
-    Event::listen(DefineGqlValidationRules::class, function (DefineGqlValidationRules $event) {
+    Event::listen(GqlValidationRulesResolving::class, function (GqlValidationRulesResolving $event) {
         $event->validationRules = [];
     });
 
@@ -118,7 +118,7 @@ it('dispatches validation rule events', function () {
 });
 
 it('validates schemas when a registered field definition is invalid', function () {
-    Event::listen(RegisterGqlQueries::class, function (RegisterGqlQueries $event) {
+    Event::listen(GqlQueriesResolving::class, function (GqlQueriesResolving $event) {
         $event->queries['mockQuery'] = [
             'type' => 'no bueno',
         ];
@@ -137,7 +137,7 @@ it('executes a query through the new service', function () {
 it('allows pre-execution listeners to short-circuit query execution', function () {
     $schema = app(Gql::class)->getPublicSchema();
 
-    Event::listen(ExecutingGqlQuery::class, function (ExecutingGqlQuery $event) {
+    Event::listen(GqlQueryExecuting::class, function (GqlQueryExecuting $event) {
         $event->result = ['data' => 'override'];
     });
 

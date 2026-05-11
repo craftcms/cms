@@ -2,13 +2,10 @@
   import {t} from '@craftcms/cp';
   import InputCombobox from '@/components/form/InputCombobox.vue';
   import type {SelectItem} from '@/types';
-  import {computed} from 'vue';
+  import {computed, useSlots} from 'vue';
 
-  const emit = defineEmits<{
-    (e: 'update:modelValue', value: string): void;
-  }>();
+  const modelValue = defineModel<string | number | boolean>();
   const props = defineProps<{
-    modelValue: string;
     label: string;
     id?: string;
     name?: string;
@@ -16,15 +13,13 @@
     options?: Array<SelectItem>;
     callouts?: Array<string>;
     error?: string;
+    requireOptionMatch?: boolean;
   }>();
 
-  const valueProxy = computed({
-    get() {
-      return props.modelValue;
-    },
-    set(newValue) {
-      emit('update:modelValue', newValue);
-    },
+  const slots = useSlots();
+  const forwardedSlots = computed(() => {
+    const {default: _, ...rest} = slots;
+    return rest;
   });
 </script>
 
@@ -35,29 +30,37 @@
     :name="name"
     :disabled="disabled"
     :has-feedback-for="error ? 'error' : ''"
+    :require-options-match="requireOptionMatch"
     v-bind="$attrs"
   >
     <InputCombobox
       slot="input"
-      v-model="valueProxy"
+      v-model="modelValue"
       :options="options"
       :label="label"
-    />
+    >
+      <!-- Forward all other slots -->
+      <template v-for="(_, name) in forwardedSlots" #[name]="slotData">
+        <slot :name="name" v-bind="slotData || {}"></slot>
+      </template>
+    </InputCombobox>
 
     <div slot="after">
-      <craft-callout
-        v-if="callouts?.includes('envVars')"
-        variant="info"
-        appearance="plain"
-        class="p-0"
-        icon="lightbulb"
-      >
-        {{ t('This can begin with an environment variable.') }}
-        <a
-          href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
-          >{{ t('Learn more') }}</a
+      <slot name="after">
+        <craft-callout
+          v-if="callouts?.includes('envVars')"
+          variant="info"
+          appearance="plain"
+          class="p-0"
+          icon="lightbulb"
         >
-      </craft-callout>
+          {{ t('This can begin with an environment variable.') }}
+          <a
+            href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
+            >{{ t('Learn more') }}</a
+          >
+        </craft-callout>
+      </slot>
     </div>
 
     <div slot="feedback">

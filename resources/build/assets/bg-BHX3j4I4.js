@@ -1,0 +1,1 @@
+var e={validationError:`Грешка,`,validationWarning:`Предупреждение,`,validationSuccess:`Успех,`,validationInfo:`Информация,`};export{e as default};

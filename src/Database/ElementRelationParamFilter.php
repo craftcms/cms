@@ -203,10 +203,6 @@ class ElementRelationParamFilter
             return $query;
         }
 
-        if (count($relatedToParam) === 1) {
-            return $this->subparse($query, $relatedToParam[0]);
-        }
-
         return $query->where(function (Builder $query) use ($relatedToParam, $glue) {
             foreach ($relatedToParam as $relCriteria) {
                 $query->where(fn (Builder $query) => $this->subparse($query, $relCriteria), boolean: $glue);

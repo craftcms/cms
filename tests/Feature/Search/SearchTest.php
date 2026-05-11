@@ -5,10 +5,10 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
-use CraftCms\Cms\Search\Events\AfterSearch;
-use CraftCms\Cms\Search\Events\BeforeIndexKeywords;
-use CraftCms\Cms\Search\Events\BeforeScoreResults;
-use CraftCms\Cms\Search\Events\BeforeSearch;
+use CraftCms\Cms\Search\Events\KeywordsIndexing;
+use CraftCms\Cms\Search\Events\ScoringResults;
+use CraftCms\Cms\Search\Events\SearchPerformed;
+use CraftCms\Cms\Search\Events\SearchStarting;
 use CraftCms\Cms\Search\Jobs\UpdateSearchIndex;
 use CraftCms\Cms\Search\SearchQuery;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -77,16 +77,16 @@ describe('indexElementAttributes', function () {
         expect($keywords)->not->toContain('original title');
     });
 
-    test('fires BeforeIndexKeywords event', function () {
-        Event::fake([BeforeIndexKeywords::class]);
+    test('fires KeywordsIndexing event', function () {
+        Event::fake([KeywordsIndexing::class]);
 
         createIndexedEntry('Test Entry');
 
-        Event::assertDispatched(BeforeIndexKeywords::class);
+        Event::assertDispatched(KeywordsIndexing::class);
     });
 
-    test('BeforeIndexKeywords event can cancel indexing', function () {
-        Event::listen(function (BeforeIndexKeywords $event) {
+    test('KeywordsIndexing event can cancel indexing', function () {
+        Event::listen(function (KeywordsIndexing $event) {
             if ($event->attribute === 'title') {
                 $event->isValid = false;
             }
@@ -101,8 +101,8 @@ describe('indexElementAttributes', function () {
         )->toBeFalse();
     });
 
-    test('BeforeIndexKeywords event can modify keywords', function () {
-        Event::listen(function (BeforeIndexKeywords $event) {
+    test('KeywordsIndexing event can modify keywords', function () {
+        Event::listen(function (KeywordsIndexing $event) {
             if ($event->attribute === 'title') {
                 $event->keywords = 'custom keywords';
             }
@@ -161,46 +161,46 @@ describe('searchElements', function () {
         expect($results[0]->id)->toBe($entry2->id);
     });
 
-    test('fires BeforeSearch event', function () {
+    test('fires SearchStarting event', function () {
         createIndexedEntry('Test');
 
-        Event::fake([BeforeSearch::class]);
+        Event::fake([SearchStarting::class]);
 
         $elementQuery = entryQuery()->search('Test');
         Search::searchElements($elementQuery);
 
-        Event::assertDispatched(BeforeSearch::class);
+        Event::assertDispatched(SearchStarting::class);
     });
 
-    test('fires BeforeScoreResults event', function () {
+    test('fires ScoringResults event', function () {
         createIndexedEntry('Test');
 
-        Event::fake([BeforeScoreResults::class]);
+        Event::fake([ScoringResults::class]);
 
         $elementQuery = entryQuery()->search('Test');
         Search::searchElements($elementQuery);
 
-        Event::assertDispatched(BeforeScoreResults::class);
+        Event::assertDispatched(ScoringResults::class);
     });
 
-    test('fires AfterSearch event', function () {
+    test('fires SearchPerformed event', function () {
         createIndexedEntry('Test');
 
-        Event::fake([AfterSearch::class]);
+        Event::fake([SearchPerformed::class]);
 
         $elementQuery = entryQuery()->search('Test');
         Search::searchElements($elementQuery);
 
-        Event::assertDispatched(AfterSearch::class);
+        Event::assertDispatched(SearchPerformed::class);
     });
 
-    test('AfterSearch event can override scores', function () {
+    test('SearchPerformed event can override scores', function () {
         $entry1 = createIndexedEntry('Apple');
         $entry2 = createIndexedEntry('Banana');
 
         $siteId = Sites::getCurrentSite()->id;
 
-        Event::listen(function (AfterSearch $event) use ($entry1, $entry2, $siteId) {
+        Event::listen(function (SearchPerformed $event) use ($entry1, $entry2, $siteId) {
             $event->scores = [
                 "{$entry2->id}-{$siteId}" => 100,
                 "{$entry1->id}-{$siteId}" => 1,
@@ -213,13 +213,13 @@ describe('searchElements', function () {
         expect($results[0]->id)->toBe($entry2->id);
     });
 
-    test('BeforeScoreResults event can override scores', function () {
+    test('ScoringResults event can override scores', function () {
         $entry1 = createIndexedEntry('Cherry');
         $entry2 = createIndexedEntry('Date');
 
         $siteId = Sites::getCurrentSite()->id;
 
-        Event::listen(function (BeforeScoreResults $event) use ($entry1, $entry2, $siteId) {
+        Event::listen(function (ScoringResults $event) use ($entry1, $entry2, $siteId) {
             $event->scores = [
                 "{$entry2->id}-{$siteId}" => 100,
                 "{$entry1->id}-{$siteId}" => 1,

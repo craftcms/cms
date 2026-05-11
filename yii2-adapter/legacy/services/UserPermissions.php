@@ -16,8 +16,8 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\RegisterUserPermissions;
 use CraftCms\Cms\User\Events\UserGroupPermissionsSaved;
+use CraftCms\Cms\User\Events\UserPermissionsResolving;
 use CraftCms\Cms\User\Events\UserPermissionsSaved;
 use CraftCms\Cms\User\UserPermissions as UserPermissionsService;
 use Illuminate\Support\Collection;
@@ -222,7 +222,7 @@ class UserPermissions extends Component
 
     public static function registerEvents(): void
     {
-        Event::listen(RegisterUserPermissions::class, function(RegisterUserPermissions $event) {
+        Event::listen(UserPermissionsResolving::class, function(UserPermissionsResolving $event) {
             if (Craft::$app->getUserPermissions()->hasEventHandlers(self::EVENT_REGISTER_PERMISSIONS)) {
                 $yiiEvent = new RegisterUserPermissionsEvent([
                     'permissions' => $event->permissions->toArray(),

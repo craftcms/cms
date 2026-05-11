@@ -8,7 +8,7 @@ use CraftCms\Cms\Element\Actions\Edit;
 use CraftCms\Cms\Element\Actions\SetStatus;
 use CraftCms\Cms\Element\Actions\View;
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Element\Events\RegisterActions;
+use CraftCms\Cms\Element\Events\ElementActionsResolving;
 use CraftCms\Cms\Entry\Elements\Entry;
 use Illuminate\Support\Facades\Event;
 
@@ -47,8 +47,8 @@ test('defineActions merges with default actions', function () {
     expect($class::actions('all'))->toContain(Foo::class);
 });
 
-test('RegisterActions event allows adding custom actions', function () {
-    Event::listen(function (RegisterActions $event) {
+test('ElementActionsResolving event allows adding custom actions', function () {
+    Event::listen(function (ElementActionsResolving $event) {
         if ($event->elementType === Entry::class) {
             $event->actions[] = CustomAction::class;
         }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Auth\OAuth\Actions\UserResolver;
 use CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition;
-use CraftCms\Cms\Auth\OAuth\Events\ResolvingOAuthUserLink;
+use CraftCms\Cms\Auth\OAuth\Events\OAuthUserLinkResolving;
 use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Tests\TestClasses\OAuth\FakeOAuthProvider;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -24,7 +24,7 @@ function defaultUserResolverProviderDefinition(): ProviderDefinition
 }
 
 beforeEach(function () {
-    Event::forget(ResolvingOAuthUserLink::class);
+    Event::forget(OAuthUserLinkResolving::class);
 });
 
 test('it returns an explicitly linked user', function () {
@@ -52,7 +52,7 @@ test('it allows the user-link event to provide a user', function () {
         'username' => 'event-user',
     ]);
 
-    Event::listen(ResolvingOAuthUserLink::class, function (ResolvingOAuthUserLink $event) use ($user) {
+    Event::listen(OAuthUserLinkResolving::class, function (OAuthUserLinkResolving $event) use ($user) {
         $event->user = $user;
     });
 

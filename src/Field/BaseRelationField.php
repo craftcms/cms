@@ -21,7 +21,7 @@ use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Element\Events\DefineElementCriteria;
+use CraftCms\Cms\Element\Events\ElementCriteriaResolving;
 use CraftCms\Cms\Element\Jobs\LocalizeRelations;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
@@ -74,24 +74,19 @@ use function CraftCms\Cms\template;
  */
 abstract class BaseRelationField extends Field implements CrossSiteCopyableFieldInterface, EagerLoadingFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, RelationalFieldInterface, ThumbableFieldInterface
 {
-    /**
-     * @event ElementCriteriaEvent The event that is triggered when defining the selection criteria for this field.
-     */
-    public const EVENT_DEFINE_SELECTION_CRITERIA = 'defineSelectionCriteria';
+    public const string VIEW_MODE_LIST = 'list';
 
-    public const VIEW_MODE_LIST = 'list';
+    public const string VIEW_MODE_LIST_INLINE = 'list-inline';
 
-    public const VIEW_MODE_LIST_INLINE = 'list-inline';
+    public const string VIEW_MODE_THUMBS = 'thumbs';
 
-    public const VIEW_MODE_THUMBS = 'thumbs';
+    public const string VIEW_MODE_CARDS = 'cards';
 
-    public const VIEW_MODE_CARDS = 'cards';
+    public const string VIEW_MODE_CARDS_GRID = 'cards-grid';
 
-    public const VIEW_MODE_CARDS_GRID = 'cards-grid';
+    public const string DEFAULT_PLACEMENT_BEGINNING = 'beginning';
 
-    public const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
-
-    public const DEFAULT_PLACEMENT_END = 'end';
+    public const string DEFAULT_PLACEMENT_END = 'end';
 
     private static bool $validatingRelatedElements = false;
 
@@ -1577,10 +1572,7 @@ JS, [
      */
     public function getInputSelectionCriteria(): array
     {
-        $this->dispatchComponentEvent(
-            self::EVENT_DEFINE_SELECTION_CRITERIA,
-            $event = new DefineElementCriteria,
-        );
+        event($event = new ElementCriteriaResolving(field: $this));
 
         return $event->criteria;
     }

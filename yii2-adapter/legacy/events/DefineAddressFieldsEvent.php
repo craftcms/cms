@@ -14,7 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.3.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Address\Events\DefineAddressUsedFields} or {@see \CraftCms\Cms\Address\Events\DefineAddressUsedSubdivisionFields} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Address\Events\AddressUsedFieldsResolving} or {@see \CraftCms\Cms\Address\Events\AddressUsedSubdivisionFieldsResolving} instead.
  */
 class DefineAddressFieldsEvent extends Event
 {

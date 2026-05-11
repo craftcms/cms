@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp;
 
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Cp\Events\RegisterCpAlerts;
+use CraftCms\Cms\Cp\Events\CpAlertsResolving;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
@@ -123,7 +123,7 @@ readonly class Alerts
             ]);
         }
 
-        event($event = new RegisterCpAlerts);
+        event($event = new CpAlertsResolving);
 
         $alerts = array_merge($alerts, $event->alerts);
 

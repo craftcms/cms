@@ -1,6 +1,8 @@
 import {usePage} from '@inertiajs/vue3';
 
 export interface CraftData {
+  csrfTokenValue?: string | null;
+  csrfTokenName?: string | null;
   system: {
     name: string;
     icon: string | null;
@@ -16,7 +18,18 @@ export interface CraftData {
   site: {
     url: string;
   };
-  currentUser: any;
+  readOnly: boolean;
+  allowAdminChanges: boolean;
+  currentUser: {
+    username: string | null;
+    email: string | null;
+    id: number | null;
+    thumbHtml: string | null;
+    name: string | null;
+  };
+  general: {
+    useEmailAsUsername: boolean;
+  };
   nav: any[];
   [key: string]: any;
 }
@@ -37,8 +50,8 @@ export function useHelpers() {
   return {
     // @TODO move to NPM package
     getActionUrl(action: string) {
-      return `${craftData.actionUrl}${action}`;
-      // return getUrl(craftData.actionUrl, action);
+      //return `${craftData.actionUrl}${action}`;
+      return getUrl(craftData.actionUrl, action);
     },
     // @TODO move to NPM package
     getCpUrl(action: string) {

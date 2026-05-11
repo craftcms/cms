@@ -1,1 +1,0 @@
-import e from"./bg3.js";var t={...e};export{t as default};

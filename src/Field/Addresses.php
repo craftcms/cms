@@ -495,9 +495,9 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
         // Existing element?
         if ($owner && $owner->id) {
-            $query->beforeQuery(function (AddressQuery $query) use ($owner) {
-                $query->owner($owner);
+            $query->owner($owner);
 
+            $query->beforeQuery(function (AddressQuery $query) use ($owner) {
                 // Clear out id=false if this query was populated previously
                 if ($query->id === false) {
                     $query->id = null;

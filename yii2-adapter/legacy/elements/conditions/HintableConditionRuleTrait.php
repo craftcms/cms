@@ -16,5 +16,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Element\Conditions\HintableConditionRuleTrait::class, HintableConditionRuleTrait::class);

@@ -8,7 +8,10 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Notifications\ResetPasswordNotification;
+use Illuminate\Notifications\Channels\MailChannel;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Session;
 
 use function CraftCms\Cms\t;
@@ -180,6 +183,24 @@ it('allows anonymous access for sendPasswordResetEmail', function () {
     expect($response->status())->not()->toBe(401);
 });
 
+it('sends password reset email for a valid loginName', function () {
+    Notification::fake();
+    auth()->logout();
+
+    $user = UserModel::factory()->createElement();
+    $user = User::find()->id($user->id)->one();
+
+    postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [
+        'loginName' => $user->email,
+    ])->assertOk();
+
+    Notification::assertSentTo(
+        $user,
+        ResetPasswordNotification::class,
+        fn ($notification, $channels) => in_array(MailChannel::class, $channels)
+    );
+});
+
 it('requires loginName when not providing userId for sendPasswordResetEmail', function () {
     $response = postJson(action([PasswordController::class, 'sendPasswordResetEmail']), []);
 
@@ -187,6 +208,8 @@ it('requires loginName when not providing userId for sendPasswordResetEmail', fu
 });
 
 it('returns error for invalid loginName on sendPasswordResetEmail', function () {
+    Cms::config()->preventUserEnumeration = false;
+
     $response = postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [
         'loginName' => 'nonexistent@example.com',
     ]);

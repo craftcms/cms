@@ -18,7 +18,6 @@ use CraftCms\Cms\Support\Arr;
 use Illuminate\Contracts\Queue\Queue as LaravelQueue;
 use Illuminate\Queue\Failed\FailedJobProviderInterface;
 use Illuminate\Support\Facades\Artisan;
-use yii\base\Component;
 
 use function CraftCms\Cms\t;
 
@@ -30,7 +29,7 @@ use function CraftCms\Cms\t;
  *
  * @deprecated 6.0.0
  */
-class QueueComponent extends Component implements QueueInterface
+class QueueComponent extends Queue
 {
     /**
      * @var int Default time-to-reserve for jobs (in seconds).
@@ -56,7 +55,7 @@ class QueueComponent extends Component implements QueueInterface
      *
      * @deprecated Use Laravel's `php artisan queue:work` command instead.
      */
-    public function run(bool $repeat = false, int $timeout = 0): mixed
+    public function run(bool $repeat = false, int $timeout = 0): ?int
     {
         Artisan::call('queue:work', Arr::whereNotNull([
             '--queue' => implode(',', array_unique([Cms::config()->queueName, Cms::config()->lowPriorityQueueName])),

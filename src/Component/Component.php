@@ -8,6 +8,7 @@ use ArrayAccess;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
+use CraftCms\Cms\Shared\Concerns\LegacyEventConstants;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Concerns\MacroableMagicMethods;
 use CraftCms\Cms\Support\DateTimeHelper;
@@ -28,6 +29,7 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
     use ArrayableTrait {
         fields as private traitFields;
     }
+    use LegacyEventConstants;
     use Macroable;
     use MacroableMagicMethods;
     use Validates;
@@ -74,6 +76,11 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
     {
         $fields = Arr::except($this->traitFields(), ['ruleset']);
 
+        return $this->formatDateFields($fields);
+    }
+
+    protected function formatDateFields(array $fields): array
+    {
         foreach ($fields as $field => $definition) {
             if (! is_string($definition)) {
                 continue;
@@ -208,15 +215,5 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
     public function offsetUnset(mixed $offset): void
     {
         $this->$offset = null;
-    }
-
-    public function __serialize(): array
-    {
-        return $this->toArray();
-    }
-
-    public function __unserialize(array $data): void
-    {
-        self::configure($this, $data);
     }
 }

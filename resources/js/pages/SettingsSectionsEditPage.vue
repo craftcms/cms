@@ -20,6 +20,7 @@
   } from '@/types';
   import SiteSettingsTable from '@/components/sections/SiteSettingsTable.vue';
   import PreviewTargetsTable from '@/components/sections/PreviewTargetsTable.vue';
+  import useCraftData from '@/composables/useCraftData';
 
   const props = defineProps<{
     title: string;
@@ -33,10 +34,11 @@
     siteSettings: Array<SectionSiteSettingsData>;
     isMultiSite: boolean;
     headlessMode: boolean;
-    readOnly?: boolean;
     flash?: Record<any, any>;
     errors: Record<any, any> | null;
   }>();
+
+  const {readOnly} = useCraftData();
 
   const form = useForm({
     sectionId: props.section.id,

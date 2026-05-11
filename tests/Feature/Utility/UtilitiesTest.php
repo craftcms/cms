@@ -5,7 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\Utility\Events\RegisterUtilities;
+use CraftCms\Cms\Utility\Events\UtilitiesResolving;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
 use CraftCms\Cms\Utility\Utilities\SystemMessages;
@@ -40,7 +40,7 @@ it('does not contains assetIndexes utility when there are no volumes', function 
 it('can register extra utilities', function () {
     expect($this->utilities->getAllUtilityTypes())->not()->toContain(DummyUtility::class);
 
-    Event::listen(RegisterUtilities::class, function (RegisterUtilities $event) {
+    Event::listen(UtilitiesResolving::class, function (UtilitiesResolving $event) {
         $event->types[] = DummyUtility::class;
     });
 

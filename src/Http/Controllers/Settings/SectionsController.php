@@ -176,8 +176,8 @@ readonly class SectionsController
 
         // Structure settings
         if ($section->type === SectionType::Structure) {
-            $section->maxLevels = $request->input('maxLevels') ?: null;
-            $section->defaultPlacement = $request->input('defaultPlacement') ?? $section->defaultPlacement;
+            $section->maxLevels = $request->integer('maxLevels') ?: null;
+            $section->defaultPlacement = $request->enum('defaultPlacement', DefaultPlacement::class, $section->defaultPlacement);
         }
 
         $section->setEntryTypes($request->array('entryTypes'));

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Concerns;
 
-use CraftCms\Cms\Plugin\Events\DisablingPlugin;
-use CraftCms\Cms\Plugin\Events\EnablingPlugin;
+use CraftCms\Cms\Plugin\Events\PluginDisabling;
+use CraftCms\Cms\Plugin\Events\PluginEnabling;
 use CraftCms\Cms\Plugin\Events\PluginEvent;
-use CraftCms\Cms\Plugin\Events\UninstallingPlugin;
+use CraftCms\Cms\Plugin\Events\PluginUninstalling;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Support\File;
 use Illuminate\Support\Collection;
@@ -30,7 +30,7 @@ trait PublishesFiles
 
     public function registerPublishesFiles(): void
     {
-        Event::listen(EnablingPlugin::class, function (EnablingPlugin $event) {
+        Event::listen(PluginEnabling::class, function (PluginEnabling $event) {
             if (! $event->plugin instanceof static) {
                 return;
             }
@@ -46,7 +46,7 @@ trait PublishesFiles
             }
         });
 
-        Event::listen([DisablingPlugin::class, UninstallingPlugin::class], function (PluginEvent $event) {
+        Event::listen([PluginDisabling::class, PluginUninstalling::class], function (PluginEvent $event) {
             if (! $event->plugin instanceof static) {
                 return;
             }

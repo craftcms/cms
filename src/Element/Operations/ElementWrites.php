@@ -10,18 +10,18 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\AfterPropagate;
-use CraftCms\Cms\Element\Events\AfterPropagateElement;
-use CraftCms\Cms\Element\Events\AfterPropagateElements;
-use CraftCms\Cms\Element\Events\AfterResaveElement;
-use CraftCms\Cms\Element\Events\AfterResaveElements;
-use CraftCms\Cms\Element\Events\AfterSaveElement;
-use CraftCms\Cms\Element\Events\BeforePropagateElement;
-use CraftCms\Cms\Element\Events\BeforePropagateElements;
-use CraftCms\Cms\Element\Events\BeforeResaveElement;
-use CraftCms\Cms\Element\Events\BeforeResaveElements;
-use CraftCms\Cms\Element\Events\BeforeSaveElement;
-use CraftCms\Cms\Element\Events\BeforeUpdateSearchIndex;
+use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
+use CraftCms\Cms\Element\Events\ElementPropagated;
+use CraftCms\Cms\Element\Events\ElementPropagating;
+use CraftCms\Cms\Element\Events\ElementResaved;
+use CraftCms\Cms\Element\Events\ElementResaving;
+use CraftCms\Cms\Element\Events\ElementSaved;
+use CraftCms\Cms\Element\Events\ElementSaving;
+use CraftCms\Cms\Element\Events\ElementSearchIndexUpdating;
+use CraftCms\Cms\Element\Events\ElementsPropagated;
+use CraftCms\Cms\Element\Events\ElementsPropagating;
+use CraftCms\Cms\Element\Events\ElementsResaved;
+use CraftCms\Cms\Element\Events\ElementsResaving;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
@@ -133,7 +133,7 @@ readonly class ElementWrites
         ?bool $updateSearchIndex = null,
         bool $touch = false,
     ): void {
-        event(new BeforeResaveElements($query));
+        event(new ElementsResaving($query));
 
         BulkOps::ensure(function () use ($query, $skipRevisions, $touch, $updateSearchIndex, $continueOnError) {
             $position = 0;
@@ -147,7 +147,7 @@ readonly class ElementWrites
 
                     $throwable = null;
                     try {
-                        event(new BeforeResaveElement($query, $element, $position));
+                        event(new ElementResaving($query, $element, $position));
 
                         if ($skipRevisions) {
                             $label = $element->getUiLabel();
@@ -176,7 +176,7 @@ readonly class ElementWrites
                         report($throwable);
                     }
 
-                    event(new AfterResaveElement($query, $element, $position, $throwable));
+                    event(new ElementResaved($query, $element, $position, $throwable));
                 });
                 /** @phpstan-ignore-next-line */
             } catch (QueryAbortedException) {
@@ -184,7 +184,7 @@ readonly class ElementWrites
             }
         });
 
-        event(new AfterResaveElements($query));
+        event(new ElementsResaved($query));
     }
 
     public function propagateElements(
@@ -192,7 +192,7 @@ readonly class ElementWrites
         array|int|null $siteIds = null,
         bool $continueOnError = false,
     ): void {
-        event(new BeforePropagateElements($query));
+        event(new ElementsPropagating($query));
 
         if ($siteIds !== null) {
             $siteIds = array_map(fn ($siteId) => $siteId, (array) $siteIds);
@@ -205,7 +205,7 @@ readonly class ElementWrites
                 $query->each(function (ElementInterface $element) use ($continueOnError, $query, &$position, $siteIds) {
                     $position++;
 
-                    event(new BeforePropagateElement($query, $element, $position));
+                    event(new ElementPropagating($query, $element, $position));
 
                     $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
                     $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
@@ -240,7 +240,7 @@ readonly class ElementWrites
                         report($throwable);
                     }
 
-                    event(new AfterPropagateElement($query, $element, $position, $throwable));
+                    event(new ElementPropagated($query, $element, $position, $throwable));
 
                     BulkOps::trackElement($element);
                     $this->elementCaches->invalidateForElement($element);
@@ -251,7 +251,7 @@ readonly class ElementWrites
             }
         });
 
-        event(new AfterPropagateElements($query));
+        event(new ElementsPropagated($query));
     }
 
     public function propagateElement(
@@ -334,7 +334,7 @@ readonly class ElementWrites
                 }
             }
 
-            event($event = new BeforeSaveElement($element, $isNewElement));
+            event($event = new ElementSaving($element, $isNewElement));
 
             if (! $event->isValid || ! $element->beforeSave($isNewElement)) {
                 $this->resetElement($element, $originalFirstSave, $originalIsNewForSite, $originalPropagateAll);
@@ -568,7 +568,7 @@ readonly class ElementWrites
                         $siteElements[$element->siteId] = $element;
                         $siteSettingsRecords[$element->siteId] = $siteSettingsRecord;
 
-                        Event::listen(function (AfterPropagate $event) use ($element, $generatedFields, $siteElements, $siteSettingsRecords) {
+                        Event::listen(function (ElementLifecyclePropagated $event) use ($element, $generatedFields, $siteElements, $siteSettingsRecords) {
                             if ($event->element->id !== $element->id) {
                                 return;
                             }
@@ -658,7 +658,7 @@ readonly class ElementWrites
                         ! empty($searchableDirtyFields) ||
                         ! empty(array_intersect($dirtyAttributes, ElementHelper::searchableAttributes($element)))
                     ) {
-                        event($event = new BeforeUpdateSearchIndex($element));
+                        event($event = new ElementSearchIndexUpdating($element));
 
                         if ($event->isValid) {
                             $this->updateElementSearchIndex($element, $searchableDirtyFields, $propagate);
@@ -710,7 +710,7 @@ readonly class ElementWrites
             $element->ruleset->useScenario($originalScenario);
         }
 
-        event(new AfterSaveElement($element, $isNewElement));
+        event(new ElementSaved($element, $isNewElement));
 
         $element->markAsClean();
         $this->resetElement($element, $originalFirstSave, $originalIsNewForSite, $originalPropagateAll);

@@ -12,7 +12,7 @@ namespace craft\events;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Events\BeforeDeleteElement} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Events\ElementLifecycleDeletingElement} instead.
  */
 class DeleteElementEvent extends ElementEvent
 {

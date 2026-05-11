@@ -19,9 +19,7 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Field\Events\ApplyingFieldDelete;
-use CraftCms\Cms\Field\Events\ApplyingFieldSave;
-use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
+use CraftCms\Cms\Field\Events\CompatibleFieldTypesResolving;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Field\Events\FieldDeleted;
 use CraftCms\Cms\Field\Events\FieldDeleting;
@@ -29,10 +27,11 @@ use CraftCms\Cms\Field\Events\FieldLayoutDeleted;
 use CraftCms\Cms\Field\Events\FieldLayoutDeleting;
 use CraftCms\Cms\Field\Events\FieldLayoutSaved;
 use CraftCms\Cms\Field\Events\FieldLayoutSaving;
+use CraftCms\Cms\Field\Events\FieldSaveApplying;
 use CraftCms\Cms\Field\Events\FieldSaved;
 use CraftCms\Cms\Field\Events\FieldSaving;
-use CraftCms\Cms\Field\Events\RegisterFieldTypes;
-use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
+use CraftCms\Cms\Field\Events\FieldTypesResolving;
+use CraftCms\Cms\Field\Events\NestedEntryFieldTypesResolving;
 use CraftCms\Cms\Field\Matrix as MatrixField;
 use CraftCms\Cms\Field\Table as TableField;
 use CraftCms\Cms\Field\Users as UsersField;
@@ -246,7 +245,7 @@ class Fields
             UsersField::class,
         ]);
 
-        event($event = new RegisterFieldTypes($fieldTypes));
+        event($event = new FieldTypesResolving($fieldTypes));
 
         return $event->types;
     }
@@ -299,7 +298,7 @@ class Fields
             $types->add($field::class);
         }
 
-        event($event = new DefineCompatibleFieldTypes($field, $types));
+        event($event = new CompatibleFieldTypesResolving($field, $types));
 
         return $event->compatibleTypes;
     }
@@ -340,7 +339,7 @@ class Fields
             MatrixField::class,
         ]);
 
-        event($event = new RegisterNestedEntryFieldTypes($fieldTypes));
+        event($event = new NestedEntryFieldTypesResolving($fieldTypes));
 
         return $event->types;
     }
@@ -746,8 +745,6 @@ class Fields
 
         $field = $this->getFieldById($fieldRecord->id);
 
-        event(new ApplyingFieldDelete($field));
-
         DB::beginTransaction();
 
         try {
@@ -951,8 +948,12 @@ class Fields
     /**
      * Creates a field layout from the given config.
      */
-    public function createLayout(array $config): FieldLayout
+    public function createLayout(array|string $config): FieldLayout
     {
+        if (is_string($config)) {
+            $config = JsonHelper::decode($config);
+        }
+
         unset($config['class']);
 
         return new FieldLayout($config);
@@ -991,8 +992,8 @@ class Fields
     {
         $paramPrefix = $namespace ? rtrim($namespace, '.').'.' : '';
 
-        $config = JsonHelper::decode(Request::get("{$paramPrefix}fieldLayout"));
-        $config['generatedFields'] = Request::get("{$paramPrefix}generatedFields") ?: null;
+        $config = JsonHelper::decode(Request::input("{$paramPrefix}fieldLayout"));
+        $config['generatedFields'] = Request::input("{$paramPrefix}generatedFields") ?: null;
 
         $layout = $this->createLayout($config);
 
@@ -1168,7 +1169,7 @@ class Fields
         // For control panel save requests, make sure we have all the custom data already saved on the object.
         $field = $this->_savingFields[$fieldUid] ?? null;
 
-        event(new ApplyingFieldSave($oldField, $data));
+        event(new FieldSaveApplying($oldField, $data));
 
         DB::beginTransaction();
 

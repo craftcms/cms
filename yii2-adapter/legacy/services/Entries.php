@@ -16,23 +16,23 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Entry\Events\ApplyingDeleteEntryType;
-use CraftCms\Cms\Entry\Events\DeletingEntryType;
 use CraftCms\Cms\Entry\Events\EntryMovedToSection;
+use CraftCms\Cms\Entry\Events\EntryMovingToSection;
 use CraftCms\Cms\Entry\Events\EntryTypeDeleted;
+use CraftCms\Cms\Entry\Events\EntryTypeDeleting;
+use CraftCms\Cms\Entry\Events\EntryTypeDeletionApplying;
 use CraftCms\Cms\Entry\Events\EntryTypeSaved;
-use CraftCms\Cms\Entry\Events\MovingEntryToSection;
-use CraftCms\Cms\Entry\Events\SavingEntryType;
+use CraftCms\Cms\Entry\Events\EntryTypeSaving;
 use CraftCms\Cms\Entry\Exceptions\EntryTypeNotFoundException;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\Section\Events\ApplyingSectionDelete;
-use CraftCms\Cms\Section\Events\DeletingSection;
-use CraftCms\Cms\Section\Events\SavingSection;
 use CraftCms\Cms\Section\Events\SectionDeleted;
+use CraftCms\Cms\Section\Events\SectionDeleting;
+use CraftCms\Cms\Section\Events\SectionDeletionApplying;
 use CraftCms\Cms\Section\Events\SectionSaved;
+use CraftCms\Cms\Section\Events\SectionSaving;
 use CraftCms\Cms\Section\Exceptions\SectionNotFoundException;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Events\SiteDeleted;
@@ -770,7 +770,7 @@ class Entries extends Component
 
     public static function registerEvents(): void
     {
-        Event::listen(SavingSection::class, function(SavingSection $event) {
+        Event::listen(SectionSaving::class, function(SectionSaving $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_SAVE_SECTION)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_SAVE_SECTION, new SectionEvent([
                     'section' => $event->section,
@@ -788,7 +788,7 @@ class Entries extends Component
             }
         });
 
-        Event::listen(DeletingSection::class, function(DeletingSection $event) {
+        Event::listen(SectionDeleting::class, function(SectionDeleting $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_DELETE_SECTION)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_DELETE_SECTION, new SectionEvent([
                     'section' => $event->section,
@@ -796,7 +796,7 @@ class Entries extends Component
             }
         });
 
-        Event::listen(ApplyingSectionDelete::class, function(ApplyingSectionDelete $event) {
+        Event::listen(SectionDeletionApplying::class, function(SectionDeletionApplying $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_APPLY_SECTION_DELETE)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_APPLY_SECTION_DELETE, new SectionEvent([
                     'section' => $event->section,
@@ -812,7 +812,7 @@ class Entries extends Component
             }
         });
 
-        Event::listen(SavingEntryType::class, function(SavingEntryType $event) {
+        Event::listen(EntryTypeSaving::class, function(EntryTypeSaving $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_SAVE_ENTRY_TYPE)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_SAVE_ENTRY_TYPE, new EntryTypeEvent([
                     'entryType' => $event->entryType,
@@ -830,7 +830,7 @@ class Entries extends Component
             }
         });
 
-        Event::listen(DeletingEntryType::class, function(DeletingEntryType $event) {
+        Event::listen(EntryTypeDeleting::class, function(EntryTypeDeleting $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_DELETE_ENTRY_TYPE)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_DELETE_ENTRY_TYPE, new EntryTypeEvent([
                     'entryType' => $event->entryType,
@@ -838,7 +838,7 @@ class Entries extends Component
             }
         });
 
-        Event::listen(ApplyingDeleteEntryType::class, function(ApplyingDeleteEntryType $event) {
+        Event::listen(EntryTypeDeletionApplying::class, function(EntryTypeDeletionApplying $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE, new EntryTypeEvent([
                     'entryType' => $event->entryType,
@@ -854,7 +854,7 @@ class Entries extends Component
             }
         });
 
-        Event::listen(MovingEntryToSection::class, function(MovingEntryToSection $event) {
+        Event::listen(EntryMovingToSection::class, function(EntryMovingToSection $event) {
             if (Craft::$app->getEntries()->hasEventHandlers(self::EVENT_BEFORE_MOVE_TO_SECTION)) {
                 Craft::$app->getEntries()->trigger(self::EVENT_BEFORE_MOVE_TO_SECTION, new MoveEntryEvent([
                     'entry' => $event->entry,

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Element\Events\CreatingRevision;
+use CraftCms\Cms\Element\Events\ElementRevertingToRevision;
 use CraftCms\Cms\Element\Events\RevertedToRevision;
-use CraftCms\Cms\Element\Events\RevertingToRevision;
 use CraftCms\Cms\Element\Events\RevisionCreated;
+use CraftCms\Cms\Element\Events\RevisionCreating;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
@@ -23,11 +23,11 @@ beforeEach(function () {
 
 it('can create a revision', function () {
     Event::fake([
-        CreatingRevision::class,
+        RevisionCreating::class,
         RevisionCreated::class,
     ]);
 
-    Event::listen(CreatingRevision::class, fn () => true);
+    Event::listen(RevisionCreating::class, fn () => true);
     Event::listen(RevisionCreated::class, fn () => true);
 
     Entry::factory()->create();
@@ -43,17 +43,17 @@ it('can create a revision', function () {
     expect($revision->getIsRevision())->toBeTrue();
     expect($revision->revisionNotes)->toBe('Some notes');
 
-    Event::assertDispatchedOnce(CreatingRevision::class);
+    Event::assertDispatchedOnce(RevisionCreating::class);
     Event::assertDispatchedOnce(RevisionCreated::class);
 });
 
 it('can revert an element to a revision', function () {
     Event::fake([
-        RevertingToRevision::class,
+        ElementRevertingToRevision::class,
         RevertedToRevision::class,
     ]);
 
-    Event::listen(RevertingToRevision::class, fn () => true);
+    Event::listen(ElementRevertingToRevision::class, fn () => true);
     Event::listen(RevertedToRevision::class, fn () => true);
 
     Entry::factory()->create();
@@ -69,6 +69,6 @@ it('can revert an element to a revision', function () {
 
     expect($element->getIsRevision())->toBeFalse();
 
-    Event::assertDispatchedOnce(RevertingToRevision::class);
+    Event::assertDispatchedOnce(ElementRevertingToRevision::class);
     Event::assertDispatchedOnce(RevertedToRevision::class);
 });

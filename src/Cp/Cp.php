@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Support\Collection;
+use stdClass;
 
 readonly class Cp
 {
@@ -23,8 +25,10 @@ readonly class Cp
                 'cpTrigger',
                 'actionTrigger',
                 'csrfTokenName',
+                'runQueueAutomatically',
             ])
             ->merge([
+                'translations' => I18N::getAllTranslationsForLocale(app()->getLocale()) ?: new stdClass,
                 'csrfTokenValue' => csrf_token(),
                 'actionUrl' => Url::actionUrl(),
                 'cpUrl' => Url::cpUrl(),

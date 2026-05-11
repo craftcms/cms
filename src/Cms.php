@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\Facades\Users;
+use Illuminate\Database\SQLiteDatabaseDoesNotExistException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Context;
@@ -27,15 +28,35 @@ readonly class Cms
 {
     public const string NAME = 'Craft CMS';
 
-    public const string VERSION = '6.0.0';
+    public const string VERSION = '6.0.0-alpha.1';
 
     public const string SCHEMA_VERSION = '6.0.0.0';
 
     public const string MIN_VERSION_REQUIRED = '5.9.0';
 
+    public static function name(): string
+    {
+        return self::NAME;
+    }
+
     public static function config(): GeneralConfig
     {
         return app(GeneralConfig::class) ?? GeneralConfig::create();
+    }
+
+    public static function version(): string
+    {
+        return self::VERSION;
+    }
+
+    public static function schemaVersion(): string
+    {
+        return self::SCHEMA_VERSION;
+    }
+
+    public static function minVersionRequired(): string
+    {
+        return self::MIN_VERSION_REQUIRED;
     }
 
     public static function timezone(): string
@@ -129,7 +150,7 @@ readonly class Cms
 
         try {
             DB::connection()->getPdo();
-        } catch (PDOException $e) {
+        } catch (PDOException|SQLiteDatabaseDoesNotExistException $e) {
             if (! app()->runningInConsole()) {
                 Log::error('There was a problem connecting to the database: '.$e->getMessage(), [__METHOD__]);
                 report($e);

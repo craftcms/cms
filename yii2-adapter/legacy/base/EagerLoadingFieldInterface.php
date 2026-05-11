@@ -17,5 +17,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface::class, EagerLoadingFieldInterface::class);

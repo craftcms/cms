@@ -25,8 +25,8 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\RegisterUserPermissions;
 use CraftCms\Cms\User\Events\UserGroupPermissionsSaved;
+use CraftCms\Cms\User\Events\UserPermissionsResolving;
 use CraftCms\Cms\User\Events\UserPermissionsSaved;
 use CraftCms\Cms\User\Models\UserPermission;
 use CraftCms\Cms\Utility\Utilities;
@@ -104,7 +104,7 @@ class UserPermissions
         $this->utilityPermissions($this->allPermissions);
         $this->importPermissions($this->allPermissions);
 
-        event($event = new RegisterUserPermissions($this->allPermissions));
+        event($event = new UserPermissionsResolving($this->allPermissions));
 
         return $event->permissions;
     }

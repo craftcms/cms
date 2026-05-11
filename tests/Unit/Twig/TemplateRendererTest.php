@@ -3,13 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
-use CraftCms\Cms\Cms;
-use CraftCms\Cms\Twig\Events\BeginPage;
-use CraftCms\Cms\Twig\Events\EndPage;
+use CraftCms\Cms\Twig\Events\PageEnded;
+use CraftCms\Cms\Twig\Events\PageStarting;
 use CraftCms\Cms\Twig\Events\PageTemplateRendered;
-use CraftCms\Cms\Twig\Events\RenderingPageTemplate;
-use CraftCms\Cms\Twig\Events\RenderingTemplate;
+use CraftCms\Cms\Twig\Events\PageTemplateRendering;
 use CraftCms\Cms\Twig\Events\TemplateRendered;
+use CraftCms\Cms\Twig\Events\TemplateRendering;
 use CraftCms\Cms\Twig\TemplateRenderer;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\TemplateMode;
@@ -120,12 +119,12 @@ describe('renderTemplate', function () {
         expect($result)->toBe('Hello, World!');
     });
 
-    it('dispatches RenderingTemplate event before rendering', function () {
-        Event::fake([RenderingTemplate::class, TemplateRendered::class]);
+    it('dispatches TemplateRendering event before rendering', function () {
+        Event::fake([TemplateRendering::class, TemplateRendered::class]);
 
         $this->renderer->renderTemplate('test-template.twig', ['name' => 'world']);
 
-        Event::assertDispatched(fn (RenderingTemplate $event) => $event->template === 'test-template.twig'
+        Event::assertDispatched(fn (TemplateRendering $event) => $event->template === 'test-template.twig'
             && $event->variables === ['name' => 'world']);
     });
 
@@ -137,8 +136,8 @@ describe('renderTemplate', function () {
         Event::assertDispatched(fn (TemplateRendered $event) => $event->template === 'test-template.twig');
     });
 
-    it('returns empty string when RenderingTemplate event is cancelled', function () {
-        Event::listen(RenderingTemplate::class, function (RenderingTemplate $event) {
+    it('returns empty string when TemplateRendering event is cancelled', function () {
+        Event::listen(TemplateRendering::class, function (TemplateRendering $event) {
             $event->isValid = false;
         });
 
@@ -157,8 +156,8 @@ describe('renderTemplate', function () {
         expect($result)->toBe('modified output');
     });
 
-    it('allows the RenderingTemplate event to modify the template name', function () {
-        Event::listen(RenderingTemplate::class, function (RenderingTemplate $event) {
+    it('allows the TemplateRendering event to modify the template name', function () {
+        Event::listen(TemplateRendering::class, function (TemplateRendering $event) {
             $event->template = 'other-template.twig';
         });
 
@@ -193,20 +192,20 @@ describe('renderPageTemplate', function () {
     it('dispatches lifecycle events in order', function () {
         $events = [];
 
-        Event::listen(RenderingPageTemplate::class, function () use (&$events) {
-            $events[] = 'RenderingPageTemplate';
+        Event::listen(PageTemplateRendering::class, function () use (&$events) {
+            $events[] = 'PageTemplateRendering';
         });
-        Event::listen(BeginPage::class, function () use (&$events) {
-            $events[] = 'BeginPage';
+        Event::listen(PageStarting::class, function () use (&$events) {
+            $events[] = 'PageStarting';
         });
-        Event::listen(RenderingTemplate::class, function () use (&$events) {
-            $events[] = 'RenderingTemplate';
+        Event::listen(TemplateRendering::class, function () use (&$events) {
+            $events[] = 'TemplateRendering';
         });
         Event::listen(TemplateRendered::class, function () use (&$events) {
             $events[] = 'TemplateRendered';
         });
-        Event::listen(EndPage::class, function () use (&$events) {
-            $events[] = 'EndPage';
+        Event::listen(PageEnded::class, function () use (&$events) {
+            $events[] = 'PageEnded';
         });
         Event::listen(PageTemplateRendered::class, function () use (&$events) {
             $events[] = 'PageTemplateRendered';
@@ -215,17 +214,17 @@ describe('renderPageTemplate', function () {
         $this->renderer->renderPageTemplate('test-template.twig');
 
         expect($events)->toBe([
-            'RenderingPageTemplate',
-            'BeginPage',
-            'RenderingTemplate',
+            'PageTemplateRendering',
+            'PageStarting',
+            'TemplateRendering',
             'TemplateRendered',
-            'EndPage',
+            'PageEnded',
             'PageTemplateRendered',
         ]);
     });
 
-    it('returns empty string when RenderingPageTemplate event is cancelled', function () {
-        Event::listen(RenderingPageTemplate::class, function (RenderingPageTemplate $event) {
+    it('returns empty string when PageTemplateRendering event is cancelled', function () {
+        Event::listen(PageTemplateRendering::class, function (PageTemplateRendering $event) {
             $event->isValid = false;
         });
 
@@ -250,7 +249,7 @@ describe('renderPageTemplate', function () {
         $renderer = $this->renderer;
         $wasRendering = false;
 
-        Event::listen(EndPage::class, function () use (&$wasRendering, $renderer) {
+        Event::listen(PageEnded::class, function () use (&$wasRendering, $renderer) {
             $wasRendering = $renderer->isRenderingPageTemplate();
         });
 
@@ -385,45 +384,23 @@ describe('normalizeObjectTemplate', function () {
 });
 
 describe('sandboxed rendering', function () {
-    it('renders sandboxed strings', function (bool $sandboxEnabled) {
-        Cms::config()->enableTwigSandbox = $sandboxEnabled;
-
+    it('renders sandboxed strings', function () {
         $result = $this->renderer->renderSandboxedString('{{ 1 + 1 }}');
 
         expect($result)->toBe('2');
-    })->with([
-        'sandbox disabled' => [false],
-        'sandbox enabled' => [true],
-    ]);
+    });
 
     it('does not allow Facade calls in sandbox', function () {
-        Cms::config()->enableTwigSandbox = true;
-
         $this->renderer->renderSandboxedString('{{ Config.get("app.name") }}');
     })->throws(SecurityNotAllowedMethodError::class);
 
-    it('renders sandboxed templates', function (bool $sandboxEnabled) {
-        Cms::config()->enableTwigSandbox = $sandboxEnabled;
-
+    it('renders sandboxed templates', function () {
         $result = $this->renderer->renderSandboxedTemplate('test-template.twig');
 
         expect($result)->toBe('Hello from test template');
-    })->with([
-        'sandbox disabled' => [false],
-        'sandbox enabled' => [true],
-    ]);
-
-    it('renders sandboxed object templates when sandbox is disabled', function () {
-        Cms::config()->enableTwigSandbox = false;
-
-        $result = $this->renderer->renderSandboxedObjectTemplate('hello {name}', (object) ['name' => 'Craft']);
-
-        expect($result)->toBe('hello Craft');
     });
 
     it('returns the template as-is when sandbox is enabled and there are no dynamic tags', function () {
-        Cms::config()->enableTwigSandbox = true;
-
         $result = $this->renderer->renderSandboxedObjectTemplate('hello world', new stdClass);
 
         expect($result)->toBe('hello world');

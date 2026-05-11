@@ -12,7 +12,7 @@ use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\BeforeEagerLoadElements;
+use CraftCms\Cms\Element\Events\ElementsEagerLoading;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
@@ -182,7 +182,7 @@ readonly class ElementEagerLoader
         foreach ($elementsBySite as $siteId => $elements) {
             $elements = array_values($elements);
 
-            event($event = new BeforeEagerLoadElements($elementType, $elements, $with));
+            event($event = new ElementsEagerLoading($elementType, $elements, $with));
 
             foreach ($event->with as $plan) {
                 // Filter out any elements that the plan doesn't like

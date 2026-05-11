@@ -22,5 +22,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Field\Conditions\FieldConditionRuleTrait::class, FieldConditionRuleTrait::class);

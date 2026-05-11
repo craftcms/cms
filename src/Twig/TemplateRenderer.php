@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig;
 
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Events\PageTemplateRendered;
-use CraftCms\Cms\Twig\Events\RenderingPageTemplate;
-use CraftCms\Cms\Twig\Events\RenderingTemplate;
+use CraftCms\Cms\Twig\Events\PageTemplateRendering;
 use CraftCms\Cms\Twig\Events\TemplateRendered;
+use CraftCms\Cms\Twig\Events\TemplateRendering;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Support\Arrayable;
@@ -38,7 +37,6 @@ class TemplateRenderer
 
     public function __construct(
         private readonly Twig $twig,
-        private readonly GeneralConfig $generalConfig,
         private readonly PageLifecycle $pageLifecycle,
     ) {}
 
@@ -65,7 +63,7 @@ class TemplateRenderer
     ): string {
         $templateMode ??= TemplateMode::get();
 
-        event($event = new RenderingTemplate($template, $variables, $templateMode));
+        event($event = new TemplateRendering($template, $variables, $templateMode));
 
         if (! $event->isValid) {
             return '';
@@ -122,7 +120,7 @@ class TemplateRenderer
     ): string {
         $templateMode ??= TemplateMode::get();
 
-        event($event = new RenderingPageTemplate($template, $variables, $templateMode));
+        event($event = new PageTemplateRendering($template, $variables, $templateMode));
 
         if (! $event->isValid) {
             return '';
@@ -373,10 +371,6 @@ class TemplateRenderer
      */
     private function sandbox(callable $callback, ?TemplateMode $templateMode): string
     {
-        if (! $this->generalConfig->enableTwigSandbox) {
-            return $callback();
-        }
-
         $extension = $this->twig->get($templateMode)->getExtension(SandboxExtension::class);
 
         if ($extension->isSandboxed()) {

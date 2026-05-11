@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Element\Events\AfterDeleteForSite;
-use CraftCms\Cms\Element\Events\BeforeDeleteForSite;
+use CraftCms\Cms\Element\Events\ElementDeletedForSite;
+use CraftCms\Cms\Element\Events\ElementDeletingForSite;
 use CraftCms\Cms\Element\Operations\ElementDeletions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -68,8 +68,8 @@ it('hard deletes single-site elements', function () {
 
 it('deletes only the requested site for multi-site elements and dispatches events', function () {
     Event::fake([
-        BeforeDeleteForSite::class,
-        AfterDeleteForSite::class,
+        ElementDeletingForSite::class,
+        ElementDeletedForSite::class,
     ]);
 
     [$entry, $secondarySite] = createMultiSiteEntry();
@@ -88,8 +88,8 @@ it('deletes only the requested site for multi-site elements and dispatches event
         ->and(entryQuery()->id($entry->id)->siteId($entry->siteId)->status(null)->exists())->toBeTrue()
         ->and(entryQuery()->id($entry->id)->siteId($secondarySite->id)->status(null)->exists())->toBeFalse();
 
-    Event::assertDispatched(fn (BeforeDeleteForSite $event): bool => $event->element->id === $entry->id && $event->element->siteId === $secondarySite->id);
-    Event::assertDispatched(fn (AfterDeleteForSite $event): bool => $event->element->id === $entry->id && $event->element->siteId === $secondarySite->id);
+    Event::assertDispatched(fn (ElementDeletingForSite $event): bool => $event->element->id === $entry->id && $event->element->siteId === $secondarySite->id);
+    Event::assertDispatched(fn (ElementDeletedForSite $event): bool => $event->element->id === $entry->id && $event->element->siteId === $secondarySite->id);
 });
 
 it('removes localized relations when deleting an element for a site', function () {

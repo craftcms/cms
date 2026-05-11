@@ -7,15 +7,19 @@ namespace CraftCms\Cms\Providers;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\Http\Mixins\RequestMixin;
 use CraftCms\Cms\Http\Mixins\SessionMixin;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Update\Data\Update as UpdateData;
+use CraftCms\Cms\Update\Data\Updates as UpdatesData;
 use GuzzleHttp\Utils;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Foundation\Events\LocaleUpdated;
@@ -31,12 +35,12 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Override;
 use ReflectionClass;
 use RuntimeException;
+use stdClass;
 
 use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\t;
@@ -53,6 +57,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->registerMacros();
+        $this->registerSerializableClasses();
     }
 
     public function boot(): void
@@ -62,7 +67,7 @@ class AppServiceProvider extends ServiceProvider
                 LC_COLLATE,
                 str_replace('-', '_', $event->locale), // target language
                 'C.UTF-8',  // libc >= 2.13
-                'C.utf8' // different spelling
+                'C.utf8', // different spelling
             );
         });
 
@@ -93,6 +98,7 @@ class AppServiceProvider extends ServiceProvider
         $this->publishes([
             "{$this->root}/resources/build/" => public_path('vendor/craft/build'),
             "{$this->root}/resources/icons/" => public_path('vendor/craft/icons'),
+            "{$this->root}/resources/images/" => public_path('vendor/craft/images'),
             "{$this->root}/resources/legacy/" => public_path('vendor/craft/legacy'),
         ], ['craftcms', 'craftcms-assets']);
     }
@@ -143,10 +149,10 @@ class AppServiceProvider extends ServiceProvider
 
         UrlGenerator::macro('defaultReturnUrl', function (): string {
             if (request()->isCpRequest() && Gate::check('accessCp')) {
-                return \CraftCms\Cms\Support\Url::cpUrl(Cms::config()->getPostCpLoginRedirect());
+                return Url::cpUrl(Cms::config()->getPostCpLoginRedirect());
             }
 
-            return \CraftCms\Cms\Support\Url::siteUrl(Cms::config()->getPostLoginRedirect());
+            return Url::siteUrl(Cms::config()->getPostLoginRedirect());
         });
 
         UrlGenerator::macro('returnUrl', function (?string $defaultUrl = null): string {
@@ -178,6 +184,25 @@ class AppServiceProvider extends ServiceProvider
                     'proxy' => Cms::config()->httpProxy,
                 ]),
             ));
+    }
+
+    private function registerSerializableClasses(): void
+    {
+        $existing = $this->app->make(Repository::class)->get('cache.serializable_classes');
+
+        if ($existing === null || $existing === true) {
+            return;
+        }
+
+        $existing = is_array($existing) ? $existing : [];
+
+        $this->app->make(Repository::class)->set('cache.serializable_classes', array_merge($existing, [
+            Collection::class,
+            ElementCollection::class,
+            stdClass::class,
+            UpdatesData::class,
+            UpdateData::class,
+        ]));
     }
 
     private function setNamespace(): void

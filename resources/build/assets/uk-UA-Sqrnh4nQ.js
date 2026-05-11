@@ -1,0 +1,1 @@
+import e from"./uk-BRTabguq.js";var t={...e};export{t as default};

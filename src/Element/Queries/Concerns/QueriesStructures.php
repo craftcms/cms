@@ -127,6 +127,12 @@ trait QueriesStructures
 
             if ($this->structureId) {
                 return $result->map(function ($element) {
+                    if (is_array($element)) {
+                        $element['structureId'] = $this->structureId;
+
+                        return $element;
+                    }
+
                     $element->structureId = $this->structureId;
 
                     return $element;

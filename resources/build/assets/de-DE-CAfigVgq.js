@@ -1,0 +1,1 @@
+import e from"./de-DRsuMPR-.js";var t={...e};export{t as default};
