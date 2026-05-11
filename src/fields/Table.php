@@ -796,13 +796,14 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
 
             case 'multiline':
             case 'singleline':
-                if ($value !== null) {
-                    if (!$fromRequest) {
-                        $value = StringHelper::unescapeShortcodes(StringHelper::shortcodesToEmoji($value));
-                    }
-                    return trim(StringHelper::convertLineBreaks($value));
+                if ($value === null) {
+                    return null;
                 }
-                // no break
+                if (!$fromRequest) {
+                    $value = StringHelper::unescapeShortcodes(StringHelper::shortcodesToEmoji($value));
+                }
+                return trim(StringHelper::convertLineBreaks($value));
+
             case 'date':
             case 'time':
                 return DateTimeHelper::toDateTime($value) ?: null;
