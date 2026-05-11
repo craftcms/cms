@@ -19,9 +19,9 @@ use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use Illuminate\Foundation\Vite;
 use Illuminate\Foundation\ViteException;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Vite;
 use Override;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
@@ -71,7 +71,8 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
     public function vite(array $entryPoints, string $buildDirectory = 'vendor/craft/build'): string
     {
         try {
-            return Vite::useHotFile(Aliases::get('@resources/hot'))
+            return (clone app(Vite::class))
+                ->useHotFile(Aliases::get('@resources/hot'))
                 ->withEntryPoints($entryPoints)
                 ->useBuildDirectory($buildDirectory)
                 ->toHtml();

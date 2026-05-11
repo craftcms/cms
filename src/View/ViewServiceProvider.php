@@ -12,7 +12,6 @@ use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
-use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\Factory;
 use Override;
@@ -32,8 +31,6 @@ class ViewServiceProvider extends ServiceProvider
             'twig',
             fn () => $this->app->make(TwigEngine::class)
         );
-
-        Vite::useHotFile("{$this->root}/resources/hot");
     }
 
     public function boot(TemplateHooks $hooks): void

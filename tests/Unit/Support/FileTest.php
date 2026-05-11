@@ -704,7 +704,7 @@ describe('zip', function () {
 
         $zipPath = File::zip($file);
 
-        expect($zipPath)->toBe($file.'.zip');
+        expect($zipPath)->toBe(File::normalizePath($file).'.zip');
         expect(is_file($zipPath))->toBeTrue();
 
         $zip = new ZipArchive;

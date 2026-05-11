@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 
@@ -11,7 +12,7 @@ function loadTestPlugin(): void
 {
     $plugins = app(Plugins::class);
 
-    $basePathOverride = dirname(__DIR__).'/TestClasses/TestPlugin/src';
+    $basePathOverride = File::normalizePath(dirname(__DIR__).'/TestClasses/TestPlugin/src');
 
     $reflectionClass = new ReflectionClass($plugins);
 

@@ -15,7 +15,7 @@ it('restores a soft-deleted element', function () {
     $entry = EntryModel::factory()->createElement();
     Elements::deleteElement($entry);
 
-    $this->artisan('elements/restore', ['id' => $entry->id])
+    $this->artisan('craft:elements/restore', ['id' => $entry->id])
         ->expectsOutputToContain('Element restored.')
         ->assertSuccessful();
 

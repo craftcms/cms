@@ -7,14 +7,17 @@ namespace CraftCms\Cms\Console\Commands\Install;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Site\Concerns\SiteDefaults;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Translation\I18N;
+use CraftCms\Cms\Validation\Rules\EnvValueRule;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Prompts\Support\Logger;
 use Override;
@@ -23,6 +26,7 @@ use Throwable;
 
 use function Laravel\Prompts\form;
 use function Laravel\Prompts\info;
+use function Laravel\Prompts\outro;
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\suggest;
 use function Laravel\Prompts\task;
@@ -42,6 +46,7 @@ class InstallCommand extends Command
         {--siteName= : The default site name for the first site to create during install.}
         {--siteUrl= : The default site URL for the first site to create during install.}
         {--language= : The default language for the first site to create during install.}
+        {--timezone= : The app’s default timezone, typically configured in Settings → General.}
     ';
 
     #[Override]
@@ -138,6 +143,23 @@ class InstallCommand extends Command
                     return null;
                 }
             ), 'language')
+            ->addIf(! $this->option('timezone'), function () {
+                $timezoneBaseOptions = array_column(SelectOptions::getTimeZoneOptions(), 'value');
+                $timezoneEnvOptions = array_column(SelectOptions::getEnvOptions($timezoneBaseOptions)[0]['options'] ?? [], 'value');
+
+                return suggest(
+                    label: 'What timezone should the application use?',
+                    options: [
+                        ...$timezoneBaseOptions,
+                        ...$timezoneEnvOptions,
+                    ],
+                    default: date_default_timezone_get(),
+                    required: true,
+                    validate: [new EnvValueRule([Rule::in($timezoneBaseOptions)])],
+                    hint: 'Type $ for environment variables containing valid timezones.',
+                    info: Env::parse(...),
+                );
+            }, 'timezone')
             ->submit();
 
         $username = $this->option('username') ?? $responses['username'];
@@ -146,6 +168,7 @@ class InstallCommand extends Command
         $siteName = $this->option('siteName') ?? $responses['siteName'];
         $siteUrl = $this->option('siteUrl') ?? $responses['siteUrl'];
         $language = $this->option('language') ?? $responses['language'];
+        $timezone = $this->option('timezone') ?? $responses['timezone'];
 
         if ($generalConfig->useEmailAsUsername) {
             $username = $email;
@@ -183,6 +206,7 @@ class InstallCommand extends Command
             password: $password,
             email: $email,
             site: $site,
+            timezone: $timezone,
         ), 'up');
 
         $migrator->getRepository()->log('Install', 1);
@@ -190,8 +214,10 @@ class InstallCommand extends Command
         task('Finishing up', function (Logger $logger) use ($migrator) {
             $this->markPendingMigrationsAsApplied($migrator);
             $this->ensureProjectConfigFileExists();
-            $logger->success('Craft CMS installed successfully!');
+            $logger->success('Done.');
         }, keepSummary: true);
+
+        outro('Craft CMS installed successfully!');
 
         return self::SUCCESS;
     }

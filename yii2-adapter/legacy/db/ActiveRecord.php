@@ -8,6 +8,7 @@
 namespace craft\db;
 
 use Craft;
+use craft\base\RejectsUnsafeConfigKeys;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Support\Query;
@@ -28,6 +29,8 @@ use DateTime;
  */
 abstract class ActiveRecord extends \yii\db\ActiveRecord
 {
+    use RejectsUnsafeConfigKeys;
+
     /**
      * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
      * @see behaviors()
@@ -50,6 +53,8 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      */
     public function __set($name, $value)
     {
+        $this->ensureConfigKeyIsSafe($name);
+
         if ($this->hasAttribute($name)) {
             $value = $this->_prepareValue($name, $value);
         }

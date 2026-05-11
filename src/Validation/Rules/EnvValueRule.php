@@ -71,7 +71,9 @@ class EnvValueRule implements DataAwareRule, ValidationRule
     #[Override]
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $parsedValue = is_string($value) ? Env::parse($value) : $value;
+        $parsedValue = is_string($value)
+            ? ($this->isBoolean() ? Env::parseBoolean($value) : Env::parse($value))
+            : $value;
         $data = $this->data;
 
         data_set($data, $attribute, $parsedValue);
@@ -87,6 +89,17 @@ class EnvValueRule implements DataAwareRule, ValidationRule
         foreach ($validator->errors()->get($attribute) as $message) {
             $fail($this->errorMessage($message, $value, $parsedValue));
         }
+    }
+
+    private function isBoolean(): bool
+    {
+        foreach ($this->rules as $rule) {
+            if ($rule === 'boolean' || $rule === 'bool') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function errorMessage(string $message, mixed $rawValue, mixed $parsedValue): string

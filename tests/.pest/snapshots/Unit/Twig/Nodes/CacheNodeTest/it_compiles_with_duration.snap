@@ -1,7 +1,7 @@
 // line 1
 $cacheService = app(CraftCms\Cms\View\TemplateCaches::class);
 $request = request();
-$ignoreCache__v0 = ($request->isPreview() || $request->getToken());
+$ignoreCache__v0 = ($request->isPreview() || $request->getHadToken());
 if (!$ignoreCache__v0) {
     $cacheKey__v0 = "RANDOM_STRING";
     $cacheBody__v0 = $cacheService->getTemplateCache($cacheKey__v0, false, true);

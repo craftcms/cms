@@ -21,9 +21,9 @@ readonly class HandleActionRequest
             return $next($request);
         }
 
-        $newRequest = $request->duplicate(server: array_merge($request->server->all(), [
-            'REQUEST_URI' => $route,
-        ]));
+        $newRequest = $request->duplicateWithUri($route);
+
+        app()->instance('request', $newRequest);
 
         return $next($newRequest);
     }

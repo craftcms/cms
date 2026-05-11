@@ -28,6 +28,7 @@ readonly class Cp
                 'useEmailAsUsername',
                 'rememberedUserSessionDuration',
                 'defaultCpLocale',
+                'runQueueAutomatically',
             ])
             ->merge([
                 'translations' => I18N::getAllTranslationsForLocale(app()->getLocale()) ?: new stdClass,

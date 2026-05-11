@@ -28,7 +28,7 @@ const queue = QueueService.getInstance();
 
 // Create our object
 const Cp = {
-  initialConfig: {},
+  initialConfig: {} as Record<string, any>,
 
   get $config() {
     return config;
@@ -57,6 +57,7 @@ const Cp = {
   init() {
     config.initialize(this.initialConfig);
     queue.initialize({
+      runAutomatically: config.get('runQueueAutomatically', true),
       enabled: true,
       appId: config.get('systemUid', ''),
       canAccessQueueManager: config.get('canAccessQueueManager', false),

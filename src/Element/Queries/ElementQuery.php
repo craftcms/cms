@@ -999,12 +999,6 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this->getQuery()->{$method}(...$parameters);
         }
 
-        if (in_array(strtolower($method), ['join', 'orderby', 'orderbydesc', 'select', 'reorder', 'addselect'])) {
-            $this->forwardCallTo($this->query, $method, $parameters);
-
-            return $this;
-        }
-
         $this->forwardCallTo($this->query, $method, $parameters);
 
         return $this;

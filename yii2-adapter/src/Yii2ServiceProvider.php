@@ -3,6 +3,7 @@
 namespace CraftCms\Yii2Adapter;
 
 use Craft;
+use craft\web\Application as WebApplication;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Table;
@@ -35,6 +36,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use PDOException;
 use RuntimeException;
+use yii\base\Application as YiiApplication;
 use yii\base\ExitException;
 
 class Yii2ServiceProvider extends ServiceProvider
@@ -50,7 +52,16 @@ class Yii2ServiceProvider extends ServiceProvider
         new CompatibilityMixins()->register();
         new FilesystemCompatibility()->register($this->app);
 
-        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+        /**
+         * Load the legacy fallback route from booted() so it registers after
+         * the CMS package's own Route::fallback(), ensuring that unmatched
+         * requests are forwarded to the legacy Yii application (where any
+         * URL rules registered via UrlManager::EVENT_REGISTER_CP_URL_RULES
+         * and EVENT_REGISTER_SITE_URL_RULES are honored).
+         */
+        $this->app->booted(function(): void {
+            $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+        });
 
         $this->setLaravelDefaults();
         $this->registerExceptionHandling();
@@ -163,11 +174,28 @@ class Yii2ServiceProvider extends ServiceProvider
             $this->ensureNewSessionsTable();
         });
 
+        $this->app->terminating(fn() => $this->triggerAfterRequestForLaravelRequest());
+
         if (!$this->app->runningInConsole()) {
             return;
         }
 
         new LegacyCommandCompatibility()->boot();
+    }
+
+    private function triggerAfterRequestForLaravelRequest(): void
+    {
+        if (!Craft::$app instanceof WebApplication) {
+            return;
+        }
+
+        if (Craft::$app->state >= YiiApplication::STATE_AFTER_REQUEST) {
+            return;
+        }
+
+        Craft::$app->state = YiiApplication::STATE_AFTER_REQUEST;
+        Craft::$app->trigger(YiiApplication::EVENT_AFTER_REQUEST);
+        Craft::$app->state = YiiApplication::STATE_END;
     }
 
     /**

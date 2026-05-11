@@ -151,6 +151,33 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public const string STATUS_LOCKED = 'locked';
 
     /**
+     * These attributes can only be saved through the User
+     * routes. The generic save element routes will not
+     * allow changes to these attributes.
+     */
+    public const array SENSITIVE_ATTRIBUTES = [
+        'active',
+        'admin',
+        'affiliatedSiteId',
+        'currentPassword',
+        'email',
+        'invalidLoginCount',
+        'lastInvalidLoginDate',
+        'lastLoginAttemptIp',
+        'lastLoginDate',
+        'lastPasswordChangeDate',
+        'locked',
+        'lockoutDate',
+        'newPassword',
+        'password',
+        'passwordResetRequired',
+        'pending',
+        'photoId',
+        'suspended',
+        'unverifiedEmail',
+    ];
+
+    /**
      * @var int|null Photo asset ID
      */
     #[AllowedInSandbox]
@@ -958,11 +985,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[AllowedInSandbox]
     public function getHasSsoIdentity(): bool
     {
-        if (! OAuth::isAvailable()) {
-            return false;
-        }
-
-        return app(OAuth::class)->hasIdentity($this->id);
+        return $this->id !== null && app(OAuth::class)->hasIdentity($this->id);
     }
 
     #[Override]

@@ -8,64 +8,70 @@ use function CraftCms\Cms\t;
 
 class Flash
 {
-    public static function notice(?string $default = null, array $settings = []): void
+    public static function notice(?string $default = null, array $settings = []): ?string
     {
         $message = request('notice', $default);
 
         if (is_null($message)) {
-            return;
+            return null;
         }
 
         if (! request()->isCpRequest()) {
             session()->flash('notice', $message);
 
-            return;
+            return $message;
         }
 
         session()->flash('cp-notification-notice', [$message, $settings + [
             'icon' => 'info',
             'iconLabel' => t('Notice'),
         ]]);
+
+        return $message;
     }
 
-    public static function success(?string $default = null, array $settings = []): void
+    public static function success(?string $default = null, array $settings = []): ?string
     {
-        $message = request('successMessage', $default);
+        $message = request()->getSigned('successMessage', $default);
 
         if (is_null($message)) {
-            return;
+            return null;
         }
 
         if (! request()->isCpRequest()) {
             session()->flash('success', $message);
 
-            return;
+            return $message;
         }
 
         session()->flash('cp-notification-success', [$message, $settings + [
             'icon' => 'check',
             'iconLabel' => t('Success'),
         ]]);
+
+        return $message;
     }
 
-    public static function error(?string $default = null, array $settings = []): void
+    public static function error(?string $default = null, array $settings = []): ?string
     {
-        $message = request('failMessage', $default);
+        $message = request()->getSigned('failMessage', $default);
 
         if ($message === null) {
-            return;
+            return null;
         }
 
         if (! request()->isCpRequest()) {
             session()->flash('error', $message);
 
-            return;
+            return $message;
         }
 
         session()->flash('cp-notification-error', [$message, $settings + [
             'icon' => 'alert',
             'iconLabel' => t('Error'),
         ]]);
+
+        return $message;
     }
 
     public static function getNotice(): ?string

@@ -53,6 +53,7 @@ class Install extends Migration
         public ?string $password = null,
         public ?string $email = null,
         public ?Site $site = null,
+        public ?string $timezone = null,
         public bool $applyProjectConfigYaml = true,
     ) {
         parent::__construct();
@@ -1415,7 +1416,7 @@ class Install extends Migration
                 'name' => $this->site->getName(),
                 'live' => true,
                 'schemaVersion' => Cms::SCHEMA_VERSION,
-                'timeZone' => 'America/Los_Angeles',
+                'timeZone' => $this->timezone ?? 'America/Los_Angeles',
             ],
             'users' => [
                 'requireEmailVerification' => true,
