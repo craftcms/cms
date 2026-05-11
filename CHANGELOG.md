@@ -44,6 +44,7 @@
 - Fixed a bug where using `{{ successMessageInput() }}` would not decrypt the resulting message for the flash message.
 - Fixed a bug where a missing widget from an uninstalled plugin would throw instead of mapping to a MissingWidget.
 - Fixed a bug where an address' ownership ids could be overridden unintentionally.
+- Fixed a bug where `getHasSsoIdentity()` would return `false` when Socialite was not installed but the user had an SSO identity.
 
 ## 6.0.0-alpha.1 - 2026-05-06
 
