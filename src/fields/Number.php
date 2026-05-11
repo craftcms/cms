@@ -290,7 +290,7 @@ class Number extends Field implements
 
         try {
             $formatNumber = !$this->step && !$formatter->willBeMisrepresented($value);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             $formatNumber = false;
         }
 
