@@ -84,3 +84,29 @@ test('structure methods', function () {
     expect($query->clone()->ancestorOf($lastStructureElement->elementId)->count())->toBe(1);
     expect($query->clone()->ancestorOf($entries[1]->id)->count())->toBe(1);
 });
+
+test('cloned executed structure queries can be further narrowed', function () {
+    $structure = Structure::factory()->create();
+    // Clean structure from factory created elements
+    $structure->structureElements()->delete();
+
+    $entries = Entry::factory(2)->create();
+
+    $root = new StructureElement([
+        'structureId' => $structure->id,
+    ]);
+    $root->makeRoot();
+
+    foreach ($entries as $entry) {
+        new StructureElement([
+            'structureId' => $structure->id,
+            'elementId' => $entry->id,
+        ])->appendTo($root);
+    }
+
+    $query = entryQuery()->structureId($structure->id);
+    $elements = $query->all();
+
+    expect($elements)->toHaveCount(2)
+        ->and($query->clone()->descendantOf($elements[0])->count())->toBe(0);
+});
