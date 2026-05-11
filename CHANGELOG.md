@@ -4,7 +4,7 @@
 
 - Added support for SQLite backups and restores. ([#18803](https://github.com/craftcms/cms/pull/18803))
 - Added support for Symfony-style array config files in `config/craft/sanitizers/`. ([#18808](https://github.com/craftcms/cms/pull/18808))
-- Added support for configuring the system timezone during installation. ([#18794](https://github.com/craftcms/cms/pull/18794))
+- Added support for configuring the system time zone during installation. ([#18794](https://github.com/craftcms/cms/pull/18794))
 - Added the legacy `paginate` Twig variable back.
 - Added CP access permission checks to Control Panel action routes.
 - The `craftAsset()` Twig function now resolves to Vite versioned assets. ([#18801](https://github.com/craftcms/cms/pull/18801))
@@ -17,7 +17,7 @@
 - Fixed a PHP error that occurred when saving an entry type. ([#18816](https://github.com/craftcms/cms/pull/18816))
 - Fixed an issue with Typecast where typed setters wouldn't have precedence over private properties.
 - Fixed a bug where Control Panel templates failed to load on Windows due to mismatched directory separators or drive-letter casing in `CraftCms\Cms\View\TwigEngine`. ([#18804](https://github.com/craftcms/cms/issues/18804))
-- Fixed a bug where Craft’s Vite hot file configuration could override the host application’s Vite hot file. ([#18822](https://github.com/craftcms/cms/pull/18822))
+- Fixed a bug where Craft’s Vite hot file configuration could override the host application’s Vite hot file. ([#18810](https://github.com/craftcms/cms/issues/18810))
 - Fixed a bug where `CraftCms\Cms\Support\Typecast` could give private properties precedence over typed setters.
 - Fixed a bug where `runQueueAutomatically` wasn’t being respected. ([#18817](https://github.com/craftcms/cms/pull/18817))
 - Fixed a bug where `CraftCms\Cms\Validation\Rules\EnvValueRule` could parse boolean values incorrectly.
@@ -41,7 +41,7 @@
 - Fixed legacy model behavior when unsafe config keys were provided.
 - Fixed permissions enforcement when duplicating Matrix blocks.
 - Fixed permissions enforcement when saving user fields through generic element save endpoints.
-- Fixed a `yii\base\InvalidConfigException` that occurred when a Yii2-based plugin registered an asset bundle. ([#18818](https://github.com/craftcms/cms/issues/18818))
+- Fixed a bug where a `yii\base\InvalidConfigException` would be thrown when a Yii2-based plugin registered an asset bundle. ([#18818](https://github.com/craftcms/cms/issues/18818))
 - Fixed a bug where using `{{ successMessageInput() }}` would not decrypt the resulting message for the flash message.
 - Fixed a bug where a missing widget from an uninstalled plugin would throw instead of mapping to a MissingWidget.
 - Fixed a bug where an address' ownership ids could be overridden unintentionally.
@@ -1002,7 +1002,7 @@ Moved the following controllers:
 - Added `CraftCms\Cms\Twig\TemplateLoader`.
 - Added `CraftCms\Cms\Twig\Exceptions\TemplateLoaderException`.
 - Added helper functions in the `CraftCms\Cms` namespace: `template()`, `sandboxedTemplate()`, `pageTemplate()`, `renderString()`, `renderSandboxedString()`, `renderObjectTemplate()`, `renderSandboxedObjectTemplate()`.
-- Added `sanitize` Twig filter for sanitizing HTML with `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers`.
+- Added `|sanitize` Twig filter for sanitizing HTML with `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers`.
 - Deprecated `craft\web\View::getTwig()`. `CraftCms\Cms\Twig\Twig::get()` should be used instead.
 - Deprecated `craft\web\View::setTwig()`. `CraftCms\Cms\Twig\Twig::set()` should be used instead.
 - Deprecated `craft\web\View::createTwig()`. `CraftCms\Cms\Twig\Twig::create()` should be used instead.

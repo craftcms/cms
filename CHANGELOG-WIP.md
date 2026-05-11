@@ -1,5 +1,8 @@
 # Release Notes for Craft CMS 6.0 (WIP)
 
+### Administration
+- Added support for configuring the system time zone during installation. ([#18794](https://github.com/craftcms/cms/pull/18794))
+
 ### Development
 - Reference tags now support fallback values when no attribute is specified. ([#17688](https://github.com/craftcms/cms/pull/17688))
 - Deprecated support for categories, global sets, and tags. ([#18009](https://github.com/craftcms/cms/pull/18009))
@@ -950,7 +953,7 @@ Moved the following controllers:
 - Added `CraftCms\Cms\Twig\TemplateLoader`.
 - Added `CraftCms\Cms\Twig\Exceptions\TemplateLoaderException`.
 - Added helper functions in the `CraftCms\Cms` namespace: `template()`, `sandboxedTemplate()`, `pageTemplate()`, `renderString()`, `renderSandboxedString()`, `renderObjectTemplate()`, `renderSandboxedObjectTemplate()`.
-- Added `sanitize` Twig filter for sanitizing HTML with `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers`.
+- Added `|sanitize` Twig filter for sanitizing HTML with `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers`.
 - Renamed the `|money` Twig filter’s `formatLocale` argument to `locale`.
 - Deprecated `craft\web\View::getTwig()`. `CraftCms\Cms\Twig\Twig::get()` should be used instead.
 - Deprecated `craft\web\View::setTwig()`. `CraftCms\Cms\Twig\Twig::set()` should be used instead.
