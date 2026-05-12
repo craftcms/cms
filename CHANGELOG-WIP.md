@@ -77,6 +77,7 @@
 - Added `craft\services\Elements::REF_TAG_PATTERN`.
 - Added `craft\services\Entries::reassignEntries()`.
 - Added `craft\validators\TimeValidator::$outOfRange`. ([#18575](https://github.com/craftcms/cms/pull/18575))
+- Added `craft\helpers\ElementHelper::belongsToCanonicalOwner()`.
 - Added `Craft.CpScreenSlideout::reload()`. ([#18625](https://github.com/craftcms/cms/pull/18625))
 - Added `Craft.ElementDeletionManager`.
 - `craft\elements\PopulateElementEvent::$row` no longer includes `fieldValues` or `generatedFieldValues` keys.
@@ -99,5 +100,6 @@
 - Fixed a bug where nested entries weren’t getting loaded with their content, if they had an entry type that was no longer allowed by their Matrix field.
 - Fixed the wording of the validation error when saving a nested entry with an invalid entry type. ([#18506](https://github.com/craftcms/cms/issues/18506))
 - Fixed a bug where relation fields’ element query params weren’t limiting results based on the query’s target site(s). ([#18781](https://github.com/craftcms/cms/issues/18781))
+- Fixed a bug where nested content could be updated unexpectedly or deleted after making successive edits to it. ([#18835](https://github.com/craftcms/cms/pull/18835))
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) potential RCE vulnerability. (GHSA-f74w-488g-8x5r)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) JavaScript injection vulnerability. (GHSA-c55v-343g-5xff)
