@@ -53,7 +53,6 @@
 - Added `craft\filters\SecFetchSiteFilter` for request origin verification. ([#18641](https://github.com/craftcms/cms/pull/18641))
 - `craft\fields\data\LinkData::getUrl()` now has an `$anyStatus` argument, which can be set to `false` to prevent a value from being returned if a disabled/pending/expired element is linked. ([#18527](https://github.com/craftcms/cms/issues/18527))
 - Markdown parsing now respects the first number of ordered lists. ([#18671](https://github.com/craftcms/cms/issues/18671))
-- Editable tables 
 
 ### Extensibility
 - Added `craft\base\DefaultableFieldInterface`. ([#18522](https://github.com/craftcms/cms/pull/18522))
