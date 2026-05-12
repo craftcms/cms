@@ -65,7 +65,7 @@ readonly class Cms
 
         // If the user is logged in *and* has a preferred time zone, use that
         // (don't actually try to fetch the user, as plugins haven't been loaded yet)
-        if (request()->isCpRequest() && $id = Auth::id()) {
+        if (request()->isCpRequest() && Auth::hasUser() && $id = Auth::id()) {
             $timezone = Users::getUserPreference($id, 'timeZone');
         }
 

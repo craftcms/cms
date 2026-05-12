@@ -356,7 +356,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
     /**
      * Returns the passed-in value if it’s not empty; otherwise, the provided default value.
      */
-    public static function defaultFilter(mixed $value, string $default = ''): mixed
+    public static function defaultFilter(mixed $value, mixed $default = ''): mixed
     {
         if ($value instanceof Component) {
             // assume the IteratorAggregate implementation was not intentional
