@@ -405,6 +405,17 @@ Craft.NestedElementManager = Garnish.Base.extend(
       try {
         const response = await this.updateSortOrder(elementIds);
         Craft.cp.displayNotice(response.data.message);
+        if (Craft.broadcaster && this.elementEditor?.settings.draftId) {
+          Craft.broadcaster.postMessage({
+            pageId: Craft.pageId,
+            event: 'reorderNestedElements',
+            canonicalId: this.elementEditor.settings.canonicalId,
+            draftId: this.elementEditor.settings.draftId,
+            isProvisionalDraft: this.elementEditor.settings.isProvisionalDraft,
+            elementType: this.elementType,
+            elementIds,
+          });
+        }
       } catch (e) {
         Craft.cp.displayError(e?.response?.data?.message);
       }
