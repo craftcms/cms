@@ -71,6 +71,7 @@
 - Added `craft\errors\FieldNotFoundException::$fieldId`.
 - Added `craft\events\DefineElementDeletionBlockersEvent`. ([#18728](https://github.com/craftcms/cms/pull/18728))
 - Added `craft\fieldlayoutelements\CustomField::setFieldId()`.
+- Added `craft\helpers\ElementHelper::belongsToCanonicalOwner()`.
 - Added `craft\helpers\Html::jsWithVars()`.
 - Added `craft\helpers\Markdown`. ([#18671](https://github.com/craftcms/cms/issues/18671))
 - Added `craft\models\Section::$minAuthors`. ([#18662](https://github.com/craftcms/cms/pull/18662))
@@ -100,6 +101,7 @@
 - Fixed a bug where nested entries weren’t getting loaded with their content, if they had an entry type that was no longer allowed by their Matrix field.
 - Fixed the wording of the validation error when saving a nested entry with an invalid entry type. ([#18506](https://github.com/craftcms/cms/issues/18506))
 - Fixed a bug where relation fields’ element query params weren’t limiting results based on the query’s target site(s). ([#18781](https://github.com/craftcms/cms/issues/18781))
+- Fixed a bug where nested content could be updated unexpectedly or deleted after making successive edits to it. ([#18835](https://github.com/craftcms/cms/pull/18835))
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-f74w-488g-8x5r)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) JavaScript injection vulnerability. (GHSA-c55v-343g-5xff)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) path traversal vulnerability. (GHSA-287w-mxq6-x2cp)
