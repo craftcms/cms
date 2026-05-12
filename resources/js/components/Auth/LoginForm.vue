@@ -1,25 +1,29 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
   import LoginController from '@actions/Auth/LoginController';
-  import {useForm, usePage} from '@inertiajs/vue3';
+  import {useHttp} from '@inertiajs/vue3';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import CraftInputPassword from '@craftcms/cp/vue/CraftInputPassword.vue';
   import CraftCheckbox from '@craftcms/cp/vue/CraftCheckbox.vue';
   import {computed, ref} from 'vue';
   import useCraftData from '@/composables/useCraftData';
   import {cpHumanizer} from '@craftcms/cp/utilities/format.ts.mjs';
-  import FlashMessages from '@/components/FlashMessages.vue';
   import Pane from '@/components/Pane.vue';
   import TransitionShake from '@/components/TransitionShake.vue';
+  import type {LoginResponse} from '@/types/auth';
 
   const emit = defineEmits<{
+    (e: 'success', response: LoginResponse): void;
+    (e: 'error', error: any): void;
     (e: 'change:view', view: 'login' | 'set-password'): void;
   }>();
+
   const props = withDefaults(
     defineProps<{
       showPasswordReset?: boolean;
       showRememberCheckbox?: boolean;
-      staticEmail?: string | null;
+      showUsername?: boolean;
+      initialUsername?: string;
       usernameProps: {
         label: string;
         type: string;
@@ -28,50 +32,42 @@
     {
       showPasswordReset: true,
       showRememberCheckbox: true,
-      staticEmail: null,
+      showUsername: true,
+      initialUsername: '',
     }
   );
 
-  const page = usePage<{
-    username?: string;
-    errors?: {
-      loginName?: string;
-      password?: string;
-      rememberMe?: string;
-    } | null;
-    flash: {
-      error: string;
-    };
-  }>();
   const {general} = useCraftData();
-  const fieldErrors = computed(() => page.props.errors);
 
-  const initialUsername = computed(() => {
-    return props.staticEmail ?? page.props.username ?? '';
-  });
-
-  const form = useForm({
-    loginName: initialUsername.value,
+  const http = useHttp<{loginName: string; password: string; rememberMe: boolean}, LoginResponse>({
+    loginName: props.initialUsername,
     password: '',
     rememberMe: false,
   });
 
   const shaking = ref(false);
+  const loading = ref(false);
+  const error = ref<string | null>(null);
 
-  function handleSubmit() {
-    form.clearErrors().submit(LoginController.attemptLogin(), {
-      preserveState: true,
-      preserveScroll: true,
-      onError: () => {
-        shaking.value = true;
-        setTimeout(() => {
-          shaking.value = false;
-        }, 1500);
-      },
-      onSuccess: () => {
-        form.reset('password');
-      },
-    });
+  async function handleSubmit() {
+    if (loading.value) return;
+
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await http.post(LoginController.attemptLogin().url);
+      emit('success', response);
+    } catch (e: any) {
+      error.value = e?.response?.data?.message ?? null;
+      emit('error', e);
+      shaking.value = true;
+      setTimeout(() => {
+        shaking.value = false;
+      }, 1500);
+    } finally {
+      loading.value = false;
+    }
   }
 
   const humanizedDuration = computed(() =>
@@ -84,11 +80,7 @@
     <Pane appearance="raised">
       <form @submit.prevent="handleSubmit()">
         <div class="grid gap-3">
-          <FlashMessages />
-          <template v-if="staticEmail">
-            <input type="hidden" name="username" :value="staticEmail" />
-          </template>
-          <template v-else>
+          <template v-if="showUsername">
             <CraftInput
               :label="usernameProps.label"
               :type="usernameProps.type"
@@ -96,18 +88,18 @@
               autocomplete="username"
               :autocapitalize="false"
               :required="true"
-              v-model="form.loginName"
-              :error="fieldErrors?.loginName"
+              v-model="http.loginName"
+              :error="error ?? undefined"
             />
           </template>
           <div>
             <CraftInputPassword
               name="password"
               label="Password"
-              v-model="form.password"
+              v-model="http.password"
               :required="true"
               autocomplete="current-password"
-              :error="fieldErrors?.password"
+              :error="showUsername ? undefined : (error ?? undefined)"
             />
             <template v-if="showPasswordReset">
               <div class="mt-2">
@@ -130,7 +122,7 @@
                   duration: humanizedDuration,
                 })
               "
-              v-model="form.rememberMe"
+              v-model="http.rememberMe"
               name="rememberMe"
             />
           </template>
@@ -140,7 +132,7 @@
           <craft-button
             type="submit"
             variant="primary"
-            :loading="form.processing"
+            :loading="loading"
             class="w-full"
             >{{ t('Sign in') }}</craft-button
           >

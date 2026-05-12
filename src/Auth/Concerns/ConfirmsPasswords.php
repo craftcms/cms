@@ -17,6 +17,21 @@ trait ConfirmsPasswords
         Session::passwordConfirmed();
     }
 
+    protected function elevatedSessionExpiresAt(): int|false
+    {
+        $remaining = $this->confirmedPasswordTimeout();
+
+        if ($remaining === false) {
+            return false;
+        }
+
+        if ($remaining === 0) {
+            return 0;
+        }
+
+        return Date::now()->unix() + $remaining;
+    }
+
     protected function requireConfirmedPassword(?string $message = null): void
     {
         abort_unless(

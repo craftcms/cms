@@ -15,6 +15,7 @@ use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Timebox;
 use Inertia\Inertia;
@@ -75,6 +76,10 @@ readonly class LoginController extends AuthenticationController
 
     public function attemptLogin(Request $request, AuthMethods $auth, Impersonation $impersonation): Response
     {
+        if ($request->user()) {
+            return $this->handleElevation($request);
+        }
+
         $request->validate([
             'loginName' => ['required', 'string'],
             'password' => ['required', 'string'],
@@ -110,6 +115,31 @@ readonly class LoginController extends AuthenticationController
             }
 
             return $this->finalizeLogin($request, $user, $request->boolean('rememberMe'));
+        }, 30_000);
+    }
+
+    private function handleElevation(Request $request): Response
+    {
+        $request->validate(['password' => ['required', 'string']]);
+
+        $user = $request->user();
+
+        return new Timebox()->call(function () use ($request, $user) {
+            if (! Hash::check($request->input('password'), $user->password)) {
+                return $this->handleLoginFailure($request, AuthError::InvalidCredentials);
+            }
+
+            if (! $this->generalConfig->disable2fa && $this->auth->hasActiveMethod($user)) {
+                $this->auth->setUser($user);
+
+                return $this->asJsonSuccess(data: $this->buildTwoFactorResponse($request, $user));
+            }
+
+            $this->confirmPassword();
+
+            return $this->asJsonSuccess(data: [
+                'elevatedSessionExpiresAt' => $this->elevatedSessionExpiresAt(),
+            ]);
         }, 30_000);
     }
 

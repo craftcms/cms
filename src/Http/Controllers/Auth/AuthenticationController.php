@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
 use CraftCms\Cms\Auth\AuthMethods;
+use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Events\InvalidUserToken;
+use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -15,11 +17,13 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\EmailVerified;
 use CraftCms\Cms\User\Events\UserEmailVerifying;
+use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\URL;
 use RuntimeException;
@@ -27,6 +31,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 abstract readonly class AuthenticationController
 {
+    use ConfirmsPasswords;
     use RespondsWithFlash;
 
     public function __construct(
@@ -75,10 +80,47 @@ abstract readonly class AuthenticationController
                 ])));
             }
 
+            if ($request->wantsJson()) {
+                return $this->asJsonSuccess(data: $this->buildTwoFactorResponse($request, $user));
+            }
+
             return redirect()->action([TwoFactorAuthenticationController::class, 'showForm']);
         }
 
         return $this->completeLogin($request, $user, $remember);
+    }
+
+    protected function buildTwoFactorResponse(Request $request, User $user, ?string $returnUrl = null): array
+    {
+        $activeMethods = $this->auth->getActiveMethods($user);
+        $method = $activeMethods->first();
+        $otherMethods = $activeMethods->filter(fn ($m) => $m !== $method)->values();
+
+        /** @var HtmlStack $htmlStack */
+        $htmlStack = app(HtmlStack::class);
+
+        $authForm = TemplateMode::with(
+            TemplateMode::Cp,
+            fn () => $method->getAuthFormHtml([
+                'returnUrl' => Crypt::encrypt(URL::defaultReturnUrl()),
+                'inline' => '1',
+            ]),
+        );
+
+        return [
+            'requiresTwoFactor' => true,
+            'authMethod' => $method::class,
+            'authMethodHandle' => $method::handle(),
+            'encryptedReturnUrl' => Crypt::encrypt($returnUrl),
+            'authForm' => $authForm,
+            'returnUrl' => $returnUrl,
+            'otherMethods' => $otherMethods->map(fn (AuthMethodInterface $m) => [
+                'name' => $m::displayName(),
+                'handle' => $m::handle(),
+            ])->values()->all(),
+            'headHtml' => $htmlStack->headHtml(),
+            'bodyHtml' => $htmlStack->bodyHtml(),
+        ];
     }
 
     protected function handleLoginFailure(Request $request, ?AuthError $authError = null, ?User $user = null): Response

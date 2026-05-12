@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Cp;
@@ -30,6 +31,8 @@ use function CraftCms\Cms\cp_url;
 
 class HandleInertiaRequests extends Middleware
 {
+    use ConfirmsPasswords;
+
     #[Override]
     public function handle(Request $request, Closure $next)
     {
@@ -145,6 +148,7 @@ class HandleInertiaRequests extends Middleware
                     'name' => $currentUser->name,
                     'thumbHtml' => $currentUser->getThumbHtml(30),
                 ] : null,
+                'elevatedSessionExpiresAt' => $this->elevatedSessionExpiresAt(),
                 'readOnly' => ! $generalConfig->allowAdminChanges,
                 'allowAdminChanges' => $generalConfig->allowAdminChanges,
                 'cpUrl' => cp_url(),

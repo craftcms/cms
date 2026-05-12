@@ -1,9 +1,12 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
-  import {startAuthentication} from '@simplewebauthn/browser';
+  import {
+    startAuthentication,
+    platformAuthenticatorIsAvailable,
+  } from '@simplewebauthn/browser';
   import {useHttp} from '@inertiajs/vue3';
   import PasskeyController from '@actions/Auth/PasskeyController';
-  import {ref} from 'vue';
+  import {onMounted, ref} from 'vue';
   import type {LoginResponse} from '@/types/auth';
 
   interface LoginBody {
@@ -11,12 +14,32 @@
     authResponse: string | null;
   }
 
+  const emit = defineEmits<{
+    (e: 'success', response: LoginResponse): void;
+    (e: 'error', error: any): void;
+  }>()
   const requestOptions = useHttp<any, {options: string}>();
   const login = useHttp<LoginBody, LoginResponse>({
     requestOptions: null,
     authResponse: null,
   });
-  const state = ref<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const state = ref<'idle' | 'loading' | 'success' | 'error' | 'initializing'>(
+    'initializing'
+  );
+
+  onMounted(async () => {
+    if (state.value !== 'initializing') {
+      return;
+    }
+
+    try {
+      await platformAuthenticatorIsAvailable();
+      state.value = 'idle';
+    } catch (error) {
+      // fail silently
+      console.error(error);
+    }
+  });
 
   async function loginWithPasskey() {
     if (state.value === 'loading') {
@@ -42,12 +65,11 @@
       );
 
       state.value = 'success';
-      window.location.href = loginResponse.returnUrl;
-      // @TODO emit successful login event
+      console.log(loginResponse);
+      emit('success', loginResponse);
     } catch (error) {
       state.value = 'error';
-      console.error(error);
-      // @TODO emit error login event
+      emit('error', error);
     } finally {
       state.value = 'idle';
     }
@@ -56,6 +78,7 @@
 
 <template>
   <craft-button
+    v-if="state !== 'initializing'"
     type="button"
     @click="loginWithPasskey()"
     :loading="state === 'loading'"

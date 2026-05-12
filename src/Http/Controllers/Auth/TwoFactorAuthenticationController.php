@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
 use CraftCms\Cms\Auth\AuthMethods;
+use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
@@ -30,6 +31,7 @@ use function CraftCms\Cms\template;
 
 readonly class TwoFactorAuthenticationController
 {
+    use ConfirmsPasswords;
     use RespondsWithFlash;
 
     public function __construct(
@@ -125,10 +127,24 @@ readonly class TwoFactorAuthenticationController
             'code' => ['required', 'string'],
         ]);
 
-        $code = $request->input('code');
+        $currentUser = $request->user();
 
-        if (! $auth->verifyMethod(TOTP::class, $code)) {
+        if (! $auth->verifyMethod(TOTP::class, $request->input('code'))) {
             return $this->asFailure($auth->getAuthMethodErrorMessage());
+        }
+
+        if ($currentUser) {
+            $this->confirmPassword();
+
+            return $this->asJsonSuccess(data: [
+                'elevatedSessionExpiresAt' => $this->elevatedSessionExpiresAt(),
+            ]);
+        }
+
+        if ($request->wantsJson()) {
+            return $this->asJsonSuccess(data: [
+                'returnUrl' => $this->getPostedRedirectUrl() ?? URL::returnUrl(),
+            ]);
         }
 
         return $this->asSuccess(t('Verification successful.'));
@@ -140,10 +156,24 @@ readonly class TwoFactorAuthenticationController
             'code' => ['required', 'string'],
         ]);
 
-        $code = $request->input('code');
+        $currentUser = $request->user();
 
-        if (! $auth->verifyMethod(RecoveryCodes::class, $code)) {
+        if (! $auth->verifyMethod(RecoveryCodes::class, $request->input('code'))) {
             return $this->asFailure($auth->getAuthMethodErrorMessage(t('Invalid recovery code.')));
+        }
+
+        if ($currentUser) {
+            $this->confirmPassword();
+
+            return $this->asJsonSuccess(data: [
+                'elevatedSessionExpiresAt' => $this->elevatedSessionExpiresAt(),
+            ]);
+        }
+
+        if ($request->wantsJson()) {
+            return $this->asJsonSuccess(data: [
+                'returnUrl' => $this->getPostedRedirectUrl() ?? URL::returnUrl(),
+            ]);
         }
 
         return $this->asSuccess(t('Verification successful.'));

@@ -57,6 +57,18 @@ readonly class PasskeyController extends AuthenticationController
             $user = $request->user();
         }
 
+        if ($request->user()) {
+            if ($request->user()->id !== $user->id) {
+                return $this->handleLoginFailure($request, null, $user);
+            }
+
+            $this->confirmPassword();
+
+            return $this->asJsonSuccess(data: [
+                'elevatedSessionExpiresAt' => $this->elevatedSessionExpiresAt(),
+            ]);
+        }
+
         return $this->completeLogin($request, $user, true);
     }
 }

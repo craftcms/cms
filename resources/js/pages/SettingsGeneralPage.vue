@@ -13,6 +13,7 @@
   import CraftCombobox from '@/components/form/CraftCombobox.vue';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import {transformBooleanOptions} from '@/utils/transformBooleanOptions';
+  import ElevateSession from '@/components/ElevateSession.vue';
 
   const props = defineProps<{
     system: SystemData;
@@ -68,6 +69,11 @@
   function save() {
     form.clearErrors().submit(store());
   }
+
+  function onElevated() {
+    alert('you did it!');
+    // protected action goes here
+  }
 </script>
 
 <template>
@@ -116,6 +122,13 @@
                 {{ t('Save and continue editing') }}
                 <craft-shortcut slot="suffix" class="ml-2">S</craft-shortcut>
               </craft-action-item>
+              <ElevateSession @confirmed="onElevated">
+                <template #default="{elevate}">
+                  <craft-action-item @click="elevate">
+                    {{ t('Require elevated session') }}
+                  </craft-action-item>
+                </template>
+              </ElevateSession>
             </div>
           </craft-action-menu>
         </craft-button-group>
