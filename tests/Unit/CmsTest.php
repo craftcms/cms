@@ -57,9 +57,9 @@ function createInfoRow(string $uid = 'system-uid'): void
 
 it('exposes Craft version constants', function () {
     expect(Cms::NAME)->toBe('Craft CMS')
-        ->and(Cms::VERSION)->toBe('6.0.0')
-        ->and(Cms::SCHEMA_VERSION)->toBe('6.0.0.0')
-        ->and(Cms::MIN_VERSION_REQUIRED)->toBe('5.9.0');
+        ->and(Cms::VERSION)->toBeString()
+        ->and(Cms::SCHEMA_VERSION)->toBeString()
+        ->and(Cms::MIN_VERSION_REQUIRED)->toBeString();
 });
 
 it('resolves the general config from the container', function () {

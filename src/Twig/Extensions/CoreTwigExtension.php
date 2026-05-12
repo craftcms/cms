@@ -383,17 +383,24 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         }
     }
 
-    public function numberFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = []): string
+    public function numberFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = [], ?string $locale = null): string
     {
         if ($value === null || $value === '') {
             return '';
         }
 
+        $formatter = $locale
+            ? I18N::getLocaleById($locale)->getFormatter()
+            : I18N::getFormatter();
+
         try {
-            return I18N::getFormatter()->asDecimal($value, $decimals, $options);
+            if (! $formatter->willBeMisrepresented($value)) {
+                return $formatter->asDecimal($value, $decimals, $options);
+            }
         } catch (Throwable) {
-            return $value;
         }
+
+        return $value;
     }
 
     public function percentageFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = []): string
