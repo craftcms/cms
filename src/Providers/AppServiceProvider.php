@@ -24,6 +24,7 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Foundation\Events\LocaleUpdated;
+use Illuminate\Foundation\Vite;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
@@ -82,6 +83,10 @@ class AppServiceProvider extends ServiceProvider
 
         $this->setNamespace();
         $this->bootAliases();
+
+        app(Vite::class)
+            ->useHotFile("{$this->root}/resources/hot")
+            ->useBuildDirectory('vendor/craft/build');
 
         $this->app->booted(function () {
             /**
