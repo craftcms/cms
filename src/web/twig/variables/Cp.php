@@ -20,6 +20,7 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Inflector;
 use craft\helpers\StringHelper;
@@ -826,15 +827,14 @@ class Cp extends Component
         // Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
         $options = [];
 
-        $offsetDate ??= new DateTime();
-        $offsetDate->setTimezone(new DateTimeZone('UTC'));
+        $utc = new DateTimeZone('UTC');
+        $offsetDate = $offsetDate ? (clone $offsetDate)->setTimezone($utc) : DateTimeHelper::now($utc);
         $offsets = [];
         $timezoneIds = [];
 
         foreach (DateTimeZone::listIdentifiers() as $timezoneId) {
             $timezone = new DateTimeZone($timezoneId);
-            $transition = $timezone->getTransitions($offsetDate->getTimestamp(), $offsetDate->getTimestamp());
-            $abbr = $transition[0]['abbr'];
+            $abbr = DateTimeHelper::timeZoneAbbreviation($timezone, $offsetDate);
 
             $offset = round($timezone->getOffset($offsetDate) / 60);
 

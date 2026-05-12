@@ -136,6 +136,7 @@ class Entry extends ElementMutationResolver
     {
         $entryId = $arguments['id'];
         $siteId = $arguments['siteId'] ?? null;
+        $hardDelete = $arguments['hardDelete'] ?? false;
 
         $elementService = Craft::$app->getElements();
         /** @var EntryElement|null $entry */
@@ -148,7 +149,7 @@ class Entry extends ElementMutationResolver
         $section = $entry->getSection();
         $this->requireSchemaAction("sections.$section->uid", 'delete');
 
-        return $elementService->deleteElementById($entryId);
+        return $elementService->deleteElementById($entryId, hardDelete: $hardDelete);
     }
 
     /**
