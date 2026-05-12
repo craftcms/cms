@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\Navigation;
@@ -97,6 +98,7 @@ class HandleInertiaRequests extends Middleware
         $nav = app(Navigation::class);
         $progressService = app(JobProgress::class);
         $currentUser = null;
+        $generalConfig = app(GeneralConfig::class);
 
         if (! $updates->isCraftUpdatePending()) {
             $currentUser = $request->user();
