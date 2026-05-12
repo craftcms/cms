@@ -320,7 +320,7 @@ return [
     'Choose which table columns should be visible by default.' => 'Escolha que colunas da tabela devem ser visíveis por padrão.',
     'Choose which table columns should be visible for this source by default.' => 'Escolha a coluna da tabela que deve ficar visível para esta fonte por padrão.',
     'Choose which user groups should have access to this source.' => 'Escolha quais os grupos de utilizadores que devem ter acesso a esta fonte.',
-    'Choose which users must use two-step verification when accessing the control panel.' => 'Escolha que utilizadores têm de utilizar a verificação em dois passos ao aceder ao painel de controlo.',
+    'Choose which users must use two-step verification to sign in.' => 'Choose which users must use two-step verification to sign in.',
     'Choose' => 'Escolher',
     'City' => 'Cidade',
     'City/Town' => 'Cidade/Localidade',

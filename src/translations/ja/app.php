@@ -320,7 +320,7 @@ return [
     'Choose which table columns should be visible by default.' => 'デフォルトで表示可能なテーブル列を選択してください。',
     'Choose which table columns should be visible for this source by default.' => 'このソースに対して表示可能なテーブルの列を選択してください。',
     'Choose which user groups should have access to this source.' => 'どのユーザーグループがこのソースにアクセスする必要があるのか選択してください。',
-    'Choose which users must use two-step verification when accessing the control panel.' => 'コントロールパネルにアクセスする場合に、どのユーザーが2段階認証を使用する必要があるのかを選択してください。',
+    'Choose which users must use two-step verification to sign in.' => 'Choose which users must use two-step verification to sign in.',
     'Choose' => '選択',
     'City' => '市区町村',
     'City/Town' => '市区町村',

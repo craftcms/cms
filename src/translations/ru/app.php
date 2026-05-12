@@ -320,7 +320,7 @@ return [
     'Choose which table columns should be visible by default.' => 'Выберите, какие столбцы таблицы будут отображаться по умолчанию.',
     'Choose which table columns should be visible for this source by default.' => 'Выберите, какие столбцы таблицы должны быть видимыми для этого источника по умолчанию.',
     'Choose which user groups should have access to this source.' => 'Выберите, каким группам пользователей дать доступ к этому источнику.',
-    'Choose which users must use two-step verification when accessing the control panel.' => 'Выберите, какие пользователи должны проходить двухэтапную проверку подлинности для получения доступа к панели управления.',
+    'Choose which users must use two-step verification to sign in.' => 'Choose which users must use two-step verification to sign in.',
     'Choose' => 'Выбрать',
     'City' => 'Город',
     'City/Town' => 'Город/Населенный пункт',

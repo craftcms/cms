@@ -320,7 +320,7 @@ return [
     'Choose which table columns should be visible by default.' => 'Choisir quelles colonnes du tableau doivent être visibles par défaut.',
     'Choose which table columns should be visible for this source by default.' => 'Choisir quelles colonnes du tableau doivent être visibles par défaut pour cette source.',
     'Choose which user groups should have access to this source.' => 'Choisissez quels groupes d\'utilisateurs peuvent accéder à cette source.',
-    'Choose which users must use two-step verification when accessing the control panel.' => 'Choisissez les utilisateurs qui doivent utiliser la vérification en deux étapes lorsqu\'ils accèdent au panneau de contrôle.',
+    'Choose which users must use two-step verification to sign in.' => 'Choose which users must use two-step verification to sign in.',
     'Choose' => 'Choisir',
     'City' => 'Ville',
     'City/Town' => 'Ville',

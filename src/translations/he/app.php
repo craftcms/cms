@@ -320,7 +320,7 @@ return [
     'Choose which table columns should be visible by default.' => 'בחר אילו עמודות טבלה ייראו כברירת מחדל.',
     'Choose which table columns should be visible for this source by default.' => 'בחר אילו עמודות טבלה תהיינה גלויות עבור מקור זה כברירת מחדל.',
     'Choose which user groups should have access to this source.' => 'בחר לאיזה קבוצות משתמשים תהיה גישה למקור הזה.',
-    'Choose which users must use two-step verification when accessing the control panel.' => 'בחר אילו משתמשים חייבים להשתמש באימות דו-שלבי בעת הגישה ללוח הבקרה.',
+    'Choose which users must use two-step verification to sign in.' => 'Choose which users must use two-step verification to sign in.',
     'Choose' => 'בחר',
     'City' => 'עיר',
     'City/Town' => 'עיר/עיירה',

@@ -320,7 +320,7 @@ return [
     'Choose which table columns should be visible by default.' => 'Vyberte, ktoré stĺpce tabuľky majú byť predvolene viditeľné.',
     'Choose which table columns should be visible for this source by default.' => 'Vyberte, ktoré stĺpce tabuľky majú byť pre tento zdroj predvolene viditeľné.',
     'Choose which user groups should have access to this source.' => 'Vyberte, ktoré skupiny používateľov majú mať prístup k tomuto zdroju.',
-    'Choose which users must use two-step verification when accessing the control panel.' => 'Vyberte, ktorí používatelia musia pri prístupe k ovládaciemu panelu používať dvojfázové overenie.',
+    'Choose which users must use two-step verification to sign in.' => 'Choose which users must use two-step verification to sign in.',
     'Choose' => 'Vybrať',
     'City' => 'Mesto',
     'City/Town' => 'Mesto/Obec',

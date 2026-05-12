@@ -320,7 +320,7 @@ return [
     'Choose which table columns should be visible by default.' => 'เลือกคอลัมน์ตารางที่ควรมองเห็นเป็นค่าเริ่มต้น',
     'Choose which table columns should be visible for this source by default.' => 'เลือกคอลัมน์ตารางที่ควรมองเห็นสำหรับแหล่งที่มานี้ตามค่าเริ่มต้น',
     'Choose which user groups should have access to this source.' => 'เลือกว่ากลุ่มผู้ใช้ใดควรมีการเข้าถึงแหล่งข้อมูลนี้',
-    'Choose which users must use two-step verification when accessing the control panel.' => 'เลือกว่าผู้ใช้คนใดจำเป็นต้องใช้การยืนยันตัวตนแบบสองขั้นตอนขณะเข้าไปยังแผงควบคุม',
+    'Choose which users must use two-step verification to sign in.' => 'Choose which users must use two-step verification to sign in.',
     'Choose' => 'เลือก',
     'City' => 'เมือง',
     'City/Town' => 'เมือง',

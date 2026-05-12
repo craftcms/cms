@@ -320,7 +320,7 @@ return [
     'Choose which table columns should be visible by default.' => '选择默认情况下应可见的表列。',
     'Choose which table columns should be visible for this source by default.' => '选择默认情况下应对此源可见的表列。',
     'Choose which user groups should have access to this source.' => '选择哪些用户组应有权访问此源。',
-    'Choose which users must use two-step verification when accessing the control panel.' => '选择访问控制面板时必须使用两步验证的用户。',
+    'Choose which users must use two-step verification to sign in.' => 'Choose which users must use two-step verification to sign in.',
     'Choose' => '选择',
     'City' => '城市',
     'City/Town' => '城市/城镇',

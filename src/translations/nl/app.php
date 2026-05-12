@@ -320,7 +320,7 @@ return [
     'Choose which table columns should be visible by default.' => 'Kies welke tabel kolommen standaard zichtbaar moeten zijn.',
     'Choose which table columns should be visible for this source by default.' => 'Kies welke tabel kolommen standaard zichtbaar moeten zijn voor deze bron.',
     'Choose which user groups should have access to this source.' => 'Kies welke gebruikersgroepen toegang moeten hebben tot deze bron.',
-    'Choose which users must use two-step verification when accessing the control panel.' => 'Kies welke gebruikers tweestapsverificatie moeten gebruiken bij toegang tot het configuratiescherm.',
+    'Choose which users must use two-step verification to sign in.' => 'Choose which users must use two-step verification to sign in.',
     'Choose' => 'Kiezen',
     'City' => 'Plaats',
     'City/Town' => 'Plaats',
