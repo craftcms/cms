@@ -42,6 +42,7 @@ use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -1926,7 +1927,7 @@ JS,
                 if (
                     $forceSave &&
                     $element->getIsDerivative() &&
-                    $entry->getPrimaryOwnerId() === $element->getCanonicalId() &&
+                    ElementHelper::belongsToCanonicalOwner($entry, $element) &&
                     // this is so that extra drafts don't get created for matrix in matrix scenario
                     // where both are set to inline-editable blocks view mode
                     (

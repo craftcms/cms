@@ -574,6 +574,29 @@ class ElementHelper
     }
 
     /**
+     * Returns whether the given nested element primarily belongs to the given owner element’s canonical element.
+     *
+     * @param NestedElementInterface $element
+     * @param ElementInterface $owner
+     * @return bool
+     * @since 5.10.0
+     */
+    public static function belongsToCanonicalOwner(NestedElementInterface $element, ElementInterface $owner): bool
+    {
+        $ownerId = $element->getPrimaryOwnerId();
+        if ($ownerId === $owner->getCanonicalId()) {
+            return true;
+        }
+
+        if ($owner->getIsCanonical()) {
+            return false;
+        }
+
+        // try again with the owner's canonical element, in case it is also a derivative
+        return static::belongsToCanonicalOwner($element, $owner->getCanonical());
+    }
+
+    /**
      * Returns whether the given element (or its root element if a block element) is a derivative of another element.
      *
      * @param ElementInterface $element

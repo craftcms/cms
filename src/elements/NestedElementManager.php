@@ -864,7 +864,7 @@ JS, [
                     ) {
                         /** @var NestedElementInterface $canonical */
                         $canonical = $element->getCanonical(true);
-                        if ($canonical->getPrimaryOwnerId() === $owner->getCanonicalId()) {
+                        if (ElementHelper::belongsToCanonicalOwner($canonical, $owner)) {
                             Craft::$app->getDrafts()->removeDraftData($element);
                             Db::delete(Table::ELEMENTS_OWNERS, [
                                 'elementId' => $canonical->id,
@@ -1093,7 +1093,11 @@ JS, [
                     $newAttributes['siteId'] = $target->siteId;
                 }
 
-                if ($target->updatingFromDerivative && $element->getIsDerivative()) {
+                if (
+                    $target->updatingFromDerivative &&
+                    $element->getIsDerivative() &&
+                    $element->getPrimaryOwnerId() === $source->id
+                ) {
                     if (
                         ElementHelper::isRevision($source) ||
                         !empty($target->newSiteIds) ||
