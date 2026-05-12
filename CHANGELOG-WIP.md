@@ -27,7 +27,7 @@
 - Assets’ Alternative Text values are now automatically set on upload, based on descriptive text data found in the uploaded file’s metadata. ([#18744](https://github.com/craftcms/cms/pull/18744))
 - When deleting elements, a modal window is now shown alerting the user of any potential issues, such as existing relationships. ([#18728](https://github.com/craftcms/cms/pull/18728))
 - “Verification Code” and “Recovery Code” forms no longer get auto-submitted when entering a value.
-- Number columns witihn Table fields are now formatted according to the user’s preferred formatting locale. ([#18823](https://github.com/craftcms/cms/issues/18823))
+- Number columns within Table fields are now formatted according to the user’s preferred formatting locale. ([#18823](https://github.com/craftcms/cms/issues/18823))
 
 ### Administration
 - It’s now possible to replace the selected custom field for existing field layout elements. ([#18814](https://github.com/craftcms/cms/pull/18814))
