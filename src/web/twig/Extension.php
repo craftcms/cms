@@ -1154,9 +1154,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * Returns the passed-in value if it’s not empty; otherwise, the provided default value.
      *
      * @param mixed $value
-     * @param string $default
+     * @param mixed $default
+     * @return mixed
+     * @since 5.10.0
      */
-    public static function defaultFilter(mixed $value, string $default = ''): mixed
+    public static function defaultFilter(mixed $value, mixed $default = ''): mixed
     {
         if ($value instanceof Model) {
             // assume the IteratorAggregate implementation was not intentional
