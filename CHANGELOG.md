@@ -1,9 +1,19 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.9.23 - 2026-05-11
 
+- Updated Yii to 2.0.55. ([#18833](https://github.com/craftcms/cms/issues/18833))
+- Fixed a bug where the “Move…” asset index action was always disabled for files. ([#18798](https://github.com/craftcms/cms/issues/18798))
 - Fixed a bug where nested elements would get soft-deleted after running the `entrify/global-set` command on subsequent environments. ([#18767](https://github.com/craftcms/cms/issues/18767))
 - Fixed a bug where row headings within Table fields weren’t getting statically translated in the control panel. ([#13703](https://github.com/craftcms/cms/discussions/13703))
+- Fixed a bug where entry type chips within Matrix settings could be missing their action items.
+- Fixed a bug where custom field override settings’ Label, Handle, and Instructions fields could be missing their placeholder values.
+- Fixed a bug where site name and language values set to environment variables were getting replaced with their resolved values when installing Craft. ([#18780](https://github.com/craftcms/cms/issues/18780))
+- Fixed a bug where site name values set to environment variables were getting replaced with their resolved values on save. ([#18789](https://github.com/craftcms/cms/pull/18789))
+- Fixed a bug where browser tabs weren’t always getting refreshed when nested elements were reordered on another browser tab.
+- Fixed a bug where reordering nested elements on a draft could reorder them on the canonical owner element as well. ([#18751](https://github.com/craftcms/cms/issues/18751))
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-24x4-j6x9-rfw5)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-xrqc-p465-2xvg)
 
 ## 5.9.22 - 2026-04-29
 

@@ -1185,7 +1185,7 @@ class Install extends Migration
             $site = $sitesService->getPrimarySite();
             $site->setBaseUrl($this->site->getBaseUrl(false));
             $site->hasUrls = $this->site->hasUrls;
-            $site->language = $this->site->language;
+            $site->language = $this->site->getLanguage(false);
             $site->setName($this->site->getName(false));
             $sitesService->saveSite($site);
         }
@@ -1323,7 +1323,7 @@ class Install extends Migration
                     'baseUrl' => $this->site->getBaseUrl(false),
                     'handle' => $this->site->handle,
                     'hasUrls' => $this->site->hasUrls,
-                    'language' => $this->site->language,
+                    'language' => $this->site->getLanguage(false),
                     'name' => $this->site->getName(false),
                     'primary' => true,
                     'siteGroup' => $siteGroupUid,

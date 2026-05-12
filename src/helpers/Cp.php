@@ -383,6 +383,9 @@ class Cp
             'data' => array_filter([
                 'type' => get_class($component),
                 'id' => $component->getId(),
+                'label' => $component->getUiLabel(),
+                'description' => $component instanceof Describable ? $component->getDescription() : null,
+                'handle' => $component instanceof Grippable ? $component->getHandle() : null,
                 'settings' => $config['autoReload'] ? [
                     'selectable' => $config['selectable'],
                     'id' => Craft::$app->getView()->namespaceInputId($config['id']),

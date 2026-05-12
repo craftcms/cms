@@ -22,6 +22,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\Localization;
 use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
 use craft\validators\HandleValidator;
@@ -796,13 +797,20 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
 
             case 'multiline':
             case 'singleline':
-                if ($value !== null) {
-                    if (!$fromRequest) {
-                        $value = StringHelper::unescapeShortcodes(StringHelper::shortcodesToEmoji($value));
-                    }
-                    return trim(StringHelper::convertLineBreaks($value));
+                if ($value === null) {
+                    return null;
                 }
-                // no break
+                if (!$fromRequest) {
+                    $value = StringHelper::unescapeShortcodes(StringHelper::shortcodesToEmoji($value));
+                }
+                return trim(StringHelper::convertLineBreaks($value));
+
+            case 'number':
+                if (isset($value['locale'], $value['value'])) {
+                    return Localization::normalizeNumber($value['value'], $value['locale']);
+                }
+                break;
+
             case 'date':
             case 'time':
                 return DateTimeHelper::toDateTime($value) ?: null;
@@ -860,8 +868,12 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             return '';
         }
 
-        // Translate the column headings and dropdown option labels
-        foreach ($this->columns as &$column) {
+        // Translate the column headings and dropdown option labels,
+        // and configure number columns with the active formatting locale
+        $columns = [];
+        $locale = Craft::$app->getFormattingLocale()->id;
+
+        foreach ($this->columns as $colId => $column) {
             if (!empty($column['heading'])) {
                 $column['heading'] = Craft::t('site', $column['heading']);
             }
@@ -870,8 +882,11 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                     $option['label'] = Craft::t('site', $option['label']);
                 });
             }
+            if ($column['type'] === 'number') {
+                $column['locale'] = $locale;
+            }
+            $columns[$colId] = $column;
         }
-        unset($column);
 
         if (!is_array($value)) {
             $value = [];
@@ -880,7 +895,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         // Explicitly set each cell value to an array with a 'value' key
         $checkForErrors = $element && $element->hasErrors($this->handle);
         foreach ($value as &$row) {
-            foreach ($this->columns as $colId => $col) {
+            foreach ($columns as $colId => $col) {
                 if (isset($row[$colId])) {
                     $hasErrors = $checkForErrors && !$this->_validateCellValue($col['type'], $row[$colId]);
                     $row[$colId] = [
@@ -905,7 +920,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return Craft::$app->getView()->renderTemplate('_includes/forms/editableTable.twig', [
             'id' => $this->getInputId(),
             'name' => $this->handle,
-            'cols' => $this->columns,
+            'cols' => $columns,
             'rows' => $value,
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,

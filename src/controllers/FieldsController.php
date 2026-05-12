@@ -661,6 +661,16 @@ JS, [
             foreach ($tabConfig['elements'] as &$elementConfig) {
                 if (isset($elementConfig['uid']) && $elementConfig['uid'] === $uid) {
                     $elementConfig = array_merge($elementConfig, $componentConfig);
+
+                    // If fieldId is set, we're replacing the selected field
+                    if ($elementConfig['type'] === CustomField::class && isset($elementConfig['fieldId'])) {
+                        if (!empty($elementConfig['fieldId'])) {
+                            unset($elementConfig['fieldUid']);
+                        } else {
+                            unset($elementConfig['fieldId']);
+                        }
+                    }
+
                     break 2;
                 }
             }

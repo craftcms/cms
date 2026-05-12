@@ -27,10 +27,13 @@
 - Assets’ Alternative Text values are now automatically set on upload, based on descriptive text data found in the uploaded file’s metadata. ([#18744](https://github.com/craftcms/cms/pull/18744))
 - When deleting elements, a modal window is now shown alerting the user of any potential issues, such as existing relationships. ([#18728](https://github.com/craftcms/cms/pull/18728))
 - “Verification Code” and “Recovery Code” forms no longer get auto-submitted when entering a value.
+- Number columns witihn Table fields are now formatted according to the user’s preferred formatting locale. ([#18823](https://github.com/craftcms/cms/issues/18823))
 
 ### Administration
+- It’s now possible to replace the selected custom field for existing field layout elements. ([#18814](https://github.com/craftcms/cms/pull/18814))
 - Sections now have a “Min Authors” setting. ([#18662](https://github.com/craftcms/cms/pull/18662))
 - Time fields’ “Max Time” settings can now be set to an earlier time than “Min Time”, for overnight time ranges. ([#18575](https://github.com/craftcms/cms/pull/18575))
+- Component chips within component select inputs now have “Replace” actions.
 - Newlines in system message bodies are now replaced with `<br>` tags. ([#18058](https://github.com/craftcms/cms/discussions/18058))
 - Added the `--to-default` option to `resave` commands. ([#18522](https://github.com/craftcms/cms/pull/18522))
 - Added the `--method` option to the `users/remove-2fa` command. ([#18732](https://github.com/craftcms/cms/pull/18732))
@@ -38,7 +41,9 @@
 ### Development
 - Added the `heading()`/`h()` and `h1()`…`h6()` Twig functions. ([#18524](https://github.com/craftcms/cms/pull/18524))
 - The `tag()` Twig function now accepts a string for its second argument. ([#18524](https://github.com/craftcms/cms/pull/18524))
+- The `|attr`, `|parseAttr`, and `|removeClass` Twig filters no longer log warnings when performed on a string without an HTML tag. ([#17622](https://github.com/craftcms/cms/discussions/17622)) 
 - The `|default` Twig filter and `is empty` Twig test now treat all `yii\base\Model` instances as not empty. ([#18727](https://github.com/craftcms/cms/issues/18727))
+- The `|number` Twig filter now has a `locale` argument. ([#18823](https://github.com/craftcms/cms/issues/18823))
 - The `|time` and `|datetime` Twig filters now have `$withTimeZone` arguments. ([#18639](https://github.com/craftcms/cms/pull/18639))
 - The `|timestamp` Twig filter now returns the current time, if applied to a `null`/empty string value. ([#18642](https://github.com/craftcms/cms/pull/18642))
 - `dataUrl()` is no longer allowed in sandboxed Twig environments by default.
@@ -49,6 +54,7 @@
 - Added `craft\filters\SecFetchSiteFilter` for request origin verification. ([#18641](https://github.com/craftcms/cms/pull/18641))
 - `craft\fields\data\LinkData::getUrl()` now has an `$anyStatus` argument, which can be set to `false` to prevent a value from being returned if a disabled/pending/expired element is linked. ([#18527](https://github.com/craftcms/cms/issues/18527))
 - Markdown parsing now respects the first number of ordered lists. ([#18671](https://github.com/craftcms/cms/issues/18671))
+- Editable tables 
 
 ### Extensibility
 - Added `craft\base\DefaultableFieldInterface`. ([#18522](https://github.com/craftcms/cms/pull/18522))
@@ -57,12 +63,15 @@
 - Added `craft\base\ElementInterface::deletionBlockers()`. ([#18728](https://github.com/craftcms/cms/pull/18728))
 - Added `craft\base\ElementInterface::setDirtyFieldTracking()`.
 - Added `craft\elements\PopulateElementEvent::$content`.
+- Added `craft\elements\db\ElementQuery::$activeQuery`.
 - Added `craft\elements\db\ElementQueryInterface::collectIds()`.
 - Added `craft\elements\deletionblockers\BaseDeletionBlocker`. ([#18728](https://github.com/craftcms/cms/pull/18728))
 - Added `craft\elements\deletionblockers\DeletionBlockerInterface`. ([#18728](https://github.com/craftcms/cms/pull/18728))
 - Added `craft\elements\deletionblockers\EntryAuthorsBlocker`. ([#18728](https://github.com/craftcms/cms/pull/18728))
 - Added `craft\elements\deletionblockers\RelationDeletionBlocker`. ([#18728](https://github.com/craftcms/cms/pull/18728))
+- Added `craft\errors\FieldNotFoundException::$fieldId`.
 - Added `craft\events\DefineElementDeletionBlockersEvent`. ([#18728](https://github.com/craftcms/cms/pull/18728))
+- Added `craft\fieldlayoutelements\CustomField::setFieldId()`.
 - Added `craft\helpers\Html::jsWithVars()`.
 - Added `craft\helpers\Markdown`. ([#18671](https://github.com/craftcms/cms/issues/18671))
 - Added `craft\models\Section::$minAuthors`. ([#18662](https://github.com/craftcms/cms/pull/18662))
@@ -91,6 +100,7 @@
 - Updated the built-in composer.phar to 2.9.7. ([#18761](https://github.com/craftcms/cms/issues/18761))
 - Fixed a bug where nested entries weren’t getting loaded with their content, if they had an entry type that was no longer allowed by their Matrix field.
 - Fixed the wording of the validation error when saving a nested entry with an invalid entry type. ([#18506](https://github.com/craftcms/cms/issues/18506))
+- Fixed a bug where relation fields’ element query params weren’t limiting results based on the query’s target site(s). ([#18781](https://github.com/craftcms/cms/issues/18781))
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-f74w-488g-8x5r)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) JavaScript injection vulnerability. (GHSA-c55v-343g-5xff)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) path traversal vulnerability. (GHSA-287w-mxq6-x2cp)

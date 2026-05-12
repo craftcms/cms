@@ -617,20 +617,31 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param int|null $decimals
      * @param array $options
      * @param array $textOptions
+     * @param string|null $locale
      * @return string
      * @since 3.6.0
      */
-    public function numberFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = []): string
-    {
+    public function numberFilter(
+        mixed $value,
+        ?int $decimals = null,
+        array $options = [],
+        array $textOptions = [],
+        ?string $locale = null,
+    ): string {
         if ($value === null || $value === '') {
             return '';
         }
 
+        $formatter = $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
+
         try {
-            return Craft::$app->getFormatter()->asDecimal($value, $decimals, $options, $textOptions);
+            if (!$formatter->willBeMisrepresented($value)) {
+                return $formatter->asDecimal($value, $decimals, $options, $textOptions);
+            }
         } catch (InvalidArgumentException) {
-            return $value;
         }
+
+        return $value;
     }
 
     /**
@@ -773,7 +784,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
      *
      * @param string $tag The HTML tag to parse
      * @return array The parsed HTML tag attributes
-     * @throws InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
      * @since 3.4.0
      */
     public function parseAttrFilter(string $tag): array
@@ -781,7 +791,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
         try {
             return Html::parseTagAttributes($tag, 0, $start, $end, true);
         } catch (InvalidArgumentException $e) {
-            Craft::warning($e->getMessage(), __METHOD__);
             return [];
         }
     }
@@ -902,7 +911,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
             return $newTag;
         } catch (InvalidArgumentException $e) {
-            Craft::warning($e->getMessage(), __METHOD__);
             return $tag;
         }
     }
@@ -1051,7 +1059,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
         try {
             return Html::modifyTagAttributes($tag, $attributes);
         } catch (InvalidArgumentException $e) {
-            Craft::warning($e->getMessage(), __METHOD__);
             return $tag;
         }
     }
