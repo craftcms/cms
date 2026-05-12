@@ -122,6 +122,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public const EVENT_AFTER_POPULATE_ELEMENTS = 'afterPopulateElements';
 
+    /**
+     * The current element query instance being prepared, for reference by fields’ `queryCondition()` methods.
+     *
+     * @since 5.10.0
+     */
+    public static ?self $activeQuery = null;
+
     // Base config attributes
     // -------------------------------------------------------------------------
 
@@ -2888,15 +2895,20 @@ class ElementQuery extends Query implements ElementQueryInterface
                 if (isset($fieldsByHandle[$handle])) {
                     foreach ($fieldsByHandle[$handle] as $instances) {
                         $firstInstance = $instances[0];
+                        static::$activeQuery = $this;
 
-                        $query = $firstInstance->modifyQuery(\Illuminate\Support\Facades\DB::query(), $instances, $fieldAttributes->$handle);
-                        $condition = $query->toSql();
-                        $params = collect($query->getBindings())->mapWithKeys(function($binding, $key) {
-                            return [':lqp' . $key => $binding];
-                        })->all();
+                        try {
+                            $query = $firstInstance->modifyQuery(\Illuminate\Support\Facades\DB::query(), $instances, $fieldAttributes->$handle);
+                            $condition = $query->toSql();
+                            $params = collect($query->getBindings())->mapWithKeys(function($binding, $key) {
+                                return [':lqp' . $key => $binding];
+                            })->all();
 
-                        foreach ($params as $key => $binding) {
-                            $condition = Str::replaceFirst('?', $key, $condition);
+                            foreach ($params as $key => $binding) {
+                                $condition = Str::replaceFirst('?', $key, $condition);
+                            }
+                        } finally {
+                            static::$activeQuery = null;
                         }
 
                         $condition = Str::after($condition, 'select * where ');

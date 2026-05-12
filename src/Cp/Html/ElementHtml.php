@@ -98,6 +98,9 @@ readonly class ElementHtml
             'data' => array_filter([
                 'type' => $component::class,
                 'id' => $component->getId(),
+                'label' => $component->getUiLabel(),
+                'description' => $component instanceof Describable ? $component->getDescription() : null,
+                'handle' => $component instanceof Grippable ? $component->getHandle() : null,
                 'settings' => $config['autoReload'] ? [
                     'selectable' => $config['selectable'],
                     'id' => InputNamespace::namespaceId($config['id']),

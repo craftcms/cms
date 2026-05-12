@@ -13,6 +13,7 @@ use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\Rule as LegacyRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ConditionalRules;
 use Override;
 use Stringable;
 
@@ -51,10 +52,10 @@ class EnvValueRule implements DataAwareRule, ValidationRule
     private array $data = [];
 
     /**
-     * @param  Closure|LegacyRule|Stringable|ValidationRule|string|array<int, Closure|LegacyRule|Stringable|ValidationRule|string>  $rules
+     * @param  Closure|LegacyRule|Stringable|ValidationRule|ConditionalRules|string|array<int, Closure|LegacyRule|Stringable|ValidationRule|ConditionalRules|string>  $rules
      */
     public function __construct(
-        Closure|LegacyRule|Stringable|ValidationRule|string|array $rules,
+        Closure|LegacyRule|Stringable|ValidationRule|ConditionalRules|string|array $rules,
         private readonly bool $showParsedValueInErrors = false,
     ) {
         $this->rules = Arr::wrap($rules);

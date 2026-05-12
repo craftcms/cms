@@ -217,6 +217,11 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     private ?array $beforeQueryCallbacksBeforePrepare = null;
 
     /**
+     * The current element query instance being prepared, for reference by fields’ `queryCondition()` methods.
+     */
+    public static ?self $activeQuery = null;
+
+    /**
      * Create a new Element query instance.
      *
      * @param  class-string<TElement>  $elementType

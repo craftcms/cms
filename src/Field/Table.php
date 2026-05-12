@@ -16,6 +16,7 @@ use CraftCms\Cms\Gql\Types\TableRow;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -748,14 +749,20 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
 
             case 'multiline':
             case 'singleline':
-                if ($value !== null) {
-                    if (! $fromRequest) {
-                        $value = Str::unescapeShortcodes(Str::shortcodesToEmoji($value));
-                    }
-
-                    return trim(Str::convertLineBreaks($value));
+                if ($value === null) {
+                    return null;
                 }
-                // no break
+
+                if (! $fromRequest) {
+                    $value = Str::unescapeShortcodes(Str::shortcodesToEmoji($value));
+                }
+
+                return trim(Str::convertLineBreaks($value));
+            case 'number':
+                if (isset($value['locale'], $value['value'])) {
+                    return I18N::normalizeNumber($value['value'], $value['locale']);
+                }
+                break;
             case 'date':
             case 'time':
                 return DateTimeHelper::toDateTime($value) ?: null;
@@ -821,8 +828,12 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             return '';
         }
 
-        // Translate the column headings and dropdown option labels
-        foreach ($this->columns as &$column) {
+        // Translate the column headings and dropdown option labels,
+        // and configure number columns with the active formatting locale
+        $columns = [];
+        $locale = I18N::getFormattingLocale()->id;
+
+        foreach ($this->columns as $colId => $column) {
             if (! empty($column['heading'])) {
                 $column['heading'] = t($column['heading'], category: 'site');
             }
@@ -831,8 +842,11 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                     $option['label'] = t($option['label'], category: 'site');
                 });
             }
+            if ($column['type'] === 'number') {
+                $column['locale'] = $locale;
+            }
+            $columns[$colId] = $column;
         }
-        unset($column);
 
         if (! is_array($value)) {
             $value = [];
@@ -841,7 +855,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         // Explicitly set each cell value to an array with a 'value' key
         $checkForErrors = $element && $element->errors()->has($this->handle);
         foreach ($value as &$row) {
-            foreach ($this->columns as $colId => $col) {
+            foreach ($columns as $colId => $col) {
                 if (isset($row[$colId])) {
                     $hasErrors = $checkForErrors && ! $this->_validateCellValue($col['type'], $row[$colId]);
                     $row[$colId] = [
@@ -866,7 +880,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return template('_includes/forms/editableTable', [
             'id' => $this->getInputId(),
             'name' => $this->handle,
-            'cols' => $this->columns,
+            'cols' => $columns,
             'rows' => $value,
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,

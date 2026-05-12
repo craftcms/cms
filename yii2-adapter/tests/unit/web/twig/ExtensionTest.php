@@ -877,6 +877,11 @@ class ExtensionTest extends TestCase
             '{{ 1000|number(decimals=2) }}'
         );
 
+        $this->testRenderResult(
+            '1 000,00',
+            '{{ 1000|number(decimals=2, locale="fr") }}',
+        );
+
         // |number should swallow the InvalidArgumentException here
         $this->testRenderResult(
             'foo',
