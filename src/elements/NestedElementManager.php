@@ -1093,10 +1093,14 @@ JS, [
                     $newAttributes['siteId'] = $target->siteId;
                 }
 
+                /** @var NestedElementInterface $canonical */
+                $canonical = $element->getCanonical(true);
+
                 if (
                     $target->updatingFromDerivative &&
                     $element->getIsDerivative() &&
-                    $element->getPrimaryOwnerId() === $source->id
+                    $element->getPrimaryOwnerId() === $source->id &&
+                    $canonical->getPrimaryOwnerId() === $target->id
                 ) {
                     if (
                         ElementHelper::isRevision($source) ||
@@ -1117,8 +1121,6 @@ JS, [
                         ], updateTimestamp: false);
                     } else {
                         // if the canonical element is owned by the target element, then go with its ID
-                        /** @var NestedElementInterface $canonical */
-                        $canonical = $element->getCanonical();
                         if ($canonical->getOwnerId() === $target->id) {
                             $newElementId = $element->getCanonicalId();
                         } else {
