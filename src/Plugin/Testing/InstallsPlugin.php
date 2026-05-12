@@ -23,6 +23,10 @@ trait InstallsPlugin
 
     public function tearDownInstallsPlugin(): void
     {
+        if (getenv('TEST_TOKEN') !== false) {
+            return;
+        }
+
         File::delete($this->app->basePath('vendor/craftcms/plugins.php'));
     }
 
@@ -37,7 +41,12 @@ trait InstallsPlugin
         ], true);
 
         File::ensureDirectoryExists($this->app->basePath('vendor/craftcms'));
-        File::put($this->app->basePath('vendor/craftcms/plugins.php'), "<?php return $plugins;\n");
+
+        $path = $this->app->basePath('vendor/craftcms/plugins.php');
+        $tempPath = sprintf('%s.%s.tmp', $path, bin2hex(random_bytes(8)));
+
+        File::put($tempPath, "<?php return $plugins;\n");
+        File::move($tempPath, $path);
 
         $this->app->forgetInstance(Plugins::class);
     }
