@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 4
 
+## 4.17.16 - 2026-05-11
+
+- Updated Yii to 2.0.55. ([#18833](https://github.com/craftcms/cms/issues/18833))
+- Fixed a bug where the “Move…” asset index action was always disabled for files. ([#18798](https://github.com/craftcms/cms/issues/18798))
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-24x4-j6x9-rfw5)
+
 ## 4.17.15 - 2026-04-29
 
 - Fixed a bug where dependencies required by `composer.json` were getting updated when installing/updating plugins. ([#18755](https://github.com/craftcms/cms/issues/18755))
