@@ -95,15 +95,14 @@ readonly class DuplicateElementController
         $this->request->validate([
             'elements' => ['required', 'array'],
             'newAttributes' => ['required', 'array'],
-
-            // No funny business
-            'newAttributes.id' => ['missing'],
-            'newAttributes.uid' => ['missing'],
-            'newAttributes.canonicalId' => ['missing'],
         ]);
 
         $elementInfo = $this->request->array('elements');
         $newAttributes = $this->request->array('newAttributes');
+
+        if (isset($newAttributes['id']) || isset($newAttributes['uid']) || isset($newAttributes['canonicalId'])) {
+            abort(400, 'Setting an element’s ID is not allowed.');
+        }
 
         $newElementInfo = [];
 

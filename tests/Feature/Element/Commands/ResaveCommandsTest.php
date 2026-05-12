@@ -8,6 +8,7 @@ use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\ElementResaveCommandsResolving;
+use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;

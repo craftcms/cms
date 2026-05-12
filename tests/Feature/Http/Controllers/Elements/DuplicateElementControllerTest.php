@@ -277,7 +277,7 @@ describe('bulkDuplicate', function () {
                 'slug' => 'target-title',
             ]);
 
-        $response = postJson(action([DuplicateElementController::class, 'bulkDuplicate']), [
+        postJson(action([DuplicateElementController::class, 'bulkDuplicate']), [
             'elements' => [[
                 'type' => Entry::class,
                 'id' => $source->id,
@@ -289,15 +289,10 @@ describe('bulkDuplicate', function () {
                 'typeId' => $this->entryType->id,
                 'title' => 'Injected Title',
             ],
-        ])->assertOk()
-            ->assertJson(fn (AssertableJson $json) => $json
-                ->where('message', mb_ucfirst(t('{type} duplicated.', ['type' => Entry::displayName()])))
-                ->has('newElements', 1)
-                ->where('newElements.0.title', 'Injected Title')
-            );
+        ])->assertBadRequest();
 
         $duplicate = Entry::find()
-            ->id($response->json('newElements.0.id'))
+            ->title('Injected Title')
             ->siteId($source->siteId)
             ->status(null)
             ->one();
@@ -307,10 +302,7 @@ describe('bulkDuplicate', function () {
             ->status(null)
             ->one();
 
-        expect($duplicate)->not->toBeNull()
-            ->and($duplicate->id)->not->toBe($source->id)
-            ->and($duplicate->id)->not->toBe($target->id)
-            ->and($duplicate->title)->toBe('Injected Title')
+        expect($duplicate)->toBeNull()
             ->and($target->title)->toBe('Target Title');
     });
 

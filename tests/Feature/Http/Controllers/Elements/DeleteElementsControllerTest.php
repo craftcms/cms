@@ -7,8 +7,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\DeletionBlockers\BaseDeletionBlocker;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements as ElementsService;
-use CraftCms\Cms\Element\Events\BeforeDelete;
 use CraftCms\Cms\Element\Events\DefineDeletionBlockers;
+use CraftCms\Cms\Element\Events\ElementDeleting;
 use CraftCms\Cms\Element\Jobs\ReplaceRelations;
 use CraftCms\Cms\Element\Operations\ElementPlaceholders;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -188,7 +188,7 @@ describe('destroy', function () {
     it('returns ok when an element deletion is cancelled', function () {
         $entry = EntryModel::factory()->createElement();
 
-        Event::listen(BeforeDelete::class, function (BeforeDelete $event) use ($entry) {
+        Event::listen(ElementDeleting::class, function (ElementDeleting $event) use ($entry) {
             if ($event->element->id === $entry->id) {
                 $event->isValid = false;
             }

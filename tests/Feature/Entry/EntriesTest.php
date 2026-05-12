@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Events\InvalidateElementCaches;
+use CraftCms\Cms\Element\Events\ElementCachesInvalidated;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Entries;
 use CraftCms\Cms\Entry\Events\EntryMovedToSection;
@@ -116,7 +116,7 @@ it('cannot move a nested entry', function () {
 });
 
 it('can reassign entries to a new author', function () {
-    Event::fake([InvalidateElementCaches::class]);
+    Event::fake([ElementCachesInvalidated::class]);
 
     $oldAuthor = User::factory()->create();
     $newAuthor = User::factory()->create();
@@ -142,7 +142,7 @@ it('can reassign entries to a new author', function () {
         ->pluck('authorId')
         ->all())->toBe([$unchangedAuthor->id]);
 
-    Event::assertDispatched(fn (InvalidateElementCaches $event): bool => $event->tags === ['element::'.EntryElement::class]);
+    Event::assertDispatched(fn (ElementCachesInvalidated $event): bool => $event->tags === ['element::'.EntryElement::class]);
 });
 
 it('does not reassign entries that already have the new author', function () {
