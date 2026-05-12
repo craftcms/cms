@@ -20,7 +20,6 @@
       showPasswordReset?: boolean;
       showRememberCheckbox?: boolean;
       staticEmail?: string | null;
-      username?: string;
       usernameProps: {
         label: string;
         type: string;
@@ -30,11 +29,11 @@
       showPasswordReset: true,
       showRememberCheckbox: true,
       staticEmail: null,
-      username: '',
     }
   );
 
   const page = usePage<{
+    username?: string;
     errors?: {
       loginName?: string;
       password?: string;
@@ -48,7 +47,7 @@
   const fieldErrors = computed(() => page.props.errors);
 
   const initialUsername = computed(() => {
-    return props.staticEmail ?? props.username ?? '';
+    return props.staticEmail ?? page.props.username ?? '';
   });
 
   const form = useForm({
