@@ -210,6 +210,12 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     private bool $elementQueryBeforeQueryCalled = false;
 
+    private ?Builder $queryBeforePrepare = null;
+
+    private ?array $columnMapBeforePrepare = null;
+
+    private ?array $beforeQueryCallbacksBeforePrepare = null;
+
     /**
      * Create a new Element query instance.
      *
@@ -1076,7 +1082,22 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public function __clone(): void
     {
-        $this->query = clone $this->query;
+        if ($this->queryBeforePrepare !== null) {
+            $beforeQueryCallbacks = $this->beforeQueryCallbacks;
+
+            $this->query = clone $this->queryBeforePrepare;
+            $this->columnMap = $this->columnMapBeforePrepare ?? $this->columnMap;
+            $this->beforeQueryCallbacks = [
+                ...($this->beforeQueryCallbacksBeforePrepare ?? []),
+                ...$beforeQueryCallbacks,
+            ];
+            $this->elementQueryBeforeQueryCalled = false;
+            $this->queryBeforePrepare = null;
+            $this->columnMapBeforePrepare = null;
+            $this->beforeQueryCallbacksBeforePrepare = null;
+        } else {
+            $this->query = clone $this->query;
+        }
 
         foreach ($this->onCloneCallbacks as $onCloneCallback) {
             $onCloneCallback($this);
@@ -1095,6 +1116,12 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
     public function applyBeforeQueryCallbacks(): void
     {
+        if (! $this->elementQueryBeforeQueryCalled && $this->queryBeforePrepare === null) {
+            $this->queryBeforePrepare = clone $this->query;
+            $this->columnMapBeforePrepare = $this->columnMap;
+            $this->beforeQueryCallbacksBeforePrepare = $this->beforeQueryCallbacks;
+        }
+
         foreach ($this->beforeQueryCallbacks as $i => $callback) {
             $callback($this);
 
