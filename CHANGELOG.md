@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.9.23 - 2026-05-11
 
 - Updated Yii to 2.0.55. ([#18833](https://github.com/craftcms/cms/issues/18833))
 - Fixed a bug where the “Move…” asset index action was always disabled for files. ([#18798](https://github.com/craftcms/cms/issues/18798))
