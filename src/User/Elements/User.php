@@ -1621,7 +1621,7 @@ JS, [
         }
 
         return [
-            $items,
+            ...$items,
             ...parent::destructiveActionMenuItems(),
         ];
     }
