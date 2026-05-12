@@ -71,7 +71,8 @@ it('uses the logged-in CP user timezone preference first', function () {
     Cms::config()->cpTrigger = 'admin';
     app()->instance('request', Request::create('/admin'));
 
-    Auth::shouldReceive('id')->once()->andReturn(42);
+    Auth::shouldReceive('hasUser')->andReturnTrue()
+        ->shouldReceive('id')->once()->andReturn(42);
     Users::shouldReceive('getUserPreference')->once()->with(42, 'timeZone')->andReturn('Europe/Brussels');
 
     expect(Cms::timezone())->toBe('Europe/Brussels');
