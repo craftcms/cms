@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Updated Yii to 2.0.55. ([#18833](https://github.com/craftcms/cms/issues/18833))
 - Fixed a bug where the “Move…” asset index action was always disabled for files. ([#18798](https://github.com/craftcms/cms/issues/18798))
 - Fixed a bug where nested elements would get soft-deleted after running the `entrify/global-set` command on subsequent environments. ([#18767](https://github.com/craftcms/cms/issues/18767))
 - Fixed a bug where row headings within Table fields weren’t getting statically translated in the control panel. ([#13703](https://github.com/craftcms/cms/discussions/13703))
