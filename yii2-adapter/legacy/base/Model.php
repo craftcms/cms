@@ -297,6 +297,13 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
         return parent::safeAttributes();
     }
 
+    public function offsetExists($offset): bool
+    {
+        return parent::offsetExists($offset) || (
+            is_string($offset) && $this->canGetProperty($offset)
+        );
+    }
+
     public function getAttributeLabel($attribute): string
     {
         return parent::getAttributeLabel($attribute);
