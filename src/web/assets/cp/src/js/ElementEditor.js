@@ -250,7 +250,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                 (ev.data.isProvisionalDraft && !this.settings.draftId))) ||
             (ev.data.event === 'saveElement' &&
               ev.data.id === this.settings.canonicalId &&
-              !this.settings.draftId)
+              (!this.settings.draftId || this.settings.isProvisionalDraft))
           ) {
             // Reload unless reloadOnBroadcastSave is disabled (unless the
             // draftId is different, in which case we really need to reload)
