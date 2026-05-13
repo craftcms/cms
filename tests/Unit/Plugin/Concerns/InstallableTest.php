@@ -38,7 +38,7 @@ it('runs the install migration and logs pending migrations', function () {
         ]);
 });
 
-it('resets migrations on uninstall when an install migration exists', function () {
+it('runs the install migration down on uninstall when an install migration exists', function () {
     $migrator = new FakeMigrator;
 
     $plugin = TestPlugin::create([
@@ -53,11 +53,9 @@ it('resets migrations on uninstall when an install migration exists', function (
 
     expect($plugin->didCallBeforeUninstall)->toBeTrue()
         ->and($plugin->didCallAfterUninstall)->toBeTrue()
-        ->and($migrator->resetArguments)->toBe([
-            [dirname(__DIR__, 3).'/TestClasses/TestPlugin/database/migrations/Install.php'],
-            [dirname(__DIR__, 3).'/TestClasses/TestPlugin/database/migrations'],
-            false,
-        ]);
+        ->and($migrator->runMigrationArgument)->toBeInstanceOf(Migration::class)
+        ->and($migrator->runMigrationMethod)->toBe('down')
+        ->and($migrator->deletedMigrations)->toBe(['Install']);
 });
 
 it('prefers the Laravel migrations path when both paths exist', function () {
@@ -101,11 +99,9 @@ PHP);
 
     $plugin->uninstall();
 
-    expect($migrator->resetArguments)->toBe([
-        [$laravelPath.'/Install.php'],
-        [$laravelPath],
-        false,
-    ]);
+    expect($migrator->runMigrationArgument)->toBeInstanceOf(Migration::class)
+        ->and($migrator->runMigrationMethod)->toBe('down')
+        ->and($migrator->deletedMigrations)->toBe(['Install']);
 
     File::deleteDirectory($pluginRoot);
 });
