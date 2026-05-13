@@ -44,7 +44,7 @@
 - The `|attr`, `|parseAttr`, and `|removeClass` Twig filters no longer log warnings when performed on a string without an HTML tag. ([#17622](https://github.com/craftcms/cms/discussions/17622)) 
 - The `|default` Twig filter and `is empty` Twig test now treat all `yii\base\Model` instances as not empty. ([#18727](https://github.com/craftcms/cms/issues/18727))
 - The `|number` Twig filter now has a `locale` argument. ([#18823](https://github.com/craftcms/cms/issues/18823))
-- The `|time` and `|datetime` Twig filters now have `$withTimeZone` arguments. ([#18639](https://github.com/craftcms/cms/pull/18639))
+- The `|time` and `|datetime` Twig filters now have `withTimeZone` arguments. ([#18639](https://github.com/craftcms/cms/pull/18639))
 - The `|timestamp` Twig filter now returns the current time, if applied to a `null`/empty string value. ([#18642](https://github.com/craftcms/cms/pull/18642))
 - `delete` GraphQL queries now have a `hardDelete` argument. ([#18511](https://github.com/craftcms/cms/pull/18511))
 - Entry `postDate` values are now `null` on creation, rather than set to the `dateCreated` value. ([#18642](https://github.com/craftcms/cms/pull/18642))
