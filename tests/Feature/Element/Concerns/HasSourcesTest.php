@@ -6,6 +6,9 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Events\ElementFieldLayoutsResolving;
 use CraftCms\Cms\Element\Events\ElementSourcesResolving;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Section\Models\Section;
 use Illuminate\Support\Facades\Event;
 
 class TestHasSourcesElement extends Element
@@ -81,6 +84,19 @@ describe('fieldLayouts', function () {
         $layouts = Entry::fieldLayouts(null);
 
         expect($layouts)->toBeArray();
+    });
+
+    test('returns array for singles source', function () {
+        $entryType = EntryType::factory()->create();
+
+        Section::factory()->withEntryTypes($entryType)->create([
+            'type' => SectionType::Single,
+        ]);
+
+        $layouts = Entry::fieldLayouts('singles');
+
+        expect($layouts)->toBeArray()
+            ->and($layouts)->not()->toBeEmpty();
     });
 
     test('triggers ElementFieldLayoutsResolving event', function () {

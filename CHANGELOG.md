@@ -55,6 +55,7 @@
 - Fixed an error that occurred when running `craft:install` in environments where Laravel Prompts can only render tasks statically. ([#18830](https://github.com/craftcms/cms/pull/18830))
 - Fix legacy model array access for null properties ([#18843](https://github.com/craftcms/cms/pull/18843))
 - Fix Twig access to Laravel error bags ([#18841](https://github.com/craftcms/cms/pull/18841))
+- Fixed a bug where singles were throwing an exception ([#18845](https://github.com/craftcms/cms/issue/18845))
 
 ## 6.0.0-alpha.1 - 2026-05-06
 
