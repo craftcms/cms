@@ -525,7 +525,14 @@ class Url extends \Illuminate\Support\Facades\URL
      */
     public static function prependCpTrigger(string $path): string
     {
-        return implode('/', array_filter([Cms::config()->cpTrigger, $path]));
+        $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+        $path = trim($path, '/');
+
+        if ($cpTrigger !== '' && ($path === $cpTrigger || str_starts_with($path, "$cpTrigger/"))) {
+            return $path;
+        }
+
+        return implode('/', array_filter([$cpTrigger, $path]));
     }
 
     /**
