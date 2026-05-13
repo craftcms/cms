@@ -129,6 +129,7 @@ it('renders the current entry edit screen for each control panel route', functio
 })->with('editElementEntryRoutes');
 
 it('renders the asset edit screen', function () {
+    $this->withoutExceptionHandling();
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $this->volume->id,
         'folderId' => $this->folder->id,

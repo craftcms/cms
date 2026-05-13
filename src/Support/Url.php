@@ -499,31 +499,6 @@ class Url extends \Illuminate\Support\Facades\URL
     }
 
     /**
-     * Returns a CP referral URL.
-     */
-    public static function cpReferralUrl(): ?string
-    {
-        $request = request();
-        $referrer = $request->header('referer');
-
-        if ($referrer === null || $referrer === '') {
-            return null;
-        }
-
-        // Make sure it didn't refer itself
-        if ($referrer === $request->fullUrl()) {
-            return null;
-        }
-
-        // Make sure the CP referred it
-        if (! str_starts_with($referrer, self::baseCpUrl())) {
-            return null;
-        }
-
-        return $referrer;
-    }
-
-    /**
      * Parses a URL for the host info.
      */
     public static function hostInfo(string $url): string

@@ -81,10 +81,6 @@ readonly class CreateEntryController
         Gate::forUser($craftUser)->authorize('save', $entry);
 
         $this->setTitleAndSlug($entry, $site);
-
-        // Resume time
-        DateTimeHelper::pause();
-
         $this->setDates($entry);
 
         // Custom fields
@@ -97,9 +93,6 @@ readonly class CreateEntryController
         // Save it
         $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $success = $drafts->saveElementAsDraft($entry, $user->id, markAsSaved: false);
-
-        // Resume time
-        DateTimeHelper::resume();
 
         if (! $success) {
             return $this->asModelFailure($entry, mb_ucfirst(t('Couldn’t create {type}.', [
@@ -228,8 +221,6 @@ readonly class CreateEntryController
         // Post & expiry dates
         if (($postDate = $this->request->input('postDate')) !== null) {
             $entry->postDate = DateTimeHelper::toDateTime($postDate);
-        } else {
-            $entry->postDate = DateTimeHelper::now();
         }
 
         if (($expiryDate = $this->request->input('expiryDate')) !== null) {

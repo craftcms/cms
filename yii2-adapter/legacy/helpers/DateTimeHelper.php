@@ -23,20 +23,6 @@ use yii\base\ErrorException;
 class DateTimeHelper extends SupportDateTimeHelper
 {
     /**
-     * Returns the timezone abbreviation for a given timezone name.
-     *
-     * @param string $timeZone
-     * @return string
-     * @deprecated in 4.3.7
-     */
-    public static function timeZoneAbbreviation(string $timeZone): string
-    {
-        return (new DateTime())
-            ->setTimezone(new DateTimeZone($timeZone))
-            ->format('T');
-    }
-
-    /**
      * Returns a given timezone's offset from UTC (e.g. '+10:00' or '-06:00').
      *
      * @param string $timeZone

@@ -7,12 +7,6 @@
         const codeInput = form.querySelector('input.auth-recovery-code');
         const submitBtn = form.querySelector('button.submit');
 
-        this.addListener(codeInput, 'input', (ev) => {
-          if (codeInput.value.replace(/-/g, '').length === 12) {
-            form.requestSubmit();
-          }
-        });
-
         this.addListener(form, 'submit', (ev) => {
           ev.preventDefault();
 

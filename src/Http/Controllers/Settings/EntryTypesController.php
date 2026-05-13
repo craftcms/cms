@@ -29,7 +29,6 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -140,7 +139,7 @@ class EntryTypesController
                 callback: function (CpScreenResponse $response) use ($entryTypeData) {
                     $response
                         ->action('entry-types/save')
-                        ->redirectUrl(Url::cpReferralUrl() ?? 'settings/entry-types')
+                        ->redirectUrl('settings/entry-types')
                         ->addAltAction(t('Save and continue editing'), [
                             'redirect' => 'settings/entry-types/{id}',
                             'shortcut' => true,

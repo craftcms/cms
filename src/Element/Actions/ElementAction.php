@@ -39,6 +39,11 @@ abstract class ElementAction extends Component implements ElementActionInterface
         $this->elementType = $elementType;
     }
 
+    public function getTriggerId(): string
+    {
+        return sprintf('%s-actiontrigger', static::class);
+    }
+
     public function getTriggerLabel(): string
     {
         return static::displayName();

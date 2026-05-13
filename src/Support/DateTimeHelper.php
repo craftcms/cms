@@ -26,52 +26,44 @@ use Throwable;
 
 use function CraftCms\Cms\t;
 
-/**
- * Class DateTimeHelper
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 6.0.0
- */
 class DateTimeHelper
 {
     /**
      * @var int Number of seconds in a minute.
      */
-    public const SECONDS_MINUTE = 60;
+    public const int SECONDS_MINUTE = 60;
 
     /**
      * @var int Number of seconds in an hour.
      */
-    public const SECONDS_HOUR = 3600;
+    public const int SECONDS_HOUR = 3600;
 
     /**
      * @var int Number of seconds in a day.
      */
-    public const SECONDS_DAY = 86400;
+    public const int SECONDS_DAY = 86400;
 
     /**
      * @var int The number of seconds in a month.
      *
      * Based on a 30.4368 day month, with the product rounded.
      */
-    public const SECONDS_MONTH = 2629740;
+    public const int SECONDS_MONTH = 2629740;
 
     /**
      * @var int The number of seconds in a year.
      *
      * Based on a 365.2416 day year, with the product rounded.
      */
-    public const SECONDS_YEAR = 31556874;
+    public const int SECONDS_YEAR = 31556874;
 
     /**
      * @var string[] Supported relative time units.
      *
      * @see relativeTimeStatement()
      * @see relativeTimeToSeconds()
-     * @since 5.2.0
      */
-    public const RELATIVE_TIME_UNITS = [
+    public const array RELATIVE_TIME_UNITS = [
         'sec',
         'secs',
         'second',
@@ -238,6 +230,34 @@ class DateTimeHelper
         }
 
         return false;
+    }
+
+    /**
+     * Returns the timezone abbreviation for a given timezone name.
+     */
+    public static function timeZoneAbbreviation(
+        string|DateTimeZone $timeZone,
+        ?DateTime $date = null,
+    ): string {
+        if (is_string($timeZone)) {
+            $normalized = static::normalizeTimeZone($timeZone);
+            if ($normalized === false) {
+                throw new InvalidArgumentException("Invalid time zone: $timeZone");
+            }
+            $timeZone = new DateTimeZone($normalized);
+        }
+
+        $utc = new DateTimeZone('UTC');
+        $date = $date ? (clone $date)->setTimezone($utc) : static::now($utc);
+        $timestamp = $date->getTimestamp();
+        $transition = $timeZone->getTransitions($timestamp, $timestamp);
+
+        if ($transition === false) {
+            // a type 1/2 time zone must have been passed into $timeZone, e.g. "-08:00" or "CDT"
+            return $timeZone->getName();
+        }
+
+        return $transition[0]['abbr'];
     }
 
     /**

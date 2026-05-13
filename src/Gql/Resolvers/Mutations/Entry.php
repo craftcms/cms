@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Resolvers\Mutations;
 
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Data\EntryType;
@@ -115,6 +114,7 @@ class Entry extends ElementMutationResolver
     {
         $entryId = $arguments['id'];
         $siteId = $arguments['siteId'] ?? null;
+        $hardDelete = $arguments['hardDelete'] ?? false;
 
         /** @var EntryElement|null $entry */
         $entry = Elements::getElementById($entryId, EntryElement::class, $siteId);
@@ -126,7 +126,7 @@ class Entry extends ElementMutationResolver
         $section = $entry->getSection();
         $this->requireSchemaAction("sections.$section->uid", 'delete');
 
-        return Elements::deleteElementById($entryId);
+        return Elements::deleteElementById($entryId, hardDelete: $hardDelete);
     }
 
     public function createDraft(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed

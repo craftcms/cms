@@ -173,6 +173,8 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
 
         if (! empty($value)) {
+            $siteId = ElementQuery::$activeQuery?->siteId;
+
             $filter = new ElementRelationParamFilter(fields: [
                 $field->handle => $field,
             ]);
@@ -183,7 +185,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             ];
 
             if ($query instanceof ElementQuery) {
-                $filter->apply($query->getQuery(), $relationCriteria);
+                $filter->apply($query->getQuery(), $relationCriteria, $siteId !== '*' ? $siteId : null);
 
                 return $query;
             }
@@ -762,13 +764,7 @@ JS, [
 
             $relationsAlias = sprintf('relations_%s', Str::random(10));
 
-            $query->beforeQuery(function (ElementQuery $elementQuery) use (
-                $element,
-                $relationsAlias) {
-                if ($elementQuery->id !== null) {
-                    return;
-                }
-
+            $query->beforeQuery(function (ElementQuery $elementQuery) use ($element, $relationsAlias) {
                 // Make these changes directly on the prepared queries, so `sortOrder` doesn't ever make it into
                 // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
                 // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied

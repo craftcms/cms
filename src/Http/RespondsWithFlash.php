@@ -7,12 +7,14 @@ namespace CraftCms\Cms\Http;
 use CraftCms\Cms\Component\Contracts\Identifiable;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Flash;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Crypt;
+use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\renderObjectTemplate;
@@ -130,6 +132,18 @@ trait RespondsWithFlash
 
         if ($object) {
             $url = renderObjectTemplate($url, $object);
+        }
+
+        $params = request()->input('redirectParams');
+
+        if ($params) {
+            try {
+                $params = Json::decode($params);
+            } catch (InvalidArgumentException $e) {
+                abort(400, $e->getMessage());
+            }
+
+            $url = Url::urlWithParams($url, $params);
         }
 
         if (request()->isCpRequest()) {

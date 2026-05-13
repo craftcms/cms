@@ -130,11 +130,16 @@ trait HasCustomFields
 
         unset($this->_normalizedFieldValues[$fieldHandle]);
 
-        if ($this->_initialized) {
+        if ($this->_trackDirtyFields) {
             $this->_dirtyFields[$fieldHandle] = true;
         }
 
         unset($this->_eagerLoadedElements[$fieldHandle], $this->_eagerLoadedElementCounts[$fieldHandle]);
+    }
+
+    public function setDirtyFieldTracking(bool $enabled = true): void
+    {
+        $this->_trackDirtyFields = $enabled;
     }
 
     public function setFieldValueFromRequest(string $fieldHandle, mixed $value): void

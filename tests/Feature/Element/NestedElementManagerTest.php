@@ -252,6 +252,51 @@ it('creates matrix nested revisions for a target owner', function () {
         ->toBeTrue();
 });
 
+it('saves nested provisional draft ownership for derivative and primary owners', function () {
+    ['owner' => $owner, 'field' => $field, 'entryType' => $entryType] = createMatrixOwnerFixture();
+
+    $nested = createMatrixNestedEntry($owner, $field, $entryType, 1, 'Canonical block');
+    $ownerDraft = app(Drafts::class)->createDraft($owner, auth()->id(), provisional: true);
+    $nestedDraft = app(Drafts::class)->createDraft(
+        $nested,
+        auth()->id(),
+        name: 'Nested provisional draft',
+        newAttributes: [
+            'ownerId' => $ownerDraft->id,
+            'primaryOwnerId' => $owner->id,
+        ],
+        provisional: true,
+    );
+
+    $ownership = DB::table(Table::ELEMENTS_OWNERS)
+        ->where('elementId', $nestedDraft->id)
+        ->pluck('sortOrder', 'ownerId')
+        ->map(fn (mixed $sortOrder): int => (int) $sortOrder)
+        ->all();
+
+    expect(array_keys($ownership))->toEqualCanonicalizing([$owner->id, $ownerDraft->id])
+        ->and($ownership[$owner->id])->toBe(1)
+        ->and($ownership[$ownerDraft->id])->toBe(1)
+        ->and(EntryElement::find()
+            ->id($nestedDraft->id)
+            ->ownerId($owner->id)
+            ->primaryOwnerId($owner->id)
+            ->drafts()
+            ->provisionalDrafts()
+            ->status(null)
+            ->one())
+        ->not->toBeNull()
+        ->and(EntryElement::find()
+            ->id($nestedDraft->id)
+            ->ownerId($ownerDraft->id)
+            ->primaryOwnerId($owner->id)
+            ->drafts()
+            ->provisionalDrafts()
+            ->status(null)
+            ->one())
+        ->not->toBeNull();
+});
+
 it('deletes and restores attribute-backed user addresses with owner state', function () {
     $user = UserModel::factory()->createElement();
     $address = AddressModel::factory()->createElement([

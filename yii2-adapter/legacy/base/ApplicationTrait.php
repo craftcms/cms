@@ -89,7 +89,7 @@ use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\ColumnSchemaBuilder;
 use yii\db\Exception as DbException;
-use yii\helpers\Markdown as MarkdownHelper;
+use craft\helpers\Markdown as MarkdownHelper;
 use yii\mutex\Mutex;
 use yii\queue\Queue;
 use yii\web\ServerErrorHttpException;

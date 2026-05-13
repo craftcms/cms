@@ -11,5 +11,6 @@ class ElementHydrated
     public function __construct(
         public ElementInterface $element,
         public array $row,
+        public array $content,
     ) {}
 }

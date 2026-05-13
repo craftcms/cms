@@ -8,6 +8,7 @@ use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
+use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
@@ -28,7 +29,7 @@ use function CraftCms\Cms\t;
  *
  * @property string|null $defaultColor
  */
-class Color extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
+class Color extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -95,10 +96,13 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
         parent::__construct($config);
     }
 
-    /**
-     * Returns the default color
-     */
+    #[Deprecated(message: 'in 5.10.0. [[getDefaultValue()]] should be used instead.')]
     public function getDefaultColor(): ?string
+    {
+        return $this->getDefaultValue();
+    }
+
+    public function getDefaultValue(): ?string
     {
         $color = Arr::first($this->palette, fn (array $color) => $color['default'] ?? false);
 
@@ -246,7 +250,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
 
         // If this is a new entry, look for any default options
         if ($value === null && $this->isFresh($element)) {
-            $defaultColor = $this->getDefaultColor();
+            $defaultColor = $this->getDefaultValue();
             if ($defaultColor) {
                 $value = $defaultColor;
             }
@@ -422,9 +426,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
     {
         /** @var ColorData|null $value */
         if (! $value) {
-            return Html::beginTag('div', ['class' => ['color', 'small', 'static']]).
-                Html::tag('div', attributes: ['class' => 'color-preview']).
-                Html::endTag('div');
+            return '';
         }
 
         $html = Html::beginTag('div', ['class' => ['color', 'small', 'static']]).

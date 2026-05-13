@@ -10,7 +10,7 @@ use Throwable;
 class FieldNotFoundException extends Exception
 {
     public function __construct(
-        public string $fieldUid,
+        public int|string $fieldId,
         string $message = '',
         int $code = 0,
         ?Throwable $previous = null
