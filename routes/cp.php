@@ -62,6 +62,8 @@ Route::get('install', [InstallController::class, 'index']);
 
 Route::middleware('craft.web')->group(function () {
     Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
+    Route::post(CpAuthPath::Login->value, [LoginController::class, 'attemptLogin']);
+    Route::get(CpAuthPath::Logout->value, [LoginController::class, 'logout']);
     Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm']);
     Route::get(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'show']);
     Route::post(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'store']);
@@ -75,8 +77,6 @@ Route::middleware('craft.web')->group(function () {
 Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     Route::get('/', [DashboardController::class, 'redirect']);
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-    Route::get(CpAuthPath::Logout->value, [LoginController::class, 'logout']);
 
     Route::get('utilities', [UtilitiesController::class, 'index']);
 

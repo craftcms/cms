@@ -54,7 +54,7 @@ trait RespondsWithFlash
         $redirect ??= $this->getPostedRedirectUrl();
 
         if ($redirect) {
-            return redirect($redirect)->with($data);
+            return redirect($redirect)->with('success', $message)->with($data);
         }
 
         return back()

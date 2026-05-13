@@ -9,6 +9,7 @@ use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\UserProvider;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\View\View;
@@ -16,6 +17,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Timebox;
+use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\cp_url;
@@ -23,7 +25,7 @@ use function CraftCms\Cms\template;
 
 readonly class LoginController extends AuthenticationController
 {
-    public function showLogin(Request $request): Response|View
+    public function showLogin(Request $request, GeneralConfig $generalConfig, AuthMethods $authMethods): Response|View|\Inertia\Response
     {
         // see if they're already logged in
         if ($user = $request->user()) {
@@ -35,7 +37,9 @@ readonly class LoginController extends AuthenticationController
             return redirect()->action([TwoFactorAuthenticationController::class, 'showForm']);
         }
 
-        return $this->renderViewWithFallback('login');
+        return Inertia::render('LoginPage', [
+            'username' => $generalConfig->rememberUsernameDuration ? $authMethods->getRememberedUsername() : '',
+        ]);
     }
 
     /**
@@ -120,6 +124,17 @@ readonly class LoginController extends AuthenticationController
 
     public function logout(Request $request): Response
     {
+        // If already logged out, just redirect to the appropriate destination
+        if (auth('craft')->guest()) {
+            if ($request->wantsJson()) {
+                return $this->asSuccess();
+            }
+
+            return $request->isCpRequest()
+                ? redirect(cp_url(CpAuthPath::Login->value))
+                : redirect($this->generalConfig->getPostLogoutRedirect());
+        }
+
         auth('craft')->logout();
 
         if ($request->wantsJson()) {
