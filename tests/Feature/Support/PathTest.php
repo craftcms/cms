@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Path;
@@ -33,6 +34,7 @@ beforeEach(function () {
 
     $this->originalProjectConfigFolderName = app(ProjectConfig::class)->folderName;
     app(ProjectConfig::class)->folderName = 'project';
+    $this->originalCompiledTemplatesPath = app(GeneralConfig::class)->compiledTemplatesPath;
 
     $this->laravelPath = function (): CraftCms\Cms\Support\Path {
         $laravelPathClass = CraftCms\Cms\Support\Path::class;
@@ -46,6 +48,7 @@ beforeEach(function () {
 
 afterEach(function () {
     app(ProjectConfig::class)->folderName = $this->originalProjectConfigFolderName;
+    app(GeneralConfig::class)->compiledTemplatesPath = $this->originalCompiledTemplatesPath;
 
     foreach ($this->originalAliases as $alias => $path) {
         Aliases::set($alias, $path);
@@ -121,6 +124,22 @@ test('directory getters return the expected path and creation side effects', fun
     'session path' => ['sessions', 'storage/runtime/sessions', false],
     'cache path' => ['cache', 'storage/runtime/cache', false],
 ]);
+
+test('compiled templates path can be configured', function () {
+    app(GeneralConfig::class)->compiledTemplatesPath = '@storage/custom-compiled-templates';
+
+    $path = ($this->laravelPath)();
+    $expectedPath = $this->aliases['@storage'].DIRECTORY_SEPARATOR.'custom-compiled-templates';
+
+    File::deleteDirectory($expectedPath);
+
+    expect($path->compiledTemplates(create: false))->toBe($expectedPath)
+        ->and(File::exists($expectedPath))->toBeFalse();
+
+    expect($path->compiledTemplates())->toBe($expectedPath)
+        ->and(File::isDirectory($expectedPath))->toBeTrue()
+        ->and($path->compiledTemplates('foo.php'))->toBe($expectedPath.DIRECTORY_SEPARATOR.'foo.php');
+});
 
 test('system paths return the expected ordered list', function () {
     $path = ($this->laravelPath)();
