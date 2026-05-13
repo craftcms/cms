@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Tests\TestClasses\TestPlugin\Tests;
 
 use CraftCms\Cms\Database\Migrator;
+use Override;
 
 class FakeMigrator extends Migrator
 {
@@ -28,7 +29,7 @@ class FakeMigrator extends Migrator
 
     public function __construct() {}
 
-    #[\Override]
+    #[Override]
     public function track(string $track): self
     {
         $this->tracked = $track;
@@ -36,13 +37,13 @@ class FakeMigrator extends Migrator
         return $this;
     }
 
-    #[\Override]
+    #[Override]
     public function getTrack(): ?string
     {
         return $this->tracked;
     }
 
-    #[\Override]
+    #[Override]
     public function setPaths(array $paths): self
     {
         $this->configuredPaths = $paths;
@@ -51,14 +52,14 @@ class FakeMigrator extends Migrator
         return $this;
     }
 
-    #[\Override]
-    public function runMigration($migration, $method): void
+    #[Override]
+    public function runMigration($migration, $method, $name = null): void
     {
         $this->runMigrationArgument = $migration;
         $this->runMigrationMethod = $method;
     }
 
-    #[\Override]
+    #[Override]
     public function getRepository(): object
     {
         return new readonly class($this)
@@ -86,7 +87,7 @@ class FakeMigrator extends Migrator
         };
     }
 
-    #[\Override]
+    #[Override]
     public function run($paths = [], array $options = []): array
     {
         $this->runArguments = [$paths, $options];
@@ -109,7 +110,7 @@ class FakeMigrator extends Migrator
         return $paths;
     }
 
-    #[\Override]
+    #[Override]
     public function getPendingMigrations($paths = []): array
     {
         $loggedMigrations = array_map(fn (array $migration) => $migration[0], $this->loggedMigrations);
@@ -121,13 +122,13 @@ class FakeMigrator extends Migrator
         return array_values(array_filter($paths, fn (string $path) => ! in_array($this->getMigrationName($path), $loggedMigrations, true)));
     }
 
-    #[\Override]
+    #[Override]
     public function getMigrationName($path): string
     {
         return pathinfo((string) $path, PATHINFO_FILENAME);
     }
 
-    #[\Override]
+    #[Override]
     public function resetMigrations(array $migrations, array $paths, $pretend = false): array
     {
         $this->resetArguments = [$migrations, $paths, $pretend];
