@@ -47,6 +47,9 @@ export {default as CraftProgressBar} from './components/progress-bar/progress-ba
 export {default as CraftRadioGroup} from './components/radio-group/radio-group.js';
 export {default as CraftRadio} from './components/radio/radio.js';
 export {default as CraftLoginForm} from './components/login-form/login-form.js';
+export {default as CraftLoginResetPassword} from './components/login-form/login-reset-password.js';
+export {default as CraftLogin2fa} from './components/login-form/login-2fa.js';
+export type {TwoFactorData} from './components/login-form/login-2fa.js';
 /* plop:component */
 
 export * from './utilities/cookies.js';
