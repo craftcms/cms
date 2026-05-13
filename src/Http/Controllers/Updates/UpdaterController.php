@@ -306,7 +306,7 @@ class UpdaterController extends BaseUpdaterController
     #[Override]
     protected function returnUrl(): string
     {
-        return Url::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect());
+        return $this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect();
     }
 
     #[Override]
