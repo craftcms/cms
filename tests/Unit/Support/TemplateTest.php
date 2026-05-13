@@ -7,6 +7,8 @@ use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Support\MessageBag;
+use Illuminate\Support\ViewErrorBag;
 use Twig\Environment;
 use Twig\Error\RuntimeError;
 use Twig\Loader\ArrayLoader;
@@ -96,6 +98,81 @@ describe('attribute', function () {
         );
 
         expect($value)->toBe('string:Craft');
+    });
+
+    it('reads messages from Laravel message bags with property-style access', function () {
+        $errors = new MessageBag(['title' => ['Title is required.']]);
+
+        $value = Template::attribute(
+            new Environment(new ArrayLoader),
+            new Source('', 'template'),
+            $errors,
+            'title',
+        );
+
+        expect($value)->toBe(['Title is required.']);
+    });
+
+    it('checks Laravel message bag keys for defined tests', function () {
+        $errors = new MessageBag(['title' => ['Title is required.']]);
+        $twig = new Environment(new ArrayLoader);
+        $source = new Source('', 'template');
+
+        expect(Template::attribute($twig, $source, $errors, 'title', isDefinedTest: true))->toBeTrue()
+            ->and(Template::attribute($twig, $source, $errors, 'handle', isDefinedTest: true))->toBeFalse();
+    });
+
+    it('reads default messages from Laravel view error bags with property-style access', function () {
+        $errors = new ViewErrorBag;
+        $errors->put('default', new MessageBag(['title' => ['Title is required.']]));
+
+        $value = Template::attribute(
+            new Environment(new ArrayLoader),
+            new Source('', 'template'),
+            $errors,
+            'title',
+        );
+
+        expect($value)->toBe(['Title is required.']);
+    });
+
+    it('checks default Laravel view error bag keys for defined tests', function () {
+        $errors = new ViewErrorBag;
+        $errors->put('default', new MessageBag(['title' => ['Title is required.']]));
+        $twig = new Environment(new ArrayLoader);
+        $source = new Source('', 'template');
+
+        expect(Template::attribute($twig, $source, $errors, 'title', isDefinedTest: true))->toBeTrue()
+            ->and(Template::attribute($twig, $source, $errors, 'handle', isDefinedTest: true))->toBeFalse();
+    });
+
+    it('preserves named Laravel view error bag access', function () {
+        $errors = new ViewErrorBag;
+        $errors->put('login', new MessageBag(['email' => ['Email is required.']]));
+
+        $value = Template::attribute(
+            new Environment(new ArrayLoader),
+            new Source('', 'template'),
+            $errors,
+            'login',
+        );
+
+        expect($value)->toBeInstanceOf(MessageBag::class)
+            ->and($value->get('email'))->toBe(['Email is required.']);
+    });
+
+    it('preserves Laravel view error bag method property access', function () {
+        $errors = new ViewErrorBag;
+        $errors->put('default', new MessageBag(['title' => ['Title is required.']]));
+
+        $value = Template::attribute(
+            new Environment(new ArrayLoader),
+            new Source('', 'template'),
+            $errors,
+            'any',
+        );
+
+        expect($value)->toBeTrue();
     });
 });
 

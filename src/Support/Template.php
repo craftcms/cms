@@ -15,7 +15,9 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Twig\Variables\Paginate;
 use CraftCms\Cms\View\Enums\Position;
+use Illuminate\Contracts\Support\MessageBag as MessageBagContract;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\ViewErrorBag;
 use RuntimeException;
 use Stringable;
 use Twig\Environment;
@@ -108,6 +110,35 @@ class Template
 
         if ($type !== TwigTemplate::METHOD_CALL && $item instanceof Stringable) {
             $item = (string) $item;
+        }
+
+        if ($type !== TwigTemplate::METHOD_CALL && is_string($item)) {
+            if ($object instanceof ViewErrorBag) {
+                if (method_exists($object, $item)) {
+                    return CoreExtension::getAttribute(
+                        $env,
+                        $source,
+                        $object,
+                        $item,
+                        $arguments,
+                        $type,
+                        $isDefinedTest,
+                        $ignoreStrictCheck,
+                        $sandboxed,
+                        $lineno,
+                    );
+                }
+
+                if ($object->hasBag($item)) {
+                    return $isDefinedTest ? true : $object->getBag($item);
+                }
+
+                $object = $object->getBag('default');
+            }
+
+            if ($object instanceof MessageBagContract && ! method_exists($object, $item)) {
+                return $isDefinedTest ? $object->has($item) : $object->get($item);
+            }
         }
 
         return CoreExtension::getAttribute(
