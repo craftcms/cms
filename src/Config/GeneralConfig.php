@@ -162,6 +162,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Environment
+     *
+     * @since 6.0.0
      */
     public ?string $compiledTemplatesPath = null;
 
@@ -3308,6 +3310,7 @@ class GeneralConfig extends BaseConfig
      * @group Environment
      *
      * @see $compiledTemplatesPath
+     * @since 6.0.0
      */
     public function compiledTemplatesPath(?string $value): self
     {
