@@ -29,12 +29,10 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -57,15 +55,9 @@ class EntryTypesController
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
 
-        /**
-         * We assemble the field layout here before validation runs
-         * so we can flash the old layout to the session.
-         */
         if ($request->route()->getActionMethod() === 'store') {
             $this->fieldLayout = $fields->assembleLayoutFromPost();
             $this->fieldLayout->type = Entry::class;
-
-            Session::flash('oldFieldLayout', $this->fieldLayout);
         }
     }
 
@@ -147,7 +139,7 @@ class EntryTypesController
                 callback: function (CpScreenResponse $response) use ($entryTypeData) {
                     $response
                         ->action('entry-types/save')
-                        ->redirectUrl(Url::cpReferralUrl() ?? 'settings/entry-types')
+                        ->redirectUrl('settings/entry-types')
                         ->addAltAction(t('Save and continue editing'), [
                             'redirect' => 'settings/entry-types/{id}',
                             'shortcut' => true,

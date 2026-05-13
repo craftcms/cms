@@ -23,6 +23,16 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
     use FieldConditionRuleTrait;
 
     #[Override]
+    protected function operators(): array
+    {
+        return array_filter(
+            parent::operators(),
+            // Remove IN/NOT IN operators as they don't fit with the implementation of money inputs
+            fn (string $operator) => ! in_array($operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN])
+        );
+    }
+
+    #[Override]
     public function setAttributes($values, $safeOnly = true): void
     {
         // Hold setting of the value attribute until we have all the info we need

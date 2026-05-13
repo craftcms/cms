@@ -29,6 +29,11 @@ describe('Markdown', function () {
             ->toBe("<p><a>test</a></p>\n");
     });
 
+    it('preserves the starting number for ordered lists', function () {
+        expect($this->markdown->parse("5. five\n6. six"))
+            ->toBe("<ol start=\"5\">\n<li>five</li>\n<li>six</li>\n</ol>\n");
+    });
+
     it('can allow unsafe links for compatibility shims', function () {
         expect($this->markdown->parse('[test](javascript:alert(1))', allowUnsafeLinks: true))
             ->toBe("<p><a href=\"javascript:alert(1)\">test</a></p>\n");

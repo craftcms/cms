@@ -189,7 +189,7 @@ class ArrayTwigExtension extends AbstractExtension
         $array = array_merge($array);
 
         return collect($array)
-            ->sortBy($key, $sortFlag, $direction === SORT_DESC)
+            ->sortBy($key, collect($sortFlag)->sum(), $direction === SORT_DESC)
             ->all();
     }
 

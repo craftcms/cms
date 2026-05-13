@@ -16,6 +16,7 @@ use CraftCms\Cms\Element\Queries\Concerns\User\QueriesUserGroups;
 use CraftCms\Cms\Element\Queries\Concerns\User\QueriesUserProperties;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\Expression;
 use Override;
 
 /**
@@ -36,15 +37,18 @@ class UserQuery extends ElementQuery
     public const string STATUS_CREDENTIALED = 'credentialed';
 
     #[Override]
-    protected array $defaultOrderBy = [
-        'users.username' => SORT_ASC,
-        'users.active' => SORT_DESC,
-        'users.pending' => SORT_DESC,
-    ];
+    protected array $defaultOrderBy;
 
     public function __construct(array $config = [])
     {
         parent::__construct(User::class, $config);
+
+        $this->defaultOrderBy = [
+            new Expression('CASE WHEN users.username IS NULL THEN 1 ELSE 0 END ASC'),
+            'users.username' => SORT_ASC,
+            'users.active' => SORT_DESC,
+            'users.pending' => SORT_DESC,
+        ];
 
         $this->query->addSelect([
             'users.photoId',

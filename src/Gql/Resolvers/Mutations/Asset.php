@@ -128,6 +128,7 @@ class Asset extends ElementMutationResolver
     public function deleteAsset(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): bool
     {
         $assetId = $arguments['id'];
+        $hardDelete = $arguments['hardDelete'] ?? false;
 
         /** @var AssetElement|null $asset */
         $asset = Elements::getElementById($assetId, AssetElement::class);
@@ -139,7 +140,7 @@ class Asset extends ElementMutationResolver
         $volumeUid = DB::table(Table::VOLUMES)->uidById($asset->getVolumeId());
         $this->requireSchemaAction('volumes.'.$volumeUid, 'delete');
 
-        return Elements::deleteElementById($assetId);
+        return Elements::deleteElementById($assetId, hardDelete: $hardDelete);
     }
 
     #[Override]

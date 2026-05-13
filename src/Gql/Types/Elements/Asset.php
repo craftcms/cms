@@ -32,7 +32,7 @@ class Asset extends Element
 
             switch ($fieldName) {
                 case 'url':
-                    return $source->getUrl($transform);
+                    return $source->getUrl($transform, $arguments['immediately'] ?? null);
                 case 'width':
                     return $source->getWidth($transform);
                 case 'height':

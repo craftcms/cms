@@ -11,6 +11,7 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
+use Override;
 
 use function Laravel\Prompts\multiselect;
 
@@ -19,13 +20,13 @@ class Remove2faCommand extends Command implements PromptsForMissingInput
     use CraftCommand;
     use PromptsForMissingUser;
 
-    #[\Override]
-    protected $signature = 'craft:users:remove-2fa {user}';
+    #[Override]
+    protected $signature = 'craft:users:remove-2fa {user} {--method= : The two-step verification method to remove.}';
 
-    #[\Override]
+    #[Override]
     protected $description = 'Removes user\'s two-step verification method(s)';
 
-    #[\Override]
+    #[Override]
     protected $aliases = ['users/remove-2fa'];
 
     public function handle(AuthMethods $auth): int
@@ -47,11 +48,23 @@ class Remove2faCommand extends Command implements PromptsForMissingInput
             $activeMethods->all(),
         );
 
-        $methodsToRemove = multiselect(
-            label: "Which two-step verification method(s) would you like to remove for user “{$user->username}”?",
-            options: array_keys($activeMethods),
-            required: true,
-        );
+        if (($method = $this->option('method')) && $method !== 'all' && ! isset($activeMethods[$this->option('method')])) {
+            $this->components->info("User “{$user->username}” doesn’t have the “{$method}” two-step verification method.");
+
+            return self::SUCCESS;
+        }
+
+        if ($method === 'all') {
+            $methodsToRemove = array_keys($activeMethods);
+        } elseif ($method) {
+            $methodsToRemove = [$method];
+        } else {
+            $methodsToRemove = multiselect(
+                label: "Which two-step verification method(s) would you like to remove for user “{$user->username}”?",
+                options: array_keys($activeMethods),
+                required: true,
+            );
+        }
 
         foreach ($methodsToRemove as $method) {
             $this->remove2faMethod($auth, $activeMethods[$method], $user);

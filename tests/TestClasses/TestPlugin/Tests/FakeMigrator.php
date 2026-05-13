@@ -10,6 +10,8 @@ class FakeMigrator extends Migrator
 {
     public array $loggedMigrations = [];
 
+    public array $deletedMigrations = [];
+
     public array $pendingMigrations = [];
 
     public array $resetArguments = [];
@@ -75,6 +77,11 @@ class FakeMigrator extends Migrator
             public function log(string $migration, int $batch): void
             {
                 $this->migrator->loggedMigrations[] = [$migration, $batch];
+            }
+
+            public function delete(object $migration): void
+            {
+                $this->migrator->deletedMigrations[] = $migration->migration;
             }
         };
     }

@@ -149,6 +149,7 @@ describe('Author required validation', function () {
             ->withEntryTypes($entryType)
             ->create([
                 'type' => $sectionType,
+                'minAuthors' => $maxAuthors,
                 'maxAuthors' => $maxAuthors,
             ]);
 

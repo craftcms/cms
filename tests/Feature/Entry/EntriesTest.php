@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Events\ElementCachesInvalidated;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Entries;
 use CraftCms\Cms\Entry\Events\EntryMovedToSection;
 use CraftCms\Cms\Entry\Events\EntryMovingToSection;
@@ -11,6 +14,8 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\User\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -20,7 +25,7 @@ beforeEach(function () {
 it('can get an entry by id', function () {
     $entry = Entry::factory()->create();
 
-    expect($this->entries->getEntryById($entry->id))->toBeInstanceOf(CraftCms\Cms\Entry\Elements\Entry::class);
+    expect($this->entries->getEntryById($entry->id))->toBeInstanceOf(EntryElement::class);
 });
 
 it('returns null when entry does not exist', function () {
@@ -33,7 +38,7 @@ it('can get an entry in a specific site', function () {
 
     $secondSite = Site::factory()->create();
 
-    expect($this->entries->getEntryById($entry->id, Site::first()->id))->toBeInstanceOf(CraftCms\Cms\Entry\Elements\Entry::class);
+    expect($this->entries->getEntryById($entry->id, Site::first()->id))->toBeInstanceOf(EntryElement::class);
     expect($this->entries->getEntryById($entry->id, $secondSite->id))->toBeNull();
 });
 
@@ -108,4 +113,73 @@ it('cannot move a nested entry', function () {
     $this->expectExceptionMessage('Attempting to move a nested element.');
 
     expect($this->entries->moveEntryToSection($entry, Sections::getAllSections()->first()));
+});
+
+it('can reassign entries to a new author', function () {
+    Event::fake([ElementCachesInvalidated::class]);
+
+    $oldAuthor = User::factory()->create();
+    $newAuthor = User::factory()->create();
+    $unchangedAuthor = User::factory()->create();
+
+    $reassignedEntry = Entry::factory()
+        ->hasAttached($oldAuthor, ['sortOrder' => 1], 'authors')
+        ->create();
+
+    $unchangedEntry = Entry::factory()
+        ->hasAttached($unchangedAuthor, ['sortOrder' => 1], 'authors')
+        ->create();
+
+    expect($this->entries->reassignEntries($oldAuthor->id, $newAuthor->id))->toBe(1);
+
+    expect(DB::table(Table::ENTRIES_AUTHORS)
+        ->where('entryId', $reassignedEntry->id)
+        ->pluck('authorId')
+        ->all())->toBe([$newAuthor->id]);
+
+    expect(DB::table(Table::ENTRIES_AUTHORS)
+        ->where('entryId', $unchangedEntry->id)
+        ->pluck('authorId')
+        ->all())->toBe([$unchangedAuthor->id]);
+
+    Event::assertDispatched(fn (ElementCachesInvalidated $event): bool => $event->tags === ['element::'.EntryElement::class]);
+});
+
+it('does not reassign entries that already have the new author', function () {
+    $oldAuthor = User::factory()->create();
+    $newAuthor = User::factory()->create();
+
+    $entry = Entry::factory()
+        ->hasAttached($oldAuthor, ['sortOrder' => 1], 'authors')
+        ->hasAttached($newAuthor, ['sortOrder' => 2], 'authors')
+        ->create();
+
+    expect($this->entries->reassignEntries($oldAuthor->id, $newAuthor->id))->toBe(0);
+
+    expect(DB::table(Table::ENTRIES_AUTHORS)
+        ->where('entryId', $entry->id)
+        ->orderBy('sortOrder')
+        ->pluck('authorId')
+        ->all())->toBe([$oldAuthor->id, $newAuthor->id]);
+});
+
+it('can reassign entries from multiple old authors', function () {
+    $oldAuthorA = User::factory()->create();
+    $oldAuthorB = User::factory()->create();
+    $newAuthor = User::factory()->create();
+
+    $entryA = Entry::factory()
+        ->hasAttached($oldAuthorA, ['sortOrder' => 1], 'authors')
+        ->create();
+
+    $entryB = Entry::factory()
+        ->hasAttached($oldAuthorB, ['sortOrder' => 1], 'authors')
+        ->create();
+
+    expect($this->entries->reassignEntries([$oldAuthorA->id, $oldAuthorB->id], $newAuthor->id))->toBe(2);
+
+    expect(DB::table(Table::ENTRIES_AUTHORS)
+        ->whereIn('entryId', [$entryA->id, $entryB->id])
+        ->pluck('authorId')
+        ->all())->toBe([$newAuthor->id, $newAuthor->id]);
 });

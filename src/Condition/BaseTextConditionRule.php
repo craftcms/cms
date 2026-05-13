@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Condition;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use Override;
 use RuntimeException;
@@ -35,6 +36,21 @@ abstract class BaseTextConditionRule extends BaseConditionRule
         ]);
     }
 
+    #[Override]
+    public function __set(string $name, $value): void
+    {
+        if (
+            $name === 'attributes' &&
+            isset($value['operator'], $value['value']) &&
+            in_array($value['operator'], [self::OPERATOR_IN, self::OPERATOR_NOT_IN]) &&
+            is_array($value['value'])
+        ) {
+            $value['value'] = Json::encode($value['value']);
+        }
+
+        parent::__set($name, $value);
+    }
+
     /**
      * Returns the operators that should be allowed for this rule.
      */
@@ -43,11 +59,14 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     {
         return [
             self::OPERATOR_EQ,
+            self::OPERATOR_NE,
             self::OPERATOR_BEGINS_WITH,
             self::OPERATOR_ENDS_WITH,
             self::OPERATOR_CONTAINS,
             self::OPERATOR_NOT_EMPTY,
             self::OPERATOR_EMPTY,
+            self::OPERATOR_IN,
+            self::OPERATOR_NOT_IN,
         ];
     }
 
@@ -67,6 +86,10 @@ abstract class BaseTextConditionRule extends BaseConditionRule
             return '';
         }
 
+        if (in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN])) {
+            return FormFields::selectizeHtml($this->inputOptions());
+        }
+
         return
             Html::hiddenLabel(Html::encode($this->getLabel()), 'value').
             FormFields::textHtml($this->inputOptions());
@@ -77,13 +100,36 @@ abstract class BaseTextConditionRule extends BaseConditionRule
      */
     protected function inputOptions(): array
     {
-        return [
-            'type' => $this->inputType(),
-            'id' => 'value',
+        $defaults = [
+            'id' => 'value'.mt_rand(),
             'name' => 'value',
-            'value' => $this->value,
-            'autocomplete' => false,
             'class' => 'flex-grow flex-shrink',
+        ];
+
+        if (in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN])) {
+            $values = Json::decodeIfJson($this->value);
+            $values = is_array($values) ? array_values($values) : [];
+
+            return [...$defaults, ...[
+                'values' => $values,
+                'options' => array_map(fn ($v) => ['value' => $v, 'label' => $v], $values),
+                'multi' => true,
+                'allowEmptyOption' => true,
+                'selectizeOptions' => [
+                    'create' => true,
+                    'persist' => false,
+                    'createOnBlur' => true,
+                ],
+            ]];
+        }
+
+        return [
+            ...$defaults,
+            ...[
+                'type' => $this->inputType(),
+                'value' => $this->value,
+                'autocomplete' => false,
+            ],
         ];
     }
 
@@ -98,13 +144,21 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     /**
      * Returns the rule’s value, prepped for {@see QueryParam::parse()} based on the selected operator.
      */
-    protected function paramValue(): ?string
+    protected function paramValue(): string|array|null
     {
         switch ($this->operator) {
             case self::OPERATOR_EMPTY:
                 return ':empty:';
             case self::OPERATOR_NOT_EMPTY:
                 return 'not :empty:';
+            case self::OPERATOR_IN:
+                return Json::decodeIfJson($this->value);
+            case self::OPERATOR_NOT_IN:
+                $value = Json::decodeIfJson($this->value);
+                $value = is_array($value) ? $value : [];
+                array_unshift($value, 'not');
+
+                return $value;
         }
 
         if ($this->value === '') {
@@ -147,6 +201,8 @@ abstract class BaseTextConditionRule extends BaseConditionRule
             self::OPERATOR_BEGINS_WITH => is_string($value) && str_starts_with(mb_strtolower($value), mb_strtolower($this->value)),
             self::OPERATOR_ENDS_WITH => is_string($value) && str_ends_with(mb_strtolower($value), mb_strtolower($this->value)),
             self::OPERATOR_CONTAINS => is_string($value) && str_contains(mb_strtolower($value), mb_strtolower($this->value)),
+            self::OPERATOR_IN => in_array($value, Json::decodeIfJson($this->value)),
+            self::OPERATOR_NOT_IN => ! in_array($value, Json::decodeIfJson($this->value)),
             default => throw new RuntimeException("Invalid operator: $this->operator"),
         };
     }

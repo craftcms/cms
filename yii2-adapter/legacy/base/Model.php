@@ -257,7 +257,7 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
      * @inheritdoc
      * @since 4.0.0
      */
-    public function setAttributes($values, $safeOnly = true): void
+    public function setAttributes($values, $safeOnly = false): void
     {
         // Typecast them
         Typecast::properties(static::class, $values);

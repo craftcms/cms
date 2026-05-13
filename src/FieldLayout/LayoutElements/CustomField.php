@@ -393,6 +393,20 @@ class CustomField extends BaseField
     }
 
     /**
+     * Sets the ID of the field this layout field is based on.
+     */
+    public function setFieldId(int $id): void
+    {
+        $field = Fields::getFieldById($id);
+
+        if (! $field) {
+            throw new FieldNotFoundException($id);
+        }
+
+        $this->setField($field);
+    }
+
+    /**
      * Returns the field’s original handle.
      */
     public function getOriginalHandle(): string
@@ -503,6 +517,9 @@ class CustomField extends BaseField
     #[Override]
     protected function settingsHtml(): ?string
     {
+        // Make sure setField() has had a chance to set the default values
+        $this->getField();
+
         return template('_includes/forms/fld/custom-field-settings', [
             'field' => $this,
             'defaultLabel' => $this->defaultLabel(),

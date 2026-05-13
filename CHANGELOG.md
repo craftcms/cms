@@ -55,6 +55,11 @@
 - Fixed an error that occurred when running `craft:install` in environments where Laravel Prompts can only render tasks statically. ([#18830](https://github.com/craftcms/cms/pull/18830))
 - Fix legacy model array access for null properties ([#18843](https://github.com/craftcms/cms/pull/18843))
 - Fix Twig access to Laravel error bags ([#18841](https://github.com/craftcms/cms/pull/18841))
+- Fixed a bug where singles were throwing an exception ([#18845](https://github.com/craftcms/cms/issue/18845))
+- Fixed a bug where plugin settings were not saving consistently ([#18849](https://github.com/craftcms/cms/pull/18849))
+- Fixed a bug where deprecated string-based `orderBy()` arguments could cause element queries to throw an unknown column exception. ([#18852](https://github.com/craftcms/cms/pull/18852))
+- Fixed a bug where Laravel HTTP exceptions weren’t passed to legacy error handler event listeners. ([#18854](https://github.com/craftcms/cms/pull/18854))
+- Fixed a bug where FieldLayouts were being flashed to the session as arrays. ([#18847](https://github.com/craftcms/cms/pull/18847))
 
 ## 6.0.0-alpha.1 - 2026-05-06
 

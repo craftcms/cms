@@ -229,7 +229,12 @@ trait QueriesCustomFields
             $this->where(function (Builder $query) use ($fieldsByHandle, $glue, $handle, $elementQuery) {
                 foreach ($fieldsByHandle[$handle] as $instances) {
                     $query->where(function (Builder $query) use ($handle, $elementQuery, $instances) {
-                        $instances[0]::modifyQuery($query, $instances, $elementQuery->customFieldValues[$handle]);
+                        static::$activeQuery = $this;
+                        try {
+                            $instances[0]::modifyQuery($query, $instances, $elementQuery->customFieldValues[$handle]);
+                        } finally {
+                            static::$activeQuery = null;
+                        }
                     }, boolean: $glue);
                 }
             });
