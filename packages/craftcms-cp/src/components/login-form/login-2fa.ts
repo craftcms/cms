@@ -4,7 +4,13 @@ import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {actionClient} from '@src/utilities/api/actionClient.js';
 import {t} from '@src/utilities/translate.js';
 import componentStyles from './login-form.styles.js';
+import CraftTotpForm from './totp-form.js';
+import CraftRecoveryCodeForm from './recovery-code-form.js';
+import './totp-form.js';
+import './recovery-code-form.js';
 import '../button/button.js';
+import '../action-item/action-item.js';
+import '../action-menu/action-menu.js';
 import '../spinner/spinner.js';
 
 export interface TwoFactorData {
@@ -28,9 +34,16 @@ declare const Craft: {
   ) => void;
 };
 
+/** Auth methods that have native web component implementations. */
+const WEB_COMPONENT_METHODS: Record<string, string> = {
+  [CraftTotpForm.METHOD]: 'craft-totp-form',
+  [CraftRecoveryCodeForm.METHOD]: 'craft-recovery-code-form',
+};
+
 /**
- * @summary Renders and initialises a server-side 2FA form, and handles
- * switching between authentication methods.
+ * @summary Renders and initialises a 2FA form, and handles switching between
+ * authentication methods. Native web component methods are rendered directly;
+ * legacy server-rendered forms are initialised via Craft.createAuthFormHandler.
  * @since 6.0
  *
  * @fires login-success - When authentication succeeds. Detail: `{ returnUrl: string }`
@@ -50,13 +63,20 @@ export default class CraftLogin2fa extends LitElement {
   override async updated(changed: Map<string, unknown>) {
     super.updated(changed);
 
-    if (!this.#initialized && !this._switching && this._container) {
+    const isNativeMethod = !!WEB_COMPONENT_METHODS[this.data?.authMethod];
+
+    if (
+      !isNativeMethod &&
+      !this.#initialized &&
+      !this._switching &&
+      this._container
+    ) {
       this.#initialized = true;
-      await this.#initForm();
+      await this.#initLegacyForm();
     }
   }
 
-  async #initForm() {
+  async #initLegacyForm() {
     if (!this._container) return;
 
     await Craft.appendHeadHtml(this.data.headHtml);
@@ -77,7 +97,7 @@ export default class CraftLogin2fa extends LitElement {
       },
       (message) => {
         this.dispatchEvent(
-          new CustomEvent('login-error', {
+          new CustomEvent('craft:login:error', {
             bubbles: true,
             composed: true,
             detail: {message},
@@ -105,6 +125,25 @@ export default class CraftLogin2fa extends LitElement {
     }
   }
 
+  #renderAuthForm() {
+    const {authMethod, authForm, returnUrl} = this.data;
+    const tag = WEB_COMPONENT_METHODS[authMethod];
+
+    if (tag === 'craft-totp-form') {
+      return html`<craft-totp-form return-url="${returnUrl}"></craft-totp-form>`;
+    }
+
+    if (tag === 'craft-recovery-code-form') {
+      return html`<craft-recovery-code-form
+        return-url="${returnUrl}"
+      ></craft-recovery-code-form>`;
+    }
+
+    return html`<div class="auth-form-container">
+      ${unsafeHTML(authForm)}
+    </div>`;
+  }
+
   override render() {
     if (this._switching) {
       return html`
@@ -118,27 +157,28 @@ export default class CraftLogin2fa extends LitElement {
 
     return html`
       <div class="login-form-container pane secondary">
-        <div class="auth-form-container">${unsafeHTML(this.data.authForm)}</div>
+        ${this.#renderAuthForm()}
 
         ${this.data.otherMethods.length
           ? html`
               <hr />
-              <div class="login-alt-container">
-                <p>${t('Try another way')}</p>
-                <div class="login-alt-menu">
+              <craft-action-menu>
+                <craft-button slot="invoker" appearance="plain">
+                  ${t('Try another way')}
+                </craft-button>
+
+                <div slot="content">
                   ${this.data.otherMethods.map(
                     (method) => html`
-                      <craft-button
-                        type="button"
-                        appearance="plain"
+                      <craft-action-item
                         @click="${() => this.#switchMethod(method.class)}"
                       >
                         ${method.name}
-                      </craft-button>
+                      </craft-action-item>
                     `
                   )}
                 </div>
-              </div>
+              </craft-action-menu>
             `
           : nothing}
       </div>

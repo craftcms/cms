@@ -49,6 +49,9 @@ export {default as CraftRadio} from './components/radio/radio.js';
 export {default as CraftLoginForm} from './components/login-form/login-form.js';
 export {default as CraftLoginResetPassword} from './components/login-form/login-reset-password.js';
 export {default as CraftLogin2fa} from './components/login-form/login-2fa.js';
+export {default as CraftTotpForm} from './components/login-form/totp-form.js';
+export {default as CraftRecoveryCodeForm} from './components/login-form/recovery-code-form.js';
+export {default as CraftFieldGroup} from './components/field-group/field-group.js';
 export type {TwoFactorData} from './components/login-form/login-2fa.js';
 /* plop:component */
 
