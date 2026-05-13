@@ -13,7 +13,7 @@
 <style scoped lang="scss">
   .dev-mode {
     --dev-mode-stripe-background-color: var(
-      --c-warning-background-color-default
+      --c-warning-static-color
     );
     padding: calc(var(--spacing) * 2);
     text-align: center;
