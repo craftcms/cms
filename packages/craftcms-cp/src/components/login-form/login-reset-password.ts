@@ -33,11 +33,11 @@ export default class CraftLoginResetPassword extends LitElement {
     this._input?.focus();
   }
 
-  private _label() {
+  #label() {
     return this.useEmailAsUsername ? t('Email') : t('Username or Email');
   }
 
-  private _validate(): string | true {
+  #validate(): string | true {
     const value = this._input?.value ?? '';
 
     if (value.length === 0) {
@@ -53,16 +53,16 @@ export default class CraftLoginResetPassword extends LitElement {
     return true;
   }
 
-  private _onInput() {
-    if (this._validateOnInput && this._validate() === true) {
+  #onInput() {
+    if (this._validateOnInput && this.#validate() === true) {
       this._error = '';
     }
   }
 
-  private async _onSubmit(event: Event) {
+  async #onSubmit(event: Event) {
     event.preventDefault();
 
-    const error = this._validate();
+    const error = this.#validate();
     if (error !== true) {
       this._error = error;
       this._validateOnInput = true;
@@ -93,7 +93,7 @@ export default class CraftLoginResetPassword extends LitElement {
     }
   }
 
-  private _onBack() {
+  #onBack() {
     this.dispatchEvent(
       new CustomEvent('reset-back', {
         bubbles: true,
@@ -110,10 +110,10 @@ export default class CraftLoginResetPassword extends LitElement {
           class="login-reset-password"
           method="post"
           accept-charset="UTF-8"
-          @submit="${this._onSubmit}"
+          @submit="${this.#onSubmit}"
         >
           <div class="field">
-            <label for="reset-username">${this._label()}</label>
+            <label for="reset-username">${this.#label()}</label>
             <input
               id="reset-username"
               type="${this.useEmailAsUsername ? 'email' : 'text'}"
@@ -123,7 +123,7 @@ export default class CraftLoginResetPassword extends LitElement {
               autocomplete="username"
               autocapitalize="off"
               aria-required="true"
-              @input="${this._onInput}"
+              @input="${this.#onInput}"
             />
           </div>
 
@@ -138,7 +138,11 @@ export default class CraftLoginResetPassword extends LitElement {
           <hr />
 
           <div class="login-alt-container">
-            <craft-button type="button" appearance="plain" @click="${this._onBack}">
+            <craft-button
+              type="button"
+              appearance="plain"
+              @click="${this.#onBack}"
+            >
               ${t('← Back to sign in')}
             </craft-button>
           </div>

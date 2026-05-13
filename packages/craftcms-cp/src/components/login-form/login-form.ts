@@ -87,11 +87,11 @@ export default class CraftLoginForm extends LitElement {
     }
   }
 
-  private _usernameLabel() {
+  #usernameLabel() {
     return this.useEmailAsUsername ? t('Email') : t('Username or Email');
   }
 
-  private _validate(): string | true {
+  #validate(): string | true {
     const username = this._usernameInput?.value ?? '';
 
     if (username.length === 0) {
@@ -125,18 +125,18 @@ export default class CraftLoginForm extends LitElement {
     return true;
   }
 
-  private _onInput() {
-    if (this._validateOnInput && this._validate() === true) {
+  #onInput() {
+    if (this._validateOnInput && this.#validate() === true) {
       this._error = '';
     }
   }
 
-  private async _onSubmit(event: Event) {
+  async #onSubmit(event: Event) {
     event.preventDefault();
 
-    const error = this._validate();
+    const error = this.#validate();
     if (error !== true) {
-      this._setError(error);
+      this.#setError(error);
       this._validateOnInput = true;
       return;
     }
@@ -156,15 +156,15 @@ export default class CraftLoginForm extends LitElement {
         this._twoFactorData = data;
         this._view = '2fa';
       } else {
-        this._redirect(data.returnUrl);
+        this.#redirect(data.returnUrl);
       }
     } catch (e: any) {
       this._loginBusy = false;
-      this._setError(e?.response?.data?.message ?? t('A server error occurred.'));
+      this.#setError(e?.response?.data?.message ?? t('A server error occurred.'));
     }
   }
 
-  private async _loginWithPasskey() {
+  async #loginWithPasskey() {
     if (this._passkeyBusy) return;
 
     this._error = '';
@@ -182,25 +182,25 @@ export default class CraftLoginForm extends LitElement {
         response: JSON.stringify(authResponse),
       });
 
-      this._redirect(data.returnUrl);
+      this.#redirect(data.returnUrl);
     } catch (e: any) {
       this._passkeyBusy = false;
       const message = e?.response?.data?.message;
       if (message) {
-        this._setError(message);
+        this.#setError(message);
       } else {
         console.warn(e);
       }
     }
   }
 
-  private _showResetPasswordForm() {
+  #showResetPasswordForm() {
     this._error = '';
     this._resetUsername = this._usernameInput?.value ?? '';
     this._view = 'reset-password';
   }
 
-  private _onResetBack(event: CustomEvent) {
+  #onResetBack(event: CustomEvent) {
     const username = (event.detail?.username as string) ?? '';
     this._view = 'login';
     this.updateComplete.then(() => {
@@ -209,15 +209,15 @@ export default class CraftLoginForm extends LitElement {
     });
   }
 
-  private _onLoginSuccess(event: CustomEvent) {
-    this._redirect((event.detail as {returnUrl: string}).returnUrl);
+  #onLoginSuccess(event: CustomEvent) {
+    this.#redirect((event.detail as {returnUrl: string}).returnUrl);
   }
 
-  private _onLoginError(event: CustomEvent) {
-    this._setError((event.detail as {message: string}).message);
+  #onLoginError(event: CustomEvent) {
+    this.#setError((event.detail as {message: string}).message);
   }
 
-  private _setError(message: string) {
+  #setError(message: string) {
     this._error = message;
     const live = this.shadowRoot?.querySelector(
       '.visually-hidden[role="status"]'
@@ -225,7 +225,7 @@ export default class CraftLoginForm extends LitElement {
     if (live) live.textContent = message;
   }
 
-  private _redirect(returnUrl: string) {
+  #redirect(returnUrl: string) {
     this.dispatchEvent(
       new CustomEvent('craft-login', {
         bubbles: true,
@@ -247,27 +247,27 @@ export default class CraftLoginForm extends LitElement {
         ></span>
 
         ${this._view === 'login'
-          ? this._renderLoginView()
+          ? this.#renderLoginView()
           : this._view === 'reset-password'
             ? html`
                 <craft-login-reset-password
                   ?use-email-as-username="${this.useEmailAsUsername}"
                   username="${this._resetUsername}"
-                  @reset-back="${this._onResetBack}"
+                  @reset-back="${this.#onResetBack}"
                 ></craft-login-reset-password>
               `
             : html`
                 <craft-login-2fa
                   .data="${this._twoFactorData!}"
-                  @login-success="${this._onLoginSuccess}"
-                  @login-error="${this._onLoginError}"
+                  @login-success="${this.#onLoginSuccess}"
+                  @login-error="${this.#onLoginError}"
                 ></craft-login-2fa>
               `}
       </div>
     `;
   }
 
-  private _renderLoginView() {
+  #renderLoginView() {
     const hasAltMethods =
       this._canUsePasskey || this.querySelector('[slot="alternative-methods"]');
 
@@ -277,7 +277,7 @@ export default class CraftLoginForm extends LitElement {
           class="login-form"
           method="post"
           accept-charset="UTF-8"
-          @submit="${this._onSubmit}"
+          @submit="${this.#onSubmit}"
         >
           ${this.staticEmail
             ? html`<input
@@ -288,7 +288,7 @@ export default class CraftLoginForm extends LitElement {
               />`
             : html`
                 <div class="field">
-                  <label for="login-username">${this._usernameLabel()}</label>
+                  <label for="login-username">${this.#usernameLabel()}</label>
                   <input
                     id="login-username"
                     type="${this.useEmailAsUsername ? 'email' : 'text'}"
@@ -298,7 +298,7 @@ export default class CraftLoginForm extends LitElement {
                     autocomplete="username"
                     autocapitalize="off"
                     aria-required="true"
-                    @input="${this._onInput}"
+                    @input="${this.#onInput}"
                   />
                 </div>
               `}
@@ -311,7 +311,7 @@ export default class CraftLoginForm extends LitElement {
               name="password"
               autocomplete="current-password"
               aria-required="true"
-              @input="${this._onInput}"
+              @input="${this.#onInput}"
             ></craft-input-password>
           </div>
 
@@ -321,7 +321,7 @@ export default class CraftLoginForm extends LitElement {
                   <button
                     type="button"
                     class="login-forgot-password"
-                    @click="${this._showResetPasswordForm}"
+                    @click="${this.#showResetPasswordForm}"
                   >
                     ${t('Forgot password?')}
                   </button>
@@ -367,7 +367,7 @@ export default class CraftLoginForm extends LitElement {
                       type="button"
                       appearance="filled"
                       ?loading="${this._passkeyBusy}"
-                      @click="${this._loginWithPasskey}"
+                      @click="${this.#loginWithPasskey}"
                     >
                       ${t('Sign in with a passkey')}
                     </craft-button>

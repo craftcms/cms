@@ -45,18 +45,18 @@ export default class CraftLogin2fa extends LitElement {
 
   @query('.auth-form-container') private _container?: HTMLElement;
 
-  private _initialized = false;
+  #initialized = false;
 
   override async updated(changed: Map<string, unknown>) {
     super.updated(changed);
 
-    if (!this._initialized && !this._switching && this._container) {
-      this._initialized = true;
-      await this._initForm();
+    if (!this.#initialized && !this._switching && this._container) {
+      this.#initialized = true;
+      await this.#initForm();
     }
   }
 
-  private async _initForm() {
+  async #initForm() {
     if (!this._container) return;
 
     await Craft.appendHeadHtml(this.data.headHtml);
@@ -91,9 +91,9 @@ export default class CraftLogin2fa extends LitElement {
       ?.focus();
   }
 
-  private async _switchMethod(methodClass: string) {
+  async #switchMethod(methodClass: string) {
     this._switching = true;
-    this._initialized = false;
+    this.#initialized = false;
 
     try {
       const {data} = await actionClient.post('users/auth-form', {
@@ -131,7 +131,7 @@ export default class CraftLogin2fa extends LitElement {
                       <craft-button
                         type="button"
                         appearance="plain"
-                        @click="${() => this._switchMethod(method.class)}"
+                        @click="${() => this.#switchMethod(method.class)}"
                       >
                         ${method.name}
                       </craft-button>
