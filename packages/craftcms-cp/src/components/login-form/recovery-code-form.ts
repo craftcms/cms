@@ -89,11 +89,7 @@ export default class CraftRecoveryCodeForm extends LitElement {
           ></craft-input>
         </div>
 
-        <craft-button
-          type="submit"
-          variant="primary"
-          ?loading="${this._busy}"
-        >
+        <craft-button type="submit" variant="primary" ?loading="${this._busy}">
           ${t('Verify')}
         </craft-button>
       </form>
