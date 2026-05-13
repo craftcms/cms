@@ -89,6 +89,7 @@ readonly class TwoFactorAuthenticationController
             'otherMethods' => $activeMethods->map(fn (AuthMethodInterface $method) => [
                 'name' => $method::displayName(),
                 'handle' => $method::handle(),
+                'url' => action([TwoFactorAuthenticationController::class, 'showForm'], ['method' => $method::handle()]),
             ])->all(),
             'authForm' => $html,
             'returnUrl' => $returnUrl,

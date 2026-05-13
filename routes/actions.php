@@ -128,7 +128,6 @@ foreach ([
         Route::get('app/health-check', HealthCheckController::class);
 
         // Auth
-        Route::post('users/login', [LoginController::class, 'attemptLogin']);
         Route::post('auth/verify-totp', [TwoFactorAuthenticationController::class, 'verify']);
         Route::post('auth/verify-recovery-code', [TwoFactorAuthenticationController::class, 'verifyRecoveryCode']);
         Route::post('auth/passkey-request-options', [PasskeyController::class, 'requestOptions']);

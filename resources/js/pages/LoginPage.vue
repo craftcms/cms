@@ -2,6 +2,7 @@
   import {usePage} from '@inertiajs/vue3';
   import useCraftData from '@/composables/useCraftData';
   import AuthBase from '@/layout/AuthBase.vue';
+  import {attemptLogin} from '@actions/Auth/LoginController';
 
   defineProps<{
     logo?: string;
@@ -17,6 +18,7 @@
 <template>
   <AuthBase>
     <craft-login-form
+      :action="attemptLogin().url"
       show-reset-password
       show-remember-me
       :username="page.props.username"

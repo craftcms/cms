@@ -1,7 +1,7 @@
 import {html, LitElement, nothing} from 'lit';
 import {property, query, state} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
-import {actionClient, t} from '@src/index.js';
+import {ConfigService, t} from '@src/index.js';
 import componentStyles from './login-form.styles.js';
 import CraftTotpForm from './totp-form.js';
 import CraftRecoveryCodeForm from './recovery-code-form.js';
@@ -12,7 +12,7 @@ export interface TwoFactorData {
   bodyHtml: string;
   returnUrl: string;
   authMethod: string;
-  otherMethods: Array<{name: string; class: string}>;
+  otherMethods: Array<{name: string; handle: string; url: string}>;
 }
 
 declare const Craft: {
@@ -51,6 +51,7 @@ export default class CraftLoginChallenge extends LitElement {
   @query('.auth-form-container') private _container?: HTMLElement;
 
   #initialized = false;
+  #config = ConfigService.getInstance();
 
   override async updated(changed: Map<string, unknown>) {
     super.updated(changed);
@@ -105,15 +106,23 @@ export default class CraftLoginChallenge extends LitElement {
       ?.focus();
   }
 
-  async #switchMethod(methodClass: string) {
+  async #switchMethod(method: {name: string; handle: string; url: string}) {
     this._switching = true;
     this.#initialized = false;
 
     try {
-      const {data} = await actionClient.post('users/auth-form', {
-        method: methodClass,
+      const response = await fetch(method.url, {
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
       });
-      this.data = data;
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch challenge data.');
+      }
+
+      this.data = await response.json();
     } finally {
       this._switching = false;
     }
@@ -146,7 +155,7 @@ export default class CraftLoginChallenge extends LitElement {
                   ${this.data.otherMethods.map(
                     (method) => html`
                       <craft-action-item
-                        @click="${() => this.#switchMethod(method.class)}"
+                        @click="${() => this.#switchMethod(method)}"
                       >
                         ${method.name}
                       </craft-action-item>

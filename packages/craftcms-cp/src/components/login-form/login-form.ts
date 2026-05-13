@@ -62,6 +62,9 @@ export default class CraftLoginForm extends LitElement {
   /** Error message pre-rendered by the server */
   @property({attribute: 'initial-error'}) initialError = '';
 
+  /** Action to submit the form */
+  @property() action = '';
+
   @state() private _view: View = 'login';
   @state() private _error = '';
   @state() private _loginBusy = false;
@@ -144,11 +147,24 @@ export default class CraftLoginForm extends LitElement {
     this._loginBusy = true;
 
     try {
-      const {data} = await actionClient.post('users/login', {
-        loginName: this._usernameInput!.value,
-        password: this._passwordInput!.value,
-        rememberMe: this._rememberMeInput?.checked ? '1' : '',
+      const response = await fetch(this.action, {
+        method: 'post',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          loginName: this._usernameInput!.value,
+          password: this._passwordInput!.value,
+          rememberMe: this._rememberMeInput?.checked ? '1' : '',
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error('Something went wrong.');
+      }
+
+      const data: TwoFactorData = await response.json();
 
       if (data.authMethod) {
         this._loginBusy = false;
@@ -159,6 +175,7 @@ export default class CraftLoginForm extends LitElement {
         this._loginBusy = false;
       }
     } catch (e: any) {
+      console.log(e);
       this._loginBusy = false;
       this.#setError(
         e?.response?.data?.message ?? t('A server error occurred.')
