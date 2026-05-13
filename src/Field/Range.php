@@ -8,6 +8,7 @@ use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\NumberFieldConditionRule;
+use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
@@ -24,7 +25,7 @@ use function CraftCms\Cms\template;
 /**
  * Range represents a Range field, which provides a tactile UI around a numeric value.
  */
-class Range extends Field implements InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Range extends Field implements DefaultableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -131,6 +132,11 @@ class Range extends Field implements InlineEditableFieldInterface, MergeableFiel
     public function useFieldset(): bool
     {
         return true;
+    }
+
+    public function getDefaultValue(): int|float|null
+    {
+        return $this->defaultValue;
     }
 
     #[Override]

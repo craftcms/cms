@@ -1304,6 +1304,19 @@ class Html
         return YiiHtml::javaScriptFile($url, $options);
     }
 
+    /**
+     * Returns JavaScript code with the given variables, pre-JSON-encoded.
+     *
+     * @param  callable  $jsFn  callback function that returns the JS code to be registered.
+     * @param  array  $vars  Array of variables that will be JSON-encoded before being passed to `$jsFn`.
+     */
+    public static function jsWithVars(callable $jsFn, array $vars): string
+    {
+        $jsVars = array_map(fn ($variable) => Json::encode($variable), $vars);
+
+        return call_user_func($jsFn, ...array_values($jsVars));
+    }
+
     public static function endForm(): string
     {
         return self::endTag('form');

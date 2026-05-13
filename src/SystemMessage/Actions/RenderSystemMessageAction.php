@@ -59,7 +59,7 @@ readonly class RenderSystemMessageAction
                 language: $language,
                 subject: $subject,
                 textBody: $textBody,
-                htmlBody: Markdown::parse($escapedHtmlBody, 'gfm'),
+                htmlBody: Markdown::parse($escapedHtmlBody, 'gfm-comment'),
                 siteId: $siteId,
                 variables: $variables,
             );

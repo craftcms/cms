@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Policies\UserPolicy;
 use Illuminate\Support\Facades\Gate;
@@ -80,7 +81,17 @@ it('allows register users permission to create new user', function () {
     expect($result)->toBeTrue();
 });
 
-it('prevents user from deleting themselves', function () {
+it('does not prevent user from deleting themselves', function () {
+    $user = createUserTestUser(id: 1, permissions: ['deleteUsers']);
+
+    $result = $this->policy->delete($user, $user);
+
+    expect($result)->toBeTrue();
+});
+
+it('prevents user from deleting themselves when edition is solo', function () {
+    Edition::set(Edition::Solo);
+
     $user = createUserTestUser(id: 1, permissions: ['deleteUsers']);
 
     $result = $this->policy->delete($user, $user);

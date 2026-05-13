@@ -35,7 +35,7 @@ class ResaveUsersCommand extends ResaveCommand
                 ->all();
         }
 
-        $withFields = $this->resolvedWithFields();
+        $withFields = $this->resolvedWithFields;
 
         if (! empty($withFields)) {
             $fieldLayout = $fields->getLayoutByType(User::class);

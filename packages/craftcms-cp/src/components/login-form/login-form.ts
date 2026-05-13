@@ -155,7 +155,7 @@ export default class CraftLoginForm extends LitElement {
         this._twoFactorData = data;
         this._view = 'challenge';
       } else {
-        this.#redirect(data.returnUrl);
+        this.#handleSuccess(data.returnUrl);
         this._loginBusy = false;
       }
     } catch (e: any) {
@@ -184,7 +184,7 @@ export default class CraftLoginForm extends LitElement {
         response: JSON.stringify(authResponse),
       });
 
-      this.#redirect(data.returnUrl);
+      this.#handleSuccess(data.returnUrl);
       this._passkeyBusy = false;
     } catch (e: any) {
       this._passkeyBusy = false;
@@ -213,7 +213,7 @@ export default class CraftLoginForm extends LitElement {
   }
 
   #onLoginSuccess(event: CustomEvent) {
-    this.#redirect((event.detail as {returnUrl: string}).returnUrl);
+    this.#handleSuccess((event.detail as {returnUrl: string}).returnUrl);
   }
 
   #onLoginError(event: CustomEvent) {
@@ -238,7 +238,7 @@ export default class CraftLoginForm extends LitElement {
     if (live) live.textContent = message;
   }
 
-  #redirect(returnUrl: string) {
+  #handleSuccess(returnUrl: string) {
     const event = new CustomEvent('craft:login:success', {
       bubbles: true,
       composed: true,

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\User\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\Users;
 use Illuminate\Console\Command;
@@ -70,15 +71,13 @@ class DeleteCommand extends Command implements PromptsForMissingInput
 
                 return self::SUCCESS;
             }
-
-            $user->inheritorOnDelete = $inheritor;
         } elseif (! confirm("Delete user “{$user->username}” and their content?")) {
             $this->components->warn('Aborted');
 
             return self::SUCCESS;
         }
 
-        if (! $user->inheritorOnDelete && ! $this->option('delete-content')) {
+        if (! $inheritor && ! $this->option('delete-content')) {
             $this->components->error('You must specify either --delete-content or --inheritor to proceed.');
 
             return self::FAILURE;
@@ -87,7 +86,11 @@ class DeleteCommand extends Command implements PromptsForMissingInput
         $fail = false;
         $this->components->task(
             'Deleting the user',
-            function () use ($elements, $user, &$fail) {
+            function () use ($inheritor, $elements, $user, &$fail) {
+                if ($inheritor) {
+                    Entries::reassignEntries($user->id, $inheritor->id);
+                }
+
                 $fail = ! $elements->deleteElement($user, $this->option('hard'));
             }
         );

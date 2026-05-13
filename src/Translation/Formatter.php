@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Translation;
 
 use Carbon\CarbonInterface;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Str;
 use DateInterval;
 use DateTime;
@@ -83,7 +84,7 @@ class Formatter
     public function asDate(int|string|DateTimeInterface $value, ?string $format = null): string
     {
         $format ??= $this->defaultDateFormat;
-        [$value] = $this->parseDate($value, $format);
+        [$value] = $this->parseDate($value, $format, false);
 
         if (is_string($value)) {
             return $value;
@@ -107,10 +108,16 @@ class Formatter
         )->format($value->toDateTime());
     }
 
-    public function asDateTime(int|string|DateTimeInterface $value, ?string $format = null): string
+    public function asDateTime(int|string|DateTimeInterface $value, ?string $format = null, bool $withTimeZone = false): string
     {
+        $value = DateTimeHelper::toDateTime(
+            value: $value,
+            assumeSystemTimeZone: false,
+            setToSystemTimeZone: false,
+        );
+
         $format ??= $this->defaultDateFormat;
-        [$value] = $this->parseDate($value, $format);
+        [$value] = $this->parseDate($value, $format, $withTimeZone);
 
         if (is_string($value)) {
             return $value;
@@ -426,10 +433,10 @@ class Formatter
         ], locale: $this->locale);
     }
 
-    public function asTime(int|string|DateTimeInterface $value, ?string $format = null): string
+    public function asTime(int|string|DateTimeInterface $value, ?string $format = null, bool $withTimeZone = false): string
     {
         $format ??= $this->defaultDateFormat;
-        [$value] = $this->parseDate($value, $format);
+        [$value] = $this->parseDate($value, $format, $withTimeZone);
 
         if (is_string($value)) {
             return $value;
@@ -456,7 +463,7 @@ class Formatter
     public function asTimestamp(int|string|DateTimeInterface $value, ?string $format = null, bool $withPreposition = false): string
     {
         $format ??= $this->defaultDateFormat;
-        [$dateTime, $hasTimeInfo] = $this->parseDate($value, $format);
+        [$dateTime, $hasTimeInfo] = $this->parseDate($value, $format, false);
 
         if (is_string($dateTime)) {
             return $dateTime;
@@ -588,7 +595,7 @@ class Formatter
     /**
      * @return array{CarbonInterface|string, bool}
      */
-    private function parseDate(int|string|DateTimeInterface $value, string $format): array
+    private function parseDate(int|string|DateTimeInterface $value, string $format, bool $withTimeZone): array
     {
         if ($value instanceof CarbonInterface) {
             return [$value, true];
@@ -628,11 +635,15 @@ class Formatter
             $dateTime = $dateTime->addHours($offset / 3600);
         }
 
-        if (str_starts_with($format, 'php:')) {
-            return [$dateTime->format(Str::after($format, 'php:')), $hasTimeInfo];
+        $result = str_starts_with($format, 'php:')
+            ? $dateTime->format(Str::after($format, 'php:'))
+            : $dateTime;
+
+        if ($withTimeZone && $result) {
+            $result .= ' '.DateTimeHelper::timeZoneAbbreviation($value->getTimezone());
         }
 
-        return [$dateTime, $hasTimeInfo];
+        return [$result, $hasTimeInfo];
     }
 
     private function normalizeNumericValue(mixed $value): float|int

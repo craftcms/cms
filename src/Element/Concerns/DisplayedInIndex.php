@@ -141,6 +141,7 @@ trait DisplayedInIndex
             'nestedInputNamespace' => $viewState['nestedInputNamespace'] ?? null,
             'tableName' => static::pluralDisplayName(),
             'elementQuery' => self::elementQueryWithAllDescendants($elementQuery),
+            'returnUrl' => $viewState['returnUrl'] ?? null,
         ];
 
         if (! empty($viewState['order'])) {

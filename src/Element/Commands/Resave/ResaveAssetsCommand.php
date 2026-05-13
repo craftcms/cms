@@ -36,7 +36,7 @@ class ResaveAssetsCommand extends ResaveCommand
                 ->all();
         }
 
-        $withFields = $this->resolvedWithFields();
+        $withFields = $this->resolvedWithFields;
 
         if (! empty($withFields)) {
             $handles = $volumes->getAllVolumes()

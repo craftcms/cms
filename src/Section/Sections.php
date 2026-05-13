@@ -195,6 +195,7 @@ class Sections
                 'sections.handle',
                 'sections.type',
                 'sections.enableVersioning',
+                'sections.minAuthors',
                 'sections.maxAuthors',
                 'sections.defaultPlacement',
                 'sections.propagationMethod',
@@ -526,6 +527,7 @@ class Sections
             $sectionModel->handle = $data['handle'];
             $sectionModel->type = $data['type'];
             $sectionModel->enableVersioning = (bool) $data['enableVersioning'];
+            $sectionModel->minAuthors = $data['minAuthors'] ?? null;
             $sectionModel->maxAuthors = $data['maxAuthors'] ?? null;
             $sectionModel->propagationMethod = $data['propagationMethod'] ?? PropagationMethod::All->value;
             $sectionModel->defaultPlacement = $data['defaultPlacement'] ?? DefaultPlacement::End;

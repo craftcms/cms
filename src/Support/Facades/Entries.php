@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static array<string, \CraftCms\Cms\Entry\Elements\Entry> getSingleEntriesByHandle(string[] $handles)
  * @method static void refreshSingleEntries()
  * @method static bool moveEntryToSection(\CraftCms\Cms\Entry\Elements\Entry $entry, \CraftCms\Cms\Section\Data\Section $section)
+ * @method static int reassignEntries(int|int[] $oldUserId, int $newUserId)
  *
  * @see \CraftCms\Cms\Entry\Entries
  */

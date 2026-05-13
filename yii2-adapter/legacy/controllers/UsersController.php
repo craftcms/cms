@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use craft\base\Event as YiiEvent;
 use craft\events\DefineEditUserScreensEvent;
-use craft\events\DefineUserContentSummaryEvent;
 use craft\events\FindLoginUserEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\UserEvent;
@@ -20,11 +19,9 @@ use CraftCms\Cms\Auth\Events\LoginUserRetrieving;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\EditUserScreensResolving;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
-use CraftCms\Cms\User\Events\UserContentSummaryResolving;
 use CraftCms\Cms\User\Events\UserGroupsAndPermissionsAssigning;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Auth\Events\Failed;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use yii\web\Response;
 
@@ -214,18 +211,6 @@ class UsersController extends Controller
                 ]);
 
                 YiiEvent::trigger(UsersController::class, UsersController::EVENT_LOGIN_FAILURE, $yiiEvent);
-            }
-        });
-
-        Event::listen(UserContentSummaryResolving::class, function(UserContentSummaryResolving $event) {
-            // Fire a 'defineContentSummary' event
-            if (YiiEvent::hasHandlers(UsersController::class, UsersController::EVENT_DEFINE_CONTENT_SUMMARY)) {
-                $yiiEvent = new DefineUserContentSummaryEvent([
-                    'userId' => $event->userId,
-                    'contentSummary' => $event->contentSummary->all(),
-                ]);
-                YiiEvent::trigger(UsersController::class, UsersController::EVENT_DEFINE_CONTENT_SUMMARY, $yiiEvent);
-                $event->contentSummary = new Collection($event->contentSummary);
             }
         });
     }

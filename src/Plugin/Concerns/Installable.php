@@ -46,13 +46,10 @@ trait Installable
     {
         $this->beforeUninstall();
 
-        $installPath = $this->getMigrationsPath().'/Install.php';
-
-        if (File::exists($installPath)) {
-            $this->getMigrator()->resetMigrations(
-                [$installPath],
-                [dirname($installPath)],
-            );
+        if ($installMigration = $this->createInstallMigration()) {
+            $migrator = $this->getMigrator();
+            $migrator->runMigration($installMigration, 'down');
+            $migrator->getRepository()->delete((object) ['migration' => 'Install']);
         }
 
         $this->afterUninstall();

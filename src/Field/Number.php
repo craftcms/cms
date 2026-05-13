@@ -8,6 +8,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\NumberFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
+use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
@@ -34,7 +35,7 @@ use function CraftCms\Cms\template;
 /**
  * Number represents a Number field.
  */
-class Number extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Number extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     public const string FORMAT_DECIMAL = 'decimal';
 
@@ -184,6 +185,11 @@ class Number extends Field implements CrossSiteCopyableFieldInterface, InlineEdi
         ]);
     }
 
+    public function getDefaultValue(): int|null|float
+    {
+        return $this->defaultValue;
+    }
+
     #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
@@ -285,6 +291,15 @@ JS;
             'field' => $this,
             'value' => $value,
             'formatNumber' => $formatNumber,
+            'currencyLabel' => $this->previewFormat === self::FORMAT_CURRENCY ? $this->currencyLabel() : false,
+        ]);
+    }
+
+    private function currencyLabel(): string
+    {
+        return t('({currencyCode}) {currencySymbol}', [
+            'currencyCode' => $this->previewCurrency,
+            'currencySymbol' => I18N::getFormattingLocale()->getCurrencySymbol($this->previewCurrency),
         ]);
     }
 

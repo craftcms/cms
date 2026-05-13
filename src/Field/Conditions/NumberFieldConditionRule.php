@@ -12,7 +12,7 @@ class NumberFieldConditionRule extends BaseNumberConditionRule implements FieldC
 {
     use FieldConditionRuleTrait;
 
-    protected function elementQueryParam(): ?string
+    protected function elementQueryParam(): string|array|null
     {
         return $this->paramValue();
     }

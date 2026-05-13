@@ -13,10 +13,15 @@ class DeleteAssets extends Delete
     public function getTriggerHtml(): ?string
     {
         // Only enable for deletable elements, per canDelete()
-        HtmlStack::jsWithVars(fn ($type) => <<<JS
+        HtmlStack::jsWithVars(fn (
+            $triggerId,
+            $elementType,
+            $hardDelete,
+            $confirmationMessage,
+        ) => <<<JS
 (() => {
-  const trigger = new Craft.ElementActionTrigger({
-    type: $type,
+  new Craft.ElementActionTrigger({
+    triggerId: $triggerId,
     requireId: false,
     validateSelection: (selectedItems, elementIndex) => {
       for (let i = 0; i < selectedItems.length; i++) {
@@ -37,24 +42,42 @@ class DeleteAssets extends Delete
         }
       }
 
-      return true;
+      return elementIndex.settings.canDeleteElements(selectedItems);
     },
-
-    activate: (selectedItems, elementIndex) => {
+    activate: async (selectedItems, elementIndex) => {
       const element = selectedItems.find('.element:first');
       if (Garnish.hasAttr(element, 'data-is-folder')) {
         const sourcePath = element.data('source-path');
-        elementIndex.deleteFolder(sourcePath[sourcePath.length - 1])
-          .then(() => {
-            elementIndex.updateElements();
-          });
+        await elementIndex.deleteFolder(sourcePath[sourcePath.length - 1]);
+        elementIndex.updateElements();
       } else {
-        elementIndex.submitAction(trigger.\$trigger.data('action'), Garnish.getPostData(trigger.\$trigger));
+        await elementIndex.onBeforeDeleteElements(selectedItems);
+        elementIndex.setIndexBusy();
+        const elementIds = elementIndex.getSelectedElementIds();
+    
+        new Craft.ElementDeletionManager($elementType, elementIds, {
+          siteId: elementIndex.siteId,
+          ownerId: elementIndex.settings.criteria?.ownerId,
+          hardDelete: $hardDelete,
+          confirmationMessage: $confirmationMessage,
+          onLoadBlockers: () => {
+            elementIndex.setIndexAvailable();
+          },
+          onSuccess: async () => {
+            elementIndex.updateElements(true, true);
+            await elementIndex.onDeleteElements(selectedItems);
+          },
+        });
       }
     },
   });
 })();
-JS, [static::class]);
+JS, [
+            $this->getTriggerId(),
+            $this->elementType,
+            $this->hard,
+            $this->confirmationMessage,
+        ]);
 
         return null;
     }

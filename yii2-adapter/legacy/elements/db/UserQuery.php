@@ -53,11 +53,7 @@ class UserQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected array $defaultOrderBy = [
-        'users.username' => SORT_ASC,
-        'users.active' => SORT_DESC,
-        'users.pending' => SORT_DESC,
-    ];
+    protected array $defaultOrderBy;
 
     // General parameters
     // -------------------------------------------------------------------------
@@ -246,6 +242,20 @@ class UserQuery extends ElementQuery
      * @since 3.6.0
      */
     public bool $withGroups = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct(string $elementType, array $config = [])
+    {
+        parent::__construct($elementType, $config);
+
+        $this->defaultOrderBy = [
+            new Expression('CASE WHEN [[users.username]] IS NULL THEN 1 ELSE 0 END ASC'),
+            'users.active' => SORT_DESC,
+            'users.pending' => SORT_DESC,
+        ];
+    }
 
     /**
      * @inheritdoc
