@@ -10,20 +10,20 @@ import {
 
 ## Overview
 
-The Craft color palette uses Leonardo to generate color palettes based on defined contrast ratios. The palette includes a wide range of colors, but not all of them are intended for direct use in the UI.
+The Craft color palette uses Leonardo to generate colors based on defined contrast ratios. The palette includes a wide range of colors, but not all of them are intended for direct use in the UI.
 
-Instead, colors should be used inside of **color tokens**. The palette is organized into two themes: light and dark. Each theme has a set of contrast colors that are used for text, borders, and backgrounds.
+Instead, colors should be used inside of **color tokens**. When a color token is used, it automatically adapts to the active theme, providing appropriate contrast for UI elements and text. This means that components can use the same color variables, and they will automatically adapt to the active theme without needing to override colors when the theme changes.
 
-For both themes, the general guideline is:
+For light and dark themes, the general guideline is:
 
 - Colors **400** and above are suitable for UI elements, as they have a 3:1 contrast ratio against the theme background color.
 - Colors **600** and above are suitable for text, as they have a 4.5:1 contrast ratio against the theme background color.
 
+There is also a static color palette that is not affected by the active theme. These colors are used for elements that need to maintain a consistent color regardless of the theme, such as icons or logos.
+
 ## Static Colors
 
-The palette also includes a set of static colors that are not affected by the active theme. These colors are used for elements that need to maintain a consistent color regardless of the theme, such as icons or logos.
-
-Static colors are based on the colors generated for the light theme, and can be used in both light and dark themes without modification.
+Static colors are used for elements that need to maintain a consistent color regardless of the theme, such as icons or logos.
 
 The color variables are used by prefixing the desired color with `--color-static-`. For example, the `blue-500` color can be used with the following variable: `--color-static-blue-500`.
 
