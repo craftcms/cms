@@ -42,7 +42,7 @@ runs:
         # GITHUB_TOKEN format (composer/composer#12849).
         github-token: ''
       env:
-        COMPOSER_TOKEN: ${{ inputs.github-token }}
+        # COMPOSER_TOKEN: ${{ inputs.github-token }}
         COMPOSER_AUTH_JSON: |
           {
             "http-basic": {
