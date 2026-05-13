@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Events\NestedElementsSaved;
@@ -861,7 +862,7 @@ JS, [
     return;
   }
 
-  const getEntries = () => field.find($entrySelector);
+  const getEntries = () => field.find($entrySelector)
 
   btn.on('activate', () => {
     Craft.cp.copyElements(getEntries().toArray().map((element) => {
@@ -1625,7 +1626,7 @@ JS,
                 if (
                     $forceSave &&
                     $element->getIsDerivative() &&
-                    $entry->getPrimaryOwnerId() === $element->getCanonicalId() &&
+                    ElementHelper::belongsToCanonicalOwner($entry, $element) &&
                     // this is so that extra drafts don't get created for matrix in matrix scenario
                     // where both are set to inline-editable blocks view mode
                     (

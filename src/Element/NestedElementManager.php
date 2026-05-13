@@ -716,13 +716,11 @@ JS, [
                     ) {
                         /** @var NestedElementInterface $canonical */
                         $canonical = $element->getCanonical(true);
-                        if ($canonical->getPrimaryOwnerId() === $owner->getCanonicalId()) {
+                        if (ElementHelper::belongsToCanonicalOwner($canonical, $owner)) {
                             app(Drafts::class)->removeDraftData($element);
                             DB::table(Table::ELEMENTS_OWNERS)
-                                ->where([
-                                    'elementId' => $canonical->id,
-                                    'ownerId' => $owner->id,
-                                ])
+                                ->where('elementId', $canonical->id)
+                                ->where('ownerId', $owner->id)
                                 ->delete();
                         }
                     } elseif (
@@ -916,7 +914,15 @@ JS, [
                     $newAttributes['siteId'] = $target->siteId;
                 }
 
-                if ($target->updatingFromDerivative && $element->getIsDerivative()) {
+                /** @var NestedElementInterface $canonical */
+                $canonical = $element->getCanonical(true);
+
+                if (
+                    $target->updatingFromDerivative &&
+                    $element->getIsDerivative() &&
+                    $element->getPrimaryOwnerId() === $source->id &&
+                    $canonical->getPrimaryOwnerId() === $target->id
+                ) {
                     if (
                         ElementHelper::isRevision($source) ||
                         ! empty($target->newSiteIds) ||
@@ -936,9 +942,12 @@ JS, [
                                 ],
                             );
                     } else {
-                        // If we're updating the canonical owner element, then go with the nested element’s canonical ID.
-                        // Otherwise, leave the current ID intact.
-                        $newElementId = $target->getIsCanonical() ? $element->getCanonicalId() : $element->id;
+                        // if the canonical element is owned by the target element, then go with its ID
+                        if ($canonical->getOwnerId() === $target->id) {
+                            $newElementId = $element->getCanonicalId();
+                        } else {
+                            $newElementId = $element->id;
+                        }
                     }
                 } elseif (! $force && $element->getPrimaryOwnerId() === $target->id) {
                     DB::table(Table::ELEMENTS_OWNERS)
