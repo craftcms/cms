@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.10.0 - 2026-05-13
 
 ### Content Management
 - Collapsed Matrix blocks now show their entries’ UI labels as preview text, whenever possible. ([#18484](https://github.com/craftcms/cms/discussions/18484))
