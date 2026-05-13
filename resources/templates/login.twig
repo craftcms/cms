@@ -21,14 +21,23 @@
       </h1>
     {% endif %}
 
-    {% include '_special/login.twig' with {
-      showResetPassword: true,
-      showRememberMeCheckbox: true,
-      initialError: loginError,
-    } %}
+    <div class="w-xs">
+      <div class="cp-pane">
+        {% include '_special/login.twig' with {
+          showResetPassword: true,
+          showRememberMeCheckbox: true,
+          initialError: loginError,
+        } %}
+      </div>
+    </div>
 
     {% if Request.isCpRequest %}
-      <a id="poweredby" href="http://craftcms.com/" title="{{ 'Powered by Craft CMS'|t('app') }}" aria-label="Craft CMS">
+      <a
+        id="poweredby"
+        href="http://craftcms.com/"
+        title="{{ 'Powered by Craft CMS'|t('app') }}"
+        aria-label="Craft CMS"
+      >
         {{ svg('@app/web/assets/cp/dist/images/craftcms.svg') }}
       </a>
     {% endif %}
@@ -52,7 +61,7 @@
   </header>
 
   <script type="text/javascript">
-    var cookieTest = 'CraftCookieTest='+Math.floor(Math.random() * 1000000);
+    var cookieTest = 'CraftCookieTest=' + Math.floor(Math.random() * 1000000);
     document.cookie = cookieTest;
     if (document.cookie.search(cookieTest) != -1) {
       document.cookie = cookieTest + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
@@ -69,17 +78,7 @@
 {% endblock %}
 
 {% css %}
-  html {
-    height: 100%;
-  }
+html {
+  height: 100%;
+}
 {% endcss %}
-
-{% js %}
-  (() => {
-    const loginForm = new Craft.LoginForm($('.login-container'));
-
-    {% if authFormData is defined %}
-      loginForm.show2faForm({{ authFormData|json_encode|raw }});
-    {% endif %}
-  })();
-{% endjs %}

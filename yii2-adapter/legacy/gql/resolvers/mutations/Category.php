@@ -93,6 +93,7 @@ class Category extends ElementMutationResolver
     public function deleteCategory(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): bool
     {
         $categoryId = $arguments['id'];
+        $hardDelete = $arguments['hardDelete'] ?? false;
 
         $category = Elements::getElementById($categoryId, CategoryElement::class);
 
@@ -103,6 +104,6 @@ class Category extends ElementMutationResolver
         $categoryGroupUid = DB::table('categorygroups')->uidById($category->groupId);
         $this->requireSchemaAction('categorygroups.' . $categoryGroupUid, 'delete');
 
-        return Elements::deleteElementById($categoryId);
+        return Elements::deleteElementById($categoryId, hardDelete: $hardDelete);
     }
 }

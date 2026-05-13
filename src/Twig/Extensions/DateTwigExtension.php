@@ -48,7 +48,7 @@ class DateTwigExtension extends AbstractExtension
     public function timestampFilter(mixed $value, ?string $format = null, bool $withPreposition = false): string
     {
         if ($value === null || $value === '') {
-            return '';
+            $value = DateTimeHelper::now();
         }
 
         try {
@@ -79,18 +79,30 @@ class DateTwigExtension extends AbstractExtension
         return $env->getExtension(CoreExtension::class)->formatDate($date, DateTime::RSS, $timezone);
     }
 
-    public function timeFilter(TwigEnvironment $env, mixed $date, ?string $format = null, mixed $timezone = null, ?string $locale = null): string
-    {
+    public function timeFilter(
+        TwigEnvironment $env,
+        mixed $date,
+        ?string $format = null,
+        mixed $timezone = null,
+        ?string $locale = null,
+        bool $withTimeZone = false,
+    ): string {
         $format = $this->normalizeFormat($format);
 
-        return $this->formatWithLocale($env, $date, $format, $timezone, $locale, 'asTime');
+        return $this->formatWithLocale($env, $date, $format, $timezone, $locale, 'asTime', $withTimeZone);
     }
 
-    public function datetimeFilter(TwigEnvironment $env, mixed $date, ?string $format = null, mixed $timezone = null, ?string $locale = null): string
-    {
+    public function datetimeFilter(
+        TwigEnvironment $env,
+        mixed $date,
+        ?string $format = null,
+        mixed $timezone = null,
+        ?string $locale = null,
+        bool $withTimeZone = false,
+    ): string {
         $format = $this->normalizeFormat($format);
 
-        return $this->formatWithLocale($env, $date, $format, $timezone, $locale, 'asDatetime');
+        return $this->formatWithLocale($env, $date, $format, $timezone, $locale, 'asDatetime', $withTimeZone);
     }
 
     private function normalizeFormat(?string $format): ?string
@@ -113,12 +125,19 @@ class DateTwigExtension extends AbstractExtension
         mixed $timezone,
         ?string $locale,
         string $method,
+        bool $withTimeZone = false,
     ): string {
-        $date = $env->getExtension(CoreExtension::class)->convertDate($date, $timezone);
+        $date = DateTime::createFromInterface($env->getExtension(CoreExtension::class)->convertDate($date, $timezone));
         $formatter = $locale ? I18N::getLocaleById($locale)->getFormatter() : I18N::getFormatter();
         $originalTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
-        $formatted = $formatter->{$method}(DateTime::createFromInterface($date), $format);
+
+        if ($method === 'asDate') {
+            $formatted = $formatter->{$method}(DateTime::createFromInterface($date), $format);
+        } else {
+            $formatted = $formatter->{$method}(DateTime::createFromInterface($date), $format, withTimeZone: $withTimeZone);
+        }
+
         $formatter->timeZone = $originalTimeZone;
 
         return $formatted;

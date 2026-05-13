@@ -6,6 +6,9 @@ import {
 } from '@simplewebauthn/browser';
 
 /** global: Garnish */
+/**
+ * @deprecated in 6.0
+ */
 Craft.LoginForm = Garnish.Base.extend(
   {
     $container: null,

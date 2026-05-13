@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
   withDefaults(
     defineProps<{
       shaking?: boolean;

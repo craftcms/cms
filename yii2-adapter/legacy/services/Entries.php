@@ -768,6 +768,20 @@ class Entries extends Component
         return EntriesFacade::moveEntryToSection($entry, $section);
     }
 
+    /**
+     * Reassigns entries to a new author.
+     *
+     * @param int|int[] $oldUserId
+     * @param int $newUserId
+     * @return int The number of affected entries
+     * @since 5.10.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Entry\Entries::reassignEntries()} instead.
+     */
+    public function reassignEntries(int|array $oldUserId, int $newUserId): int
+    {
+        return EntriesFacade::reassignEntries($oldUserId, $newUserId);
+    }
+
     public static function registerEvents(): void
     {
         Event::listen(SectionSaving::class, function(SectionSaving $event) {

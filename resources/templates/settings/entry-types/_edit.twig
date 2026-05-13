@@ -217,7 +217,9 @@
 
 {{ forms.fieldLayoutDesignerField({
     id: 'field-layout',
-    fieldLayout: session('oldFieldLayout', entryType.getFieldLayout()),
+    fieldLayout: old('fieldLayout')
+        ? Fields.createLayout(old('fieldLayout'))
+        : entryType.getFieldLayout(),
     withGeneratedFields: true,
     withCardViewDesigner: true,
     disabled: readOnly,

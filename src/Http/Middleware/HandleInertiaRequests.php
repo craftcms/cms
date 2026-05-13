@@ -97,6 +97,7 @@ class HandleInertiaRequests extends Middleware
         $updates = app(Updates::class);
         $nav = app(Navigation::class);
         $progressService = app(JobProgress::class);
+        $generalConfig = app(GeneralConfig::class);
         $currentUser = null;
         $generalConfig = app(GeneralConfig::class);
 
@@ -143,7 +144,7 @@ class HandleInertiaRequests extends Middleware
                     'username' => $currentUser->username,
                     'email' => $currentUser->email,
                     'name' => $currentUser->name,
-                    'thumbHtml' => $currentUser->getThumbHtml(30),
+                    'thumbHtml' => $currentUser?->getThumbHtml(30),
                 ] : null,
                 'readOnly' => ! $generalConfig->allowAdminChanges,
                 'allowAdminChanges' => $generalConfig->allowAdminChanges,

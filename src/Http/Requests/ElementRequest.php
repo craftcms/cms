@@ -17,6 +17,7 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Foundation\Http\FormRequest;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 #[Scoped]
 class ElementRequest extends FormRequest
@@ -41,6 +42,7 @@ class ElementRequest extends FormRequest
         return [
             '*' => [],
             'id' => ['missing'],
+            'uid' => ['missing'],
             'canonicalId' => ['missing'],
 
             /**
@@ -87,7 +89,11 @@ class ElementRequest extends FormRequest
         $this->overrides = $overrides;
         $this->checkForProvisionalDraft = $checkForProvisionalDraft;
         $this->strictSite = $strictSite;
-        $this->elementType = $this->elementType();
+        try {
+            $this->elementType = $this->elementType();
+        } catch (HttpException) {
+            return null;
+        }
 
         $this->validateElementType($this->elementType);
 

@@ -16,6 +16,8 @@ use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Identifiable;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Support\Facades\Auth;
@@ -696,6 +698,17 @@ abstract class Controller extends \yii\web\Controller
 
         if ($url && $object) {
             $url = renderObjectTemplate($url, $object);
+        }
+
+        $params = $this->request->getBodyParam('redirectParams');
+        if ($params) {
+            try {
+                $params = Json::decode($params);
+            } catch (InvalidArgumentException $e) {
+                throw new BadRequestHttpException($e->getMessage(), previous: $e);
+            }
+
+            $url = Url::urlWithParams($url, $params);
         }
 
         return $url;

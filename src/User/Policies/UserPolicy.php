@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Policies;
 
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Policies\ElementPolicy;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserPermissions;
@@ -36,9 +37,12 @@ class UserPolicy extends ElementPolicy
 
     public function delete(User $user, User $target): bool
     {
-        // Cannot delete yourself
-        if ($user->id === $target->id) {
+        if (Edition::get() === Edition::Solo) {
             return false;
+        }
+
+        if ($user->id === $target->id) {
+            return true;
         }
 
         // Need deleteUsers permission

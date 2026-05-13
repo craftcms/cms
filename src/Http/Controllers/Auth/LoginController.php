@@ -37,7 +37,7 @@ readonly class LoginController extends AuthenticationController
             return redirect()->action([TwoFactorAuthenticationController::class, 'showForm']);
         }
 
-        return Inertia::render('Auth/Login', [
+        return Inertia::render('LoginPage', [
             'username' => $generalConfig->rememberUsernameDuration ? $authMethods->getRememberedUsername() : '',
         ]);
     }
@@ -53,6 +53,15 @@ readonly class LoginController extends AuthenticationController
     public function showLoginModal(Request $request, Impersonation $impersonation, HtmlStack $HtmlStack): JsonResponse
     {
         $forElevatedSession = $request->boolean('forElevatedSession');
+
+        // if we're showing the modal for session elevation, and we got this far,
+        // it means that the time left doesn't exceed minimum requirement,
+        // but there might still be some time left;
+        // to avoid strange behaviour, clear out whatever's left so that we start with the right amount of time
+        // see https://github.com/craftcms/cms/pull/18753
+        if ($forElevatedSession) {
+            $request->session()->forget('auth.password_confirmed_at');
+        }
 
         // If the current user is being impersonated, get the impersonator instead
         if ($forElevatedSession && ($impersonator = $impersonation->getImpersonator())) {

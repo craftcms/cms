@@ -1923,6 +1923,7 @@ class Elements extends Component
             ]));
 
             $event->hardDelete = $yiiEvent->hardDelete;
+            $event->isValid = $yiiEvent->isValid;
         });
 
         Event::listen(function(ElementActionPerforming $event) {

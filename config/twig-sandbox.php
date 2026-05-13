@@ -110,7 +110,6 @@ return [
         'combine',
         'cpUrl',
         'cycle',
-        'dataUrl',
         'date',
         'date',
         'encodeUrl',

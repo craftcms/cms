@@ -87,6 +87,7 @@ class Tag extends ElementMutationResolver
     public function deleteTag(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): bool
     {
         $tagId = $arguments['id'];
+        $hardDelete = $arguments['hardDelete'] ?? false;
 
         $tag = Elements::getElementById($tagId, TagElement::class);
 
@@ -97,6 +98,6 @@ class Tag extends ElementMutationResolver
         $tagGroupUid = DB::table('taggroups')->uidById($tag->groupId);
         $this->requireSchemaAction('taggroups.' . $tagGroupUid, 'delete');
 
-        return Elements::deleteElementById($tagId);
+        return Elements::deleteElementById($tagId, hardDelete: $hardDelete);
     }
 }

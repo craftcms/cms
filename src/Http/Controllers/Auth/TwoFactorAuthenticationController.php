@@ -16,15 +16,11 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\URL;
-use Inertia\Inertia;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
-use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -36,19 +32,12 @@ readonly class TwoFactorAuthenticationController
         private GeneralConfig $generalConfig,
     ) {}
 
-    public function showForm(Request $request, AuthMethods $auth, Impersonation $impersonation, HtmlStack $HtmlStack): RedirectResponse|\Inertia\Response
+    public function showForm(Request $request, AuthMethods $auth, Impersonation $impersonation, HtmlStack $HtmlStack): Response|string
     {
         $user = $impersonation->getImpersonator()
             ?? User::find()->id($request->session()->get('user.id'))->first();
 
-        $pendingAt = $request->session()->get('user.pending_2fa_at');
-        $elapsedTime = now()->timestamp - $pendingAt;
-        $challengeExpired = ! $pendingAt || $elapsedTime > 300;
-        if ($challengeExpired) {
-            $request->session()->forget(['user.id', 'user.pending_2fa_at']);
-        }
-
-        if (! $user || $challengeExpired) {
+        if (! $user) {
             if ($request->isSiteRequest()) {
                 if (! $loginPath = $this->generalConfig->getLoginPath()) {
                     throw new RuntimeException('The loginPath config setting is disabled.');
@@ -57,7 +46,7 @@ readonly class TwoFactorAuthenticationController
                 return redirect($loginPath);
             }
 
-            return redirect(cp_url(CpAuthPath::Login->value));
+            return redirect(CpAuthPath::Login->value);
         }
 
         $activeMethods = $auth->getActiveMethods($user);
@@ -70,13 +59,13 @@ readonly class TwoFactorAuthenticationController
             );
 
             abort_if(! $method, 400, 'Invalid method handle: '.$methodHandle);
+
+            $activeMethods = $activeMethods->filter(fn ($m) => $m !== $method)->values();
         } else {
             abort_if($activeMethods->isEmpty(), 400, 'User has no active two-step verification methods.');
 
             $method = $activeMethods->first();
         }
-
-        $activeMethods = $activeMethods->filter(fn ($m) => $m !== $method)->values();
 
         $returnUrl = $request->input('returnUrl');
         if (! $returnUrl) {
@@ -92,9 +81,7 @@ readonly class TwoFactorAuthenticationController
 
         $html = TemplateMode::with(
             TemplateMode::Cp,
-            fn () => $method->getAuthFormHtml([
-                'returnUrl' => Crypt::encrypt($returnUrl),
-            ]),
+            fn () => $method->getAuthFormHtml($returnUrl),
         );
 
         $authFormData = [
@@ -115,8 +102,7 @@ readonly class TwoFactorAuthenticationController
             ]);
         }
 
-        return Inertia::render('Auth/Challenge', compact('authFormData'));
-        // return template('login', compact('authFormData'), templateMode: TemplateMode::Cp);
+        return template('login', compact('authFormData'), templateMode: TemplateMode::Cp);
     }
 
     public function verify(Request $request, AuthMethods $auth): Response

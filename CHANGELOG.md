@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-alpha.2 - 2026-05-13
 
 - Added support for SQLite backups and restores. ([#18803](https://github.com/craftcms/cms/pull/18803))
 - Added support for Symfony-style array config files in `config/craft/sanitizers/`. ([#18808](https://github.com/craftcms/cms/pull/18808))
@@ -53,6 +53,13 @@
 - Fixed a bug where criteria added to clones of executed element queries could be ignored. ([#18826](https://github.com/craftcms/cms/pull/18826))
 - Fixed a bug where Yii2 behaviors registered from plugins weren’t getting attached at the right time. ([#18824](https://github.com/craftcms/cms/issues/18824))
 - Fixed an error that occurred when running `craft:install` in environments where Laravel Prompts can only render tasks statically. ([#18830](https://github.com/craftcms/cms/pull/18830))
+- Fix legacy model array access for null properties ([#18843](https://github.com/craftcms/cms/pull/18843))
+- Fix Twig access to Laravel error bags ([#18841](https://github.com/craftcms/cms/pull/18841))
+- Fixed a bug where singles were throwing an exception ([#18845](https://github.com/craftcms/cms/issue/18845))
+- Fixed a bug where plugin settings were not saving consistently ([#18849](https://github.com/craftcms/cms/pull/18849))
+- Fixed a bug where deprecated string-based `orderBy()` arguments could cause element queries to throw an unknown column exception. ([#18852](https://github.com/craftcms/cms/pull/18852))
+- Fixed a bug where Laravel HTTP exceptions weren’t passed to legacy error handler event listeners. ([#18854](https://github.com/craftcms/cms/pull/18854))
+- Fixed a bug where FieldLayouts were being flashed to the session as arrays. ([#18847](https://github.com/craftcms/cms/pull/18847))
 
 ## 6.0.0-alpha.1 - 2026-05-06
 

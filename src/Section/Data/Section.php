@@ -47,6 +47,8 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
 
     public ?SectionType $type = null;
 
+    public int $minAuthors = 1;
+
     public ?int $maxAuthors = 1;
 
     public ?int $maxLevels = null;
@@ -186,8 +188,6 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
      * Sets the section's entry types.
      *
      * @param  EntryType[]  $entryTypes
-     *
-     * @since 3.1.0
      */
     public function setEntryTypes(array $entryTypes): void
     {
@@ -258,6 +258,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
             'type' => $this->type->value,
             'entryTypes' => array_map(fn (EntryType $entryType) => $entryType->getUsageConfig(), $this->getEntryTypes()),
             'enableVersioning' => $this->enableVersioning,
+            'minAuthors' => $this->minAuthors,
             'maxAuthors' => $this->maxAuthors,
             'propagationMethod' => $this->propagationMethod->value,
             'siteSettings' => [],

@@ -129,7 +129,7 @@ readonly class ElementAttributeRenderer
             $formatter = I18N::getFormatter();
 
             return Html::tag('span', $formatter->asTimestamp($value, Locale::LENGTH_SHORT), [
-                'title' => $formatter->asDatetime($value, Locale::LENGTH_SHORT),
+                'title' => $formatter->asDatetime($value, Locale::LENGTH_SHORT, true),
             ]);
         }
 
