@@ -96,7 +96,7 @@
 - Cross-domain script tags added by JavaScript are now loaded directly, rather than via a proxy. ([#18559](https://github.com/craftcms/cms/pull/18559))
 - Updated Twig to 3.24. ([#18259](https://github.com/craftcms/cms/discussions/18259), [#18454](https://github.com/craftcms/cms/issues/18454))
 - Updated bacon/bacon-qr-code to 3.x. ([#18742](https://github.com/craftcms/cms/discussions/18742))
-- Updated the built-in composer.phar to 2.9.7. ([#18761](https://github.com/craftcms/cms/issues/18761))
+- Updated the built-in composer.phar to 2.9.8. ([#18761](https://github.com/craftcms/cms/issues/18761))
 - Fixed a bug where nested entries weren’t getting loaded with their content, if they had an entry type that was no longer allowed by their Matrix field.
 - Fixed the wording of the validation error when saving a nested entry with an invalid entry type. ([#18506](https://github.com/craftcms/cms/issues/18506))
 - Fixed a bug where relation fields’ element query params weren’t limiting results based on the query’s target site(s). ([#18781](https://github.com/craftcms/cms/issues/18781))
