@@ -13,12 +13,12 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Db;
 use craft\helpers\Html;
+use craft\helpers\Markdown;
 use craft\helpers\Queue;
 use craft\i18n\Translation;
 use craft\queue\jobs\Announcement;
 use DateTime;
 use yii\base\Component;
-use yii\helpers\Markdown;
 
 /**
  * Announcements service.

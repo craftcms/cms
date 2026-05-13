@@ -2,6 +2,8 @@
 /** global: Garnish */
 /**
  * Delete User Modal
+ *
+ * @deprecated in 5.10.0
  */
 Craft.DeleteUserModal = Garnish.Modal.extend(
   {

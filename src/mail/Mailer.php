@@ -11,13 +11,13 @@ use Craft;
 use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\helpers\App;
+use craft\helpers\Markdown;
 use craft\helpers\Template;
 use craft\models\Site;
 use craft\web\View;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Throwable;
 use yii\base\InvalidConfigException;
-use yii\helpers\Markdown;
 use yii\mail\MailEvent;
 
 /**
@@ -200,7 +200,7 @@ class Mailer extends \yii\symfonymailer\Mailer
 
                 try {
                     $message->setHtmlBody($view->renderTemplate($template, array_merge($variables, [
-                        'body' => Template::raw(Markdown::process($htmlBody, 'gfm')),
+                        'body' => Template::raw(Markdown::process($htmlBody, 'gfm-comment')),
                     ]), $templateMode));
                 } catch (Throwable $e) {
                     // Just log it and don't worry about the HTML body

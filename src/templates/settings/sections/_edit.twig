@@ -268,6 +268,28 @@
 }) }}
 
 {{ forms.textField({
+  label: 'Min Authors'|t('app'),
+  instructions: 'The minimum number of authors that entries in this section can have.'|t('app'),
+  id: 'minAuthors',
+  name: 'minAuthors',
+  type: 'number',
+  min: 0,
+  max: 32767,
+  autocorrect: false,
+  autocapitalize: false,
+  value: section.minAuthors,
+  errors: section.getErrors('minAuthors'),
+  data: {'error-key': 'minAuthors'},
+  size: 5,
+  disabled: readOnly,
+  fieldClass: {
+    'type-channel': true,
+    'type-structure': true,
+    'hidden': section.type == 'single',
+  }|filter|keys,
+}) }}
+
+{{ forms.textField({
     label: 'Max Authors'|t('app'),
     instructions: 'The maximum number of authors that entries in this section can have.'|t('app'),
     id: 'maxAuthors',

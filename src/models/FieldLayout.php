@@ -1338,7 +1338,11 @@ class FieldLayout extends Model
         }
 
         if ($element) {
-            return $element->getGeneratedFieldValues()[$uid] ?? null;
+            $html = $element->getGeneratedFieldValues()[$uid] ?? null;
+            if (!$html) {
+                return null;
+            }
+            return Html::tag('div', $html, ['class' => 'no-truncate']);
         }
 
         return Html::encode($field['name'] ?? '');

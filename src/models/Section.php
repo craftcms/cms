@@ -88,6 +88,12 @@ class Section extends Model implements Chippable, CpEditable, Iconic
     public ?string $type = null;
 
     /**
+     * @var int Min authors
+     * @since 5.10.0
+     */
+    public int $minAuthors = 1;
+
+    /**
      * @var int|null Max authors
      * @since 5.0.0
      */
@@ -209,10 +215,17 @@ class Section extends Model implements Chippable, CpEditable, Iconic
         $rules[] = [['id', 'structureId'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle'], 'trim'];
         $rules[] = [
-            ['maxLevels', 'maxAuthors'],
+            ['maxLevels', 'minAuthors'],
             'number',
             'integerOnly' => true,
             'min' => 0,
+            'max' => Db::getMaxAllowedValueForNumericColumn(Schema::TYPE_SMALLINT),
+        ];
+        $rules[] = [
+            ['maxAuthors'],
+            'number',
+            'integerOnly' => true,
+            'min' => $this->minAuthors,
             'max' => Db::getMaxAllowedValueForNumericColumn(Schema::TYPE_SMALLINT),
         ];
         $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
@@ -471,6 +484,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
             'type' => $this->type,
             'entryTypes' => array_map(fn(EntryType $entryType) => $entryType->getUsageConfig(), $this->getEntryTypes()),
             'enableVersioning' => $this->enableVersioning,
+            'minAuthors' => $this->minAuthors,
             'maxAuthors' => $this->maxAuthors,
             'propagationMethod' => $this->propagationMethod->value,
             'siteSettings' => [],
