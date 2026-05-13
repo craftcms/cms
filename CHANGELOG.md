@@ -53,6 +53,8 @@
 - Fixed a bug where criteria added to clones of executed element queries could be ignored. ([#18826](https://github.com/craftcms/cms/pull/18826))
 - Fixed a bug where Yii2 behaviors registered from plugins weren’t getting attached at the right time. ([#18824](https://github.com/craftcms/cms/issues/18824))
 - Fixed an error that occurred when running `craft:install` in environments where Laravel Prompts can only render tasks statically. ([#18830](https://github.com/craftcms/cms/pull/18830))
+- Fix legacy model array access for null properties ([#18843](https://github.com/craftcms/cms/pull/18843))
+- Fix Twig access to Laravel error bags ([#18841](https://github.com/craftcms/cms/pull/18841))
 
 ## 6.0.0-alpha.1 - 2026-05-06
 
