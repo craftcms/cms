@@ -1,4 +1,4 @@
-import {html, LitElement, nothing} from 'lit';
+import {html, LitElement} from 'lit';
 import {property, query, state} from 'lit/decorators.js';
 import {actionClient, t} from '@src/index.js';
 import componentStyles from './login-form.styles.js';
@@ -78,8 +78,8 @@ export default class CraftRecoveryCodeForm extends LitElement {
         @submit="${this.#onSubmit}"
       >
         <div class="field">
-          <label for="recovery-code">${t('Recovery Code')}</label>
           <craft-input
+            label="${t('Recovery Code')}"
             id="recovery-code"
             class="recovery-code"
             name="code"
@@ -89,13 +89,13 @@ export default class CraftRecoveryCodeForm extends LitElement {
           ></craft-input>
         </div>
 
-        ${this._busy
-          ? nothing
-          : html`
-              <craft-button type="submit" variant="primary">
-                ${t('Verify')}
-              </craft-button>
-            `}
+        <craft-button
+          type="submit"
+          variant="primary"
+          ?loading="${this._busy}"
+        >
+          ${t('Verify')}
+        </craft-button>
       </form>
     `;
   }

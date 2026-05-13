@@ -1,12 +1,10 @@
 import {html, LitElement, nothing} from 'lit';
 import {property, query, state} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
-import {actionClient, CraftLoginChallenge, t} from '@src/index.js';
+import {actionClient, t} from '@src/index.js';
 import componentStyles from './login-form.styles.js';
 import CraftTotpForm from './totp-form.js';
 import CraftRecoveryCodeForm from './recovery-code-form.js';
-import './totp-form.js';
-import './recovery-code-form.js';
 
 export interface TwoFactorData {
   authForm: string;
@@ -30,10 +28,10 @@ declare const Craft: {
 };
 
 /** Auth methods that have native web component implementations. */
-const WEB_COMPONENT_METHODS: Record<string, string> = {
-  [CraftTotpForm.METHOD]: 'craft-totp-form',
-  [CraftRecoveryCodeForm.METHOD]: 'craft-recovery-code-form',
-};
+const NATIVE_AUTH_METHODS = new Set([
+  CraftTotpForm.METHOD,
+  CraftRecoveryCodeForm.METHOD,
+]);
 
 /**
  * @summary Renders and initialises a 2FA form, and handles switching between
@@ -43,7 +41,7 @@ const WEB_COMPONENT_METHODS: Record<string, string> = {
  * @fires login-verified - When authentication succeeds (internal). Detail: `{ returnUrl: string }`
  * @fires login-failed   - When authentication fails (internal).   Detail: `{ message: string }`
  */
-export default class CraftLogin2fa extends LitElement {
+export default class CraftLoginChallenge extends LitElement {
   static override styles = [componentStyles];
 
   @property({attribute: false}) data!: TwoFactorData;
@@ -57,7 +55,7 @@ export default class CraftLogin2fa extends LitElement {
   override async updated(changed: Map<string, unknown>) {
     super.updated(changed);
 
-    const isNativeMethod = !!WEB_COMPONENT_METHODS[this.data?.authMethod];
+    const isNativeMethod = NATIVE_AUTH_METHODS.has(this.data?.authMethod);
 
     if (
       !isNativeMethod &&

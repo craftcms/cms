@@ -156,6 +156,7 @@ export default class CraftLoginForm extends LitElement {
         this._view = 'challenge';
       } else {
         this.#redirect(data.returnUrl);
+        this._loginBusy = false;
       }
     } catch (e: any) {
       this._loginBusy = false;
@@ -184,6 +185,7 @@ export default class CraftLoginForm extends LitElement {
       });
 
       this.#redirect(data.returnUrl);
+      this._passkeyBusy = false;
     } catch (e: any) {
       this._passkeyBusy = false;
       const message = e?.response?.data?.message;
