@@ -46,6 +46,7 @@
 - The `|number` Twig filter now has a `locale` argument. ([#18823](https://github.com/craftcms/cms/issues/18823))
 - The `|time` and `|datetime` Twig filters now have `withTimeZone` arguments. ([#18639](https://github.com/craftcms/cms/pull/18639))
 - The `|timestamp` Twig filter now returns the current time, if applied to a `null`/empty string value. ([#18642](https://github.com/craftcms/cms/pull/18642))
+- `dataUrl()` is no longer allowed in sandboxed Twig environments by default.
 - `delete` GraphQL queries now have a `hardDelete` argument. ([#18511](https://github.com/craftcms/cms/pull/18511))
 - Entry `postDate` values are now `null` on creation, rather than set to the `dateCreated` value. ([#18642](https://github.com/craftcms/cms/pull/18642))
 - Assets’ `url` GraphQL fields’ `immediately` arguments are no longer deprecated. ([#18581](https://github.com/craftcms/cms/issues/18581))
@@ -102,5 +103,6 @@
 - Fixed a bug where relation fields’ element query params weren’t limiting results based on the query’s target site(s). ([#18781](https://github.com/craftcms/cms/issues/18781))
 - Fixed a bug where nested content could be updated unexpectedly or deleted after making successive edits to it. ([#18835](https://github.com/craftcms/cms/pull/18835))
 - Fixed a bug where full-page element edit screens weren’t being reloaded automatically when the element was saved in another tab.
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) potential RCE vulnerability. (GHSA-f74w-488g-8x5r)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-f74w-488g-8x5r)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) JavaScript injection vulnerability. (GHSA-c55v-343g-5xff)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) path traversal vulnerability. (GHSA-287w-mxq6-x2cp)
