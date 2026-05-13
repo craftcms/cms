@@ -7,8 +7,8 @@ import componentStyles from './login-form.styles.js';
  * @summary Recovery code authentication form.
  * @since 6.0
  *
- * @fires login-success - Verification succeeded. Detail: `{ returnUrl: string }`
- * @fires login-error   - Verification failed.    Detail: `{ message: string }`
+ * @fires login-verified - Verification succeeded (internal). Detail: `{ returnUrl: string }`
+ * @fires login-failed   - Verification failed (internal).   Detail: `{ message: string }`
  */
 export default class CraftRecoveryCodeForm extends LitElement {
   static override styles = [componentStyles];
@@ -48,7 +48,7 @@ export default class CraftRecoveryCodeForm extends LitElement {
       await actionClient.post('auth/verify-recovery-code', {code});
 
       this.dispatchEvent(
-        new CustomEvent('login-success', {
+        new CustomEvent('login-verified', {
           bubbles: true,
           composed: true,
           detail: {returnUrl: this.returnUrl},
@@ -56,7 +56,7 @@ export default class CraftRecoveryCodeForm extends LitElement {
       );
     } catch (e: any) {
       this.dispatchEvent(
-        new CustomEvent('login-error', {
+        new CustomEvent('login-failed', {
           bubbles: true,
           composed: true,
           detail: {

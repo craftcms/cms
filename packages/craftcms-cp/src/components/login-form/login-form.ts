@@ -20,7 +20,8 @@ type View = 'login' | 'reset-password' | 'challenge';
  *
  * @slot alternative-methods - Additional sign-in buttons (OAuth, SSO, etc.)
  *
- * @fires craft:login:success - When login succeeds. Detail: `{ returnUrl: string }`
+ * @fires craft:login:success - When login succeeds. Cancelable — call `preventDefault()` to suppress navigation. Detail: `{ returnUrl: string }`
+ * @fires craft:login:error   - When login fails.    Cancelable — call `preventDefault()` to suppress built-in error display. Detail: `{ message: string }`
  */
 export default class CraftLoginForm extends LitElement {
   static override styles = [visuallyHiddenStyles, componentStyles];
@@ -214,7 +215,17 @@ export default class CraftLoginForm extends LitElement {
   }
 
   #onLoginError(event: CustomEvent) {
-    this.#setError((event.detail as {message: string}).message);
+    const message = (event.detail as {message: string}).message;
+    const errorEvent = new CustomEvent('craft:login:error', {
+      bubbles: true,
+      composed: true,
+      cancelable: true,
+      detail: {message},
+    });
+    this.dispatchEvent(errorEvent);
+    if (!errorEvent.defaultPrevented) {
+      this.#setError(message);
+    }
   }
 
   #setError(message: string) {
@@ -226,14 +237,16 @@ export default class CraftLoginForm extends LitElement {
   }
 
   #redirect(returnUrl: string) {
-    this.dispatchEvent(
-      new CustomEvent('craft:login:success', {
-        bubbles: true,
-        composed: true,
-        detail: {returnUrl},
-      })
-    );
-    window.location.href = returnUrl;
+    const event = new CustomEvent('craft:login:success', {
+      bubbles: true,
+      composed: true,
+      cancelable: true,
+      detail: {returnUrl},
+    });
+    this.dispatchEvent(event);
+    if (!event.defaultPrevented) {
+      window.location.href = returnUrl;
+    }
   }
 
   override render() {
@@ -257,11 +270,11 @@ export default class CraftLoginForm extends LitElement {
                 ></craft-login-reset-password>
               `
             : html`
-                <craft-login-2fa
+                <craft-login-challenge
                   .data="${this._twoFactorData!}"
-                  @craft:login:success="${this.#onLoginSuccess}"
-                  @craft:login:error="${this.#onLoginError}"
-                ></craft-login-2fa>
+                  @login-verified="${this.#onLoginSuccess}"
+                  @login-failed="${this.#onLoginError}"
+                ></craft-login-challenge>
               `}
       </div>
     `;

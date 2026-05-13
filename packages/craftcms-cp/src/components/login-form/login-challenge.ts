@@ -1,7 +1,7 @@
 import {html, LitElement, nothing} from 'lit';
 import {property, query, state} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
-import {actionClient, t} from '@src/index.js';
+import {actionClient, CraftLoginChallenge, t} from '@src/index.js';
 import componentStyles from './login-form.styles.js';
 import CraftTotpForm from './totp-form.js';
 import CraftRecoveryCodeForm from './recovery-code-form.js';
@@ -40,8 +40,8 @@ const WEB_COMPONENT_METHODS: Record<string, string> = {
  * authentication methods.
  * @since 6.0
  *
- * @fires craft:login:success - When authentication succeeds. Detail: `{ returnUrl: string }`
- * @fires craft:login:error   - When authentication fails.  Detail: `{ message: string }`
+ * @fires login-verified - When authentication succeeds (internal). Detail: `{ returnUrl: string }`
+ * @fires login-failed   - When authentication fails (internal).   Detail: `{ message: string }`
  */
 export default class CraftLogin2fa extends LitElement {
   static override styles = [componentStyles];
@@ -71,7 +71,9 @@ export default class CraftLogin2fa extends LitElement {
   }
 
   async #initLegacyForm() {
-    if (!this._container) return;
+    if (!this._container) {
+      return;
+    }
 
     await Craft.appendHeadHtml(this.data.headHtml);
     await Craft.appendBodyHtml(this.data.bodyHtml);
@@ -82,7 +84,7 @@ export default class CraftLogin2fa extends LitElement {
       this._container,
       () => {
         this.dispatchEvent(
-          new CustomEvent('craft:login:success', {
+          new CustomEvent('login-verified', {
             bubbles: true,
             composed: true,
             detail: {returnUrl: this.data.returnUrl},
@@ -91,7 +93,7 @@ export default class CraftLogin2fa extends LitElement {
       },
       (message) => {
         this.dispatchEvent(
-          new CustomEvent('craft:login:error', {
+          new CustomEvent('login-failed', {
             bubbles: true,
             composed: true,
             detail: {message},
@@ -161,12 +163,12 @@ export default class CraftLogin2fa extends LitElement {
   }
 }
 
-if (!customElements.get('craft-login-2fa')) {
-  customElements.define('craft-login-2fa', CraftLogin2fa);
+if (!customElements.get('craft-login-challenge')) {
+  customElements.define('craft-login-challenge', CraftLoginChallenge);
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    'craft-login-2fa': CraftLogin2fa;
+    'craft-login-challenge': CraftLoginChallenge;
   }
 }

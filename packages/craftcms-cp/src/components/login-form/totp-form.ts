@@ -7,8 +7,8 @@ import componentStyles from './login-form.styles.js';
  * @summary TOTP authentication code form.
  * @since 6.0
  *
- * @fires craft:login:success - Verification succeeded. Detail: `{ returnUrl: string }`
- * @fires craft:login:error   - Verification failed.    Detail: `{ message: string }`
+ * @fires login-verified - Verification succeeded (internal). Detail: `{ returnUrl: string }`
+ * @fires login-failed   - Verification failed (internal).   Detail: `{ message: string }`
  */
 export default class CraftTotpForm extends LitElement {
   static override styles = [componentStyles];
@@ -51,7 +51,7 @@ export default class CraftTotpForm extends LitElement {
 
       this._state = 'success';
       this.dispatchEvent(
-        new CustomEvent('craft:login:success', {
+        new CustomEvent('login-verified', {
           bubbles: true,
           composed: true,
           detail: {returnUrl: this.returnUrl},
@@ -65,7 +65,7 @@ export default class CraftTotpForm extends LitElement {
     } catch (e: any) {
       this._state = 'error';
       this.dispatchEvent(
-        new CustomEvent('craft:login:error', {
+        new CustomEvent('login-failed', {
           bubbles: true,
           composed: true,
           detail: {
