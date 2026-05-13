@@ -589,7 +589,14 @@ class Plugins
                 ->where('track', "plugin:$handle")
                 ->delete();
 
-            DB::commit();
+            try {
+                DB::commit();
+            } catch (PDOException $e) {
+                // The transaction could be implicitly committed by Mysql
+                if ($e->getMessage() !== 'There is no active transaction') {
+                    throw $e;
+                }
+            }
         } catch (Throwable $e) {
             DB::rollBack();
             throw $e;

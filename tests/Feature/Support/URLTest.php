@@ -330,6 +330,8 @@ describe('base and control panel helpers', function () {
         'default-trigger' => ['admin/settings', 'admin', 'settings'],
         'empty-path' => ['admin', 'admin', ''],
         'missing-trigger' => ['settings', null, 'settings'],
+        'existing-trigger' => ['admin/settings', 'admin', 'admin/settings'],
+        'similar-prefix' => ['admin/administrator/settings', 'admin', 'administrator/settings'],
     ]);
 });
 
@@ -342,6 +344,7 @@ describe('generated URLs', function () {
     })->with([
         'empty-path' => ['{cpUrl}', '', [], 'https'],
         'with-params' => ['{cpUrl}/nav?param1=entry1&param2=entry2', 'nav', ['param1' => 'entry1', 'param2' => 'entry2'], 'https'],
+        'with-trigger' => ['{cpUrl}/login', 'admin/login', [], 'https'],
         'preserves-query-string' => ['{cpUrl}/nav?param3=entry3&param1=entry1&param2=entry2', 'nav?param3=entry3', ['param1' => 'entry1', 'param2' => 'entry2'], 'https'],
         'absolute-site-url' => ['{siteUrl}?param1=entry1&param2=entry2', 'https://localhost/', ['param1' => 'entry1', 'param2' => 'entry2'], 'https'],
     ]);
