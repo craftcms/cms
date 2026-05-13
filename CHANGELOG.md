@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where the `cpTrigger` would be appended twice to the URL after running migrations from the control panel. ([#18858](https://github.com/craftcms/cms/pull/18858))
 - Fixed an error that occurred when uninstalling plugins. ([#18862](https://github.com/craftcms/cms/pull/18862))
 
 ## 6.0.0-alpha.2 - 2026-05-13
