@@ -24,22 +24,22 @@ export default class CraftIndicator extends LitElement {
       }
 
       .indicator--success {
-        --indicator-background-color: var(--c-success-background-color-default);
+        --indicator-background-color: var(--c-color-success-static);
         --indicator-border-color: var(--c-success-border-color);
       }
 
       .indicator--danger {
-        --indicator-background-color: var(--c-danger-background-color-default);
+        --indicator-background-color: var(--c-danger-static-color);
         --indicator-border-color: var(--c-danger-border-color);
       }
 
       .indicator--warning {
-        --indicator-background-color: var(--c-warning-background-color-default);
+        --indicator-background-color: var(--c-color-warning-static);
         --indicator-border-color: var(--c-warning-border-color);
       }
 
       .indicator--info {
-        --indicator-background-color: var(--c-info-background-color-default);
+        --indicator-background-color: var(--c-info-static-color);
         --indicator-border-color: var(--c-info-border-color);
       }
     `,

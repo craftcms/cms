@@ -12,10 +12,6 @@ export default class CraftSwitchButton extends LionSwitchButton {
           --c-switch-thumb-height: calc(
             var(--c-switch-height) - var(--c-switch-thumb-offset)
           );
-          --c-switch-track-background-off: var(--c-color-neutral-fill-quiet);
-          --c-switch-track-background-on: var(
-            --c-success-background-color-default
-          );
           display: flex;
           height: var(--c-switch-height);
           width: calc(var(--c-switch-height) * 2);
@@ -34,7 +30,7 @@ export default class CraftSwitchButton extends LionSwitchButton {
         .switch-button__track {
           --tw-inset-shadow-color: var(--color-slate-300);
           margin-inline: -1px;
-          background-color: var(--c-switch-track-background-off);
+          background-color: var(--c-color-neutral-fill-quiet);
           border-radius: var(--c-radius-full);
           border: 1px solid var(--c-form-control-border-color);
           box-shadow: var(--c-input-shadow);
@@ -53,7 +49,7 @@ export default class CraftSwitchButton extends LionSwitchButton {
         }
 
         :host([checked]) .switch-button__track {
-          background-color: var(--c-switch-track-background-on);
+          background-color: var(--c-color-success-static);
         }
 
         :host([checked]) .switch-button__thumb {

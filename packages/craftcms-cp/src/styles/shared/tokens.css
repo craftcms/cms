@@ -109,11 +109,11 @@
   /**
   Components
    */
-  --c-success-static-color: var(--color-static-emerald-400);
+  --c-color-success-static: var(--color-static-emerald-400);
   --c-success-static-color-darker: var(--color-static-emerald-500);
   --c-success-static-color-foreground: var(--c-text-white);
 
-  --c-warning-static-color: var(--color-static-yellow-100);
+  --c-color-warning-static: var(--color-static-yellow-100);
   --c-warning-static-color-darker: var(--color-static-yellow-200);
   --c-warning-static-color-foreground: var(--c-text-black);
 
