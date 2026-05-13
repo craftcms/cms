@@ -491,7 +491,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         if ($source === '*') {
             $sections = Sections::getAllSections()->all();
         } elseif ($source === 'singles') {
-            $sections = Sections::getSectionsByType(SectionType::Single);
+            $sections = Sections::getSectionsByType(SectionType::Single)->all();
         } elseif ($source !== null && preg_match('/^section:(.+)$/', $source, $matches)) {
             $sections = array_filter([
                 Sections::getSectionByUid($matches[1]),

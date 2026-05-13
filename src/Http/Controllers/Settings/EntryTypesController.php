@@ -33,7 +33,6 @@ use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -56,15 +55,9 @@ class EntryTypesController
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
 
-        /**
-         * We assemble the field layout here before validation runs
-         * so we can flash the old layout to the session.
-         */
         if ($request->route()->getActionMethod() === 'store') {
             $this->fieldLayout = $fields->assembleLayoutFromPost();
             $this->fieldLayout->type = Entry::class;
-
-            Session::flash('oldFieldLayout', $this->fieldLayout);
         }
     }
 
