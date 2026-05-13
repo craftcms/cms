@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.18.0 - 2026-05-13
 
 ### Development
 - The `|default` Twig filter and `is empty` Twig test now treat all `yii\base\Model` instances as not empty. ([#18727](https://github.com/craftcms/cms/issues/18727)) 
