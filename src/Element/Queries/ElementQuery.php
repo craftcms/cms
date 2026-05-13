@@ -226,7 +226,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         public string $elementType = Element::class,
         protected array $config = [],
     ) {
-        parent::__construct($config);
+        parent::__construct();
 
         $this->query = DB::table($this->table)->select('**');
 
@@ -267,6 +267,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         $this->initTraits();
+
+        self::configure($this, $config);
     }
 
     protected function initTraits(): void
@@ -821,9 +823,54 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this;
         }
 
+        if (is_string($column)) {
+            if ($this->isDeprecatedOrderByString($column)) {
+                Deprecator::log(
+                    static::class.'::orderBy(string)',
+                    sprintf('Passing `%s` to %s::orderBy() has been deprecated. Pass the direction as the second argument, or call orderBy() once for each column.', $column, static::class),
+                );
+            }
+
+            foreach ($this->normalizeOrderByString($column, $direction) as [$column, $direction]) {
+                $this->forwardCallTo($this->query, 'orderBy', [$column, $direction]);
+            }
+
+            return $this;
+        }
+
         $this->forwardCallTo($this->query, 'orderBy', [$column, $direction]);
 
         return $this;
+    }
+
+    private function isDeprecatedOrderByString(string $columns): bool
+    {
+        return str_contains($columns, ',') || preg_match('/\s+(asc|desc)(?:\s*(?:,|$))/i', $columns) === 1;
+    }
+
+    private function normalizeOrderByString(string $columns, mixed $defaultDirection): array
+    {
+        $defaultDirection = match ($defaultDirection) {
+            SORT_DESC, 'desc' => 'desc',
+            default => 'asc',
+        };
+
+        return str($columns)
+            ->explode(',')
+            ->map(fn (string $column) => trim($column))
+            ->filter()
+            ->map(function (string $column) use ($defaultDirection) {
+                $direction = $defaultDirection;
+
+                if (preg_match('/^(.+?)\s+(asc|desc)$/i', $column, $matches)) {
+                    $column = $matches[1];
+                    $direction = strtolower($matches[2]);
+                }
+
+                return [trim($column), $direction];
+            })
+            ->values()
+            ->all();
     }
 
     /**
