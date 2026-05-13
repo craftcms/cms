@@ -1,17 +1,14 @@
-import {html, LitElement, nothing} from 'lit';
-import {property, state, query} from 'lit/decorators.js';
-import {actionClient} from '@src/utilities/api/actionClient.js';
-import {t} from '@src/utilities/translate.js';
+import {html, LitElement} from 'lit';
+import {property, query, state} from 'lit/decorators.js';
+import {actionClient, t} from '@src/index.js';
 import componentStyles from './login-form.styles.js';
-import '../button/button.js';
-import '../input/input.js';
 
 /**
  * @summary TOTP authentication code form.
  * @since 6.0
  *
- * @fires login-success - Verification succeeded. Detail: `{ returnUrl: string }`
- * @fires login-error   - Verification failed.    Detail: `{ message: string }`
+ * @fires craft:login:success - Verification succeeded. Detail: `{ returnUrl: string }`
+ * @fires craft:login:error   - Verification failed.    Detail: `{ message: string }`
  */
 export default class CraftTotpForm extends LitElement {
   static override styles = [componentStyles];
@@ -21,7 +18,7 @@ export default class CraftTotpForm extends LitElement {
   /** Redirect destination passed through to the login-success event */
   @property({attribute: 'return-url'}) returnUrl = '';
 
-  @state() private _busy = false;
+  @state() private _state: 'idle' | 'loading' | 'success' | 'error' = 'idle';
 
   @query('craft-input.totp-code')
   private _input?: HTMLElement & {value: string};
@@ -39,27 +36,36 @@ export default class CraftTotpForm extends LitElement {
 
   async #onSubmit(event: Event) {
     event.preventDefault();
-    this.#submit(this._input?.value ?? '');
+    await this.#submit(this._input?.value ?? '');
   }
 
   async #submit(code: string) {
-    if (this._busy) return;
+    if (this._state === 'loading') {
+      return;
+    }
 
-    this._busy = true;
+    this._state = 'loading';
 
     try {
       await actionClient.post('auth/verify-totp', {code});
 
+      this._state = 'success';
       this.dispatchEvent(
-        new CustomEvent('login-success', {
+        new CustomEvent('craft:login:success', {
           bubbles: true,
           composed: true,
           detail: {returnUrl: this.returnUrl},
         })
       );
+
+      // @TODO hook up to global feedback time setting
+      setTimeout(() => {
+        this._state = 'idle';
+      }, 2000);
     } catch (e: any) {
+      this._state = 'error';
       this.dispatchEvent(
-        new CustomEvent('login-error', {
+        new CustomEvent('craft:login:error', {
           bubbles: true,
           composed: true,
           detail: {
@@ -68,8 +74,6 @@ export default class CraftTotpForm extends LitElement {
           },
         })
       );
-    } finally {
-      this._busy = false;
     }
   }
 
@@ -80,28 +84,28 @@ export default class CraftTotpForm extends LitElement {
         accept-charset="UTF-8"
         @submit="${this.#onSubmit}"
       >
-        <div class="field">
-          <label for="totp-code">${t('Authentication Code')}</label>
+        <div class="login-form__fields">
           <craft-input
+            label="${t('Verification Code')}"
             id="totp-code"
             class="totp-code"
             name="code"
             .maxlength="${6}"
-            center
             autocomplete="one-time-code"
             inputmode="numeric"
             aria-required="true"
             @model-value-changed="${this.#onModelValueChanged}"
-          ></craft-input>
+          >
+          </craft-input>
+          <craft-button
+            slot="after"
+            type="submit"
+            variant="primary"
+            ?loading="${this._state === 'loading'}"
+          >
+            ${t('Verify')}
+          </craft-button>
         </div>
-
-        ${this._busy
-          ? nothing
-          : html`
-              <craft-button type="submit" variant="primary">
-                ${t('Verify')}
-              </craft-button>
-            `}
       </form>
     `;
   }

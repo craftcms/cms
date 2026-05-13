@@ -1,20 +1,18 @@
 import {html, LitElement, nothing} from 'lit';
-import {property, state, query} from 'lit/decorators.js';
+import {property, query, state} from 'lit/decorators.js';
 import {
   browserSupportsWebAuthn,
   platformAuthenticatorIsAvailable,
   startAuthentication,
 } from '@simplewebauthn/browser';
-import {actionClient} from '@src/utilities/api/actionClient.js';
-import {t} from '@src/utilities/translate.js';
+import {actionClient, t} from '@src/index.js';
 import componentStyles from './login-form.styles.js';
-import type {TwoFactorData} from './login-2fa.js';
-import './login-2fa.js';
+import type {TwoFactorData} from './login-challenge.js';
+import './login-challenge.js';
 import './login-reset-password.js';
-import '../button/button.js';
-import '../input-password/input-password.js';
+import visuallyHiddenStyles from '@src/styles/visually-hidden.styles';
 
-type View = 'login' | 'reset-password' | '2fa';
+type View = 'login' | 'reset-password' | 'challenge';
 
 /**
  * @summary Full-page login form with password reset and passkey support.
@@ -22,10 +20,10 @@ type View = 'login' | 'reset-password' | '2fa';
  *
  * @slot alternative-methods - Additional sign-in buttons (OAuth, SSO, etc.)
  *
- * @fires craft-login - When login succeeds. Detail: `{ returnUrl: string }`
+ * @fires craft:login:success - When login succeeds. Detail: `{ returnUrl: string }`
  */
 export default class CraftLoginForm extends LitElement {
-  static override styles = [componentStyles];
+  static override styles = [visuallyHiddenStyles, componentStyles];
 
   /** Show the passkey sign-in button if the platform supports it */
   @property({type: Boolean, attribute: 'show-passkey-btn'})
@@ -154,13 +152,15 @@ export default class CraftLoginForm extends LitElement {
       if (data.authMethod) {
         this._loginBusy = false;
         this._twoFactorData = data;
-        this._view = '2fa';
+        this._view = 'challenge';
       } else {
         this.#redirect(data.returnUrl);
       }
     } catch (e: any) {
       this._loginBusy = false;
-      this.#setError(e?.response?.data?.message ?? t('A server error occurred.'));
+      this.#setError(
+        e?.response?.data?.message ?? t('A server error occurred.')
+      );
     }
   }
 
@@ -218,16 +218,16 @@ export default class CraftLoginForm extends LitElement {
   }
 
   #setError(message: string) {
-    this._error = message;
+    this._error = message.trim();
     const live = this.shadowRoot?.querySelector(
-      '.visually-hidden[role="status"]'
+      '.cp-visually-hidden[role="status"]'
     );
     if (live) live.textContent = message;
   }
 
   #redirect(returnUrl: string) {
     this.dispatchEvent(
-      new CustomEvent('craft-login', {
+      new CustomEvent('craft:login:success', {
         bubbles: true,
         composed: true,
         detail: {returnUrl},
@@ -238,9 +238,9 @@ export default class CraftLoginForm extends LitElement {
 
   override render() {
     return html`
-      <div class="login-container">
+      <div>
         <span
-          class="visually-hidden"
+          class="cp-visually-hidden"
           role="status"
           aria-live="polite"
           aria-atomic="true"
@@ -253,14 +253,14 @@ export default class CraftLoginForm extends LitElement {
                 <craft-login-reset-password
                   ?use-email-as-username="${this.useEmailAsUsername}"
                   username="${this._resetUsername}"
-                  @reset-back="${this.#onResetBack}"
+                  @craft:login:reset-back="${this.#onResetBack}"
                 ></craft-login-reset-password>
               `
             : html`
                 <craft-login-2fa
                   .data="${this._twoFactorData!}"
-                  @login-success="${this.#onLoginSuccess}"
-                  @login-error="${this.#onLoginError}"
+                  @craft:login:success="${this.#onLoginSuccess}"
+                  @craft:login:error="${this.#onLoginError}"
                 ></craft-login-2fa>
               `}
       </div>
@@ -272,91 +272,96 @@ export default class CraftLoginForm extends LitElement {
       this._canUsePasskey || this.querySelector('[slot="alternative-methods"]');
 
     return html`
-      <div class="login-form-container pane secondary">
+      <craft-pane>
         <form
           class="login-form"
           method="post"
           accept-charset="UTF-8"
           @submit="${this.#onSubmit}"
         >
-          ${this.staticEmail
-            ? html`<input
-                type="hidden"
-                class="login-username"
-                name="username"
-                .value="${this.staticEmail}"
-              />`
-            : html`
-                <div class="field">
-                  <label for="login-username">${this.#usernameLabel()}</label>
-                  <input
-                    id="login-username"
-                    type="${this.useEmailAsUsername ? 'email' : 'text'}"
-                    class="login-username"
-                    name="username"
-                    .value="${this.username}"
-                    autocomplete="username"
-                    autocapitalize="off"
-                    aria-required="true"
-                    @input="${this.#onInput}"
-                  />
-                </div>
-              `}
+          <craft-field-group>
+            ${this.staticEmail
+              ? html`<input
+                  type="hidden"
+                  class="login-username"
+                  name="username"
+                  .value="${this.staticEmail}"
+                />`
+              : html`
+                  <div class="field">
+                    <craft-input
+                      label="${this.#usernameLabel()}"
+                      id="login-username"
+                      type="${this.useEmailAsUsername ? 'email' : 'text'}"
+                      class="login-username"
+                      name="username"
+                      .value="${this.username}"
+                      autocomplete="username"
+                      autocapitalize="off"
+                      required
+                      @user-input-changed="${this.#onInput}"
+                    />
+                  </div>
+                `}
 
-          <div class="field">
-            <label for="login-password">${t('Password')}</label>
-            <craft-input-password
-              id="login-password"
-              class="login-password"
-              name="password"
-              autocomplete="current-password"
-              aria-required="true"
-              @input="${this.#onInput}"
-            ></craft-input-password>
+            <div>
+              <craft-input-password
+                label="${t('Password')}"
+                id="login-password"
+                class="login-password"
+                name="password"
+                autocomplete="current-password"
+                required
+                @user-input-changed="${this.#onInput}"
+              ></craft-input-password>
+
+              ${this.showResetPassword
+                ? html`
+                    <craft-button
+                      type="button"
+                      size="small"
+                      appearance="plain"
+                      @click="${this.#showResetPasswordForm}"
+                      style="margin-block-start: var(--c-spacing-sm)"
+                    >
+                      ${t('Forgot password?')}
+                    </craft-button>
+                  `
+                : nothing}
+            </div>
+
+            ${this.showRememberMe
+              ? html`
+                  <div class="remember-me-row">
+                    <craft-checkbox
+                      label="${this.rememberMeLabel || t('Stay signed in')}"
+                      type="checkbox"
+                      id="login-remember-me"
+                      class="login-remember-me"
+                    ></craft-checkbox>
+                  </div>
+                `
+              : nothing}
+          </craft-field-group>
+
+          <div class="login-form__actions">
+            <craft-button
+              type="submit"
+              variant="primary"
+              ?loading="${this._loginBusy}"
+              style="width: 100%"
+            >
+              ${t('Sign in')}
+            </craft-button>
           </div>
-
-          ${this.showResetPassword
-            ? html`
-                <div class="forgot-password-row">
-                  <button
-                    type="button"
-                    class="login-forgot-password"
-                    @click="${this.#showResetPasswordForm}"
-                  >
-                    ${t('Forgot password?')}
-                  </button>
-                </div>
-              `
-            : nothing}
-
-          ${this.showRememberMe
-            ? html`
-                <div class="remember-me-row">
-                  <input
-                    type="checkbox"
-                    id="login-remember-me"
-                    class="login-remember-me"
-                  />
-                  <label for="login-remember-me">
-                    ${this.rememberMeLabel || t('Stay signed in')}
-                  </label>
-                </div>
-              `
-            : nothing}
-
-          <craft-button
-            type="submit"
-            variant="primary"
-            ?loading="${this._loginBusy}"
-          >
-            ${t('Sign in')}
-          </craft-button>
         </form>
 
         ${this._error
-          ? html`<p class="login-errors">${this._error}</p>`
+          ? html`<craft-callout class="login-form__error" variant="danger"
+              >${this._error}</craft-callout
+            >`
           : nothing}
-      </div>
+      </craft-pane>
 
       ${hasAltMethods
         ? html`
@@ -368,6 +373,7 @@ export default class CraftLoginForm extends LitElement {
                       appearance="filled"
                       ?loading="${this._passkeyBusy}"
                       @click="${this.#loginWithPasskey}"
+                      style="width: 100%"
                     >
                       ${t('Sign in with a passkey')}
                     </craft-button>

@@ -1,10 +1,7 @@
 import {html, LitElement, nothing} from 'lit';
-import {property, state, query} from 'lit/decorators.js';
-import {actionClient} from '@src/utilities/api/actionClient.js';
-import {t} from '@src/utilities/translate.js';
+import {property, query, state} from 'lit/decorators.js';
+import {actionClient, t} from '@src/index.js';
 import componentStyles from './login-form.styles.js';
-import '../button/button.js';
-import '../input/input.js';
 
 /**
  * @summary Recovery code authentication form.

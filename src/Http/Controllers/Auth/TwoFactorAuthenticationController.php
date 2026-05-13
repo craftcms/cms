@@ -67,11 +67,6 @@ readonly class TwoFactorAuthenticationController
             $method = $activeMethods->first();
         }
 
-        $html = TemplateMode::with(
-            TemplateMode::Cp,
-            fn () => $method->getAuthFormHtml(),
-        );
-
         $returnUrl = $request->input('returnUrl');
         if (! $returnUrl) {
             if ($request->isCpRequest()) {
@@ -83,6 +78,11 @@ readonly class TwoFactorAuthenticationController
 
             $returnUrl = URL::returnUrl($defaultReturnUrl);
         }
+
+        $html = TemplateMode::with(
+            TemplateMode::Cp,
+            fn () => $method->getAuthFormHtml($returnUrl),
+        );
 
         $authFormData = [
             'authMethod' => $method::class,

@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Auth\Methods;
 use Carbon\CarbonInterface;
 use CraftCms\Cms\Auth\Models\RecoveryCodes as RecoveryCodesModel;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use CraftCms\Cms\View\LegacyAssets\RecoveryCodesAsset;
+use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Url;
 use InvalidArgumentException;
 use Override;
 use PragmaRX\Recovery\Recovery;
@@ -42,11 +42,11 @@ JS, [$containerId]);
         return template('_components/auth/methods/RecoveryCodes/setup');
     }
 
-    public function getAuthFormHtml(): string
+    public function getAuthFormHtml(?string $returnUrl = null): string
     {
-        app(InternalAssetRegistry::class)->register(RecoveryCodesAsset::class);
-
-        return template('_components/auth/methods/RecoveryCodes/form');
+        return Html::tag('craft-recovery-code-form', attributes: [
+            'return-url' => $returnUrl ?? Url::defaultReturnUrl(),
+        ]);
     }
 
     #[Override]

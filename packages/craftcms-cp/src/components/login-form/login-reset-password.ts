@@ -1,17 +1,14 @@
 import {html, LitElement, nothing} from 'lit';
-import {property, state, query} from 'lit/decorators.js';
-import {actionClient} from '@src/utilities/api/actionClient.js';
-import {t} from '@src/utilities/translate.js';
+import {property, query, state} from 'lit/decorators.js';
+import {actionClient, t} from '@src/index.js';
 import componentStyles from './login-form.styles.js';
-import '../button/button.js';
-import '../dialog/dialog.js';
 
 /**
  * @summary Password-reset request form. Fires `reset-back` when the user
  * wants to return to the login view.
  * @since 6.0
  *
- * @fires reset-back - User clicked "Back to sign in". Detail: `{ username: string }`
+ * @fires craft:login:reset-back - User clicked "Back to sign in". Detail: `{ username: string }`
  */
 export default class CraftLoginResetPassword extends LitElement {
   static override styles = [componentStyles];
@@ -86,8 +83,7 @@ export default class CraftLoginResetPassword extends LitElement {
       dialog.appendChild(msg);
       document.body.appendChild(dialog);
     } catch (e: any) {
-      this._error =
-        e?.response?.data?.message ?? t('A server error occurred.');
+      this._error = e?.response?.data?.message ?? t('A server error occurred.');
     } finally {
       this._busy = false;
     }
@@ -95,7 +91,7 @@ export default class CraftLoginResetPassword extends LitElement {
 
   #onBack() {
     this.dispatchEvent(
-      new CustomEvent('reset-back', {
+      new CustomEvent('craft:login:reset-back', {
         bubbles: true,
         composed: true,
         detail: {username: this._input?.value ?? ''},
@@ -105,16 +101,16 @@ export default class CraftLoginResetPassword extends LitElement {
 
   override render() {
     return html`
-      <div class="login-form-container pane secondary">
+      <craft-pane>
         <form
-          class="login-reset-password"
+          class="login-form login-form--reset"
           method="post"
           accept-charset="UTF-8"
           @submit="${this.#onSubmit}"
         >
-          <div class="field">
-            <label for="reset-username">${this.#label()}</label>
-            <input
+          <craft-field-group>
+            <craft-input
+              label="${this.#label()}"
               id="reset-username"
               type="${this.useEmailAsUsername ? 'email' : 'text'}"
               class="reset-username"
@@ -124,30 +120,39 @@ export default class CraftLoginResetPassword extends LitElement {
               autocapitalize="off"
               aria-required="true"
               @input="${this.#onInput}"
-            />
-          </div>
-
-          <craft-button type="submit" variant="primary" ?loading="${this._busy}">
-            ${t('Reset password')}
-          </craft-button>
-
-          ${this._error
-            ? html`<p class="login-errors">${this._error}</p>`
-            : nothing}
-
-          <hr />
-
-          <div class="login-alt-container">
-            <craft-button
-              type="button"
-              appearance="plain"
-              @click="${this.#onBack}"
             >
-              ${t('← Back to sign in')}
+            </craft-input>
+          </craft-field-group>
+
+          <div class="login-form__actions">
+            <craft-button
+              type="submit"
+              variant="primary"
+              ?loading="${this._busy}"
+            >
+              ${t('Reset password')}
             </craft-button>
           </div>
+
+          ${this._error
+            ? html`<craft-callout variant="danger" class="login-form__error"
+                >${this._error}</craft-callout
+              >`
+            : nothing}
         </form>
-      </div>
+
+        <hr />
+
+        <craft-button
+          type="button"
+          appearance="plain"
+          size="small"
+          @click="${this.#onBack}"
+        >
+          <craft-icon slot="prefix" name="arrow-left"></craft-icon>
+          ${t('Back to sign in')}
+        </craft-button>
+      </craft-pane>
     `;
   }
 }

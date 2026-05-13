@@ -155,6 +155,10 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 
 #### Dashboard & Widgets
 
+#### UI
+
+- `<craft-spinner/>` is now a Lit element.
+
 ##### Controllers
 - Removed `craft\controllers\DashboardController`. The following controllers now implement this functionality:
   - `CraftCms\Cms\Http\Controllers\Dashboard\DashboardController`

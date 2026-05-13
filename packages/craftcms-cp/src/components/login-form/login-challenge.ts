@@ -1,17 +1,12 @@
 import {html, LitElement, nothing} from 'lit';
-import {property, state, query} from 'lit/decorators.js';
+import {property, query, state} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
-import {actionClient} from '@src/utilities/api/actionClient.js';
-import {t} from '@src/utilities/translate.js';
+import {actionClient, t} from '@src/index.js';
 import componentStyles from './login-form.styles.js';
 import CraftTotpForm from './totp-form.js';
 import CraftRecoveryCodeForm from './recovery-code-form.js';
 import './totp-form.js';
 import './recovery-code-form.js';
-import '../button/button.js';
-import '../action-item/action-item.js';
-import '../action-menu/action-menu.js';
-import '../spinner/spinner.js';
 
 export interface TwoFactorData {
   authForm: string;
@@ -42,12 +37,11 @@ const WEB_COMPONENT_METHODS: Record<string, string> = {
 
 /**
  * @summary Renders and initialises a 2FA form, and handles switching between
- * authentication methods. Native web component methods are rendered directly;
- * legacy server-rendered forms are initialised via Craft.createAuthFormHandler.
+ * authentication methods.
  * @since 6.0
  *
- * @fires login-success - When authentication succeeds. Detail: `{ returnUrl: string }`
- * @fires login-error   - When authentication fails.  Detail: `{ message: string }`
+ * @fires craft:login:success - When authentication succeeds. Detail: `{ returnUrl: string }`
+ * @fires craft:login:error   - When authentication fails.  Detail: `{ message: string }`
  */
 export default class CraftLogin2fa extends LitElement {
   static override styles = [componentStyles];
@@ -88,7 +82,7 @@ export default class CraftLogin2fa extends LitElement {
       this._container,
       () => {
         this.dispatchEvent(
-          new CustomEvent('login-success', {
+          new CustomEvent('craft:login:success', {
             bubbles: true,
             composed: true,
             detail: {returnUrl: this.data.returnUrl},
@@ -125,25 +119,6 @@ export default class CraftLogin2fa extends LitElement {
     }
   }
 
-  #renderAuthForm() {
-    const {authMethod, authForm, returnUrl} = this.data;
-    const tag = WEB_COMPONENT_METHODS[authMethod];
-
-    if (tag === 'craft-totp-form') {
-      return html`<craft-totp-form return-url="${returnUrl}"></craft-totp-form>`;
-    }
-
-    if (tag === 'craft-recovery-code-form') {
-      return html`<craft-recovery-code-form
-        return-url="${returnUrl}"
-      ></craft-recovery-code-form>`;
-    }
-
-    return html`<div class="auth-form-container">
-      ${unsafeHTML(authForm)}
-    </div>`;
-  }
-
   override render() {
     if (this._switching) {
       return html`
@@ -156,14 +131,14 @@ export default class CraftLogin2fa extends LitElement {
     }
 
     return html`
-      <div class="login-form-container pane secondary">
-        ${this.#renderAuthForm()}
-
+      <craft-pane>
+        <div class="auth-form-container">${unsafeHTML(this.data.authForm)}</div>
         ${this.data.otherMethods.length
           ? html`
               <hr />
               <craft-action-menu>
-                <craft-button slot="invoker" appearance="plain">
+                <craft-button slot="invoker" appearance="plain" size="zero">
+                  <craft-icon slot="prefix" name="chevron-down"></craft-icon>
                   ${t('Try another way')}
                 </craft-button>
 
@@ -181,7 +156,7 @@ export default class CraftLogin2fa extends LitElement {
               </craft-action-menu>
             `
           : nothing}
-      </div>
+      </craft-pane>
     `;
   }
 }
