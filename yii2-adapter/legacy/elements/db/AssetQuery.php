@@ -20,7 +20,7 @@ use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\ImageTransforms;
+use CraftCms\Cms\Support\Facades\AssetTransforms;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
@@ -879,7 +879,7 @@ class AssetQuery extends ElementQuery
                 $transforms = is_string($transforms) ? str($transforms)->explode(',')->all() : [$transforms];
             }
 
-            ImageTransforms::eagerLoadTransforms($elements, $transforms);
+            AssetTransforms::eagerLoadTransforms($elements, $transforms);
         }
 
         return $elements;

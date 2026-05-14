@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -29,15 +30,36 @@ readonly class TransformController
     use EnforcesPermissions;
     use RespondsWithFlash;
 
-    public function generate(Request $request): Response
+    public function generate(Request $request, AssetTransforms $assetTransforms): Response
     {
-        if ($transformId = $request->integer('transformId')) {
+        $transformIndexModel = null;
+        $transformer = null;
+
+        $transformId = $request->integer('transformId');
+        if (! $transformId && $request->filled('transformToken')) {
+            $token = (string) $request->input('transformToken');
+            $signature = (string) $request->input('transformSignature');
+            $expectedSignature = hash_hmac('sha256', $token, (string) config('app.key'));
+
+            if (! hash_equals($expectedSignature, $signature)) {
+                abort(400, 'Invalid transform signature.');
+            }
+
+            try {
+                $transformId = (int) Crypt::decryptString($token);
+            } catch (Throwable) {
+                abort(400, 'Invalid transform token.');
+            }
+        }
+
+        if ($transformId) {
             $transformer = new ImageTransformer;
             $transformIndexModel = $transformer->getTransformIndexModelById($transformId);
             abort_if(! $transformIndexModel, 400, "Invalid transform ID: $transformId");
             $assetId = $transformIndexModel->assetId;
             try {
                 $transform = $transformIndexModel->getTransform();
+                $transformer = $assetTransforms->getAssetTransformer($transformIndexModel->transformer);
             } catch (Throwable $e) {
                 abort(500, 'Image transform cannot be created.', ['exception' => $e]);
             }
@@ -53,12 +75,27 @@ readonly class TransformController
                 abort(500, 'Image transform cannot be created.', ['exception' => $e]);
             }
             abort_if(! $transform, 400, "Invalid transform handle: $handle");
-            $transformer = $transform->getImageTransformer();
         }
 
         $asset = Asset::findOne(['id' => $assetId]);
 
         abort_if(! $asset, 400, "Invalid asset ID: $assetId");
+
+        $transformer ??= $assetTransforms->getAssetTransformer(
+            $transform->getTransformer() ?? $asset->getVolume()->getDefaultTransformer(),
+        );
+
+        if (
+            $transformIndexModel !== null &&
+            $transformer instanceof ImageTransformer &&
+            ! $asset->getVolume()->getTransformFs()->hasUrls
+        ) {
+            try {
+                return $transformer->getTransformResponse($asset, $transformIndexModel);
+            } catch (Throwable $e) {
+                return $this->asBrokenImage($e);
+            }
+        }
 
         try {
             $url = $transformer->getTransformUrl($asset, $transform, true);

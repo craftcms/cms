@@ -27,7 +27,6 @@ use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\Image\Data\ImageTransform;
-use CraftCms\Cms\Image\FallbackTransformer;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Env;
@@ -157,11 +156,6 @@ class Assets
         ]);
 
         $url = $asset->getUrl($transform);
-
-        if (! $url) {
-            $transform->setTransformer(FallbackTransformer::class);
-            $url = $asset->getUrl($transform);
-        }
 
         if ($url === null) {
             return $iconFallback ? Url::actionUrl('assets/icon', [

@@ -48,6 +48,7 @@ class VolumeRules extends Ruleset
             'fieldLayout' => [fn (string $attribute, mixed $value, Closure $fail) => $this->subject->validateFieldLayout()],
             'fsHandle' => [fn (string $attribute, mixed $value, Closure $fail) => $this->validateFilesystemHandle($attribute, $fail)],
             'transformFsHandle' => ['nullable', fn (string $attribute, mixed $value, Closure $fail) => $this->validateFilesystemHandle($attribute, $fail)],
+            'defaultTransformer' => ['nullable', 'string'],
             'subpath' => [
                 Rule::requiredIf(fn () => $this->subpathRequired()),
                 fn (string $attribute, mixed $value, Closure $fail) => $this->validateUniqueSubpath($attribute, $fail),

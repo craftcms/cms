@@ -50,7 +50,7 @@
         id: 'name',
         name: 'name',
         value: old('name', transform.name),
-        errors: transform.errors.get('name'),
+        errors: errors.get('name'),
         autofocus: true,
         required: true,
         disabled: readOnly,
@@ -64,10 +64,24 @@
         autocorrect: false,
         autocapitalize: false,
         value: old('handle', transform.handle),
-        errors: transform.errors.get('handle'),
+        errors: errors.get('handle'),
         required: true,
         disabled: readOnly,
     }) }}
+
+    {{ forms.selectField({
+        label: 'Transformer'|t('app'),
+        instructions: 'Which transformer should be used when this named transform is applied.'|t('app'),
+        id: 'transformer',
+        name: 'transformer',
+        options: transformerOptions,
+        value: old('transformer', transform.getTransformer() ?? ''),
+        disabled: readOnly,
+    }) }}
+
+    {% if transformerSettingsHtml %}
+        {{ transformerSettingsHtml|raw }}
+    {% endif %}
 
     {% embed '_includes/forms/field.twig' with {
         label: 'Mode'|t('app')
@@ -115,7 +129,7 @@
             label: 'Fill Color',
             name: 'fill',
             value: mode == 'letterbox' and fill != 'transparent' ? fill,
-            errors: transform.errors.get('fill'),
+            errors: errors.get('fill'),
             disabled: readOnly,
         }) }}
     </div>
@@ -148,7 +162,7 @@
         name: "width",
         size: 5,
         value: old('width', transform.width),
-        errors: transform.errors.get('width'),
+        errors: errors.get('width'),
         disabled: readOnly,
     }) }}
 
@@ -158,7 +172,7 @@
         name: "height",
         size: 5,
         value: old('height', transform.height),
-        errors: transform.errors.get('height'),
+        errors: errors.get('height'),
         disabled: readOnly,
     }) }}
 
@@ -167,13 +181,13 @@
         id: 'upscale',
         name: 'upscale',
         on: old('upscale', transform.upscale ?? config('craft.general.upscaleImages')),
-        errors: transform.errors.get('upscale'),
+        errors: errors.get('upscale'),
         disabled: readOnly,
     }) }}
 
     {% embed '_includes/forms/field.twig' with {
         label: 'Quality'|t('app'),
-        errors: transform.errors.get('quality'),
+        errors: errors.get('quality'),
     } %}
         {% block input %}
             {% import '_includes/forms.twig' as forms %}
@@ -221,7 +235,7 @@
             {label: 'Partition'|t('app'), value: 'partition'},
         ],
         value: old('interlace', transform.interlace ?? 'none'),
-        errors: transform.errors.get('interlace'),
+        errors: errors.get('interlace'),
         disabled: readOnly,
     }) }}
 
@@ -246,7 +260,7 @@
         name: "format",
         instructions: "The image format that transformed images should use."|t('app'),
         value: format,
-        errors: transform.errors.get('format'),
+        errors: errors.get('format'),
         options: formatOptions,
         disabled: readOnly,
     }) }}

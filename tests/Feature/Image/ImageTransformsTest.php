@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
-use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
+use CraftCms\Cms\Gql\Arguments\Transform as TransformArguments;
+use CraftCms\Cms\Image\Contracts\AssetTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
-use CraftCms\Cms\Image\Events\ImageTransformersResolving;
+use CraftCms\Cms\Image\Events\AssetTransformersResolving;
 use CraftCms\Cms\Image\Events\TransformDeleted;
 use CraftCms\Cms\Image\Events\TransformDeleting;
 use CraftCms\Cms\Image\Events\TransformDeletionApplying;
@@ -15,17 +17,25 @@ use CraftCms\Cms\Image\Events\TransformSaving;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
+use CraftCms\Cms\Support\Facades\AssetTransforms as AssetTransformsFacade;
 use CraftCms\Cms\Support\Facades\ImageTransforms as ImageTransformsFacade;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
+use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
     $this->service = app(ImageTransforms::class);
+    $this->assetTransforms = app(AssetTransforms::class);
 });
 
 it('is a singleton', function () {
     expect(ImageTransformsFacade::getFacadeRoot())->toBe(app(ImageTransforms::class));
     expect($this->service)->toBe(app(ImageTransforms::class));
+});
+
+it('has an asset transforms singleton', function () {
+    expect(AssetTransformsFacade::getFacadeRoot())->toBe(app(AssetTransforms::class));
+    expect($this->assetTransforms)->toBe(app(AssetTransforms::class));
 });
 
 describe('getAllTransforms', function () {
@@ -173,6 +183,22 @@ describe('saveTransform', function () {
 
         Event::assertDispatchedOnce(TransformSaving::class);
         Event::assertDispatchedOnce(TransformSaved::class);
+    });
+
+    it('persists transformer and extra settings', function () {
+        $this->service->saveTransform(new ImageTransform([
+            'name' => 'Blurred',
+            'handle' => 'blurred',
+            'width' => 500,
+            'transformer' => 'custom',
+            'settings' => ['blur' => 12],
+        ]));
+
+        $this->service->reset();
+        $transform = $this->service->getTransformByHandle('blurred');
+
+        expect($transform->getTransformer())->toBe('custom')
+            ->and($transform->settings)->toBe(['blur' => 12]);
     });
 
     it('assigns id to the transform after saving', function () {
@@ -345,59 +371,192 @@ describe('deleteTransform', function () {
     });
 });
 
-describe('getAllImageTransformers', function () {
-    it('includes the default ImageTransformer', function () {
-        $transformers = $this->service->getAllImageTransformers();
-
-        expect($transformers)->toContain(ImageTransformer::class);
+describe('asset transformers', function () {
+    it('includes the craft transformer', function () {
+        expect($this->assetTransforms->getAllAssetTransformers())
+            ->toHaveKey('craft', ImageTransformer::class);
     });
 
-    it('fires ImageTransformersResolving event', function () {
-        Event::fake([ImageTransformersResolving::class]);
-
-        $this->service->getAllImageTransformers();
-
-        Event::assertDispatchedOnce(ImageTransformersResolving::class);
-    });
-
-    it('allows adding custom transformers via event', function () {
-        $customTransformer = (new class implements ImageTransformerInterface
+    it('allows adding custom transformers by handle', function () {
+        $customTransformer = (new class implements AssetTransformerInterface
         {
+            public static function handle(): string
+            {
+                return 'custom';
+            }
+
+            public static function displayName(): string
+            {
+                return 'Custom';
+            }
+
+            public static function gqlArguments(): array
+            {
+                return [];
+            }
+
+            public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
+            {
+                return 'https://example.test/custom';
+            }
+
+            public function invalidateAssetTransforms(Asset $asset): void {}
+
+            public function getTransformString(ImageTransform $imageTransform, bool $ignoreHandle = false): string
+            {
+                return 'custom';
+            }
+
+            public function getSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+            {
+                return null;
+            }
+        })::class;
+
+        Event::listen(AssetTransformersResolving::class, function (AssetTransformersResolving $event) use ($customTransformer) {
+            $event->types['custom'] = $customTransformer;
+        });
+
+        expect($this->assetTransforms->getAllAssetTransformers())->toHaveKey('custom', $customTransformer)
+            ->and($this->assetTransforms->getAssetTransformer('custom'))->toBeInstanceOf(AssetTransformerInterface::class);
+    });
+
+    it('allows adding custom transformer instances by handle', function () {
+        $customTransformer = new class implements AssetTransformerInterface
+        {
+            public static function handle(): string
+            {
+                return 'custom';
+            }
+
+            public static function displayName(): string
+            {
+                return 'Custom';
+            }
+
+            public static function gqlArguments(): array
+            {
+                return [];
+            }
+
+            public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
+            {
+                return 'https://example.test/custom';
+            }
+
+            public function invalidateAssetTransforms(Asset $asset): void {}
+
+            public function getTransformString(ImageTransform $imageTransform, bool $ignoreHandle = false): string
+            {
+                return 'custom';
+            }
+
+            public function getSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+            {
+                return null;
+            }
+        };
+
+        Event::listen(AssetTransformersResolving::class, function (AssetTransformersResolving $event) use ($customTransformer) {
+            $event->types['custom'] = $customTransformer;
+        });
+
+        expect($this->assetTransforms->getAssetTransformer('custom'))->toBe($customTransformer);
+    });
+
+    it('adds transformer GraphQL arguments', function () {
+        $customTransformer = (new class implements AssetTransformerInterface
+        {
+            public static function handle(): string
+            {
+                return 'custom';
+            }
+
+            public static function displayName(): string
+            {
+                return 'Custom';
+            }
+
+            public static function gqlArguments(): array
+            {
+                return [
+                    'blur' => [
+                        'type' => Type::int(),
+                    ],
+                ];
+            }
+
             public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
             {
                 return '';
             }
 
             public function invalidateAssetTransforms(Asset $asset): void {}
+
+            public function getTransformString(ImageTransform $imageTransform, bool $ignoreHandle = false): string
+            {
+                return '';
+            }
+
+            public function getSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+            {
+                return null;
+            }
         })::class;
 
-        Event::listen(ImageTransformersResolving::class, function (ImageTransformersResolving $event) use ($customTransformer) {
-            $event->types[] = $customTransformer;
+        Event::listen(AssetTransformersResolving::class, function (AssetTransformersResolving $event) use ($customTransformer) {
+            $event->types['custom'] = $customTransformer;
         });
 
-        $transformers = $this->service->getAllImageTransformers();
-
-        expect($transformers)->toContain($customTransformer);
-    });
-});
-
-describe('getImageTransformer', function () {
-    it('returns an instance of the transformer', function () {
-        $transformer = $this->service->getImageTransformer(ImageTransformer::class);
-
-        expect($transformer)->toBeInstanceOf(ImageTransformerInterface::class);
+        expect(TransformArguments::getArguments())->toHaveKey('blur');
     });
 
-    it('memoizes transformer instances', function () {
-        $first = $this->service->getImageTransformer(ImageTransformer::class);
-        $second = $this->service->getImageTransformer(ImageTransformer::class);
+    it('rejects transformer GraphQL argument collisions', function () {
+        $customTransformer = (new class implements AssetTransformerInterface
+        {
+            public static function handle(): string
+            {
+                return 'custom';
+            }
 
-        expect($first)->toBe($second);
-    });
+            public static function displayName(): string
+            {
+                return 'Custom';
+            }
 
-    it('throws for invalid transformer class', function () {
-        $this->service->getImageTransformer(stdClass::class);
-    })->throws(ImageTransformException::class, 'Invalid image transformer');
+            public static function gqlArguments(): array
+            {
+                return [
+                    'width' => [
+                        'type' => Type::int(),
+                    ],
+                ];
+            }
+
+            public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
+            {
+                return '';
+            }
+
+            public function invalidateAssetTransforms(Asset $asset): void {}
+
+            public function getTransformString(ImageTransform $imageTransform, bool $ignoreHandle = false): string
+            {
+                return '';
+            }
+
+            public function getSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+            {
+                return null;
+            }
+        })::class;
+
+        Event::listen(AssetTransformersResolving::class, function (AssetTransformersResolving $event) use ($customTransformer) {
+            $event->types['custom'] = $customTransformer;
+        });
+
+        TransformArguments::getArguments();
+    })->throws(ImageTransformException::class);
 });
 
 describe('reset', function () {

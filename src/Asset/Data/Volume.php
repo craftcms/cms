@@ -17,6 +17,7 @@ use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\AssetTransforms;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Url;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
@@ -104,6 +105,8 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
 
     private ?string $_transformFsHandle = null;
 
+    private ?string $_defaultTransformer = null;
+
     public function __construct(array|object $config = [])
     {
         if (is_object($config)) {
@@ -144,6 +147,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
             'subpath' => $this->getSubpath(ensureTrailing: false, parse: false),
             'transformFsHandle' => $this->getTransformFsHandle(false),
             'transformSubpath' => $this->getTransformSubpath(ensureTrailing: false, parse: false),
+            'defaultTransformer' => $this->getDefaultTransformer(false),
         ]);
     }
 
@@ -158,6 +162,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
             'subpath' => t('Subpath'),
             'transformFsHandle' => t('Transform Filesystem'),
             'transformSubpath' => t('Transform Subpath'),
+            'defaultTransformer' => t('Default Transformer'),
         ];
     }
 
@@ -410,6 +415,20 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
         $this->_transformFs = null;
     }
 
+    public function getDefaultTransformer(bool $resolve = true): ?string
+    {
+        if (! $resolve) {
+            return $this->_defaultTransformer;
+        }
+
+        return AssetTransforms::resolveTransformerHandle($this->_defaultTransformer);
+    }
+
+    public function setDefaultTransformer(?string $handle): void
+    {
+        $this->_defaultTransformer = $handle ?: null;
+    }
+
     public function getResolvedFsTarget(bool $parse = true): ?string
     {
         return $this->resolveStorageTargetKey($this->_fsHandle, $parse);
@@ -429,6 +448,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
             'subpath' => $this->_subpath,
             'transformFs' => $this->_transformFsHandle,
             'transformSubpath' => $this->_transformSubpath,
+            'defaultTransformer' => $this->_defaultTransformer,
             'titleTranslationMethod' => $this->titleTranslationMethod->value,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
             'altTranslationMethod' => $this->altTranslationMethod->value,

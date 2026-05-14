@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
-use CraftCms\Cms\Support\Facades\ImageTransforms;
+use CraftCms\Cms\Support\Facades\AssetTransforms;
 use Illuminate\Support\Collection;
 
 /**
@@ -57,7 +57,7 @@ trait EagerloadsTransforms
                     : [$transforms];
             }
 
-            ImageTransforms::eagerLoadTransforms($result->all(), $transforms);
+            AssetTransforms::eagerLoadTransforms($result->all(), $transforms);
 
             return $result;
         });

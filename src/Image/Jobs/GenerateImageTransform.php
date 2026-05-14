@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image\Jobs;
 
+use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -21,7 +23,7 @@ class GenerateImageTransform extends Job
         parent::__construct();
     }
 
-    public function handle(): void
+    public function handle(?AssetTransforms $assetTransforms = null): void
     {
         $transformer = new ImageTransformer;
         $index = $transformer->getTransformIndexModelById($this->transformId);
@@ -33,6 +35,7 @@ class GenerateImageTransform extends Job
                 $asset = Asset::find()->id($index->assetId)->one();
 
                 if ($asset) {
+                    $transformer = $assetTransforms->getAssetTransformer($index->transformer ?? ImageTransform::DEFAULT_TRANSFORMER);
                     $transformer->getTransformUrl($asset, $index->getTransform(), true);
                 }
             } catch (Throwable $e) {

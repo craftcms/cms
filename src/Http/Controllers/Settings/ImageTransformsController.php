@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
+use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Image\Data\ImageTransform;
@@ -73,6 +74,8 @@ class ImageTransformsController
             : null;
         $transform->interlace = (string) $request->input('interlace', $transform->interlace);
         $transform->format = $request->input('format');
+        $transform->setTransformer($request->input('transformer'));
+        $transform->settings = $request->input('settings', []);
         $transform->fill = ($fill = $request->input('fill')) !== '' && ! is_null($fill)
             ? (string) $fill
             : null;
@@ -126,11 +129,32 @@ class ImageTransformsController
             'handle' => $transformHandle,
             'transform' => $transform,
             'title' => $title,
+            'transformerOptions' => $this->transformerOptions(app(AssetTransforms::class)),
+            'transformerSettingsHtml' => app(AssetTransforms::class)
+                ->getAssetTransformer($transform->getTransformer())
+                ->getSettingsHtml($transform, $this->readOnly),
             'qualityPickerOptions' => $qualityPickerOptions,
             'qualityPickerValue' => $qualityPickerValue,
             'readOnly' => $this->readOnly,
             'baseIconsUrl' => craftAsset('legacy/edittransform/dist/images'),
         ]);
+    }
+
+    private function transformerOptions(AssetTransforms $assetTransforms): array
+    {
+        $options = [[
+            'label' => t('Volume default'),
+            'value' => '',
+        ]];
+
+        foreach ($assetTransforms->getAllAssetTransformers() as $handle => $class) {
+            $options[] = [
+                'label' => $class::displayName(),
+                'value' => $handle,
+            ];
+        }
+
+        return $options;
     }
 
     /**

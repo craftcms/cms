@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Commands\Concerns;
 
+use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Asset\Data\IndexingSession;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -14,7 +15,6 @@ use CraftCms\Cms\Asset\Exceptions\MissingVolumeFolderException;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Filesystem\Data\FsListing;
-use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Support\Facades\AssetIndexer;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Folders;
@@ -113,7 +113,7 @@ trait IndexesAssets
                     $assets = Asset::find()->id($assetIds)->get();
 
                     foreach ($assets as $asset) {
-                        app(ImageTransforms::class)->deleteCreatedTransformsForAsset($asset);
+                        app(AssetTransforms::class)->deleteCreatedTransformsForAsset($asset);
                         $asset->keepFileOnDelete = true;
                         Elements::deleteElement($asset);
                     }

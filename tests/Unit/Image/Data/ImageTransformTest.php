@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Image\Data\ImageTransform;
-use CraftCms\Cms\Image\ImageTransformer;
 
 describe('defaults', function () {
     test('has sensible defaults', function () {
@@ -71,25 +70,25 @@ describe('modes', function () {
 });
 
 describe('transformer', function () {
-    test('defaults to ImageTransformer', function () {
+    test('defaults to volume transformer resolution', function () {
         $transform = new ImageTransform;
 
-        expect($transform->getTransformer())->toBe(ImageTransformer::class);
+        expect($transform->getTransformer())->toBeNull();
     });
 
-    test('can set a custom transformer', function () {
+    test('can set a custom transformer handle', function () {
         $transform = new ImageTransform;
-        $transform->setTransformer('Custom\Transformer');
+        $transform->setTransformer('custom');
 
-        expect($transform->getTransformer())->toBe('Custom\Transformer');
+        expect($transform->getTransformer())->toBe('custom');
     });
 
-    test('falls back to default when set to null', function () {
+    test('falls back to volume transformer resolution when set to null', function () {
         $transform = new ImageTransform;
-        $transform->setTransformer('Custom\Transformer');
+        $transform->setTransformer('custom');
         $transform->setTransformer(null);
 
-        expect($transform->getTransformer())->toBe(ImageTransformer::class);
+        expect($transform->getTransformer())->toBeNull();
     });
 });
 
@@ -106,6 +105,8 @@ describe('getConfig', function () {
             'interlace' => 'none',
             'format' => 'webp',
             'fill' => '#ff0000',
+            'settings' => ['blur' => 12],
+            'transformer' => 'custom',
             'upscale' => true,
         ]);
 
@@ -119,6 +120,8 @@ describe('getConfig', function () {
             'name' => 'Thumbnail',
             'position' => 'center-center',
             'quality' => 80,
+            'settings' => ['blur' => 12],
+            'transformer' => 'custom',
             'upscale' => true,
             'width' => 200,
         ]);
@@ -317,7 +320,7 @@ describe('validation', function () {
 });
 
 describe('DEFAULT_TRANSFORMER constant', function () {
-    test('points to ImageTransformer class', function () {
-        expect(ImageTransform::DEFAULT_TRANSFORMER)->toBe(ImageTransformer::class);
+    test('points to the built-in transformer handle', function () {
+        expect(ImageTransform::DEFAULT_TRANSFORMER)->toBe('craft');
     });
 });

@@ -251,6 +251,7 @@ class Craft extends Yii2
         app()->forgetInstance(Volumes::class);
         app()->forgetInstance(Assets::class);
         app()->forgetInstance(Folders::class);
+        app()->forgetInstance(\CraftCms\Cms\Asset\AssetTransforms::class);
         app()->forgetInstance(ImageTransforms::class);
         $this->resetPathService();
 
@@ -259,6 +260,7 @@ class Craft extends Yii2
         \CraftCms\Cms\Support\Facades\Sections::clearResolvedInstances();
         \CraftCms\Cms\Support\Facades\Assets::clearResolvedInstances();
         \CraftCms\Cms\Support\Facades\Folders::clearResolvedInstances();
+        \CraftCms\Cms\Support\Facades\AssetTransforms::clearResolvedInstances();
         \CraftCms\Cms\Support\Facades\ImageTransforms::clearResolvedInstances();
 
         \Craft::$app->getDb()->close();

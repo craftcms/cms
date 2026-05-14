@@ -12,10 +12,13 @@ use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\events\AssetEvent;
 use craft\events\ImageTransformEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\imagetransforms\ImageTransformer;
+use craft\imagetransforms\LegacyImageTransformerAdapter;
+use CraftCms\Cms\Asset\AssetTransforms as AssetTransformsService;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Image\Data\ImageTransform as ImageTransformData;
+use CraftCms\Cms\Image\Events\AssetTransformersResolving;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
-use CraftCms\Cms\Image\Events\ImageTransformersResolving;
 use CraftCms\Cms\Image\Events\TransformDeleted;
 use CraftCms\Cms\Image\Events\TransformDeleting;
 use CraftCms\Cms\Image\Events\TransformDeletionApplying;
@@ -38,6 +41,11 @@ use yii\base\Component;
  */
 class ImageTransforms extends Component
 {
+    /**
+     * @var ImageTransformerInterface[]
+     */
+    private array $_imageTransformers = [];
+
     /**
      * @event ImageTransformEvent The event that is triggered before an image transform is saved
      */
@@ -186,7 +194,7 @@ class ImageTransforms extends Component
      */
     public function eagerLoadTransforms(array $assets, array $transforms): void
     {
-        $this->service()->eagerLoadTransforms($assets, $transforms);
+        $this->assetTransforms()->eagerLoadTransforms($assets, $transforms);
     }
 
     /**
@@ -197,7 +205,15 @@ class ImageTransforms extends Component
      */
     public function getImageTransformer(string $type, array $config = []): ImageTransformerInterface
     {
-        return $this->service()->getImageTransformer($type, $config);
+        if (array_key_exists($type, $this->_imageTransformers)) {
+            return $this->_imageTransformers[$type];
+        }
+
+        if (!is_subclass_of($type, ImageTransformerInterface::class)) {
+            throw new \InvalidArgumentException("Invalid image transformer: $type");
+        }
+
+        return $this->_imageTransformers[$type] = new $type($config);
     }
 
     /**
@@ -207,7 +223,7 @@ class ImageTransforms extends Component
      */
     public function deleteAllTransformData(Asset $asset): void
     {
-        $this->service()->deleteAllTransformData($asset);
+        $this->assetTransforms()->deleteAllTransformData($asset);
     }
 
     /**
@@ -217,7 +233,7 @@ class ImageTransforms extends Component
      */
     public function deleteResizedAssetVersion(Asset $asset): void
     {
-        $this->service()->deleteResizedAssetVersion($asset);
+        $this->assetTransforms()->deleteResizedAssetVersion($asset);
     }
 
     /**
@@ -227,7 +243,7 @@ class ImageTransforms extends Component
      */
     public function deleteCreatedTransformsForAsset(Asset $asset): void
     {
-        $this->service()->deleteCreatedTransformsForAsset($asset);
+        $this->assetTransforms()->deleteCreatedTransformsForAsset($asset);
     }
 
     /**
@@ -238,7 +254,17 @@ class ImageTransforms extends Component
      */
     public function getAllImageTransformers(): array
     {
-        return $this->service()->getAllImageTransformers();
+        $event = new RegisterComponentTypesEvent([
+            'types' => [
+                ImageTransformer::class,
+            ],
+        ]);
+
+        if (Craft::$app->getImageTransforms()->hasEventHandlers(self::EVENT_REGISTER_IMAGE_TRANSFORMERS)) {
+            Craft::$app->getImageTransforms()->trigger(self::EVENT_REGISTER_IMAGE_TRANSFORMERS, $event);
+        }
+
+        return $event->types;
     }
 
     public static function registerEvents(): void
@@ -305,19 +331,34 @@ class ImageTransforms extends Component
             ]));
         });
 
-        EventFacade::listen(ImageTransformersResolving::class, function(ImageTransformersResolving $event) {
-            if (!Craft::$app->getImageTransforms()->hasEventHandlers(self::EVENT_REGISTER_IMAGE_TRANSFORMERS)) {
-                return;
-            }
+        EventFacade::listen(AssetTransformersResolving::class, function(AssetTransformersResolving $event) {
+            foreach (Craft::$app->getImageTransforms()->getAllImageTransformers() as $type) {
+                if ($type === ImageTransformer::class) {
+                    continue;
+                }
 
-            $legacyEvent = new RegisterComponentTypesEvent(['types' => $event->types]);
-            Craft::$app->getImageTransforms()->trigger(self::EVENT_REGISTER_IMAGE_TRANSFORMERS, $legacyEvent);
-            $event->types = $legacyEvent->types;
+                $event->types[$type] = new LegacyImageTransformerAdapter($type);
+            }
+        });
+
+        EventFacade::listen(AssetTransformsInvalidating::class, function(AssetTransformsInvalidating $event) {
+            foreach (Craft::$app->getImageTransforms()->getAllImageTransformers() as $type) {
+                if ($type === ImageTransformer::class) {
+                    continue;
+                }
+
+                Craft::$app->getImageTransforms()->getImageTransformer($type)->invalidateAssetTransforms($event->asset);
+            }
         });
     }
 
     private function service(): ImageTransformsService
     {
         return app(ImageTransformsService::class);
+    }
+
+    private function assetTransforms(): AssetTransformsService
+    {
+        return app(AssetTransformsService::class);
     }
 }

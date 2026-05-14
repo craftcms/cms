@@ -320,7 +320,6 @@ use craft\i18n\FormatConverter;
 use craft\image\Raster;
 use craft\image\Svg;
 use craft\image\SvgAllowedAttributes;
-use craft\imagetransforms\FallbackTransformer;
 use craft\models\AssetIndexData;
 use craft\models\AssetIndexingSession;
 use craft\models\DeprecationError;
@@ -701,7 +700,6 @@ class ClassAliases
         class_alias(\CraftCms\Cms\Gql\Data\GqlToken::class, GqlToken::class);
         class_alias(\CraftCms\Cms\Gql\Exceptions\GqlException::class, GqlException::class);
         class_alias(\CraftCms\Cms\Http\Controllers\Users\EditUserTrait::class, EditUserTrait::class);
-        class_alias(\CraftCms\Cms\Image\FallbackTransformer::class, FallbackTransformer::class);
         class_alias(\CraftCms\Cms\Image\Image::class, Image::class);
         class_alias(\CraftCms\Cms\Image\Raster::class, Raster::class);
         class_alias(\CraftCms\Cms\Image\Svg::class, Svg::class);

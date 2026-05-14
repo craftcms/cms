@@ -2,13 +2,18 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
+use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Image\Contracts\AssetTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\Events\AssetTransformersResolving;
 use CraftCms\Cms\Image\ImageTransformer;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
     config()->set('filesystems.disks.test-disk', [
@@ -117,4 +122,53 @@ it('invalidates stale eager-loaded indexes when dateModified is a string', funct
     );
 
     expect(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $index->id)->exists())->toBeFalse();
+});
+
+it('uses the volume default transformer when a transform does not specify one', function () {
+    $customTransformer = (new class implements AssetTransformerInterface
+    {
+        public static function handle(): string
+        {
+            return 'custom';
+        }
+
+        public static function displayName(): string
+        {
+            return 'Custom';
+        }
+
+        public static function gqlArguments(): array
+        {
+            return [];
+        }
+
+        public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
+        {
+            return 'https://example.test/custom-transform';
+        }
+
+        public function invalidateAssetTransforms(Asset $asset): void {}
+
+        public function getTransformString(ImageTransform $imageTransform, bool $ignoreHandle = false): string
+        {
+            return 'custom';
+        }
+
+        public function getSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+        {
+            return null;
+        }
+    })::class;
+
+    Event::listen(AssetTransformersResolving::class, function (AssetTransformersResolving $event) use ($customTransformer) {
+        $event->types['custom'] = $customTransformer;
+    });
+
+    $this->volume->defaultTransformer = 'custom';
+    $this->volume->save();
+    app()->forgetInstance(Volumes::class);
+
+    $asset = ($this->createImageAsset)();
+
+    expect($asset->getUrl(['width' => 100]))->toBe('https://example.test/custom-transform');
 });

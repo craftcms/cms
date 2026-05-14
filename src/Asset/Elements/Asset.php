@@ -16,6 +16,7 @@ use CraftCms\Cms\Asset\Actions\RenameFile;
 use CraftCms\Cms\Asset\Actions\ReplaceFile;
 use CraftCms\Cms\Asset\Actions\ShowInFolder;
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Asset\Concerns\LegacyConstants;
 use CraftCms\Cms\Asset\Conditions\AssetCondition;
 use CraftCms\Cms\Asset\Data\Volume;
@@ -1934,11 +1935,7 @@ JS, [
 
         if (
             $transform && (
-                // if it's a site request - check the mime type and general settings and decide whether to nullify the transform
-                // otherwise - we can proceed and rely on the FallbackTransformer (e.g. for thumbs in the CP)
-                // see https://github.com/craftcms/cms/issues/13306 and https://github.com/craftcms/cms/issues/13624 for more info
-                (request()->isSiteRequest() && ! $this->allowTransforms()) ||
-                ! ImageHelper::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))
+                request()->isSiteRequest() && ! $this->allowTransforms()
             )
         ) {
             $transform = null;
@@ -1967,11 +1964,15 @@ JS, [
                 return Html::encodeSpaces($event->url);
             }
 
-            $imageTransformer = $transform->getImageTransformer();
+            $transformerHandle = $transform->getTransformer() ?? $volume->getDefaultTransformer();
+            $transformer = app(AssetTransforms::class)->getAssetTransformer($transformerHandle);
+            $transform->setTransformer(app(AssetTransforms::class)->resolveTransformerHandle($transformerHandle));
 
             try {
-                $url = Html::encodeSpaces($imageTransformer->getTransformUrl($this, $transform, $immediately));
+                $url = Html::encodeSpaces($transformer->getTransformUrl($this, $transform, $immediately));
             } catch (NotSupportedException) {
+                Log::warning('Asset transformer doesn’t support this asset or transform.', [__METHOD__]);
+
                 return null;
             } catch (ImageTransformException $e) {
                 Log::warning("Couldn’t get image transform URL: {$e->getMessage()}", [__METHOD__]);
@@ -3033,7 +3034,7 @@ JS;
             }
         }
 
-        app(ImageTransforms::class)->deleteAllTransformData($this);
+        app(AssetTransforms::class)->deleteAllTransformData($this);
         parent::afterDelete();
     }
 
@@ -3256,7 +3257,7 @@ JS;
 
         if ($this->folderId) {
             // Nuke the transforms
-            app(ImageTransforms::class)->deleteAllTransformData($this);
+            app(AssetTransforms::class)->deleteAllTransformData($this);
         }
 
         // Update file properties

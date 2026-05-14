@@ -109,6 +109,23 @@ it('can save a new volume', function () {
     Event::assertDispatchedOnce(VolumeSaved::class);
 });
 
+it('persists the default transformer', function () {
+    $this->volumes->saveVolume(new VolumeData([
+        'name' => 'Transformed Volume',
+        'handle' => 'transformedVolume',
+        'fsHandle' => 'test-disk',
+        'defaultTransformer' => 'craft',
+    ]));
+
+    app()->forgetInstance(Volumes::class);
+    $this->volumes = app(Volumes::class);
+
+    $volume = $this->volumes->getVolumeByHandle('transformedVolume');
+
+    expect($volume->getDefaultTransformer(false))->toBe('craft')
+        ->and(Volume::firstOrFail()->defaultTransformer)->toBe('craft');
+});
+
 it('can save an existing volume', function () {
     $this->volumes->saveVolume(new VolumeData([
         'name' => 'Original Name',

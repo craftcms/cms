@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Image\Data;
 
 use CraftCms\Cms\Component\Component;
-use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
+use CraftCms\Cms\Image\Contracts\AssetTransformerInterface;
 use CraftCms\Cms\Image\ImageTransformer;
 use DateTime;
 use Illuminate\Validation\Rule;
@@ -15,7 +15,7 @@ use function CraftCms\Cms\t;
 
 class ImageTransform extends Component
 {
-    public const string DEFAULT_TRANSFORMER = ImageTransformer::class;
+    public const string DEFAULT_TRANSFORMER = 'craft';
 
     private const array POSITIONS = [
         'top-left',
@@ -68,12 +68,14 @@ class ImageTransform extends Component
 
     public ?DateTime $parameterChangeTime = null;
 
-    /** @var class-string<ImageTransformerInterface> */
-    protected string $transformer = self::DEFAULT_TRANSFORMER;
+    /** @var array<string, mixed> */
+    public array $settings = [];
+
+    protected ?string $transformer = null;
 
     public function getIsNamedTransform(): bool
     {
-        return $this->id && $this->getTransformer() === self::DEFAULT_TRANSFORMER;
+        return $this->id && in_array($this->getTransformer(), [null, self::DEFAULT_TRANSFORMER, ImageTransformer::class], true);
     }
 
     /**
@@ -93,10 +95,8 @@ class ImageTransform extends Component
 
     /**
      * Returns the transformer class.
-     *
-     * @return class-string<ImageTransformerInterface>
      */
-    public function getTransformer(): string
+    public function getTransformer(): ?string
     {
         return $this->transformer;
     }
@@ -104,16 +104,13 @@ class ImageTransform extends Component
     /**
      * Sets the transformer class.
      *
-     * @param  class-string<ImageTransformerInterface>|null  $transformer
+     * @param  class-string<AssetTransformerInterface>|string|null  $transformer
      */
     public function setTransformer(?string $transformer): void
     {
-        $this->transformer = $transformer ?? self::DEFAULT_TRANSFORMER;
-    }
-
-    public function getImageTransformer(): ImageTransformerInterface
-    {
-        return app()->make($this->getTransformer());
+        $this->transformer = $transformer === ImageTransformer::class || $transformer === null || $transformer === ''
+            ? null
+            : $transformer;
     }
 
     public function getConfig(): array
@@ -128,6 +125,8 @@ class ImageTransform extends Component
             'name' => $this->name,
             'position' => $this->position,
             'quality' => $this->quality,
+            'settings' => ! empty($this->settings) ? $this->settings : null,
+            'transformer' => $this->getTransformer(),
             'upscale' => $this->upscale,
             'width' => $this->width ?: null,
         ];

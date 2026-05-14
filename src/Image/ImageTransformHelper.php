@@ -67,7 +67,6 @@ class ImageTransformHelper
             'interlace' => $matches['interlace'] ?? 'none',
             'fill' => $fill ?? null,
             'upscale' => ($matches['upscale'] ?? null) !== 'ns',
-            'transformer' => ImageTransform::DEFAULT_TRANSFORMER,
         ]);
     }
 
@@ -113,6 +112,8 @@ class ImageTransformHelper
             foreach ($parameters as $name => $value) {
                 if (in_array($name, $attributes, true)) {
                     $transform->$name = $value;
+                } else {
+                    $transform->settings[$name] = $value;
                 }
             }
 
@@ -305,7 +306,7 @@ class ImageTransformHelper
                 return self::extendTransform($baseTransform, $transform);
             }
 
-            return new ImageTransform($transform);
+            return self::createTransformFromArray($transform);
         }
 
         if (is_string($transform)) {
@@ -322,6 +323,28 @@ class ImageTransformHelper
         }
 
         return null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $config
+     */
+    private static function createTransformFromArray(array $config): ImageTransform
+    {
+        $transform = new ImageTransform;
+        $settings = [];
+
+        foreach ($config as $name => $value) {
+            if (! $transform->canSetProperty($name)) {
+                $settings[$name] = $value;
+                unset($config[$name]);
+            }
+        }
+
+        if (! empty($settings)) {
+            $config['settings'] = array_merge($config['settings'] ?? [], $settings);
+        }
+
+        return new ImageTransform($config);
     }
 
     /**

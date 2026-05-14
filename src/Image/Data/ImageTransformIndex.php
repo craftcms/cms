@@ -61,7 +61,12 @@ class ImageTransformIndex extends Component
 
     public function getTransform(): ImageTransform
     {
-        return $this->_transform ??= ImageTransformHelper::normalizeTransform($this->transformString);
+        if (! isset($this->_transform)) {
+            $this->_transform = ImageTransformHelper::normalizeTransform($this->transformString);
+            $this->_transform->setTransformer($this->transformer);
+        }
+
+        return $this->_transform;
     }
 
     public function setTransform(ImageTransform $transform): void

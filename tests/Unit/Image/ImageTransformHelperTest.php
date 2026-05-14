@@ -414,15 +414,16 @@ describe('extendTransform', function () {
         expect($result)->toBe($original);
     });
 
-    test('ignores unknown parameters', function () {
+    test('preserves unknown parameters as settings', function () {
         $original = new ImageTransform(['width' => 800]);
 
         $extended = ImageTransformHelper::extendTransform($original, [
             'width' => 400,
-            'nonExistentProperty' => 'value',
+            'blur' => 12,
         ]);
 
-        expect($extended->width)->toBe(400);
+        expect($extended->width)->toBe(400)
+            ->and($extended->settings)->toBe(['blur' => 12]);
     });
 
     test('matches legacy extendTransform provider cases', function (ImageTransform $transform, array $parameters, array $expected) {

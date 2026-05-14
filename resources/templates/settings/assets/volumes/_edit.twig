@@ -89,6 +89,18 @@
     disabled: readOnly,
 }) }}
 
+{{ forms.selectField({
+    label: 'Default Transformer'|t('app'),
+    instructions: 'Which transformer should be used by default for this volume.'|t('app'),
+    id: 'default-transformer',
+    name: 'defaultTransformer',
+    options: transformerOptions,
+    value: old('defaultTransformer', volume.getDefaultTransformer(false) ?? 'craft'),
+    errors: volume.errors.get('defaultTransformer'),
+    data: {'error-key': 'defaultTransformer'},
+    disabled: readOnly,
+}) }}
+
 {% if Sites.isMultiSite() %}
     <hr>
 

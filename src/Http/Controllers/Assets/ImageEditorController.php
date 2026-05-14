@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use CraftCms\Cms\Asset\Assets;
+use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Validation\AssetRules;
@@ -13,7 +14,6 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransformHelper;
-use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -206,7 +206,7 @@ readonly class ImageEditorController
             $asset->setFocalPoint($focal);
 
             if ($focalChanged) {
-                app(ImageTransforms::class)->deleteCreatedTransformsForAsset($asset);
+                app(AssetTransforms::class)->deleteCreatedTransformsForAsset($asset);
             }
 
             // Only replace file if it changed, otherwise just save changed focal points
@@ -237,7 +237,7 @@ readonly class ImageEditorController
         return $this->asSuccess(data: $output);
     }
 
-    public function updateFocalPoint(Request $request, Elements $elements, ImageTransforms $imageTransforms): Response
+    public function updateFocalPoint(Request $request, Elements $elements, AssetTransforms $assetTransforms): Response
     {
         $request->validate([
             'assetUid' => ['required', 'string'],
@@ -264,7 +264,7 @@ readonly class ImageEditorController
 
         $asset->setFocalPoint($focalData);
         $elements->saveElement($asset);
-        $imageTransforms->deleteCreatedTransformsForAsset($asset);
+        $assetTransforms->deleteCreatedTransformsForAsset($asset);
 
         return $this->asSuccess();
     }
