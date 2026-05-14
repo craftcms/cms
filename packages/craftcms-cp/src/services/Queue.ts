@@ -193,7 +193,7 @@ export class QueueService extends EventTarget {
           this.setJobData(data.jobData.jobs);
         }
         // Schedule our next poll with extra delay to avoid conflicts
-        if (this.jobInfo.length > 0) {
+        if (this.displayedJob !== null) {
           const delay = this.#getAdaptiveDelay() + 1000;
           this.startTracking(delay);
         }
@@ -235,8 +235,8 @@ export class QueueService extends EventTarget {
       // Broadcast to other tabs
       this.#broadcast('trackJobProgress', {jobData: response.data});
 
-      // Continue polling if there are jobs
-      if (this.jobInfo.length > 0) {
+      // Continue polling while there's an active job to display
+      if (this.displayedJob !== null) {
         this.startTracking(true, true);
       }
     } catch (error) {
@@ -255,8 +255,8 @@ export class QueueService extends EventTarget {
         return;
       }
 
-      // For other errors, retry with delay if there are jobs to track
-      if (this.jobInfo.length > 0) {
+      // For other errors, retry with delay if there's still an active job
+      if (this.displayedJob !== null) {
         this.startTracking(true, true);
       }
     } finally {
@@ -265,23 +265,24 @@ export class QueueService extends EventTarget {
     }
   }
 
+  #displayedJobEqual(a: JobInfo | null, b: JobInfo | null): boolean {
+    if (a === null && b === null) return true;
+    if (a === null || b === null) return false;
+    return (
+      a.id === b.id &&
+      a.progress === b.progress &&
+      a.progressLabel === b.progressLabel &&
+      a.status === b.status
+    );
+  }
+
   #setJobInfo(jobs: JobInfo[]): void {
     const oldDisplayedJob = this.displayedJob;
 
     this.jobInfo = jobs;
     this.displayedJob = this.#selectDisplayedJob();
 
-    // Track if displayed job changed for adaptive delay
-    const jobsUnchanged =
-      (oldDisplayedJob &&
-        this.displayedJob &&
-        oldDisplayedJob.id === this.displayedJob.id &&
-        oldDisplayedJob.progress === this.displayedJob.progress &&
-        oldDisplayedJob.progressLabel === this.displayedJob.progressLabel &&
-        oldDisplayedJob.status === this.displayedJob.status) ||
-      (!oldDisplayedJob && !this.displayedJob && this.jobInfo.length > 0);
-
-    if (jobsUnchanged) {
+    if (this.#displayedJobEqual(oldDisplayedJob, this.displayedJob)) {
       this.displayedJobUnchangedCount++;
     } else {
       this.displayedJobUnchangedCount = 1;
@@ -296,7 +297,7 @@ export class QueueService extends EventTarget {
     }
 
     // Check for completion
-    if (this.jobInfo.length === 0 && oldDisplayedJob) {
+    if (this.displayedJob === null && oldDisplayedJob) {
       this.#emitJobComplete();
     }
   }
