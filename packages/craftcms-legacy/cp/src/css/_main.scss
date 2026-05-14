@@ -4335,10 +4335,7 @@ table {
       font-size: 0;
       position: absolute;
       z-index: 100;
-      inset-block-start: 0;
-      inset-inline-start: 0;
-      width: calc(100% + var(--pane-padding, 24px) + var(--pane-padding, 24px));
-      height: 100%;
+      inset: 0;
       background: color.adjust(mixins.$white, $alpha: -0.25);
       border-radius: var(--radius-lg);
     }
