@@ -3012,7 +3012,10 @@ JS;
         if (
             !$this->postDate &&
             $this->enabled &&
-            in_array($this->scenario, [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT])
+            (
+                in_array($this->scenario, [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]) ||
+                (!$this->getIsDraft() && !$this->getIsRevision())
+            )
         ) {
             // Default the post date to the current date/time
             $this->postDate = new DateTime();
