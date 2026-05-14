@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where assets’ Alternative Text values weren’t always being set when replacing an existing asset’s file. ([#18713](https://github.com/craftcms/cms/discussions/18713))
+
 ## 5.10.0 - 2026-05-13
 
 ### Content Management
