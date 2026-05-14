@@ -608,6 +608,7 @@ class Install extends Migration
             'handle' => $this->string()->notNull(),
             'type' => $this->enum('type', [Section::TYPE_SINGLE, Section::TYPE_CHANNEL, Section::TYPE_STRUCTURE])->notNull()->defaultValue('channel'),
             'enableVersioning' => $this->boolean()->defaultValue(false)->notNull(),
+            'minAuthors' => $this->smallInteger()->unsigned()->notNull()->defaultValue(1),
             'maxAuthors' => $this->smallInteger()->unsigned(),
             'propagationMethod' => $this->string()->defaultValue(PropagationMethod::All->value)->notNull(),
             'defaultPlacement' => $this->enum('defaultPlacement', [Section::DEFAULT_PLACEMENT_BEGINNING, Section::DEFAULT_PLACEMENT_END])->defaultValue('end')->notNull(),
@@ -1184,7 +1185,7 @@ class Install extends Migration
             $site = $sitesService->getPrimarySite();
             $site->setBaseUrl($this->site->getBaseUrl(false));
             $site->hasUrls = $this->site->hasUrls;
-            $site->language = $this->site->language;
+            $site->language = $this->site->getLanguage(false);
             $site->setName($this->site->getName(false));
             $sitesService->saveSite($site);
         }
@@ -1322,7 +1323,7 @@ class Install extends Migration
                     'baseUrl' => $this->site->getBaseUrl(false),
                     'handle' => $this->site->handle,
                     'hasUrls' => $this->site->hasUrls,
-                    'language' => $this->site->language,
+                    'language' => $this->site->getLanguage(false),
                     'name' => $this->site->getName(false),
                     'primary' => true,
                     'siteGroup' => $siteGroupUid,

@@ -260,10 +260,26 @@ class Site extends Model implements Chippable
     /**
      * @inheritdoc
      */
+    public function beforeValidate(): bool
+    {
+        if (!parent::beforeValidate()) {
+            return false;
+        }
+
+        // Can't use the `trim` rule because it replaces env vars
+        // see https://github.com/craftcms/cms/pull/18789
+        $this->setName(trim($this->getName(false)));
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['name', 'handle'], 'trim'];
+        $rules[] = [['handle'], 'trim'];
         $rules[] = [['groupId', 'name', 'handle', 'language'], 'required'];
         $rules[] = [['id', 'groupId'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle', 'baseUrl'], 'string', 'max' => 255];

@@ -67,6 +67,7 @@ use craft\models\Site;
 use craft\records\Entry as EntryRecord;
 use craft\services\ElementSources;
 use craft\services\Structures;
+use craft\validators\ArrayValidator;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
 use craft\web\twig\AllowedInSandbox;
@@ -1019,6 +1020,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected function defineRules(): array
     {
+        $section = $this->getSection();
+
         $rules = parent::defineRules();
         $rules[] = [['sectionId', 'fieldId', 'ownerId', 'primaryOwnerId', 'typeId', 'sortOrder'], 'number', 'integerOnly' => true];
         $rules[] = [['authorIds'], 'each', 'rule' => ['number', 'integerOnly' => true]];
@@ -1033,9 +1036,15 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             ['typeId'],
             function(string $attribute) {
                 if (!$this->isEntryTypeAllowed()) {
-                    $this->addError($attribute, Craft::t('app', '{type} entries are no longer allowed in this section. Please choose a different entry type.', [
-                        'type' => $this->getType()->getUiLabel(),
-                    ]));
+                    if (isset($this->sectionId)) {
+                        $this->addError($attribute, Craft::t('app', '{type} entries are no longer allowed in this section. Please choose a different entry type.', [
+                            'type' => $this->getType()->getUiLabel(),
+                        ]));
+                    } else {
+                        $this->addError($attribute, Craft::t('app', '{type} entries are no longer allowed in this field. Please choose a different entry type.', [
+                            'type' => $this->getType()->getUiLabel(),
+                        ]));
+                    }
                 }
             },
             'skipOnEmpty' => false,
@@ -1057,15 +1066,15 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             'when' => fn() => $this->postDate && $this->expiryDate,
             'on' => self::SCENARIO_LIVE,
         ];
-        $rules[] = [
-            ['authorIds'],
-            'required',
-            'when' => function() {
-                $section = $this->getSection();
-                return $section && $section->type !== Section::TYPE_SINGLE && $section->maxAuthors !== 0;
-            },
-            'on' => self::SCENARIO_LIVE,
-        ];
+        if ($section && $section->type !== Section::TYPE_SINGLE && $section->maxAuthors !== 0) {
+            $rules[] = [
+                ['authorIds'],
+                ArrayValidator::class,
+                'min' => $section->minAuthors,
+                'max' => $section->maxAuthors,
+                'on' => self::SCENARIO_LIVE,
+            ];
+        }
         $rules[] = [
             ['typeId'],
             function(string $attribute) {
@@ -2299,6 +2308,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         $actions = parent::safeActionMenuItems();
 
         if (
+            Craft::$app->controller instanceof ElementsController &&
+            Craft::$app->controller->element === $this &&
             Craft::$app->getUser()->getIsAdmin() &&
             Craft::$app->getConfig()->getGeneral()->allowAdminChanges
         ) {
@@ -2353,11 +2364,7 @@ JS, [
             }
 
             // Field settings
-            if (
-                !empty($this->fieldId) &&
-                Craft::$app->controller instanceof ElementsController &&
-                Craft::$app->controller->element === $this
-            ) {
+            if (!empty($this->fieldId)) {
                 $fieldEditId = sprintf('edit-field-%s', mt_rand());
                 $actions[] = [
                     'id' => $fieldEditId,
@@ -2417,14 +2424,7 @@ JS, [
     {
         switch ($attribute) {
             case 'authors':
-                $authors = $this->getAuthors();
-                $html = '';
-                if (!empty($authors)) {
-                    foreach ($authors as $author) {
-                        $html .= Cp::elementChipHtml($author);
-                    }
-                }
-                return $html;
+                return Cp::elementPreviewHtml($this->getAuthors());
             case 'section':
                 $section = $this->getSection();
                 if (!$section) {
@@ -2709,7 +2709,7 @@ JS, [
                 'label' => Craft::t('app', 'Post Date'),
                 'id' => 'postDate',
                 'name' => 'postDate',
-                'value' => $this->_userPostDate(),
+                'value' => $this->postDate,
                 'errors' => $this->getErrors('postDate'),
                 'disabled' => $static,
             ]);
@@ -2909,21 +2909,6 @@ JS;
         Craft::$app->set('formattingLocale', $formattingLocale);
     }
 
-    /**
-     * Returns the Post Date value that should be shown on the edit form.
-     *
-     * @return DateTime|null
-     */
-    private function _userPostDate(): ?DateTime
-    {
-        if (!$this->postDate || ($this->getIsUnpublishedDraft() && $this->postDate == $this->dateCreated)) {
-            // Pretend the post date hasn't been set yet, even if it has
-            return null;
-        }
-
-        return $this->postDate;
-    }
-
     // Events
     // -------------------------------------------------------------------------
 
@@ -2954,7 +2939,7 @@ JS;
                     Craft::$app->getRevisions()->createRevision(
                         $current,
                         $current->getAuthorId(),
-                        sprintf('Revision from %s', Craft::$app->getFormatter()->asDatetime($current->dateUpdated)),
+                        sprintf('Revision from %s', Craft::$app->getFormatter()->asDatetime($current->dateUpdated, withTimeZone: true)),
                     );
                 }
             }
@@ -3015,7 +3000,7 @@ JS;
         $section = $this->getSection();
         if (
             $section?->type !== Section::TYPE_SINGLE &&
-            $section?->maxAuthors !== 0 &&
+            $section?->minAuthors === 1 &&
             empty($this->getAuthors())
         ) {
             $user = Craft::$app->getUser()->getIdentity();
@@ -3025,11 +3010,9 @@ JS;
         }
 
         if (
-            !$this->_userPostDate() &&
-            (
-                in_array($this->scenario, [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]) ||
-                !$this->getIsDraft()
-            )
+            !$this->postDate &&
+            $this->enabled &&
+            in_array($this->scenario, [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT])
         ) {
             // Default the post date to the current date/time
             $this->postDate = new DateTime();

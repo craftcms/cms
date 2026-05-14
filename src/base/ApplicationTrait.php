@@ -46,6 +46,7 @@ use craft\fieldlayoutelements\users\PhotoField;
 use craft\fieldlayoutelements\users\UsernameField;
 use craft\helpers\App;
 use craft\helpers\Db;
+use craft\helpers\Markdown as MarkdownHelper;
 use craft\helpers\Session;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
@@ -125,7 +126,6 @@ use yii\caching\Cache;
 use yii\db\ColumnSchemaBuilder;
 use yii\db\Exception as DbException;
 use yii\db\Expression;
-use yii\helpers\Markdown as MarkdownHelper;
 use yii\mutex\Mutex;
 use yii\queue\Queue;
 use yii\web\ServerErrorHttpException;
@@ -1582,11 +1582,13 @@ trait ApplicationTrait
         $this->getRequest();
         $this->getLog();
 
+        $isCpRequest = $this->getRequest()->getIsCpRequest();
+
         // Set the timezone
-        $this->_setTimeZone();
+        $this->_setTimeZone($isCpRequest);
 
         // Set the language
-        $this->updateTargetLanguage();
+        $this->updateTargetLanguage($isCpRequest);
 
         // Register the variable dumper
         VarDumper::setHandler(function($var) {
@@ -1641,9 +1643,22 @@ trait ApplicationTrait
     /**
      * Sets the system timezone.
      */
-    private function _setTimeZone(): void
+    private function _setTimeZone(bool $useUserTz): void
     {
-        $timeZone = $this->getConfig()->getGeneral()->timezone ?? $this->getProjectConfig()->get('system.timeZone');
+        $timeZone = null;
+
+        if ($useUserTz && $this instanceof WebApplication) {
+            // If the user is logged in *and* has a preferred time zone, use that
+            // (don't actually try to fetch the user, as plugins haven't been loaded yet)
+            $id = Session::get($this->getUser()->idParam);
+            if ($id) {
+                $timeZone = $this->getUsers()->getUserPreference($id, 'timeZone');
+            }
+        }
+
+        if (!$timeZone) {
+            $timeZone = $this->getConfig()->getGeneral()->timezone ?? $this->getProjectConfig()->get('system.timeZone');
+        }
 
         if ($timeZone) {
             $this->setTimeZone(App::parseEnv($timeZone));
