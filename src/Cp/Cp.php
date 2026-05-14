@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Vite;
 use stdClass;
 
 readonly class Cp
@@ -34,5 +36,20 @@ readonly class Cp
                 'cpUrl' => Url::cpUrl(),
                 'baseUrl' => Url::url(),
             ]);
+    }
+
+    public static function vite()
+    {
+        return Vite::getFacadeRoot()
+            ->useHotFile(Aliases::get('@resources/hot'))
+            ->useBuildDirectory('/vendor/craft/build');
+    }
+
+    public static function viteScripts()
+    {
+        return static::vite()->withEntryPoints([
+            'resources/css/cp.css',
+            'resources/js/cp.ts',
+        ]);
     }
 }

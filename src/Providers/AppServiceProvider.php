@@ -97,8 +97,6 @@ class AppServiceProvider extends ServiceProvider
 
         $this->publishes([
             "{$this->root}/resources/build/" => public_path('vendor/craft/build'),
-            "{$this->root}/resources/icons/" => public_path('vendor/craft/icons'),
-            "{$this->root}/resources/images/" => public_path('vendor/craft/images'),
             "{$this->root}/resources/legacy/" => public_path('vendor/craft/legacy'),
         ], ['craftcms', 'craftcms-assets']);
     }

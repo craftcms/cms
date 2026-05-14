@@ -62,6 +62,8 @@ export default defineConfig(({mode}) => {
     base: './',
     server,
 
+    publicDir: 'resources/public',
+
     resolve: {
       tsconfigPaths: true,
       alias: {

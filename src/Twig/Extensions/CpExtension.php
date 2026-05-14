@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Extensions;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
 use CraftCms\Cms\Cp\FormFields;
@@ -19,7 +19,6 @@ use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use Illuminate\Foundation\Vite;
 use Illuminate\Foundation\ViteException;
 use Illuminate\Support\Collection;
 use Override;
@@ -61,20 +60,19 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('siteMenuItems', app(MenuHtml::class)->siteMenuItems(...)),
             new TwigFunction('statusIndicator', app(StatusHtml::class)->statusIndicatorHtml(...), ['is_safe' => ['html']]),
             new TwigFunction('readOnlyNotice', app(ContentHtml::class)->readOnlyNoticeHtml(...), ['is_safe' => ['html']]),
-            new TwigFunction('vite', $this->vite(...), ['is_safe' => ['html']]),
+            new TwigFunction('cpVite', $this->vite(...), ['is_safe' => ['html']]),
+            new TwigFunction('cpAsset', [Cp::class, 'viteAsset'], ['is_safe' => ['html']]),
 
             // Legacy Assets - remove once all dependencies on these are removed
             new TwigFunction('registerLegacyAsset', fn (string $bundle) => app(InternalAssetRegistry::class)->register($bundle)),
         ];
     }
 
-    public function vite(array $entryPoints, string $buildDirectory = 'vendor/craft/build'): string
+    public function vite(array $entryPoints): string
     {
         try {
-            return (clone app(Vite::class))
-                ->useHotFile(Aliases::get('@resources/hot'))
+            return Cp::vite()
                 ->withEntryPoints($entryPoints)
-                ->useBuildDirectory($buildDirectory)
                 ->toHtml();
         } catch (ViteException $e) {
             if (Cms::config()->devMode) {
