@@ -77,7 +77,7 @@ export default class CraftRecoveryCodeForm extends LitElement {
         accept-charset="UTF-8"
         @submit="${this.#onSubmit}"
       >
-        <div class="field">
+        <div class="login-form__fields">
           <craft-input
             label="${t('Recovery Code')}"
             id="recovery-code"
@@ -87,11 +87,14 @@ export default class CraftRecoveryCodeForm extends LitElement {
             aria-required="true"
             @model-value-changed="${this.#onModelValueChanged}"
           ></craft-input>
+          <craft-button
+            type="submit"
+            variant="primary"
+            ?loading="${this._busy}"
+          >
+            ${t('Verify')}
+          </craft-button>
         </div>
-
-        <craft-button type="submit" variant="primary" ?loading="${this._busy}">
-          ${t('Verify')}
-        </craft-button>
       </form>
     `;
   }

@@ -6,6 +6,11 @@ export default css`
     width: 100%;
   }
 
+  .spinner-overlay {
+    display: grid;
+    place-items: center;
+  } 
+  
   .login-form__fields {
     display: flex;
     gap: var(--c-spacing-md);

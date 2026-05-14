@@ -86,11 +86,13 @@ readonly class TwoFactorAuthenticationController
 
         $authFormData = [
             'authMethod' => $method::class,
-            'otherMethods' => $activeMethods->map(fn (AuthMethodInterface $method) => [
-                'name' => $method::displayName(),
-                'handle' => $method::handle(),
-                'url' => action([TwoFactorAuthenticationController::class, 'showForm'], ['method' => $method::handle()]),
-            ])->all(),
+            'otherMethods' => $activeMethods
+                ->filter(fn (AuthMethodInterface $authMethod) => $authMethod::handle() !== $method::handle())
+                ->map(fn (AuthMethodInterface $method) => [
+                    'name' => $method::displayName(),
+                    'handle' => $method::handle(),
+                    'url' => action([TwoFactorAuthenticationController::class, 'showForm'], ['method' => $method::handle()]),
+                ])->values(),
             'authForm' => $html,
             'returnUrl' => $returnUrl,
         ];

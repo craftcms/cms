@@ -49,7 +49,6 @@ export default class CraftTotpForm extends LitElement {
     try {
       await actionClient.post('auth/verify-totp', {code});
 
-      this._state = 'success';
       this.dispatchEvent(
         new CustomEvent('login-verified', {
           bubbles: true,
@@ -58,6 +57,7 @@ export default class CraftTotpForm extends LitElement {
         })
       );
 
+      this._state = 'success';
       // @TODO hook up to global feedback time setting
       setTimeout(() => {
         this._state = 'idle';

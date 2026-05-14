@@ -167,9 +167,9 @@ export default class CraftLoginForm extends LitElement {
       const data: TwoFactorData = await response.json();
 
       if (data.authMethod) {
-        this._loginBusy = false;
         this._twoFactorData = data;
         this._view = 'challenge';
+        this._loginBusy = false;
       } else {
         this.#handleSuccess(data.returnUrl);
         this._loginBusy = false;

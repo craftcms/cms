@@ -131,11 +131,11 @@ export default class CraftLoginChallenge extends LitElement {
   override render() {
     if (this._switching) {
       return html`
-        <div class="login-form-container pane secondary">
+        <craft-pane>
           <div class="spinner-overlay">
             <craft-spinner></craft-spinner>
           </div>
-        </div>
+        </craft-pane>
       `;
     }
 
