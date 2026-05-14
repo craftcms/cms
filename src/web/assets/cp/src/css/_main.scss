@@ -4153,6 +4153,10 @@ table {
 
 .element-index {
   .source-path {
+    // see https://github.com/craftcms/cms/issues/18876
+    position: relative;
+    z-index: 1;
+
     background-color: var(--gray-050);
     border-radius: 3px;
 
