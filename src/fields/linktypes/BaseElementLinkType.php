@@ -160,7 +160,7 @@ JS, [
                 'showSiteMenu' => true,
                 'modalSettings' => [
                     'matchSiteBeforeDisablingElement' => true,
-                    'siteId' => Craft::$app->getSites()->getSiteByHandle(Craft::$app->getRequest()->getParam('site'))?->id,
+                    'siteId' => Cp::requestedSite()?->id,
                 ],
             ])) .
             Html::hiddenInput('value', $value);
