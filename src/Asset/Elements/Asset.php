@@ -2899,7 +2899,7 @@ JS;
         if (! $this->propagating) {
             // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
             if (
-                $this->alt === null &&
+                ($this->alt === null || $this->alt === '') &&
                 isset($this->tempFilePath) &&
                 $this->ruleset->inScenarios(AssetRules::SCENARIO_CREATE, AssetRules::SCENARIO_REPLACE)
             ) {
