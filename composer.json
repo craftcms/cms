@@ -172,6 +172,7 @@
         "Addresses": "CraftCms\\Cms\\Support\\Facades\\Addresses",
         "Announcements": "CraftCms\\Cms\\Support\\Facades\\Announcements",
         "AssetIndexer": "CraftCms\\Cms\\Support\\Facades\\AssetIndexer",
+        "AssetTransforms": "CraftCms\\Cms\\Support\\Facades\\AssetTransforms",
         "Assets": "CraftCms\\Cms\\Support\\Facades\\Assets",
         "AuthMethods": "CraftCms\\Cms\\Support\\Facades\\AuthMethods",
         "BulkOps": "CraftCms\\Cms\\Support\\Facades\\BulkOps",

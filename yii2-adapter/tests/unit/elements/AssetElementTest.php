@@ -8,12 +8,13 @@
 namespace crafttests\unit\elements;
 
 use craft\fs\Local;
-use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform;
 use craft\test\TestCase;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Image\ImageTransformer;
+use CraftCms\Cms\Support\Facades\AssetTransforms;
 use CraftCms\Cms\Support\Facades\ImageTransforms;
 use UnitTester;
 
@@ -55,9 +56,13 @@ class AssetElementTest extends TestCase
             ->andReturn($this->make(ImageTransform::class, [
                 'width' => 400,
                 'height' => 200,
-                'getImageTransformer' => $this->make(ImageTransformer::class, [
-                    'getTransformUrl' => fn(Asset $asset, ImageTransform $transform) => 'w=' . $transform->width . '&h=' . $transform->height,
-                ]),
+            ]));
+
+        AssetTransforms::shouldReceive('resolveTransformerHandle')
+            ->andReturn(ImageTransform::DEFAULT_TRANSFORMER);
+        AssetTransforms::shouldReceive('getAssetTransformer')
+            ->andReturn($this->make(ImageTransformer::class, [
+                'getTransformUrl' => fn(Asset $asset, ImageTransform $transform, bool $immediately) => 'w=' . $transform->width . '&h=' . $transform->height,
             ]));
 
         $previousValue = Cms::config()->generateTransformsBeforePageLoad;
