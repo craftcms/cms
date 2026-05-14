@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\TemplateRenderer;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Stringable;
 use UnitEnum;
@@ -31,7 +32,9 @@ function enum_value(mixed $value, mixed $default = null): mixed
 
 function craftAsset(string $path, ?bool $secure = null): string
 {
-    return asset("vendor/craft/$path", $secure);
+    $suffix = pathinfo($path, PATHINFO_EXTENSION) !== '' ? '?v='.App::version() : '';
+
+    return asset("vendor/craft/$path", $secure).$suffix;
 }
 
 function t(string|Stringable|null $id, array $parameters = [], ?string $category = 'app', ?string $locale = null): string
