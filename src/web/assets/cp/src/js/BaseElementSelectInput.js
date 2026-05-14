@@ -851,7 +851,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       const ids = [];
 
       for (let i = 0; i < this.$elements.length; i++) {
-        // if modal is set to
         if (
           this.settings.modalSettings.matchSiteBeforeDisablingElement &&
           this.settings.modalSettings.siteId
