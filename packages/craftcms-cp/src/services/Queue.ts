@@ -255,8 +255,10 @@ export class QueueService extends EventTarget {
         return;
       }
 
-      // For other errors, retry with delay
-      this.startTracking(true, true);
+      // For other errors, retry with delay if there are jobs to track
+      if (this.jobInfo.length > 0) {
+        this.startTracking(true, true);
+      }
     } finally {
       this.isTracking = false;
       this.#abortController = null;
@@ -270,14 +272,16 @@ export class QueueService extends EventTarget {
     this.displayedJob = this.#selectDisplayedJob();
 
     // Track if displayed job changed for adaptive delay
-    if (
-      oldDisplayedJob &&
-      this.displayedJob &&
-      oldDisplayedJob.id === this.displayedJob.id &&
-      oldDisplayedJob.progress === this.displayedJob.progress &&
-      oldDisplayedJob.progressLabel === this.displayedJob.progressLabel &&
-      oldDisplayedJob.status === this.displayedJob.status
-    ) {
+    const jobsUnchanged =
+      (oldDisplayedJob &&
+        this.displayedJob &&
+        oldDisplayedJob.id === this.displayedJob.id &&
+        oldDisplayedJob.progress === this.displayedJob.progress &&
+        oldDisplayedJob.progressLabel === this.displayedJob.progressLabel &&
+        oldDisplayedJob.status === this.displayedJob.status) ||
+      (!oldDisplayedJob && !this.displayedJob && this.jobInfo.length > 0);
+
+    if (jobsUnchanged) {
       this.displayedJobUnchangedCount++;
     } else {
       this.displayedJobUnchangedCount = 1;
