@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Extensions;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
@@ -71,10 +70,8 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
     public function vite(array $entryPoints, string $buildDirectory = 'vendor/craft/build'): string
     {
         try {
-            return (clone app(Vite::class))
-                ->useHotFile(Aliases::get('@resources/hot'))
+            return app(Vite::class)
                 ->withEntryPoints($entryPoints)
-                ->useBuildDirectory($buildDirectory)
                 ->toHtml();
         } catch (ViteException $e) {
             if (Cms::config()->devMode) {

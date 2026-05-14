@@ -23,6 +23,7 @@ use Illuminate\Contracts\Config\Repository;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Foundation\Events\LocaleUpdated;
+use Illuminate\Foundation\Vite;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
@@ -79,6 +80,11 @@ class AppServiceProvider extends ServiceProvider
 
         $this->setNamespace();
         $this->bootAliases();
+
+        // Configure Vite
+        app(Vite::class)
+            ->useHotFile("{$this->root}/resources/hot")
+            ->useBuildDirectory('vendor/craft/build');
 
         $this->app->booted(function () {
             /**
