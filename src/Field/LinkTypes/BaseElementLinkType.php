@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\LinkTypes;
 
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Link;
@@ -161,7 +162,7 @@ JS, [
                 'showSiteMenu' => true,
                 'modalSettings' => [
                     'matchSiteBeforeDisablingElement' => true,
-                    'siteId' => Craft::$app->getSites()->getSiteByHandle(Craft::$app->getRequest()->getParam('site'))?->id,
+                    'siteId' => app(RequestedSite::class)->get()?->id,
                 ],
             ])).
             Html::hiddenInput('value', $value);
