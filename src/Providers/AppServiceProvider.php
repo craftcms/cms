@@ -95,6 +95,15 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
+        $icons = collect(File::allFiles("{$this->root}/resources/icons"))
+            ->filter(fn ($file) => $file->getExtension() === 'svg')
+            ->mapWithKeys(fn ($file) => [
+                $file->getRealPath() => public_path('vendor/craft/icons/'.$file->getRelativePathname()),
+            ])
+            ->all();
+
+        $this->publishes($icons, ['craftcms', 'craftcms-assets', 'craftcms-icons']);
+
         $this->publishes([
             "{$this->root}/resources/build/" => public_path('vendor/craft/build'),
             "{$this->root}/resources/legacy/" => public_path('vendor/craft/legacy'),
