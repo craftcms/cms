@@ -608,11 +608,11 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
     /**
      * Localize the value of the link field when linking to an element.
      *
-     * @param mixed $value
+     * @param LinkData $value
      * @param ElementInterface $element
-     * @return array|mixed
+     * @return LinkData|array
      */
-    private function localizeLinkValue(mixed $value, ElementInterface $element)
+    private function localizeLinkValue(LinkData $value, ElementInterface $element): LinkData|array
     {
         $linkedElement = $value->getElement();
         if ($linkedElement && $linkedElement::isLocalized()) {
@@ -622,7 +622,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
                 $localizedQuery->siteId($element->siteId)->exists()
             ) {
                 $type = $value->getType();
-                $value = [
+                return [
                     'type' => $type,
                     'value' => sprintf('{%s:%s@%s:url}', $linkedElement::refHandle(), $linkedElement->id, $element->siteId),
                 ];
