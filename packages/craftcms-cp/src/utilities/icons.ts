@@ -106,7 +106,7 @@ export function getIconUrl(
   resolvedName = LEGACY_NAMES[resolvedName] ?? resolvedName;
 
   // Use the default CDN
-  return `/vendor/craft/build/icons/${folder}/${resolvedName}.svg`;
+  return `/vendor/craft/icons/${folder}/${resolvedName}.svg`;
 }
 
 export function configureIcons() {
