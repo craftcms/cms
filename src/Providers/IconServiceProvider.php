@@ -11,7 +11,7 @@ class IconServiceProvider extends ServiceProvider
 {
     public function boot(YiiAliases $aliases): void
     {
-        $aliases->set('@icons', '@craftcms/resources/public/icons');
+        $aliases->set('@icons', '@craftcms/resources/icons');
         $aliases->set('@appicons', '@icons/solid');
 
         $customIconsPath = '@icons/custom-icons';
