@@ -6,6 +6,7 @@
 - Fixed a bug where element indexes had horizontal scroll bars while loading. ([#18870](https://github.com/craftcms/cms/issues/18870))
 - Fixed a bug where elements selected by Link fields weren’t getting replaced with their localized versions when propagating content for newly-created elements to other sites. ([#18743](https://github.com/craftcms/cms/issues/18743))
 - Fixed a bug where it wasn’t possible to replace the selected element within Link fields with a localized version of the same element. ([#18873](https://github.com/craftcms/cms/pull/18873))
+- Fixed a bug where nested entries weren’t getting their Post Date values set. ([#18872](https://github.com/craftcms/cms/issues/18872))
 
 ## 5.10.0 - 2026-05-13
 
