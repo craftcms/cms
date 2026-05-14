@@ -6,6 +6,7 @@ namespace CraftCms\Cms;
 
 use BackedEnum;
 use Closure;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Typecast;
@@ -34,7 +35,9 @@ function enum_value(mixed $value, mixed $default = null): mixed
 function craftAsset(string $path, ?bool $secure = null): string
 {
     try {
-        return app(Vite::class)
+        return (clone app(Vite::class))
+            ->useHotFile(Aliases::get('@resources/hot'))
+            ->useBuildDirectory('vendor/craft/build')
             ->asset($path);
     } catch (ViteException) {
         return asset("vendor/craft/$path", $secure);
