@@ -83,9 +83,9 @@
             {% endif %}
             <li class="heading">
                 <div class="source-item source-item--heading">
-                    <span class="type-heading-small">{{ source.heading|t('site') }}</span>
+                    <span class="type-heading-small">{{ source.heading is defined and source.heading|length ? source.heading|t('site') : '' }}</span>
                     {# Don't toggle blank headings #}
-                    {% if source.heading | length %}
+                    {% if source.heading is defined and source.heading | length %}
                         {% embed '_includes/disclosure-toggle' with {
                             persist: true,
                             storageKey: 'sources-list:' ~ key,
