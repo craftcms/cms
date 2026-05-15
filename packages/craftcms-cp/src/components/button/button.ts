@@ -54,18 +54,18 @@ export default class CraftButton extends LionButtonSubmit {
     'filled';
 
   /**
-   * Theme variant of the button. Defaults to "default"
+   * Theme variant of the button. Defaults to "neutral"
    *
-   * Primary: The primary action on a page
-   * Default: Used in most cases
+   * Accent: The primary action on a page
+   * Neutral: Used in most cases
    * Danger: Indicates a dangerous action, when data will be removed or deleted
    * Inherit: Useful for colorable elements, button will reflect the parent theme
    */
   @property({reflect: true}) variant:
-    | 'primary'
-    | 'default'
+    | 'accent'
+    | 'neutral'
     | 'danger'
-    | 'inherit' = 'default';
+    | 'inherit' = 'neutral';
 
   /** Size of the button. Defaults to "medium" */
   @property({reflect: true}) size: 'zero' | 'small' | 'medium' | 'large' =

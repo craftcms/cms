@@ -6,7 +6,7 @@ import './button.js';
 import '../icon/icon.js';
 import '../chip/chip.js';
 
-const buttonVariants = ['primary', 'default', 'danger'];
+const buttonVariants = ['accent', 'neutral', 'danger'];
 const appearance = ['filled', 'outline', 'plain'];
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
@@ -18,8 +18,9 @@ const meta = {
   },
   args: {
     label: 'Button',
-    variant: 'filled',
+    appearance: 'filled',
     loading: false,
+    variant: 'neutral',
   },
   argTypes: {
     appearance: {
@@ -32,7 +33,7 @@ const meta = {
   },
   render: (args) => html`
     <div class="grid gap-4">
-      ${['primary', 'default', 'danger'].map(
+      ${buttonVariants.map(
         (variant) => html`
           <div class="flex gap-2">
             <craft-button variant="${variant}"
@@ -71,9 +72,9 @@ export const Default: Story = {
   args: {},
 };
 
-export const Primary: Story = {
+export const Accent: Story = {
   args: {
-    variant: 'primary',
+    variant: 'accent',
   },
   argTypes: {
     variant: {

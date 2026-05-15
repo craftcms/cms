@@ -11,12 +11,36 @@ A button represents a clickable element that performs an action when activated.
 
 ## Appearance
 
-### Hierarchy
+`appearance` controls how visually prominent the button is. Use it to signal importance relative to other buttons on the page.
 
-Buttons can be styled to indicate their purpose or importance. The available variants are:
+- `filled` — Solid colored background. The highest-emphasis style. Use for the single most important action in a given context.
+- `outline` — Transparent background with a colored border. Medium emphasis. Use for secondary actions alongside a filled button.
+- `plain` — No background or border. Lowest emphasis. Use for tertiary or destructive actions that shouldn't draw attention on their own.
 
-- `primary`: The primary button style, used for the most important actions.
-- `secondary`: The secondary button style, used for less important actions.
-- `tertiary`: The tertiary button style, used for the least important actions.
+## Variant
 
-Semantic buttons should only be used in the primary layout containers, and not inside **Colorable** components. This is because they rely on the variant system to apply the correct colors, and using them inside of a Colorable component may cause unexpected results.
+`variant` controls the button's color, which communicates the _intent_ of the action — not how prominent it is. Appearance and variant are independent: any appearance can be combined with any variant.
+
+- `accent` — Blue. Use for the primary action on a page, such as Save or Confirm.
+- `neutral` — Gray. The default. Use for everyday actions that don't carry a strong positive or negative meaning.
+- `danger` — Red. Use for actions that delete, remove, or permanently change data.
+
+<Canvas of={ButtonStories.Accent} />
+
+### Inherit
+
+`variant="inherit"` is a special case for buttons placed inside [Colorable](?path=/docs/concepts-colorable--docs) containers. Instead of applying its own color, the button picks up the color from its parent container.
+
+Avoid using the standard color variants (`accent`, `neutral`, `danger`) inside Colorable components — the two color systems can conflict and produce unexpected results.
+
+## Sizes
+
+<Canvas of={ButtonStories.Sizes} />
+
+## Icon buttons
+
+<Canvas of={ButtonStories.Icon} />
+
+## Loading state
+
+<Canvas of={ButtonStories.Loading} />

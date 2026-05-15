@@ -1,12 +1,6 @@
 import {css} from 'lit';
 export default css`
   :host {
-    // Necessary to use variables here to override the default active style specificity
-    --_active-background-color: hsl(
-      from var(--c-color-fill-loud, var(--c-color-neutral-fill-normal)) h s
-        calc(l - 10)
-    );
-    --_active-color: var(--c-color-on-loud);
     cursor: pointer;
     font: inherit;
     display: inline-flex;
@@ -161,6 +155,14 @@ export default css`
     color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
   }
 
+  :host([appearance~='filled']:active) {
+    --_active-background-color: hsl(
+      from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
+        calc(l - 10)
+    );
+    --_active-color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
+  }
+
   /* Outline */
   :host([appearance~='outline']) {
     border-color: var(--c-color-border-loud);
@@ -169,19 +171,19 @@ export default css`
   /*
   Variants (aka fill colors) 
    */
-  :host([variant~='primary']) {
-    --c-color-fill-loud: var(--c-color-brand-fill-loud);
-    --c-color-fill-normal: var(--c-color-brand-fill-normal);
-    --c-color-fill-quiet: var(--c-color-brand-fill-quiet);
-    --c-color-border-loud: var(--c-color-brand-border-loud);
-    --c-color-border-normal: var(--c-color-brand-border-normal);
-    --c-color-border-quiet: var(--c-color-brand-border-quiet);
-    --c-color-on-loud: var(--c-color-brand-on-loud);
-    --c-color-on-normal: var(--c-color-brand-on-normal);
-    --c-color-on-quiet: var(--c-color-brand-on-quiet);
+  :host([variant~='accent']) {
+    --c-color-fill-loud: var(--c-color-accent-fill-loud);
+    --c-color-fill-normal: var(--c-color-accent-fill-normal);
+    --c-color-fill-quiet: var(--c-color-accent-fill-quiet);
+    --c-color-border-loud: var(--c-color-accent-border-loud);
+    --c-color-border-normal: var(--c-color-accent-border-normal);
+    --c-color-border-quiet: var(--c-color-accent-border-quiet);
+    --c-color-on-loud: var(--c-color-accent-on-loud);
+    --c-color-on-normal: var(--c-color-accent-on-normal);
+    --c-color-on-quiet: var(--c-color-accent-on-quiet);
   }
 
-  :host([variant='default']) {
+  :host([variant='neutral']) {
     --c-color-fill-loud: var(--c-color-neutral-fill-loud);
     --c-color-fill-normal: var(--c-color-neutral-fill-normal);
     --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
