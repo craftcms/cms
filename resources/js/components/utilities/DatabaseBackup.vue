@@ -34,7 +34,7 @@
       <div class="mt-4">
         <craft-button
           type="submit"
-          variant="primary"
+          variant="accent"
           :loading="form.processing"
         >
           {{ t('Backup') }}

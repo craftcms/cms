@@ -149,13 +149,13 @@
         <craft-button-group v-if="!readOnly">
           <craft-button
             type="submit"
-            variant="primary"
+            variant="accent"
             :loading="form.processing"
           >
             {{ t('Save') }}
           </craft-button>
           <craft-action-menu>
-            <craft-button slot="invoker" variant="primary" type="button" icon>
+            <craft-button slot="invoker" variant="accent" type="button" icon>
               <craft-icon name="chevron-down"></craft-icon>
             </craft-button>
 

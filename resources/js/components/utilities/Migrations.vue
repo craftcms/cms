@@ -77,7 +77,7 @@
   <template v-if="allMigrations.length">
     <template v-if="newMigrations.length">
       <Form :action="migrationsController()" method="post">
-        <craft-button type="submit" variant="primary">
+        <craft-button type="submit" variant="accent">
           {{ t('Apply new migrations') }}
         </craft-button>
       </Form>

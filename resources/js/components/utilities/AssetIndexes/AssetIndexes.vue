@@ -94,7 +94,7 @@
         <div class="mt-4 flex gap-2 items-center">
           <craft-button
             type="submit"
-            variant="primary"
+            variant="accent"
             :loading="isStarting"
             :disabled="form.volumes.length === 0"
           >

@@ -215,7 +215,7 @@
         <h1 class="text-2xl font-semibold">{{ headingText }}</h1>
         <craft-button
           type="button"
-          variant="primary"
+          variant="accent"
           :loading="isUpdatingAll"
           @click="startUpdateAll"
         >

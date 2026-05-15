@@ -83,7 +83,7 @@
             <div v-if="invert" class="buttons">
               <craft-button
                 type="button"
-                variant="secondary"
+                variant="neutral"
                 :loading="isDiscarding"
                 @click="discardChanges"
               >
@@ -133,7 +133,7 @@
             <Form :action="discard()" #default="{processing}">
               <craft-button
                 type="submit"
-                variant="secondary"
+                variant="neutral"
                 :loading="processing"
               >
                 {{ t('Generate') }}

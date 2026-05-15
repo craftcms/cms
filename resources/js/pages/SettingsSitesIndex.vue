@@ -257,7 +257,7 @@
         v-if="!readOnly"
         as="craft-button"
         :href="create({query: {groupId: group?.id}}).url"
-        variant="primary"
+        variant="accent"
         appearance="button"
       >
         <craft-icon name="plus" slot="prefix"></craft-icon>

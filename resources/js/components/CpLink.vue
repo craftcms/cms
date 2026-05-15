@@ -6,7 +6,7 @@
     defineProps<
       InertiaLinkProps & {
         as?: string | Component;
-        variant?: 'default' | 'primary' | 'danger';
+        variant?: 'neutral' | 'accent' | 'danger';
         size?: 'zero' | 'small' | 'medium' | 'large';
         appearance?: 'button' | 'inline';
         block?: boolean;
@@ -14,7 +14,7 @@
     >(),
     {
       as: 'a',
-      variant: 'default',
+      variant: 'neutral',
       appearance: 'inline',
       block: false,
       size: 'medium',
@@ -36,8 +36,8 @@
       'cp-link--large': size === 'large',
       'cp-link--inline': appearance === 'inline',
       'cp-link--button': appearance === 'button',
-      'cp-link--default': variant === 'default',
-      'cp-link--primary': variant === 'primary',
+      'cp-link--neutral': variant === 'neutral',
+      'cp-link--accent': variant === 'accent',
       'cp-link--danger': variant === 'danger',
     }"
     v-bind="$attrs"
@@ -116,7 +116,7 @@
     }
   }
 
-  .cp-link--default {
+  .cp-link--neutral {
     --c-color-fill-loud: var(--c-color-neutral-fill-loud);
     --c-color-fill-normal: var(--c-color-neutral-fill-normal);
     --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
@@ -128,16 +128,16 @@
     --c-color-on-quiet: var(--c-color-neutral-on-quiet);
   }
 
-  .cp-link--primary {
-    --c-color-fill-loud: var(--c-color-brand-fill-loud);
-    --c-color-fill-normal: var(--c-color-brand-fill-normal);
-    --c-color-fill-quiet: var(--c-color-brand-fill-quiet);
-    --c-color-border-loud: var(--c-color-brand-border-loud);
-    --c-color-border-normal: var(--c-color-brand-border-normal);
-    --c-color-border-quiet: var(--c-color-brand-border-quiet);
-    --c-color-on-loud: var(--c-color-brand-on-loud);
-    --c-color-on-normal: var(--c-color-brand-on-normal);
-    --c-color-on-quiet: var(--c-color-brand-on-quiet);
+  .cp-link--accent {
+    --c-color-fill-loud: var(--c-color-accent-fill-loud);
+    --c-color-fill-normal: var(--c-color-accent-fill-normal);
+    --c-color-fill-quiet: var(--c-color-accent-fill-quiet);
+    --c-color-border-loud: var(--c-color-accent-border-loud);
+    --c-color-border-normal: var(--c-color-accent-border-normal);
+    --c-color-border-quiet: var(--c-color-accent-border-quiet);
+    --c-color-on-loud: var(--c-color-accent-on-loud);
+    --c-color-on-normal: var(--c-color-accent-on-normal);
+    --c-color-on-quiet: var(--c-color-accent-on-quiet);
   }
 
   .cp-link--danger {
