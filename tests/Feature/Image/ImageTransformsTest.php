@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Gql\Arguments\Transform as TransformArguments;
 use CraftCms\Cms\Image\Contracts\AssetTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
@@ -21,6 +22,7 @@ use CraftCms\Cms\Support\Facades\AssetTransforms as AssetTransformsFacade;
 use CraftCms\Cms\Support\Facades\ImageTransforms as ImageTransformsFacade;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -199,6 +201,25 @@ describe('saveTransform', function () {
 
         expect($transform->getTransformer())->toBe('custom')
             ->and($transform->settings)->toBe(['blur' => 12]);
+    });
+
+    it('hydrates JSON encoded settings from stored transforms', function () {
+        $this->service->saveTransform(new ImageTransform([
+            'name' => 'Blurred',
+            'handle' => 'blurred',
+            'width' => 500,
+            'transformer' => 'custom',
+            'settings' => ['blur' => 12],
+        ]));
+
+        DB::table(Table::IMAGETRANSFORMS)
+            ->where('handle', 'blurred')
+            ->update(['settings' => json_encode(['blur' => 12])]);
+
+        $this->service->reset();
+
+        expect($this->service->getTransformByHandle('blurred')->settings)
+            ->toBe(['blur' => 12]);
     });
 
     it('assigns id to the transform after saving', function () {

@@ -17,6 +17,7 @@ use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use DateTime;
@@ -218,10 +219,18 @@ class ImageTransforms
             ])
             ->orderBy('name')
             ->get()
-            ->map(fn ($result) => new ImageTransform(array_filter(
-                Arr::except((array) $result, ['dateCreated', 'dateUpdated', 'dateDeleted']),
-                fn (mixed $value): bool => $value !== null,
-            )))
+            ->map(function ($result) {
+                $config = Arr::except((array) $result, ['dateCreated', 'dateUpdated', 'dateDeleted']);
+
+                if (is_string($config['settings'] ?? null)) {
+                    $config['settings'] = Json::decode($config['settings']);
+                }
+
+                return new ImageTransform(array_filter(
+                    $config,
+                    fn (mixed $value): bool => $value !== null,
+                ));
+            })
             ->values();
     }
 
