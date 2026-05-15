@@ -12,15 +12,14 @@
 
 <style scoped lang="scss">
   .dev-mode {
-    --dev-mode-stripe-background-color: var(--c-color-warning-static);
     padding: calc(var(--spacing) * 2);
     text-align: center;
     background-image: repeating-linear-gradient(
       -45deg,
       transparent,
       transparent 12px,
-      var(--dev-mode-stripe-background-color) 12px,
-      var(--dev-mode-stripe-background-color) 20px
+      var(--c-color-static-warning-fill) 12px,
+      var(--c-color-static-warning-fill) 20px
     );
     background-color: var(--color-slate-900);
   }
