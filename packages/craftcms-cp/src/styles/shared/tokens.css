@@ -109,7 +109,7 @@
   /**
   Components
    */
-  --c-color-static-success-fill: var(--color-static-emerald-400);
+  --c-color-static-success-fill: var(--color-static-emerald-200);
   --c-color-static-success-on: var(--c-text-white);
   --c-color-static-success-border: var(--color-static-emerald-500);
 
@@ -174,35 +174,6 @@
   --c-select-spacing-inline: var(--c-form-control-spacing-inline);
   --c-select-spacing-block: var(--c-form-control-spacing-block);
   --c-select-shadow: var(--shadow-sm);
-
-  /**
-  Buttons
-   */
-
-  /** Variants **/
-  /* Default */
-  --c-button-default-fill: var(--color-slate-200);
-  --c-button-default-fill-hover: var(--color-slate-300);
-  --c-button-default-text: var(--c-text-default);
-  --c-button-default-text-hover: var(--c-button-default-text);
-  --c-button-default-border: var(--color-slate-300);
-  --c-button-default-border-hover: var(--c-button-default-border);
-
-  /* Primary */
-  --c-button-primary-fill: var(--color-red-600);
-  --c-button-primary-border: var(--color-red-700);
-  --c-button-primary-text: var(--color-white);
-  --c-button-primary-fill-hover: var(--color-red-700);
-  --c-button-primary-border-hover: var(--c-button-primary-border);
-  --c-button-primary-text-hover: var(--c-button-primary-text);
-
-  /* Danger */
-  --c-button-danger-fill: var(--color-red-600);
-  --c-button-danger-border: var(--color-red-700);
-  --c-button-danger-text: var(--color-white);
-  --c-button-danger-fill-hover: var(--color-red-700);
-  --c-button-danger-border-hover: var(--c-button-danger-border);
-  --c-button-danger-text-hover: var(--c-button-danger-text);
 
   /** Appearances **/
   /* Generic Panes */

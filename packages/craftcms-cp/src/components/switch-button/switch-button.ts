@@ -49,7 +49,7 @@ export default class CraftSwitchButton extends LionSwitchButton {
         }
 
         :host([checked]) .switch-button__track {
-          background-color: var(--c-color-success-static);
+          background-color: var(--c-color-static-success-fill);
         }
 
         :host([checked]) .switch-button__thumb {
@@ -69,7 +69,7 @@ export default class CraftSwitchButton extends LionSwitchButton {
           mask-repeat: no-repeat;
           width: calc(var(--c-switch-thumb-height) - 6px);
           aspect-ratio: 1;
-          background-color: var(--c-color-success-border-loud);
+          background-color: var(--c-color-success-on-normal);
         }
       `,
     ];
