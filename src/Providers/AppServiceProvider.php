@@ -97,8 +97,11 @@ class AppServiceProvider extends ServiceProvider
 
         $iconsDir = (string) realpath("{$this->root}/resources/icons");
         $icons = [];
-        foreach (array_merge(glob("{$iconsDir}/*.svg") ?: [], glob("{$iconsDir}/*/*.svg") ?: []) as $path) {
-            $icons[$path] = public_path('vendor/craft/icons/'.substr($path, strlen($iconsDir) + 1));
+
+        if ($iconsDir) {
+            foreach (array_merge(glob("{$iconsDir}/*.svg") ?: [], glob("{$iconsDir}/*/*.svg") ?: []) as $path) {
+                $icons[$path] = public_path('vendor/craft/icons/'.substr($path, strlen($iconsDir) + 1));
+            }
         }
 
         $this->publishes($icons, ['craftcms', 'craftcms-assets', 'craftcms-icons']);
