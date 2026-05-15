@@ -109,33 +109,33 @@
   /**
   Components
    */
-  --c-color-success-static: var(--color-static-emerald-400);
-  --c-success-static-color-darker: var(--color-static-emerald-500);
-  --c-success-static-color-foreground: var(--c-text-white);
+  --c-color-static-success-fill: var(--color-static-emerald-400);
+  --c-color-static-success-on: var(--c-text-white);
+  --c-color-static-success-border: var(--color-static-emerald-500);
 
-  --c-color-warning-static: var(--color-static-yellow-100);
-  --c-warning-static-color-darker: var(--color-static-yellow-200);
-  --c-warning-static-color-foreground: var(--c-text-black);
+  --c-color-static-warning-fill: var(--color-static-yellow-100);
+  --c-color-static-warning-on: var(--c-text-black);
+  --c-color-static-warning-border: var(--color-static-yellow-200);
 
-  --c-info-static-color: var(--color-static-blue-400);
-  --c-info-static-color-darker: var(--color-static-blue-500);
-  --c-info-static-color-foreground: var(--c-text-white);
+  --c-color-static-info-fill: var(--color-static-blue-400);
+  --c-color-static-info-on: var(--c-text-white);
+  --c-color-static-info-border: var(--color-static-blue-500);
 
-  --c-brand-static-color: var(--color-static-red-500);
-  --c-brand-static-color-darker: var(--color-static-red-600);
-  --c-brand-static-color-foreground: var(--c-text-white);
+  --c-color-static-brand-fill: var(--color-static-red-500);
+  --c-color-static-brand-on: var(--c-text-white);
+  --c-color-static-brand-border: var(--color-static-red-600);
 
-  --c-danger-static-color: var(--color-static-red-500);
-  --c-danger-static-color-darker: var(--color-static-red-600);
-  --c-danger-static-color-foreground: var(--c-text-white);
+  --c-color-static-danger-fill: var(--color-static-red-500);
+  --c-color-static-danger-on: var(--c-text-white);
+  --c-color-static-danger-border: var(--color-static-red-600);
 
-  --c-accent-static-color: var(--color-static-blue-400);
-  --c-accent-static-color-darker: var(--color-static-blue-500);
-  --c-accent-static-color-foreground: var(--c-text-white);
+  --c-color-static-accent-fill: var(--color-static-blue-400);
+  --c-color-static-accent-on: var(--c-text-white);
+  --c-color-static-accent-border: var(--color-static-blue-500);
 
-  --c-neutral-static-color: var(--color-static-slate-600);
-  --c-neutral-static-color-darker: var(--color-static-slate-700);
-  --c-neutral-static-color-foreground: var(--c-text-white);
+  --c-color-static-neutral-fill: var(--color-static-slate-600);
+  --c-color-static-neutral-on: var(--c-text-white);
+  --c-color-static-neutral-border: var(--color-static-slate-700);
 
   /**
   Form controls
