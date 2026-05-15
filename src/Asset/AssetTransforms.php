@@ -46,7 +46,7 @@ class AssetTransforms
             return;
         }
 
-        $transformsByTransformer = [];
+        $normalizedTransforms = [];
 
         /** @var ImageTransform|null $refTransform */
         $refTransform = null;
@@ -85,20 +85,53 @@ class AssetTransforms
             }
 
             $transform = ImageTransformHelper::normalizeTransform($transform);
-            $transformerHandle = $this->resolveTransformerHandle($transform->getTransformer());
-            $transform->setTransformer($transformerHandle);
-            $transformsByTransformer[$transformerHandle][] = $transform;
+            if ($transform === null) {
+                continue;
+            }
+
+            $normalizedTransforms[] = $transform;
 
             if (! isset($sizeValue)) {
                 $refTransform = $transform;
             }
         }
 
-        foreach ($transformsByTransformer as $type => $typeTransforms) {
+        $transformsByTransformer = [];
+
+        foreach ($normalizedTransforms as $transformKey => $transform) {
+            $transformerHandle = $transform->getTransformer();
+
+            if ($transformerHandle !== null) {
+                $transformerHandle = $this->resolveTransformerHandle($transformerHandle);
+                $groupTransform = clone $transform;
+                $groupTransform->setTransformer($transformerHandle);
+                $transformsByTransformer[$transformerHandle]['transforms'][$transformKey] = $groupTransform;
+                $transformsByTransformer[$transformerHandle]['assets'] = $assets;
+
+                continue;
+            }
+
+            foreach ($assets as $assetKey => $asset) {
+                $transformerHandle = $this->resolveTransformerHandle($asset->getVolume()->getDefaultTransformer());
+
+                if (! isset($transformsByTransformer[$transformerHandle]['transforms'][$transformKey])) {
+                    $groupTransform = clone $transform;
+                    $groupTransform->setTransformer($transformerHandle);
+                    $transformsByTransformer[$transformerHandle]['transforms'][$transformKey] = $groupTransform;
+                }
+
+                $transformsByTransformer[$transformerHandle]['assets'][$assetKey] = $asset;
+            }
+        }
+
+        foreach ($transformsByTransformer as $type => $group) {
             $transformer = $this->getAssetTransformer($type);
 
             if ($transformer instanceof EagerImageTransformerInterface) {
-                $transformer->eagerLoadTransforms($typeTransforms, $assets);
+                $transformer->eagerLoadTransforms(
+                    array_values($group['transforms']),
+                    array_values($group['assets']),
+                );
             }
         }
     }

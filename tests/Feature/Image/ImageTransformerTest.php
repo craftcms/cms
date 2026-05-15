@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
@@ -9,6 +10,7 @@ use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Image\Contracts\AssetTransformerInterface;
+use CraftCms\Cms\Image\Contracts\EagerImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Events\AssetTransformersResolving;
 use CraftCms\Cms\Image\ImageTransformer;
@@ -171,4 +173,70 @@ it('uses the volume default transformer when a transform does not specify one', 
     $asset = ($this->createImageAsset)();
 
     expect($asset->getUrl(['width' => 100]))->toBe('https://example.test/custom-transform');
+});
+
+it('eager loads transforms with the volume default transformer', function () {
+    $customTransformer = new class implements AssetTransformerInterface, EagerImageTransformerInterface
+    {
+        public array $eagerLoadedTransforms = [];
+
+        public array $eagerLoadedAssets = [];
+
+        public static function handle(): string
+        {
+            return 'custom';
+        }
+
+        public static function displayName(): string
+        {
+            return 'Custom';
+        }
+
+        public static function gqlArguments(): array
+        {
+            return [];
+        }
+
+        public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
+        {
+            return 'https://example.test/custom-transform';
+        }
+
+        public function invalidateAssetTransforms(Asset $asset): void {}
+
+        public function getTransformString(ImageTransform $imageTransform, bool $ignoreHandle = false): string
+        {
+            return 'custom';
+        }
+
+        public function getSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+        {
+            return null;
+        }
+
+        public function eagerLoadTransforms(array $transforms, array $assets): void
+        {
+            $this->eagerLoadedTransforms = $transforms;
+            $this->eagerLoadedAssets = $assets;
+        }
+    };
+
+    Event::listen(AssetTransformersResolving::class, function (AssetTransformersResolving $event) use ($customTransformer) {
+        $event->types['custom'] = $customTransformer;
+    });
+
+    $this->volume->defaultTransformer = 'custom';
+    $this->volume->save();
+    app()->forgetInstance(Volumes::class);
+
+    $asset = ($this->createImageAsset)();
+
+    app(AssetTransforms::class)->eagerLoadTransforms([$asset], [
+        ['width' => 100],
+    ]);
+
+    expect($customTransformer->eagerLoadedAssets)->toHaveCount(1)
+        ->and($customTransformer->eagerLoadedAssets[0]->id)->toBe($asset->id)
+        ->and($customTransformer->eagerLoadedTransforms)->toHaveCount(1)
+        ->and($customTransformer->eagerLoadedTransforms[0]->getTransformer())->toBe('custom');
 });
