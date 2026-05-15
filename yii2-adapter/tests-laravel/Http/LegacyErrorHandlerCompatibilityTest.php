@@ -31,3 +31,25 @@ it('triggers legacy before handle exception handlers for Laravel 404s', function
         ->toBeInstanceOf(HttpException::class)
         ->and($receivedException->statusCode)->toBe(404);
 });
+
+it('can send a legacy redirect response from before handle exception handlers', function() {
+    $handler = function() {
+        Craft::$app->getResponse()
+            ->redirect('/redirect-target', 301, false)
+            ->send();
+    };
+
+    YiiEvent::on(ErrorHandler::class, ErrorHandler::EVENT_BEFORE_HANDLE_EXCEPTION, $handler);
+
+    try {
+        $response = app(ExceptionHandlerContract::class)->render(
+            Request::create('/missing-page'),
+            new NotFoundHttpException('Page not found.')
+        );
+    } finally {
+        YiiEvent::off(ErrorHandler::class, ErrorHandler::EVENT_BEFORE_HANDLE_EXCEPTION, $handler);
+    }
+
+    expect($response->getStatusCode())->toBe(301);
+    expect($response->headers->get('Location'))->toBe('http://localhost/redirect-target');
+});

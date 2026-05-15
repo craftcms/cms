@@ -906,27 +906,25 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             }
         }
 
-        if (isset($values['email'])) {
+        if (isset($values['email']) && $this->email !== null) {
             // make sure they have an elevated session
             if (! $this->isPasswordConfirmed()) {
                 abort(400, t('An elevated session is required to change a user’s email.'));
             }
 
-            if ($this->email !== null) {
-                // are they allowed to set the email?
-                if ($this->getIsCurrent() || Gate::check('administrateUsers')) {
-                    if (
-                        Edition::get()->value >= Edition::Pro->value &&
-                        ProjectConfig::get('users.requireEmailVerification') &&
-                        ! Gate::check('administrateUsers')
-                    ) {
-                        // set it as the unverified email instead, and
-                        $values['unverifiedEmail'] = Arr::pull($values, 'email');
-                        $this->sendVerificationEmailAfterRequest = true;
-                    }
-                } else {
-                    unset($values['email']);
+            // are they allowed to set the email?
+            if ($this->getIsCurrent() || Gate::check('administrateUsers')) {
+                if (
+                    Edition::get()->value >= Edition::Pro->value &&
+                    ProjectConfig::get('users.requireEmailVerification') &&
+                    ! Gate::check('administrateUsers')
+                ) {
+                    // set it as the unverified email instead, and
+                    $values['unverifiedEmail'] = Arr::pull($values, 'email');
+                    $this->sendVerificationEmailAfterRequest = true;
                 }
+            } else {
+                unset($values['email']);
             }
         }
 
