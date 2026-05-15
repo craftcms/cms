@@ -1,119 +1,41 @@
-import {html, LitElement} from 'lit';
-import {property, query, state} from 'lit/decorators.js';
-import {actionClient, t} from '@craftcms/cp';
-import componentStyles from '../login/login-form.styles.js';
+import {html} from 'lit';
+import {query} from 'lit/decorators.js';
+import {CraftAuthChallengeForm, t} from '@craftcms/cp';
 
 /**
  * @summary TOTP authentication code form.
  * @since 6.0
  *
- * @fires login-verified - Verification succeeded (internal). Detail: `{ returnUrl: string }`
- * @fires login-failed   - Verification failed (internal).   Detail: `{ message: string }`
+ * @fires login-verified - Verification succeeded; bubbles to `craft-login-challenge`. Detail: `{ returnUrl: string }`
+ * @fires login-failed   - Verification failed; bubbles to `craft-login-challenge`.   Detail: `{ message: string }`
  */
-export default class CraftTotpForm extends LitElement {
-  static override styles = [componentStyles];
-
-  static METHOD = 'CraftCms\\Cms\\Auth\\Methods\\TOTP';
-
-  /** Redirect destination passed through to the login-success event */
-  @property({attribute: 'return-url'}) returnUrl = '';
-
-  @state() private _state: 'idle' | 'loading' | 'success' | 'error' = 'idle';
+export default class CraftTotpForm extends CraftAuthChallengeForm {
+  static override METHOD = 'totp';
 
   @query('craft-input.totp-code')
-  private _input?: HTMLElement & {value: string};
+  protected override _input?: HTMLElement & {value: string};
 
-  override firstUpdated() {
-    this._input?.focus();
+  protected override get endpoint() {
+    return 'auth/verify-totp';
   }
 
-  #onModelValueChanged(event: CustomEvent) {
-    const value = (event.detail?.modelValue as string) ?? '';
-    if (value.replace(/\s/g, '').length === 6) {
-      this.#submit(value);
-    }
-  }
-
-  async #onSubmit(event: Event) {
-    event.preventDefault();
-    await this.#submit(this._input?.value ?? '');
-  }
-
-  async #submit(code: string) {
-    if (this._state === 'loading') {
-      return;
-    }
-
-    this._state = 'loading';
-
-    try {
-      await actionClient.post('auth/verify-totp', {code});
-
-      this.dispatchEvent(
-        new CustomEvent('login-verified', {
-          bubbles: true,
-          composed: true,
-          detail: {returnUrl: this.returnUrl},
-        })
-      );
-
-      this._state = 'success';
-      // @TODO hook up to global feedback time setting
-      setTimeout(() => {
-        this._state = 'idle';
-      }, 2000);
-    } catch (e: any) {
-      this._state = 'error';
-      this.dispatchEvent(
-        new CustomEvent('login-failed', {
-          bubbles: true,
-          composed: true,
-          detail: {
-            message:
-              e?.response?.data?.message ?? t('A server error occurred.'),
-          },
-        })
-      );
-    }
-  }
-
-  override render() {
+  override renderInput() {
     return html`
-      <form
-        class="login-form"
-        accept-charset="UTF-8"
-        @submit="${this.#onSubmit}"
-      >
-        <div class="login-form__fields">
-          <craft-input
-            label="${t('Verification Code')}"
-            id="totp-code"
-            class="totp-code"
-            name="code"
-            .maxlength="${6}"
-            autocomplete="one-time-code"
-            inputmode="numeric"
-            aria-required="true"
-            @model-value-changed="${this.#onModelValueChanged}"
-          >
-          </craft-input>
-          <craft-button
-            slot="after"
-            type="submit"
-            variant="primary"
-            ?loading="${this._state === 'loading'}"
-          >
-            ${t('Verify')}
-          </craft-button>
-        </div>
-      </form>
+      <craft-input
+        label="${t('Verification Code')}"
+        id="totp-code"
+        class="totp-code"
+        name="code"
+        .maxlength="${6}"
+        autocomplete="one-time-code"
+        inputmode="numeric"
+        aria-required="true"
+      ></craft-input>
     `;
   }
 }
 
-if (!customElements.get('craft-totp-form')) {
-  customElements.define('craft-totp-form', CraftTotpForm);
-}
+CraftAuthChallengeForm.register('craft-totp-form', CraftTotpForm);
 
 declare global {
   interface HTMLElementTagNameMap {

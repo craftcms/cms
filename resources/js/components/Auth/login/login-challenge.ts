@@ -1,10 +1,12 @@
 import {html, LitElement, nothing} from 'lit';
 import {property, query, state} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
-import {ConfigService, t} from '@craftcms/cp';
+import {CraftAuthChallengeForm, ConfigService, t} from '@craftcms/cp';
 import componentStyles from './login-form.styles.js';
-import CraftTotpForm from '../totp/totp-form.js';
-import CraftRecoveryCodeForm from '../recovery-codes/recovery-code-form.js';
+// Side-effect imports: ensure both forms call CraftAuthChallengeForm.register()
+// before isNative() is ever queried.
+import '../totp/totp-form.js';
+import '../recovery-codes/recovery-code-form.js';
 
 export interface TwoFactorData {
   authForm: string;
@@ -26,12 +28,6 @@ declare const Craft: {
     onError: (error: string) => void
   ) => void;
 };
-
-/** Auth methods that have native web component implementations. */
-const NATIVE_AUTH_METHODS = new Set([
-  CraftTotpForm.METHOD,
-  CraftRecoveryCodeForm.METHOD,
-]);
 
 /**
  * @summary Renders and initialises a 2FA form, and handles switching between
@@ -56,7 +52,9 @@ export default class CraftLoginChallenge extends LitElement {
   override async updated(changed: Map<string, unknown>) {
     super.updated(changed);
 
-    const isNativeMethod = NATIVE_AUTH_METHODS.has(this.data?.authMethod);
+    const isNativeMethod = CraftAuthChallengeForm.isNative(
+      this.data?.authMethod
+    );
 
     if (
       !isNativeMethod &&

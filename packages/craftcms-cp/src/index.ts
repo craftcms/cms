@@ -48,6 +48,7 @@ export {default as CraftRadioGroup} from './components/radio-group/radio-group.j
 export {default as CraftRadio} from './components/radio/radio.js';
 export {default as CraftFieldGroup} from './components/field-group/field-group.js';
 export {default as CraftPane} from './components/pane/pane.js';
+export {CraftAuthChallengeForm} from './components/auth-challenge-form/auth-challenge-form.js';
 /* plop:component */
 
 export * from './utilities/cookies.js';
