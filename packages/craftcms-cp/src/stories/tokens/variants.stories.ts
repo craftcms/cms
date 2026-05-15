@@ -11,8 +11,8 @@ import {Appearance, Variant} from '@src/types';
 const variants = Object.values(Variant);
 const appearances = Object.values(Appearance);
 
-const buttonVariants = ['primary', 'default', 'danger'] as const;
-const buttonAppearances = ['accent', 'filled', 'dashed', 'plain'] as const;
+const buttonVariants = ['accent', 'neutral', 'danger'] as const;
+const buttonAppearances = ['filled', 'outline', 'plain'] as const;
 
 const meta: Meta = {
   title: 'Tokens/Variants & Appearances',
@@ -65,8 +65,8 @@ export const CalloutMatrix: Story = {
 };
 
 /**
- * Buttons use their own variant subset (primary, default, danger)
- * and appearance subset (accent, filled, dashed, plain).
+ * Buttons use their own variant subset (accent, neutral, danger)
+ * and appearance subset (filled, outline, plain).
  */
 export const ButtonMatrix: Story = {
   name: 'Button Matrix',
