@@ -2,7 +2,6 @@
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import type {VariantKey} from '@craftcms/cp/types/index.ts';
   import {type Component, computed, type VNode} from 'vue';
-  import VarDump from '@/components/VarDump.vue';
 
   interface ActionItemHr {
     type: 'hr';
