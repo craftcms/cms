@@ -37,8 +37,6 @@ export interface CraftData {
     useEmailAsUsername: boolean;
     rememberedUserSessionDuration: number;
     defaultCpLocale: string;
-    readOnly: boolean;
-    allowAdminChanges: boolean;
   };
   nav: any[];
   [key: string]: any;
