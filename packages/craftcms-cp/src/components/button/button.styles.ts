@@ -111,6 +111,7 @@ export default css`
   Appearances 
    */
 
+ /* Plain & Outline (Shared) */
   :host([appearance~='plain']),
   :host([appearance~='outline']) {
     background-color: transparent;
@@ -135,7 +136,6 @@ export default css`
   }
 
   /* Plain */
-
   :host([appearance~='plain']) {
     border-color: transparent;
   }
