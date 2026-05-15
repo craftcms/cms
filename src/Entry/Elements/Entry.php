@@ -2403,7 +2403,10 @@ JS;
         if (
             ! $this->postDate &&
             $this->enabled &&
-            $this->ruleset->inScenarios(ElementRules::SCENARIO_LIVE, ElementRules::SCENARIO_DEFAULT)
+            (
+                $this->ruleset->inScenarios(ElementRules::SCENARIO_LIVE, ElementRules::SCENARIO_DEFAULT) ||
+                isset($this->fieldId)
+            )
         ) {
             // Default the post date to the current date/time
             $this->postDate = new DateTime;

@@ -61,6 +61,12 @@ it('can set trackedQueueNames via fluent setter', function () {
     expect($config->trackedQueueNames)->toBe(['craft', 'default']);
 });
 
+it('can set compiledTemplatesPath via fluent setter', function () {
+    $config = GeneralConfig::create()->compiledTemplatesPath('@storage/custom-compiled-templates');
+
+    expect($config->compiledTemplatesPath)->toBe('@storage/custom-compiled-templates');
+});
+
 it('does not expose moved deprecated members on the new class', function () {
     $config = GeneralConfig::create();
 

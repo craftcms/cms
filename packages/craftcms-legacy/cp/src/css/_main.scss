@@ -4153,6 +4153,10 @@ table {
 
 .element-index {
   .source-path {
+    // see https://github.com/craftcms/cms/issues/18876
+    position: relative;
+    z-index: 1;
+
     background-color: var(--gray-050);
     border-radius: 3px;
 
@@ -4335,10 +4339,7 @@ table {
       font-size: 0;
       position: absolute;
       z-index: 100;
-      inset-block-start: 0;
-      inset-inline-start: 0;
-      width: calc(100% + var(--pane-padding, 24px) + var(--pane-padding, 24px));
-      height: 100%;
+      inset: 0;
       background: color.adjust(mixins.$white, $alpha: -0.25);
       border-radius: var(--radius-lg);
     }

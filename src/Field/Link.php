@@ -434,7 +434,8 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     public function normalizeValue(mixed $value, ?ElementInterface $element): ?LinkData
     {
         // if this was set due to propagateAll for a fresh element (as opposed to the translation method),
-        // and an element is selected, swap it with the same element in the current site (if it exists)
+        // and an element is selected, swap it with the same element in the current site (if it exists);
+        // this flow will kick in for all cases apart from nested entries when field uses "none" propagation method
         if (
             $value instanceof LinkData &&
             $element?->propagating &&
@@ -450,24 +451,23 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             }
 
             if ($this->getTranslationKey($element) !== $this->getTranslationKey($element->propagatingFrom)) {
-                $linkedElement = $value->getElement();
-                if ($linkedElement && $linkedElement::isLocalized()) {
-                    $localizedQuery = $linkedElement->getLocalized();
-                    if (
-                        $localizedQuery instanceof ElementQueryInterface &&
-                        $localizedQuery->siteId($element->siteId)->exists()
-                    ) {
-                        $type = $value->getType();
-                        $value = [
-                            'type' => $type,
-                            'value' => sprintf('{%s:%s@%s:url}', $linkedElement::refHandle(), $linkedElement->id, $element->siteId),
-                        ];
-                    }
-                }
+                $value = $this->localizeLinkValue($value, $element);
             }
 
             // set $propagating back to true
             $element->propagating = true;
+        }
+
+        // as above but specifically for nested entries when field uses "none" propagation method
+        if (
+            $value instanceof LinkData &&
+            ! $element?->propagating &&
+            isset($element->duplicateOf) &&
+            ($element->propagateAll || $element->isNewForSite)
+        ) {
+            if ($this->getTranslationKey($element) !== $this->getTranslationKey($element->duplicateOf)) {
+                $value = $this->localizeLinkValue($value, $element);
+            }
         }
 
         if ($value instanceof LinkData) {
@@ -533,6 +533,30 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         }
 
         return new LinkData($config['value'], $config['linkType']);
+    }
+
+    /**
+     * Localize the value of the link field when linking to an element.
+     */
+    private function localizeLinkValue(LinkData $value, ElementInterface $element): LinkData|array
+    {
+        $linkedElement = $value->getElement();
+        if ($linkedElement && $linkedElement::isLocalized()) {
+            $localizedQuery = $linkedElement->getLocalized();
+            if (
+                $localizedQuery instanceof ElementQueryInterface &&
+                $localizedQuery->siteId($element->siteId)->exists()
+            ) {
+                $type = $value->getType();
+
+                return [
+                    'type' => $type,
+                    'value' => sprintf('{%s:%s@%s:url}', $linkedElement::refHandle(), $linkedElement->id, $element->siteId),
+                ];
+            }
+        }
+
+        return $value;
     }
 
     #[Override]
