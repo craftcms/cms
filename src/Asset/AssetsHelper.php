@@ -38,7 +38,6 @@ use Throwable;
 use Twig\Error\RuntimeError;
 
 use function CraftCms\Cms\renderObjectTemplate;
-use function CraftCms\Cms\t;
 
 class AssetsHelper
 {
@@ -533,7 +532,7 @@ class AssetsHelper
             return $path;
         }
 
-        $svg = file_get_contents(Aliases::get('@resources/images/thumbs/file.svg'));
+        $svg = file_get_contents(Aliases::get('@resources/public/images/thumbs/file.svg'));
 
         $extLength = strlen($extension);
 
