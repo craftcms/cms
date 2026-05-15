@@ -1,6 +1,12 @@
 import {css} from 'lit';
 export default css`
   :host {
+    // Necessary to use variables here to override the default active style specificity
+    --_active-background-color: hsl(
+      from var(--c-color-fill-loud, var(--c-color-neutral-fill-normal)) h s
+        calc(l - 10)
+    );
+    --_active-color: var(--c-color-on-loud);
     cursor: pointer;
     font: inherit;
     display: inline-flex;
@@ -43,11 +49,8 @@ export default css`
   }
 
   :host(:not(:disabled):not(.loading):active) {
-    color: var(--c-color-on-loud);
-    background-color: hsl(
-      from var(--c-color-fill-loud, var(--c-color-neutral-fill-normal)) h s
-        calc(l - 10)
-    );
+    color: var(--_active-color);
+    background-color: var(--_active-background-color);
   }
 
   /*
@@ -111,7 +114,7 @@ export default css`
   Appearances 
    */
 
- /* Plain & Outline (Shared) */
+  /* Plain & Outline (Shared) */
   :host([appearance~='plain']),
   :host([appearance~='outline']) {
     background-color: transparent;
@@ -120,19 +123,19 @@ export default css`
 
   :host([appearance~='plain']:hover),
   :host([appearance~='outline']:hover) {
-    background-color: var(
-      --c-color-fill-quiet,
-      var(--c-color-neutral-fill-quiet)
+    background-color: hsl(
+      from var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)) h s
+        calc(l - 5)
     );
   }
 
   :host([appearance~='plain']:active),
   :host([appearance~='outline']:active) {
-    background-color: hsl(
+    --_active-background-color: hsl(
       from var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)) h s
-        calc(l - 5)
+        calc(l - 8)
     );
-    color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
+    --_active-color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
   }
 
   /* Plain */
