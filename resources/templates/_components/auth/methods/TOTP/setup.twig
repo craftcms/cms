@@ -54,7 +54,7 @@
 </div>
 
 <script type="module">
-  const totpForm = document.querySelector('craft-totp-form');
+  const totpForm = document.querySelector('{{ totpFormId }}');
   totpForm.addEventListener('login-verified', (event) => {
     event.preventDefault();
     Craft.Slideout.instances['{{ containerId }}'].showSuccess();
