@@ -9,8 +9,8 @@ export default css`
   .spinner-overlay {
     display: grid;
     place-items: center;
-  } 
-  
+  }
+
   .login-form__fields {
     display: flex;
     gap: var(--c-spacing-md);
