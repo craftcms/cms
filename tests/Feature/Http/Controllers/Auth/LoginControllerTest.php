@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
-use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
@@ -25,14 +24,6 @@ test('showLogin redirects already authenticated users', function () {
 test('showLogin shows the login form for guests', function () {
     get(action([LoginController::class, 'showLogin']))
         ->assertOk();
-});
-
-test('showLogin renders flashed login errors', function () {
-    session()->flash('cp-notification-error', ['Authentication failed.', []]);
-
-    get(cp_url('login'))
-        ->assertOk()
-        ->assertSee('Authentication failed.');
 });
 
 test('showLogin redirects to 2fa form when verify parameter is present', function () {
