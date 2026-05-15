@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\events\AssetEvent;
 use craft\events\ImageTransformEvent;
 use craft\events\RegisterComponentTypesEvent;
@@ -16,6 +15,7 @@ use craft\imagetransforms\ImageTransformer;
 use craft\imagetransforms\LegacyImageTransformerAdapter;
 use CraftCms\Cms\Asset\AssetTransforms as AssetTransformsService;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform as ImageTransformData;
 use CraftCms\Cms\Image\Events\AssetTransformersResolving;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
@@ -338,16 +338,6 @@ class ImageTransforms extends Component
                 }
 
                 $event->types[$type] = new LegacyImageTransformerAdapter($type);
-            }
-        });
-
-        EventFacade::listen(AssetTransformsInvalidating::class, function(AssetTransformsInvalidating $event) {
-            foreach (Craft::$app->getImageTransforms()->getAllImageTransformers() as $type) {
-                if ($type === ImageTransformer::class) {
-                    continue;
-                }
-
-                Craft::$app->getImageTransforms()->getImageTransformer($type)->invalidateAssetTransforms($event->asset);
             }
         });
     }
