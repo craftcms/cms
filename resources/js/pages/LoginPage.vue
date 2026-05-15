@@ -3,6 +3,7 @@
   import useCraftData from '@/composables/useCraftData';
   import AuthBase from '@/layout/AuthBase.vue';
   import {attemptLogin} from '@actions/Auth/LoginController';
+  import '../components/Auth/login/login-form.js';
 
   defineProps<{
     logo?: string;

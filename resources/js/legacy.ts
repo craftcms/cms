@@ -1,5 +1,9 @@
 import Cp from './bootstrap/cp.js';
 
+// We need to globally register these for the moment
+import './components/Auth/totp/totp-form.js';
+import './components/Auth/recovery-codes/recovery-code-form.js';
+
 // @ts-ignore
 window.Cp = {
   ...(window.Cp || {}),

@@ -11,12 +11,8 @@ use BaconQrCode\Writer;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Models\Authenticator;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use CraftCms\Cms\View\LegacyAssets\TotpAsset;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Session\SessionManager;
 use PragmaRX\Google2FA\Exceptions\Google2FAException;
@@ -80,18 +76,8 @@ class TOTP extends BaseAuthMethod
         $secret = $this->secret();
         $totpFormId = sprintf('totp-form-%s', mt_rand());
 
-        app(InternalAssetRegistry::class)->register(TotpAsset::class);
-        HtmlStack::jsWithVars(fn ($totpFormId, $containerId) => <<<JS
-Craft.createAuthFormHandler(Craft.TotpForm.METHOD, $('#' + $totpFormId), () => {
-  Craft.Slideout.instances[$containerId].showSuccess();
-  Craft.authMethodSetup.refresh();
-});
-JS, [
-            InputNamespace::namespaceId($totpFormId),
-            $containerId,
-        ]);
-
         return template('_components/auth/methods/TOTP/setup', [
+            'containerId' => $containerId,
             'secret' => rtrim(chunk_split($secret, 4, ' ')),
             'user' => $this->user,
             'qrCode' => $this->generateQrCode($secret),
