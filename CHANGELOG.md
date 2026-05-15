@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.18.0.1 - 2026-05-15
 
 - Fixed a bug where the `|default` filter only accepted string values. ([#18886](https://github.com/craftcms/cms/issues/18886))
 
