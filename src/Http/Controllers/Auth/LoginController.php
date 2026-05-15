@@ -38,6 +38,7 @@ readonly class LoginController extends AuthenticationController
         }
 
         return Inertia::render('LoginPage', [
+            'action' => action([LoginController::class, 'attemptLogin']),
             'username' => $generalConfig->rememberUsernameDuration ? $authMethods->getRememberedUsername() : '',
         ]);
     }
@@ -71,6 +72,7 @@ readonly class LoginController extends AuthenticationController
         }
 
         $html = template('_special/login-modal', [
+            'action' => action([LoginController::class, 'attemptLogin']),
             'staticEmail' => $staticEmail,
             'forElevatedSession' => $forElevatedSession,
         ], templateMode: TemplateMode::Cp);

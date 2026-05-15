@@ -4,6 +4,7 @@
 {% set username = staticEmail ?? (generalConfig.rememberUsernameDuration ? AuthMethods.getRememberedUsername() : '') %}
 
 <craft-login-form {{ attr({
+  action: action ?? null,
   'show-reset-password': showResetPassword ?? false,
   'show-remember-me': showRememberMeCheckbox ?? false,
   'static-email': staticEmail,
