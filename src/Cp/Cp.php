@@ -8,8 +8,8 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Foundation\Vite;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Vite;
 use stdClass;
 
 readonly class Cp
@@ -40,7 +40,7 @@ readonly class Cp
 
     public static function vite()
     {
-        return Vite::getFacadeRoot()
+        return (clone app(Vite::class))
             ->useHotFile(Aliases::get('@resources/hot'))
             ->useBuildDirectory('/vendor/craft/build');
     }
