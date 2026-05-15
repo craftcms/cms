@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-alpha.3 - 2026-05-15
 
 - Added the `compiledTemplatesPath` config setting. ([#18861](https://github.com/craftcms/cms/pull/18861))
 - Added a missing migration that adds `minAuthors` to the section table ([#18875](https://github.com/craftcms/cms/pull/18875))
