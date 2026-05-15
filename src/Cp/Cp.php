@@ -34,8 +34,8 @@ readonly class Cp
             ])
             ->merge([
                 'translations' => I18N::getAllTranslationsForLocale(app()->getLocale()) ?: new stdClass,
-                'csrfTokenValue' => $config->enableCsrfProtection ? csrf_token() : null,
-                'csrfTokenName' => $config->enableCsrfProtection ? $config->csrfTokenName : null,
+                'csrfTokenValue' => csrf_token(),
+                'csrfTokenName' => '_token',
                 'actionUrl' => Url::actionUrl(),
                 'cpUrl' => Url::cpUrl(),
                 'baseUrl' => Url::url(),
