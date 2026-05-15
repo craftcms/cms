@@ -1,11 +1,12 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import {computed, ref} from 'vue';
-  import {useApiClient} from '@/composables/useFetch';
+  import {computed, ref, watch} from 'vue';
+  import {useApiClient, useFetch} from '@/composables/useFetch';
   import Empty from '@/components/Empty.vue';
   import Update from '@/components/utilities/Updates/Update.vue';
   import {router} from '@inertiajs/vue3';
   import UpdaterController from '@actions/Updates/UpdaterController';
+  import UpdatesController from '@actions/Updates/UpdatesController';
 
   interface Release {
     version: string;
@@ -48,15 +49,27 @@
 
   // State & API
 
-  const {data, isLoading, isError, isSuccess} = useApiClient<UpdatesResponse>(
-    'updates',
-    {
-      params: {
-        forceRefresh: true,
-        includeDetails: true,
-      },
+  const {
+    data: updatesData,
+    isLoading,
+    isError,
+    isSuccess,
+  } = useApiClient<UpdatesResponse>('updates', {
+    params: {
+      forceRefresh: true,
+      includeDetails: true,
+    },
+  });
+
+  const {execute, data} = useFetch(UpdatesController.cache().url, {
+    method: 'post',
+  });
+
+  watch(isSuccess, () => {
+    if (isSuccess.value) {
+      execute({updates: updatesData.value, includeDetails: true});
     }
-  );
+  });
 
   // Computed Properties
 
@@ -75,7 +88,9 @@
 
   const pluginUpdates = computed(() => {
     const plugins = data.value?.updates?.plugins ?? [];
-    return plugins.filter((p) => p.releases.length > 0 || p.abandoned);
+    return plugins.filter(
+      (p: UpdateInfo) => p.releases.length > 0 || p.abandoned
+    );
   });
 
   const showUpdates = computed(() => {
@@ -87,7 +102,7 @@
     if (cmsUpdate.value && isAvailable(cmsUpdate.value)) {
       count++;
     }
-    pluginUpdates.value.forEach((p) => {
+    pluginUpdates.value.forEach((p: UpdateInfo) => {
       if (isAvailable(p)) {
         count++;
       }
@@ -100,7 +115,7 @@
     if (cmsUpdate.value && isInstallable(cmsUpdate.value)) {
       updates.push(cmsUpdate.value);
     }
-    pluginUpdates.value.forEach((p) => {
+    pluginUpdates.value.forEach((p: UpdateInfo) => {
       if (isInstallable(p)) {
         updates.push(p);
       }
