@@ -1,14 +1,14 @@
 <script setup lang="ts">
   import {Deferred, Head, useHttp} from '@inertiajs/vue3';
   import {t} from '@craftcms/cp';
-  import backgroundUrl from '../../images/install/installer-bg.png';
+  import backgroundUrl from '../../public/images/install/installer-bg.png';
   import {computed, reactive, watchEffect} from 'vue';
   import AccountFields from '@/components/install/AccountFields.vue';
   import SiteFields from '@/components/install/SiteFields.vue';
   import {useInstall} from '@/composables/useInstall';
-  import accountBg from '../../images/install/account.png';
-  import siteBg from '../../images/install/site.png';
-  import dbBg from '../../images/install/db.png';
+  import accountBg from '../../public/images/install/account.png';
+  import siteBg from '../../public/images/install/site.png';
+  import dbBg from '../../public/images/install/db.png';
   import DbFields from '@/components/install/DbFields.vue';
   import InstallingScreen from '@/components/install/InstallingScreen.vue';
   import Pane from '@/components/Pane.vue';

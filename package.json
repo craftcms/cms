@@ -34,7 +34,6 @@
     "@tailwindcss/vite": "^4.2.4",
     "@total-typescript/tsconfig": "^1.0.4",
     "@vitejs/plugin-vue": "^6.0.6",
-    "baseline-browser-mapping": "^2.10.25",
     "esbuild": "^0.28.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
