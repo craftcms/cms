@@ -117,6 +117,6 @@ export const Loading: Story = {
     loading: true,
   },
   render: (args) => html`
-    <craft-button loading="${args.loading}"> Submit </craft-button>
+    <craft-button ?loading="${args.loading}"> Submit </craft-button>
   `,
 };
