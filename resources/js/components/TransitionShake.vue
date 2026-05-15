@@ -42,8 +42,8 @@
     transform: translate3d(0, 0, 0);
     perspective: 1000px;
 
-    //@media (prefers-reduced-motion: reduce) {
-    //  animation: none;
-    //}
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
   }
 </style>
