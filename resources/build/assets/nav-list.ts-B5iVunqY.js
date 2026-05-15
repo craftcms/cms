@@ -1,0 +1,16 @@
+import{n as e}from"./chunk-B94d72a0.js";import{c as t,f as n,t as r}from"./lit-X8lyiNX5.js";var i=e({default:()=>a}),a=class extends r{render(){return t`
+      <ul class="nav-list">
+        <slot></slot>
+      </ul>
+    `}};a.styles=n`
+    :host {
+      display: block;
+    }
+
+    .nav-list {
+      display: grid;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+  `,customElements.get(`craft-nav-list`)||customElements.define(`craft-nav-list`,a);export{i as t};

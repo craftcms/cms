@@ -198,7 +198,7 @@ export default class CraftLoginForm extends LitElement {
       });
       const {data} = await actionClient.post('users/login-with-passkey', {
         requestOptions: optionsData.options,
-        response: JSON.stringify(authResponse),
+        authResponse: JSON.stringify(authResponse),
       });
 
       this.#handleSuccess(data.returnUrl);
