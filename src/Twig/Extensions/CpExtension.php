@@ -61,7 +61,6 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('statusIndicator', app(StatusHtml::class)->statusIndicatorHtml(...), ['is_safe' => ['html']]),
             new TwigFunction('readOnlyNotice', app(ContentHtml::class)->readOnlyNoticeHtml(...), ['is_safe' => ['html']]),
             new TwigFunction('cpVite', $this->vite(...), ['is_safe' => ['html']]),
-            new TwigFunction('cpAsset', [Cp::class, 'viteAsset'], ['is_safe' => ['html']]),
 
             // Legacy Assets - remove once all dependencies on these are removed
             new TwigFunction('registerLegacyAsset', fn (string $bundle) => app(InternalAssetRegistry::class)->register($bundle)),
