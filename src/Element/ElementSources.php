@@ -176,6 +176,10 @@ class ElementSources
                     $source = $elementType::modifyCustomSource($source);
                 }
 
+                if ($source['type'] === self::TYPE_HEADING) {
+                    $source['heading'] ??= '';
+                }
+
                 $sources[] = $source;
             }
 
@@ -452,7 +456,7 @@ class ElementSources
                         'userGroups' => $s['userGroups'] ?? null,
                     ],
                     self::TYPE_HEADING => [
-                        'heading' => $s['heading'] ?? null,
+                        'heading' => $s['heading'] ?? '',
                     ],
                     default => [
                         'disabled' => $s['disabled'] ?? null,
