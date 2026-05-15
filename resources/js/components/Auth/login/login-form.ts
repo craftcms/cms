@@ -159,11 +159,13 @@ export default class CraftLoginForm extends LitElement {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Something went wrong.');
-      }
+      const data = (await response.json()) as TwoFactorData & {
+        message?: string;
+      };
 
-      const data: TwoFactorData = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'A server error occurred.');
+      }
 
       if (data.authMethod) {
         this._twoFactorData = data;
@@ -174,11 +176,8 @@ export default class CraftLoginForm extends LitElement {
         this._loginBusy = false;
       }
     } catch (e: any) {
-      console.log(e);
       this._loginBusy = false;
-      this.#setError(
-        e?.response?.data?.message ?? t('A server error occurred.')
-      );
+      this.#setError(e.message);
     }
   }
 
