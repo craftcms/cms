@@ -43,11 +43,11 @@ export default css`
   }
 
   :host(:not(:disabled):not(.loading):active) {
+    color: var(--c-color-on-loud);
     background-color: hsl(
       from var(--c-color-fill-loud, var(--c-color-neutral-fill-normal)) h s
         calc(l - 10)
     );
-    color: var(--c-color-on-loud);
   }
 
   /*
