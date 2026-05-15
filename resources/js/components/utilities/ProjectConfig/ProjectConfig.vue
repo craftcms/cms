@@ -96,7 +96,7 @@
             <div v-else class="buttons">
               <SyncConfigButton
                 :label="t('Apply changes only')"
-                variant="default"
+                variant="neutral"
               />
               <SyncConfigButton :force="true" />
 
@@ -165,7 +165,7 @@
             <div class="flex gap-2 items-center">
               <craft-button
                 type="submit"
-                variant="default"
+                variant="neutral"
                 :loading="processing"
               >
                 {{ t('Rebuild') }}
