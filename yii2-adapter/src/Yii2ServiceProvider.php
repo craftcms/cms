@@ -133,8 +133,12 @@ class Yii2ServiceProvider extends ServiceProvider
 
         $handler->dontReport([ExitException::class]);
         $handler->renderable(fn(ExitException $exception) => LegacyMiddleware::createResponse());
-        $handler->renderable(function(Throwable $exception): null {
+        $handler->renderable(function(Throwable $exception) {
             $this->triggerLegacyBeforeHandleException($exception);
+
+            if (Craft::$app?->getResponse()->isSent) {
+                return LegacyMiddleware::createResponse();
+            }
 
             return null;
         });

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\View;
 
 use CraftCms\Cms\Support\Html;
 use Illuminate\Container\Attributes\Scoped;
+use Stringable;
 
 #[Scoped]
 class InputNamespace
@@ -106,14 +107,14 @@ class InputNamespace
      * }, 'widget-settings');
      * ```
      *
-     * @param  callable|string  $html  The HTML code, or a callable that returns the HTML code
+     * @param  callable|string|Stringable  $html  The HTML code, or a callable that returns the HTML code
      * @param  string|null  $namespace  The namespace. Defaults to the [[getNamespace()|active namespace]].
      * @param  bool  $otherAttributes  Whether `id`, `for`, and other attributes should be namespaced (in addition to `name`)
      * @param  bool  $withClasses  Whether class names should be namespaced as well (affects both `class` attributes and
      *                             class name CSS selectors within `<style>` tags). This will only have an effect if `$otherAttributes` is `true`.
      * @return string The HTML with namespaced attributes
      */
-    public function namespaceInputs(callable|string $html, ?string $namespace = null, bool $otherAttributes = true, bool $withClasses = false): string
+    public function namespaceInputs(callable|string|Stringable $html, ?string $namespace = null, bool $otherAttributes = true, bool $withClasses = false): string
     {
         if (is_callable($html)) {
             // If no namespace was passed in, just return the callable response directly.
@@ -132,6 +133,8 @@ class InputNamespace
 
             return $response;
         }
+
+        $html = (string) $html;
 
         if ($html === '') {
             return $html;

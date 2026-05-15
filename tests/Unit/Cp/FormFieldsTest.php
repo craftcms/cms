@@ -10,6 +10,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
+use Twig\Markup;
 
 #[Ruleset(AddressRules::class)]
 class TestAddressForFormFields extends Address
@@ -30,6 +31,12 @@ describe('fieldHtml', function () {
         expect($html)->toContain('<div class="input ltr"><input></div>')
             ->and($labelHtml)->toContain('<label id="id-label" for="id">Label</label>')
             ->and($blankLabelHtml)->not->toContain('<label');
+    });
+
+    it('renders markup input', function () {
+        $html = FormFields::fieldHtml(new Markup('<input name="title">', 'UTF-8'));
+
+        expect($html)->toContain('<div class="input ltr"><input name="title"></div>');
     });
 
     it('throws for an invalid site id in multi-site mode', function () {
@@ -73,6 +80,16 @@ describe('fieldHtml', function () {
             ->and($withWarning)->toContain('<p id="warning" class="warning has-icon">')
             ->and($withErrors)->toContain('has-errors')
             ->and((bool) preg_match('/<ul id="[\w\-]+" class="errors">/', $withErrors))->toBeTrue();
+    });
+
+    it('renders markup warnings', function () {
+        $html = FormFields::fieldHtml('<input>', [
+            'warningId' => 'warning',
+            'warning' => new Markup('Config warning', 'UTF-8'),
+        ]);
+
+        expect($html)->toContain('<p id="warning" class="warning has-icon">')
+            ->and($html)->toContain('Config warning');
     });
 
     it('throws for invalid template paths', function () {
