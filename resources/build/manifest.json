@@ -305,8 +305,8 @@
     "file": "assets/cp-BIpQ6o1r.css",
     "src": "_cp-BIpQ6o1r.css"
   },
-  "_cp-Ck-lTAGP.js": {
-    "file": "assets/cp-Ck-lTAGP.js",
+  "_cp-BSUq4smM.js": {
+    "file": "assets/cp-BSUq4smM.js",
     "name": "cp",
     "imports": [
       "__plugin-vue_export-helper-BLD82GEK.js",
@@ -376,8 +376,8 @@
     "file": "assets/lit-X8lyiNX5.js",
     "name": "lit"
   },
-  "_login-form-cb2l6hTH.js": {
-    "file": "assets/login-form-cb2l6hTH.js",
+  "_login-form-Caefk0Gj.js": {
+    "file": "assets/login-form-Caefk0Gj.js",
     "name": "login-form",
     "imports": [
       "_decorate-BpI2plOt.js",
@@ -1109,26 +1109,26 @@
     "isEntry": true
   },
   "resources/js/cp.ts": {
-    "file": "assets/cp-UvjVCVOI.js",
+    "file": "assets/cp-DYjfYtBi.js",
     "name": "cp",
     "src": "resources/js/cp.ts",
     "isEntry": true,
     "imports": [
       "__plugin-vue_export-helper-BLD82GEK.js",
-      "_cp-Ck-lTAGP.js",
+      "_cp-BSUq4smM.js",
       "_CpGlobalSidebar-CJ7REL2r.js",
       "_CpQueueIndicator-C5ZEYj0Q.js"
     ]
   },
   "resources/js/legacy.ts": {
-    "file": "assets/legacy-Bd8EkLwN.js",
+    "file": "assets/legacy-CHJIbRuu.js",
     "name": "legacy",
     "src": "resources/js/legacy.ts",
     "isEntry": true,
     "imports": [
       "__plugin-vue_export-helper-BLD82GEK.js",
-      "_cp-Ck-lTAGP.js",
-      "_login-form-cb2l6hTH.js"
+      "_cp-BSUq4smM.js",
+      "_login-form-Caefk0Gj.js"
     ],
     "dynamicImports": [
       "_nav-list.ts-j3dtyfMW.js",
@@ -1166,13 +1166,13 @@
     ]
   },
   "resources/js/pages/LoginPage.vue": {
-    "file": "assets/LoginPage-gMGM6kLA.js",
+    "file": "assets/LoginPage-C1fRs35D.js",
     "name": "LoginPage",
     "src": "resources/js/pages/LoginPage.vue",
     "isDynamicEntry": true,
     "imports": [
       "__plugin-vue_export-helper-BLD82GEK.js",
-      "_login-form-cb2l6hTH.js",
+      "_login-form-Caefk0Gj.js",
       "_LoginController-BV5gkC9o.js",
       "_wayfinder-DmhY2auL.js"
     ],
