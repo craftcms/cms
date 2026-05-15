@@ -111,6 +111,35 @@ export default css`
   Appearances 
    */
 
+  :host([appearance~='plain']),
+  :host([appearance~='outline']) {
+    background-color: transparent;
+    color: var(--c-color-on-quiet);
+  }
+
+  :host([appearance~='plain']:hover),
+  :host([appearance~='outline']:hover) {
+    background-color: var(
+      --c-color-fill-quiet,
+      var(--c-color-neutral-fill-quiet)
+    );
+  }
+
+  :host([appearance~='plain']:active),
+  :host([appearance~='outline']:active) {
+    background-color: hsl(
+      from var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)) h s
+        calc(l - 5)
+    );
+    color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
+  }
+
+  /* Plain */
+
+  :host([appearance~='plain']) {
+    border-color: transparent;
+  }
+
   /* Filled */
   :host([appearance~='filled']) {
     background-color: var(
@@ -129,36 +158,9 @@ export default css`
     color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
   }
 
-  /* Outline & Plain */
-  :host([appearance~='outline']),
-  :host([appearance~='plain']) {
-    background-color: transparent;
-    color: var(--c-color-on-quiet);
-  }
-
-  /* Plain */
-  :host([appearance~='plain']) {
-    border-color: transparent;
-  }
-
-  :host([appearance~='plain']:active) {
-    color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
-    background-color: color-mix(
-      in oklab,
-      var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
-      var(--c-color-mix-active)
-    );
-  }
-
   /* Outline */
   :host([appearance~='outline']) {
-    border-color: var(--c-color-border-normal);
-    color: var(--c-color-on-quiet);
-  }
-
-  :host([appearance~='outline']:active) {
-    color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
-    background-color: var(--c-color-fill-quiet);
+    border-color: var(--c-color-border-loud);
   }
 
   /*
