@@ -813,7 +813,7 @@ class Elements
      *
      * @param  class-string<ElementInterface>  $elementType  The root element type class
      * @param  ElementInterface[]  $elements  The root element models that should be updated with the eager-loaded elements
-     * @param  array<string|array>|string|EagerLoadPlan[]  $with  Dot-delimited paths of the elements that should be eager-loaded into the root elements
+     * @param  array<int, string|array|EagerLoadPlan>|string  $with  Dot-delimited paths of the elements that should be eager-loaded into the root elements
      */
     public function eagerLoadElements(string $elementType, array|Collection $elements, array|string $with): void
     {

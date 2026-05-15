@@ -12,7 +12,7 @@ use Override;
  * @method static bool arePluginsLoaded()
  * @method static \CraftCms\Cms\Plugin\Contracts\PluginInterface|null getPlugin(string $handle)
  * @method static \CraftCms\Cms\Plugin\Contracts\PluginInterface|null getPluginByPackageName(string $packageName)
- * @method static string|null getPluginHandleByClass(class-string $class)
+ * @method static string|null getPluginHandleByClass(string $class)
  * @method static \CraftCms\Cms\Plugin\Contracts\PluginInterface[] getAllPlugins()
  * @method static bool enablePlugin(string $handle)
  * @method static bool disablePlugin(string $handle)
