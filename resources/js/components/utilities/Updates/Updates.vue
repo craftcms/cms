@@ -49,24 +49,24 @@
 
   // State & API
 
-  const {
-    data: updatesData,
-    isLoading,
-    isError,
-    isSuccess,
-  } = useApiClient<UpdatesResponse>('updates', {
-    params: {
-      forceRefresh: true,
-      includeDetails: true,
-    },
-  });
+  const {data: updatesData, isSuccess: apiSuccess} =
+    useApiClient<UpdatesResponse>('updates', {
+      params: {
+        forceRefresh: true,
+        includeDetails: true,
+      },
+    });
 
-  const {execute, data} = useFetch(UpdatesController.cache().url, {
-    method: 'post',
-  });
+  const {execute, data, isLoading, isError, isSuccess} = useFetch(
+    UpdatesController.cache().url,
+    {
+      method: 'post',
+      immediate: false,
+    }
+  );
 
-  watch(isSuccess, () => {
-    if (isSuccess.value) {
+  watch(apiSuccess, () => {
+    if (apiSuccess.value && updatesData.value) {
       execute({updates: updatesData.value, includeDetails: true});
     }
   });
@@ -197,16 +197,9 @@
 </script>
 
 <template>
-  <!-- Loading State -->
-  <Empty v-if="isLoading" :label="t('Checking for updates…')">
-    <template #graphic>
-      <craft-spinner style="--size: 3rem" :visible="true"></craft-spinner>
-    </template>
-  </Empty>
-
   <!-- Error State -->
   <Empty
-    v-else-if="isError"
+    v-if="isError"
     icon="alert-circle"
     :label="t('Unable to fetch updates at this time.')"
   />
@@ -257,6 +250,13 @@
       </div>
     </div>
   </template>
+
+  <!-- Loading State -->
+  <Empty v-else :label="t('Checking for updates…')">
+    <template #graphic>
+      <craft-spinner style="--size: 3rem" :visible="true"></craft-spinner>
+    </template>
+  </Empty>
 </template>
 
 <style scoped lang="scss">
