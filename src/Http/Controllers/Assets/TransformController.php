@@ -34,6 +34,7 @@ readonly class TransformController
     {
         $transformIndexModel = null;
         $transformer = null;
+        $hasValidTransformToken = false;
 
         $transformId = $request->integer('transformId');
         if (! $transformId && $request->filled('transformToken')) {
@@ -47,6 +48,7 @@ readonly class TransformController
 
             try {
                 $transformId = (int) Crypt::decryptString($token);
+                $hasValidTransformToken = true;
             } catch (Throwable) {
                 abort(400, 'Invalid transform token.');
             }
@@ -90,6 +92,10 @@ readonly class TransformController
             $transformer instanceof ImageTransformer &&
             ! $asset->getVolume()->getTransformFs()->hasUrls
         ) {
+            if (! $hasValidTransformToken) {
+                $this->requirePermission('accessCp');
+            }
+
             try {
                 return $transformer->getTransformResponse($asset, $transformIndexModel);
             } catch (Throwable $e) {

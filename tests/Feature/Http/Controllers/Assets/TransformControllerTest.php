@@ -6,6 +6,8 @@ use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Http\Controllers\Assets\TransformController;
+use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Crypt;
@@ -58,6 +60,26 @@ describe('generate', function () {
         postJson(action([TransformController::class, 'generate']), [
             'assetId' => $asset->id,
         ])->assertStatus(400);
+    });
+
+    it('forbids anonymous raw transform ids for private transform filesystems', function () {
+        $asset = AssetModel::factory()->createElement([
+            'volumeId' => $this->volume->id,
+            'folderId' => $this->folder->id,
+            'filename' => 'transform-test.jpg',
+            'kind' => 'image',
+            'width' => 1200,
+            'height' => 800,
+            'dateModified' => now()->subMinute(),
+        ]);
+
+        $index = (new ImageTransformer)->getTransformIndex($asset, new ImageTransform([
+            'width' => 100,
+            'height' => 100,
+        ]));
+
+        get(action([TransformController::class, 'generate'], ['transformId' => $index->id]))
+            ->assertForbidden();
     });
 });
 
