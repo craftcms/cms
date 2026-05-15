@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.10.1 - 2026-05-14
 
 - Fixed a bug where assets’ Alternative Text values weren’t always being set when replacing an existing asset’s file. ([#18713](https://github.com/craftcms/cms/discussions/18713))
 - Fixed a bug where element indexes had horizontal scroll bars while loading. ([#18870](https://github.com/craftcms/cms/issues/18870))
