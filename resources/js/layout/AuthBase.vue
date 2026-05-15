@@ -11,9 +11,8 @@
         <img
           :src="general.cpLogoUrl"
           :alt="system.name"
+          class="cp-login__logo"
           width="288px"
-          height="auto"
-          class="inline-block"
         />
       </h1>
 
@@ -31,5 +30,11 @@
     height: 100vh;
     place-items: center;
     gap: var(--c-spacing-md);
+  }
+
+  .cp-login__logo {
+    display: inline-block;
+    width: calc(288rem / 16);
+    height: auto;
   }
 </style>
