@@ -59,7 +59,10 @@ class Category extends Mutation
         if ($createDeleteMutation) {
             $mutationList['deleteCategory'] = [
                 'name' => 'deleteCategory',
-                'args' => ['id' => Type::nonNull(Type::int())],
+                'args' => [
+                    'id' => Type::nonNull(Type::int()),
+                    'hardDelete' => Type::boolean(),
+                ],
                 'resolve' => [Craft::createObject(CategoryResolver::class), 'deleteCategory'],
                 'description' => 'Delete a category.',
                 'type' => Type::boolean(),

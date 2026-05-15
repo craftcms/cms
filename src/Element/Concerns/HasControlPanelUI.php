@@ -28,6 +28,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Translation\Formatter;
 use Illuminate\Support\Facades\Gate;
 use Stringable;
@@ -79,12 +80,20 @@ trait HasControlPanelUI
         $isUnpublishedDraft = $this->getIsUnpublishedDraft();
         $canSaveCanonical = Gate::check('saveCanonical', $this);
 
+        $returnUrl = request()->query('returnUrl');
+        $redirectParams = array_filter([
+            'returnUrl' => $returnUrl,
+        ]);
+
         $altActions = [
             [
                 'label' => $isUnpublishedDraft && $canSaveCanonical
                     ? t('Create and continue editing')
                     : t('Save and continue editing'),
                 'redirect' => '{cpEditUrl}',
+                'params' => array_filter([
+                    'redirectParams' => ! empty($redirectParams) ? Json::encode($redirectParams) : null,
+                ]),
                 'shortcut' => true,
                 'retainScroll' => true,
                 'eventData' => ['autosave' => false],
@@ -101,7 +110,10 @@ trait HasControlPanelUI
                     'shortcut' => true,
                     'shift' => true,
                     'eventData' => ['autosave' => false],
-                    'params' => ['addAnother' => 1],
+                    'params' => [
+                        'addAnother' => 1,
+                        'returnUrl' => $returnUrl,
+                    ],
                 ];
             }
 
@@ -126,9 +138,19 @@ trait HasControlPanelUI
                     'params' => [
                         'asUnpublishedDraft' => true,
                         'deleteProvisionalDraft' => true,
+                        'redirectParams' => ! empty($redirectParams) ? Json::encode($redirectParams) : null,
                     ],
                 ];
             }
+        }
+
+        if ($this->getIsDraft() && ! $this->getIsUnpublishedDraft() && ! $this->isProvisionalDraft) {
+            $altActions[] = [
+                'label' => t('Save as a new {type}', [
+                    'type' => t('draft'),
+                ]),
+                'action' => 'elements/duplicate',
+            ];
         }
 
         event($event = new ElementAltActionsResolving($this, $altActions));
@@ -341,22 +363,47 @@ JS, [
             }
 
             if ($canDeleteCanonical) {
+                $deleteId = sprintf('action-delete-%s', mt_rand());
+
                 $items[] = [
+                    'id' => $deleteId,
                     'icon' => 'trash',
                     'label' => mb_ucfirst(t('Delete {type}', [
                         'type' => $isUnpublishedDraft ? t('draft') : static::lowerDisplayName(),
                     ])),
-                    'action' => $isUnpublishedDraft ? 'elements/delete-draft' : 'elements/delete',
-                    'params' => [
-                        'elementId' => $this->getCanonicalId(),
-                        'siteId' => $this->siteId,
-                    ],
-                    'redirect' => "$redirectUrl#",
-                    'confirm' => t('Are you sure you want to delete this {type}?', [
-                        'type' => $isUnpublishedDraft ? t('draft') : static::lowerDisplayName(),
-                    ]),
-                    'destructive' => true,
                 ];
+
+                HtmlStack::jsWithVars(fn (
+                    $id,
+                    $elementType,
+                    $elementId,
+                    $siteId,
+                    $ownerId,
+                    $confirmationMessage,
+                    $redirect,
+                ) => <<<JS
+$('#' + $id).on('activate', async () => {
+  new Craft.ElementDeletionManager($elementType, [$elementId], {
+    siteId: $siteId,
+    ownerId: $ownerId,
+    confirmationMessage: $confirmationMessage,
+    onSuccess: () => {
+      document.location.href = $redirect;
+    },
+  })
+});
+JS,
+                    [
+                        InputNamespace::namespaceId($deleteId),
+                        static::class,
+                        $this->id,
+                        $this->siteId,
+                        $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
+                        t('Are you sure you want to delete this {type}?', [
+                            'type' => $isDraft ? t('draft') : static::lowerDisplayName(),
+                        ]),
+                        "$redirectUrl#",
+                    ]);
             }
         } elseif ($isDraft && $canDeleteDraft) {
             if ($canDeleteForSite) {
@@ -681,10 +728,10 @@ JS, [
             },
         ], $metadata, [
             t('Created at') => $this->dateCreated && ! $this->getIsUnpublishedDraft()
-                ? $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT)
+                ? $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT, true)
                 : false,
             t('Updated at') => $this->dateUpdated && ! $this->getIsUnpublishedDraft()
-                ? $formatter->asDatetime($this->dateUpdated, Formatter::FORMAT_WIDTH_SHORT)
+                ? $formatter->asDatetime($this->dateUpdated, Formatter::FORMAT_WIDTH_SHORT, true)
                 : false,
             t('Notes') => function () {
                 if ($this->getIsRevision()) {

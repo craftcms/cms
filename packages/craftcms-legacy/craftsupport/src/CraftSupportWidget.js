@@ -377,23 +377,19 @@ import './CraftSupportWidget.scss';
 
           var max = Math.min(results.length, 20);
           for (var i = 0; i < max; i++) {
-            const $resultLink = $('<a>', {
-              href: this.getSearchResultUrl(results[i]),
-              target: '_blank',
-              rel: 'noopener',
-            })
-              .append(
-                $('<span>', {
-                  class: 'status ' + this.getSearchResultStatus(results[i]),
+            this.$searchResults.append(
+              $('<li>').append(
+                $('<a>', {
+                  href: this.getSearchResultUrl(results[i]),
+                  target: '_blank',
+                  html:
+                    '<span class="status ' +
+                    this.getSearchResultStatus(results[i]) +
+                    '"></span>' +
+                    Craft.escapeHtml(this.getSearchResultText(results[i])),
                 })
               )
-              .append(
-                document.createTextNode(
-                  this.getSearchResultText(results[i]) || ''
-                )
-              );
-
-            this.$searchResults.append($('<li>').append($resultLink));
+            );
           }
 
           // Announce the results for SR users
@@ -571,7 +567,9 @@ import './CraftSupportWidget.scss';
             if (response.errors.hasOwnProperty(attribute)) {
               for (var i = 0; i < response.errors[attribute].length; i++) {
                 var error = response.errors[attribute][i];
-                $('<li>' + error + '</li>').appendTo(this.$supportErrorList);
+                $('<li/>', {
+                  text: error,
+                }).appendTo(this.$supportErrorList);
               }
             }
           }

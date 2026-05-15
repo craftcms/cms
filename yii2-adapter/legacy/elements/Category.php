@@ -8,6 +8,8 @@
 namespace craft\elements;
 
 use Craft;
+use craft\db\Connection;
+use craft\db\FixedOrderExpression;
 use craft\db\Table;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
@@ -38,11 +40,13 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use CraftCms\Yii2Adapter\Validation\LegacyElementRules;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+
 use function CraftCms\Cms\t;
 
 /**
@@ -320,6 +324,19 @@ class Category extends Element
             'slug' => t('Slug'),
             'uri' => t('URI'),
             [
+                'label' => t('Group'),
+                'orderBy' => function(int $dir, Connection $db) {
+                    $groupIds = Collection::make(Craft::$app->getCategories()->getAllGroups())
+                        ->sort(fn(CategoryGroup $a, CategoryGroup $b) => $dir === SORT_ASC
+                            ? $a->name <=> $b->name
+                            : $b->name <=> $a->name)
+                        ->map(fn(CategoryGroup $group) => $group->id)
+                        ->all();
+                    return new FixedOrderExpression('categories.groupId', $groupIds, $db);
+                },
+                'attribute' => 'group',
+            ],
+            [
                 'label' => t('Date Created'),
                 'orderBy' => 'dateCreated',
                 'defaultDir' => 'desc',
@@ -338,6 +355,7 @@ class Category extends Element
     protected static function defineTableAttributes(): array
     {
         return array_merge(parent::defineTableAttributes(), [
+            'group' => ['label' => t('Group')],
             'ancestors' => ['label' => t('Ancestors')],
             'parent' => ['label' => t('Parent')],
         ]);
@@ -782,6 +800,19 @@ class Category extends Element
 
     // Indexes, etc.
     // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    protected function attributeHtml(string $attribute): string
+    {
+        switch ($attribute) {
+            case 'group':
+                return Html::encode($this->getGroup()->getUiLabel());
+            default:
+                return parent::attributeHtml($attribute);
+        }
+    }
 
     /**
      * @inheritdoc

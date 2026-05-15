@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -110,6 +111,34 @@ it('can uninstall and install a plugin', function () {
 
     expect($this->plugins->isPluginInstalled('test-plugin'))->toBeTrue();
     expect($this->plugins->isPluginEnabled('test-plugin'))->toBeTrue();
+});
+
+it('ignores missing transaction exceptions during uninstall commits', function () {
+    $this->plugins->enablePlugin('test-plugin');
+
+    $manager = DB::getFacadeRoot();
+    $connectionName = DB::getDefaultConnection();
+    $connection = DB::connection();
+    $connectionMock = Mockery::mock($connection)->makePartial();
+
+    $connections = new ReflectionProperty($manager, 'connections');
+    $resolvedConnections = $connections->getValue($manager);
+    $resolvedConnections[$connectionName] = $connectionMock;
+    $connections->setValue($manager, $resolvedConnections);
+
+    $connectionMock
+        ->shouldReceive('commit')
+        ->once()
+        ->andThrow(new PDOException('There is no active transaction'));
+
+    try {
+        $this->plugins->uninstallPlugin('test-plugin');
+    } finally {
+        $resolvedConnections[$connectionName] = $connection;
+        $connections->setValue($manager, $resolvedConnections);
+    }
+
+    expect($this->plugins->isPluginInstalled('test-plugin'))->toBeFalse();
 });
 
 it('cannot uninstall a plugin that is not enabled', function () {

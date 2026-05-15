@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\CodingStyle\Rector\ArrowFunction\ArrowFunctionDelegatingCallToFirstClassCallableRector;
 use Rector\Config\RectorConfig;
+use Rector\Php55\Rector\String_\StringClassNameToClassConstantRector;
 use Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector;
 use RectorLaravel\Rector\ArrayDimFetch\EnvVariableToEnvHelperRector;
 use RectorLaravel\Rector\Class_\AnonymousMigrationsRector;
@@ -41,6 +42,9 @@ return RectorConfig::configure()
             __DIR__.'/src/Http/Mixins/SessionMixin.php',
         ],
         AppToResolveRector::class,
+        StringClassNameToClassConstantRector::class => [
+            __DIR__.'/src/Console/PromptTask.php',
+        ],
     ])
     ->withSetProviders(LaravelSetProvider::class)
     ->withComposerBased(laravel: true)

@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Console\Commands\Install;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Console\PromptTask;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
@@ -29,7 +30,6 @@ use function Laravel\Prompts\info;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\suggest;
-use function Laravel\Prompts\task;
 use function Laravel\Prompts\text;
 use function Laravel\Prompts\warning;
 
@@ -196,10 +196,10 @@ class InstallCommand extends Command
 
         info('Installing Craft CMS...');
 
-        task('Running initial migrations', function (Logger $logger) {
+        PromptTask::run('Running initial migrations', function (Logger $logger) {
             $this->callSilent('migrate');
             $logger->success('Initial migrations completed.');
-        }, keepSummary: true);
+        }, keepSummary: true, output: $this->output);
 
         $migrator->track('craft')->runMigration(new Install(
             username: $username,
@@ -211,11 +211,11 @@ class InstallCommand extends Command
 
         $migrator->getRepository()->log('Install', 1);
 
-        task('Finishing up', function (Logger $logger) use ($migrator) {
+        PromptTask::run('Finishing up', function (Logger $logger) use ($migrator) {
             $this->markPendingMigrationsAsApplied($migrator);
             $this->ensureProjectConfigFileExists();
             $logger->success('Done.');
-        }, keepSummary: true);
+        }, keepSummary: true, output: $this->output);
 
         outro('Craft CMS installed successfully!');
 

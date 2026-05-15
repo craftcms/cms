@@ -50,6 +50,11 @@ class TimeRule implements DataAwareRule, ValidationRule
         public ?string $tooLate = null,
 
         /**
+         * @var string|null user-defined error message used when the value is out of range and [[min]] is greater than [[max]]
+         */
+        public ?string $outOfRange = null,
+
+        /**
          * @var string|null user-defined error message
          */
         public ?string $message = null,
@@ -57,6 +62,7 @@ class TimeRule implements DataAwareRule, ValidationRule
         $this->message ??= t('{attribute} must be a time.');
         $this->tooEarly ??= t('{attribute} must be no earlier than {min}.');
         $this->tooLate ??= t('{attribute} must be no later than {max}.');
+        $this->outOfRange ??= t('{attribute} must be between {min} and {max}.');
     }
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
@@ -71,18 +77,15 @@ class TimeRule implements DataAwareRule, ValidationRule
             return;
         }
 
+        // If min > max (e.g. 10pm - 2am),
+        $min = $max = null;
+
         if (isset($this->min)) {
             $min = $this->data[$this->min] ?? $this->min;
             $min = DateTimeHelper::toDateTime(['time' => $min], true);
 
             if (! $min) {
                 throw new RuntimeException("Invalid minimum time: $min");
-            }
-
-            if ($value < $min) {
-                $fail(t($this->tooEarly, [
-                    'min' => I18N::getFormatter()->asTime($min, Locale::LENGTH_SHORT),
-                ], locale: app()->getLocale()));
             }
         }
 
@@ -93,12 +96,30 @@ class TimeRule implements DataAwareRule, ValidationRule
             if (! $max) {
                 throw new RuntimeException("Invalid maximum time: $max");
             }
+        }
 
-            if ($value > $max) {
-                $fail(t($this->tooLate, [
+        // Overnight time range? (e.g. 10pm-2am)
+        if ($min !== null && $max !== null && $min > $max) {
+            if ($value < $min && $value > $max) {
+                $fail(t($this->outOfRange, [
+                    'min' => I18N::getFormatter()->asTime($min, Locale::LENGTH_SHORT),
                     'max' => I18N::getFormatter()->asTime($max, Locale::LENGTH_SHORT),
-                ], locale: app()->getLocale()));
+                ]));
             }
+
+            return;
+        }
+
+        if ($min !== null && $value < $min) {
+            $fail(t($this->tooEarly, [
+                'min' => I18N::getFormatter()->asTime($min, Locale::LENGTH_SHORT),
+            ]));
+        }
+
+        if ($max !== null && $value > $max) {
+            $fail(t($this->tooLate, [
+                'max' => I18N::getFormatter()->asTime($max, Locale::LENGTH_SHORT),
+            ]));
         }
     }
 

@@ -9,6 +9,7 @@ namespace craft\web;
 
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\View\TemplateMode;
+use Stringable;
 use yii\base\Behavior;
 use function CraftCms\Cms\template;
 
@@ -118,11 +119,11 @@ class CpModalResponseBehavior extends Behavior
     /**
      * Sets the content HTML.
      *
-     * @param callable|string|null $value
+     * @param callable|string|Stringable|null $value
      * @return Response
 
      */
-    public function contentHtml(callable|string|null $value): Response
+    public function contentHtml(callable|string|Stringable|null $value): Response
     {
         $this->contentHtml = $value;
         return $this->owner;
@@ -145,10 +146,10 @@ class CpModalResponseBehavior extends Behavior
     /**
      * Sets the errors summary HTML.
      *
-     * @param callable|string|null $value
+     * @param callable|string|Stringable|null $value
      * @return Response
      */
-    public function errorSummary(callable|string|null $value): Response
+    public function errorSummary(callable|string|Stringable|null $value): Response
     {
         $this->errorSummary = $value;
         return $this->owner;

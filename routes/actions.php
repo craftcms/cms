@@ -33,6 +33,7 @@ use CraftCms\Cms\Http\Controllers\EditionController;
 use CraftCms\Cms\Http\Controllers\Elements\CopyElementValuesController;
 use CraftCms\Cms\Http\Controllers\Elements\CreateElementController;
 use CraftCms\Cms\Http\Controllers\Elements\DeleteElementController;
+use CraftCms\Cms\Http\Controllers\Elements\DeleteElementsController;
 use CraftCms\Cms\Http\Controllers\Elements\DuplicateElementController;
 use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementActivityController;
@@ -51,6 +52,7 @@ use CraftCms\Cms\Http\Controllers\Elements\UpdateFieldLayoutController;
 use CraftCms\Cms\Http\Controllers\Elements\ValidateElementController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController;
+use CraftCms\Cms\Http\Controllers\Entries\ReassignEntriesModalController;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Http\Controllers\Gql\ApiController as GqlApiController;
@@ -95,7 +97,6 @@ use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
 use CraftCms\Cms\Http\Controllers\Users\SaveUsersFieldLayoutController;
 use CraftCms\Cms\Http\Controllers\Users\SuspendController;
 use CraftCms\Cms\Http\Controllers\Users\UnlockController;
-use CraftCms\Cms\Http\Controllers\Users\UsersController;
 use CraftCms\Cms\Http\Controllers\Utilities\AssetIndexesController;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
 use CraftCms\Cms\Http\Controllers\Utilities\DbBackupController;
@@ -258,6 +259,11 @@ Route::prefix(implode('/', [
         });
 
         // Elements
+        Route::post('delete-elements/deletion-blockers', [DeleteElementsController::class, 'deletionBlockers']);
+        Route::post('delete-elements/delete', [DeleteElementsController::class, 'destroy']);
+        Route::any('delete-elements/replace-relations-modal', [DeleteElementsController::class, 'replaceRelationsModal']);
+        Route::post('delete-elements/replace-relations', [DeleteElementsController::class, 'replaceRelations']);
+
         Route::post('elements/create', CreateElementController::class);
         Route::any('elements/edit', EditElementController::class);
         Route::post('elements/save', [SaveElementController::class, 'store']);
@@ -300,6 +306,8 @@ Route::prefix(implode('/', [
         Route::post('entries/save-entry', StoreEntryController::class);
         Route::post('entries/move-to-section-modal-data', [MoveEntryToSectionController::class, 'showModal']);
         Route::post('entries/move-to-section', [MoveEntryToSectionController::class, 'move']);
+        Route::any('entries/reassign-modal', [ReassignEntriesModalController::class, 'show']);
+        Route::any('entries/reassign', [ReassignEntriesModalController::class, 'store']);
 
         // Entry Types
         Route::get('entry-types/table-data', [EntryTypesController::class, 'tableData']);
@@ -527,8 +535,6 @@ Route::prefix(implode('/', [
 
         Route::post('users/save-permissions', [PermissionsController::class, 'store']);
         Route::post('users/save-preferences', [PreferencesController::class, 'store']);
-        Route::post('users/delete-user', [UsersController::class, 'destroy']);
-        Route::post('users/user-content-summary', [UsersController::class, 'contentSummary']);
         Route::post('users/render-photo-input', [PhotoController::class, 'renderInput']);
         Route::post('users/upload-user-photo', [PhotoController::class, 'upload']);
         Route::post('users/delete-user-photo', [PhotoController::class, 'destroy']);

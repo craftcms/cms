@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\View\InputNamespace;
+use Twig\Markup;
 
 beforeEach(function () {
     $this->inputNamespace = app(InputNamespace::class);
@@ -151,6 +152,16 @@ describe('namespaceInputs with string html', function () {
         $html = '<input type="text" name="title" id="title">';
 
         expect($this->inputNamespace->namespaceInputs($html))->toBe($html);
+    });
+
+    it('accepts markup html', function () {
+        $html = new Markup('<input type="text" name="title" id="title">', 'UTF-8');
+
+        $result = $this->inputNamespace->namespaceInputs($html, 'foo');
+
+        expect($result)
+            ->toContain('name="foo[title]"')
+            ->toContain('id="foo-title"');
     });
 
     it('namespaces html with an explicit namespace', function () {

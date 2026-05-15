@@ -98,7 +98,6 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         return array_merge(parent::getRules(), [
             'minuteIncrement' => ['nullable', 'integer', 'min:1', 'max:60'],
             'min' => ['nullable', new TimeRule],
-            'max' => ['nullable', new TimeRule(min: 'min')],
         ]);
     }
 

@@ -20,4 +20,10 @@ class PopulateElementEvent extends ElementEvent
      * @var array The element query’s result for this element.
      */
     public array $row;
+
+    /**
+     * @var array The element’s field values, indexed by their layout element UUIDs
+     * @since 5.10.0
+     */
+    public array $content;
 }

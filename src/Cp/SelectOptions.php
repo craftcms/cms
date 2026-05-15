@@ -10,6 +10,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -332,15 +333,14 @@ class SelectOptions
         // Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
         $options = [];
 
-        $offsetDate ??= new DateTime;
-        $offsetDate->setTimezone(new DateTimeZone('UTC'));
+        $utc = new DateTimeZone('UTC');
+        $offsetDate = $offsetDate ? (clone $offsetDate)->setTimezone($utc) : DateTimeHelper::now($utc);
         $offsets = [];
         $timezoneIds = [];
 
         foreach (DateTimeZone::listIdentifiers() as $timezoneId) {
             $timezone = new DateTimeZone($timezoneId);
-            $transition = $timezone->getTransitions($offsetDate->getTimestamp(), $offsetDate->getTimestamp());
-            $abbr = $transition[0]['abbr'];
+            $abbr = DateTimeHelper::timeZoneAbbreviation($timezone, $offsetDate);
 
             $offset = round($timezone->getOffset($offsetDate) / 60);
 

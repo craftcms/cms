@@ -68,7 +68,7 @@ class ResaveEntriesCommand extends ResaveCommand
                 ->all();
         }
 
-        $withFields = $this->resolvedWithFields();
+        $withFields = $this->resolvedWithFields;
 
         if (! empty($withFields)) {
             $handles = $entryTypes->getAllEntryTypes()

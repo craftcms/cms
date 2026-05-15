@@ -22,13 +22,14 @@ use Illuminate\Support\ViewErrorBag;
 use Illuminate\Validation\ConditionalRules;
 use Illuminate\Validation\Rules\RequiredIf;
 use InvalidArgumentException;
+use Stringable;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
 readonly class FormFields
 {
-    public static function fieldHtml(string|callable $input, array $config = []): string
+    public static function fieldHtml(string|Stringable|callable $input, array $config = []): string
     {
         $attribute = $config['attribute'] ?? $config['id'] ?? null;
         $id = $config['id'] ??= 'field'.mt_rand();
@@ -61,6 +62,10 @@ readonly class FormFields
         }
 
         $siteId = Sites::isMultiSite() && isset($config['siteId']) ? (int) $config['siteId'] : null;
+
+        if (! is_callable($input)) {
+            $input = (string) $input;
+        }
 
         if (is_callable($input) || str_starts_with($input, 'template:')) {
             // Set labelledBy and describedBy values in case the input template supports it
@@ -244,11 +249,13 @@ readonly class FormFields
             Html::endTag('div');
     }
 
-    private static function noticeHtml(string $id, string $class, string $label, ?string $message): string
+    private static function noticeHtml(string $id, string $class, string $label, string|Stringable|null $message): string
     {
         if (! $message) {
             return '';
         }
+
+        $message = (string) $message;
 
         return
             Html::beginTag('p', [

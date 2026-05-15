@@ -148,6 +148,26 @@ class GeneralConfig extends BaseConfig
     public array $aliases = [];
 
     /**
+     * @var string|null The server path to the directory where Craft should store compiled Twig templates.
+     *
+     * If this is set to `null`, Craft will store compiled templates in `storage/runtime/compiled_templates`.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->compiledTemplatesPath('@storage/runtime/templates')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_COMPILED_TEMPLATES_PATH=@storage/runtime/templates
+     * ```
+     * :::
+     *
+     * @group Environment
+     *
+     * @since 6.0.0
+     */
+    public ?string $compiledTemplatesPath = null;
+
+    /**
      * @var bool Whether admins should be allowed to make administrative changes to the system.
      *
      * When this is disabled, the Settings section will be hidden, the Craft edition and Craft/plugin versions will be locked,
@@ -3144,7 +3164,7 @@ class GeneralConfig extends BaseConfig
         // (Re-)normalize everything.
         $this
             // IDE Helper defaults to the same value as devMode
-            ->ideHelperEnabled(Env::get('APP_DEBUG', false))
+            ->ideHelperEnabled(Env::parseBoolean('$APP_DEBUG') ?? false)
             // file extensions
             ->allowedFileExtensions($this->allowedFileExtensions)
             ->extraAllowedFileExtensions($this->extraAllowedFileExtensions)
@@ -3274,6 +3294,27 @@ class GeneralConfig extends BaseConfig
         foreach ($value as $name => $path) {
             $this->addAlias($name, $path);
         }
+
+        return $this;
+    }
+
+    /**
+     * The server path to the directory where Craft should store compiled Twig templates.
+     *
+     * If this is set to `null`, Craft will store compiled templates in `storage/runtime/compiled_templates`.
+     *
+     * ```php
+     * ->compiledTemplatesPath('@storage/runtime/templates')
+     * ```
+     *
+     * @group Environment
+     *
+     * @see $compiledTemplatesPath
+     * @since 6.0.0
+     */
+    public function compiledTemplatesPath(?string $value): self
+    {
+        $this->compiledTemplatesPath = $value;
 
         return $this;
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Support;
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Container\Attributes\Singleton;
@@ -17,6 +18,7 @@ class Path
 {
     public function __construct(
         private readonly Application $app,
+        private readonly GeneralConfig $generalConfig,
         private readonly ProjectConfig $projectConfig,
         private readonly License $license,
     ) {}
@@ -172,6 +174,18 @@ class Path
 
     public function compiledTemplates(string $path = '', bool $create = true): string
     {
+        if ($this->generalConfig->compiledTemplatesPath !== null) {
+            $compiledTemplatesPath = Env::parse($this->generalConfig->compiledTemplatesPath);
+
+            if ($compiledTemplatesPath !== null && $compiledTemplatesPath !== '') {
+                return $this->directory(
+                    File::normalizePath($compiledTemplatesPath),
+                    $path,
+                    $create,
+                );
+            }
+        }
+
         return $this->subdirectory($this->runtime(create: $create), 'compiled_templates', $path, $create);
     }
 

@@ -20,6 +20,7 @@ use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
+use CraftCms\Cms\Plugin\Events\PluginsLoaded;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Yii2Adapter\Behavior\LegacyBehaviorCatalog;
@@ -30,6 +31,7 @@ use CraftCms\Yii2Adapter\Mixins\ElementQueryMixin;
 use CraftCms\Yii2Adapter\Mixins\UserMixin;
 use CraftCms\Yii2Adapter\Mixins\ValidateMixin;
 use CraftCms\Yii2Adapter\Mixins\VolumeMixin;
+use Illuminate\Support\Facades\Event;
 
 readonly class CompatibilityMixins
 {
@@ -71,5 +73,10 @@ readonly class CompatibilityMixins
         Widget::mixin(new ValidateMixin());
         ImageTransform::mixin(new ValidateMixin());
         ImageTransformIndex::mixin(new ValidateMixin());
+
+        Event::listen(
+            PluginsLoaded::class,
+            fn() => LegacyBehaviorCompatibility::registerDefinedBehaviorMethodsFromRegisteredEvents(),
+        );
     }
 }

@@ -54,6 +54,8 @@ class ResaveElements extends BaseJob
      */
     public ?string $to = null;
 
+    public bool $toDefault = false;
+
     /**
      * @var bool Whether the [[set]] attribute should only be set if it doesn’t have a value.
      *
@@ -77,19 +79,23 @@ class ResaveElements extends BaseJob
 
     public int $batchSize = 100;
 
+    public array $withFields = [];
+
     public function execute($queue): void
     {
         new \CraftCms\Cms\Element\Jobs\ResaveElements(
-            $this->elementType,
-            $this->criteria,
-            $this->updateSearchIndex,
-            $this->set,
-            $this->to,
-            $this->ifEmpty,
-            $this->ifInvalid,
-            $this->touch,
-            $this->batchSize,
-            $this->description,
+            elementType: $this->elementType,
+            criteria: $this->criteria,
+            updateSearchIndex: $this->updateSearchIndex,
+            withFields: $this->withFields,
+            set: $this->set,
+            to: $this->to,
+            toDefault: $this->toDefault,
+            ifEmpty: $this->ifEmpty,
+            ifInvalid: $this->ifInvalid,
+            touch: $this->touch,
+            batchSize: $this->batchSize,
+            description: $this->description,
         );
     }
 

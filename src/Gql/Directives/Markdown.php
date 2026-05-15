@@ -14,9 +14,9 @@ use GraphQL\Type\Definition\Type;
 
 class Markdown extends Directive
 {
-    public const DEFAULT_FLAVOR = null;
+    public const null DEFAULT_FLAVOR = null;
 
-    public const DEFAULT_INLINE_ONLY = false;
+    public const false DEFAULT_INLINE_ONLY = false;
 
     public static function create(): GqlDirective
     {

@@ -28,9 +28,9 @@ readonly class Cms
 {
     public const string NAME = 'Craft CMS';
 
-    public const string VERSION = '6.0.0-alpha.1';
+    public const string VERSION = '6.0.0-alpha.2';
 
-    public const string SCHEMA_VERSION = '6.0.0.0';
+    public const string SCHEMA_VERSION = '6.0.0.2';
 
     public const string MIN_VERSION_REQUIRED = '5.9.0';
 
@@ -61,9 +61,21 @@ readonly class Cms
 
     public static function timezone(): string
     {
-        $timezone = Cms::config()->timezone
-            ?? ProjectConfig::get('system.timeZone')
-            ?? config('app.timezone', 'UTC');
+        $timezone = null;
+
+        // If the user is logged in *and* has a preferred time zone, use that
+        // (don't actually try to fetch the user, as plugins haven't been loaded yet)
+        if (request()->isCpRequest() && Auth::hasUser() && $id = Auth::id()) {
+            $timezone = Users::getUserPreference($id, 'timeZone');
+        }
+
+        if (! $timezone) {
+            $timezone = Cms::config()->timezone ?? ProjectConfig::get('system.timeZone');
+        }
+
+        if (! $timezone) {
+            $timezone = config('app.timezone', 'UTC');
+        }
 
         $timezone = Env::parse($timezone);
 

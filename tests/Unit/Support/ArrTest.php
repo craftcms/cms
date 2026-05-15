@@ -115,6 +115,22 @@ test('get', function (string $expected, array $array, string $key) {
     ['foo-bar.baz.qux', ['foo-bar' => ['baz' => ['qux' => 'foo-bar.baz.qux']]], 'foo-bar[baz][qux]'],
 ]);
 
+test('get preserves non string key behavior', function (mixed $expected, mixed $key, mixed $default = null) {
+    $array = [
+        'foo' => 'bar',
+        0 => 'zero',
+        1 => [
+            'nested' => 'value',
+        ],
+    ];
+
+    expect(Arr::get($array, $key, $default))->toBe($expected);
+})->with([
+    'null key' => [['foo' => 'bar', 0 => 'zero', 1 => ['nested' => 'value']], null],
+    'integer key' => ['zero', 0],
+    'missing integer key' => ['fallback', 2, 'fallback'],
+]);
+
 test('isOrdered', function (bool $expected, array $array) {
     expect(Arr::isOrdered($array))->toBe($expected);
 })->with([
