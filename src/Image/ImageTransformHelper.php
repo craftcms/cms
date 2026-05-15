@@ -19,7 +19,6 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\Log;
@@ -99,8 +98,6 @@ class ImageTransformHelper
             // Don't change the same transform
             $transform = clone $transform;
 
-            $attributes = Utils::getPublicAttributes($transform);
-
             $nullables = [
                 'id',
                 'name',
@@ -110,7 +107,7 @@ class ImageTransformHelper
             ];
 
             foreach ($parameters as $name => $value) {
-                if (in_array($name, $attributes, true)) {
+                if ($transform->canSetProperty($name)) {
                     $transform->$name = $value;
                 } else {
                     $transform->settings[$name] = $value;

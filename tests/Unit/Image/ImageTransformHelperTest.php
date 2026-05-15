@@ -426,6 +426,21 @@ describe('extendTransform', function () {
             ->and($extended->settings)->toBe(['blur' => 12]);
     });
 
+    test('preserves transformer overrides as transform properties', function () {
+        $original = new ImageTransform([
+            'width' => 800,
+            'transformer' => 'base',
+        ]);
+
+        $extended = ImageTransformHelper::extendTransform($original, [
+            'transformer' => 'custom',
+            'blur' => 12,
+        ]);
+
+        expect($extended->getTransformer())->toBe('custom')
+            ->and($extended->settings)->toBe(['blur' => 12]);
+    });
+
     test('matches legacy extendTransform provider cases', function (ImageTransform $transform, array $parameters, array $expected) {
         $extended = ImageTransformHelper::extendTransform($transform, $parameters);
 
