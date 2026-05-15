@@ -137,6 +137,7 @@ class RouteServiceProvider extends ServiceProvider
     {
         PreventRequestsDuringMaintenance::except([
             action([UpdaterController::class, 'precheck']),
+            action([UpdaterController::class, 'composerInstall']),
             action([UpdaterController::class, 'finish']),
             action([UpdaterController::class, 'backup']),
             action([UpdaterController::class, 'serverCheck']),

@@ -1,15 +1,18 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-alpha.3 - 2026-05-15
 
 - Added the `compiledTemplatesPath` config setting. ([#18861](https://github.com/craftcms/cms/pull/18861))
 - Added a missing migration that adds `minAuthors` to the section table ([#18875](https://github.com/craftcms/cms/pull/18875))
 - Fixed a bug where the `cpTrigger` would be appended twice to the URL after running migrations from the control panel. ([#18858](https://github.com/craftcms/cms/pull/18858))
+- Fixed an error that occurred when rendering element indexes with blank source headings. ([#18891](https://github.com/craftcms/cms/pull/18891))
 - Fixed an error that occurred when uninstalling plugins. ([#18862](https://github.com/craftcms/cms/pull/18862))
 - Fixed an error that could occur when Control Panel HTML values were passed as `Stringable` objects. ([#18883](https://github.com/craftcms/cms/pull/18883))
+- Fixed a bug where plugin package config files could affect plugin settings before being published. ([#18885](https://github.com/craftcms/cms/pull/18885))
 - Fixed a bug where the control panel would continuously poll for queue job info, even if there were no active jobs. ([#18853](https://github.com/craftcms/cms/issues/18853))
 - Fixed a bug where legacy redirect responses were not being handled. ([#18860](https://github.com/craftcms/cms/pull/18860))
 - Fixed a bug where email addresses couldn’t be saved when applying unpublished user drafts. ([#18882](https://github.com/craftcms/cms/pull/18882))
+- Fixed a bug where the Updates utility wasn’t showing available updates. ([#18884](https://github.com/craftcms/cms/pull/18884))
 
 ## 6.0.0-alpha.2 - 2026-05-13
 
