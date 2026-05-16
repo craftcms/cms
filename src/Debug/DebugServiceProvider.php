@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Debug;
 
+use CraftCms\Cms\Debug\Deprecation\DeprecationCollectorProvider;
 use CraftCms\Cms\Debug\Element\ElementCollectorProvider;
 use Fruitcake\LaravelDebugbar\CollectorProviders\AbstractCollectorProvider;
 use Fruitcake\LaravelDebugbar\LaravelDebugbar;
@@ -21,15 +22,16 @@ class DebugServiceProvider extends ServiceProvider
             return;
         }
 
-        $this->app->afterResolving('debugbar', fn () => $this->registerElementCollectorProvider());
+        $this->app->afterResolving('debugbar', fn () => $this->registerCollectorProviders());
 
         if ($this->app->resolved('debugbar')) {
-            $this->registerElementCollectorProvider();
+            $this->registerCollectorProviders();
         }
     }
 
-    private function registerElementCollectorProvider(): void
+    private function registerCollectorProviders(): void
     {
+        $this->app->call(DeprecationCollectorProvider::class);
         $this->app->call(ElementCollectorProvider::class);
     }
 }
