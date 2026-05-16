@@ -136,7 +136,6 @@
                     {% else %}
                         {% set widthAttributes = '' %}
                     {% endif %}
-                    {% dump widthAttributes %}
                     {% if col.type == 'heading' %}
                         <th scope="row" class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}"{{ widthAttributes|raw }}>{{ value|raw }}</th>
                     {% elseif col.type == 'html' %}
