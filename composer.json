@@ -77,6 +77,7 @@
     "yiisoft/translator-message-php": "^1.1"
   },
   "require-dev": {
+    "barryvdh/laravel-debugbar": "^4.2",
     "dg/bypass-finals": "^1.9",
     "driftingly/rector-laravel": "^2.1",
     "fakerphp/faker": "^1.19.0",
