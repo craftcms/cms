@@ -276,15 +276,15 @@
   --c-color-success-on-loud: var(--color-emerald-50);
 
   /* Semantics colors - warning */
-  --c-color-warning-fill-quiet: var(--color-orange-50);
-  --c-color-warning-fill-normal: var(--color-orange-100);
-  --c-color-warning-fill-loud: var(--color-orange-600);
-  --c-color-warning-border-quiet: var(--color-orange-400);
-  --c-color-warning-border-normal: var(--color-orange-600);
-  --c-color-warning-border-loud: var(--color-orange-800);
-  --c-color-warning-on-quiet: var(--color-orange-800);
-  --c-color-warning-on-normal: var(--color-orange-950);
-  --c-color-warning-on-loud: var(--color-orange-50);
+  --c-color-warning-fill-quiet: var(--color-yellow-50);
+  --c-color-warning-fill-normal: var(--color-yellow-100);
+  --c-color-warning-fill-loud: var(--color-yellow-600);
+  --c-color-warning-border-quiet: var(--color-yellow-400);
+  --c-color-warning-border-normal: var(--color-yellow-600);
+  --c-color-warning-border-loud: var(--color-yellow-800);
+  --c-color-warning-on-quiet: var(--color-yellow-800);
+  --c-color-warning-on-normal: var(--color-yellow-950);
+  --c-color-warning-on-loud: var(--color-yellow-50);
 
   /* Semantics colors - danger */
   --c-color-danger-fill-quiet: var(--color-red-50);

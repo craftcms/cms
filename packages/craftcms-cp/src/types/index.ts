@@ -1,5 +1,5 @@
 export const Variant = {
-  Default: 'default',
+  Neutral: 'neutral',
   Success: 'success',
   Warning: 'warning',
   Danger: 'danger',
@@ -9,11 +9,23 @@ export const Variant = {
 export type VariantKey = (typeof Variant)[keyof typeof Variant];
 
 export const Appearance = {
-  Accent: 'accent',
+  Solid: 'solid',
   OutlineFill: 'outline-fill',
   Fill: 'fill',
   Outline: 'outline',
   Plain: 'plain',
+} as const;
+
+export const ButtonAppearance = {
+  Solid: 'solid',
+  Outline: 'outline',
+  Plain: 'plain',
+} as const;
+
+export const ButtonVariant = {
+  Accent: 'accent',
+  Neutral: 'neutral',
+  Danger: 'danger',
 } as const;
 
 export type AppearanceKey = (typeof Appearance)[keyof typeof Appearance];

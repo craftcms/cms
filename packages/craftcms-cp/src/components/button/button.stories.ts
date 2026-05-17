@@ -7,7 +7,7 @@ import '../icon/icon.js';
 import '../chip/chip.js';
 
 const buttonVariants = ['accent', 'neutral', 'danger'];
-const appearance = ['filled', 'outline', 'plain'];
+const appearance = ['solid', 'outline', 'plain'];
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {
@@ -18,7 +18,7 @@ const meta = {
   },
   args: {
     label: 'Button',
-    appearance: 'filled',
+    appearance: 'solid',
     loading: false,
     variant: 'neutral',
   },
@@ -37,7 +37,7 @@ const meta = {
         (variant) => html`
           <div class="flex gap-2">
             <craft-button variant="${variant}"
-              >${variant ?? 'None'} filled</craft-button
+              >${variant ?? 'None'} solid</craft-button
             >
             <craft-button appearance="outline" variant="${variant}"
               >${variant} outline</craft-button

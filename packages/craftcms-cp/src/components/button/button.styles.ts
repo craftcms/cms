@@ -137,8 +137,8 @@ export default css`
     border-color: transparent;
   }
 
-  /* Filled */
-  :host([appearance~='filled']) {
+  /* Solid */
+  :host([appearance~='solid']) {
     background-color: var(
       --c-color-fill-loud,
       var(--c-color-neutral-fill-loud)
@@ -147,7 +147,7 @@ export default css`
     color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
   }
 
-  :host([appearance~='filled']:hover) {
+  :host([appearance~='solid']:hover) {
     background-color: hsl(
       from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
         calc(l - 5)
@@ -155,7 +155,7 @@ export default css`
     color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
   }
 
-  :host([appearance~='filled']:active) {
+  :host([appearance~='solid']:active) {
     --_active-background-color: hsl(
       from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
         calc(l - 10)

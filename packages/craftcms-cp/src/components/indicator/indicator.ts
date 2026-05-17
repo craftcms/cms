@@ -26,7 +26,7 @@ export default class CraftIndicator extends LitElement {
   ];
 
   @property({reflect: true})
-  variant: VariantKey | 'empty' = Variant.Default;
+  variant: VariantKey | 'empty' = Variant.Neutral;
 
   @property()
   label: string | null = null;

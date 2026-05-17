@@ -39,7 +39,7 @@ const semanticColors = {
   accent: 'blue',
   info: 'blue',
   success: 'emerald',
-  warning: 'orange',
+  warning: 'yellow',
   danger: 'red',
 };
 

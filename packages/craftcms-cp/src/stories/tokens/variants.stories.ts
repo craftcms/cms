@@ -6,13 +6,13 @@ import '../../components/callout/callout.js';
 import '../../components/button/button.js';
 import '../../components/indicator/indicator.js';
 
-import {Appearance, Variant} from '@src/types';
+import {Appearance, Variant, ButtonAppearance, ButtonVariant} from '@src/types';
 
 const variants = Object.values(Variant);
 const appearances = Object.values(Appearance);
 
-const buttonVariants = ['accent', 'neutral', 'danger'] as const;
-const buttonAppearances = ['filled', 'outline', 'plain'] as const;
+const buttonVariants = Object.values(ButtonVariant);
+const buttonAppearances = Object.values(ButtonAppearance);
 
 const meta: Meta = {
   title: 'Tokens/Variants & Appearances',
@@ -66,7 +66,7 @@ export const CalloutMatrix: Story = {
 
 /**
  * Buttons use their own variant subset (accent, neutral, danger)
- * and appearance subset (filled, outline, plain).
+ * and appearance subset (solid, outline, plain).
  */
 export const ButtonMatrix: Story = {
   name: 'Button Matrix',
@@ -89,9 +89,7 @@ export const ButtonMatrix: Story = {
                     <td>
                       <craft-button
                         variant="${variant}"
-                        appearance="${appearance === 'accent'
-                          ? nothing
-                          : appearance}"
+                        appearance="${appearance}"
                       >
                         ${variant}
                       </craft-button>

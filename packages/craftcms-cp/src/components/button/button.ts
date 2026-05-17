@@ -50,8 +50,8 @@ export default class CraftButton extends LionButtonSubmit {
   @property() accessibleName: string;
 
   /** Visual appearance of the button */
-  @property({reflect: true}) appearance: 'filled' | 'outline' | 'plain' =
-    'filled';
+  @property({reflect: true}) appearance: 'solid' | 'outline' | 'plain' =
+    'solid';
 
   /**
    * Theme variant of the button. Defaults to "neutral"
