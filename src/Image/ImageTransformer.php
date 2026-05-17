@@ -498,23 +498,20 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
 
     public function storeTransformIndexData(ImageTransformIndex $index): void
     {
-        $values = $index->toArray([
-            'assetId',
-            'transformer',
-            'filename',
-            'format',
-            'transformString',
-            'volumeId',
-            'fileExists',
-            'inProgress',
-            'error',
-            'dateIndexed',
-        ], [], false);
-
-        // Normalize DateTime payloads for MySQL/MariaDB DATETIME columns.
-        if (array_key_exists('dateIndexed', $values)) {
-            $values['dateIndexed'] = Query::prepareDateForDb($values['dateIndexed']);
-        }
+        $values = Query::prepareValuesForDb(
+            $index->toArray([
+                'assetId',
+                'transformer',
+                'filename',
+                'format',
+                'transformString',
+                'volumeId',
+                'fileExists',
+                'inProgress',
+                'error',
+                'dateIndexed',
+            ], [], false)
+        );
 
         $now = now();
 
