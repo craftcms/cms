@@ -5,9 +5,10 @@ import {html} from 'lit';
 import './button.js';
 import '../icon/icon.js';
 import '../chip/chip.js';
+import {ButtonAppearance, ButtonVariant} from '@src/types';
 
-const buttonVariants = ['accent', 'neutral', 'danger'];
-const appearance = ['solid', 'outline', 'plain'];
+const buttonVariants = Object.values(ButtonVariant);
+const appearance = Object.values(ButtonAppearance);
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {

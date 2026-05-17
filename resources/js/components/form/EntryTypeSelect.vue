@@ -101,7 +101,7 @@
       <craft-button
         type="button"
         slot="invoker"
-        appearance="filled"
+        appearance="solid"
         v-if="!readOnly"
       >
         <craft-icon name="chevron-down" slot="prefix"></craft-icon>
