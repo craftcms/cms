@@ -25,6 +25,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use DateTimeInterface;
@@ -509,6 +510,11 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
             'error',
             'dateIndexed',
         ], [], false);
+
+        // Normalize DateTime payloads for MySQL/MariaDB DATETIME columns.
+        if (array_key_exists('dateIndexed', $values)) {
+            $values['dateIndexed'] = Query::prepareDateForDb($values['dateIndexed']);
+        }
 
         $now = now();
 
