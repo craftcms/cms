@@ -4,6 +4,7 @@
 
 - Removed a stray dump statement ([#18902](https://github.com/craftcms/cms/issues/18902))
 - Fixed a bug where legacy redirect responses were not being returned as a redirect ([#18893](https://github.com/craftcms/cms/pull/18893))
+- Fixed a bug where plugin routes were not being registered with the `web` middleware.
 
 ## 6.0.0-alpha.3 - 2026-05-15
 
