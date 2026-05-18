@@ -36,6 +36,24 @@ test('EncodeSpaces', function (string $expected, string $str) {
     ['foo%20%20bar', 'foo  bar'],
 ]);
 
+test('Ul', function () {
+    expect(Html::ul(['One', 'Two'], ['class' => 'errors']))->toBe(<<<'HTML'
+<ul class="errors">
+<li>One</li>
+<li>Two</li>
+</ul>
+HTML);
+});
+
+test('Ol', function () {
+    expect(Html::ol(['One', 'Two'], ['class' => 'steps']))->toBe(<<<'HTML'
+<ol class="steps">
+<li>One</li>
+<li>Two</li>
+</ol>
+HTML);
+});
+
 test('DisableInputs', function (?string $expected, callable|string|null $html) {
     $this->assertSame($expected, Html::disableInputs($html));
 })->with([

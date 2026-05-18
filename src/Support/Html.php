@@ -314,6 +314,20 @@ class Html
         return self::tag('a', $text, $options);
     }
 
+    public static function ul(array $items = [], array $attributes = [], bool $encode = true): string
+    {
+        return YiiHtml::ul(self::normalizeTagAttributes($attributes))
+            ->strings(array_map(strval(...), $items), encode: $encode)
+            ->render();
+    }
+
+    public static function ol(array $items = [], array $attributes = [], bool $encode = true): string
+    {
+        return YiiHtml::ol(self::normalizeTagAttributes($attributes))
+            ->strings(array_map(strval(...), $items), encode: $encode)
+            ->render();
+    }
+
     /**
      * Appends HTML to the end of the given tag.
      *
