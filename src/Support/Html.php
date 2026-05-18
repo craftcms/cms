@@ -28,6 +28,8 @@ use Yiisoft\Html\Html as YiiHtml;
 use Yiisoft\Html\NoEncode;
 use Yiisoft\Html\Tag\Button;
 use Yiisoft\Html\Tag\Input;
+use Yiisoft\Html\Tag\Ol;
+use Yiisoft\Html\Tag\Ul;
 
 use function CraftCms\Cms\template;
 
@@ -314,18 +316,16 @@ class Html
         return self::tag('a', $text, $options);
     }
 
-    public static function ul(array $items = [], array $attributes = [], bool $encode = true): string
+    public static function ul(array $items = [], array $attributes = [], bool $encode = true): Ul
     {
         return YiiHtml::ul(self::normalizeTagAttributes($attributes))
-            ->strings(array_map(strval(...), $items), encode: $encode)
-            ->render();
+            ->strings(array_map(strval(...), $items), encode: $encode);
     }
 
-    public static function ol(array $items = [], array $attributes = [], bool $encode = true): string
+    public static function ol(array $items = [], array $attributes = [], bool $encode = true): Ol
     {
         return YiiHtml::ol(self::normalizeTagAttributes($attributes))
-            ->strings(array_map(strval(...), $items), encode: $encode)
-            ->render();
+            ->strings(array_map(strval(...), $items), encode: $encode);
     }
 
     /**
