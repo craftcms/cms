@@ -68,7 +68,7 @@ it('validates invalid request payloads', function (array $payload, array $errors
     ], ['showSiteMenu']],
     'invalid sources type' => [[
         'elementType' => Entry::class,
-        'sources' => 'not-an-array',
+        'sources' => 123,
     ], ['sources']],
     'invalid source item type' => [[
         'elementType' => Entry::class,
@@ -113,6 +113,15 @@ it('renders modal HTML with the expected config', function () {
             'sources' => ['*', 'singles'],
         ])
         ->and(array_keys($this->elementIndexHtmlState->config['statuses']))->toBe(array_keys(Entry::statuses()));
+});
+
+it('accepts string sources', function () {
+    postJson(action(ElementSelectorModalController::class), [
+        'elementType' => Entry::class,
+        'sources' => '[]',
+    ])->assertOk();
+
+    expect($this->elementIndexHtmlState->config['sources'])->toBe('[]');
 });
 
 it('passes the provided context through to the element index html', function () {
