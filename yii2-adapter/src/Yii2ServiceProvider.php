@@ -6,6 +6,7 @@ use Craft;
 use craft\events\ExceptionEvent;
 use craft\web\Application as WebApplication;
 use craft\web\ErrorHandler;
+use craft\web\twig\variables\CraftVariable as LegacyCraftVariable;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Table;
@@ -210,6 +211,7 @@ class Yii2ServiceProvider extends ServiceProvider
         new RebrandCompatibility()->boot();
 
         CraftVariable::mixin(new CraftVariableMixin());
+        $this->registerCraftVariableCompatibility();
 
         /**
          * Keep legacy CustomFieldBehavior statics in sync when field caches are invalidated.
@@ -243,6 +245,17 @@ class Yii2ServiceProvider extends ServiceProvider
         Craft::$app->state = YiiApplication::STATE_AFTER_REQUEST;
         Craft::$app->trigger(YiiApplication::EVENT_AFTER_REQUEST);
         Craft::$app->state = YiiApplication::STATE_END;
+    }
+
+    private function registerCraftVariableCompatibility(): void
+    {
+        $this->app->afterResolving(CraftVariable::class, function() {
+            $legacyVariable = new LegacyCraftVariable();
+
+            foreach (array_keys($legacyVariable->getComponents()) as $name) {
+                CraftVariable::macro($name, fn() => $legacyVariable->get($name));
+            }
+        });
     }
 
     /**
