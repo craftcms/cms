@@ -244,6 +244,8 @@ class Craft extends Yii2
 
     public function _after(TestInterface $test): void
     {
+        parent::_after($test);
+
         app()->forgetInstance(\CraftCms\Cms\Element\Elements::class);
         app()->forgetInstance(EntryTypes::class);
         app()->forgetInstance(Sections::class);
@@ -260,11 +262,6 @@ class Craft extends Yii2
         \CraftCms\Cms\Support\Facades\Assets::clearResolvedInstances();
         \CraftCms\Cms\Support\Facades\Folders::clearResolvedInstances();
         \CraftCms\Cms\Support\Facades\ImageTransforms::clearResolvedInstances();
-
-        \Craft::$app->getDb()->close();
-        \Craft::$app->getDb2()->close();
-
-        parent::_after($test);
 
         DB::disconnect();
         DB::disconnect('db2');
