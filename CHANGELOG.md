@@ -4,6 +4,7 @@
 
 - Removed a stray dump statement ([#18902](https://github.com/craftcms/cms/issues/18902))
 - Fixed a bug where legacy redirect responses were not being returned as a redirect ([#18893](https://github.com/craftcms/cms/pull/18893))
+- Fixed an error that could occur when saving filesystems with null transient settings. ([#18909](https://github.com/craftcms/cms/pull/18909))
 
 ## 6.0.0-alpha.3 - 2026-05-15
 
