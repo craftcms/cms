@@ -4,6 +4,8 @@
 
 - Removed a stray dump statement ([#18902](https://github.com/craftcms/cms/issues/18902))
 - Fixed a bug where legacy redirect responses were not being returned as a redirect ([#18893](https://github.com/craftcms/cms/pull/18893))
+- Fixed a bug where a legacy Yii action controller would result in a 404 when returning `null` as the response ([#18907](https://github.com/craftcms/cms/pull/18907))
+- Fixed an error that could occur because `ol` and `ul` were not normalizing the attributes ([#18907](https://github.com/craftcms/cms/pull/18907))
 
 ## 6.0.0-alpha.3 - 2026-05-15
 
