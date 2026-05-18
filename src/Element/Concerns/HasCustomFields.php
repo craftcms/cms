@@ -305,7 +305,7 @@ trait HasCustomFields
 
     private function hasFieldValueFromRequest(FieldInterface $field, array $values): bool
     {
-        if (isset($values[$field->handle])) {
+        if (array_key_exists((string) $field->handle, $values)) {
             return true;
         }
 
