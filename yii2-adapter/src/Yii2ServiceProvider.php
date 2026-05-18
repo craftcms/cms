@@ -136,7 +136,9 @@ class Yii2ServiceProvider extends ServiceProvider
         $handler->renderable(function(Throwable $exception) {
             $this->triggerLegacyBeforeHandleException($exception);
 
-            if (Craft::$app?->getResponse()->isSent) {
+            $response = Craft::$app?->getResponse();
+
+            if ($response?->isSent || $response?->getIsRedirection()) {
                 return LegacyMiddleware::createResponse();
             }
 
