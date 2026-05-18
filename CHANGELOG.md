@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where plugin-registered Twig variables weren’t available via the `craft` template variable. ([#18903](https://github.com/craftcms/cms/pull/18903))
 - Removed a stray dump statement ([#18902](https://github.com/craftcms/cms/issues/18902))
 
 ## 6.0.0-alpha.3 - 2026-05-15
