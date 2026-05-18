@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Removed a stray dump statement ([#18902](https://github.com/craftcms/cms/issues/18902))
+- Fixed an error that occurred when opening element selector modals with string `sources` values. ([#18915](https://github.com/craftcms/cms/pull/18915))
 - Fixed a bug where legacy redirect responses were not being returned as a redirect ([#18893](https://github.com/craftcms/cms/pull/18893))
 
 ## 6.0.0-alpha.3 - 2026-05-15
