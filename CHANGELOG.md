@@ -15,6 +15,7 @@
 - Fixed a bug where legacy redirect responses were not being handled. ([#18860](https://github.com/craftcms/cms/pull/18860))
 - Fixed a bug where email addresses couldn’t be saved when applying unpublished user drafts. ([#18882](https://github.com/craftcms/cms/pull/18882))
 - Fixed a bug where the Updates utility wasn’t showing available updates. ([#18884](https://github.com/craftcms/cms/pull/18884))
+- Removed a stray dump statement ([#18902](https://github.com/craftcms/cms/issues/18902))
 
 ## 6.0.0-alpha.2 - 2026-05-13
 
