@@ -37,7 +37,7 @@ test('EncodeSpaces', function (string $expected, string $str) {
 ]);
 
 test('Ul', function () {
-    expect(Html::ul(['One', 'Two'], ['class' => 'errors']))->toBe(<<<'HTML'
+    expect((string) Html::ul(['One', 'Two'], ['class' => 'errors']))->toBe(<<<'HTML'
 <ul class="errors">
 <li>One</li>
 <li>Two</li>
@@ -46,7 +46,7 @@ HTML);
 });
 
 test('Ol', function () {
-    expect(Html::ol(['One', 'Two'], ['class' => 'steps']))->toBe(<<<'HTML'
+    expect((string) Html::ol(['One', 'Two'], ['class' => 'steps']))->toBe(<<<'HTML'
 <ol class="steps">
 <li>One</li>
 <li>Two</li>
