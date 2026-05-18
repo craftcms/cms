@@ -128,7 +128,7 @@ it('stores dateIndexed as a DB-compatible UTC datetime string', function () {
         'transformer' => ImageTransformer::class,
         'filename' => 'transform-test.jpg',
         'transformString' => '_30x20_crop_center-center_none',
-        'dateIndexed' => new \DateTime('2026-05-17 15:32:16', new \DateTimeZone('Europe/Vienna')),
+        'dateIndexed' => new DateTime('2026-05-17 15:32:16', new DateTimeZone('Europe/Vienna')),
     ]);
 
     $this->transformer->storeTransformIndexData($index);
