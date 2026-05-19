@@ -149,7 +149,7 @@ it('can get mismatched license issues for craft', function () {
     expect($this->license->issues())->toBe([
         [
             'Craft',
-            'The Craft CMS license located at config/license.key belongs to <a href="http://craftcms.com" rel="noopener" target="_blank">craftcms.com</a>. <a class="go" href="https://craftcms.com/support/resolving-mismatched-licenses">Learn more</a>',
+            'The Craft CMS license located at config/license.key belongs to <a rel="noopener" target="_blank" href="http://craftcms.com">craftcms.com</a>. <a class="go" href="https://craftcms.com/support/resolving-mismatched-licenses">Learn more</a>',
             null,
         ],
     ]);
