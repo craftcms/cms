@@ -185,6 +185,19 @@ it('saves, updates, fetches, generates, and deletes tokens', function () {
         ->and($token?->schemaId)->toBe($updatedSchema->id)
         ->and($token?->expiryDate?->getTimestamp())->toBe(DateTimeHelper::toDateTime('2026-12-31 15:30')?->getTimestamp());
 
+    postJson(cp_url('actions/graphql/save-token'), [
+        'tokenId' => $token->id,
+        'name' => 'Updated API Token',
+        'accessToken' => 'api-token-2',
+        'enabled' => false,
+        'schema' => $updatedSchema->id,
+        'expiryDate' => '',
+    ])->assertOk();
+
+    $token = Gql::getTokenById($token->id);
+
+    expect($token?->expiryDate)->toBeNull();
+
     postJson(cp_url('actions/graphql/fetch-token'), [
         'tokenUid' => $token->uid,
     ])->assertOk()
