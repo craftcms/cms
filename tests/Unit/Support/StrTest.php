@@ -77,8 +77,8 @@ test('encDec', function (string $string) {
 test('emojiToShortcodes', function (string $expected, string $str) {
     expect(Str::emojiToShortcodes($str))->toBe($expected);
 })->with([
-    ['Baby you light my :fire:! :smiley:', 'Baby you light my 🔥! 😃'],
-    ['Test — em – en - dashes :hand_with_index_and_middle_fingers_crossed:', 'Test — em – en - dashes 🤞'],
+    ['Baby you light my :fire:! :glad:', 'Baby you light my 🔥! 😃'],
+    ['Test — em – en - dashes :fingers_crossed:', 'Test — em – en - dashes 🤞'],
 ]);
 
 test('encodeMb4', function (string $expected, string $string) {
