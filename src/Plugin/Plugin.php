@@ -22,6 +22,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
     use Concerns\HasListeners;
     use Concerns\HasPermissions;
     use Concerns\HasRoutes;
+    use Concerns\HasScheduling;
     use Concerns\HasSettings;
     use Concerns\HasTranslations;
     use Concerns\HasUtilities;
