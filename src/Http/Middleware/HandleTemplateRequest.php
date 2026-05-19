@@ -10,7 +10,9 @@ use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Route\DynamicRoute;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Twig\TemplateResolver;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
+use Illuminate\View\Factory as ViewFactory;
 use Symfony\Component\HttpFoundation\Response;
 
 readonly class HandleTemplateRequest
@@ -18,10 +20,18 @@ readonly class HandleTemplateRequest
     public function __construct(
         private TemplateResolver $templateResolver,
         private Sites $sites,
+        private ViewFactory $views,
     ) {}
 
     public function handle(Request $request, Closure $next): mixed
     {
+        if ($request->isCpRequest()) {
+            TemplateMode::set(TemplateMode::Cp);
+
+            $this->prependViewLocation(dirname(__DIR__, 3).'/resources/templates');
+            $this->prependViewLocation(dirname(__DIR__, 3).'/resources/views');
+        }
+
         $response = $next($request);
 
         if ($request->isSiteRequest() && Cms::config()->headlessMode) {
@@ -57,6 +67,15 @@ readonly class HandleTemplateRequest
         }
 
         return new DynamicRoute('templates/render', ['template' => $path])->handle($request);
+    }
+
+    private function prependViewLocation(string $path): void
+    {
+        if (in_array($path, $this->views->getFinder()->getPaths(), true)) {
+            return;
+        }
+
+        $this->views->prependLocation($path);
     }
 
     private function isPublicTemplatePath(Request $request, string $path): bool

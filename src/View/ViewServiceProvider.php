@@ -52,19 +52,6 @@ class ViewServiceProvider extends ServiceProvider
         $hooks->register('cp.layouts.elementindex', PrepareElementIndexVariables::class);
         $hooks->register('cp.elements.toolbar', PrepareElementToolbarVariables::class);
         $hooks->register('cp.elements.sources', PrepareElementSourcesVariables::class);
-
-        $this->app->booted(function () {
-            /**
-             * This ensures that when Laravel tries to find an error view,
-             * it will look in the CP templates for it as well.
-             */
-            if (request()->isCpRequest()) {
-                config()->set('view.paths', array_merge(
-                    config('view.paths'),
-                    [dirname(__DIR__, 2).'/resources/templates']
-                ));
-            }
-        });
     }
 
     private function registerTemplateGlobals(): void
@@ -81,16 +68,6 @@ class ViewServiceProvider extends ServiceProvider
         $this->app->booted(function () {
             /** @var Factory $factory */
             $factory = $this->app->make(ViewFactory::class);
-
-            /**
-             * Prepend the Craft CMS Control panel views when
-             * we're in CP Template mode. This makes view()
-             * work without a 'craftcms::' prefix.
-             */
-            if (TemplateMode::is(TemplateMode::Cp)) {
-                $factory->prependLocation("{$this->root}/resources/templates");
-                $factory->prependLocation("{$this->root}/resources/views");
-            }
 
             foreach (TemplateMode::get()->templateRoots() as $namespace => $roots) {
                 $factory->addNamespace($namespace, $roots);
