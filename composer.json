@@ -61,8 +61,6 @@
     "symfony/dom-crawler": "^7.0|^8.0",
     "symfony/filesystem": "^7.0|^8.0",
     "symfony/html-sanitizer": "^7.0|^8.0",
-    "symfony/property-access": "^7.0|^8.0",
-    "symfony/property-info": "^7.0|^8.0",
     "symfony/serializer": "^6.4|^7.0|^8.0",
     "symfony/yaml": "^7.0|^8.0",
     "theiconic/name-parser": "^1.2",
