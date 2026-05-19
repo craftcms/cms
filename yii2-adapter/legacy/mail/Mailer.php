@@ -179,12 +179,7 @@ class Mailer extends \yii\symfonymailer\Mailer
 
                 $message->language = $rendered->language;
                 $message->setSubject($rendered->subject);
-                $textView = resource_path('views/mail/system-message-text.blade.php');
-                if (!file_exists($textView)) {
-                    throw new InvalidConfigException("The `$textView` view file does not exist.");
-                }
-
-                $message->setTextBody(view()->file($textView, $formatted->viewData)->render());
+                $message->setTextBody(view('mail.system-message-text', $formatted->viewData)->render()); // @phpstan-ignore argument.type
                 $message->setHtmlBody($formatted->htmlBody);
             }
 
