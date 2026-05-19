@@ -17,6 +17,7 @@ use CraftCms\Cms\View\TemplateHooks;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
 use Illuminate\View\Factory as ViewFactory;
+use Illuminate\View\FileViewFinder;
 use Symfony\Component\HttpFoundation\Response;
 
 readonly class HandleTemplateRequest
@@ -76,7 +77,9 @@ readonly class HandleTemplateRequest
 
     private function prependViewLocation(string $path): void
     {
-        if (in_array($path, $this->views->getFinder()->getPaths(), true)) {
+        $finder = $this->views->getFinder();
+
+        if ($finder instanceof FileViewFinder && in_array($path, $finder->getPaths(), true)) {
             return;
         }
 
