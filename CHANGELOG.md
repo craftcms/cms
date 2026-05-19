@@ -1,5 +1,25 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Updated `yiisoft/html` to 4.1.0. ([#18920](https://github.com/craftcms/cms/pull/18920))
+- Updated `elvanto/litemoji` to 5.2.0. ([#18917](https://github.com/craftcms/cms/pull/18917))
+- Updated `pragmarx/google2fa` to 9.0.0. ([#18919](https://github.com/craftcms/cms/pull/18919))
+- Removed a stray dump statement ([#18902](https://github.com/craftcms/cms/issues/18902))
+- Fixed an error that occurred when opening element selector modals with string `sources` values. ([#18915](https://github.com/craftcms/cms/pull/18915))
+- Added “Elements” and “Deprecations” panels to Laravel Debugbar. ([#18897](https://github.com/craftcms/cms/pull/18897)
+- Fixed a bug where legacy redirect responses were not being returned as a redirect ([#18893](https://github.com/craftcms/cms/pull/18893))
+- Fixed an error that could occur when saving filesystems with null transient settings. ([#18909](https://github.com/craftcms/cms/pull/18909))
+- Fixed a bug where plugin routes were not being registered with the `web` middleware.
+- Fixed an error that could occur when storing image transform indexes. ([#18899](https://github.com/craftcms/cms/pull/18899))
+- Fixed an error when `loginPath` or `logoutPath` was set to `false` in `GeneralConfig`. ([#18894](https://github.com/craftcms/cms/issue/18894))
+- Fixed a bug where plugin-registered Twig variables weren’t available via the `craft` template variable. ([#18903](https://github.com/craftcms/cms/pull/18903))
+- Fixed an error that occurred when using the legacy cache service with a new dependency object ([#18904](https://github.com/craftcms/cms/pull/18904))
+- Fixed a bug where clearing submitted values could retain the previous value. ([#18905](https://github.com/craftcms/cms/issues/18905))
+- Fixed a bug where a legacy Yii action controller would result in a 404 when returning `null` as the response ([#18907](https://github.com/craftcms/cms/pull/18907))
+- Fixed an error that could occur because `ol` and `ul` were not normalizing the attributes ([#18907](https://github.com/craftcms/cms/pull/18907))
+- Fixed an error that occurred when trying to upload an asset through a legacy filesystem plugin ([#18908](https://github.com/craftcms/cms/pull/18908))
+
 ## 6.0.0-alpha.3 - 2026-05-15
 
 - Added the `compiledTemplatesPath` config setting. ([#18861](https://github.com/craftcms/cms/pull/18861))

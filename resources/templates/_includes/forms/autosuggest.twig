@@ -3,8 +3,8 @@
 {% do registerLegacyAsset("CraftCms\\Cms\\View\\LegacyAssets\\VueAsset") %}
 
 {% set suggestions = (suggestions ?? [])
-    |merge((suggestTemplates ?? false) ? craft.cp.getTemplateSuggestions() : [])
-    |merge((suggestEnvVars ?? false) ? craft.cp.getEnvSuggestions(
+    |merge((suggestTemplates ?? false) ? cpTemplateSuggestions() : [])
+    |merge((suggestEnvVars ?? false) ? cpEnvSuggestions(
         suggestAliases ?? false,
         suggestionFilter ?? null
     ) : []) %}

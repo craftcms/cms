@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\User\Elements\User;
@@ -152,6 +153,24 @@ test('save creates filesystem with valid data', function () {
     expect($fs->name)->toBe('New Test Filesystem');
 });
 
+test('save ignores null transient filesystem settings', function () {
+    $response = postJson(action([FilesystemsController::class, 'save']), [
+        'type' => TransientSettingsFilesystem::class,
+        'name' => 'Transient Settings Filesystem',
+        'handle' => 'transientSettingsFilesystem',
+        'types' => [
+            TransientSettingsFilesystem::class => [
+                'transientSetting' => null,
+            ],
+        ],
+    ]);
+
+    $response->assertOk();
+
+    $fs = Filesystems::getFilesystemByHandle('transientSettingsFilesystem');
+    expect($fs)->not()->toBeNull();
+});
+
 test('save updates existing filesystem with oldHandle', function () {
     // Create a filesystem first
     $fs = Filesystems::createFilesystem([
@@ -261,3 +280,24 @@ test('respects read-only mode for delete operation', function () {
     ])
         ->assertForbidden();
 });
+
+class TransientSettingsFilesystem extends Filesystem
+{
+    public function __construct(array $config = [])
+    {
+        if (isset($config['transientSetting'])) {
+            unset($config['transientSetting']);
+        }
+
+        parent::__construct($config);
+    }
+
+    #[Override]
+    public function getDiskConfig(): array
+    {
+        return [
+            'driver' => 'local',
+            'root' => sys_get_temp_dir(),
+        ];
+    }
+}

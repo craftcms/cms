@@ -445,7 +445,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             }
 
             foreach ($nativeFields as $field) {
-                if (isset($addressData[$field])) {
+                if (array_key_exists($field, $addressData)) {
                     $address->$field = $addressData[$field];
                 }
             }

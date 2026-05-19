@@ -36,6 +36,14 @@ test('EncodeSpaces', function (string $expected, string $str) {
     ['foo%20%20bar', 'foo  bar'],
 ]);
 
+test('Ul', function () {
+    expect((string) Html::ul(['One', 'Two'], ['class' => 'errors']))->toMatchSnapshot();
+});
+
+test('Ol', function () {
+    expect((string) Html::ol(['One', 'Two'], ['class' => 'steps']))->toMatchSnapshot();
+});
+
 test('DisableInputs', function (?string $expected, callable|string|null $html) {
     $this->assertSame($expected, Html::disableInputs($html));
 })->with([
@@ -229,8 +237,8 @@ test('ModifyTagAttributes', function (string|false $expected, string $tag, array
     [false, '<!-- comment -->', []],
     [false, '<?xml?>', []],
     // https://github.com/craftcms/cms/issues/4984
-    ['<img class="foo" src="image.jpg?width=100&amp;height=100">', '<img src="image.jpg?width=100&height=100">', ['class' => 'foo']],
-    ['<img class="foo" src="image.jpg?width=100&amp;height=100">', '<img src="image.jpg?width=100&amp;height=100">', ['class' => 'foo']],
+    ['<img src="image.jpg?width=100&amp;height=100" class="foo">', '<img src="image.jpg?width=100&height=100">', ['class' => 'foo']],
+    ['<img src="image.jpg?width=100&amp;height=100" class="foo">', '<img src="image.jpg?width=100&amp;height=100">', ['class' => 'foo']],
     // https://github.com/craftcms/cms/issues/6973
     ['<custom-element class="foo"></custom-element>', '<custom-element></custom-element>', ['class' => 'foo']],
     // https://github.com/craftcms/cms/issues/7234
