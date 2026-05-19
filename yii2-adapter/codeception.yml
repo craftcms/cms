@@ -10,6 +10,9 @@ bootstrap: _bootstrap.php
 settings:
   colors: true
   memory_limit: 4096M
+extensions:
+  enabled:
+    - crafttests\_support\Extension\FailOnIncompleteRun
 coverage:
   enabled: true
   include:

@@ -2,9 +2,13 @@
 
 ## Unreleased
 
-- Removed a stray dump statement ([#18902](https://github.com/craftcms/cms/issues/18902))
-- Fixed an error that occurred when using the legacy cache service with a new dependency object ([##18904](https://github.com/craftcms/cms/pull/#18904))
+- Added “Elements” and “Deprecations” panels to Laravel Debugbar. ([#18897](https://github.com/craftcms/cms/pull/18897)
 - Fixed a bug where legacy redirect responses were not being returned as a redirect ([#18893](https://github.com/craftcms/cms/pull/18893))
+- Fixed a bug where plugin routes were not being registered with the `web` middleware.
+- Fixed an error that could occur when storing image transform indexes. ([#18899](https://github.com/craftcms/cms/pull/18899))
+- Fixed an error when `loginPath` or `logoutPath` was set to `false` in `GeneralConfig`. ([#18894](https://github.com/craftcms/cms/issue/18894))
+- Fixed a bug where plugin-registered Twig variables weren’t available via the `craft` template variable. ([#18903](https://github.com/craftcms/cms/pull/18903))
+- Fixed an error that occurred when using the legacy cache service with a new dependency object ([#18904](https://github.com/craftcms/cms/pull/18904))
 
 ## 6.0.0-alpha.3 - 2026-05-15
 
@@ -12,10 +16,8 @@
 - Added a missing migration that adds `minAuthors` to the section table ([#18875](https://github.com/craftcms/cms/pull/18875))
 - Fixed a bug where the `cpTrigger` would be appended twice to the URL after running migrations from the control panel. ([#18858](https://github.com/craftcms/cms/pull/18858))
 - Fixed an error that occurred when rendering element indexes with blank source headings. ([#18891](https://github.com/craftcms/cms/pull/18891))
-- Fixed an error that could occur when storing image transform indexes. ([#18899](https://github.com/craftcms/cms/pull/18899))
 - Fixed an error that occurred when uninstalling plugins. ([#18862](https://github.com/craftcms/cms/pull/18862))
 - Fixed an error that could occur when Control Panel HTML values were passed as `Stringable` objects. ([#18883](https://github.com/craftcms/cms/pull/18883))
-- Fixed an error when `loginPath` or `logoutPath` was set to `false` in `GeneralConfig`. ([#18894](https://github.com/craftcms/cms/issue/18894))
 - Fixed a bug where plugin package config files could affect plugin settings before being published. ([#18885](https://github.com/craftcms/cms/pull/18885))
 - Fixed a bug where the control panel would continuously poll for queue job info, even if there were no active jobs. ([#18853](https://github.com/craftcms/cms/issues/18853))
 - Fixed a bug where legacy redirect responses were not being handled. ([#18860](https://github.com/craftcms/cms/pull/18860))
