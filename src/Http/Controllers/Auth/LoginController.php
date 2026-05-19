@@ -18,7 +18,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Timebox;
 use Illuminate\Validation\Rule;
-use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\cp_url;
@@ -38,7 +37,7 @@ readonly class LoginController extends AuthenticationController
             return redirect()->action([TwoFactorAuthenticationController::class, 'showForm']);
         }
 
-        return Inertia::render('LoginPage', [
+        return $this->renderViewWithFallback(cpTemplate: 'login', inertiaComponent: 'LoginPage', inertiaProps: [
             'action' => action([LoginController::class, 'attemptLogin']),
             'username' => $generalConfig->rememberUsernameDuration ? $authMethods->getRememberedUsername() : '',
         ]);
