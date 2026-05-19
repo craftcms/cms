@@ -53,3 +53,24 @@ it('can send a legacy redirect response from before handle exception handlers', 
     expect($response->getStatusCode())->toBe(301);
     expect($response->headers->get('Location'))->toBe('http://localhost/redirect-target');
 });
+
+it('can create a legacy redirect response from before handle exception handlers', function() {
+    $handler = function() {
+        Craft::$app->getResponse()
+            ->redirect('/redirect-target', 301, false);
+    };
+
+    YiiEvent::on(ErrorHandler::class, ErrorHandler::EVENT_BEFORE_HANDLE_EXCEPTION, $handler);
+
+    try {
+        $response = app(ExceptionHandlerContract::class)->render(
+            Request::create('/missing-page'),
+            new NotFoundHttpException('Page not found.')
+        );
+    } finally {
+        YiiEvent::off(ErrorHandler::class, ErrorHandler::EVENT_BEFORE_HANDLE_EXCEPTION, $handler);
+    }
+
+    expect($response->getStatusCode())->toBe(301);
+    expect($response->headers->get('Location'))->toBe('http://localhost/redirect-target');
+});
