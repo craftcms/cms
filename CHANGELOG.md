@@ -7,6 +7,7 @@
 - Fixed a bug where plugin routes were not being registered with the `web` middleware.
 - Fixed an error that could occur when storing image transform indexes. ([#18899](https://github.com/craftcms/cms/pull/18899))
 - Fixed an error when `loginPath` or `logoutPath` was set to `false` in `GeneralConfig`. ([#18894](https://github.com/craftcms/cms/issue/18894))
+- Fixed a bug where plugin-registered Twig variables weren’t available via the `craft` template variable. ([#18903](https://github.com/craftcms/cms/pull/18903))
 
 ## 6.0.0-alpha.3 - 2026-05-15
 
