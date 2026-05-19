@@ -77,9 +77,8 @@ readonly class AddressesController
         // All safe attributes
         $safeAttributes = [];
         foreach ($address->safeAttributes() as $name) {
-            $value = $request->input($name);
-            if ($value !== null) {
-                $safeAttributes[$name] = $value;
+            if ($request->has($name)) {
+                $safeAttributes[$name] = $request->input($name);
             }
         }
 

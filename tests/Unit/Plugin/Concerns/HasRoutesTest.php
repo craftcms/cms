@@ -39,4 +39,10 @@ it('registers web, cp, and action routes from plugin route files', function () {
         ->and($uris)->toContain('admin/plugin-cp')
         ->and($uris)->toContain('admin/actions/plugin-action')
         ->and($uris)->toContain('actions/plugin-action');
+
+    $routesByUri = collect(Route::getRoutes()->getRoutes())
+        ->keyBy(fn ($route) => $route->uri());
+
+    expect($routesByUri->get('admin/plugin-cp')->middleware())->toContain('web', 'craft', 'craft.cp')
+        ->and($routesByUri->get('admin/actions/plugin-action')->middleware())->toContain('web', 'craft', 'craft.cp');
 });
