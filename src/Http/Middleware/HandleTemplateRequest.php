@@ -10,6 +10,10 @@ use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Route\DynamicRoute;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Twig\TemplateResolver;
+use CraftCms\Cms\View\Hooks\PrepareElementIndexVariables;
+use CraftCms\Cms\View\Hooks\PrepareElementSourcesVariables;
+use CraftCms\Cms\View\Hooks\PrepareElementToolbarVariables;
+use CraftCms\Cms\View\TemplateHooks;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
 use Illuminate\View\Factory as ViewFactory;
@@ -30,6 +34,7 @@ readonly class HandleTemplateRequest
 
             $this->prependViewLocation(dirname(__DIR__, 3).'/resources/templates');
             $this->prependViewLocation(dirname(__DIR__, 3).'/resources/views');
+            $this->registerCpTemplateHooks();
         }
 
         $response = $next($request);
@@ -76,6 +81,15 @@ readonly class HandleTemplateRequest
         }
 
         $this->views->prependLocation($path);
+    }
+
+    private function registerCpTemplateHooks(): void
+    {
+        $hooks = app(TemplateHooks::class);
+
+        $hooks->register('cp.layouts.elementindex', PrepareElementIndexVariables::class);
+        $hooks->register('cp.elements.toolbar', PrepareElementToolbarVariables::class);
+        $hooks->register('cp.elements.sources', PrepareElementSourcesVariables::class);
     }
 
     private function isPublicTemplatePath(Request $request, string $path): bool

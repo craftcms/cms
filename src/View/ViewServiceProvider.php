@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\View;
 
 use CraftCms\Cms\View\Events\ViewAssetsRendering;
-use CraftCms\Cms\View\Hooks\PrepareElementIndexVariables;
-use CraftCms\Cms\View\Hooks\PrepareElementSourcesVariables;
-use CraftCms\Cms\View\Hooks\PrepareElementToolbarVariables;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Support\Facades\Event;
@@ -33,7 +30,7 @@ class ViewServiceProvider extends ServiceProvider
         );
     }
 
-    public function boot(TemplateHooks $hooks): void
+    public function boot(): void
     {
         Event::listen(function (ViewAssetsRendering $event) {
             app(InternalAssetRegistry::class)->flush();
@@ -49,9 +46,6 @@ class ViewServiceProvider extends ServiceProvider
         $this->registerTemplateRoots();
         $this->registerTemplateGlobals();
 
-        $hooks->register('cp.layouts.elementindex', PrepareElementIndexVariables::class);
-        $hooks->register('cp.elements.toolbar', PrepareElementToolbarVariables::class);
-        $hooks->register('cp.elements.sources', PrepareElementSourcesVariables::class);
     }
 
     private function registerTemplateGlobals(): void
