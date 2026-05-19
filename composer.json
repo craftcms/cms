@@ -52,7 +52,6 @@
     "league/flysystem-path-prefixing": "^3.31",
     "league/uri": "^7.0",
     "moneyphp/money": "^4.0",
-    "phpdocumentor/reflection-docblock": "^5.3",
     "phpoffice/phpspreadsheet": "^5.3",
     "pixelandtonic/graphql-php": "~14.11.10.1",
     "pixelandtonic/imagine": "~1.5.2.1",
