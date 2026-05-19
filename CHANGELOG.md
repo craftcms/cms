@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fixed a bug where editable tables registered unexpected debug toolbar output. ([#18895](https://github.com/craftcms/cms/issues/18895))
+- Fixed a bug where editable tables registered unexpected debug toolbar output. ([#18895](https://github.com/craftcms/cms/issues/18895), [#18902](https://github.com/craftcms/cms/issues/18902))
 
 ## 5.10.1 - 2026-05-14
 
