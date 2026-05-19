@@ -120,13 +120,14 @@ class FilesystemsController
     public function save(Request $request): Response
     {
         $type = $request->input('type');
+        $settings = Arr::whereNotNull($request->array('types.'.Html::id($type)));
 
         $fs = $this->filesystems->createFilesystem([
             'type' => $type,
             'name' => $request->input('name'),
             'handle' => $request->input('handle'),
             'oldHandle' => $request->input('oldHandle'),
-            'settings' => $request->input('types')[Html::id($type)] ?? [],
+            'settings' => $settings,
         ]);
 
         if (! $this->filesystems->saveFilesystem($fs)) {

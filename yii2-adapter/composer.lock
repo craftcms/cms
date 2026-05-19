@@ -475,11 +475,11 @@
         },
         {
             "name": "craftcms/cms",
-            "version": "dev-5.10-into-6.x",
+            "version": "6.x-dev",
             "dist": {
                 "type": "path",
                 "url": "..",
-                "reference": "5947614732ba9a80e45e485afaf7824174ac2916"
+                "reference": "8d52f3b13b3d8af2990f9fe87b2e131e814a6f14"
             },
             "require": {
                 "bacon/bacon-qr-code": "^3.0",
@@ -511,18 +511,15 @@
                 "league/uri": "^7.0",
                 "moneyphp/money": "^4.0",
                 "php": "^8.5",
-                "phpdocumentor/reflection-docblock": "^5.3",
                 "phpoffice/phpspreadsheet": "^5.3",
                 "pixelandtonic/graphql-php": "~14.11.10.1",
                 "pixelandtonic/imagine": "~1.5.2.1",
-                "pragmarx/google2fa": "^8.0",
+                "pragmarx/google2fa": "^9.0",
                 "pragmarx/recovery": "^0.2.1",
                 "symfony/css-selector": "^7.0|^8.0",
                 "symfony/dom-crawler": "^7.0|^8.0",
                 "symfony/filesystem": "^7.0|^8.0",
                 "symfony/html-sanitizer": "^7.0|^8.0",
-                "symfony/property-access": "^7.0|^8.0",
-                "symfony/property-info": "^7.0|^8.0",
                 "symfony/serializer": "^6.4|^7.0|^8.0",
                 "symfony/yaml": "^7.0|^8.0",
                 "theiconic/name-parser": "^1.2",
@@ -531,15 +528,17 @@
                 "voku/portable-ascii": "^2.0",
                 "web-auth/webauthn-lib": "~5.2.4",
                 "yiisoft/arrays": "^3.2",
-                "yiisoft/html": "^3.11",
+                "yiisoft/html": "^4.1",
                 "yiisoft/translator": "^3.2",
                 "yiisoft/translator-message-php": "^1.1"
             },
             "require-dev": {
+                "barryvdh/laravel-debugbar": "^4.2",
                 "dg/bypass-finals": "^1.9",
                 "driftingly/rector-laravel": "^2.1",
                 "fakerphp/faker": "^1.19.0",
                 "larastan/larastan": "^3.4",
+                "laravel/pao": "^1.0",
                 "laravel/pint": "^1.22",
                 "laravel/socialite": "^5.23",
                 "orchestra/testbench": "^11.0",
@@ -4830,16 +4829,16 @@
         },
         {
             "name": "pragmarx/google2fa",
-            "version": "v8.0.3",
+            "version": "v9.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/antonioribeiro/google2fa.git",
-                "reference": "6f8d87ebd5afbf7790bde1ffc7579c7c705e0fad"
+                "reference": "e6bc62dd6ae83acc475f57912e27466019a1f2cf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/antonioribeiro/google2fa/zipball/6f8d87ebd5afbf7790bde1ffc7579c7c705e0fad",
-                "reference": "6f8d87ebd5afbf7790bde1ffc7579c7c705e0fad",
+                "url": "https://api.github.com/repos/antonioribeiro/google2fa/zipball/e6bc62dd6ae83acc475f57912e27466019a1f2cf",
+                "reference": "e6bc62dd6ae83acc475f57912e27466019a1f2cf",
                 "shasum": ""
             },
             "require": {
@@ -4876,9 +4875,9 @@
             ],
             "support": {
                 "issues": "https://github.com/antonioribeiro/google2fa/issues",
-                "source": "https://github.com/antonioribeiro/google2fa/tree/v8.0.3"
+                "source": "https://github.com/antonioribeiro/google2fa/tree/v9.0.0"
             },
-            "time": "2024-09-05T11:56:40+00:00"
+            "time": "2025-09-19T22:51:08+00:00"
         },
         {
             "name": "pragmarx/random",
@@ -10002,16 +10001,16 @@
         },
         {
             "name": "yiisoft/html",
-            "version": "3.13.0",
+            "version": "4.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/yiisoft/html.git",
-                "reference": "d02c6bd9094d554afc0c4bffc291f8a2f57b3710"
+                "reference": "315a6582d533d6ab73484c8f982beb9131675909"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/yiisoft/html/zipball/d02c6bd9094d554afc0c4bffc291f8a2f57b3710",
-                "reference": "d02c6bd9094d554afc0c4bffc291f8a2f57b3710",
+                "url": "https://api.github.com/repos/yiisoft/html/zipball/315a6582d533d6ab73484c8f982beb9131675909",
+                "reference": "315a6582d533d6ab73484c8f982beb9131675909",
                 "shasum": ""
             },
             "require": {
@@ -10061,7 +10060,7 @@
                     "type": "opencollective"
                 }
             ],
-            "time": "2026-03-13T13:07:22+00:00"
+            "time": "2026-05-19T07:13:29+00:00"
         },
         {
             "name": "yiisoft/i18n",

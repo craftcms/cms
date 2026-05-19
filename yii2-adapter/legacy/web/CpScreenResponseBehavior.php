@@ -11,6 +11,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\TemplateMode;
+use Stringable;
 use yii\base\Behavior;
 use function CraftCms\Cms\template;
 
@@ -550,11 +551,11 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the toolbar HTML.
      *
-     * @param callable|string|null $value
+     * @param callable|string|Stringable|null $value
      * @return Response
      * @since 5.7.0
      */
-    public function toolbarHtml(callable|string|null $value): Response
+    public function toolbarHtml(callable|string|Stringable|null $value): Response
     {
         $this->toolbarHtml = $value;
         return $this->owner;
@@ -607,11 +608,11 @@ class CpScreenResponseBehavior extends Behavior
      *
      * This will only be used by full-page screens.
      *
-     * @param callable|string|null $value
+     * @param callable|string|Stringable|null $value
      * @return Response
      * @since 5.0.0
      */
-    public function additionalButtonsHtml(callable|string|null $value): Response
+    public function additionalButtonsHtml(callable|string|Stringable|null $value): Response
     {
         $this->additionalButtonsHtml = $value;
         return $this->owner;
@@ -636,11 +637,11 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the content HTML.
      *
-     * @param callable|string|null $value
+     * @param callable|string|Stringable|null $value
      * @return Response
      * @since 5.0.0
      */
-    public function contentHtml(callable|string|null $value): Response
+    public function contentHtml(callable|string|Stringable|null $value): Response
     {
         $this->contentHtml = $value;
         return $this->owner;
@@ -663,11 +664,11 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the right-hand meta sidebar HTML.
      *
-     * @param callable|string|null $value
+     * @param callable|string|Stringable|null $value
      * @return Response
      * @since 5.0.0
      */
-    public function metaSidebarHtml(callable|string|null $value): Response
+    public function metaSidebarHtml(callable|string|Stringable|null $value): Response
     {
         $this->metaSidebarHtml = $value;
         return $this->owner;
@@ -690,11 +691,11 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the left-hand page sidebar HTML (only used by full-page screens).
      *
-     * @param callable|string|null $value
+     * @param callable|string|Stringable|null $value
      * @return Response
      * @since 5.0.0
      */
-    public function pageSidebarHtml(callable|string|null $value): Response
+    public function pageSidebarHtml(callable|string|Stringable|null $value): Response
     {
         $this->pageSidebarHtml = $value;
         return $this->owner;
@@ -718,11 +719,11 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the content notice HTML.
      *
-     * @param callable|string|null $value
+     * @param callable|string|Stringable|null $value
      * @return Response
      * @since 5.0.0
      */
-    public function noticeHtml(callable|string|null $value): Response
+    public function noticeHtml(callable|string|Stringable|null $value): Response
     {
         $this->noticeHtml = $value;
         return $this->owner;
@@ -745,11 +746,11 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the errors summary HTML.
      *
-     * @param callable|string|null $value
+     * @param callable|string|Stringable|null $value
      * @return Response
      * @since 4.5.0
      */
-    public function errorSummary(callable|string|null $value): Response
+    public function errorSummary(callable|string|Stringable|null $value): Response
     {
         $this->errorSummary = $value;
         return $this->owner;

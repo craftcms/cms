@@ -42,7 +42,7 @@ trait HasRoutes
     protected function registerCpRoutes(string|Closure $routes): void
     {
         $this->app['router']
-            ->middleware(['craft', 'craft.cp'])
+            ->middleware(['web', 'craft', 'craft.cp'])
             ->prefix(Cms::config()->cpTrigger)
             ->group($routes);
     }
@@ -50,7 +50,7 @@ trait HasRoutes
     protected function registerActionRoutes(string|Closure $routes): void
     {
         $this->app['router']
-            ->middleware(['craft', 'craft.cp'])
+            ->middleware(['web', 'craft', 'craft.cp'])
             ->prefix(implode('/', [
                 Cms::config()->cpTrigger,
                 Cms::config()->actionTrigger,

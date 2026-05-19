@@ -124,18 +124,13 @@ trait QueriesStatuses
             return;
         }
 
-        if ($negate = ($glue === 'not')) {
-            $glue = 'and';
-        }
-
-        $elementQuery->where(function (Builder $query) use ($statuses, $negate, $glue) {
+        $elementQuery->where(function (Builder $query) use ($statuses, $glue) {
             foreach ($statuses as $status) {
-                match (true) {
-                    $glue === 'or' && $negate === false => $query->orWhere($this->placeholderCondition($this->statusCondition($status))),
-                    $glue === 'or' && $negate === true => $query->orWhereNot($this->placeholderCondition($this->statusCondition($status))),
-                    $negate === false => $query->where($this->placeholderCondition($this->statusCondition($status))),
-                    $negate === true => $query->whereNot($this->placeholderCondition($this->statusCondition($status))),
-                };
+                if ($glue === 'not') {
+                    $query->whereNot($this->placeholderCondition($this->statusCondition($status)));
+                } else {
+                    $query->orWhere($this->placeholderCondition($this->statusCondition($status)));
+                }
             }
         });
     }

@@ -809,6 +809,12 @@ JS, [
         return $query;
     }
 
+    #[Override]
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
+    {
+        return $this->normalizeValue($value ?? [], $element);
+    }
+
     protected function fetchRelationsFromDbTable(?ElementInterface $element): bool
     {
         if ($this->layoutElement?->uid === null) {

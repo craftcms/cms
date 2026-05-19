@@ -88,7 +88,7 @@ trait SavesElement
                 $values = $this->request->validated() + array_filter(['fieldId' => $this->request->input('fieldId')]);
 
                 if ($element instanceof User) {
-                    $values = Arr::except($values, User::SENSITIVE_ATTRIBUTES);
+                    $values = Arr::except($values, $this->sensitiveAttributes($element));
                 }
 
                 $element->setAttributesFromRequest($values);
@@ -104,5 +104,14 @@ trait SavesElement
 
         // Set the custom field values
         $element->setFieldValuesFromRequest($fieldsLocation);
+    }
+
+    private function sensitiveAttributes(User $element): array
+    {
+        if ($element->getIsDraft()) {
+            return array_diff(User::SENSITIVE_ATTRIBUTES, ['email']);
+        }
+
+        return User::SENSITIVE_ATTRIBUTES;
     }
 }

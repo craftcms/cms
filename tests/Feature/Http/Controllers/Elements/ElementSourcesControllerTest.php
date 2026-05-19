@@ -262,6 +262,81 @@ it('stores normalized source settings for multi-page sources', function () {
         ]));
 });
 
+it('preserves blank heading values when storing and returning source settings', function () {
+    $projectConfig = app(ProjectConfig::class);
+
+    $response = postJson(action([ElementSourcesController::class, 'store']), [
+        'elementType' => TestElementSourcesElement::class,
+        'sourceOrder' => [
+            'heading:blank',
+            'native-enabled',
+        ],
+        'sourcePages' => [
+            'heading:blank' => 'Content',
+            'native-enabled' => 'Content',
+        ],
+        'pageSettings' => [
+            'Content' => [
+                'label' => 'Content',
+            ],
+        ],
+        'sources' => [
+            'heading:blank' => [
+                'heading' => '',
+            ],
+            'native-enabled' => [
+                'tableAttributes' => ['slug'],
+                'enabled' => true,
+            ],
+        ],
+    ]);
+
+    $response->assertOk();
+
+    expect(normalizeConfig($projectConfig->get(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, TestElementSourcesElement::class))))->toBe(normalizeConfig([
+        [
+            'type' => ElementSources::TYPE_HEADING,
+            'key' => 'heading:blank',
+            'page' => 'Content',
+            'heading' => '',
+        ],
+        [
+            'type' => ElementSources::TYPE_NATIVE,
+            'key' => 'native-enabled',
+            'page' => 'Content',
+            'tableAttributes' => ['slug'],
+            'disabled' => false,
+        ],
+    ]));
+
+    postJson(action([ElementSourcesController::class, 'show']), [
+        'elementType' => TestElementSourcesElement::class,
+    ])
+        ->assertOk()
+        ->assertJsonPath('sources.0.type', ElementSources::TYPE_HEADING)
+        ->assertJsonPath('sources.0.heading', '');
+
+    $projectConfig->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, TestElementSourcesElement::class), [
+        [
+            'type' => ElementSources::TYPE_HEADING,
+            'key' => 'heading:malformed',
+            'page' => 'Content',
+        ],
+        [
+            'type' => ElementSources::TYPE_NATIVE,
+            'key' => 'native-enabled',
+            'page' => 'Content',
+        ],
+    ]);
+
+    postJson(action([ElementSourcesController::class, 'show']), [
+        'elementType' => TestElementSourcesElement::class,
+    ])
+        ->assertOk()
+        ->assertJsonPath('sources.0.type', ElementSources::TYPE_HEADING)
+        ->assertJsonPath('sources.0.heading', '');
+});
+
 it('stores single-page source settings without page reordering', function () {
     $projectConfig = app(ProjectConfig::class);
 

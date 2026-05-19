@@ -2014,7 +2014,7 @@ JS, [
     protected function thumbSvg(): string
     {
         if ($this->isFolder) {
-            return file_get_contents(Aliases::get('@resources/images/thumbs/folder.svg'));
+            return file_get_contents(Aliases::get('@resources/public/images/thumbs/folder.svg'));
         }
 
         return AssetsHelper::iconSvg($this->getExtension());
@@ -2900,7 +2900,7 @@ JS;
         if (! $this->propagating) {
             // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
             if (
-                $this->alt === null &&
+                ($this->alt === null || $this->alt === '') &&
                 isset($this->tempFilePath) &&
                 $this->ruleset->inScenarios(AssetRules::SCENARIO_CREATE, AssetRules::SCENARIO_REPLACE)
             ) {

@@ -12,6 +12,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Image\Contracts\AssetTransformerInterface;
 use CraftCms\Cms\Image\Contracts\EagerImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\Data\ImageTransformIndex;
 use CraftCms\Cms\Image\Events\AssetTransformersResolving;
 use CraftCms\Cms\Image\ImageTransformer;
 use Illuminate\Support\Facades\DB;
@@ -124,6 +125,28 @@ it('invalidates stale eager-loaded indexes when dateModified is a string', funct
     );
 
     expect(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $index->id)->exists())->toBeFalse();
+});
+
+it('stores dateIndexed as a DB-compatible UTC datetime string', function () {
+    $asset = ($this->createImageAsset)();
+
+    $index = new ImageTransformIndex([
+        'assetId' => $asset->id,
+        'transformer' => ImageTransformer::class,
+        'filename' => 'transform-test.jpg',
+        'transformString' => '_30x20_crop_center-center_none',
+        'dateIndexed' => new DateTime('2026-05-17 15:32:16', new DateTimeZone('Europe/Vienna')),
+    ]);
+
+    $this->transformer->storeTransformIndexData($index);
+
+    $storedDateIndexed = DB::table(Table::IMAGETRANSFORMINDEX)
+        ->where('id', $index->id)
+        ->value('dateIndexed');
+
+    expect($storedDateIndexed)->toBe('2026-05-17 13:32:16')
+        ->and($storedDateIndexed)->not->toContain('T')
+        ->and($storedDateIndexed)->not->toContain('+');
 });
 
 it('uses the volume default transformer when a transform does not specify one', function () {

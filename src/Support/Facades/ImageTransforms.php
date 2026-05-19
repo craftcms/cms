@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static \Illuminate\Support\Collection<int, \CraftCms\Cms\Image\Data\ImageTransform> getAllTransforms()
+ * @method static \Illuminate\Support\Collection getAllTransforms()
  * @method static \CraftCms\Cms\Image\Data\ImageTransform|null getTransformByHandle(string $handle)
  * @method static \CraftCms\Cms\Image\Data\ImageTransform|null getTransformById(int $id)
  * @method static \CraftCms\Cms\Image\Data\ImageTransform|null getTransformByUid(string $uid)
