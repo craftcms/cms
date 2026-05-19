@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-alpha.4 - 2026-05-19
 
 - Added support for plugins to register Laravel scheduled tasks that run via `php artisan schedule:run`.
 - Updated `yiisoft/html` to 4.1.0. ([#18920](https://github.com/craftcms/cms/pull/18920))
