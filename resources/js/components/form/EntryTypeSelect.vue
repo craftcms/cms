@@ -15,6 +15,7 @@
   import DragShadow from '@/components/DragShadow.vue';
   import {useReorderableItems} from '@/composables/useReorderableItems';
   import ReorderButton from '@/components/ReorderButton.vue';
+  import useCraftData from '@/composables/useCraftData';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<EntryType>): void;
