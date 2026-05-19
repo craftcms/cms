@@ -210,6 +210,8 @@ it('allows delete on temp fs even for peer assets', function () {
 // Helper functions
 function createAssetTestUser(array $permissions): User
 {
+    static $nextUserId = 10000;
+
     $user = new class extends User
     {
         public array $grantedPermissions = [];
@@ -224,7 +226,7 @@ function createAssetTestUser(array $permissions): User
         }
     };
 
-    $user->id = random_int(1, 10000);
+    $user->id = ++$nextUserId;
     $user->grantedPermissions = $permissions;
 
     return $user;

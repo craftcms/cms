@@ -64,14 +64,12 @@ readonly class TokensController extends GqlController
             $token = new GqlToken;
         }
 
-        $name = $request->input('name');
-        if ($name !== null) {
-            $token->name = $name;
+        if ($request->has('name')) {
+            $token->name = $request->input('name');
         }
 
-        $accessToken = $request->input('accessToken');
-        if ($accessToken !== null) {
-            $token->accessToken = $accessToken;
+        if ($request->has('accessToken')) {
+            $token->accessToken = $request->input('accessToken');
         }
 
         $token->enabled = (bool) $request->input('enabled');
@@ -79,8 +77,8 @@ readonly class TokensController extends GqlController
         $schemaId = $request->input('schema');
         $token->schemaId = is_numeric($schemaId) ? (int) $schemaId : null;
 
-        if (($expiryDate = $request->input('expiryDate')) !== null) {
-            $token->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
+        if ($request->has('expiryDate')) {
+            $token->expiryDate = DateTimeHelper::toDateTime($request->input('expiryDate')) ?: null;
         }
 
         if (! $this->gql->saveToken($token)) {
