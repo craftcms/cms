@@ -4,6 +4,7 @@
 
 - Added “Elements” and “Deprecations” panels to Laravel Debugbar. ([#18897](https://github.com/craftcms/cms/pull/18897)
 - Fixed a bug where legacy redirect responses were not being returned as a redirect ([#18893](https://github.com/craftcms/cms/pull/18893))
+- Fixed an error that could occur when saving filesystems with null transient settings. ([#18909](https://github.com/craftcms/cms/pull/18909))
 - Fixed a bug where plugin routes were not being registered with the `web` middleware.
 - Fixed an error that could occur when storing image transform indexes. ([#18899](https://github.com/craftcms/cms/pull/18899))
 - Fixed an error when `loginPath` or `logoutPath` was set to `false` in `GeneralConfig`. ([#18894](https://github.com/craftcms/cms/issue/18894))
