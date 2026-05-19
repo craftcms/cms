@@ -9,6 +9,7 @@ use CraftCms\Cms\Auth\AuthServiceProvider;
 use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Console\ConsoleServiceProvider;
 use CraftCms\Cms\Database\DatabaseServiceProvider;
+use CraftCms\Cms\Debug\DebugServiceProvider;
 use CraftCms\Cms\Deprecator\DeprecatorServiceProvider;
 use CraftCms\Cms\Element\ElementServiceProvider;
 use CraftCms\Cms\Email\EmailServiceProvider;
@@ -44,6 +45,7 @@ class CraftServiceProvider extends AggregateServiceProvider
         TwigServiceProvider::class,
         ProjectConfigServiceProvider::class,
         DeprecatorServiceProvider::class,
+        DebugServiceProvider::class,
         LicenseServiceProvider::class,
         RouteServiceProvider::class,
         AppServiceProvider::class,

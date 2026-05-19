@@ -6,6 +6,7 @@ use Craft;
 use craft\events\ExceptionEvent;
 use craft\web\Application as WebApplication;
 use craft\web\ErrorHandler;
+use craft\web\twig\variables\CraftVariable as LegacyCraftVariable;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Table;
@@ -25,11 +26,13 @@ use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
 use CraftCms\Yii2Adapter\HtmlPurifier\LegacyHtmlPurifierConfigRegistrar;
+use CraftCms\Yii2Adapter\Http\CaptureOriginalActionRequestUri;
 use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
 use CraftCms\Yii2Adapter\I18N\I18NCompatibility;
 use CraftCms\Yii2Adapter\Mail\TestToEmailAddressCompatibility;
 use CraftCms\Yii2Adapter\Mixins\CraftVariableMixin;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
@@ -178,6 +181,8 @@ class Yii2ServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->app->make(HttpKernel::class)->prependMiddleware(CaptureOriginalActionRequestUri::class);
+
         $this->commands([
             AddCategoriesSupportCommand::class,
             AddGlobalSetsSupportCommand::class,
@@ -210,6 +215,7 @@ class Yii2ServiceProvider extends ServiceProvider
         new RebrandCompatibility()->boot();
 
         CraftVariable::mixin(new CraftVariableMixin());
+        $this->registerCraftVariableCompatibility();
 
         /**
          * Keep legacy CustomFieldBehavior statics in sync when field caches are invalidated.
@@ -243,6 +249,17 @@ class Yii2ServiceProvider extends ServiceProvider
         Craft::$app->state = YiiApplication::STATE_AFTER_REQUEST;
         Craft::$app->trigger(YiiApplication::EVENT_AFTER_REQUEST);
         Craft::$app->state = YiiApplication::STATE_END;
+    }
+
+    private function registerCraftVariableCompatibility(): void
+    {
+        $this->app->afterResolving(CraftVariable::class, function() {
+            $legacyVariable = new LegacyCraftVariable();
+
+            foreach (array_keys($legacyVariable->getComponents()) as $name) {
+                CraftVariable::macro($name, fn() => $legacyVariable->get($name));
+            }
+        });
     }
 
     /**
