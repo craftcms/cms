@@ -36,6 +36,14 @@ test('EncodeSpaces', function (string $expected, string $str) {
     ['foo%20%20bar', 'foo  bar'],
 ]);
 
+test('Ul', function () {
+    expect((string) Html::ul(['One', 'Two'], ['class' => 'errors']))->toMatchSnapshot();
+});
+
+test('Ol', function () {
+    expect((string) Html::ol(['One', 'Two'], ['class' => 'steps']))->toMatchSnapshot();
+});
+
 test('DisableInputs', function (?string $expected, callable|string|null $html) {
     $this->assertSame($expected, Html::disableInputs($html));
 })->with([
