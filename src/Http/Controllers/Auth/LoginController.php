@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Timebox;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\cp_url;
@@ -84,7 +85,7 @@ readonly class LoginController extends AuthenticationController
         ]);
     }
 
-    public function attemptLogin(Request $request, AuthMethods $auth, Impersonation $impersonation): Response
+    public function attemptLogin(Request $request, Impersonation $impersonation): Response
     {
         $request->validate([
             'loginName' => [
@@ -92,7 +93,7 @@ readonly class LoginController extends AuthenticationController
                 'string',
                 Rule::when($this->generalConfig->useEmailAsUsername, 'email'),
             ],
-            'password' => ['required', 'string', 'min:6', 'max:160'],
+            'password' => Password::required(),
             'rememberMe' => ['nullable'],
         ]);
 
