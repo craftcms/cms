@@ -109,8 +109,8 @@ class RouteServiceProvider extends ServiceProvider
                 return Limit::none();
             }
 
-            // Throttle by loginName to prevent enumeration attacks
-            return Limit::perMinute(1);
+            // Throttle to prevent enumeration attacks
+            return Limit::perMinute(1)->by($request->ip());
         });
     }
 
