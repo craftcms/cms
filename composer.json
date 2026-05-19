@@ -55,7 +55,7 @@
     "phpoffice/phpspreadsheet": "^5.3",
     "pixelandtonic/graphql-php": "~14.11.10.1",
     "pixelandtonic/imagine": "~1.5.2.1",
-    "pragmarx/google2fa": "^8.0",
+    "pragmarx/google2fa": "^9.0",
     "pragmarx/recovery": "^0.2.1",
     "symfony/css-selector": "^7.0|^8.0",
     "symfony/dom-crawler": "^7.0|^8.0",
