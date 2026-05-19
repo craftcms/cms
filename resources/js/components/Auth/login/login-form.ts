@@ -110,16 +110,14 @@ export default class CraftLoginForm extends LitElement {
     if (passwordLength < this.minPasswordLength) {
       return t(
         '{attribute} should contain at least {min, number} {min, plural, one{character} other{characters}}.',
-        {attribute: t('Password'), min: this.minPasswordLength},
-        'yii'
+        {attribute: t('Password'), min: this.minPasswordLength}
       );
     }
 
     if (passwordLength > this.maxPasswordLength) {
       return t(
         '{attribute} should contain at most {max, number} {max, plural, one{character} other{characters}}.',
-        {attribute: t('Password'), max: this.maxPasswordLength},
-        'yii'
+        {attribute: t('Password'), max: this.maxPasswordLength}
       );
     }
 
