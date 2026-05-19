@@ -49,7 +49,7 @@ class FieldTest extends TestCase
 TWIG;
 
         $html = renderString($template, [], TemplateMode::Cp);
-        self::assertStringContainsString('<div id="foo-field" class="field" data-attribute="foo" data-foo="test">', $html);
+        self::assertStringContainsString('<div class="field" id="foo-field" data-attribute="foo" data-foo="test">', $html);
         self::assertStringContainsString('TEST HEADING', $html);
         self::assertStringContainsString('<label id="label" for="foo">TEST LABEL</label>', $html);
         self::assertStringContainsString('<div id="foo-instructions" class="instructions"><p>TEST INSTRUCTIONS</p>', $html);
