@@ -26,7 +26,8 @@ class SectionRules extends Ruleset
             'id' => ['nullable', 'integer'],
             'structureId' => ['nullable', 'integer'],
             'maxLevels' => ['nullable', 'integer', 'min:0', 'max:32767'],
-            'maxAuthors' => ['nullable', 'integer', 'min:0', 'max:32767'],
+            'minAuthors' => ['nullable', 'integer', 'min:0', 'max:32767'],
+            'maxAuthors' => ['nullable', 'integer', 'min:0', 'gte:minAuthors', 'max:32767'],
             'name' => ['required', 'string', 'max:255'],
             'handle' => [
                 'required',

@@ -3,6 +3,9 @@
 namespace CraftCms\Yii2Adapter;
 
 use Craft;
+use craft\events\ExceptionEvent;
+use craft\web\Application as WebApplication;
+use craft\web\ErrorHandler;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Table;
@@ -35,7 +38,12 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use PDOException;
 use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Throwable;
+use yii\base\Application as YiiApplication;
 use yii\base\ExitException;
+use yii\web\HttpException as YiiHttpException;
+use yii\web\NotFoundHttpException as YiiNotFoundHttpException;
 
 class Yii2ServiceProvider extends ServiceProvider
 {
@@ -50,7 +58,16 @@ class Yii2ServiceProvider extends ServiceProvider
         new CompatibilityMixins()->register();
         new FilesystemCompatibility()->register($this->app);
 
-        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+        /**
+         * Load the legacy fallback route from booted() so it registers after
+         * the CMS package's own Route::fallback(), ensuring that unmatched
+         * requests are forwarded to the legacy Yii application (where any
+         * URL rules registered via UrlManager::EVENT_REGISTER_CP_URL_RULES
+         * and EVENT_REGISTER_SITE_URL_RULES are honored).
+         */
+        $this->app->booted(function(): void {
+            $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+        });
 
         $this->setLaravelDefaults();
         $this->registerExceptionHandling();
@@ -116,6 +133,47 @@ class Yii2ServiceProvider extends ServiceProvider
 
         $handler->dontReport([ExitException::class]);
         $handler->renderable(fn(ExitException $exception) => LegacyMiddleware::createResponse());
+        $handler->renderable(function(Throwable $exception) {
+            $this->triggerLegacyBeforeHandleException($exception);
+
+            $response = Craft::$app?->getResponse();
+
+            if ($response?->isSent || $response?->getIsRedirection()) {
+                return LegacyMiddleware::createResponse();
+            }
+
+            return null;
+        });
+    }
+
+    private function triggerLegacyBeforeHandleException(Throwable $exception): void
+    {
+        if ($exception instanceof ExitException || !Craft::$app) {
+            return;
+        }
+
+        $errorHandler = Craft::$app->getErrorHandler();
+
+        if (!$errorHandler->hasEventHandlers(ErrorHandler::EVENT_BEFORE_HANDLE_EXCEPTION)) {
+            return;
+        }
+
+        $errorHandler->trigger(ErrorHandler::EVENT_BEFORE_HANDLE_EXCEPTION, new ExceptionEvent([
+            'exception' => $this->toLegacyException($exception),
+        ]));
+    }
+
+    private function toLegacyException(Throwable $exception): Throwable
+    {
+        if (!$exception instanceof HttpExceptionInterface) {
+            return $exception;
+        }
+
+        if ($exception->getStatusCode() === 404) {
+            return new YiiNotFoundHttpException($exception->getMessage(), $exception->getCode(), $exception);
+        }
+
+        return new YiiHttpException($exception->getStatusCode(), $exception->getMessage(), $exception->getCode(), $exception);
     }
 
     public function boot(): void
@@ -163,11 +221,28 @@ class Yii2ServiceProvider extends ServiceProvider
             $this->ensureNewSessionsTable();
         });
 
+        $this->app->terminating(fn() => $this->triggerAfterRequestForLaravelRequest());
+
         if (!$this->app->runningInConsole()) {
             return;
         }
 
         new LegacyCommandCompatibility()->boot();
+    }
+
+    private function triggerAfterRequestForLaravelRequest(): void
+    {
+        if (!Craft::$app instanceof WebApplication) {
+            return;
+        }
+
+        if (Craft::$app->state >= YiiApplication::STATE_AFTER_REQUEST) {
+            return;
+        }
+
+        Craft::$app->state = YiiApplication::STATE_AFTER_REQUEST;
+        Craft::$app->trigger(YiiApplication::EVENT_AFTER_REQUEST);
+        Craft::$app->state = YiiApplication::STATE_END;
     }
 
     /**

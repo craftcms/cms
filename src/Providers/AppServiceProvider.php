@@ -13,7 +13,6 @@ use CraftCms\Cms\Http\Mixins\RequestMixin;
 use CraftCms\Cms\Http\Mixins\SessionMixin;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Url;
@@ -27,12 +26,10 @@ use Illuminate\Foundation\Events\LocaleUpdated;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
 use Illuminate\Routing\UrlGenerator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -65,12 +62,6 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        Cache::handleUnserializableClassUsing(function (...$params) {
-            dump($params);
-        });
-
-        JsonResource::withoutWrapping();
-
         Event::listen(LocaleUpdated::class, function (LocaleUpdated $event) {
             setlocale(
                 LC_COLLATE,
@@ -104,10 +95,18 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
+        $iconsDir = (string) realpath("{$this->root}/resources/icons");
+        $icons = [];
+
+        if ($iconsDir) {
+            foreach (array_merge(glob("{$iconsDir}/*.svg") ?: [], glob("{$iconsDir}/*/*.svg") ?: []) as $path) {
+                $icons[$path] = public_path('vendor/craft/icons/'.substr($path, strlen($iconsDir) + 1));
+            }
+        }
+
+        $this->publishes($icons, ['craftcms', 'craftcms-assets', 'craftcms-icons']);
         $this->publishes([
             "{$this->root}/resources/build/" => public_path('vendor/craft/build'),
-            "{$this->root}/resources/icons/" => public_path('vendor/craft/icons'),
-            "{$this->root}/resources/images/" => public_path('vendor/craft/images'),
             "{$this->root}/resources/legacy/" => public_path('vendor/craft/legacy'),
         ], ['craftcms', 'craftcms-assets']);
     }

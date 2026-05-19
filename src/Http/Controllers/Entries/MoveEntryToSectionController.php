@@ -124,7 +124,7 @@ readonly class MoveEntryToSectionController
 
         abort_if(is_null($section), 400, 'Cannot find the section to move the entries to.');
 
-        $this->requirePermission("viewEntries:$section->uid");
+        $this->requirePermission("saveEntries:$section->uid");
 
         /** @var Collection<Entry> $entries */
         $entries = Entry::find()

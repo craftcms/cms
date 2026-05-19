@@ -64,9 +64,9 @@ class Migrator extends \Illuminate\Database\Migrations\Migrator
     }
 
     #[Override]
-    public function runMigration($migration, $method): void
+    public function runMigration($migration, $method, $name = null): void
     {
-        parent::runMigration($migration, $method);
+        parent::runMigration($migration, $method, $name);
     }
 
     #[Override]

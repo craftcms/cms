@@ -9,7 +9,6 @@ namespace craft\validators;
 
 use Craft;
 use craft\helpers\DateTimeHelper;
-use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Locale;
 use DateTime;
 use yii\base\InvalidConfigException;
@@ -50,6 +49,12 @@ class TimeValidator extends Validator
     public ?string $tooLate = null;
 
     /**
+     * @var string|null user-defined error message used when the value is out of range and [[min]] is greater than [[max]]
+     * @since 5.10.0
+     */
+    public ?string $outOfRange = null;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -66,6 +71,10 @@ class TimeValidator extends Validator
 
         if (isset($this->max) && !isset($this->tooLate)) {
             $this->tooLate = t('{attribute} must be no later than {max}.');
+        }
+
+        if (isset($this->min) && isset($this->max) && !isset($this->outOfRange)) {
+            $this->outOfRange = Craft::t('app', '{attribute} must be between {min} and {max}.');
         }
     }
 
@@ -85,15 +94,14 @@ class TimeValidator extends Validator
             return;
         }
 
+        // If min > max (e.g. 10pm - 2am),
+
+        $min = $max = null;
+
         if (isset($this->min)) {
             $min = DateTimeHelper::toDateTime(['time' => $this->min], true);
             if (!$min) {
                 throw new InvalidConfigException("Invalid minimum time: $this->min");
-            }
-            if ($value < $min) {
-                $this->addError($model, $attribute, $this->tooEarly, [
-                    'min' => I18N::getFormatter()->asTime($min, Locale::LENGTH_SHORT),
-                ]);
             }
         }
 
@@ -102,11 +110,29 @@ class TimeValidator extends Validator
             if (!$max) {
                 throw new InvalidConfigException("Invalid maximum time: $this->max");
             }
-            if ($value > $max) {
-                $this->addError($model, $attribute, $this->tooLate, [
-                    'max' => I18N::getFormatter()->asTime($max, Locale::LENGTH_SHORT),
+        }
+
+        // Overnight time range? (e.g. 10pm-2am)
+        if ($min !== null && $max !== null && $min > $max) {
+            if ($value < $min && $value > $max) {
+                $this->addError($model, $attribute, $this->outOfRange, [
+                    'min' => Craft::$app->getFormatter()->asTime($min, Locale::LENGTH_SHORT),
+                    'max' => Craft::$app->getFormatter()->asTime($max, Locale::LENGTH_SHORT),
                 ]);
             }
+            return;
+        }
+
+        if ($min !== null && $value < $min) {
+            $this->addError($model, $attribute, $this->tooEarly, [
+                'min' => Craft::$app->getFormatter()->asTime($min, Locale::LENGTH_SHORT),
+            ]);
+        }
+
+        if ($max !== null && $value > $max) {
+            $this->addError($model, $attribute, $this->tooLate, [
+                'max' => Craft::$app->getFormatter()->asTime($max, Locale::LENGTH_SHORT),
+            ]);
         }
     }
 }

@@ -393,6 +393,16 @@ class FieldsController
             foreach ($tabConfig['elements'] as &$elementConfig) {
                 if (isset($elementConfig['uid']) && $elementConfig['uid'] === $uid) {
                     $elementConfig = array_merge($elementConfig, $componentConfig);
+
+                    // If fieldId is set, we're replacing the selected field
+                    if ($elementConfig['type'] === CustomField::class && isset($elementConfig['fieldId'])) {
+                        if (! empty($elementConfig['fieldId'])) {
+                            unset($elementConfig['fieldUid']);
+                        } else {
+                            unset($elementConfig['fieldId']);
+                        }
+                    }
+
                     break 2;
                 }
             }
@@ -521,7 +531,7 @@ class FieldsController
         if (! $this->readOnly) {
             $response
                 ->action('fields/save-field')
-                ->redirectUrl(Url::cpReferralUrl() ?? 'settings/fields')
+                ->redirectUrl('settings/fields')
                 ->addAltAction(t('Save and continue editing'), [
                     'redirect' => 'settings/fields/edit/{id}',
                     'shortcut' => true,

@@ -31,7 +31,9 @@ function enum_value(mixed $value, mixed $default = null): mixed
 
 function craftAsset(string $path, ?bool $secure = null): string
 {
-    return asset("vendor/craft/$path", $secure);
+    $suffix = pathinfo($path, PATHINFO_EXTENSION) !== '' ? '?v='.Cms::version() : '';
+
+    return asset("vendor/craft/$path", $secure).$suffix;
 }
 
 function t(string|Stringable|null $id, array $parameters = [], ?string $category = 'app', ?string $locale = null): string

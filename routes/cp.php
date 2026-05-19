@@ -280,6 +280,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         } else {
             Route::get('settings/users', fn () => redirect(cp_url('settings/users/fields')));
         }
+        Route::view('settings/users/fields', 'settings/users/fields');
 
         // User groups
         Route::middleware([RequireEdition::class.':'.Edition::Team->value])->group(function () {

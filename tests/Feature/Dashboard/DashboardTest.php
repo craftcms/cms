@@ -10,9 +10,12 @@ use CraftCms\Cms\Dashboard\Events\WidgetTypesResolving;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
 use CraftCms\Cms\Dashboard\Widgets\Feed;
+use CraftCms\Cms\Dashboard\Widgets\MissingWidget;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Once;
 
 use function Pest\Laravel\actingAs;
 
@@ -67,6 +70,20 @@ it('can create a widget from type', function () {
     expect($widget)->toBeInstanceOf(Feed::class);
 });
 
+it('creates a missing widget for an invalid widget type', function () {
+    $widget = $this->dashboard->createWidget([
+        'type' => 'some\\missing\\Widget',
+        'settings' => [
+            'foo' => 'bar',
+        ],
+    ]);
+
+    expect($widget)
+        ->toBeInstanceOf(MissingWidget::class)
+        ->and($widget->expectedType)->toBe('some\\missing\\Widget')
+        ->and($widget->settings)->toBe(['foo' => 'bar']);
+});
+
 it('can get all widgets and adds default widgets', function () {
     expect(WidgetModel::count())->toBe(0);
 
@@ -75,7 +92,31 @@ it('can get all widgets and adds default widgets', function () {
     expect(WidgetModel::count())->toBeGreaterThan(0);
 });
 
+it('returns missing widgets for saved widget types that can no longer be resolved', function () {
+    $user = auth()->user();
+    UserModel::where('id', $user->id)->update(['hasDashboard' => true]);
+    $user->hasDashboard = true;
+
+    WidgetModel::create([
+        'userId' => $user->id,
+        'type' => 'some\\missing\\Widget',
+        'sortOrder' => 1,
+        'settings' => ['foo' => 'bar'],
+    ]);
+
+    $widgets = $this->dashboard->getAllWidgets();
+
+    expect($widgets)->toHaveCount(1)
+        ->and($widgets->first())
+        ->toBeInstanceOf(MissingWidget::class)
+        ->expectedType->toBe('some\\missing\\Widget');
+});
+
 it('can test if a user has a widget', function () {
+    $user = auth()->user();
+    UserModel::where('id', $user->id)->update(['hasDashboard' => true]);
+    $user->hasDashboard = true;
+
     expect($this->dashboard->doesUserHaveWidget(Feed::class))->toBeFalse();
 
     $this->dashboard->saveWidget($this->dashboard->createWidget([
@@ -85,6 +126,8 @@ it('can test if a user has a widget', function () {
             'url' => 'https://craftcms.com/news.rss',
         ],
     ]));
+
+    Once::flush();
 
     expect($this->dashboard->doesUserHaveWidget(Feed::class))->toBeTrue();
 });

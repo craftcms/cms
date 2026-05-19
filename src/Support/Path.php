@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Support;
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Container\Attributes\Singleton;
@@ -17,6 +18,7 @@ class Path
 {
     public function __construct(
         private readonly Application $app,
+        private readonly GeneralConfig $generalConfig,
         private readonly ProjectConfig $projectConfig,
         private readonly License $license,
     ) {}
@@ -145,7 +147,7 @@ class Path
 
     public function cpTranslations(string $path = ''): string
     {
-        return $this->path(Aliases::get('@craftcms/resources/translations'), $path);
+        return $this->path(File::normalizePath(Aliases::get('@craftcms/resources/translations')), $path);
     }
 
     public function siteTranslations(string $path = ''): string
@@ -157,7 +159,7 @@ class Path
 
     public function cpTemplates(string $path = ''): string
     {
-        return $this->path(Aliases::get('@craftcms/resources/templates'), $path);
+        return $this->path(File::normalizePath(Aliases::get('@craftcms/resources/templates')), $path);
     }
 
     public function siteTemplates(string $path = ''): string
@@ -172,6 +174,18 @@ class Path
 
     public function compiledTemplates(string $path = '', bool $create = true): string
     {
+        if ($this->generalConfig->compiledTemplatesPath !== null) {
+            $compiledTemplatesPath = Env::parse($this->generalConfig->compiledTemplatesPath);
+
+            if ($compiledTemplatesPath !== null && $compiledTemplatesPath !== '') {
+                return $this->directory(
+                    File::normalizePath($compiledTemplatesPath),
+                    $path,
+                    $create,
+                );
+            }
+        }
+
         return $this->subdirectory($this->runtime(create: $create), 'compiled_templates', $path, $create);
     }
 
@@ -242,7 +256,7 @@ class Path
 
     private function path(string $basePath, string $path = ''): string
     {
-        return $path === '' ? $basePath : join_paths($basePath, $path);
+        return $path === '' ? $basePath : File::normalizePath(join_paths($basePath, $path));
     }
 
     private function directory(string $basePath, string $path = '', bool $create = true, bool $writeGitignore = false): string

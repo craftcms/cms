@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\File as Path;
 use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
 use CraftCms\Cms\View\TemplateMode;
@@ -72,19 +73,19 @@ describe('resolve', function () {
     it('resolves exact file path', function () {
         file_put_contents($this->tempDir.'/exact-file.html', 'content');
 
-        expect($this->resolver->resolve('exact-file.html'))->toBe($this->tempDir.'/exact-file.html');
+        expect($this->resolver->resolve('exact-file.html'))->toBe(Path::normalizePath($this->tempDir.'/exact-file.html'));
     });
 
     it('resolves template with .twig extension', function () {
         file_put_contents($this->tempDir.'/my-page.twig', 'content');
 
-        expect($this->resolver->resolve('my-page'))->toBe($this->tempDir.'/my-page.twig');
+        expect($this->resolver->resolve('my-page'))->toBe(Path::normalizePath($this->tempDir.'/my-page.twig'));
     });
 
     it('resolves template with .html extension', function () {
         file_put_contents($this->tempDir.'/my-page.html', 'content');
 
-        expect($this->resolver->resolve('my-page'))->toBe($this->tempDir.'/my-page.html');
+        expect($this->resolver->resolve('my-page'))->toBe(Path::normalizePath($this->tempDir.'/my-page.html'));
     });
 
     it('prefers .twig over .html for site mode', function () {
@@ -95,27 +96,27 @@ describe('resolve', function () {
 
         $result = $this->resolver->resolve('page');
 
-        expect($result)->toBe($this->tempDir.'/page.twig');
+        expect($result)->toBe(Path::normalizePath($this->tempDir.'/page.twig'));
     });
 
     it('resolves index template in directory', function () {
         mkdir($this->tempDir.'/section', 0777, true);
         file_put_contents($this->tempDir.'/section/index.twig', 'index content');
 
-        expect($this->resolver->resolve('section'))->toBe($this->tempDir.'/section/index.twig');
+        expect($this->resolver->resolve('section'))->toBe(Path::normalizePath($this->tempDir.'/section/index.twig'));
     });
 
     it('resolves index.html template in directory', function () {
         mkdir($this->tempDir.'/section', 0777, true);
         file_put_contents($this->tempDir.'/section/index.html', 'index content');
 
-        expect($this->resolver->resolve('section'))->toBe($this->tempDir.'/section/index.html');
+        expect($this->resolver->resolve('section'))->toBe(Path::normalizePath($this->tempDir.'/section/index.html'));
     });
 
     it('resolves empty name to index template (homepage)', function () {
         file_put_contents($this->tempDir.'/index.twig', 'homepage');
 
-        expect($this->resolver->resolve(''))->toBe($this->tempDir.'/index.twig');
+        expect($this->resolver->resolve(''))->toBe(Path::normalizePath($this->tempDir.'/index.twig'));
     });
 
     it('returns false when template does not exist', function () {
@@ -126,14 +127,14 @@ describe('resolve', function () {
         mkdir($this->tempDir.'/sub', 0777, true);
         file_put_contents($this->tempDir.'/sub/page.twig', 'content');
 
-        expect($this->resolver->resolve('sub\\page'))->toBe($this->tempDir.'/sub/page.twig');
+        expect($this->resolver->resolve('sub\\page'))->toBe(Path::normalizePath($this->tempDir.'/sub/page.twig'));
     });
 
     it('normalizes multiple slashes in template names', function () {
         mkdir($this->tempDir.'/sub', 0777, true);
         file_put_contents($this->tempDir.'/sub/page.twig', 'content');
 
-        expect($this->resolver->resolve('sub///page'))->toBe($this->tempDir.'/sub/page.twig');
+        expect($this->resolver->resolve('sub///page'))->toBe(Path::normalizePath($this->tempDir.'/sub/page.twig'));
     });
 
     it('caches resolved paths for the same template', function () {
@@ -143,14 +144,14 @@ describe('resolve', function () {
         $second = $this->resolver->resolve('cached');
 
         expect($first)->toBe($second)
-            ->and($first)->toBe($this->tempDir.'/cached.twig');
+            ->and($first)->toBe(Path::normalizePath($this->tempDir.'/cached.twig'));
     });
 
     it('strips NUL bytes during name normalization', function () {
         file_put_contents($this->tempDir.'/badtemplate.twig', 'content');
 
         // NUL bytes are stripped by Str::convertToUtf8, so "bad\0template" resolves as "badtemplate"
-        expect($this->resolver->resolve("bad\0template"))->toBe($this->tempDir.'/badtemplate.twig');
+        expect($this->resolver->resolve("bad\0template"))->toBe(Path::normalizePath($this->tempDir.'/badtemplate.twig'));
     });
 
     it('throws LoaderError for path traversal', function () {
@@ -166,7 +167,7 @@ describe('resolve', function () {
     it('resolves private templates when publicOnly is false', function () {
         file_put_contents($this->tempDir.'/_partial.twig', 'private');
 
-        expect($this->resolver->resolve('_partial', publicOnly: false))->toBe($this->tempDir.'/_partial.twig');
+        expect($this->resolver->resolve('_partial', publicOnly: false))->toBe(Path::normalizePath($this->tempDir.'/_partial.twig'));
     });
 
     it('uses custom private template trigger from config', function () {
@@ -175,7 +176,7 @@ describe('resolve', function () {
         file_put_contents($this->tempDir.'/.hidden.twig', 'hidden');
 
         expect($this->resolver->resolve('.hidden', publicOnly: true))->toBeFalse();
-        expect($this->resolver->resolve('.hidden', publicOnly: false))->toBe($this->tempDir.'/.hidden.twig');
+        expect($this->resolver->resolve('.hidden', publicOnly: false))->toBe(Path::normalizePath($this->tempDir.'/.hidden.twig'));
     });
 });
 
@@ -185,7 +186,7 @@ describe('custom template extensions', function () {
 
         file_put_contents($this->tempDir.'/page.htm', 'content');
 
-        expect($this->resolver->resolve('page'))->toBe($this->tempDir.'/page.htm');
+        expect($this->resolver->resolve('page'))->toBe(Path::normalizePath($this->tempDir.'/page.htm'));
     });
 
     it('does not resolve templates with non-configured extensions', function () {
@@ -206,7 +207,7 @@ describe('custom index filenames', function () {
         mkdir($this->tempDir.'/section', 0777, true);
         file_put_contents($this->tempDir.'/section/default.twig', 'default content');
 
-        expect($this->resolver->resolve('section'))->toBe($this->tempDir.'/section/default.twig');
+        expect($this->resolver->resolve('section'))->toBe(Path::normalizePath($this->tempDir.'/section/default.twig'));
     });
 
     it('does not resolve standard index when custom filenames are set', function () {
@@ -239,7 +240,7 @@ describe('template roots', function () {
         // New resolver to avoid cache
         $resolver = new TemplateResolver;
 
-        expect($resolver->resolve('myroot/page'))->toBe($rootDir.'/page.twig');
+        expect($resolver->resolve('myroot/page'))->toBe(Path::normalizePath($rootDir.'/page.twig'));
     });
 
     it('resolves template root with empty prefix', function () {
@@ -257,7 +258,7 @@ describe('template roots', function () {
 
         $resolver = new TemplateResolver;
 
-        expect($resolver->resolve('fallback'))->toBe($rootDir.'/fallback.twig');
+        expect($resolver->resolve('fallback'))->toBe(Path::normalizePath($rootDir.'/fallback.twig'));
     });
 });
 
@@ -280,7 +281,7 @@ describe('template mode', function () {
         TemplateMode::set(TemplateMode::Cp);
 
         // Should find it in Site mode even though current mode is CP
-        expect($this->resolver->resolve('site-only', TemplateMode::Site))->toBe($this->tempDir.'/site-only.twig');
+        expect($this->resolver->resolve('site-only', TemplateMode::Site))->toBe(Path::normalizePath($this->tempDir.'/site-only.twig'));
     });
 
     it('restores template mode after resolve with explicit mode', function () {
@@ -299,13 +300,13 @@ describe('nested templates', function () {
         mkdir($this->tempDir.'/a/b/c', 0777, true);
         file_put_contents($this->tempDir.'/a/b/c/deep.twig', 'deep content');
 
-        expect($this->resolver->resolve('a/b/c/deep'))->toBe($this->tempDir.'/a/b/c/deep.twig');
+        expect($this->resolver->resolve('a/b/c/deep'))->toBe(Path::normalizePath($this->tempDir.'/a/b/c/deep.twig'));
     });
 
     it('resolves nested index templates', function () {
         mkdir($this->tempDir.'/a/b', 0777, true);
         file_put_contents($this->tempDir.'/a/b/index.twig', 'nested index');
 
-        expect($this->resolver->resolve('a/b'))->toBe($this->tempDir.'/a/b/index.twig');
+        expect($this->resolver->resolve('a/b'))->toBe(Path::normalizePath($this->tempDir.'/a/b/index.twig'));
     });
 });

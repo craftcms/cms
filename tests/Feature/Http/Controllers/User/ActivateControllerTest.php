@@ -20,6 +20,8 @@ test('activate requires administrateUsers permission and activates users', funct
     Edition::set(Edition::Pro);
 
     $user = User::factory()->create();
+    UserPermissions::saveUserPermissions($user->id, ['accessCp']);
+
     $user2 = User::factory()->create([
         'active' => false,
     ]);
@@ -31,6 +33,7 @@ test('activate requires administrateUsers permission and activates users', funct
     ])->assertForbidden();
 
     UserPermissions::saveUserPermissions($user->id, [
+        'accessCp',
         'viewUsers',
         'editUsers',
         'administrateUsers',
@@ -53,11 +56,16 @@ test('deactivate requires administrateUsers permission and deactivates users', f
 
     actingAs($user->asElement());
 
+    UserPermissions::saveUserPermissions($user->id, [
+        'accessCp',
+    ]);
+
     postJson(action([ActivateController::class, 'deactivate']), [
         'userId' => $user2->id,
     ])->assertForbidden();
 
     UserPermissions::saveUserPermissions($user->id, [
+        'accessCp',
         'viewUsers',
         'editUsers',
         'administrateUsers',
@@ -80,6 +88,10 @@ test('sendActivationEmail requires moderateUsers for pending users', function ()
     Edition::set(Edition::Pro);
 
     $user = User::factory()->create();
+    UserPermissions::saveUserPermissions($user->id, [
+        'accessCp',
+    ]);
+
     $pendingUser = User::factory()->create([
         'active' => false,
         'pending' => true,
@@ -92,6 +104,7 @@ test('sendActivationEmail requires moderateUsers for pending users', function ()
     ])->assertForbidden();
 
     UserPermissions::saveUserPermissions($user->id, [
+        'accessCp',
         'viewUsers',
         'editUsers',
         'moderateUsers',
@@ -110,6 +123,9 @@ test('sendActivationEmail requires moderateUsers for inactive (non-pending) user
     Edition::set(Edition::Pro);
 
     $user = User::factory()->create();
+    UserPermissions::saveUserPermissions($user->id, [
+        'accessCp',
+    ]);
     $inactiveUser = User::factory()->create([
         'active' => false,
         'pending' => false,
@@ -122,6 +138,7 @@ test('sendActivationEmail requires moderateUsers for inactive (non-pending) user
     ])->assertForbidden();
 
     UserPermissions::saveUserPermissions($user->id, [
+        'accessCp',
         'viewUsers',
         'editUsers',
         'moderateUsers',

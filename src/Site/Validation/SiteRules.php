@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Site\Validation;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Validation\Rules\EnvValueRule;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use CraftCms\Cms\Validation\Rules\LanguageRule;
 use CraftCms\Cms\Validation\Ruleset;
@@ -32,14 +33,14 @@ class SiteRules extends Ruleset
                     [new Unique(Table::SITES, 'handle')->ignore($this->subject->id)->withoutTrashed('dateDeleted')],
                 ),
             ],
-            'name' => [
+            'name' => new EnvValueRule([
                 'required',
                 'string',
                 Rule::when(
                     Cms::isInstalled(),
                     [new Unique(Table::SITES, 'name')->ignore($this->subject->id)->withoutTrashed('dateDeleted')],
                 ),
-            ],
+            ]),
         ];
     }
 }

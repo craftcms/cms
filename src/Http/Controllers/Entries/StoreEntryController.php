@@ -57,6 +57,8 @@ readonly class StoreEntryController
 
         $this->populateEntry($entry);
 
+        $this->enforceEditEntryPermissions($entry, $duplicate);
+
         if ($forceDisabled) {
             $entry->enabled = false;
         }

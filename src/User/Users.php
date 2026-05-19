@@ -372,7 +372,10 @@ class Users
     ): void {
         $filename = AssetsHelper::prepareAssetName($filename ?? pathinfo($fileLocation, PATHINFO_BASENAME), true, true);
 
-        if (! ImageHelper::canManipulateAsImage(pathinfo($fileLocation, PATHINFO_EXTENSION))) {
+        if (
+            ! ImageHelper::canManipulateAsImage(pathinfo($fileLocation, PATHINFO_EXTENSION)) ||
+            ! ImageHelper::canManipulateAsImage(pathinfo($filename, PATHINFO_EXTENSION))
+        ) {
             throw new ImageException(t('User photo must be an image that Craft can manipulate.'));
         }
 
@@ -1274,11 +1277,8 @@ class Users
             $url = Url::siteUrl($path, $params, $scheme, siteId: $siteId);
         }
 
-        if (Url::isRootRelativeUrl($url)) {
-            $request = request();
-            if (! app()->runningInConsole()) {
-                $url = rtrim($request->getSchemeAndHttpHost().$request->getBaseUrl(), '/').$url;
-            }
+        if (Url::isRootRelativeUrl($url) && ! app()->runningInConsole()) {
+            return url($url);
         }
 
         return $url;

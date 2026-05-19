@@ -9,7 +9,7 @@ use Override;
 
 /**
  * @method static bool isAvailable()
- * @method static \Illuminate\Support\Collection<string, \CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition> getProviderDefinitions()
+ * @method static \Illuminate\Support\Collection getProviderDefinitions()
  * @method static \CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition|null getProviderDefinition(string $handle)
  * @method static \Illuminate\Support\HtmlString[] getLoginButtons(bool|null $isCpRequest = null)
  * @method static \Laravel\Socialite\Contracts\Provider buildProvider(\CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition $provider, bool|null $isCpRequest = null)

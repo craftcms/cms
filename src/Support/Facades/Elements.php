@@ -8,16 +8,16 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static class-string<\CraftCms\Cms\Element\Contracts\ElementInterface>|null getElementTypeById(int $elementId)
+ * @method static string|null getElementTypeById(int $elementId)
  * @method static string|null getElementTypeByUid(string $uid)
  * @method static string|null getElementTypeByKey(string $property, int|string $elementId)
  * @method static string[] getElementTypesByIds(int[] $elementIds)
- * @method static class-string<\CraftCms\Cms\Element\Contracts\ElementInterface>[] getAllElementTypes()
+ * @method static string[] getAllElementTypes()
  * @method static string|null getElementTypeByRefHandle(string $refHandle)
- * @method static \CraftCms\Cms\Element\Contracts\ElementInterface createElement(class-string<\CraftCms\Cms\Element\Contracts\ElementInterface>|array $config)
- * @method static \CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface createElementQuery(class-string<\CraftCms\Cms\Element\Contracts\ElementInterface> $elementType)
- * @method static \CraftCms\Cms\Element\Contracts\ElementInterface|null getElementById(int $elementId, class-string<\CraftCms\Cms\Element\Contracts\ElementInterface>|null $elementType = null, int|string|int[]|null $siteId = null, array $criteria = [])
- * @method static \CraftCms\Cms\Element\Contracts\ElementInterface|null getElementByUid(string $uid, class-string<\CraftCms\Cms\Element\Contracts\ElementInterface>|null $elementType = null, int|string|int[]|null $siteId = null, array $criteria = [])
+ * @method static \CraftCms\Cms\Element\Contracts\ElementInterface createElement(string|array $config)
+ * @method static \CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface createElementQuery(string $elementType)
+ * @method static \CraftCms\Cms\Element\Contracts\ElementInterface|null getElementById(int $elementId, string|null $elementType = null, int|string|int[]|null $siteId = null, array $criteria = [])
+ * @method static \CraftCms\Cms\Element\Contracts\ElementInterface|null getElementByUid(string $uid, string|null $elementType = null, int|string|int[]|null $siteId = null, array $criteria = [])
  * @method static \CraftCms\Cms\Element\Contracts\ElementInterface|null getElementByUri(string $uri, int|null $siteId = null, bool $enabledOnly = false)
  * @method static string|null getElementUriForSite(int $elementId, int $siteId)
  * @method static int[] getEnabledSiteIdsForElement(int $elementId)
@@ -34,7 +34,7 @@ use Override;
  * @method static void updateDescendantSlugsAndUris(\CraftCms\Cms\Element\Contracts\ElementInterface $element, bool $updateOtherSites = true, bool $queue = false)
  * @method static bool mergeElementsByIds(int $mergedElementId, int $prevailingElementId)
  * @method static bool mergeElements(\CraftCms\Cms\Element\Contracts\ElementInterface $mergedElement, \CraftCms\Cms\Element\Contracts\ElementInterface $prevailingElement)
- * @method static bool deleteElementById(int $elementId, class-string<\CraftCms\Cms\Element\Contracts\ElementInterface>|null $elementType = null, int|null $siteId = null, bool $hardDelete = false)
+ * @method static bool deleteElementById(int $elementId, string|null $elementType = null, int|null $siteId = null, bool $hardDelete = false)
  * @method static bool deleteElement(\CraftCms\Cms\Element\Contracts\ElementInterface $element, bool $hardDelete = false)
  * @method static void deleteElementForSite(\CraftCms\Cms\Element\Contracts\ElementInterface $element)
  * @method static void deleteElementsForSite(\CraftCms\Cms\Element\Contracts\ElementInterface[] $elements)
@@ -45,7 +45,7 @@ use Override;
  * @method static \CraftCms\Cms\Element\Contracts\ElementInterface[] getPlaceholderElements()
  * @method static \CraftCms\Cms\Element\Contracts\ElementInterface|null getPlaceholderElement(int $sourceId, int $siteId)
  * @method static \CraftCms\Cms\Element\Data\EagerLoadPlan[] createEagerLoadingPlans(array|string $with)
- * @method static void eagerLoadElements(class-string<\CraftCms\Cms\Element\Contracts\ElementInterface> $elementType, \CraftCms\Cms\Element\Contracts\ElementInterface[] $elements, array<string|array>|string|\CraftCms\Cms\Element\Data\EagerLoadPlan[] $with)
+ * @method static void eagerLoadElements(string $elementType, \CraftCms\Cms\Element\Contracts\ElementInterface[] $elements, array|string $with)
  *
  * @see \CraftCms\Cms\Element\Elements
  */

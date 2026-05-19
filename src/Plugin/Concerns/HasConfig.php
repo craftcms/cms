@@ -27,7 +27,5 @@ trait HasConfig
         $this->publishes([
             $source => config_path("craft/$handle.php"),
         ], $handle);
-
-        $this->mergeConfigFrom($source, "craft.$handle");
     }
 }

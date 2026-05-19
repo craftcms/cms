@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static string|null get()
  * @method static \CraftCms\Cms\View\InputNamespace set(string|null $namespace)
  * @method static mixed with(string|null $namespace, callable $callback)
- * @method static string namespaceInputs(callable|string $html, string|null $namespace = null, bool $otherAttributes = true, bool $withClasses = false)
+ * @method static string namespaceInputs(callable|string|\Stringable $html, string|null $namespace = null, bool $otherAttributes = true, bool $withClasses = false)
  * @method static string namespaceInputName(string $inputName, string|null $namespace = null)
  * @method static string namespaceId(string $inputId, string|null $namespace = null)
  *

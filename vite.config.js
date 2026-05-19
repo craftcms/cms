@@ -2,9 +2,44 @@ import {defineConfig, loadEnv} from 'vite';
 import laravel from 'laravel-vite-plugin';
 import inertia from '@inertiajs/vite';
 import fs from 'fs';
+import path from 'path';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 import {wayfinder} from '@laravel/vite-plugin-wayfinder';
+
+const MIME_TYPES = {
+  '.js': 'application/javascript',
+  '.mjs': 'application/javascript',
+  '.css': 'text/css',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+  '.map': 'application/json',
+};
+
+function serveResourcesLegacy() {
+  return {
+    name: 'serve-resources-legacy',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (!req.url?.startsWith('/legacy/')) return next();
+        const filePath = path.resolve('resources' + req.url.split('?')[0]);
+        if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+          const ext = path.extname(filePath);
+          res.writeHead(200, {'Content-Type': MIME_TYPES[ext] ?? 'application/octet-stream'});
+          fs.createReadStream(filePath).pipe(res);
+          return;
+        }
+        next();
+      });
+    },
+  };
+}
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -27,6 +62,8 @@ export default defineConfig(({mode}) => {
     base: './',
     server,
 
+    publicDir: 'resources/public',
+
     resolve: {
       tsconfigPaths: true,
       alias: {
@@ -36,10 +73,10 @@ export default defineConfig(({mode}) => {
 
     build: {
       emptyOutDir: true,
-
     },
 
     plugins: [
+      serveResourcesLegacy(),
       tailwindcss(),
       wayfinder({
         path: 'resources/js',

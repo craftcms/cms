@@ -191,7 +191,7 @@ class CpScreenResponse implements Responsable
     public $contextMenuItems;
 
     /**
-     * @var string|callable|null Toolbar HTML
+     * @var string|Stringable|callable|null Toolbar HTML
      *
      * @see toolbarHtml()
      * @see toolbarTemplate()
@@ -213,7 +213,7 @@ class CpScreenResponse implements Responsable
     public ?string $submitButtonLabel = null;
 
     /**
-     * @var string|callable|null Additional buttons’ HTML.
+     * @var string|Stringable|callable|null Additional buttons’ HTML.
      *
      * This will only be used by full-page screens.
      *
@@ -223,7 +223,7 @@ class CpScreenResponse implements Responsable
     public $additionalButtonsHtml;
 
     /**
-     * @var string|callable|null The content HTML.
+     * @var string|Stringable|callable|null The content HTML.
      *
      * @see contentHtml()
      * @see contentTemplate()
@@ -231,7 +231,7 @@ class CpScreenResponse implements Responsable
     public $contentHtml;
 
     /**
-     * @var string|callable|null The right-hand meta sidebar HTML.
+     * @var string|Stringable|callable|null The right-hand meta sidebar HTML.
      *
      * @see metaSidebarHtml()
      * @see metaSidebarTemplate()
@@ -239,7 +239,7 @@ class CpScreenResponse implements Responsable
     public $metaSidebarHtml;
 
     /**
-     * @var string|callable|null The left-hand page sidebar HTML (only used by full-page screens).
+     * @var string|Stringable|callable|null The left-hand page sidebar HTML (only used by full-page screens).
      *
      * @see pageSidebarHtml()
      * @see pageSidebarTemplate()
@@ -247,7 +247,7 @@ class CpScreenResponse implements Responsable
     public $pageSidebarHtml;
 
     /**
-     * @var string|callable|null The content notice HTML.
+     * @var string|Stringable|callable|null The content notice HTML.
      *
      * @see noticeHtml()
      * @see noticeTemplate()
@@ -255,7 +255,7 @@ class CpScreenResponse implements Responsable
     public $noticeHtml;
 
     /**
-     * @var string|callable|null The errors summary HTML (DEV-212).
+     * @var string|Stringable|callable|null The errors summary HTML (DEV-212).
      *
      * @see errorSummary()
      * @see errorSummaryTemplate()
@@ -540,7 +540,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets the toolbar HTML.
      */
-    public function toolbarHtml(callable|string|null $value): self
+    public function toolbarHtml(callable|string|Stringable|null $value): self
     {
         $this->toolbarHtml = $value;
 
@@ -606,7 +606,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets the content HTML.
      */
-    public function contentHtml(callable|string|null $value): self
+    public function contentHtml(callable|string|Stringable|null $value): self
     {
         $this->contentHtml = $value;
 
@@ -640,7 +640,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets the right-hand meta sidebar HTML.
      */
-    public function metaSidebarHtml(callable|string|null $value): self
+    public function metaSidebarHtml(callable|string|Stringable|null $value): self
     {
         $this->metaSidebarHtml = $value;
 
@@ -660,7 +660,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets the left-hand page sidebar HTML (only used by full-page screens).
      */
-    public function pageSidebarHtml(callable|string|null $value): self
+    public function pageSidebarHtml(callable|string|Stringable|null $value): self
     {
         $this->pageSidebarHtml = $value;
 
@@ -680,7 +680,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets the content notice HTML.
      */
-    public function noticeHtml(callable|string|null $value): self
+    public function noticeHtml(callable|string|Stringable|null $value): self
     {
         $this->noticeHtml = $value;
 
@@ -700,7 +700,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets the errors summary HTML.
      */
-    public function errorSummary(callable|string|null $value): self
+    public function errorSummary(callable|string|Stringable|null $value): self
     {
         $this->errorSummary = $value;
 

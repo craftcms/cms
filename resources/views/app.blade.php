@@ -5,6 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <script>window.Cp = {};</script>
         {!! $headHtml !!}
+        {!! \CraftCms\Cms\Cp\Cp::viteScripts()->toHtml() !!}
+        {!! app(\CraftCms\Cms\Plugin\Plugins::class)->getAssetsHtml() !!}
         <script>let Craft = (window.Craft || {})</script>
         @vite(['resources/css/cp.css', 'resources/js/cp.ts'], 'vendor/craft/build')
         <x-inertia::head>

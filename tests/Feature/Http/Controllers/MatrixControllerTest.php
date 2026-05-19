@@ -257,6 +257,33 @@ it('rejects invalid duplicate source ids when creating a matrix entry', function
         ->assertJsonPath('message', 'Invalid source element ID: 999999');
 });
 
+it('rejects duplicate sources from another matrix owner', function () {
+    $victimOwner = EntryModel::factory()
+        ->forSection($this->fixture['section'])
+        ->forEntryType($this->fixture['ownerType'])
+        ->createElement([
+            'title' => 'Victim Owner Entry',
+            'slug' => Str::slug('Victim Owner Entry '.Str::random(6)),
+        ]);
+    $victimFixture = [
+        ...$this->fixture,
+        'owner' => EntryElement::find()->id($victimOwner->id)->status(null)->one(),
+    ];
+
+    $victimFixture['owner'] = saveMatrixControllerBlocks($victimFixture, [[
+        'title' => 'Victim Block',
+        'innerText' => 'Victim text',
+    ]]);
+    $victimFixture = refreshMatrixControllerFixture($victimFixture);
+    $source = matrixControllerNestedEntries($victimFixture)->sole();
+
+    postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+        'duplicate' => $source->id,
+    ]))
+        ->assertStatus(400)
+        ->assertJsonPath('message', "Invalid source element ID: $source->id");
+});
+
 it('forbids duplicating a matrix entry when authorization fails', function () {
     $this->fixture['owner'] = saveMatrixControllerBlocks($this->fixture, [[
         'title' => 'Source Block',
@@ -267,6 +294,28 @@ it('forbids duplicating a matrix entry when authorization fails', function () {
 
     Gate::before(function ($user, string $ability) {
         if ($ability === 'duplicateAsDraft') {
+            return false;
+        }
+
+        return null;
+    });
+
+    postJson(action([MatrixController::class, 'createEntry']), createMatrixControllerPayload($this->fixture, [
+        'duplicate' => $source->id,
+    ]))
+        ->assertForbidden();
+});
+
+it('forbids duplicating a matrix entry when viewing the source is not authorized', function () {
+    $this->fixture['owner'] = saveMatrixControllerBlocks($this->fixture, [[
+        'title' => 'Source Block',
+        'innerText' => 'Source text',
+    ]]);
+    $this->fixture = refreshMatrixControllerFixture($this->fixture);
+    $source = matrixControllerNestedEntries($this->fixture)->sole();
+
+    Gate::before(function ($user, string $ability) {
+        if ($ability === 'view') {
             return false;
         }
 

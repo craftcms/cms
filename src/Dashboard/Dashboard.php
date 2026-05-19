@@ -69,7 +69,7 @@ readonly class Dashboard
     public function createWidget(string|array $config): WidgetInterface
     {
         if (is_string($config)) {
-            return app($config);
+            $config = ['type' => $config];
         }
 
         return Widget::fromConfig($config);
@@ -102,10 +102,13 @@ readonly class Dashboard
      */
     public function doesUserHaveWidget(string $type): bool
     {
-        return Models\Widget::query()
-            ->where('userId', Auth::user()->getAuthIdentifier())
-            ->where('type', $type)
-            ->exists();
+        $widgets = $this->getUserWidgets();
+
+        if ($widgets === false) {
+            return false;
+        }
+
+        return $widgets->contains(fn (WidgetInterface $widget) => $widget::class === $type);
     }
 
     /**
@@ -354,10 +357,10 @@ readonly class Dashboard
             return false;
         }
 
-        return Models\Widget::query()
+        return once(fn () => Models\Widget::query()
             ->where('userId', $user->id)
             ->orderBy('sortOrder')
             ->get()
-            ->map(fn (Models\Widget $widget) => Widget::fromConfig($widget));
+            ->map(fn (Models\Widget $widget) => Widget::fromConfig($widget)));
     }
 }

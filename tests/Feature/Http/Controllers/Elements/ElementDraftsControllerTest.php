@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementActivity;
@@ -21,6 +22,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -540,6 +542,99 @@ describe('apply', function () {
         expect($canonical->title)->toBe('Applied Draft Title')
             ->and($canonical->slug)->toBe('applied-draft-title')
             ->and(Entry::find()->draftId($draft->draftId)->status(null)->one())->toBeNull();
+    });
+
+    it('applies email changes from unpublished user drafts', function () {
+        $admin = UserModel::factory()->admin()->createElement();
+
+        actingAs($admin);
+
+        $draft = app(User::class);
+        $draft->username = 'new-user';
+
+        expect(app(Drafts::class)->saveElementAsDraft($draft, $admin->id, markAsSaved: false))->toBeTrue();
+
+        postJson(action([ElementDraftsController::class, 'apply']), [
+            'elementType' => User::class,
+            'draftId' => $draft->draftId,
+            'siteId' => $draft->siteId,
+            'email' => 'new-user@example.com',
+            'username' => 'new-user',
+        ])->assertOk()
+            ->assertJsonPath('message', t('{type} created.', [
+                'type' => User::displayName(),
+            ]));
+
+        expect(User::find()
+            ->email('new-user@example.com')
+            ->status(null)
+            ->one()
+        )->not->toBeNull();
+    });
+
+    it('ignores other sensitive attributes when applying user drafts', function () {
+        $admin = UserModel::factory()->admin()->createElement();
+        $targetUser = UserModel::factory()->createElement([
+            'active' => false,
+            'admin' => false,
+            'passwordResetRequired' => false,
+        ]);
+        $originalPassword = DB::table(Table::USERS)
+            ->where('id', $targetUser->id)
+            ->value('password');
+        /** @var User $draft */
+        $draft = app(Drafts::class)->createDraft($targetUser, $admin->id, name: 'User Draft');
+
+        actingAs($admin);
+
+        postJson(action([ElementDraftsController::class, 'apply']), [
+            'elementType' => User::class,
+            'draftId' => $draft->draftId,
+            'siteId' => $draft->siteId,
+            'firstName' => 'Updated',
+            'active' => true,
+            'admin' => true,
+            'affiliatedSiteId' => 999,
+            'currentPassword' => 'password',
+            'invalidLoginCount' => 10,
+            'lastInvalidLoginDate' => now()->toDateTimeString(),
+            'lastLoginAttemptIp' => '127.0.0.1',
+            'lastLoginDate' => now()->toDateTimeString(),
+            'lastPasswordChangeDate' => now()->toDateTimeString(),
+            'locked' => true,
+            'lockoutDate' => now()->toDateTimeString(),
+            'newPassword' => 'SecurePassword123!',
+            'password' => 'password',
+            'passwordResetRequired' => true,
+            'pending' => true,
+            'photoId' => 999,
+            'suspended' => true,
+            'unverifiedEmail' => 'unverified@example.com',
+        ])->assertOk();
+
+        /** @var User $updatedUser */
+        $updatedUser = User::find()
+            ->id($targetUser->id)
+            ->status(null)
+            ->one();
+
+        expect($updatedUser->firstName)->toBe('Updated')
+            ->and($updatedUser->active)->toBeFalse()
+            ->and($updatedUser->admin)->toBeFalse()
+            ->and($updatedUser->affiliatedSiteId)->toBeNull()
+            ->and($updatedUser->invalidLoginCount)->toBeNull()
+            ->and($updatedUser->lastInvalidLoginDate)->toBeNull()
+            ->and($updatedUser->lastLoginAttemptIp)->toBeNull()
+            ->and($updatedUser->lastLoginDate)->toBeNull()
+            ->and($updatedUser->lastPasswordChangeDate)->toBeNull()
+            ->and($updatedUser->locked)->toBeFalse()
+            ->and($updatedUser->lockoutDate)->toBeNull()
+            ->and(DB::table(Table::USERS)->where('id', $targetUser->id)->value('password'))->toBe($originalPassword)
+            ->and($updatedUser->passwordResetRequired)->toBeFalse()
+            ->and($updatedUser->pending)->toBeFalse()
+            ->and($updatedUser->photoId)->toBeNull()
+            ->and($updatedUser->suspended)->toBeFalse()
+            ->and($updatedUser->unverifiedEmail)->toBeNull();
     });
 
     it('forbids applying a draft when the user cannot save the canonical element', function () {

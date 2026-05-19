@@ -38,6 +38,7 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
 {
     use ClonefixTrait;
     use HasRuleset;
+    use RejectsUnsafeConfigKeys;
 
     /**
      * @event \yii\base\Event The event that is triggered after the model's init cycle
@@ -93,6 +94,16 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
 
         // Intentionally not passing $config along
         parent::__construct();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function __set($name, $value)
+    {
+        $this->ensureConfigKeyIsSafe($name);
+
+        parent::__set($name, $value);
     }
 
     /**
@@ -246,7 +257,7 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
      * @inheritdoc
      * @since 4.0.0
      */
-    public function setAttributes($values, $safeOnly = true): void
+    public function setAttributes($values, $safeOnly = false): void
     {
         // Typecast them
         Typecast::properties(static::class, $values);
@@ -273,7 +284,7 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
             $attributes = Arr::except($attributes, $except);
         }
 
-        return $attributes;
+        return Arr::except($attributes, ['ruleset']);
     }
 
     public function attributes(): array
@@ -284,6 +295,13 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
     public function safeAttributes(): array
     {
         return parent::safeAttributes();
+    }
+
+    public function offsetExists($offset): bool
+    {
+        return parent::offsetExists($offset) || (
+            is_string($offset) && $this->canGetProperty($offset)
+        );
     }
 
     public function getAttributeLabel($attribute): string

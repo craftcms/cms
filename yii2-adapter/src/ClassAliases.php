@@ -87,7 +87,6 @@ use craft\elements\actions\Delete;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\DeleteAssets;
 use craft\elements\actions\DeleteForSite;
-use craft\elements\actions\DeleteUsers;
 use craft\elements\actions\DownloadAssetFile;
 use craft\elements\actions\Duplicate;
 use craft\elements\actions\Edit;
@@ -755,7 +754,6 @@ class ClassAliases
         class_alias(\CraftCms\Cms\Twig\Extensions\FeExtension::class, FeExtension::class);
         class_alias(\CraftCms\Cms\Twig\Extensions\SinglePreloaderExtension::class, SinglePreloaderExtension::class);
         class_alias(NavItemNode::class, NavItem_Node::class);
-        class_alias(\CraftCms\Cms\User\Actions\DeleteUsers::class, DeleteUsers::class);
         class_alias(\CraftCms\Cms\User\Actions\SuspendUsers::class, SuspendUsers::class);
         class_alias(\CraftCms\Cms\User\Actions\UnsuspendUsers::class, UnsuspendUsers::class);
         class_alias(\CraftCms\Cms\User\Conditions\AdminConditionRule::class, AdminConditionRule::class);

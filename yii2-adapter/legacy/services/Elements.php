@@ -22,8 +22,8 @@ use craft\events\InvalidateElementCachesEvent;
 use craft\events\MergeElementsEvent;
 use craft\events\MultiElementActionEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\helpers\Component as ComponentHelper;
 use craft\models\ElementActivity;
-use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Element\BulkOp\Events\BulkOpCompleted;
 use CraftCms\Cms\Element\BulkOp\Events\BulkOpStarting;
 use CraftCms\Cms\Element\Contracts\ElementActionInterface;
@@ -1923,6 +1923,7 @@ class Elements extends Component
             ]));
 
             $event->hardDelete = $yiiEvent->hardDelete;
+            $event->isValid = $yiiEvent->isValid;
         });
 
         Event::listen(function(ElementActionPerforming $event) {

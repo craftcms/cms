@@ -17,6 +17,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
+use CraftCms\Cms\Element\DeletionBlockers\EntryAuthorsBlocker;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\MenuItemType;
@@ -25,7 +26,6 @@ use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\UserQuery;
-use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Shared\Concerns\HasNames;
@@ -34,7 +34,6 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
-use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -49,7 +48,6 @@ use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
-use CraftCms\Cms\User\Actions\DeleteUsers;
 use CraftCms\Cms\User\Actions\SuspendUsers;
 use CraftCms\Cms\User\Actions\UnsuspendUsers;
 use CraftCms\Cms\User\Concerns\LegacyConstants;
@@ -76,7 +74,6 @@ use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
@@ -149,6 +146,33 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public const string STATUS_SUSPENDED = 'suspended';
 
     public const string STATUS_LOCKED = 'locked';
+
+    /**
+     * These attributes can only be saved through the User
+     * routes. The generic save element routes will not
+     * allow changes to these attributes.
+     */
+    public const array SENSITIVE_ATTRIBUTES = [
+        'active',
+        'admin',
+        'affiliatedSiteId',
+        'currentPassword',
+        'email',
+        'invalidLoginCount',
+        'lastInvalidLoginDate',
+        'lastLoginAttemptIp',
+        'lastLoginDate',
+        'lastPasswordChangeDate',
+        'locked',
+        'lockoutDate',
+        'newPassword',
+        'password',
+        'passwordResetRequired',
+        'pending',
+        'photoId',
+        'suspended',
+        'unverifiedEmail',
+    ];
 
     /**
      * @var int|null Photo asset ID
@@ -269,11 +293,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var string|null Session remember token
      */
     public ?string $remember_token = null;
-
-    /**
-     * @var self|null The user who should take over the user’s content if the user is deleted.
-     */
-    public ?User $inheritorOnDelete = null;
 
     /**
      * @var ElementCollection<Address> Addresses
@@ -520,7 +539,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     {
         return collect()
             ->when(Gate::check('moderateUsers'), fn ($actions) => $actions->push(SuspendUsers::class, UnsuspendUsers::class))
-            ->when(Gate::check('deleteUsers'), fn ($actions) => $actions->push(DeleteUsers::class))
             ->push(Restore::class)
             ->all();
     }
@@ -888,27 +906,25 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             }
         }
 
-        if (isset($values['email'])) {
+        if (isset($values['email']) && $this->email !== null) {
             // make sure they have an elevated session
             if (! $this->isPasswordConfirmed()) {
                 abort(400, t('An elevated session is required to change a user’s email.'));
             }
 
-            if ($this->email !== null) {
-                // are they allowed to set the email?
-                if ($this->getIsCurrent() || Gate::check('administrateUsers')) {
-                    if (
-                        Edition::get()->value >= Edition::Pro->value &&
-                        ProjectConfig::get('users.requireEmailVerification') &&
-                        ! Gate::check('administrateUsers')
-                    ) {
-                        // set it as the unverified email instead, and
-                        $values['unverifiedEmail'] = Arr::pull($values, 'email');
-                        $this->sendVerificationEmailAfterRequest = true;
-                    }
-                } else {
-                    unset($values['email']);
+            // are they allowed to set the email?
+            if ($this->getIsCurrent() || Gate::check('administrateUsers')) {
+                if (
+                    Edition::get()->value >= Edition::Pro->value &&
+                    ProjectConfig::get('users.requireEmailVerification') &&
+                    ! Gate::check('administrateUsers')
+                ) {
+                    // set it as the unverified email instead, and
+                    $values['unverifiedEmail'] = Arr::pull($values, 'email');
+                    $this->sendVerificationEmailAfterRequest = true;
                 }
+            } else {
+                unset($values['email']);
             }
         }
 
@@ -958,11 +974,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[AllowedInSandbox]
     public function getHasSsoIdentity(): bool
     {
-        if (! OAuth::isAvailable()) {
-            return false;
-        }
-
-        return app(OAuth::class)->hasIdentity($this->id);
+        return $this->id !== null && app(OAuth::class)->hasIdentity($this->id);
     }
 
     #[Override]
@@ -1568,9 +1580,6 @@ JS, [
             return parent::destructiveActionMenuItems();
         }
 
-        // Intentionally not calling parent::destructiveActionMenuItems() here,
-        // because we want to override the user deletion UX.
-
         /** @var User $currentUser */
         $currentUser = Auth::user();
         $canAdministrateUsers = $currentUser->can('administrateUsers');
@@ -1606,40 +1615,13 @@ JS, [
                         'confirm' => t('Deactivating a user revokes their ability to sign in. Are you sure you want to continue?'),
                     ];
                 }
-
-                if ($isCurrentUser || $currentUser->can('deleteUsers')) {
-                    $deleteId = sprintf('action-delete-%s', mt_rand());
-                    $items[] = [
-                        'id' => $deleteId,
-                        'icon' => 'trash',
-                        'label' => mb_ucfirst(t('Delete {type}', [
-                            'type' => self::lowerDisplayName(),
-                        ])),
-                    ];
-
-                    HtmlStack::jsWithVars(fn ($id, $userId, $redirect) => <<<JS
-$('#' + $id).on('activate', () => {
-  Craft.sendActionRequest('POST', 'users/user-content-summary', {
-    data: {userId: $userId}
-  }).then((response) => {
-    new Craft.DeleteUserModal($userId, {
-      contentSummary: response.data,
-      redirect: $redirect,
-    })
-  });
-});
-JS,
-                        [
-                            InputNamespace::namespaceId($deleteId),
-                            $this->id,
-                            /** @phpstan-ignore-next-line */
-                            Crypt::encrypt(Edition::get() === Edition::Solo ? 'dashboard' : 'users'),
-                        ]);
-                }
             }
         }
 
-        return $items;
+        return [
+            ...$items,
+            ...parent::destructiveActionMenuItems(),
+        ];
     }
 
     private function _copyPasswordResetUrlActionItem(string $label): array
@@ -1890,7 +1872,7 @@ JS, [
 
                 return $formatter->asDuration($duration);
             },
-            t('Created at') => $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT),
+            t('Created at') => $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT, true),
             t('Last login') => function () use ($formatter) {
                 if ($this->pending) {
                     return false;
@@ -1899,14 +1881,14 @@ JS, [
                     return t('Never');
                 }
 
-                return $formatter->asDatetime($this->lastLoginDate, Formatter::FORMAT_WIDTH_SHORT);
+                return $formatter->asDatetime($this->lastLoginDate, Formatter::FORMAT_WIDTH_SHORT, true);
             },
             t('Last login fail') => function () use ($formatter) {
                 if (! $this->locked || ! $this->lastInvalidLoginDate) {
                     return false;
                 }
 
-                return $formatter->asDatetime($this->lastInvalidLoginDate, Formatter::FORMAT_WIDTH_SHORT);
+                return $formatter->asDatetime($this->lastInvalidLoginDate, Formatter::FORMAT_WIDTH_SHORT, true);
             },
             t('Login fail count') => function () use ($formatter) {
                 if (! $this->locked) {
@@ -1915,6 +1897,15 @@ JS, [
 
                 return $formatter->asDecimal($this->invalidLoginCount, 0);
             },
+        ];
+    }
+
+    #[Override]
+    public static function deletionBlockers(ElementCollection $elements, bool $hardDelete): array
+    {
+        return [
+            new EntryAuthorsBlocker($elements, $hardDelete),
+            ...parent::deletionBlockers($elements, $hardDelete),
         ];
     }
 
@@ -2061,46 +2052,6 @@ JS, [
         if (! parent::beforeDelete()) {
             return false;
         }
-
-        // Do all this stuff within a transaction
-        DbFacade::transaction(function () {
-            // Should we transfer the content to a new user?
-            if ($this->inheritorOnDelete) {
-                // Invalidate all entry caches
-                ElementCaches::invalidateForElementType(Entry::class);
-
-                // Update the entry/version/draft tables to point to the new user
-                $userRefs = [
-                    Table::DRAFTS => 'creatorId',
-                    Table::REVISIONS => 'creatorId',
-                    Table::ENTRIES_AUTHORS => 'authorId',
-                ];
-
-                foreach ($userRefs as $table => $column) {
-                    DbFacade::table($table)
-                        ->where($column, $this->id)
-                        ->update([
-                            $column => $this->inheritorOnDelete->id,
-                        ]);
-                }
-
-                return;
-            }
-
-            // Delete the entries
-            $entryQuery = Entry::find()
-                ->authorId($this->id)
-                ->status(null)
-                ->site('*')
-                ->unique();
-
-            $entryQuery->each(function (Entry $entry) {
-                // only delete their entry if they're the sole author
-                if ($entry->getAuthorIds() === [$this->id]) {
-                    Elements::deleteElement($entry);
-                }
-            }, 100);
-        });
 
         $this->getAddressManager()->deleteNestedElements($this, $this->hardDelete);
 

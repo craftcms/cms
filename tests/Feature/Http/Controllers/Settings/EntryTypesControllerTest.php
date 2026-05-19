@@ -18,6 +18,7 @@ use function Pest\Laravel\get;
 use function Pest\Laravel\getJson;
 use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
+use function Pest\Laravel\withSession;
 
 beforeEach(function () {
     actingAs(User::find()->one());
@@ -67,6 +68,16 @@ test('create can be loaded', function () {
 
 test('it can edit an entry type', function () {
     $entryType = $this->entryTypes->getEntryTypeById(EntryType::first()->id);
+
+    get(action([EntryTypesController::class, 'edit'], [$entryType->id]))
+        ->assertOk()
+        ->assertSee($entryType->name);
+});
+
+test('it ignores stale flashed field layouts when editing an entry type', function () {
+    $entryType = $this->entryTypes->getEntryTypeById(EntryType::first()->id);
+
+    withSession(['oldFieldLayout' => []]);
 
     get(action([EntryTypesController::class, 'edit'], [$entryType->id]))
         ->assertOk()

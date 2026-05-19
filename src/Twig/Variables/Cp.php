@@ -23,6 +23,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Uri;
 use InvalidArgumentException;
+use Stringable;
 
 use function CraftCms\Cms\t;
 
@@ -313,7 +314,7 @@ class Cp extends Component
      * @throws TemplateLoaderException if $input begins with `template:` and is followed by an invalid template path
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
      */
-    public function field(string $input, array $config = []): string
+    public function field(string|Stringable $input, array $config = []): string
     {
         return FormFields::fieldHtml($input, $config);
     }
@@ -334,14 +335,14 @@ class Cp extends Component
         $options = [];
 
         foreach ($originalOptions as $value) {
-            if ($value['type'] === 'optgroup') {
+            if (($value['type'] ?? null) === 'optgroup') {
                 $options[] = ['optgroup' => $value['label']];
                 array_push($options, ...($value['options'] ?? []));
             } else {
                 $options[] = [
                     'label' => $value['label'],
                     'value' => $value['value'],
-                    'data' => $value['data'],
+                    'data' => $value['data'] ?? null,
                 ];
             }
         }

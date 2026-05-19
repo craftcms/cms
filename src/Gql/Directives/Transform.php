@@ -90,7 +90,7 @@ class Transform extends Directive
             'mimeType' => $source->getMimeType($transform),
             'url' => $source->getUrl(
                 transform: $transform,
-                immediately: $arguments['immediately'] ?? Cms::config()->generateTransformsBeforePageLoad,
+                immediately: $arguments['immediately'] ?? null,
             ),
             'width' => $source->getWidth($transform),
             default => $value,

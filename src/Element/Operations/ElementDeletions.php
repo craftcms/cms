@@ -217,6 +217,10 @@ readonly class ElementDeletions
 
         $element->hardDelete = $hardDelete || $event->hardDelete;
 
+        if (! $event->isValid) {
+            return false;
+        }
+
         if (! $element->beforeDelete()) {
             return false;
         }

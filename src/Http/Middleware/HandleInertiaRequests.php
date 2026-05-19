@@ -16,6 +16,7 @@ use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\CpAsset;
@@ -86,7 +87,6 @@ class HandleInertiaRequests extends Middleware
         }
 
         $currentSite = Sites::getCurrentSite();
-        $generalConfig = app(GeneralConfig::class);
         $updates = app(Updates::class);
         $nav = app(Navigation::class);
         $progressService = app(JobProgress::class);
@@ -97,8 +97,8 @@ class HandleInertiaRequests extends Middleware
             $currentUser = $request->user();
         }
 
-        $systemIcon = Cms::config()->cpIconUrl
-            ? Aliases::get(Cms::config()->cpIconUrl)
+        $systemIcon = ($generalConfig->cpIconUrl && Edition::isAtLeast(Edition::Pro))
+            ? Html::img(Aliases::get($generalConfig->cpIconUrl))->render()
             : Icons::svg('c-outline');
 
         return [
@@ -120,8 +120,8 @@ class HandleInertiaRequests extends Middleware
             'readOnly' => fn () => ! $generalConfig->allowAdminChanges,
             'locale' => fn () => app()->getLocale(),
             'craft' => fn () => [
-                'csrfTokenValue' => $generalConfig->enableCsrfProtection ? csrf_token() : null,
-                'csrfTokenName' => $generalConfig->enableCsrfProtection ? $generalConfig->csrfTokenName : null,
+                'csrfTokenValue' => csrf_token(),
+                'csrfTokenName' => '_token',
                 'general' => [
                     'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
                 ],
@@ -141,7 +141,7 @@ class HandleInertiaRequests extends Middleware
                     'username' => $currentUser->username ?? null,
                     'email' => $currentUser->email ?? null,
                     'name' => $currentUser->name ?? null,
-                    'thumbHtml' => $currentUser->getThumbHtml(30),
+                    'thumbHtml' => $currentUser?->getThumbHtml(30),
                 ],
                 'readOnly' => ! $generalConfig->allowAdminChanges,
                 'allowAdminChanges' => $generalConfig->allowAdminChanges,

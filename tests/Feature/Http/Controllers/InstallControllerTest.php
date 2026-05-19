@@ -17,6 +17,17 @@ beforeEach(function () {
     Cms::setIsInstalled(false);
 });
 
+afterEach(function () {
+    putenv('INSTALL_TIMEZONE');
+    putenv('INSTALL_BASE_URL');
+});
+
+it('503s if debug is disabled', function () {
+    config()->set('app.debug', false);
+
+    get(action([InstallController::class, 'index']))->assertServiceUnavailable();
+});
+
 it('shows the install page', function () {
     Cms::setIsInstalled(false);
 
@@ -24,9 +35,14 @@ it('shows the install page', function () {
         ->assertInertia(function (AssertableInertia $page) {
             $page->component('Install')
                 ->missing('licenseHtml')
+                ->missing('localeOptions')
+                ->missing('timezone')
                 ->loadDeferredProps(function (AssertableInertia $reload) {
                     $reload->has('licenseHtml')
-                        ->where('licenseHtml', fn ($html) => str_contains($html, 'Copyright © Pixel &amp; Tonic, Inc.'));
+                        ->where('licenseHtml', fn ($html) => str_contains($html, 'Copyright © Pixel &amp; Tonic, Inc.'))
+                        ->has('localeOptions')
+                        ->has('timezone')
+                        ->where('timezone', fn ($options) => collect($options)->pluck('value')->contains('America/New_York'));
                 });
         })
         ->assertOk();
@@ -147,7 +163,60 @@ it('can validate site', function (array $data, array $errors) {
         ],
         'errors' => ['language'],
     ],
+    'valid timezone' => [
+        'data' => [
+            'name' => 'Craft',
+            'baseUrl' => 'http://localhost',
+            'language' => 'en',
+            'timezone' => 'America/New_York',
+        ],
+        'errors' => [],
+    ],
+    'invalid timezone' => [
+        'data' => [
+            'name' => 'Craft',
+            'baseUrl' => 'http://localhost',
+            'language' => 'en',
+            'timezone' => 'Not/A_Timezone',
+        ],
+        'errors' => ['timezone'],
+    ],
 ]);
+
+it('accepts environment variables for the timezone and baseUrl when validating site', function () {
+    putenv('INSTALL_TIMEZONE=America/New_York');
+    putenv('INSTALL_BASE_URL=https://example.test');
+
+    postJson(action([InstallController::class, 'validateSite']), [
+        'name' => 'Craft',
+        'baseUrl' => '$INSTALL_BASE_URL',
+        'language' => 'en',
+        'timezone' => '$INSTALL_TIMEZONE',
+    ])->assertOk();
+});
+
+it('validates resolved environment variable timezone values when validating site', function () {
+    putenv('INSTALL_TIMEZONE=super-secret-not-a-timezone');
+
+    $response = postJson(action([InstallController::class, 'validateSite']), [
+        'name' => 'Craft',
+        'baseUrl' => 'http://localhost',
+        'language' => 'en',
+        'timezone' => '$INSTALL_TIMEZONE',
+    ])->assertJsonValidationErrors('timezone');
+
+    $response->assertDontSee('super-secret-not-a-timezone');
+});
+
+it('validates resolved environment variable baseUrl values when validating site', function () {
+    putenv('INSTALL_BASE_URL=not-an-url');
+
+    postJson(action([InstallController::class, 'validateSite']), [
+        'name' => 'Craft',
+        'baseUrl' => '$INSTALL_BASE_URL',
+        'language' => 'en',
+    ])->assertJsonValidationErrors('baseUrl');
+});
 
 test('Laravel migration installer can recreate the sessions table', function () {
     expect(Schema::hasTable('sessions'))->toBeTrue();

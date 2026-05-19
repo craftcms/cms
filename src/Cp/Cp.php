@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Foundation\Vite;
 use Illuminate\Support\Collection;
 use stdClass;
 
@@ -25,6 +27,7 @@ readonly class Cp
                 'cpTrigger',
                 'actionTrigger',
                 'csrfTokenName',
+                'runQueueAutomatically',
             ])
             ->merge([
                 'translations' => I18N::getAllTranslationsForLocale(app()->getLocale()) ?: new stdClass,
@@ -33,5 +36,20 @@ readonly class Cp
                 'cpUrl' => Url::cpUrl(),
                 'baseUrl' => Url::url(),
             ]);
+    }
+
+    public static function vite(): Vite
+    {
+        return (clone app(Vite::class))
+            ->useHotFile(Aliases::get('@resources/hot'))
+            ->useBuildDirectory('vendor/craft/build');
+    }
+
+    public static function viteScripts(): Vite
+    {
+        return static::vite()->withEntryPoints([
+            'resources/css/cp.css',
+            'resources/js/cp.ts',
+        ]);
     }
 }

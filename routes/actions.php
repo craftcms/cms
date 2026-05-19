@@ -33,6 +33,7 @@ use CraftCms\Cms\Http\Controllers\EditionController;
 use CraftCms\Cms\Http\Controllers\Elements\CopyElementValuesController;
 use CraftCms\Cms\Http\Controllers\Elements\CreateElementController;
 use CraftCms\Cms\Http\Controllers\Elements\DeleteElementController;
+use CraftCms\Cms\Http\Controllers\Elements\DeleteElementsController;
 use CraftCms\Cms\Http\Controllers\Elements\DuplicateElementController;
 use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementActivityController;
@@ -51,6 +52,7 @@ use CraftCms\Cms\Http\Controllers\Elements\UpdateFieldLayoutController;
 use CraftCms\Cms\Http\Controllers\Elements\ValidateElementController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController;
+use CraftCms\Cms\Http\Controllers\Entries\ReassignEntriesModalController;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Http\Controllers\Gql\ApiController as GqlApiController;
@@ -92,7 +94,6 @@ use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
 use CraftCms\Cms\Http\Controllers\Users\SaveUsersFieldLayoutController;
 use CraftCms\Cms\Http\Controllers\Users\SuspendController;
 use CraftCms\Cms\Http\Controllers\Users\UnlockController;
-use CraftCms\Cms\Http\Controllers\Users\UsersController;
 use CraftCms\Cms\Http\Controllers\Utilities\AssetIndexesController;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
 use CraftCms\Cms\Http\Controllers\Utilities\DbBackupController;
@@ -121,7 +122,7 @@ foreach ([
         Cms::config()->actionTrigger,
     ]) => ['craft.cp'],
 ] as $prefix => $middleware) {
-    Route::prefix($prefix)->middleware($middleware)->group(function () {
+    Route::prefix($prefix)->middleware($middleware)->group(function () use ($middleware) {
         // App
         Route::get('app/health-check', HealthCheckController::class);
 
@@ -137,7 +138,9 @@ foreach ([
             ->middleware(StartSessionWithoutPersistence::class)
             ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class]);
         Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout']);
-        Route::middleware('throttle:1,1')->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
+        Route::middleware(
+            in_array('craft.cp', $middleware) ? null : 'throttle:1,1'
+        )->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
         Route::post('users/save-user', SaveUserController::class);
 
         // Asset Transforms (anonymous access)
@@ -203,19 +206,19 @@ Route::prefix(implode('/', [
     /**
      * Actions needing auth
      */
-    Route::middleware(['auth:craft'])->group(function () {
+    Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         // Addresses
         Route::post('addresses/fields', [AddressesController::class, 'fields']);
         Route::middleware(RequireAdminChanges::class)->post('addresses/save-field-layout', [AddressesController::class, 'saveFieldLayout']);
 
         // App
-        Route::any('app/get-cp-alerts', [CpAlertsController::class, 'index']);
-        Route::any('app/shun-cp-alert', [CpAlertsController::class, 'destroy']);
-        Route::any('app/set-license-shun-cookie', [LicensesController::class, 'setShunCookie']);
+        Route::post('app/get-cp-alerts', [CpAlertsController::class, 'index']);
+        Route::post('app/shun-cp-alert', [CpAlertsController::class, 'destroy']);
+        Route::post('app/set-license-shun-cookie', [LicensesController::class, 'setShunCookie']);
         Route::middleware(RequireAdmin::class)->post('app/get-plugin-license-info', [CraftCms\Cms\Http\Controllers\App\PluginsController::class, 'getLicenseInfo']);
         Route::middleware(RequireAdminChanges::class)->post('app/update-plugin-license', [CraftCms\Cms\Http\Controllers\App\PluginsController::class, 'updateLicense']);
-        Route::any('app/render-elements', [RenderController::class, 'elements']);
-        Route::any('app/render-components', [RenderController::class, 'components']);
+        Route::post('app/render-elements', [RenderController::class, 'elements']);
+        Route::post('app/render-components', [RenderController::class, 'components']);
 
         // Auth methods
         Route::post('auth/method-setup-html', [AuthMethodController::class, 'setupHtml']);
@@ -253,6 +256,11 @@ Route::prefix(implode('/', [
         });
 
         // Elements
+        Route::post('delete-elements/deletion-blockers', [DeleteElementsController::class, 'deletionBlockers']);
+        Route::post('delete-elements/delete', [DeleteElementsController::class, 'destroy']);
+        Route::any('delete-elements/replace-relations-modal', [DeleteElementsController::class, 'replaceRelationsModal']);
+        Route::post('delete-elements/replace-relations', [DeleteElementsController::class, 'replaceRelations']);
+
         Route::post('elements/create', CreateElementController::class);
         Route::any('elements/edit', EditElementController::class);
         Route::post('elements/save', [SaveElementController::class, 'store']);
@@ -295,6 +303,8 @@ Route::prefix(implode('/', [
         Route::post('entries/save-entry', StoreEntryController::class);
         Route::post('entries/move-to-section-modal-data', [MoveEntryToSectionController::class, 'showModal']);
         Route::post('entries/move-to-section', [MoveEntryToSectionController::class, 'move']);
+        Route::any('entries/reassign-modal', [ReassignEntriesModalController::class, 'show']);
+        Route::any('entries/reassign', [ReassignEntriesModalController::class, 'store']);
 
         // Entry Types
         Route::get('entry-types/table-data', [EntryTypesController::class, 'tableData']);
@@ -386,15 +396,15 @@ Route::prefix(implode('/', [
         Route::any('preview/create-token', [PreviewController::class, 'createToken']);
 
         // Queue
-        Route::any('queue/run', [QueueController::class, 'run']);
-        Route::any('queue/get-job-info', [QueueController::class, 'jobInfo']);
-        Route::any('queue/release', [QueueController::class, 'cancel']);
-        Route::any('queue/release-all', [QueueController::class, 'cancelAll']);
-        Route::any('queue/retry', [QueueController::class, 'retry']);
-        Route::any('queue/retry-all', [QueueController::class, 'retryAll']);
+        Route::post('queue/run', [QueueController::class, 'run']);
+        Route::get('queue/get-job-info', [QueueController::class, 'jobInfo']);
+        Route::post('queue/release', [QueueController::class, 'cancel']);
+        Route::post('queue/release-all', [QueueController::class, 'cancelAll']);
+        Route::post('queue/retry', [QueueController::class, 'retry']);
+        Route::post('queue/retry-all', [QueueController::class, 'retryAll']);
 
         // Relational fields
-        Route::any('relational-fields/structured-input-html', [RelationalFieldsController::class, 'structuredInputHtml']);
+        Route::post('relational-fields/structured-input-html', [RelationalFieldsController::class, 'structuredInputHtml']);
 
         // Widgets
         Route::post('dashboard/create-widget', [WidgetsController::class, 'store']);
@@ -501,8 +511,6 @@ Route::prefix(implode('/', [
 
         Route::post('users/save-permissions', [PermissionsController::class, 'store']);
         Route::post('users/save-preferences', [PreferencesController::class, 'store']);
-        Route::post('users/delete-user', [UsersController::class, 'destroy']);
-        Route::post('users/user-content-summary', [UsersController::class, 'contentSummary']);
         Route::post('users/render-photo-input', [PhotoController::class, 'renderInput']);
         Route::post('users/upload-user-photo', [PhotoController::class, 'upload']);
         Route::post('users/delete-user-photo', [PhotoController::class, 'destroy']);

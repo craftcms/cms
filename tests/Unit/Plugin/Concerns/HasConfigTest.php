@@ -16,7 +16,7 @@ beforeEach(function () {
     ServiceProvider::$publishGroups = [];
 });
 
-it('merges plugin config and registers publish paths', function () {
+it('registers publish paths without merging plugin config', function () {
     Config::set('craft.test-plugin', [
         'shared' => 'app',
     ]);
@@ -31,7 +31,6 @@ it('merges plugin config and registers publish paths', function () {
     $plugin->bootHasConfig();
 
     expect(Config::get('craft.test-plugin'))->toBe([
-        'fromFile' => 'default',
         'shared' => 'app',
     ]);
 

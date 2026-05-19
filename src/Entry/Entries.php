@@ -19,12 +19,14 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\BulkOps;
+use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Exception;
 use Illuminate\Container\Attributes\Scoped;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -282,5 +284,34 @@ class Entries
         event(new EntryMovedToSection($entry, $section));
 
         return true;
+    }
+
+    /**
+     * Reassigns entries to a new author.
+     *
+     * @param  int|int[]  $oldUserId
+     * @return int The number of affected entries
+     */
+    public function reassignEntries(int|array $oldUserId, int $newUserId): int
+    {
+        $count = DB::table(Table::ENTRIES_AUTHORS)
+            ->whereIn('authorId', Arr::wrap($oldUserId))
+            ->whereNotExists(function (Builder $query) use ($newUserId) {
+                $query->selectRaw('1')
+                    ->fromSub(
+                        DB::table(Table::ENTRIES_AUTHORS, 'ea2')
+                            ->select('ea2.entryId')
+                            ->where('ea2.authorId', $newUserId),
+                        'existingAuthor',
+                    )
+                    ->whereColumn('existingAuthor.entryId', Table::ENTRIES_AUTHORS.'.entryId');
+            })
+            ->update([
+                'authorId' => $newUserId,
+            ]);
+
+        ElementCaches::invalidateForElementType(Entry::class);
+
+        return $count;
     }
 }

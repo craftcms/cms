@@ -77,7 +77,7 @@ it('fixes duplicate and missing field layout uids', function () {
 
     ProjectConfig::regenerateExternalConfig();
 
-    $this->artisan('utils/fix-field-layout-uids')
+    $this->artisan('craft:utils/fix-field-layout-uids')
         ->expectsOutputToContain('Looking for duplicate UUIDs ...')
         ->expectsOutputToContain("Missing UUID found at testFixture.first.fieldLayouts.$fieldLayoutUid.tabs.0.elements.1")
         ->expectsOutputToContain("Duplicate UUID at testFixture.second.fieldLayouts.$fieldLayoutUid.tabs.0")

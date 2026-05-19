@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
+use Throwable;
 use yii\web\Session as YiiSession;
 
 /**
@@ -93,7 +94,12 @@ class Session
         if (!static::exists()) {
             return false;
         }
-        return self::session()->has($key);
+        try {
+            return self::session()->has($key);
+        } catch (Throwable) {
+            // Probably a "headers already sent" error
+            return false;
+        }
     }
 
     /**
