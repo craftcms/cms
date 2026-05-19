@@ -26,6 +26,7 @@ use Illuminate\Foundation\Events\LocaleUpdated;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
 use Illuminate\Routing\UrlGenerator;
 use Illuminate\Support\Collection;
@@ -62,6 +63,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        JsonResource::withoutWrapping();
+
         Event::listen(LocaleUpdated::class, function (LocaleUpdated $event) {
             setlocale(
                 LC_COLLATE,
