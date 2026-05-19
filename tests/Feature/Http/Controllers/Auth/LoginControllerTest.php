@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\User\Elements\User;
@@ -172,4 +173,26 @@ test('attemptLogin dispatches Failed event on wrong credentials', function () {
 
     Event::assertDispatched(fn (Failed $event) => $event->user->id === $user->id
         && $event->credentials['loginName'] === $user->email);
+});
+
+test('attemptLogin validates loginName as email when useEmailAsUsername is true', function () {
+    Cms::config()->useEmailAsUsername = true;
+
+    postJson(action([LoginController::class, 'attemptLogin']), [
+        'loginName' => 'not-an-email',
+        'password' => 'craftcms2018!!',
+    ])->assertJsonValidationErrors(['loginName']);
+});
+
+test('attemptLogin accepts username when useEmailAsUsername is false', function () {
+    Cms::config()->useEmailAsUsername = false;
+
+    $user = User::findOne();
+
+    postJson(action([LoginController::class, 'attemptLogin']), [
+        'loginName' => $user->username,
+        'password' => 'craftcms2018!!',
+    ])->assertOk();
+
+    expect(Auth::check())->toBeTrue();
 });

@@ -4,7 +4,6 @@
   import AuthBase from '@/layout/AuthBase.vue';
   import {attemptLogin} from '@actions/Auth/LoginController';
   import '../components/Auth/login/login-form.js';
-  import VarDump from '@/components/VarDump.vue';
 
   defineProps<{
     logo?: string;

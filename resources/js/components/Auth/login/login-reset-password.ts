@@ -22,7 +22,6 @@ export default class CraftLoginResetPassword extends LitElement {
 
   @state() private _busy = false;
   @state() private _error = '';
-  @state() private _validateOnInput = false;
 
   @query('.reset-username') private _input?: HTMLInputElement;
 
@@ -34,37 +33,8 @@ export default class CraftLoginResetPassword extends LitElement {
     return this.useEmailAsUsername ? t('Email') : t('Username or Email');
   }
 
-  #validate(): string | true {
-    const value = this._input?.value ?? '';
-
-    if (value.length === 0) {
-      return this.useEmailAsUsername
-        ? t('Invalid email.')
-        : t('Invalid username or email.');
-    }
-
-    if (this.useEmailAsUsername && !value.match(/.+@.+\..+/)) {
-      return t('Invalid email.');
-    }
-
-    return true;
-  }
-
-  #onInput() {
-    if (this._validateOnInput && this.#validate() === true) {
-      this._error = '';
-    }
-  }
-
   async #onSubmit(event: Event) {
     event.preventDefault();
-
-    const error = this.#validate();
-    if (error !== true) {
-      this._error = error;
-      this._validateOnInput = true;
-      return;
-    }
 
     this._error = '';
     this._busy = true;
@@ -118,8 +88,7 @@ export default class CraftLoginResetPassword extends LitElement {
               .value="${this.username}"
               autocomplete="username"
               autocapitalize="off"
-              aria-required="true"
-              @input="${this.#onInput}"
+              required
             >
             </craft-input>
           </craft-field-group>

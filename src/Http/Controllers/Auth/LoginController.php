@@ -17,6 +17,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Timebox;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -87,8 +88,12 @@ readonly class LoginController extends AuthenticationController
     public function attemptLogin(Request $request, AuthMethods $auth, Impersonation $impersonation): Response
     {
         $request->validate([
-            'loginName' => ['required', 'string'],
-            'password' => ['required', 'string'],
+            'loginName' => [
+                'required',
+                'string',
+                Rule::when($this->generalConfig->useEmailAsUsername, 'email'),
+            ],
+            'password' => ['required', 'string', 'min:6', 'max:160'],
             'rememberMe' => ['nullable'],
         ]);
 

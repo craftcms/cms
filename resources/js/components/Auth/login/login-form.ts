@@ -47,14 +47,6 @@ export default class CraftLoginForm extends LitElement {
   @property({type: Boolean, attribute: 'use-email-as-username'})
   useEmailAsUsername = false;
 
-  /** Minimum allowed password length */
-  @property({type: Number, attribute: 'min-password-length'})
-  minPasswordLength = 6;
-
-  /** Maximum allowed password length */
-  @property({type: Number, attribute: 'max-password-length'})
-  maxPasswordLength = 160;
-
   /** "Remember me" label with duration baked in by the server */
   @property({attribute: 'remember-me-label'}) rememberMeLabel = '';
 
@@ -69,7 +61,6 @@ export default class CraftLoginForm extends LitElement {
   @state() private _loginBusy = false;
   @state() private _passkeyBusy = false;
   @state() private _canUsePasskey = false;
-  @state() private _validateOnInput = false;
   @state() private _twoFactorData: TwoFactorData | null = null;
   @state() private _resetUsername = '';
 
@@ -92,53 +83,8 @@ export default class CraftLoginForm extends LitElement {
     return this.useEmailAsUsername ? t('Email') : t('Username or Email');
   }
 
-  #validate(): string | true {
-    const username = this._usernameInput?.value ?? '';
-
-    if (username.length === 0) {
-      return this.useEmailAsUsername
-        ? t('Invalid email.')
-        : t('Invalid username or email.');
-    }
-
-    if (this.useEmailAsUsername && !username.match(/.+@.+\..+/)) {
-      return t('Invalid email.');
-    }
-
-    const passwordLength = this._passwordInput?.value.length ?? 0;
-
-    if (passwordLength < this.minPasswordLength) {
-      return t(
-        '{attribute} should contain at least {min, number} {min, plural, one{character} other{characters}}.',
-        {attribute: t('Password'), min: this.minPasswordLength}
-      );
-    }
-
-    if (passwordLength > this.maxPasswordLength) {
-      return t(
-        '{attribute} should contain at most {max, number} {max, plural, one{character} other{characters}}.',
-        {attribute: t('Password'), max: this.maxPasswordLength}
-      );
-    }
-
-    return true;
-  }
-
-  #onInput() {
-    if (this._validateOnInput && this.#validate() === true) {
-      this._error = '';
-    }
-  }
-
   async #onSubmit(event: Event) {
     event.preventDefault();
-
-    const error = this.#validate();
-    if (error !== true) {
-      this.#setError(error);
-      this._validateOnInput = true;
-      return;
-    }
 
     this._error = '';
     this._loginBusy = true;
@@ -327,7 +273,6 @@ export default class CraftLoginForm extends LitElement {
                       autocomplete="username"
                       autocapitalize="off"
                       required
-                      @user-input-changed="${this.#onInput}"
                     />
                   </div>
                 `}
@@ -340,7 +285,6 @@ export default class CraftLoginForm extends LitElement {
                 name="password"
                 autocomplete="current-password"
                 required
-                @user-input-changed="${this.#onInput}"
               ></craft-input-password>
 
               ${this.showResetPassword
