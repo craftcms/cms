@@ -1,0 +1,1 @@
+{"version":3,"file":"3804.js","mappings":"iGAAA,WACEA,aAAc,6C","sources":["webpack:///../../../../node_modules/@lion/ui/components/combobox/translations/uk.js"],"sourcesContent":["export default {\n  optionsPopup: 'Спливаюче вікно параметрів поля зі списком',\n};\n"],"names":["optionsPopup"],"sourceRoot":""}

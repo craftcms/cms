@@ -70,7 +70,6 @@
       'cp-pane--outline': appearance === 'outline',
       'cp-pane--raised': appearance === 'raised',
     }"
-    v-bind="$attrs"
   >
     <slot name="header" v-if="showHeader">
       <div class="cp-pane__header">

@@ -73,7 +73,7 @@
 
 <template>
   <craft-action-menu>
-    <slot name="invoker" :label="label">
+    <slot name="invoker" :label="label" :attributes="{slot: 'invoker'}">
       <craft-button
         type="button"
         slot="invoker"

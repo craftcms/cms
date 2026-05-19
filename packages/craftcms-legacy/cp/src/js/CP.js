@@ -1,4 +1,4 @@
-import {QueueService} from '@craftcms/cp/dist/services/Queue.ts.mjs';
+import {QueueService} from '@craftcms/cp';
 /** global: Craft */
 /** global: Garnish */
 /** global: $ */

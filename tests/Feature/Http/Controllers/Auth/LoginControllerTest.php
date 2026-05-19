@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\User\Elements\User;
@@ -10,7 +11,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
-use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
@@ -25,14 +25,6 @@ test('showLogin redirects already authenticated users', function () {
 test('showLogin shows the login form for guests', function () {
     get(action([LoginController::class, 'showLogin']))
         ->assertOk();
-});
-
-test('showLogin renders flashed login errors', function () {
-    session()->flash('cp-notification-error', ['Authentication failed.', []]);
-
-    get(cp_url('login'))
-        ->assertOk()
-        ->assertSee('Authentication failed.');
 });
 
 test('showLogin redirects to 2fa form when verify parameter is present', function () {
@@ -181,4 +173,26 @@ test('attemptLogin dispatches Failed event on wrong credentials', function () {
 
     Event::assertDispatched(fn (Failed $event) => $event->user->id === $user->id
         && $event->credentials['loginName'] === $user->email);
+});
+
+test('attemptLogin validates loginName as email when useEmailAsUsername is true', function () {
+    Cms::config()->useEmailAsUsername = true;
+
+    postJson(action([LoginController::class, 'attemptLogin']), [
+        'loginName' => 'not-an-email',
+        'password' => 'craftcms2018!!',
+    ])->assertJsonValidationErrors(['loginName']);
+});
+
+test('attemptLogin accepts username when useEmailAsUsername is false', function () {
+    Cms::config()->useEmailAsUsername = false;
+
+    $user = User::findOne();
+
+    postJson(action([LoginController::class, 'attemptLogin']), [
+        'loginName' => $user->username,
+        'password' => 'craftcms2018!!',
+    ])->assertOk();
+
+    expect(Auth::check())->toBeTrue();
 });

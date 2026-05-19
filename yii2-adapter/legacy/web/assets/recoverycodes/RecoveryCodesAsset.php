@@ -8,16 +8,30 @@
 namespace craft\web\assets\recoverycodes;
 
 use craft\web\AssetBundle;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use craft\web\assets\cp\CpAsset;
 
 /**
- * TOTP asset bundle
- * @deprecated 6.0.0
+ * Recovery codes asset bundle
+ * @deprecated in 6.0
  */
 class RecoveryCodesAsset extends AssetBundle
 {
-    public function registerAssetFiles($view)
-    {
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\RecoveryCodesAsset::class);
-    }
+    /**
+     * @inheritdoc
+     */
+    public $sourcePath = __DIR__ . '/dist';
+
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        CpAsset::class,
+    ];
+
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'recoverycodes.js',
+    ];
 }

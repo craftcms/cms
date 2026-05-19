@@ -6,7 +6,6 @@
 - Updated `yiisoft/html` to 4.1.0. ([#18920](https://github.com/craftcms/cms/pull/18920))
 - Updated `elvanto/litemoji` to 5.2.0. ([#18917](https://github.com/craftcms/cms/pull/18917))
 - Updated `pragmarx/google2fa` to 9.0.0. ([#18919](https://github.com/craftcms/cms/pull/18919))
-- Removed a stray dump statement ([#18902](https://github.com/craftcms/cms/issues/18902))
 - Fixed an error that occurred when opening element selector modals with string `sources` values. ([#18915](https://github.com/craftcms/cms/pull/18915))
 - Added “Elements” and “Deprecations” panels to Laravel Debugbar. ([#18897](https://github.com/craftcms/cms/pull/18897)
 - Fixed a bug where legacy redirect responses were not being returned as a redirect ([#18893](https://github.com/craftcms/cms/pull/18893))

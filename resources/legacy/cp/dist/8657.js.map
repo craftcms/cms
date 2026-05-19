@@ -1,0 +1,1 @@
+{"version":3,"file":"8657.js","mappings":"iGAAA,WACEA,aAAc,8C","sources":["webpack:///../../../../node_modules/@lion/ui/components/combobox/translations/ru.js"],"sourcesContent":["export default {\n  optionsPopup: 'Всплывающее окно параметров поля со списком',\n};\n"],"names":["optionsPopup"],"sourceRoot":""}

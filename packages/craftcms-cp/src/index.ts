@@ -53,6 +53,9 @@ export {default as CraftProgress} from './components/progress/progress.js';
 export {default as CraftProgressBar} from './components/progress-bar/progress-bar.js';
 export {default as CraftRadioGroup} from './components/radio-group/radio-group.js';
 export {default as CraftRadio} from './components/radio/radio.js';
+export {default as CraftFieldGroup} from './components/field-group/field-group.js';
+export {default as CraftPane} from './components/pane/pane.js';
+export {CraftAuthChallengeForm} from './components/auth-challenge-form/auth-challenge-form.js';
 export {default as CraftVisuallyHidden} from './components/visually-hidden/visually-hidden.js';
 /* plop:component */
 
@@ -80,5 +83,14 @@ export type {
   IndexerEventListener,
 } from './services/AssetIndexer.js';
 export {IndexingActions} from './services/AssetIndexer.js';
+
+// Types
+export * from './types/index.js';
+
+// Web component styles
+export * from './styles/form.styles.js';
+export {default as hostStyles} from './styles/host.styles.js';
+export {default as variantStyles} from './styles/variants.styles.js';
+export {default as visuallyHiddenStyles} from './styles/visually-hidden.styles.js';
 
 configureIcons();

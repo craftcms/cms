@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[1593,5598],{1593:function(a,n,i){i.r(n),n.default={validationError:"Błąd,",validationWarning:"Ostrzeżenie,",validationSuccess:"Zrealizowano pomyślnie,",validationInfo:"Informacja,"}},5598:function(a,n,i){i.r(n);var e=i(1593);n.default={...e.default}}}]);
+//# sourceMappingURL=5598.js.map
