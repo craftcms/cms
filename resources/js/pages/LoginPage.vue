@@ -4,6 +4,7 @@
   import AuthBase from '@/layout/AuthBase.vue';
   import {attemptLogin} from '@actions/Auth/LoginController';
   import '../components/Auth/login/login-form.js';
+  import VarDump from '@/components/VarDump.vue';
 
   defineProps<{
     logo?: string;
@@ -23,7 +24,7 @@
       show-reset-password
       show-remember-me
       :username="page.props.username"
-      :use-email-as-username="general.useEmailAsUsername"
+      :use-email-as-username="general.useEmailAsUsername ? '' : null"
     >
     </craft-login-form>
   </AuthBase>
