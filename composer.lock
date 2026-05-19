@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0e2c6b9f184864f3a516ee4648d4c8db",
+    "content-hash": "fe514deb70fcf36bcb3aed9cfded30ce",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -9311,16 +9311,16 @@
         },
         {
             "name": "yiisoft/html",
-            "version": "3.13.0",
+            "version": "4.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/yiisoft/html.git",
-                "reference": "d02c6bd9094d554afc0c4bffc291f8a2f57b3710"
+                "reference": "315a6582d533d6ab73484c8f982beb9131675909"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/yiisoft/html/zipball/d02c6bd9094d554afc0c4bffc291f8a2f57b3710",
-                "reference": "d02c6bd9094d554afc0c4bffc291f8a2f57b3710",
+                "url": "https://api.github.com/repos/yiisoft/html/zipball/315a6582d533d6ab73484c8f982beb9131675909",
+                "reference": "315a6582d533d6ab73484c8f982beb9131675909",
                 "shasum": ""
             },
             "require": {
@@ -9370,7 +9370,7 @@
                     "type": "opencollective"
                 }
             ],
-            "time": "2026-03-13T13:07:22+00:00"
+            "time": "2026-05-19T07:13:29+00:00"
         },
         {
             "name": "yiisoft/i18n",

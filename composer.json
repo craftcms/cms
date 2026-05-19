@@ -69,7 +69,7 @@
     "voku/portable-ascii": "^2.0",
     "web-auth/webauthn-lib": "~5.2.4",
     "yiisoft/arrays": "^3.2",
-    "yiisoft/html": "^3.11",
+    "yiisoft/html": "^4.1",
     "yiisoft/translator": "^3.2",
     "yiisoft/translator-message-php": "^1.1"
   },
