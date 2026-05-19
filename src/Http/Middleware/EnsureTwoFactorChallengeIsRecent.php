@@ -36,7 +36,7 @@ readonly class EnsureTwoFactorChallengeIsRecent
         Session::forget(['user.id', 'user.pending_2fa_at']);
 
         if ($request->wantsJson()) {
-            return new JsonResponse(['message' => t('Your verification session has expired. Please sign in again.')], 401);
+            return new JsonResponse(['message' => t('Your verification session has expired. Please sign in again.')], 419);
         }
 
         if ($request->isSiteRequest() && $loginPath = $this->generalConfig->getLoginPath()) {

@@ -48,11 +48,11 @@ test('clears user session keys when challenge has expired', function () {
 test('returns 401 json when session is expired and request wants json', function () {
     $this->withSession(['user.pending_2fa_at' => now()->subSeconds(301)->timestamp])
         ->postJson('/test-2fa-recent')
-        ->assertStatus(401)
+        ->assertStatus(419)
         ->assertJsonPath('message', fn (string $m) => str_contains($m, 'expired'));
 });
 
 test('returns 401 json when pending_2fa_at is missing and request wants json', function () {
     $this->postJson('/test-2fa-recent')
-        ->assertStatus(401);
+        ->assertStatus(419);
 });
