@@ -70,7 +70,6 @@
       'pane--outline': appearance === 'outline',
       'pane--raised': appearance === 'raised',
     }"
-    v-bind="$attrs"
   >
     <slot name="header" v-if="showHeader">
       <div class="pane__header">

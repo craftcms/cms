@@ -2313,6 +2313,9 @@ $.extend(Craft, {
     return new func(elementType, settings);
   },
 
+  /**
+   * @deprecated in 6.0. Use event listeners directly.
+   */
   createAuthFormHandler(method, container, onSuccess, showError) {
     if (typeof this._authFormHandlers[method] === 'undefined') {
       throw `No authentication form has been registered for the method "${method}".`;

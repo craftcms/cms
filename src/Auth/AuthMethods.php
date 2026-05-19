@@ -199,8 +199,9 @@ class AuthMethods
 
         if ($user) {
             Session::put('user.id', $user->id);
+            Session::put('user.pending_2fa_at', now()->timestamp);
         } else {
-            Session::forget('user.id');
+            Session::forget(['user.id', 'user.pending_2fa_at']);
         }
     }
 

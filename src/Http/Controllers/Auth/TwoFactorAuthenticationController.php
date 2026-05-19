@@ -50,15 +50,15 @@ readonly class TwoFactorAuthenticationController
         }
 
         $activeMethods = $auth->getActiveMethods($user);
-        $methodClass = $request->input('method');
+        $methodHandle = $request->input('method');
 
-        if ($methodClass) {
+        if ($methodHandle) {
             /** @var AuthMethodInterface|null $method */
             $method = $activeMethods->first(
-                fn (AuthMethodInterface $method) => $method::class === $methodClass,
+                fn (AuthMethodInterface $method) => $method::handle() === $methodHandle,
             );
 
-            abort_if(! $method, 400, 'Invalid method class: '.$methodClass);
+            abort_if(! $method, 400, 'Invalid method handle: '.$methodHandle);
 
             $activeMethods = $activeMethods->filter(fn ($m) => $m !== $method)->values();
         } else {
@@ -66,11 +66,6 @@ readonly class TwoFactorAuthenticationController
 
             $method = $activeMethods->first();
         }
-
-        $html = TemplateMode::with(
-            TemplateMode::Cp,
-            fn () => $method->getAuthFormHtml(),
-        );
 
         $returnUrl = $request->input('returnUrl');
         if (! $returnUrl) {
@@ -84,12 +79,20 @@ readonly class TwoFactorAuthenticationController
             $returnUrl = URL::returnUrl($defaultReturnUrl);
         }
 
+        $html = TemplateMode::with(
+            TemplateMode::Cp,
+            fn () => $method->getAuthFormHtml($returnUrl),
+        );
+
         $authFormData = [
             'authMethod' => $method::class,
-            'otherMethods' => $activeMethods->map(fn (AuthMethodInterface $method) => [
-                'name' => $method::displayName(),
-                'class' => $method::class,
-            ])->all(),
+            'otherMethods' => $activeMethods
+                ->filter(fn (AuthMethodInterface $authMethod) => $authMethod::handle() !== $method::handle())
+                ->map(fn (AuthMethodInterface $method) => [
+                    'name' => $method::displayName(),
+                    'handle' => $method::handle(),
+                    'url' => action([TwoFactorAuthenticationController::class, 'showForm'], ['method' => $method::handle()]),
+                ])->values(),
             'authForm' => $html,
             'returnUrl' => $returnUrl,
         ];

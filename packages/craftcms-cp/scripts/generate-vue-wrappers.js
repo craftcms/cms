@@ -240,7 +240,7 @@ function generateValueWrapper(component) {
     v-bind="$attrs"
     .modelValue="model"
     @model-value-changed="model = ($event.target as ${component.className})?.modelValue"
-    :has-feedbck-for="error ? 'error' : ''"
+    :has-feedback-for="error ? 'error' : ''"
   >
     <slot></slot>
     
@@ -279,7 +279,7 @@ function generateCheckedWrapper(component) {
     v-bind="$attrs"
     .checked="model"
     @model-value-changed="model = ($event.target as ${component.className})?.checked"
-    :has-feedbck-for="error ? 'error' : ''"
+    :has-feedback-for="error ? 'error' : ''"
   >
     <slot></slot>
     
@@ -318,7 +318,7 @@ function generateGroupWrapper(component) {
     v-bind="$attrs"
     .modelValue="model"
     @model-value-changed="model = ($event.target as ${component.className})?.modelValue"
-    :has-feedbck-for="error ? 'error' : ''"
+    :has-feedback-for="error ? 'error' : ''"
   >
     <slot></slot>
     

@@ -86,8 +86,21 @@ export function useFlashMessages(
     }
   }
 
+  function clear(type: 'success' | 'error') {
+    messages.value[type] = null;
+  }
+
+  function clearAll() {
+    messages.value = {
+      success: null,
+      error: null,
+    };
+  }
+
   return {
     flash,
+    clear,
+    clearAll,
     messages,
   };
 }
