@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -43,6 +44,6 @@ readonly class EnsureTwoFactorChallengeIsRecent
             return redirect($loginPath);
         }
 
-        return redirect(CpAuthPath::Login->value);
+        return redirect(Url::cpUrl(CpAuthPath::Login->value));
     }
 }
