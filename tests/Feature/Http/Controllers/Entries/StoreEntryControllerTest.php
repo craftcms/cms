@@ -10,6 +10,7 @@ use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
@@ -131,6 +132,95 @@ it('can update an existing entry', function () {
 
     $entry = Entry::find()->id($entryModel->id)->status(null)->one();
     expect($entry->title)->toBe('Updated Title');
+});
+
+it('clears existing plain text field values', function () {
+    $field = Field::factory()->create([
+        'name' => 'Body Field',
+        'handle' => 'bodyField',
+        'type' => PlainText::class,
+    ]);
+
+    $fieldLayout = FieldLayout::create([
+        'type' => Entry::class,
+        'config' => createFieldLayoutConfig($field),
+    ]);
+
+    $this->entryType->update(['fieldLayoutId' => $fieldLayout->id]);
+
+    EntryTypes::refreshEntryTypes();
+    Fields::invalidateCaches();
+    Fields::refreshFields();
+
+    $entryModel = EntryModel::factory()->forSection($this->section)->forEntryType($this->entryType)->create();
+    $entry = Entry::find()->id($entryModel->id)->status(null)->one();
+    $entry->setFieldValue($field->handle, 'Existing value');
+    Elements::saveElement($entry);
+
+    post(action(StoreEntryController::class), [
+        'entryId' => $entryModel->id,
+        'fields' => [
+            'bodyField' => '',
+        ],
+    ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $entry = Entry::find()->id($entryModel->id)->status(null)->one();
+    expect($entry->getFieldValue('bodyField'))->toBeNull();
+});
+
+it('clears existing entries field values', function () {
+    $targetEntry = EntryModel::factory()->create();
+    $field = Field::factory()->create([
+        'name' => 'Related Entries',
+        'handle' => 'relatedEntries',
+        'type' => EntriesField::class,
+    ]);
+
+    $fieldLayout = FieldLayout::create([
+        'type' => Entry::class,
+        'config' => createFieldLayoutConfig($field),
+    ]);
+
+    $this->entryType->update(['fieldLayoutId' => $fieldLayout->id]);
+
+    EntryTypes::refreshEntryTypes();
+    Fields::invalidateCaches();
+    Fields::refreshFields();
+
+    $entryModel = EntryModel::factory()->forSection($this->section)->forEntryType($this->entryType)->create();
+    $entry = Entry::find()->id($entryModel->id)->status(null)->one();
+    $entry->setFieldValue($field->handle, [$targetEntry->id]);
+    Elements::saveElement($entry);
+
+    post(action(StoreEntryController::class), [
+        'entryId' => $entryModel->id,
+        'fields' => [
+            'relatedEntries' => '',
+        ],
+    ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $entry = Entry::find()->id($entryModel->id)->status(null)->one();
+    expect($entry->getFieldValue('relatedEntries')->ids())->toBe([]);
+});
+
+it('clears existing native entry attributes', function () {
+    $entryModel = EntryModel::factory()->forSection($this->section)->forEntryType($this->entryType)->create([
+        'expiryDate' => now()->addDay(),
+    ]);
+
+    post(action(StoreEntryController::class), [
+        'entryId' => $entryModel->id,
+        'expiryDate' => '',
+    ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $entry = Entry::find()->id($entryModel->id)->status(null)->one();
+    expect($entry->expiryDate)->toBeNull();
 });
 
 it('can duplicate an entry', function () {

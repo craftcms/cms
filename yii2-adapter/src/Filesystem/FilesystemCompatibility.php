@@ -22,7 +22,10 @@ readonly class FilesystemCompatibility
 {
     public function register(Application $app): void
     {
-        $app->make(FilesystemManager::class)->extend(LegacyFsFlysystemAdapter::DISK_DRIVER, function($app, array $config) {
+        $filesystemWithPrefix = self::filesystemWithPrefix(...);
+        $legacyFilesystemAdapter = self::legacyFilesystemAdapter(...);
+
+        $app->make(FilesystemManager::class)->extend(LegacyFsFlysystemAdapter::DISK_DRIVER, function($app, array $config) use ($filesystemWithPrefix, $legacyFilesystemAdapter) {
             $handle = $config['fsHandle'] ?? null;
             if (!is_string($handle) || $handle === '') {
                 throw new InvalidArgumentException('Missing `fsHandle` configuration for craft-fs-bridge disk.');
@@ -45,7 +48,7 @@ readonly class FilesystemCompatibility
                         );
                     }
 
-                    return self::legacyFilesystemAdapter($filesystem, array_merge($config, $diskConfig));
+                    return $legacyFilesystemAdapter($filesystem, array_merge($config, $diskConfig));
                 }
 
                 $disk = $app->make(FilesystemManager::class)->build($diskConfig);
@@ -54,7 +57,7 @@ readonly class FilesystemCompatibility
                     throw new InvalidArgumentException("Filesystem [$handle] returned an invalid disk configuration.");
                 }
 
-                return self::filesystemWithPrefix($disk, $config);
+                return $filesystemWithPrefix($disk, $config);
             } catch (Throwable $e) {
                 if (!$filesystem instanceof BaseFsInterface) {
                     throw new InvalidArgumentException(
@@ -72,7 +75,7 @@ readonly class FilesystemCompatibility
                     ),
                 );
 
-                return self::legacyFilesystemAdapter($filesystem, $config);
+                return $legacyFilesystemAdapter($filesystem, $config);
             }
         });
     }
