@@ -9,6 +9,7 @@ use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\View\Events\CpTemplateRootsResolving;
 use CraftCms\Cms\View\Events\SiteTemplateRootsResolving;
 use Illuminate\Support\Facades\Context;
+use Illuminate\View\FileViewFinder;
 
 enum TemplateMode: string
 {
@@ -41,6 +42,8 @@ enum TemplateMode: string
             if (TemplateMode::is(TemplateMode::Cp)) {
                 $templates = dirname(__DIR__, 2).'/resources/templates';
                 $views = dirname(__DIR__, 2).'/resources/views';
+
+                /** @var FileViewFinder $finder */
                 $finder = view()->getFinder();
 
                 if (! in_array($templates, $finder->getPaths())) {
