@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "551a09ac18f361a619628575754ee429",
+    "content-hash": "3b6c5f504fd99874ec829e99f1682ee6",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -1269,24 +1269,24 @@
         },
         {
             "name": "elvanto/litemoji",
-            "version": "4.3.0",
+            "version": "5.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/elvanto/litemoji.git",
-                "reference": "f13cf10686f7110a3b17d09de03050d0708840b8"
+                "reference": "859dbcaa31ac5eb99c0811a981ba9d9ca3dab1c1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/elvanto/litemoji/zipball/f13cf10686f7110a3b17d09de03050d0708840b8",
-                "reference": "f13cf10686f7110a3b17d09de03050d0708840b8",
+                "url": "https://api.github.com/repos/elvanto/litemoji/zipball/859dbcaa31ac5eb99c0811a981ba9d9ca3dab1c1",
+                "reference": "859dbcaa31ac5eb99c0811a981ba9d9ca3dab1c1",
                 "shasum": ""
             },
             "require": {
                 "ext-mbstring": "*",
-                "php": ">=7.3"
+                "php": ">=7.4"
             },
             "require-dev": {
-                "milesj/emojibase": "7.0.*",
+                "milesj/emojibase": "^16.0.3",
                 "phpunit/phpunit": "^9.0"
             },
             "type": "library",
@@ -1306,9 +1306,9 @@
             ],
             "support": {
                 "issues": "https://github.com/elvanto/litemoji/issues",
-                "source": "https://github.com/elvanto/litemoji/tree/4.3.0"
+                "source": "https://github.com/elvanto/litemoji/tree/5.2.0"
             },
-            "time": "2022-10-28T02:32:19+00:00"
+            "time": "2025-07-15T04:24:11+00:00"
         },
         {
             "name": "enshrined/svg-sanitize",
