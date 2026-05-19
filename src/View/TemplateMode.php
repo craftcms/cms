@@ -31,6 +31,27 @@ enum TemplateMode: string
     public static function set(self $mode): void
     {
         Context::addHidden(self::class, $mode);
+
+        if ($mode === self::Cp) {
+            /**
+             * Prepend the Craft CMS Control panel views when
+             * we're in CP Template mode. This makes view()
+             * work without a 'craftcms::' prefix.
+             */
+            if (TemplateMode::is(TemplateMode::Cp)) {
+                $templates = dirname(__DIR__, 2).'/resources/templates';
+                $views = dirname(__DIR__, 2).'/resources/views';
+                $finder = view()->getFinder();
+
+                if (! in_array($templates, $finder->getPaths())) {
+                    $finder->prependLocation($templates);
+                }
+
+                if (! in_array($views, $finder->getPaths())) {
+                    $finder->prependLocation($views);
+                }
+            }
+        }
     }
 
     public static function is(self $mode): bool

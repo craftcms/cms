@@ -45,7 +45,6 @@ class ViewServiceProvider extends ServiceProvider
 
         $this->registerTemplateRoots();
         $this->registerTemplateGlobals();
-
     }
 
     private function registerTemplateGlobals(): void
