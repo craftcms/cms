@@ -27,7 +27,7 @@ readonly class RequireCpRequest
         return $next($request);
     }
 
-    private function registerCpTemplateHooks(): void
+    public function registerCpTemplateHooks(): void
     {
         TemplateHooks::register('cp.layouts.elementindex', PrepareElementIndexVariables::class);
         TemplateHooks::register('cp.elements.toolbar', PrepareElementToolbarVariables::class);
