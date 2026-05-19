@@ -61,7 +61,7 @@
 {% endif %}
 
 {% if includeEnvVars ?? false %}
-    {% set options = options|merge(craft.cp.getEnvOptions(allowedEnvValues)) %}
+    {% set options = options|merge(cpEnvOptions(allowedEnvValues)) %}
 {% endif %}
 
 {% include (multi ? '_includes/forms/multiselect.twig' : '_includes/forms/select.twig') with {
