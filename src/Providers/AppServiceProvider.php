@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Providers;
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementCollection;
@@ -20,6 +21,7 @@ use CraftCms\Cms\Update\Data\Update as UpdateData;
 use CraftCms\Cms\Update\Data\UpdateRelease;
 use CraftCms\Cms\Update\Data\Updates as UpdatesData;
 use GuzzleHttp\Utils;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Application;
@@ -67,6 +69,14 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        AuthenticationException::redirectUsing(function () {
+            if (! request()->isCpRequest() && Cms::config()->loginPath !== false) {
+                return Url::siteUrl(Cms::config()->getLoginPath());
+            }
+
+            return Url::cpUrl(CpAuthPath::Login->value);
+        });
+
         Event::listen(LocaleUpdated::class, function (LocaleUpdated $event) {
             setlocale(
                 LC_COLLATE,
