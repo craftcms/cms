@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed an error that occurred when Updates were cached and deserialized.
+- The default value for `GeneralConfig::$loginPath` is now `false`
 
 ## 6.0.0-alpha.4 - 2026-05-19
 

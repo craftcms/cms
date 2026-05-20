@@ -1585,16 +1585,16 @@ class GeneralConfig extends BaseConfig
     /**
      * @var mixed The URI Craft should use for user login on the front end.
      *
-     * This can be set to `false` to disable front-end login.
+     * This is set to `false` by default which disables front-end login.
      *
      * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
-     * ->loginPath(false)
+     * ->loginPath('login')
      * ```
      * ```shell Environment Override
-     * CRAFT_LOGIN_PATH=false
+     * CRAFT_LOGIN_PATH=login
      * ```
      * :::
      *
@@ -1602,7 +1602,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group Routing
      */
-    public mixed $loginPath = 'login';
+    public mixed $loginPath = false;
 
     /**
      * @var array<int|string, array<string, mixed>|string> The OAuth providers that should be available for login.
