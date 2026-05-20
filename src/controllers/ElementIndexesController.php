@@ -878,13 +878,20 @@ class ElementIndexesController extends BaseElementsController
         $sortable = $this->isAdministrative() && $this->request->getParam('sortable');
 
         if ($this->sourceKey) {
+            // get the return URL with `?` replaced with a token
+            // (see https://github.com/craftcms/cms/issues/18923)
+            $returnUrl = $this->request->getParam('returnUrl');
+            if ($returnUrl) {
+                $returnUrl = str_replace('?', ':QS:', $returnUrl);
+            }
+
             $responseData['html'] = $this->elementType::indexHtml(
                 $this->elementQuery,
                 $disabledElementIds,
                 [
                     ...$this->viewState,
                     'fieldLayouts' => $this->fieldLayouts,
-                    'returnUrl' => $this->request->getParam('returnUrl'),
+                    'returnUrl' => $returnUrl,
                 ],
                 $this->sourceKey,
                 $this->context,

@@ -5,6 +5,7 @@
 - Updated Twig to 3.26. ([#18924](https://github.com/craftcms/cms/pull/18924), [#18926](https://github.com/craftcms/cms/issues/18926))
 - Fixed a bug where editable tables registered unexpected debug toolbar output. ([#18895](https://github.com/craftcms/cms/issues/18895), [#18902](https://github.com/craftcms/cms/issues/18902))
 - Fixed a JavaScript error that occurred when pasting nested entries within Matrix fields in Blocks view. ([#18912](https://github.com/craftcms/cms/issues/18912))
+- Fixed an error that could occur when editing elements on Apache servers. ([#18923](https://github.com/craftcms/cms/issues/18923))
 
 ## 5.10.1 - 2026-05-14
 

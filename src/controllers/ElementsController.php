@@ -378,6 +378,10 @@ class ElementsController extends Controller
             } elseif (str_contains($redirectUrl, '{')) {
                 throw new BadRequestHttpException("Invalid returnUrl param: $redirectUrl");
             }
+
+            // swap the QS placeholder with a `?`
+            // (see https://github.com/craftcms/cms/issues/18923)
+            $redirectUrl = str_replace(':QS:', '?', $redirectUrl);
         } else {
             $redirectUrl = ElementHelper::postEditUrl($element);
         }
