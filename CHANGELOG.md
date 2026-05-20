@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Fixed some errors that could occur when running Craft through Laravel Octane ([#18921](https://github.com/craftcms/cms/pull/18921))
+
 ## 6.0.0-alpha.4 - 2026-05-19
 
 - Added support for plugins to register Laravel scheduled tasks that run via `php artisan schedule:run`.
