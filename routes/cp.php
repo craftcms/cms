@@ -297,7 +297,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         });
 
         // User settings
-        Route::get('settings/users/settings', [UserSettingsController::class, 'index']);
+        Route::get('settings/users/settings', [UserSettingsController::class, 'index'])->name('settings.users.index');
     });
 
     Route::prefix('settings/filesystems')->group(function () {
