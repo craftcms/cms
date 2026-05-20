@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Filesystem\Resources\FsResource;
@@ -13,6 +14,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -93,18 +95,36 @@ class FilesystemsController
             $title = t('Create a new filesystem');
         }
 
+        $isValidUrl = fn ($value) => Str::isUrl($value);
+
         return new CpScreenResponse()
             ->title($title)
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Filesystems'), 'settings/filesystems')
-            ->contentTemplate('settings/filesystems/_edit.twig', [
+            ->inertiaPage('SettingsFilesystemsEditPage', [
                 'oldHandle' => $handle,
-                'filesystem' => $filesystem,
+                'filesystem' => [
+                    ...$filesystem,
+                    'type' => $filesystem::class,
+                    'settingsHtml' => $this->readOnly ? $filesystem->getReadOnlySettingsHtml() : $filesystem->getSettingsHtml(),
+                    'showHasUrlSetting' => $filesystem->getShowHasUrlSetting(),
+                    'showUrlSetting' => $filesystem->getShowUrlSetting(),
+                ],
                 'fsOptions' => $fsOptions,
                 'fsInstances' => $fsInstances,
                 'fsTypes' => $allFsTypes,
-                'readOnly' => $this->readOnly,
+
+                // @TODO this should probably be its own item on SelectOptions
+                'baseUrlSuggestions' => SelectOptions::getEnvSuggestions(true, $isValidUrl),
             ])
+            // ->contentTemplate('settings/filesystems/_edit.twig', [
+            //     'oldHandle' => $handle,
+            //     'filesystem' => $filesystem,
+            //     'fsOptions' => $fsOptions,
+            //     'fsInstances' => $fsInstances,
+            //     'fsTypes' => $allFsTypes,
+            //     'readOnly' => $this->readOnly,
+            // ])
             ->unless(
                 $this->readOnly,
                 function (CpScreenResponse $response) {

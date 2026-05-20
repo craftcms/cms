@@ -15,6 +15,7 @@ import AssetIndexes from '@/components/utilities/AssetIndexes/AssetIndexes.vue';
 import SystemMessages from '@/components/utilities/SystemMessages/SystemMessages.vue';
 import DeprecationErrorsToolbar from '@/components/utilities/DeprecationErrors/DeprecationErrorsToolbar.vue';
 import {setTranslations} from '@craftcms/cp/utilities/translate.ts.mjs';
+import LocalFsSettings from '@/components/Filesystems/LocalFsSettings.vue';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -98,6 +99,9 @@ const Cp = {
         app.component('ProjectConfig', ProjectConfig);
         app.component('AssetIndexes', AssetIndexes);
         app.component('SystemMessages', SystemMessages);
+        app.component('LocalFsSettings', LocalFsSettings);
+
+        // @TODO Register plugin components
       },
     });
 

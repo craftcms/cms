@@ -9,6 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\View\TemplateMode;
 use Override;
 
@@ -124,10 +125,17 @@ class Local extends Filesystem
 
     private function settingsHtml(bool $readOnly): string
     {
-        return template('_components/fs/Local/settings', [
-            'filesystem' => $this,
+        return Html::tag('LocalFsSettings', attributes: [
+            // ':filesystem' => json_encode([
+            //     'name' => $this->name,
+            //     'handle' => $this->handle,
+            // ]),
             'readOnly' => $readOnly,
-        ], TemplateMode::Cp);
+        ]);
+        // return template('_components/fs/Local/settings', [
+        //     'filesystem' => $this,
+        //     'readOnly' => $readOnly,
+        // ], TemplateMode::Cp);
     }
 
     #[Override]
