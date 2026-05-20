@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     actingAs(User::findOne());
+
+    app(RequireCpRequest::class)->registerCpTemplateHooks();
 });
 
 it('renders an element index shell with toolbar and elements container', function () {

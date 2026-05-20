@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed some errors that could occur when running Craft through Laravel Octane ([#18921](https://github.com/craftcms/cms/pull/18921))
 - Fixed an error that occurred when Updates were cached and deserialized.
 - The default value for `GeneralConfig::$loginPath` is now `false`
 
