@@ -77,13 +77,19 @@ class ElementIndexResource extends JsonResource
             return $responseData;
         }
 
+        // get the return URL with `?` replaced with a token
+        // (see https://github.com/craftcms/cms/issues/18923)
+        if ($returnUrl = $request->input('returnUrl')) {
+            $returnUrl = str_replace('?', ':QS:', $returnUrl);
+        }
+
         $responseData['html'] = $elementType::indexHtml(
             elementQuery: $elementQuery,
             disabledElementIds: $request->array('disabledElementIds'),
             viewState: [
                 ...$viewState,
                 'fieldLayouts' => $this->resolveFieldLayouts(),
-                'returnUrl' => $request->input('returnUrl'),
+                'returnUrl' => $returnUrl,
             ],
             sourceKey: $sourceKey,
             context: $request->context(),
