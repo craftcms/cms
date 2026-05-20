@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Fixed an error that occurred when Updates were cached and deserialized.
+- The default value for `GeneralConfig::$loginPath` is now `false`
+
+## 6.0.0-alpha.4 - 2026-05-19
+
 - Added support for plugins to register Laravel scheduled tasks that run via `php artisan schedule:run`.
 - Updated `yiisoft/html` to 4.1.0. ([#18920](https://github.com/craftcms/cms/pull/18920))
 - Updated `elvanto/litemoji` to 5.2.0. ([#18917](https://github.com/craftcms/cms/pull/18917))

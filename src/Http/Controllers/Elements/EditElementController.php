@@ -156,6 +156,10 @@ class EditElementController
                     abort(400, "Invalid returnUrl param: $redirectUrl");
                 }
             }
+
+            // swap the QS placeholder with a `?`
+            // (see https://github.com/craftcms/cms/issues/18923)
+            $redirectUrl = str_replace(':QS:', '?', $redirectUrl);
         } else {
             $redirectUrl = ElementHelper::postEditUrl($element);
         }

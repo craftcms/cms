@@ -95,18 +95,18 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         private readonly PageLifecycle $pageLifecycle,
     ) {}
 
-    public static function arraySome(TwigEnvironment $env, mixed $array, mixed $arrow): mixed
+    public static function arraySome(TwigEnvironment $env, mixed $array, mixed $arrow, bool $isSandboxed = false): mixed
     {
-        CoreExtension::checkArrow($env, $arrow, 'has some', 'operator');
+        CoreExtension::checkArrow($isSandboxed, $arrow, 'has some', 'operator');
 
-        return CoreExtension::arraySome($env, $array, $arrow);
+        return CoreExtension::arraySome($env, $array, $arrow, $isSandboxed);
     }
 
-    public static function arrayEvery(TwigEnvironment $env, mixed $array, mixed $arrow): mixed
+    public static function arrayEvery(TwigEnvironment $env, mixed $array, mixed $arrow, bool $isSandboxed = false): mixed
     {
-        CoreExtension::checkArrow($env, $arrow, 'has every', 'operator');
+        CoreExtension::checkArrow($isSandboxed, $arrow, 'has every', 'operator');
 
-        return CoreExtension::arrayEvery($env, $array, $arrow);
+        return CoreExtension::arrayEvery($env, $array, $arrow, $isSandboxed);
     }
 
     #[Override]

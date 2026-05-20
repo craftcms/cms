@@ -28,7 +28,7 @@ readonly class Cms
 {
     public const string NAME = 'Craft CMS';
 
-    public const string VERSION = '6.0.0-alpha.3';
+    public const string VERSION = '6.0.0-alpha.4';
 
     public const string SCHEMA_VERSION = '6.0.0.2';
 
