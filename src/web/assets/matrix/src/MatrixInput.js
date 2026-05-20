@@ -311,7 +311,9 @@
             this.$pasteBtn = Craft.ui
               .createPasteButton()
               .appendTo(this.$addEntryBtnContainer);
-            this.addListener(this.$pasteBtn, 'activate', 'pasteEntries');
+            this.addListener(this.$pasteBtn, 'activate', () => {
+              this.pasteEntries();
+            });
           } else {
             this.$pasteBtn.removeClass('hidden');
           }
