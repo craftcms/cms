@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Resources;
 
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Cp\JsonResource;
 use CraftCms\Cms\Entry\Data\EntryType;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 /** @mixin EntryType */
 class EntryTypeResource extends JsonResource

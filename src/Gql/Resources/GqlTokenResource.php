@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Resources;
 
+use CraftCms\Cms\Cp\JsonResource;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use DateTime;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin GqlToken
