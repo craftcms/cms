@@ -1,18 +1,11 @@
-import Cp from './bootstrap/cp.js';
-
 // We need to globally register these for the moment because an
 // elevated session modal can be called from pretty much anywhere
 import './components/Auth/login/login-form.js';
 import './components/Auth/totp/totp-form.js';
 import './components/Auth/recovery-codes/recovery-code-form.js';
+import Cp from './bootstrap/cp.js';
 
-// @ts-ignore
-window.Cp = {
-  ...(window.Cp || {}),
-  ...Cp,
-};
-
-console.log('window.Cp defined', window.Cp);
+window.Cp = Cp;
 
 /**
  * Components - dynamically imported after Craft is initialized
