@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Tests\Support\RegistersPackageAliases;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
@@ -66,6 +67,7 @@ class UnitTestCase extends Orchestra
         TemplateMode::set(TemplateMode::Cp);
 
         Sites::setCurrentSite(new Site);
+        Updates::shouldReceive('isUpdatePending')->andReturnFalse();
 
         app()->setLocale('en-US');
 
