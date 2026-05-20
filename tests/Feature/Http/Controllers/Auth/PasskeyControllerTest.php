@@ -15,12 +15,12 @@ test('requestOptions returns passkey request options', function () {
 
 test('login validates required fields', function () {
     postJson(action([PasskeyController::class, 'login']), [])
-        ->assertJsonValidationErrors(['requestOptions', 'response']);
+        ->assertJsonValidationErrors(['requestOptions', 'authResponse']);
 });
 
 test('login fails with invalid credential', function () {
     postJson(action([PasskeyController::class, 'login']), [
         'requestOptions' => Json::encode(['challenge' => 'test']),
-        'response' => Json::encode(['id' => 'non-existent-credential-id']),
+        'authResponse' => Json::encode(['id' => 'non-existent-credential-id']),
     ])->assertStatus(400);
 });

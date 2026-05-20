@@ -19,7 +19,7 @@ export default class CraftInput extends LionInput {
 
     if (this._inputNode && this.maxlength) {
       if (this.maxlength > 0) {
-        this._inputNode.size = this.maxlength;
+        this._inputNode.maxLength = this.maxlength;
       }
     }
   }

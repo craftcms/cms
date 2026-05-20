@@ -16,6 +16,8 @@ use CraftCms\Cms\User\Elements\User;
  */
 interface AuthMethodInterface extends ComponentInterface
 {
+    public static function handle(): string;
+
     /**
      * Returns the description of this authentication method.
      */

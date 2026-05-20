@@ -20,11 +20,13 @@ use CraftCms\Cms\Update\Data\Update as UpdateData;
 use CraftCms\Cms\Update\Data\Updates as UpdatesData;
 use GuzzleHttp\Utils;
 use Illuminate\Contracts\Config\Repository;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Foundation\Events\LocaleUpdated;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\UrlGenerator;
@@ -58,6 +60,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->registerMacros();
         $this->registerSerializableClasses();
+        $this->registerThrottleExceptionHandler();
     }
 
     public function boot(): void
@@ -249,5 +252,16 @@ class AppServiceProvider extends ServiceProvider
         } else {
             Aliases::set('@web', config('app.url'));
         }
+    }
+
+    private function registerThrottleExceptionHandler(): void
+    {
+        $this->callAfterResolving(ExceptionHandler::class, function (ExceptionHandler $handler): void {
+            $handler->renderable(function (ThrottleRequestsException $e, $request) {
+                if ($request->inertia()) {
+                    return back()->with('error', t('Too many requests. Please wait a moment before trying again.'));
+                }
+            });
+        });
     }
 }
