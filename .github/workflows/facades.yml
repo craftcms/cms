@@ -9,11 +9,17 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: facades-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   update:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write # Required to push generated facade docblock commits.
 
     strategy:
       fail-fast: true
@@ -22,10 +28,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2
         with:
           php-version: 8.5
           extensions: :php-psr
@@ -44,13 +52,9 @@ jobs:
             }
 
       - name: Install dependencies
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 5
-          max_attempts: 5
-          command: |
-            composer config repositories.facade-documenter vcs git@github.com:laravel/facade-documenter.git
-            composer require --dev laravel/facade-documenter:dev-main --prefer-stable --prefer-dist --no-interaction --no-progress -W
+        run: |
+          composer config repositories.facade-documenter vcs git@github.com:laravel/facade-documenter.git
+          composer require --dev laravel/facade-documenter:dev-main --prefer-stable --prefer-dist --no-interaction --no-progress -W
 
       - name: Update facade docblocks
         run: |
@@ -64,7 +68,24 @@ jobs:
           php -f vendor/bin/facade.php -- "${facade_classes[@]}"
 
       - name: Commit facade docblocks
-        uses: stefanzweifel/git-auto-commit-action@v7
-        with:
-          commit_message: Update facade docblocks
-          file_pattern: src/
+        env:
+          BRANCH: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          if [[ "$REF_TYPE" != "branch" ]]; then
+            echo "Skipping commit on non-branch ref: $REF_TYPE"
+            exit 0
+          fi
+
+          if [[ -z "$(git status --porcelain -- src/)" ]]; then
+            echo "No facade docblock changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/
+          git commit -m "Update facade docblocks"
+          gh auth setup-git
+          git push origin "HEAD:${BRANCH}"

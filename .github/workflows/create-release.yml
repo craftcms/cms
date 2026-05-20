@@ -6,16 +6,47 @@ on:
     types:
       - craftcms/new-release
 
+permissions: {}
+
+concurrency:
+  group: create-release-${{ github.event.client_payload.tag }}
+  cancel-in-progress: false
+
 jobs:
   build:
+    name: Create release
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write # Required to create GitHub releases.
     steps:
-      - uses: ncipollo/release-action@v1
-        with:
-          body: ${{ github.event.client_payload.notes }}
-          makeLatest: ${{ github.event.client_payload.latest }}
-          name: ${{ github.event.client_payload.version }}
-          prerelease: ${{ github.event.client_payload.prerelease }}
-          tag: ${{ github.event.client_payload.tag }}
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_BODY: ${{ github.event.client_payload.notes }}
+          RELEASE_LATEST: ${{ github.event.client_payload.latest }}
+          RELEASE_NAME: ${{ github.event.client_payload.version }}
+          RELEASE_PRERELEASE: ${{ github.event.client_payload.prerelease }}
+          RELEASE_TAG: ${{ github.event.client_payload.tag }}
+        run: |
+          args=(release create "$RELEASE_TAG" --title "$RELEASE_NAME" --notes "$RELEASE_BODY")
+
+          if [[ "$RELEASE_PRERELEASE" == "true" ]]; then
+            args+=(--prerelease)
+          fi
+
+          case "$RELEASE_LATEST" in
+            true)
+              args+=(--latest)
+              ;;
+            false)
+              args+=(--latest=false)
+              ;;
+            legacy|"")
+              ;;
+            *)
+              echo "Unsupported latest value: $RELEASE_LATEST" >&2
+              exit 1
+              ;;
+          esac
+
+          gh "${args[@]}"

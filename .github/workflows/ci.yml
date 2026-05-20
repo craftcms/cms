@@ -14,7 +14,7 @@ concurrency:
 jobs:
   ci:
     name: ci
-    uses: craftcms/.github/.github/workflows/ci.yml@v3
+    uses: craftcms/.github/.github/workflows/ci.yml@v3 # zizmor: ignore[unpinned-uses] This reusable workflow is maintained by Craft CMS; use the version tag for shared workflow updates.
     with:
       php_version: '8.5'
       craft_version: '6'

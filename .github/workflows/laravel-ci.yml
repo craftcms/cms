@@ -7,6 +7,9 @@ on:
       - 6.x
   pull_request:
 
+permissions:
+  contents: read
+
 concurrency:
   group: laravel-ci-${{ github.ref }}
   cancel-in-progress: true
@@ -19,12 +22,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.head_ref }}
+          persist-credentials: false
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2
         with:
           php-version: '8.5'
           extensions: json, dom, curl, libxml, mbstring
@@ -41,12 +45,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.head_ref }}
+          persist-credentials: false
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2
         with:
           php-version: '8.5'
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
@@ -67,10 +72,10 @@ jobs:
         run: composer config version "6.x-dev"
 
       - name: Install dependencies
-        uses: ramsey/composer-install@v3
+        uses: ramsey/composer-install@a8d0d959dab41457692a5e2041bd9b757a119e3f # v3
 
       - name: Rector Cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: /tmp/rector
           key: ${{ runner.os }}-rector-${{ github.run_id }}
@@ -86,10 +91,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          persist-credentials: false
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2
         with:
           php-version: '8.5'
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
@@ -100,10 +107,10 @@ jobs:
         run: composer config version "6.x-dev"
 
       - name: Install composer dependencies
-        uses: ramsey/composer-install@v3
+        uses: ramsey/composer-install@a8d0d959dab41457692a5e2041bd9b757a119e3f # v3
       
       - name: PHPStan Cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: /tmp/phpstan
           key: ${{ runner.os }}-phpstan-${{ github.run_id }}
@@ -124,7 +131,9 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Run tests
         uses: ./.github/actions/run-tests
@@ -142,7 +151,9 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Run tests
         uses: ./.github/actions/run-tests
@@ -164,40 +175,39 @@ jobs:
         php: [8.5]
         db: [mysql, pgsql, sqlite]
         exclude:
-          # Service containers (mysql/pgsql) are only supported on Linux runners.
+          # Preinstalled MySQL/PostgreSQL services are only available on Ubuntu runners.
           - os: windows-latest
             db: mysql
           - os: windows-latest
             db: pgsql
-    services:
-      pgsql:
-        image: ${{ (matrix.os == 'ubuntu-latest' && matrix.db == 'pgsql') && 'postgres:latest' || '' }}
-        env:
-          POSTGRES_USER: root
-          POSTGRES_PASSWORD: mysecretpassword
-          POSTGRES_DB: craft_test
-        ports:
-          - 5432:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
-      mysql:
-        image: ${{ (matrix.os == 'ubuntu-latest' && matrix.db == 'mysql') && 'mysql:8.0' || '' }}
-        env:
-          MYSQL_ROOT_PASSWORD: mysecretpassword
-          MYSQL_DATABASE: craft_test
-          MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
-        options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 5
-        ports:
-          - 3306:3306
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: Start MySQL
+        if: matrix.os == 'ubuntu-latest' && matrix.db == 'mysql'
+        run: |
+          sudo systemctl start mysql.service
+          mysql --host=127.0.0.1 --user=root --password=root --execute="CREATE DATABASE IF NOT EXISTS craft_test"
+
+      - name: Start PostgreSQL
+        if: matrix.os == 'ubuntu-latest' && matrix.db == 'pgsql'
+        run: |
+          sudo systemctl start postgresql.service
+          sudo -u postgres createuser --login --superuser root
+          sudo -u postgres psql -v ON_ERROR_STOP=1 --command="ALTER ROLE root WITH PASSWORD 'root'"
+          sudo -u postgres createdb --owner=root craft_test
 
       - name: Copy tests .env
         shell: bash
+        env:
+          DB: ${{ matrix.db }}
         run: |
-          cp ./tests/.env.example.${{ matrix.db }} ./tests/.env
-          sed -i 's/DB_PASSWORD=/DB_PASSWORD=mysecretpassword/' tests/.env
+          cp "./tests/.env.example.${DB}" ./tests/.env
+          sed -i 's/DB_PASSWORD=/DB_PASSWORD=root/' tests/.env
           touch database/craft_tests.sqlite
 
       - name: Run tests
@@ -216,7 +226,9 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Run tests
         uses: ./.github/actions/run-tests
