@@ -475,6 +475,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         }
 
         $linkTypes = $this->getLinkTypes();
+        $linkType = null;
         $config = [
             'value' => $value,
         ];
@@ -529,10 +530,10 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             }
 
             $typeId = $this->resolveType($value);
-            $config['linkType'] = $linkTypes[$typeId] ?? ComponentHelper::createComponent(self::types()[$typeId], BaseLinkType::class);
+            $linkType = $linkTypes[$typeId] ?? ComponentHelper::createComponent(self::types()[$typeId], BaseLinkType::class);
         }
 
-        return new LinkData($config['value'], $config['linkType']);
+        return new LinkData($config['value'], $linkType);
     }
 
     /**
