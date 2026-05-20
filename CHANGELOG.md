@@ -4,6 +4,7 @@
 
 - Fixed an error that occurred when Updates were cached and deserialized.
 - The default value for `GeneralConfig::$loginPath` is now `false`
+- Fixed a bug where Money fields could throw an error during element validation when the field value was falsy.
 
 ## 6.0.0-alpha.4 - 2026-05-19
 
