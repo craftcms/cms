@@ -2,8 +2,10 @@
 
 ## Unreleased
 
+- The default value for `GeneralConfig::$loginPath` is now `false`.
+- Fixed some errors that could occur when running Craft through Laravel Octane ([#18921](https://github.com/craftcms/cms/pull/18921))
 - Fixed an error that occurred when Updates were cached and deserialized.
-- The default value for `GeneralConfig::$loginPath` is now `false`
+- Fixed an error that prevented link fields from saving.
 - Fixed a bug where Money fields could throw an error during element validation when the field value was falsy.
 
 ## 6.0.0-alpha.4 - 2026-05-19
@@ -13,7 +15,7 @@
 - Updated `elvanto/litemoji` to 5.2.0. ([#18917](https://github.com/craftcms/cms/pull/18917))
 - Updated `pragmarx/google2fa` to 9.0.0. ([#18919](https://github.com/craftcms/cms/pull/18919))
 - Fixed an error that occurred when opening element selector modals with string `sources` values. ([#18915](https://github.com/craftcms/cms/pull/18915))
-- Added “Elements” and “Deprecations” panels to Laravel Debugbar. ([#18897](https://github.com/craftcms/cms/pull/18897)
+- Added “Elements” and “Deprecations” panels to Laravel Debugbar. ([#18897](https://github.com/craftcms/cms/pull/18897))
 - Fixed a bug where legacy redirect responses were not being returned as a redirect ([#18893](https://github.com/craftcms/cms/pull/18893))
 - Fixed an error that could occur when saving filesystems with null transient settings. ([#18909](https://github.com/craftcms/cms/pull/18909))
 - Fixed a bug where plugin routes were not being registered with the `web` middleware.
