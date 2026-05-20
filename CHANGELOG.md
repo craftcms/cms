@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.10.2 - 2026-05-20
 
 - Updated Twig to 3.26. ([#18924](https://github.com/craftcms/cms/pull/18924), [#18926](https://github.com/craftcms/cms/issues/18926))
 - Fixed a bug where editable tables registered unexpected debug toolbar output. ([#18895](https://github.com/craftcms/cms/issues/18895), [#18902](https://github.com/craftcms/cms/issues/18902))
