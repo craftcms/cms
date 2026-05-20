@@ -78,7 +78,14 @@ class FilesystemsController
                 $filesystem = $fsInstance;
             }
 
-            $fsInstances[$fsType] = $fsInstance;
+            $fsInstances[$fsType] = [
+                ...$fsInstance->toArray(),
+                'type' => $filesystem::class,
+                'settingsHtml' => $this->readOnly ? $filesystem->getReadOnlySettingsHtml() : $filesystem->getSettingsHtml(),
+                'showHasUrlSetting' => $fsInstance->getShowHasUrlSetting(),
+                'showUrlSetting' => $fsInstance->getShowUrlSetting(),
+            ];
+
             $fsOptions[] = [
                 'value' => $fsType,
                 'label' => $fsInstance::displayName(),

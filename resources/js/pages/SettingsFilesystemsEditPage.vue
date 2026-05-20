@@ -62,7 +62,7 @@
 </script>
 
 <template>
-  <AppLayout :form="form" @save="save">
+  <AppLayout :form="form" @save="save" :debug="$props">
     <Pane appearance="raised">
       <div class="grid gap-3">
         <CraftInput

@@ -5,6 +5,7 @@
   import CraftCombobox from '@/components/form/CraftCombobox.vue';
   import DynamicHtmlRenderer from '@/components/DynamicHtmlRenderer.vue';
   import type {Filesystem} from '@/types/filesystems';
+  import VarDump from '@/components/VarDump.vue';
 
   const hasUrls = defineModel<boolean>('hasUrls');
   const url = defineModel<string>('url', {default: ''});
@@ -20,14 +21,16 @@
 
 <template>
   <div v-if="filesystem" :id="filesystem.type">
-    <template v-if="filesystem.showHasUrlSetting">
-      <CraftSwitch
-        :label="t('Files in this filesystem have public URLs')"
-        name="hasUrls"
-        id="has-urls"
-        v-model="hasUrls"
-        :disabled="page.props.readOnly"
-      />
+    <div class="grid gap-3">
+      <template v-if="filesystem.showHasUrlSetting">
+        <CraftSwitch
+          :label="t('Files in this filesystem have public URLs')"
+          name="hasUrls"
+          id="has-urls"
+          v-model="hasUrls"
+          :disabled="page.props.readOnly"
+        />
+      </template>
 
       <template v-if="hasUrls && filesystem.showUrlSetting">
         <CraftCombobox
@@ -42,8 +45,8 @@
           :disabled="page.props.readOnly"
         ></CraftCombobox>
       </template>
-    </template>
-    <DynamicHtmlRenderer :html="filesystem.settingsHtml" />
+      <DynamicHtmlRenderer :html="filesystem.settingsHtml" />
+    </div>
   </div>
 </template>
 
