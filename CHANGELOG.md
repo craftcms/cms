@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where Single section entries weren’t initially saved with a post date. ([#18931](https://github.com/craftcms/cms/issues/18931))
+
 ## 5.10.2 - 2026-05-20
 
 - Updated Twig to 3.26. ([#18924](https://github.com/craftcms/cms/pull/18924), [#18926](https://github.com/craftcms/cms/issues/18926))

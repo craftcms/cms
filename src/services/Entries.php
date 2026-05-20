@@ -1025,6 +1025,7 @@ class Entries extends Component
             $entry->sectionId = $section->id;
             $entry->setTypeId($entryTypeIds[0]);
             $entry->title = $section->name;
+            $entry->postDate = new DateTime();
         }
 
         // Validate first
