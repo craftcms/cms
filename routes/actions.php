@@ -421,7 +421,7 @@ Route::prefix(implode('/', [
         // Filesystems
         Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::get('fs/edit', [FilesystemsController::class, 'edit']);
-            Route::post('fs/save', [FilesystemsController::class, 'save']);
+            Route::post('fs/save', [FilesystemsController::class, 'store']);
         });
 
         // Volumes

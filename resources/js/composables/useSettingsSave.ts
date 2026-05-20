@@ -4,7 +4,10 @@ import {computed} from 'vue';
 
 export function useSettingsSave<T extends Record<string, any>>(
   form: InertiaForm<T>,
-  action: any
+  action: any,
+  opts?: {
+    transform?: (data: T) => Record<string, any>;
+  }
 ) {
   const page = usePage<{
     redirectUrl?: string;
@@ -31,8 +34,9 @@ export function useSettingsSave<T extends Record<string, any>>(
     form
       .clearErrors()
       .transform((data: T) => {
+        const transformed = opts?.transform ? opts.transform(data) : data;
         return {
-          ...data,
+          ...transformed,
           redirect:
             redirect && redirectUrl.value ? redirectUrl.value : undefined,
         };

@@ -1,38 +1,16 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
-  import {computed} from 'vue';
   import {usePage} from '@inertiajs/vue3';
-  import type {Filesystem} from '@/pages/SettingsFilesystemsEditPage.vue';
-  import VarDump from '@/components/VarDump.vue';
   import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
   import CraftCombobox from '@/components/form/CraftCombobox.vue';
   import DynamicHtmlRenderer from '@/components/DynamicHtmlRenderer.vue';
+  import type {Filesystem} from '@/types/filesystems';
 
   const hasUrls = defineModel<boolean>('hasUrls');
-  const url = defineModel<string>('url');
-  withDefaults(
-    defineProps<{
-      filesystem?: Filesystem;
-    }>(),
-    {
-      filesystem: {
-        errors: () => [],
-        name: null,
-        handle: null,
-        oldHandle: null,
-        hasUrls: false,
-        url: null,
-        uid: null,
-        rootUrl: null,
-        id: null,
-        dateCreated: null,
-        dateUpdated: null,
-        settingsHtml: null,
-        rootPath: null,
-        path: null,
-      },
-    }
-  );
+  const url = defineModel<string>('url', {default: ''});
+  defineProps<{
+    filesystem: Filesystem;
+  }>();
 
   const page = usePage<{
     readOnly: boolean;
@@ -65,8 +43,7 @@
         ></CraftCombobox>
       </template>
     </template>
-    <DynamicHtmlRenderer :html="filesystem.settingsHtml"/>
-    <!--<div v-html="filesystem.settingsHtml" />-->
+    <DynamicHtmlRenderer :html="filesystem.settingsHtml" />
   </div>
 </template>
 

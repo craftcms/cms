@@ -13,7 +13,6 @@ use CraftCms\Cms\Filesystem\Resources\FsResource;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Http\Request;
@@ -104,7 +103,7 @@ class FilesystemsController
             ->inertiaPage('SettingsFilesystemsEditPage', [
                 'oldHandle' => $handle,
                 'filesystem' => [
-                    ...$filesystem,
+                    ...$filesystem->toArray(),
                     'type' => $filesystem::class,
                     'settingsHtml' => $this->readOnly ? $filesystem->getReadOnlySettingsHtml() : $filesystem->getSettingsHtml(),
                     'showHasUrlSetting' => $filesystem->getShowHasUrlSetting(),
@@ -116,15 +115,8 @@ class FilesystemsController
 
                 // @TODO this should probably be its own item on SelectOptions
                 'baseUrlSuggestions' => SelectOptions::getEnvSuggestions(true, $isValidUrl),
+                'basePathSuggestions' => SelectOptions::getEnvSuggestions(true),
             ])
-            // ->contentTemplate('settings/filesystems/_edit.twig', [
-            //     'oldHandle' => $handle,
-            //     'filesystem' => $filesystem,
-            //     'fsOptions' => $fsOptions,
-            //     'fsInstances' => $fsInstances,
-            //     'fsTypes' => $allFsTypes,
-            //     'readOnly' => $this->readOnly,
-            // ])
             ->unless(
                 $this->readOnly,
                 function (CpScreenResponse $response) {
@@ -143,10 +135,10 @@ class FilesystemsController
             );
     }
 
-    public function save(Request $request): Response
+    public function store(Request $request): Response
     {
         $type = $request->input('type');
-        $settings = Arr::whereNotNull($request->array('types.'.Html::id($type)));
+        $settings = Arr::whereNotNull($request->array('settings'));
 
         $fs = $this->filesystems->createFilesystem([
             'type' => $type,

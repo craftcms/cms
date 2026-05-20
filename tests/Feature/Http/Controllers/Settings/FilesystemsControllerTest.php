@@ -37,7 +37,7 @@ test('requires authentication for edit', function () {
 test('requires authentication for save', function () {
     Auth::logout();
 
-    postJson(action([FilesystemsController::class, 'save']))
+    postJson(action([FilesystemsController::class, 'store']))
         ->assertUnauthorized();
 });
 
@@ -135,7 +135,7 @@ test('edit loads filesystem and shows actions when not in read-only mode', funct
 });
 
 test('save creates filesystem with valid data', function () {
-    $response = postJson(action([FilesystemsController::class, 'save']), [
+    $response = postJson(action([FilesystemsController::class, 'store']), [
         'type' => 'craft\fs\Local',
         'name' => 'New Test Filesystem',
         'handle' => 'newTestFilesystem',
@@ -155,7 +155,7 @@ test('save creates filesystem with valid data', function () {
 });
 
 test('save ignores null transient filesystem settings', function () {
-    $response = postJson(action([FilesystemsController::class, 'save']), [
+    $response = postJson(action([FilesystemsController::class, 'store']), [
         'type' => TransientSettingsFilesystem::class,
         'name' => 'Transient Settings Filesystem',
         'handle' => 'transientSettingsFilesystem',
@@ -186,7 +186,7 @@ test('save updates existing filesystem with oldHandle', function () {
     Filesystems::saveFilesystem($fs);
 
     // Update it
-    $response = postJson(action([FilesystemsController::class, 'save']), [
+    $response = postJson(action([FilesystemsController::class, 'store']), [
         'type' => 'craft\fs\Local',
         'name' => 'Updated Name',
         'handle' => 'updatedHandle',
@@ -211,7 +211,7 @@ test('save updates existing filesystem with oldHandle', function () {
 });
 
 test('save returns failure on invalid data', function () {
-    $response = postJson(action([FilesystemsController::class, 'save']), [
+    $response = postJson(action([FilesystemsController::class, 'store']), [
         'type' => 'craft\fs\Local',
         'name' => '', // Empty name should fail
         'handle' => '',
@@ -255,7 +255,7 @@ test('delete handles non-existent filesystem gracefully', function () {
 test('respects read-only mode for save operation', function () {
     Cms::config()->allowAdminChanges = false;
 
-    postJson(action([FilesystemsController::class, 'save']), [
+    postJson(action([FilesystemsController::class, 'store']), [
         'type' => 'craft\fs\Local',
         'name' => 'Test',
         'handle' => 'test',

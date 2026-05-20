@@ -37,12 +37,11 @@
   }
 
   const props = defineProps<{
-    filesystems: Array<FileSystemData>;
+    filesystems: {data: Array<FileSystemData>};
     readOnly: boolean;
   }>();
 
   function deleteFs(fs: FileSystemData) {
-    console.log({fs});
     if (
       confirm(
         t('Are you sure you want to delete “{name}”', {
@@ -92,7 +91,7 @@
   ]);
   const table = useVueTable<FileSystemData>({
     get data() {
-      return props.filesystems;
+      return props.filesystems.data;
     },
     get columns() {
       return columns.value;

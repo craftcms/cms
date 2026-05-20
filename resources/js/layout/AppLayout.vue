@@ -17,7 +17,6 @@
   import InlineFlash from '@/components/InlineFlash.vue';
   import ErrorSummary from '@/components/form/ErrorSummary.vue';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
-  import {useFlashMessages} from '@/composables/useFlashMessages';
   import UserMenu from '@/components/UserMenu.vue';
   import FlashMessages from '@/components/FlashMessages.vue';
 

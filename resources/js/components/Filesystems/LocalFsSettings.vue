@@ -1,18 +1,63 @@
 <script setup lang="ts">
-  import {computed} from 'vue';
-  import VarDump from '@/components/VarDump.vue';
+  import {t} from '@craftcms/cp';
+  import {computed, inject, type Ref} from 'vue';
+  import CraftCombobox from '@/components/form/CraftCombobox.vue';
+  import {usePage} from '@inertiajs/vue3';
 
-  const props = defineProps<{
-    filesystem?: string;
+  defineProps<{
+    filesystem: any;
+    readOnly: boolean;
   }>();
 
-  const fs = computed(() => props.filesystem ? JSON.parse(props.filesystem) : null);
+  const page = usePage<{
+    basePathSuggestions: Array<any>;
+    errors: Record<string, string>;
+  }>();
+
+  const fsTypeSettings = inject<Ref<Record<string, any>>>('fsTypeSettings');
+  const path = computed({
+    get: () => fsTypeSettings?.value.path ?? '',
+    set: (v) => {
+      if (fsTypeSettings) {
+        fsTypeSettings.value.path = v;
+      }
+    },
+  });
 </script>
 
 <template>
-  <h2>Roundabout LocalFsSettings</h2>
-
-  <VarDump :data="{props}" />
+  <CraftCombobox
+    :label="t('Base Path')"
+    :help-text="
+      t(
+        'The base folder path that should be used as the root of the filesystem.'
+      )
+    "
+    v-model="path"
+    name="path"
+    id="path"
+    :required="true"
+    :placeholder="t('/path/to/folder')"
+    data-error-key="path"
+    :options="page.props.basePathSuggestions"
+    :disabled="readOnly"
+    :error="page.props.errors?.path"
+  >
+    <template #after>
+      <craft-callout
+        variant="info"
+        appearance="plain"
+        class="p-0"
+        icon="lightbulb"
+      >
+        {{ t('This can begin with an environment variable or alias.') }}
+        <a
+          href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
+          >{{ t('Learn more') }}</a
+        >
+      </craft-callout>
+    </template>
+  </CraftCombobox>
 </template>
 
 <style scoped lang="scss"></style>

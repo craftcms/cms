@@ -1,36 +1,18 @@
 <script setup lang="ts">
   import {t, toHandle} from '@craftcms/cp';
   import AppLayout from '@/layout/AppLayout.vue';
-  import VarDump from '@/components/VarDump.vue';
-  import type {SelectItem, SelectOption} from '@/types';
+  import type {SelectOption} from '@/types';
   import Pane from '@/components/Pane.vue';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import CraftInputHandle from '@craftcms/cp/vue/CraftInputHandle.vue';
   import Select from '@/components/form/Select.vue';
   import {useForm} from '@inertiajs/vue3';
   import {useInputGenerator} from '@/composables/useInputGenerator';
-  import DynamicHtmlRenderer from '@/components/DynamicHtmlRenderer.vue';
   import FilesystemSettings from '@/components/Filesystems/FilesystemSettings.vue';
-
-  export type Filesystem = {
-    errors: any[];
-    name: string | null;
-    handle: string | null;
-    oldHandle: any;
-    hasUrls: boolean;
-    url: any;
-    uid: any;
-    rootUrl: any;
-    id: any;
-    dateCreated: any;
-    dateUpdated: any;
-    settingsHtml: string;
-    rootPath: string;
-    path: any;
-    type: string;
-    showHasUrlSetting: boolean;
-    showUrlSetting: boolean;
-  };
+  import type {Filesystem} from '@/types/filesystems';
+  import {useSettingsSave} from '@/composables/useSettingsSave';
+  import {store} from '@actions/Settings/FilesystemsController';
+  import {provide, ref} from 'vue';
 
   const props = defineProps<{
     oldHandle: string | null;
@@ -54,28 +36,33 @@
     (v) => (form.handle = toHandle(v))
   );
 
-  function handleSubmit() {
-    const form = event.target as HTMLFormElement;
+  /**
+   * We create a special ref for the type specific settings and then provide
+   * it down. That way Vue components registered and rendered within
+   * DynamicHtmlRenderer can pick up the injected ref and alter it so the
+   * settings values can be picked up by the form.
+   *
+   * @TODO I need to make sure this works with plugins, or make it work with
+   * plugins.
+   */
+  const fsTypeSettings = ref<{
+    path?: string | null;
+  }>({
+    path: props.filesystem.path ?? null,
+  });
 
-    form.transform(() => {
-      return {
-        ...(new FormData(form)),
-        ...form
-      }
-    }).submit();
-  }
+  provide('fsTypeSettings', fsTypeSettings);
 
-  function getFs(fsType: string): Filesystem | null {
-    if (fsType === form.type) {
-      return props.filesystem;
-    }
-
-    return props.fsInstances[fsType] ?? null;
-  }
+  const {save} = useSettingsSave(form, store['/admin/actions/fs/save'], {
+    transform: (data) => ({
+      ...data,
+      settings: fsTypeSettings.value,
+    }),
+  });
 </script>
 
 <template>
-  <AppLayout>
+  <AppLayout :form="form" @save="save">
     <Pane appearance="raised">
       <div class="grid gap-3">
         <CraftInput
@@ -83,6 +70,7 @@
           :label="t('Name')"
           id="name"
           name="name"
+          autocomplete="off"
           :autofocus="true"
           :required="true"
           :error="form.errors?.name"
@@ -117,6 +105,7 @@
 
         <template v-for="fsType in fsTypes">
           <FilesystemSettings
+            v-if="fsInstances[fsType]"
             v-model:has-urls="form.hasUrls"
             v-model:url="form.url"
             :filesystem="fsInstances[fsType]"

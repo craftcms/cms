@@ -15,6 +15,7 @@
     callouts?: Array<string>;
     error?: string;
     requireOptionMatch?: boolean;
+    placeholder?: string;
   }>();
 
   const slots = useSlots();
@@ -39,6 +40,7 @@
       v-model="modelValue"
       :options="options"
       :label="label"
+      :placeholder="placeholder"
     >
       <!-- Forward all other slots -->
       <template v-for="(_, name) in forwardedSlots" #[name]="slotData">
