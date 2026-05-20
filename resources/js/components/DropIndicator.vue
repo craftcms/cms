@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import type {Edge} from '@atlaskit/pragmatic-drag-and-drop-hitbox/types';
-  import VarDump from '@/components/VarDump.vue';
 
   const props = defineProps<{
     edge?: Edge | null;

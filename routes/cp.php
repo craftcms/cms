@@ -235,7 +235,20 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         })->where('filename', '.*');
 
         // Routes
-        Route::get('settings/routes', [RoutesController::class, 'index']);
+        Route::get('settings/routes', [RoutesController::class, 'index'])
+            ->name('settings.routes.index');
+        Route::middleware(RequireAdminChanges::class)->group(function () {
+            Route::post('settings/routes', [RoutesController::class, 'store'])
+                ->name('settings.routes.store');
+            Route::patch('settings/routes/{routeUid}', [RoutesController::class, 'update'])
+                ->whereUuid('routeUid')
+                ->name('settings.routes.update');
+            Route::delete('settings/routes/{routeUid}', [RoutesController::class, 'destroy'])
+                ->whereUuid('routeUid')
+                ->name('settings.routes.destroy');
+            Route::post('settings/routes/reorder', [RoutesController::class, 'reorder'])
+                ->name('settings.routes.reorder');
+        });
 
         // Sections
         Route::get('settings/sections', [SectionsController::class, 'index'])
