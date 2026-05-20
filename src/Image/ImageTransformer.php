@@ -40,6 +40,7 @@ use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Sleep;
 use RuntimeException;
