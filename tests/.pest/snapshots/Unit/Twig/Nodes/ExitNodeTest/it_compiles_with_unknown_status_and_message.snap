@@ -1,2 +1,2 @@
 // line 1
-abort(418, "I'm a teapot");
+abort(418, "I\x27m a teapot");
