@@ -107,19 +107,19 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * @since 5.4.3
      */
-    public static function arraySome(TwigEnvironment $env, $array, $arrow)
+    public static function arraySome(TwigEnvironment $env, $array, $arrow, $isSandboxed = false)
     {
-        CoreExtension::checkArrow($env, $arrow, 'has some', 'operator');
-        return CoreExtension::arraySome($env, $array, $arrow);
+        CoreExtension::checkArrow($isSandboxed, $arrow, 'has some', 'operator');
+        return CoreExtension::arraySome($env, $array, $arrow, $isSandboxed);
     }
 
     /**
      * @since 5.4.3
      */
-    public static function arrayEvery(TwigEnvironment $env, $array, $arrow)
+    public static function arrayEvery(TwigEnvironment $env, $array, $arrow, $isSandboxed = false)
     {
-        CoreExtension::checkArrow($env, $arrow, 'has every', 'operator');
-        return CoreExtension::arrayEvery($env, $array, $arrow);
+        CoreExtension::checkArrow($isSandboxed, $arrow, 'has every', 'operator');
+        return CoreExtension::arrayEvery($env, $array, $arrow, $isSandboxed);
     }
 
     /**
@@ -234,7 +234,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('explodeClass', [Html::class, 'explodeClass']),
             new TwigFilter('explodeStyle', [Html::class, 'explodeStyle']),
             new TwigFilter('filesize', [$this, 'filesizeFilter']),
-            new TwigFilter('filter', [$this, 'filterFilter'], ['needs_environment' => true]),
+            new TwigFilter('filter', [$this, 'filterFilter'], ['needs_environment' => true, 'needs_is_sandboxed' => true]),
             new TwigFilter('filterByValue', [ArrayHelper::class, 'where'], ['deprecation_info' => new DeprecatedCallableInfo('craftcms/cms', '3.5.0', 'where')]),
             new TwigFilter('firstWhere', [ArrayHelper::class, 'firstWhere']),
             new TwigFilter('flatten', [Arr::class, 'flatten']),
@@ -253,7 +253,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('length', [$this, 'lengthFilter'], ['needs_environment' => true]),
             new TwigFilter('lcfirst', [$this, 'lcfirstFilter']),
             new TwigFilter('literal', [$this, 'literalFilter']),
-            new TwigFilter('map', [$this, 'mapFilter'], ['needs_environment' => true]),
+            new TwigFilter('map', [$this, 'mapFilter'], ['needs_environment' => true, 'needs_is_sandboxed' => true]),
             new TwigFilter('markdown', [$this, 'markdownFilter'], ['is_safe' => ['html']]),
             new TwigFilter('md', [$this, 'markdownFilter'], ['is_safe' => ['html']]),
             new TwigFilter('merge', [$this, 'mergeFilter']),
@@ -272,12 +272,12 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('prepend', [$this, 'prependFilter'], ['is_safe' => ['html']]),
             new TwigFilter('purify', [$this, 'purifyFilter'], ['is_safe' => ['html']]),
             new TwigFilter('push', [$this, 'pushFilter']),
-            new TwigFilter('reduce', [$this, 'reduceFilter'], ['needs_environment' => true]),
+            new TwigFilter('reduce', [$this, 'reduceFilter'], ['needs_environment' => true, 'needs_is_sandboxed' => true]),
             new TwigFilter('removeClass', [$this, 'removeClassFilter'], ['is_safe' => ['html']]),
             new TwigFilter('replace', [$this, 'replaceFilter']),
             new TwigFilter('rss', [$this, 'rssFilter'], ['needs_environment' => true]),
             new TwigFilter('snake', [$this, 'snakeFilter']),
-            new TwigFilter('sort', [$this, 'sortFilter'], ['needs_environment' => true]),
+            new TwigFilter('sort', [$this, 'sortFilter'], ['needs_environment' => true, 'needs_is_sandboxed' => true]),
             new TwigFilter('string', 'strval'),
             new TwigFilter('time', [$this, 'timeFilter'], ['needs_environment' => true]),
             new TwigFilter('timestamp', [$this, 'timestampFilter']),
@@ -523,10 +523,10 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @throws RuntimeError
      * @since 4.3.2
      */
-    public function sortFilter(TwigEnvironment $env, iterable $array, string|callable|null $arrow = null): array
+    public function sortFilter(TwigEnvironment $env, bool $isSandboxed, iterable $array, string|callable|null $arrow = null): array
     {
-        CoreExtension::checkArrow($env, $arrow, 'sort', 'filter');
-        return CoreExtension::sort($env, $array, $arrow);
+        CoreExtension::checkArrow($isSandboxed, $arrow, 'sort', 'filter');
+        return CoreExtension::sort($env, $isSandboxed, $array, $arrow);
     }
 
     /**
@@ -540,10 +540,10 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @throws RuntimeError
      * @since 4.4.16
      */
-    public function reduceFilter(TwigEnvironment $env, mixed $array, mixed $arrow, mixed $initial = null): mixed
+    public function reduceFilter(TwigEnvironment $env, bool $isSandboxed, mixed $array, mixed $arrow, mixed $initial = null): mixed
     {
-        CoreExtension::checkArrow($env, $arrow, 'reduce', 'filter');
-        return CoreExtension::reduce($env, $array, $arrow, $initial);
+        CoreExtension::checkArrow($isSandboxed, $arrow, 'reduce', 'filter');
+        return CoreExtension::reduce($env, $isSandboxed, $array, $arrow, $initial);
     }
 
     /**
@@ -556,10 +556,10 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @throws RuntimeError
      * @since 4.4.16
      */
-    public function mapFilter(TwigEnvironment $env, mixed $array, mixed $arrow = null): array
+    public function mapFilter(TwigEnvironment $env, bool $isSandboxed, mixed $array, mixed $arrow = null): array
     {
-        CoreExtension::checkArrow($env, $arrow, 'map', 'filter');
-        return CoreExtension::map($env, $array, $arrow);
+        CoreExtension::checkArrow($isSandboxed, $arrow, 'map', 'filter');
+        return CoreExtension::map($env, $isSandboxed, $array, $arrow);
     }
 
 
@@ -1192,7 +1192,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @return array
      * @throws RuntimeError
      */
-    public function filterFilter(TwigEnvironment $env, iterable $arr, ?callable $arrow = null): array
+    public function filterFilter(TwigEnvironment $env, bool $isSandboxed, iterable $arr, ?callable $arrow = null): array
     {
         /** @var array|Traversable $arr */
         if ($arrow === null) {
@@ -1202,9 +1202,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
             return array_filter($arr);
         }
 
-        CoreExtension::checkArrow($env, $arrow, 'filter', 'filter');
+        CoreExtension::checkArrow($isSandboxed, $arrow, 'filter', 'filter');
 
-        $filtered = CoreExtension::filter($env, $arr, $arrow);
+        $filtered = CoreExtension::filter($env, $isSandboxed, $arr, $arrow);
 
         if (is_array($filtered)) {
             return $filtered;
