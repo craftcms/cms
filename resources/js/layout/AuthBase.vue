@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import useCraftData from '@/composables/useCraftData';
-  import craftCmsLogoUrl from '../../legacy/cp/dist/images/craftcms.svg';
+  import craftCmsLogoUrl from '../../public/images/craftcms.svg';
 
   const {general, system} = useCraftData();
 </script>

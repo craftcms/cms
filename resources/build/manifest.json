@@ -1348,9 +1348,9 @@
       "_IndexLayout-DVH3V2Rt.js"
     ]
   },
-  "resources/legacy/cp/dist/images/craftcms.svg": {
+  "resources/public/images/craftcms.svg": {
     "file": "assets/craftcms-Dn6fy_A6.svg",
-    "src": "resources/legacy/cp/dist/images/craftcms.svg"
+    "src": "resources/public/images/craftcms.svg"
   },
   "resources/public/images/install/account.png": {
     "file": "assets/account-Bwr2nbaw.png",
