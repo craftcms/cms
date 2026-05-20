@@ -660,6 +660,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Deprecated `craft\fields\Url`. `CraftCms\Cms\Field\Url` should be used instead.
 - Deprecated `craft\fields\Users`. `CraftCms\Cms\Field\Users` should be used instead.
 - Deprecated `craft\services\Fields`. `CraftCms\Cms\Field\Fields` should be used instead.
+- Fixed a bug where Money fields could throw an error during element validation when the field value was falsy.
 
 ### Filesystems
 
