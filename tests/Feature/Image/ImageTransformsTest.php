@@ -6,6 +6,7 @@ use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Gql\Arguments\Transform as TransformArguments;
 use CraftCms\Cms\Image\Contracts\AssetTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
@@ -428,7 +429,12 @@ describe('asset transformers', function () {
                 return 'custom';
             }
 
-            public function getSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+            public function getImageTransformSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+            {
+                return null;
+            }
+
+            public function getFilesystemSettingsHtml(FsInterface $filesystem, bool $readOnly = false): ?string
             {
                 return null;
             }
@@ -472,7 +478,12 @@ describe('asset transformers', function () {
                 return 'custom';
             }
 
-            public function getSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+            public function getImageTransformSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+            {
+                return null;
+            }
+
+            public function getFilesystemSettingsHtml(FsInterface $filesystem, bool $readOnly = false): ?string
             {
                 return null;
             }
@@ -519,7 +530,12 @@ describe('asset transformers', function () {
                 return '';
             }
 
-            public function getSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+            public function getImageTransformSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+            {
+                return null;
+            }
+
+            public function getFilesystemSettingsHtml(FsInterface $filesystem, bool $readOnly = false): ?string
             {
                 return null;
             }
@@ -566,7 +582,12 @@ describe('asset transformers', function () {
                 return '';
             }
 
-            public function getSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+            public function getImageTransformSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+            {
+                return null;
+            }
+
+            public function getFilesystemSettingsHtml(FsInterface $filesystem, bool $readOnly = false): ?string
             {
                 return null;
             }

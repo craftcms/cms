@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Flash;
@@ -20,6 +21,7 @@ readonly class UserSettingsController
     public function __construct(
         private ProjectConfig $projectConfig,
         private GeneralConfig $generalConfig,
+        private ImageTransformer $imageTransformer,
     ) {}
 
     public function index(): View
@@ -27,6 +29,7 @@ readonly class UserSettingsController
         return view('settings/users/_settings', [
             'readOnly' => ! $this->generalConfig->allowAdminChanges,
             'settings' => $this->projectConfig->get('users') ?? [],
+            'imageTransformer' => $this->imageTransformer,
         ]);
     }
 

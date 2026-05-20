@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
@@ -34,6 +35,10 @@ readonly class Navigation
 
     public function getItems(): array
     {
+        if (Updates::isUpdatePending()) {
+            return [];
+        }
+
         $user = Auth::user();
         $isAdmin = $user?->isAdmin();
 

@@ -4,6 +4,7 @@ namespace craft\imagetransforms;
 
 use Craft;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Image\Contracts\AssetTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransformHelper;
@@ -52,7 +53,12 @@ class LegacyImageTransformerAdapter implements AssetTransformerInterface
         return ImageTransformHelper::getTransformString($imageTransform, $ignoreHandle);
     }
 
-    public function getSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+    public function getImageTransformSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+    {
+        return null;
+    }
+
+    public function getFilesystemSettingsHtml(FsInterface $filesystem, bool $readOnly = false): ?string
     {
         return null;
     }

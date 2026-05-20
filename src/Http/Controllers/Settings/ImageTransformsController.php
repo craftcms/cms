@@ -132,7 +132,7 @@ class ImageTransformsController
             'transformerOptions' => $this->transformerOptions(app(AssetTransforms::class)),
             'transformerSettingsHtml' => app(AssetTransforms::class)
                 ->getAssetTransformer($transform->getTransformer())
-                ->getSettingsHtml($transform, $this->readOnly),
+                ->getImageTransformSettingsHtml($transform, $this->readOnly),
             'qualityPickerOptions' => $qualityPickerOptions,
             'qualityPickerValue' => $qualityPickerValue,
             'readOnly' => $this->readOnly,

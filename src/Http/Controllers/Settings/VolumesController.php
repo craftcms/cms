@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
@@ -43,12 +42,12 @@ class VolumesController
         ]);
     }
 
-    public function create(Volumes $volumes, AssetTransforms $assetTransforms): CpScreenResponse
+    public function create(Volumes $volumes): CpScreenResponse
     {
-        return $this->edit($volumes, assetTransforms: $assetTransforms);
+        return $this->edit($volumes);
     }
 
-    public function edit(Volumes $volumes, ?Volume $volume = null, ?int $volumeId = null, ?AssetTransforms $assetTransforms = null): CpScreenResponse
+    public function edit(Volumes $volumes, ?Volume $volume = null, ?int $volumeId = null): CpScreenResponse
     {
         if ($volumeId === null && $this->readOnly) {
             abort(403, 'Administrative changes are disallowed in this environment.');
@@ -93,8 +92,6 @@ class VolumesController
         $fsOptions = $groupedFsOptions;
         array_unshift($fsOptions, ['label' => t('Select a filesystem'), 'value' => '', 'data' => ['hint' => '']]);
 
-        $transformerOptions = $this->transformerOptions($assetTransforms ?? app(AssetTransforms::class));
-
         return new CpScreenResponse()
             ->title($title)
             ->addCrumb(t('Settings'), 'settings')
@@ -108,7 +105,6 @@ class VolumesController
                 'lowerTypeName' => Asset::lowerDisplayName(),
                 'fsOptions' => $fsOptions,
                 'groupedFsOptions' => $groupedFsOptions,
-                'transformerOptions' => $transformerOptions,
                 'readOnly' => $this->readOnly,
             ])
             ->unless(
@@ -157,9 +153,6 @@ class VolumesController
             'handle' => $request->input('handle'),
             'fsHandle' => $request->input('fsHandle'),
             'subpath' => $subpath ?? null,
-            'transformFsHandle' => $request->input('transformFsHandle'),
-            'transformSubpath' => $request->input('transformSubpath', ''),
-            'defaultTransformer' => $request->input('defaultTransformer'),
             'titleTranslationMethod' => $request->enum('titleTranslationMethod', TranslationMethod::class, TranslationMethod::Site),
             'titleTranslationKeyFormat' => $request->input('titleTranslationKeyFormat'),
             'altTranslationMethod' => $request->enum('altTranslationMethod', TranslationMethod::class, TranslationMethod::None),
@@ -228,17 +221,5 @@ class VolumesController
         }
 
         return "fs:{$value}";
-    }
-
-    private function transformerOptions(AssetTransforms $assetTransforms): array
-    {
-        return collect($assetTransforms->getAllAssetTransformers())
-            ->map(fn (mixed $class, string $handle): array => [
-                'label' => $class::displayName(),
-                'value' => $handle,
-            ])
-            ->sortBy('label')
-            ->values()
-            ->all();
     }
 }

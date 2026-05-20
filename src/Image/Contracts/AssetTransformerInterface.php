@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Image\Contracts;
 
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
 
 interface AssetTransformerInterface
@@ -24,5 +25,7 @@ interface AssetTransformerInterface
 
     public function getTransformString(ImageTransform $imageTransform, bool $ignoreHandle = false): string;
 
-    public function getSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string;
+    public function getImageTransformSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string;
+
+    public function getFilesystemSettingsHtml(FsInterface $filesystem, bool $readOnly = false): ?string;
 }

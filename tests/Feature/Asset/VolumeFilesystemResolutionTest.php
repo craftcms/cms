@@ -10,6 +10,7 @@ use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
+use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Support\Facades\Assets;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use Illuminate\Support\Facades\DB;
@@ -96,11 +97,9 @@ it('normalizes plain disk handles to disk-prefixed values on assignment', functi
         'name' => 'Normalize',
         'handle' => 'normalizeVolume',
         'fsHandle' => 'normalize-disk',
-        'transformFsHandle' => 'normalize-disk',
     ]);
 
-    expect($volume->getFsHandle(false))->toBe('disk:normalize-disk')
-        ->and($volume->getTransformFsHandle(false))->toBe('disk:normalize-disk');
+    expect($volume->getFsHandle(false))->toBe('disk:normalize-disk');
 });
 
 it('validates literal filesystem references and permits unresolved env values', function () {
@@ -245,7 +244,7 @@ it('applies laravel filesystem operations via sourceDisk() with volume subpaths'
     expect($storageDisk->exists('nested/moved.txt'))->toBeFalse();
 });
 
-it('supports macro-backed legacy methods and property assignment', function () {
+it('supports filesystem property assignment', function () {
     config()->set('filesystems.disks.macro-disk', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/volume-disks/macro-disk'),
@@ -255,56 +254,52 @@ it('supports macro-backed legacy methods and property assignment', function () {
         'name' => 'Macro',
         'handle' => 'macro',
         'fs' => 'macro-disk',
-        'transformFs' => 'macro-disk',
         'subpath' => 'initial',
     ]);
 
     expect($volume->getFsHandle(false))->toBe('disk:macro-disk')
-        ->and($volume->getTransformFsHandle(false))->toBe('disk:macro-disk')
         ->and($volume->getResolvedFsTarget())->toBe('disk:macro-disk')
         ->and($volume->getSubpath())->toBe('initial/')
         ->and($volume->getFs())->toBeInstanceOf(DiskFilesystem::class);
 
     $volume->fsHandle = 'macro-disk';
-    $volume->transformFsHandle = 'macro-disk';
     $volume->subpath = 'changed';
-    $volume->transformSubpath = 'transforms';
 
     expect($volume->getFsHandle(false))->toBe('disk:macro-disk')
-        ->and($volume->getTransformFsHandle(false))->toBe('disk:macro-disk')
-        ->and($volume->getSubpath())->toBe('changed/')
-        ->and($volume->getTransformSubpath())->toBe('transforms/');
+        ->and($volume->getSubpath())->toBe('changed/');
 });
 
-it('returns a working transformDisk() for Craft filesystem backed volumes', function () {
+it('returns a working image transformer disk for Craft filesystem backed volumes', function () {
     config()->set('filesystems.disks.transform-disk-target', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/volume-disks/transform-disk-target'),
     ]);
 
-    createVolumeLocalFilesystem('transform-disk-target');
+    $filesystem = createVolumeLocalFilesystem('transform-disk-target');
+    $filesystem->setTransformerSettings('craft', [
+        'transformFsHandle' => 'transform-disk-target',
+        'transformSubpath' => 'transforms',
+    ]);
+    Filesystems::saveFilesystem($filesystem, false);
 
     $volume = new Volume([
         'name' => 'Transform',
         'handle' => 'transformVolume',
         'fsHandle' => 'transform-disk-target',
         'subpath' => 'source',
-        'transformFsHandle' => 'transform-disk-target',
-        'transformSubpath' => 'transforms',
     ]);
 
-    $transformDisk = $volume->transformDisk();
+    $transformDisk = app(ImageTransformer::class)->transformDiskForVolume($volume);
 
     expect($transformDisk->put('thumb.jpg', 'image-data'))->toBeTrue()
         ->and($transformDisk->exists('thumb.jpg'))->toBeTrue()
         ->and($transformDisk->get('thumb.jpg'))->toBe('image-data');
 
-    // Verify the transform file is scoped under the transform subpath
     $rawDisk = Storage::disk('craft-fs-transform-disk-target');
     expect($rawDisk->exists('transforms/thumb.jpg'))->toBeTrue();
 });
 
-it('falls back to source filesystem when no transform fs handle is set', function () {
+it('falls back to source filesystem when no transform filesystem setting is set', function () {
     config()->set('filesystems.disks.fallback-source', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/volume-disks/fallback-source'),
@@ -319,36 +314,40 @@ it('falls back to source filesystem when no transform fs handle is set', functio
         'subpath' => 'assets',
     ]);
 
-    $transformDisk = $volume->transformDisk();
+    $transformDisk = app(ImageTransformer::class)->transformDiskForVolume($volume);
 
-    // Ensure with start with clean disks
     $transformDisk->delete('transform.jpg');
     Storage::disk('craft-fs-fallback-source')->delete('transform.jpg');
 
     expect($transformDisk->put('transform.jpg', 'transform-data'))->toBeTrue()
         ->and($transformDisk->exists('transform.jpg'))->toBeTrue();
 
-    // No transformSubpath is set, so the transformDisk prefix is null (root of disk)
     $rawDisk = Storage::disk('craft-fs-fallback-source');
     expect($rawDisk->exists('transform.jpg'))->toBeTrue();
 });
 
-it('returns a working transformDisk() for plain Laravel disk targets', function () {
+it('returns a working image transformer disk for filesystem settings that target plain Laravel disks', function () {
     config()->set('filesystems.disks.transform-plain', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/volume-disks/transform-plain'),
     ]);
 
-    $volume = new Volume([
-        'name' => 'Transform Plain',
-        'handle' => 'transformPlain',
-        'fsHandle' => 'disk:transform-plain',
-        'subpath' => 'src',
+    createVolumeLocalFilesystem('transform-plain-source');
+    $filesystem = Filesystems::getFilesystemByHandle('transform-plain-source');
+    $filesystem->setTransformerSettings('craft', [
         'transformFsHandle' => 'disk:transform-plain',
         'transformSubpath' => 'xforms',
     ]);
+    Filesystems::saveFilesystem($filesystem, false);
 
-    $transformDisk = $volume->transformDisk();
+    $volume = new Volume([
+        'name' => 'Transform Plain',
+        'handle' => 'transformPlain',
+        'fsHandle' => 'transform-plain-source',
+        'subpath' => 'src',
+    ]);
+
+    $transformDisk = app(ImageTransformer::class)->transformDiskForVolume($volume);
 
     expect($transformDisk->put('test.webp', 'webp-data'))->toBeTrue();
 
@@ -385,8 +384,6 @@ it('serializes volume config correctly via getConfig()', function () {
         'handle' => 'configVolume',
         'fsHandle' => 'config-fs',
         'subpath' => 'uploads',
-        'transformFsHandle' => 'config-fs',
-        'transformSubpath' => 'transforms',
         'titleTranslationMethod' => 'site',
         'altTranslationMethod' => 'none',
         'sortOrder' => 3,
@@ -398,8 +395,7 @@ it('serializes volume config correctly via getConfig()', function () {
         ->and($config['handle'])->toBe('configVolume')
         ->and($config['fs'])->toBe('config-fs')
         ->and($config['subpath'])->toBe('uploads')
-        ->and($config['transformFs'])->toBe('config-fs')
-        ->and($config['transformSubpath'])->toBe('transforms')
+        ->and($config)->not()->toHaveKeys(['transformFs', 'transformSubpath'])
         ->and($config['titleTranslationMethod'])->toBe('site')
         ->and($config['altTranslationMethod'])->toBe('none')
         ->and($config['sortOrder'])->toBe(3);
@@ -415,14 +411,13 @@ it('serializes disk-prefixed fs handles in getConfig()', function () {
         'name' => 'Disk Config',
         'handle' => 'diskConfig',
         'fsHandle' => 'config-disk',
-        'transformFsHandle' => 'disk:config-disk',
     ]);
 
     $config = $volume->getConfig();
 
     // Plain disk names get normalized to disk: prefix
     expect($config['fs'])->toBe('disk:config-disk')
-        ->and($config['transformFs'])->toBe('disk:config-disk');
+        ->and($config)->not()->toHaveKey('transformFs');
 });
 
 function createVolumeLocalFilesystem(string $handle): FsInterface

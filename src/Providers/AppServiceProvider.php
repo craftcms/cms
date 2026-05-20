@@ -17,6 +17,7 @@ use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Data\Update as UpdateData;
+use CraftCms\Cms\Update\Data\UpdateRelease;
 use CraftCms\Cms\Update\Data\Updates as UpdatesData;
 use GuzzleHttp\Utils;
 use Illuminate\Contracts\Config\Repository;
@@ -28,6 +29,7 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\UrlGenerator;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -205,11 +207,13 @@ class AppServiceProvider extends ServiceProvider
         $existing = is_array($existing) ? $existing : [];
 
         $this->app->make(Repository::class)->set('cache.serializable_classes', array_merge($existing, [
+            Carbon::class,
             Collection::class,
             ElementCollection::class,
             stdClass::class,
             UpdatesData::class,
             UpdateData::class,
+            UpdateRelease::class,
         ]));
     }
 

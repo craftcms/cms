@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
+use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -27,6 +29,7 @@ class FilesystemsController
     public function __construct(
         GeneralConfig $generalConfig,
         private readonly Filesystems $filesystems,
+        private readonly AssetTransforms $assetTransforms,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
@@ -97,6 +100,10 @@ class FilesystemsController
                 'fsOptions' => $fsOptions,
                 'fsInstances' => $fsInstances,
                 'fsTypes' => $allFsTypes,
+                'transformerOptions' => $this->transformerOptions(),
+                'transformerSettingsHtml' => $this->assetTransforms
+                    ->getAssetTransformer(request()->input('defaultTransformer', $filesystem->getDefaultTransformer(false) ?? 'craft'))
+                    ->getFilesystemSettingsHtml($filesystem, $this->readOnly),
                 'readOnly' => $this->readOnly,
             ])
             ->unless(
@@ -121,6 +128,21 @@ class FilesystemsController
     {
         $type = $request->input('type');
         $settings = Arr::whereNotNull($request->array('types.'.Html::id($type)));
+        $defaultTransformer = $request->input('defaultTransformer') ?: null;
+        $selectedTransformer = $this->assetTransforms->resolveTransformerHandle($defaultTransformer);
+        $oldHandle = $request->input('oldHandle');
+        $existingFilesystem = is_string($oldHandle) && $oldHandle !== ''
+            ? $this->filesystems->getFilesystemByHandle($oldHandle)
+            : null;
+        $transformerSettings = $existingFilesystem?->getAllTransformerSettings() ?? [];
+        $postedTransformerSettings = $request->array('transformerSettings')[$selectedTransformer] ?? [];
+
+        if ($postedTransformerSettings !== []) {
+            $transformerSettings[$selectedTransformer] = array_merge(
+                $transformerSettings[$selectedTransformer] ?? [],
+                $postedTransformerSettings,
+            );
+        }
 
         $fs = $this->filesystems->createFilesystem([
             'type' => $type,
@@ -128,6 +150,8 @@ class FilesystemsController
             'handle' => $request->input('handle'),
             'oldHandle' => $request->input('oldHandle'),
             'settings' => $settings,
+            'defaultTransformer' => $defaultTransformer,
+            'transformerSettings' => $transformerSettings,
         ]);
 
         if (! $this->filesystems->saveFilesystem($fs)) {
@@ -148,5 +172,20 @@ class FilesystemsController
         }
 
         return $this->asSuccess();
+    }
+
+    private function transformerOptions(): array
+    {
+        $transformers = $this->assetTransforms->getAllAssetTransformers();
+        $options = collect($transformers)
+            ->map(fn (mixed $class, string $handle): array => [
+                'label' => $class::displayName(),
+                'value' => $handle,
+            ])
+            ->sortBy('label')
+            ->values()
+            ->all();
+
+        return array_merge($options, SelectOptions::getEnvOptions(array_keys($transformers)));
     }
 }

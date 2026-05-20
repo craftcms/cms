@@ -109,21 +109,21 @@ it('can save a new volume', function () {
     Event::assertDispatchedOnce(VolumeSaved::class);
 });
 
-it('persists the default transformer', function () {
+it('does not persist transformer settings on volume config', function () {
     $this->volumes->saveVolume(new VolumeData([
         'name' => 'Transformed Volume',
         'handle' => 'transformedVolume',
         'fsHandle' => 'test-disk',
-        'defaultTransformer' => 'craft',
     ]));
 
     app()->forgetInstance(Volumes::class);
     $this->volumes = app(Volumes::class);
 
     $volume = $this->volumes->getVolumeByHandle('transformedVolume');
+    $configPath = CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_VOLUMES.'.'.$volume->uid;
+    $projectConfigData = ProjectConfig::get($configPath);
 
-    expect($volume->getDefaultTransformer(false))->toBe('craft')
-        ->and(Volume::firstOrFail()->defaultTransformer)->toBe('craft');
+    expect($projectConfigData)->not()->toHaveKeys(['defaultTransformer', 'transformFs', 'transformSubpath']);
 });
 
 it('can save an existing volume', function () {

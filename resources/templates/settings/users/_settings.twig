@@ -23,7 +23,7 @@
 {% set validVolumeUids = [] %}
 
 {% for volume in allVolumes %}
-  {% if volume.getTransformFs().hasUrls %}
+  {% if imageTransformer.getTransformFsForVolume(volume).hasUrls %}
     {% set volumeList = volumeList|push({label: volume.name, value: volume.uid}) %}
     {% set validVolumeUids = validVolumeUids|push(volume.uid) %}
   {% endif %}

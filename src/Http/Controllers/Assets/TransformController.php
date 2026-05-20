@@ -84,13 +84,13 @@ readonly class TransformController
         abort_if(! $asset, 400, "Invalid asset ID: $assetId");
 
         $transformer ??= $assetTransforms->getAssetTransformer(
-            $transform->getTransformer() ?? $asset->getVolume()->getDefaultTransformer(),
+            $transform->getTransformer() ?? $asset->getVolume()->getFs()->getDefaultTransformer(),
         );
 
         if (
             $transformIndexModel !== null &&
             $transformer instanceof ImageTransformer &&
-            ! $asset->getVolume()->getTransformFs()->hasUrls
+            ! $transformer->getTransformFs($asset)->hasUrls
         ) {
             if (! $hasValidTransformToken) {
                 $this->requirePermission('accessCp');

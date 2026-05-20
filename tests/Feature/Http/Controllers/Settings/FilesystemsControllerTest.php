@@ -138,9 +138,16 @@ test('save creates filesystem with valid data', function () {
         'type' => 'craft\fs\Local',
         'name' => 'New Test Filesystem',
         'handle' => 'newTestFilesystem',
+        'defaultTransformer' => 'craft',
         'types' => [
             'craft-fs-Local' => [
                 'path' => '@webroot/test-uploads',
+            ],
+        ],
+        'transformerSettings' => [
+            'craft' => [
+                'transformFsHandle' => 'newTestFilesystem',
+                'transformSubpath' => 'transforms',
             ],
         ],
     ]);
@@ -150,7 +157,12 @@ test('save creates filesystem with valid data', function () {
     // Verify filesystem was created
     $fs = Filesystems::getFilesystemByHandle('newTestFilesystem');
     expect($fs)->not()->toBeNull();
-    expect($fs->name)->toBe('New Test Filesystem');
+    expect($fs->name)->toBe('New Test Filesystem')
+        ->and($fs->getDefaultTransformer(false))->toBe('craft')
+        ->and($fs->getTransformerSettings('craft'))->toMatchArray([
+            'transformFsHandle' => 'newTestFilesystem',
+            'transformSubpath' => 'transforms',
+        ]);
 });
 
 test('save ignores null transient filesystem settings', function () {

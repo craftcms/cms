@@ -12,7 +12,7 @@ When an asset transform is requested, Craft resolves the transformer in this ord
 
 1. the `transformer` value in the transform array
 2. the transformer selected by the named image transform
-3. the asset volume's default transformer
+3. the asset filesystem's default transformer
 4. Craft's built-in `craft` transformer
 
 If a configured transformer handle is missing, Craft logs a warning and falls back to `craft`.
@@ -67,6 +67,7 @@ Transformers implement `CraftCms\Cms\Image\Contracts\AssetTransformerInterface`.
 namespace App\Assets;
 
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Image\Contracts\AssetTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
@@ -135,7 +136,12 @@ class MyServiceTransformer implements AssetTransformerInterface
         return http_build_query(array_filter($parts, fn (mixed $value): bool => $value !== null));
     }
 
-    public function getSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+    public function getImageTransformSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+    {
+        return null;
+    }
+
+    public function getFilesystemSettingsHtml(FsInterface $filesystem, bool $readOnly = false): ?string
     {
         return null;
     }
@@ -158,12 +164,14 @@ This is what lets one transformer support an option like `blur` while another tr
 
 ## Settings UI
 
-Named image transforms can store transformer-specific settings. Return CP HTML from `getSettingsHtml()` when your transformer needs fields on the named transform edit screen.
+Named image transforms can store transformer-specific settings. Return CP HTML from `getImageTransformSettingsHtml()` when your transformer needs fields on the named transform edit screen.
+
+Filesystem defaults can also store transformer-specific settings. Return CP HTML from `getFilesystemSettingsHtml()` when your transformer needs fields on the filesystem edit screen. Craft's built-in `craft` transformer uses those filesystem-scoped settings for its transform filesystem and transform subpath.
 
 Fields should post under `settings`.
 
 ```php
-public function getSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+public function getImageTransformSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
 {
     $value = htmlspecialchars((string) ($imageTransform->settings['blur'] ?? ''), ENT_QUOTES);
     $disabled = $readOnly ? ' disabled' : '';
@@ -201,11 +209,11 @@ public static function gqlArguments(): array
 
 Argument names must not collide with Craft's built-in transform arguments or arguments registered by another transformer. Craft throws an `ImageTransformException` if a collision is detected.
 
-## Volume Defaults and Named Transforms
+## Filesystem Defaults and Named Transforms
 
-Volumes have a default transformer setting. Use that for environment-specific behavior, such as a cloud image service in staging and production but Craft's local transformer in development.
+Filesystems have a default transformer setting. Use that for environment-specific behavior, such as a cloud image service in staging and production but Craft's local transformer in development. The setting can be an environment variable, such as `$ASSET_TRANSFORMER`, whose value is a registered transformer handle.
 
-Named image transforms can optionally select a transformer. Leave the named transform set to the volume default when the transform should follow the asset's volume.
+Named image transforms can optionally select a transformer. Leave the named transform set to the filesystem default when the transform should follow the asset's filesystem.
 
 Per-call `transformer` values still take precedence:
 
@@ -219,9 +227,11 @@ Per-call `transformer` values still take precedence:
 
 ## Filesystems With and Without URLs
 
-Transformers should work with volumes whose transform filesystems have public URLs and volumes whose filesystems do not.
+Transformers should work with filesystems that have public URLs and filesystems that do not.
 
-Craft's built-in `craft` transformer returns direct filesystem URLs when possible and signed Craft action URLs for private filesystems. Custom transformers should follow the same principle: return a usable URL regardless of whether the source or transform filesystem has public URLs.
+Craft's built-in `craft` transformer stores its transform output target in filesystem-scoped transformer settings. Its settings include the transform filesystem and transform subpath. When no transform filesystem is configured, Craft writes generated transforms to the asset's source filesystem.
+
+Craft's built-in `craft` transformer returns direct filesystem URLs when possible and signed Craft action URLs for private filesystems. Custom transformers should follow the same principle: return a usable URL regardless of whether the source or configured transform filesystem has public URLs.
 
 If your transformer needs to read the original asset and `Asset::getUrl()` returns `null`, use `Asset::getStream()` or `Asset::getCopyOfFile()` instead of requiring a public source URL.
 

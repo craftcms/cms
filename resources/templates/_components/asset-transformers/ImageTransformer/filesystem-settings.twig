@@ -1,0 +1,30 @@
+{% import '_includes/forms.twig' as forms %}
+
+{% namespace 'transformerSettings[craft]' %}
+    {{ forms.fsField({
+        label: 'Transform Filesystem'|t('app'),
+        instructions: 'Choose which filesystem image transforms should be stored in.'|t('app'),
+        id: 'transform-fs-handle',
+        name: 'transformFsHandle',
+        includeEnvVars: true,
+        value: old('transformerSettings.craft.transformFsHandle', settings.transformFsHandle ?? null),
+        options: [{label: 'Same as asset filesystem'|t('app'), value: null, data: {hint: ''}}]|merge(craft.cp.getFsOptions()),
+        disabled: readOnly,
+        showSelectedHint: true,
+        selectizeOptions: {
+            extraPlugins: false,
+            allowEmptyOption: true,
+            placeholder: 'Same as asset filesystem'|t('app'),
+        },
+    }) }}
+
+    {{ forms.autosuggestField({
+        label: 'Transform Subpath'|t('app'),
+        instructions: 'Where transforms should be stored on the filesystem.'|t('app'),
+        id: 'transform-subpath',
+        name: 'transformSubpath',
+        suggestEnvVars: true,
+        value: old('transformerSettings.craft.transformSubpath', settings.transformSubpath ?? null),
+        disabled: readOnly,
+    }) }}
+{% endnamespace %}

@@ -13,6 +13,7 @@ use CraftCms\Cms\Image\Events\AssetTransformersResolving;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransformHelper;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
 use Illuminate\Container\Attributes\Singleton;
@@ -112,7 +113,7 @@ class AssetTransforms
             }
 
             foreach ($assets as $assetKey => $asset) {
-                $transformerHandle = $this->resolveTransformerHandle($asset->getVolume()->getDefaultTransformer());
+                $transformerHandle = $this->resolveTransformerHandle($asset->getVolume()->getFs()->getDefaultTransformer());
 
                 if (! isset($transformsByTransformer[$transformerHandle]['transforms'][$transformKey])) {
                     $groupTransform = clone $transform;
@@ -166,6 +167,8 @@ class AssetTransforms
 
     public function resolveTransformerHandle(?string $handle): string
     {
+        $handle = Env::parse($handle);
+
         if ($handle === null || $handle === '' || $handle === ImageTransformer::class) {
             return ImageTransform::DEFAULT_TRANSFORMER;
         }

@@ -1964,7 +1964,7 @@ JS, [
                 return Html::encodeSpaces($event->url);
             }
 
-            $transformerHandle = $transform->getTransformer() ?? $volume->getDefaultTransformer();
+            $transformerHandle = $transform->getTransformer() ?? $volume->getFs()->getDefaultTransformer();
             $transformer = app(AssetTransforms::class)->getAssetTransformer($transformerHandle);
             $transform->setTransformer(app(AssetTransforms::class)->resolveTransformerHandle($transformerHandle));
 

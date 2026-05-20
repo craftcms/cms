@@ -11,6 +11,8 @@ use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
+use CraftCms\Cms\Image\Events\AssetTransformersResolving;
+use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -92,6 +94,51 @@ it('validates local filesystems with laravel path requirements', function () {
 
     expect($filesystem->validate())->toBeFalse()
         ->and($filesystem->errors()->get('path'))->not()->toBeEmpty();
+});
+
+it('does not serialize local filesystem render-only properties into project config', function () {
+    $filesystem = $this->service->createFilesystem([
+        'type' => Local::class,
+        'name' => 'Config Settings',
+        'handle' => 'configSettings',
+        'settings' => [
+            'path' => sys_get_temp_dir().'/filesystems-service/config-settings',
+            'settingsHtml' => '<div>bad config</div>',
+            'rootPath' => sys_get_temp_dir().'/filesystems-service/bad-root-path',
+        ],
+    ]);
+
+    $config = $this->service->createFilesystemConfig($filesystem);
+
+    expect($config['settings'])
+        ->toHaveKey('path')
+        ->not->toHaveKey('settingsHtml')
+        ->not->toHaveKey('rootPath');
+});
+
+it('resolves filesystem default transformers from environment variables', function () {
+    $_SERVER['TEST_DEFAULT_ASSET_TRANSFORMER'] = 'customEnv';
+
+    try {
+        Event::listen(AssetTransformersResolving::class, function (AssetTransformersResolving $event) {
+            $event->types['customEnv'] = ImageTransformer::class;
+        });
+
+        $filesystem = $this->service->createFilesystem([
+            'type' => Local::class,
+            'name' => 'Env Default Transformer',
+            'handle' => 'envDefaultTransformer',
+            'defaultTransformer' => '$TEST_DEFAULT_ASSET_TRANSFORMER',
+            'settings' => [
+                'path' => sys_get_temp_dir().'/filesystems-service/env-default-transformer',
+            ],
+        ]);
+
+        expect($filesystem->getDefaultTransformer(false))->toBe('$TEST_DEFAULT_ASSET_TRANSFORMER')
+            ->and($filesystem->getDefaultTransformer())->toBe('customEnv');
+    } finally {
+        unset($_SERVER['TEST_DEFAULT_ASSET_TRANSFORMER']);
+    }
 });
 
 it('rejects local filesystems inside system directories', function () {

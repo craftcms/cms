@@ -70,6 +70,24 @@
     {% endtag %}
 {% endfor %}
 
+<hr>
+
+{{ forms.selectField({
+    label: 'Default Transformer'|t('app'),
+    instructions: 'Which transformer should be used by default for assets stored on this filesystem.'|t('app'),
+    id: 'default-transformer',
+    name: 'defaultTransformer',
+    options: transformerOptions,
+    value: old('defaultTransformer', filesystem.getDefaultTransformer(false) ?? 'craft'),
+    errors: (filesystem is defined ? errors.get('defaultTransformer') : null),
+    data: {'error-key': 'defaultTransformer'},
+    disabled: readOnly,
+}) }}
+
+{% if transformerSettingsHtml %}
+    {{ transformerSettingsHtml|raw }}
+{% endif %}
+
 
 {% if filesystem is not defined or not filesystem.handle %}
     {% js %}

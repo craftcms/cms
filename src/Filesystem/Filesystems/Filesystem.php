@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Filesystem\Filesystems;
 
+use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Validation\Rule;
@@ -52,6 +54,30 @@ abstract class Filesystem extends Component implements FsInterface
 
     public ?string $uid = null;
 
+    public ?string $defaultTransformer {
+        get => $this->getDefaultTransformer();
+        set {
+            $this->setDefaultTransformer($value);
+        }
+    }
+
+    /**
+     * @var array<string,array<string,mixed>>
+     */
+    public array $transformerSettings {
+        get => $this->getAllTransformerSettings();
+        set {
+            $this->_transformerSettings = $value;
+        }
+    }
+
+    private ?string $_defaultTransformer = null;
+
+    /**
+     * @var array<string,array<string,mixed>>
+     */
+    private array $_transformerSettings = [];
+
     public ?string $rootUrl {
         get => $this->getRootUrl();
         set {
@@ -85,6 +111,7 @@ abstract class Filesystem extends Component implements FsInterface
             'handle' => t('Handle'),
             'name' => t('Name'),
             'url' => t('Base URL'),
+            'defaultTransformer' => t('Default Transformer'),
         ];
     }
 
@@ -123,6 +150,38 @@ abstract class Filesystem extends Component implements FsInterface
                 'max:255',
                 Rule::requiredIf(fn () => $this->hasUrls && $this->getShowUrlSetting()),
             ],
+            'defaultTransformer' => ['nullable', 'string'],
         ];
+    }
+
+    public function getDefaultTransformer(bool $resolve = true): ?string
+    {
+        if (! $resolve) {
+            return $this->_defaultTransformer;
+        }
+
+        return app(AssetTransforms::class)->resolveTransformerHandle($this->_defaultTransformer);
+    }
+
+    public function setDefaultTransformer(?string $handle): void
+    {
+        $this->_defaultTransformer = $handle ?: null;
+    }
+
+    public function getTransformerSettings(?string $handle = null): array
+    {
+        $handle ??= ImageTransform::DEFAULT_TRANSFORMER;
+
+        return $this->_transformerSettings[$handle] ?? [];
+    }
+
+    public function setTransformerSettings(string $handle, array $settings): void
+    {
+        $this->_transformerSettings[$handle] = $settings;
+    }
+
+    public function getAllTransformerSettings(): array
+    {
+        return $this->_transformerSettings;
     }
 }

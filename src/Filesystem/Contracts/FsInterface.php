@@ -18,6 +18,8 @@ use CraftCms\Cms\Validation\Contracts\Validatable;
  * @property bool $hasUrls
  * @property string|null $url
  * @property string|null $uid
+ * @property string|null $defaultTransformer
+ * @property array<string,array<string,mixed>> $transformerSettings
  *
  * @phpstan-require-extends Filesystem
  */
@@ -39,4 +41,23 @@ interface FsInterface extends ConfigurableComponentInterface, SavableComponentIn
      * Returns whether the “Base URL” setting should be shown.
      */
     public function getShowUrlSetting(): bool;
+
+    public function getDefaultTransformer(bool $resolve = true): ?string;
+
+    public function setDefaultTransformer(?string $handle): void;
+
+    /**
+     * @return array<string,mixed>
+     */
+    public function getTransformerSettings(?string $handle = null): array;
+
+    /**
+     * @param  array<string,mixed>  $settings
+     */
+    public function setTransformerSettings(string $handle, array $settings): void;
+
+    /**
+     * @return array<string,array<string,mixed>>
+     */
+    public function getAllTransformerSettings(): array;
 }

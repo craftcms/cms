@@ -6,11 +6,14 @@ namespace CraftCms\Cms\Image;
 
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
+use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Image\Contracts\AssetTransformerInterface;
 use CraftCms\Cms\Image\Contracts\EagerImageTransformerInterface;
@@ -23,17 +26,21 @@ use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\View\TemplateMode;
 use DateTimeInterface;
 use Exception;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Sleep;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -41,6 +48,7 @@ use Throwable;
 
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 class ImageTransformer implements AssetTransformerInterface, EagerImageTransformerInterface, ImageEditorTransformerInterface
 {
@@ -71,14 +79,70 @@ class ImageTransformer implements AssetTransformerInterface, EagerImageTransform
         return ImageTransformHelper::getTransformString($imageTransform, $ignoreHandle);
     }
 
-    public function getSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+    public function getImageTransformSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
     {
         return null;
     }
 
+    public function getFilesystemSettingsHtml(FsInterface $filesystem, bool $readOnly = false): ?string
+    {
+        return template('_components/asset-transformers/ImageTransformer/filesystem-settings', [
+            'filesystem' => $filesystem,
+            'settings' => $filesystem->getTransformerSettings(self::handle()),
+            'readOnly' => $readOnly,
+        ], TemplateMode::Cp);
+    }
+
+    public function getTransformFs(Asset $asset): FsInterface
+    {
+        return $this->getTransformFsForVolume($asset->getVolume());
+    }
+
+    public function getTransformFsForVolume(Volume $volume): FsInterface
+    {
+        $filesystem = $volume->getFs();
+        $settings = $filesystem->getTransformerSettings(self::handle());
+        $handle = $this->normalizeConfiguredFsHandle($settings['transformFsHandle'] ?? null)
+            ?? $volume->getFsHandle();
+
+        if (! $handle) {
+            return $filesystem;
+        }
+
+        $transformFs = app(FilesystemsService::class)->resolve($handle);
+
+        if ($transformFs) {
+            return $transformFs;
+        }
+
+        Log::error("Invalid transform filesystem handle: $handle for the $filesystem->name filesystem.");
+
+        return $filesystem;
+    }
+
+    public function transformDisk(Asset $asset): FilesystemAdapter
+    {
+        return $this->transformDiskForVolume($asset->getVolume());
+    }
+
+    public function transformDiskForVolume(Volume $volume): FilesystemAdapter
+    {
+        $filesystem = $volume->getFs();
+        $settings = $filesystem->getTransformerSettings(self::handle());
+        $handle = $this->normalizeConfiguredFsHandle($settings['transformFsHandle'] ?? null)
+            ?? $volume->getFsHandle();
+        $diskName = $handle ? app(FilesystemsService::class)->resolveDiskName($handle) : null;
+
+        if (! $diskName) {
+            throw new RuntimeException('Asset transform filesystem is missing or invalid.');
+        }
+
+        return $this->storageDiskFor($diskName, $this->transformDiskPrefix($filesystem));
+    }
+
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
     {
-        $disk = $asset->getVolume()->transformDisk();
+        $disk = $this->transformDisk($asset);
         $mimeType = $asset->getMimeType();
         $generalConfig = Cms::config();
 
@@ -91,7 +155,7 @@ class ImageTransformer implements AssetTransformerInterface, EagerImageTransform
         }
 
         $index = $this->getTransformIndex($asset, $imageTransform);
-        $uri = str_replace('\\', '/', $this->getTransformBasePath($asset)).$this->getTransformUri($asset, $index);
+        $uri = str_replace('\\', '/', (string) $asset->folderPath).$this->getTransformUri($asset, $index);
 
         // If it's a local filesystem, make sure `fileExists` is accurate
         if ($disk instanceof LocalFilesystemAdapter) {
@@ -178,7 +242,7 @@ class ImageTransformer implements AssetTransformerInterface, EagerImageTransform
             }
         }
 
-        $url = $asset->getVolume()->getTransformFs()->hasUrls
+        $url = $this->getTransformFs($asset)->hasUrls
             ? $disk->url($uri)
             : $this->privateTransformUrl($index);
 
@@ -200,14 +264,54 @@ class ImageTransformer implements AssetTransformerInterface, EagerImageTransform
         $this->deleteTransformIndexDataByAssetId($asset->id);
     }
 
+    private function normalizeConfiguredFsHandle(mixed $handle): ?string
+    {
+        if (! is_string($handle) || $handle === '') {
+            return null;
+        }
+
+        $handle = Env::parse($handle);
+
+        return is_string($handle) && $handle !== '' ? $handle : null;
+    }
+
+    private function transformDiskPrefix(FsInterface $filesystem): ?string
+    {
+        $settings = $filesystem->getTransformerSettings(self::handle());
+        $subpath = $settings['transformSubpath'] ?? null;
+        $subpath = is_string($subpath) ? Env::parse($subpath) : null;
+        $subpath = trim((string) $subpath, '/');
+
+        return $subpath !== '' ? $subpath : null;
+    }
+
+    private function storageDiskFor(string $diskName, ?string $prefix): FilesystemAdapter
+    {
+        if ($prefix === null) {
+            return Storage::disk($diskName);
+        }
+
+        $disk = Storage::build([
+            'driver' => 'scoped',
+            'disk' => $diskName,
+            'prefix' => $prefix,
+        ]);
+
+        if (! $disk instanceof FilesystemAdapter) {
+            throw new RuntimeException('Invalid filesystem disk configuration.');
+        }
+
+        return $disk;
+    }
+
     public function deleteImageTransformFile(Asset $asset, ImageTransformIndex $transformIndex): void
     {
-        $path = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $transformIndex);
+        $path = $asset->folderPath.$this->getTransformSubpath($asset, $transformIndex);
 
         event(new DeletingTransformedImage(asset: $asset, path: $path));
 
         try {
-            $asset->getVolume()->transformDisk()->delete($path);
+            $this->transformDisk($asset)->delete($path);
         } catch (RuntimeException|NotSupportedException) {
             // NBD
         }
@@ -218,8 +322,8 @@ class ImageTransformer implements AssetTransformerInterface, EagerImageTransform
         $this->getTransformUrl($asset, $index->getTransform(), true);
         $index = $this->getTransformIndexModelById((int) $index->id) ?? $index;
 
-        $path = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $index);
-        $disk = $asset->getVolume()->transformDisk();
+        $path = $asset->folderPath.$this->getTransformSubpath($asset, $index);
+        $disk = $this->transformDisk($asset);
         $stream = $disk->readStream($path);
 
         if (! is_resource($stream)) {
@@ -346,9 +450,8 @@ class ImageTransformer implements AssetTransformerInterface, EagerImageTransform
             return;
         }
 
-        $volume = $asset->getVolume();
-        $transformDisk = $volume->transformDisk();
-        $transformPath = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $index);
+        $transformDisk = $this->transformDisk($asset);
+        $transformPath = $asset->folderPath.$this->getTransformSubpath($asset, $index);
 
         if ($transformDisk->exists($transformPath)) {
             $dateModified = $transformDisk->lastModified($transformPath);
@@ -414,20 +517,18 @@ class ImageTransformer implements AssetTransformerInterface, EagerImageTransform
             throw new ImageTransformException('Asset not found - '.$index->assetId);
         }
 
-        $volume = $asset->getVolume();
-
         $index->detectedFormat = $index->format ?: ImageTransformHelper::detectTransformFormat($asset);
         $transformFilename = pathinfo($asset->getFilename(), PATHINFO_FILENAME).'.'.$index->detectedFormat;
         $index->filename = $transformFilename;
 
         $matchFound = $this->getSimilarTransformIndex($asset, $index);
-        $disk = $volume->transformDisk();
+        $disk = $this->transformDisk($asset);
 
-        $target = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $index);
+        $target = $asset->folderPath.$this->getTransformSubpath($asset, $index);
 
         // If we have a match, copy the file.
         if ($matchFound) {
-            $from = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $matchFound);
+            $from = $asset->folderPath.$this->getTransformSubpath($asset, $matchFound);
 
             // Sanity check
             try {
@@ -696,14 +797,6 @@ class ImageTransformer implements AssetTransformerInterface, EagerImageTransform
         $this->editingTempPath = null;
 
         return $tempPath;
-    }
-
-    private function getTransformBasePath(Asset $asset): string
-    {
-        $subPath = $asset->getVolume()->getTransformSubpath();
-        $subPath = Str::chopEnd($subPath, '/');
-
-        return ($subPath ? $subPath.DIRECTORY_SEPARATOR : '').$asset->folderPath;
     }
 
     private function deleteTransformIndexDataByAssetId(int $assetId): void

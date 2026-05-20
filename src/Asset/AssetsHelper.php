@@ -18,6 +18,7 @@ use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
+use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Filesystems;
@@ -145,8 +146,9 @@ class AssetsHelper
             $baseUrls->push(self::diskBaseUrl($volume->sourceDisk()));
         }
 
-        if ($volume->getTransformFs()->hasUrls) {
-            $baseUrls->push(self::diskBaseUrl($volume->transformDisk()));
+        $imageTransformer = app(ImageTransformer::class);
+        if ($imageTransformer->getTransformFs($asset)->hasUrls) {
+            $baseUrls->push(self::diskBaseUrl($imageTransformer->transformDisk($asset)));
         }
 
         $baseUrls = $baseUrls

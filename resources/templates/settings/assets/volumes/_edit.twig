@@ -58,49 +58,6 @@
     disabled: readOnly,
 }) }}
 
-{{ forms.fsField({
-    label: 'Transform Filesystem'|t('app'),
-    instructions: 'Choose which filesystem image transforms should be stored in.'|t('app'),
-    id: 'transform-fs-handle',
-    name: 'transformFsHandle',
-    includeEnvVars: true,
-    value: old('transformFsHandle', volume.transformFsHandle(false)),
-    options: [{label: 'Same as asset filesystem'|t('app'), value: null, data: {hint: ''}}]|merge(groupedFsOptions),
-    errors: volume.errors.get('transformFsHandle'),
-    data: {'error-key': 'transformFsHandle'},
-    disabled: readOnly,
-    showSelectedHint: true,
-    selectizeOptions: {
-        extraPlugins: false,
-        allowEmptyOption: true,
-        placeholder: 'Same as asset filesystem'|t('app'),
-    },
-}) }}
-
-{{ forms.autosuggestField({
-    label: 'Transform Subpath'|t('app'),
-    instructions: 'Where transforms should be stored on the filesystem.'|t('app'),
-    id: 'transformSubpath',
-    name: 'transformSubpath',
-    suggestEnvVars: true,
-    value: old('transformSubpath', volume.getTransformSubpath(false, false)),
-    errors: volume.errors.get('transformSubpath'),
-    data: {'error-key': 'transformSubpath'},
-    disabled: readOnly,
-}) }}
-
-{{ forms.selectField({
-    label: 'Default Transformer'|t('app'),
-    instructions: 'Which transformer should be used by default for this volume.'|t('app'),
-    id: 'default-transformer',
-    name: 'defaultTransformer',
-    options: transformerOptions,
-    value: old('defaultTransformer', volume.getDefaultTransformer(false) ?? 'craft'),
-    errors: volume.errors.get('defaultTransformer'),
-    data: {'error-key': 'defaultTransformer'},
-    disabled: readOnly,
-}) }}
-
 {% if Sites.isMultiSite() %}
     <hr>
 

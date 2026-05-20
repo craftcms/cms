@@ -9,12 +9,15 @@ use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Image\Contracts\AssetTransformerInterface;
 use CraftCms\Cms\Image\Contracts\EagerImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
 use CraftCms\Cms\Image\Events\AssetTransformersResolving;
 use CraftCms\Cms\Image\ImageTransformer;
+use CraftCms\Cms\Support\Facades\Filesystems;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
@@ -149,7 +152,7 @@ it('stores dateIndexed as a DB-compatible UTC datetime string', function () {
         ->and($storedDateIndexed)->not->toContain('+');
 });
 
-it('uses the volume default transformer when a transform does not specify one', function () {
+it('uses the filesystem default transformer when a transform does not specify one', function () {
     $customTransformer = (new class implements AssetTransformerInterface
     {
         public static function handle(): string
@@ -179,7 +182,12 @@ it('uses the volume default transformer when a transform does not specify one', 
             return 'custom';
         }
 
-        public function getSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+        public function getImageTransformSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+        {
+            return null;
+        }
+
+        public function getFilesystemSettingsHtml(FsInterface $filesystem, bool $readOnly = false): ?string
         {
             return null;
         }
@@ -189,7 +197,18 @@ it('uses the volume default transformer when a transform does not specify one', 
         $event->types['custom'] = $customTransformer;
     });
 
-    $this->volume->defaultTransformer = 'custom';
+    $filesystem = Filesystems::createFilesystem([
+        'type' => Local::class,
+        'name' => 'Custom Default',
+        'handle' => 'customDefault',
+        'defaultTransformer' => 'custom',
+        'settings' => [
+            'path' => storage_path('framework/testing/image-transformer-test/custom-default'),
+        ],
+    ]);
+    Filesystems::saveFilesystem($filesystem, false);
+
+    $this->volume->fs = 'customDefault';
     $this->volume->save();
     app()->forgetInstance(Volumes::class);
 
@@ -198,7 +217,7 @@ it('uses the volume default transformer when a transform does not specify one', 
     expect($asset->getUrl(['width' => 100]))->toBe('https://example.test/custom-transform');
 });
 
-it('eager loads transforms with the volume default transformer', function () {
+it('eager loads transforms with the filesystem default transformer', function () {
     $customTransformer = new class implements AssetTransformerInterface, EagerImageTransformerInterface
     {
         public array $eagerLoadedTransforms = [];
@@ -232,7 +251,12 @@ it('eager loads transforms with the volume default transformer', function () {
             return 'custom';
         }
 
-        public function getSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+        public function getImageTransformSettingsHtml(ImageTransform $imageTransform, bool $readOnly = false): ?string
+        {
+            return null;
+        }
+
+        public function getFilesystemSettingsHtml(FsInterface $filesystem, bool $readOnly = false): ?string
         {
             return null;
         }
@@ -248,7 +272,18 @@ it('eager loads transforms with the volume default transformer', function () {
         $event->types['custom'] = $customTransformer;
     });
 
-    $this->volume->defaultTransformer = 'custom';
+    $filesystem = Filesystems::createFilesystem([
+        'type' => Local::class,
+        'name' => 'Custom Eager Default',
+        'handle' => 'customEagerDefault',
+        'defaultTransformer' => 'custom',
+        'settings' => [
+            'path' => storage_path('framework/testing/image-transformer-test/custom-eager-default'),
+        ],
+    ]);
+    Filesystems::saveFilesystem($filesystem, false);
+
+    $this->volume->fs = 'customEagerDefault';
     $this->volume->save();
     app()->forgetInstance(Volumes::class);
 

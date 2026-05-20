@@ -54,6 +54,14 @@ class Filesystems
             'settings' => ProjectConfigHelper::packAssociativeArrays($fs->getSettings()),
         ];
 
+        if ($fs->getDefaultTransformer(false) !== null) {
+            $config['defaultTransformer'] = $fs->getDefaultTransformer(false);
+        }
+
+        if ($fs->getAllTransformerSettings() !== []) {
+            $config['transformerSettings'] = ProjectConfigHelper::packAssociativeArrays($fs->getAllTransformerSettings());
+        }
+
         if ($fs->getShowHasUrlSetting()) {
             $config['hasUrls'] = $fs->hasUrls;
         }
@@ -92,8 +100,10 @@ class Filesystems
 
         $filesystems = collect($this->projectConfig->get(ProjectConfig::PATH_FS) ?? [])
             ->mapWithKeys(function (array $config, string $handle): array {
+                $config = ProjectConfigHelper::unpackAssociativeArray($config);
                 $config['handle'] = $handle;
                 $config['settings'] = ProjectConfigHelper::unpackAssociativeArrays($config['settings'] ?? []);
+                $config['transformerSettings'] = ProjectConfigHelper::unpackAssociativeArrays($config['transformerSettings'] ?? []);
 
                 return [$handle => $this->createFilesystem($config)];
             });
@@ -224,13 +234,28 @@ class Filesystems
                         $changed = true;
                     }
 
-                    if ($volume->getTransformFsHandle(false) === $fs->oldHandle) {
-                        $volume->setTransformFsHandle($fs->handle);
-                        $changed = true;
-                    }
-
                     if ($changed) {
                         Volumes::saveVolume($volume);
+                    }
+                }
+
+                $fsConfigs = $this->projectConfig->get(ProjectConfig::PATH_FS) ?? [];
+                if (is_array($fsConfigs)) {
+                    foreach ($fsConfigs as $handle => $fsConfig) {
+                        if (! is_string($handle)) {
+                            continue;
+                        }
+                        if (! is_array($fsConfig)) {
+                            continue;
+                        }
+                        $transformFsHandle = $fsConfig['transformerSettings']['craft']['transformFsHandle'] ?? null;
+                        if ($transformFsHandle === $fs->oldHandle) {
+                            $this->projectConfig->set(
+                                sprintf('%s.%s.transformerSettings.craft.transformFsHandle', ProjectConfig::PATH_FS, $handle),
+                                $fs->handle,
+                                "Update transform filesystem references to “{$fs->handle}”",
+                            );
+                        }
                     }
                 }
 
@@ -332,7 +357,7 @@ class Filesystems
         if (str_starts_with($handle, 'disk:')) {
             $diskName = substr($handle, strlen('disk:'));
             if ($diskName !== '' && $this->diskExists($diskName)) {
-                return new DiskFilesystem(['disk' => $diskName]);
+                return $this->diskFilesystem($diskName);
             }
 
             return null;
@@ -344,7 +369,7 @@ class Filesystems
         }
 
         if ($this->diskExists($handle)) {
-            return new DiskFilesystem(['disk' => $handle]);
+            return $this->diskFilesystem($handle);
         }
 
         return null;
@@ -370,6 +395,24 @@ class Filesystems
         }
 
         return null;
+    }
+
+    private function diskFilesystem(string $diskName): DiskFilesystem
+    {
+        $url = config("filesystems.disks.$diskName.url");
+        if (is_string($url) && $url !== '') {
+            $url = rtrim($url, '/');
+        } else {
+            $url = null;
+        }
+
+        return new DiskFilesystem([
+            'disk' => $diskName,
+            'name' => $diskName,
+            'handle' => "disk:$diskName",
+            'hasUrls' => $url !== null,
+            'url' => $url,
+        ]);
     }
 
     public function reset(): void
@@ -463,8 +506,10 @@ class Filesystems
      */
     private function resolveDiskConfigFromArray(string $handle, array $filesystemConfig): ?array
     {
+        $filesystemConfig = ProjectConfigHelper::unpackAssociativeArray($filesystemConfig);
         $filesystemConfig['handle'] = $handle;
         $filesystemConfig['settings'] = ProjectConfigHelper::unpackAssociativeArrays($filesystemConfig['settings'] ?? []);
+        $filesystemConfig['transformerSettings'] = ProjectConfigHelper::unpackAssociativeArrays($filesystemConfig['transformerSettings'] ?? []);
 
         try {
             return $this->createFilesystem($filesystemConfig)->getDiskConfig();

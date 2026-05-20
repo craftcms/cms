@@ -37,18 +37,6 @@ class Local extends Filesystem
         ],
     ];
 
-    public ?string $settingsHtml {
-        get => $this->getSettingsHtml();
-        set {
-        }
-    }
-
-    public string $rootPath {
-        get => $this->getRootPath();
-        set {
-        }
-    }
-
     #[Override]
     public static function displayName(): string
     {
@@ -65,6 +53,8 @@ class Local extends Filesystem
      */
     public function __construct($config = [])
     {
+        unset($config['rootPath'], $config['settingsHtml']);
+
         // Config normalization
         if (isset($config['path'])) {
             $config['path'] = rtrim(str_replace('\\', '/', $config['path']), '/');
