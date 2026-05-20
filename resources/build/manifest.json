@@ -301,8 +301,12 @@
       "node_modules/@lion/ui/components/combobox/translations/zh.js"
     ]
   },
-  "_cp-BEWxH4oE.js": {
-    "file": "assets/cp-BEWxH4oE.js",
+  "_cp-BIpQ6o1r.css": {
+    "file": "assets/cp-BIpQ6o1r.css",
+    "src": "_cp-BIpQ6o1r.css"
+  },
+  "_cp-Cu_tkrU3.js": {
+    "file": "assets/cp-Cu_tkrU3.js",
     "name": "cp",
     "imports": [
       "__plugin-vue_export-helper-DmB1UnH4.js",
@@ -338,10 +342,6 @@
     "css": [
       "assets/cp-BIpQ6o1r.css"
     ]
-  },
-  "_cp-BIpQ6o1r.css": {
-    "file": "assets/cp-BIpQ6o1r.css",
-    "src": "_cp-BIpQ6o1r.css"
   },
   "_decorate-BCB464nu-BkDVF5u1.js": {
     "file": "assets/decorate-BCB464nu-BkDVF5u1.js",
@@ -1100,7 +1100,7 @@
     ]
   },
   "resources/css/cp.css": {
-    "file": "assets/cp-BxxAq-TO.css",
+    "file": "assets/cp-C_NePL9m.css",
     "name": "cp",
     "names": [
       "cp.css"
@@ -1109,25 +1109,25 @@
     "isEntry": true
   },
   "resources/js/cp.ts": {
-    "file": "assets/cp-BhS1qO4P.js",
+    "file": "assets/cp-DS3_PFfH.js",
     "name": "cp",
     "src": "resources/js/cp.ts",
     "isEntry": true,
     "imports": [
       "__plugin-vue_export-helper-DmB1UnH4.js",
-      "_cp-BEWxH4oE.js",
+      "_cp-Cu_tkrU3.js",
       "_CpGlobalSidebar-CJ7REL2r.js",
       "_CpQueueIndicator-C5ZEYj0Q.js"
     ]
   },
   "resources/js/legacy.ts": {
-    "file": "assets/legacy-CB3-AjaW.js",
+    "file": "assets/legacy-DC4Y3U88.js",
     "name": "legacy",
     "src": "resources/js/legacy.ts",
     "isEntry": true,
     "imports": [
       "__plugin-vue_export-helper-DmB1UnH4.js",
-      "_cp-BEWxH4oE.js",
+      "_cp-Cu_tkrU3.js",
       "_login-form-k8RUsE3v.js"
     ],
     "dynamicImports": [
@@ -1166,7 +1166,7 @@
     ]
   },
   "resources/js/pages/LoginPage.vue": {
-    "file": "assets/LoginPage-DsCFBLGB.js",
+    "file": "assets/LoginPage-Yssr5gOn.js",
     "name": "LoginPage",
     "src": "resources/js/pages/LoginPage.vue",
     "isDynamicEntry": true,
@@ -1177,7 +1177,10 @@
       "_wayfinder-BqIXdOWJ.js"
     ],
     "css": [
-      "assets/LoginPage-yFcZxxXp.css"
+      "assets/LoginPage-CkZTFoAe.css"
+    ],
+    "assets": [
+      "assets/craftcms-Dn6fy_A6.svg"
     ]
   },
   "resources/js/pages/SettingsEmailPage.vue": {
@@ -1344,6 +1347,10 @@
       "_useAnnouncer-CnybEK4f.js",
       "_IndexLayout-DVH3V2Rt.js"
     ]
+  },
+  "resources/public/images/craftcms.svg": {
+    "file": "assets/craftcms-Dn6fy_A6.svg",
+    "src": "resources/public/images/craftcms.svg"
   },
   "resources/public/images/install/account.png": {
     "file": "assets/account-Bwr2nbaw.png",
