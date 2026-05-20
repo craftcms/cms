@@ -78,7 +78,7 @@ Craft.CP = Garnish.Base.extend(
     resizeTimeout: null,
 
     /** @type QueueService */
-    QueueService: window.Craft.$queue ?? null,
+    QueueService: QueueService.getInstance(),
 
     init: function () {
       this.elementThumbLoader = new Craft.ElementThumbLoader();
