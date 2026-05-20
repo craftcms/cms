@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import useCraftData from '@/composables/useCraftData';
+  import craftCmsLogoUrl from '../../legacy/cp/dist/images/craftcms.svg';
 
   const {general, system} = useCraftData();
 </script>
@@ -19,6 +20,21 @@
       <div class="w-sm">
         <slot></slot>
       </div>
+
+      <a
+        class="cp-login__powered-by"
+        href="http://craftcms.com/"
+        title="Powered by Craft CMS"
+        aria-label="Craft CMS"
+      >
+        <img
+          :src="craftCmsLogoUrl"
+          alt=""
+          class="cp-login__craft-logo"
+          width="104"
+          height="26"
+        />
+      </a>
     </div>
   </div>
 </template>
@@ -35,6 +51,25 @@
   .cp-login__logo {
     display: inline-block;
     width: calc(288rem / 16);
+    height: auto;
+  }
+
+  .cp-login__powered-by {
+    display: block;
+    margin-block-start: calc(70rem / 16);
+    opacity: 0.8;
+    text-align: center;
+
+    &:hover,
+    &:focus,
+    &:active {
+      opacity: 1;
+    }
+  }
+
+  .cp-login__craft-logo {
+    display: inline-block;
+    width: calc(104rem / 16);
     height: auto;
   }
 </style>
