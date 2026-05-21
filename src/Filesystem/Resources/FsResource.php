@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Filesystem\Resources;
 
+use CraftCms\Cms\Cp\JsonResource;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin Filesystem

@@ -1,3 +1,8 @@
+import humanizeDuration from 'humanize-duration';
+
+// @TODO grab this from the config
+const defaultCpLocale = 'en';
+
 export function formatNumber(number: number | string, format?: string) {
   // If d3 is available, use it for compatibility
   if (
@@ -27,7 +32,7 @@ export function formatNumber(number: number | string, format?: string) {
       ? parseInt(decimalMatch[1]!, 10)
       : 0;
 
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat(defaultCpLocale, {
       useGrouping: hasThousandSeparator,
       minimumFractionDigits: maximumFractionDigits,
       maximumFractionDigits: maximumFractionDigits,
@@ -35,9 +40,16 @@ export function formatNumber(number: number | string, format?: string) {
   }
 
   // Default: format with thousand separators, no decimal places
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat(defaultCpLocale, {
     useGrouping: true,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(num);
 }
+
+export const cpHumanizer = humanizeDuration.humanizer({
+  language: defaultCpLocale,
+  fallbacks: ['en'],
+  largest: 2,
+  round: true,
+});

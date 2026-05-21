@@ -159,6 +159,12 @@ export default css`
     border-color: transparent;
     color: inherit;
     padding: 0;
+    min-height: auto;
+    min-width: auto;
+
+    &:before {
+      display: none;
+    }
   }
 
   /* Plain */
@@ -166,6 +172,10 @@ export default css`
     background-color: transparent;
     border-color: transparent;
     color: inherit;
+
+    &:before {
+      display: none;
+    }
   }
 
   :host([appearance='plain']:not(:disabled):not(.loading):hover) {

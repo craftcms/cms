@@ -110,6 +110,11 @@ class TestRemove2faSmsMethod extends BaseAuthMethod
 {
     public static int $removeCount = 0;
 
+    public static function handle(): string
+    {
+        return 'sms';
+    }
+
     public static function displayName(): string
     {
         return 'SMS';
@@ -149,6 +154,11 @@ class TestRemove2faSmsMethod extends BaseAuthMethod
 class TestRemove2faEmailMethod extends BaseAuthMethod
 {
     public static int $removeCount = 0;
+
+    public static function handle(): string
+    {
+        return 'email';
+    }
 
     public static function displayName(): string
     {

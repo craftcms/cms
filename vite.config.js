@@ -69,10 +69,15 @@ export default defineConfig(({mode}) => {
       alias: {
         vue: 'vue/dist/vue.esm-bundler.js',
       },
+      dedupe: ['@awesome.me/webawesome', 'lit'],
     },
 
     build: {
       emptyOutDir: true,
+    },
+
+    optimizeDeps: {
+      include: ['@awesome.me/webawesome', 'lit'],
     },
 
     plugins: [

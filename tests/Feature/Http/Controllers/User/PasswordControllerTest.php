@@ -202,9 +202,8 @@ it('sends password reset email for a valid loginName', function () {
 });
 
 it('requires loginName when not providing userId for sendPasswordResetEmail', function () {
-    $response = postJson(action([PasswordController::class, 'sendPasswordResetEmail']), []);
-
-    expect($response->json('message'))->toContain('Username or email is required.');
+    postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [])
+        ->assertJsonValidationErrorFor('loginName');
 });
 
 it('returns error for invalid loginName on sendPasswordResetEmail', function () {
@@ -214,6 +213,27 @@ it('returns error for invalid loginName on sendPasswordResetEmail', function () 
         'loginName' => 'nonexistent@example.com',
     ]);
 
+    expect($response->json('message'))->toContain('Invalid username or email.');
+});
+
+it('validates loginName as email when useEmailAsUsername is true for sendPasswordResetEmail', function () {
+    Cms::config()->useEmailAsUsername = true;
+
+    postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [
+        'loginName' => 'not-an-email',
+    ])->assertJsonValidationErrorFor('loginName');
+});
+
+it('accepts username when useEmailAsUsername is false for sendPasswordResetEmail', function () {
+    Cms::config()->useEmailAsUsername = false;
+    Cms::config()->preventUserEnumeration = false;
+
+    // Should pass validation but fail because user doesn't exist
+    $response = postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [
+        'loginName' => 'someusername',
+    ]);
+
+    // Should not be a validation error, but an "invalid user" error
     expect($response->json('message'))->toContain('Invalid username or email.');
 });
 

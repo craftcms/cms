@@ -9,6 +9,7 @@
     "prepare": "husky",
     "prebuild": "npm run fix-prettier",
     "build": "vite build",
+    "build:fe": "npm run build:cp && npm run build",
     "dev": "vite",
     "lint:styles": "stylelint \"resources/**/*.css\"",
     "build:bundles": "cd ./packages/craftcms-legacy && npm run build",

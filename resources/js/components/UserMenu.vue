@@ -9,6 +9,7 @@
   import ActionMenu from '@/components/ActionMenu.vue';
   import CurrentUser from '@/components/CurrentUser.vue';
   import UserThumbnail from '@/components/UserThumbnail.vue';
+  import PasswordController from '@actions/Users/PasswordController';
 
   const {currentUser, general} = useCraftData();
 
@@ -30,6 +31,10 @@
       {
         href: PreferencesController.index().url,
         label: t('Preferences'),
+      },
+      {
+        href: PasswordController.index().url,
+        label: t('Password & Verification'),
       },
       {type: 'hr'},
       {

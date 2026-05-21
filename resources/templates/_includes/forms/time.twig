@@ -73,7 +73,7 @@
         Craft.ui.remediateTimepickerA11y($timePicker);
 
         {%- if value and value is instance of('DateTimeInterface') -%}
-            $timePicker.timepicker('setTime', {{ value.format('G') }}*3600 + {{ value.format('i') }}*60 + {{ value.format('s') }});
+            $timePicker.timepicker('setTime', {{ value.format('G') * 3600 + value.format('i') * 60 + value.format('s') }});
         {%- endif -%}
     {%- endjs -%}
 {%- endif -%}

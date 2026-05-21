@@ -19,6 +19,7 @@
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
   import {useFlashMessages} from '@/composables/useFlashMessages';
   import UserMenu from '@/components/UserMenu.vue';
+  import FlashMessages from '@/components/FlashMessages.vue';
 
   interface SaveOptions {
     redirect?: boolean;
@@ -42,8 +43,7 @@
     form: null,
   });
 
-  const {system, currentUser, general} = useCraftData();
-  const {messages} = useFlashMessages();
+  const {system} = useCraftData();
 
   const page = usePage<{
     title: string;
@@ -164,17 +164,7 @@
         </craft-button>
         <UserMenu />
       </div>
-      <!-- TODO: this is just temporary placement -->
-      <template v-if="errorFlash">
-        <craft-callout variant="danger" rounded="none">{{
-          errorFlash
-        }}</craft-callout>
-      </template>
-      <template v-if="successFlash">
-        <craft-callout variant="success" rounded="none">{{
-          successFlash
-        }}</craft-callout>
-      </template>
+      <FlashMessages />
     </header>
     <div class="cp__sidebar">
       <CpSidebar

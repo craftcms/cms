@@ -26,12 +26,16 @@ readonly class Cp
             ->only([
                 'cpTrigger',
                 'actionTrigger',
-                'csrfTokenName',
+                'cpLogoUrl',
+                'useEmailAsUsername',
+                'rememberedUserSessionDuration',
+                'defaultCpLocale',
                 'runQueueAutomatically',
             ])
             ->merge([
                 'translations' => I18N::getAllTranslationsForLocale(app()->getLocale()) ?: new stdClass,
                 'csrfTokenValue' => csrf_token(),
+                'csrfTokenName' => '_token',
                 'actionUrl' => Url::actionUrl(),
                 'cpUrl' => Url::cpUrl(),
                 'baseUrl' => Url::url(),

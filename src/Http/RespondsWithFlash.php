@@ -56,7 +56,7 @@ trait RespondsWithFlash
         if ($redirect) {
             return redirect($redirect)
                 ->with('success', $message)
-                ->with($data);
+                ->with('success', $message)->with($data);
         }
 
         return back()

@@ -31,11 +31,11 @@ readonly class PasskeyController extends AuthenticationController
     {
         $request->validate([
             'requestOptions' => ['required'],
-            'response' => ['required'],
+            'authResponse' => ['required'],
         ]);
 
         $requestOptions = $request->input('requestOptions');
-        $response = $request->input('response');
+        $response = $request->input('authResponse');
         $credential = WebAuthn::where('credentialId', Json::decode($response)['id'])->first();
 
         if ($credential === null) {

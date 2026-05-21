@@ -140,4 +140,4 @@ class CraftDisclosure extends HTMLElement {
   }
 }
 
-customElements.define('craft-disclosure', CraftDisclosure);
+customElements.define('craft-legacy-disclosure', CraftDisclosure);
