@@ -7,6 +7,7 @@
 - Fixed an error that occurred when Updates were cached and deserialized.
 - Fixed an error that prevented link fields from saving.
 - Fixed a bug where Money fields could throw an error during element validation when the field value was falsy.
+- Fixed a bug where `CraftCms\Cms\Validation\Contracts\Validatable::prepareForValidation()` wasn’t called consistently, and plain `Validatable` classes without a configured ruleset couldn’t be validated. ([#18944](https://github.com/craftcms/cms/pull/18944))
 
 ## 6.0.0-alpha.4 - 2026-05-19
 
