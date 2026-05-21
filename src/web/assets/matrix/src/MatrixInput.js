@@ -273,6 +273,10 @@
           Craft.initUiElements($newEntries);
 
           $newEntries.each((i, entry) => {
+            if (entry.nodeType !== 1) {
+              return;
+            }
+
             const $entry = $(entry);
             new Craft.MatrixInput.Entry(this, $entry);
             this.trigger('entryAdded', {

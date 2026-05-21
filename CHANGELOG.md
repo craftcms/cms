@@ -7,6 +7,7 @@
 - Deprecated `craft\services\Path::getRuntimePath()`. `Craft::$app->getRuntimePath()` should be called instead.
 - Fixed a bug where Single section entries weren’t initially saved with a post date. ([#18931](https://github.com/craftcms/cms/issues/18931))
 - Fixed a bug where overriding the runtime path via `config/app.php` wasn’t possible. ([#18936](https://github.com/craftcms/cms/issues/18936))
+- Fixed a bug where pasted nested entries within Matrix fields in Blocks view weren’t always getting fully initialized. ([#18912](https://github.com/craftcms/cms/issues/18912))
 
 ## 5.10.2 - 2026-05-20
 
