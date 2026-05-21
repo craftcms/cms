@@ -27,8 +27,10 @@
     name: props.filesystem.name ?? '',
     handle: props.filesystem.handle ?? '',
     type: props.filesystem.type ?? '',
-    hasUrls: props.filesystem.hasUrls ?? false,
-    url: props.filesystem.url ?? '',
+    settings: {
+      hasUrls: props.filesystem.hasUrls ?? false,
+      url: props.filesystem.url ?? '',
+    },
   });
 
   useInputGenerator(
@@ -56,7 +58,10 @@
   const {save} = useSettingsSave(form, store['/admin/actions/fs/save'], {
     transform: (data) => ({
       ...data,
-      settings: fsTypeSettings.value,
+      settings: {
+        ...data.settings,
+        ...fsTypeSettings.value,
+      },
     }),
   });
 </script>
@@ -106,8 +111,8 @@
         <template v-for="fsType in fsTypes">
           <FilesystemSettings
             v-if="fsInstances[fsType]"
-            v-model:has-urls="form.hasUrls"
-            v-model:url="form.url"
+            v-model:has-urls="form.settings.hasUrls"
+            v-model:url="form.settings.url"
             :filesystem="fsInstances[fsType]"
           />
         </template>
