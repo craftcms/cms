@@ -34,7 +34,7 @@ readonly class RoutesController
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Routes')],
             ])
-            ->inertiaPage('SettingsRoutesPage', [
+            ->inertiaPage('settings/routes/RoutesPage', [
                 'tokens' => $this->routes->tokens,
                 'routes' => $this->routeProps(),
                 'sites' => $this->siteProps(),
