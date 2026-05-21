@@ -4,7 +4,9 @@
 
 - Reduced the number of database queries executed when eager-loading nested entries or addresses. ([#18929](https://github.com/craftcms/cms/issues/18929))
 - Reduced the number of database queries executed when loading image transforms. ([#18929](https://github.com/craftcms/cms/issues/18929))
+- Deprecated `craft\services\Path::getRuntimePath()`. `Craft::$app->getRuntimePath()` should be called instead.
 - Fixed a bug where Single section entries weren’t initially saved with a post date. ([#18931](https://github.com/craftcms/cms/issues/18931))
+- Fixed a bug where overriding the runtime path via `config/app.php` wasn’t possible. ([#18936](https://github.com/craftcms/cms/issues/18936))
 
 ## 5.10.2 - 2026-05-20
 

@@ -46,6 +46,7 @@ use craft\fieldlayoutelements\users\PhotoField;
 use craft\fieldlayoutelements\users\UsernameField;
 use craft\helpers\App;
 use craft\helpers\Db;
+use craft\helpers\FileHelper;
 use craft\helpers\Markdown as MarkdownHelper;
 use craft\helpers\Session;
 use craft\i18n\Formatter;
@@ -297,6 +298,8 @@ trait ApplicationTrait
      */
     private array $afterRequestCallbacks = [];
 
+    private string $_runtimePath;
+
     /**
      * Returns the application ID combined with the environment name.
      *
@@ -334,6 +337,30 @@ trait ApplicationTrait
         Craft::setAlias('@bower/inputmask/dist', $assetsPath . '/inputmask/dist');
         Craft::setAlias('@bower/punycode', $assetsPath . '/punycode/dist');
         Craft::setAlias('@bower/yii2-pjax', $assetsPath . '/yii2pjax/dist');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRuntimePath(): string
+    {
+        if (!isset($this->_runtimePath)) {
+            $path = $this->getPath()->getStoragePath() . DIRECTORY_SEPARATOR . 'runtime';
+            FileHelper::createDirectory($path);
+            FileHelper::writeGitignoreFile($path);
+            $this->setRuntimePath($path);
+        }
+
+        return $this->_runtimePath;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setRuntimePath($path): void
+    {
+        $this->_runtimePath = Craft::getAlias($path);
+        Craft::setAlias('@runtime', $this->_runtimePath);
     }
 
     /**
