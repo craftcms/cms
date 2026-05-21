@@ -1,5 +1,4 @@
 <script setup lang="ts">
-  import ColorInput from '@/components/form/ColorInput.vue';
   import Pane from '@/components/Pane.vue';
   import {useInputGenerator} from '@/composables/useInputGenerator';
   import useCraftData from '@/composables/useCraftData';
@@ -8,6 +7,7 @@
   import {store as saveTransform} from '@actions/Settings/ImageTransformsController';
   import {t, toHandle} from '@craftcms/cp';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import CraftInputColor from '@craftcms/cp/vue/CraftInputColor.vue';
   import CraftInputHandle from '@craftcms/cp/vue/CraftInputHandle.vue';
   import CraftSelect from '@craftcms/cp/vue/CraftSelect.vue';
   import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
@@ -184,7 +184,7 @@
           </ul>
         </div>
 
-        <ColorInput
+        <CraftInputColor
           v-if="shouldShowFillColor"
           id="fill"
           name="fill"

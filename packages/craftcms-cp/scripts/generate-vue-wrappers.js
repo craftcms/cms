@@ -45,6 +45,23 @@ const VALUE_COMPONENTS = [
     ],
   },
   {
+    tagName: 'craft-input-color',
+    className: 'CraftInputColor',
+    fileName: 'CraftInputColor',
+    modelType: 'string',
+    importPath: '../components/input-color/input-color',
+    slots: [
+      'label',
+      'help-text',
+      'input',
+      'feedback',
+      'prefix',
+      'suffix',
+      'before',
+      'after',
+    ],
+  },
+  {
     tagName: 'craft-input-handle',
     className: 'CraftInputHandle',
     fileName: 'CraftInputHandle',
