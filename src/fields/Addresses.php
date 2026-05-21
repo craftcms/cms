@@ -896,6 +896,9 @@ JS, [
                 'allowOwnerDrafts' => true,
                 'allowOwnerRevisions' => true,
             ],
+            'createElement' => fn(AddressQuery $query, array $result, ElementInterface $sourceElement) => $query
+                ->owner($sourceElement)
+                ->createElement($result),
         ];
     }
 

@@ -1437,6 +1437,9 @@ JS,
                 'revisions' => Collection::make($sourceElements)
                     ->contains(fn($sourceElement) => $sourceElement->getIsRevision()),
             ],
+            'createElement' => fn(EntryQuery $query, array $result, ElementInterface $sourceElement) => $query
+                ->owner($sourceElement)
+                ->createElement($result),
         ];
     }
 
