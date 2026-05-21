@@ -4,14 +4,8 @@
   import Pane from '@/components/Pane.vue';
   import Select from '@/components/form/Select.vue';
   import {useSettingsSave} from '@/composables/useSettingsSave';
-  import type {
-    MixedInputPart,
-  } from '@/components/form/MixedInput.vue';
-  import type {
-    RouteActionMenuItem,
-    RouteData,
-    RouteFormData,
-  } from './types';
+  import type {MixedInputPart} from '@/components/form/MixedInput.vue';
+  import type {RouteActionMenuItem, RouteData, RouteFormData} from './types';
   import {store, update} from '@actions/Settings/RoutesController';
   import {router, useForm} from '@inertiajs/vue3';
   import {t} from '@craftcms/cp';
@@ -33,7 +27,7 @@
   const mixedInput = shallowRef<InstanceType<typeof MixedInput> | null>(null);
 
   const form = useForm<RouteFormData>({
-    uriParts: copyUriParts(props.route.uriParts),
+    uriParts: props.route.uriParts,
     template: props.route.template,
     siteUid: props.route.siteUid ?? '',
   });
@@ -53,14 +47,6 @@
     }),
   });
 
-  function isToken(part: MixedInputPart): part is [string, string] {
-    return Array.isArray(part);
-  }
-
-  function copyUriParts(parts: Array<MixedInputPart>): Array<MixedInputPart> {
-    return parts.map((part) => (isToken(part) ? [part[0], part[1]] : part));
-  }
-
   function addUriToken(token: BaseOption) {
     mixedInput.value?.addToken(token);
   }
@@ -72,7 +58,7 @@
   }
 
   function normalizedUriParts(): Array<MixedInputPart> {
-    const parts = copyUriParts(form.uriParts);
+    const parts = [...form.uriParts];
 
     if (typeof parts[0] === 'string') {
       parts[0] = parts[0].replace(/^\/+/, '');
