@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Image\Data;
 
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\ImageTransformer;
 use DateTime;
@@ -141,7 +142,7 @@ class ImageTransform extends Component
     {
         return [
             'name' => ['required', 'string'],
-            'handle' => ['required', 'string'],
+            'handle' => ['required', 'string', Rule::unique(Table::IMAGETRANSFORMS, 'handle')->ignore($this->id)],
             'width' => ['nullable', 'integer', 'min:1'],
             'height' => ['nullable', 'integer', 'min:1'],
             'mode' => ['required', Rule::in(self::MODES)],

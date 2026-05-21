@@ -4,32 +4,23 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Rules\ColorRule;
-use CraftCms\Cms\View\LegacyAssets\EditTransformAsset;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Imagine\Image\Format;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
-use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
 
 class ImageTransformsController
 {
     use RespondsWithFlash;
-
-    private bool $readOnly;
-
-    public function __construct(GeneralConfig $generalConfig)
-    {
-        $this->readOnly = ! $generalConfig->allowAdminChanges;
-    }
 
     public function index(ImageTransforms $imageTransforms)
     {
@@ -38,10 +29,11 @@ class ImageTransformsController
             ->sort(fn (ImageTransform $a, ImageTransform $b): int => t($a->name, category: 'site') <=> t($b->name, category: 'site'))
             ->values();
 
-        return Inertia::render('SettingsImageTransformsIndexPage', [
+        return Inertia::render('settings/assets/transforms/ImageTransformsIndexPage', [
             'crumbs' => fn () => [
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
-                ['label' => t('Transforms')],
+                ['label' => t('Assets'), 'url' => Url::cpUrl('settings/assets/transforms')],
+                ['label' => t('Image Transforms')],
             ],
             'title' => t('Image Transforms'),
             'transforms' => $transforms,
@@ -49,19 +41,18 @@ class ImageTransformsController
         ]);
     }
 
-    public function create(): View
+    public function create(Images $images): CpScreenResponse
     {
-        abort_if($this->readOnly, 403, 'Administrative changes are disallowed in this environment.');
-
-        return $this->editView();
+        return $this->editScreen(new ImageTransform, $images);
     }
 
-    public function edit(ImageTransforms $imageTransforms, string $transformHandle): View
+    public function edit(ImageTransforms $imageTransforms, Images $images, string $transformHandle): CpScreenResponse
     {
         $transform = $imageTransforms->getTransformByHandle($transformHandle);
+
         abort_if(is_null($transform), 404, 'Transform not found');
 
-        return $this->editView($transformHandle, $transform);
+        return $this->editScreen($transform, $images);
     }
 
     public function save(Request $request, ImageTransforms $imageTransforms): Response
@@ -103,66 +94,147 @@ class ImageTransformsController
             return $this->asModelFailure($transform, modelName: 'transform');
         }
 
-        return $this->asModelSuccess($transform, t('Transform saved.'), 'transform');
+        return $this->asModelSuccess(
+            $transform,
+            t('Transform saved.'),
+            'transform',
+            redirect: $this->getPostedRedirectUrl($transform)
+                ?? Url::cpUrl("settings/assets/transforms/$transform->handle"),
+        );
     }
 
-    public function destroy(Request $request, ImageTransforms $imageTransforms, int $transformId): Response
+    public function destroy(ImageTransforms $imageTransforms, int $transformId): Response
     {
         $imageTransforms->deleteTransformById($transformId);
 
         return $this->asSuccess();
     }
 
-    private function editView(?string $transformHandle = null, ?ImageTransform $transform = null): View
+    private function editScreen(ImageTransform $transform, Images $images): CpScreenResponse
     {
-        $transform ??= new ImageTransform;
-        app(InternalAssetRegistry::class)->register(EditTransformAsset::class);
-
         $title = $transform->id
             ? (trim((string) $transform->name) ?: t('Edit Image Transform'))
             : t('Create a new image transform');
 
-        [$qualityPickerOptions, $qualityPickerValue] = $this->qualityPickerData($transform);
-
-        return view('settings/assets/transforms/_settings', [
-            'handle' => $transformHandle,
-            'transform' => $transform,
-            'title' => $title,
-            'qualityPickerOptions' => $qualityPickerOptions,
-            'qualityPickerValue' => $qualityPickerValue,
-            'readOnly' => $this->readOnly,
-            'baseIconsUrl' => craftAsset('legacy/edittransform/dist/images'),
-        ]);
+        return new CpScreenResponse()
+            ->title($title)
+            ->addCrumb(t('Settings'), 'settings')
+            ->addCrumb(t('Assets'), 'settings/assets/transforms')
+            ->addCrumb(t('Image Transforms'), 'settings/assets/transforms')
+            ->addCrumb($title)
+            ->redirectUrl('settings/assets/transforms')
+            ->inertiaPage('settings/assets/transforms/EditImageTransformPage', [
+                'transform' => $this->transformData($transform),
+                'modeOptions' => $this->modeOptions(),
+                'positionOptions' => $this->positionOptions(),
+                'interlaceOptions' => $this->interlaceOptions(),
+                'formatOptions' => $this->formatOptions($images, $transform),
+                'qualityOptions' => $this->qualityOptions(),
+            ]);
     }
 
     /**
-     * @return array{0: array<int, array{label: string, value: int}>, 1: int}
+     * @return array<string, mixed>
      */
-    private function qualityPickerData(ImageTransform $transform): array
+    private function transformData(ImageTransform $transform): array
     {
-        $qualityPickerOptions = [
+        return [
+            'id' => $transform->id,
+            'name' => $transform->name,
+            'handle' => $transform->handle,
+            'width' => $transform->width,
+            'height' => $transform->height,
+            'mode' => $transform->mode,
+            'position' => $transform->position,
+            'quality' => $transform->quality,
+            'interlace' => $transform->interlace,
+            'format' => $transform->format,
+            'fill' => $transform->fill,
+            'upscale' => $transform->upscale,
+        ];
+    }
+
+    /**
+     * @return array<int, array{label: string, value: string}>
+     */
+    private function modeOptions(): array
+    {
+        $modes = ImageTransform::modes();
+
+        return collect(['crop', 'fit', 'letterbox', 'stretch'])
+            ->map(fn (string $value): array => [
+                'label' => $modes[$value],
+                'value' => $value,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return array<int, array{label: string, value: string}>
+     */
+    private function positionOptions(): array
+    {
+        return [
+            ['label' => t('Top-Left'), 'value' => 'top-left'],
+            ['label' => t('Top-Center'), 'value' => 'top-center'],
+            ['label' => t('Top-Right'), 'value' => 'top-right'],
+            ['label' => t('Center-Left'), 'value' => 'center-left'],
+            ['label' => t('Center-Center'), 'value' => 'center-center'],
+            ['label' => t('Center-Right'), 'value' => 'center-right'],
+            ['label' => t('Bottom-Left'), 'value' => 'bottom-left'],
+            ['label' => t('Bottom-Center'), 'value' => 'bottom-center'],
+            ['label' => t('Bottom-Right'), 'value' => 'bottom-right'],
+        ];
+    }
+
+    /**
+     * @return array<int, array{label: string, value: string}>
+     */
+    private function interlaceOptions(): array
+    {
+        return [
+            ['label' => t('None'), 'value' => 'none'],
+            ['label' => t('Line'), 'value' => 'line'],
+            ['label' => t('Plane'), 'value' => 'plane'],
+            ['label' => t('Partition'), 'value' => 'partition'],
+        ];
+    }
+
+    /**
+     * @return array<int, array{label: string, value: string}>
+     */
+    private function formatOptions(Images $images, ImageTransform $transform): array
+    {
+        $options = [
+            ['label' => t('Auto'), 'value' => ''],
+            ['label' => 'jpg', 'value' => 'jpg'],
+            ['label' => 'png', 'value' => 'png'],
+            ['label' => 'gif', 'value' => 'gif'],
+        ];
+
+        if ($transform->format === Format::ID_WEBP || $images->getSupportsWebP()) {
+            $options[] = ['label' => Format::ID_WEBP, 'value' => Format::ID_WEBP];
+        }
+
+        if ($transform->format === Format::ID_AVIF || $images->getSupportsAvif()) {
+            $options[] = ['label' => Format::ID_AVIF, 'value' => Format::ID_AVIF];
+        }
+
+        return $options;
+    }
+
+    /**
+     * @return array<int, array{label: string, value: int}>
+     */
+    private function qualityOptions(): array
+    {
+        return [
             ['label' => t('Low'), 'value' => 10],
             ['label' => t('Medium'), 'value' => 30],
             ['label' => t('High'), 'value' => 60],
             ['label' => t('Very High'), 'value' => 80],
             ['label' => t('Maximum'), 'value' => 100],
         ];
-
-        if ($transform->quality) {
-            // Default to Low, even if quality is < 10.
-            $qualityPickerValue = 10;
-            foreach ($qualityPickerOptions as $option) {
-                if ($transform->quality >= $option['value']) {
-                    $qualityPickerValue = $option['value'];
-                } else {
-                    break;
-                }
-            }
-        } else {
-            // Auto
-            $qualityPickerValue = 0;
-        }
-
-        return [$qualityPickerOptions, $qualityPickerValue];
     }
 }

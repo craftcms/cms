@@ -7,14 +7,17 @@ use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
 use CraftCms\Cms\Image\Data\ImageTransform as ImageTransformData;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
+use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
@@ -80,8 +83,9 @@ it('requires admin changes', function () {
     get(action([ImageTransformsController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page->where('readOnly', true));
     get(action([ImageTransformsController::class, 'edit'], ['transformHandle' => $transform->handle]))
-        ->assertOk()
-        ->assertSee(t("Changes to these settings aren\u{2019}t permitted in this environment."));
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/assets/transforms/EditImageTransformPage')
+            ->where('readOnly', true));
 
     get(action([ImageTransformsController::class, 'create']))->assertForbidden();
     postJson(action([ImageTransformsController::class, 'save']), validTransformData())->assertForbidden();
@@ -90,21 +94,36 @@ it('requires admin changes', function () {
 
 it('renders index', function () {
     get(action([ImageTransformsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('SettingsImageTransformsIndexPage'));
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/assets/transforms/ImageTransformsIndexPage'));
 });
 
 it('renders create', function () {
     get(action([ImageTransformsController::class, 'create']))
-        ->assertOk()
-        ->assertSee(t('Create a new image transform'));
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/assets/transforms/EditImageTransformPage')
+            ->where('title', t('Create a new image transform'))
+            ->where('transform.id', null)
+            ->has('modeOptions', 4)
+            ->where('modeOptions.0.value', 'crop')
+            ->where('modeOptions.1.value', 'fit')
+            ->where('modeOptions.2.value', 'letterbox')
+            ->where('modeOptions.3.value', 'stretch')
+            ->has('positionOptions', 9)
+            ->has('interlaceOptions', 4)
+            ->has('formatOptions')
+            ->has('qualityOptions', 5));
 });
 
 it('renders edit for an existing transform', function () {
     $transform = createTestTransform();
 
     get(action([ImageTransformsController::class, 'edit'], ['transformHandle' => $transform->handle]))
-        ->assertOk()
-        ->assertSee($transform->name);
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/assets/transforms/EditImageTransformPage')
+            ->where('title', $transform->name)
+            ->where('transform.id', $transform->id)
+            ->where('transform.name', $transform->name)
+            ->where('transform.handle', $transform->handle));
 });
 
 it('returns 404 for a missing transform handle', function () {
@@ -129,6 +148,27 @@ it('saves a new transform', function () {
 
     expect($transform)->not->toBeNull()
         ->and($transform->name)->toBe($payload['name']);
+});
+
+it('redirects to the saved transform edit page when saving and continuing', function () {
+    $payload = validTransformData([
+        'handle' => 'continuedTransform',
+    ]);
+
+    post(action([ImageTransformsController::class, 'save']), $payload)
+        ->assertRedirect(Url::cpUrl('settings/assets/transforms/continuedTransform'))
+        ->assertSessionHas('success', t('Transform saved.'));
+});
+
+it('redirects to the posted redirect when saving normally', function () {
+    $payload = validTransformData([
+        'handle' => 'normallySavedTransform',
+        'redirect' => Crypt::encrypt('settings/assets/transforms'),
+    ]);
+
+    post(action([ImageTransformsController::class, 'save']), $payload)
+        ->assertRedirect(Url::cpUrl('settings/assets/transforms'))
+        ->assertSessionHas('success', t('Transform saved.'));
 });
 
 it('updates an existing transform', function () {
