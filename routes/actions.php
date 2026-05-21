@@ -72,7 +72,6 @@ use CraftCms\Cms\Http\Controllers\QueueController;
 use CraftCms\Cms\Http\Controllers\RelationalFieldsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
-use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
 use CraftCms\Cms\Http\Controllers\Settings\RoutesController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
@@ -428,7 +427,6 @@ Route::prefix(implode('/', [
         Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::post('volumes/save-volume', [VolumesController::class, 'save']);
             Route::post('volumes/reorder-volumes', [VolumesController::class, 'reorder']);
-            Route::post('image-transforms/save', [ImageTransformsController::class, 'save']);
         });
 
         // Plugins

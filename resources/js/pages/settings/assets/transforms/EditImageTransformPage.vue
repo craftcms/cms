@@ -5,7 +5,7 @@
   import useCraftData from '@/composables/useCraftData';
   import {useSettingsSave} from '@/composables/useSettingsSave';
   import AppLayout from '@/layout/AppLayout.vue';
-  import {save as saveTransform} from '@actions/Settings/ImageTransformsController';
+  import {store as saveTransform} from '@actions/Settings/ImageTransformsController';
   import {t, toHandle} from '@craftcms/cp';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import CraftInputHandle from '@craftcms/cp/vue/CraftInputHandle.vue';

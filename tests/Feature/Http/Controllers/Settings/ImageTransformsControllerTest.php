@@ -72,7 +72,7 @@ it('requires authentication', function () {
     get(action([ImageTransformsController::class, 'index']))->assertRedirect();
     get(action([ImageTransformsController::class, 'create']))->assertRedirect();
     get(action([ImageTransformsController::class, 'edit'], ['transformHandle' => $transform->handle]))->assertRedirect();
-    postJson(action([ImageTransformsController::class, 'save']))->assertUnauthorized();
+    postJson(action([ImageTransformsController::class, 'store']))->assertUnauthorized();
     deleteJson(action([ImageTransformsController::class, 'destroy'], [$transform->id]))->assertUnauthorized();
 });
 
@@ -88,7 +88,7 @@ it('requires admin changes', function () {
             ->where('readOnly', true));
 
     get(action([ImageTransformsController::class, 'create']))->assertForbidden();
-    postJson(action([ImageTransformsController::class, 'save']), validTransformData())->assertForbidden();
+    postJson(action([ImageTransformsController::class, 'store']), validTransformData())->assertForbidden();
     deleteJson(action([ImageTransformsController::class, 'destroy'], [$transform->id]))->assertForbidden();
 });
 
@@ -136,7 +136,7 @@ it('saves a new transform', function () {
 
     $payload = validTransformData();
 
-    postJson(action([ImageTransformsController::class, 'save']), $payload)
+    postJson(action([ImageTransformsController::class, 'store']), $payload)
         ->assertOk()
         ->assertJsonPath('modelName', 'transform');
 
@@ -155,7 +155,7 @@ it('redirects to the saved transform edit page when saving and continuing', func
         'handle' => 'continuedTransform',
     ]);
 
-    post(action([ImageTransformsController::class, 'save']), $payload)
+    post(action([ImageTransformsController::class, 'store']), $payload)
         ->assertRedirect(Url::cpUrl('settings/assets/transforms/continuedTransform'))
         ->assertSessionHas('success', t('Transform saved.'));
 });
@@ -166,7 +166,7 @@ it('redirects to the posted redirect when saving normally', function () {
         'redirect' => Crypt::encrypt('settings/assets/transforms'),
     ]);
 
-    post(action([ImageTransformsController::class, 'save']), $payload)
+    post(action([ImageTransformsController::class, 'store']), $payload)
         ->assertRedirect(Url::cpUrl('settings/assets/transforms'))
         ->assertSessionHas('success', t('Transform saved.'));
 });
@@ -178,7 +178,7 @@ it('updates an existing transform', function () {
         'width' => 100,
     ]);
 
-    postJson(action([ImageTransformsController::class, 'save']), validTransformData([
+    postJson(action([ImageTransformsController::class, 'store']), validTransformData([
         'transformId' => $transform->id,
         'name' => 'Updated Name',
         'handle' => $transform->handle,
@@ -197,7 +197,7 @@ it('updates an existing transform', function () {
 });
 
 it('rejects save when both width and height are missing', function () {
-    postJson(action([ImageTransformsController::class, 'save']), validTransformData([
+    postJson(action([ImageTransformsController::class, 'store']), validTransformData([
         'width' => '',
         'height' => '',
     ]))
@@ -213,7 +213,7 @@ it('normalizes letterbox fill color on save', function () {
         'fill' => 'abc',
     ]);
 
-    postJson(action([ImageTransformsController::class, 'save']), $payload)->assertOk();
+    postJson(action([ImageTransformsController::class, 'store']), $payload)->assertOk();
 
     $service = app(ImageTransforms::class);
     $service->reset();

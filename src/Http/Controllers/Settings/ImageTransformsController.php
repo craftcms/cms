@@ -55,7 +55,7 @@ class ImageTransformsController
         return $this->editScreen($transform, $images);
     }
 
-    public function save(Request $request, ImageTransforms $imageTransforms): Response
+    public function store(Request $request, ImageTransforms $imageTransforms): Response
     {
         $transform = new ImageTransform;
         $transform->id = $request->integer('transformId') ?: null;
