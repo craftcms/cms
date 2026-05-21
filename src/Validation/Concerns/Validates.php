@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Validation\Concerns;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
+use CraftCms\Cms\Validation\ComponentRules;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\RulesetValidation\Concerns\HasRuleset;
 use Illuminate\Support\MessageBag;
@@ -88,7 +89,7 @@ trait Validates
             $attributeNames = [$attributeNames];
         }
 
-        $ruleset = $this->ruleset;
+        $ruleset = $this->ruleset ?: app()->make(ComponentRules::class, ['subject' => $this]);
 
         if (! is_null($attributeNames)) {
             $ruleset->only($attributeNames);

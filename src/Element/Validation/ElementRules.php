@@ -43,6 +43,8 @@ class ElementRules extends Ruleset
     #[Override]
     public function prepareForValidation(): void
     {
+        parent::prepareForValidation();
+
         $shouldPrepare = fn (string $attribute) => is_null($this->validationAttributes) || in_array($attribute, $this->validationAttributes, true);
 
         if ($shouldPrepare('title')) {

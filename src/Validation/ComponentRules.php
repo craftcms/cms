@@ -30,12 +30,6 @@ class ComponentRules extends Ruleset
     }
 
     #[Override]
-    protected function prepareForValidation(): void
-    {
-        $this->subject->prepareForValidation();
-    }
-
-    #[Override]
     protected function passedValidation(): void
     {
         $this->subject->passedValidation();

@@ -18,6 +18,8 @@ function createValidatableComponent(array $attributes, ?string $rulesetClass = n
 
         public bool $afterValidateCalled = false;
 
+        public bool $prepareForValidationCalled = false;
+
         public function __construct(
             private array $testAttributes,
             ?string $rulesetClass = null,
@@ -38,6 +40,11 @@ function createValidatableComponent(array $attributes, ?string $rulesetClass = n
         public function ruleset(): string
         {
             return $this->rulesetClass;
+        }
+
+        public function prepareForValidation(): void
+        {
+            $this->prepareForValidationCalled = true;
         }
 
         public function afterValidate(?Validator $validator = null): void
@@ -87,6 +94,53 @@ class EmptyRuleset extends Ruleset
     }
 }
 
+class PlainValidatable implements Validatable
+{
+    use Validates;
+
+    public bool $prepareForValidationCalled = false;
+
+    public bool $passedValidationCalled = false;
+
+    public bool $afterValidateCalled = false;
+
+    public function __construct(
+        private array $testAttributes,
+    ) {}
+
+    public function setAttributes(array $values): void
+    {
+        $this->testAttributes = array_merge($this->testAttributes, $values);
+    }
+
+    public function validationData(): array
+    {
+        return $this->testAttributes;
+    }
+
+    public function getRules(): array
+    {
+        return [
+            'title' => ['required', 'string'],
+        ];
+    }
+
+    public function prepareForValidation(): void
+    {
+        $this->prepareForValidationCalled = true;
+    }
+
+    public function passedValidation(): void
+    {
+        $this->passedValidationCalled = true;
+    }
+
+    public function afterValidate(?Validator $validator = null): void
+    {
+        $this->afterValidateCalled = true;
+    }
+}
+
 describe('validate', function () {
     test('returns true when validation passes', function () {
         $component = createValidatableComponent([
@@ -115,6 +169,40 @@ describe('validate', function () {
         $component->validate();
 
         expect($component->ruleset->prepareForValidationCalled)->toBeTrue();
+        expect($component->prepareForValidationCalled)->toBeTrue();
+    });
+
+    test('calls subject prepareForValidation from base ruleset', function () {
+        $component = createValidatableComponent(['title' => 'Test'], EmptyRuleset::class);
+
+        $component->validate();
+
+        expect($component->prepareForValidationCalled)->toBeTrue();
+    });
+
+    test('validates with fallback ruleset when no ruleset is configured', function () {
+        $component = new PlainValidatable(['title' => 'Test']);
+
+        $result = $component->validate();
+
+        expect($component->ruleset)->toBeFalse();
+        expect($result)->toBeTrue();
+        expect($component->prepareForValidationCalled)->toBeTrue();
+        expect($component->passedValidationCalled)->toBeTrue();
+        expect($component->afterValidateCalled)->toBeTrue();
+    });
+
+    test('stores errors from fallback ruleset when no ruleset is configured', function () {
+        $component = new PlainValidatable(['title' => null]);
+
+        $result = $component->validate();
+
+        expect($component->ruleset)->toBeFalse();
+        expect($result)->toBeFalse();
+        expect($component->errors()->has('title'))->toBeTrue();
+        expect($component->prepareForValidationCalled)->toBeTrue();
+        expect($component->passedValidationCalled)->toBeFalse();
+        expect($component->afterValidateCalled)->toBeTrue();
     });
 
     test('passes attribute names to prepareForValidation', function () {
