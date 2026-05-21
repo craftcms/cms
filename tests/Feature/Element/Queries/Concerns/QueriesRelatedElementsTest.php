@@ -44,6 +44,8 @@ test('related elements', function () {
     expect(entryQuery()->count())->toBe(3);
     expect(entryQuery()->relatedTo($entries[1]->id)->count())->toBe(1);
     expect(entryQuery()->notRelatedTo($entries[1]->id)->count())->toBe(2);
+    expect(entryQuery()->relatedTo('notavalidelement')->count())->toBe(0);
+    expect(entryQuery()->notRelatedTo('notavalidelement')->count())->toBe(3);
 });
 
 test('relation fields modify element queries with relation filters', function () {

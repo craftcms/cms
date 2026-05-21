@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element\Queries\Concerns\Entry;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\EntryTypes;
@@ -46,7 +47,7 @@ trait QueriesEntryTypes
             $this->normalizeTypeId($entryQuery);
 
             if ($entryQuery->typeId === []) {
-                return;
+                throw new QueryAbortedException;
             }
 
             if (! $entryQuery->typeId) {

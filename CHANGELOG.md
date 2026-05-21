@@ -7,6 +7,7 @@
 - Fixed an error that occurred when Updates were cached and deserialized.
 - Fixed an error that prevented link fields from saving.
 - Fixed a bug where Money fields could throw an error during element validation when the field value was falsy.
+- Fixed a bug where invalid element query filters could return all results. ([#18937](https://github.com/craftcms/cms/pull/18937))
 
 ## 6.0.0-alpha.4 - 2026-05-19
 
