@@ -438,20 +438,24 @@
 
   .mixed-input__editor {
     align-items: center;
-    background: var(--white);
-    border: 1px solid var(--border-hairline);
-    border-radius: var(--radius-md);
+    background: var(--c-input-fill);
+    border: var(--c-input-border-width) var(--c-input-border-style)
+      var(--c-input-border-color);
+    border-radius: var(--c-input-radius);
+    box-shadow: var(--c-input-shadow);
+    box-sizing: border-box;
     display: flex;
     flex: 1 1 auto;
     flex-wrap: wrap;
     gap: 0;
-    min-height: 34px;
+    min-height: var(--c-size-control-md);
     min-width: 0;
-    padding: 4px 8px;
+    padding-block: 0;
+    padding-inline: var(--c-input-spacing-inline);
   }
 
   .mixed-input__editor--error {
-    border-color: var(--error-color);
+    border-color: var(--c-color-danger-border-loud);
   }
 
   .mixed-input__text {
@@ -484,13 +488,13 @@
 
   .mixed-input__token {
     align-items: center;
-    background: var(--gray-100);
+    background: var(--c-color-neutral-fill-normal);
     border: 0;
-    border-radius: var(--radius-sm);
-    color: var(--fg);
+    border-radius: var(--c-radius-sm);
+    color: var(--c-color-neutral-on-normal);
     display: inline-flex;
-    font-family: var(--font-mono);
-    font-size: var(--font-size-sm);
+    font-family: var(--c-font-mono);
+    font-size: var(--c-text-sm);
     gap: 0.25rem;
     line-height: 1.3;
     padding: 0.125rem 0.4rem;
@@ -503,8 +507,8 @@
 
   .mixed-input__token--selected,
   .mixed-input__token--editable:focus {
-    box-shadow: 0 0 0 1px var(--white);
-    outline: 2px solid var(--link-color);
+    box-shadow: 0 0 0 1px var(--c-input-fill);
+    outline: 2px solid var(--c-text-link);
     outline-offset: 1px;
   }
 </style>

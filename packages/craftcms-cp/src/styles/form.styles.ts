@@ -28,7 +28,7 @@ export const baseInputStyles = css`
 `;
 
 export const baseFieldStyles = css`
-  :host(:not([label-sr-only])) .form-field__group-one {
+  :host(:not([label-sr-only])) .form-field__group-one .form-field__label slot:not(:empty) {
     margin-block-end: var(--c-spacing-sm);
   }
 

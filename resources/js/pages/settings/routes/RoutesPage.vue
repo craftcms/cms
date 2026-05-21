@@ -2,26 +2,14 @@
   import AppLayout from '@/layout/AppLayout.vue';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
   import DropIndicator from '@/components/DropIndicator.vue';
-  import MixedInput from '@/components/form/MixedInput.vue';
-  import ModalForm from '@/components/ModalForm.vue';
-  import {useFlashMessages} from '@/composables/useFlashMessages';
+  import RouteEditModal from '@/pages/settings/routes/components/RouteEditModal.vue';
   import {useReorderableItems} from '@/composables/useReorderableItems';
-  import type {
-    MixedInputPart,
-    MixedInputToken,
-  } from '@/components/form/MixedInput.vue';
-  import {
-    destroy,
-    reorder,
-    store,
-    update,
-  } from '@actions/Settings/RoutesController';
-  import {router, useForm} from '@inertiajs/vue3';
+  import type {MixedInputPart} from '@/components/form/MixedInput.vue';
+  import {reorder} from '@actions/Settings/RoutesController';
+  import {router} from '@inertiajs/vue3';
   import {t} from '@craftcms/cp';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
-  import CraftSelect from '@craftcms/cp/vue/CraftSelect.vue';
   import type {Edge} from '@atlaskit/pragmatic-drag-and-drop-hitbox/types';
-  import {computed, ref} from 'vue';
+  import {ref, shallowRef} from 'vue';
 
   interface RouteData {
     uid: string;
@@ -37,12 +25,6 @@
     name: string;
   }
 
-  interface RouteFormData {
-    uriParts: Array<MixedInputPart>;
-    template: string;
-    siteUid: string | null;
-  }
-
   interface SettingsRoutesPageProps {
     routes: Array<RouteData>;
   }
@@ -56,35 +38,13 @@
     readOnly?: boolean;
   }>();
 
-  const {flash} = useFlashMessages();
   const modalActive = ref(false);
-  const editingRoute = ref<RouteData | null>(null);
-  const mixedInput = ref<InstanceType<typeof MixedInput> | null>(null);
-
-  const form = useForm<RouteFormData>({
-    uriParts: [''],
-    template: '',
-    siteUid: null,
-  });
-
-  const formSiteUid = computed({
-    get: () => form.siteUid ?? '',
-    set: (siteUid: string) => {
-      form.siteUid = siteUid || null;
-    },
-  });
-
-  const tokenOptions = computed<Array<MixedInputToken>>(() =>
-    Object.entries(props.tokens).map(([name, value]) => ({name, value}))
-  );
-
-  const canReorder = computed(() => !props.readOnly && props.routes.length > 1);
-  const routeIds = computed(() => props.routes.map((route) => route.uid));
+  const editingRoute = shallowRef<RouteData | null>(null);
 
   const {setItemRef, setHandleRef, getDragState, getDropState} =
     useReorderableItems({
-      getItemIds: () => routeIds.value,
-      enabled: () => canReorder.value,
+      getItemIds: () => props.routes.map((route) => route.uid),
+      enabled: () => !props.readOnly && props.routes.length > 1,
       onReorder: handleReorder,
     });
 
@@ -92,60 +52,20 @@
     return Array.isArray(part);
   }
 
-  function copyUriParts(parts: Array<MixedInputPart>): Array<MixedInputPart> {
-    return parts.map((part) => (isToken(part) ? [part[0], part[1]] : part));
-  }
-
-  function openCreateModal() {
-    editingRoute.value = null;
-    form.clearErrors();
-    form.uriParts = [''];
-    form.template = '';
-    form.siteUid = null;
-    modalActive.value = true;
-  }
-
-  function openEditModal(route: RouteData) {
-    editingRoute.value = route;
-    form.clearErrors();
-    form.uriParts = copyUriParts(route.uriParts.length ? route.uriParts : ['']);
-    form.template = route.template;
-    form.siteUid = route.siteUid;
+  function openModal(route?: RouteData) {
+    editingRoute.value = route ?? null;
     modalActive.value = true;
   }
 
   function closeModal() {
     modalActive.value = false;
     editingRoute.value = null;
-    form.clearErrors();
   }
 
   function routeDropEdge(routeUid: string): Edge | null {
     const state = getDropState(routeUid);
 
     return state.type === 'is-over' ? state.closestEdge : null;
-  }
-
-  function addUriToken(token: MixedInputToken) {
-    mixedInput.value?.addToken(token);
-  }
-
-  function handleUriTokenClick(event: MouseEvent, token: MixedInputToken) {
-    if (event.detail === 0) {
-      addUriToken(token);
-    }
-  }
-
-  function normalizedUriParts(): Array<MixedInputPart> {
-    const parts = copyUriParts(form.uriParts);
-
-    if (typeof parts[0] === 'string') {
-      parts[0] = parts[0].replace(/^\/+/, '');
-    }
-
-    return parts.filter((part) =>
-      typeof part === 'string' ? part !== '' : true
-    );
   }
 
   function reorderedRoutes(
@@ -176,43 +96,6 @@
     return newRoutes;
   }
 
-  function saveRoute() {
-    const uriParts = normalizedUriParts();
-
-    form.clearErrors();
-
-    form
-      .transform((data) => ({
-        ...data,
-        uriParts,
-        siteUid: data.siteUid || null,
-      }))
-      .submit(editingRoute.value ? update(editingRoute.value.uid) : store(), {
-        preserveScroll: true,
-        onSuccess: () => {
-          closeModal();
-          flash('success', t('Route saved.'));
-        },
-        onError: () => {
-          flash('error', t('Couldn’t save route.'));
-        },
-      });
-  }
-
-  function deleteRoute(route: RouteData) {
-    if (!confirm(t('Are you sure you want to delete this route?'))) {
-      return;
-    }
-
-    form.delete(destroy(route.uid).url, {
-      preserveScroll: true,
-      onSuccess: () => {
-        closeModal();
-        flash('success', t('Route deleted.'));
-      },
-    });
-  }
-
   function handleReorder(startIndex: number, finishIndex: number) {
     const newRoutes = reorderedRoutes(props.routes, startIndex, finishIndex);
 
@@ -238,12 +121,6 @@
         {
           preserveScroll: true,
           preserveState: true,
-          onSuccess: () => {
-            flash('success', t('New route order saved.'));
-          },
-          onError: () => {
-            flash('error', t('Couldn’t save new route order.'));
-          },
         }
       );
   }
@@ -258,7 +135,7 @@
         v-if="!readOnly"
         type="button"
         variant="primary"
-        @click="openCreateModal"
+        @click="openModal"
       >
         <craft-icon name="plus" slot="prefix"></craft-icon>
         {{ t('New route') }}
@@ -280,7 +157,7 @@
           'route--dragging':
             !readOnly && getDragState(route.uid).type === 'is-dragging',
         }"
-        @click="!readOnly && openEditModal(route)"
+        @click="!readOnly && openModal(route)"
       >
         <div class="route__uri">
           <span v-if="isMultiSite" class="route__site">
@@ -306,11 +183,9 @@
 
         <div class="route__actions" v-if="!readOnly" @click.stop>
           <craft-button
-            type="button"
-            icon
             size="small"
             appearance="plain"
-            @click="openEditModal(route)"
+            @click="openModal(route)"
           >
             <craft-icon name="pencil" :label="t('Edit')"></craft-icon>
           </craft-button>
@@ -318,8 +193,6 @@
           <craft-action-menu>
             <craft-button
               slot="invoker"
-              type="button"
-              icon
               size="small"
               appearance="plain"
             >
@@ -349,8 +222,6 @@
             class="route__reorder"
           >
             <craft-button
-              type="button"
-              icon
               size="small"
               appearance="plain"
               @click.prevent
@@ -367,128 +238,20 @@
       </article>
     </div>
 
-    <ModalForm
+    <RouteEditModal
       :is-active="modalActive"
-      :title="editingRoute ? t('Edit Route') : t('Create a new route')"
-      :loading="form.processing"
-      :submit-label="t('Save')"
-      width="md"
+      :route="editingRoute"
+      :tokens="tokens"
+      :sites="sites"
+      :is-multi-site="isMultiSite"
       @close="closeModal"
-      @submit="saveRoute"
-    >
-      <template #header>
-        <div class="route-modal-header">
-          <h1>
-            {{ editingRoute ? t('Edit Route') : t('Create a new route') }}
-          </h1>
-        </div>
-      </template>
-
-      <div class="route-modal">
-        <div class="route-uri-field">
-          <div class="route-uri-field__label">
-            {{ t('If the URI looks like this') }}:
-          </div>
-
-          <div class="route-uri-field__controls">
-            <MixedInput
-              ref="mixedInput"
-              v-model="form.uriParts"
-              class="route-uri-input"
-              :invalid="!!form.errors.uriParts"
-              :disabled="form.processing"
-              :aria-label="t('URI')"
-            >
-              <template v-if="form.errors.uriParts" #error>
-                <ul class="error-list">
-                  <li>{{ form.errors.uriParts }}</li>
-                </ul>
-              </template>
-            </MixedInput>
-
-            <CraftSelect
-              v-if="isMultiSite"
-              class="route-site-select"
-              id="route-site"
-              name="siteUid"
-              v-model="formSiteUid"
-              :disabled="form.processing"
-            >
-              <select
-                slot="input"
-                v-model="formSiteUid"
-                :aria-label="t('Site')"
-              >
-                <option value="">{{ t('Global') }}</option>
-                <option v-for="site in sites" :key="site.uid" :value="site.uid">
-                  {{ site.name }}
-                </option>
-              </select>
-            </CraftSelect>
-          </div>
-
-          <div class="route-token-picker">
-            <h3>{{ t('Add a token') }}</h3>
-            <button
-              v-for="token in tokenOptions"
-              :key="token.name"
-              type="button"
-              class="route-token route-token--button"
-              :disabled="form.processing"
-              @mousedown.prevent="addUriToken(token)"
-              @click="handleUriTokenClick($event, token)"
-            >
-              {{ token.name }}
-            </button>
-          </div>
-        </div>
-
-        <CraftInput
-          :label="t('Load this template')"
-          id="route-template"
-          name="template"
-          v-model="form.template"
-          dir="ltr"
-          :disabled="form.processing"
-          :error="form.errors.template"
-          required
-        />
-      </div>
-
-      <template #footer>
-        <div class="route-modal-footer">
-          <craft-button
-            v-if="editingRoute"
-            type="button"
-            appearance="plain"
-            class="route-delete-button"
-            :disabled="form.processing"
-            @click="deleteRoute(editingRoute)"
-          >
-            {{ t('Delete') }}
-          </craft-button>
-
-          <div class="route-modal-footer__actions">
-            <craft-button type="reset" appearance="plain" @click="closeModal">
-              {{ t('Cancel') }}
-            </craft-button>
-            <craft-button
-              type="submit"
-              variant="primary"
-              :loading="form.processing"
-            >
-              {{ t('Save') }}
-            </craft-button>
-          </div>
-        </div>
-      </template>
-    </ModalForm>
+    />
   </AppLayout>
 </template>
 
 <style scoped lang="scss">
   .empty-routes {
-    color: var(--fg-subtle);
+    color: var(--c-text-quiet);
   }
 
   .routes-list {
@@ -498,9 +261,10 @@
 
   .route {
     align-items: stretch;
-    background: var(--gray-050);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--pane-shadow);
+    background: var(--c-color-neutral-fill-quiet);
+    border: 1px solid var(--c-color-neutral-border-quiet);
+    border-radius: var(--c-radius-lg);
+    box-shadow: var(--c-shadow-raised);
     cursor: pointer;
     display: flex;
     min-height: 2.5rem;
@@ -518,9 +282,9 @@
 
   .route__uri {
     align-items: center;
-    background: var(--white);
-    border-radius: var(--radius-lg) 0 0 var(--radius-lg);
-    color: var(--link-color);
+    background: var(--c-surface-default);
+    border-radius: var(--c-radius-lg) 0 0 var(--c-radius-lg);
+    color: var(--c-text-link);
     display: flex;
     gap: var(--c-spacing-sm);
     min-width: min(26rem, 55%);
@@ -529,12 +293,12 @@
   }
 
   .route__site {
-    background: var(--gray-050);
-    border-radius: var(--radius-sm);
-    box-shadow: inset 0 0 0 1px var(--border-hairline);
-    color: var(--fg-subtle);
+    background: var(--c-color-neutral-fill-quiet);
+    border-radius: var(--c-radius-sm);
+    box-shadow: inset 0 0 0 1px var(--c-color-neutral-border-quiet);
+    color: var(--c-text-quiet);
     display: inline-flex;
-    font-size: var(--font-size-sm);
+    font-size: var(--c-text-sm);
     line-height: 1.2;
     padding: 0.125rem 0.35rem;
     white-space: nowrap;
@@ -551,7 +315,7 @@
 
   .route__template {
     align-items: center;
-    color: var(--fg-subtle);
+    color: var(--c-text-quiet);
     display: flex;
     gap: var(--c-spacing-xs);
     min-width: 0;
@@ -580,131 +344,16 @@
 
   .route-token {
     align-items: center;
-    background: var(--gray-100);
+    background: var(--c-color-neutral-fill-normal);
     border: 0;
-    border-radius: var(--radius-sm);
-    color: var(--fg);
+    border-radius: var(--c-radius-sm);
+    color: var(--c-color-neutral-on-normal);
     display: inline-flex;
-    font-family: var(--font-mono);
-    font-size: var(--font-size-sm);
+    font-family: var(--c-font-mono);
+    font-size: var(--c-text-sm);
     gap: 0.25rem;
     line-height: 1.3;
     padding: 0.125rem 0.4rem;
-  }
-
-  .route-token--button {
-    appearance: none;
-    cursor: pointer;
-  }
-
-  .route-token--button:focus {
-    box-shadow: 0 0 0 1px var(--white);
-    outline: 2px solid var(--link-color);
-    outline-offset: 1px;
-  }
-
-  .route-modal-header {
-    background: var(--gray-100);
-    border-bottom: 1px solid var(--border-hairline);
-    padding: 24px;
-  }
-
-  .route-modal-header h1 {
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 1.25;
-    margin: 0;
-  }
-
-  :deep(.cp-pane:has(.route-modal) .cp-pane__body) {
-    padding: 0;
-  }
-
-  :deep(.content.w-md:has(.route-modal)) {
-    width: 500px;
-  }
-
-  .route-modal {
-    display: grid;
-    gap: 22px;
-    padding: 22px 24px 24px;
-    width: 100%;
-  }
-
-  .route-uri-field {
-    display: grid;
-    gap: 10px;
-  }
-
-  .route-uri-field__label {
-    font-weight: 600;
-  }
-
-  .route-uri-field__controls {
-    align-items: flex-start;
-    display: flex;
-    gap: 8px;
-  }
-
-  .route-uri-input {
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-
-  .route-site-select {
-    flex: 0 0 134px;
-  }
-
-  .route-site-select :deep(select) {
-    min-height: 34px;
-    width: 100%;
-  }
-
-  .route-token-picker {
-    background: var(--white);
-    border-radius: var(--radius-lg);
-    box-shadow: inset 0 1px 3px -1px #bed2e9;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    justify-content: center;
-    padding: 13px 24px 14px;
-  }
-
-  .route-token-picker h3 {
-    flex-basis: 100%;
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-    margin: 0 0 3px;
-    text-align: center;
-  }
-
-  .route-token-picker .route-token {
-    font-family: inherit;
-    font-size: 12px;
-    line-height: 16px;
-    padding: 2px 7px;
-  }
-
-  .route-modal-footer {
-    align-items: center;
-    background: var(--gray-100);
-    border-top: 1px solid var(--border-hairline);
-    display: flex;
-    gap: var(--c-spacing-md);
-    justify-content: space-between;
-    min-height: 44px;
-    padding: 6px 24px;
-  }
-
-  .route-modal-footer__actions {
-    display: flex;
-    gap: 8px;
-    margin-left: auto;
-  }
-
-  .route-delete-button {
-    color: var(--fg);
   }
 
   @media (max-width: 720px) {
@@ -713,20 +362,12 @@
     }
 
     .route__uri {
-      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      border-radius: var(--c-radius-lg) var(--c-radius-lg) 0 0;
       min-width: 0;
     }
 
     .route__actions {
       justify-content: flex-end;
-    }
-
-    .route-site-select {
-      flex-basis: auto;
-    }
-
-    .route-uri-field__controls {
-      display: grid;
     }
   }
 </style>
