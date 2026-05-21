@@ -38,27 +38,7 @@ readonly class MenuHtml
             'omitIfEmpty' => true,
         ];
 
-        // Item normalization & cleanup
-        $items = Collection::make($this->normalizeMenuItems($items));
-
-        // Place all the destructive items at the end
-        $destructiveItems = $items->filter(fn (array $item) => $item['destructive'] ?? false);
-        $items = $items->reject(fn (array $item): bool => (bool) ($item['destructive'] ?? false))
-            ->push(['type' => MenuItemType::HR->value])
-            ->push(...$destructiveItems->all());
-
-        // Remove leading/trailing/repetitive HRs
-        while (($items->first()['type'] ?? null) === MenuItemType::HR->value) {
-            $items->shift();
-        }
-        while (($items->last()['type'] ?? null) === MenuItemType::HR->value) {
-            $items->pop();
-        }
-        $items = $items->values();
-        $items = $items->filter(fn (array $item, int $i) => (
-            ($item['type'] ?? null) !== MenuItemType::HR->value ||
-            ($items->get($i + 1)['type'] ?? null) !== MenuItemType::HR->value
-        ));
+        $items = Collection::make($this->disclosureMenuItems($items));
 
         // If we're left without any items, just return an empty string
         if ($config['omitIfEmpty'] && $items->isEmpty()) {
@@ -81,6 +61,32 @@ readonly class MenuHtml
         }
 
         return template('_includes/disclosuremenu', $config, templateMode: TemplateMode::Cp);
+    }
+
+    public function disclosureMenuItems(array $items): array
+    {
+        $items = Collection::make($this->normalizeMenuItems($items));
+
+        // Place all the destructive items at the end
+        $destructiveItems = $items->filter(fn (array $item) => $item['destructive'] ?? false);
+        $items = $items->reject(fn (array $item): bool => (bool) ($item['destructive'] ?? false))
+            ->push(['type' => MenuItemType::HR->value])
+            ->push(...$destructiveItems->all());
+
+        // Remove leading/trailing/repetitive HRs
+        while (($items->first()['type'] ?? null) === MenuItemType::HR->value) {
+            $items->shift();
+        }
+        while (($items->last()['type'] ?? null) === MenuItemType::HR->value) {
+            $items->pop();
+        }
+        $items = $items->values();
+        $items = $items->filter(fn (array $item, int $i) => (
+            ($item['type'] ?? null) !== MenuItemType::HR->value ||
+            ($items->get($i + 1)['type'] ?? null) !== MenuItemType::HR->value
+        ));
+
+        return $items->values()->all();
     }
 
     public function menuItem(array $config, string $menuId): string

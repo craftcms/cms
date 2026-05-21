@@ -10,6 +10,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Route\Routes;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Http\Request;
@@ -34,40 +35,42 @@ readonly class RoutesController
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Routes')],
             ])
-            ->inertiaPage('settings/routes/RoutesPage', [
-                'tokens' => $this->routes->tokens,
-                'routes' => $this->routeProps(),
-                'sites' => $this->siteProps(),
-                'isMultiSite' => $this->sites->isMultiSite(),
-                'readOnly' => ! Cms::config()->allowAdminChanges,
+            ->inertiaPage('settings/routes/RoutesIndexPage', [
+                'routes' => $this->routes->getProjectConfigRoutes()->values(),
             ]);
+    }
+
+    public function create(): CpScreenResponse
+    {
+        return $this->editResponse(new Route(uriParts: [''], template: ''), isNew: true);
+    }
+
+    public function edit(string $uid): CpScreenResponse
+    {
+        $route = $this->routes->getProjectConfigRoutes()->firstWhere('uid', $uid);
+
+        abort_if(is_null($route), 404, 'Route not found');
+
+        return $this->editResponse($route, isNew: false);
     }
 
     public function store(RouteRequest $request): Response
     {
-        $route = $request->toRoute();
-        $routeUid = $this->routes->saveRoute($route);
+        $this->routes->saveRoute($request->toRoute());
 
-        return $this->asSuccess(t('Route saved.'), [
-            'routeUid' => $routeUid,
-            'siteUid' => $route->siteUid,
-        ]);
+        return $this->asSuccess(t('Route saved.'));
     }
 
-    public function update(RouteRequest $request, string $routeUid): Response
+    public function update(RouteRequest $request, string $uid): Response
     {
-        $route = $request->toRoute($routeUid);
-        $routeUid = $this->routes->saveRoute($route);
+        $this->routes->saveRoute($request->toRoute($uid));
 
-        return $this->asSuccess(t('Route saved.'), [
-            'routeUid' => $routeUid,
-            'siteUid' => $route->siteUid,
-        ]);
+        return $this->asSuccess(t('Route saved.'));
     }
 
-    public function destroy(string $routeUid): Response
+    public function destroy(string $uid): Response
     {
-        $this->routes->deleteRouteByUid($routeUid);
+        $this->routes->deleteRouteByUid($uid);
 
         return $this->asSuccess(t('Route deleted.'));
     }
@@ -84,20 +87,49 @@ readonly class RoutesController
         return $this->asSuccess(t('New route order saved.'));
     }
 
-    private function routeProps(): array
+    private function editResponse(Route $route, bool $isNew): CpScreenResponse
     {
-        $sitesByUid = $this->sites->getAllSites()->keyBy('uid');
+        $title = $isNew
+            ? t('Create a new route')
+            : t('Edit Route');
 
-        return $this->routes->getProjectConfigRoutes()
-            ->map(fn (Route $route): array => [
-                'uid' => $route->uid,
-                'siteUid' => $route->siteUid,
-                'siteName' => $route->siteUid
-                    ? t($sitesByUid->get($route->siteUid)?->getName() ?? $route->siteUid, category: 'site')
-                    : t('Global'),
-                'uriParts' => array_values($route->uriParts),
-                'template' => $route->template,
-                'sortOrder' => $route->sortOrder,
+        $response = new CpScreenResponse()
+            ->title($title)
+            ->crumbs([
+                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
+                ['label' => t('Routes'), 'url' => Url::cpUrl('settings/routes')],
+                ['label' => $title],
+            ])
+            ->redirectUrl('settings/routes');
+
+        if (! $isNew && Cms::config()->allowAdminChanges) {
+            $response->actionMenuItems(fn () => [[
+                'label' => t('Delete'),
+                'icon' => 'trash',
+                'destructive' => true,
+                'attributes' => [
+                    'type' => 'button',
+                    'data' => [
+                        'route-delete-action' => true,
+                        'route-delete-url' => Url::cpUrl("settings/routes/{$route->uid}"),
+                    ],
+                ],
+            ]]);
+        }
+
+        return $response->inertiaPage('settings/routes/EditRoutePage', [
+            'route' => $route,
+            'tokens' => $this->tokenProps(),
+            'sites' => $this->siteProps(),
+        ]);
+    }
+
+    private function tokenProps(): array
+    {
+        return collect($this->routes->tokens)
+            ->map(fn (string $value, string $name): array => [
+                'name' => $name,
+                'value' => $value,
             ])
             ->values()
             ->all();
@@ -105,11 +137,14 @@ readonly class RoutesController
 
     private function siteProps(): array
     {
-        return $this->sites->getAllSites()
-            ->map(fn ($site): array => [
-                'uid' => $site->uid,
-                'name' => t($site->getName(), category: 'site'),
-            ])
+        return collect([[
+            'value' => '',
+            'label' => t('Global'),
+        ]])
+            ->merge($this->sites->getAllSites()->map(fn (Site $site): array => [
+                'value' => $site->uid,
+                'label' => t($site->getName(), category: 'site'),
+            ]))
             ->values()
             ->all();
     }

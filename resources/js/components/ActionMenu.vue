@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import type {VariantKey} from '@craftcms/cp/types/index.ts';
+  import type {ActionFeedback, BaseAction} from '@craftcms/cp/actions.mjs';
   import {type Component, computed, type VNode} from 'vue';
 
   interface ActionItemHr {
@@ -15,16 +16,21 @@
   interface ActionItemButton {
     type?: 'button';
     label: string;
-    variant?: VariantKey;
+    variant?: VariantKey | string;
     icon?: string;
-    onClick?: () => void;
+    action?: BaseAction;
+    disabled?: boolean;
+    feedback?: ActionFeedback;
+    onClick?: (event?: Event) => void;
   }
 
   interface ActionItemLink {
     type?: 'link';
     href: string;
     label: string;
-    variant?: VariantKey;
+    variant?: VariantKey | string;
+    icon?: string;
+    disabled?: boolean;
   }
 
   export type ActionItem =
@@ -39,7 +45,7 @@
     defineProps<{
       icon?: string;
       label?: string;
-      actions: Array<ActionItem & {onClick?: (event: Event) => void}>;
+      actions: Array<any>;
     }>(),
     {
       icon: 'ellipsis',
@@ -50,15 +56,22 @@
   const normalizedActions = computed((): ActionItems => {
     return props.actions.map((action): ActionItem => {
       if (action.type === 'hr' || action.type === 'display') {
-        return action;
+        return action as ActionItem;
+      }
+
+      if ('href' in action) {
+        return {
+          ...action,
+          label: action.label ?? '',
+          type: action.type ?? 'link',
+        } as ActionItem;
       }
 
       return {
         ...action,
-        type:
-          action.type ??
-          (('href' in action ? 'link' : 'button') as 'link' | 'button'),
-      };
+        label: action.label ?? '',
+        type: action.type ?? 'button',
+      } as ActionItem;
     });
   });
 
@@ -69,6 +82,24 @@
       return aDanger - bDanger;
     });
   });
+
+  function actionProps(action: ActionItem): Record<string, unknown> {
+    if (action.type === 'hr' || action.type === 'display') {
+      return {};
+    }
+
+    const attrs = {...action};
+
+    delete (attrs as {onClick?: unknown}).onClick;
+
+    return attrs;
+  }
+
+  function runAction(action: ActionItem, event: Event) {
+    if ('onClick' in action) {
+      action.onClick?.(event);
+    }
+  }
 </script>
 
 <template>
@@ -92,14 +123,18 @@
         <component v-else-if="action.type === 'display'" :is="action.is" />
         <craft-action-item
           v-else-if="action.type === 'link'"
-          v-bind="action"
+          v-bind="actionProps(action)"
           :href="action.href"
         >
           {{ action.label }}
         </craft-action-item>
-        <craft-action-item v-else @click="action.onClick?.()" v-bind="action">{{
-          action.label
-        }}</craft-action-item>
+        <craft-action-item
+          v-else
+          @click="runAction(action, $event)"
+          v-bind="actionProps(action)"
+        >
+          {{ action.label }}
+        </craft-action-item>
       </template>
     </div>
   </craft-action-menu>

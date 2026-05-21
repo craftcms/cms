@@ -237,19 +237,17 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         })->where('filename', '.*');
 
         // Routes
-        Route::get('settings/routes', [RoutesController::class, 'index'])
-            ->name('settings.routes.index');
-        Route::middleware(RequireAdminChanges::class)->group(function () {
-            Route::post('settings/routes', [RoutesController::class, 'store'])
-                ->name('settings.routes.store');
-            Route::patch('settings/routes/{routeUid}', [RoutesController::class, 'update'])
-                ->whereUuid('routeUid')
-                ->name('settings.routes.update');
-            Route::delete('settings/routes/{routeUid}', [RoutesController::class, 'destroy'])
-                ->whereUuid('routeUid')
-                ->name('settings.routes.destroy');
-            Route::post('settings/routes/reorder', [RoutesController::class, 'reorder'])
-                ->name('settings.routes.reorder');
+        Route::prefix('settings/routes')->name('settings.routes.')->group(function () {
+            Route::get('/', [RoutesController::class, 'index'])->name('index');
+            Route::get('{uid}', [RoutesController::class, 'edit'])->name('edit');
+
+            Route::middleware(RequireAdminChanges::class)->group(function () {
+                Route::get('new', [RoutesController::class, 'create'])->name('create');
+                Route::post('/', [RoutesController::class, 'store'])->name('store');
+                Route::patch('{uid}', [RoutesController::class, 'update'])->name('update');
+                Route::delete('{uid}', [RoutesController::class, 'destroy'])->name('destroy');
+                Route::post('reorder', [RoutesController::class, 'reorder'])->name('reorder');
+            });
         });
 
         // Sections

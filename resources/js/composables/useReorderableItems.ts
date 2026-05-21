@@ -1,4 +1,5 @@
 import {
+  type ComponentPublicInstance,
   nextTick,
   onMounted,
   onUnmounted,
@@ -15,6 +16,8 @@ import {
 
 export type {DragState, DropState};
 
+type ReorderableElement = Element | ComponentPublicInstance | null;
+
 export interface UseReorderableItemsOptions {
   getItemIds: () => Array<string | number>;
   onReorder: (startIndex: number, finishIndex: number) => void;
@@ -23,8 +26,8 @@ export interface UseReorderableItemsOptions {
 }
 
 export interface UseReorderableItemsReturn {
-  setItemRef: (el: HTMLElement | null, itemId: string | number) => void;
-  setHandleRef: (el: HTMLElement | null, itemId: string | number) => void;
+  setItemRef: (el: ReorderableElement, itemId: string | number) => void;
+  setHandleRef: (el: ReorderableElement, itemId: string | number) => void;
   getDragState: (id: string | number) => DragState;
   getDropState: (id: string | number) => DropState;
   refreshRegistrations: () => void;
@@ -47,6 +50,18 @@ export function useReorderableItems(
       axis: options.axis ?? 'vertical',
     });
 
+  function resolveElement(el: ReorderableElement): HTMLElement | null {
+    if (el instanceof HTMLElement) {
+      return el;
+    }
+
+    if (el && !(el instanceof Element) && el.$el instanceof HTMLElement) {
+      return el.$el;
+    }
+
+    return null;
+  }
+
   function scheduleRefreshRegistrations() {
     if (!mounted || unmounted || refreshScheduled) {
       return;
@@ -63,15 +78,16 @@ export function useReorderableItems(
     });
   }
 
-  function setItemRef(el: HTMLElement | null, itemId: string | number) {
+  function setItemRef(el: ReorderableElement, itemId: string | number) {
+    const element = resolveElement(el);
     const current = itemRefs.value.get(itemId);
 
-    if (el) {
-      if (current === el) {
+    if (element) {
+      if (current === element) {
         return;
       }
 
-      itemRefs.value.set(itemId, el);
+      itemRefs.value.set(itemId, element);
     } else if (current) {
       itemRefs.value.delete(itemId);
     } else {
@@ -82,15 +98,16 @@ export function useReorderableItems(
     scheduleRefreshRegistrations();
   }
 
-  function setHandleRef(el: HTMLElement | null, itemId: string | number) {
+  function setHandleRef(el: ReorderableElement, itemId: string | number) {
+    const element = resolveElement(el);
     const current = handleRefs.value.get(itemId);
 
-    if (el) {
-      if (current === el) {
+    if (element) {
+      if (current === element) {
         return;
       }
 
-      handleRefs.value.set(itemId, el);
+      handleRefs.value.set(itemId, element);
     } else if (current) {
       handleRefs.value.delete(itemId);
     } else {

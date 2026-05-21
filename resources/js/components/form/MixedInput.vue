@@ -405,7 +405,10 @@
           v-else
           :value="part"
           type="text"
-          class="mixed-input__text"
+          :class="{
+            'mixed-input__text': true,
+            'mixed-input__text--last': index === model.length - 1,
+          }"
           dir="ltr"
           :data-mixed-input-index="index"
           :style="{width: textPartWidth(index)}"
@@ -473,6 +476,10 @@
 
   .mixed-input__text:focus {
     outline: none;
+  }
+
+  .mixed-input__text--last {
+    flex-grow: 1;
   }
 
   .mixed-input__text-measure {
