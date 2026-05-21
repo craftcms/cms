@@ -1,13 +1,9 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
   import {nextTick, onMounted, shallowRef, useTemplateRef, watch} from 'vue';
+  import type {BaseOption} from '@/types';
 
   export type MixedInputPart = string | [string, string];
-
-  export interface MixedInputToken {
-    name: string;
-    value: string;
-  }
 
   const textPartPadding = 20;
 
@@ -223,7 +219,7 @@
     updateTextPart(index, inputFromEvent(event).value);
   }
 
-  function addToken(token: MixedInputToken) {
+  function addToken(token: BaseOption) {
     const focused = focusedTextPart.value;
     const selected = selectedTokenIndex.value;
     selectedTokenIndex.value = null;
@@ -234,7 +230,7 @@
       const before = text.slice(0, focused.selectionStart);
       const after = text.slice(focused.selectionEnd);
 
-      parts.splice(focused.index, 1, before, [token.name, token.value], after);
+      parts.splice(focused.index, 1, before, [token.label, token.value], after);
       model.value = parts;
       focusedTextPart.value = {
         index: focused.index + 2,
@@ -248,7 +244,7 @@
 
     if (selected !== null) {
       const parts = [...model.value];
-      parts.splice(selected + 1, 0, '', [token.name, token.value]);
+      parts.splice(selected + 1, 0, '', [token.label, token.value]);
       model.value = parts;
       focusElement(selected + 2);
 
@@ -256,7 +252,7 @@
     }
 
     const parts = [...model.value];
-    parts.push([token.name, token.value], '');
+    parts.push([token.label, token.value], '');
     focusedTextPart.value = {
       index: parts.length - 1,
       selectionStart: 0,

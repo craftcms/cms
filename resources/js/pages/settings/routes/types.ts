@@ -14,11 +14,6 @@ export interface RouteIndexData extends Omit<RouteData, 'siteUid' | 'uid'> {
   siteName: string;
 }
 
-export interface RouteSiteOption {
-  value: string;
-  label: string;
-}
-
 export interface RouteFormData {
   uriParts: Array<MixedInputPart>;
   template: string;

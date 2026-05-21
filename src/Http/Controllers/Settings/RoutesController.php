@@ -72,7 +72,7 @@ readonly class RoutesController
     {
         $this->routes->deleteRouteByUid($uid);
 
-        return $this->asSuccess(t('Route deleted.'));
+        return $this->asSuccess(t('Route deleted.'), redirect: route('craft.cp.settings.routes.index'));
     }
 
     public function reorder(Request $request): Response
@@ -127,8 +127,8 @@ readonly class RoutesController
     private function tokenProps(): array
     {
         return collect($this->routes->tokens)
-            ->map(fn (string $value, string $name): array => [
-                'name' => $name,
+            ->map(fn (string $value, string $label): array => [
+                'label' => $label,
                 'value' => $value,
             ])
             ->values()

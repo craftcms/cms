@@ -6,33 +6,28 @@
   import {useSettingsSave} from '@/composables/useSettingsSave';
   import type {
     MixedInputPart,
-    MixedInputToken,
   } from '@/components/form/MixedInput.vue';
   import type {
     RouteActionMenuItem,
     RouteData,
     RouteFormData,
-    RouteSiteOption,
   } from './types';
   import {store, update} from '@actions/Settings/RoutesController';
-  import {router, useForm, usePage} from '@inertiajs/vue3';
+  import {router, useForm} from '@inertiajs/vue3';
   import {t} from '@craftcms/cp';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import {computed, shallowRef} from 'vue';
+  import type {BaseOption} from '@/types';
 
   const props = defineProps<{
     title: string;
     route: RouteData;
-    tokens: Array<MixedInputToken>;
-    sites: Array<RouteSiteOption>;
+    tokens: Array<BaseOption>;
+    sites: Array<BaseOption>;
     isMultiSite: boolean;
     readOnly?: boolean;
     actionMenuItems?: Array<RouteActionMenuItem> | null;
     errors: Record<string, string> | null;
-  }>();
-
-  const page = usePage<{
-    redirectUrl?: string;
   }>();
 
   const mixedInput = shallowRef<InstanceType<typeof MixedInput> | null>(null);
@@ -66,11 +61,11 @@
     return parts.map((part) => (isToken(part) ? [part[0], part[1]] : part));
   }
 
-  function addUriToken(token: MixedInputToken) {
+  function addUriToken(token: BaseOption) {
     mixedInput.value?.addToken(token);
   }
 
-  function handleUriTokenClick(event: MouseEvent, token: MixedInputToken) {
+  function handleUriTokenClick(event: MouseEvent, token: BaseOption) {
     if (event.detail === 0) {
       addUriToken(token);
     }
@@ -139,9 +134,6 @@
     }
 
     router.delete(url, {
-      data: {
-        redirect: page.props.redirectUrl,
-      },
       preserveScroll: true,
     });
   }
@@ -192,14 +184,14 @@
             <h3>{{ t('Add a token') }}</h3>
             <button
               v-for="token in tokens"
-              :key="token.name"
+              :key="token.label"
               type="button"
               class="route-token route-token--button"
               :disabled="form.processing || readOnly"
               @mousedown.prevent="addUriToken(token)"
               @click="handleUriTokenClick($event, token)"
             >
-              {{ token.name }}
+              {{ token.label }}
             </button>
           </div>
         </div>
