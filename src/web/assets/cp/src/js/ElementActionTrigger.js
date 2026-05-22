@@ -32,9 +32,32 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 
       this.setSettings(settings, Craft.ElementActionTrigger.defaults);
 
-      this.$trigger = $(
-        '#' + settings.type.replace(/[\[\]\\]+/g, '-') + '-actiontrigger'
-      );
+      const triggerId =
+        Craft.formatInputId(this.settings.type) + '-actiontrigger';
+      this.$trigger = $('#' + triggerId);
+
+      if (
+        !this.$trigger.length &&
+        Craft.elementIndex &&
+        Craft.elementIndex._$triggers
+      ) {
+        this.$trigger = Craft.elementIndex._$triggers.find('#' + triggerId);
+
+        if (!this.$trigger.length) {
+          Craft.elementIndex._$triggers.find('.menubtn').each((i, btn) => {
+            const menuBtn = $(btn).data('menubtn');
+
+            if (menuBtn?.menu?.$container) {
+              const $trigger = menuBtn.menu.$container.find('#' + triggerId);
+
+              if ($trigger.length) {
+                this.$trigger = $trigger;
+                return false;
+              }
+            }
+          });
+        }
+      }
 
       // Do we have a custom handler?
       if (this.settings.activate) {
