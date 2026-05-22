@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.10.3 - 2026-05-22
 
 - Reduced the number of database queries executed when eager-loading nested entries or addresses. ([#18929](https://github.com/craftcms/cms/issues/18929))
 - Reduced the number of database queries executed when loading image transforms. ([#18929](https://github.com/craftcms/cms/issues/18929))
