@@ -289,7 +289,7 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
 
     public function attributes(): array
     {
-        return parent::attributes();
+        return array_values(array_diff(parent::attributes(), ['ruleset']));
     }
 
     public function safeAttributes(): array
