@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Http\Routing\ActionRoute;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Crypt;
@@ -200,6 +201,15 @@ describe('duplicateWithUri', function () {
 
         expect($duplicate->hasSession())->toBeTrue()
             ->and($duplicate->session())->toBe($request->session());
+    });
+
+    it('does not preserve resolved action routes on the duplicated request', function () {
+        $request = Request::create('/actions/users/login');
+        $request->attributes->set(ActionRoute::class, ActionRoute::fromSegments(['users', 'login'], false));
+
+        $duplicate = $request->duplicateWithUri('/entries');
+
+        expect($duplicate->attributes->has(ActionRoute::class))->toBeFalse();
     });
 });
 

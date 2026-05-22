@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Mixins;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\Http\Routing\ActionRouteResolver;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
@@ -281,6 +282,8 @@ class RequestMixin
             if ($request->hasSession()) {
                 $duplicatedRequest->setLaravelSession($request->session());
             }
+
+            $duplicatedRequest->attributes->remove(ActionRoute::class);
 
             return $duplicatedRequest;
         };
