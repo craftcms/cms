@@ -17,6 +17,18 @@ use Override;
 abstract class Ruleset extends \CraftCms\RulesetValidation\Ruleset
 {
     #[Override]
+    protected function runValidation(bool $throw = true): bool
+    {
+        $subject = $this->resolveSubject();
+
+        if ($subject instanceof Validatable) {
+            $subject->prepareForValidation();
+        }
+
+        return parent::runValidation($throw);
+    }
+
+    #[Override]
     protected function validationRules(): array
     {
         $rules = parent::validationRules();
