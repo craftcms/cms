@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Validation\Concerns;
 
+use CraftCms\Cms\Component\Exceptions\InvalidCallException;
+use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Validation\ComponentRules;
 use CraftCms\Cms\Validation\Contracts\Validatable;
@@ -126,6 +129,19 @@ trait Validates
         $labels = $this->attributeLabels();
 
         return $labels[$attribute] ?? $this->generateAttributeLabel($attribute);
+    }
+
+    public function setAttributes($values): void
+    {
+        Typecast::properties(static::class, $values);
+
+        foreach ($values as $name => $value) {
+            try {
+                $this->$name = $value;
+            } catch (UnknownPropertyException|InvalidCallException) {
+                // Property or setter doesn't exist
+            }
+        }
     }
 
     /**

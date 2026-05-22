@@ -109,19 +109,6 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
         return $fields;
     }
 
-    public function setAttributes($values): void
-    {
-        Typecast::properties(static::class, $values);
-
-        foreach ($values as $name => $value) {
-            try {
-                $this->$name = $value;
-            } catch (UnknownPropertyException|InvalidCallException) {
-                // Property or setter doesn't exist
-            }
-        }
-    }
-
     public function __get(string $name)
     {
         $getter = $this->resolveMagicMethod('get', $name);
