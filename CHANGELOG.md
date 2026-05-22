@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where some element index actions weren’t working. ([#18938](https://github.com/craftcms/cms/issues/18938))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 
 ## 4.18.0.1 - 2026-05-15
