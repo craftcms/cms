@@ -9,6 +9,7 @@
 - Fixed a bug where overriding the runtime path via `config/app.php` wasn’t possible. ([#18936](https://github.com/craftcms/cms/issues/18936))
 - Fixed a bug where pasted nested entries within Matrix fields in Blocks view weren’t always getting fully initialized. ([#18912](https://github.com/craftcms/cms/issues/18912))
 - Fixed a bug where collapsed Matrix blocks were getting “Entry [ID]” preview values if their entry type didn’t have a UI Label. ([#18484](https://github.com/craftcms/cms/discussions/18484))
+- Fixed a bug where nested elements could be deleted when reverting content from a revision. ([#18950](https://github.com/craftcms/cms/issues/18950))
 
 ## 5.10.2 - 2026-05-20
 

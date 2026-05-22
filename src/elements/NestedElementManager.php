@@ -1102,8 +1102,13 @@ JS, [
                 if (
                     $target->updatingFromDerivative &&
                     $element->getIsDerivative() &&
-                    $element->getPrimaryOwnerId() === $source->id &&
-                    $canonical->getPrimaryOwnerId() === $target->id
+                    (
+                        ElementHelper::isRevision($source) ||
+                        (
+                            $element->getPrimaryOwnerId() === $source->id &&
+                            $canonical->getPrimaryOwnerId() === $target->id
+                        )
+                    )
                 ) {
                     if (
                         ElementHelper::isRevision($source) ||
