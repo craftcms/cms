@@ -1,0 +1,47 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Http\Routing;
+
+use CraftCms\Cms\Cms;
+use Illuminate\Http\Request;
+
+readonly class ActionRoute
+{
+    public function __construct(
+        public array $segments,
+        public string $uri,
+        public bool $isCp,
+    ) {}
+
+    public static function fromSegments(array $segments, bool $isCp): ?self
+    {
+        $segments = array_values($segments);
+
+        if ($segments === []) {
+            return null;
+        }
+
+        return new self(
+            segments: $segments,
+            uri: self::uriForSegments($segments, $isCp),
+            isCp: $isCp,
+        );
+    }
+
+    public static function uriForSegments(array $segments, bool $isCp): string
+    {
+        return implode('/', array_filter([
+            '',
+            $isCp ? Cms::config()->cpTrigger : null,
+            Cms::config()->actionTrigger,
+            ...$segments,
+        ], fn ($value) => $value !== null));
+    }
+
+    public function matches(Request $request): bool
+    {
+        return '/'.ltrim($request->path(), '/') === $this->uri;
+    }
+}
