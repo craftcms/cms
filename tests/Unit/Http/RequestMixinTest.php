@@ -145,9 +145,9 @@ describe('actionSegmentsToRoute', function () {
             ->toBe('/admin/actions/users/login');
     });
 
-    it('builds a route from explicit action segments', function () {
-        expect(Request::create('/news')->actionSegmentsToRoute(['users', 'login']))
-            ->toBe('/actions/users/login');
+    it('returns an empty string when the current request is not an action request', function () {
+        expect(Request::create('/news')->actionSegmentsToRoute())
+            ->toBe('');
     });
 });
 
