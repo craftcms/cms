@@ -1,5 +1,7 @@
 # Release Notes for Craft CMS 4
 
+- Fixed a bug where some element index actions weren’t working. ([#18938](https://github.com/craftcms/cms/issues/18938))
+
 ## 4.18.0.1 - 2026-05-15
 
 - Fixed a bug where the `|default` filter only accepted string values. ([#18886](https://github.com/craftcms/cms/issues/18886))
