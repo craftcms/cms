@@ -8,6 +8,7 @@ use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Data\UserGroup;
@@ -51,7 +52,7 @@ trait QueriesAuthors
     {
         $this->beforeQuery(function (EntryQuery $query) {
             if ($this->authorGroupId === []) {
-                return;
+                throw new QueryAbortedException;
             }
 
             if (Edition::get() === Edition::Solo) {

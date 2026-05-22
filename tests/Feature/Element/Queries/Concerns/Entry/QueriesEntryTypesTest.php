@@ -20,4 +20,5 @@ it('can query entries by entry types', function () {
 
     expect(entryQuery()->type('not '.$entry1->entryType->handle)->count())->toBe(1);
     expect(entryQuery()->type('not '.$entry2->entryType->handle)->count())->toBe(1);
+    expect(entryQuery()->type('notavalidhandle')->count())->toBe(0);
 });

@@ -20,4 +20,5 @@ it('can query entries by section', function () {
 
     expect(entryQuery()->section('not '.$entry1->section->handle)->count())->toBe(1);
     expect(entryQuery()->section('not '.$entry2->section->handle)->count())->toBe(1);
+    expect(entryQuery()->section('notavalidhandle')->count())->toBe(0);
 });
