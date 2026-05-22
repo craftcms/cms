@@ -14,7 +14,7 @@ class SettingsIndexController
 {
     public function __invoke(GeneralConfig $generalConfig, Settings $cpSettings)
     {
-        return Inertia::render('SettingsIndexPage', [
+        return Inertia::render('settings/Index', [
             'readOnly' => ! $generalConfig->allowAdminChanges,
             'crumbs' => [
                 ['label' => t('Settings')],

@@ -31,7 +31,7 @@ readonly class TokensController extends GqlController
 
     public function index()
     {
-        return Inertia::render('GraphQlTokensPage', [
+        return Inertia::render('graphql/Tokens', [
             'tokens' => GqlTokenResource::collection($this->gql->getTokens()),
         ]);
     }

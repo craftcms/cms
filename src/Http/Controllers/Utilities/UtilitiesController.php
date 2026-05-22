@@ -58,7 +58,7 @@ readonly class UtilitiesController
             abort(403, sprintf('User not permitted to access the “%s” utility.', $class::displayName()));
         }
 
-        return Inertia::render('UtilitiesShowPage', [
+        return Inertia::render('utilities/Show', [
             'crumbs' => [
                 ['label' => 'Utilities', 'url' => Url::cpUrl('utilities')],
                 ['label' => $class::displayName(), 'url' => null],
