@@ -243,7 +243,7 @@ class RequestMixin
              */
             $request = $this;
 
-            return app(ActionRouteResolver::class)->resolve($request)?->segments ?? [];
+            return app(ActionRouteResolver::class)->resolve($request)->segments ?? [];
         };
     }
 
@@ -257,7 +257,7 @@ class RequestMixin
              */
             $request = $this;
 
-            return app(ActionRouteResolver::class)->resolve($request)?->uri ?? '';
+            return app(ActionRouteResolver::class)->resolve($request)->uri ?? '';
         };
     }
 
