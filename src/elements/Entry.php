@@ -1468,7 +1468,11 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     {
         if ($this->fieldId) {
             $entryType = $this->getType();
-            if (!$entryType->hasTitleField && !$entryType->titleFormat && $entryType->uiLabelFormat === '{title}') {
+            if (
+                !$entryType->hasTitleField &&
+                !$entryType->titleFormat &&
+                (!$entryType->uiLabelFormat || $entryType->uiLabelFormat === '{title}')
+            ) {
                 return '';
             }
         }
@@ -1481,8 +1485,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected function uiLabel(): ?string
     {
-        if ($this->getType()->uiLabelFormat !== '{title}') {
-            $uiLabel = Craft::$app->getView()->renderObjectTemplate($this->getType()->uiLabelFormat, $this);
+        $entryType = $this->getType();
+
+        if ($entryType->uiLabelFormat && $entryType->uiLabelFormat !== '{title}') {
+            $uiLabel = Craft::$app->getView()->renderObjectTemplate($entryType->uiLabelFormat, $this);
             if ($uiLabel !== '') {
                 return $uiLabel;
             }

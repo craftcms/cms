@@ -1693,7 +1693,7 @@ SQL)->execute();
                 $entryTypeRecord->description = $data['description'] ?? null;
             }
             if ($db->columnExists(Table::ENTRYTYPES, 'uiLabelFormat')) {
-                $entryTypeRecord->uiLabelFormat = $data['uiLabelFormat'] ?? '{title}';
+                $entryTypeRecord->uiLabelFormat = ($data['uiLabelFormat'] ?? null) ?: '{title}';
             }
             if ($db->columnExists(Table::ENTRYTYPES, 'allowLineBreaksInTitles')) {
                 $entryTypeRecord->allowLineBreaksInTitles = $data['allowLineBreaksInTitles'] ?? false;
