@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added Laravel event dispatching to Craft’s `Yiisoft\Translator\Translator` instance, enabling `Yiisoft\Translator\Event\MissingTranslationEvent` listeners. ([#18952](https://github.com/craftcms/cms/pull/18952))
 - The default value for `GeneralConfig::$loginPath` is now `false`.
 - Fixed some errors that could occur when running Craft through Laravel Octane ([#18921](https://github.com/craftcms/cms/pull/18921))
 - Fixed an error that occurred when Updates were cached and deserialized.
