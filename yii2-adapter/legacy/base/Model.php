@@ -17,8 +17,8 @@ use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
-use CraftCms\Cms\Validation\ComponentRules;
 use CraftCms\Cms\Validation\Contracts\Validatable;
+use CraftCms\Cms\Validation\ValidatableRules;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use CraftCms\RulesetValidation\Concerns\HasRuleset;
 use Illuminate\Contracts\Support\Arrayable;
@@ -33,7 +33,7 @@ use Yiisoft\Arrays\ArrayableInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-#[Ruleset(ComponentRules::class)]
+#[Ruleset(ValidatableRules::class)]
 abstract class Model extends \yii\base\Model implements ModelInterface, Validatable, Arrayable, ArrayableInterface
 {
     use ClonefixTrait;

@@ -3,14 +3,14 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
-use CraftCms\Cms\Validation\ComponentRules;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\Cms\Validation\Rules\EnvValueRule;
+use CraftCms\Cms\Validation\ValidatableRules;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
-class EnvValueRuleTestRuleset extends ComponentRules
+class EnvValueRuleTestRuleset extends ValidatableRules
 {
     #[Override]
     public function rules(): array

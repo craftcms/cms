@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Validation\ComponentRules;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\Cms\Validation\Ruleset;
+use CraftCms\Cms\Validation\ValidatableRules;
 use Illuminate\Validation\Validator;
 
 function createValidatableComponent(array $attributes, ?string $rulesetClass = null): Validatable
@@ -54,7 +54,7 @@ function createValidatableComponent(array $attributes, ?string $rulesetClass = n
     };
 }
 
-class TestRuleset extends ComponentRules
+class TestRuleset extends ValidatableRules
 {
     public bool $prepareForValidationCalled = false;
 

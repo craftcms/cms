@@ -10,8 +10,8 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Utils;
-use CraftCms\Cms\Validation\ComponentRules;
 use CraftCms\Cms\Validation\Contracts\Validatable;
+use CraftCms\Cms\Validation\ValidatableRules;
 use CraftCms\RulesetValidation\Concerns\HasRuleset;
 use Illuminate\Support\MessageBag;
 use Illuminate\Validation\Validator;
@@ -92,7 +92,7 @@ trait Validates
             $attributeNames = [$attributeNames];
         }
 
-        $ruleset = $this->ruleset ?: app()->make(ComponentRules::class, ['subject' => $this]);
+        $ruleset = $this->ruleset ?: app()->make(ValidatableRules::class, ['subject' => $this]);
 
         if (! is_null($attributeNames)) {
             $ruleset->only($attributeNames);
