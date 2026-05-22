@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.18.1 - 2026-05-22
 
 - Fixed a bug where some element index actions weren’t working. ([#18938](https://github.com/craftcms/cms/issues/18938))
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
