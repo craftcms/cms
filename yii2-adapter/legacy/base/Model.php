@@ -487,6 +487,11 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
         return [];
     }
 
+    public function passedValidation(): void
+    {
+        // Not implemented
+    }
+
     public function validationData($names = null, $except = []): array
     {
         return Arr::except($this->toArray($names ?? []), $except);
