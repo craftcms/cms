@@ -6,12 +6,13 @@ namespace CraftCms\Cms\Element\Queries;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements;
+use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Field\Elements\ContentBlock;
 
 /**
  * @extends ElementQuery<ContentBlock>
  */
-class ContentBlockQuery extends ElementQuery
+class ContentBlockQuery extends ElementQuery implements NestedElementQueryInterface
 {
     use QueriesNestedElements;
 

@@ -13,6 +13,7 @@ use CraftCms\Cms\Element\Queries\Concerns\Entry\QueriesEntryTypes;
 use CraftCms\Cms\Element\Queries\Concerns\Entry\QueriesRef;
 use CraftCms\Cms\Element\Queries\Concerns\Entry\QueriesSections;
 use CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements;
+use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Enums\SectionType;
@@ -31,7 +32,7 @@ use Override;
  *
  * @extends ElementQuery<T>
  */
-class EntryQuery extends ElementQuery
+class EntryQuery extends ElementQuery implements NestedElementQueryInterface
 {
     use QueriesAuthors;
     use QueriesEntryDates;

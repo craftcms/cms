@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
+use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Collection;
 
@@ -204,6 +205,12 @@ trait QueriesEagerly
         };
 
         if (! $eagerLoaded) {
+            $criteria += $this->getCriteria() + ['with' => $this->with];
+
+            if ($this instanceof NestedElementQueryInterface) {
+                unset($criteria['ownerId'], $criteria['primaryOwnerId']);
+            }
+
             Elements::eagerLoadElements(
                 $this->eagerLoadSourceElement::class,
                 $this->eagerLoadSourceElement->elementQueryResult,
@@ -211,7 +218,7 @@ trait QueriesEagerly
                     new EagerLoadPlan(
                         handle: $this->eagerLoadHandle,
                         alias: $alias,
-                        criteria: $criteria + $this->getCriteria() + ['with' => $this->with],
+                        criteria: $criteria,
                         all: ! $count,
                         count: $count,
                         lazy: true,
