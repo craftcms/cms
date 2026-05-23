@@ -29,6 +29,7 @@ use Illuminate\Database\RecordsNotFoundException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\LazyCollection;
@@ -264,7 +265,9 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         if ($this->hasElementSourceTable) {
-            foreach (DB::getSchemaBuilder()->getColumnListing($this->table) as $column) {
+            $columnListing = Cache::store('array')->rememberForever("column-listing-{$this->table}", fn () => DB::getSchemaBuilder()->getColumnListing($this->table));
+
+            foreach ($columnListing as $column) {
                 if (! isset($this->columnMap[$column])) {
                     $this->columnMap[$column] = "$this->table.$column";
                 }
