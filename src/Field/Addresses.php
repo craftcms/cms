@@ -492,7 +492,9 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
         // Existing element?
         if ($owner && $owner->id) {
-            $query->owner($owner);
+            $query
+                ->owner($owner)
+                ->excludeEagerLoadCriteria(['ownerId', 'primaryOwnerId']);
 
             $query->beforeQuery(function (AddressQuery $query) use ($owner) {
                 // Clear out id=false if this query was populated previously

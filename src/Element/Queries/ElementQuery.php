@@ -29,7 +29,6 @@ use Illuminate\Database\RecordsNotFoundException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\LazyCollection;
@@ -218,6 +217,11 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     private ?array $beforeQueryCallbacksBeforePrepare = null;
 
     /**
+     * @var array<string,array<int,string>>
+     */
+    private static array $columnListings = [];
+
+    /**
      * The current element query instance being prepared, for reference by fields’ `queryCondition()` methods.
      */
     public static ?self $activeQuery = null;
@@ -265,7 +269,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         if ($this->hasElementSourceTable) {
-            $columnListing = Cache::store('array')->rememberForever("column-listing-{$this->table}", fn () => DB::getSchemaBuilder()->getColumnListing($this->table));
+            $columnListing = self::$columnListings[$this->table] ??= DB::getSchemaBuilder()->getColumnListing($this->table);
 
             foreach ($columnListing as $column) {
                 if (! isset($this->columnMap[$column])) {

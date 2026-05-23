@@ -644,7 +644,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         // Existing element?
         if ($owner && $owner->id) {
-            $query->owner($owner);
+            $query
+                ->owner($owner)
+                ->excludeEagerLoadCriteria(['ownerId', 'primaryOwnerId']);
 
             // Clear out id=false if this query was populated previously
             if ($query->id === false) {
