@@ -10,18 +10,15 @@ use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\Twig\TemplateRenderer;
 use Illuminate\Contracts\View\Engine;
 
-readonly class TwigEngine implements Engine
+class TwigEngine implements Engine
 {
-    public function __construct(
-        private TemplateRenderer $renderer,
-    ) {}
-
     public function get($path, array $data = []): string
     {
         $template = $this->stripBasePath($path, TemplateMode::get()->templatesPath());
+        $renderer = app(TemplateRenderer::class);
 
         try {
-            return $this->renderer->renderPageTemplate($template, $data);
+            return $renderer->renderPageTemplate($template, $data);
         } catch (TemplateLoaderException $e) {
             /**
              * If a custom error page is set up on the frontend, Laravel will
@@ -31,7 +28,7 @@ readonly class TwigEngine implements Engine
             if (TemplateMode::is(TemplateMode::Cp) && Str::contains($template, 'errors/')) {
                 $template = $this->stripBasePath($path, TemplateMode::Site->templatesPath());
 
-                return $this->renderer->renderPageTemplate($template, $data);
+                return $renderer->renderPageTemplate($template, $data);
             }
 
             throw $e;
