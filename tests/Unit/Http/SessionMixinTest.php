@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Providers\AppServiceProvider;
 use CraftCms\Cms\Support\Flash;
+use Illuminate\Session\SessionManager;
+use Illuminate\Session\Store as SessionStore;
 use Illuminate\Support\Facades\Session;
 
 it('registers flash accessors as closures that can be rebound by Laravel macros', function () {
@@ -13,4 +16,27 @@ it('registers flash accessors as closures that can be rebound by Laravel macros'
     expect(Session::getError())->toBe(Flash::getError())
         ->and(Session::getNotice())->toBe(Flash::getNotice())
         ->and(Session::getSuccess())->toBe(Flash::getSuccess());
+});
+
+it('registers session macros without resolving the configured session driver', function () {
+    $originalSession = app(SessionManager::class);
+
+    app()->instance('session', new class
+    {
+        public function mixin(): never
+        {
+            throw new RuntimeException('Session driver was resolved.');
+        }
+    });
+
+    Session::clearResolvedInstance('session');
+
+    try {
+        new AppServiceProvider(app())->register();
+
+        expect(SessionStore::hasMacro('getError'))->toBeTrue();
+    } finally {
+        app()->instance('session', $originalSession);
+        Session::clearResolvedInstance('session');
+    }
 });

@@ -33,6 +33,7 @@ use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\UrlGenerator;
+use Illuminate\Session\Store as SessionStore;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -40,7 +41,6 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Override;
@@ -154,7 +154,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Request::mixin(new RequestMixin);
-        Session::mixin(new SessionMixin);
+        SessionStore::mixin(new SessionMixin);
 
         Response::macro('setNoCacheHeaders', function (bool $replace = true) {
             $this->header('Expires', '0', $replace);
