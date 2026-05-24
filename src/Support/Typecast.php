@@ -10,9 +10,11 @@ use Carbon\CarbonInterface;
 use DateTime;
 use DateTimeInterface;
 use InvalidArgumentException;
+use PropertyHookType;
 use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionParameter;
+use ReflectionProperty;
 use ReflectionUnionType;
 use RuntimeException;
 use Throwable;
@@ -47,6 +49,8 @@ class Typecast
 
     private static array $setterTypes = [];
 
+    private static array $assignableProperties = [];
+
     /**
      * Configures a component with the initial property values.
      *
@@ -58,9 +62,15 @@ class Typecast
      */
     final public static function configure(object $object, array $properties = []): object
     {
-        self::properties($object::class, $properties);
+        $class = $object::class;
+
+        self::properties($class, $properties);
 
         foreach ($properties as $name => $value) {
+            if (! self::isAssignableProperty($class, $name)) {
+                continue;
+            }
+
             try {
                 $object->$name = $value;
             } catch (Throwable $error) {
@@ -74,6 +84,15 @@ class Typecast
         }
 
         return $object;
+    }
+
+    private static function isAssignableProperty(string $class, string $property): bool
+    {
+        if (! isset(self::$assignableProperties[$class])) {
+            self::resolveClassTypes($class);
+        }
+
+        return self::$assignableProperties[$class][$property] ?? true;
     }
 
     /**
@@ -258,6 +277,7 @@ class Typecast
     {
         self::$types[$class] = [];
         self::$setterTypes[$class] = [];
+        self::$assignableProperties[$class] = [];
 
         $className = $class;
         $class = new ReflectionClass($className);
@@ -294,6 +314,8 @@ class Typecast
                 continue;
             }
 
+            self::$assignableProperties[$className][$ref->getName()] = self::reflectionPropertyIsAssignable($ref);
+
             $type = $ref->getType();
 
             if ($type instanceof ReflectionNamedType) {
@@ -306,6 +328,23 @@ class Typecast
                 }
             }
         }
+    }
+
+    private static function reflectionPropertyIsAssignable(ReflectionProperty $property): bool
+    {
+        if (! $property->isPublic()) {
+            return false;
+        }
+
+        if ($property->isPrivateSet() || $property->isProtectedSet() || $property->isReadOnly()) {
+            return false;
+        }
+
+        if ($property->isVirtual()) {
+            return $property->hasHook(PropertyHookType::Set);
+        }
+
+        return true;
     }
 
     private static function resolveParameterType(ReflectionParameter $parameter): array|false|null
