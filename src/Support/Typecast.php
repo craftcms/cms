@@ -49,6 +49,8 @@ class Typecast
 
     private static array $setterTypes = [];
 
+    private static array $setters = [];
+
     private static array $assignableProperties = [];
 
     /**
@@ -68,6 +70,11 @@ class Typecast
 
         foreach ($properties as $name => $value) {
             if (! self::isAssignableProperty($class, $name)) {
+                $setter = self::setter($class, $name);
+                if ($setter !== null) {
+                    $object->$setter($value);
+                }
+
                 continue;
             }
 
@@ -93,6 +100,15 @@ class Typecast
         }
 
         return self::$assignableProperties[$class][$property] ?? true;
+    }
+
+    private static function setter(string $class, string $property): ?string
+    {
+        if (! isset(self::$setters[$class])) {
+            self::resolveClassTypes($class);
+        }
+
+        return self::$setters[$class][$property] ?? null;
     }
 
     /**
@@ -257,7 +273,10 @@ class Typecast
             self::resolveClassTypes($class);
         }
 
-        if (array_key_exists($property, self::$types[$class])) {
+        if (
+            array_key_exists($property, self::$types[$class]) &&
+            (self::$assignableProperties[$class][$property] ?? false)
+        ) {
             return self::$types[$class][$property];
         }
 
@@ -269,6 +288,10 @@ class Typecast
             }
         }
 
+        if (array_key_exists($property, self::$types[$class])) {
+            return self::$types[$class][$property];
+        }
+
         return self::$types[$class]['_'.lcfirst($property)] // Underscore prefixed private
             ?? false;
     }
@@ -277,6 +300,7 @@ class Typecast
     {
         self::$types[$class] = [];
         self::$setterTypes[$class] = [];
+        self::$setters[$class] = [];
         self::$assignableProperties[$class] = [];
 
         $className = $class;
@@ -307,6 +331,7 @@ class Typecast
             }
 
             self::$setterTypes[$className][$property] = self::resolveParameterType($parameters[0]);
+            self::$setters[$className][$property] = $ref->getName();
         }
 
         foreach ($class->getProperties() as $ref) {
