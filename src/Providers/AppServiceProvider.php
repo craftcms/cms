@@ -110,16 +110,10 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
-        $iconsDir = (string) realpath("{$this->root}/resources/icons");
-        $icons = [];
-
-        if ($iconsDir) {
-            foreach (array_merge(glob("{$iconsDir}/*.svg") ?: [], glob("{$iconsDir}/*/*.svg") ?: []) as $path) {
-                $icons[$path] = public_path('vendor/craft/icons/'.substr($path, strlen($iconsDir) + 1));
-            }
+        if (! $this->app->runningInConsole()) {
+            return;
         }
 
-        $this->publishes($icons, ['craftcms', 'craftcms-assets', 'craftcms-icons']);
         $this->publishes([
             "{$this->root}/resources/build/" => public_path('vendor/craft/build'),
             "{$this->root}/resources/legacy/" => public_path('vendor/craft/legacy'),
