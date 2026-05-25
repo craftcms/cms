@@ -903,6 +903,7 @@ class Html extends \yii\helpers\Html
                 foreach ($matchIds as $i => $id) {
                     if (
                         $i % 2 === 0 && // not a delimiter
+                        $id !== '' && // check if it's not an empty string, or the next line will error
                         $id[0] !== '.' // not a class name
                     ) {
                         $isHash = $id[0] === '#';
