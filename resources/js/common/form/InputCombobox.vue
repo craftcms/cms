@@ -189,7 +189,10 @@
           <template v-for="(item, idx) in filteredOptions" :key="idx">
             <template v-if="item.type === 'optgroup'">
               <div class="group-label">{{ item.label }}</div>
-              <template v-for="(option, optionIdx) in item.options" :key="optionIdx">
+              <template
+                v-for="(option, optionIdx) in item.options"
+                :key="optionIdx"
+              >
                 <slot name="option" :option="option">
                   <InputComboboxOption :option="option" />
                 </slot>

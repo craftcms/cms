@@ -16,8 +16,7 @@
     {isActive: false}
   );
 
-  const {finishSession, closeReview, reviewSession} =
-    useAssetIndexer();
+  const {finishSession, closeReview, reviewSession} = useAssetIndexer();
 
   const missingEntries = computed(() => reviewSession.value?.missingEntries);
   const missingFolders = computed(() => missingEntries.value?.folders ?? {});

@@ -94,7 +94,7 @@
         :inertia="false"
         appearance="button"
         variant="primary"
-      >{{ t('New token') }}</CpLink
+        >{{ t('New token') }}</CpLink
       >
     </template>
     <Pane :padding="0" appearance="raised">
@@ -106,7 +106,7 @@
               icon="plus"
               :inertia="false"
               appearance="button"
-            >{{ t('New token') }}</CpLink
+              >{{ t('New token') }}</CpLink
             >
           </Empty>
         </template>

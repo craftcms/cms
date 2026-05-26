@@ -116,7 +116,7 @@
         {{ t('This can begin with an environment variable.') }}
         <a
           href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
-        >{{ t('Learn more') }}</a
+          >{{ t('Learn more') }}</a
         >
       </craft-callout>
     </div>
@@ -256,7 +256,7 @@
           {{ t('This can begin with an environment variable or alias.') }}
           <a
             href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
-          >{{ t('Learn more') }}</a
+            >{{ t('Learn more') }}</a
           >
         </craft-callout>
       </template>

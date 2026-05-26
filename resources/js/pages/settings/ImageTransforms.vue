@@ -102,7 +102,12 @@
     },
   });
 
-  type NavItem = {label: string; url: string; active?: boolean; inertia?: boolean};
+  type NavItem = {
+    label: string;
+    url: string;
+    active?: boolean;
+    inertia?: boolean;
+  };
   const navItems = computed((): Record<string, NavItem> => {
     return {
       volumes: {label: t('Volumes'), url: index().url},
@@ -124,7 +129,7 @@
         :href="create().url"
         variant="primary"
         icon="plus"
-      >{{ t('New image transform') }}</CpLink
+        >{{ t('New image transform') }}</CpLink
       >
     </template>
 
@@ -153,7 +158,7 @@
             :href="create().url"
             variant="default"
             icon="plus"
-          >{{ t('New image transform') }}</CpLink
+            >{{ t('New image transform') }}</CpLink
           >
         </Empty>
       </template>

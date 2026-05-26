@@ -140,7 +140,7 @@
         :key="link.url"
         :href="link.url"
         class="skip-link skip-link--global"
-      >{{ link.label }}</a
+        >{{ link.label }}</a
       >
       <div class="flex gap-2 p-2">
         <craft-button
@@ -216,14 +216,17 @@
                           </craft-button>
                           <ActionMenu
                             icon="chevron-down"
-                            :actions="([
-                              {
-                                label: t('Save and continue editing'),
-                                onClick: () => emit('save', {redirect: false}),
-                                shortcut: 'S',
-                              },
-                              ...(formActions ?? []),
-                            ] as ActionItem[])"
+                            :actions="
+                              [
+                                {
+                                  label: t('Save and continue editing'),
+                                  onClick: () =>
+                                    emit('save', {redirect: false}),
+                                  shortcut: 'S',
+                                },
+                                ...(formActions ?? []),
+                              ] as ActionItem[]
+                            "
                           >
                             <template #invoker="{label}">
                               <craft-button

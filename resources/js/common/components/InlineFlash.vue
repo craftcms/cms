@@ -21,7 +21,7 @@
         icon="circle-check"
         inline
         class="p-0"
-      >{{ successFlash }}</craft-callout
+        >{{ successFlash }}</craft-callout
       >
     </template>
     <template v-if="isActive && errorFlash">

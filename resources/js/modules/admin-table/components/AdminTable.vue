@@ -37,7 +37,7 @@
     }
   );
 
-  const page = usePage<{readOnly: boolean}>()
+  const page = usePage<{readOnly: boolean}>();
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
   const emit = defineEmits<{
     reorder: [startIndex: number, finishIndex: number];

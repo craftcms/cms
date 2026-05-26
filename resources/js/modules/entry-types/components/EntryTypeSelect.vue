@@ -13,7 +13,10 @@
   import CreateEntryTypeButton from '@/modules/entry-types/components/CreateEntryTypeButton.vue';
   import {router} from '@inertiajs/vue3';
   import DragShadow from '@/common/components/DragShadow.vue';
-  import {useReorderableItems, type DropState} from '@/common/composables/useReorderableItems';
+  import {
+    useReorderableItems,
+    type DropState,
+  } from '@/common/composables/useReorderableItems';
   import ReorderButton from '@/common/components/ReorderButton.vue';
   import useCraftData from '@/common/composables/useCraftData';
 
@@ -64,7 +67,9 @@
       enabled: () => props.modelValue.length > 1,
     });
 
-  function getOverDropState(id: number | string): Extract<DropState, {type: 'is-over'}> | null {
+  function getOverDropState(
+    id: number | string
+  ): Extract<DropState, {type: 'is-over'}> | null {
     const state = getDropState(id);
     return state.type === 'is-over' ? state : null;
   }
@@ -262,12 +267,16 @@
               icon: 'gear',
               onClick: () => openSlideout(entryType.id),
             },
-            ...(!readOnly ? [{
-              label: t('Remove'),
-              variant: 'danger',
-              icon: 'x',
-              onClick: () => removeItem(entryType.id),
-            }] : []),
+            ...(!readOnly
+              ? [
+                  {
+                    label: t('Remove'),
+                    variant: 'danger',
+                    icon: 'x',
+                    onClick: () => removeItem(entryType.id),
+                  },
+                ]
+              : []),
           ]"
           @handle-ref="(el) => setHandleRef(el, entryType.id)"
         >
@@ -331,7 +340,11 @@
               :checked="
                 modelValue.find((valueType) => valueType.id === entryType.id)
               "
-              :data-color="(entryType.color && typeof entryType.color !== 'string' ? entryType.color.value : entryType.color) ?? 'white'"
+              :data-color="
+                (entryType.color && typeof entryType.color !== 'string'
+                  ? entryType.color.value
+                  : entryType.color) ?? 'white'
+              "
             >
               <div>
                 {{ entryType.name }}

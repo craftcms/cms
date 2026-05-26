@@ -97,7 +97,7 @@
         :inertia="false"
         appearance="button"
         variant="primary"
-      >{{ t('New schema') }}</CpLink
+        >{{ t('New schema') }}</CpLink
       >
     </template>
     <Pane :padding="0" appearance="raised">

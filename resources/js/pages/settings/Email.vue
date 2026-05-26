@@ -47,7 +47,16 @@
   const isMultiSite = computed(() => props.sites.length > 1);
 
   // Build initial site overrides with empty values for all sites
-  const initialSiteOverrides: Record<string, {uid: string; fromEmail: string; fromName: string; replyToEmail: string; template: string}> = {};
+  const initialSiteOverrides: Record<
+    string,
+    {
+      uid: string;
+      fromEmail: string;
+      fromName: string;
+      replyToEmail: string;
+      template: string;
+    }
+  > = {};
   for (const site of props.sites) {
     const existing = props.emailConfig.siteOverrides?.[site.uid] ?? {};
     initialSiteOverrides[site.uid] = {
@@ -153,7 +162,10 @@
             :disabled="readOnly"
             :require-option-match="false"
             show-all-on-empty
-            :options="[...(templateSuggestions ?? []), ...(envSuggestions ?? [])]"
+            :options="[
+              ...(templateSuggestions ?? []),
+              ...(envSuggestions ?? []),
+            ]"
             :callouts="['envVars']"
           />
         </div>
@@ -190,7 +202,10 @@
             :disabled="readOnly"
             :require-option-match="false"
             show-all-on-empty
-            :options="[...mailerOptions.map(o => ({...o, value: o.value ?? ''})), ...(envSuggestions ?? [])]"
+            :options="[
+              ...mailerOptions.map((o) => ({...o, value: o.value ?? ''})),
+              ...(envSuggestions ?? []),
+            ]"
             :callouts="['envVars']"
           />
         </div>

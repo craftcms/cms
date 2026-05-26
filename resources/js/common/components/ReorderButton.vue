@@ -32,13 +32,13 @@
         icon="arrow-up"
         @click="emit('click:up')"
         :disabled="position === 'first'"
-      >{{ t('Move up') }}</craft-action-item
+        >{{ t('Move up') }}</craft-action-item
       >
       <craft-action-item
         icon="arrow-down"
         @click="emit('click:down')"
         :disabled="position === 'last'"
-      >{{ t('Move down') }}</craft-action-item
+        >{{ t('Move down') }}</craft-action-item
       >
     </div>
   </craft-action-menu>

@@ -197,7 +197,13 @@
 
                 <SiteFields
                   v-model="formData.site"
-                  :locale-options="(localeOptions ?? []).map(o => ({id: o.id, label: o.name, value: o.id}))"
+                  :locale-options="
+                    (localeOptions ?? []).map((o) => ({
+                      id: o.id,
+                      label: o.name,
+                      value: o.id,
+                    }))
+                  "
                   :errors="errors.site"
                 />
               </Deferred>

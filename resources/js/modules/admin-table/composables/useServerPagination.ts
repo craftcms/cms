@@ -1,8 +1,5 @@
 import {ref} from 'vue';
-import type {
-  PaginationState,
-  Updater,
-} from '@tanstack/vue-table';
+import type {PaginationState, Updater} from '@tanstack/vue-table';
 import type {PaginationData} from '@/common/types';
 
 interface OnChangeArgs {

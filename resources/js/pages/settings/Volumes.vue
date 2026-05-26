@@ -134,7 +134,12 @@
     getCoreRowModel: getCoreRowModel<VolumeData>(),
   });
 
-  type NavItem = {label: string; url: string; active?: boolean; inertia?: boolean};
+  type NavItem = {
+    label: string;
+    url: string;
+    active?: boolean;
+    inertia?: boolean;
+  };
   const navItems = computed((): Record<string, NavItem> => {
     return {
       volumes: {label: t('Volumes'), url: index().url, active: true},

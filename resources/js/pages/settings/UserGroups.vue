@@ -73,7 +73,7 @@
         icon="plus"
         appearance="button"
         variant="primary"
-      >{{ t('New user group') }}</CpLink
+        >{{ t('New user group') }}</CpLink
       >
     </template>
 
@@ -103,7 +103,7 @@
             class="btn submit add icon"
             icon="plus"
             appearance="button"
-          >{{ t('New user group') }}</CpLink
+            >{{ t('New user group') }}</CpLink
           >
         </Empty>
       </template>
