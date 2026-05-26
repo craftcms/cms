@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
+use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -19,13 +21,16 @@ use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\MarkdownFieldAsset;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Override;
 
@@ -66,6 +71,8 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
 
     public const string TOOLBAR_LINK = 'link';
 
+    public const string TOOLBAR_ASSET = 'asset';
+
     public const string TOOLBAR_IMAGE = 'image';
 
     public const string TOOLBAR_TABLE = 'table';
@@ -93,6 +100,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         self::TOOLBAR_UNORDERED_LIST,
         self::TOOLBAR_ORDERED_LIST,
         self::TOOLBAR_LINK,
+        self::TOOLBAR_ASSET,
         self::TOOLBAR_IMAGE,
         self::TOOLBAR_TABLE,
         self::TOOLBAR_PREVIEW,
@@ -112,6 +120,12 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
 
     public ?int $byteLimit = null;
 
+    public array|string $availableVolumes = '*';
+
+    public bool $showUnpermittedVolumes = false;
+
+    public bool $showUnpermittedFiles = false;
+
     public function __construct(array $config = [])
     {
         if (isset($config['limitUnit'], $config['fieldLimit'])) {
@@ -128,6 +142,16 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                 $config['toolbarButtons'] === '' => [],
                 is_array($config['toolbarButtons']) => $config['toolbarButtons'],
                 default => [$config['toolbarButtons']],
+            };
+        }
+
+        if (array_key_exists('availableVolumes', $config)) {
+            $config['availableVolumes'] = match (true) {
+                $config['availableVolumes'] === '*',
+                is_array($config['availableVolumes']) => $config['availableVolumes'],
+                $config['availableVolumes'] === null,
+                $config['availableVolumes'] === '' => [],
+                default => [$config['availableVolumes']],
             };
         }
 
@@ -182,6 +206,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             ['label' => t('Check List'), 'value' => self::TOOLBAR_CHECK_LIST, 'icon' => 'list-check'],
             ['label' => t('Clean Block'), 'value' => self::TOOLBAR_CLEAN_BLOCK, 'icon' => 'eraser'],
             ['label' => t('Link'), 'value' => self::TOOLBAR_LINK, 'icon' => 'link'],
+            ['label' => t('Asset'), 'value' => self::TOOLBAR_ASSET, 'icon' => 'paperclip'],
             ['label' => t('Image'), 'value' => self::TOOLBAR_IMAGE, 'icon' => 'image'],
             ['label' => t('Table'), 'value' => self::TOOLBAR_TABLE, 'icon' => 'table'],
             ['label' => t('Horizontal Rule'), 'value' => self::TOOLBAR_HORIZONTAL_RULE, 'icon' => 'minus'],
@@ -208,6 +233,17 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             ->map(fn (string $flavor) => [
                 'label' => $labels[$flavor] ?? $flavor,
                 'value' => $flavor,
+            ])
+            ->values()
+            ->all();
+    }
+
+    public function volumeOptions(): array
+    {
+        return Volumes::getAllVolumes()
+            ->map(fn (Volume $volume) => [
+                'label' => $volume->name,
+                'value' => $volume->uid,
             ])
             ->values()
             ->all();
@@ -244,6 +280,29 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             'initialRows' => ['nullable', 'integer', 'min:1'],
             'charLimit' => ['nullable', 'integer', 'min:1'],
             'byteLimit' => ['nullable', 'integer', 'min:1'],
+            'availableVolumes' => [
+                function ($attribute, mixed $value, Closure $fail) {
+                    if ($value === '*') {
+                        return;
+                    }
+
+                    if (! is_array($value)) {
+                        $fail(t('Invalid volumes.'));
+
+                        return;
+                    }
+
+                    foreach ($value as $volumeUid) {
+                        if (! is_string($volumeUid) || ! in_array($volumeUid, Arr::pluck($this->volumeOptions(), 'value'), true)) {
+                            $fail(t('Invalid volumes.'));
+
+                            return;
+                        }
+                    }
+                },
+            ],
+            'showUnpermittedVolumes' => ['boolean'],
+            'showUnpermittedFiles' => ['boolean'],
         ]);
     }
 
@@ -264,6 +323,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             'field' => $this,
             'flavorOptions' => self::flavorOptions(),
             'toolbarButtonOptions' => self::toolbarButtonOptions(),
+            'volumeOptions' => $this->volumeOptions(),
             'readOnly' => $readOnly,
         ]);
     }
@@ -297,6 +357,8 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         $id = $this->getInputId();
 
         if (! $static) {
+            $assetSourceKeys = $this->assetSourceKeys();
+
             app(InternalAssetRegistry::class)->register(MarkdownFieldAsset::class);
             HtmlStack::jsWithVars(fn ($id, $settings) => "new Craft.MarkdownField($id, $settings);", [
                 InputNamespace::namespaceId($id),
@@ -305,8 +367,14 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                     'previewAction' => 'app/render-markdown',
                     'readOnly' => $static,
                     'toolbar' => ! $inline,
-                    'toolbarButtons' => $this->toolbarButtons,
+                    'toolbarButtons' => $assetSourceKeys === []
+                        ? array_values(array_diff($this->toolbarButtons, [self::TOOLBAR_ASSET]))
+                        : $this->toolbarButtons,
                     'toolbarIcons' => $this->toolbarIcons(),
+                    'assetElementType' => Asset::class,
+                    'assetRefHandle' => Asset::refHandle(),
+                    'assetSources' => $assetSourceKeys,
+                    'assetCriteria' => $this->assetSelectionCriteria(),
                 ],
             ]);
         }
@@ -329,6 +397,33 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             ->unique()
             ->mapWithKeys(fn (string $icon) => [$icon => Icons::svg($icon)])
             ->all();
+    }
+
+    private function assetSourceKeys(): array
+    {
+        return $this->availableAssetVolumes()
+            ->map(fn (Volume $volume) => "volume:$volume->uid")
+            ->all();
+    }
+
+    private function assetSelectionCriteria(): array
+    {
+        return $this->showUnpermittedFiles ? ['uploaderId' => null] : [];
+    }
+
+    private function availableAssetVolumes(): Collection
+    {
+        $volumes = Volumes::getAllVolumes();
+
+        if ($this->availableVolumes !== '*') {
+            $volumes = $volumes->filter(fn (Volume $volume) => in_array($volume->uid, $this->availableVolumes, true));
+        }
+
+        if (! $this->showUnpermittedVolumes) {
+            $volumes = $volumes->filter(fn (Volume $volume) => Gate::check("viewAssets:$volume->uid"));
+        }
+
+        return $volumes->values();
     }
 
     #[Override]

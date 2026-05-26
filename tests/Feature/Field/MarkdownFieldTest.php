@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Volumes as VolumesService;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Data\MarkdownData;
@@ -11,6 +13,7 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Markdown\Flavors\GfmFlavor;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Twig\TemplateRenderer;
 use GraphQL\Language\AST\FieldNode;
 use GraphQL\Language\AST\NameNode;
@@ -101,6 +104,7 @@ it('validates configurable toolbar buttons', function () {
         MarkdownField::TOOLBAR_HEADING_3,
         MarkdownField::TOOLBAR_CHECK_LIST,
         MarkdownField::TOOLBAR_CLEAN_BLOCK,
+        MarkdownField::TOOLBAR_ASSET,
         MarkdownField::TOOLBAR_HORIZONTAL_RULE,
         MarkdownField::TOOLBAR_GUIDE,
         MarkdownField::TOOLBAR_UNDO,
@@ -118,6 +122,56 @@ it('validates configurable toolbar buttons', function () {
     expect($field->validate())->toBeFalse()
         ->and($field->errors()->has('toolbarButtons'))->toBeTrue()
         ->and(new MarkdownField(['toolbarButtons' => ''])->toolbarButtons)->toBe([]);
+});
+
+it('validates and applies asset selector volume settings', function () {
+    $volume = Volume::factory()->create([
+        'name' => 'Images',
+        'fs' => 'disk:test-disk',
+    ]);
+    app()->forgetInstance(VolumesService::class);
+
+    $field = new MarkdownField([
+        'name' => 'Body',
+        'handle' => 'body',
+        'availableVolumes' => [$volume->uid],
+        'showUnpermittedVolumes' => true,
+        'showUnpermittedFiles' => true,
+    ]);
+
+    $assetSourceKeys = fn (): array => $this->assetSourceKeys();
+    $assetSelectionCriteria = fn (): array => $this->assetSelectionCriteria();
+
+    $field->validate();
+
+    expect($field->errors()->toArray())->toBe([])
+        ->and(Arr::pluck($field->volumeOptions(), 'value'))->toContain($volume->uid)
+        ->and($assetSourceKeys->call($field))->toBe(["volume:$volume->uid"])
+        ->and($assetSelectionCriteria->call($field))->toBe(['uploaderId' => null]);
+
+    $invalidField = new MarkdownField([
+        'name' => 'Body',
+        'handle' => 'body',
+        'availableVolumes' => ['missing'],
+    ]);
+
+    expect($invalidField->validate())->toBeFalse()
+        ->and($invalidField->errors()->has('availableVolumes'))->toBeTrue();
+});
+
+it('warns and resolves no asset sources when no volumes exist', function () {
+    Volumes::shouldReceive('getAllVolumes')
+        ->andReturn(collect());
+
+    $field = new MarkdownField([
+        'name' => 'Body',
+        'handle' => 'body',
+        'toolbarButtons' => [MarkdownField::TOOLBAR_ASSET],
+    ]);
+    $assetSourceKeys = fn (): array => $this->assetSourceKeys();
+
+    expect($assetSourceKeys->call($field))->toBe([])
+        ->and($field->getSettingsHtml())->toContain('No volumes exist yet.');
 });
 
 it('normalizes values without trimming markdown-significant whitespace', function () {

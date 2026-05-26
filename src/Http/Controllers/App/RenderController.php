@@ -15,6 +15,7 @@ use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Field\Markdown as MarkdownField;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Typecast;
@@ -177,7 +178,7 @@ readonly class RenderController
         ]);
 
         return new JsonResponse([
-            'html' => Markdown::parse($validated['markdown'] ?? '', $validated['flavor']),
+            'html' => Markdown::parse(Elements::parseRefs($validated['markdown'] ?? ''), $validated['flavor']),
         ]);
     }
 }

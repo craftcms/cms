@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Field\Data\MarkdownData;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Twig\Contracts\SafeHtml;
 use Illuminate\Contracts\Support\Htmlable;
 
@@ -27,4 +28,15 @@ it('renders empty markdown as an empty string', function () {
     expect($value->getHtml())->toBe('')
         ->and((string) $value)->toBe('')
         ->and($value->serialize())->toBe('');
+});
+
+it('parses element reference tags before rendering markdown', function () {
+    Elements::shouldReceive('parseRefs')
+        ->once()
+        ->with('![Alt]({asset:1@2:url})')
+        ->andReturn('![Alt](https://example.test/image.jpg)');
+
+    $value = new MarkdownData('![Alt]({asset:1@2:url})', 'gfm');
+
+    expect($value->getHtml())->toBe("<p><img src=\"https://example.test/image.jpg\" alt=\"Alt\" /></p>\n");
 });

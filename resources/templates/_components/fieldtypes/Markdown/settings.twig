@@ -22,6 +22,51 @@
     disabled: readOnly,
 }) }}
 
+<hr>
+
+<a class="fieldtoggle" data-target="assets">{{ 'Assets'|t('app') }}</a>
+<div id="assets" class="hidden">
+    {% if volumeOptions|length %}
+        {{ forms.checkboxSelectField({
+            label: 'Available Volumes'|t('app'),
+            instructions: 'The volumes that should be available when selecting assets.'|t('app'),
+            id: 'availableVolumes',
+            name: 'availableVolumes',
+            options: volumeOptions,
+            values: field.availableVolumes,
+            showAllOption: true,
+            errors: field.errors.get('availableVolumes'),
+            disabled: readOnly,
+        }) }}
+    {% else %}
+        {{ forms.field({
+            label: 'Available Volumes'|t('app'),
+            instructions: 'The volumes that should be available when selecting assets.'|t('app'),
+            id: 'availableVolumes',
+        }, '<p class="error">' ~ 'No volumes exist yet.'|t('app') ~ '</p>') }}
+    {% endif %}
+
+    {{ forms.lightswitchField({
+        label: 'Show unpermitted volumes'|t('app'),
+        instructions: 'Whether to show volumes that the user doesn’t have permission to view.'|t('app'),
+        id: 'showUnpermittedVolumes',
+        name: 'showUnpermittedVolumes',
+        on: field.showUnpermittedVolumes,
+        errors: field.errors.get('showUnpermittedVolumes'),
+        disabled: readOnly,
+    }) }}
+
+    {{ forms.lightswitchField({
+        label: 'Show unpermitted files'|t('app'),
+        instructions: 'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'|t('app'),
+        id: 'showUnpermittedFiles',
+        name: 'showUnpermittedFiles',
+        on: field.showUnpermittedFiles,
+        errors: field.errors.get('showUnpermittedFiles'),
+        disabled: readOnly,
+    }) }}
+</div>
+
 {{ forms.textField({
     label: "Placeholder Text"|t('app'),
     instructions: "The text that will be shown if the field doesn’t have a value."|t('app'),

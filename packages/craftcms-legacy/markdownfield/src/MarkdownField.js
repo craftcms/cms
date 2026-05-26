@@ -1,4 +1,5 @@
 import EasyMDE from 'easymde';
+import CodeMirror from 'codemirror';
 import 'easymde/dist/easymde.min.css';
 import './MarkdownField.scss';
 
@@ -7,6 +8,7 @@ import './MarkdownField.scss';
     {
       settings: null,
       editor: null,
+      assetSelectorModal: null,
       previewRequestId: 0,
       previewTimeout: null,
 
@@ -49,10 +51,21 @@ import './MarkdownField.scss';
             this.settings.toolbar && toolbarItems.length ? toolbarItems : false,
           uploadImage: false,
         });
+
+        this.editor.codemirror.addKeyMap({
+          'Cmd-S': () => this.passSaveShortcut(),
+          'Ctrl-S': () => this.passSaveShortcut(),
+        });
+
+        Craft.MarkdownField.registerInstance(this);
       },
 
       toolbarItems: function () {
         const selectedButtons = new Set(this.settings.toolbarButtons ?? []);
+        if (!this.settings.assetSources?.length) {
+          selectedButtons.delete('asset');
+        }
+
         const toolbarItems = [];
 
         for (const group of this.toolbarButtonGroups()) {
@@ -178,6 +191,12 @@ import './MarkdownField.scss';
               Craft.t('app', 'Link')
             ),
             this.toolbarButton(
+              'asset',
+              () => this.openAssetSelector(),
+              'paperclip',
+              Craft.t('app', 'Asset')
+            ),
+            this.toolbarButton(
               'image',
               EasyMDE.drawImage,
               'image',
@@ -289,13 +308,106 @@ import './MarkdownField.scss';
           }
         }, this.settings.previewDelay);
       },
+
+      syncEditor: function () {
+        if (!this.isConnected()) {
+          return;
+        }
+
+        this.editor?.codemirror?.save();
+      },
+
+      passSaveShortcut: function () {
+        this.syncEditor();
+
+        return CodeMirror.Pass;
+      },
+
+      isConnected: function () {
+        return this.$textarea?.[0]?.isConnected ?? false;
+      },
+
+      openAssetSelector: function () {
+        if (!this.assetSelectorModal) {
+          this.assetSelectorModal = Craft.createElementSelectorModal(
+            this.settings.assetElementType,
+            {
+              closeOtherModals: false,
+              criteria: this.settings.assetCriteria,
+              hideOnSelect: true,
+              modalTitle: Craft.t('app', 'Choose an asset'),
+              multiSelect: false,
+              sources: this.settings.assetSources,
+              onSelect: (assets) => {
+                if (assets.length) {
+                  this.insertAsset(assets[0]);
+                }
+              },
+            }
+          );
+
+          return;
+        }
+
+        this.assetSelectorModal.show();
+      },
+
+      insertAsset: function (asset) {
+        const $element = asset.$element || $();
+        const siteId = asset.siteId || $element.data('site-id');
+        const ref = `{${this.settings.assetRefHandle}:${asset.id}@${siteId}:url}`;
+        const label = this.escapeMarkdownLabel(
+          String($element.data('alt') || asset.label || '')
+        );
+        const markdown =
+          $element.data('kind') === 'image'
+            ? `![${label}](${ref})`
+            : `[${label || ref}](${ref})`;
+
+        this.editor.codemirror.replaceSelection(markdown);
+        this.editor.codemirror.focus();
+      },
+
+      escapeMarkdownLabel: function (label) {
+        return label.replace(/([\\[\\]\\\\])/g, '\\$1');
+      },
     },
     {
+      instances: [],
+      saveShortcutRegistered: false,
+
+      registerInstance: function (instance) {
+        this.instances = this.connectedInstances();
+        this.instances.push(instance);
+
+        if (this.saveShortcutRegistered) {
+          return;
+        }
+
+        Craft.cp.on('beforeSaveShortcut', () => {
+          this.instances = this.connectedInstances();
+
+          for (const instance of this.instances) {
+            instance.syncEditor();
+          }
+        });
+
+        this.saveShortcutRegistered = true;
+      },
+
+      connectedInstances: function () {
+        return this.instances.filter((instance) => instance.isConnected());
+      },
+
       defaults: {
         flavor: 'gfm',
         previewAction: 'app/render-markdown',
         previewDelay: 250,
         toolbar: true,
+        assetElementType: null,
+        assetRefHandle: 'asset',
+        assetCriteria: {},
+        assetSources: [],
         toolbarButtons: [
           'bold',
           'italic',
@@ -305,6 +417,7 @@ import './MarkdownField.scss';
           'unordered-list',
           'ordered-list',
           'link',
+          'asset',
           'image',
           'table',
           'preview',

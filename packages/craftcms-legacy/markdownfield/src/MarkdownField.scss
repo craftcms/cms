@@ -106,6 +106,10 @@
     content: '[]';
   }
 
+  .markdown-field-toolbar-asset:empty::before {
+    content: '@';
+  }
+
   .markdown-field-toolbar-image:empty::before {
     content: 'img';
   }

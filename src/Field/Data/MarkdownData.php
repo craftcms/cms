@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Data;
 
 use CraftCms\Cms\Shared\Contracts\Serializable;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Markdown as MarkdownFacade;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\Twig\Contracts\SafeHtml;
@@ -41,7 +42,7 @@ class MarkdownData implements Htmlable, SafeHtml, Serializable, Stringable
 
     public function getHtml(): string
     {
-        return MarkdownFacade::parse($this->raw, $this->flavor);
+        return MarkdownFacade::parse(Elements::parseRefs($this->raw), $this->flavor);
     }
 
     public function toHtml(): string
