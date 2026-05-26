@@ -5,6 +5,7 @@
     "useDefineForClassFields": false,
     "paths": {
       "@/*": ["./resources/js/*"],
+      "@public/*": ["./resources/public/*"],
       "@actions/*": ["./resources/js/actions/CraftCms/Cms/Http/Controllers/*"],
       "@routes/*": ["./resources/js/routes/craft/*"]
     },

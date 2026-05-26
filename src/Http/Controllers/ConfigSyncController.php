@@ -60,7 +60,7 @@ class ConfigSyncController extends BaseUpdaterController
         $state = $this->realInitialState();
         $state['data'] = Crypt::encrypt(Json::encode($this->data));
 
-        return Inertia::render('Updater', [
+        return Inertia::render('updater/Index', [
             'title' => $this->pageTitle(),
             'initialState' => $state,
             'actionPrefix' => 'config-sync',

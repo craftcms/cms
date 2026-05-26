@@ -88,7 +88,7 @@ class FieldsController
 
         [$pagination, $tableData] = $this->fieldsService->getTableData($page, $limit, $searchTerm, $orderBy, $sortDir);
 
-        return Inertia::render('SettingsFieldsIndexPage', [
+        return Inertia::render('settings/Fields', [
             'crumbs' => fn () => [
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Fields')],

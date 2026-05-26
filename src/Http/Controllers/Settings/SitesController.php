@@ -55,7 +55,7 @@ readonly class SitesController
             (isset($group) ? ['label' => $group->getName()] : null),
         ]);
 
-        return Inertia::render('SettingsSitesIndex', [
+        return Inertia::render('settings/Sites', [
             'crumbs' => $crumbs,
             'newSiteUrl' => Url::cpUrl('settings/sites/new'),
             'nameSuggestions' => Inertia::defer(fn () => SelectOptions::getEnvSuggestions()),
@@ -96,7 +96,7 @@ readonly class SitesController
                     'active' => true,
                 ],
             ])
-            ->inertiaPage('SettingsSitesEdit', [
+            ->inertiaPage('settings/SitesEdit', [
                 ...$this->getViewData(),
                 'site' => new Site([
                     'name' => '',
@@ -144,7 +144,7 @@ readonly class SitesController
 
             ])
             ->redirectUrl('settings/sites')
-            ->inertiaPage('SettingsSitesEdit', [
+            ->inertiaPage('settings/SitesEdit', [
                 ...$this->getViewData(),
                 'site' => $siteData,
                 'groupId' => $siteData->groupId,

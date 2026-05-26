@@ -90,7 +90,7 @@ class EntryTypesController
             sortDir: $sortDir,
         );
 
-        return Inertia::render('SettingsEntryTypesIndexPage', [
+        return Inertia::render('settings/EntryTypes', [
             'crumbs' => fn () => [
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Entry Types')],

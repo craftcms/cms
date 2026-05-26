@@ -33,7 +33,7 @@ readonly class SchemasController extends GqlController
         // Ensure the public schema exists so the table stays aligned with the legacy UI.
         $this->gql->getPublicSchema();
 
-        return Inertia::render('GraphQlSchemasPage', [
+        return Inertia::render('graphql/Schemas', [
             'crumbs' => fn () => [
                 ['label' => t('GraphQL'), 'url' => Url::cpUrl('graphql/schemas')],
                 ['label' => t('Schemas')],
