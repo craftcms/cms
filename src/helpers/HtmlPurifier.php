@@ -87,5 +87,8 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
 
             $def->addAttribute('a', 'rel', new RelAttrLinkTypeDef('rel'));
         }
+
+        // allow HTML5 ID attributes by default
+        $config->set('Attr.ID.HTML5', true);
     }
 }
