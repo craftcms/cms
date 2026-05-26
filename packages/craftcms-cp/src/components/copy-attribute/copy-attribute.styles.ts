@@ -60,16 +60,4 @@ export default css`
     color: var(--c-copy-attribute-error-text, var(--c-copy-attribute-text));
     border: var(--c-copy-attribute-error-border, var(--_border));
   }
-
-  .icon {
-    display: inline-block;
-    width: 0.9em;
-    height: 0.9em;
-  }
-
-  svg {
-    fill: currentColor;
-    width: 100%;
-    height: 100%;
-  }
 `;

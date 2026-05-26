@@ -8,12 +8,14 @@ use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Routing\Exceptions\UrlGenerationException;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
 
@@ -47,11 +49,12 @@ function createTestVolume(array $overrides = []): VolumeData
 
 it('requires authentication', function () {
     Auth::logout();
+    $volume = createTestVolume();
 
     get(action([VolumesController::class, 'index']))->assertRedirect();
     get(action([VolumesController::class, 'create']))->assertRedirect();
     postJson(action([VolumesController::class, 'save']))->assertUnauthorized();
-    postJson(action([VolumesController::class, 'delete']))->assertUnauthorized();
+    deleteJson(action([VolumesController::class, 'destroy'], ['volumeId' => $volume->id]))->assertUnauthorized();
     postJson(action([VolumesController::class, 'reorder']))->assertUnauthorized();
 });
 
@@ -62,8 +65,8 @@ it('requires admin changes', function () {
 
     // Read only
     get(action([VolumesController::class, 'index']))
-        ->assertOk()
-        ->assertSee(t("Changes to these settings aren\u{2019}t permitted in this environment."));
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('readOnly', true));
+
     get(action([VolumesController::class, 'edit'], ['volumeId' => $volume->id]))
         ->assertOk()
         ->assertSee(t("Changes to these settings aren\u{2019}t permitted in this environment."));
@@ -75,9 +78,7 @@ it('requires admin changes', function () {
         'handle' => 'test',
         'fsHandle' => 'disk:test-disk',
     ])->assertForbidden();
-    postJson(action([VolumesController::class, 'delete']), [
-        'id' => 1,
-    ])->assertForbidden();
+    deleteJson(action([VolumesController::class, 'destroy'], ['volumeId' => $volume->id]))->assertForbidden();
 });
 
 describe('index', function () {
@@ -156,16 +157,13 @@ describe('delete', function () {
 
         expect(Volume::count())->toBe(1);
 
-        postJson(action([VolumesController::class, 'delete']), [
-            'id' => $volume->id,
-        ])->assertOk();
+        deleteJson(action([VolumesController::class, 'destroy'], ['volumeId' => $volume->id]))->assertOk();
 
         expect(Volume::withTrashed()->whereNotNull('dateDeleted')->count())->toBe(1);
     });
 
     test('delete validates required id field', function () {
-        postJson(action([VolumesController::class, 'delete']), [])
-            ->assertJsonValidationErrors(['id']);
+        expect(fn () => deleteJson(action([VolumesController::class, 'destroy']), []))->toThrow(UrlGenerationException::class);
     });
 });
 
@@ -180,7 +178,7 @@ describe('reorder', function () {
         expect(Volume::findOrFail($volume2->id)->sortOrder)->toBe(2);
 
         postJson(action([VolumesController::class, 'reorder']), [
-            'ids' => Json::encode([$volume2->id, $volume1->id]),
+            'ids' => [$volume2->id, $volume1->id],
         ])->assertOk();
 
         expect(Volume::findOrFail($volume2->id)->sortOrder)->toBe(1);

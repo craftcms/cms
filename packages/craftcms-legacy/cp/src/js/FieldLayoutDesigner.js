@@ -503,7 +503,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
     this.$addBtn = $tabContent.children('.fld-add-btn');
 
     const hud = new Garnish.HUD(this.$addBtn, {
-      hudClass: 'hud fld-library-hud',
+      hudClass: 'hud fld-library-hud cp-legacy',
       listenToMainResize: false,
       showOnInit: false,
       orientations: ['right', 'bottom', 'left'],
@@ -1896,9 +1896,19 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
     this.$libraryContainer = this.$container.find(
       '.cvd-library .checkbox-select'
     );
+
     this.sortableCheckboxSelect = this.$libraryContainer.data(
       'sortableCheckboxSelect'
     );
+
+    // If the checkboxes haven't been initialized yet, do that.
+    if (!this.sortableCheckboxSelect) {
+      console.trace('Not initialized');
+      this.sortableCheckboxSelect = new Craft.SortableCheckboxSelect(
+        this.$libraryContainer
+      );
+    }
+
     this.$thumbManagementContainer = this.$container.find('.thumb-management');
     this.alwaysShowThumbAlignmentBtns =
       designer.settings.alwaysShowThumbAlignmentBtns;

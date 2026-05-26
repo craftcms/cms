@@ -1,0 +1,1 @@
+{"version":3,"file":"2548.js","mappings":"iGAAA,WACEA,aAAc,uC","sources":["webpack:///../../../../node_modules/@lion/ui/components/combobox/translations/ro.js"],"sourcesContent":["export default {\n  optionsPopup: 'Fereastra pop-up cu opţiuni Combobox',\n};\n"],"names":["optionsPopup"],"sourceRoot":""}

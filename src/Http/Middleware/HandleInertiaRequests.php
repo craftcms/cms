@@ -19,8 +19,10 @@ use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Update\Updates;
+use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\View;
 use Inertia\Middleware;
 use Inertia\Support\Header;
 use Override;
@@ -33,6 +35,15 @@ class HandleInertiaRequests extends Middleware
     #[Override]
     public function handle(Request $request, Closure $next)
     {
+        $htmlStack = app(HtmlStack::class);
+
+        View::composer('app', function ($view) use ($htmlStack) {
+            $view->with([
+                'headHtml' => $htmlStack->headHtml(),
+                'bodyHtml' => $htmlStack->bodyHtml(),
+            ]);
+        });
+
         $response = parent::handle($request, $next);
 
         /*
@@ -123,6 +134,9 @@ class HandleInertiaRequests extends Middleware
                 'hasReservedJobs' => false,
                 'hasWaitingJobs' => false,
             ],
+            'isMultiSite' => fn () => Sites::isMultiSite(),
+            'readOnly' => fn () => ! $generalConfig->allowAdminChanges,
+            'locale' => fn () => app()->getLocale(),
             'craft' => fn () => [
                 'csrfTokenValue' => csrf_token(),
                 'csrfTokenName' => '_token',

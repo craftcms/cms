@@ -592,17 +592,14 @@ class EntryTypes
 
         foreach ($entryTypes as $entryType) {
             $label = Html::encode($entryType->getUiLabel());
-            $chipCellContent = Html::beginTag('div', ['class' => 'inline-chips']).
+            $chipCellContent = Html::beginTag('div', ['class' => 'flex gap-1 items-center row-wrap']).
                 app(ElementHtml::class)->chipHtml($entryType, [
-                    'labelHtml' => Html::a($label, $entryType->getCpEditUrl(), [
-                        'class' => ['chip-label', 'cell-bold'],
-                    ]),
+                    'labelHtml' => Html::a($label, $entryType->getCpEditUrl()),
                 ]);
             if ($entryType->description) {
-                $chipCellContent .= Html::tag('span',
+                $chipCellContent .= Html::tag('craft-info-icon',
                     Html::decodeDoubles(Markdown::parse(Html::encodeInvalidTags(Html::encode($entryType->description)),
-                        'gfm-comment')),
-                    ['class' => 'info']);
+                        'gfm-comment')));
             }
             $chipCellContent .= Html::endTag('div');
 

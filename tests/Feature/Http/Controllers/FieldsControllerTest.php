@@ -11,6 +11,7 @@ use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\actingAs;
 
@@ -41,7 +42,6 @@ it('needs authentication and admin changes for the routes', function (string $me
     ['getJson', [FieldsController::class, 'edit'], false],
     ['postJson', [FieldsController::class, 'renderSettings'], true],
     ['postJson', [FieldsController::class, 'store'], true],
-    ['postJson', [FieldsController::class, 'destroy'], true],
     ['postJson', [FieldsController::class, 'renderLayoutComponentSettings'], true],
     ['postJson', [FieldsController::class, 'applyLayoutTabSettings'], true],
     ['postJson', [FieldsController::class, 'applyLayoutElementSettings'], true],
@@ -49,10 +49,33 @@ it('needs authentication and admin changes for the routes', function (string $me
     ['getJson', [FieldsController::class, 'tableData'], false],
 ]);
 
+it('needs authentication and admin changes to delete', function () {
+    auth()->logout();
+
+    Fields::saveField($field = Fields::createField([
+        'type' => PlainText::class,
+        'name' => 'My plaintext field',
+        'handle' => 'plainText',
+    ]));
+
+    $this->deleteJson(action([FieldsController::class, 'destroy'], ['fieldId' => $field->id]))->assertUnauthorized();
+
+    CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
+    actingAs(User::find()->one());
+
+    $this->deleteJson(action([FieldsController::class, 'destroy'], ['fieldId' => $field->id]))->assertForbidden();
+
+    CraftCms\Cms\User\Models\User::first()->update(['admin' => true]);
+    actingAs(User::find()->one());
+
+    Cms::config()->allowAdminChanges(false);
+
+    $this->deleteJson(action([FieldsController::class, 'destroy'], ['fieldId' => $field->id]))->assertForbidden();
+});
+
 it('can render the index', function () {
     $this->get(action([FieldsController::class, 'index']))
-        ->assertOk()
-        ->assertSee('No fields exist yet.');
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/Fields'));
 });
 
 it('can create a new field', function () {
@@ -130,7 +153,7 @@ it('can delete a field', function () {
 
     $currentCount = FieldModel::count();
 
-    $this->postJson(action([FieldsController::class, 'destroy'], ['fieldId' => $field->id]))
+    $this->deleteJson(action([FieldsController::class, 'destroy'], ['fieldId' => $field->id]))
         ->assertOk();
 
     expect(FieldModel::count())->toBe($currentCount - 1);

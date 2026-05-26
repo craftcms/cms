@@ -4,6 +4,8 @@ import componentStyles from './spinner.styles.js';
 import {classMap} from 'lit/directives/class-map.js';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles';
 
+import '../visually-hidden/visually-hidden';
+
 export default class CraftSpinner extends LitElement {
   static override styles = [visuallyHiddenStyles, componentStyles];
 

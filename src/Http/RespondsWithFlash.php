@@ -54,7 +54,9 @@ trait RespondsWithFlash
         $redirect ??= $this->getPostedRedirectUrl();
 
         if ($redirect) {
-            return redirect($redirect)->with('success', $message)->with($data);
+            return redirect($redirect)
+                ->with('success', $message)
+                ->with('success', $message)->with($data);
         }
 
         return back()
@@ -128,6 +130,11 @@ trait RespondsWithFlash
             $url = Crypt::decrypt($url);
         } catch (DecryptException) {
             abort(400, 'Request contained an invalid body param');
+        }
+
+        // I'm not sure why, but decrypt ac
+        if (! $url) {
+            return null;
         }
 
         if ($object) {

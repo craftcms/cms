@@ -36,11 +36,12 @@ readonly class GeneralSettingsController
                 ['label' => t('General Settings')],
             ])
             ->redirectUrl('settings')
-            ->inertiaPage('SettingsGeneralPage', [
+            ->inertiaPage('settings/General', [
                 'system' => $this->projectConfig->get('system') ?? [],
                 'nameSuggestions' => SelectOptions::getEnvSuggestions(),
                 'timezoneOptions' => $timezoneOptions,
                 'systemStatusOptions' => SelectOptions::getBooleanEnvOptions(),
+
             ]);
     }
 
@@ -58,7 +59,6 @@ readonly class GeneralSettingsController
         $systemSettings['live'] = $settings['live'];
         $systemSettings['retryDuration'] = $settings['retryDuration'] ?? null;
         $systemSettings['timeZone'] = $settings['timeZone'];
-
         $this->projectConfig->set('system', $systemSettings, 'Update system settings.');
 
         return $this->asSuccess(t('System settings saved.'));

@@ -68,7 +68,7 @@ class UpdaterController extends BaseUpdaterController
         $state = $this->realInitialState();
         $state['data'] = Crypt::encrypt(Json::encode($this->data));
 
-        return Inertia::render('Updater', [
+        return Inertia::render('updater/Index', [
             'title' => $this->pageTitle(),
             'initialState' => $state,
             'actionPrefix' => 'updater',
@@ -191,7 +191,7 @@ class UpdaterController extends BaseUpdaterController
     #[Override]
     protected function pageTitle(): string
     {
-        return t('Updater');
+        return t('updater/Index');
     }
 
     #[Override]

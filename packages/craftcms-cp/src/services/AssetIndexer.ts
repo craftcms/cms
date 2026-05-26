@@ -76,7 +76,7 @@ export interface StartIndexingParams {
 /**
  * Parameters for finishing an indexing session.
  */
-export interface FinishIndexingParams {
+export interface FinishIndexingParams extends Record<string, any> {
   sessionId: number;
   /** Folder IDs to delete */
   deleteFolder?: Array<string | number>;

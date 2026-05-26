@@ -64,7 +64,7 @@ test('all routes validate data', function (string $controller, string $action) {
 test('index returns Inertia Updater page', function () {
     post(action([ConfigSyncController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('Updater')
+            ->component('updater/Index')
             ->has('title')
             ->has('initialState')
             ->has('actionPrefix')

@@ -1,0 +1,1 @@
+{"version":3,"file":"3830.js","mappings":"iGAAA,WACEA,aAAc,gD","sources":["webpack:///../../../../node_modules/@lion/ui/components/combobox/translations/sk.js"],"sourcesContent":["export default {\n  optionsPopup: 'Vyskakovacie okno možností kombinovaného poľa',\n};\n"],"names":["optionsPopup"],"sourceRoot":""}

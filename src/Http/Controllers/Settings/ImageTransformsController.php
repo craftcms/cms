@@ -8,11 +8,13 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransforms;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use CraftCms\Cms\View\LegacyAssets\EditTransformAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\craftAsset;
@@ -29,17 +31,21 @@ class ImageTransformsController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(ImageTransforms $imageTransforms): View
+    public function index(ImageTransforms $imageTransforms)
     {
         $transforms = $imageTransforms
             ->getAllTransforms()
             ->sort(fn (ImageTransform $a, ImageTransform $b): int => t($a->name, category: 'site') <=> t($b->name, category: 'site'))
             ->values();
 
-        return view('settings/assets/transforms/_index', [
+        return Inertia::render('settings/ImageTransforms', [
+            'crumbs' => fn () => [
+                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
+                ['label' => t('Transforms')],
+            ],
+            'title' => t('Image Transforms'),
             'transforms' => $transforms,
             'modes' => ImageTransform::modes(),
-            'readOnly' => $this->readOnly,
         ]);
     }
 
@@ -100,13 +106,9 @@ class ImageTransformsController
         return $this->asModelSuccess($transform, t('Transform saved.'), 'transform');
     }
 
-    public function delete(Request $request, ImageTransforms $imageTransforms): Response
+    public function destroy(Request $request, ImageTransforms $imageTransforms, int $transformId): Response
     {
-        $transformId = $request->validate([
-            'id' => ['required', 'integer'],
-        ])['id'];
-
-        $imageTransforms->deleteTransformById((int) $transformId);
+        $imageTransforms->deleteTransformById($transformId);
 
         return $this->asSuccess();
     }

@@ -12,7 +12,7 @@ describe('renderViewWithFallback', function () {
     test('returns Inertia response with correct component for CP requests', function () {
         get(action([LoginController::class, 'showLogin']))
             ->assertOk()
-            ->assertInertia(fn (AssertableInertia $page) => $page->component('LoginPage'));
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('auth/Login'));
     });
 
     test('Inertia response includes expected props', function () {

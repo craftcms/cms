@@ -25,7 +25,6 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -43,14 +42,14 @@ readonly class SectionsController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(Request $request, Sections $sections): \Inertia\Response
+    public function index(Request $request, Sections $sections): CpScreenResponse
     {
         $pageParam = Cms::config()->getPageTriggerParam();
         $page = $request->integer($pageParam, 1);
         $limit = $request->integer('per_page', 50);
         $searchTerm = $request->input('search');
 
-        $sort = $request->array('sort') ?? [
+        $sort = ! empty($request->array('sort')) ? $request->array('sort') : [
             ['field' => 'name', 'direction' => 'asc'],
         ];
 
@@ -73,19 +72,20 @@ readonly class SectionsController
             sortDir: $sortDir,
         );
 
-        return Inertia::render('SettingsSectionsIndexPage', [
-            'crumbs' => fn () => [
+        return new CpScreenResponse()
+            ->title(t('Sections'))
+            ->crumbs([
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Sections')],
-            ],
-            'title' => t('Sections'),
-            'data' => fn () => $tableData,
-            'pagination' => fn () => $pagination,
-            'sort' => $sort,
-            'searchTerm' => $searchTerm,
-            'emptyMessage' => t('No sections exist yet.'),
-            'readOnly' => $this->readOnly,
-        ]);
+            ])
+            ->inertiaPage('settings/Sections', [
+                'data' => fn () => $tableData,
+                'pagination' => fn () => $pagination,
+                'sort' => $sort,
+                'searchTerm' => $searchTerm,
+                'emptyMessage' => t('No sections exist yet.'),
+                'readOnly' => $this->readOnly,
+            ]);
     }
 
     public function create(Sites $sites): CpScreenResponse
@@ -97,8 +97,9 @@ readonly class SectionsController
         return new CpScreenResponse()
             ->title(t('Create a new section'))
             ->addCrumb(t('Settings'), 'settings')
+            ->redirectUrl('settings/sections')
             ->addCrumb(t('Sections'), 'settings/sections')
-            ->inertiaPage('SettingsSectionsEditPage', $this->sectionProps($section, $sites, brandNew: true));
+            ->inertiaPage('settings/SectionsEdit', $this->sectionProps($section, $sites, brandNew: true));
     }
 
     public function edit(Sections $sections, Sites $sites, SectionModel $section): CpScreenResponse
@@ -108,9 +109,10 @@ readonly class SectionsController
 
         return new CpScreenResponse()
             ->title(trim($sectionData->name) ?: t('Edit Section'))
+            ->redirectUrl('settings/sections')
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Sections'), 'settings/sections')
-            ->inertiaPage('SettingsSectionsEditPage', $this->sectionProps($sectionData, $sites, brandNew: false));
+            ->inertiaPage('settings/SectionsEdit', $this->sectionProps($sectionData, $sites, brandNew: false));
     }
 
     private function sectionProps(SectionData $section, Sites $sites, bool $brandNew): array
@@ -227,7 +229,7 @@ readonly class SectionsController
             return $this->asModelFailure($section, t('Couldn’t save section.'), 'section');
         }
 
-        return $this->asModelSuccess($section, t('Section saved.'), 'section');
+        return $this->asSuccess(t('Section saved.'));
     }
 
     public function destroy(Request $request, Sections $sections): Response
@@ -247,6 +249,7 @@ readonly class SectionsController
         ]));
     }
 
+    #[\Deprecated(message: 'in 6.0. Use `settings/sections` instead.')]
     public function tableData(Request $request, Sections $sections): Response
     {
         $pageParam = Cms::config()->getPageTriggerParam();
