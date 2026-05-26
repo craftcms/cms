@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where an empty `storage/runtime/` directory was getting created even if `runtimePath` was being overridden in `config/app.php`. ([#18936](https://github.com/craftcms/cms/issues/18936))
+
 ## 5.10.3 - 2026-05-22
 
 - Reduced the number of database queries executed when eager-loading nested entries or addresses. ([#18929](https://github.com/craftcms/cms/issues/18929))
