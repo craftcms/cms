@@ -19,7 +19,7 @@ use CraftCms\Cms\Support\Facades\Deprecator;
  */
 class BaseConfig extends Model
 {
-    use \craft\base\LegacyEventConstants;
+    public const string EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
     /**
      * @var array Settings that have been renamed

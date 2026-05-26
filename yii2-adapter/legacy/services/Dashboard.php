@@ -11,11 +11,11 @@ use Craft;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\WidgetEvent;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
-use CraftCms\Cms\Dashboard\Events\RegisterWidgetTypes;
 use CraftCms\Cms\Dashboard\Events\WidgetDeleted;
 use CraftCms\Cms\Dashboard\Events\WidgetDeleting;
 use CraftCms\Cms\Dashboard\Events\WidgetSaved;
 use CraftCms\Cms\Dashboard\Events\WidgetSaving;
+use CraftCms\Cms\Dashboard\Events\WidgetTypesResolving;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
 use DateTime;
 use Illuminate\Support\Collection;
@@ -200,7 +200,7 @@ class Dashboard extends Component
     public static function registerEvents(): void
     {
         // Fire a 'registerWidgetTypes' event
-        Event::listen(RegisterWidgetTypes::class, function(RegisterWidgetTypes $event) {
+        Event::listen(WidgetTypesResolving::class, function(WidgetTypesResolving $event) {
             $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->types->all()]);
             Craft::$app->getDashboard()->trigger(self::EVENT_REGISTER_WIDGET_TYPES, $yiiEvent);
 

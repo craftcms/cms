@@ -10,6 +10,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
+use CraftCms\Cms\Element\Concerns\LegacyConstants;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
@@ -52,6 +53,7 @@ abstract class Element extends Component implements ElementInterface
     use Concerns\HasCanonical;
     use Concerns\HasControlPanelUI;
     use Concerns\HasCustomFields;
+    use Concerns\HasDeletionBlockers;
     use Concerns\HasGqlType;
     use Concerns\HasLifecycleHooks;
     use Concerns\HasPreviewTargets;
@@ -66,6 +68,7 @@ abstract class Element extends Component implements ElementInterface
     use Concerns\Searchable;
     use Concerns\Structurable;
     use Concerns\TracksChanges;
+    use LegacyConstants;
     use Macroable {
         __call as macroCall;
     }
@@ -229,7 +232,7 @@ abstract class Element extends Component implements ElementInterface
      */
     private ?array $_attributeNames = null;
 
-    private bool $_initialized = false;
+    private bool $_trackDirtyFields = false;
 
     /**
      * @see toArray()
@@ -253,7 +256,7 @@ abstract class Element extends Component implements ElementInterface
             $this->_savedTitle = $this->title;
         }
 
-        $this->_initialized = true;
+        $this->_trackDirtyFields = true;
     }
 
     public function __clone()
@@ -299,12 +302,19 @@ abstract class Element extends Component implements ElementInterface
         if (str_starts_with($name, 'field:')) {
             return app(Fields::class)->isKnownFieldHandle(substr($name, 6));
         }
+
         if ($name === 'title') {
             return true;
         }
+
+        if (isset($this->_generatedFieldValues[$name])) {
+            return true;
+        }
+
         if ($this->hasEagerLoadedElements($name)) {
             return true;
         }
+
         if (parent::__isset($name)) {
             return true;
         }
@@ -687,7 +697,10 @@ abstract class Element extends Component implements ElementInterface
 
     public function safeAttributes(): array
     {
-        return array_keys($this->ruleset->rules());
+        return array_values(array_diff(array_keys($this->ruleset->rules()), [
+            'id',
+            'uid',
+        ]));
     }
 
     public function getIterator(): Traversable

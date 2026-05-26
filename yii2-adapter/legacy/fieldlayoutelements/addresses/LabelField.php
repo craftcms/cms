@@ -9,17 +9,17 @@
 
 namespace craft\fieldlayoutelements\addresses;
 
-use craft\base\LegacyEventConstants;
-
-/**
- * Class LabelField.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\Addresses\LabelField} instead.
- */
-class LabelField extends \CraftCms\Cms\FieldLayout\LayoutElements\Addresses\LabelField
-{
-    use LegacyEventConstants;
+/** @phpstan-ignore-next-line */
+if (false) {
+    /**
+     * Class LabelField.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     *
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\Addresses\LabelField} instead.
+     */
+    class LabelField extends \CraftCms\Cms\FieldLayout\LayoutElements\Addresses\LabelField
+    {
+    }
 }

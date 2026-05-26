@@ -6,10 +6,12 @@ namespace CraftCms\Cms\Config;
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
 use Override;
 use Throwable;
@@ -45,6 +47,7 @@ class ConfigServiceProvider extends ServiceProvider
     {
         $this->bootPublishables();
         $this->loadGeneralConfig();
+        $this->loadHtmlSanitizers();
     }
 
     private function loadEnvironmentVariablesWhenConfigIsCached(): void
@@ -112,6 +115,23 @@ class ConfigServiceProvider extends ServiceProvider
 
         foreach ($generalConfig->aliases as $name => $value) {
             Aliases::set($name, $value);
+        }
+    }
+
+    private function loadHtmlSanitizers(): void
+    {
+        $path = config_path('craft/sanitizers');
+
+        if (! File::isDirectory($path)) {
+            return;
+        }
+
+        $sanitizers = $this->app->make(HtmlSanitizers::class);
+
+        foreach (File::files($path) as $file) {
+            if ($file->getExtension() === 'php') {
+                $sanitizers->register($file->getFilenameWithoutExtension(), require $file->getRealPath());
+            }
         }
     }
 }

@@ -9,7 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\events\RegisterComponentTypesEvent;
-use CraftCms\Cms\Auth\Events\RegisterAuthMethods;
+use CraftCms\Cms\Auth\Events\AuthMethodsResolving;
 use CraftCms\Cms\Auth\Events\SettingPassword;
 use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
@@ -324,7 +324,7 @@ class Auth extends Component
 
     public static function registerEvents(): void
     {
-        Event::listen(RegisterAuthMethods::class, function(RegisterAuthMethods $event) {
+        Event::listen(AuthMethodsResolving::class, function(AuthMethodsResolving $event) {
             if (Craft::$app->getAuth()->hasEventHandlers(self::EVENT_REGISTER_METHODS)) {
                 $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->methods->all()]);
                 Craft::$app->getAuth()->trigger(self::EVENT_REGISTER_METHODS, $yiiEvent);

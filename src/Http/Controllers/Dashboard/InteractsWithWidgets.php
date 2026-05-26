@@ -34,8 +34,11 @@ trait InteractsWithWidgets
         $settingsJs = HtmlStack::clearJsBuffer(false);
 
         // Get the colspan (limited to the widget type's max allowed colspan)
-        $colspan = $widget->colspan ?? 1;
-        $colspan = min($colspan, $widget::maxColspan() ?? 3);
+        $colspan = $widget->colspan ?: 1;
+
+        if (($maxColspan = $widget::maxColspan()) && $colspan > $maxColspan) {
+            $colspan = $maxColspan;
+        }
 
         return [
             'id' => $widget->id,

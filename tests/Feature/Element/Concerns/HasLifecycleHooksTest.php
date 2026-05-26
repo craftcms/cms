@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Element\Events\AfterDelete;
-use CraftCms\Cms\Element\Events\AfterPropagate;
-use CraftCms\Cms\Element\Events\AfterRestore;
-use CraftCms\Cms\Element\Events\AfterSave;
-use CraftCms\Cms\Element\Events\BeforeDelete;
-use CraftCms\Cms\Element\Events\BeforeRestore;
-use CraftCms\Cms\Element\Events\BeforeSave;
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleted;
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleting;
+use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
+use CraftCms\Cms\Element\Events\ElementLifecycleRestored;
+use CraftCms\Cms\Element\Events\ElementLifecycleRestoring;
+use CraftCms\Cms\Element\Events\ElementLifecycleSaved;
+use CraftCms\Cms\Element\Events\ElementLifecycleSaving;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\User\Elements\User;
@@ -24,7 +24,7 @@ beforeEach(function () {
 
 test('beforeSave triggers event', function () {
     $triggered = false;
-    Event::listen(function (BeforeSave $event) use (&$triggered) {
+    Event::listen(function (ElementLifecycleSaving $event) use (&$triggered) {
         $triggered = true;
     });
 
@@ -34,7 +34,7 @@ test('beforeSave triggers event', function () {
 });
 
 test('beforeSave event can prevent save', function () {
-    Event::listen(function (BeforeSave $event) {
+    Event::listen(function (ElementLifecycleSaving $event) {
         $event->isValid = false;
     });
 
@@ -48,7 +48,7 @@ test('beforeSave event can prevent save', function () {
 
 test('beforeSave event receives isNew parameter', function () {
     $receivedIsNew = [];
-    Event::listen(function (BeforeSave $event) use (&$receivedIsNew) {
+    Event::listen(function (ElementLifecycleSaving $event) use (&$receivedIsNew) {
         $receivedIsNew[] = $event->isNew;
     });
 
@@ -59,7 +59,7 @@ test('beforeSave event receives isNew parameter', function () {
 
 test('afterSave triggers event', function () {
     $triggered = false;
-    Event::listen(function (AfterSave $event) use (&$triggered) {
+    Event::listen(function (ElementLifecycleSaved $event) use (&$triggered) {
         $triggered = true;
     });
 
@@ -70,7 +70,7 @@ test('afterSave triggers event', function () {
 
 test('afterSave event receives isNew parameter', function () {
     $receivedIsNew = null;
-    Event::listen(function (AfterSave $event) use (&$receivedIsNew) {
+    Event::listen(function (ElementLifecycleSaved $event) use (&$receivedIsNew) {
         $receivedIsNew = $event->isNew;
     });
 
@@ -81,7 +81,7 @@ test('afterSave event receives isNew parameter', function () {
 
 test('afterPropagate triggers event', function () {
     $triggered = false;
-    Event::listen(function (AfterPropagate $event) use (&$triggered) {
+    Event::listen(function (ElementLifecyclePropagated $event) use (&$triggered) {
         $triggered = true;
     });
 
@@ -92,7 +92,7 @@ test('afterPropagate triggers event', function () {
 
 test('afterPropagate event receives isNew parameter', function () {
     $receivedIsNew = [];
-    Event::listen(function (AfterPropagate $event) use (&$receivedIsNew) {
+    Event::listen(function (ElementLifecyclePropagated $event) use (&$receivedIsNew) {
         $receivedIsNew[] = $event->isNew;
     });
 
@@ -103,7 +103,7 @@ test('afterPropagate event receives isNew parameter', function () {
 
 test('beforeDelete triggers event', function () {
     $triggered = false;
-    Event::listen(function (BeforeDelete $event) use (&$triggered) {
+    Event::listen(function (ElementLifecycleDeleting $event) use (&$triggered) {
         $triggered = true;
     });
 
@@ -113,7 +113,7 @@ test('beforeDelete triggers event', function () {
 });
 
 test('beforeDelete event can prevent delete', function () {
-    Event::listen(function (BeforeDelete $event) {
+    Event::listen(function (ElementLifecycleDeleting $event) {
         $event->isValid = false;
     });
 
@@ -124,7 +124,7 @@ test('beforeDelete event can prevent delete', function () {
 
 test('afterDelete triggers event', function () {
     $triggered = false;
-    Event::listen(function (AfterDelete $event) use (&$triggered) {
+    Event::listen(function (ElementLifecycleDeleted $event) use (&$triggered) {
         $triggered = true;
     });
 
@@ -135,7 +135,7 @@ test('afterDelete triggers event', function () {
 
 test('beforeRestore triggers event', function () {
     $triggered = false;
-    Event::listen(function (BeforeRestore $event) use (&$triggered) {
+    Event::listen(function (ElementLifecycleRestoring $event) use (&$triggered) {
         $triggered = true;
     });
 
@@ -145,7 +145,7 @@ test('beforeRestore triggers event', function () {
 });
 
 test('beforeRestore event can prevent restore', function () {
-    Event::listen(function (BeforeRestore $event) {
+    Event::listen(function (ElementLifecycleRestoring $event) {
         $event->isValid = false;
     });
 
@@ -156,7 +156,7 @@ test('beforeRestore event can prevent restore', function () {
 
 test('afterRestore triggers event', function () {
     $triggered = false;
-    Event::listen(function (AfterRestore $event) use (&$triggered) {
+    Event::listen(function (ElementLifecycleRestored $event) use (&$triggered) {
         $triggered = true;
     });
 

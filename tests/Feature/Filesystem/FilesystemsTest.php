@@ -5,7 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
-use CraftCms\Cms\Filesystem\Events\RegisterFilesystemTypes;
+use CraftCms\Cms\Filesystem\Events\FilesystemTypesResolving;
 use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
@@ -32,7 +32,7 @@ it('can register extra filesystem types through an event', function () {
         ->toBeInstanceOf(Collection::class)
         ->not()->toContain(Temp::class);
 
-    Event::listen(RegisterFilesystemTypes::class, function (RegisterFilesystemTypes $event) {
+    Event::listen(FilesystemTypesResolving::class, function (FilesystemTypesResolving $event) {
         $event->types->add(Temp::class);
     });
 

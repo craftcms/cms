@@ -47,6 +47,7 @@ use CraftCms\Cms\Http\Controllers\Users\UsersController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
 use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
+use CraftCms\Cms\Http\Middleware\EnsureTwoFactorChallengeIsRecent;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
@@ -62,7 +63,8 @@ Route::get('install', [InstallController::class, 'index']);
 
 Route::middleware('craft.web')->group(function () {
     Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
-    Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm']);
+    Route::post(CpAuthPath::Login->value, [LoginController::class, 'attemptLogin']);
+    Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm'])->middleware(EnsureTwoFactorChallengeIsRecent::class);
     Route::get(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'show']);
     Route::post(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'store']);
     Route::get(CpAuthPath::VerifyEmail->value, [VerifyEmailController::class, 'show']);
@@ -271,6 +273,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         } else {
             Route::get('settings/users', fn () => redirect(cp_url('settings/users/fields')));
         }
+        Route::view('settings/users/fields', 'settings/users/fields');
 
         // User groups
         Route::middleware([RequireEdition::class.':'.Edition::Team->value])->group(function () {

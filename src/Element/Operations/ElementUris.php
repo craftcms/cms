@@ -9,8 +9,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\AfterUpdateSlugAndUri;
-use CraftCms\Cms\Element\Events\BeforeUpdateSlugAndUri;
+use CraftCms\Cms\Element\Events\ElementSlugAndUriUpdated;
+use CraftCms\Cms\Element\Events\ElementSlugAndUriUpdating;
 use CraftCms\Cms\Element\Events\SetElementUri;
 use CraftCms\Cms\Element\Jobs\UpdateElementSlugsAndUris;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
@@ -67,7 +67,7 @@ readonly class ElementUris
             $this->setElementUri($element);
         }
 
-        event(new BeforeUpdateSlugAndUri($element));
+        event(new ElementSlugAndUriUpdating($element));
 
         DB::table(Table::ELEMENTS_SITES)
             ->where('elementId', $element->id)
@@ -78,7 +78,7 @@ readonly class ElementUris
                 'dateUpdated' => now(),
             ]);
 
-        event(new AfterUpdateSlugAndUri($element));
+        event(new ElementSlugAndUriUpdated($element));
 
         $this->elementCaches->invalidateForElement($element);
 

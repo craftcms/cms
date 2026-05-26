@@ -15,6 +15,7 @@ use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Traits\Conditionable;
+use Stringable;
 
 use function CraftCms\Cms\template;
 
@@ -53,7 +54,7 @@ class CpModalResponse implements Responsable
     public ?string $submitButtonLabel = null;
 
     /**
-     * @var string|callable|null The content HTML.
+     * @var string|Stringable|callable|null The content HTML.
      *
      * @see contentHtml()
      * @see contentTemplate()
@@ -61,7 +62,7 @@ class CpModalResponse implements Responsable
     public $contentHtml;
 
     /**
-     * @var string|callable|null The errors summary HTML (DEV-212).
+     * @var string|Stringable|callable|null The errors summary HTML (DEV-212).
      *
      * @see errorSummary()
      * @see errorSummaryTemplate()
@@ -113,7 +114,7 @@ class CpModalResponse implements Responsable
     /**
      * Sets the content HTML.
      */
-    public function contentHtml(callable|string|null $value): self
+    public function contentHtml(callable|string|Stringable|null $value): self
     {
         $this->contentHtml = $value;
 
@@ -133,7 +134,7 @@ class CpModalResponse implements Responsable
     /**
      * Sets the errors summary HTML.
      */
-    public function errorSummary(callable|string|null $value): self
+    public function errorSummary(callable|string|Stringable|null $value): self
     {
         $this->errorSummary = $value;
 

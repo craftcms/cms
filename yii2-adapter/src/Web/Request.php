@@ -10,6 +10,7 @@
 namespace CraftCms\Yii2Adapter\Web;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Yii2Adapter\Http\CaptureOriginalActionRequestUri;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Request as IlluminateRequest;
 use Yii;
@@ -148,6 +149,12 @@ class Request extends \yii\web\Request
      */
     protected function resolveRequestUri(): bool|string
     {
+        $originalUri = $this->getIlluminateRequest()->attributes->get(CaptureOriginalActionRequestUri::ORIGINAL_ACTION_REQUEST_URI);
+
+        if (is_string($originalUri)) {
+            return $originalUri;
+        }
+
         return $this->getIlluminateRequest()->getRequestUri();
     }
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\BulkOpDeferrals;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
-use CraftCms\Cms\Element\BulkOp\Events\DeferredBulkOpReplay;
+use CraftCms\Cms\Element\BulkOp\Events\DeferredBulkOpReplayed;
 use CraftCms\Cms\Entry\Elements\Entry;
 use Illuminate\Support\Facades\DB;
 
@@ -39,7 +39,7 @@ it('does nothing outside a bulk op', function () {
 it('replays a watched event when the bulk op ends', function () {
     $replays = [];
 
-    $this->deferrals->defer(TestDeferredBulkEvent::class, function (DeferredBulkOpReplay $event) use (&$replays) {
+    $this->deferrals->defer(TestDeferredBulkEvent::class, function (DeferredBulkOpReplayed $event) use (&$replays) {
         $replays[] = $event;
     }, data: ['source' => 'native']);
 
@@ -95,11 +95,11 @@ it('replays multiple handlers for the same watched event', function () {
 it('records and replays every watch key registered for the same event', function () {
     $replays = [];
 
-    $this->deferrals->defer(TestDeferredBulkEvent::class, function (DeferredBulkOpReplay $event) use (&$replays) {
+    $this->deferrals->defer(TestDeferredBulkEvent::class, function (DeferredBulkOpReplayed $event) use (&$replays) {
         $replays[] = $event->watchKey;
     }, watchKey: 'first-watch-key');
 
-    $this->deferrals->defer(TestDeferredBulkEvent::class, function (DeferredBulkOpReplay $event) use (&$replays) {
+    $this->deferrals->defer(TestDeferredBulkEvent::class, function (DeferredBulkOpReplayed $event) use (&$replays) {
         $replays[] = $event->watchKey;
     }, watchKey: 'second-watch-key');
 
@@ -114,7 +114,7 @@ it('records and replays every watch key registered for the same event', function
 it('replays once per active bulk op key and leaves other keys pending', function () {
     $replayedKeys = [];
 
-    $this->deferrals->defer(TestDeferredBulkEvent::class, function (DeferredBulkOpReplay $event) use (&$replayedKeys) {
+    $this->deferrals->defer(TestDeferredBulkEvent::class, function (DeferredBulkOpReplayed $event) use (&$replayedKeys) {
         $replayedKeys[] = $event->key;
     });
 
@@ -148,7 +148,7 @@ it('persists pending triggers for later replay', function () {
 it('replays persisted rows and deletes them', function () {
     $replays = [];
 
-    $this->deferrals->defer(TestDeferredBulkEvent::class, function (DeferredBulkOpReplay $event) use (&$replays) {
+    $this->deferrals->defer(TestDeferredBulkEvent::class, function (DeferredBulkOpReplayed $event) use (&$replays) {
         $replays[] = $event;
     }, data: ['source' => 'persisted']);
 
@@ -170,7 +170,7 @@ it('replays persisted rows and deletes them', function () {
 it('replays before elements bulk op rows are cleaned up', function () {
     $rowsVisibleDuringReplay = null;
 
-    $this->deferrals->defer(TestDeferredBulkEvent::class, function (DeferredBulkOpReplay $event) use (&$rowsVisibleDuringReplay) {
+    $this->deferrals->defer(TestDeferredBulkEvent::class, function (DeferredBulkOpReplayed $event) use (&$rowsVisibleDuringReplay) {
         $rowsVisibleDuringReplay = DB::connection('db2')
             ->table(Table::ELEMENTS_BULKOPS)
             ->where('key', $event->key)

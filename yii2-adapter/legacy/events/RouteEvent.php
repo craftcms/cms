@@ -14,7 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Route\Events\SavingRoute}, {@see \CraftCms\Cms\Route\Events\RouteSaved}, {@see \CraftCms\Cms\Route\Events\DeletingRoute}, or {@see \CraftCms\Cms\Route\Events\RouteDeleted} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Route\Events\RouteSaving}, {@see \CraftCms\Cms\Route\Events\RouteSaved}, {@see \CraftCms\Cms\Route\Events\RouteDeleting}, or {@see \CraftCms\Cms\Route\Events\RouteDeleted} instead.
  */
 class RouteEvent extends Event
 {

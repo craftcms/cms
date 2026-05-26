@@ -10,8 +10,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Artisan;
 
 use function Pest\Laravel\actingAs;
-use function Pest\Laravel\get;
 use function Pest\Laravel\getJson;
+use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
@@ -32,7 +32,7 @@ it('does not run the queue when automatic queue running is disabled', function (
 
     $callbackCount = count(terminatingCallbacks());
 
-    get(action([QueueController::class, 'run']))
+    post(action([QueueController::class, 'run']))
         ->assertOk()
         ->assertContent('');
 
@@ -47,7 +47,7 @@ it('does not run the queue when a job is reserved', function () {
 
     $callbackCount = count(terminatingCallbacks());
 
-    get(action([QueueController::class, 'run']))
+    post(action([QueueController::class, 'run']))
         ->assertOk()
         ->assertContent('');
 
@@ -61,7 +61,7 @@ it('does not run the queue when there are no pending jobs', function () {
 
     $callbackCount = count(terminatingCallbacks());
 
-    get(action([QueueController::class, 'run']))
+    post(action([QueueController::class, 'run']))
         ->assertOk()
         ->assertContent('');
 
@@ -84,7 +84,7 @@ it('runs one queued job after the response terminates', function () {
 
     $callbackCount = count(terminatingCallbacks());
 
-    get(action([QueueController::class, 'run']))
+    post(action([QueueController::class, 'run']))
         ->assertOk()
         ->assertContent('');
 
@@ -105,7 +105,7 @@ it('deduplicates queue names and falls back to the default memory limit', functi
         '--once',
     ])->andReturn(0);
 
-    get(action([QueueController::class, 'run']))->assertOk();
+    post(action([QueueController::class, 'run']))->assertOk();
 });
 
 it('returns total jobs and job info without a limit', function () {

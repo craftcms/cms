@@ -5,10 +5,10 @@
   import {computed, useTemplateRef} from 'vue';
   import type {SelectItem, SelectOption, Site} from '@/types';
   import InputCombobox from '@/components/form/InputCombobox.vue';
+  import CraftCombobox from '@/components/form/CraftCombobox.vue';
   import {useInputGenerator} from '@/composables/useInputGenerator';
   import {toHandle} from '@craftcms/cp/utilities/string.ts.mjs';
   import useCraftData from '@/composables/useCraftData';
-  import CraftCombobox from '@/components/form/CraftCombobox.vue';
 
   const props = defineProps<{
     inertiaForm: InertiaForm<any>;

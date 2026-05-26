@@ -16,7 +16,7 @@ use function CraftCms\Cms\t;
  */
 abstract class BaseNumberConditionRule extends BaseTextConditionRule
 {
-    protected const OPERATOR_BETWEEN = 'between';
+    protected const string OPERATOR_BETWEEN = 'between';
 
     public string $maxValue = '';
 
@@ -47,6 +47,8 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
             self::OPERATOR_BETWEEN,
             self::OPERATOR_NOT_EMPTY,
             self::OPERATOR_EMPTY,
+            self::OPERATOR_IN,
+            self::OPERATOR_NOT_IN,
         ];
     }
 
@@ -108,7 +110,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
     }
 
     #[Override]
-    protected function paramValue(): ?string
+    protected function paramValue(): string|array|null
     {
         if ($this->operator !== self::OPERATOR_BETWEEN) {
             return parent::paramValue();

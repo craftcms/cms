@@ -29,6 +29,8 @@ class LegacyMiddleware
 
     public function handle(Request $request, Closure $next): mixed
     {
+        app()->instance('request', $request);
+
         if ($request->uri()->path() === 'index.php' && $request->has('p')) {
             $internal = Request::create(
                 uri: $request->get('p'),
@@ -51,13 +53,16 @@ class LegacyMiddleware
         $this->restoreEmptyStrings($request);
 
         try {
-            /** @var \craft\web\Request $request */
-            $request = Craft::$app->get('request');
+            $this->ensureCraftApp();
+
+            /** @var \craft\web\Request $yiiRequest */
+            $yiiRequest = Craft::createObject(App::webRequestConfig());
+            $yiiRequest->csrfCookie = Craft::cookieConfig([], $yiiRequest);
 
             // Remove any token as it was already handled by Laravel's HandleTokenRequest
-            $request->setToken(null);
+            $yiiRequest->setToken(null);
 
-            Craft::$app->set('request', $request);
+            Craft::$app->set('request', $yiiRequest);
 
             /**
              * Reset the user as it could have been set before.
@@ -123,6 +128,19 @@ class LegacyMiddleware
             Craft::$app = null;
             app()->forgetInstance('Craft');
         });
+    }
+
+    private function ensureCraftApp(): void
+    {
+        if (class_exists(Craft::class, false) && Craft::$app) {
+            return;
+        }
+
+        $craftApp = $this->app->make('Craft');
+
+        if (!Craft::$app) {
+            Craft::$app = $craftApp;
+        }
     }
 
     private function restoreEmptyStrings(Request $request): void

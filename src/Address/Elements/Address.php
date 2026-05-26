@@ -9,6 +9,7 @@ use CommerceGuys\Addressing\AddressInterface;
 use CommerceGuys\Addressing\Country\Country;
 use CommerceGuys\Addressing\Subdivision\SubdivisionUpdater;
 use CraftCms\Cms\Address\Addresses;
+use CraftCms\Cms\Address\Concerns\LegacyConstants;
 use CraftCms\Cms\Address\Conditions\AddressCondition;
 use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Address\Validation\AddressRules;
@@ -19,13 +20,18 @@ use CraftCms\Cms\Element\Concerns\NestedElement;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Shared\Concerns\HasNames;
+use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
+use Illuminate\Support\Facades\Auth;
 use Override;
 use RuntimeException;
 
@@ -38,6 +44,7 @@ use function CraftCms\Cms\t;
 class Address extends Element implements AddressInterface, NestedElementInterface
 {
     use HasNames;
+    use LegacyConstants;
     use NestedElement;
 
     public const string GQL_TYPE_NAME = 'Address';
@@ -287,6 +294,16 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     #[Override]
+    public function safeAttributes(): array
+    {
+        return array_values(array_diff(parent::safeAttributes(), [
+            'fieldId',
+            'ownerId',
+            'primaryOwnerId',
+        ]));
+    }
+
+    #[Override]
     public function setAttributes($values): void
     {
         // Don't even allow setting a blank country code
@@ -333,6 +350,42 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         $owner = $this->getOwner();
 
         return $owner instanceof User && $owner->getIsCurrent();
+    }
+
+    #[Override]
+    protected function safeActionMenuItems(): array
+    {
+        $items = parent::safeActionMenuItems();
+
+        if (
+            app(ElementRequest::class)->element === $this &&
+            Auth::user()->isAdmin() &&
+            Cms::config()->allowAdminChanges &&
+            ! empty($this->fieldId)
+        ) {
+            $items[] = ['type' => MenuItemType::HR];
+
+            // Field settings
+            $fieldEditId = sprintf('edit-field-%s', mt_rand());
+            $items[] = [
+                'id' => $fieldEditId,
+                'icon' => 'gear',
+                'label' => t('Field settings'),
+            ];
+
+            HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
+    (() => {
+      $('#' + $id).on('activate', function() {
+        new Craft.CpScreenSlideout('fields/edit-field', {params: $params})
+      });
+    })();
+    JS, [
+                InputNamespace::namespaceId($fieldEditId),
+                ['fieldId' => $this->fieldId],
+            ]);
+        }
+
+        return $items;
     }
 
     #[AllowedInSandbox]

@@ -85,7 +85,7 @@ class ElementQueryMixin
     public function addOrderBy(): Closure
     {
         return function($columns) {
-            Deprecator::log('ElementQuery-scalar', 'Calling ->scalar on an ElementQuery is deprecated. Use ->value($column) instead.');
+            Deprecator::log('ElementQuery-addOrderBy', 'Calling ->addOrderBy on an ElementQuery is deprecated. Use ->orderBy($column) instead.');
 
             foreach (Arr::wrap($columns) as $column) {
                 /** @phpstan-ignore-next-line */

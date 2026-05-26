@@ -9,13 +9,21 @@ use CommerceGuys\Addressing\AddressFormat\LocalityType;
 use CommerceGuys\Addressing\AddressFormat\PostalCodeType;
 use CommerceGuys\Addressing\Country\CountryRepository;
 use CraftCms\Cms\Address\Addresses;
-use CraftCms\Cms\Address\Events\DefineAddressCountries;
-use CraftCms\Cms\Address\Events\DefineAddressFieldLabel;
-use CraftCms\Cms\Address\Events\DefineAddressSubdivisions;
-use CraftCms\Cms\Address\Events\DefineAddressUsedFields;
-use CraftCms\Cms\Address\Events\DefineAddressUsedSubdivisionFields;
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Address\Events\AddressCountriesResolving;
+use CraftCms\Cms\Address\Events\AddressFieldLabelResolving;
+use CraftCms\Cms\Address\Events\AddressSubdivisionsResolving;
+use CraftCms\Cms\Address\Events\AddressUsedFieldsResolving;
+use CraftCms\Cms\Address\Events\AddressUsedSubdivisionFieldsResolving;
+use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Address\Repositories\SubdivisionRepository;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
+use CraftCms\Cms\FieldLayout\LayoutElements\Addresses\LabelField;
+use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -39,7 +47,7 @@ it('can get the address format repository', function () {
 });
 
 it('can define address subdivisions with an event', function () {
-    Event::listen(DefineAddressSubdivisions::class, function (DefineAddressSubdivisions $event) {
+    Event::listen(AddressSubdivisionsResolving::class, function (AddressSubdivisionsResolving $event) {
         $event->subdivisions = ['foo'];
     });
 
@@ -51,7 +59,7 @@ it('can get the country list', function () {
 });
 
 it('can add countries through the event', function () {
-    Event::listen(DefineAddressCountries::class, function (DefineAddressCountries $event) {
+    Event::listen(AddressCountriesResolving::class, function (AddressCountriesResolving $event) {
         $event->countries['ME'] = 'Middle Earth';
     });
 
@@ -67,7 +75,7 @@ it('can get used fields for a country code', function () {
 });
 
 it('can change the used fields with an event', function () {
-    Event::listen(DefineAddressUsedFields::class, function (DefineAddressUsedFields $event) {
+    Event::listen(AddressUsedFieldsResolving::class, function (AddressUsedFieldsResolving $event) {
         $event->fields = ['changed'];
     });
 
@@ -81,7 +89,7 @@ it('can get used subdivision fields for a country code', function () {
 });
 
 it('can change the used subdivisionfields with an event', function () {
-    Event::listen(DefineAddressUsedSubdivisionFields::class, function (DefineAddressUsedSubdivisionFields $event) {
+    Event::listen(AddressUsedSubdivisionFieldsResolving::class, function (AddressUsedSubdivisionFieldsResolving $event) {
         $event->fields = ['changed'];
     });
 
@@ -93,14 +101,30 @@ it('can get a field label for a field and country code', function () {
 });
 
 it('can change the field label with an event', function () {
-    Event::listen(DefineAddressFieldLabel::class, function (DefineAddressFieldLabel $event) {
+    Event::listen(AddressFieldLabelResolving::class, function (AddressFieldLabelResolving $event) {
         $event->label = 'foo';
     });
 
     expect($this->addresses->getFieldLabel(AddressField::LOCALITY, 'BE'))->toBe('foo');
 });
 
-it('can format an address')->todo('When Address Element is ported');
+it('can format an address', function () {
+    $address = AddressModel::factory()->createElement([
+        'countryCode' => 'US',
+        'administrativeArea' => 'NY',
+        'locality' => 'New York',
+        'postalCode' => '10001',
+        'addressLine1' => '20 W 34th St.',
+    ]);
+
+    expect($this->addresses->formatAddress($address))->toContain(
+        '20 W 34th St.',
+        'New York',
+        'NY',
+        '10001',
+        'United States',
+    );
+});
 
 it('can get a locality type label', function () {
     expect($this->addresses->getLocalityTypeLabel(LocalityType::DISTRICT))->toBe('District');
@@ -122,5 +146,43 @@ it('can get the fieldlayout', function () {
     expect($this->addresses->getFieldLayout())->toBeInstanceOf(FieldLayout::class);
 });
 
-it('can save the fieldlayout')->todo('When Field layouts are ported');
-it('can handle changed address field layout')->todo('When Field layouts are ported');
+it('can save the fieldlayout', function () {
+    $layout = new FieldLayout([
+        'uid' => Str::uuid()->toString(),
+        'type' => Address::class,
+        'tabs' => [
+            [
+                'uid' => Str::uuid()->toString(),
+                'name' => 'Content',
+                'elements' => [
+                    [
+                        'uid' => Str::uuid()->toString(),
+                        'type' => LabelField::class,
+                    ],
+                ],
+            ],
+        ],
+    ]);
+
+    expect($this->addresses->saveFieldLayout($layout))->toBeTrue()
+        ->and(app(Fields::class)->getLayoutByType(Address::class, false)?->uid)->toBe($layout->uid);
+});
+
+it('can handle changed address field layout', function () {
+    $layout = $this->addresses->getFieldLayout();
+    $layout->uid ??= Str::uuid()->toString();
+    $layout->setTabs([
+        new FieldLayoutTab([
+            'layout' => $layout,
+            'uid' => Str::uuid()->toString(),
+            'name' => 'Changed',
+        ]),
+    ]);
+
+    $this->addresses->handleChangedAddressFieldLayout(new ItemUpdated(
+        path: ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS,
+        newValue: [$layout->uid => $layout->getConfig()],
+    ));
+
+    expect(app(Fields::class)->getLayoutByType(Address::class, false)?->getTabs()[0]->name)->toBe('Changed');
+});

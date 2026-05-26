@@ -20,7 +20,7 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
-use CraftCms\Cms\Field\Events\LocateUploadedFiles;
+use CraftCms\Cms\Field\Events\AssetsUploadedFilesLocating;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidFsException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
@@ -822,7 +822,7 @@ class Assets extends BaseRelationField
             }
         }
 
-        $event = new LocateUploadedFiles(
+        $event = new AssetsUploadedFilesLocating(
             field: $this,
             element: $element,
             files: $files,

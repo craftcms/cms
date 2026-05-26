@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Element\Events\DefineKeywords;
+use CraftCms\Cms\Element\Events\ElementKeywordsResolving;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\User\Elements\User;
@@ -54,11 +54,11 @@ describe('getSearchKeywords', function () {
         expect($element->getSearchKeywords('customField'))->toBe('custom-keywords-for-value');
     });
 
-    test('DefineKeywords event can override keywords when handled', function () {
+    test('ElementKeywordsResolving event can override keywords when handled', function () {
         $element = new TestSearchableElement;
         $element->title = 'Original Title';
 
-        Event::listen(function (DefineKeywords $event) {
+        Event::listen(function (ElementKeywordsResolving $event) {
             if ($event->attribute === 'title') {
                 $event->keywords = 'overridden-keywords';
                 $event->handled = true;
@@ -70,11 +70,11 @@ describe('getSearchKeywords', function () {
         expect($keywords)->toBe('overridden-keywords');
     });
 
-    test('DefineKeywords returns empty string when keywords is empty and handled', function () {
+    test('ElementKeywordsResolving returns empty string when keywords is empty and handled', function () {
         $element = new TestSearchableElement;
         $element->title = 'Original Title';
 
-        Event::listen(function (DefineKeywords $event) {
+        Event::listen(function (ElementKeywordsResolving $event) {
             $event->keywords = '';
             $event->handled = true;
         });
@@ -84,11 +84,11 @@ describe('getSearchKeywords', function () {
         expect($keywords)->toBe('');
     });
 
-    test('DefineKeywords is ignored when not handled', function () {
+    test('ElementKeywordsResolving is ignored when not handled', function () {
         $element = new TestSearchableElement;
         $element->title = 'Original Title';
 
-        Event::listen(function (DefineKeywords $event) {
+        Event::listen(function (ElementKeywordsResolving $event) {
             $event->keywords = 'this-should-be-ignored';
             // Note: not setting $event->handled = true
         });

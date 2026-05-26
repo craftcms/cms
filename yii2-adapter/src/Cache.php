@@ -9,6 +9,8 @@
 
 namespace CraftCms\Yii2Adapter;
 
+use CraftCms\DependencyAwareCache\Dependency\Dependency;
+use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Support\Facades\Cache as CacheFacade;
 
@@ -29,6 +31,17 @@ class Cache extends \yii\caching\Cache
     protected function getValue($key)
     {
         return $this->laravelCache->get($key, false);
+    }
+
+    public function set($key, $value, $duration = null, $dependency = null)
+    {
+        if ($dependency instanceof Dependency) {
+            DependencyCache::put($key, $value, $this->convertDuration($duration), $dependency);
+
+            return true;
+        }
+
+        return parent::set($key, $value, $duration, $dependency);
     }
 
     /**

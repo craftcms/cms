@@ -11,7 +11,7 @@ use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Log;
 
-use function CraftCms\Cms\template;
+use function CraftCms\Cms\pageTemplate;
 
 /**
  * @mixin Plugin
@@ -90,7 +90,7 @@ trait HasSettings
             return (string) $this->settingsHtml();
         }, 'settings');
 
-        return response(template('settings/plugins/_settings', [
+        return response(pageTemplate('settings/plugins/_settings', [
             'plugin' => $this,
             'settingsHtml' => $settingsHtml,
             'readOnly' => $readOnly,

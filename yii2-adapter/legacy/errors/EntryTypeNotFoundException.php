@@ -12,5 +12,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Entry\Exceptions\EntryTypeNotFoundException::class, EntryTypeNotFoundException::class);

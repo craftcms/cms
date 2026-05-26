@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Composer;
+use CraftCms\Cms\Support\File;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 
 beforeEach(function () {
@@ -11,7 +12,7 @@ beforeEach(function () {
 });
 
 it('can get the composer.json path', function () {
-    expect($this->composer->getJsonPath())->toBe(base_path('composer.json'));
+    expect($this->composer->getJsonPath())->toBe(File::normalizePath(base_path('composer.json')));
 });
 
 it('throws a FileNotFoundException when composer.json does not exist', function () {
@@ -23,7 +24,7 @@ it('throws a FileNotFoundException when composer.json does not exist', function 
 it('can get the composer.lock path', function () {
     touch(base_path('composer.lock'));
 
-    expect($this->composer->getLockPath())->toBe(base_path('composer.lock'));
+    expect($this->composer->getLockPath())->toBe(File::normalizePath(base_path('composer.lock')));
 
     unlink(base_path('composer.lock'));
 });

@@ -7,7 +7,7 @@ use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Events\BeforeDelete;
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleting;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
@@ -287,7 +287,7 @@ it('returns a failure response when deleting a primary nested element fails', fu
     $owner = User::find()->id(User::findOne()->id)->one();
     $address = AddressModel::factory()->withOwnedElement($owner, 1)->createElement();
 
-    Event::listen(BeforeDelete::class, function (BeforeDelete $event) use ($address) {
+    Event::listen(ElementLifecycleDeleting::class, function (ElementLifecycleDeleting $event) use ($address) {
         if ($event->element->id !== $address->id) {
             return;
         }

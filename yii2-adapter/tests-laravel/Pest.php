@@ -2,4 +2,4 @@
 
 use CraftCms\Yii2Adapter\Tests\TestCase;
 
-uses(TestCase::class)->in('Http', 'Queue', 'Legacy', 'View');
+uses(TestCase::class)->in('Filesystem', 'Http', 'Queue', 'Legacy', 'View');

@@ -3,14 +3,14 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
-use CraftCms\Cms\Validation\ComponentRules;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\Cms\Validation\Rules\EnvValueRule;
+use CraftCms\Cms\Validation\ValidatableRules;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
-class EnvValueRuleTestRuleset extends ComponentRules
+class EnvValueRuleTestRuleset extends ValidatableRules
 {
     #[Override]
     public function rules(): array
@@ -58,6 +58,7 @@ afterEach(function () {
     putenv('ENV_VALUE_RULE_EMAIL');
     putenv('ENV_VALUE_RULE_MAILER');
     putenv('ENV_VALUE_RULE_MISSING');
+    putenv('ENV_VALUE_RULE_BOOL');
     putenv('PASSWORD');
     Aliases::remove('@env-value-rule-email');
 });
@@ -132,6 +133,25 @@ it('formats parsed values in errors according to sensitivity', function (string 
 })->with([
     'non-sensitive environment variable' => ['$ENV_VALUE_RULE_EMAIL', 'Invalid value. (resolved-value)', fn () => putenv('ENV_VALUE_RULE_EMAIL=resolved-value')],
     'sensitive environment variable' => ['$PASSWORD', 'Invalid value.', fn () => putenv('PASSWORD=resolved-value')],
+]);
+
+it('parses boolean environment variables for the boolean rule', function (string $envValue, bool $shouldPass) {
+    putenv("ENV_VALUE_RULE_BOOL={$envValue}");
+
+    $validator = makeEnvValueRuleValidator('$ENV_VALUE_RULE_BOOL', ['required', 'boolean']);
+
+    expect($validator->passes())->toBe($shouldPass);
+})->with([
+    'true' => ['true', true],
+    'false' => ['false', true],
+    'yes' => ['yes', true],
+    'no' => ['no', true],
+    'on' => ['on', true],
+    'off' => ['off', true],
+    '1' => ['1', true],
+    '0' => ['0', true],
+    'maybe' => ['maybe', false],
+    'empty' => ['', false],
 ]);
 
 it('works from rulesets without mutating the subject value', function () {

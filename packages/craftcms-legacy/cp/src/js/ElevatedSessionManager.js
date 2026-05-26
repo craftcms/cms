@@ -1,9 +1,5 @@
 /** global: Craft */
 /** global: Garnish */
-import {
-  browserSupportsWebAuthn,
-  platformAuthenticatorIsAvailable,
-} from '@simplewebauthn/browser';
 
 /**
  * Elevated Session Manager
@@ -97,15 +93,12 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
         shadeClass: 'modal-shade dark login-modal-shade',
         onFadeIn: async () => {
           Craft.initUiElements($container);
-          new Craft.LoginForm($container.find('.login-container'), {
-            showPasskeyBtn: Craft.userHasPasskeys,
-            onLogin: () => {
-              this.success = true;
-              this.loginModal.hide();
-            },
+          const $loginForm = $container.find('craft-login-form');
+          $loginForm.on('craft:login:success', (event) => {
+            event.preventDefault();
+            this.success = true;
+            this.loginModal.hide();
           });
-          await Craft.appendHeadHtml(data.headHtml);
-          await Craft.appendBodyHtml(data.bodyHtml);
         },
         onFadeOut: () => {
           this.loginModal.destroy();

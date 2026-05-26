@@ -80,6 +80,7 @@ use Twig\ExpressionParser\Infix\BinaryOperatorExpressionParser;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\GlobalsInterface;
+use Twig\Node\Expression\Filter\DefaultFilter;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
@@ -94,18 +95,18 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         private readonly PageLifecycle $pageLifecycle,
     ) {}
 
-    public static function arraySome(TwigEnvironment $env, mixed $array, mixed $arrow): mixed
+    public static function arraySome(TwigEnvironment $env, mixed $array, mixed $arrow, bool $isSandboxed = false): mixed
     {
-        CoreExtension::checkArrow($env, $arrow, 'has some', 'operator');
+        CoreExtension::checkArrow($isSandboxed, $arrow, 'has some', 'operator');
 
-        return CoreExtension::arraySome($env, $array, $arrow);
+        return CoreExtension::arraySome($env, $array, $arrow, $isSandboxed);
     }
 
-    public static function arrayEvery(TwigEnvironment $env, mixed $array, mixed $arrow): mixed
+    public static function arrayEvery(TwigEnvironment $env, mixed $array, mixed $arrow, bool $isSandboxed = false): mixed
     {
-        CoreExtension::checkArrow($env, $arrow, 'has every', 'operator');
+        CoreExtension::checkArrow($isSandboxed, $arrow, 'has every', 'operator');
 
-        return CoreExtension::arrayEvery($env, $array, $arrow);
+        return CoreExtension::arrayEvery($env, $array, $arrow, $isSandboxed);
     }
 
     #[Override]
@@ -173,6 +174,14 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigTest('boolean', fn ($obj): bool => is_bool($obj)),
             new TwigTest('callable', fn ($obj): bool => is_callable($obj)),
             new TwigTest('countable', fn ($obj): bool => is_countable($obj)),
+            new TwigTest('empty', function ($obj): bool {
+                if ($obj instanceof Component) {
+                    // assume the IteratorAggregate implementation was not intentional
+                    return false;
+                }
+
+                return CoreExtension::testEmpty($obj);
+            }),
             new TwigTest('float', fn ($obj): bool => is_float($obj)),
             new TwigTest('instance of', fn ($obj, $class) => $obj instanceof $class),
             new TwigTest('integer', fn ($obj): bool => is_int($obj)),
@@ -227,6 +236,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('base64_encode', 'base64_encode'),
             new TwigFilter('boolean', 'boolval'),
             new TwigFilter('currency', $this->currencyFilter(...)),
+            new TwigFilter('default', $this->defaultFilter(...), ['node_class' => DefaultFilter::class]),
             new TwigFilter('filesize', $this->filesizeFilter(...)),
             new TwigFilter('float', 'floatval'),
             new TwigFilter('integer', 'intval'),
@@ -304,13 +314,13 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         return app(Addresses::class)->formatAddress($address, $options, $formatter);
     }
 
-    public function moneyFilter(?Money $money, ?string $formatLocale = null): ?string
+    public function moneyFilter(?Money $money, ?string $locale = null): ?string
     {
         if ($money === null) {
             return null;
         }
 
-        return MoneyHelper::toString($money, $formatLocale);
+        return MoneyHelper::toString($money, $locale);
     }
 
     public function translateFilter(mixed $message, mixed $category = null, mixed $params = null, ?string $language = null): string
@@ -343,6 +353,23 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         }
     }
 
+    /**
+     * Returns the passed-in value if it’s not empty; otherwise, the provided default value.
+     */
+    public static function defaultFilter(mixed $value, mixed $default = ''): mixed
+    {
+        if ($value instanceof Component) {
+            // assume the IteratorAggregate implementation was not intentional
+            return $value;
+        }
+
+        if (CoreExtension::testEmpty($value)) {
+            return $default;
+        }
+
+        return $value;
+    }
+
     public function filesizeFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = []): string
     {
         if ($value === null || $value === '') {
@@ -356,17 +383,24 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         }
     }
 
-    public function numberFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = []): string
+    public function numberFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = [], ?string $locale = null): string
     {
         if ($value === null || $value === '') {
             return '';
         }
 
+        $formatter = $locale
+            ? I18N::getLocaleById($locale)->getFormatter()
+            : I18N::getFormatter();
+
         try {
-            return I18N::getFormatter()->asDecimal($value, $decimals, $options);
+            if (! $formatter->willBeMisrepresented($value)) {
+                return $formatter->asDecimal($value, $decimals, $options);
+            }
         } catch (Throwable) {
-            return $value;
         }
+
+        return $value;
     }
 
     public function percentageFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = []): string

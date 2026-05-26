@@ -9,7 +9,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
-use CraftCms\Cms\Asset\Events\RegisterFileKinds;
+use CraftCms\Cms\Asset\Events\AssetFileKindsResolving;
 use CraftCms\Cms\Asset\Events\SetAssetFilename;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -38,7 +38,6 @@ use Throwable;
 use Twig\Error\RuntimeError;
 
 use function CraftCms\Cms\renderObjectTemplate;
-use function CraftCms\Cms\t;
 
 class AssetsHelper
 {
@@ -408,7 +407,7 @@ class AssetsHelper
         // Merge with the extraFileKinds setting
         self::$_fileKinds = Arr::merge(self::$_fileKinds, Cms::config()->extraFileKinds);
 
-        event($event = new RegisterFileKinds(self::$_fileKinds));
+        event($event = new AssetFileKindsResolving(self::$_fileKinds));
 
         return self::$_fileKinds = Arr::sort($event->fileKinds, 'label');
     }
@@ -533,7 +532,7 @@ class AssetsHelper
             return $path;
         }
 
-        $svg = file_get_contents(Aliases::get('@resources/images/thumbs/file.svg'));
+        $svg = file_get_contents(Aliases::get('@resources/public/images/thumbs/file.svg'));
 
         $extLength = strlen($extension);
 

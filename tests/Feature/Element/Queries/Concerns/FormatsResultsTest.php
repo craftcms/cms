@@ -1,7 +1,9 @@
 <?php
 
 use CraftCms\Cms\Element\Queries\AddressQuery;
+use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use Illuminate\Support\Collection;
 
 test('inReverse', function () {
@@ -109,3 +111,37 @@ it('maps concrete element table order columns', function (Closure $query, string
     'user last login date' => [userQuery(...), 'lastLoginDate', 'users.lastLoginDate'],
     'address country code' => [fn () => new AddressQuery, 'countryCode', 'addresses.countryCode'],
 ]);
+
+it('parses string order columns with directions', function () {
+    $query = entryQuery()->orderBy('dateUpdated DESC, title ASC');
+    $query->applyBeforeQueryCallbacks();
+
+    expect($query->getQuery()->orders)
+        ->toContain(['column' => 'elements.dateUpdated', 'direction' => 'desc'])
+        ->toContain(['column' => 'elements_sites.title', 'direction' => 'asc']);
+});
+
+it('parses string order columns with directions from find criteria', function () {
+    $entry = Entry::factory()->create();
+
+    expect(CraftCms\Cms\Entry\Elements\Entry::findOne([
+        'sectionId' => $entry->sectionId,
+        'orderBy' => 'dateUpdated DESC',
+    ]))->not()->toBeNull();
+});
+
+it('parses string order columns with directions from query config', function () {
+    $query = entryQuery(['orderBy' => 'dateUpdated DESC']);
+    $query->applyBeforeQueryCallbacks();
+
+    expect($query->getQuery()->orders)
+        ->toContain(['column' => 'elements.dateUpdated', 'direction' => 'desc']);
+});
+
+it('logs a deprecation for legacy string order columns', function () {
+    entryQuery()->orderBy('dateUpdated DESC');
+
+    expect(collect(array_keys(Deprecator::getRequestLogs()))
+        ->contains(fn (string $key) => str_starts_with($key, EntryQuery::class.'::orderBy(string)-')))
+        ->toBeTrue();
+});

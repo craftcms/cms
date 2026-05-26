@@ -9,7 +9,7 @@ use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\FieldLayout\Events\DefineShowInForm;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentShowInFormResolving;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Conditions\UserCondition;
@@ -273,7 +273,7 @@ abstract class FieldLayoutComponent extends Component
      */
     public function showInForm(?ElementInterface $element = null): bool
     {
-        event($event = new DefineShowInForm(
+        event($event = new FieldLayoutComponentShowInFormResolving(
             fieldLayoutComponent: $this,
             fieldLayout: $this->getLayout(),
             element: $element,

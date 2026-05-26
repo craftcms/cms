@@ -18,13 +18,14 @@ use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
 use CraftCms\Cms\Image\Events\DeletingTransformedImage;
-use CraftCms\Cms\Image\Events\TransformingImage;
+use CraftCms\Cms\Image\Events\ImageTransforming;
 use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use DateTimeInterface;
@@ -315,7 +316,7 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
             $this->storeTransformIndexData($index);
         }, $image);
 
-        event($event = new TransformingImage(
+        event($event = new ImageTransforming(
             asset: $asset,
             imageTransformIndex: $index,
             transform: $index->getTransform(),
@@ -497,18 +498,20 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
 
     public function storeTransformIndexData(ImageTransformIndex $index): void
     {
-        $values = $index->toArray([
-            'assetId',
-            'transformer',
-            'filename',
-            'format',
-            'transformString',
-            'volumeId',
-            'fileExists',
-            'inProgress',
-            'error',
-            'dateIndexed',
-        ], [], false);
+        $values = Query::prepareValuesForDb(
+            $index->toArray([
+                'assetId',
+                'transformer',
+                'filename',
+                'format',
+                'transformString',
+                'volumeId',
+                'fileExists',
+                'inProgress',
+                'error',
+                'dateIndexed',
+            ], [], false)
+        );
 
         $now = now();
 

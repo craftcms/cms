@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Console\PromptTask;
 use CraftCms\Cms\Database\Commands\Concerns\BackupTrait;
-use CraftCms\Cms\Database\Events\RegisterMigrators;
+use CraftCms\Cms\Database\Events\MigratorsResolving;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Str;
@@ -23,7 +24,6 @@ use Override;
 use Throwable;
 
 use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\task;
 
 class MigrateCommand extends Command implements Isolatable
 {
@@ -205,7 +205,7 @@ class MigrateCommand extends Command implements Isolatable
             }
         }
 
-        event($event = new RegisterMigrators);
+        event($event = new MigratorsResolving);
 
         foreach ($event->migrators as $migrator) {
             if (! $migrator instanceof Migrator) {
@@ -241,9 +241,9 @@ class MigrateCommand extends Command implements Isolatable
             return;
         }
 
-        task('Preparing database', function (Logger $logger) {
+        PromptTask::run('Preparing database', function (Logger $logger) {
             $logger->subLabel('Creating migration table');
             $this->callSilent('migrate:install');
-        }, keepSummary: true);
+        }, keepSummary: true, output: $this->output);
     }
 }

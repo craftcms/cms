@@ -16,7 +16,7 @@ use CraftCms\Cms\Field\Entries as EntryField;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Users as UserField;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
-use CraftCms\Cms\Gql\Events\RegisterGqlEagerLoadableFields;
+use CraftCms\Cms\Gql\Events\GqlEagerLoadableFieldsResolving;
 use CraftCms\Cms\Gql\Gql as GqlService;
 use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
 use CraftCms\Cms\Support\Arr;
@@ -231,7 +231,7 @@ class ElementQueryConditionBuilder extends Component
                 self::LOCALIZED_NODENAME => [EntryField::class],
             ];
 
-            event($event = new RegisterGqlEagerLoadableFields(fieldList: $list));
+            event($event = new GqlEagerLoadableFieldsResolving(fieldList: $list));
 
             $this->_additionalEagerLoadableNodes = $event->fieldList;
         }
@@ -447,17 +447,13 @@ class ElementQueryConditionBuilder extends Component
                     $subNode = $this->_fragments[$nodeName];
                 }
 
-                $wrappingFragment = $subNode;
-
-                $nodeName = $subNode->typeCondition->name->value;
-
                 // If we are inside a field that supports different subtypes, it should implement the appropriate interface
                 if ($parentField instanceof GqlInlineFragmentFieldInterface) {
                     // Get the Craft entity that correlates to the fragment
                     // Build the prefix, load the context and proceed in a recursive manner
                     try {
-                        $gqlFragmentEntity = $parentField->getGqlFragmentEntityByName($nodeName);
-                        $plan->nested = $this->_traverseAndBuildPlans($subNode, $plan, $parentField, $wrappingFragment, $gqlFragmentEntity->getFieldContext());
+                        $gqlFragmentEntity = $parentField->getGqlFragmentEntityByName($subNode->typeCondition->name->value);
+                        $plan->nested = $this->_traverseAndBuildPlans($subNode, $plan, $parentField, $subNode, $gqlFragmentEntity->getFieldContext());
 
                         // Correct the handles and, maybe, aliases.
                         foreach ($plan->nested as $nestedPlan) {
@@ -469,11 +465,11 @@ class ElementQueryConditionBuilder extends Component
                         }
                         // This is to be expected, depending on whether the fragment is targeted towards the field itself instead of its subtypes.
                     } catch (InvalidArgumentException) {
-                        $plan->nested = $this->_traverseAndBuildPlans($subNode, $plan, $parentField, $wrappingFragment, $context);
+                        $plan->nested = $this->_traverseAndBuildPlans($subNode, $plan, $parentField, $subNode, $context);
                     }
                     // If we are not, just expand the fragment and traverse it as if on the same level in the query tree
                 } else {
-                    $plan->nested = $this->_traverseAndBuildPlans($subNode, $plan, $parentField, $wrappingFragment, $context);
+                    $plan->nested = $this->_traverseAndBuildPlans($subNode, $plan, $parentField, $subNode, $context);
                 }
             }
 

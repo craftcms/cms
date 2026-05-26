@@ -10,7 +10,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\Enums\Position;
-use CraftCms\Cms\View\Events\RenderingAssets;
+use CraftCms\Cms\View\Events\ViewAssetsRendering;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
 use Stringable;
@@ -99,10 +99,7 @@ class HtmlStack
      */
     public function jsWithVars(callable $fn, array $vars, Position $position = Position::Ready, ?string $key = null): void
     {
-        $encodedVars = array_map(fn (mixed $var): string => Json::encode($var), $vars);
-        $js = $fn(...array_values($encodedVars));
-
-        $this->js($js, $position, $key);
+        $this->js(Html::jsWithVars($fn, $vars), $position, $key);
     }
 
     /**
@@ -279,7 +276,7 @@ class HtmlStack
      */
     public function headHtml(bool $clear = true): string
     {
-        event(new RenderingAssets);
+        event(new ViewAssetsRendering);
 
         $head = Position::Head->value;
 
@@ -335,7 +332,7 @@ class HtmlStack
      */
     public function bodyBeginHtml(bool $clear = true): string
     {
-        event(new RenderingAssets);
+        event(new ViewAssetsRendering);
 
         $body = Position::BodyBegin->value;
 
@@ -361,7 +358,7 @@ class HtmlStack
      */
     public function bodyEndHtml(bool $clear = true): string
     {
-        event(new RenderingAssets);
+        event(new ViewAssetsRendering);
 
         $body = Position::BodyEnd->value;
 

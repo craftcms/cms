@@ -15,7 +15,7 @@ use CraftCms\Cms\Asset\Data\Volume;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.4.0
- * @deprecated in 6.0.0. [[\CraftCms\Cms\Utility\Events\ListVolumes]] should be used instead.
+ * @deprecated in 6.0.0. [[\CraftCms\Cms\Utility\Events\AssetIndexVolumesResolving]] should be used instead.
  */
 class ListVolumesEvent extends Event
 {

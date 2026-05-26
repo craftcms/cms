@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Plugin\Events\LoadingPlugins;
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
 use CraftCms\Cms\Plugin\Events\PluginsLoaded;
+use CraftCms\Cms\Plugin\Events\PluginsLoading;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -53,7 +54,7 @@ it('dispatches a loading event', function () {
     $triggeredLoading = false;
     $triggeredLoaded = false;
 
-    Event::listen(LoadingPlugins::class, function () use (&$triggeredLoading) {
+    Event::listen(PluginsLoading::class, function () use (&$triggeredLoading) {
         $triggeredLoading = true;
     });
 
@@ -63,7 +64,7 @@ it('dispatches a loading event', function () {
 
     $this->plugins->loadPlugins();
 
-    expect($triggeredLoading)->toBeTrue('LoadingPlugins not triggered');
+    expect($triggeredLoading)->toBeTrue('PluginsLoading not triggered');
     expect($triggeredLoaded)->toBeTrue('PluginsLoaded not triggered');
 });
 
@@ -110,6 +111,34 @@ it('can uninstall and install a plugin', function () {
 
     expect($this->plugins->isPluginInstalled('test-plugin'))->toBeTrue();
     expect($this->plugins->isPluginEnabled('test-plugin'))->toBeTrue();
+});
+
+it('ignores missing transaction exceptions during uninstall commits', function () {
+    $this->plugins->enablePlugin('test-plugin');
+
+    $manager = DB::getFacadeRoot();
+    $connectionName = DB::getDefaultConnection();
+    $connection = DB::connection();
+    $connectionMock = Mockery::mock($connection)->makePartial();
+
+    $connections = new ReflectionProperty($manager, 'connections');
+    $resolvedConnections = $connections->getValue($manager);
+    $resolvedConnections[$connectionName] = $connectionMock;
+    $connections->setValue($manager, $resolvedConnections);
+
+    $connectionMock
+        ->shouldReceive('commit')
+        ->once()
+        ->andThrow(new PDOException('There is no active transaction'));
+
+    try {
+        $this->plugins->uninstallPlugin('test-plugin');
+    } finally {
+        $resolvedConnections[$connectionName] = $connection;
+        $connections->setValue($manager, $resolvedConnections);
+    }
+
+    expect($this->plugins->isPluginInstalled('test-plugin'))->toBeFalse();
 });
 
 it('cannot uninstall a plugin that is not enabled', function () {

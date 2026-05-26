@@ -261,6 +261,51 @@ describe('bulkDuplicate', function () {
         ])->assertForbidden();
     });
 
+    it('does not allow bulk duplicate attributes to target an existing element ID', function () {
+        $source = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->createElement([
+                'title' => 'Source Title',
+                'slug' => 'source-title',
+            ]);
+        $target = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->createElement([
+                'title' => 'Target Title',
+                'slug' => 'target-title',
+            ]);
+
+        postJson(action([DuplicateElementController::class, 'bulkDuplicate']), [
+            'elements' => [[
+                'type' => Entry::class,
+                'id' => $source->id,
+                'siteId' => $source->siteId,
+            ]],
+            'newAttributes' => [
+                'id' => $target->id,
+                'sectionId' => $this->section->id,
+                'typeId' => $this->entryType->id,
+                'title' => 'Injected Title',
+            ],
+        ])->assertBadRequest();
+
+        $duplicate = Entry::find()
+            ->title('Injected Title')
+            ->siteId($source->siteId)
+            ->status(null)
+            ->one();
+        $target = Entry::find()
+            ->id($target->id)
+            ->siteId($target->siteId)
+            ->status(null)
+            ->one();
+
+        expect($duplicate)->toBeNull()
+            ->and($target->title)->toBe('Target Title');
+    });
+
     it('returns a failure response when bulk duplication raises an invalid element exception', function () {
         $entry = EntryModel::factory()
             ->forSection($this->section)

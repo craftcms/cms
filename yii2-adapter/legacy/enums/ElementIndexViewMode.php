@@ -12,5 +12,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Element\Enums\ElementIndexViewMode::class, ElementIndexViewMode::class);

@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static \Illuminate\Support\Collection<\CraftCms\Cms\Element\Contracts\ElementInterface> getEditableDrafts(\CraftCms\Cms\Element\Contracts\ElementInterface $element, string|null $permission = null)
+ * @method static \Illuminate\Support\Collection getEditableDrafts(\CraftCms\Cms\Element\Contracts\ElementInterface $element, string|null $permission = null)
  * @method static \CraftCms\Cms\Element\Contracts\ElementInterface createDraft(\CraftCms\Cms\Element\Contracts\ElementInterface $canonical, int|null $creatorId = null, string|null $name = null, string|null $notes = null, array $newAttributes = [], bool $provisional = false)
  * @method static string generateDraftName(int $canonicalId)
  * @method static bool saveElementAsDraft(\CraftCms\Cms\Element\Contracts\ElementInterface $element, int|null $creatorId = null, string|null $name = null, string|null $notes = null, bool $markAsSaved = true)

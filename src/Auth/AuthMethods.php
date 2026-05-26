@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Auth;
 
 use CraftCms\Cms\Auth\Enums\AuthError;
-use CraftCms\Cms\Auth\Events\Authenticating;
-use CraftCms\Cms\Auth\Events\RegisterAuthMethods;
+use CraftCms\Cms\Auth\Events\AuthMethodsResolving;
+use CraftCms\Cms\Auth\Events\UserAuthenticating;
 use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Auth\Methods\TOTP;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -79,7 +80,7 @@ class AuthMethods
             RecoveryCodes::class,
         ]);
 
-        event($event = new RegisterAuthMethods($methods));
+        event($event = new AuthMethodsResolving($methods));
 
         $this->methods[$user->id] = $event->methods->map(function (string $class) use ($user) {
             if (! is_subclass_of($class, AuthMethodInterface::class)) {
@@ -198,8 +199,9 @@ class AuthMethods
 
         if ($user) {
             Session::put('user.id', $user->id);
+            Session::put('user.pending_2fa_at', now()->timestamp);
         } else {
-            Session::forget('user.id');
+            Session::forget(['user.id', 'user.pending_2fa_at']);
         }
     }
 
@@ -234,7 +236,7 @@ class AuthMethods
 
     public function authenticate(User $user, #[SensitiveParameter] array $credentials): bool
     {
-        event($event = new Authenticating($credentials));
+        event($event = new UserAuthenticating($credentials));
 
         $this->authError = $event->authError;
 
@@ -281,7 +283,7 @@ class AuthMethods
 
     public function authenticateWithPasskey(User $user, string $requestOptions, string $response): bool
     {
-        event($event = new Authenticating);
+        event($event = new UserAuthenticating);
 
         $this->authError = $event->authError;
 
@@ -410,7 +412,14 @@ class AuthMethods
             $authError = $this->getAuthError($user);
         }
 
-        if ($authError === AuthError::InvalidCredentials || ! $authError) {
+        if (
+            $authError === AuthError::InvalidCredentials || ! $authError ||
+            // if preventUserEnumeration is true and the account is locked, still show the same message
+            (
+                Cms::config()->preventUserEnumeration &&
+                in_array($authError, [AuthError::AccountLocked, AuthError::AccountCooldown])
+            )
+        ) {
             return $defaultMessage ?? t('Invalid verification code.');
         }
 

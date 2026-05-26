@@ -11,6 +11,8 @@
   import {useAnnouncer} from '@/composables/useAnnouncer';
   import LiveRegion from '@/components/LiveRegion.vue';
   import {useFlashMessages} from '@/composables/useFlashMessages';
+  import UserMenu from '@/components/UserMenu.vue';
+  import FlashMessages from '@/components/FlashMessages.vue';
 
   const props = withDefaults(
     defineProps<{
@@ -26,35 +28,22 @@
   const {messages} = useFlashMessages();
 
   const page = usePage<{
-    flash: {
-      success: string | null;
-      error: string | null;
-    };
     crumbs?: Array<{
       url?: string;
       label: string;
     }> | null;
   }>();
-  const errorFlash = computed(
-    () => page.props.flash?.error ?? messages.value.error ?? null
-  );
-  const successFlash = computed(
-    () => page.props.flash?.success ?? messages.value.success ?? null
-  );
   const crumbs = computed(() => page.props.crumbs ?? null);
   const skipLinks = computed(() => [
     {label: t('Skip to main section'), url: '#main'},
     ...(props.additionalSkipLinks ?? []),
   ]);
   const sidebarToggle = useTemplateRef('sidebarToggle');
-  const {announcement, announce} = useAnnouncer();
+  const {announcement} = useAnnouncer();
   const fullPageTitle = computed(() => {
     const title = props.title?.trim();
     return title ? `${title} - ${system.name}` : system.name;
   });
-
-  watch(successFlash, (newMessage) => announce(newMessage));
-  watch(errorFlash, (newMessage) => announce(newMessage));
 
   const state = reactive<{
     sidebar: {
@@ -141,21 +130,12 @@
         <SystemInfo v-if="isLargeScreen" />
 
         <div class="ml-auto"></div>
-        <craft-button icon appearance="plain">
+        <craft-button icon appearance="plain" type="button">
           <craft-icon name="search" :label="t('Search')"></craft-icon>
         </craft-button>
+        <UserMenu />
       </div>
-      <!-- TODO: this is just temporary placement -->
-      <template v-if="errorFlash">
-        <craft-callout variant="danger" rounded="none">{{
-          errorFlash
-        }}</craft-callout>
-      </template>
-      <template v-if="successFlash">
-        <craft-callout variant="success" rounded="none">{{
-          successFlash
-        }}</craft-callout>
-      </template>
+      <FlashMessages />
     </header>
     <div class="cp__sidebar">
       <CpSidebar

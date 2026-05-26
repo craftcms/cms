@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Plugin\Concerns;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
-use CraftCms\Cms\User\Events\RegisterUserPermissions;
+use CraftCms\Cms\User\Events\UserPermissionsResolving;
 use Illuminate\Support\Facades\Event;
 
 /**
@@ -38,7 +38,7 @@ trait HasPermissions
             sprintf('Each permission returned from `getPermissions()` needs to be an instance of `%s`', Permission::class)
         );
 
-        Event::listen(RegisterUserPermissions::class, function (RegisterUserPermissions $event) use ($permissions) {
+        Event::listen(UserPermissionsResolving::class, function (UserPermissionsResolving $event) use ($permissions) {
             $plugin = self::getInstance();
 
             $event->permissions = $event->permissions->push(new PermissionGroup(

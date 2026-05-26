@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Element\Concerns;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Element\Events\BeforeDefineUrl;
-use CraftCms\Cms\Element\Events\DefineUrl;
+use CraftCms\Cms\Element\Events\ElementUrlResolved;
+use CraftCms\Cms\Element\Events\ElementUrlResolving;
 use CraftCms\Cms\Element\Events\SetRoute;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
@@ -83,20 +83,20 @@ trait HasRoutesAndUrls
 
     public function getUrl(): ?string
     {
-        event($beforeEvent = new BeforeDefineUrl($this));
+        event($beforeEvent = new ElementUrlResolving($this));
 
         $url = $beforeEvent->url;
         $handled = $beforeEvent->handled;
 
-        // If BeforeDefineUrl::$url is set to null, only respect that if $handled is true
+        // If ElementUrlResolving::$url is set to null, only respect that if $handled is true
         if ($url === null && ! $handled && isset($this->uri)) {
             $path = $this->getIsHomepage() ? '' : $this->uri;
             $url = Url::siteUrl($path, null, null, $this->siteId);
         }
 
-        event($event = new DefineUrl($this, $url));
+        event($event = new ElementUrlResolved($this, $url));
 
-        // If DefineUrl::$url is set to null, only respect that if $handled is true
+        // If ElementUrlResolved::$url is set to null, only respect that if $handled is true
         if ($event->url !== null || $event->handled) {
             $url = $event->url;
         }

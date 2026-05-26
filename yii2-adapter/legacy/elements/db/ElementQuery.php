@@ -122,6 +122,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public const EVENT_AFTER_POPULATE_ELEMENTS = 'afterPopulateElements';
 
+    /**
+     * The current element query instance being prepared, for reference by fields’ `queryCondition()` methods.
+     *
+     * @since 5.10.0
+     */
+    public static ?self $activeQuery = null;
+
     // Base config attributes
     // -------------------------------------------------------------------------
 
@@ -2110,6 +2117,14 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public function collectIds(?YiiConnection $db = null): Collection
+    {
+        return Collection::make($this->ids($db));
+    }
+
+    /**
      * Executes the query and renders the resulting elements using their partial templates.
      *
      * If no partial template exists for an element, its string representation will be output instead.
@@ -2390,29 +2405,10 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         // Set the field values
+        // (We'll set them after the element bas been created, and we have its field layout.)
         $content = Arr::pull($row, 'content');
-        $row['fieldValues'] = [];
-
-        if (!empty($content) && (!empty($this->customFields) || !empty($this->generatedFields))) {
-            if (is_string($content)) {
-                $content = Json::decode($content);
-            }
-
-            foreach ($this->customFields as $field) {
-                if ($field::dbType() !== null && isset($content[$field->layoutElement->uid])) {
-                    $handle = $field->layoutElement->handle ?? $field->handle;
-                    $row['fieldValues'][$handle] = $content[$field->layoutElement->uid];
-                }
-            }
-
-            foreach ($this->generatedFields as $field) {
-                if (isset($content[$field['uid']])) {
-                    $row['generatedFieldValues'][$field['uid']] = $content[$field['uid']];
-                    if (($field['handle'] ?? '') !== '') {
-                        $row['generatedFieldValues'][$field['handle']] = $content[$field['uid']];
-                    }
-                }
-            }
+        if (is_string($content)) {
+            $content = Json::decode($content);
         }
 
         if (array_key_exists('dateDeleted', $row)) {
@@ -2455,6 +2451,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($this->hasEventHandlers(self::EVENT_BEFORE_POPULATE_ELEMENT)) {
             $event = new PopulateElementEvent([
                 'row' => $row,
+                'content' => $content,
             ]);
             $this->trigger(self::EVENT_BEFORE_POPULATE_ELEMENT, $event);
             $row = $event->row ?? $row;
@@ -2465,11 +2462,38 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         $element ??= new $class($row);
 
+        // Set the custom field values
+        if (!empty($content)) {
+            $fieldLayout = $element->getFieldLayout();
+            if ($fieldLayout) {
+                $element->setDirtyFieldTracking(false);
+                foreach ($fieldLayout->getCustomFields() as $field) {
+                    if ($field::dbType() !== null && isset($content[$field->layoutElement->uid])) {
+                        $handle = $field->layoutElement->handle ?? $field->handle;
+                        $element->setFieldValue($handle, $content[$field->layoutElement->uid]);
+                    }
+                }
+                $element->setDirtyFieldTracking();
+
+                $generatedFieldValues = [];
+                foreach ($fieldLayout->getGeneratedFields() as $field) {
+                    if (isset($content[$field['uid']])) {
+                        $generatedFieldValues[$field['uid']] = $content[$field['uid']];
+                        if (($field['handle'] ?? '') !== '') {
+                            $generatedFieldValues[$field['handle']] = $content[$field['uid']];
+                        }
+                    }
+                }
+                $element->setGeneratedFieldValues($generatedFieldValues);
+            }
+        }
+
         // Fire an 'afterPopulateElement' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENT)) {
             $event = new PopulateElementEvent([
                 'element' => $element,
                 'row' => $row,
+                'content' => $content,
             ]);
             $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, $event);
             return $event->element;
@@ -2871,15 +2895,20 @@ class ElementQuery extends Query implements ElementQueryInterface
                 if (isset($fieldsByHandle[$handle])) {
                     foreach ($fieldsByHandle[$handle] as $instances) {
                         $firstInstance = $instances[0];
+                        static::$activeQuery = $this;
 
-                        $query = $firstInstance->modifyQuery(\Illuminate\Support\Facades\DB::query(), $instances, $fieldAttributes->$handle);
-                        $condition = $query->toSql();
-                        $params = collect($query->getBindings())->mapWithKeys(function($binding, $key) {
-                            return [':lqp' . $key => $binding];
-                        })->all();
+                        try {
+                            $query = $firstInstance->modifyQuery(\Illuminate\Support\Facades\DB::query(), $instances, $fieldAttributes->$handle);
+                            $condition = $query->toSql();
+                            $params = collect($query->getBindings())->mapWithKeys(function($binding, $key) {
+                                return [':lqp' . $key => $binding];
+                            })->all();
 
-                        foreach ($params as $key => $binding) {
-                            $condition = Str::replaceFirst('?', $key, $condition);
+                            foreach ($params as $key => $binding) {
+                                $condition = Str::replaceFirst('?', $key, $condition);
+                            }
+                        } finally {
+                            static::$activeQuery = null;
                         }
 
                         $condition = Str::after($condition, 'select * where ');
@@ -4031,5 +4060,26 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function get(): Collection
     {
         return collect($this->all());
+    }
+
+    /**
+     * @return \Illuminate\Database\Query\Builder
+     */
+    public function getQuery(): Builder
+    {
+        return \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ELEMENTS);
+    }
+
+    public function reorder($column = null, $direction = 'asc'): self
+    {
+        if ($column) {
+            $this->orderBy([$column => $direction === 'asc' ? SORT_ASC : SORT_DESC]);
+
+            return $this;
+        }
+
+        $this->orderBy = null;
+
+        return $this;
     }
 }

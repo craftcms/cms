@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static \CraftCms\Cms\Element\Contracts\ElementActionInterface[] availableActions(class-string<\CraftCms\Cms\Element\Contracts\ElementInterface> $elementType, string $sourceKey, \CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $elementQuery)
- * @method static \CraftCms\Cms\Element\Contracts\ElementActionInterface createAction(\CraftCms\Cms\Element\Contracts\ElementActionInterface|class-string<\CraftCms\Cms\Element\Contracts\ElementActionInterface>|array $action, class-string<\CraftCms\Cms\Element\Contracts\ElementInterface> $elementType)
- * @method static array serializeActions(iterable<\CraftCms\Cms\Element\Contracts\ElementActionInterface> $actions)
- * @method static \CraftCms\Cms\Element\Contracts\ElementActionInterface|null resolveAction(iterable<\CraftCms\Cms\Element\Contracts\ElementActionInterface> $actions, string $actionClass)
+ * @method static \CraftCms\Cms\Element\Contracts\ElementActionInterface[] availableActions(string $elementType, string $sourceKey, \CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $elementQuery)
+ * @method static \CraftCms\Cms\Element\Contracts\ElementActionInterface createAction(\CraftCms\Cms\Element\Contracts\ElementActionInterface|string|array $action, string $elementType)
+ * @method static array serializeActions(iterable $actions)
+ * @method static \CraftCms\Cms\Element\Contracts\ElementActionInterface|null resolveAction(iterable $actions, string $actionClass)
  * @method static array invoke(\CraftCms\Cms\Element\Contracts\ElementActionInterface $action, \CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $query)
  *
  * @see \CraftCms\Cms\Element\ElementActions

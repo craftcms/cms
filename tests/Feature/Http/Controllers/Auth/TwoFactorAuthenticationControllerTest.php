@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\Models\Authenticator;
+use CraftCms\Cms\Auth\Models\RecoveryCodes;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\User\Elements\User;
+use PragmaRX\Google2FA\Google2FA;
 
 use function Pest\Laravel\get;
 use function Pest\Laravel\getJson;
@@ -20,7 +22,7 @@ test('showForm redirects to login when user id in session is invalid', function 
 
 test('showForm aborts when user has no active 2fa methods', function () {
     $user = User::findOne();
-    withSession(['user.id' => $user->id]);
+    withSession(['user.id' => $user->id, 'user.pending_2fa_at' => now()->timestamp]);
 
     get(action([TwoFactorAuthenticationController::class, 'showForm']))
         ->assertStatus(400);
@@ -28,7 +30,7 @@ test('showForm aborts when user has no active 2fa methods', function () {
 
 test('showForm aborts with invalid method class', function () {
     $user = User::findOne();
-    withSession(['user.id' => $user->id]);
+    withSession(['user.id' => $user->id, 'user.pending_2fa_at' => now()->timestamp]);
 
     get(action([TwoFactorAuthenticationController::class, 'showForm'], [
         'method' => 'InvalidMethodClass',
@@ -37,7 +39,7 @@ test('showForm aborts with invalid method class', function () {
 
 test('verify fails with invalid totp code', function () {
     $user = User::findOne();
-    withSession(['user.id' => $user->id]);
+    withSession(['user.id' => $user->id, 'user.pending_2fa_at' => now()->timestamp]);
 
     postJson(action([TwoFactorAuthenticationController::class, 'verify']), [
         'code' => '000000',
@@ -46,7 +48,7 @@ test('verify fails with invalid totp code', function () {
 
 test('verifyRecoveryCode fails with invalid recovery code', function () {
     $user = User::findOne();
-    withSession(['user.id' => $user->id]);
+    withSession(['user.id' => $user->id, 'user.pending_2fa_at' => now()->timestamp]);
 
     postJson(action([TwoFactorAuthenticationController::class, 'verifyRecoveryCode']), [
         'code' => 'invalid-recovery-code',
@@ -55,27 +57,40 @@ test('verifyRecoveryCode fails with invalid recovery code', function () {
 
 test('verify returns success with valid TOTP code', function () {
     $user = User::findOne();
-    withSession(['user.id' => $user->id]);
+    $secret = (new Google2FA)->generateSecretKey();
 
-    $this->withoutExceptionHandling();
+    Authenticator::create([
+        'userId' => $user->id,
+        'auth2faSecret' => $secret,
+    ]);
+
+    withSession(['user.id' => $user->id, 'user.pending_2fa_at' => now()->timestamp]);
 
     postJson(action([TwoFactorAuthenticationController::class, 'verify']), [
-        'code' => '123456',
-    ]);
-})->todo('Implement once Auth service is ported and can be faked.');
+        'code' => (new Google2FA)->getCurrentOtp($secret),
+    ])->assertOk();
+});
 
 test('verifyRecoveryCode returns success with valid recovery code', function () {
     $user = User::findOne();
-    withSession(['user.id' => $user->id]);
+
+    RecoveryCodes::create([
+        'userId' => $user->id,
+        'recoveryCodes' => ['abc123-def456'],
+    ]);
+
+    withSession(['user.id' => $user->id, 'user.pending_2fa_at' => now()->timestamp]);
 
     postJson(action([TwoFactorAuthenticationController::class, 'verifyRecoveryCode']), [
-        'code' => 'some-recovery-code',
-    ]);
-})->todo('Implement once Auth service is ported and can be faked.');
+        'code' => 'abc123-def456',
+    ])->assertOk();
+
+    expect(RecoveryCodes::where('userId', $user->id)->first()->recoveryCodes)->toBe([false]);
+});
 
 test('verify requires code parameter', function () {
     $user = User::findOne();
-    withSession(['user.id' => $user->id]);
+    withSession(['user.id' => $user->id, 'user.pending_2fa_at' => now()->timestamp]);
 
     postJson(action([TwoFactorAuthenticationController::class, 'verify']), [])
         ->assertJsonValidationErrorFor('code');
@@ -83,7 +98,7 @@ test('verify requires code parameter', function () {
 
 test('verifyRecoveryCode requires code parameter', function () {
     $user = User::findOne();
-    withSession(['user.id' => $user->id]);
+    withSession(['user.id' => $user->id, 'user.pending_2fa_at' => now()->timestamp]);
 
     postJson(action([TwoFactorAuthenticationController::class, 'verifyRecoveryCode']), [])
         ->assertJsonValidationErrorFor('code');
@@ -96,7 +111,7 @@ test('showForm handles JSON requests', function () {
         'auth2faSecret' => 'secret',
     ]);
 
-    withSession(['user.id' => $user->id]);
+    withSession(['user.id' => $user->id, 'user.pending_2fa_at' => now()->timestamp]);
 
     getJson(action([TwoFactorAuthenticationController::class, 'showForm']))
         ->assertJsonStructure(['authMethod', 'otherMethods', 'authForm', 'returnUrl']);

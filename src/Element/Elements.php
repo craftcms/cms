@@ -10,7 +10,7 @@ use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
-use CraftCms\Cms\Element\Events\RegisterElementTypes;
+use CraftCms\Cms\Element\Events\ElementTypesResolving;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Operations\ElementCanonicalChanges;
@@ -43,6 +43,16 @@ class Elements
      * @var string[]
      */
     private array $elementTypesByRefHandle = [];
+
+    public const string REF_TAG_PATTERN = '/
+        \{                                      # Tags always begin with a `{`
+            (?P<elementType>[\w\\\\]+)          # Ref handle or element type class
+            \:(?P<ref>[^@\:\}\|]+)              # Identifier (ID, or another format supported by the element type)
+            (?:@(?P<site>[^\:\}\|]+))?          # [Optional] Site handle, ID, or UUID
+            (?:\:(?P<attr>[^\}\| ]+))?          # [Optional] Attribute, property, or field
+            (?:\ *\|\|\ *(?P<fallback>[^\}]+))? # [Optional] Fallback text (if the ref fails to resolve)
+        \}                                      # Tags always close with a `}`
+    /x';
 
     public function __construct(
         private readonly ElementPlaceholders $placeholders,
@@ -113,7 +123,7 @@ class Elements
             User::class,
         ];
 
-        event($event = new RegisterElementTypes($elementTypes));
+        event($event = new ElementTypesResolving($elementTypes));
 
         return $event->types;
     }
@@ -803,7 +813,7 @@ class Elements
      *
      * @param  class-string<ElementInterface>  $elementType  The root element type class
      * @param  ElementInterface[]  $elements  The root element models that should be updated with the eager-loaded elements
-     * @param  array<string|array>|string|EagerLoadPlan[]  $with  Dot-delimited paths of the elements that should be eager-loaded into the root elements
+     * @param  array<int, string|array|EagerLoadPlan>|string  $with  Dot-delimited paths of the elements that should be eager-loaded into the root elements
      */
     public function eagerLoadElements(string $elementType, array|Collection $elements, array|string $with): void
     {

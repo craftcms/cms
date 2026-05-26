@@ -7,6 +7,7 @@
 
 namespace crafttests\unit\web\twig;
 
+use ArrayIterator;
 use ArrayObject;
 use Craft;
 use craft\test\TestCase;
@@ -14,6 +15,7 @@ use craft\test\TestSetup;
 use craft\web\View;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Models\Element;
@@ -38,7 +40,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use IteratorAggregate;
 use Throwable;
+use Traversable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -208,7 +212,37 @@ class ExtensionTest extends TestCase
         );
     }
 
-    public function test_translate_filter(): void
+    public function testEmptyTest(): void
+    {
+        $this->testRenderResult('empty', '{{ foo is empty ? "empty" : "not empty" }}', [
+            'foo' => null,
+        ]);
+
+        $this->testRenderResult('empty', '{{ foo is empty ? "empty" : "not empty" }}', [
+            'foo' => new class() implements IteratorAggregate {
+                public function getIterator(): Traversable
+                {
+                    return new ArrayIterator([]);
+                }
+            },
+        ]);
+
+        $this->testRenderResult('not empty', '{{ foo is empty ? "empty" : "not empty" }}', [
+            'foo' => new class() implements IteratorAggregate {
+                public function getIterator(): Traversable
+                {
+                    return new ArrayIterator([1, 2, 3]);
+                }
+            },
+        ]);
+
+        $this->testRenderResult('not empty', '{{ foo is empty ? "empty" : "not empty" }}', [
+            'foo' => new class() extends Component {
+            },
+        ]);
+    }
+
+    public function testTranslateFilter(): void
     {
         $this->markTestSkipped('Move test to Laravel');
 
@@ -843,6 +877,11 @@ class ExtensionTest extends TestCase
             '{{ 1000|number(decimals=2) }}'
         );
 
+        $this->testRenderResult(
+            '1 000,00',
+            '{{ 1000|number(decimals=2, locale="fr") }}',
+        );
+
         // |number should swallow the InvalidArgumentException here
         $this->testRenderResult(
             'foo',
@@ -877,6 +916,46 @@ class ExtensionTest extends TestCase
     public function test_widont_filter(): void
     {
         $this->testRenderResult('foo bar&nbsp;baz', '{{ "foo bar baz"|widont }}');
+    }
+
+    public function testDefaultFilter(): void
+    {
+        $this->testRenderResult('default', '{{ foo|default("default") }}');
+
+        $this->testRenderResult('default', '{{ foo|default("default") }}', [
+            'foo' => new class() implements IteratorAggregate {
+                public function __toString(): string
+                {
+                    return 'foo';
+                }
+                public function getIterator(): Traversable
+                {
+                    return new ArrayIterator([]);
+                }
+            },
+        ]);
+
+        $this->testRenderResult('foo', '{{ foo|default("default") }}', [
+            'foo' => new class() implements IteratorAggregate {
+                public function __toString(): string
+                {
+                    return 'foo';
+                }
+                public function getIterator(): Traversable
+                {
+                    return new ArrayIterator([1, 2, 3]);
+                }
+            },
+        ]);
+
+        $this->testRenderResult('foo', '{{ foo|default("default") }}', [
+            'foo' => new class() extends Component {
+                public function __toString(): string
+                {
+                    return 'foo';
+                }
+            },
+        ]);
     }
 
     public function test_clone_function(): void
@@ -987,6 +1066,16 @@ class ExtensionTest extends TestCase
     public function test_tag_function(): void
     {
         $this->testRenderResult(
+            '<p>Hello</p>',
+            '{{ tag("p", "Hello") }}'
+        );
+
+        $this->testRenderResult(
+            '<p>&lt;script&gt;alert(\'Hello\');&lt;/script&gt;</p>',
+            '{{ tag("p", "<script>alert(\'Hello\');</script>") }}'
+        );
+
+        $this->testRenderResult(
             '<p class="foo">Hello</p>',
             '{{ tag("p", {text: "Hello", class: "foo"}) }}'
         );
@@ -1003,12 +1092,55 @@ class ExtensionTest extends TestCase
     }
 
     /**
+     *
+     */
+    public function testHeadingFunctions(): void
+    {
+        for ($i = 1; $i <= 6; $i++) {
+            $this->testRenderResult(
+                "<h$i>Hello</h$i>",
+                "{{ heading($i, 'Hello') }}"
+            );
+            $this->testRenderResult(
+                "<h$i>Hello</h$i>",
+                "{{ h($i, 'Hello') }}"
+            );
+            $this->testRenderResult(
+                "<h$i>Hello</h$i>",
+                "{{ h$i('Hello') }}"
+            );
+        }
+
+        $this->testRenderResult(
+            '<h1>&lt;script&gt;alert(\'Hello\');&lt;/script&gt;</h1>',
+            '{{ h1("<script>alert(\'Hello\');</script>") }}'
+        );
+
+        $this->testRenderResult(
+            '<h1 class="foo">Hello</h1>',
+            '{{ h1({text: "Hello", class: "foo"}) }}'
+        );
+
+        $this->testRenderResult(
+            '<h1>&lt;script&gt;alert(\'Hello\');&lt;/script&gt;</h1>',
+            '{{ h1({text: "<script>alert(\'Hello\');</script>"}) }}'
+        );
+
+        $this->testRenderResult(
+            '<h1><script>alert(\'Hello\');</script></h1>',
+            '{{ h1({html: "<script>alert(\'Hello\');</script>"}) }}'
+        );
+
+        self::expectException(RuntimeError::class);
+        $this->view->renderString("{{ heading(7, 'Hello') }}");
+    }
+
+    /**
      * @throws LoaderError
      * @throws SyntaxError
      */
     public function test_csrf_input_function(): void
     {
-        Cms::config()->enableCsrfProtection = true;
         Session::start();
 
         $this->testRenderResult(

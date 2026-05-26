@@ -9,8 +9,8 @@ use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Events\ElementHydrated;
+use CraftCms\Cms\Element\Queries\Events\ElementHydrating;
 use CraftCms\Cms\Element\Queries\Events\ElementsHydrated;
-use CraftCms\Cms\Element\Queries\Events\HydratingElement;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Json;
@@ -121,39 +121,11 @@ trait HydratesElements
             $row['title'] = (string) ($row['title'] ?? '');
         }
 
-        // Set the field values
-        $content = Arr::pull($row, 'content');
-        $row['fieldValues'] = [];
-
-        if (! empty($content) && (! empty($this->customFields) || ! empty($this->generatedFields))) {
-            if (is_string($content)) {
-                $content = Json::decode($content);
-            }
-
-            foreach ($this->customFields as $field) {
-                if (is_null($field::dbType())) {
-                    continue;
-                }
-
-                if (! isset($content[$field->layoutElement->uid])) {
-                    continue;
-                }
-
-                $handle = $field->layoutElement->handle ?? $field->handle;
-                $row['fieldValues'][$handle] = $content[$field->layoutElement->uid];
-            }
-
-            foreach ($this->generatedFields as $field) {
-                if (! isset($content[$field['uid']])) {
-                    continue;
-                }
-
-                $row['generatedFieldValues'][$field['uid']] = $content[$field['uid']];
-
-                if (! empty($field['handle'] ?? '')) {
-                    $row['generatedFieldValues'][$field['handle']] = $content[$field['uid']];
-                }
-            }
+        // Remove the field values
+        // (We'll set them after the element has been created, and we have its field layout.)
+        $content = Arr::pull($row, 'content') ?? [];
+        if (is_string($content)) {
+            $content = Json::decode($content);
         }
 
         if (array_key_exists('dateDeleted', $row)) {
@@ -190,7 +162,7 @@ trait HydratesElements
             }
         }
 
-        event($event = new HydratingElement($row));
+        event($event = new ElementHydrating(row: $row, content: $content));
 
         /**
          * When using addSelect() to select extra columns, they might appear
@@ -202,7 +174,38 @@ trait HydratesElements
 
         $element = $event->element ?? new $class($row);
 
-        event($event = new ElementHydrated($element, $row));
+        // Set the custom field values
+        if (! empty($content)) {
+            $fieldLayout = $element->getFieldLayout();
+
+            if ($fieldLayout) {
+                $element->setDirtyFieldTracking(false);
+
+                foreach ($fieldLayout->getCustomFields() as $field) {
+                    if ($field::dbType() !== null && isset($content[$field->layoutElement->uid])) {
+                        $handle = $field->layoutElement->handle ?? $field->handle;
+                        $element->setFieldValue($handle, $content[$field->layoutElement->uid]);
+                    }
+                }
+
+                $element->setDirtyFieldTracking();
+
+                $generatedFieldValues = [];
+
+                foreach ($fieldLayout->getGeneratedFields() as $field) {
+                    if (isset($content[$field['uid']])) {
+                        $generatedFieldValues[$field['uid']] = $content[$field['uid']];
+                        if (($field['handle'] ?? '') !== '') {
+                            $generatedFieldValues[$field['handle']] = $content[$field['uid']];
+                        }
+                    }
+                }
+
+                $element->setGeneratedFieldValues($generatedFieldValues);
+            }
+        }
+
+        event($event = new ElementHydrated($element, $row, $content));
 
         return $event->element;
     }

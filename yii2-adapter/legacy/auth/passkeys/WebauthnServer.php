@@ -11,5 +11,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Auth\Passkeys\WebauthnServer::class, WebauthnServer::class);

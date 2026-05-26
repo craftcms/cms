@@ -2,14 +2,16 @@
 
 namespace craft\fields\conditions;
 
-/**
- * Text field condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Conditions\NumberFieldConditionRule} instead.
- */
-class NumberFieldConditionRule extends \CraftCms\Cms\Field\Conditions\NumberFieldConditionRule
-{
-    use \craft\base\LegacyEventConstants;
+/** @phpstan-ignore-next-line */
+if (false) {
+    /**
+     * Text field condition rule.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Conditions\NumberFieldConditionRule} instead.
+     */
+    class NumberFieldConditionRule extends \CraftCms\Cms\Field\Conditions\NumberFieldConditionRule
+    {
+    }
 }

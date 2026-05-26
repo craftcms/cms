@@ -2,17 +2,29 @@
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import dbBackupController from '@actions/Utilities/DbBackupController';
   import {useForm} from '@inertiajs/vue3';
-  import type CraftCheckbox from '@craftcms/cp/src/components/checkbox/checkbox';
+  import CraftCheckbox from '@craftcms/cp/vue/CraftCheckbox.vue';
+  import {useTemplateRef} from 'vue';
+  import useCraftData from '@/composables/useCraftData';
 
   const form = useForm({
-    downloadBackup: false,
+    downloadBackup: true,
   });
+
+  const {csrfTokenValue, csrfTokenName} = useCraftData();
+  const formRef = useTemplateRef('formRef');
 
   function handleSubmit() {
     form.clearErrors();
-    form.submit(dbBackupController(), {
-      onError: (e) => {
-        console.log('uh oh');
+
+    // If downloading, submit form natively to handle file response
+    if (form.downloadBackup) {
+      formRef.value?.submit();
+      return;
+    }
+
+    form.post(dbBackupController().url, {
+      onSuccess: () => {
+        form.reset();
       },
     });
   }
@@ -20,16 +32,25 @@
 
 <template>
   <div class="p-4">
-    <form @submit.prevent="handleSubmit" id="db-backup" method="post">
-      <craft-checkbox
+    <form
+      :action="dbBackupController().url"
+      ref="formRef"
+      @submit.prevent="handleSubmit"
+      id="db-backup"
+      method="post"
+    >
+      <input
+        v-if="csrfTokenName && csrfTokenValue"
+        type="hidden"
+        :name="csrfTokenName"
+        :value="csrfTokenValue"
+      />
+      <CraftCheckbox
         :label="t('Download backup')"
         name="downloadBackup"
-        .checked="form.downloadBackup"
-        @model-value-changed="
-          form.downloadBackup =
-            ($event.target as CraftCheckbox)?.checked === true
-        "
-      ></craft-checkbox>
+        v-model="form.downloadBackup"
+        value="on"
+      />
 
       <div class="mt-4">
         <craft-button type="submit" variant="accent" :loading="form.processing">

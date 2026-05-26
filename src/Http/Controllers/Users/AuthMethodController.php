@@ -14,6 +14,7 @@ use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -30,6 +31,8 @@ readonly class AuthMethodController
 
     public function setupHtml(Request $request, HtmlStack $HtmlStack): JsonResponse
     {
+        Session::put('user.pending_2fa_at', now()->timestamp);
+
         $class = $request->validate([
             'method' => ['required', 'string'],
         ])['method'];

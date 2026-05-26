@@ -11,13 +11,13 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\AfterDeleteElement;
-use CraftCms\Cms\Element\Events\AfterDeleteForSite;
-use CraftCms\Cms\Element\Events\AfterMergeElements;
-use CraftCms\Cms\Element\Events\AfterRestoreElement;
-use CraftCms\Cms\Element\Events\BeforeDeleteElement;
-use CraftCms\Cms\Element\Events\BeforeDeleteForSite;
-use CraftCms\Cms\Element\Events\BeforeRestoreElement;
+use CraftCms\Cms\Element\Events\ElementDeleted;
+use CraftCms\Cms\Element\Events\ElementDeletedForSite;
+use CraftCms\Cms\Element\Events\ElementDeleting;
+use CraftCms\Cms\Element\Events\ElementDeletingForSite;
+use CraftCms\Cms\Element\Events\ElementRestored;
+use CraftCms\Cms\Element\Events\ElementRestoring;
+use CraftCms\Cms\Element\Events\ElementsMerged;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -174,7 +174,7 @@ readonly class ElementDeletions
                 ));
             }
 
-            event(new AfterMergeElements($mergedElement->id, $prevailingElement->id));
+            event(new ElementsMerged($mergedElement->id, $prevailingElement->id));
 
             return $this->deleteElement($mergedElement);
         });
@@ -213,9 +213,13 @@ readonly class ElementDeletions
 
     public function deleteElement(ElementInterface $element, bool $hardDelete = false): bool
     {
-        event($event = new BeforeDeleteElement($element, $hardDelete));
+        event($event = new ElementDeleting($element, $hardDelete));
 
         $element->hardDelete = $hardDelete || $event->hardDelete;
+
+        if (! $event->isValid) {
+            return false;
+        }
 
         if (! $element->beforeDelete()) {
             return false;
@@ -271,7 +275,7 @@ readonly class ElementDeletions
             }
         });
 
-        event(new AfterDeleteElement($element));
+        event(new ElementDeleted($element));
 
         return true;
     }
@@ -322,7 +326,7 @@ readonly class ElementDeletions
 
         if (! empty($multiSiteElements)) {
             foreach ($multiSiteElements as $element) {
-                event(new BeforeDeleteForSite($element));
+                event(new ElementDeletingForSite($element));
             }
 
             foreach ($multiSiteElements as $element) {
@@ -350,7 +354,7 @@ readonly class ElementDeletions
             }
 
             foreach ($multiSiteElements as $element) {
-                event(new AfterDeleteForSite($element));
+                event(new ElementDeletedForSite($element));
             }
         }
 
@@ -367,7 +371,7 @@ readonly class ElementDeletions
     public function restoreElements(array $elements): bool
     {
         foreach ($elements as $element) {
-            event(new BeforeRestoreElement($element));
+            event(new ElementRestoring($element));
 
             if (! $element->beforeRestore()) {
                 return false;
@@ -447,7 +451,7 @@ readonly class ElementDeletions
                 $element->dateDeleted = null;
                 $element->deletedWithOwner = null;
 
-                event(new AfterRestoreElement($element));
+                event(new ElementRestored($element));
             }
 
             DB::commit();

@@ -17,13 +17,14 @@ use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
-use CraftCms\Cms\Support\Utils;
-use CraftCms\Cms\Validation\ComponentRules;
 use CraftCms\Cms\Validation\Contracts\Validatable;
+use CraftCms\Cms\Validation\ValidatableRules;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use CraftCms\RulesetValidation\Concerns\HasRuleset;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\MessageBag;
 use yii\validators\Validator;
+use Yiisoft\Arrays\ArrayableInterface;
 
 /**
  * Model base class.
@@ -32,11 +33,12 @@ use yii\validators\Validator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-#[Ruleset(ComponentRules::class)]
-abstract class Model extends \yii\base\Model implements ModelInterface, Validatable
+#[Ruleset(ValidatableRules::class)]
+abstract class Model extends \yii\base\Model implements ModelInterface, Validatable, Arrayable, ArrayableInterface
 {
     use ClonefixTrait;
     use HasRuleset;
+    use RejectsUnsafeConfigKeys;
 
     /**
      * @event \yii\base\Event The event that is triggered after the model's init cycle
@@ -92,6 +94,16 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
 
         // Intentionally not passing $config along
         parent::__construct();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function __set($name, $value)
+    {
+        $this->ensureConfigKeyIsSafe($name);
+
+        parent::__set($name, $value);
     }
 
     /**
@@ -245,7 +257,7 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
      * @inheritdoc
      * @since 4.0.0
      */
-    public function setAttributes($values, $safeOnly = true): void
+    public function setAttributes($values, $safeOnly = false): void
     {
         // Typecast them
         Typecast::properties(static::class, $values);
@@ -272,17 +284,24 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
             $attributes = Arr::except($attributes, $except);
         }
 
-        return $attributes;
+        return Arr::except($attributes, ['ruleset']);
     }
 
     public function attributes(): array
     {
-        return parent::attributes();
+        return array_values(array_diff(parent::attributes(), ['ruleset']));
     }
 
     public function safeAttributes(): array
     {
         return parent::safeAttributes();
+    }
+
+    public function offsetExists($offset): bool
+    {
+        return parent::offsetExists($offset) || (
+            is_string($offset) && $this->canGetProperty($offset)
+        );
     }
 
     public function getAttributeLabel($attribute): string
@@ -468,9 +487,14 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
         return [];
     }
 
+    public function passedValidation(): void
+    {
+        // Not implemented
+    }
+
     public function validationData($names = null, $except = []): array
     {
-        return Arr::except(Utils::getPublicProperties($this), ['ruleset']);
+        return Arr::except($this->toArray($names ?? []), $except);
     }
 
     public function attributeLabels(): array
@@ -481,5 +505,10 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
     public function inScenarios(string ...$scenarios): bool
     {
         return in_array($this->ruleset->getScenario(), $scenarios, true);
+    }
+
+    public function toArray(array $fields = [], array $expand = [], $recursive = true): array
+    {
+        return parent::toArray($fields, $expand, $recursive);
     }
 }

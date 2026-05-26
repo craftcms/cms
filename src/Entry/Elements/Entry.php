@@ -9,6 +9,7 @@ use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
@@ -36,13 +37,14 @@ use CraftCms\Cms\Entry\Actions\MoveToSection;
 use CraftCms\Cms\Entry\Actions\NewChild;
 use CraftCms\Cms\Entry\Actions\NewSiblingAfter;
 use CraftCms\Cms\Entry\Actions\NewSiblingBefore;
+use CraftCms\Cms\Entry\Concerns\LegacyConstants;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Conditions\SectionConditionRule;
 use CraftCms\Cms\Entry\Conditions\TypeConditionRule;
 use CraftCms\Cms\Entry\Data\EntryType;
-use CraftCms\Cms\Entry\Events\DefineEntryTypes;
-use CraftCms\Cms\Entry\Events\DefineMetaFields;
-use CraftCms\Cms\Entry\Events\DefineParentSelectionCriteria;
+use CraftCms\Cms\Entry\Events\EntryMetaFieldsResolving;
+use CraftCms\Cms\Entry\Events\EntryParentSelectionCriteriaResolving;
+use CraftCms\Cms\Entry\Events\EntryTypesResolving;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Validation\EntryRules;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -108,6 +110,7 @@ use function CraftCms\Cms\t;
 #[Ruleset(EntryRules::class)]
 class Entry extends Element implements Colorable, ExpirableElementInterface, Iconic, NestedElementInterface
 {
+    use LegacyConstants;
     use NestedElement {
         eagerLoadingMap as traitEagerLoadingMap;
         attributes as traitAttributes;
@@ -488,7 +491,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         if ($source === '*') {
             $sections = Sections::getAllSections()->all();
         } elseif ($source === 'singles') {
-            $sections = Sections::getSectionsByType(SectionType::Single);
+            $sections = Sections::getSectionsByType(SectionType::Single)->all();
         } elseif ($source !== null && preg_match('/^section:(.+)$/', $source, $matches)) {
             $sections = array_filter([
                 Sections::getSectionByUid($matches[1]),
@@ -1442,7 +1445,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         };
 
         if ($triggerEvent) {
-            event($event = new DefineEntryTypes($this, $entryTypes));
+            event($event = new EntryTypesResolving($this, $entryTypes));
 
             return $event->entryTypes;
         }
@@ -1783,6 +1786,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $actions = parent::safeActionMenuItems();
 
         if (
+            app(ElementRequest::class)->element === $this &&
             Auth::user()?->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
@@ -1835,10 +1839,7 @@ JS, [
             }
 
             // Field settings
-            if (
-                ! empty($this->fieldId) &&
-                app(ElementRequest::class)->element === $this
-            ) {
+            if (! empty($this->fieldId)) {
                 $fieldEditId = sprintf('edit-field-%s', mt_rand());
                 $actions[] = [
                     'id' => $fieldEditId,
@@ -1888,13 +1889,7 @@ JS, [
     {
         switch ($attribute) {
             case 'authors':
-                $authors = $this->getAuthors();
-                $html = '';
-                foreach ($authors as $author) {
-                    $html .= app(ElementHtml::class)->elementChipHtml($author);
-                }
-
-                return $html;
+                return app(PreviewHtml::class)->elementPreviewHtml($this->getAuthors());
             case 'section':
                 $section = $this->getSection();
                 if (! $section) {
@@ -1956,7 +1951,7 @@ JS, [
                     ],
                     'single' => false,
                     'elements' => $authors ?: null,
-                    'disabled' => false,
+                    'disabled' => ! $this->canChangeAuthor(),
                     'errors' => $this->errors()->get('authorIds'),
                     'limit' => $section->maxAuthors,
                 ]);
@@ -2152,7 +2147,7 @@ JS, [
                 'label' => t('Post Date'),
                 'id' => 'postDate',
                 'name' => 'postDate',
-                'value' => $this->_userPostDate(),
+                'value' => $this->postDate,
                 'errors' => $this->errors()->get('postDate'),
                 'disabled' => $static,
             ]);
@@ -2171,7 +2166,7 @@ JS, [
 
         $fields[] = parent::metaFieldsHtml($static);
 
-        event($event = new DefineMetaFields($this, $static, $fields));
+        event($event = new EntryMetaFieldsResolving($this, $static, $fields));
 
         return implode("\n", $event->fields);
     }
@@ -2219,11 +2214,6 @@ JS;
         }
 
         $section = $this->getSection();
-
-        if (! $user->can("viewPeerEntries:$section->uid")) {
-            return false;
-        }
-
         $authorIds = $this->getAuthorIds();
 
         return
@@ -2283,7 +2273,7 @@ JS;
             $parentOptionCriteria['level'] = sprintf('<=%s', $section->maxLevels - $depth);
         }
 
-        event($event = new DefineParentSelectionCriteria($this, $parentOptionCriteria));
+        event($event = new EntryParentSelectionCriteriaResolving($this, $parentOptionCriteria));
 
         return $event->criteria;
     }
@@ -2319,19 +2309,6 @@ JS;
         }
     }
 
-    /**
-     * Returns the Post Date value that should be shown on the edit form.
-     */
-    private function _userPostDate(): ?DateTime
-    {
-        if (! $this->postDate || ($this->getIsUnpublishedDraft() && $this->postDate == $this->dateCreated)) {
-            // Pretend the post date hasn't been set yet, even if it has
-            return null;
-        }
-
-        return $this->postDate;
-    }
-
     // Events
     // -------------------------------------------------------------------------
 
@@ -2359,7 +2336,7 @@ JS;
                     app(Revisions::class)->createRevision(
                         $current,
                         $current->getAuthorId(),
-                        sprintf('Revision from %s', I18N::getFormatter()->asDatetime($current->dateUpdated)),
+                        sprintf('Revision from %s', I18N::getFormatter()->asDatetime($current->dateUpdated, withTimeZone: true)),
                     );
                 }
             }
@@ -2416,7 +2393,7 @@ JS;
 
         $section = $this->getSection();
         if ($section?->type !== SectionType::Single
-            && $section?->maxAuthors !== 0
+            && $section?->minAuthors === 1
             && empty($this->getAuthors())
             && $user = Auth::user()
         ) {
@@ -2424,10 +2401,11 @@ JS;
         }
 
         if (
-            ! $this->_userPostDate() &&
+            ! $this->postDate &&
+            $this->enabled &&
             (
                 $this->ruleset->inScenarios(ElementRules::SCENARIO_LIVE, ElementRules::SCENARIO_DEFAULT) ||
-                ! $this->getIsDraft()
+                isset($this->fieldId)
             )
         ) {
             // Default the post date to the current date/time

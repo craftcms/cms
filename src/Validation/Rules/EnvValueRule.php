@@ -13,6 +13,7 @@ use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\Rule as LegacyRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ConditionalRules;
 use Override;
 use Stringable;
 
@@ -51,10 +52,10 @@ class EnvValueRule implements DataAwareRule, ValidationRule
     private array $data = [];
 
     /**
-     * @param  Closure|LegacyRule|Stringable|ValidationRule|string|array<int, Closure|LegacyRule|Stringable|ValidationRule|string>  $rules
+     * @param  Closure|LegacyRule|Stringable|ValidationRule|ConditionalRules|string|array<int, Closure|LegacyRule|Stringable|ValidationRule|ConditionalRules|string>  $rules
      */
     public function __construct(
-        Closure|LegacyRule|Stringable|ValidationRule|string|array $rules,
+        Closure|LegacyRule|Stringable|ValidationRule|ConditionalRules|string|array $rules,
         private readonly bool $showParsedValueInErrors = false,
     ) {
         $this->rules = Arr::wrap($rules);
@@ -71,7 +72,9 @@ class EnvValueRule implements DataAwareRule, ValidationRule
     #[Override]
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $parsedValue = is_string($value) ? Env::parse($value) : $value;
+        $parsedValue = is_string($value)
+            ? ($this->isBoolean() ? Env::parseBoolean($value) : Env::parse($value))
+            : $value;
         $data = $this->data;
 
         data_set($data, $attribute, $parsedValue);
@@ -87,6 +90,17 @@ class EnvValueRule implements DataAwareRule, ValidationRule
         foreach ($validator->errors()->get($attribute) as $message) {
             $fail($this->errorMessage($message, $value, $parsedValue));
         }
+    }
+
+    private function isBoolean(): bool
+    {
+        foreach ($this->rules as $rule) {
+            if ($rule === 'boolean' || $rule === 'bool') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function errorMessage(string $message, mixed $rawValue, mixed $parsedValue): string

@@ -5,11 +5,11 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Events\AfterDelete;
-use CraftCms\Cms\Element\Events\AfterDeleteElement;
-use CraftCms\Cms\Element\Events\BeforeDelete;
-use CraftCms\Cms\Element\Events\BeforeDeleteElement;
-use CraftCms\Cms\Element\Events\InvalidateElementCaches;
+use CraftCms\Cms\Element\Events\ElementCachesInvalidated;
+use CraftCms\Cms\Element\Events\ElementDeleted;
+use CraftCms\Cms\Element\Events\ElementDeleting;
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleted;
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleting;
 use CraftCms\Cms\Element\Operations\ElementDeletions;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -55,12 +55,12 @@ it('returns false when beforeDelete vetoes the delete', function () {
     insertSearchIndexRowForSite($entry->id, $entry->siteId);
 
     Event::fake([
-        BeforeDeleteElement::class,
-        AfterDeleteElement::class,
-        InvalidateElementCaches::class,
+        ElementDeleting::class,
+        ElementDeleted::class,
+        ElementCachesInvalidated::class,
     ]);
 
-    Event::listen(BeforeDelete::class, function (BeforeDelete $event) use ($entry) {
+    Event::listen(ElementLifecycleDeleting::class, function (ElementLifecycleDeleting $event) use ($entry) {
         if ($event->element->id !== $entry->id) {
             return;
         }
@@ -72,9 +72,9 @@ it('returns false when beforeDelete vetoes the delete', function () {
         ->and(DB::table(Table::ELEMENTS)->where('id', $entry->id)->value('dateDeleted'))->toBeNull()
         ->and(DB::table(Table::SEARCHINDEX)->where('elementId', $entry->id)->exists())->toBeTrue();
 
-    Event::assertDispatched(fn (BeforeDeleteElement $event): bool => $event->element->id === $entry->id && $event->hardDelete === false);
-    Event::assertNotDispatched(AfterDeleteElement::class);
-    Event::assertNotDispatched(InvalidateElementCaches::class);
+    Event::assertDispatched(fn (ElementDeleting $event): bool => $event->element->id === $entry->id && $event->hardDelete === false);
+    Event::assertNotDispatched(ElementDeleted::class);
+    Event::assertNotDispatched(ElementCachesInvalidated::class);
 });
 
 it('soft deletes an element, cascades drafts and revisions, and tracks it in the current bulk op', function () {
@@ -91,11 +91,11 @@ it('soft deletes an element, cascades drafts and revisions, and tracks it in the
     insertSearchIndexRowForSite($entry->id, $entry->siteId);
 
     Event::fake([
-        BeforeDelete::class,
-        AfterDelete::class,
-        BeforeDeleteElement::class,
-        AfterDeleteElement::class,
-        InvalidateElementCaches::class,
+        ElementLifecycleDeleting::class,
+        ElementLifecycleDeleted::class,
+        ElementDeleting::class,
+        ElementDeleted::class,
+        ElementCachesInvalidated::class,
     ]);
 
     $key = $this->bulkOps->start();
@@ -114,11 +114,11 @@ it('soft deletes an element, cascades drafts and revisions, and tracks it in the
                 ->where('elementId', $entry->id)
                 ->count())->toBe(1);
 
-        Event::assertDispatched(fn (BeforeDeleteElement $event): bool => $event->element->id === $entry->id && $event->hardDelete === false);
-        Event::assertDispatched(fn (AfterDeleteElement $event): bool => $event->element->id === $entry->id);
-        Event::assertDispatched(fn (BeforeDelete $event): bool => $event->element->id === $entry->id);
-        Event::assertDispatched(fn (AfterDelete $event): bool => $event->element->id === $entry->id);
-        Event::assertDispatched(fn (InvalidateElementCaches $event): bool => $event->element?->id === $entry->id);
+        Event::assertDispatched(fn (ElementDeleting $event): bool => $event->element->id === $entry->id && $event->hardDelete === false);
+        Event::assertDispatched(fn (ElementDeleted $event): bool => $event->element->id === $entry->id);
+        Event::assertDispatched(fn (ElementLifecycleDeleting $event): bool => $event->element->id === $entry->id);
+        Event::assertDispatched(fn (ElementLifecycleDeleted $event): bool => $event->element->id === $entry->id);
+        Event::assertDispatched(fn (ElementCachesInvalidated $event): bool => $event->element?->id === $entry->id);
     } finally {
         $this->bulkOps->end($key);
     }
@@ -130,11 +130,11 @@ it('hard deletes an element and removes its search indexes without tracking it',
     insertSearchIndexRowForSite($entry->id, $entry->siteId);
 
     Event::fake([
-        BeforeDelete::class,
-        AfterDelete::class,
-        BeforeDeleteElement::class,
-        AfterDeleteElement::class,
-        InvalidateElementCaches::class,
+        ElementLifecycleDeleting::class,
+        ElementLifecycleDeleted::class,
+        ElementDeleting::class,
+        ElementDeleted::class,
+        ElementCachesInvalidated::class,
     ]);
 
     $key = $this->bulkOps->start();
@@ -148,17 +148,17 @@ it('hard deletes an element and removes its search indexes without tracking it',
                 ->where('elementId', $entry->id)
                 ->count())->toBe(0);
 
-        Event::assertDispatched(fn (BeforeDeleteElement $event): bool => $event->element->id === $entry->id && $event->hardDelete === true);
-        Event::assertDispatched(fn (AfterDeleteElement $event): bool => $event->element->id === $entry->id);
-        Event::assertDispatched(fn (BeforeDelete $event): bool => $event->element->id === $entry->id);
-        Event::assertDispatched(fn (AfterDelete $event): bool => $event->element->id === $entry->id);
-        Event::assertDispatched(fn (InvalidateElementCaches $event): bool => $event->element?->id === $entry->id);
+        Event::assertDispatched(fn (ElementDeleting $event): bool => $event->element->id === $entry->id && $event->hardDelete === true);
+        Event::assertDispatched(fn (ElementDeleted $event): bool => $event->element->id === $entry->id);
+        Event::assertDispatched(fn (ElementLifecycleDeleting $event): bool => $event->element->id === $entry->id);
+        Event::assertDispatched(fn (ElementLifecycleDeleted $event): bool => $event->element->id === $entry->id);
+        Event::assertDispatched(fn (ElementCachesInvalidated $event): bool => $event->element?->id === $entry->id);
     } finally {
         $this->bulkOps->end($key);
     }
 });
 
-it('allows BeforeDeleteElement to force hard deleting derivative elements', function (string $type, string $table) {
+it('allows ElementDeleting to force hard deleting derivative elements', function (string $type, string $table) {
     $canonical = EntryModel::factory()->createElement();
 
     if ($type === 'draft') {
@@ -177,7 +177,7 @@ it('allows BeforeDeleteElement to force hard deleting derivative elements', func
     $receivedHardDelete = null;
     $afterDeleteElementDispatched = false;
 
-    Event::listen(BeforeDeleteElement::class, function (BeforeDeleteElement $event) use ($derivative, &$receivedHardDelete) {
+    Event::listen(ElementDeleting::class, function (ElementDeleting $event) use ($derivative, &$receivedHardDelete) {
         if ($event->element->id !== $derivative->id) {
             return;
         }
@@ -186,7 +186,7 @@ it('allows BeforeDeleteElement to force hard deleting derivative elements', func
         $event->hardDelete = true;
     });
 
-    Event::listen(AfterDeleteElement::class, function (AfterDeleteElement $event) use ($derivative, &$afterDeleteElementDispatched) {
+    Event::listen(ElementDeleted::class, function (ElementDeleted $event) use ($derivative, &$afterDeleteElementDispatched) {
         if ($event->element->id !== $derivative->id) {
             return;
         }
@@ -247,7 +247,7 @@ it('rolls back the delete when afterDelete throws', function () {
     $beforeDeleteElementDispatched = false;
     $afterDeleteElementDispatched = false;
 
-    Event::listen(BeforeDeleteElement::class, function (BeforeDeleteElement $event) use ($entry, &$beforeDeleteElementDispatched) {
+    Event::listen(ElementDeleting::class, function (ElementDeleting $event) use ($entry, &$beforeDeleteElementDispatched) {
         if ($event->element->id !== $entry->id) {
             return;
         }
@@ -255,7 +255,7 @@ it('rolls back the delete when afterDelete throws', function () {
         $beforeDeleteElementDispatched = true;
     });
 
-    Event::listen(AfterDelete::class, function (AfterDelete $event) use ($entry) {
+    Event::listen(ElementLifecycleDeleted::class, function (ElementLifecycleDeleted $event) use ($entry) {
         if ($event->element->id !== $entry->id) {
             return;
         }
@@ -263,7 +263,7 @@ it('rolls back the delete when afterDelete throws', function () {
         throw new RuntimeException('delete failed');
     });
 
-    Event::listen(AfterDeleteElement::class, function (AfterDeleteElement $event) use ($entry, &$afterDeleteElementDispatched) {
+    Event::listen(ElementDeleted::class, function (ElementDeleted $event) use ($entry, &$afterDeleteElementDispatched) {
         if ($event->element->id !== $entry->id) {
             return;
         }

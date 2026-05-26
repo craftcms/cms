@@ -7,10 +7,10 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
-use CraftCms\Cms\Element\Events\AfterPropagateElement;
-use CraftCms\Cms\Element\Events\AfterPropagateElements;
-use CraftCms\Cms\Element\Events\BeforePropagateElement;
-use CraftCms\Cms\Element\Events\BeforePropagateElements;
+use CraftCms\Cms\Element\Events\ElementPropagated;
+use CraftCms\Cms\Element\Events\ElementPropagating;
+use CraftCms\Cms\Element\Events\ElementsPropagated;
+use CraftCms\Cms\Element\Events\ElementsPropagating;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
 use CraftCms\Cms\Element\Operations\ElementUris;
 use CraftCms\Cms\Element\Operations\ElementWrites;
@@ -188,10 +188,10 @@ function createElement(int $id, int $siteId = 1, ?DateTime $dateUpdated = null):
 it('propagates elements to supported target sites and dispatches lifecycle events', function () {
     fakeBulkOps();
     Event::fake([
-        BeforePropagateElements::class,
-        BeforePropagateElement::class,
-        AfterPropagateElement::class,
-        AfterPropagateElements::class,
+        ElementsPropagating::class,
+        ElementPropagating::class,
+        ElementPropagated::class,
+        ElementsPropagated::class,
     ]);
 
     $element = createElement(100);
@@ -233,15 +233,15 @@ it('propagates elements to supported target sites and dispatches lifecycle event
         ->and($this->writes->propagateCalls[1]['siteId'])->toBe(3)
         ->and($this->writes->propagateCalls[1]['siteElement'])->toBeFalse();
 
-    Event::assertDispatched(fn (BeforePropagateElements $event): bool => $event->query === $query);
-    Event::assertDispatched(fn (BeforePropagateElement $event): bool => $event->query === $query
+    Event::assertDispatched(fn (ElementsPropagating $event): bool => $event->query === $query);
+    Event::assertDispatched(fn (ElementPropagating $event): bool => $event->query === $query
         && $event->element === $element
         && $event->position === 1);
-    Event::assertDispatched(fn (AfterPropagateElement $event): bool => $event->query === $query
+    Event::assertDispatched(fn (ElementPropagated $event): bool => $event->query === $query
         && $event->element === $element
         && $event->position === 1
         && $event->exception === null);
-    Event::assertDispatched(fn (AfterPropagateElements $event): bool => $event->query === $query);
+    Event::assertDispatched(fn (ElementsPropagated $event): bool => $event->query === $query);
 });
 
 it('filters requested site ids and skips the source site and newer localized elements', function () {
@@ -297,7 +297,7 @@ it('rethrows propagation errors when continueOnError is false', function () {
 
 it('continues after propagation errors when continueOnError is true', function () {
     fakeBulkOps();
-    Event::fake([AfterPropagateElement::class]);
+    Event::fake([ElementPropagated::class]);
 
     $element = createElement(400);
     $query = createQueryMock([$element]);
@@ -323,13 +323,13 @@ it('continues after propagation errors when continueOnError is true', function (
     expect($bulkOps->trackedElements)->toBe([$element])
         ->and($element->afterPropagateCalled)->toBeFalse();
 
-    Event::assertDispatched(fn (AfterPropagateElement $event): bool => $event->element === $element
+    Event::assertDispatched(fn (ElementPropagated $event): bool => $event->element === $element
         && $event->exception === $exception);
 });
 
 it('swallows aborted queries and still dispatches the final event', function () {
     fakeBulkOps();
-    Event::fake([BeforePropagateElements::class, AfterPropagateElements::class]);
+    Event::fake([ElementsPropagating::class, ElementsPropagated::class]);
 
     $query = Mockery::mock(ElementQueryInterface::class);
     $query->shouldReceive('each')
@@ -347,8 +347,8 @@ it('swallows aborted queries and still dispatches the final event', function () 
         ->and($bulkOps->trackedElements)->toBe([])
         ->and($this->writes->propagateCalls)->toBeEmpty();
 
-    Event::assertDispatched(fn (BeforePropagateElements $event): bool => $event->query === $query);
-    Event::assertDispatched(fn (AfterPropagateElements $event): bool => $event->query === $query);
+    Event::assertDispatched(fn (ElementsPropagating $event): bool => $event->query === $query);
+    Event::assertDispatched(fn (ElementsPropagated $event): bool => $event->query === $query);
 });
 
 readonly class TestPropagateElementsWrites extends ElementWrites

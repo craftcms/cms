@@ -9,8 +9,9 @@ namespace CraftCms\Cms\Database\Migrations;
 use Closure;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Console\PromptTask;
 use CraftCms\Cms\Database\Migration;
-use CraftCms\Cms\Database\Migrations\Event\PostCreateTables;
+use CraftCms\Cms\Database\Migrations\Event\TablesCreated;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -43,7 +44,6 @@ use Throwable;
 
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\task;
 use function Laravel\Prompts\warning;
 
 class Install extends Migration
@@ -53,6 +53,7 @@ class Install extends Migration
         public ?string $password = null,
         public ?string $email = null,
         public ?Site $site = null,
+        public ?string $timezone = null,
         public bool $applyProjectConfigYaml = true,
     ) {
         parent::__construct();
@@ -66,20 +67,21 @@ class Install extends Migration
             return;
         }
 
-        task(
+        PromptTask::run(
             label: str($label)->finish('...')->toString(),
             callback: function (Logger $logger) use ($callback, $label) {
                 $callback($logger);
                 $logger->label($label);
             },
             keepSummary: true,
+            output: $this->output,
         );
     }
 
     public function up(): void
     {
         if (! $this->_validateProjectConfig($error)) {
-            $message = "Project config validation failed: $error Run `composer install` or remove your `config/project/` folder and try again.";
+            $message = "Project config validation failed: $error Run `composer install` or remove your `config/craft/project/` folder and try again.";
 
             error($message);
             error('Aborting install.');
@@ -105,7 +107,7 @@ class Install extends Migration
             $logger?->success('Foreign keys added.');
         });
 
-        event(new PostCreateTables);
+        event(new TablesCreated);
 
         DB::afterCommit(function () {
             try {
@@ -743,6 +745,7 @@ class Install extends Migration
                 SectionType::Structure->value,
             ])->default(SectionType::Channel->value);
             $table->boolean('enableVersioning')->default(false);
+            $table->unsignedSmallInteger('minAuthors')->default(1);
             $table->unsignedSmallInteger('maxAuthors')->nullable();
             $table->string('propagationMethod')->default(PropagationMethod::All->value);
             $table->enum('defaultPlacement', [
@@ -1415,7 +1418,7 @@ class Install extends Migration
                 'name' => $this->site->getName(),
                 'live' => true,
                 'schemaVersion' => Cms::SCHEMA_VERSION,
-                'timeZone' => 'America/Los_Angeles',
+                'timeZone' => $this->timezone ?? 'America/Los_Angeles',
             ],
             'users' => [
                 'requireEmailVerification' => true,

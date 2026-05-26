@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Data;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Shared\Contracts\Serializable;
@@ -80,13 +82,22 @@ class LinkData implements Serializable, Stringable
 
     /**
      * Returns the full link URL.
+     *
+     * @param  bool  $anyStatus  Whether to return a value regardless of the linked element’s status
      */
-    public function getUrl(): string
+    public function getUrl(bool $anyStatus = true): string
     {
         $url = $this->getValue();
 
         if ($url === '') {
             return $url;
+        }
+
+        if (! $anyStatus) {
+            $status = $this->getElement()?->getStatus();
+            if ($status && ! in_array($status, [Element::STATUS_ENABLED, Entry::STATUS_LIVE])) {
+                return '';
+            }
         }
 
         return sprintf('%s%s', $url, $this->urlSuffix ?? '');

@@ -1,10 +1,15 @@
 # Release Notes for Craft CMS 6.0 (WIP)
 
-## Development
+### Administration
+- Added support for configuring the system time zone during installation. ([#18794](https://github.com/craftcms/cms/pull/18794))
+- Added the `compiledTemplatesPath` config setting. ([#18861](https://github.com/craftcms/cms/pull/18861))
+
+### Development
 - Reference tags now support fallback values when no attribute is specified. ([#17688](https://github.com/craftcms/cms/pull/17688))
 - Deprecated support for categories, global sets, and tags. ([#18009](https://github.com/craftcms/cms/pull/18009))
+- Removed support for the Debug Toolbar. [Laravel Debugbar](https://laraveldebugbar.com) can be used instead. ([#18812](https://github.com/craftcms/cms/pull/18812))
 
-## Extensibility
+### Extensibility
 - Added `CraftCms\Cms\Support\Arr`.
 - Added `CraftCms\Cms\Support\DateTimeHelper`.
 - Added `CraftCms\Cms\Support\File`.
@@ -26,7 +31,7 @@
 - Deprecated `craft\helpers\HtmlPurifier::cleanUtf8()`.
 - Deprecated `craft\helpers\HtmlPurifier::convertToUtf8()`. `CraftCms\Cms\Support\Str::convertToUtf8()` should be used instead.
 - Deprecated `craft\helpers\HtmlPurifier::configure()`. `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers::defaults()` or a custom sanitizer registration should be used instead.
-- Deprecated `config/craft/htmlpurifier/*.json` sanitizer config files. Sanitizers should be registered on `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers` instead.
+- Deprecated `config/craft/htmlpurifier/*.json` sanitizer config files. Sanitizers should be registered as Symfony-style array config files in `config/craft/sanitizers/`, or on `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers` instead.
 - Deprecated `craft\services\Path`. `CraftCms\Cms\Support\Path` should be used instead.
 - Deprecated `craft\helpers\SessionHelper`. `Illuminate\Support\Facades\Session` should be used instead.
 - Deprecated `craft\helpers\Sequence`. `CraftCms\Cms\Support\Sequence` should be used instead.
@@ -95,7 +100,7 @@
 - Deprecated `craft\helpers\FileHelper`. `CraftCms\Cms\Support\File` should be used instead.
 - Deprecated `craft\helpers\UrlHelper`. `CraftCms\Cms\Support\URL` should be used instead.
 
-### Deprecator
+#### Deprecator
 - Added `CraftCms\Cms\Support\Facades\Deprecator`.
 - Added `CraftCms\Cms\Deprecator\Commands\ClearDeprecations`.
 - Removed `craft\console\controllers\ClearDeprecationsController.php`.
@@ -103,7 +108,7 @@
 - Deprecated `craft\models\DeprecationError`. `CraftCms\Cms\Deprecator\Models\DeprecationError` should be used instead.
 - Deprecated `craft\errors\DeprecationException`. `CraftCms\Cms\Deprecator\Exceptions\DeprecationException` should be used instead.
 
-### Console commands
+#### Console commands
 - Added `php craft twig:cache` - Precompile Twig views
 - Added `php craft twig:clear` - Clear precompiled Twig views
 - `craft\console\controllers\EnvController` has been removed in favor of the classes below:
@@ -136,7 +141,7 @@
 - `craft\console\controllers\utils\RepairController::actionProjectConfig()` has been removed in favor of the class below:
   - `CraftCms\Cms\ProjectConfig\Commands\RepairCommand` => `php craft project-config:repair`
 
-### Mutex
+#### Mutex
 
 Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://laravel.com/docs/12.x/cache#atomic-locks) should be used instead.
 
@@ -144,21 +149,21 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Deprecated `craft\mutex\MutexTrait`
 - Deprecated `Craft::$app->getMutex()`
 
-### Components
+#### Components
 - Deprecated `craft\base\ComponentInterface`. `CraftCms\Cms\Component\Contracts\ComponentInterface` should be used instead.
 - Deprecated `craft\base\ConfigurableComponentInterface`. `CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface` should be used instead.
 - Deprecated `craft\base\SavableComponentInterface`. `CraftCms\Cms\Component\Contracts\SavableComponentInterface` should be used instead.
 
-### Dashboard & Widgets
+#### Dashboard & Widgets
 
-#### Controllers
+##### Controllers
 - Removed `craft\controllers\DashboardController`. The following controllers now implement this functionality:
   - `CraftCms\Cms\Http\Controllers\Dashboard\DashboardController`
   - `CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController`
   - `CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController`
   - `CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController`
 
-#### Deprecations
+##### Deprecations
 - Deprecated `Craft::$app->getDashboard()`. `app(\CraftCms\Cms\Dashboard\Dashboard::class)` should be used instead.
 - Deprecated `craft\services\Dashboard`. `CraftCms\Cms\Dashboard\Dashboard` should be used instead.
 - Deprecated `craft\base\Widget`. `CraftCms\Cms\Dashboard\Widgets\Widget` should be used instead.
@@ -174,20 +179,20 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Deprecated `craft\widgets\Updates`. `CraftCms\Cms\Dashboard\Widgets\Updates` should be used instead.
 - Deprecated `craft\records\Widget`. `CraftCms\Cms\Dashboard\Models\Widget` should be used instead.
 
-#### Events
+##### Events
 
-- Deprecated `craft\services\Dashboard::EVENT_REGISTER_WIDGET_TYPES`. `CraftCms\Cms\Dashboard\Events\RegisterWidgetTypes` should be used instead.
+- Deprecated `craft\services\Dashboard::EVENT_REGISTER_WIDGET_TYPES`. `CraftCms\Cms\Dashboard\Events\WidgetTypesResolving` should be used instead.
 - Deprecated `craft\events\WidgetEvent` in favor of the following new events:
   - `craft\services\Dashboard::EVENT_BEFORE_SAVE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetSaving`
   - `craft\services\Dashboard::EVENT_AFTER_SAVE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetSaved`
   - `craft\services\Dashboard::EVENT_BEFORE_DELETE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetDeleting`
   - `craft\services\Dashboard::EVENT_AFTER_DELETE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetDeleted`
 
-## Address
+### Address
 
 - Added `CraftCms\Cms\Support\Facades\Addresses`.
 
-## Assets
+### Assets
 
 - Added `CraftCms\Cms\Asset\AssetsHelper`.
 - Added `CraftCms\Cms\Support\Facades\Assets`.
@@ -214,26 +219,26 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Deprecated `craft\errors\MissingVolumeFolderException`. `CraftCms\Cms\Asset\Exceptions\MissingVolumeFolderException` should be used instead.
 - Deprecated `craft\errors\VolumeException`. `CraftCms\Cms\Asset\Exceptions\VolumeException` should be used instead.
 
-### Events
+#### Events
 
-- Added `CraftCms\Cms\Asset\Events\RegisterFileKinds`.
+- Added `CraftCms\Cms\Asset\Events\AssetFileKindsResolving`.
 - Added `CraftCms\Cms\Asset\Events\SetAssetFilename`.
 - Deprecated `craft\events\SetAssetFilenameEvent`. `CraftCms\Cms\Asset\Events\SetAssetFilename` should be used instead.
-- Deprecated `craft\events\RegisterAssetFileKindsEvent`. `CraftCms\Cms\Asset\Events\RegisterFileKinds` should be used instead.
+- Deprecated `craft\events\RegisterAssetFileKindsEvent`. `CraftCms\Cms\Asset\Events\AssetFileKindsResolving` should be used instead.
 - Deprecated `craft\events\ReplaceAssetEvent` in favor of the following new events:
-  - `craft\services\Assets::EVENT_BEFORE_REPLACE_ASSET` => `CraftCms\Cms\Asset\Events\BeforeReplaceAsset`
-  - `craft\services\Assets::EVENT_AFTER_REPLACE_ASSET` => `CraftCms\Cms\Asset\Events\AfterReplaceAsset`
-- Deprecated `craft\events\DefineAssetThumbUrlEvent`. `CraftCms\Cms\Asset\Events\DefineThumbUrl` should be used instead.
-- Deprecated `craft\events\AssetPreviewEvent`. `CraftCms\Cms\Asset\Events\RegisterPreviewHandler` should be used instead.
+  - `craft\services\Assets::EVENT_BEFORE_REPLACE_ASSET` => `CraftCms\Cms\Asset\Events\AssetReplacing`
+  - `craft\services\Assets::EVENT_AFTER_REPLACE_ASSET` => `CraftCms\Cms\Asset\Events\AssetReplaced`
+- Deprecated `craft\events\DefineAssetThumbUrlEvent`. `CraftCms\Cms\Asset\Events\ThumbUrlResolving` should be used instead.
+- Deprecated `craft\events\AssetPreviewEvent`. `CraftCms\Cms\Asset\Events\PreviewHandlerResolving` should be used instead.
 
-## Auth
+### Auth
 
 - Refactored the authentication system to use Laravel's authentication system.
 - Added `CraftCms\Cms\Auth\Events\SettingPassword`.
 - Added `CraftCms\Cms\User\Notifications\ResetPasswordNotification`.
 - Deprecated `craft\services\Auth`. `CraftCms\Cms\Auth\Auth` should be used instead.
 - Deprecated `craft\web\User`. `auth('craft')->user()` or `CraftCms\Cms\User\Elements\User` methods should be used instead.
-- Deprecated `craft\events\AuthenticateUserEvent`. `CraftCms\Cms\Auth\Events\Authenticating` should be used instead.
+- Deprecated `craft\events\AuthenticateUserEvent`. `CraftCms\Cms\Auth\Events\UserAuthenticating` should be used instead.
 - Deprecated `\craft\records\Authenticator`. `\CraftCms\Cms\Auth\Models\Authenticator` should be used instead.
 - Deprecated `\craft\records\RecoveryCodes`. `\CraftCms\Cms\Auth\Models\RecoveryCodes` should be used instead.
 - Deprecated `\craft\records\SsoIdentity`. `\CraftCms\Cms\Auth\Models\SsoIdentity` should be used instead.
@@ -242,21 +247,21 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Deprecated `craft\behaviors\SessionBehavior::deauthorize`. `CraftCms\Cms\Auth\SessionAuth::deauthorize` should be used instead.
 - Deprecated `craft\behaviors\SessionBehavior::checkAuthorization`. `CraftCms\Cms\Auth\SessionAuth::checkAuthorization` should be used instead.
 - Deprecated `craft\services\Users::isVerificationCodeValidForUser()`. `Password::broker('craft')->tokenExists($user, $code)` should be used instead.
-- Deprecated `GeneralConfig::elevatedSessionDuration()`. The `auth.password_timeout` config value should be used instead. To disable password confirmation (elevated sessions), you now set this value to `-1` instead of `0`.
-    - Elevated sessions now work through [Laravel's password confirmation](https://laravel.com/docs/12.x/authentication#password-confirmation) system.
+- Deprecated the `elevatedSessionDuration` general config setting. The `auth.password_timeout` config value should be used instead. To disable password confirmation (elevated sessions), you now set this value to `-1` instead of `0`.
+  - Elevated sessions now work through [Laravel's password confirmation](https://laravel.com/docs/12.x/authentication#password-confirmation) system.
 - Removed `craft\controllers\AuthController`. The following controllers now implement this functionality:
-    - `CraftCms\Cms\Http\Controllers\Users\AuthMethodController`
-    - `CraftCms\Cms\Http\Controllers\Users\PasskeysController`
-    - `CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController`
+  - `CraftCms\Cms\Http\Controllers\Users\AuthMethodController`
+  - `CraftCms\Cms\Http\Controllers\Users\PasskeysController`
+  - `CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController`
 - Removed `verificationCode` and `verificationCodeIssuedDate` columns on the `users` table in favor of the `password_reset_tokens` table.
 
-### Authorization
+#### Authorization
 
 Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/authorization) for element authorization checks.
 
-#### Added
+##### Added
 
-- Added `CraftCms\Cms\Auth\Events\AuthorizingElement` event for customizing element authorization.
+- Added `CraftCms\Cms\Auth\Events\ElementAuthorizing` event for customizing element authorization.
 - Added `CraftCms\Cms\Element\Policies\ElementPolicy` base policy for element authorization.
 - Added element-specific authorization policies:
   - `CraftCms\Cms\Address\Policies\AddressPolicy`
@@ -265,7 +270,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
   - `CraftCms\Cms\User\Policies\UserPolicy`
   - `CraftCms\Cms\Field\Policies\ContentBlockPolicy`
 
-### Passkeys
+#### Passkeys
 
 - Added `CraftCms\Cms\Auth\Passkeys\Passkeys`.
 - Deprecated `craft\services\Auth` passkey methods. The following should be used instead:
@@ -279,23 +284,23 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Deprecated `craft\auth\passkeys\CredentialRepository`. `CraftCms\Cms\Auth\Passkeys\CredentialRepository` should be used instead.
 - Deprecated `craft\auth\passkeys\WebauthnServer`. `CraftCms\Cms\Auth\Passkeys\WebauthnServer` should be used instead.
 
-## Conditions
+### Conditions
 
-### Added
+#### Added
 
 - Added `CraftCms\Cms\Support\Facades\Conditions`.
 
-### Controllers
+#### Controllers
 
 - Removed `craft\controllers\ConditionsController`. `CraftCms\Cms\Http\Controllers\ConditionsController` should be used instead.
 
-### Deprecations
+#### Deprecations
 
-#### Service
+##### Service
 
 - Deprecated `craft\services\Conditions`. `CraftCms\Cms\Condition\Conditions` should be used instead.
 
-#### Base Conditions
+##### Base Conditions
 
 - Deprecated `craft\base\conditions\ConditionInterface`. `CraftCms\Cms\Condition\Contracts\ConditionInterface` should be used instead.
 - Deprecated `craft\base\conditions\ConditionRuleInterface`. `CraftCms\Cms\Condition\Contracts\ConditionRuleInterface` should be used instead.
@@ -309,7 +314,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Deprecated `craft\base\conditions\BaseDateRangeConditionRule`. `CraftCms\Cms\Condition\BaseDateRangeConditionRule` should be used instead.
 - Deprecated `craft\base\conditions\BaseElementSelectConditionRule`. `CraftCms\Cms\Condition\BaseElementSelectConditionRule` should be used instead.
 
-#### Elements
+##### Elements
 
 - Deprecated `craft\elements\conditions\ElementCondition`. `CraftCms\Cms\Element\Conditions\ElementCondition` should be used instead.
 - Deprecated `craft\elements\conditions\ElementConditionInterface`. `CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface` should be used instead.
@@ -331,7 +336,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Deprecated `craft\elements\conditions\RelatedToConditionRule`. `CraftCms\Cms\Element\Conditions\RelatedToConditionRule` should be used instead.
 - Deprecated `craft\elements\conditions\NotRelatedToConditionRule`. `CraftCms\Cms\Element\Conditions\NotRelatedToConditionRule` should be used instead.
 
-#### Entries
+##### Entries
 
 - Deprecated `craft\elements\conditions\entries\EntryCondition`. `CraftCms\Cms\Entry\Conditions\EntryCondition` should be used instead.
 - Deprecated `craft\elements\conditions\entries\PostDateConditionRule`. `CraftCms\Cms\Entry\Conditions\PostDateConditionRule` should be used instead.
@@ -344,7 +349,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Deprecated `craft\elements\conditions\entries\SavableConditionRule`. `CraftCms\Cms\Entry\Conditions\SavableConditionRule` should be used instead.
 - Deprecated `craft\elements\conditions\entries\FieldConditionRule`. `CraftCms\Cms\Entry\Conditions\FieldConditionRule` should be used instead.
 
-#### Users
+##### Users
 
 - Deprecated `craft\elements\conditions\users\UserCondition`. `CraftCms\Cms\User\Conditions\UserCondition` should be used instead.
 - Deprecated `craft\elements\conditions\users\UsernameConditionRule`. `CraftCms\Cms\User\Conditions\UsernameConditionRule` should be used instead.
@@ -357,7 +362,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Deprecated `craft\elements\conditions\users\LastLoginDateConditionRule`. `CraftCms\Cms\User\Conditions\LastLoginDateConditionRule` should be used instead.
 - Deprecated `craft\elements\conditions\users\AffiliatedSiteConditionRule`. `CraftCms\Cms\User\Conditions\AffiliatedSiteConditionRule` should be used instead.
 
-#### Assets
+##### Assets
 
 - Deprecated `craft\elements\conditions\assets\AssetCondition`. `CraftCms\Cms\Asset\Conditions\AssetCondition` should be used instead.
 - Deprecated `craft\elements\conditions\assets\VolumeConditionRule`. `CraftCms\Cms\Asset\Conditions\VolumeConditionRule` should be used instead.
@@ -372,7 +377,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Deprecated `craft\elements\conditions\assets\SavableConditionRule`. `CraftCms\Cms\Asset\Conditions\SavableConditionRule` should be used instead.
 - Deprecated `craft\elements\conditions\assets\ViewableConditionRule`. `CraftCms\Cms\Asset\Conditions\ViewableConditionRule` should be used instead.
 
-#### Addresses
+##### Addresses
 
 - Deprecated `craft\elements\conditions\addresses\AddressCondition`. `CraftCms\Cms\Address\Conditions\AddressCondition` should be used instead.
 - Deprecated `craft\elements\conditions\addresses\FullNameConditionRule`. `CraftCms\Cms\Address\Conditions\FullNameConditionRule` should be used instead.
@@ -389,7 +394,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Deprecated `craft\elements\conditions\addresses\AddressLine3ConditionRule`. `CraftCms\Cms\Address\Conditions\AddressLine3ConditionRule` should be used instead.
 - Deprecated `craft\elements\conditions\addresses\FieldConditionRule`. `CraftCms\Cms\Address\Conditions\FieldConditionRule` should be used instead.
 
-#### Fields
+##### Fields
 
 - Deprecated `craft\fields\conditions\FieldConditionRuleInterface`. `CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface` should be used instead.
 - Deprecated `craft\fields\conditions\FieldConditionRuleTrait`. `CraftCms\Cms\Field\Conditions\FieldConditionRuleTrait` should be used instead.
@@ -405,17 +410,17 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Deprecated `craft\fields\conditions\CountryFieldConditionRule`. `CraftCms\Cms\Field\Conditions\CountryFieldConditionRule` should be used instead.
 - Deprecated `craft\fields\conditions\LinkFieldConditionRule`. `CraftCms\Cms\Field\Conditions\LinkFieldConditionRule` should be used instead.
 
-#### Events
+##### Events
 
-- Deprecated `craft\events\RegisterConditionRulesEvent`. `CraftCms\Cms\Condition\Events\RegisterConditionRules` should be used instead.
+- Deprecated `craft\events\RegisterConditionRulesEvent`. `CraftCms\Cms\Condition\Events\ConditionRulesResolving` should be used instead.
 
-## Drafts
+### Drafts
 
 - Deprecated `craft\services\Drafts`. `CraftCms\Cms\Element\Drafts` should be used instead.
 - Deprecated `craft\events\DraftEvent`. One of the events extending `CraftCms\Cms\Element\Events\DraftEvent` should be used instead.
 - Deprecated `craft\behaviors\DraftBehavior`. `CraftCms\Cms\Element\Concerns\Draftable` should be used instead.
 
-## Elements
+### Elements
 
 - Added `CraftCms\Cms\Element\ElementCaches` and `CraftCms\Cms\Support\Facades\ElementCaches`.
   - Deprecated `craft\services\Elements::getIsCollectingCacheInfo()`. `CraftCms\Cms\Element\ElementCaches::isCollectingCacheInfo()` should be used instead.
@@ -438,7 +443,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Added `CraftCms\Cms\Element\ElementActivity`, `CraftCms\Cms\Element\Data\ElementActivity`, `CraftCms\Cms\Element\Enums\ElementActivityType`, and `CraftCms\Cms\Support\Facades\ElementActivity`.
   - Deprecated `craft\services\Elements::getRecentActivity()`. `CraftCms\Cms\Element\ElementActivity::getRecentActivity()` should be used instead.
   - Deprecated `craft\services\Elements::trackActivity()`. `CraftCms\Cms\Element\ElementActivity::trackActivity()` should be used instead.
-- Added `CraftCms\Cms\Element\Actions\ElementAction`, `CraftCms\Cms\Element\ElementActions`, `CraftCms\Cms\Element\Contracts\DeleteActionInterface`, `CraftCms\Cms\Element\Contracts\ElementActionInterface`, `CraftCms\Cms\Element\Events\AfterPerformAction`, `CraftCms\Cms\Element\Events\BeforePerformAction`, `CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController`, and `CraftCms\Cms\Support\Facades\ElementActions`.
+- Added `CraftCms\Cms\Element\Actions\ElementAction`, `CraftCms\Cms\Element\ElementActions`, `CraftCms\Cms\Element\Contracts\DeleteActionInterface`, `CraftCms\Cms\Element\Contracts\ElementActionInterface`, `CraftCms\Cms\Element\Events\ElementActionPerformed`, `CraftCms\Cms\Element\Events\ElementActionPerforming`, `CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController`, and `CraftCms\Cms\Support\Facades\ElementActions`.
 - Added Laravel-native element action classes under `CraftCms\Cms\Element\Actions`, `CraftCms\Cms\Asset\Actions`, `CraftCms\Cms\Entry\Actions`, and `CraftCms\Cms\User\Actions`.
 - Added `CraftCms\Cms\Element\ElementExporters`, `CraftCms\Cms\Element\Contracts\ElementExporterInterface`, `CraftCms\Cms\Element\Exporters\ElementExporter`, `CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ExportElementIndexController`, and `CraftCms\Cms\Support\Facades\ElementExporters`.
 - Added Laravel-native element exporter classes under `CraftCms\Cms\Element\Exporters`.
@@ -447,11 +452,11 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Deprecated `craft\base\ElementAction`, `craft\base\ElementActionInterface`, `craft\elements\actions\DeleteActionInterface`, and the legacy `craft\elements\actions\*` classes. The corresponding `CraftCms\Cms\Element\Actions\*`, `CraftCms\Cms\Asset\Actions\*`, `CraftCms\Cms\Entry\Actions\*`, and `CraftCms\Cms\User\Actions\*` classes should be used instead.
 - Deprecated `craft\base\ElementExporter`, `craft\base\ElementExporterInterface`, and the legacy `craft\elements\exporters\*` classes. The corresponding `CraftCms\Cms\Element\Exporters\*` classes should be used instead.
 
-### Validation
+#### Validation
 
 Craft 6 introduces a new validation system that uses Laravel's Validator instead of Yii2's model validation.
 
-#### Added
+##### Added
 
 - Added `CraftCms\Cms\Validation\Contracts\Validatable` interface for classes that support Laravel-style validation.
 - Added `CraftCms\Cms\Validation\Contracts\ValidatableWithRuleset` interface for classes that use a `Ruleset` class to define validation rules.
@@ -462,7 +467,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Added `CraftCms\Cms\Validation\Concerns\HasScenarios` trait for scenario-based validation filtering.
 - Added `CraftCms\Cms\Validation\Concerns\InteractsWithValidator` trait providing common validator interactions.
 - Added `CraftCms\Cms\Element\Validation\ElementRules` abstract class for defining element-specific validation rules.
-- Added `CraftCms\Cms\Element\Validation\Events\DefineValidationRules` event for plugins to modify element validation rules.
+- Added `CraftCms\Cms\Element\Validation\Events\ValidationRulesResolving` event for plugins to modify element validation rules.
 - Added `CraftCms\Cms\Element\Validation\Rules\ElementUriRule` for validating element URIs.
 - Added element-specific ruleset classes:
   - `CraftCms\Cms\Address\Validation\AddressRules`
@@ -477,13 +482,13 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Added `CraftCms\Cms\Validation\Rules\DisallowMb4` for disallowing 4-byte UTF-8 characters.
 - Added `CraftCms\Cms\Validation\Rules\MoneyRule` for validating money values.
 
-#### Changed
+##### Changed
 
 - `FieldInterface::getElementValidationRules()` has been replaced by `FieldInterface::getElementRules()` which returns rules in Laravel's validation format.
 - Added `FieldInterface::prepareForElementValidation()` for preparing field values before validation.
 - Validation rules are now defined as Laravel-style arrays (e.g., `['required', 'string', 'max:255']`).
 
-#### Deprecations
+##### Deprecations
 
 - Deprecated `craft\base\Model::hasErrors()`. Use `->errors()->has($attribute)` or `->errors()->isNotEmpty()` instead.
 - Deprecated `craft\base\Model::getErrors()`. Use `->errors()->get($attribute)` or `->errors()->getMessages()` instead.
@@ -497,13 +502,13 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Deprecated `\craft\records\Element_SiteSettings`. `\CraftCms\Cms\Element\Models\ElementSiteSettings` should be used instead.
 - Deprecated `\craft\records\Revision`. `\CraftCms\Cms\Element\Models\Revision` should be used instead.
 
-## ElementSources
+### ElementSources
 
 - Deprecated `craft\services\ElementSources`. `CraftCms\Cms\Element\ElementSources` should be used instead.
-- Deprecated `craft\events\DefineSourceSortOptionsEvent`. `CraftCms\Cms\Element\Events\DefineSourceSortOptions` should be used instead.
-- Deprecated `craft\events\DefineSourceTableAttributesEvent`. `CraftCms\Cms\Element\Events\DefineSourceTableAttributes` should be used instead.
+- Deprecated `craft\events\DefineSourceSortOptionsEvent`. `CraftCms\Cms\Element\Events\ElementSourceSortOptionsResolving` should be used instead.
+- Deprecated `craft\events\DefineSourceTableAttributesEvent`. `CraftCms\Cms\Element\Events\ElementSourceTableAttributesResolving` should be used instead.
 
-## Element Queries
+### Element Queries
 
 - Deprecated `craft\elements\db\ElementRelationParamParser`. `CraftCms\Cms\Database\ElementRelationParamFilter` should be used instead.
 - Deprecated `craft\elements\db\NestedElementQueryInterface`. `CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface` should be used instead.
@@ -517,9 +522,9 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Deprecated `\craft\elements\db\EntryQuery` `\CraftCms\Cms\Element\Queries\EntryQuery` should be used instead.
 - Deprecated `\craft\elements\db\UserQuery` `\CraftCms\Cms\Element\Queries\UserQuery` should be used instead.
 
-## Entries & Entry Types
+### Entries & Entry Types
 
-- Updated entry type table pagination to return Laravel-style pagination metadata and use the configured `GeneralConfig::$pageTrigger` query parameter.
+- Updated entry type table pagination to return Laravel-style pagination metadata and use the `pageTrigger` query parameter.
 - Deprecated `craft\services\Entries`. `CraftCms\Cms\Entry\Entries` and `CraftCms\Cms\Entry\EntryTypes` should be used instead.
 - Deprecated `craft\models\EntryType`. `CraftCms\Cms\Entry\Data\EntryType` should be used instead.
 - Deprecated `craft\records\EntryType`. `CraftCms\Cms\Entry\Models\EntryType` should be used instead.
@@ -529,26 +534,26 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
   - `craft\services\Entries::EVENT_BEFORE_DELETE_ENTRY_TYPE` => `CraftCms\Cms\Section\Events\DeletingEntryType`
   - `craft\services\Entries::EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE` => `CraftCms\Cms\Entry\Events\ApplyingEntryTypeDelete`
   - `craft\services\Entries::EVENT_AFTER_DELETE_ENTRY_TYPE` => `CraftCms\Cms\Entry\Events\EntryTypeDeleted`
-  - `craft\services\Entries::EVENT_BEFORE_SAVE_ENTRY_TYPE` => `CraftCms\Cms\Entry\Events\SavingEntryType`
+  - `craft\services\Entries::EVENT_BEFORE_SAVE_ENTRY_TYPE` => `CraftCms\Cms\Entry\Events\EntryTypeSaving`
   - `craft\services\Entries::EVENT_AFTER_SAVE_ENTRY_TYPE` => `CraftCms\Cms\Entry\Events\EntryTypeSaved`
 - Removed `craft\controllers\EntriesController`. The following controllers now implement this functionality:
-    - `CraftCms\Cms\Http\Controllers\Entries\CreateEntryController`
-    - `CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController`
-    - `CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController`
-    - `CraftCms\Cms\Http\Controllers\Entries\StoreEntryController`
+  - `CraftCms\Cms\Http\Controllers\Entries\CreateEntryController`
+  - `CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController`
+  - `CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController`
+  - `CraftCms\Cms\Http\Controllers\Entries\StoreEntryController`
 - Removed `craft\controllers\EntryTypesController` in favor of `CraftCms\Cms\Http\Controllers\EntryTypesController`
 - Removed `craft\console\controllers\EntryTypesController` in favor of:
   - `CraftCms\Cms\Entry\Commands\MergeEntryTypesCommand`
 
-## Component
+### Component
 
 - Added `CraftCms\Cms\Component\Component` base class, replacing Yii2's `BaseObject`/`Component` with config hydration, magic getters/setters, and `Arrayable` support.
 - Added `CraftCms\Cms\Component\Exceptions\InvalidCallException`, replacing `yii\base\InvalidCallException`.
 - Added `CraftCms\Cms\Component\Exceptions\UnknownPropertyException`, replacing `yii\base\UnknownPropertyException`.
 
-## Field Layouts
+### Field Layouts
 
-### Added
+#### Added
 
 - Added `CraftCms\Cms\FieldLayout\FieldLayoutForm`.
 - Added `CraftCms\Cms\FieldLayout\FieldLayoutFormTab`.
@@ -556,7 +561,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Added `CraftCms\Cms\FieldLayout\FieldLayoutServiceProvider`.
 - Added `CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout` trait.
 
-### Deprecations
+#### Deprecations
 - Deprecated `craft\models\FieldLayout`. `CraftCms\Cms\FieldLayout\FieldLayout` should be used instead.
 - Deprecated `craft\models\FieldLayoutTab`. `CraftCms\Cms\FieldLayout\FieldLayoutTab` should be used instead.
 - Deprecated `craft\base\FieldLayoutComponent`. `CraftCms\Cms\FieldLayout\FieldLayoutComponent` should be used instead.
@@ -592,16 +597,16 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Deprecated `craft\fieldlayoutelements\users\EmailField`. `CraftCms\Cms\FieldLayout\LayoutElements\Users\EmailField` should be used instead.
 - Deprecated `craft\fieldlayoutelements\users\AffiliatedSiteField`. `CraftCms\Cms\FieldLayout\LayoutElements\Users\AffiliatedSiteField` should be used instead.
 - Deprecated `craft\fieldlayoutelements\users\PhotoField`. `CraftCms\Cms\FieldLayout\LayoutElements\Users\PhotoField` should be used instead.
-- Deprecated `craft\events\CreateFieldLayoutFormEvent`. `CraftCms\Cms\FieldLayout\Events\CreateFieldLayoutForm` should be used instead.
-- Deprecated `craft\events\DefineFieldLayoutCustomFieldsEvent`. `CraftCms\Cms\FieldLayout\Events\DefineCustomFields` should be used instead.
-- Deprecated `craft\events\DefineFieldLayoutElementsEvent`. `CraftCms\Cms\FieldLayout\Events\DefineUIElements` should be used instead.
-- Deprecated `craft\events\DefineFieldLayoutFieldsEvent`. `CraftCms\Cms\FieldLayout\Events\DefineNativeFields` should be used instead.
-- Deprecated `craft\events\DefineShowFieldLayoutComponentInFormEvent`. `CraftCms\Cms\FieldLayout\Events\DefineShowInForm` should be used instead.
-- Deprecated `craft\events\DefineFieldActionsEvent`. `CraftCms\Cms\FieldLayout\Events\DefineActionMenuItems` should be used instead.
+- Deprecated `craft\events\CreateFieldLayoutFormEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutFormCreating` should be used instead.
+- Deprecated `craft\events\DefineFieldLayoutCustomFieldsEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutCustomFieldsResolving` should be used instead.
+- Deprecated `craft\events\DefineFieldLayoutElementsEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutUIElementsResolving` should be used instead.
+- Deprecated `craft\events\DefineFieldLayoutFieldsEvent`. `CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving` should be used instead.
+- Deprecated `craft\events\DefineShowFieldLayoutComponentInFormEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentShowInFormResolving` should be used instead.
+- Deprecated `craft\events\DefineFieldActionsEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutActionMenuItemsResolving` should be used instead.
 
-## Fields
+### Fields
 
-- Updated field index pagination to return Laravel-style pagination metadata and use the configured `GeneralConfig::$pageTrigger` query parameter.
+- Updated field index pagination to return Laravel-style pagination metadata and use the configured `pageTrigger` query parameter.
 - Removed `craft\controllers\FieldsController` in favor of `CraftCms\Cms\Http\Controllers\FieldsController`.
 - Removed `craft\controllers\MatrixController`. `CraftCms\Cms\Http\Controllers\MatrixController` should be used instead.
 - Removed `craft\controllers\RelationalFieldsController`. `CraftCms\Cms\Http\Controllers\RelationalFieldsController` should be used instead.
@@ -656,18 +661,18 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Deprecated `craft\fields\Users`. `CraftCms\Cms\Field\Users` should be used instead.
 - Deprecated `craft\services\Fields`. `CraftCms\Cms\Field\Fields` should be used instead.
 
-## Filesystems
+### Filesystems
 
 - Deprecated `craft\errors\InvalidSubpathException`. `CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException` should be used instead.
 
-## GQL
+### GQL
 
 - Deprecated `\craft\records\GqlSchema`. `\CraftCms\Cms\Gql\Models\GqlSchema` should be used instead.
 - Deprecated `\craft\records\GqlToken`. `\CraftCms\Cms\Gql\Models\GqlToken` should be used instead.
 
-## HTTP
+### HTTP
 
-- Deprecated `craft\config\GeneralConfig::$errorTemplatePrefix` and `craft\config\GeneralConfig::errorTemplatePrefix()`. Configure [Laravel's custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages) instead.
+- Deprecated the `errorTemplatePrefix` general config setting. Configure [Laravel's custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages) instead.
 - Deprecated `craft\filters\BasicHttpAuthLogin`. Use the `auth.basic` middleware instead. (see https://laravel.com/docs/12.x/authentication#http-basic-authentication)
 - Deprecated `craft\filters\BasicHttpAuthStatic`. Use the `auth.basic` middleware instead. (see https://laravel.com/docs/12.x/authentication#http-basic-authentication)
 - Deprecated `craft\filters\BasicHttpAuthTrait`. Use the `auth.basic` middleware instead. (see https://laravel.com/docs/12.x/authentication#http-basic-authentication)
@@ -689,7 +694,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Removed the licensing issues screen logic in `yii2-adapter\legacy\web\Application`. The new `\CraftCms\Cms\Http\Middleware\EnforceLicenses` middleware handles this functionality.
 - Removed `craft\controllers\AppController::actionTryEdition()` and `actionSwitchToLicensedEdition()` in favor of `CraftCms\Cms\Http\Controllers\EditionController`.
 
-## Mail
+### Mail
 
 - Added `CraftCms\Cms\Email\Commands\SendTestMailCommand`.
 - Added `CraftCms\Cms\Email\Mailables\CraftMailable`, a base mailable class that automatically applies project config email settings (from, replyTo, mailer) with site-specific overrides.
@@ -697,11 +702,11 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Deprecated `Craft::$app->getMailer()`. Laravel mailers/drivers and `CraftCms\Cms\SystemMessage\SystemMessages::mailable()` should be used instead.
 - Deprecated `craft\mail\Mailer`. Laravel mailers/drivers and `CraftCms\Cms\SystemMessage\SystemMessages::mailable()` should be used instead.
 - Deprecated `craft\helpers\MailerHelper`. Laravel mail configuration and drivers should be used instead.
-- Deprecated `craft\config\GeneralConfig::$testToEmailAddress` and `craft\config\GeneralConfig::testToEmailAddress()`. `Illuminate\Support\Facades\Mail::alwaysTo()` should be used instead.
+- Deprecated the `testToEmailAddress` general config setting. `Illuminate\Support\Facades\Mail::alwaysTo()` should be used instead.
 - Deprecated `craft\mail\Mailer::$template`, `craft\mail\Mailer::$siteOverrides`, `craft\models\MailSettings::$template`, and `craft\models\MailSettings::$siteOverrides`. Laravel mailable views and environment-specific Laravel mailers should be used instead.
 - Removed legacy `projectConfig.email` mail settings and mail transport adapter configuration in favor of Laravel's `mail` config and drivers.
 
-## Migrations
+### Migrations
 
 Craft and Yii's migrations have been removed in favor of [Laravel migrations](https://laravel.com/docs/12.x/migrations).
 
@@ -714,16 +719,16 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
   - `CraftCms\Cms\Console\Commands\InstallCommand`
   - `CraftCms\Cms\Console\Commands\InstallCheckCommand`
 - Removed `craft\console\controllers\MigrateController` in favor of:
-  - `CraftCms\Cms\Database\Commands\MigrateCommand` 
+  - `CraftCms\Cms\Database\Commands\MigrateCommand`
 - Removed `craft\console\controllers\UpController` in favor of:
-  - `CraftCms\Cms\Console\Commands\UpCommand` 
+  - `CraftCms\Cms\Console\Commands\UpCommand`
 
-## Plugins
+### Plugins
 
-### Added
+#### Added
 - The base `CraftCms\Cms\Plugin\Plugin` class is now a [Laravel ServiceProvider](https://laravel.com/docs/12.x/providers) which provides a new way to register components for your plugins.
 
-### Deprecations
+#### Deprecations
 
 - Deprecated `craft\services\Plugins`. `CraftCms\Cms\Plugin\Plugins` should be used instead.
 - Deprecated `craft\base\Plugin`. `CraftCms\Cms\Plugin\Plugin` should be used instead.
@@ -732,10 +737,10 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
 - Deprecated `craft\errors\InvalidPluginException`. `CraftCms\Cms\Plugin\Exceptions\InvalidPluginException` should be used instead.
 - Deprecated `craft\errors\InvalidLicenseKeyException`. `CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException` should be used instead.
 
-### Controllers
+#### Controllers
 - Removed `craft\controllers\PluginsController`. Use `CraftCms\Cms\Http\Controllers\PluginsController` instead.
 
-### Commands
+#### Commands
 - Removed `craft\console\controllers\PluginController` in favor of:
   - `CraftCms\Cms\Plugin\Commands\DisableCommand` -> `php craft plugin:disable`
   - `CraftCms\Cms\Plugin\Commands\EnableCommand` -> `php craft plugin:enable`
@@ -743,16 +748,16 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
   - `CraftCms\Cms\Plugin\Commands\UninstallCommand` -> `php craft plugin:uninstall`
   - `CraftCms\Cms\Plugin\Commands\ListCommand` -> `php craft plugin:list`
 
-### Events
+#### Events
 - Deprecated `craft\events\PluginEvent` in favor of the following new events:
   - `craft\base\Plugin::EVENT_BEFORE_SAVE_SETTINGS` => `CraftCms\Cms\Component\Events\ComponentEvent`
   - `craft\base\Plugin::EVENT_AFTER_SAVE_SETTINGS` => `CraftCms\Cms\Component\Events\ComponentEvent`
-  - `craft\services\Plugins::EVENT_BEFORE_DISABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\DisablingPlugin`;
-  - `craft\services\Plugins::EVENT_BEFORE_ENABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\EnablingPlugin`;
-  - `craft\services\Plugins::EVENT_BEFORE_INSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\InstallingPlugin`;
-  - `craft\services\Plugins::EVENT_BEFORE_LOAD_PLUGINS` => `CraftCms\Cms\Plugin\Events\LoadingPlugins`;
+  - `craft\services\Plugins::EVENT_BEFORE_DISABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginDisabling`;
+  - `craft\services\Plugins::EVENT_BEFORE_ENABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginEnabling`;
+  - `craft\services\Plugins::EVENT_BEFORE_INSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginInstalling`;
+  - `craft\services\Plugins::EVENT_BEFORE_LOAD_PLUGINS` => `CraftCms\Cms\Plugin\Events\PluginsLoading`;
   - `craft\services\Plugins::EVENT_BEFORE_SAVE_PLUGIN_SETTINGS` => `CraftCms\Cms\Plugin\Events\SavingPluginSettings`;
-  - `craft\services\Plugins::EVENT_BEFORE_UNINSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\UninstallingPlugin`;
+  - `craft\services\Plugins::EVENT_BEFORE_UNINSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginUninstalling`;
   - `craft\services\Plugins::EVENT_AFTER_DISABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginDisabled`;
   - `craft\services\Plugins::EVENT_AFTER_ENABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginEnabled`;
   - `craft\services\Plugins::EVENT_AFTER_INSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginInstalled`;
@@ -760,21 +765,22 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
   - `craft\services\Plugins::EVENT_AFTER_SAVE_PLUGIN_SETTINGS` => `CraftCms\Cms\Plugin\Events\PluginSettingsSaved`;
   - `craft\services\Plugins::EVENT_AFTER_UNINSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginUninstalled`;
 
-## Request
+### Request
 
 - Added `Request::isPreview()` macro for detecting preview requests via `x-craft-preview` or `x-craft-live-preview` parameters.
 - Added `Request::isCpRequest()`, `Request::isSiteRequest()`, `Request::isActionRequest()`, `Request::actionSegments()`, `Request::actionSegmentsToRoute()`, `Request::duplicateWithUri()`, `Request::getToken()`, and `Request::getSigned()` macros.
-- Updated paginated requests to resolve the current page from the configured `GeneralConfig::$pageTrigger` query parameter rather than path-style pagination segments.
+- Updated paginated requests to resolve the current page from the configured `pageTrigger` query parameter rather than path-style pagination segments.
 
-## Security
+### Security
 
 - Added `CraftCms\Cms\Support\Security`.
 - Added `CraftCms\Cms\Support\Facades\Security`.
 - Added `CraftCms\Cms\Http\Middleware\AddLogContext`.
 - Deprecated `Craft::$app->getSecurity()` in favor of Laravel's Hash and Crypt facades, or `CraftCms\Cms\Support\Facades\Security`.
-- Deprecated `GeneralConfig::$blowfishHashCost` in favor of Laravel's hashing.bcrypt.rounds config or the BCRYPT_ROUNDS environment variable.
+- Deprecated the `blowfishHashCost` general config setting in favor of Laravel's `hashing.bcrypt.rounds` config or the `BCRYPT_ROUNDS` environment variable.
+- Deprecated the `csrfTokenName`, `enableCsrfCookie`, and `enableCsrfProtection` general config settings. ([#18806](https://github.com/craftcms/cms/pull/18806))
 
-## Updates
+### Updates
 
 The `craft\services\Updates` internal service has been removed. `CraftCms\Cms\Update\Updates` should be used instead.
 
@@ -792,7 +798,7 @@ Moved the following controllers:
   - `CraftCms\Cms\Update\Commands\ComposerInstallCommand`
   - `CraftCms\Cms\Update\Commands\InfoCommand`
 
-#### Deprecations & removals
+##### Deprecations & removals
 - Deprecated `craft\helpers\Install`. `CraftCms\Cms\Site\Concerns\SiteDefaults` should be used instead.
 - Deprecated `craft\helpers\Update`. The only method was `checkPhpConstraint` which is now available on `CraftCms\Cms\Support\PHP::checkConstraint()`
 - Removed `craft\events\UpdateReleaseEvent` in favor of `CraftCms\Cms\Update\Events\CriticalUpdateReleasedEvent`
@@ -800,7 +806,7 @@ Moved the following controllers:
 - Removed `craft\models\UpdateRelease`. `CraftCms\Cms\Update\Data\UpdateRelease` should be used instead.
 - Removed `craft\models\Updates`. `CraftCms\Cms\Update\Data\Updates` should be used instead.
 
-### Users
+#### Users
 
 - Removed `craft\console\controllers\UsersController` in favor of the following commands (signatures are the same):
   - `CraftCms\Cms\User\Commands\ActivationUrlCommand`
@@ -814,7 +820,7 @@ Moved the following controllers:
   - `CraftCms\Cms\User\Commands\SetPasswordCommand`
   - `CraftCms\Cms\User\Commands\UnlockCommand`
 
-## Project Config
+### Project Config
 
 - Deprecated `craft\services\ProjectConfig`. `CraftCms\Cms\ProjectConfig\ProjectConfig` should be used instead.
 - Removed `craft\controllers\ProjectConfigController` in favor of `CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController`
@@ -830,18 +836,18 @@ Moved the following controllers:
   - `CraftCms\Cms\ProjectConfig\Commands\WriteCommand`
   - All commands can be called using either `php craft project-config` or `php craft pc`
 - Deprecated `craft\events\ConfigEvent` in favor of the following events:
-  - `CraftCms\Cms\ProjectConfig\Events\AddingItem`
+  - `CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemAdding`
   - `CraftCms\Cms\ProjectConfig\Events\ItemAdded`
-  - `CraftCms\Cms\ProjectConfig\Events\UpdatingItem`
+  - `CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemUpdated`
   - `CraftCms\Cms\ProjectConfig\Events\ItemUpdated`
-  - `CraftCms\Cms\ProjectConfig\Events\RemovingItem`
+  - `CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemRemoved`
   - `CraftCms\Cms\ProjectConfig\Events\ItemRemoved`
 - Deprecated `craft\services\ProjectConfig::EVENT_AFTER_APPLY_CHANGES`
   - Added `CraftCms\Cms\ProjectConfig\Events\ChangesApplied`
 - Deprecated `craft\services\ProjectConfig::EVENT_AFTER_WRITE_YAML_FILES`
 - Added `CraftCms\Cms\ProjectConfig\Events\YamlFilesWritten`
 - Deprecated `craft\services\ProjectConfig::EVENT_REBUILD`
-  - Added `CraftCms\Cms\ProjectConfig\Events\RebuildConfig`
+  - Added `CraftCms\Cms\ProjectConfig\Events\ProjectConfigRebuilt`
 - Removed `craft\errors\BusyResourceException` in favor of `CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException`
 - Removed `craft\errors\StaleResourceException` in favor of `CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException`
 - Added `CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException`
@@ -849,18 +855,18 @@ Moved the following controllers:
 - Removed `craft\models\ReadOnlyProjectConfigData` in favor of `CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData`
 - Deprecated `craft\helpers\ProjectConfig`. `CraftCms\Cms\ProjectConfig\ProjectConfigHelper` should be used instead.
 
-## Revisions
+### Revisions
 
 - Deprecated `craft\services\Revisions`. `CraftCms\Cms\Element\Revisions` should be used instead.
 - Deprecated `craft\events\RevisionEvent`. One of the events extending `CraftCms\Cms\Element\Events\RevisionEvent` should be used instead.
 - Deprecated `craft\behaviors\RevisionBehavior`. `CraftCms\Cms\Element\Concerns\Revisionable` should be used instead.
 
-## Routes
+### Routes
 
 - Deprecated `craft\services\Routes`. `CraftCms\Cms\Route\Routes` should be used instead.
 - Using routes in `config/routes.php` is no longer supported. Register routes using [Laravel's routing](https://laravel.com/docs/12.x/routing) instead.
 
-## Search
+### Search
 
 - Added `CraftCms\Cms\Support\Facades\Search`.
 - Deprecated `craft\services\Search`. `CraftCms\Cms\Search\Search` should be used instead.
@@ -869,24 +875,24 @@ Moved the following controllers:
 - Deprecated `craft\search\SearchQueryTerm`. `CraftCms\Cms\Search\SearchQueryTerm` should be used instead.
 - Deprecated `craft\search\SearchQueryTermGroup`. `CraftCms\Cms\Search\SearchQueryTermGroup` should be used instead.
 - Deprecated `craft\events\SearchEvent` in favor of the following new events:
-  - `craft\services\Search::EVENT_BEFORE_SEARCH` => `CraftCms\Cms\Search\Events\BeforeSearch`
-  - `craft\services\Search::EVENT_AFTER_SEARCH` => `CraftCms\Cms\Search\Events\AfterSearch`
-  - `craft\services\Search::EVENT_BEFORE_SCORE_RESULTS` => `CraftCms\Cms\Search\Events\BeforeScoreResults`
-- Deprecated `craft\events\IndexKeywordsEvent`. `CraftCms\Cms\Search\Events\BeforeIndexKeywords` should be used instead.
+  - `craft\services\Search::EVENT_BEFORE_SEARCH` => `CraftCms\Cms\Search\Events\SearchStarting`
+  - `craft\services\Search::EVENT_AFTER_SEARCH` => `CraftCms\Cms\Search\Events\SearchPerformed`
+  - `craft\services\Search::EVENT_BEFORE_SCORE_RESULTS` => `CraftCms\Cms\Search\Events\ScoringResults`
+- Deprecated `craft\events\IndexKeywordsEvent`. `CraftCms\Cms\Search\Events\KeywordsIndexing` should be used instead.
 
-## Sections
+### Sections
 
-- Updated section index pagination to return Laravel-style pagination metadata and use the configured `GeneralConfig::$pageTrigger` query parameter.
+- Updated section index pagination to return Laravel-style pagination metadata and use the configured `pageTrigger` query parameter.
 - Deprecated the section related methods in `craft\services\Entries`. `CraftCms\Cms\Section\Sections` should be used instead.
 - Deprecated `craft\models\Section`. `CraftCms\Cms\Section\Data\Section` should be used instead.
 - Deprecated `craft\records\Section`. `CraftCms\Cms\Section\Models\Section` should be used instead.
 - Deprecated `craft\models\Section_SiteSettings`. `CraftCms\Cms\Section\Data\SectionSiteSettings` should be used instead.
 - Deprecated `craft\records\Section_SiteSettings`. `CraftCms\Cms\Section\Models\SectionSiteSettings` should be used instead.
 - Deprecated `craft\events\SectionEvent`. One of these should be used instead:
-  - `craft\services\Entries::EVENT_BEFORE_DELETE_SECTION` => `CraftCms\Cms\Section\Events\DeletingSection`
-  - `craft\services\Entries::EVENT_BEFORE_APPLY_SECTION_DELETE` => `CraftCms\Cms\Section\Events\ApplyingSectionDelete`
+  - `craft\services\Entries::EVENT_BEFORE_DELETE_SECTION` => `CraftCms\Cms\Section\Events\SectionDeleting`
+  - `craft\services\Entries::EVENT_BEFORE_APPLY_SECTION_DELETE` => `CraftCms\Cms\Section\Events\SectionDeletionApplying`
   - `craft\services\Entries::EVENT_AFTER_DELETE_SECTION` => `CraftCms\Cms\Section\Events\SectionDeleted`
-  - `craft\services\Entries::EVENT_BEFORE_SAVE_SECTION` => `CraftCms\Cms\Section\Events\SavingSection`
+  - `craft\services\Entries::EVENT_BEFORE_SAVE_SECTION` => `CraftCms\Cms\Section\Events\SectionSaving`
   - `craft\services\Entries::EVENT_AFTER_SAVE_SECTION` => `CraftCms\Cms\Section\Events\SectionSaved`
 - Removed `craft\controllers\SectionsController` in favor of `CraftCms\Cms\Http\Controllers\SectionsController`
 - Removed `craft\console\controllers\SectionsController` in favor of:
@@ -896,7 +902,7 @@ Moved the following controllers:
 - Added `CraftCms\Cms\Section\Enums\SectionType`
 - Deprecated `craft\errors\SectionNotFoundException`. `CraftCms\Cms\Section\Exceptions\SectionNotFoundException` should be used instead.
 
-## Sites
+### Sites
 
 - Deprecated `craft\services\Sites`. `CraftCms\Cms\Site\Sites` should be used instead.
 - Deprecated `craft\models\Site`. `CraftCms\Cms\Site\Data\Site` should be used instead.
@@ -904,17 +910,17 @@ Moved the following controllers:
 - Deprecated `craft\records\Site`. `CraftCms\Cms\Site\Models\Site` should be used instead.
 - Deprecated `craft\records\SiteGroup`. `CraftCms\Cms\Site\Models\SiteGroup` should be used instead.
 - Deprecated `craft\events\SiteEvent`. One of `CraftCms\Cms\Site\Events\*` should be used instead.
-- Deprecated `craft\events\DeleteSiteEvent`. One of `CraftCms\Cms\Site\Events\DeletingSite` or `CraftCms\Cms\Site\Events\SiteDeleted` should be used instead.
-- Deprecated `craft\events\ReorderSitesEvent`. One of `CraftCms\Cms\Site\Events\ReorderingSites` or `CraftCms\Cms\Site\Events\SitesReordered` should be used instead.
+- Deprecated `craft\events\DeleteSiteEvent`. One of `CraftCms\Cms\Site\Events\SiteDeleting` or `CraftCms\Cms\Site\Events\SiteDeleted` should be used instead.
+- Deprecated `craft\events\ReorderSitesEvent`. One of `CraftCms\Cms\Site\Events\SitesReordering` or `CraftCms\Cms\Site\Events\SitesReordered` should be used instead.
 - Deprecated `craft\events\SiteGroupEvent`. One of `CraftCms\Cms\Site\Events\*` should be used instead.
 - Deprecated `craft\errors\SiteNotFoundException`. `CraftCms\Cms\Site\Exceptions\SiteNotFoundException` should be used instead.
 - Deprecated `craft\errors\SiteGroupNotFoundException`.
 
 - Removed `craft\controllers\SitesController` in favor of:
-  - `CraftCms\Cms\Http\Controllers\Settings\SitesController` 
-  - `CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController` 
+  - `CraftCms\Cms\Http\Controllers\Settings\SitesController`
+  - `CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController`
 
-## Structures
+### Structures
 
 - Deprecated `craft\services\Structures`. `CraftCms\Cms\Structure\Structures` should be used instead.
 - Deprecated `craft\models\Structure`. `CraftCms\Cms\Structure\Data\Structure` should be used instead.
@@ -925,20 +931,20 @@ Moved the following controllers:
   - `\CraftCms\Cms\Structure\Commands\RepairCategoryGroupStructureCommand`
   - `\CraftCms\Cms\Structure\Commands\RepairSectionStructureCommand`
 
-## System Messages
+### System Messages
 
 - Deprecated `craft\services\SystemMessages`. `CraftCms\Cms\SystemMessage\SystemMessages` should be used instead.
 - Deprecated `craft\models\SystemMessage` and `craft\records\SystemMessage`. `CraftCms\Cms\SystemMessage\Models\SystemMessage` should be used instead.
 - Replaced `craft\controllers\SystemMessagesController` with `CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController`
 
-## Tokens
+### Tokens
 
 - Deprecated `craft\services\Tokens`. `CraftCms\Cms\RouteToken\RouteTokens` should be used instead.
 - Deprecated `craft\records\Token`. `CraftCms\Cms\RouteToken\Models\RouteToken` should be used instead.
 
-## Twig
+### Twig
 
-- Updated Twig `{% paginate %}` queries to use Laravel paginators and generate query-string pagination URLs based on `GeneralConfig::$pageTrigger`.
+- Updated Twig `{% paginate %}` queries to use Laravel paginators and generate query-string pagination URLs based on the `pageTrigger` general config setting.
 - Added `CraftCms\Cms\Twig\Twig` service for managing Twig environments, replacing the Twig management logic previously in `craft\web\View`.
 - Added `CraftCms\Cms\Twig\TemplateRenderer` for rendering templates, replacing the rendering logic previously in `craft\web\View`.
 - Added `CraftCms\Cms\Twig\PageLifecycle` for managing the page rendering lifecycle (head/body placeholder replacement), replacing the page lifecycle logic previously in `craft\web\View`.
@@ -948,7 +954,8 @@ Moved the following controllers:
 - Added `CraftCms\Cms\Twig\TemplateLoader`.
 - Added `CraftCms\Cms\Twig\Exceptions\TemplateLoaderException`.
 - Added helper functions in the `CraftCms\Cms` namespace: `template()`, `sandboxedTemplate()`, `pageTemplate()`, `renderString()`, `renderSandboxedString()`, `renderObjectTemplate()`, `renderSandboxedObjectTemplate()`.
-- Added `sanitize` Twig filter for sanitizing HTML with `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers`.
+- Added `|sanitize` Twig filter for sanitizing HTML with `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers`.
+- Renamed the `|money` Twig filter’s `formatLocale` argument to `locale`.
 - Deprecated `craft\web\View::getTwig()`. `CraftCms\Cms\Twig\Twig::get()` should be used instead.
 - Deprecated `craft\web\View::setTwig()`. `CraftCms\Cms\Twig\Twig::set()` should be used instead.
 - Deprecated `craft\web\View::createTwig()`. `CraftCms\Cms\Twig\Twig::create()` should be used instead.
@@ -972,21 +979,21 @@ Moved the following controllers:
 - Deprecated `craft\web\twig\TemplateLoader`. `CraftCms\Cms\Twig\TemplateLoader` should be used instead.
 - Deprecated `craft\web\twig\TemplateLoaderException`. `CraftCms\Cms\Twig\Exceptions\TemplateLoaderException` should be used instead.
 
-### Events
+#### Events
 
 - Added `CraftCms\Cms\Twig\Events\TwigCreated`, dispatched when a Twig environment is created.
-- Added `CraftCms\Cms\Twig\Events\RenderingTemplate`, dispatched before a template is rendered. Supports cancellation via `ValidatableEvent`.
+- Added `CraftCms\Cms\Twig\Events\TemplateRendering`, dispatched before a template is rendered. Supports cancellation via `ValidatableEvent`.
 - Added `CraftCms\Cms\Twig\Events\TemplateRendered`, dispatched after a template is rendered. Has a mutable `output` property.
-- Added `CraftCms\Cms\Twig\Events\RenderingPageTemplate`, dispatched before a page template is rendered. Supports cancellation via `ValidatableEvent`.
+- Added `CraftCms\Cms\Twig\Events\PageTemplateRendering`, dispatched before a page template is rendered. Supports cancellation via `ValidatableEvent`.
 - Added `CraftCms\Cms\Twig\Events\PageTemplateRendered`, dispatched after a page template is rendered. Has a mutable `output` property.
-- Added `CraftCms\Cms\Twig\Events\BeginPage`, dispatched when page rendering begins.
-- Added `CraftCms\Cms\Twig\Events\EndPage`, dispatched when page rendering ends. Has nullable `headHtml`, `bodyBeginHtml`, and `bodyEndHtml` properties for overriding `HtmlStack` output.
-- Deprecated `craft\web\View::EVENT_BEFORE_RENDER_TEMPLATE`. `CraftCms\Cms\Twig\Events\RenderingTemplate` should be used instead.
+- Added `CraftCms\Cms\Twig\Events\PageStarting`, dispatched when page rendering begins.
+- Added `CraftCms\Cms\Twig\Events\PageEnded`, dispatched when page rendering ends. Has nullable `headHtml`, `bodyBeginHtml`, and `bodyEndHtml` properties for overriding `HtmlStack` output.
+- Deprecated `craft\web\View::EVENT_BEFORE_RENDER_TEMPLATE`. `CraftCms\Cms\Twig\Events\TemplateRendering` should be used instead.
 - Deprecated `craft\web\View::EVENT_AFTER_RENDER_TEMPLATE`. `CraftCms\Cms\Twig\Events\TemplateRendered` should be used instead.
-- Deprecated `craft\web\View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE`. `CraftCms\Cms\Twig\Events\RenderingPageTemplate` should be used instead.
+- Deprecated `craft\web\View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE`. `CraftCms\Cms\Twig\Events\PageTemplateRendering` should be used instead.
 - Deprecated `craft\web\View::EVENT_AFTER_RENDER_PAGE_TEMPLATE`. `CraftCms\Cms\Twig\Events\PageTemplateRendered` should be used instead.
 
-## Translations
+### Translations
 
 - Deprecated `craft\i18n\FormatConverter`. `CraftCms\Cms\Translation\FormatConverter` should be used instead.
 - Deprecated `craft\i18n\Formatter`. `CraftCms\Cms\Translation\Formatter` should be used instead.
@@ -997,7 +1004,7 @@ Moved the following controllers:
 - Deprecated `craft\i18n\Translation`. `CraftCms\Cms\Support\Facades\I18N` should be used instead.
 - Deprecated `Craft::t`. `CraftCms\Cms\t` should be used instead.
 
-## Users
+### Users
 
 - `CraftCms\Cms\User\Elements\User` now implements `Illuminate\Contracts\Auth\Authenticatable`, `Illuminate\Contracts\Auth\Access\Authorizable`, `Illuminate\Contracts\Auth\CanResetPassword`, and `Illuminate\Contracts\Auth\MustVerifyEmail`.
 - Added `CraftCms\Cms\User\Notifications\VerifyEmailNotification`.
@@ -1012,10 +1019,10 @@ Moved the following controllers:
   - `CraftCms\Cms\Http\Controllers\Settings\UserGroupsController`
   - `CraftCms\Cms\Http\Controllers\Settings\UserSettingsController`
 - Deprecated `UserGroupEvent` in favor of:
-  - `CraftCms\Cms\User\Events\SavingUserGroup`
+  - `CraftCms\Cms\User\Events\UserGroupSaving`
   - `CraftCms\Cms\User\Events\UserGroupSaved`
-  - `CraftCms\Cms\User\Events\ApplyingUserGroupDelete`
-  - `CraftCms\Cms\User\Events\DeletingUserGroup`
+  - `CraftCms\Cms\User\Events\UserGroupDeletionApplying`
+  - `CraftCms\Cms\User\Events\UserGroupDeleting`
   - `CraftCms\Cms\User\Events\UserGroupDeleted`
 - Deprecated `\craft\exceptions\UserGroupNotFoundException`.
 - Deprecated `\craft\services\UserGroups`. `CraftCms\Cms\User\UserGroups` should be used instead.
@@ -1025,9 +1032,9 @@ Moved the following controllers:
 - Deprecated `\craft\records\UserPermission`. `\CraftCms\Cms\User\Models\UserPermission` should be used instead.
 - Deprecated `craft\services\UserPermissions`. `CraftCms\Cms\User\UserPermissions` should be used instead.
 - Deprecated `craft.app.userPermissions`. `craft.userPermissions` should be used instead.
-- Deprecated `craft\events\DefineEditUserScreensEvent`. `CraftCms\Cms\User\Events\DefineEditUserScreens` should be used instead.
+- Deprecated `craft\events\DefineEditUserScreensEvent`. `CraftCms\Cms\User\Events\EditUserScreensResolving` should be used instead.
 
-## View
+### View
 
 - Added `CraftCms\Cms\View\TwigEngine`.
 - Added `CraftCms\Cms\View\HtmlStack`.
@@ -1040,14 +1047,14 @@ Moved the following controllers:
 - Added `CraftCms\Cms\View\DeltaRegistry`.
 - Added `CraftCms\Cms\Support\Facades\DeltaRegistry`.
 - Added `CraftCms\Cms\View\TemplateMode` enum.
-- Added `CraftCms\Cms\View\Events\RegisterCpTemplateRoots`.
-- Added `CraftCms\Cms\View\Events\RegisterSiteTemplateRoots`.
+- Added `CraftCms\Cms\View\Events\CpTemplateRootsResolving`.
+- Added `CraftCms\Cms\View\Events\SiteTemplateRootsResolving`.
 - Added `CraftCms\Cms\View\TemplateCaches`.
 - Added `CraftCms\Cms\View\CacheCollectors\DependencyCollector`.
 - Added `CraftCms\Cms\View\CacheCollectors\ResourceCollector`.
 - Added `CraftCms\Cms\View\Contracts\CacheCollectorInterface`.
 - Added `CraftCms\Cms\View\Data\TemplateCacheContext`.
-- Added `CraftCms\Cms\View\Events\RegisterTemplateCacheCollectors`.
+- Added `CraftCms\Cms\View\Events\TemplateCacheCollectorsResolving`.
 - Deprecated `craft\services\TemplateCaches`. `CraftCms\Cms\View\TemplateCaches` should be used instead.
 - Deprecated `craft\web\View::registerJs()`. `CraftCms\Cms\View\HtmlStack::js()` should be used instead.
 - Deprecated `craft\web\View::registerJsWithVars()`. `CraftCms\Cms\View\HtmlStack::jsWithVars()` should be used instead.
@@ -1090,8 +1097,8 @@ Moved the following controllers:
 - Deprecated `craft\web\View::getTemplatesPath()`. `CraftCms\Cms\View\TemplateMode::templatesPath()` should be used instead.
 - Deprecated `craft\web\View::getCpTemplateRoots()`. `CraftCms\Cms\View\TemplateMode::templateRoots()` should be used instead.
 - Deprecated `craft\web\View::getSiteTemplateRoots()`. `CraftCms\Cms\View\TemplateMode::templateRoots()` should be used instead.
-- Deprecated `craft\web\View::EVENT_REGISTER_CP_TEMPLATE_ROOTS`. `CraftCms\Cms\View\Events\RegisterCpTemplateRoots` should be used instead.
-- Deprecated `craft\web\View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS`. `CraftCms\Cms\View\Events\RegisterSiteTemplateRoots` should be used instead.
+- Deprecated `craft\web\View::EVENT_REGISTER_CP_TEMPLATE_ROOTS`. `CraftCms\Cms\View\Events\CpTemplateRootsResolving` should be used instead.
+- Deprecated `craft\web\View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS`. `CraftCms\Cms\View\Events\SiteTemplateRootsResolving` should be used instead.
 - Deprecated `craft\web\View::registerDeltaName()`. `CraftCms\Cms\View\DeltaRegistry::registerName()` should be used instead.
 - Deprecated `craft\web\View::getDeltaNames()`. `CraftCms\Cms\View\DeltaRegistry::getNames()` should be used instead.
 - Deprecated `craft\web\View::getModifiedDeltaNames()`. `CraftCms\Cms\View\DeltaRegistry::getModifiedNames()` should be used instead.

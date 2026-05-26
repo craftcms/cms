@@ -28,6 +28,8 @@ use Yiisoft\Html\Html as YiiHtml;
 use Yiisoft\Html\NoEncode;
 use Yiisoft\Html\Tag\Button;
 use Yiisoft\Html\Tag\Input;
+use Yiisoft\Html\Tag\Ol;
+use Yiisoft\Html\Tag\Ul;
 
 use function CraftCms\Cms\template;
 
@@ -312,6 +314,18 @@ class Html
         }
 
         return self::tag('a', $text, $options);
+    }
+
+    public static function ul(array $items = [], array $attributes = [], bool $encode = true): Ul
+    {
+        return YiiHtml::ul(self::normalizeTagAttributes($attributes))
+            ->strings(array_map(strval(...), $items), encode: $encode);
+    }
+
+    public static function ol(array $items = [], array $attributes = [], bool $encode = true): Ol
+    {
+        return YiiHtml::ol(self::normalizeTagAttributes($attributes))
+            ->strings(array_map(strval(...), $items), encode: $encode);
     }
 
     /**
@@ -1302,6 +1316,19 @@ class Html
     public static function jsFile($url, $options = [])
     {
         return YiiHtml::javaScriptFile($url, $options);
+    }
+
+    /**
+     * Returns JavaScript code with the given variables, pre-JSON-encoded.
+     *
+     * @param  callable  $jsFn  callback function that returns the JS code to be registered.
+     * @param  array  $vars  Array of variables that will be JSON-encoded before being passed to `$jsFn`.
+     */
+    public static function jsWithVars(callable $jsFn, array $vars): string
+    {
+        $jsVars = array_map(fn ($variable) => Json::encode($variable), $vars);
+
+        return call_user_func($jsFn, ...array_values($jsVars));
     }
 
     public static function endForm(): string

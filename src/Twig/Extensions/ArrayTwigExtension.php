@@ -29,18 +29,18 @@ class ArrayTwigExtension extends AbstractExtension
             new TwigFilter('column', Arr::pluck(...)),
             new TwigFilter('contains', Arr::contains(...)),
             new TwigFilter('diff', 'array_diff'),
-            new TwigFilter('filter', $this->filterFilter(...), ['needs_environment' => true]),
-            new TwigFilter('firstWhere', Arr::first(...)),
+            new TwigFilter('filter', $this->filterFilter(...), ['needs_environment' => true, 'needs_is_sandboxed' => true]),
+            new TwigFilter('firstWhere', $this->firstWhereFilter(...)),
             new TwigFilter('flatten', Arr::flatten(...)),
             new TwigFilter('group', $this->groupFilter(...)),
             new TwigFilter('indexOf', $this->indexOfFilter(...)),
             new TwigFilter('intersect', 'array_intersect'),
-            new TwigFilter('map', $this->mapFilter(...), ['needs_environment' => true]),
+            new TwigFilter('map', $this->mapFilter(...), ['needs_environment' => true, 'needs_is_sandboxed' => true]),
             new TwigFilter('merge', $this->mergeFilter(...)),
             new TwigFilter('multisort', $this->multisortFilter(...)),
             new TwigFilter('push', $this->pushFilter(...)),
-            new TwigFilter('reduce', $this->reduceFilter(...), ['needs_environment' => true]),
-            new TwigFilter('sort', $this->sortFilter(...), ['needs_environment' => true]),
+            new TwigFilter('reduce', $this->reduceFilter(...), ['needs_environment' => true, 'needs_is_sandboxed' => true]),
+            new TwigFilter('sort', $this->sortFilter(...), ['needs_environment' => true, 'needs_is_sandboxed' => true]),
             new TwigFilter('unique', 'array_unique'),
             new TwigFilter('unshift', $this->unshiftFilter(...)),
             new TwigFilter('values', 'array_values'),
@@ -63,37 +63,37 @@ class ArrayTwigExtension extends AbstractExtension
     /**
      * @throws RuntimeError
      */
-    public function sortFilter(TwigEnvironment $env, iterable $array, string|callable|null $arrow = null): array
+    public function sortFilter(TwigEnvironment $env, bool $isSandboxed, iterable $array, string|callable|null $arrow = null): array
     {
-        CoreExtension::checkArrow($env, $arrow, 'sort', 'filter');
+        CoreExtension::checkArrow($isSandboxed, $arrow, 'sort', 'filter');
 
-        return CoreExtension::sort($env, $array, $arrow);
+        return CoreExtension::sort($env, $isSandboxed, $array, $arrow);
     }
 
     /**
      * @throws RuntimeError
      */
-    public function reduceFilter(TwigEnvironment $env, mixed $array, mixed $arrow, mixed $initial = null): mixed
+    public function reduceFilter(TwigEnvironment $env, bool $isSandboxed, mixed $array, mixed $arrow, mixed $initial = null): mixed
     {
-        CoreExtension::checkArrow($env, $arrow, 'reduce', 'filter');
+        CoreExtension::checkArrow($isSandboxed, $arrow, 'reduce', 'filter');
 
-        return CoreExtension::reduce($env, $array, $arrow, $initial);
+        return CoreExtension::reduce($env, $isSandboxed, $array, $arrow, $initial);
     }
 
     /**
      * @throws RuntimeError
      */
-    public function mapFilter(TwigEnvironment $env, mixed $array, mixed $arrow = null): array
+    public function mapFilter(TwigEnvironment $env, bool $isSandboxed, mixed $array, mixed $arrow = null): array
     {
-        CoreExtension::checkArrow($env, $arrow, 'map', 'filter');
+        CoreExtension::checkArrow($isSandboxed, $arrow, 'map', 'filter');
 
-        return CoreExtension::map($env, $array, $arrow);
+        return CoreExtension::map($env, $isSandboxed, $array, $arrow);
     }
 
     /**
      * @throws RuntimeError
      */
-    public function filterFilter(TwigEnvironment $env, iterable $arr, ?callable $arrow = null): array
+    public function filterFilter(TwigEnvironment $env, bool $isSandboxed, iterable $arr, ?callable $arrow = null): array
     {
         /** @var array|Traversable $arr */
         if ($arrow === null) {
@@ -104,15 +104,20 @@ class ArrayTwigExtension extends AbstractExtension
             return array_filter($arr);
         }
 
-        CoreExtension::checkArrow($env, $arrow, 'filter', 'filter');
+        CoreExtension::checkArrow($isSandboxed, $arrow, 'filter', 'filter');
 
-        $filtered = CoreExtension::filter($env, $arr, $arrow);
+        $filtered = CoreExtension::filter($env, $isSandboxed, $arr, $arrow);
 
         if (is_array($filtered)) {
             return $filtered;
         }
 
         return iterator_to_array($filtered);
+    }
+
+    public function firstWhereFilter(iterable $array, callable|string $key, mixed $value = true, bool $strict = false): mixed
+    {
+        return collect($array)->firstWhere($key, $strict ? '===' : '==', $value);
     }
 
     /**
@@ -184,7 +189,7 @@ class ArrayTwigExtension extends AbstractExtension
         $array = array_merge($array);
 
         return collect($array)
-            ->sortBy($key, $sortFlag, $direction === SORT_DESC)
+            ->sortBy($key, collect($sortFlag)->sum(), $direction === SORT_DESC)
             ->all();
     }
 

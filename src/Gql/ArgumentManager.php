@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Gql;
 
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Gql\Contracts\ArgumentHandlerInterface;
-use CraftCms\Cms\Gql\Events\RegisterGqlArgumentHandlers;
+use CraftCms\Cms\Gql\Events\GqlArgumentHandlersResolving;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Handlers\RelatedAssets;
 use CraftCms\Cms\Gql\Handlers\RelatedEntries;
@@ -37,7 +37,7 @@ class ArgumentManager extends Component
             'siteId' => SiteId::class,
         ];
 
-        event($event = new RegisterGqlArgumentHandlers(handlers: $this->_argumentHandlers));
+        event($event = new GqlArgumentHandlersResolving(handlers: $this->_argumentHandlers));
         $this->_argumentHandlers = $event->handlers;
     }
 

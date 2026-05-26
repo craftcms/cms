@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Providers;
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementCollection;
@@ -13,25 +14,28 @@ use CraftCms\Cms\Http\Mixins\RequestMixin;
 use CraftCms\Cms\Http\Mixins\SessionMixin;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Data\Update as UpdateData;
+use CraftCms\Cms\Update\Data\UpdateRelease;
 use CraftCms\Cms\Update\Data\Updates as UpdatesData;
 use GuzzleHttp\Utils;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Config\Repository;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Foundation\Events\LocaleUpdated;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\UrlGenerator;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -60,12 +64,17 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->registerMacros();
         $this->registerSerializableClasses();
+        $this->registerThrottleExceptionHandler();
     }
 
     public function boot(): void
     {
-        Cache::handleUnserializableClassUsing(function (...$params) {
-            dump($params);
+        AuthenticationException::redirectUsing(function () {
+            if (! request()->isCpRequest() && Cms::config()->loginPath !== false) {
+                return Url::siteUrl(Cms::config()->getLoginPath());
+            }
+
+            return Url::cpUrl(CpAuthPath::Login->value);
         });
 
         Event::listen(LocaleUpdated::class, function (LocaleUpdated $event) {
@@ -101,10 +110,18 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
+        $iconsDir = (string) realpath("{$this->root}/resources/icons");
+        $icons = [];
+
+        if ($iconsDir) {
+            foreach (array_merge(glob("{$iconsDir}/*.svg") ?: [], glob("{$iconsDir}/*/*.svg") ?: []) as $path) {
+                $icons[$path] = public_path('vendor/craft/icons/'.substr($path, strlen($iconsDir) + 1));
+            }
+        }
+
+        $this->publishes($icons, ['craftcms', 'craftcms-assets', 'craftcms-icons']);
         $this->publishes([
             "{$this->root}/resources/build/" => public_path('vendor/craft/build'),
-            "{$this->root}/resources/icons/" => public_path('vendor/craft/icons'),
-            "{$this->root}/resources/images/" => public_path('vendor/craft/images'),
             "{$this->root}/resources/legacy/" => public_path('vendor/craft/legacy'),
         ], ['craftcms', 'craftcms-assets']);
     }
@@ -203,11 +220,13 @@ class AppServiceProvider extends ServiceProvider
         $existing = is_array($existing) ? $existing : [];
 
         $this->app->make(Repository::class)->set('cache.serializable_classes', array_merge($existing, [
+            Carbon::class,
             Collection::class,
             ElementCollection::class,
             stdClass::class,
             UpdatesData::class,
             UpdateData::class,
+            UpdateRelease::class,
         ]));
     }
 
@@ -247,5 +266,16 @@ class AppServiceProvider extends ServiceProvider
         } else {
             Aliases::set('@web', config('app.url'));
         }
+    }
+
+    private function registerThrottleExceptionHandler(): void
+    {
+        $this->callAfterResolving(ExceptionHandler::class, function (ExceptionHandler $handler): void {
+            $handler->renderable(function (ThrottleRequestsException $e, $request) {
+                if ($request->inertia()) {
+                    return back()->with('error', t('Too many requests. Please wait a moment before trying again.'));
+                }
+            });
+        });
     }
 }

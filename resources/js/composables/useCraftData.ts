@@ -1,6 +1,16 @@
 import {usePage} from '@inertiajs/vue3';
 
+export interface CpUser {
+  username: string | null;
+  email: string | null;
+  id: number | null;
+  thumbHtml: string | null;
+  name: string | null;
+}
+
 export interface CraftData {
+  csrfTokenValue?: string | null;
+  csrfTokenName?: string | null;
   system: {
     name: string;
     icon: string | null;
@@ -18,7 +28,16 @@ export interface CraftData {
   };
   readOnly: boolean;
   allowAdminChanges: boolean;
-  currentUser: any;
+  currentUser: CpUser | null;
+  general: {
+    cpTrigger: string;
+    actionTrigger: string | null;
+    csrfTokenName: string | null;
+    cpLogoUrl: string | null;
+    useEmailAsUsername: boolean;
+    rememberedUserSessionDuration: number;
+    defaultCpLocale: string;
+  };
   nav: any[];
   [key: string]: any;
 }

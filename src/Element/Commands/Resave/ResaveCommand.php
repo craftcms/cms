@@ -6,19 +6,20 @@ namespace CraftCms\Cms\Element\Commands\Resave;
 
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Element\Events\AfterPropagateElement;
-use CraftCms\Cms\Element\Events\AfterResaveElement;
-use CraftCms\Cms\Element\Events\BeforePropagateElement;
-use CraftCms\Cms\Element\Events\BeforeResaveElement;
+use CraftCms\Cms\Element\Events\ElementPropagated;
+use CraftCms\Cms\Element\Events\ElementPropagating;
+use CraftCms\Cms\Element\Events\ElementResaved;
+use CraftCms\Cms\Element\Events\ElementResaving;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Jobs\ResaveElements as ResaveElementsJob;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
-use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
@@ -52,6 +53,7 @@ abstract class ResaveCommand extends Command
         {--touch : Update the `dateUpdated` timestamp.}
         {--set= : Attribute name to set on each element.}
         {--to= : Value for the --set attribute.}
+        {--to-default : Sets the specified fields to their default values.}
         {--if-empty : Only set the attribute if it is currently empty.}
         {--if-invalid : Only set the attribute if the current value is invalid.}
         {--with-fields=* : Only resave elements with these field handles.}
@@ -74,9 +76,9 @@ abstract class ResaveCommand extends Command
     private ?bool $resolvedRevisions = false;
 
     /**
-     * @var array<int, string>|null
+     * @var array<int, FieldInterface>
      */
-    private ?array $resolvedWithFields = null;
+    protected array $resolvedWithFields = [];
 
     /**
      * Returns [[to]] normalized to a callable.
@@ -168,13 +170,56 @@ abstract class ResaveCommand extends Command
         }
 
         // Validate --set requires --to
-        if ($this->option('set') && ! $this->option('to')) {
-            $this->components->error('--to is required when using --set.');
+        if ($this->option('set') && ! $this->option('to') && ! $this->option('to-default')) {
+            $this->components->error('--to or --to-default is required when using --set.');
 
             return false;
         }
 
-        $this->resolvedWithFields = $this->normalizeOptionValues('with-fields');
+        $resolvedWithFields = $this->normalizeOptionValues('with-fields');
+
+        foreach ($resolvedWithFields as $i => $field) {
+            if (! $field instanceof FieldInterface) {
+                $handle = $field;
+                $field = Fields::getFieldByHandle($handle);
+                if (! $field) {
+                    $this->components->error("Invalid field: `$handle`");
+
+                    return false;
+                }
+            }
+
+            $resolvedWithFields[$i] = $field;
+        }
+
+        $this->resolvedWithFields = $resolvedWithFields;
+
+        if ($this->option('to-default')) {
+            if (empty($this->resolvedWithFields) && $this->option('set') === null) {
+                $this->components->error('--with-fields or --set is required when using --to-default.');
+
+                return false;
+            }
+
+            if ($set = $this->option('set')) {
+                $field = Fields::getFieldByHandle($set);
+                if (! $field) {
+                    $this->components->error("Invalid field handle: $set");
+
+                    return false;
+                }
+            } else {
+                foreach ($this->resolvedWithFields as $field) {
+                    if ($field instanceof DefaultableFieldInterface) {
+                        continue;
+                    }
+
+                    $this->components->error("$field->handle doesn’t support --to-default.");
+
+                    return false;
+                }
+            }
+        }
 
         return true;
     }
@@ -257,9 +302,11 @@ abstract class ResaveCommand extends Command
             dispatch(new ResaveElementsJob(
                 elementType: $elementType,
                 criteria: $criteria,
+                withFields: array_map(fn (FieldInterface $field) => $field->handle, $this->resolvedWithFields),
                 updateSearchIndex: (bool) $this->option('update-search-index'),
                 set: $this->option('set'),
                 to: $this->option('to'),
+                toDefault: $this->option('to-default'),
                 ifEmpty: (bool) $this->option('if-empty'),
                 ifInvalid: (bool) $this->option('if-invalid'),
                 touch: (bool) $this->option('touch'),
@@ -283,23 +330,13 @@ abstract class ResaveCommand extends Command
      */
     protected function hasTheFields(FieldLayout $fieldLayout): bool
     {
-        $withFields = $this->resolvedWithFields();
+        $withFields = $this->resolvedWithFields;
 
         if (empty($withFields)) {
             return true;
         }
 
-        $fieldsService = app(Fields::class);
-
-        foreach ($withFields as $handle) {
-            $field = $fieldsService->getFieldByHandle($handle);
-
-            if ($field && $fieldLayout->getFieldByUid($field->uid)) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($withFields, fn ($field) => (bool) $fieldLayout->getFieldByUid($field->uid));
     }
 
     /**
@@ -334,7 +371,7 @@ abstract class ResaveCommand extends Command
             $setEnabledForSite = (bool) normalizeValue($setEnabledForSite);
         }
 
-        $beforeCallback = function (BeforeResaveElement|BeforePropagateElement $e) use ($count, $query, $to, $set, $ifEmpty, $ifInvalid, $setEnabledForSite) {
+        $beforeCallback = function (ElementResaving|ElementPropagating $e) use ($count, $query, $to, $set, $ifEmpty, $ifInvalid, $setEnabledForSite) {
             if ($e->query !== $query) {
                 return;
             }
@@ -357,7 +394,38 @@ abstract class ResaveCommand extends Command
                 }
 
                 try {
-                    if (isset($set)) {
+                    if ($this->option('to-default')) {
+                        if ($set) {
+                            $fields = [$element->getFieldLayout()?->getFieldByHandle($set)];
+                        } else {
+                            $fields = array_map(
+                                fn (FieldInterface $field) => $element->getFieldLayout()?->getFieldByUid($field->uid),
+                                $this->resolvedWithFields,
+                            );
+                        }
+
+                        $fields = array_filter($fields, fn (?FieldInterface $field) => $field instanceof DefaultableFieldInterface);
+
+                        foreach ($fields as $field) {
+                            $set = true;
+                            if ($this->option('if-empty')) {
+                                if (! ElementHelper::isAttributeEmpty($element, $field->handle)) {
+                                    $set = false;
+                                }
+                            } elseif ($this->option('if-invalid')) {
+                                $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+
+                                if ($element->validate("field:$field->handle")) {
+                                    $set = false;
+                                }
+                            }
+
+                            if ($set) {
+                                /** @var DefaultableFieldInterface $field */
+                                $element->setFieldValue($field->handle, $field->getDefaultValue());
+                            }
+                        }
+                    } elseif (isset($set)) {
                         $shouldSet = true;
 
                         if ($ifEmpty) {
@@ -382,7 +450,7 @@ abstract class ResaveCommand extends Command
             }
         };
 
-        $afterCallback = function (AfterPropagateElement|AfterResaveElement $e) use ($query, &$fail) {
+        $afterCallback = function (ElementPropagated|ElementResaved $e) use ($query, &$fail) {
             if ($e->query !== $query) {
                 return;
             }
@@ -401,12 +469,12 @@ abstract class ResaveCommand extends Command
         };
 
         if (isset($this->resolvedPropagateTo)) {
-            Event::listen(fn (BeforePropagateElement $event) => $beforeCallback($event));
-            Event::listen(fn (AfterPropagateElement $event) => $afterCallback($event));
+            Event::listen(fn (ElementPropagating $event) => $beforeCallback($event));
+            Event::listen(fn (ElementPropagated $event) => $afterCallback($event));
             Elements::propagateElements($query, $this->resolvedPropagateTo, true);
         } else {
-            Event::listen(fn (BeforeResaveElement $event) => $beforeCallback($event));
-            Event::listen(fn (AfterResaveElement $event) => $afterCallback($event));
+            Event::listen(fn (ElementResaving $event) => $beforeCallback($event));
+            Event::listen(fn (ElementResaved $event) => $afterCallback($event));
             Elements::resaveElements($query, true, $this->resolvedRevisions === false, (bool) $this->option('update-search-index'), (bool) $this->option('touch'));
         }
 
@@ -424,14 +492,6 @@ abstract class ResaveCommand extends Command
     protected function optionalOption(string $name): mixed
     {
         return $this->hasOption($name) ? $this->input->getOption($name) : null;
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    protected function resolvedWithFields(): array
-    {
-        return $this->resolvedWithFields ??= $this->normalizeOptionValues('with-fields');
     }
 
     /**

@@ -7,20 +7,21 @@ namespace CraftCms\Cms\Database;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Database\Events\AfterCreateBackup;
-use CraftCms\Cms\Database\Events\AfterRestoreBackup;
-use CraftCms\Cms\Database\Events\BeforeCreateBackup;
-use CraftCms\Cms\Database\Events\BeforeRestoreBackup;
+use CraftCms\Cms\Database\BackupCommands\MysqlBackupCommand;
+use CraftCms\Cms\Database\BackupCommands\PostgresBackupCommand;
+use CraftCms\Cms\Database\BackupCommands\SqliteBackupCommand;
+use CraftCms\Cms\Database\Events\BackupCreated;
+use CraftCms\Cms\Database\Events\BackupCreating;
+use CraftCms\Cms\Database\Events\BackupRestored;
+use CraftCms\Cms\Database\Events\BackupRestoring;
 use CraftCms\Cms\Database\Exceptions\CommandFailedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
-use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
-use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
 
 #[Singleton]
@@ -83,7 +84,7 @@ final readonly class Backups
         $connection ??= DB::connection();
         $ignoreTables ??= self::DEFAULT_IGNORED_TABLES;
 
-        event($event = new BeforeCreateBackup(
+        event($event = new BackupCreating(
             connection: $connection,
             file: $filePath,
             ignoreTables: $ignoreTables,
@@ -98,7 +99,7 @@ final readonly class Backups
 
         $this->executeCommandWithMysqlDefaults($connection, $command);
 
-        event(new AfterCreateBackup(
+        event(new BackupCreated(
             connection: $connection,
             file: $filePath,
         ));
@@ -113,7 +114,7 @@ final readonly class Backups
     ): void {
         $connection ??= DB::connection();
 
-        event(new BeforeRestoreBackup(
+        event(new BackupRestoring(
             connection: $connection,
             file: $filePath,
         ));
@@ -122,7 +123,7 @@ final readonly class Backups
 
         $this->executeCommandWithMysqlDefaults($connection, $command);
 
-        event(new AfterRestoreBackup(
+        event(new BackupRestored(
             connection: $connection,
             file: $filePath,
         ));
@@ -189,120 +190,22 @@ final readonly class Backups
 
     private function defaultBackupCommand(Connection $connection, string $filePath, ?string $backupFormat, array $ignoreTables): string
     {
-        if ($connection->isPgsql()) {
-            $config = $this->getConnectionConfig($connection);
-            $parts = [
-                $this->resolveExecutable('pg_dump'),
-                '--dbname='.escapeshellarg((string) $config['database']),
-                '--host='.escapeshellarg((string) $config['host']),
-                '--port='.escapeshellarg((string) $config['port']),
-                '--username='.escapeshellarg((string) $config['username']),
-                '--if-exists',
-                '--clean',
-                '--no-owner',
-                '--no-privileges',
-                '--no-acl',
-                '--file='.escapeshellarg($filePath),
-                '--schema='.escapeshellarg((string) $config['schema']),
-            ];
-
-            foreach ($ignoreTables as $table) {
-                $table = $this->tableName($connection, $table);
-                $parts[] = '--exclude-table-data='.escapeshellarg("{$config['schema']}.$table");
-            }
-
-            $format = $backupFormat ?? $this->generalConfig->backupCommandFormat;
-            if ($format) {
-                $parts[] = '--format='.escapeshellarg($format);
-            }
-
-            return implode(' ', $parts);
-        }
-
-        if ($connection->isMysql()) {
-            $config = $this->getConnectionConfig($connection);
-            $charset = (string) ($connection->getConfig('charset') ?? 'utf8mb4');
-
-            $baseArgs = implode(' ', [
-                $this->resolveExecutable('mysqldump'),
-                '--defaults-file={defaultsFile}',
-                '--add-drop-table',
-                '--comments',
-                '--create-options',
-                '--dump-date',
-                '--no-autocommit',
-                '--routines',
-                '--default-character-set='.$charset,
-                '--set-charset',
-                '--triggers',
-                '--no-tablespaces',
-            ]);
-
-            $schemaDump = implode(' ', [
-                $baseArgs,
-                '--no-data',
-                '--skip-triggers',
-                '--result-file='.escapeshellarg($filePath),
-                escapeshellarg((string) $config['database']),
-            ]);
-
-            $dataArgs = [
-                $baseArgs,
-                '--no-create-info',
-            ];
-
-            foreach ($ignoreTables as $table) {
-                $raw = $this->tableName($connection, $table);
-                $dataArgs[] = '--ignore-table='.escapeshellarg("{$config['database']}.$raw");
-            }
-
-            $dataArgs[] = escapeshellarg((string) $config['database']);
-
-            return $schemaDump.' && '.implode(' ', $dataArgs).' >> '.escapeshellarg($filePath);
-        }
-
-        throw new RuntimeException('Database backups are only supported for MySQL/MariaDB and PostgreSQL.');
+        return match (true) {
+            $connection->isPgsql() => new PostgresBackupCommand($connection, $filePath, $ignoreTables, $backupFormat)->backup(),
+            $connection->isMysql() => new MysqlBackupCommand($connection, $filePath, $ignoreTables)->backup(),
+            $connection->isSqlite() => new SqliteBackupCommand($connection, $filePath, $ignoreTables)->backup(),
+            default => throw new RuntimeException('Database backups are only supported for MySQL/MariaDB, PostgreSQL, and SQLite.'),
+        };
     }
 
     private function defaultRestoreCommand(Connection $connection, string $filePath, ?string $restoreFormat): string
     {
-        if ($connection->isPgsql()) {
-            $config = $this->getConnectionConfig($connection);
-            $usePgRestore = $restoreFormat !== null && $restoreFormat !== 'plain';
-
-            $parts = [
-                $this->resolveExecutable($usePgRestore ? 'pg_restore' : 'psql'),
-                '--dbname='.escapeshellarg((string) $config['database']),
-                '--host='.escapeshellarg((string) $config['host']),
-                '--port='.escapeshellarg((string) $config['port']),
-                '--username='.escapeshellarg((string) $config['username']),
-                '--no-password',
-            ];
-
-            if ($usePgRestore) {
-                $parts = array_merge($parts, [
-                    '--clean',
-                    '--if-exists',
-                    '--no-owner',
-                    '--no-acl',
-                    '--schema='.escapeshellarg((string) $config['schema']),
-                    '--single-transaction',
-                    escapeshellarg($filePath),
-                ]);
-            } else {
-                $parts[] = '< '.escapeshellarg($filePath);
-            }
-
-            return implode(' ', $parts);
-        }
-
-        if ($connection->isMysql() || $connection->isMaria()) {
-            $config = $this->getConnectionConfig($connection);
-
-            return $this->resolveExecutable('mysql').' --defaults-file={defaultsFile} '.escapeshellarg((string) $config['database']).' < '.escapeshellarg($filePath);
-        }
-
-        throw new RuntimeException('Database restore is only supported for MySQL/MariaDB and PostgreSQL.');
+        return match (true) {
+            $connection->isPgsql() => new PostgresBackupCommand($connection, $filePath, restoreFormat: $restoreFormat)->restore(),
+            $connection->isMysql() => new MysqlBackupCommand($connection, $filePath)->restore(),
+            $connection->isSqlite() => new SqliteBackupCommand($connection, $filePath)->restore(),
+            default => throw new RuntimeException('Database restore is only supported for MySQL/MariaDB, PostgreSQL, and SQLite.'),
+        };
     }
 
     private function applyCommandClosure(Closure $closure, string $command): string
@@ -361,13 +264,6 @@ final readonly class Backups
             exitCode: $process->getExitCode() ?? 1,
             error: trim($process->getErrorOutput()) ?: null,
         );
-    }
-
-    private function resolveExecutable(string $name): string
-    {
-        $path = new ExecutableFinder()->find($name) ?: $name;
-
-        return escapeshellarg($path);
     }
 
     private function createMysqlDefaultsFile(Connection $connection): string
@@ -429,11 +325,6 @@ final readonly class Backups
             'tar' => '.tar',
             default => '.sql',
         };
-    }
-
-    private function tableName(Connection $connection, string $table): string
-    {
-        return Str::start(trim($table), $connection->getTablePrefix());
     }
 
     private function getConnectionConfig(Connection $connection): array

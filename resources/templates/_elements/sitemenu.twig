@@ -15,7 +15,7 @@
         <button type="button" class="btn menubtn sitemenubtn" data-icon="world" aria-labelledby="context-label">{{ selectedSiteId ? Sites.getSiteById(selectedSiteId).name|t('site') }}</button>
         <div class="menu">
             {% for group in groups %}
-                {% set groupSiteIds = group.getSiteIds()|intersect(siteIds) %}
+                {% set groupSiteIds = group.getSiteIds().all()|intersect(siteIds) %}
                 {% if groupSiteIds %}
                     {% if groups|length > 1 %}<h6>{{ group.name|t('site') }}</h6>{% endif %}
                     <ul class="padded">

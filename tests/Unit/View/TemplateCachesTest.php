@@ -2,16 +2,18 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use CraftCms\Cms\View\Contracts\CacheCollectorInterface;
 use CraftCms\Cms\View\Data\TemplateCacheContext;
-use CraftCms\Cms\View\Events\RegisterTemplateCacheCollectors;
+use CraftCms\Cms\View\Events\TemplateCacheCollectorsResolving;
 use CraftCms\Cms\View\TemplateCaches;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Event;
 
 class TestTemplateCacheCollector implements CacheCollectorInterface
@@ -53,15 +55,15 @@ beforeEach(function () {
 });
 
 it('dispatches the collector registration event', function () {
-    Event::fake(RegisterTemplateCacheCollectors::class);
+    Event::fake(TemplateCacheCollectorsResolving::class);
 
     app(TemplateCaches::class)->startTemplateCache(global: true);
 
-    Event::assertDispatched(RegisterTemplateCacheCollectors::class);
+    Event::assertDispatched(TemplateCacheCollectorsResolving::class);
 });
 
 it('runs event-registered collectors', function () {
-    Event::listen(RegisterTemplateCacheCollectors::class, function (RegisterTemplateCacheCollectors $event) {
+    Event::listen(TemplateCacheCollectorsResolving::class, function (TemplateCacheCollectorsResolving $event) {
         if ($event->types->doesntContain(TestTemplateCacheCollector::class)) {
             $event->types->add(TestTemplateCacheCollector::class);
         }
@@ -139,6 +141,19 @@ it('scopes non-global caches using the paginator current page resolver', functio
 
     swapTemplateCacheRequest('/admin/news?page=2');
     expect(app(TemplateCaches::class)->getTemplateCache('resolved-page-cache', false))->toBe('cp-page-three');
+});
+
+it('does not read or write template caches when the original request had a token', function () {
+    setTemplateCacheConsoleState(false);
+    swapTemplateCacheRequest('/news');
+    Context::addHidden(HandleTokenRequest::HAD_TOKEN_KEY, true);
+
+    $service = app(TemplateCaches::class);
+
+    $service->startTemplateCache(global: false);
+    $service->endTemplateCache('preview-cache', false, null, null, 'preview body');
+
+    expect($service->getTemplateCache('preview-cache', false))->toBeNull();
 });
 
 function swapTemplateCacheRequest(string $uri): void

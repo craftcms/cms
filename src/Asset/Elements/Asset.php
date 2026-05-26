@@ -16,15 +16,16 @@ use CraftCms\Cms\Asset\Actions\RenameFile;
 use CraftCms\Cms\Asset\Actions\ReplaceFile;
 use CraftCms\Cms\Asset\Actions\ShowInFolder;
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Asset\Concerns\LegacyConstants;
 use CraftCms\Cms\Asset\Conditions\AssetCondition;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
-use CraftCms\Cms\Asset\Events\BeforeDefineAssetUrl;
-use CraftCms\Cms\Asset\Events\BeforeGenerateTransform;
-use CraftCms\Cms\Asset\Events\BeforeHandleFile;
-use CraftCms\Cms\Asset\Events\DefineAssetUrl;
+use CraftCms\Cms\Asset\Events\AssetFileHandling;
+use CraftCms\Cms\Asset\Events\AssetUrlDefined;
+use CraftCms\Cms\Asset\Events\AssetUrlResolving;
+use CraftCms\Cms\Asset\Events\TransformGenerating;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\FileException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
@@ -54,6 +55,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
+use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\ImageTransformHelper;
@@ -68,6 +70,7 @@ use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Images;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Search;
@@ -85,6 +88,8 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateInterval;
 use DateTime;
+use DOMDocument;
+use DOMXPath;
 use Exception;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
@@ -94,11 +99,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Imagick;
 use InvalidArgumentException;
 use League\Flysystem\UnableToDeleteFile;
 use Override;
 use RuntimeException;
 use Stringable;
+use Throwable;
 use Twig\Markup;
 
 use function CraftCms\Cms\t;
@@ -138,6 +145,8 @@ use function CraftCms\Cms\t;
 #[Ruleset(AssetRules::class)]
 class Asset extends Element
 {
+    use LegacyConstants;
+
     // Location error codes
     // -------------------------------------------------------------------------
 
@@ -1038,9 +1047,9 @@ class Asset extends Element
         }
 
         $canUpload = Gate::check("saveAssets:$volume->uid");
-        $canMoveTo = $canUpload && Gate::check("deleteAssets:$volume->uid");
-        $canMovePeerFilesTo = (
-            $canMoveTo &&
+        $canMoveTo = (
+            $canUpload &&
+            Gate::check("deleteAssets:$volume->uid") &&
             Gate::check("savePeerAssets:$volume->uid") &&
             Gate::check("deletePeerAssets:$volume->uid")
         );
@@ -1059,7 +1068,6 @@ class Asset extends Element
                 'folder-id' => $folder->id,
                 'can-upload' => $folder->volumeId === null || $canUpload,
                 'can-move-to' => $canMoveTo,
-                'can-move-peer-files-to' => $canMovePeerFilesTo,
                 'fs-type' => $fs::class,
             ],
         ];
@@ -1529,6 +1537,54 @@ JS, [
             ]);
         }
 
+        if (
+            app(ElementRequest::class)->element() === $this &&
+            Auth::user()->isAdmin() &&
+            Cms::config()->allowAdminChanges
+        ) {
+            $items[] = ['type' => MenuItemType::HR];
+
+            // Volume settings
+            $volumeEditId = sprintf('edit-volume-%s', mt_rand());
+            $items[] = [
+                'id' => $volumeEditId,
+                'icon' => 'gear',
+                'label' => t('Volume settings'),
+            ];
+
+            HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
+(() => {
+  $('#' + $id).on('activate', function() {
+    const params = $params;
+    new Craft.CpScreenSlideout('volumes/edit-volume', {params});
+  });
+})();
+JS, [
+                InputNamespace::namespaceId($volumeEditId),
+                ['volumeId' => $this->volumeId],
+            ]);
+
+            // Filesystem settings
+            $fsEditId = sprintf('edit-fs-%s', mt_rand());
+            $items[] = [
+                'id' => $fsEditId,
+                'icon' => 'gear',
+                'label' => t('Filesystem settings'),
+            ];
+
+            HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
+(() => {
+  $('#' + $id).on('activate', function() {
+    const params = $params;
+    new Craft.CpScreenSlideout('fs/edit', {params});
+  });
+})();
+JS, [
+                InputNamespace::namespaceId($fsEditId),
+                ['handle' => $this->getVolume()->getFs()->handle],
+            ]);
+        }
+
         return $items;
     }
 
@@ -1849,18 +1905,18 @@ JS, [
 
         $transform ??= $this->_transform;
 
-        event($event = new BeforeDefineAssetUrl($this, $transform));
+        event($event = new AssetUrlResolving($this, $transform));
 
         $url = $event->url;
 
-        // If BeforeDefineAssetUrl::$url is set to null, only respect that if $handled is true
+        // If AssetUrlResolving::$url is set to null, only respect that if $handled is true
         if ($event->url === null && ! $event->handled) {
             $url = $this->_url($transform, $immediately);
         }
 
-        event($event = new DefineAssetUrl($this, $transform, $url));
+        event($event = new AssetUrlDefined($this, $transform, $url));
 
-        // If DefineAssetUrl::$url is set to null, only respect that if $handled is true
+        // If AssetUrlDefined::$url is set to null, only respect that if $handled is true
         if ($event->url !== null || $event->handled) {
             $url = $event->url;
         }
@@ -1904,7 +1960,7 @@ JS, [
                 $immediately = Cms::config()->generateTransformsBeforePageLoad;
             }
 
-            event($event = new BeforeGenerateTransform($this, $transform));
+            event($event = new TransformGenerating($this, $transform));
 
             // If a plugin set the url, we'll just use that.
             if ($event->url !== null) {
@@ -1957,7 +2013,7 @@ JS, [
     protected function thumbSvg(): string
     {
         if ($this->isFolder) {
-            return file_get_contents(Aliases::get('@resources/images/thumbs/folder.svg'));
+            return file_get_contents(Aliases::get('@resources/public/images/thumbs/folder.svg'));
         }
 
         return AssetsHelper::iconSvg($this->getExtension());
@@ -2803,7 +2859,7 @@ JS;
 
         // Fire a 'beforeHandleFile' event if we're going to be doing any file operations in afterSave()
         if (isset($this->newLocation) || isset($this->tempFilePath)) {
-            event(new BeforeHandleFile($this, isNew: ! $this->id));
+            event(new AssetFileHandling($this, isNew: ! $this->id));
         }
 
         // Set the kind based on filename
@@ -2841,6 +2897,15 @@ JS;
     public function afterSave(bool $isNew): void
     {
         if (! $this->propagating) {
+            // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
+            if (
+                ($this->alt === null || $this->alt === '') &&
+                isset($this->tempFilePath) &&
+                $this->ruleset->inScenarios(AssetRules::SCENARIO_CREATE, AssetRules::SCENARIO_REPLACE)
+            ) {
+                $this->alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
+            }
+
             // Are we uploading an image that needs to be sanitized?
             if (
                 isset($this->tempFilePath) &&
@@ -3296,5 +3361,129 @@ JS;
             'image/svg+xml' => Cms::config()->transformSvgs,
             default => true,
         };
+    }
+
+    /**
+     * Attempts to extract alt text from XMP metadata embedded in an image file.
+     * Checks Iptc4xmpCore:AltTextAccessibility first, then dc:description.
+     */
+    private function _getAltFromXmpMetadata(string $filePath): ?string
+    {
+        try {
+            $xmp = null;
+
+            if (Images::getIsImagick() && class_exists(Imagick::class)) {
+                $imagick = new Imagick($filePath);
+                $xmp = $imagick->getImageProfile('xmp') ?: null;
+                $imagick->clear();
+            }
+
+            if ($xmp === null) {
+                // Fall back to scanning the raw file for the XMP packet
+                $handle = fopen($filePath, 'rb');
+                if ($handle === false) {
+                    return null;
+                }
+                $chunk = fread($handle, 131072); // 128KB covers the XMP packet in most images
+                fclose($handle);
+
+                if ($chunk !== false) {
+                    $xmpStart = strpos($chunk, '<x:xmpmeta');
+                    if ($xmpStart !== false) {
+                        $xmpEnd = strpos($chunk, '</x:xmpmeta>', $xmpStart);
+                        if ($xmpEnd !== false) {
+                            $xmp = substr($chunk, $xmpStart, $xmpEnd - $xmpStart + strlen('</x:xmpmeta>'));
+                        }
+                    }
+                }
+            }
+
+            if (empty($xmp)) {
+                return null;
+            }
+
+            $dom = new DOMDocument;
+            if (! @$dom->loadXML($xmp)) {
+                return null;
+            }
+
+            $xpath = new DOMXPath($dom);
+            $xpath->registerNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
+            $xpath->registerNamespace('dc', 'http://purl.org/dc/elements/1.1/');
+            $xpath->registerNamespace('Iptc4xmpCore', 'http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/');
+            $xpath->registerNamespace('Iptc4xmpExt', 'http://iptc.org/std/Iptc4xmpExt/2008-02-29/');
+
+            // Try Iptc4xmpCore:AltTextAccessibility (LangAlt rdf:Alt/rdf:li structure)
+            foreach ([
+                '//Iptc4xmpCore:AltTextAccessibility/rdf:Alt/rdf:li',
+                '//Iptc4xmpExt:AltTextAccessibility/rdf:Alt/rdf:li',
+                '//Iptc4xmpCore:AltTextAccessibility[not(rdf:Alt)]',
+                '//Iptc4xmpExt:AltTextAccessibility[not(rdf:Alt)]',
+            ] as $query) {
+                $nodes = $xpath->query($query);
+                if ($nodes !== false) {
+                    foreach ($nodes as $node) {
+                        $value = trim($node->textContent);
+                        if ($value !== '') {
+                            return $value;
+                        }
+                    }
+                }
+            }
+
+            // Try dc:description as an rdf:Alt structure
+            $nodes = $xpath->query('//dc:description/rdf:Alt/rdf:li');
+            if ($nodes !== false) {
+                foreach ($nodes as $node) {
+                    $value = trim($node->textContent);
+                    if ($value !== '') {
+                        return $value;
+                    }
+                }
+            }
+
+            // Try dc:description as a plain string value
+            $nodes = $xpath->query('//dc:description[not(rdf:Alt)]');
+            if ($nodes !== false) {
+                foreach ($nodes as $node) {
+                    $value = trim($node->textContent);
+                    if ($value !== '') {
+                        return $value;
+                    }
+                }
+            }
+        } catch (Throwable) {
+            // Ignore errors and fall through to IPTC
+        }
+
+        return null;
+    }
+
+    /**
+     * Attempts to extract alt text from IPTC Caption/Abstract (Iptc.Application2.Caption, field 2:120).
+     */
+    private function _getAltFromIptcMetadata(string $filePath): ?string
+    {
+        try {
+            $imageInfo = [];
+            @getimagesize($filePath, $imageInfo);
+
+            if (! isset($imageInfo['APP13'])) {
+                return null;
+            }
+
+            $iptc = iptcparse($imageInfo['APP13']);
+
+            if (! empty($iptc['2#120'])) {
+                $value = trim(implode(' ', $iptc['2#120']));
+                if ($value !== '') {
+                    return $value;
+                }
+            }
+        } catch (Throwable) {
+            // Ignore errors
+        }
+
+        return null;
     }
 }

@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\Facades\Users;
+use Illuminate\Database\SQLiteDatabaseDoesNotExistException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Context;
@@ -27,9 +28,9 @@ readonly class Cms
 {
     public const string NAME = 'Craft CMS';
 
-    public const string VERSION = '6.0.0';
+    public const string VERSION = '6.0.0-alpha.4';
 
-    public const string SCHEMA_VERSION = '6.0.0.0';
+    public const string SCHEMA_VERSION = '6.0.0.2';
 
     public const string MIN_VERSION_REQUIRED = '5.9.0';
 
@@ -60,9 +61,21 @@ readonly class Cms
 
     public static function timezone(): string
     {
-        $timezone = Cms::config()->timezone
-            ?? ProjectConfig::get('system.timeZone')
-            ?? config('app.timezone', 'UTC');
+        $timezone = null;
+
+        // If the user is logged in *and* has a preferred time zone, use that
+        // (don't actually try to fetch the user, as plugins haven't been loaded yet)
+        if (request()->isCpRequest() && Auth::hasUser() && $id = Auth::id()) {
+            $timezone = Users::getUserPreference($id, 'timeZone');
+        }
+
+        if (! $timezone) {
+            $timezone = Cms::config()->timezone ?? ProjectConfig::get('system.timeZone');
+        }
+
+        if (! $timezone) {
+            $timezone = config('app.timezone', 'UTC');
+        }
 
         $timezone = Env::parse($timezone);
 
@@ -149,7 +162,7 @@ readonly class Cms
 
         try {
             DB::connection()->getPdo();
-        } catch (PDOException $e) {
+        } catch (PDOException|SQLiteDatabaseDoesNotExistException $e) {
             if (! app()->runningInConsole()) {
                 Log::error('There was a problem connecting to the database: '.$e->getMessage(), [__METHOD__]);
                 report($e);

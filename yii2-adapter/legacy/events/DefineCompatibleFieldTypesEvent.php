@@ -12,7 +12,7 @@ namespace craft\events;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.7
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Events\CompatibleFieldTypesResolving} instead.
  */
 class DefineCompatibleFieldTypesEvent extends FieldEvent
 {

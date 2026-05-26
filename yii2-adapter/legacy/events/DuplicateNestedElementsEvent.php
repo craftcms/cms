@@ -15,7 +15,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Events\DuplicateNestedElementsEvent} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Events\NestedElementsDuplicated} instead.
  */
 class DuplicateNestedElementsEvent extends Event
 {

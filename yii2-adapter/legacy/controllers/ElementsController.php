@@ -11,7 +11,7 @@ use craft\base\Event as YiiEvent;
 use craft\events\DefineElementEditorHtmlEvent;
 use craft\web\Controller;
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Element\Events\DefineElementEditorContent;
+use CraftCms\Cms\Element\Events\ElementEditorContentResolving;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Facades\Event;
 
@@ -32,7 +32,7 @@ class ElementsController extends Controller
 
     public static function registerEvents(): void
     {
-        Event::listen(function(DefineElementEditorContent $event) {
+        Event::listen(function(ElementEditorContentResolving $event) {
             if (!YiiEvent::hasHandlers(ElementsController::class, ElementsController::EVENT_DEFINE_EDITOR_CONTENT)) {
                 return;
             }

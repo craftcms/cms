@@ -63,8 +63,8 @@ readonly class UploadController
 
             abort_if(! $field instanceof AssetsField, 400, 'The field provided is not an Assets field');
 
-            if ($elementId = $request->input('elementId')) {
-                $siteId = $request->input('siteId') ?: null;
+            if ($elementId = $request->integer('elementId')) {
+                $siteId = $request->integer('siteId') ?: null;
                 $element = $this->elements->getElementById($elementId, null, $siteId);
             } else {
                 $element = null;
@@ -214,8 +214,15 @@ readonly class UploadController
             abort(404, 'Asset not found.');
         }
 
-        $this->requireVolumePermissionByAsset('replaceFiles', $assetToReplace ?: $sourceAsset);
-        $this->requirePeerVolumePermissionByAsset('replacePeerFiles', $assetToReplace ?: $sourceAsset);
+        if ($assetToReplace) {
+            $this->requireVolumePermissionByAsset('replaceFiles', $assetToReplace);
+            $this->requirePeerVolumePermissionByAsset('replacePeerFiles', $assetToReplace);
+        }
+
+        if ($sourceAsset) {
+            $this->requireVolumePermissionByAsset('replaceFiles', $sourceAsset);
+            $this->requirePeerVolumePermissionByAsset('replacePeerFiles', $sourceAsset);
+        }
 
         // Handle the Element Action
         if ($assetToReplace !== null && $uploadedFile) {
@@ -258,7 +265,11 @@ readonly class UploadController
             'filename' => $resultingAsset->getFilename(),
             'formattedSize' => $resultingAsset->getFormattedSize(0),
             'formattedSizeInBytes' => $resultingAsset->getFormattedSizeInBytes(false),
-            'formattedDateUpdated' => I18N::getFormatter()->asDatetime($resultingAsset->dateUpdated, Formatter::FORMAT_WIDTH_SHORT),
+            'formattedDateUpdated' => I18N::getFormatter()->asDatetime(
+                $resultingAsset->dateUpdated,
+                Formatter::FORMAT_WIDTH_SHORT,
+                true,
+            ),
             'dimensions' => $resultingAsset->getDimensions(),
             'updatedTimestamp' => $resultingAsset->dateUpdated->getTimestamp(),
             'resultingUrl' => $resultingAsset->getUrl(),

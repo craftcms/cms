@@ -697,6 +697,7 @@ h3,
 .h3 {
   margin-block: 14px;
   margin-inline: 0;
+  font-size: 14px;
   font-weight: bold;
   line-height: 1.2;
 }
@@ -1904,6 +1905,10 @@ ul.icons {
 
 .items-stretch {
   align-items: stretch;
+}
+
+.gap-0 {
+  gap: 0;
 }
 
 .gap-2xs {
@@ -4148,6 +4153,10 @@ table {
 
 .element-index {
   .source-path {
+    // see https://github.com/craftcms/cms/issues/18876
+    position: relative;
+    z-index: 1;
+
     background-color: var(--gray-050);
     border-radius: 3px;
 
@@ -4204,6 +4213,12 @@ table {
     .btn.settings {
       box-shadow: 0 0 0 2px var(--white);
     }
+  }
+
+  .elements {
+    margin: calc(var(--pane-padding) * -1);
+    padding: var(--pane-padding);
+    overflow: auto;
   }
 
   &.main {
@@ -4324,10 +4339,7 @@ table {
       font-size: 0;
       position: absolute;
       z-index: 100;
-      inset-block-start: 0;
-      inset-inline-start: calc(var(--pane-padding, 24px) * -1);
-      width: calc(100% + var(--pane-padding, 24px) + var(--pane-padding, 24px));
-      height: 100%;
+      inset: 0;
       background: color.adjust(mixins.$white, $alpha: -0.25);
       border-radius: var(--radius-lg);
     }
@@ -7549,6 +7561,47 @@ $min2ColWidth: 400px;
   }
 }
 
+/* element deletion modal */
+.element-deletion-modal {
+  width: 500px;
+  display: flex;
+  flex-direction: column;
+
+  .body {
+    flex: 1;
+    height: calc(100% - 44px);
+    overflow: auto;
+
+    .edm-blockers {
+      margin-inline: calc(var(--pane-padding) * -1);
+      border-block-start: var(--hr-border);
+
+      .edm-blocker {
+        padding: var(--pane-padding);
+
+        &:nth-child(odd) {
+          background-color: var(--secondary-pane-bg);
+        }
+      }
+
+      .edm-details {
+        .element-index {
+          border-color: var(--border-hairline-dark) !important;
+          background-color: var(--white) !important;
+
+          .elements {
+            max-height: 220px;
+          }
+        }
+      }
+
+      .edm-blocker-resolved-message {
+        margin-block-start: var(--s);
+      }
+    }
+  }
+}
+
 /* delete user modal */
 .deleteusermodal {
   .content-summary {
@@ -9917,6 +9970,29 @@ body.licensing-issues {
   & > .buttons {
     margin-block-start: 0;
     height: 30px;
+  }
+}
+
+/* number field */
+.number-container {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0;
+
+  .number-currency-label {
+    @include mixins.input-styles;
+    border-inline-end: none;
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+    align-items: center;
+    box-sizing: border-box;
+    background: transparent;
+    display: flex;
+    height: 100%;
+    padding-block: 6px;
+    padding-inline: 9px;
+    white-space: nowrap;
   }
 }
 

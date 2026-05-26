@@ -58,9 +58,10 @@ export function useUpdater(
    */
   async function executeAction(action: string): Promise<void> {
     isLoading.value = true;
+    let response;
 
     try {
-      const response = await axios.post(
+      response = await axios.post(
         `/admin/actions/${actionPrefix}/${action}`,
         {data: state.value.data},
         {
@@ -70,13 +71,13 @@ export function useUpdater(
           },
         }
       );
-
-      handleStateUpdate(response.data);
     } catch (error: any) {
       handleFatalError(error);
+    } finally {
+      isLoading.value = false;
     }
 
-    isLoading.value = false;
+    handleStateUpdate(response.data);
   }
 
   /**

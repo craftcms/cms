@@ -8,11 +8,11 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static \Illuminate\Support\Collection<\CraftCms\Cms\Auth\Methods\AuthMethodInterface> getAllMethods(\CraftCms\Cms\User\Elements\User|null $user = null)
- * @method static \Illuminate\Support\Collection<\CraftCms\Cms\Auth\Methods\AuthMethodInterface> getAvailableMethods(\CraftCms\Cms\User\Elements\User|null $user = null)
+ * @method static \Illuminate\Support\Collection getAllMethods(\CraftCms\Cms\User\Elements\User|null $user = null)
+ * @method static \Illuminate\Support\Collection getAvailableMethods(\CraftCms\Cms\User\Elements\User|null $user = null)
  * @method static bool hasActiveMethod(\CraftCms\Cms\User\Elements\User|null $user = null)
- * @method static \Illuminate\Support\Collection<\CraftCms\Cms\Auth\Methods\AuthMethodInterface> getActiveMethods(\CraftCms\Cms\User\Elements\User|null $user = null)
- * @method static \CraftCms\Cms\Auth\Methods\AuthMethodInterface getMethod(class-string<\CraftCms\Cms\Auth\Methods\AuthMethodInterface> $class, \CraftCms\Cms\User\Elements\User|null $user = null)
+ * @method static \Illuminate\Support\Collection getActiveMethods(\CraftCms\Cms\User\Elements\User|null $user = null)
+ * @method static \CraftCms\Cms\Auth\Methods\AuthMethodInterface getMethod(string $class, \CraftCms\Cms\User\Elements\User|null $user = null)
  * @method static \CraftCms\Cms\User\Elements\User|null getUser()
  * @method static void setUser(\CraftCms\Cms\User\Elements\User|null $user)
  * @method static bool is2faRequired(\CraftCms\Cms\User\Elements\User $user)

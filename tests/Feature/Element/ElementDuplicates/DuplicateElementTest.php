@@ -5,7 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Events\AfterPropagate;
+use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Operations\ElementDeletions;
@@ -72,7 +72,7 @@ test('throws when authorization fails', function () {
 });
 
 test('disables clone and revalidates when uri is invalid', function () {
-    Event::fake([AfterPropagate::class]);
+    Event::fake([ElementLifecyclePropagated::class]);
     $saveCalls = [];
     $action = duplicateAction(writes: successfulElementWrites($saveCalls));
 
@@ -85,7 +85,7 @@ test('disables clone and revalidates when uri is invalid', function () {
     expect($clone->enabled)->toBeFalse()
         ->and($clone->validateCallCount)->toBe(2);
 
-    Event::assertDispatched(fn (AfterPropagate $event) => $event->element === $clone && $event->isNew);
+    Event::assertDispatched(fn (ElementLifecyclePropagated $event) => $event->element === $clone && $event->isNew);
 });
 
 test('throws when validation still fails', function () {

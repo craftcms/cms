@@ -36,26 +36,26 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\ActivatingUser;
-use CraftCms\Cms\User\Events\AssigningUserToDefaultGroups;
-use CraftCms\Cms\User\Events\AssigningUserToGroups;
-use CraftCms\Cms\User\Events\DeactivatingUser;
-use CraftCms\Cms\User\Events\DefineDefaultUserGroups;
-use CraftCms\Cms\User\Events\DeletingUserPhoto;
-use CraftCms\Cms\User\Events\SavingUserPhoto;
-use CraftCms\Cms\User\Events\SuspendingUser;
-use CraftCms\Cms\User\Events\UnlockingUser;
-use CraftCms\Cms\User\Events\UnsuspendingUser;
+use CraftCms\Cms\User\Events\DefaultUserGroupsResolving;
 use CraftCms\Cms\User\Events\UserActivated;
+use CraftCms\Cms\User\Events\UserActivating;
 use CraftCms\Cms\User\Events\UserAssignedToDefaultGroups;
 use CraftCms\Cms\User\Events\UserAssignedToGroups;
 use CraftCms\Cms\User\Events\UserDeactivated;
+use CraftCms\Cms\User\Events\UserDeactivating;
+use CraftCms\Cms\User\Events\UserDefaultGroupsAssigning;
+use CraftCms\Cms\User\Events\UserGroupsAssigning;
 use CraftCms\Cms\User\Events\UserLocked;
 use CraftCms\Cms\User\Events\UserPhotoDeleted;
+use CraftCms\Cms\User\Events\UserPhotoDeleting;
 use CraftCms\Cms\User\Events\UserPhotoSaved;
+use CraftCms\Cms\User\Events\UserPhotoSaving;
 use CraftCms\Cms\User\Events\UserSuspended;
+use CraftCms\Cms\User\Events\UserSuspending;
 use CraftCms\Cms\User\Events\UserUnlocked;
+use CraftCms\Cms\User\Events\UserUnlocking;
 use CraftCms\Cms\User\Events\UserUnsuspended;
+use CraftCms\Cms\User\Events\UserUnsuspending;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Validation\UserRules;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
@@ -372,13 +372,16 @@ class Users
     ): void {
         $filename = AssetsHelper::prepareAssetName($filename ?? pathinfo($fileLocation, PATHINFO_BASENAME), true, true);
 
-        if (! ImageHelper::canManipulateAsImage(pathinfo($fileLocation, PATHINFO_EXTENSION))) {
+        if (
+            ! ImageHelper::canManipulateAsImage(pathinfo($fileLocation, PATHINFO_EXTENSION)) ||
+            ! ImageHelper::canManipulateAsImage(pathinfo($filename, PATHINFO_EXTENSION))
+        ) {
             throw new ImageException(t('User photo must be an image that Craft can manipulate.'));
         }
 
         $photoId = $user->photoId;
 
-        event($event = new SavingUserPhoto($user, $photoId));
+        event($event = new UserPhotoSaving($user, $photoId));
 
         // If the photo exists, just replace the file.
         if ($event->photoId && ($photo = AssetsService::getAssetById($event->photoId)) !== null) {
@@ -482,7 +485,7 @@ class Users
     {
         $photoId = $user->photoId;
 
-        event(new DeletingUserPhoto($user, $photoId));
+        event(new UserPhotoDeleting($user, $photoId));
 
         $result = $this->elements->deleteElementById($photoId, Asset::class);
 
@@ -594,7 +597,7 @@ class Users
      */
     public function activateUser(User $user): void
     {
-        event($event = new ActivatingUser($user));
+        event($event = new UserActivating($user));
 
         if (! $event->isValid) {
             throw new InvalidElementException($user);
@@ -662,7 +665,7 @@ class Users
      */
     public function deactivateUser(User $user): void
     {
-        event($event = new DeactivatingUser($user));
+        event($event = new UserDeactivating($user));
 
         if (! $event->isValid) {
             throw new InvalidElementException($user);
@@ -764,7 +767,7 @@ class Users
      */
     public function unlockUser(User $user): void
     {
-        event($event = new UnlockingUser($user));
+        event($event = new UserUnlocking($user));
 
         if (! $event->isValid) {
             throw new InvalidElementException($user);
@@ -808,7 +811,7 @@ class Users
      */
     public function suspendUser(User $user): void
     {
-        event($event = new SuspendingUser($user));
+        event($event = new UserSuspending($user));
 
         if (! $event->isValid) {
             throw new InvalidElementException($user);
@@ -842,7 +845,7 @@ class Users
      */
     public function unsuspendUser(User $user): void
     {
-        event($event = new UnsuspendingUser($user));
+        event($event = new UserUnsuspending($user));
 
         if (! $event->isValid) {
             throw new InvalidElementException($user);
@@ -1036,7 +1039,7 @@ class Users
 
         $newGroupIds = array_keys($newGroupIds);
 
-        event($event = new AssigningUserToGroups(
+        event($event = new UserGroupsAssigning(
             userId: $userId,
             groupIds: $groupIds,
             removedGroupIds: $removedGroupIds,
@@ -1111,7 +1114,7 @@ class Users
             }
         }
 
-        event($event = new DefineDefaultUserGroups($user, $groups));
+        event($event = new DefaultUserGroupsResolving($user, $groups));
 
         return $event->userGroups;
     }
@@ -1132,7 +1135,7 @@ class Users
             return false;
         }
 
-        event($event = new AssigningUserToDefaultGroups($user, $groups));
+        event($event = new UserDefaultGroupsAssigning($user, $groups));
 
         if (! $event->isValid) {
             return false;
@@ -1274,11 +1277,8 @@ class Users
             $url = Url::siteUrl($path, $params, $scheme, siteId: $siteId);
         }
 
-        if (Url::isRootRelativeUrl($url)) {
-            $request = request();
-            if (! app()->runningInConsole()) {
-                $url = rtrim($request->getSchemeAndHttpHost().$request->getBaseUrl(), '/').$url;
-            }
+        if (Url::isRootRelativeUrl($url) && ! app()->runningInConsole()) {
+            return url($url);
         }
 
         return $url;

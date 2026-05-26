@@ -17,5 +17,3 @@ if (false) {
     {
     }
 }
-
-class_alias(\CraftCms\Cms\Component\Contracts\Thumbable::class, Thumbable::class);

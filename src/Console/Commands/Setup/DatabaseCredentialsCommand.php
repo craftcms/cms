@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Console\Commands\Setup;
 
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Console\PromptTask;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
@@ -20,7 +21,6 @@ use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
-use function Laravel\Prompts\task;
 use function Laravel\Prompts\text;
 
 class DatabaseCredentialsCommand extends Command
@@ -154,7 +154,7 @@ class DatabaseCredentialsCommand extends Command
 
         startTest:
 
-        $result = task('Testing database credentials...', function (Logger $logger) use (&$config, &$badUserCredentials) {
+        $result = PromptTask::run('Testing database credentials...', function (Logger $logger) use (&$config, &$badUserCredentials) {
             test:
 
             $config = array_filter([
@@ -219,7 +219,7 @@ class DatabaseCredentialsCommand extends Command
             $logger->success('Success!');
 
             return true;
-        }, keepSummary: true);
+        }, keepSummary: true, output: $this->output);
 
         if ($result === false) {
             if ($badUserCredentials) {
@@ -233,7 +233,7 @@ class DatabaseCredentialsCommand extends Command
             goto top;
         }
 
-        task('Saving database credentials to your .env file...', function (Logger $logger) {
+        PromptTask::run('Saving database credentials to your .env file...', function (Logger $logger) {
             $path = app()->environmentFilePath();
 
             if (! is_null(Env::get('DB_URL'))) {
@@ -256,7 +256,7 @@ class DatabaseCredentialsCommand extends Command
             }
 
             $logger->success('Database credentials saved successfully.');
-        }, keepSummary: true);
+        }, keepSummary: true, output: $this->output);
 
         Config::set('database.default', $this->driver);
         Config::set("database.connections.{$this->driver}", $config);

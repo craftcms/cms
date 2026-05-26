@@ -14,7 +14,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\EmailVerified;
-use CraftCms\Cms\User\Events\VerifyingEmail;
+use CraftCms\Cms\User\Events\UserEmailVerifying;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Passwords\PasswordBroker;
@@ -22,6 +22,8 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\URL;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -94,10 +96,14 @@ abstract readonly class AuthenticationController
         return $this->asFailure($message, ['errorCode' => $authError?->value]);
     }
 
-    protected function renderViewWithFallback(string $cpTemplate, array $data = []): View
+    protected function renderViewWithFallback(string $cpTemplate, array $data = [], ?string $inertiaComponent = null, ?array $inertiaProps = []): View|InertiaResponse
     {
         if (view()->exists(request()->craftPath())) {
             return view(request()->craftPath(), $data);
+        }
+
+        if ($inertiaComponent !== null && request()->isCpRequest()) {
+            return Inertia::render($inertiaComponent, $inertiaProps ?? $data);
         }
 
         TemplateMode::set(TemplateMode::Cp);
@@ -128,7 +134,7 @@ abstract readonly class AuthenticationController
             auth('craft')->logout();
         }
 
-        event(new VerifyingEmail($user));
+        event(new UserEmailVerifying($user));
 
         /** @var PasswordBroker $broker */
         $broker = Password::broker('craft');

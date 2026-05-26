@@ -8,7 +8,7 @@ use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
-use CraftCms\Cms\Filesystem\Events\RegisterFilesystemTypes;
+use CraftCms\Cms\Filesystem\Events\FilesystemTypesResolving;
 use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
@@ -72,7 +72,7 @@ class Filesystems
      */
     public function getAllFilesystemTypes(): Collection
     {
-        $event = new RegisterFilesystemTypes(Collection::make([
+        $event = new FilesystemTypesResolving(Collection::make([
             Local::class,
         ]));
 

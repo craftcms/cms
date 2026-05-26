@@ -9,15 +9,17 @@
 
 namespace craft\fieldlayoutelements\users;
 
-/**
- * UsernameField represents a Username field that can be included in the user field layout.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 5.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\Users\UsernameField} instead.
- */
-class UsernameField extends \CraftCms\Cms\FieldLayout\LayoutElements\Users\UsernameField
-{
-    use \craft\base\LegacyEventConstants;
+/** @phpstan-ignore-next-line */
+if (false) {
+    /**
+     * UsernameField represents a Username field that can be included in the user field layout.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     *
+     * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\Users\UsernameField} instead.
+     */
+    class UsernameField extends \CraftCms\Cms\FieldLayout\LayoutElements\Users\UsernameField
+    {
+    }
 }

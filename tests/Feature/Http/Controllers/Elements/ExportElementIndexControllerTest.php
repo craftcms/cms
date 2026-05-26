@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Element\Events\RegisterExporters;
+use CraftCms\Cms\Element\Events\ElementExportersResolving;
 use CraftCms\Cms\Element\Exporters\ElementExporter;
 use CraftCms\Cms\Element\Exporters\Expanded;
 use CraftCms\Cms\Element\Exporters\Raw;
@@ -127,7 +127,7 @@ it('returns raw string responses for non formattable exporters', function () {
         }
     };
 
-    Event::listen(function (RegisterExporters $event) use ($exporter) {
+    Event::listen(function (ElementExportersResolving $event) use ($exporter) {
         if ($event->elementType === Entry::class) {
             $event->exporters[] = clone $exporter;
         }
@@ -164,7 +164,7 @@ it('returns streamed responses for non formattable stream exporters', function (
         }
     };
 
-    Event::listen(function (RegisterExporters $event) use ($exporter) {
+    Event::listen(function (ElementExportersResolving $event) use ($exporter) {
         if ($event->elementType === Entry::class) {
             $event->exporters[] = clone $exporter;
         }

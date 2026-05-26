@@ -3,6 +3,7 @@
 use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
 use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
 use Illuminate\Http\Request;
+use yii\base\Application;
 
 it('can restore empty strings', function() {
     $_POST = [
@@ -71,4 +72,30 @@ it('can restore nested empty strings', function() {
     }
 
     expect($request->get('foo')['bar']['baz'])->toBe('');
+});
+
+it('triggers after request callbacks when Laravel terminates a request', function() {
+    $called = false;
+
+    Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() use (&$called) {
+        $called = true;
+    });
+
+    app()->terminate();
+
+    expect($called)->toBeTrue();
+});
+
+it('does not trigger after request callbacks twice after a legacy request', function() {
+    $calls = 0;
+
+    Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() use (&$calls) {
+        $calls++;
+    });
+
+    Craft::$app->state = Application::STATE_AFTER_REQUEST;
+    Craft::$app->trigger(Application::EVENT_AFTER_REQUEST);
+    app()->terminate();
+
+    expect($calls)->toBe(1);
 });

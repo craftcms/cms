@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Enums\AuthError;
-use CraftCms\Cms\Auth\Events\Authenticating;
+use CraftCms\Cms\Auth\Events\UserAuthenticating;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\UserPermissions;
@@ -182,7 +182,7 @@ test('authenticate with site offline no access', function () {
 test('authenticating event can block auth', function () {
     $user = UserModel::factory()->createElement();
 
-    Event::listen(Authenticating::class, function (Authenticating $event) {
+    Event::listen(UserAuthenticating::class, function (UserAuthenticating $event) {
         $event->authError = AuthError::InvalidCredentials;
     });
 
@@ -195,7 +195,7 @@ test('authenticating event can block auth', function () {
 test('authenticating event can skip password check', function () {
     $user = UserModel::factory()->createElement();
 
-    Event::listen(Authenticating::class, function (Authenticating $event) {
+    Event::listen(UserAuthenticating::class, function (UserAuthenticating $event) {
         $event->performAuthentication = false;
     });
 

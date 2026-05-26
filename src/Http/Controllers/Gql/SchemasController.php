@@ -69,10 +69,8 @@ readonly class SchemasController extends GqlController
             $schema = new GqlSchema;
         }
 
-        $name = $request->input('name');
-
-        if ($name !== null) {
-            $schema->name = $name;
+        if ($request->has('name')) {
+            $schema->name = $request->input('name');
         }
 
         $permissions = $request->input('permissions', []);
@@ -99,8 +97,8 @@ readonly class SchemasController extends GqlController
 
         $token->enabled = (bool) $request->input('enabled');
 
-        if (($expiryDate = $request->input('expiryDate')) !== null) {
-            $token->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
+        if ($request->has('expiryDate')) {
+            $token->expiryDate = DateTimeHelper::toDateTime($request->input('expiryDate')) ?: null;
         }
 
         if (! $this->gql->saveToken($token)) {

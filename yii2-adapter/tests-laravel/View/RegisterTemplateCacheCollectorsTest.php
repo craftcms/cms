@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\View\Events\RegisterTemplateCacheCollectors;
+use CraftCms\Cms\View\Events\TemplateCacheCollectorsResolving;
 use CraftCms\Yii2Adapter\View\LegacyAssetBundleCollector;
 use Illuminate\Support\Collection;
 
 it('registers the legacy asset bundle collector', function() {
-    $event = new RegisterTemplateCacheCollectors(Collection::make());
+    $event = new TemplateCacheCollectorsResolving(Collection::make());
 
     event($event);
 
