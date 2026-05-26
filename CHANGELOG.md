@@ -23,6 +23,7 @@
 - Fixed a bug where `CraftCms\Cms\Validation\Contracts\Validatable::prepareForValidation()` wasn’t called consistently, and plain `Validatable` classes without a configured ruleset couldn’t be validated. ([#18944](https://github.com/craftcms/cms/pull/18944))
 - Fixed a bug where invalid element query filters could return all results. ([#18937](https://github.com/craftcms/cms/pull/18937))
 - Fixed an error that occurred when uploading assets to fields with dynamic default upload locations. ([#18949](https://github.com/craftcms/cms/pull/18949))
+- Fixed a bug where Craft could look for the license key in `config/license.key` instead of `config/craft/license.key`.
 
 ## 6.0.0-alpha.4 - 2026-05-19
 
