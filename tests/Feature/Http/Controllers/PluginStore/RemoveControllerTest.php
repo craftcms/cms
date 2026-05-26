@@ -71,7 +71,7 @@ test('index', function () {
         'packageName' => 'craftcms/test-plugin',
     ])
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('Updater')
+            ->component('updater/Index')
         );
 });
 

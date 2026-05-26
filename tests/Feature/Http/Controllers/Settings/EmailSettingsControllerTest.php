@@ -39,7 +39,7 @@ it('requires authentication', function () {
 
 it('can show the email settings screen', function () {
     get(action([EmailSettingsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('SettingsEmailPage'))
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/Email'))
         ->assertOk();
 });
 
