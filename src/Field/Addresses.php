@@ -809,7 +809,7 @@ JS, [
                 'addresses.id as target',
             ])
             ->join(new Alias(DbTable::ELEMENTS_OWNERS, 'elements_owners'), function (JoinClause $join) use ($sourceElementIds) {
-                $join->where('elements_owners.elementId', 'addresses.id')
+                $join->whereColumn('elements_owners.elementId', 'addresses.id')
                     ->whereIn('elements_owners.ownerId', $sourceElementIds);
             })
             ->where('addresses.fieldId', $this->id)
