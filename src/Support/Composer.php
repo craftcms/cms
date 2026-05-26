@@ -168,7 +168,7 @@ class Composer
         if (! $composerPath) {
             $runtimePath = Path::runtime();
 
-            // Copy composer.phar into storage/
+            // Copy composer.phar into the runtime folder
             $pharPath = join_paths($runtimePath, 'composer.phar');
             copy(Aliases::get('@lib/composer.phar'), $pharPath);
 

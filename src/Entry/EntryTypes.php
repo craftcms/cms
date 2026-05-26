@@ -332,7 +332,7 @@ class EntryTypes
             $entryTypeModel->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $entryTypeModel->titleFormat = $data['titleFormat'];
             $entryTypeModel->allowLineBreaksInTitles = $data['allowLineBreaksInTitles'] ?? false;
-            $entryTypeModel->uiLabelFormat = $data['uiLabelFormat'] ?? '{title}';
+            $entryTypeModel->uiLabelFormat = ($data['uiLabelFormat'] ?? null) ?: '{title}';
             $entryTypeModel->showSlugField = $data['showSlugField'] ?? true;
             $entryTypeModel->slugTranslationMethod = $data['slugTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
             $entryTypeModel->slugTranslationKeyFormat = $data['slugTranslationKeyFormat'] ?? null;

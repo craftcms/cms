@@ -139,7 +139,7 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
 
                 // Generate the transform
                 try {
-                    $this->generateTransform($index);
+                    $this->generateTransform($index, $asset);
                 } catch (Exception $e) {
                     $index->inProgress = false;
                     $index->fileExists = false;
@@ -352,9 +352,9 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
      *
      * @throws ImageTransformException
      */
-    private function generateTransform(ImageTransformIndex $index): void
+    private function generateTransform(ImageTransformIndex $index, ?Asset $asset = null): void
     {
-        $asset = app(Assets::class)->getAssetById($index->assetId);
+        $asset ??= app(Assets::class)->getAssetById($index->assetId);
 
         if (! $asset) {
             throw new ImageTransformException('Asset not found - '.$index->assetId);

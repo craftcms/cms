@@ -10,6 +10,8 @@ use CraftCms\Cms\Entry\Events\EntryTypeDeletionApplying;
 use CraftCms\Cms\Entry\Events\EntryTypeSaved;
 use CraftCms\Cms\Entry\Events\EntryTypeSaving;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes as EntryTypesFacade;
 use CraftCms\Cms\Support\Json;
@@ -80,6 +82,28 @@ it('can get an entry type mixed', function () {
     expect($found)->toBeInstanceOf(EntryTypeData::class);
     expect($found->name)->toBe('A different name');
     expect($found->handle)->toBe('A different handle');
+});
+
+it('normalizes empty ui label formats from project config to the title placeholder', function () {
+    $uid = fake()->uuid();
+
+    $this->entryTypes->handleChangedEntryType(new ItemUpdated(
+        path: "entryTypes.$uid",
+        newValue: [
+            'name' => 'Pages',
+            'handle' => 'pages',
+            'hasTitleField' => true,
+            'titleTranslationMethod' => Field::TRANSLATION_METHOD_SITE,
+            'titleFormat' => null,
+            'uiLabelFormat' => '',
+        ],
+        tokenMatches: [$uid],
+    ));
+
+    $found = $this->entryTypes->getEntryTypeByUid($uid);
+
+    expect($found)->toBeInstanceOf(EntryTypeData::class)
+        ->and($found->uiLabelFormat)->toBe('{title}');
 });
 
 it('can save an entry type', function () {
