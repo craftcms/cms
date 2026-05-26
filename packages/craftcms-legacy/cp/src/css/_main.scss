@@ -4288,7 +4288,7 @@ table:not(.cp-table) {
       font-size: 0;
       position: absolute;
       z-index: 100;
-      inset: 0;
+      inset: var(--pane-padding);
       background: color.adjust(mixins.$white, $alpha: -0.25);
       border-radius: var(--radius-lg);
     }

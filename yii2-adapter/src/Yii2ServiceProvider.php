@@ -28,12 +28,14 @@ use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
 use CraftCms\Yii2Adapter\HtmlPurifier\LegacyHtmlPurifierConfigRegistrar;
 use CraftCms\Yii2Adapter\Http\CaptureOriginalActionRequestUri;
 use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
+use CraftCms\Yii2Adapter\Http\PrepareLegacyCraftApp;
 use CraftCms\Yii2Adapter\I18N\I18NCompatibility;
 use CraftCms\Yii2Adapter\Mail\TestToEmailAddressCompatibility;
 use CraftCms\Yii2Adapter\Mixins\CraftVariableMixin;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Exceptions\Handler;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
@@ -182,6 +184,7 @@ class Yii2ServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->make(HttpKernel::class)->prependMiddleware(CaptureOriginalActionRequestUri::class);
+        $this->app->make(Router::class)->pushMiddlewareToGroup('craft', PrepareLegacyCraftApp::class);
 
         $this->commands([
             AddCategoriesSupportCommand::class,

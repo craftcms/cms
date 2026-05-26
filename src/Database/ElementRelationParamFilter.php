@@ -194,26 +194,45 @@ class ElementRelationParamFilter
      *
      * @param  int|string|int[]|null  $siteId
      */
-    public function apply(Builder $query, mixed $relatedToParam, array|int|string|null $siteId = null): Builder
+    public function apply(Builder $query, mixed $relatedToParam, array|int|string|null $siteId = null, bool $matchNoneWhenInvalid = true): bool
     {
         $relatedToParam = self::normalizeRelatedToParam($relatedToParam, $siteId);
         $glue = array_shift($relatedToParam);
 
         if (empty($relatedToParam)) {
-            return $query;
+            return false;
         }
 
-        return $query->where(function (Builder $query) use ($relatedToParam, $glue) {
+        $applied = false;
+        $failed = false;
+
+        $query->where(function (Builder $query) use ($relatedToParam, $glue, &$applied, &$failed) {
             foreach ($relatedToParam as $relCriteria) {
-                $query->where(fn (Builder $query) => $this->subparse($query, $relCriteria), boolean: $glue);
+                $query->where(function (Builder $query) use ($relCriteria, &$applied, &$failed) {
+                    if ($this->subparse($query, $relCriteria)) {
+                        $applied = true;
+                    } else {
+                        $failed = true;
+                    }
+                }, boolean: $glue);
             }
         });
+
+        if (! $applied || ($glue === 'and' && $failed)) {
+            if ($matchNoneWhenInvalid) {
+                $query->whereRaw('0 = 1');
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
      * Parses a part of a relatedTo element query param and returns the condition or `false` if there's an issue.
      */
-    private function subparse(Builder $query, mixed $relCriteria): Builder
+    private function subparse(Builder $query, mixed $relCriteria): bool
     {
         // Get the element IDs, wherever they are
         $relElementIds = [];
@@ -258,7 +277,7 @@ class ElementRelationParamFilter
         }
 
         if (empty($relElementIds)) {
-            return $query;
+            return false;
         }
 
         // Going both ways?
@@ -299,6 +318,7 @@ class ElementRelationParamFilter
             return $this->apply($query, $newRelatedToParam);
         }
         $relationFieldIds = [];
+        $applied = false;
 
         if ($relCriteria['field']) {
             // Loop through all of the fields in this rel criteria, create the Matrix-specific
@@ -316,7 +336,7 @@ class ElementRelationParamFilter
                 if (($fieldModel = $this->getField($field, $fieldHandleParts, $useElementQueryFields)) === null) {
                     Log::warning('Attempting to load relations for an invalid field: '.$field);
 
-                    return $query;
+                    return false;
                 }
 
                 if ($fieldModel instanceof BaseRelationField) {
@@ -396,12 +416,13 @@ class ElementRelationParamFilter
                     }
 
                     $query->orWhereIn('elements.id', $subQuery);
+                    $applied = true;
 
                     unset($subQuery);
                 } else {
                     Log::warning('Attempting to load relations for a non-relational field: '.$fieldModel->handle);
 
-                    return $query;
+                    return false;
                 }
             }
         }
@@ -438,9 +459,10 @@ class ElementRelationParamFilter
             }
 
             $query->orWhereIn('elements.id', $subQuery);
+            $applied = true;
         }
 
-        return $query;
+        return $applied;
     }
 
     /**

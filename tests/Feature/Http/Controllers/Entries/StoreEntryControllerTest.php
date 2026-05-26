@@ -89,7 +89,7 @@ it('requires login', function () {
     Auth::logout();
 
     post(action(StoreEntryController::class))
-        ->assertRedirect('login');
+        ->assertRedirectContains('/login');
 });
 
 it('requires sectionId when creating a new entry', function () {

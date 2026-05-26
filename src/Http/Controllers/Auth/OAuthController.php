@@ -16,7 +16,6 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
-use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -152,7 +151,7 @@ readonly class OAuthController extends AuthenticationController
         }
 
         if (! $loginPath = $this->generalConfig->getLoginPath()) {
-            throw new RuntimeException('The loginPath config setting is disabled.');
+            return cp_url(CpAuthPath::Login->value);
         }
 
         return \CraftCms\Cms\Support\Url::siteUrl($loginPath);

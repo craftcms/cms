@@ -78,6 +78,7 @@ use CraftCms\Cms\Support\Facades\Elements as ElementsFacade;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
@@ -1980,7 +1981,11 @@ class Elements extends Component
         });
 
         // Fire deprecated Yii auth events for plugin compatibility
-        Gate::before(function(User $user, string $ability, mixed $arguments) {
+        Gate::before(function(Authenticatable $user, string $ability, mixed $arguments) {
+            if (!$user instanceof User) {
+                return null;
+            }
+
             $element = $arguments[0] ?? null;
 
             if (!$element instanceof ElementInterface) {

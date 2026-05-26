@@ -6,7 +6,6 @@
   import '../components/Auth/login/login-form.js';
 
   defineProps<{
-    logo?: string;
     errors?: Record<string, string[]>;
     authFormData?: Record<string, string>;
   }>();

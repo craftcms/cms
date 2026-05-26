@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Validation;
 
-use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Validation\Contracts\Validatable;
 use Override;
 
 /**
- * @extends Ruleset<Component>
+ * A ruleset which takes its validation rules,
+ * attributes and messages from the subject.
+ *
+ * @extends Ruleset<Validatable>
  */
-class ComponentRules extends Ruleset
+class ValidatableRules extends Ruleset
 {
     public function rules(): array
     {
@@ -27,12 +30,6 @@ class ComponentRules extends Ruleset
     public function messages(): array
     {
         return $this->subject->getMessages();
-    }
-
-    #[Override]
-    protected function prepareForValidation(): void
-    {
-        $this->subject->prepareForValidation();
     }
 
     #[Override]
