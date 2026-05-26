@@ -89,7 +89,7 @@
 
 <template>
   <div class="sessions">
-    <template v-for="session in sessionsArray">
+    <template v-for="session in sessionsArray" :key="session.id">
       <div class="session">
         <div class="session__label">
           <div class="mb-1">

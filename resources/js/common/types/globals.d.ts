@@ -19,10 +19,11 @@ declare module '@tanstack/vue-table' {
 
 // Set up interfaces and types
 interface ProgressBarInterface {
+  // eslint-disable-next-line @typescript-eslint/no-misused-new
   new (
     $element: JQuery,
     displaySteps?: boolean,
-    settings?: Object
+    settings?: object
   ): ProgressBarInterface;
 
   $progressBar: JQuery;
@@ -37,7 +38,8 @@ interface ProgressBarInterface {
 }
 
 interface IntervalManagerInterface {
-  new (settings?: Object): IntervalManagerInterface;
+  // eslint-disable-next-line @typescript-eslint/no-misused-new
+  new (settings?: object): IntervalManagerInterface;
 
   stop(): void;
 
@@ -51,6 +53,7 @@ type Site = {
   uid: string;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface CpStatic extends CpServices {}
 
 interface CpNotificationSettings {
@@ -91,11 +94,11 @@ interface CraftStatic {
       type: any,
       message?: string,
       settings?: CpNotificationSettings
-    ) => Object;
+    ) => object;
     displayError?: (
       message?: string | CpNotificationSettings,
       settings?: CpNotificationSettings
-    ) => Object;
+    ) => object;
   };
   systemUid?: string;
   canAccessQueueManager?: boolean;
@@ -117,7 +120,9 @@ interface CraftStatic {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface GarnishStatic {}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface JQueryObject {}
 
 // Declare existing variables, mock the things we'll use.

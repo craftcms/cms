@@ -85,7 +85,7 @@
     </select>
 
     <ul class="error-list" v-if="form.errors?.group" slot="feedback">
-      <li v-for="error in form.errors?.group">{{ error }}</li>
+      <li v-for="error in form.errors?.group" :key="error">{{ error }}</li>
     </ul>
 
     <div slot="after" v-if="form?.id && isMultisite">

@@ -5,7 +5,9 @@
   import {useEventListener} from '@vueuse/core';
   import ModalForm from '@/common/components/ModalForm.vue';
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
-  import {store} from '@actions/Utilities/SystemMessagesController';
+  import SystemMessagesController, {store} from '@actions/Utilities/SystemMessagesController';
+  import type {SelectOption} from '@/common/types';
+  import {useFlashMessages} from '@/common/composables/useFlashMessages';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import CraftTextarea from '@craftcms/cp/vue/CraftTextarea.vue';
   import CraftSelect from '@craftcms/cp/vue/CraftSelect.vue';

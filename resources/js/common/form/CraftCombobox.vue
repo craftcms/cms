@@ -6,7 +6,6 @@
 
   const modelValue = defineModel<string | number | boolean>();
   const props = defineProps<{
-    modelValue: string | boolean | number;
     label: string;
     id?: string;
     name?: string;

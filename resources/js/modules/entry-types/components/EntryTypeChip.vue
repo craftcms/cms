@@ -58,6 +58,7 @@
       <div v-if="indicators">
         <craft-icon
           v-for="indicator in indicators"
+          :key="indicator.icon"
           :name="indicator.icon"
           :label="indicator.label"
           :style="{

@@ -20,6 +20,7 @@
 <template>
   <craft-callout
     v-for="issue in plugin.licenseIssues"
+    :key="issue"
     variant="danger"
     appearance="plain"
     class="p-0"

@@ -72,7 +72,7 @@
 
     <table class="table-fixed border-collapse w-full">
       <tbody>
-        <tr v-for="(value, name) in job">
+        <tr v-for="(value, name) in job" :key="name">
           <template v-if="!hiddenProperties.includes(name)">
             <th
               :class="{

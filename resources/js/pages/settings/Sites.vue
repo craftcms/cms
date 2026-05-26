@@ -180,7 +180,7 @@
     getRowId: (row) => row.id.toString(),
     enableSorting: false,
     defaultColumn: {
-      // @ts-ignore this is technically invalid, but gives us the behavior we want
+      // @ts-expect-error — this is technically invalid, but gives us the behavior we want
       size: 'auto',
       minSize: 50,
       maxSize: 200,

@@ -5,7 +5,7 @@ interface FlashMessages {
   error: null | string;
 }
 
-let messages = ref<FlashMessages>({
+const messages = ref<FlashMessages>({
   success: null,
   error: null,
 });

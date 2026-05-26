@@ -36,7 +36,7 @@
           </h2>
           <nav :aria-labelledby="`category-heading-${index}`">
             <ul class="settings-grid">
-              <template v-for="(item, handle) in items">
+              <template v-for="(item, handle) in items" :key="handle">
                 <li>
                   <CpLink
                     :href="item.url || `${settingsIndex().url}/${handle}`"

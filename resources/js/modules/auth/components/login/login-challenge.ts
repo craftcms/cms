@@ -1,7 +1,7 @@
 import {html, LitElement, nothing} from 'lit';
 import {property, query, state} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
-import {CraftAuthChallengeForm, ConfigService, t} from '@craftcms/cp';
+import {CraftAuthChallengeForm, t} from '@craftcms/cp';
 import componentStyles from './login-form.styles.js';
 // Side-effect imports: ensure both forms call CraftAuthChallengeForm.register()
 // before isNative() is ever queried.
@@ -47,7 +47,6 @@ export default class CraftLoginChallenge extends LitElement {
   @query('.auth-form-container') private _container?: HTMLElement;
 
   #initialized = false;
-  #config = ConfigService.getInstance();
 
   override async updated(changed: Map<string, unknown>) {
     super.updated(changed);

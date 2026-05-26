@@ -38,7 +38,7 @@
 <template>
   <Callout variant="danger" v-if="errors && errors['*']">
     <ul>
-      <li v-for="formError in errors['*']">
+      <li v-for="formError in errors['*']" :key="formError">
         {{ formError }}
       </li>
     </ul>

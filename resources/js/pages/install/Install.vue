@@ -93,7 +93,7 @@
 
     const form = evt.currentTarget as HTMLFormElement;
     formData
-      // @ts-expect-error
+      // @ts-expect-error — dynamic key access on typed form data
       .transform((data) => data[currentId.value!] as Record<string, any>)
       .post(form.action, {
         onSuccess: () => {

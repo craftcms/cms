@@ -63,7 +63,7 @@
   });
 
   const sortedActions = computed(() => {
-    return normalizedActions.value.sort((a, b) => {
+    return [...normalizedActions.value].sort((a, b) => {
       const aDanger = 'variant' in a && a.variant === 'danger' ? 1 : 0;
       const bDanger = 'variant' in b && b.variant === 'danger' ? 1 : 0;
       return aDanger - bDanger;

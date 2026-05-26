@@ -50,7 +50,7 @@
 
 <template>
   <ul v-if="links?.length > 0" class="flex gap-3 items-base">
-    <li v-for="link in links">
+    <li v-for="link in links" :key="link.href">
       <a
         :href="link.href"
         target="_blank"

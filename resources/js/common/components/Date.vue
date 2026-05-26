@@ -6,8 +6,8 @@
     locale?: string;
   }>();
 
-  // @TODO this needs to respect a user's locale
-  const locale = computed<Intl.LocalesArgument>(() => 'en-US');
+  // @TODO this needs to respect a user's locale (props.locale is available but unused for now)
+  const displayLocale = computed<Intl.LocalesArgument>(() => 'en-US');
   const options = computed<Intl.DateTimeFormatOptions>(() => {
     return {
       year: 'numeric',
@@ -17,7 +17,7 @@
   });
 
   const formattedValue = computed(() =>
-    new Date(props.value).toLocaleString(locale.value, options.value)
+    new Date(props.value).toLocaleString(displayLocale.value, options.value)
   );
 </script>
 
