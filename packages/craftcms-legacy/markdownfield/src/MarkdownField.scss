@@ -1,9 +1,20 @@
 .markdown-field {
   .EasyMDEContainer {
+    border: var(--input-border);
+    border-radius: var(--input-border-radius);
+    background: var(--input-bg);
+    background-clip: padding-box;
+    overflow: hidden;
+
+    &:focus-within {
+      box-shadow: var(--focus-ring);
+    }
+
     .editor-toolbar {
-      border-color: var(--border-hairline);
-      border-start-start-radius: var(--large-border-radius);
-      border-start-end-radius: var(--large-border-radius);
+      border: 0;
+      border-block-end: var(--input-border);
+      border-radius: 0;
+      background: var(--input-bg);
 
       button {
         color: var(--ui-control-color);
@@ -25,11 +36,15 @@
     }
 
     .CodeMirror {
-      border-color: var(--border-hairline);
-      border-end-start-radius: var(--large-border-radius);
-      border-end-end-radius: var(--large-border-radius);
+      border: 0;
+      border-radius: 0;
+      background: var(--input-bg);
       color: var(--text-color);
       font-family: var(--font-monospace);
+
+      &.CodeMirror-focused {
+        box-shadow: none;
+      }
     }
 
     .editor-preview,
