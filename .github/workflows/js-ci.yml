@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - 6.x
+      - feature/inertia-ui
   pull_request:
 
 concurrency:
@@ -30,6 +31,9 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
+      - name: Build @craftcms/cp
+        run: npm run build:cp
+
       - name: Run ESLint
         run: npm run lint:js
 
@@ -50,6 +54,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
+
+      - name: Build @craftcms/cp
+        run: npm run build:cp
 
       - name: Run TypeScript type check
         run: npm run typecheck
