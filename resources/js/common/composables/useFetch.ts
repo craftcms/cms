@@ -79,7 +79,7 @@ export function useFetch<T = any>(
   // Reactive state
   const data = ref(initialData) as Ref<UnwrapRef<T> | null>;
   const state = ref<AxiosFetchState>('idle');
-  const error = ref(null);
+  const error = ref<unknown>(null);
 
   const isLoading = computed(() => state.value === 'loading');
   const isSuccess = computed(() => state.value === 'success');
@@ -124,7 +124,7 @@ export function useFetch<T = any>(
       state.value = 'success';
       data.value = transformedData as UnwrapRef<T>;
       onSuccess?.(transformedData, response);
-    } catch (err: AxiosError | any) {
+    } catch (err: unknown) {
       if (axios.isCancel(err)) {
         state.value = 'aborted';
       } else if (axios.isAxiosError(err)) {
@@ -132,10 +132,14 @@ export function useFetch<T = any>(
         state.value = 'error';
         error.value = err.response?.data || err.message || 'Unknown error';
         onError?.(err);
-      } else {
-        console.error('Unkown error:', err.message);
+      } else if (err instanceof Error) {
+        console.error('Unknown error:', err.message);
         state.value = 'error';
         error.value = err.message || 'Unknown error';
+      } else {
+        console.error('Unknown error:', err);
+        state.value = 'error';
+        error.value = 'Unknown error';
       }
     }
   };

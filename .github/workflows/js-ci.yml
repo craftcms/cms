@@ -46,6 +46,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-progress
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -57,6 +65,9 @@ jobs:
 
       - name: Build @craftcms/cp
         run: npm run build:cp
+
+      - name: Generate Wayfinder types
+        run: ./vendor/bin/testbench wayfinder:generate --path=resources/js
 
       - name: Run TypeScript type check
         run: npm run typecheck
