@@ -5,7 +5,9 @@ declare(strict_types=1);
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\App\RenderController;
+use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 
@@ -98,4 +100,37 @@ test('render components returns chip and menu item html for sections', function 
     $response->assertOk()
         ->assertJsonPath("components.CraftCms\\Cms\\Section\\Data\\Section.{$section->id}.0", fn (string $html) => str_contains($html, 'Articles') && str_contains($html, CraftCms\Cms\Section\Data\Section::class) && str_contains($html, "data-id=\"{$section->id}\""))
         ->assertJsonPath("menuItems.CraftCms\\Cms\\Section\\Data\\Section.{$section->id}", fn (string $html) => str_contains($html, 'Articles') && str_contains($html, CraftCms\Cms\Section\Data\Section::class) && str_contains($html, "data-id=\"{$section->id}\""));
+});
+
+test('render markdown validates required flavor', function () {
+    postJson(action([RenderController::class, 'markdown']), [
+        'markdown' => '**bold**',
+    ])->assertJsonValidationErrors(['flavor']);
+});
+
+test('render markdown rejects invalid flavors', function () {
+    postJson(action([RenderController::class, 'markdown']), [
+        'markdown' => '**bold**',
+        'flavor' => 'pre-encoded',
+    ])->assertJsonValidationErrors(['flavor']);
+});
+
+test('render markdown returns html using the requested flavor', function () {
+    postJson(action([RenderController::class, 'markdown']), [
+        'markdown' => "line one\nline two",
+        'flavor' => MarkdownService::FLAVOR_GFM_COMMENT,
+    ])->assertExactJson([
+        'html' => "<p>line one<br>\nline two</p>\n",
+    ]);
+});
+
+test('render markdown matches the markdown service output', function () {
+    $markdown = "## Heading\n\n| A | B |\n| - | - |\n| 1 | 2 |";
+
+    postJson(action([RenderController::class, 'markdown']), [
+        'markdown' => $markdown,
+        'flavor' => MarkdownService::FLAVOR_GFM,
+    ])->assertExactJson([
+        'html' => Markdown::parse($markdown, MarkdownService::FLAVOR_GFM),
+    ]);
 });

@@ -1,0 +1,30 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Field\Data\MarkdownData;
+use CraftCms\Cms\Twig\Contracts\SafeHtml;
+use Illuminate\Contracts\Support\Htmlable;
+
+it('exposes raw markdown and renders html with the configured flavor', function () {
+    $value = new MarkdownData("line one\nline two", 'gfm-comment');
+
+    expect($value)->toBeInstanceOf(SafeHtml::class)
+        ->and($value)->toBeInstanceOf(Htmlable::class)
+        ->and($value)->toBeInstanceOf(Stringable::class)
+        ->and($value->getRaw())->toBe("line one\nline two")
+        ->and($value->getMarkdown())->toBe("line one\nline two")
+        ->and($value->getFlavor())->toBe('gfm-comment')
+        ->and($value->getHtml())->toBe("<p>line one<br>\nline two</p>\n")
+        ->and($value->toHtml())->toBe("<p>line one<br>\nline two</p>\n")
+        ->and((string) $value)->toBe("<p>line one<br>\nline two</p>\n")
+        ->and($value->serialize())->toBe("line one\nline two");
+});
+
+it('renders empty markdown as an empty string', function () {
+    $value = new MarkdownData('', 'gfm');
+
+    expect($value->getHtml())->toBe('')
+        ->and((string) $value)->toBe('')
+        ->and($value->serialize())->toBe('');
+});

@@ -49,6 +49,7 @@
     "blueimp-file-upload": "^10.32.0",
     "codemirror": "^5.65.21",
     "d3": "^7.9.0",
+    "easymde": "^2.21.0",
     "fabric": "^1.7.22",
     "htmx.org": "^1.9.12",
     "iframe-resizer": "^4.4.5",

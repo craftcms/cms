@@ -222,6 +222,7 @@ Route::prefix(implode('/', [
         Route::middleware(RequireAdminChanges::class)->post('app/update-plugin-license', [CraftCms\Cms\Http\Controllers\App\PluginsController::class, 'updateLicense']);
         Route::post('app/render-elements', [RenderController::class, 'elements']);
         Route::post('app/render-components', [RenderController::class, 'components']);
+        Route::post('app/render-markdown', [RenderController::class, 'markdown']);
 
         // Auth methods
         Route::post('auth/method-setup-html', [AuthMethodController::class, 'setupHtml']);

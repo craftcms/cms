@@ -233,6 +233,7 @@ class Fields
             Json::class,
             Lightswitch::class,
             Link::class,
+            Markdown::class,
             MatrixField::class,
             Money::class,
             MultiSelect::class,

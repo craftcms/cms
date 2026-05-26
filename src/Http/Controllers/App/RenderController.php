@@ -13,11 +13,14 @@ use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
+use CraftCms\Cms\Field\Markdown as MarkdownField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 readonly class RenderController
 {
@@ -164,5 +167,17 @@ readonly class RenderController
         }
 
         return new JsonResponse($data);
+    }
+
+    public function markdown(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'markdown' => ['nullable', 'string'],
+            'flavor' => ['required', 'string', Rule::in(Arr::pluck(MarkdownField::flavorOptions(), 'value'))],
+        ]);
+
+        return new JsonResponse([
+            'html' => Markdown::parse($validated['markdown'] ?? '', $validated['flavor']),
+        ]);
     }
 }

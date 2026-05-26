@@ -1,0 +1,19 @@
+{% import "_includes/forms" as forms %}
+
+{%- set disabled = disabled ?? false %}
+
+<div class="markdown-field">
+    {{ forms.textarea({
+        id: id ?? field.getInputId(),
+        describedBy: field.describedBy,
+        name: name,
+        value: value,
+        class: ['nicetext', 'code'],
+        maxlength: not disabled ? field.charLimit,
+        showCharsLeft: true,
+        placeholder: placeholder,
+        rows: field.initialRows,
+        orientation: orientation ?? null,
+        disabled,
+    }) }}
+</div>
