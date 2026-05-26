@@ -38,14 +38,15 @@ class TwigEngine implements Engine
     /**
      * Strips the templates base path from the given absolute path.
      *
-     * Both paths are normalized first so that mixed directory separators
-     * (e.g. `/` vs `\` on Windows) and inconsistent drive-letter casing
-     * (e.g. `C:` vs `c:`) don’t cause the lookup to fall through.
+     * Both paths are normalized to Twig-style separators first so that mixed
+     * directory separators (e.g. `/` vs `\` on Windows) and inconsistent
+     * drive-letter casing (e.g. `C:` vs `c:`) don’t cause the lookup to fall
+     * through.
      */
     private function stripBasePath(string $path, string $basePath): string
     {
-        $path = File::normalizePath($path);
-        $basePath = File::normalizePath($basePath);
+        $path = File::normalizePath($path, '/');
+        $basePath = File::normalizePath($basePath, '/');
 
         $template = Str::after($path, $basePath);
 
