@@ -35,7 +35,6 @@
   }>();
 
   const envSuggestions = computed(() => page.props.envSuggestions);
-  const readOnly = computed(() => page.props.readOnly);
   const templateSuggestions = computed(() => page.props.templateSuggestions);
 
   function getSiteName(siteUid: string): string {

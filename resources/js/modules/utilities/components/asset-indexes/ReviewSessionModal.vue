@@ -16,7 +16,7 @@
     {isActive: false}
   );
 
-  const {stopSession, finishSession, closeReview, reviewSession} =
+  const {finishSession, closeReview, reviewSession} =
     useAssetIndexer();
 
   const missingEntries = computed(() => reviewSession.value?.missingEntries);

@@ -18,7 +18,7 @@
     width: 'md',
   });
 
-  onKeyStroke('Escape', (e) => {
+  onKeyStroke('Escape', () => {
     emit('close');
   });
 

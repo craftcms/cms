@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {type InertiaLinkProps, Link} from '@inertiajs/vue3';
-  import {type Component, computed, defineComponent} from 'vue';
+  import {type Component, computed} from 'vue';
 
   const props = withDefaults(
     defineProps<

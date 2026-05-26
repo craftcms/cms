@@ -11,7 +11,7 @@
   import UserThumbnail from '@/common/components/UserThumbnail.vue';
   import PasswordController from '@actions/Users/PasswordController';
 
-  const {currentUser, general} = useCraftData();
+  const {currentUser} = useCraftData();
 
   const menuItems = computed(() => {
     return [
@@ -47,8 +47,8 @@
 </script>
 
 <template>
-  <ActionMenu :actions="menuItems" :label="currentUser.username">
-    <template #invoker="{label}">
+  <ActionMenu :actions="menuItems" :label="currentUser!.username">
+    <template #invoker>
       <craft-button
         slot="invoker"
         type="button"

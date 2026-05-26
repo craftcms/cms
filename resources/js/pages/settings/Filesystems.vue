@@ -1,17 +1,11 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {
-    createColumnHelper,
-    getCoreRowModel,
-    useVueTable,
-  } from '@tanstack/vue-table';
+  import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {computed, h, ref} from 'vue';
   import Empty from '@/common/components/Empty.vue';
   import CpLink from '@/common/components/CpLink.vue';
   import {create, destroy, edit} from '@actions/Settings/FilesystemsController';
-  import IndexLayout from '@/common/layouts/IndexLayout.vue';
-  import VarDump from '@/common/components/VarDump.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
@@ -42,7 +36,6 @@
   }>();
 
   function deleteFs(fs: FileSystemData) {
-    console.log({fs});
     if (
       confirm(
         t('Are you sure you want to delete “{name}”', {

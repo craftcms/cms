@@ -5,8 +5,3 @@ export interface SystemMessageData {
   body: string;
   language: string;
 }
-
-interface LocaleOption {
-  value: string;
-  label: string;
-}

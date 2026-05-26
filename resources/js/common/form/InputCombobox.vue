@@ -149,7 +149,7 @@
         @change="query = $event.target.value"
         class="input"
         :class="props.class"
-        :displayValue="displayValue"
+        :display-value="displayValue"
         :placeholder="placeholder"
       />
       <ComboboxButton
@@ -165,8 +165,8 @@
       </ComboboxButton>
       <TransitionRoot
         leave="transition ease-in duration-100"
-        leaveFrom="opacity-100"
-        leaveTo="opacity-0"
+        leave-from="opacity-100"
+        leave-to="opacity-0"
         @after-leave="query = ''"
       >
         <ComboboxOptions
@@ -189,7 +189,7 @@
           <template v-for="(item, idx) in filteredOptions" :key="idx">
             <template v-if="item.type === 'optgroup'">
               <div class="group-label">{{ item.label }}</div>
-              <template v-for="(option, idx) in item.options" :key="idx">
+              <template v-for="(option, optionIdx) in item.options" :key="optionIdx">
                 <slot name="option" :option="option">
                   <InputComboboxOption :option="option" />
                 </slot>

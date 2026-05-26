@@ -14,7 +14,7 @@
   <div>
     <Form
       v-if="logs.length"
-      #default="{processing}"
+      v-slot="{processing}"
       :action="deleteAllDeprecationErrors()"
       method="post"
     >

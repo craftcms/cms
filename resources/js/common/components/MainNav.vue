@@ -48,9 +48,9 @@
       </template>
     </craft-nav-item>
     <cp-queue-indicator
-      :displayedJob.prop="queue.displayedJob"
-      :hasReservedJobs.prop="queue.hasReservedJobs"
-      :hasWaitingJobs.prop="queue.hasWaitingJobs"
+      :displayed-job.prop="queue.displayedJob"
+      :has-reserved-jobs.prop="queue.hasReservedJobs"
+      :has-waiting-jobs.prop="queue.hasWaitingJobs"
     ></cp-queue-indicator>
   </craft-nav-list>
 </template>

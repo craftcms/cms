@@ -18,7 +18,7 @@
 </script>
 
 <template>
-  <Form :action="ConfigSyncController.index()" #default="{processing}">
+  <Form :action="ConfigSyncController.index()" v-slot="{processing}">
     <input type="hidden" name="return" :value="returnTo" />
     <input type="hidden" name="force" value="1" v-if="force" />
     <craft-button

@@ -1,16 +1,9 @@
 <script setup lang="ts">
-  import {computed} from 'vue';
-
-  const props = defineProps<{
+  defineProps<{
     processedEntries: number;
     totalEntries: number;
     pending?: boolean;
   }>();
-
-  const progressPercent = computed(() => {
-    if (props.totalEntries === 0) return 0;
-    return Math.round((props.processedEntries / props.totalEntries) * 100);
-  });
 </script>
 
 <template>

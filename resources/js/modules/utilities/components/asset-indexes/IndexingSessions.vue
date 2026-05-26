@@ -1,16 +1,9 @@
 <script setup lang="ts">
-  import {
-    createColumnHelper,
-    getCoreRowModel,
-    useVueTable,
-  } from '@tanstack/vue-table';
-  import {h, ref} from 'vue';
   import {t} from '@craftcms/cp';
   import Badge from '@/common/components/Badge.vue';
   import SessionProgress from '@/modules/utilities/components/asset-indexes/SessionProgress.vue';
   import SessionActions from '@/modules/utilities/components/asset-indexes/SessionActions.vue';
   import {useAssetIndexer} from '@/modules/utilities/composables/useAssetIndexer';
-  import {type IndexingSession} from '@craftcms/cp/services/AssetIndexer.ts.mjs';
   import ReviewSessionModal from '@/modules/utilities/components/asset-indexes/ReviewSessionModal.vue';
   import SessionVolumes from '@/modules/utilities/components/asset-indexes/SessionVolumes.vue';
   import Date from '@/common/components/Date.vue';
@@ -22,69 +15,6 @@
     reviewSessionOverview,
     reviewSession,
   } = useAssetIndexer();
-
-  // Table columns
-  const columnHelper = createColumnHelper<IndexingSession>();
-
-  const columns = ref([
-    columnHelper.accessor('indexedVolumes', {
-      header: () => t('Volumes being indexed'),
-      cell: ({getValue}) => h(SessionVolumes, {value: getValue()}),
-    }),
-    columnHelper.accessor('dateUpdated', {
-      header: () => t('Last update'),
-      cell: ({getValue}) => h(Date, {value: getValue().date}),
-    }),
-    columnHelper.display({
-      id: 'progress',
-      header: () => t('Progress'),
-      cell: ({row}) =>
-        h(SessionProgress, {
-          pending:
-            !row.original.actionRequired &&
-            row.original.id !== currentSessionId.value,
-          processedEntries: row.original.processedEntries,
-          totalEntries: row.original.totalEntries,
-        }),
-    }),
-    columnHelper.display({
-      id: 'status',
-      header: () => t('Status'),
-      cell: ({row}) => {
-        const session = row.original;
-        if (session.actionRequired) {
-          return h(Badge, {variant: 'warning'}, () => t('Waiting for review'));
-        }
-
-        if (session.id === currentSessionId.value) {
-          return h(Badge, {variant: 'success'}, () => t('Active'));
-        }
-
-        return h(Badge, {variant: 'default'}, () => t('Waiting'));
-      },
-    }),
-    columnHelper.display({
-      id: 'actions',
-      cell: ({row}) =>
-        h(SessionActions, {
-          sessionId: row.original.id,
-          actionRequired: row.original.actionRequired,
-          onStop: (id: number) => stopSession(id),
-          onReview: (id: number) => reviewSessionOverview(id),
-        }),
-    }),
-  ]);
-
-  const sessionsTable = useVueTable({
-    get data() {
-      return sessionsArray.value;
-    },
-    get columns() {
-      return columns.value;
-    },
-    getRowId: (row) => String(row.id),
-    getCoreRowModel: getCoreRowModel<IndexingSession>(),
-  });
 </script>
 
 <template>

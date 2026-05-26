@@ -1,13 +1,12 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate.ts';
-  import {computed} from 'vue';
+  import {t} from '@craftcms/cp';
   import type CraftCheckbox from '@craftcms/cp/components/checkbox/checkbox.ts.mjs';
   import type {CheckboxOption} from '@/common/types';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<string>): void;
   }>();
-  const props = withDefaults(
+  withDefaults(
     defineProps<{
       name?: string;
       label?: string;
@@ -23,24 +22,20 @@
     const target = event.target as CraftCheckbox;
     emit('update:modelValue', target.modelValue);
   }
-
-  const allOptionSelected = computed(() => {
-    return !props.modelValue || props.modelValue.includes('*');
-  });
 </script>
 
 <template>
   <craft-checkbox-group
     :name="name"
     :label="label"
-    .modelValue="modelValue"
+    .model-value="modelValue"
     @model-value-changed="handleValueChange"
     :disabled="disabled"
   >
     <template v-if="allowSelectAll">
       <craft-checkbox-indeterminate :label="t('All')">
         <template v-for="option in options" :key="option.value">
-          <craft-checkbox .choiceValue="option.value">
+          <craft-checkbox .choice-value="option.value">
             <label slot="label"
               ><slot name="label" :option="option">{{
                 option.label
@@ -53,7 +48,7 @@
     </template>
     <template v-else>
       <template v-for="option in options" :key="option.value">
-        <craft-checkbox .choiceValue="option.value">
+        <craft-checkbox .choice-value="option.value">
           <label slot="label"
             ><slot name="label" :option="option">{{
               option.label

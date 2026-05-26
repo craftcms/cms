@@ -45,6 +45,7 @@
     handle: props.section.handle ?? '',
     type: props.section.type,
     entryTypes: (props.section.entryTypes ?? []).map(
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       ({actions, ...rest}) => rest
     ),
     enableVersioning: props.section.enableVersioning,

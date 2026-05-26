@@ -49,7 +49,7 @@
 </script>
 
 <template>
-  <Disclosure :defaultOpen="shouldAutoExpand" v-slot="{open}">
+  <Disclosure :default-open="shouldAutoExpand" v-slot="{open}">
     <div class="release" :class="{'release--critical': critical}">
       <!-- Clickable header when notes exist -->
       <DisclosureButton v-if="hasNotes" class="release-trigger">

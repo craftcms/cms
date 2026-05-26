@@ -1,5 +1,5 @@
 import {t} from '@craftcms/cp';
-import {h, type InputHTMLAttributes} from 'vue';
+import {h} from 'vue';
 import {
   type AccessorColumnDef,
   type CellContext,
@@ -49,6 +49,7 @@ export function createCraftColumnHelper<T extends Record<string, any>>() {
     group: baseHelper.group,
 
     date(accessor, config = {}) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {format, ...rest} = config;
       return baseHelper.accessor(accessor, {
         cell: (cellContext: CellContext<T, any>) => {

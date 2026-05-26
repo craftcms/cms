@@ -13,16 +13,22 @@
   import {transformBooleanOptions} from '@/common/utils/transformBooleanOptions';
   import useCraftData from '@/common/composables/useCraftData';
 
-  const props = defineProps<{
-    system: SystemData;
-    nameSuggestions?: Array<SelectItem>;
-    timezoneOptions?: Array<SelectItem>;
-    systemStatusOptions?: Array<SelectItem>;
-    flash?: Record<any, any>;
-    errors: Record<any, any>;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      system: SystemData;
+      nameSuggestions?: Array<SelectItem>;
+      timezoneOptions?: Array<SelectItem>;
+      systemStatusOptions?: Array<SelectItem>;
+      flash?: Record<any, any>;
+      errors: Record<any, any>;
+    }>(),
+    {
+      systemStatusOptions: () => [],
+      timezoneOptions: () => [],
+      nameSuggestions: () => [],
+    }
+  );
 
-  const flash = computed(() => props.flash);
   const errors = computed(() => props.errors);
   const {readOnly} = useCraftData();
 

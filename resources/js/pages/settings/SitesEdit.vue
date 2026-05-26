@@ -10,7 +10,6 @@
   import Badge from '@/common/components/Badge.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import Pane from '@/common/components/Pane.vue';
-  import useCraftData from '@/common/composables/useCraftData';
   import {useEventListener} from '@vueuse/core';
 
   const props = defineProps<{
@@ -34,8 +33,6 @@
     primary: props.site.primary,
     baseUrl: props.site.baseUrlRaw ?? '',
   });
-
-  const {readOnly} = useCraftData();
 
   // Handle cmd + s events
   useEventListener('keydown', (event) => {

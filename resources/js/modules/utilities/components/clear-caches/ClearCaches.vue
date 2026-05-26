@@ -51,7 +51,7 @@
           announce(t('Caches cleared'));
         }
       "
-      #default="{processing, recentlySuccessful}"
+      v-slot="{processing, recentlySuccessful}"
     >
       <CheckboxGroup
         name="caches[]"
@@ -99,7 +99,7 @@
           announce(t('Data caches invalidated'));
         }
       "
-      #default="{processing, recentlySuccessful}"
+      v-slot="{processing, recentlySuccessful}"
     >
       <CheckboxGroup
         name="tags[]"

@@ -10,6 +10,7 @@
   import Select from '@/common/form/Select.vue';
   import Text from '@/common/components/Text.vue';
   import Empty from '@/common/components/Empty.vue';
+  import {usePage} from '@inertiajs/vue3';
 
   const props = withDefaults(
     defineProps<{
@@ -36,6 +37,8 @@
     }
   );
 
+  const page = usePage<{readOnly: boolean}>()
+  const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
   const emit = defineEmits<{
     reorder: [startIndex: number, finishIndex: number];
   }>();
@@ -215,8 +218,8 @@
               }"
             >
               <ColumnHeaderTitle
-                :isSortable="header.column.getCanSort()"
-                :sortInstructionsId="columnSortInstructionId"
+                :is-sortable="header.column.getCanSort()"
+                :sort-instructions-id="columnSortInstructionId"
                 @sort-column="header.column.getToggleSortingHandler()?.($event)"
               >
                 <FlexRender

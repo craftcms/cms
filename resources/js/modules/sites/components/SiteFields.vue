@@ -1,8 +1,7 @@
 <script setup lang="ts" generic="T">
-  import type {CraftInput} from '@craftcms/cp';
   import {t, toEnvVar} from '@craftcms/cp';
   import {type InertiaForm, usePage} from '@inertiajs/vue3';
-  import {computed, useTemplateRef} from 'vue';
+  import {computed} from 'vue';
   import type {SelectItem, SelectOption, Site} from '@/common/types';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {toHandle} from '@craftcms/cp/utilities/string.ts.mjs';
@@ -38,9 +37,6 @@
   const baseUrlSuggestions = computed(() => page.props.baseUrlSuggestions);
   const site = computed(() => page.props.site);
 
-  const handleRef = useTemplateRef<CraftInput | null>('handle');
-  const baseUrlRef = useTemplateRef<CraftInput | null>('baseUrl');
-
   const handleGenerator = useInputGenerator(
     () => form.value.name,
     (v) => (form.value.handle = toHandle(v))
@@ -70,7 +66,7 @@
     :help-text="t('Which group should this site belong to?')"
     name="group"
     id="group"
-    .modelValue="form.group"
+    .model-value="form.group"
     @model-value-changed="form.group = $event.target?.modelValue"
     :disabled="readOnly"
   >
@@ -120,7 +116,7 @@
         {{ t('This can begin with an environment variable.') }}
         <a
           href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
-          >{{ t('Learn more') }}</a
+        >{{ t('Learn more') }}</a
         >
       </craft-callout>
     </div>
@@ -260,7 +256,7 @@
           {{ t('This can begin with an environment variable or alias.') }}
           <a
             href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
-            >{{ t('Learn more') }}</a
+          >{{ t('Learn more') }}</a
           >
         </craft-callout>
       </template>

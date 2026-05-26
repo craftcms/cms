@@ -10,8 +10,6 @@
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import Empty from '@/common/components/Empty.vue';
   import {Form} from '@inertiajs/vue3';
-  import VarDump from '@/common/components/VarDump.vue';
-
   interface Migration {
     id?: number;
     name: string;

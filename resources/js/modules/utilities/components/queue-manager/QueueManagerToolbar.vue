@@ -1,8 +1,7 @@
 <script setup lang="ts">
-  import {type JobInfo, JobStatus} from '@craftcms/cp/types/index.ts';
+  import {type JobInfo, JobStatus} from '@craftcms/cp';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import {computed, inject, ref, watch} from 'vue';
-  import {Axios, Queue} from '@/common/types/keys';
+  import {computed, ref, watch} from 'vue';
   import {useFlashMessages} from '@/common/composables/useFlashMessages';
   import TransitionFade from '@/common/components/TransitionFade.vue';
   import {useActionClient} from '@/common/composables/useFetch';
@@ -20,8 +19,6 @@
     {jobs: () => [], activeJob: null}
   );
 
-  const queue = inject(Queue);
-  const axios = inject(Axios);
   const {
     execute: executeRetryAll,
     state: retryAllStatus,
@@ -33,25 +30,14 @@
     error: releaseAllError,
   } = useActionClient('queue/release-all');
   const {flash, messages} = useFlashMessages();
-  const successDuration = 1000;
-  const state = ref({
-    retryAll: 'idle',
-    releaseAll: 'idle',
-  });
   const loading = ref(false);
 
   const isRetryable = computed(() => {
     return (
-      props.activeJob.status.value == JobStatus.Reserved ||
-      props.activeJob.status.value == JobStatus.Failed
+      props.activeJob?.status.value == JobStatus.Reserved ||
+      props.activeJob?.status.value == JobStatus.Failed
     );
   });
-
-  function clearActiveJob(value: boolean) {}
-
-  function releaseActiveJob() {}
-
-  function retryActiveJob() {}
 
   async function retryAll() {
     await executeRetryAll();

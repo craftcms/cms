@@ -123,7 +123,7 @@
         :href="create().url"
         variant="primary"
         icon="plus"
-        >{{ t('New image transform') }}</CpLink
+      >{{ t('New image transform') }}</CpLink
       >
     </template>
 
@@ -152,7 +152,7 @@
             :href="create().url"
             variant="default"
             icon="plus"
-            >{{ t('New image transform') }}</CpLink
+          >{{ t('New image transform') }}</CpLink
           >
         </Empty>
       </template>

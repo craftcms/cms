@@ -130,7 +130,7 @@
         <!-- YAML doesn't exist - Generate button -->
         <template v-else>
           <div class="buttons">
-            <Form :action="discard()" #default="{processing}">
+            <Form :action="discard()" v-slot="{processing}">
               <craft-button
                 type="submit"
                 variant="secondary"
@@ -160,7 +160,7 @@
           <Form
             :action="rebuild()"
             method="post"
-            #default="{processing, recentlySuccessful}"
+            v-slot="{processing, recentlySuccessful}"
           >
             <div class="flex gap-2 items-center">
               <craft-button

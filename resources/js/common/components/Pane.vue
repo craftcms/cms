@@ -21,7 +21,7 @@
   );
 
   // Check if string is a valid number
-  function isNumeric(value) {
+  function isNumeric(value: string | number) {
     return !isNaN(parseFloat(value)) && isFinite(value);
   }
 

@@ -27,15 +27,6 @@
   }>();
 
   const {readOnly} = useCraftData();
-
-  const selectedTypes = computed(() => {
-    return props.modelValue
-      .map((id) => {
-        return props.types?.find((type) => type.id === id) ?? null;
-      })
-      .filter(Boolean);
-  });
-
   const entryTypeQuery = ref('');
 
   const selectableTypes = computed(() => {
@@ -248,7 +239,7 @@
         <DragShadow
           v-if="
             getDropState(entryType.id).type === 'is-over' &&
-            getDropState(entryType.id).closestEdge === 'top'
+              getDropState(entryType.id).closestEdge === 'top'
           "
           :height="getDropState(entryType.id).draggingRect?.height"
         />
@@ -272,11 +263,11 @@
               readOnly
                 ? null
                 : {
-                    label: t('Remove'),
-                    variant: 'danger',
-                    icon: 'x',
-                    onClick: () => removeItem(entryType.id),
-                  },
+                  label: t('Remove'),
+                  variant: 'danger',
+                  icon: 'x',
+                  onClick: () => removeItem(entryType.id),
+                },
             ],
           ]"
           @handle-ref="(el) => setHandleRef(el, entryType.id)"
@@ -296,7 +287,7 @@
         <DragShadow
           v-if="
             getDropState(entryType.id).type === 'is-over' &&
-            getDropState(entryType.id).closestEdge === 'bottom'
+              getDropState(entryType.id).closestEdge === 'bottom'
           "
           :height="getDropState(entryType.id).draggingRect?.height"
         />

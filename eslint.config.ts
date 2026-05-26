@@ -30,17 +30,8 @@ export default tseslint.config(
     },
     rules: {
       // Downgrade to warn — widespread in the codebase, address in follow-up
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'off',
 
-      // Downgrade to warn — many unused imports exist; clean up in follow-up PRs
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_',
-        },
-      ],
       'vue/no-unused-vars': 'warn',
 
       // Vue single-word component names are intentional in this codebase
@@ -52,10 +43,13 @@ export default tseslint.config(
       'vue/no-deprecated-slot-attribute': 'off',
 
       // v-html is used intentionally; XSS risk is accepted in Craft's admin context
-      'vue/no-v-html': 'warn',
+      'vue/no-v-html': 'off',
 
       // v-html on Craft web components (custom elements) is intentional — they render slot content as HTML
-      'vue/no-v-text-v-html-on-component': 'warn',
+      'vue/no-v-text-v-html-on-component': 'off',
+
+      // I don't find this useful when writing in typescript.
+      'vue/require-default-prop': 'off',
 
       // Formatting rules — Prettier handles these
       'vue/html-self-closing': 'off',
@@ -65,6 +59,7 @@ export default tseslint.config(
       'vue/multiline-html-element-content-newline': 'off',
       'vue/html-closing-bracket-newline': 'off',
       'vue/first-attribute-linebreak': 'off',
+      'vue/html-indent': 'off',
     },
-  },
+  }
 );

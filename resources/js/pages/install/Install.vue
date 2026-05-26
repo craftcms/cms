@@ -197,7 +197,7 @@
 
                 <SiteFields
                   v-model="formData.site"
-                  :localeOptions="localeOptions"
+                  :locale-options="localeOptions"
                   :errors="errors.site"
                 />
               </Deferred>

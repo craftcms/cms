@@ -97,7 +97,7 @@
           :inertia="false"
           :href="plugin.buyUrl"
           :variant="plugin.licenseIssues.length > 0 ? 'primary' : 'default'"
-          >{{ t('Buy now') }}</CpLink
+        >{{ t('Buy now') }}</CpLink
         >
       </template>
       <template v-if="showUpdateButton">

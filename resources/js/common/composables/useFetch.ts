@@ -8,7 +8,6 @@ import {
   watch,
 } from 'vue';
 import axios, {
-  type AxiosError,
   type AxiosInstance,
   type AxiosRequestConfig,
   type AxiosResponse,

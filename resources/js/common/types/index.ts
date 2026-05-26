@@ -1,5 +1,4 @@
 import type {VariantKey} from '@craftcms/cp';
-import type {Component} from 'vue';
 
 export interface BaseOption {
   label: string;

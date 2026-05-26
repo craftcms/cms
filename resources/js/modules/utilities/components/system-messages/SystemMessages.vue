@@ -5,7 +5,6 @@
   import Pane from '@/common/components/Pane.vue';
   import type {SelectOption} from '@/common/types';
   import type {SystemMessageData} from '@/modules/utilities/types/utilities';
-  import {useFlashMessages} from '@/common/composables/useFlashMessages';
 
   const props = defineProps<{
     messages: Array<SystemMessageData>;
@@ -14,11 +13,9 @@
     primaryLanguage: string;
   }>();
 
-  const {flash} = useFlashMessages();
   const localMessages = ref<Array<SystemMessageData>>([...props.messages]);
   const isModalOpen = ref(false);
   const editingMessage = ref<SystemMessageData | null>(null);
-
   function openEditModal(message: SystemMessageData) {
     editingMessage.value = message;
     isModalOpen.value = true;

@@ -17,6 +17,7 @@
       }
     >(),
     {
+      title: undefined,
       overlay: true,
       loading: false,
       resetLabel: t('Cancel'),
@@ -31,7 +32,7 @@
 
 <template>
   <Modal
-    :isActive="isActive"
+    :is-active="isActive"
     :overlay="overlay"
     @close="emit('close')"
     :width="width"

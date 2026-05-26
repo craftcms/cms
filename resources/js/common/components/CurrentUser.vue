@@ -4,22 +4,22 @@
   import {computed} from 'vue';
   import UsersController from '@actions/Users/UsersController';
 
-  const {currentUser, general} = useCraftData();
+  const {currentUser} = useCraftData();
 
   const primaryText = computed(() => {
-    if (currentUser.name !== currentUser.username) {
-      return currentUser.name;
+    if (currentUser!.name !== currentUser!.username) {
+      return currentUser!.name;
     }
 
-    return currentUser.username;
+    return currentUser!.username;
   });
 
   const secondaryText = computed(() => {
-    if (currentUser.username === currentUser.name) {
-      return currentUser.email;
+    if (currentUser!.username === currentUser!.name) {
+      return currentUser!.email;
     }
 
-    return currentUser.username;
+    return currentUser!.username;
   });
 </script>
 

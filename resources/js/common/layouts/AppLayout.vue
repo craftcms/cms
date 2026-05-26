@@ -17,7 +17,6 @@
   import InlineFlash from '@/common/components/InlineFlash.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
-  import {useFlashMessages} from '@/common/composables/useFlashMessages';
   import UserMenu from '@/common/components/UserMenu.vue';
   import FlashMessages from '@/common/components/FlashMessages.vue';
 
@@ -140,7 +139,7 @@
         :key="link.url"
         :href="link.url"
         class="skip-link skip-link--global"
-        >{{ link.label }}</a
+      >{{ link.label }}</a
       >
       <div class="flex gap-2 p-2">
         <craft-button

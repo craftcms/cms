@@ -6,7 +6,7 @@
 
   const isActive = ref(false);
 
-  const props = defineProps<{
+  defineProps<{
     logId: number;
   }>();
 </script>

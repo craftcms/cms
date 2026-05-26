@@ -75,20 +75,20 @@
             {siteName: site.name}
           )
         "
-        .modelValue="form.contentDestination"
+        .model-value="form.contentDestination"
         @model-value-changed="
           form.contentDestination = $event.target.modelValue
         "
       >
         <craft-radio
           :label="t('Transfer it')"
-          .choiceValue="'transfer'"
+          .choice-value="'transfer'"
           :checked="'transfer' === form.contentDestination"
         >
         </craft-radio>
         <craft-radio
           :label="t('Delete it')"
-          .choiceValue="'delete'"
+          .choice-value="'delete'"
           :checked="'delete' === form.contentDestination"
         ></craft-radio>
       </craft-radio-group>
@@ -104,7 +104,7 @@
             :label="t('Transfer content to')"
             id="transfer-to"
             name="transferContentTo"
-            .modelValue="form.transferContentTo"
+            .model-value="form.transferContentTo"
             @model-value-changed="
               form.transferContentTo = $event.target.modelValue
             "
@@ -114,12 +114,12 @@
                 {{ t('Select site') }}
               </option>
               <option
-                v-for="site in transferContentOptions"
-                :key="site.id"
-                :selected="site.id === form.transferContentTo"
-                :value="site.id"
+                v-for="siteOption in transferContentOptions"
+                :key="siteOption.id"
+                :selected="siteOption.id === form.transferContentTo"
+                :value="siteOption.id"
               >
-                {{ site.name }}
+                {{ siteOption.name }}
               </option>
             </select>
 

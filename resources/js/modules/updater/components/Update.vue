@@ -4,7 +4,7 @@
   import {computed, ref} from 'vue';
   import CpLink from '@/common/components/CpLink.vue';
   import UpdaterController from '@actions/Updates/UpdaterController';
-  import {Form, router} from '@inertiajs/vue3';
+  import {Form} from '@inertiajs/vue3';
 
   interface ReleaseInfo {
     version: string;
@@ -51,32 +51,6 @@
     return props.ctaText || t('Update');
   });
 
-  // Loading state for update button
-  const isUpdating = ref(false);
-
-  // Start the update process
-  function startUpdate() {
-    if (!props.handle || !props.latestVersion || !props.packageName) {
-      return;
-    }
-
-    isUpdating.value = true;
-
-    router.post(
-      UpdaterController.index['/admin/actions/updater'](),
-      {
-        return: 'utilities/updates',
-        install: {[props.handle]: `^${props.latestVersion}`},
-        packageNames: {[props.handle]: props.packageName},
-      },
-      {
-        onFinish: () => {
-          isUpdating.value = false;
-        },
-      }
-    );
-  }
-
   // Copy handle to clipboard
   const initialHandleLabel = t('Copy plugin handle');
   const copyHandleLabel = ref(initialHandleLabel);
@@ -88,7 +62,8 @@
       setTimeout(() => {
         copyHandleLabel.value = initialHandleLabel;
       }, 1500);
-    } catch (e) {
+    } catch (error: unknown) {
+      console.error(error);
       copyHandleLabel.value = t('Failed to copy');
     }
   }
@@ -104,7 +79,8 @@
       setTimeout(() => {
         copyPackageLabel.value = initialPackageLabel;
       }, 1500);
-    } catch (e) {
+    } catch (error: unknown) {
+      console.error(error);
       copyPackageLabel.value = t('Failed to copy');
     }
   }
@@ -133,7 +109,7 @@
             v-else
             :action="UpdaterController.index['/admin/actions/updater']()"
             method="post"
-            #default="{processing}"
+            v-slot="{processing}"
           >
             <input type="hidden" name="return" value="utilities/updates" />
             <input

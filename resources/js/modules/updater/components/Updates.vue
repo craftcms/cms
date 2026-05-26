@@ -57,7 +57,7 @@
       },
     });
 
-  const {execute, data, isLoading, isError, isSuccess} = useFetch(
+  const {execute, data, isError, isSuccess} = useFetch(
     UpdatesController.cache().url,
     {
       method: 'post',
@@ -237,7 +237,7 @@
         <Update
           v-if="cmsUpdate"
           v-bind="cmsUpdate"
-          :allowUpdates="allowUpdates"
+          :allow-updates="allowUpdates"
         />
 
         <!-- Plugin Updates -->
@@ -245,7 +245,7 @@
           v-for="plugin in pluginUpdates"
           :key="plugin.handle"
           v-bind="plugin"
-          :allowUpdates="allowUpdates"
+          :allow-updates="allowUpdates"
         />
       </div>
     </div>

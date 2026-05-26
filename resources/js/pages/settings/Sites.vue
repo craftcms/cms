@@ -62,9 +62,13 @@
 
   const siteIds = ref(props.sites.map((site) => site.id));
   const sites = computed(() => {
-    return siteIds.value
-      .map((id) => props.sites.find((site) => site.id === id))
-      .filter(Boolean);
+    if (siteIds.value.length > 0) {
+      return siteIds.value
+        .map((id) => props.sites.find((site) => site.id === id))
+        .filter(Boolean);
+    }
+
+    return [];
   });
 
   watch(siteIds, (newValue, oldValue) => {
@@ -250,7 +254,7 @@
       </CpLink>
     </template>
 
-    <template #interior-nav="{state}">
+    <template #interior-nav>
       <craft-nav-list class="-mx-2">
         <craft-nav-item :href="index.url()" :active="!group">
           {{ t('All Sites') }}

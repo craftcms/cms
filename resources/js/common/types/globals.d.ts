@@ -1,8 +1,7 @@
 import type {CpServices} from '@craftcms/cp/types/globals.d.ts';
-import type {RowData} from '@tanstack/vue-table';
 
 declare module '@tanstack/vue-table' {
-  interface ColumnMeta<TData extends RowData, TValue> {
+  interface ColumnMeta {
     wrap?: boolean;
     // Applies classes to the cell
     cellClass?: string | Record<string, boolean>;

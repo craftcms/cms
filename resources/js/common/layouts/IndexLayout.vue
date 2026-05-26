@@ -10,6 +10,7 @@
   const isLarge = useMediaQuery('(min-width: 768px)');
   const navState = ref<'expanded' | 'collapsed'>('expanded');
   const forwardedSlots = computed(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {default: _, ...rest} = slots;
     return rest;
   });

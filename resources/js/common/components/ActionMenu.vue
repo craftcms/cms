@@ -38,7 +38,7 @@
   const props = withDefaults(
     defineProps<{
       icon?: string;
-      label?: string;
+      label?: string | null;
       actions: Array<ActionItem & {onClick?: (event: Event) => void}>;
     }>(),
     {

@@ -41,7 +41,7 @@
 
 <template>
   <QueueManagerShow v-if="activeJob" :job="activeJob" />
-  <QueueManagerIndex v-else :jobs="jobs" :totalJobs="totalJobs" />
+  <QueueManagerIndex v-else :jobs="jobs" :total-jobs="totalJobs" />
 </template>
 
 <style scoped lang="scss"></style>

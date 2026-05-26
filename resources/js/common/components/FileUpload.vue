@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import {computed} from 'vue';
+  import {t} from '@craftcms/cp';
 
   const modelValue = defineModel<{
     url: string;
@@ -17,8 +18,11 @@
       error?: string | null;
     }>(),
     {
+      label: undefined,
+      name: undefined,
+      helpText: undefined,
       disabled: false,
-      buttonLabel: 'Select file',
+      buttonLabel: t('Select file'),
       multiple: false,
       thumbnailSize: 120,
       error: null,
@@ -41,7 +45,7 @@
       : event.detail?.newFiles?.[0] || null;
   }
 
-  function handleFileRemoved(event: CustomEvent) {
+  function handleFileRemoved() {
     modelValue.value = null;
   }
 
@@ -74,7 +78,7 @@
     :help-text="helpText"
     :disabled="disabled"
     :multiple="multiple"
-    .uploadResponse="uploadResponse"
+    .upload-response="uploadResponse"
     @file-removed="handleFileRemoved"
     @file-list-changed="handleListChange"
     :has-feedback-for="error ? 'error' : ''"

@@ -37,7 +37,7 @@
   });
 
   // After the cms license response comes back, check the plugin licenses
-  watch(pluginLicenses, (newVal) => {
+  watch(pluginLicenses, () => {
     http.post(PluginsController.getLicenseInfo().url, {
       onSuccess: (data) => {
         pluginLicenseData.value = data;

@@ -14,13 +14,12 @@
       dateFormat?: string;
       isEphemeral?: boolean;
     }>(),
-    {volumeOptions: () => []}
+    {volumeOptions: () => [], existingSessions: () => []}
   );
 
-  const {sessionsArray, hasSessions, startIndexing, isStarting} =
-    useAssetIndexer({
-      existingSessions: props.existingSessions,
-    });
+  const {hasSessions, startIndexing, isStarting} = useAssetIndexer({
+    existingSessions: props.existingSessions,
+  });
 
   const form = reactive({
     volumes: ['*', ...props.volumeOptions.map((v) => v.value)],

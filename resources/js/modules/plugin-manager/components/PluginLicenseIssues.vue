@@ -30,7 +30,7 @@
         template="This license is for the {name} edition."
         :params="{name: editionName}"
       />
-      <Form :action="switchEdition()" method="post" #default="{processing}">
+      <Form :action="switchEdition()" method="post" v-slot="{processing}">
         <input type="hidden" name="pluginHandle" :value="plugin.handle" />
         <input type="hidden" name="edition" :value="plugin.licensedEdition" />
         <craft-button
@@ -38,7 +38,7 @@
           appearance="inline"
           variant="inherit"
           :loading="processing"
-          >Switch</craft-button
+        >Switch</craft-button
         >
       </Form>
     </div>
@@ -48,7 +48,7 @@
     />
     <Text
       v-else-if="issue === 'mismatched'"
-      template='This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.'
+      template="This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href=&quot;{buyUrl}&quot;>buy a new license</a>."
       :params="{accountLink: accountLink, buyUrl: plugin.buyUrl}"
     />
     <Text

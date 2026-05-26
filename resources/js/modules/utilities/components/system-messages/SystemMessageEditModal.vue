@@ -4,24 +4,20 @@
   import {useHttp} from '@inertiajs/vue3';
   import {useEventListener} from '@vueuse/core';
   import ModalForm from '@/common/components/ModalForm.vue';
-  import {useAnnouncer} from '@/common/composables/useAnnouncer';
-  import SystemMessagesController, {store} from '@actions/Utilities/SystemMessagesController';
+  import SystemMessagesController, {
+    store,
+  } from '@actions/Utilities/SystemMessagesController';
   import type {SelectOption} from '@/common/types';
   import {useFlashMessages} from '@/common/composables/useFlashMessages';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import CraftTextarea from '@craftcms/cp/vue/CraftTextarea.vue';
-  import CraftSelect from '@craftcms/cp/vue/CraftSelect.vue';
 
   interface SystemMessageData {
     key: string;
     heading: string;
     subject: string;
     body: string;
-  }
-
-  interface LocaleOption {
-    value: string;
-    label: string;
+    language: string;
   }
 
   const props = defineProps<{
@@ -41,7 +37,6 @@
   }>();
 
   const {flash} = useFlashMessages();
-  const {announce} = useAnnouncer();
   const feedback = ref<{
     icon?: string;
     variant: string;
@@ -99,7 +94,7 @@
 
     feedback.value = null;
     form.post(store().url, {
-      onHttpException: (error) => {
+      onHttpException: () => {
         feedback.value = {
           icon: 'triangle-exclamation',
           message: t('Failed to save message.'),

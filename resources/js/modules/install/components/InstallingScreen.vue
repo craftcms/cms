@@ -18,7 +18,7 @@
     isLoading,
     isError,
   } = usePost('/admin/actions/install/install', {
-    onSuccess: (data) => {
+    onSuccess: () => {
       setTimeout(() => {
         window.location.href = pageProps.postCpLoginRedirect as string;
       }, 1000);

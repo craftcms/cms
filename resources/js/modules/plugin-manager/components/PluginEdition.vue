@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import {t, capitalize} from '@craftcms/cp';
-  import Badge from '@/common/components/Badge.vue';
   import {computed} from 'vue';
 
   const props = withDefaults(

@@ -10,7 +10,7 @@
     install,
     uninstall,
   } from '@actions/PluginsController';
-  import RemoveController, {index} from '@actions/PluginStore/RemoveController';
+  import RemoveController from '@actions/PluginStore/RemoveController';
   import {router} from '@inertiajs/vue3';
 
   const props = defineProps<{

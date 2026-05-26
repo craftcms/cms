@@ -1,7 +1,6 @@
 import {ref} from 'vue';
 import type {
   PaginationState,
-  TableOptionsWithReactiveData,
   Updater,
 } from '@tanstack/vue-table';
 import type {PaginationData} from '@/common/types';

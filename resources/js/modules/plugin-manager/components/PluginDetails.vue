@@ -44,7 +44,7 @@
         <PluginLicenseStatusIcon
           v-if="
             plugin.licenseKeyStatus === 'valid' ||
-            plugin.licenseIssues.length > 0
+              plugin.licenseIssues.length > 0
           "
           class="license-key-status"
           :status="plugin.licenseIssues.length === 0 ? 'valid' : 'invalid'"
