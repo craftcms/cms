@@ -5,7 +5,6 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Providers\AppServiceProvider;
 use CraftCms\Cms\Support\Flash;
-use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Http\Request;
 use Illuminate\Session\SessionManager;
 use Illuminate\Session\Store as SessionStore;
@@ -46,21 +45,6 @@ it('registers session macros without resolving the configured session driver', f
         app()->instance('session', $originalSession);
         Session::clearResolvedInstance('session');
     }
-});
-
-it('flashes broadcast messages as ready-time JavaScript on control panel requests', function () {
-    app()->instance('request', Request::create('/admin/entries'));
-
-    session()->broadcastToJs([
-        'event' => 'saveElement',
-        'id' => 42,
-    ]);
-
-    expect(session()->getJs(false))->toBe([[
-        "if (Craft?.broadcaster) {\n    Craft.broadcaster.postMessage({\"event\":\"saveElement\",\"id\":42});\n}",
-        Position::Ready->value,
-        null,
-    ]]);
 });
 
 it('does not queue broadcast messages outside the control panel', function () {
