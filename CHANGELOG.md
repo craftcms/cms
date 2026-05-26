@@ -4,6 +4,7 @@
 
 - Fixed a bug where an empty `storage/runtime/` directory was getting created even if `runtimePath` was being overridden in `config/app.php`. ([#18936](https://github.com/craftcms/cms/issues/18936))
 - Fixed a bug where overridden entry type handles weren’t being respected when rendering partial templates. ([#18968](https://github.com/craftcms/cms/issues/18968))
+- Fixed an error that could occur when opening an element slideout. ([#18957](https://github.com/craftcms/cms/issues/18957))
 
 ## 5.10.3 - 2026-05-22
 
