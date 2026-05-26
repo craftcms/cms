@@ -5,6 +5,18 @@
 - Added Laravel event dispatching to Craft’s `Yiisoft\Translator\Translator` instance, enabling `Yiisoft\Translator\Event\MissingTranslationEvent` listeners. ([#18952](https://github.com/craftcms/cms/pull/18952))
 - The default value for `GeneralConfig::$loginPath` is now `false`.
 - Fixed some errors that could occur when running Craft through Laravel Octane ([#18921](https://github.com/craftcms/cms/pull/18921))
+- Fixed an error that occurred when rendering the database update screen outside Control Panel template mode.
+- Fixed an error that occurred when Redis was configured as the session driver.
+- Fixed an error that could occur when request context was dehydrated after a matched element route was resolved.
+- Fixed a bug where `CraftCms\Cms\Support\Typecast` could skip setters that used a same-name private backing property.
+- Updated section queries to always select `minAuthors`.
+- Fixed a bug where `CraftCms\Cms\Support\Typecast` could attempt to assign read-only, private-set, protected-set, or setterless virtual properties.
+- Fixed a bug where publishable Craft assets were registered during web requests.
+- Improved emoji shortcode handling performance for strings without shortcode delimiters.
+- Fixed a bug where eager-loading didn’t treat address, content block, and entry queries as nested element queries.
+- Improved element query performance by caching element source table column listings in memory.
+- Improved nested entry type resolution by avoiding unnecessary owner element queries.
+- Fixed a bug where lazy eager-loading nested element fields could reuse owner criteria and return the wrong elements.
 - Fixed an error that occurred when Updates were cached and deserialized.
 - Fixed an error that prevented link fields from saving.
 - Fixed a bug where Money fields could throw an error during element validation when the field value was falsy.
