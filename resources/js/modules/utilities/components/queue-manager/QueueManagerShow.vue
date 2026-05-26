@@ -1,12 +1,16 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import {type JobInfo} from '@craftcms/cp/types/index.ts';
+  import {t} from '@craftcms/cp';
+  import {type JobInfo} from '@craftcms/cp';
   import VarDump from '@/common/components/VarDump.vue';
   import Badge from '@/common/components/Badge.vue';
+  import {computed} from 'vue';
 
-  defineProps<{
+  const props = defineProps<{
     job: JobInfo;
   }>();
+
+  // Cast to Record for generic iteration in template (job may have extra server-side fields)
+  const jobRecord = computed(() => props.job as Record<string, any>);
 
   const hiddenProperties = ['delay', 'description', 'progressLabel', 'job'];
 
@@ -72,7 +76,7 @@
 
     <table class="table-fixed border-collapse w-full">
       <tbody>
-        <tr v-for="(value, name) in job" :key="name">
+        <tr v-for="(value, name) in jobRecord" :key="name">
           <template v-if="!hiddenProperties.includes(name)">
             <th
               :class="{

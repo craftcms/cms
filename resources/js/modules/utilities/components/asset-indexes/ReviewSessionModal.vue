@@ -133,7 +133,7 @@
             <CheckboxGroup
               class="my-2"
               :label="t('Delete folders')"
-              :model-value="formData.deleteFolder"
+              :model-value="formData.deleteFolder?.map(String) ?? []"
               :options="deleteFolderOptions"
               :allow-select-all="true"
             >
@@ -148,7 +148,7 @@
             <CheckboxGroup
               class="my-2"
               :label="t('Delete assets')"
-              :model-value="formData.deleteAsset"
+              :model-value="formData.deleteAsset?.map(String) ?? []"
               :options="deleteAssetOptions"
               :allow-select-all="true"
             >

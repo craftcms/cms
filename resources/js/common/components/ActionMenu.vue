@@ -1,7 +1,6 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import type {VariantKey} from '@craftcms/cp/types/index.ts';
-  import {type Component, computed, type VNode} from 'vue';
+  import {t, type VariantKey} from '@craftcms/cp';
+  import {type Component, computed} from 'vue';
 
   interface ActionItemHr {
     type: 'hr';
@@ -9,22 +8,26 @@
 
   interface ActionItemDisplay {
     type: 'display';
-    is: () => VNode | 'string' | Component;
+    is: Component;
   }
 
   interface ActionItemButton {
     type?: 'button';
     label: string;
-    variant?: VariantKey;
+    variant?: VariantKey | string;
     icon?: string;
     onClick?: () => void;
+    shortcut?: string | {alt?: boolean; shift?: boolean; key: string} | null;
+    [key: string]: unknown;
   }
 
   interface ActionItemLink {
-    type?: 'link';
+    type: 'link';
     href: string;
     label: string;
-    variant?: VariantKey;
+    variant?: VariantKey | string;
+    onClick?: () => void;
+    [key: string]: unknown;
   }
 
   export type ActionItem =
@@ -47,20 +50,24 @@
     }
   );
 
-  const normalizedActions = computed((): ActionItems => {
-    return props.actions.map((action): ActionItem => {
-      if (action.type === 'hr' || action.type === 'display') {
-        return action;
-      }
+  const normalizedActions = computed(
+    (): Array<ActionItem & {onClick?: (event: Event) => void}> => {
+      return props.actions.map(
+        (action): ActionItem & {onClick?: (event: Event) => void} => {
+          if (action.type === 'hr' || action.type === 'display') {
+            return action;
+          }
 
-      return {
-        ...action,
-        type:
-          action.type ??
-          (('href' in action ? 'link' : 'button') as 'link' | 'button'),
-      };
-    });
-  });
+          return {
+            ...action,
+            type:
+              action.type ??
+              ('href' in action && action.href ? 'link' : 'button'),
+          } as ActionItem & {onClick?: (event: Event) => void};
+        }
+      );
+    }
+  );
 
   const sortedActions = computed(() => {
     return [...normalizedActions.value].sort((a, b) => {

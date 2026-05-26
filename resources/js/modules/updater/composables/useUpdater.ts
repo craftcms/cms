@@ -77,7 +77,9 @@ export function useUpdater(
       isLoading.value = false;
     }
 
-    handleStateUpdate(response.data);
+    if (response) {
+      handleStateUpdate(response.data);
+    }
   }
 
   /**

@@ -29,14 +29,14 @@
       ...props.newMigrations.map((item) => ({
         name: item,
         status: t('New'),
-        batch: '',
+        batch: undefined,
       })),
       ...props.migrationHistory.map((item) => ({
-        name: item.migration,
+        name: item.migration ?? item.name,
         status: t('Applied'),
         batch: item.batch,
       })),
-    ];
+    ] as Migration[];
   });
 
   const columnHelper = createColumnHelper<Migration>();

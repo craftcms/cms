@@ -13,7 +13,7 @@
   import CreateEntryTypeButton from '@/modules/entry-types/components/CreateEntryTypeButton.vue';
   import {router} from '@inertiajs/vue3';
   import DragShadow from '@/common/components/DragShadow.vue';
-  import {useReorderableItems} from '@/common/composables/useReorderableItems';
+  import {useReorderableItems, type DropState} from '@/common/composables/useReorderableItems';
   import ReorderButton from '@/common/components/ReorderButton.vue';
   import useCraftData from '@/common/composables/useCraftData';
 
@@ -40,6 +40,7 @@
   function reorder(startIndex: number, finishIndex: number) {
     const items = [...props.modelValue];
     const [removed] = items.splice(startIndex, 1);
+    if (removed === undefined) return;
     items.splice(finishIndex, 0, removed);
     emit('update:modelValue', items);
   }
@@ -62,6 +63,11 @@
       onReorder: reorder,
       enabled: () => props.modelValue.length > 1,
     });
+
+  function getOverDropState(id: number | string): Extract<DropState, {type: 'is-over'}> | null {
+    const state = getDropState(id);
+    return state.type === 'is-over' ? state : null;
+  }
 
   function handleTypeSelect(type: EntryType) {
     if (props.modelValue.find((item) => item.id === type.id)) {
@@ -237,11 +243,8 @@
       >
         <!-- Shadow before item when dragged over top edge -->
         <DragShadow
-          v-if="
-            getDropState(entryType.id).type === 'is-over' &&
-              getDropState(entryType.id).closestEdge === 'top'
-          "
-          :height="getDropState(entryType.id).draggingRect?.height"
+          v-if="getOverDropState(entryType.id)?.closestEdge === 'top'"
+          :height="getOverDropState(entryType.id)?.draggingRect?.height"
         />
 
         <EntryTypeChip
@@ -259,16 +262,12 @@
               icon: 'gear',
               onClick: () => openSlideout(entryType.id),
             },
-            ...[
-              readOnly
-                ? null
-                : {
-                  label: t('Remove'),
-                  variant: 'danger',
-                  icon: 'x',
-                  onClick: () => removeItem(entryType.id),
-                },
-            ],
+            ...(!readOnly ? [{
+              label: t('Remove'),
+              variant: 'danger',
+              icon: 'x',
+              onClick: () => removeItem(entryType.id),
+            }] : []),
           ]"
           @handle-ref="(el) => setHandleRef(el, entryType.id)"
         >
@@ -285,11 +284,8 @@
 
         <!-- Shadow after item when dragged over bottom edge -->
         <DragShadow
-          v-if="
-            getDropState(entryType.id).type === 'is-over' &&
-              getDropState(entryType.id).closestEdge === 'bottom'
-          "
-          :height="getDropState(entryType.id).draggingRect?.height"
+          v-if="getOverDropState(entryType.id)?.closestEdge === 'bottom'"
+          :height="getOverDropState(entryType.id)?.draggingRect?.height"
         />
       </div>
     </template>
@@ -335,7 +331,7 @@
               :checked="
                 modelValue.find((valueType) => valueType.id === entryType.id)
               "
-              :data-color="entryType.color?.value ?? 'white'"
+              :data-color="(entryType.color && typeof entryType.color !== 'string' ? entryType.color.value : entryType.color) ?? 'white'"
             >
               <div>
                 {{ entryType.name }}

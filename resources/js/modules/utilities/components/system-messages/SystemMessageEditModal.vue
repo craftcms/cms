@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {ref, watch} from 'vue';
+  import {computed, ref, watch} from 'vue';
   import {t} from '@craftcms/cp';
   import {useHttp} from '@inertiajs/vue3';
   import {useEventListener} from '@vueuse/core';
@@ -48,6 +48,8 @@
       language: props.initialLanguage,
     }
   );
+
+  const isLoadingMessage = computed(() => messageForm.processing);
 
   // Form for saving message
   const form = useHttp<

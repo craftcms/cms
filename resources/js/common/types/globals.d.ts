@@ -117,6 +117,9 @@ interface CraftStatic {
     ): SlideoutInstance;
     new (settings: SlideoutSettings): SlideoutInstance;
   };
+  CpScreenSlideout: {
+    new (url: string, settings?: object): SlideoutInstance;
+  };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type

@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import ActionMenu from '@/common/components/ActionMenu.vue';
+  import type {ActionItem} from '@/common/components/ActionMenu.vue';
   import ReorderButton from '@/common/components/ReorderButton.vue';
   import type {EntryType} from '@/common/types';
   import Tooltip from '@/common/components/Tooltip.vue';
@@ -40,7 +41,7 @@
 </script>
 
 <template>
-  <craft-chip :data-color="color?.value ?? color ?? 'white'" :data-id="id">
+  <craft-chip :data-color="(color && typeof color !== 'string' ? color.value : color) ?? 'white'" :data-id="id">
     <template v-if="icon">
       <craft-icon slot="icon" v-bind="icon" />
     </template>
@@ -69,7 +70,7 @@
     </div>
 
     <div slot="suffix" class="flex gap-0.5 items-center">
-      <ActionMenu v-if="actions" :actions="actions" />
+      <ActionMenu v-if="actions" :actions="(actions as ActionItem[])" />
       <span v-if="draggable" ref="handleRef" class="drag-handle">
         <slot name="drag-handle">
           <ReorderButton variant="inherit" />

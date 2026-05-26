@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
-  import {computed, defineEmits, defineProps} from 'vue';
+  import {computed} from 'vue';
   import Callout from '@/common/components/Callout.vue';
   import {useFocusField} from '@/common/composables/useFocusField';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';

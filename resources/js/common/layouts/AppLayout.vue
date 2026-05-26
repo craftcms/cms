@@ -12,6 +12,7 @@
   import LiveRegion from '@/common/components/LiveRegion.vue';
   import {useAppendHtml} from '@/common/composables/useAppendHtml';
   import ActionMenu from '@/common/components/ActionMenu.vue';
+  import type {ActionItem} from '@/common/components/ActionMenu.vue';
   import type {ActionItemData} from '@/common/types';
   import {useFlash} from '@/common/composables/useFlash';
   import InlineFlash from '@/common/components/InlineFlash.vue';
@@ -215,14 +216,14 @@
                           </craft-button>
                           <ActionMenu
                             icon="chevron-down"
-                            :actions="[
+                            :actions="([
                               {
                                 label: t('Save and continue editing'),
                                 onClick: () => emit('save', {redirect: false}),
                                 shortcut: 'S',
                               },
                               ...(formActions ?? []),
-                            ]"
+                            ] as ActionItem[])"
                           >
                             <template #invoker="{label}">
                               <craft-button

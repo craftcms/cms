@@ -22,7 +22,7 @@
 
   // Check if string is a valid number
   function isNumeric(value: string | number) {
-    return !isNaN(parseFloat(value)) && isFinite(value);
+    return !isNaN(parseFloat(String(value))) && isFinite(Number(value));
   }
 
   const showHeader = computed(() => {

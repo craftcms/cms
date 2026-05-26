@@ -95,7 +95,7 @@ export function useFetch<T = any>(
 
   // Axios cancel token
   let cancelTokenSource: CancelTokenSource | null = null;
-  let debounceTimer: number | null = null;
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   // The actual fetch function
   const execute = async (postData = {}): Promise<void> => {

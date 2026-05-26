@@ -3,7 +3,7 @@
   import type {PluginInfo} from '@/modules/plugin-manager/types/plugins';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import {computed, onMounted} from 'vue';
-  import type {ActionItem} from '@craftcms/cp/actions.mjs';
+  import type {ActionItem} from '@/common/components/ActionMenu.vue';
   import {
     disable,
     enable,

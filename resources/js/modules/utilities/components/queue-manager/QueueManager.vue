@@ -2,7 +2,7 @@
   import QueueManagerIndex from '@/modules/utilities/components/queue-manager/QueueManagerIndex.vue';
   import QueueManagerShow from '@/modules/utilities/components/queue-manager/QueueManagerShow.vue';
   import {inject, onMounted, ref} from 'vue';
-  import type {JobInfo} from '@craftcms/cp/types/index.ts';
+  import type {JobInfo, JobUpdateDetail} from '@craftcms/cp';
   import {Queue} from '@/common/types/keys';
 
   const props = withDefaults(
@@ -27,7 +27,8 @@
   const totalJobs = ref(props.totalJobs);
 
   onMounted(async () => {
-    queue?.addEventListener('job-update', ({detail}) => {
+    queue?.addEventListener('job-update', (event) => {
+      const {detail} = event as CustomEvent<JobUpdateDetail>;
       jobs.value = detail.jobInfo;
       totalJobs.value = detail.totalJobs;
     });

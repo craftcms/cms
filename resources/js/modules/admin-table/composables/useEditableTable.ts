@@ -278,14 +278,13 @@ export function useEditableTable<T extends Record<string, any>>(
         ...(cellOptions?.transformModelValue !== undefined && {
           transformModelValue: cellOptions.transformModelValue,
         }),
-        requireOptionMatch: cellOptions?.requireOptionMatch,
-        transformModelValue: cellOptions?.transformModelValue,
         disabled: resolveDisabled(cellOptions?.disabled, row),
-        'onUpdate:modelValue': (value: string) => {
+        'onUpdate:modelValue': (value: string | number) => {
+          const strValue = String(value);
           if (typeof cellOptions?.onChange === 'function') {
-            cellOptions.onChange(value, {row, column});
+            cellOptions.onChange(strValue, {row, column});
           }
-          handleChange(row, column.id, value);
+          handleChange(row, column.id, strValue);
         },
       });
     };

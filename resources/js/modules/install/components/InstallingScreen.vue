@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
-  import {defineProps, onMounted} from 'vue';
+  import {onMounted} from 'vue';
   import {usePost} from '@/common/composables/useFetch';
   import {usePage} from '@inertiajs/vue3';
   import Pane from '@/common/components/Pane.vue';

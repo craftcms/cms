@@ -26,7 +26,7 @@
       <craft-spinner></craft-spinner>
     </template>
     <template v-if="http.wasSuccessful">
-      <div v-html="data.html"></div>
+      <div v-html="data?.html"></div>
     </template>
   </Pane>
 </template>

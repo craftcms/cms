@@ -61,11 +61,11 @@
   }
 
   const siteIds = ref(props.sites.map((site) => site.id));
-  const sites = computed(() => {
+  const sites = computed((): Site[] => {
     if (siteIds.value.length > 0) {
       return siteIds.value
         .map((id) => props.sites.find((site) => site.id === id))
-        .filter(Boolean);
+        .filter((s): s is Site => s !== undefined);
     }
 
     return [];
@@ -93,6 +93,7 @@
   function handleReorder(startIndex: number, finishIndex: number) {
     const newIds = [...siteIds.value];
     const [id] = newIds.splice(startIndex, 1);
+    if (id === undefined) return;
     newIds.splice(finishIndex, 0, id);
     siteIds.value = newIds;
   }

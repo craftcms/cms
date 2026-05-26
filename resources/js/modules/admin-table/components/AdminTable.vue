@@ -52,6 +52,11 @@
       enabled: () => !props.readOnly && props.reorderable,
     });
 
+  function getClosestEdge(rowId: string) {
+    const state = getDropState(rowId);
+    return state.type === 'is-over' ? state.closestEdge : null;
+  }
+
   const id = useId();
   const columnSortInstructionId = `column-sort-instructions-${id}`;
   const titleString = computed(() => {
@@ -278,7 +283,7 @@
                 </div>
 
                 <!-- Drop indicator spans entire row, positioned from this cell -->
-                <DropIndicator :edge="getDropState(row.id).closestEdge" />
+                <DropIndicator :edge="getClosestEdge(row.id)" />
               </td>
             </template>
             <component
@@ -322,7 +327,7 @@
         <Text
           v-if="showDisplayedRows"
           template="{from} – {to} of {total, plural, =1{# item} other{# items}}"
-          :params="{from, to, total}"
+          :params="{from: from ?? 0, to: to ?? 0, total: total ?? 0}"
         />
       </div>
       <div class="flex gap-1">

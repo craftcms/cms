@@ -18,7 +18,7 @@
   }>();
 
   const {isDownloading, isDiscarding, discardChanges, downloadConfig} =
-    useProjectConfig(props);
+    useProjectConfig();
 
   const sectionTitle = computed(() => {
     if (!props.yamlExists) {

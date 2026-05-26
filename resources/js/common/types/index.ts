@@ -22,6 +22,10 @@ export interface SelectOptGroup {
 
 export type SelectItem = SelectOption | SelectOptGroup;
 
+export interface SuggestionGroup extends SelectOptGroup {
+  type: 'optgroup';
+}
+
 export interface SiteGroup {
   id: number;
   uid: string;

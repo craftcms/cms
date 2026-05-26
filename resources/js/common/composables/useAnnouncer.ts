@@ -5,7 +5,7 @@ interface AnnouncerOptions {
 }
 
 const announcement = ref<string | null>(null);
-const announcerTimeout = ref(0);
+const announcerTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
 
 /**
  * Composable for announcing messages to screen readers and displaying temporary notifications.
@@ -46,7 +46,7 @@ export function useAnnouncer(options: Partial<AnnouncerOptions> = {}) {
       return;
     }
 
-    if (announcerTimeout.value) {
+    if (announcerTimeout.value !== null) {
       clearTimeout(announcerTimeout.value);
     }
 

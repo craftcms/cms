@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {type Component, computed} from 'vue';
-  import {t} from '@craftcms/cp/utilities/translate.ts';
+  import {t} from '@craftcms/cp';
 
   const props = withDefaults(
     defineProps<{

@@ -3,7 +3,7 @@ import type {
   Meta,
   StoryObj,
 } from '@storybook/vue3-vite';
-import {pluginInfo} from '@/fixtures/plugins';
+import {pluginInfo} from '@/modules/plugin-manager/fixtures/plugins';
 
 import PluginsList from './PluginsList.vue';
 

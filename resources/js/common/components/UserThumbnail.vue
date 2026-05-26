@@ -25,8 +25,8 @@
 
 <template>
   <div
-    v-if="currentUser.thumbHtml"
-    v-html="currentUser.thumbHtml"
+    v-if="currentUser?.thumbHtml"
+    v-html="currentUser?.thumbHtml"
     data-color="white"
     :class="{
       'user-thumbnail': true,

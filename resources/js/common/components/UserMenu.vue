@@ -7,19 +7,20 @@
   import useCraftData from '@/common/composables/useCraftData';
   import {computed} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
+  import type {ActionItem} from '@/common/components/ActionMenu.vue';
   import CurrentUser from '@/common/components/CurrentUser.vue';
   import UserThumbnail from '@/common/components/UserThumbnail.vue';
   import PasswordController from '@actions/Users/PasswordController';
 
   const {currentUser} = useCraftData();
 
-  const menuItems = computed(() => {
+  const menuItems = computed((): ActionItem[] => {
     return [
       {
-        type: 'display',
+        type: 'display' as const,
         is: CurrentUser,
       },
-      {type: 'hr'},
+      {type: 'hr' as const},
       {
         href: UsersController.edit['/admin/myaccount']().url,
         label: t('Profile'),

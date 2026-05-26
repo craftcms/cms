@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import {type JobInfo} from '@craftcms/cp/types/index.ts';
+  import {t} from '@craftcms/cp';
+  import {type JobInfo} from '@craftcms/cp';
   import {useActionClient} from '@/common/composables/useFetch';
   import {unref, watch} from 'vue';
   import {router} from '@inertiajs/vue3';

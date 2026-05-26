@@ -63,15 +63,16 @@
   }
 
   const volumeIds = ref(props.volumes.map((volume) => volume.id));
-  const volumes = computed(() => {
+  const volumes = computed((): VolumeData[] => {
     return (volumeIds.value ?? [])
       .map((id) => props.volumes.find((volume) => volume.id === id))
-      .filter(Boolean);
+      .filter((v): v is VolumeData => v !== undefined);
   });
 
   function handleReorder(startIndex: number, finishIndex: number) {
     const newIds = [...volumeIds.value];
     const [id] = newIds.splice(startIndex, 1);
+    if (id === undefined) return;
     newIds.splice(finishIndex, 0, id);
     volumeIds.value = newIds;
   }
@@ -133,7 +134,8 @@
     getCoreRowModel: getCoreRowModel<VolumeData>(),
   });
 
-  const navItems = computed(() => {
+  type NavItem = {label: string; url: string; active?: boolean; inertia?: boolean};
+  const navItems = computed((): Record<string, NavItem> => {
     return {
       volumes: {label: t('Volumes'), url: index().url, active: true},
       transforms: {
