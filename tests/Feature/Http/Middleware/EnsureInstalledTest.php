@@ -26,7 +26,7 @@ it('allows installer requests through when Craft is not installed', function () 
 
     get(cp_url('install'))
         ->assertOk()
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('Install'));
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('install/Install'));
 
     expect(postJson(action([InstallController::class, 'validateDb']))->status())->not()->toBe(503);
     expect(postJson(action([InstallController::class, 'validateAccount']))->status())->not()->toBe(503);

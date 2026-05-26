@@ -90,7 +90,7 @@ it('requires admin changes', function () {
 
 it('renders index', function () {
     get(action([ImageTransformsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('SettingsImageTransformsIndexPage'));
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/ImageTransforms'));
 });
 
 it('renders create', function () {
