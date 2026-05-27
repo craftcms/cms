@@ -33,7 +33,7 @@ it('shows the install page', function () {
 
     get(action([InstallController::class, 'index']))
         ->assertInertia(function (AssertableInertia $page) {
-            $page->component('Install')
+            $page->component('install/Install')
                 ->missing('licenseHtml')
                 ->missing('localeOptions')
                 ->missing('timezone')

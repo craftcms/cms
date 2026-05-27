@@ -50,8 +50,12 @@ export default class CraftButton extends LionButtonSubmit {
   @property() accessibleName: string;
 
   /** Visual appearance of the button */
-  @property({reflect: true}) appearance: 'solid' | 'outline' | 'plain' =
-    'solid';
+  @property({reflect: true}) appearance:
+    | 'solid'
+    | 'outline'
+    | 'inline'
+    | 'none'
+    | 'plain' = 'solid';
 
   /**
    * Theme variant of the button. Defaults to "neutral"
@@ -77,11 +81,15 @@ export default class CraftButton extends LionButtonSubmit {
   /** Set align-items for the content */
   @property() align: 'start' | 'end' | 'center' = 'center';
 
+  @property() icon: string | null = null;
+
   @state()
   private _hasAccessibilityError: boolean = false;
 
   override render() {
     return html`
+      <!--@TODO need to figure this out-->
+      <!--<div role="status" class="sr-only"></div>-->
       <div
         class="${classMap({
           'button-content': true,
@@ -91,7 +99,11 @@ export default class CraftButton extends LionButtonSubmit {
         })}"
         part="content"
       >
-        <slot name="prefix" class="prefix" part="prefix"></slot>
+        <slot name="prefix" class="prefix" part="prefix">
+          ${this.icon
+            ? html`<craft-icon name="${this.icon}"></craft-icon>`
+            : nothing}
+        </slot>
         <slot class="label" part="label"></slot>
         <slot name="suffix" class="suffix" part="suffix"></slot>
       </div>

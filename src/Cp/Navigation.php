@@ -20,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
+use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 
 readonly class Navigation
@@ -131,13 +132,13 @@ readonly class Navigation
                 if ($this->generalConfig->allowAdminChanges) {
                     $subNavItems['schemas'] = [
                         'label' => t('Schemas'),
-                        'url' => 'graphql/schemas',
+                        'url' => cp_url('graphql/schemas'),
                     ];
                 }
 
                 $subNavItems['tokens'] = [
                     'label' => t('Tokens'),
-                    'url' => 'graphql/tokens',
+                    'url' => cp_url('graphql/tokens'),
                 ];
 
                 $subNavItems['graphiql'] = [

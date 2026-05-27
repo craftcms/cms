@@ -2152,21 +2152,22 @@ $.extend(Craft, {
      * Swap any instruction text with info icons but avoid those with the class
      * visually-hidden as those have already been swapped
      * This needs to happen before the `infoicon` method
-     */
+     *
+     * The primary place this happens is in the advanced settings of the link field
+     * */
     $(
       '.field.info-icon-instructions > .instructions, #details .meta > .field > .instructions',
       $container
     )
-      .not('.visually-hidden')
+      .not('.visually-hidden,.sr-only')
       .each(function () {
         const $instructions = $(this);
         const $label = $instructions.siblings('.heading').find('label');
-        $('<div/>', {
-          class: 'info',
+        $('<craft-info-icon>', {
           html: $instructions.children().html(),
         }).appendTo($label);
         // Keep the original element around in case an aria-describedby attribute is referencing it
-        $instructions.addClass('visually-hidden');
+        $instructions.addClass('sr-only');
       });
 
     $('.info', $container).infoicon();
@@ -2675,20 +2676,37 @@ $.extend(Craft, {
       return;
     }
 
-    const $actions = $(chip).find(
+    // Try old-style chip/card containers first
+    let $actions = $(chip).find(
       '> .chip-content > .chip-actions, > .card-titlebar > .card-actions-container > .card-actions'
     );
-    let $actionMenuBtn = $actions.find('.action-btn').removeClass('hidden');
 
-    if (!$actionMenuBtn.length) {
-      // the chip/card doesn't have an action menu yet, so add one
+    let $actionMenuBtn;
+
+    if ($actions.length) {
+      // Old div.chip — look for existing .action-btn
+      $actionMenuBtn = $actions.find('.action-btn').removeClass('hidden');
+    } else {
+      // New craft-chip — look in [slot="suffix"] for an existing disclosure trigger
+      const $suffixSlot = $(chip).children('[slot="suffix"]');
+      if ($suffixSlot.length) {
+        $actions = $suffixSlot;
+        $actionMenuBtn = $actions
+          .find('[data-disclosure-trigger]')
+          .first()
+          .removeClass('hidden');
+      }
+    }
+
+    if (!$actionMenuBtn?.length) {
+      // No existing action button — create one and wire it up
       const menuId = `actions-${Math.floor(Math.random() * 1000000)}`;
       const labelId = `${menuId}-label`;
       const $label = $('<label/>', {
         id: labelId,
         class: 'visually-hidden',
         text: Craft.t('app', 'Actions'),
-      }).appendTo($actions);
+      });
       $actionMenuBtn = $('<button/>', {
         class: 'btn action-btn',
         type: 'button',
@@ -2696,11 +2714,23 @@ $.extend(Craft, {
         'aria-controls': menuId,
         'aria-describedby': labelId,
         'data-disclosure-trigger': 'true',
-      }).insertAfter($label);
-      $('<div/>', {
+      });
+      const $menu = $('<div/>', {
         id: menuId,
         class: 'menu menu--disclosure',
-      }).insertAfter($actionMenuBtn);
+      });
+
+      if ($actions?.length) {
+        // Append into the found container (old chip-actions or [slot="suffix"])
+        $label.appendTo($actions);
+        $actionMenuBtn.appendTo($actions);
+        $menu.appendTo($actions);
+      } else {
+        // No container found — create a chip-actions div and append to the chip
+        const $newContainer = $('<div/>', {class: 'chip-actions'});
+        $newContainer.append($label, $actionMenuBtn, $menu);
+        $(chip).append($newContainer);
+      }
     }
 
     const disclosureMenu = $actionMenuBtn

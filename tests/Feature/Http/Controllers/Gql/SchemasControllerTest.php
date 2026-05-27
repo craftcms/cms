@@ -9,12 +9,15 @@ use CraftCms\Cms\Http\Controllers\Gql\SchemasController;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Routing\Exceptions\UrlGenerationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
 
@@ -55,9 +58,7 @@ it('requires admin access for schema pages and actions', function () {
         'enabled' => true,
     ])->assertForbidden();
 
-    postJson(cp_url('actions/graphql/delete-schema'), [
-        'id' => $schema->id,
-    ])->assertForbidden();
+    deleteJson(action([SchemasController::class, 'destroy'], ['schemaId' => $schema->id]))->assertForbidden();
 });
 
 it('forbids schema pages when admin changes are disabled', function () {
@@ -74,8 +75,7 @@ it('renders the schema index, create, edit, and public edit screens', function (
     $schema = createSchemaForSchemasControllerTest();
 
     get(action([SchemasController::class, 'index']))
-        ->assertOk()
-        ->assertViewIs('graphql.schemas._index');
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('graphql/Schemas'));
 
     get(action([SchemasController::class, 'create']))
         ->assertOk()
@@ -153,9 +153,9 @@ it('requires password confirmation for save-schema and save-public-schema', func
     ])->assertStatus(423);
 });
 
-it('validates the delete payload before deleting a schema', function () {
-    postJson(action([SchemasController::class, 'destroy']), [])->assertUnprocessable()
-        ->assertJsonValidationErrors(['id']);
+it('requires a schemaId before deletion', function () {
+    expect(fn () => deleteJson(action([SchemasController::class, 'destroy']), []))
+        ->toThrow(UrlGenerationException::class);
 });
 
 function schemaControllerScope(): array

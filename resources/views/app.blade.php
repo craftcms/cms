@@ -3,15 +3,20 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <script>window.Cp = {};</script>
+        {!! $headHtml !!}
         {!! \CraftCms\Cms\Cp\Cp::viteScripts()->toHtml() !!}
         {!! app(\CraftCms\Cms\Plugin\Plugins::class)->getAssetsHtml() !!}
+        <script>
+          let Craft = (window.Craft || {})
+          window.Cp = {};
+        </script>
         <x-inertia::head>
             <title>{{ config('app.name') }}</title>
         </x-inertia::head>
     </head>
     <body>
         <x-inertia::app />
+        {!! $bodyHtml !!}
         <script>
           let CpConfig = {!! json_encode(\CraftCms\Cms\Cp\Cp::config()) !!};
         </script>

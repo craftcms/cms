@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Assets;
+use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
@@ -140,4 +142,22 @@ it('stores dateIndexed as a DB-compatible UTC datetime string', function () {
     expect($storedDateIndexed)->toBe('2026-05-17 13:32:16')
         ->and($storedDateIndexed)->not->toContain('T')
         ->and($storedDateIndexed)->not->toContain('+');
+});
+
+it('uses the provided asset when immediately generating transforms', function () {
+    $asset = ($this->createImageAsset)([
+        'filename' => 'transform-test.txt',
+    ]);
+    $assets = Mockery::mock(Assets::class);
+    $assets->shouldNotReceive('getAssetById');
+    app()->instance(Assets::class, $assets);
+
+    $transform = new ImageTransform([
+        'width' => 100,
+        'height' => 100,
+        'mode' => 'crop',
+    ]);
+
+    expect(fn () => $this->transformer->getTransformUrl($asset, $transform, true))
+        ->toThrow(ImageTransformException::class);
 });

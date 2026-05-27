@@ -1245,7 +1245,11 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     {
         if ($this->fieldId) {
             $entryType = $this->getType();
-            if (! $entryType->hasTitleField && ! $entryType->titleFormat && $entryType->uiLabelFormat === '{title}') {
+            if (
+                ! $entryType->hasTitleField &&
+                ! $entryType->titleFormat &&
+                (! $entryType->uiLabelFormat || $entryType->uiLabelFormat === '{title}')
+            ) {
                 return '';
             }
         }
@@ -1255,8 +1259,11 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
     protected function uiLabel(): ?string
     {
-        if ($this->getType()->uiLabelFormat !== '{title}') {
-            $uiLabel = renderObjectTemplate($this->getType()->uiLabelFormat, $this);
+        $entryType = $this->getType();
+
+        if ($entryType->uiLabelFormat && $entryType->uiLabelFormat !== '{title}') {
+            $uiLabel = renderObjectTemplate($entryType->uiLabelFormat, $this);
+
             if ($uiLabel !== '') {
                 return $uiLabel;
             }
@@ -1436,10 +1443,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     public function getAvailableEntryTypes(bool $triggerEvent = true): array
     {
         $entryTypes = match (true) {
-            isset($this->fieldId) => array_values(array_filter(
-                $this->getField()->getFieldLayoutProviders(),
-                fn ($provider) => $provider instanceof EntryType,
-            )),
+            isset($this->fieldId) => $this->getFieldEntryTypes(),
             isset($this->sectionId) => $this->getSection()->getEntryTypes(),
             default => throw new RuntimeException('Either `sectionId` or `fieldId` + `ownerId` must be set on the entry.'),
         };
@@ -1498,6 +1502,25 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
 
         return $this->_type = $entryType;
+    }
+
+    /**
+     * Returns the field's entry types without resolving nested entry owners.
+     *
+     * @return EntryType[]
+     */
+    private function getFieldEntryTypes(): array
+    {
+        $field = app(Fields::class)->getFieldById($this->fieldId);
+
+        if (! $field instanceof ElementContainerFieldInterface) {
+            throw new RuntimeException("Invalid field ID: $this->fieldId");
+        }
+
+        return array_values(array_filter(
+            $field->getFieldLayoutProviders(),
+            fn ($provider) => $provider instanceof EntryType,
+        ));
     }
 
     #[AllowedInSandbox]

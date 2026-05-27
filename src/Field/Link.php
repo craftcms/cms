@@ -475,6 +475,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         }
 
         $linkTypes = $this->getLinkTypes();
+        $linkType = null;
         $config = [
             'value' => $value,
         ];

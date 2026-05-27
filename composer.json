@@ -87,7 +87,8 @@
     "pestphp/pest-plugin-arch": "^4.0",
     "pestphp/pest-plugin-laravel": "^4.0",
     "phpstan/phpstan": "^2.1",
-    "rector/rector": "^2.3"
+    "rector/rector": "^2.3",
+    "spatie/laravel-typescript-transformer": "^3.2"
   },
   "repositories": [
     {

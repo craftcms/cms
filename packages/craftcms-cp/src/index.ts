@@ -1,6 +1,12 @@
 import '@github/relative-time-element';
 import {configureIcons} from './utilities/icons';
 
+// Types
+import './types/globals.js';
+import './types/events.js';
+import './types/index.js';
+import './types/queue.js';
+
 export {default as CraftDisclosure} from './components/disclosure/disclosure.js';
 export {default as CraftSpinner} from './components/spinner/spinner.js';
 export {default as CraftTooltip} from './components/tooltip/tooltip.js';
@@ -21,6 +27,7 @@ export {default as CraftSelect} from './components/select/select.js';
 export {default as CraftOption} from './components/option/option.js';
 export {default as CraftDropdown} from './components/dropdown/dropdown.js';
 export {default as CraftIcon} from './components/icon/icon.js';
+export {default as CraftInfoIcon} from './components/info-icon/info-icon.js';
 export {default as CraftTabs} from './components/tabs/tabs.js';
 export {default as CraftCard} from './components/card/card.js';
 export {default as CraftTab} from './components/tab/tab.js';
@@ -49,6 +56,7 @@ export {default as CraftRadio} from './components/radio/radio.js';
 export {default as CraftFieldGroup} from './components/field-group/field-group.js';
 export {default as CraftPane} from './components/pane/pane.js';
 export {CraftAuthChallengeForm} from './components/auth-challenge-form/auth-challenge-form.js';
+export {default as CraftVisuallyHidden} from './components/visually-hidden/visually-hidden.js';
 /* plop:component */
 
 export * from './utilities/cookies.js';
@@ -57,6 +65,7 @@ export * from './utilities/format.js';
 export * from './utilities/api/actionClient.js';
 export * from './utilities/api/apiClient.js';
 export * from './utilities/string.js';
+export * from './utilities/dom.js';
 
 // Services
 export {QueueService} from './services/Queue.js';

@@ -68,6 +68,10 @@ export default css`
     align-self: center;
   }
 
+  craft-shortcut {
+    margin-inline-start: var(--c-spacing-sm);
+  }
+
   .action-item__label {
     flex: 1 1 auto;
     min-width: 0;

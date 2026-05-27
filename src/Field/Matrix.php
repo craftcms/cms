@@ -644,7 +644,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         // Existing element?
         if ($owner && $owner->id) {
-            $query->owner($owner);
+            $query
+                ->owner($owner)
+                ->excludeEagerLoadCriteria(['ownerId', 'primaryOwnerId']);
 
             // Clear out id=false if this query was populated previously
             if ($query->id === false) {
@@ -1103,7 +1105,7 @@ JS,
             'showHeaderColumn' => Collection::make($entryTypes)->contains(fn (EntryType $entryType) => (
                 $entryType->hasTitleField ||
                 $entryType->titleFormat ||
-                $entryType->uiLabelFormat !== '{title}'
+                ($entryType->uiLabelFormat && $entryType->uiLabelFormat !== '{title}')
             )),
             'pageSize' => $this->pageSize ?? 50,
             'storageKey' => sprintf('field:%s', $this->uid),
@@ -1287,6 +1289,9 @@ JS,
                 'revisions' => Collection::make($sourceElements)
                     ->contains(fn ($sourceElement) => $sourceElement->getIsRevision()),
             ],
+            'createElement' => fn (EntryQuery $query, array $result, ElementInterface $sourceElement) => $query
+                ->owner($sourceElement)
+                ->createElement($result),
         ];
     }
 

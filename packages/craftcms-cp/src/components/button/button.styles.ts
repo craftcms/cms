@@ -107,6 +107,44 @@ export default css`
   /*
   Appearances 
    */
+  :host([appearance~='inline']) {
+    display: inline;
+    appearance: none;
+    background-color: transparent;
+    border-color: currentColor;
+    color: inherit;
+    font: inherit;
+    padding: 0;
+    min-height: auto;
+    min-width: auto;
+
+    &::before {
+      /* remove the sizer added by lion */
+      display: none;
+    }
+
+    .button-content {
+      padding: 0;
+    }
+  }
+
+  :host([appearance='inline']:not(:disabled):not(.loading):hover) {
+    background-color: color-mix(
+      in oklab,
+      var(--c-color-fill-quiet, var(--c-button-default-fill)),
+      var(--c-color-mix-hover)
+    );
+    color: var(--c-color-on-quiet);
+  }
+
+  :host([appearance='inline']:not(:disabled):not(.loading):active) {
+    color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
+    background-color: color-mix(
+      in oklab,
+      var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
+      var(--c-color-mix-active)
+    );
+  }
 
   /* Plain & Outline (Shared) */
   :host([appearance~='plain']),
@@ -135,19 +173,51 @@ export default css`
   /* Plain */
   :host([appearance~='plain']) {
     border-color: transparent;
+    color: inherit;
+
+    &:before {
+      display: none;
+    }
   }
 
-  /* Solid */
+  :host([appearance='plain']:not(:disabled):not(.loading):hover) {
+    background-color: color-mix(
+      in oklab,
+      var(--c-color-fill-quiet, var(--c-button-default-fill)),
+      var(--c-color-mix-hover)
+    );
+    color: var(--c-color-on-quiet);
+  }
+
+  :host([appearance='plain']:not(:disabled):not(.loading):active) {
+    color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
+    background-color: color-mix(
+      in oklab,
+      var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
+      var(--c-color-mix-active)
+    );
+  }
+
+  /* Filled */
   :host([appearance~='solid']) {
     background-color: var(
       --c-color-fill-loud,
       var(--c-color-neutral-fill-loud)
     );
     border-color: transparent;
-    color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
+    color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
   }
 
-  :host([appearance~='solid']:hover) {
+  :host([appearance='solid']:not(:disabled):not(.loading):hover) {
+    background-color: color-mix(
+      in oklab,
+      var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)),
+      var(--c-color-mix-hover)
+    );
+    color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
+  }
+
+  :host([appearance='solid']:hover) {
     background-color: hsl(
       from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
         calc(l - 5)
@@ -155,7 +225,7 @@ export default css`
     color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
   }
 
-  :host([appearance~='solid']:active) {
+  :host([appearance='solid']:active) {
     --_active-background-color: hsl(
       from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
         calc(l - 10)
@@ -164,7 +234,7 @@ export default css`
   }
 
   /* Outline */
-  :host([appearance~='outline']) {
+  :host([appearance='outline']) {
     border-color: var(--c-color-border-loud);
   }
 

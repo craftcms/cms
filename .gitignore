@@ -27,3 +27,7 @@ database/*.sqlite
 resources/js/actions
 resources/js/routes
 resources/js/wayfinder
+
+# TypeScript transformer generated files
+resources/js/generated/*
+!resources/js/generated/.gitkeep

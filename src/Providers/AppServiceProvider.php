@@ -33,6 +33,7 @@ use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\UrlGenerator;
+use Illuminate\Session\Store as SessionStore;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -40,7 +41,6 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Override;
@@ -110,16 +110,10 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
-        $iconsDir = (string) realpath("{$this->root}/resources/icons");
-        $icons = [];
-
-        if ($iconsDir) {
-            foreach (array_merge(glob("{$iconsDir}/*.svg") ?: [], glob("{$iconsDir}/*/*.svg") ?: []) as $path) {
-                $icons[$path] = public_path('vendor/craft/icons/'.substr($path, strlen($iconsDir) + 1));
-            }
+        if (! $this->app->runningInConsole()) {
+            return;
         }
 
-        $this->publishes($icons, ['craftcms', 'craftcms-assets', 'craftcms-icons']);
         $this->publishes([
             "{$this->root}/resources/build/" => public_path('vendor/craft/build'),
             "{$this->root}/resources/legacy/" => public_path('vendor/craft/legacy'),
@@ -160,7 +154,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Request::mixin(new RequestMixin);
-        Session::mixin(new SessionMixin);
+        SessionStore::mixin(new SessionMixin);
 
         Response::macro('setNoCacheHeaders', function (bool $replace = true) {
             $this->header('Expires', '0', $replace);

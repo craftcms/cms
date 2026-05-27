@@ -1,0 +1,1 @@
+{"version":3,"file":"133.js","mappings":"+FAAA,WACEA,aAAc,uC","sources":["webpack:///../../../../node_modules/@lion/ui/components/combobox/translations/it.js"],"sourcesContent":["export default {\n  optionsPopup: 'Finestra a comparsa opzioni ComboBox',\n};\n"],"names":["optionsPopup"],"sourceRoot":""}

@@ -1,7 +1,7 @@
 {% import '_includes/forms' as forms %}
 
 {% set chipId = "chip#{random()}" %}
-<div class="pane no-border p-m">
+<div class="p-2 border rounded bg-gray-100">
   {{ chip(entryType.original, {
     id: chipId,
     class: 'hairline',
@@ -13,9 +13,8 @@
 
 {% js %}
 (() => {
-  const $chip = $('#{{ chipId|namespaceInputId }}');
-  $chip.on('dblclick taphold', (ev) => {
-    $chip.find('.btn').data('disclosureMenu').$container.find('[data-edit-action]').click();
+  $(document).on('dblclick taphold', '#{{chipId|namespaceInputId}}', (ev) => {
+    $(ev.currentTarget).find('[data-edit-action]').first().click();
   });
 })();
 {% endjs %}

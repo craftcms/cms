@@ -2,7 +2,7 @@
   <div id="application-info">
     <h2 class="mb-3">{{ "Application Info"|t('app') }}</h2>
 
-    <table class="cp-table cp-table--borderless" dir="ltr">
+    <table class="cp-table" dir="ltr">
       <tbody>
         {% for label, value in appInfo %}
           <tr>
@@ -19,7 +19,7 @@
     <h2 class="mb-3">{{ "Plugins"|t('app') }}</h2>
 
     {% if plugins|length %}
-      <table class="cp-table cp-table--borderless" dir="ltr">
+      <table class="cp-table" dir="ltr">
         <tbody>
           {% for plugin in plugins %}
             <tr>
@@ -37,13 +37,13 @@
   <div id="aliases">
 
     <h2 class="mb-3">{{ 'Aliases'|t('app') }}</h2>
-    <p>
+    <p class="mb-2">
       {{ 'The following <a href="{url}">aliases</a> are defined:'|t('app', {
         url: 'https://craftcms.com/docs/5.x/configure.html#aliases',
       })|raw }}
     </p>
 
-    <table class="cp-table cp-table--borderless" dir="ltr">
+    <table class="cp-table" dir="ltr">
       <tbody>
         {% for alias, value in aliases %}
           <tr>
@@ -59,7 +59,7 @@
 
     <h2 class="mb-3">{{ "Requirements"|t('app') }}</h2>
 
-    <table class="cp-table cp-table--borderless" dir="ltr">
+    <table class="cp-table" dir="ltr">
       <tbody>
         {% for requirement in requirements %}
           <tr>

@@ -84,17 +84,12 @@ readonly class ElementHtml
 
         $attributes = Arr::merge([
             'id' => $config['id'],
+            'size' => $config['size'],
             'class' => [
-                'chip',
+                'cp-color-'.($color->value ?? 'white'),
                 $config['size'],
                 ...Html::explodeClass($config['class']),
             ],
-            'style' => array_filter([
-                '--custom-border-color' => $color?->cssVar(200),
-                '--custom-bg-color' => $color?->cssVar(50),
-                '--custom-text-color' => $color?->cssVar(900),
-                '--custom-sel-bg-color' => $color?->cssVar(900),
-            ]),
             'data' => array_filter([
                 'type' => $component::class,
                 'id' => $component->getId(),
@@ -117,7 +112,11 @@ readonly class ElementHtml
             ]),
         ], $config['attributes']);
 
-        $html = Html::beginTag('div', $attributes);
+        $html = Html::beginTag('craft-chip', $attributes);
+
+        if ($config['selectable'] || $config['showThumb'] || $config['showStatus']) {
+            $html .= Html::beginTag('div', ['slot' => 'prefix']);
+        }
 
         if ($config['showThumb']) {
             if ($component instanceof Thumbable) {
@@ -127,14 +126,10 @@ readonly class ElementHtml
                 /** @var Chippable&Iconic $component */
                 $icon = $component->getIcon();
                 if ($icon || $icon === '0') {
-                    $html .= Html::tag('div', Icons::svg($icon), [
-                        'class' => array_filter(['thumb', 'cp-icon', $color?->value]),
-                    ]);
+                    $html .= Html::tag('craft-icon', '', Icons::resolveIconData($icon));
                 }
             }
         }
-
-        $html .= Html::beginTag('div', ['class' => 'chip-content']);
 
         if ($config['selectable']) {
             $html .= $this->componentCheckboxHtml(sprintf('%s-label', $config['id']));
@@ -143,6 +138,10 @@ readonly class ElementHtml
         if ($config['showStatus']) {
             /** @var Chippable&Statusable $component */
             $html .= $this->statusHtml->componentStatusIndicatorHtml($component) ?? '';
+        }
+
+        if ($config['selectable'] || $config['showThumb'] || $config['showStatus']) {
+            $html .= Html::endTag('div'); // prefix slot
         }
 
         if (isset($config['labelHtml'])) {
@@ -160,9 +159,8 @@ readonly class ElementHtml
                 /** @var Chippable&Describable $component */
                 $description = $component->getDescription();
                 if ($description) {
-                    $labelHtml .= Html::tag('span',
-                        $this->contentHtml->parseMarkdown(Html::encode($description)),
-                        ['class' => 'info']);
+                    $labelHtml .= Html::tag('craft-info-icon',
+                        $this->contentHtml->parseMarkdown(Html::encode($description)));
                 }
             }
 
@@ -173,7 +171,7 @@ readonly class ElementHtml
                 $handle = $component->getHandle();
                 if ($handle) {
                     $labelHtml .= Html::tag('div', Html::encode($handle), [
-                        'class' => ['smalltext', 'light', 'code'],
+                        'class' => ['cp-code'],
                     ]);
                 }
             }
@@ -199,11 +197,10 @@ readonly class ElementHtml
             }
             $html .= Html::tag('div', $labelHtml, [
                 'id' => sprintf('%s-label', $config['id']),
-                'class' => 'chip-label',
             ]);
         }
 
-        $html .= Html::beginTag('div', ['class' => 'chip-actions']);
+        $html .= Html::beginTag('div', ['slot' => 'suffix']);
         if ($config['showActionMenu']) {
             /** @var Chippable&Actionable $component */
             $html .= $this->componentActionMenu($component);
@@ -222,14 +219,14 @@ readonly class ElementHtml
                 ],
             ]);
         }
-        $html .= Html::endTag('div'); // .chip-actions
+        $html .= Html::endTag('div'); // slot=suffix
 
         if ($config['inputName'] !== null) {
             $inputValue = $config['inputValue'] ?? $component->getId();
             $html .= Html::hiddenInput($config['inputName'], (string) $inputValue);
         } // .element
 
-        return $html.(Html::endTag('div').Html::endTag('div'));
+        return $html.Html::endTag('craft-chip');
     }
 
     /**
@@ -742,15 +739,9 @@ JS, [
 
                 return $this->menuHtml->disclosureMenu($actionMenuItems, [
                     'hiddenLabel' => t('Actions'),
-                    'buttonAttributes' => [
-                        'class' => array_keys(array_filter([
-                            'action-btn' => true,
-                            'small' => true,
-                            'hidden' => empty($actionMenuItems),
-                        ])),
-                        'removeClass' => 'menubtn',
-                        'data' => ['icon' => 'ellipsis'],
-                    ],
+                    'buttonHtml' => Html::tag('craft-icon', '', [
+                        'name' => 'ellipsis',
+                    ]),
                     'omitIfEmpty' => false,
                 ]);
             },

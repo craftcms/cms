@@ -492,7 +492,9 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
         // Existing element?
         if ($owner && $owner->id) {
-            $query->owner($owner);
+            $query
+                ->owner($owner)
+                ->excludeEagerLoadCriteria(['ownerId', 'primaryOwnerId']);
 
             $query->beforeQuery(function (AddressQuery $query) use ($owner) {
                 // Clear out id=false if this query was populated previously
@@ -807,7 +809,7 @@ JS, [
                 'addresses.id as target',
             ])
             ->join(new Alias(DbTable::ELEMENTS_OWNERS, 'elements_owners'), function (JoinClause $join) use ($sourceElementIds) {
-                $join->where('elements_owners.elementId', 'addresses.id')
+                $join->whereColumn('elements_owners.elementId', 'addresses.id')
                     ->whereIn('elements_owners.ownerId', $sourceElementIds);
             })
             ->where('addresses.fieldId', $this->id)
@@ -824,6 +826,9 @@ JS, [
                 'allowOwnerDrafts' => true,
                 'allowOwnerRevisions' => true,
             ],
+            'createElement' => fn (AddressQuery $query, array $result, ElementInterface $sourceElement) => $query
+                ->owner($sourceElement)
+                ->createElement($result),
         ];
     }
 

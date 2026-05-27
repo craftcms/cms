@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Http\Mixins;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Http\Routing\ActionRoute;
+use CraftCms\Cms\Http\Routing\ActionRouteResolver;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
@@ -167,7 +169,7 @@ class RequestMixin
              */
             $request = $this;
 
-            return $request->actionSegments() !== [];
+            return app(ActionRouteResolver::class)->resolve($request) !== null;
         };
     }
 
@@ -241,30 +243,14 @@ class RequestMixin
              * @phpstan-ignore-next-line
              */
             $request = $this;
-            $actionTrigger = Cms::config()->actionTrigger;
-            $segmentIndex = $request->isCpRequest() ? 2 : 1;
 
-            if ($request->segment($segmentIndex) === $actionTrigger && count($request->segments()) > $segmentIndex) {
-                return array_slice($request->segments(), $segmentIndex);
-            }
-
-            $actionParam = $request->input('action');
-
-            if ($actionParam !== null) {
-                if (! is_string($actionParam)) {
-                    abort(400, 'Invalid action param');
-                }
-
-                return array_values(array_filter(explode('/', $actionParam)));
-            }
-
-            return [];
+            return app(ActionRouteResolver::class)->resolve($request)->segments ?? [];
         };
     }
 
     public function actionSegmentsToRoute(): Closure
     {
-        return function (?array $actionSegments = null): string {
+        return function (): string {
             /**
              * @var Request $request
              *
@@ -272,14 +258,7 @@ class RequestMixin
              */
             $request = $this;
 
-            $actionSegments ??= $request->actionSegments();
-
-            return implode('/', array_filter([
-                '',
-                $request->isCpRequest() ? Cms::config()->cpTrigger : null,
-                Cms::config()->actionTrigger,
-                ...$actionSegments,
-            ], fn ($value) => $value !== null));
+            return app(ActionRouteResolver::class)->resolve($request)->uri ?? '';
         };
     }
 
@@ -303,6 +282,8 @@ class RequestMixin
             if ($request->hasSession()) {
                 $duplicatedRequest->setLaravelSession($request->session());
             }
+
+            $duplicatedRequest->attributes->remove(ActionRoute::class);
 
             return $duplicatedRequest;
         };
