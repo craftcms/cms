@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Fixed a bug where JavaScript and CSS registered by utility pages weren’t executed when navigating between utility
+  pages, and weren’t cleaned up when navigating away. ([#18978](https://github.com/craftcms/cms/issues/18978))
+
 ## 6.0.0-alpha.5 - 2026-05-27
 
 - Improved emoji shortcode handling performance for strings without shortcode delimiters.
