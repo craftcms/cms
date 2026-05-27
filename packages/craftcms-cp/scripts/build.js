@@ -29,6 +29,7 @@ async function generateBundle(config = {}) {
       target: 'es2020',
       entry: {
         cp: './src/index.ts',
+        actions: './src/actions/index.ts',
         ...(await resolveFrom(
           './src/components/**/!(*.(stories|styles|test)).ts'
         )),

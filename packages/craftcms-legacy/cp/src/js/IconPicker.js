@@ -56,7 +56,7 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
     },
 
     createModal() {
-      const $container = $('<div class="modal icon-picker-modal"/>');
+      const $container = $('<div class="cp-legacy modal icon-picker-modal"/>');
       const $body = $('<div class="body"/>').appendTo($container);
 
       const $searchContainer = $('<div class="texticon"/>').appendTo($body);

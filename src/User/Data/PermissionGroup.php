@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Data;
 
+use CraftCms\Cms\Support\Str;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 
@@ -19,6 +20,7 @@ class PermissionGroup implements Arrayable
     {
         return [
             'heading' => $this->heading,
+            'handle' => Str::toHandle($this->heading),
             'permissions' => $this->permissions->keyBy('key')->toArray(),
         ];
     }

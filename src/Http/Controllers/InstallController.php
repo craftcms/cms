@@ -76,7 +76,7 @@ readonly class InstallController
         $dbConfig = DB::getConfig();
         $postCpLoginRedirect = Cms::config()->postCpLoginRedirect;
 
-        return Inertia::render('Install', [
+        return Inertia::render('install/Install', [
             'showDbScreen' => $showDbScreen,
             'postCpLoginRedirect' => $postCpLoginRedirect,
             'licenseHtml' => Inertia::defer(function () {
@@ -231,7 +231,7 @@ readonly class InstallController
         // Run the install migration
         try {
             $migrator->track('craft')->runMigration($migration, 'up');
-            $migrator->getRepository()->log('Install', 1);
+            $migrator->getRepository()->log('install/Install', 1);
         } catch (Throwable $e) {
             return new JsonResponse([
                 'message' => $e->getMessage(),

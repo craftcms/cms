@@ -23,7 +23,7 @@ it('requires authentication', function () {
 
 it('loads the settings page', function () {
     get(action(SettingsIndexController::class))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('SettingsIndexPage'))
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/Index'))
         ->assertOk();
 });
 

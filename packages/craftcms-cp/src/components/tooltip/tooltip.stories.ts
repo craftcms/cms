@@ -24,11 +24,11 @@ const meta = {
     }
 
     return html`
-      <craft-tooltip
+      <c-tooltip
         placement="${args.placement}"
         style="${args.style}"
         for="my-button"
-        >${args.content}</craft-tooltip
+        >${args.content}</c-tooltip
       >
       <craft-button id="my-button">Hover me</craft-button>
     `;

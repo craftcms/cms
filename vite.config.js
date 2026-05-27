@@ -1,11 +1,15 @@
 import {defineConfig, loadEnv} from 'vite';
 import laravel from 'laravel-vite-plugin';
 import inertia from '@inertiajs/vite';
+import {exec} from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import {promisify} from 'util';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 import {wayfinder} from '@laravel/vite-plugin-wayfinder';
+
+const execAsync = promisify(exec);
 
 const MIME_TYPES = {
   '.js': 'application/javascript',
@@ -43,6 +47,51 @@ function serveResourcesLegacy() {
   };
 }
 
+function typescriptTransformer() {
+  const command = './vendor/bin/testbench typescript:transform';
+
+  let context;
+
+  async function runCommand() {
+    try {
+      await execAsync(command);
+    } catch (error) {
+      context.error('Error generating TypeScript transformer types: ' + error);
+    }
+
+    context.info('Types generated for TypeScript transformer');
+  }
+
+  function shouldRun(file, root) {
+    const relativePath = path.relative(root, file).replaceAll(path.sep, '/');
+
+    return (
+      (relativePath.startsWith('src/') && relativePath.endsWith('.php')) ||
+      relativePath ===
+        'workbench/app/Providers/TypeScriptTransformerServiceProvider.php' ||
+      (relativePath.startsWith('workbench/app/TypeScript/') &&
+        relativePath.endsWith('.php'))
+    );
+  }
+
+  return {
+    name: 'craftcms-typescript-transformer',
+    enforce: 'pre',
+    buildStart() {
+      context = this;
+
+      return runCommand();
+    },
+    async handleHotUpdate({file, server}) {
+      context = this;
+
+      if (shouldRun(file, server.config.root)) {
+        await runCommand();
+      }
+    },
+  };
+}
+
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, process.cwd(), '');
   const url = new URL(env.APP_URL);
@@ -71,15 +120,21 @@ export default defineConfig(({mode}) => {
       alias: {
         vue: 'vue/dist/vue.esm-bundler.js',
       },
+      dedupe: ['@awesome.me/webawesome', 'lit'],
     },
 
     build: {
       emptyOutDir: true,
     },
 
+    optimizeDeps: {
+      include: ['@awesome.me/webawesome', 'lit'],
+    },
+
     plugins: [
       serveResourcesLegacy(),
       tailwindcss(),
+      typescriptTransformer(),
       wayfinder({
         path: 'resources/js',
         command: './vendor/bin/testbench wayfinder:generate',

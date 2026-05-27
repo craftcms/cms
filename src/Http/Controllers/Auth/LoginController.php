@@ -38,7 +38,7 @@ readonly class LoginController extends AuthenticationController
             return redirect()->action([TwoFactorAuthenticationController::class, 'showForm']);
         }
 
-        return $this->renderViewWithFallback(cpTemplate: 'login', inertiaComponent: 'LoginPage', inertiaProps: [
+        return $this->renderViewWithFallback(cpTemplate: 'login', inertiaComponent: 'auth/Login', inertiaProps: [
             'action' => action([LoginController::class, 'attemptLogin']),
             'username' => $generalConfig->rememberUsernameDuration ? $authMethods->getRememberedUsername() : '',
         ]);

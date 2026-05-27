@@ -1,0 +1,1 @@
+import{I as e,T as t,V as n,g as r,v as i,y as a}from"./dist-Znl-SqMt.js";var o=t({__name:`DynamicHtmlRenderer`,props:{html:{}},setup(o){let s=o,c=r(()=>t({template:s.html}));return(t,r)=>o.html?(e(),i(n(c.value),{key:0})):a(``,!0)}});export{o as t};

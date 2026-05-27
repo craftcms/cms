@@ -147,7 +147,7 @@ function buildSemanticTokens() {
 }
 
 function buildStyleBlock(color) {
-  return `.c-colorable--${color},
+  return `.cp-color-${color},
 [data-color='${color}'] {
   --c-color-fill-quiet: var(--c-color-${color}-fill-quiet);
   --c-color-border-quiet: var(--c-color-${color}-border-quiet);
@@ -169,24 +169,7 @@ ${buildColorableTokens()}
 ${buildSemanticTokens()}
 }
 
-.c-colorable,
-[data-color] {
-  --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
-  --c-color-fill-normal: var(--c-color-neutral-fill-normal);
-  --c-color-fill-loud: var(--c-color-neutral-fill-loud);
-  --c-color-border-quiet: var(--c-color-neutral-border-quiet);
-  --c-color-border-normal: var(--c-color-neutral-border-normal);
-  --c-color-border-loud: var(--c-color-neutral-border-loud);
-  --c-color-on-quiet: var(--c-color-neutral-on-quiet);
-  --c-color-on-normal: var(--c-color-neutral-on-normal);
-  --c-color-on-loud: var(--c-color-neutral-on-loud);
-  
-  background-color: var(--c-color-fill-quiet);
-  border-color: var(--c-color-border-quiet);
-  color: var(--c-color-on-quiet);
-}
-
-${colors.map((c) => buildStyleBlock(c)).join('\n')}
+${[...availableColors, ...semanticColors].map((c) => buildStyleBlock(c)).join('\n')}
 `;
 }
 

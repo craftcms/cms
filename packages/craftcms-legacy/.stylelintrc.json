@@ -8,12 +8,7 @@
     "declaration-empty-line-before": null,
     "no-descending-specificity": null,
     "no-duplicate-selectors": null,
-    "no-invalid-position-at-import-rule": [
-      true,
-      {
-        "ignoreAtRules": ["tailwind", "use"]
-      }
-    ],
+    "no-invalid-position-at-import-rule": null,
     "selector-class-pattern": null,
     "liberty/use-logical-spec": [
       "always",

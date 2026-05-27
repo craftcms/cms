@@ -25,9 +25,8 @@ CP Styles
   width: 100%;
   min-height: var(--markdown-field-min-height, 188px);
   margin: 0;
-  padding: calc(
-    var(--c-input-spacing-block, var(--c-spacing-md)) + var(--c-spacing-xs)
-  );
+  padding-block: var(--c-spacing-md);
+  padding-inline: var(--c-input-spacing-inline);
   overflow: auto;
   border: var(
       --c-input-border-width,

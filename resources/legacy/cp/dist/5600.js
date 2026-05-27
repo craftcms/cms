@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[5600,7229],{5600:function(a,n,i){i.r(n);var t=i(7229);n.default={...t.default}},7229:function(a,n,i){i.r(n),n.default={validationError:"Помилка,",validationWarning:"Попередження,",validationSuccess:"Успішно,",validationInfo:"Інформація,"}}}]);
+//# sourceMappingURL=5600.js.map

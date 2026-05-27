@@ -21,14 +21,14 @@ import $ from 'jquery';
         this.setSettings(settings, Craft.Slideout.defaults);
 
         this.$outerContainer = $('<div/>', {
-          class: 'slideout-container hidden',
+          class: 'slideout-container cp-legacy hidden',
         });
         this.$container = $(
           `<${this.settings.containerElement}/>`,
           this.settings.containerAttributes
         )
           .attr('data-slideout', '')
-          .addClass('slideout')
+          .addClass('slideout cp-legacy')
           .append(contents)
           .data('slideout', this)
           .appendTo(this.$outerContainer);

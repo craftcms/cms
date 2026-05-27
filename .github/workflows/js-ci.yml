@@ -1,0 +1,73 @@
+name: 'ci / Front End'
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - 6.x
+      - feature/inertia-ui
+  pull_request:
+
+concurrency:
+  group: js-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  eslint:
+    name: 'Code Quality / ESLint'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Build @craftcms/cp
+        run: npm run build:cp
+
+      - name: Run ESLint
+        run: npm run lint:js
+
+  typecheck:
+    name: 'Code Quality / TypeScript'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-progress
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Build @craftcms/cp
+        run: npm run build:cp
+
+      - name: Generate Wayfinder types
+        run: ./vendor/bin/testbench wayfinder:generate --path=resources/js
+
+      - name: Run TypeScript type check
+        run: npm run typecheck

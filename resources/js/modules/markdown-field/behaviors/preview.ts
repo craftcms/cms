@@ -1,0 +1,99 @@
+import {t} from '@craftcms/cp';
+import {useHttp} from '@inertiajs/vue3';
+import type {OverType as OverTypeInstance} from 'overtype';
+import {markdown as renderMarkdown} from '@actions/App/RenderController';
+
+type PreviewRequest = {
+  flavor: string;
+  markdown: string;
+};
+
+type PreviewResponse = {
+  html: string;
+};
+
+export type PreviewController = {
+  destroy: () => void;
+  isActive: () => boolean;
+  render: (markdown: string) => Promise<void>;
+  toggle: () => Promise<void>;
+};
+
+export function createPreviewController(
+  editor: OverTypeInstance,
+  flavor: string,
+  previewDelay: number
+): PreviewController {
+  let active = false;
+  let requestId = 0;
+  let timeout: number | null = null;
+  const previewRequest = useHttp<PreviewRequest, PreviewResponse>({
+    flavor,
+    markdown: '',
+  });
+
+  function updateButton(): void {
+    const button = editor.container.querySelector<HTMLButtonElement>(
+      '[data-button="preview"]'
+    );
+
+    if (!button) {
+      return;
+    }
+
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', active.toString());
+  }
+
+  async function render(markdown: string): Promise<void> {
+    const currentRequestId = ++requestId;
+
+    if (timeout) {
+      window.clearTimeout(timeout);
+    }
+
+    timeout = window.setTimeout(async () => {
+      try {
+        previewRequest.flavor = flavor;
+        previewRequest.markdown = markdown;
+
+        const data = await previewRequest.post(renderMarkdown().url);
+
+        if (active && currentRequestId === requestId) {
+          editor.preview.innerHTML = data.html;
+        }
+      } catch {
+        if (active && currentRequestId === requestId) {
+          editor.preview.textContent = t('Couldn’t render Markdown preview.');
+        }
+      }
+    }, previewDelay);
+  }
+
+  async function toggle(): Promise<void> {
+    active = !active;
+    updateButton();
+
+    if (!active) {
+      editor.showNormalEditMode();
+      editor.focus();
+
+      return;
+    }
+
+    editor.showPreviewMode();
+    await render(editor.getValue());
+  }
+
+  return {
+    destroy() {
+      if (timeout) {
+        window.clearTimeout(timeout);
+        timeout = null;
+      }
+    },
+    isActive: () => active,
+    render,
+    toggle,
+  };
+}

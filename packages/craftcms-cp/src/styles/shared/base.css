@@ -41,20 +41,33 @@ ul {
 }
 
 .cp-code {
-  font-size: 0.9em;
+  font-size: 0.75em;
+  font-family: var(--c-font-mono);
   display: inline-flex;
   padding: 0 var(--c-spacing-sm);
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--c-color-on-quiet);
+  border: 1px solid var(--c-color-border-quiet);
+  background-color: color-mix(
+    var(--c-color-fill-quiet) 90%,
+    var(--c-color-fill-loud)
+  );
   border-radius: var(--c-radius-sm);
+}
+
+.cp-icon {
+  width: 1em;
+  height: 1em;
 }
 
 hr {
   display: block;
   width: 100%;
   border: 0;
-  border-top: 1px solid var(--c-color-neutral-border-quiet);
+  height: 0;
+  border-block-start: 1px solid var(--c-color-neutral-border-quiet);
   margin-block: var(--c-spacing-lg);
+  margin-inline: 0;
+  color: transparent;
 }
 
 .index-grid {
@@ -127,6 +140,9 @@ CP Table
 
 Applies some basic styling to table elements.
 
+The idea here is that you can just apply `cp-table` to the parent table and have
+most of the element display correctly which is why we don't do BEM or anything here
+
 Modify with `cp-table--compact` to reduce the vertical cell padding
 Modify with `cp-table--borderless` to remove the inline cell padding
 Modify with `cp-table--auto` to apply table-layout: auto
@@ -148,29 +164,30 @@ Modify with `cp-table--auto` to apply table-layout: auto
     background-color: var(--c-color-neutral-fill-quiet);
   }
 
-  .cell {
-    padding: 0;
-    vertical-align: middle;
+  th,
+  td {
+    padding-block: var(--_cell-spacing-block);
     padding-inline: var(--_cell-spacing-inline);
-    padding-block: 0;
     position: relative;
-    height: var(--c-size-control-md);
 
-    &:has(textarea),
-    &:has(input:not([type='checkbox']):not([type='radio'])) {
+    &:has(.cp-table-input:not([type='checkbox']):not([type='radio'])) {
       padding: 0;
     }
   }
 
   td,
-  th,
-  tr:not(:last-child) {
-    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+  th {
+    border-block-end: 1px solid
+      color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
   }
 
-  td:not(:first-child),
-  th:not(:first-child) {
-    border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
+  /* Add a rule to the first cells */
+  tr:first-child {
+    td,
+    th {
+      border-block-start: 1px solid
+        color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
+    }
   }
 
   textarea,
@@ -186,6 +203,32 @@ Modify with `cp-table--auto` to apply table-layout: auto
   textarea {
     resize: none;
     line-height: 1.2;
+  }
+}
+
+.cp-table--ruled {
+  td:not(:first-child),
+  th:not(:first-child) {
+    border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
+  }
+}
+
+.cp-table--grid {
+  --table-column-count: auto-fill;
+  --table-template-columns: repeat(var(--table-column-count), 1fr);
+
+  tr {
+    display: grid;
+    grid-template-columns: var(--table-template-columns);
+    grid-template-rows: minmax(var(--c-size-control-md), auto);
+  }
+
+  th,
+  td {
+    display: flex;
+    align-items: start;
+    flex-direction: column;
+    justify-content: center;
   }
 }
 
@@ -211,6 +254,10 @@ Modify with `cp-table--auto` to apply table-layout: auto
 
 .cp-table--compact {
   --_cell-spacing-block: var(--c-spacing-sm);
+}
+
+.cp-table--spacious {
+  --_cell-spacing-block: var(--c-spacing-lg);
 }
 
 .cp-table-header,

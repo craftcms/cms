@@ -69,7 +69,7 @@ test('index returns Inertia Updater page', function () {
         ],
     ])
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('Updater')
+            ->component('updater/Index')
             ->has('title')
             ->has('initialState')
             ->has('actionPrefix')

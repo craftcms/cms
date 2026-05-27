@@ -5,7 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\PluginStore;
 
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
+use CraftCms\Cms\Support\Json;
+use Illuminate\Support\Facades\Crypt;
+use Inertia\Inertia;
+use Override;
+use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 
 /**
@@ -13,13 +19,31 @@ use function CraftCms\Cms\t;
  */
 class RemoveController extends BaseUpdaterController
 {
-    #[\Override]
+    /**
+     * Renders the Config Sync page via Inertia.
+     */
+    #[Override]
+    public function index(): Response
+    {
+        $this->data = $this->initialData();
+        $state = $this->realInitialState();
+        $state['data'] = Crypt::encrypt(Json::encode($this->data));
+
+        return Inertia::render('updater/Index', [
+            'title' => $this->pageTitle(),
+            'initialState' => $state,
+            'actionPrefix' => 'pluginstore/remove',
+            'returnUrl' => $this->returnUrl(),
+        ])->toResponse($this->request);
+    }
+
+    #[Override]
     protected function pageTitle(): string
     {
         return t('Plugin Uninstaller');
     }
 
-    #[\Override]
+    #[Override]
     protected function initialData(): array
     {
         $data = $this->request->validate([
@@ -31,7 +55,7 @@ class RemoveController extends BaseUpdaterController
         return $data;
     }
 
-    #[\Override]
+    #[Override]
     protected function initialState(bool $force = false): array
     {
         if (! $this->ensureComposerJson()) {
@@ -41,7 +65,7 @@ class RemoveController extends BaseUpdaterController
         return $this->actionState(self::ACTION_COMPOSER_REMOVE);
     }
 
-    #[\Override]
+    #[Override]
     protected function postComposerInstallState(): array
     {
         return $this->actionState(self::ACTION_FINISH, [
@@ -49,9 +73,9 @@ class RemoveController extends BaseUpdaterController
         ]);
     }
 
-    #[\Override]
+    #[Override]
     protected function returnUrl(): string
     {
-        return 'settings/plugins';
+        return cp_url('settings/plugins');
     }
 }
