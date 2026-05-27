@@ -5,7 +5,7 @@ export interface RouteData extends CraftCms.Cms.Route.Data.Route {
   uriDisplayHtml: string;
 }
 
-export interface RouteIndexData extends Omit<RouteData, 'siteUid' | 'uid'> {
+export interface RouteIndexData extends Omit<RouteData, 'siteUid'> {
   siteName: string;
 }
 
