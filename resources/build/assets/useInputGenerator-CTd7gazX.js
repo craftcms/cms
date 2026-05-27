@@ -1,1 +1,0 @@
-import{G as e,rt as t}from"./dist-DEii-EQ_.js";function n(n,r){let i=t(!1),a=null;function o(){r(n())}function s(){a||=e(n,()=>{i.value||o()})}function c(){a?.(),a=null}function l(){i.value=!0}function u(){i.value=!1}return s(),{isDirty:i,stop:c,start:s,markDirty:l,markClean:u}}export{n as t};
