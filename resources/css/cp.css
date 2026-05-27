@@ -14,3 +14,40 @@ CP Styles
   --global-content-width: calc(1440rem / 16);
   --header-height: calc(44rem / 16);
 }
+
+.markdown-field > .markdown-field-editor {
+  display: block;
+  min-height: 0;
+}
+
+.markdown-field > .markdown-field-editor:not(:defined) {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--markdown-field-min-height, 188px);
+  margin: 0;
+  padding: calc(
+    var(--c-input-spacing-block, var(--c-spacing-md)) + var(--c-spacing-xs)
+  );
+  overflow: auto;
+  border: var(
+      --c-input-border-width,
+      var(--c-form-control-border-width, var(--c-spacing-1px))
+    )
+    var(--c-input-border-style, var(--c-form-control-border-style, solid))
+    var(
+      --c-input-border-color,
+      var(--c-form-control-border-color, var(--c-color-neutral-border-quiet))
+    );
+  border-radius: var(--c-input-radius, var(--c-radius-sm));
+  background: var(
+    --c-input-fill,
+    var(--c-form-control-fill, var(--c-surface-form))
+  );
+  background-clip: padding-box;
+  box-shadow: var(--c-input-shadow);
+  color: var(--c-input-text, var(--c-text-default));
+  font-family: var(--c-font-mono);
+  font-size: var(--c-text-base);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}

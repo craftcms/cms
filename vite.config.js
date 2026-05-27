@@ -31,7 +31,9 @@ function serveResourcesLegacy() {
         const filePath = path.resolve('resources' + req.url.split('?')[0]);
         if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
           const ext = path.extname(filePath);
-          res.writeHead(200, {'Content-Type': MIME_TYPES[ext] ?? 'application/octet-stream'});
+          res.writeHead(200, {
+            'Content-Type': MIME_TYPES[ext] ?? 'application/octet-stream',
+          });
           fs.createReadStream(filePath).pipe(res);
           return;
         }
@@ -112,7 +114,7 @@ export default defineConfig(({mode}) => {
         detectTls: env.VITE_DETECT_TLS ?? undefined,
       }),
       inertia({
-        ssr: false
+        ssr: false,
       }),
     ],
   };

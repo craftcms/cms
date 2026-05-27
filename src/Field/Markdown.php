@@ -6,8 +6,6 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Asset\Data\Volume;
-use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
@@ -19,13 +17,12 @@ use CraftCms\Cms\Field\Data\MarkdownData;
 use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use CraftCms\Cms\View\LegacyAssets\MarkdownFieldAsset;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -45,17 +42,17 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
 
     public const string TOOLBAR_STRIKETHROUGH = 'strikethrough';
 
-    public const string TOOLBAR_HEADING = 'heading';
-
-    public const string TOOLBAR_HEADING_SMALLER = 'heading-smaller';
-
-    public const string TOOLBAR_HEADING_BIGGER = 'heading-bigger';
-
     public const string TOOLBAR_HEADING_1 = 'heading-1';
 
     public const string TOOLBAR_HEADING_2 = 'heading-2';
 
     public const string TOOLBAR_HEADING_3 = 'heading-3';
+
+    public const string TOOLBAR_HEADING_4 = 'heading-4';
+
+    public const string TOOLBAR_HEADING_5 = 'heading-5';
+
+    public const string TOOLBAR_HEADING_6 = 'heading-6';
 
     public const string TOOLBAR_QUOTE = 'quote';
 
@@ -67,48 +64,37 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
 
     public const string TOOLBAR_CHECK_LIST = 'check-list';
 
-    public const string TOOLBAR_CLEAN_BLOCK = 'clean-block';
-
     public const string TOOLBAR_LINK = 'link';
 
     public const string TOOLBAR_ASSET = 'asset';
 
-    public const string TOOLBAR_IMAGE = 'image';
-
-    public const string TOOLBAR_TABLE = 'table';
-
-    public const string TOOLBAR_HORIZONTAL_RULE = 'horizontal-rule';
-
     public const string TOOLBAR_PREVIEW = 'preview';
 
-    public const string TOOLBAR_SIDE_BY_SIDE = 'side-by-side';
-
-    public const string TOOLBAR_FULLSCREEN = 'fullscreen';
-
     public const string TOOLBAR_GUIDE = 'guide';
-
-    public const string TOOLBAR_UNDO = 'undo';
-
-    public const string TOOLBAR_REDO = 'redo';
 
     public const array DEFAULT_TOOLBAR_BUTTONS = [
         self::TOOLBAR_BOLD,
         self::TOOLBAR_ITALIC,
-        self::TOOLBAR_HEADING,
-        self::TOOLBAR_QUOTE,
+        self::TOOLBAR_STRIKETHROUGH,
         self::TOOLBAR_CODE,
+        self::TOOLBAR_HEADING_1,
+        self::TOOLBAR_HEADING_2,
+        self::TOOLBAR_HEADING_3,
+        self::TOOLBAR_QUOTE,
         self::TOOLBAR_UNORDERED_LIST,
         self::TOOLBAR_ORDERED_LIST,
+        self::TOOLBAR_CHECK_LIST,
         self::TOOLBAR_LINK,
         self::TOOLBAR_ASSET,
-        self::TOOLBAR_IMAGE,
-        self::TOOLBAR_TABLE,
         self::TOOLBAR_PREVIEW,
-        self::TOOLBAR_SIDE_BY_SIDE,
-        self::TOOLBAR_FULLSCREEN,
+        self::TOOLBAR_GUIDE,
     ];
 
     public string $flavor = MarkdownService::FLAVOR_GFM;
+
+    public bool $showToolbar = true;
+
+    public bool $showStats = false;
 
     public array $toolbarButtons = self::DEFAULT_TOOLBAR_BUTTONS;
 
@@ -121,6 +107,8 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
     public ?int $byteLimit = null;
 
     public array|string $availableVolumes = '*';
+
+    public ?string $uploadVolume = null;
 
     public bool $showUnpermittedVolumes = false;
 
@@ -153,6 +141,10 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                 $config['availableVolumes'] === '' => [],
                 default => [$config['availableVolumes']],
             };
+        }
+
+        if (($config['uploadVolume'] ?? null) === '') {
+            $config['uploadVolume'] = null;
         }
 
         unset(
@@ -193,29 +185,21 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             ['label' => t('Bold'), 'value' => self::TOOLBAR_BOLD, 'icon' => 'bold'],
             ['label' => t('Italic'), 'value' => self::TOOLBAR_ITALIC, 'icon' => 'italic'],
             ['label' => t('Strikethrough'), 'value' => self::TOOLBAR_STRIKETHROUGH, 'icon' => 'strikethrough'],
-            ['label' => t('Heading'), 'value' => self::TOOLBAR_HEADING, 'icon' => 'heading'],
-            ['label' => t('Smaller Heading'), 'value' => self::TOOLBAR_HEADING_SMALLER, 'icon' => 'heading'],
-            ['label' => t('Bigger Heading'), 'value' => self::TOOLBAR_HEADING_BIGGER, 'icon' => 'heading'],
-            ['label' => t('Big Heading'), 'value' => self::TOOLBAR_HEADING_1, 'icon' => 'heading'],
-            ['label' => t('Medium Heading'), 'value' => self::TOOLBAR_HEADING_2, 'icon' => 'heading'],
-            ['label' => t('Small Heading'), 'value' => self::TOOLBAR_HEADING_3, 'icon' => 'heading'],
-            ['label' => t('Quote'), 'value' => self::TOOLBAR_QUOTE, 'icon' => 'quotes-left'],
             ['label' => t('Code'), 'value' => self::TOOLBAR_CODE, 'icon' => 'code'],
+            ['label' => t('Big Heading'), 'value' => self::TOOLBAR_HEADING_1, 'icon' => 'h1'],
+            ['label' => t('Medium Heading'), 'value' => self::TOOLBAR_HEADING_2, 'icon' => 'h2'],
+            ['label' => t('Small Heading'), 'value' => self::TOOLBAR_HEADING_3, 'icon' => 'h3'],
+            ['label' => t('Heading 4'), 'value' => self::TOOLBAR_HEADING_4, 'icon' => 'h4'],
+            ['label' => t('Heading 5'), 'value' => self::TOOLBAR_HEADING_5, 'icon' => 'h5'],
+            ['label' => t('Heading 6'), 'value' => self::TOOLBAR_HEADING_6, 'icon' => 'h6'],
+            ['label' => t('Quote'), 'value' => self::TOOLBAR_QUOTE, 'icon' => 'quotes-left'],
             ['label' => t('Bulleted List'), 'value' => self::TOOLBAR_UNORDERED_LIST, 'icon' => 'list-ul'],
             ['label' => t('Numbered List'), 'value' => self::TOOLBAR_ORDERED_LIST, 'icon' => 'list-ol'],
             ['label' => t('Check List'), 'value' => self::TOOLBAR_CHECK_LIST, 'icon' => 'list-check'],
-            ['label' => t('Clean Block'), 'value' => self::TOOLBAR_CLEAN_BLOCK, 'icon' => 'eraser'],
             ['label' => t('Link'), 'value' => self::TOOLBAR_LINK, 'icon' => 'link'],
             ['label' => t('Asset'), 'value' => self::TOOLBAR_ASSET, 'icon' => 'paperclip'],
-            ['label' => t('Image'), 'value' => self::TOOLBAR_IMAGE, 'icon' => 'image'],
-            ['label' => t('Table'), 'value' => self::TOOLBAR_TABLE, 'icon' => 'table'],
-            ['label' => t('Horizontal Rule'), 'value' => self::TOOLBAR_HORIZONTAL_RULE, 'icon' => 'minus'],
             ['label' => t('Preview'), 'value' => self::TOOLBAR_PREVIEW, 'icon' => 'eye'],
-            ['label' => t('Side-by-side Preview'), 'value' => self::TOOLBAR_SIDE_BY_SIDE, 'icon' => 'split'],
-            ['label' => t('Full Screen'), 'value' => self::TOOLBAR_FULLSCREEN, 'icon' => 'expand'],
             ['label' => t('Markdown Guide'), 'value' => self::TOOLBAR_GUIDE, 'icon' => 'circle-question'],
-            ['label' => t('Undo'), 'value' => self::TOOLBAR_UNDO, 'icon' => 'rotate-left'],
-            ['label' => t('Redo'), 'value' => self::TOOLBAR_REDO, 'icon' => 'rotate-right'],
         ];
     }
 
@@ -265,6 +249,8 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
     {
         return array_merge(parent::getRules(), [
             'flavor' => ['required', Rule::in(Arr::pluck(self::flavorOptions(), 'value'))],
+            'showToolbar' => ['boolean'],
+            'showStats' => ['boolean'],
             'toolbarButtons' => [
                 'array',
                 function ($attribute, mixed $value, Closure $fail) {
@@ -280,6 +266,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             'initialRows' => ['nullable', 'integer', 'min:1'],
             'charLimit' => ['nullable', 'integer', 'min:1'],
             'byteLimit' => ['nullable', 'integer', 'min:1'],
+            'uploadVolume' => ['nullable', Rule::in(Arr::pluck($this->volumeOptions(), 'value'))],
             'availableVolumes' => [
                 function ($attribute, mixed $value, Closure $fail) {
                     if ($value === '*') {
@@ -355,48 +342,37 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
     private function input(mixed $value, ?ElementInterface $element, bool $inline, bool $static): string
     {
         $id = $this->getInputId();
-
-        if (! $static) {
-            $assetSourceKeys = $this->assetSourceKeys();
-
-            app(InternalAssetRegistry::class)->register(MarkdownFieldAsset::class);
-            HtmlStack::jsWithVars(fn ($id, $settings) => "new Craft.MarkdownField($id, $settings);", [
-                InputNamespace::namespaceId($id),
-                [
-                    'flavor' => $this->flavor,
-                    'previewAction' => 'app/render-markdown',
-                    'readOnly' => $static,
-                    'toolbar' => ! $inline,
-                    'toolbarButtons' => $assetSourceKeys === []
-                        ? array_values(array_diff($this->toolbarButtons, [self::TOOLBAR_ASSET]))
-                        : $this->toolbarButtons,
-                    'toolbarIcons' => $this->toolbarIcons(),
-                    'assetElementType' => Asset::class,
-                    'assetRefHandle' => Asset::refHandle(),
-                    'assetSources' => $assetSourceKeys,
-                    'assetCriteria' => $this->assetSelectionCriteria(),
-                ],
-            ]);
-        }
+        $placeholder = $this->placeholder !== null
+            ? t(Str::unescapeShortcodes($this->placeholder), category: 'site')
+            : null;
+        $assetSourceKeys = $this->assetSourceKeys();
+        $settings = [
+            'assetCriteria' => $this->assetSelectionCriteria(),
+            'assetSources' => $assetSourceKeys,
+            'describedBy' => $this->describedBy === null ? null : collect(explode(' ', $this->describedBy))
+                ->map(fn (string $id) => InputNamespace::namespaceId($id))
+                ->implode(' '),
+            'disabled' => $static,
+            'flavor' => $this->flavor,
+            'maxLength' => $static ? null : $this->charLimit,
+            'placeholder' => $placeholder,
+            'rows' => $this->initialRows,
+            'showStats' => $this->showStats,
+            'showToolbar' => $this->showToolbar && ! $inline && ! $static,
+            'toolbarButtons' => $assetSourceKeys === []
+                ? array_values(array_diff($this->toolbarButtons, [self::TOOLBAR_ASSET]))
+                : $this->toolbarButtons,
+            'uploadFolderId' => $static ? null : $this->uploadFolderId(),
+            'uploadSiteId' => $element?->siteId ?? Sites::getCurrentSite()->id,
+            'value' => $this->rawValue($value),
+        ];
 
         return template('_components/fieldtypes/Markdown/input', [
             'id' => $id,
             'name' => $this->handle,
-            'value' => $this->rawValue($value),
-            'field' => $this,
-            'placeholder' => $this->placeholder !== null ? t(Str::unescapeShortcodes($this->placeholder),
-                category: 'site') : null,
-            'orientation' => $this->getOrientation($element),
             'disabled' => $static,
+            'settings' => $settings,
         ]);
-    }
-
-    private function toolbarIcons(): array
-    {
-        return collect(Arr::pluck(self::toolbarButtonOptions(), 'icon'))
-            ->unique()
-            ->mapWithKeys(fn (string $icon) => [$icon => Icons::svg($icon)])
-            ->all();
     }
 
     private function assetSourceKeys(): array
@@ -409,6 +385,26 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
     private function assetSelectionCriteria(): array
     {
         return $this->showUnpermittedFiles ? ['uploaderId' => null] : [];
+    }
+
+    private function uploadFolderId(): ?int
+    {
+        $volume = $this->uploadVolume();
+
+        if (! $volume || ! Gate::check("saveAssets:$volume->uid")) {
+            return null;
+        }
+
+        return Folders::getRootFolderByVolumeId($volume->id)?->id;
+    }
+
+    private function uploadVolume(): ?Volume
+    {
+        if (! $this->uploadVolume) {
+            return null;
+        }
+
+        return Volumes::getVolumeByUid($this->uploadVolume);
     }
 
     private function availableAssetVolumes(): Collection

@@ -1,0 +1,1 @@
+import e from"./fr-BwVS4ltX.js";var t={...e};export{t as default};

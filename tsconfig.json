@@ -6,6 +6,7 @@
     "paths": {
       "@/*": ["./resources/js/*"],
       "@actions/*": ["./resources/js/actions/CraftCms/Cms/Http/Controllers/*"],
+      "@icons/*": ["./resources/icons/*"],
       "@routes/*": ["./resources/js/routes/craft/*"]
     },
     "types": ["vite/client"]

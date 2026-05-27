@@ -11,14 +11,37 @@
     disabled: readOnly,
 }) }}
 
-{{ forms.checkboxSelectField({
-    label: 'Toolbar Buttons'|t('app'),
-    instructions: 'Choose which buttons should be available in the editor toolbar.'|t('app'),
-    id: 'toolbarButtons',
-    name: 'toolbarButtons',
-    options: toolbarButtonOptions,
-    values: field.toolbarButtons,
-    errors: field.errors.get('toolbarButtons'),
+{{ forms.lightswitchField({
+    label: 'Show Toolbar'|t('app'),
+    instructions: 'Whether the editor toolbar should be visible.'|t('app'),
+    id: 'showToolbar',
+    name: 'showToolbar',
+    on: field.showToolbar,
+    toggle: 'toolbar-button-settings',
+    errors: field.errors.get('showToolbar'),
+    disabled: readOnly,
+}) }}
+
+<div id="toolbar-button-settings" class="{{ not field.showToolbar ? 'hidden' }}">
+    {{ forms.checkboxSelectField({
+        label: 'Toolbar Buttons'|t('app'),
+        instructions: 'Choose which buttons should be available in the editor toolbar.'|t('app'),
+        id: 'toolbarButtons',
+        name: 'toolbarButtons',
+        options: toolbarButtonOptions,
+        values: field.toolbarButtons,
+        errors: field.errors.get('toolbarButtons'),
+        disabled: readOnly,
+    }) }}
+</div>
+
+{{ forms.lightswitchField({
+    label: 'Show Stats'|t('app'),
+    instructions: 'Whether the editor should show character, word, and line counts.'|t('app'),
+    id: 'showStats',
+    name: 'showStats',
+    on: field.showStats,
+    errors: field.errors.get('showStats'),
     disabled: readOnly,
 }) }}
 
@@ -65,6 +88,19 @@
         errors: field.errors.get('showUnpermittedFiles'),
         disabled: readOnly,
     }) }}
+
+    {% if volumeOptions|length %}
+        {{ forms.selectField({
+            label: 'Upload Volume'|t('app'),
+            instructions: 'The volume where pasted or dropped files should be uploaded.'|t('app'),
+            id: 'uploadVolume',
+            name: 'uploadVolume',
+            options: [{ label: 'No uploads'|t('app'), value: '' }]|merge(volumeOptions),
+            value: field.uploadVolume,
+            errors: field.errors.get('uploadVolume'),
+            disabled: readOnly,
+        }) }}
+    {% endif %}
 </div>
 
 {{ forms.textField({

@@ -21,3 +21,4 @@ import('@craftcms/cp/components/nav-list/nav-list.ts.mjs');
 import('@craftcms/cp/components/nav-item/nav-item.ts.mjs');
 import('./components/CpGlobalSidebar.js');
 import('./components/CpQueueIndicator.js');
+import('./components/markdown-field/MarkdownField.js');

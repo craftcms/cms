@@ -96,21 +96,45 @@ it('validates configurable toolbar buttons', function () {
     $toolbarOptions = MarkdownField::toolbarButtonOptions();
 
     expect(Arr::pluck($toolbarOptions, 'value'))->toContain(
+        MarkdownField::TOOLBAR_BOLD,
+        MarkdownField::TOOLBAR_ITALIC,
         MarkdownField::TOOLBAR_STRIKETHROUGH,
-        MarkdownField::TOOLBAR_HEADING_SMALLER,
-        MarkdownField::TOOLBAR_HEADING_BIGGER,
+        MarkdownField::TOOLBAR_CODE,
         MarkdownField::TOOLBAR_HEADING_1,
         MarkdownField::TOOLBAR_HEADING_2,
         MarkdownField::TOOLBAR_HEADING_3,
+        MarkdownField::TOOLBAR_HEADING_4,
+        MarkdownField::TOOLBAR_HEADING_5,
+        MarkdownField::TOOLBAR_HEADING_6,
+        MarkdownField::TOOLBAR_QUOTE,
+        MarkdownField::TOOLBAR_UNORDERED_LIST,
+        MarkdownField::TOOLBAR_ORDERED_LIST,
         MarkdownField::TOOLBAR_CHECK_LIST,
-        MarkdownField::TOOLBAR_CLEAN_BLOCK,
+        MarkdownField::TOOLBAR_LINK,
         MarkdownField::TOOLBAR_ASSET,
-        MarkdownField::TOOLBAR_HORIZONTAL_RULE,
+        MarkdownField::TOOLBAR_PREVIEW,
         MarkdownField::TOOLBAR_GUIDE,
-        MarkdownField::TOOLBAR_UNDO,
-        MarkdownField::TOOLBAR_REDO,
     )->not()->toContain('upload-image')
+        ->and(Arr::pluck($toolbarOptions, 'value'))->not()->toContain(
+            'heading',
+            'heading-smaller',
+            'heading-bigger',
+            'clean-block',
+            'image',
+            'table',
+            'horizontal-rule',
+            'side-by-side',
+            'fullscreen',
+            'undo',
+            'redo',
+        )
         ->and(Arr::pluck($toolbarOptions, 'icon'))->not()->toContain(null);
+
+    expect(MarkdownField::DEFAULT_TOOLBAR_BUTTONS)->not()->toContain(
+        MarkdownField::TOOLBAR_HEADING_4,
+        MarkdownField::TOOLBAR_HEADING_5,
+        MarkdownField::TOOLBAR_HEADING_6,
+    );
 
     $field = new MarkdownField([
         'toolbarButtons' => [
@@ -122,6 +146,42 @@ it('validates configurable toolbar buttons', function () {
     expect($field->validate())->toBeFalse()
         ->and($field->errors()->has('toolbarButtons'))->toBeTrue()
         ->and(new MarkdownField(['toolbarButtons' => ''])->toolbarButtons)->toBe([]);
+});
+
+it('can disable the editor toolbar', function () {
+    $field = new MarkdownField([
+        'name' => 'Body',
+        'handle' => 'body',
+        'showToolbar' => false,
+    ]);
+
+    $html = $field->getInputHtml('Initial **markdown**', null);
+
+    expect($field->validate())->toBeTrue()
+        ->and($html)->not()->toContain('show-toolbar');
+});
+
+it('can show editor stats', function () {
+    $field = new MarkdownField([
+        'name' => 'Body',
+        'handle' => 'body',
+        'showStats' => true,
+    ]);
+
+    $html = $field->getInputHtml('Initial **markdown**', null);
+
+    expect($field->validate())->toBeTrue()
+        ->and($html)->toContain('show-stats')
+        ->and($field->getSettingsHtml())->toContain('name="showStats"');
+});
+
+it('only shows toolbar button settings when the toolbar is enabled', function () {
+    $settingsHtml = new MarkdownField(['showToolbar' => false])->getSettingsHtml();
+    $enabledSettingsHtml = new MarkdownField(['showToolbar' => true])->getSettingsHtml();
+
+    expect($settingsHtml)->toContain('data-target="toolbar-button-settings"')
+        ->and($settingsHtml)->toContain('id="toolbar-button-settings" class="hidden"')
+        ->and($enabledSettingsHtml)->not()->toContain('id="toolbar-button-settings" class="hidden"');
 });
 
 it('validates and applies asset selector volume settings', function () {

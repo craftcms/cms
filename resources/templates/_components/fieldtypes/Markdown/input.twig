@@ -1,19 +1,25 @@
-{% import "_includes/forms" as forms %}
-
 {%- set disabled = disabled ?? false %}
+{%- set editorMinHeight = max(settings.rows, 1) * 21 + 20 %}
+{%- set editorStyle = '--markdown-field-min-height: ' ~ editorMinHeight ~ 'px;' %}
 
 <div class="markdown-field">
-    {{ forms.textarea({
-        id: id ?? field.getInputId(),
-        describedBy: field.describedBy,
-        name: name,
-        value: value,
-        class: ['nicetext', 'code'],
-        maxlength: not disabled ? field.charLimit,
-        showCharsLeft: true,
-        placeholder: placeholder,
-        rows: field.initialRows,
-        orientation: orientation ?? null,
-        disabled,
-    }) }}
+    <craft-markdown-field
+        id="{{ id }}"
+        name="{{ name }}"
+        class="markdown-field-editor"
+        style="{{ editorStyle }}"
+        flavor="{{ settings.flavor }}"
+        rows="{{ settings.rows }}"
+        upload-site-id="{{ settings.uploadSiteId }}"
+        toolbar-buttons="{{ settings.toolbarButtons|json_encode|e('html_attr') }}"
+        asset-sources="{{ settings.assetSources|json_encode|e('html_attr') }}"
+        {% if settings.showToolbar %}show-toolbar{% endif %}
+        {% if settings.showStats %}show-stats{% endif %}
+        {% if settings.placeholder is not empty %}placeholder="{{ settings.placeholder }}"{% endif %}
+        {% if settings.maxLength %}max-length="{{ settings.maxLength }}"{% endif %}
+        {% if settings.describedBy is not empty %}described-by="{{ settings.describedBy }}"{% endif %}
+        {% if settings.uploadFolderId %}upload-folder-id="{{ settings.uploadFolderId }}"{% endif %}
+        {% if settings.assetCriteria.uploaderId is defined and settings.assetCriteria.uploaderId is null %}asset-any-uploader{% endif %}
+        {% if disabled %}disabled{% endif %}
+    >{{ settings.value }}</craft-markdown-field>
 </div>
