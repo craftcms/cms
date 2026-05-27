@@ -12,7 +12,6 @@
 - Fixed a bug where legacy Control Panel URL rules couldn’t route directly to templates. ([#18972](https://github.com/craftcms/cms/pull/18972))
 - Fixed an error that could occur when request context was dehydrated after a matched element route was resolved.
 - Fixed a bug where `CraftCms\Cms\Support\Typecast` could skip setters that used a same-name private backing property.
-- Updated section queries to always select `minAuthors`.
 - Fixed a bug where `CraftCms\Cms\Support\Typecast` could attempt to assign read-only, private-set, protected-set, or setterless virtual properties.
 - Fixed a bug where publishable Craft assets were registered during web requests.
 - Improved emoji shortcode handling performance for strings without shortcode delimiters.
