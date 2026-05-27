@@ -1,4 +1,4 @@
-import type {MixedInputPart} from '@/components/form/MixedInput.vue';
+export type MixedInputPart = string | [string, string];
 
 export interface RouteData {
   uid: string | null;

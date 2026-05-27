@@ -1,9 +1,8 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
   import {nextTick, onMounted, shallowRef, useTemplateRef, watch} from 'vue';
-  import type {BaseOption} from '@/types';
-
-  export type MixedInputPart = string | [string, string];
+  import type {BaseOption} from '@/common/types';
+  import type {MixedInputPart} from '@/pages/settings/routes/types';
 
   const textPartPadding = 20;
 

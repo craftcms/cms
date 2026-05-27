@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import AppLayout from '@/common/layouts/AppLayout.vue';
-  import type {MixedInputPart} from '@/common/form/MixedInput.vue';
+  import type {MixedInputPart} from '@/pages/settings/routes/types';
   import MixedInput from '@/common/form/MixedInput.vue';
   import Pane from '@/common/components/Pane.vue';
   import Select from '@/common/form/Select.vue';
