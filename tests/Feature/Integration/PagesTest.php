@@ -96,7 +96,7 @@ it('renders inertia pages', function (string $url, string $component, string $ti
     [
         'url' => '/settings/routes',
         'title' => 'Routes',
-        'component' => 'settings/routes/RoutesIndexPage',
+        'component' => 'settings/routes/Index',
     ],
 ]);
 
