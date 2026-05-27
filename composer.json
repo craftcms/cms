@@ -67,7 +67,7 @@
     "symfony/var-dumper": "^5.0|^6.0|^7.0",
     "symfony/yaml": "^5.2.3|^6.0|^7.0",
     "theiconic/name-parser": "^1.2",
-    "twig/twig": "~3.26.0",
+    "twig/twig": "~3.27.0",
     "voku/portable-ascii": "^2.0",
     "web-auth/webauthn-lib": "~5.2.4",
     "yiisoft/yii2": "~2.0.55.0",
