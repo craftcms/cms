@@ -36,7 +36,7 @@ it('requires authentication', function () {
 
 it('can show the settings screen', function () {
     get(action([GeneralSettingsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('SettingsGeneralPage'))
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/General'))
         ->assertOk();
 });
 

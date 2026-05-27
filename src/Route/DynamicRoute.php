@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Route;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
@@ -36,7 +37,7 @@ class DynamicRoute
         }
 
         return app()->make(Kernel::class)->handle($request->duplicateWithUri(
-            newUri: $request->actionSegmentsToRoute(explode('/', trim($this->route, '/'))),
+            newUri: ActionRoute::uriForSegments(explode('/', trim($this->route, '/')), $request->isCpRequest()),
             query: $variables,
         ));
     }

@@ -3,10 +3,12 @@
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
@@ -127,4 +129,85 @@ test('eagerly', function () {
     }
 
     expect($queryCountWithEagerly)->toBeLessThan($queryCountWithoutEagerlyResults);
+});
+
+test('eagerly lazy loads nested entry fields for each owner', function () {
+    $nestedEntryType = EntryType::factory()
+        ->withFieldLayout()
+        ->create([
+            'name' => 'Nested Block',
+            'handle' => 'nestedBlock',
+            'hasTitleField' => true,
+        ]);
+
+    $ownerEntryType = EntryType::factory()
+        ->withFieldLayout()
+        ->create([
+            'name' => 'Owner',
+            'handle' => 'owner',
+            'hasTitleField' => true,
+        ]);
+
+    $section = Section::factory()
+        ->withEntryTypes($ownerEntryType, $nestedEntryType)
+        ->create([
+            'handle' => 'matrixBlog',
+        ]);
+
+    $firstOwnerResult = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($ownerEntryType)
+        ->withField('matrixField', Matrix::class, ['entryTypes' => [$nestedEntryType->id]])
+        ->createElementWithFields(['title' => 'Owner A']);
+
+    $field = app(Fields::class)->getFieldById($firstOwnerResult->field('matrixField')->id);
+    $firstOwner = entryQuery()->id($firstOwnerResult->element->id)->one();
+    $secondOwner = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($ownerEntryType)
+        ->createElement(['title' => 'Owner B']);
+
+    DB::table(Table::ELEMENTS)
+        ->where('id', $secondOwner->id)
+        ->update(['fieldLayoutId' => $firstOwner->fieldLayoutId]);
+
+    $createNestedEntry = function (Entry $owner, string $title) use ($field, $nestedEntryType, $section) {
+        $entry = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($nestedEntryType)
+            ->title($title)
+            ->createElement([
+                'fieldId' => $field->id,
+                'primaryOwnerId' => $owner->id,
+            ]);
+
+        DB::table(Table::ENTRIES)
+            ->where('id', $entry->id)
+            ->update(['sectionId' => null]);
+
+        DB::table(Table::ELEMENTS_OWNERS)->insert([
+            'elementId' => $entry->id,
+            'ownerId' => $owner->id,
+            'sortOrder' => 1,
+        ]);
+    };
+
+    $createNestedEntry($firstOwner, 'First nested block');
+    $createNestedEntry($secondOwner, 'Second nested block');
+
+    $owners = entryQuery()
+        ->section('matrixBlog')
+        ->typeId($ownerEntryType->id)
+        ->status(null)
+        ->orderBy('elements.id')
+        ->all();
+
+    $nestedTitles = collect($owners)
+        ->map(fn ($owner) => $owner->matrixField->eagerly()->one()?->title)
+        ->all();
+
+    expect($nestedTitles)->toBe([
+        'First nested block',
+        'Second nested block',
+    ]);
 });

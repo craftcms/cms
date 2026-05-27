@@ -67,7 +67,7 @@ test('asTime', function (int|string|DateTime $input, string $output, ?string $fo
 
     expect($this->formatter->asTime($input, $format))->toBe($output);
 })->with(function () {
-    $dateTime = new DateTime('2021-01-01 00:00:00');
+    $dateTime = new DateTime('2021-01-01 00:00:00', new DateTimeZone('UTC'));
 
     return [
         [$dateTime, '12:00:00 AM'],
@@ -92,7 +92,7 @@ test('asTime with Locale', function (int|string|DateTime $input, string $output,
 
     expect($formatter->asTime($input))->toBe($output);
 })->with(function () {
-    $dateTime = new DateTime('2021-01-01 00:00:00');
+    $dateTime = new DateTime('2021-01-01 00:00:00', new DateTimeZone('UTC'));
 
     return [
         [$dateTime, '4:00:00 PM'],
@@ -106,7 +106,7 @@ test('asDate', function (int|string|DateTime $input, string $output, ?string $fo
 
     expect($this->formatter->asDate($input, $format))->toBe($output);
 })->with(function () {
-    $dateTime = new DateTime('2021-01-01 00:00:00');
+    $dateTime = new DateTime('2021-01-01 00:00:00', new DateTimeZone('UTC'));
 
     return [
         [$dateTime, 'Jan 1, 2021'],
@@ -135,7 +135,7 @@ test('asDate with Locale', function (int|string|DateTime $input, string $output,
 
     expect($formatter->asDate($input))->toBe($output);
 })->with(function () {
-    $dateTime = new DateTime('2021-01-01 00:00:00');
+    $dateTime = new DateTime('2021-01-01 00:00:00', new DateTimeZone('UTC'));
 
     return [
         [$dateTime, 'Dec 31, 2020'],
@@ -149,7 +149,7 @@ test('asDateTime', function (int|string|DateTime $input, string $output, ?string
 
     expect($this->formatter->asDateTime($input, $format))->toBe($output);
 })->with(function () {
-    $dateTime = new DateTime('2021-01-01 00:00:00');
+    $dateTime = new DateTime('2021-01-01 00:00:00', new DateTimeZone('UTC'));
 
     return [
         [$dateTime, 'Jan 1, 2021, 12:00:00 AM'],
@@ -174,7 +174,7 @@ test('asDateTime with Locale', function (int|string|DateTime $input, string $out
 
     expect($formatter->asDateTime($input))->toBe($output);
 })->with(function () {
-    $dateTime = new DateTime('2021-01-01 00:00:00');
+    $dateTime = new DateTime('2021-01-01 00:00:00', new DateTimeZone('UTC'));
 
     return [
         [$dateTime, 'Dec 31, 2020, 4:00:00 PM'],

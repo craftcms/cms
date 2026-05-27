@@ -70,28 +70,28 @@ it('renders inertia pages', function (string $url, string $component, string $ti
 })->with([
     [
         'url' => '/settings/sections',
-        'component' => 'SettingsSectionsIndexPage',
+        'component' => 'settings/Sections',
         'title' => 'Sections',
     ],
     [
         'url' => '/settings/users',
         'title' => 'User Settings',
-        'component' => 'SettingsUserGroupsIndexPage',
+        'component' => 'settings/UserGroups',
     ],
     [
         'url' => '/settings/fields',
         'title' => 'Fields',
-        'component' => 'SettingsFieldsIndexPage',
+        'component' => 'settings/Fields',
     ],
     [
         'url' => '/settings/assets',
         'title' => 'Asset Settings',
-        'component' => 'SettingsVolumesIndexPage',
+        'component' => 'settings/Volumes',
     ],
     [
         'url' => '/settings/assets/transforms',
         'title' => 'Image Transforms',
-        'component' => 'SettingsImageTransformsIndexPage',
+        'component' => 'settings/ImageTransforms',
     ],
     [
         'url' => '/settings/routes',

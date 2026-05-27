@@ -36,7 +36,7 @@ readonly class GeneralSettingsController
                 ['label' => t('General Settings')],
             ])
             ->redirectUrl('settings')
-            ->inertiaPage('SettingsGeneralPage', [
+            ->inertiaPage('settings/General', [
                 'system' => $this->projectConfig->get('system') ?? [],
                 'nameSuggestions' => SelectOptions::getEnvSuggestions(),
                 'timezoneOptions' => $timezoneOptions,

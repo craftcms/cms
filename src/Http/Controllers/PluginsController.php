@@ -44,7 +44,7 @@ readonly class PluginsController
                 ['label' => t('Settings'), 'url' => 'settings'],
                 ['label' => t('Plugins')],
             ])
-            ->inertiaPage('SettingsPluginsIndexPage', [
+            ->inertiaPage('settings/Plugins', [
                 'pluginInfo' => fn () => $info,
             ]);
     }

@@ -47,7 +47,7 @@ test('index shows read-only state when allowAdminChanges is false', function () 
 
     get(action([PluginsController::class, 'index']))
         ->assertOk()
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('SettingsPluginsIndexPage')
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/Plugins')
             ->where('readOnly', true)
         );
 });

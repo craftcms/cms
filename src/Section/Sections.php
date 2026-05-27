@@ -43,6 +43,7 @@ use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
+use DateTime;
 use Exception;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
@@ -53,7 +54,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 use RuntimeException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -188,7 +188,7 @@ class Sections
 
     private function createSectionQuery(): Builder
     {
-        $query = DB::table(Table::SECTIONS, 'sections')
+        return DB::table(Table::SECTIONS, 'sections')
             ->select([
                 'sections.id',
                 'sections.structureId',
@@ -197,6 +197,7 @@ class Sections
                 'sections.type',
                 'sections.enableVersioning',
                 'sections.maxAuthors',
+                'sections.minAuthors',
                 'sections.defaultPlacement',
                 'sections.propagationMethod',
                 'sections.previewTargets',
@@ -209,12 +210,6 @@ class Sections
             })
             ->whereNull('sections.dateDeleted')
             ->orderBy('sections.name');
-
-        if (Schema::hasColumn(Table::SECTIONS, 'minAuthors')) {
-            $query->addSelect('sections.minAuthors');
-        }
-
-        return $query;
     }
 
     /**
@@ -909,6 +904,7 @@ class Sections
             $entry->sectionId = $section->id;
             $entry->setTypeId($entryTypeIds[0]);
             $entry->title = $section->name;
+            $entry->postDate = new DateTime;
         }
 
         // Validate first

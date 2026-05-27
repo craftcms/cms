@@ -105,6 +105,7 @@ it('can query entries by author groups', function () {
     expect(entryQuery()->authorGroup(['not', $userGroup1->handle])->count())->toBe(1);
     expect(entryQuery()->authorGroup(['not', $userGroup1->handle, $userGroup2->handle])->count())->toBe(0);
     expect(entryQuery()->authorGroup(implode(', ', [$userGroup1->handle, $userGroup2->handle]))->count())->toBe(2);
+    expect(entryQuery()->authorGroup('notavalidhandle')->count())->toBe(0);
 });
 
 it('treats falsy author group IDs as explicit filters', function (mixed $groupId) {

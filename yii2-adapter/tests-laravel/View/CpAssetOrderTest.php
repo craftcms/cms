@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\View\Enums\Position;
+use CraftCms\Cms\View\HtmlStack as HtmlStackService;
 use yii\web\AssetBundle;
 
 class CpAssetDependentAssetBundle extends AssetBundle
@@ -38,4 +40,20 @@ it('renders the internal CP asset files before Yii asset bundle dependents', fun
     expect($html)->toContain('legacy/jquery/dist/jquery.js')
         ->and($html)->toContain('https://example.test/assets/dependent.js')
         ->and(strpos($html, 'legacy/jquery/dist/jquery.js'))->toBeLessThan(strpos($html, 'https://example.test/assets/dependent.js'));
+});
+
+it('uses the current scoped HtmlStack after scoped instances are flushed', function() {
+    $view = Craft::$app->getView();
+
+    app(HtmlStackService::class)->js('window.firstScopedStack = true', Position::Head);
+    expect($view->placeholderHtml()['headHtml'])->toContain('window.firstScopedStack = true;');
+
+    app()->forgetScopedInstances();
+
+    app(HtmlStackService::class)->js('window.secondScopedStack = true', Position::Head);
+    $html = $view->placeholderHtml()['headHtml'];
+
+    expect($html)
+        ->toContain('window.secondScopedStack = true;')
+        ->not->toContain('window.firstScopedStack = true;');
 });

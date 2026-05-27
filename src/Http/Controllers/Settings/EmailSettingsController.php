@@ -48,7 +48,7 @@ readonly class EmailSettingsController
                 ['label' => t('Email')],
             ])
             ->redirectUrl('settings')
-            ->inertiaPage('SettingsEmailPage', [
+            ->inertiaPage('settings/Email', [
                 'emailConfig' => $this->projectConfig->get('email') ?? [],
                 'mailerOptions' => $this->getMailerOptions(),
                 'envSuggestions' => SelectOptions::getEnvSuggestions(),

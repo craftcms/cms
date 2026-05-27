@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import AppLayout from '@/layout/AppLayout.vue';
-  import DropIndicator from '@/components/DropIndicator.vue';
-  import {useReorderableItems} from '@/composables/useReorderableItems';
+  import AppLayout from '@/common/layouts/AppLayout.vue';
+  import DropIndicator from '@/common/components/DropIndicator.vue';
+  import {useReorderableItems} from '@/common/composables/useReorderableItems';
   import type {RouteIndexData} from './types';
   import {
     create,

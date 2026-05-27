@@ -75,7 +75,7 @@ it('renders the schema index, create, edit, and public edit screens', function (
     $schema = createSchemaForSchemasControllerTest();
 
     get(action([SchemasController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('GraphQlSchemasPage'));
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('graphql/Schemas'));
 
     get(action([SchemasController::class, 'create']))
         ->assertOk()

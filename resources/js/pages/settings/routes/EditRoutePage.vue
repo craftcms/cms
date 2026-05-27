@@ -1,17 +1,17 @@
 <script setup lang="ts">
-  import AppLayout from '@/layout/AppLayout.vue';
-  import MixedInput from '@/components/form/MixedInput.vue';
-  import Pane from '@/components/Pane.vue';
-  import Select from '@/components/form/Select.vue';
-  import {useSettingsSave} from '@/composables/useSettingsSave';
-  import type {MixedInputPart} from '@/components/form/MixedInput.vue';
+  import AppLayout from '@/common/layouts/AppLayout.vue';
+  import MixedInput from '@/common/form/MixedInput.vue';
+  import Pane from '@/common/components/Pane.vue';
+  import Select from '@/common/form/Select.vue';
+  import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
+  import type {MixedInputPart} from '@/common/form/MixedInput.vue';
   import type {RouteActionMenuItem, RouteData, RouteFormData} from './types';
   import {store, update} from '@actions/Settings/RoutesController';
   import {router, useForm} from '@inertiajs/vue3';
   import {t} from '@craftcms/cp';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import {computed, shallowRef} from 'vue';
-  import type {BaseOption} from '@/types';
+  import type {BaseOption} from '@/common/types';
 
   const props = defineProps<{
     title: string;

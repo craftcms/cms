@@ -89,7 +89,7 @@ it('renders the token index, create, and edit screens', function () {
     $publicSchema = Gql::getPublicSchema();
 
     get(action([TokensController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('GraphQlTokensPage'));
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('graphql/Tokens'));
 
     get(action([TokensController::class, 'create']))
         ->assertOk()

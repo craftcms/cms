@@ -8,6 +8,7 @@ use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements;
+use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
@@ -16,7 +17,7 @@ use Override;
 /**
  * @extends ElementQuery<Address>
  */
-class AddressQuery extends ElementQuery
+class AddressQuery extends ElementQuery implements NestedElementQueryInterface
 {
     use QueriesNestedElements;
 

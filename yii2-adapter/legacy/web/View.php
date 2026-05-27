@@ -268,18 +268,14 @@ class View extends \yii\web\View
      */
     private array $_registeredJsFiles = [];
 
-    private ?HtmlStack $_registry = null;
-
     private function registry(): HtmlStack
     {
-        return $this->_registry ??= app(HtmlStack::class);
+        return app(HtmlStack::class);
     }
-
-    private ?TemplateHooks $_templateHooks = null;
 
     private function templateHooks(): TemplateHooks
     {
-        return $this->_templateHooks ??= app(TemplateHooks::class);
+        return app(TemplateHooks::class);
     }
 
     /**

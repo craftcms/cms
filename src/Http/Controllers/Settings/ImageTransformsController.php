@@ -38,7 +38,7 @@ class ImageTransformsController
             ->sort(fn (ImageTransform $a, ImageTransform $b): int => t($a->name, category: 'site') <=> t($b->name, category: 'site'))
             ->values();
 
-        return Inertia::render('SettingsImageTransformsIndexPage', [
+        return Inertia::render('settings/ImageTransforms', [
             'crumbs' => fn () => [
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Transforms')],
