@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-alpha.5 - 2026-05-27
 
 - Improved emoji shortcode handling performance for strings without shortcode delimiters.
 - Improved element query performance by caching element source table column listings in memory.
