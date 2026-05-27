@@ -54,6 +54,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use RuntimeException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -188,7 +189,7 @@ class Sections
 
     private function createSectionQuery(): Builder
     {
-        return DB::table(Table::SECTIONS, 'sections')
+        $query = DB::table(Table::SECTIONS, 'sections')
             ->select([
                 'sections.id',
                 'sections.structureId',
@@ -197,7 +198,6 @@ class Sections
                 'sections.type',
                 'sections.enableVersioning',
                 'sections.maxAuthors',
-                'sections.minAuthors',
                 'sections.defaultPlacement',
                 'sections.propagationMethod',
                 'sections.previewTargets',
@@ -210,6 +210,12 @@ class Sections
             })
             ->whereNull('sections.dateDeleted')
             ->orderBy('sections.name');
+
+        if (Schema::hasColumn(Table::SECTIONS, 'minAuthors')) {
+            $query->addSelect('sections.minAuthors');
+        }
+
+        return $query;
     }
 
     /**
