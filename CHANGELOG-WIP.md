@@ -3,6 +3,7 @@
 ### Administration
 - Added support for configuring the system time zone during installation. ([#18794](https://github.com/craftcms/cms/pull/18794))
 - Added the `compiledTemplatesPath` config setting. ([#18861](https://github.com/craftcms/cms/pull/18861))
+- The `loginPath` config setting is now `false` by default.
 
 ### Development
 - Reference tags now support fallback values when no attribute is specified. ([#17688](https://github.com/craftcms/cms/pull/17688))
