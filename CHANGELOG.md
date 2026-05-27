@@ -4,6 +4,7 @@
 
 - Added Laravel event dispatching to Craft’s `Yiisoft\Translator\Translator` instance, enabling `Yiisoft\Translator\Event\MissingTranslationEvent` listeners. ([#18952](https://github.com/craftcms/cms/pull/18952))
 - The default value for `GeneralConfig::$loginPath` is now `false`.
+- Renamed the `PluginsLoaded` event to `PluginsRegistered`. ([#18973](https://github.com/craftcms/cms/pull/18973))
 - Updated Twig to 3.27. ([#18980](https://github.com/craftcms/cms/pull/18980))
 - Fixed some errors that could occur when running Craft through Laravel Octane ([#18921](https://github.com/craftcms/cms/pull/18921))
 - Fixed an error that occurred when rendering the database update screen outside Control Panel template mode.
@@ -881,7 +882,7 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
   - `craft\services\Plugins::EVENT_AFTER_DISABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginDisabled`;
   - `craft\services\Plugins::EVENT_AFTER_ENABLE_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginEnabled`;
   - `craft\services\Plugins::EVENT_AFTER_INSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginInstalled`;
-  - `craft\services\Plugins::EVENT_AFTER_LOAD_PLUGINS` => `CraftCms\Cms\Plugin\Events\PluginsBooted`;
+  - `craft\services\Plugins::EVENT_AFTER_LOAD_PLUGINS` => `CraftCms\Cms\Plugin\Events\PluginsLoaded`;
   - `craft\services\Plugins::EVENT_AFTER_SAVE_PLUGIN_SETTINGS` => `CraftCms\Cms\Plugin\Events\PluginSettingsSaved`;
   - `craft\services\Plugins::EVENT_AFTER_UNINSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginUninstalled`;
 

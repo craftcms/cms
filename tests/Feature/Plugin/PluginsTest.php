@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Plugin\Events\PluginsBooted;
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
 use CraftCms\Cms\Plugin\Events\PluginsLoading;
 use CraftCms\Cms\Plugin\Events\PluginsRegistered;
@@ -60,16 +59,12 @@ it('dispatches plugin lifecycle events', function () {
     Event::listen(PluginsRegistered::class, function (PluginsRegistered $event) use (&$events) {
         $events[] = PluginsRegistered::class;
     });
-    Event::listen(PluginsBooted::class, function (PluginsBooted $event) use (&$events) {
-        $events[] = PluginsBooted::class;
-    });
 
     $this->plugins->loadPlugins();
 
     expect($events)->toBe([
         PluginsLoading::class,
         PluginsRegistered::class,
-        PluginsBooted::class,
     ]);
 });
 
