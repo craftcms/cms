@@ -4,9 +4,11 @@
 
 - Added Laravel event dispatching to Craft’s `Yiisoft\Translator\Translator` instance, enabling `Yiisoft\Translator\Event\MissingTranslationEvent` listeners. ([#18952](https://github.com/craftcms/cms/pull/18952))
 - The default value for `GeneralConfig::$loginPath` is now `false`.
+- Updated Twig to 3.27. ([#18980](https://github.com/craftcms/cms/pull/18980))
 - Fixed some errors that could occur when running Craft through Laravel Octane ([#18921](https://github.com/craftcms/cms/pull/18921))
 - Fixed an error that occurred when rendering the database update screen outside Control Panel template mode.
 - Fixed an error that occurred when Redis was configured as the session driver.
+- Fixed a bug where legacy Control Panel URL rules couldn’t route directly to templates. ([#18972](https://github.com/craftcms/cms/pull/18972))
 - Fixed an error that could occur when request context was dehydrated after a matched element route was resolved.
 - Fixed a bug where `CraftCms\Cms\Support\Typecast` could skip setters that used a same-name private backing property.
 - Updated section queries to always select `minAuthors`.

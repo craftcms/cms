@@ -226,6 +226,10 @@ class Application extends \yii\web\Application
      */
     public function runAction($route, $params = []): ?BaseResponse
     {
+        if ($route === 'templates/render') {
+            return $this->runTemplateRoute($params);
+        }
+
         try {
             $result = parent::runAction($route, $params);
         } catch (InvalidRouteException $e) {
@@ -265,6 +269,24 @@ class Application extends \yii\web\Application
         } catch (InvalidRouteException) {
             return [false, null];
         }
+    }
+
+    private function runTemplateRoute(array $params = []): BaseResponse
+    {
+        $laravelResponse = new DynamicRoute('templates/render', $params + [
+            'publicOnly' => false,
+        ])->handle(request());
+
+        $response = $this->getResponse();
+
+        if ($response instanceof IlluminateBridgeResponse) {
+            return $response->setIlluminateResponse($laravelResponse);
+        }
+
+        $response->data = $laravelResponse->getContent();
+        $response->setStatusCode($laravelResponse->getStatusCode());
+
+        return $response;
     }
 
     private function runLaravelAction(string $route, array $params = []): ?BaseResponse
