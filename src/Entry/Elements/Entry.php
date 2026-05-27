@@ -2768,14 +2768,17 @@ JS;
         $entryType = $this->getType();
 
         if (isset($entryType->original) && $entryType->original->handle !== $entryType->handle) {
-            $templates[] = [
-                'template' => sprintf(
-                    '%s/%s/%s',
-                    Cms::config()->partialTemplatesPath,
-                    self::refHandle(),
-                    $entryType->original->handle,
-                ),
-                'priority' => 5,
+            return [
+                [
+                    'template' => sprintf(
+                        '%s/%s/%s',
+                        Cms::config()->partialTemplatesPath,
+                        self::refHandle(),
+                        $entryType->original->handle,
+                    ),
+                    'priority' => 5,
+                ],
+                ...$templates,
             ];
         }
 

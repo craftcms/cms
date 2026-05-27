@@ -390,6 +390,8 @@ test('NamespaceAttributes', function (string $expected, string $html, string $na
     ['<div id="foo-bar"></div><div data-reverse-target="#foo-bar, #foo-bar .foo"></div>', '<div id="bar"></div><div data-reverse-target="#bar, #bar .foo"></div>', 'foo', false],
     ['<div id="foo-bar"></div><div data-target-prefix="#foo-"></div>', '<div id="bar"></div><div data-target-prefix="#"></div>', 'foo', false],
     ['<div id="foo-bar"></div><div data-target-prefix></div>', '<div id="bar"></div><div data-target-prefix></div>', 'foo', false],
+    // https://github.com/craftcms/cms/issues/18957
+    ['<div for=" "></div>', '<div for=" "></div>', 'foo', false],
 ]);
 
 test('Widont', function (string $expected, string $string): void {
