@@ -237,6 +237,25 @@ it('sanitizes submitted html with the configured html sanitizer', function () {
         ->and($value->getRaw())->toBe('<p>Hi</p>');
 });
 
+it('preserves element reference tags when sanitizing submitted markdown', function () {
+    $field = new MarkdownField([
+        'name' => 'Body',
+        'handle' => 'body',
+        'sanitizeHtml' => true,
+    ]);
+
+    $value = $field->normalizeValueFromRequest(implode("\n", [
+        '[Global Transit Overhaul Widens Washington]({entry:925@1:url})',
+        '[Unknown]({unknown:925@1:url})',
+    ]), null);
+
+    expect($field->validate())->toBeTrue()
+        ->and($value->getRaw())->toBe(implode("\n", [
+            '[Global Transit Overhaul Widens Washington]({entry:925@1:url})',
+            '[Unknown]({unknown:925&#64;1:url})',
+        ]));
+});
+
 it('can disable submitted html sanitization', function () {
     $field = new MarkdownField([
         'name' => 'Body',

@@ -8,6 +8,7 @@ use Closure;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Concerns\PreservesElementRefs;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -37,6 +38,8 @@ use function CraftCms\Cms\template;
 
 class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
+    use PreservesElementRefs;
+
     public const string TOOLBAR_BOLD = 'bold';
 
     public const string TOOLBAR_ITALIC = 'italic';
@@ -602,7 +605,10 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         }
 
         if ($fromRequest && $this->sanitizeHtml) {
-            $value = app(HtmlSanitizers::class)->sanitize($value, $this->htmlSanitizer);
+            $value = $this->sanitizePreservingElementRefs(
+                $value,
+                fn (string $value): string => app(HtmlSanitizers::class)->sanitize($value, $this->htmlSanitizer),
+            );
 
             if (trim($value) === '') {
                 return null;
