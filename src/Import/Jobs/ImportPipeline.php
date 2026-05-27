@@ -28,7 +28,7 @@ class ImportPipeline extends Job
         // each batch should `allowFailures()`
         // so that we don't cancel the batch when one job failed
         // maybe this should be customisable?
-        // https://laravel.com/docs/12.x/queues#allowing-failures
+        // https://laravel.com/docs/13.x/queues#allowing-failures
         $steps = [];
         foreach ($this->steps as $step) {
             $steps[] = Bus::batch([$step['job']])->name($step['name'] ?? 'Importing step data')->allowFailures();
@@ -40,6 +40,6 @@ class ImportPipeline extends Job
     #[Override]
     protected function defaultDescription(): string
     {
-        return t("Importing “{$this->run->name}” data");
+        return t("Importing “{$this->run->name}” run data");
     }
 }

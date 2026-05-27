@@ -7,6 +7,9 @@ namespace CraftCms\Cms\Import\Jobs;
 use CraftCms\Cms\Import\Import as ImportService;
 use CraftCms\Cms\Queue\Job;
 use Illuminate\Bus\Batchable;
+use Override;
+
+use function CraftCms\Cms\t;
 
 class Import extends Job
 {
@@ -20,6 +23,12 @@ class Import extends Job
         private readonly int $start = 0,
     ) {
         parent::__construct();
+    }
+
+    #[Override]
+    protected function defaultDescription(): string
+    {
+        return t('Importing data (import job)');
     }
 
     /**
