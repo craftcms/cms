@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.10.4 - 2026-05-27
 
 - Updated Twig to 3.27. ([#18980](https://github.com/craftcms/cms/pull/18980))
 - Fixed a bug where an empty `storage/runtime/` directory was getting created even if `runtimePath` was being overridden in `config/app.php`. ([#18936](https://github.com/craftcms/cms/issues/18936))
