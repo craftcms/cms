@@ -150,7 +150,7 @@ readonly class Navigation
                 $navItems[] = [
                     'label' => 'GraphQL',
                     'url' => 'graphql',
-                    'icon' => 'graphql',
+                    'icon' => 'custom-icons/graphql',
                     'subnav' => $subNavItems,
                 ];
             }
