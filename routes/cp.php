@@ -49,6 +49,7 @@ use CraftCms\Cms\Http\Controllers\Users\UsersController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
 use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
+use CraftCms\Cms\Http\Middleware\EnsureTwoFactorChallengeIsRecent;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
@@ -64,7 +65,8 @@ Route::get('install', [InstallController::class, 'index']);
 
 Route::middleware('craft.web')->group(function () {
     Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
-    Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm']);
+    Route::post(CpAuthPath::Login->value, [LoginController::class, 'attemptLogin']);
+    Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm'])->middleware(EnsureTwoFactorChallengeIsRecent::class);
     Route::get(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'show']);
     Route::post(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'store']);
     Route::get(CpAuthPath::VerifyEmail->value, [VerifyEmailController::class, 'show']);
@@ -192,11 +194,13 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         Route::get('settings/entry-types', [EntryTypesController::class, 'index']);
         Route::middleware(RequireAdminChanges::class)->get('settings/entry-types/new', [EntryTypesController::class, 'create']);
         Route::get('settings/entry-types/{entryType}', [EntryTypesController::class, 'edit']);
+        Route::middleware(RequireAdminChanges::class)->delete('settings/entry-types/{entryType}', [EntryTypesController::class, 'destroy']);
 
         // Fields
         Route::get('settings/fields', [FieldsController::class, 'index']);
         Route::middleware(RequireAdminChanges::class)->get('settings/fields/new', [FieldsController::class, 'create']);
         Route::get('settings/fields/edit/{fieldId}', [FieldsController::class, 'edit']);
+        Route::middleware(RequireAdminChanges::class)->delete('settings/fields/{fieldId}', [FieldsController::class, 'destroy'])->whereNumber('fieldId');
 
         // General
         Route::get('settings/general', [GeneralSettingsController::class, 'index'])
@@ -226,6 +230,9 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
             Route::get('graphql/schemas/new', [SchemasController::class, 'create']);
             Route::get('graphql/schemas/public', [SchemasController::class, 'editPublic']);
             Route::get('graphql/schemas/{schemaId}', [SchemasController::class, 'edit'])->whereNumber('schemaId');
+            Route::delete('graphql/schemas/{schemaId}', [SchemasController::class, 'destroy'])->whereNumber('schemaId');
+
+            Route::delete('graphql/tokens/{tokenId}', [TokensController::class, 'destroy'])->whereNumber('tokenId');
         });
 
         // Plugins
@@ -249,17 +256,21 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         Route::get('settings/routes', [RoutesController::class, 'index']);
 
         // Sections
-        Route::get('settings/sections', [SectionsController::class, 'index']);
+        Route::get('settings/sections', [SectionsController::class, 'index'])
+            ->name('settings.sections.index');
         Route::middleware(RequireAdminChanges::class)->get('settings/sections/new', [SectionsController::class, 'create']);
         Route::get('settings/sections/{section}', [SectionsController::class, 'edit']);
+        Route::middleware(RequireAdminChanges::class)->post('sections/sections', [SectionsController::class, 'store']);
 
         // Volumes
         Route::get('settings/assets', [VolumesController::class, 'index']);
         Route::middleware(RequireAdminChanges::class)->get('settings/assets/volumes/new', [VolumesController::class, 'create']);
         Route::get('settings/assets/volumes/{volumeId}', [VolumesController::class, 'edit'])->whereNumber('volumeId');
+        Route::middleware(RequireAdminChanges::class)->delete('settings/assets/volumes/{volumeId}', [VolumesController::class, 'destroy'])->whereNumber('volumeId');
         Route::get('settings/assets/transforms', [ImageTransformsController::class, 'index']);
         Route::middleware(RequireAdminChanges::class)->get('settings/assets/transforms/new', [ImageTransformsController::class, 'create']);
         Route::get('settings/assets/transforms/{transformHandle}', [ImageTransformsController::class, 'edit']);
+        Route::middleware(RequireAdminChanges::class)->delete('settings/assets/transforms/{transformId}', [ImageTransformsController::class, 'destroy']);
 
         // Sites
         Route::get('settings/sites', [SitesController::class, 'index'])
@@ -296,12 +307,15 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
                 RequireAdminChanges::class,
             ])->group(function () {
                 Route::get('settings/users/groups/new', [UserGroupsController::class, 'create']);
+                Route::post('settings/users/groups', [UserGroupsController::class, 'store'])->whereNumber('groupId');
+                Route::delete('settings/users/groups/{groupId}', [UserGroupsController::class, 'destroy'])->whereNumber('groupId');
             });
-            Route::get('settings/users/groups/{userGroup}', [UserGroupsController::class, 'edit']);
+            Route::get('settings/users/groups/{userGroup}', [UserGroupsController::class, 'edit'])
+                ->name('settings.users.groups.edit');
         });
 
         // User settings
-        Route::get('settings/users/settings', [UserSettingsController::class, 'index']);
+        Route::get('settings/users/settings', [UserSettingsController::class, 'index'])->name('settings.users.index');
     });
 
     Route::prefix('settings/filesystems')->group(function () {
@@ -318,6 +332,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
             RequireAdminChanges::class,
         ])->group(function () {
             Route::post('{handle}', [FilesystemsController::class, 'save']);
+            Route::delete('{handle}', [FilesystemsController::class, 'destroy']);
         });
     });
 

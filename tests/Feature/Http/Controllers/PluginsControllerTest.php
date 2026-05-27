@@ -10,6 +10,7 @@ use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPluginSettingsRequest;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -46,7 +47,9 @@ test('index shows read-only state when allowAdminChanges is false', function () 
 
     get(action([PluginsController::class, 'index']))
         ->assertOk()
-        ->assertSee(t('Changes to these settings aren’t permitted in this environment.'));
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/Plugins')
+            ->where('readOnly', true)
+        );
 });
 
 test('install validates required pluginHandle', function () {

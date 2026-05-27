@@ -77,7 +77,6 @@ use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
 use CraftCms\Cms\Http\Controllers\Settings\RoutesController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
-use CraftCms\Cms\Http\Controllers\Settings\UserGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
@@ -105,6 +104,7 @@ use CraftCms\Cms\Http\Controllers\Utilities\FindAndReplaceController;
 use CraftCms\Cms\Http\Controllers\Utilities\MigrationsController;
 use CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
+use CraftCms\Cms\Http\Middleware\EnsureTwoFactorChallengeIsRecent;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
@@ -130,9 +130,10 @@ foreach ([
         Route::get('app/health-check', HealthCheckController::class);
 
         // Auth
-        Route::post('users/login', [LoginController::class, 'attemptLogin']);
-        Route::post('auth/verify-totp', [TwoFactorAuthenticationController::class, 'verify']);
-        Route::post('auth/verify-recovery-code', [TwoFactorAuthenticationController::class, 'verifyRecoveryCode']);
+        Route::middleware(EnsureTwoFactorChallengeIsRecent::class)->group(function () {
+            Route::post('auth/verify-totp', [TwoFactorAuthenticationController::class, 'verify']);
+            Route::post('auth/verify-recovery-code', [TwoFactorAuthenticationController::class, 'verifyRecoveryCode']);
+        });
         Route::post('auth/passkey-request-options', [PasskeyController::class, 'requestOptions']);
         Route::post('users/login-with-passkey', [PasskeyController::class, 'login']);
         Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
@@ -142,7 +143,7 @@ foreach ([
             ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class]);
         Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout']);
         Route::middleware(
-            in_array('craft.cp', $middleware) ? null : 'throttle:1,1'
+            in_array('craft.cp', $middleware) ? null : 'throttle:password-reset'
         )->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
         Route::post('users/save-user', SaveUserController::class);
 
@@ -317,7 +318,6 @@ Route::prefix(implode('/', [
         ])->group(function () {
             Route::get('entry-types/new', [EntryTypesController::class, 'create']);
             Route::post('entry-types/save', [EntryTypesController::class, 'store']);
-            Route::post('entry-types/delete', [EntryTypesController::class, 'destroy']);
             Route::post('entry-types/render-override-settings', [EntryTypesController::class, 'renderOverrideSettings']);
             Route::post('entry-types/apply-override-settings', [EntryTypesController::class, 'applyOverrideSettings']);
         });
@@ -327,7 +327,6 @@ Route::prefix(implode('/', [
             Route::get('fields/edit-field', [FieldsController::class, 'edit']);
             Route::post('fields/render-settings', [FieldsController::class, 'renderSettings']);
             Route::post('fields/save-field', [FieldsController::class, 'store']);
-            Route::post('fields/delete-field', [FieldsController::class, 'destroy']);
             Route::post('fields/render-layout-component-settings', [FieldsController::class, 'renderLayoutComponentSettings']);
             Route::post('fields/apply-layout-tab-settings', [FieldsController::class, 'applyLayoutTabSettings']);
             Route::post('fields/apply-layout-element-settings', [FieldsController::class, 'applyLayoutElementSettings']);
@@ -342,7 +341,6 @@ Route::prefix(implode('/', [
 
         // GraphQL
         Route::middleware([RequireAdmin::class])->group(function () {
-            Route::post('graphql/delete-token', [GqlTokensController::class, 'destroy']);
             Route::post('graphql/generate-token', [GqlTokensController::class, 'generate']);
 
             Route::middleware('password.confirm')->group(function () {
@@ -352,7 +350,6 @@ Route::prefix(implode('/', [
         });
 
         Route::middleware([RequireAdminChanges::class])->group(function () {
-            Route::post('graphql/delete-schema', [GqlSchemasController::class, 'destroy']);
 
             Route::middleware('password.confirm')->group(function () {
                 Route::post('graphql/save-schema', [GqlSchemasController::class, 'save']);
@@ -441,16 +438,13 @@ Route::prefix(implode('/', [
         Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::get('fs/edit', [FilesystemsController::class, 'edit']);
             Route::post('fs/save', [FilesystemsController::class, 'save']);
-            Route::post('fs/remove', [FilesystemsController::class, 'delete']);
         });
 
         // Volumes
         Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::post('volumes/save-volume', [VolumesController::class, 'save']);
-            Route::post('volumes/delete-volume', [VolumesController::class, 'delete']);
             Route::post('volumes/reorder-volumes', [VolumesController::class, 'reorder']);
             Route::post('image-transforms/save', [ImageTransformsController::class, 'save']);
-            Route::post('image-transforms/delete', [ImageTransformsController::class, 'delete']);
         });
 
         // Plugins
@@ -498,7 +492,7 @@ Route::prefix(implode('/', [
         Route::middleware([
             RequireAdminChanges::class,
         ])->group(function () {
-            Route::post('sections/save-section', [SectionsController::class, 'store']);
+            // Route::post('sections/save-section', [SectionsController::class, 'store']);
             Route::post('sections/delete-section', [SectionsController::class, 'destroy']);
         });
 
@@ -542,15 +536,6 @@ Route::prefix(implode('/', [
         Route::post('users/remove-password-reset-requirement', [PasswordController::class, 'removeResetRequirement']);
         Route::post('users/verify-password', [PasswordController::class, 'verifyPassword']);
         Route::post('users/save-field-layout', SaveUsersFieldLayoutController::class);
-
-        // User groups
-        Route::middleware([
-            RequireAdminChanges::class,
-            RequireEdition::class.':'.Edition::Team->value,
-        ])->group(function () {
-            Route::post('user-settings/save-group', [UserGroupsController::class, 'store']);
-            Route::post('user-settings/delete-group', [UserGroupsController::class, 'destroy']);
-        });
 
         // User settings
         Route::middleware([

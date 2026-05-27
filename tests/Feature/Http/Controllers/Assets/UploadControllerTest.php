@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Http\Controllers\Assets\UploadController;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Http\UploadedFile;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
@@ -33,6 +37,36 @@ it('requires a file or field for upload', function () {
     postJson(action([UploadController::class, 'upload']), [
         'folderId' => $this->folder->id,
     ])->assertStatus(400);
+});
+
+it('uploads to a dynamic field location using posted element context', function () {
+    $result = EntryModel::factory()
+        ->withField('coverImage', AssetsField::class, [
+            'defaultUploadLocationSource' => "volume:{$this->volume->uid}",
+            'defaultUploadLocationSubpath' => '{uid}',
+        ])
+        ->createElementWithFields(['title' => 'Hub Resource']);
+
+    $entry = $result->element;
+    $field = $result->fields->get('coverImage');
+
+    post(action([UploadController::class, 'upload']), [
+        'fieldId' => (string) $field->id,
+        'elementId' => (string) $entry->id,
+        'siteId' => (string) $entry->siteId,
+        'assets-upload' => UploadedFile::fake()->image('cover.jpg'),
+    ], [
+        'Accept' => 'application/json',
+    ])
+        ->assertOk()
+        ->assertJson([
+            'filename' => 'cover.jpg',
+        ]);
+
+    expect($this->folder->newQuery()
+        ->where('volumeId', $this->volume->id)
+        ->where('path', "{$entry->uid}/")
+        ->exists())->toBeTrue();
 });
 
 it('requires authentication for replace file', function () {

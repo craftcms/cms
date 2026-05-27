@@ -103,6 +103,19 @@ it('renders matched element template routes for a full request', function () {
         ->assertSeeText("entry-template:{$entry->id}:full-request-entry", escape: false);
 });
 
+it('keeps matched element state out of dehydrated queue context', function () {
+    $entry = createRoutableEntry('dehydrated-context-entry', 'entries/show');
+
+    $request = Request::create('/dehydrated-context-entry');
+    app()->instance('request', $request);
+
+    $response = $this->middleware->handle($request, fn () => response('next'));
+
+    expect($response->getStatusCode())->toBe(200)
+        ->and(MatchedElement::get()->id)->toBe($entry->id)
+        ->and(fn () => Context::dehydrate())->not->toThrow(Throwable::class);
+});
+
 it('denies anonymous matched element template routes when the system is offline', function () {
     Cms::config()->isSystemLive = false;
 

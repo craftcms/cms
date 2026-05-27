@@ -14,8 +14,12 @@ use craft\helpers\FileHelper;
 use craft\queue\QueueLogBehavior;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Route\DynamicRoute;
+use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Yii2Adapter\Http\CaptureOriginalActionRequestUri;
 use CraftCms\Yii2Adapter\Web\Response as IlluminateBridgeResponse;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request as IlluminateRequest;
@@ -206,6 +210,10 @@ class Application extends \yii\web\Application
             return $response;
         }
 
+        if ($request->getIsActionRequest() && request()->attributes->has(CaptureOriginalActionRequestUri::ORIGINAL_ACTION_REQUEST_URI)) {
+            return $this->handleOriginalLaravelActionRequest();
+        }
+
         // If we’re still here, finally let Yii do its thing.
         return parent::handleRequest($request);
     }
@@ -261,9 +269,9 @@ class Application extends \yii\web\Application
 
     private function runLaravelAction(string $route, array $params = []): ?BaseResponse
     {
-        $actionUri = request()->actionSegmentsToRoute(explode('/', $route));
+        $actionUri = ActionRoute::uriForSegments(explode('/', $route), request()->isCpRequest());
 
-        if ($actionUri === null) {
+        if (empty($actionUri)) {
             return null;
         }
 
@@ -293,6 +301,36 @@ class Application extends \yii\web\Application
 
         /** @var SymfonyResponse $laravelResponse */
         $laravelResponse = app(Kernel::class)->handle($internalRequest);
+
+        $response = $this->getResponse();
+
+        if ($response instanceof IlluminateBridgeResponse) {
+            return $response->setIlluminateResponse($laravelResponse);
+        }
+
+        return $response;
+    }
+
+    private function handleOriginalLaravelActionRequest(): BaseResponse
+    {
+        /** @var IlluminateRequest $request */
+        $request = request();
+        $originalUri = (string) $request->attributes->get(CaptureOriginalActionRequestUri::ORIGINAL_ACTION_REQUEST_URI);
+
+        $originalRequest = $request->duplicateWithUri($originalUri);
+        $originalRequest->query->remove('action');
+        $originalRequest->request->remove('action');
+
+        app()->instance('request', $originalRequest);
+
+        $template = $originalRequest->isSiteRequest()
+            ? app(Sites::class)->getRequestPath($originalRequest)
+            : $originalRequest->craftPath();
+
+        $laravelResponse = new DynamicRoute('templates/render', [
+            'template' => $template,
+            'variables' => $this->getUrlManager()->getRouteParams() ?? [],
+        ])->handle($originalRequest);
 
         $response = $this->getResponse();
 

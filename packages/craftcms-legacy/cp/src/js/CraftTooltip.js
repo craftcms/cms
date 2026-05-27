@@ -329,4 +329,4 @@ class CraftTooltip extends HTMLElement {
   };
 }
 
-customElements.define('craft-tooltip', CraftTooltip);
+customElements.define('craft-legacy-tooltip', CraftTooltip);

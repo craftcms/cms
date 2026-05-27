@@ -5,12 +5,12 @@ export default css`
     display: contents;
   }
 
-  .chip {
+  .cp-chip {
+    --_min-height: var(--c-chip-height, var(--c-size-control-sm));
     display: inline-flex;
-    min-height: var(--c-chip-height, var(--c-size-control-sm));
     min-width: auto;
     border-radius: var(--c-chip-radius, var(--c-radius-md));
-    padding-inline: var(--c-chip-spacing-inline, var(--c-spacing-md));
+    padding-inline: var(--c-chip-spacing-inline, 0);
     padding-block: var(--c-chip-spacing-block, var(--c-spacing-sm));
     align-items: start;
     box-shadow: var(--c-chip-shadow, var(--c-shadow-sm));
@@ -26,8 +26,14 @@ export default css`
     background-color: var(--c-color-fill-quiet, var(--c-surface-raised));
   }
 
-  .chip[appearance='plain'],
-  .chip--plain {
+  .cp-chip__body ::slotted(a) {
+    text-decoration: none;
+    font-weight: bold;
+    display: flex;
+  }
+
+  .cp-chip[appearance='plain'],
+  .cp-chip--plain {
     padding-block: 0;
     padding-inline: 0;
     border-color: transparent;
@@ -35,42 +41,38 @@ export default css`
     box-shadow: none;
   }
 
-  .chip[size='small'],
-  .chip--small {
-    padding-block: 0;
-    min-height: var(--c-size-control-sm);
+  .cp-chip[size='small'],
+  .cp-chip--small {
+    --_min-height: var(--c-size-control-sm);
+    padding-block: calc(var(--c-spacing-xs) / 2);
   }
 
-  chip[size='medium'],
-  .chip--medium {
+  .cp-chip[size='medium'],
+  .cp-chip--medium {
     padding-block: 0;
     min-height: var(--c-size-control-md);
   }
 
-  .chip__prefix,
-  .chip__body,
-  .chip__suffix {
+  .cp-chip__prefix,
+  .cp-chip__body,
+  .cp-chip__suffix {
     display: inline-flex;
     flex-direction: column;
-    align-self: center;
+    min-height: var(--_min-height);
   }
 
-  .chip__body {
+  .cp-chip__body {
     flex: 1 1 auto;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  .chip__prefix {
-    padding-inline-end: var(--c-spacing-md);
+  .cp-chip__prefix {
+    padding-inline: calc(var(--c-spacing-md) / 2);
   }
 
-  .chip__suffix {
+  .cp-chip__suffix {
     padding-inline-start: var(--c-spacing-md);
-  }
-
-  :host(:not([variant='plain'])) .chip__suffix {
-    margin-inline-end: calc(var(--c-spacing-sm) * -1);
   }
 `;

@@ -131,6 +131,7 @@ class CraftConnector extends Yii2
 
         Craft::$app->db->close();
         Craft::$app->db2->close();
+        DbFacade::reconnect();
     }
 
     public function doRequest(object $request): Response

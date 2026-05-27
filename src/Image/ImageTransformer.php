@@ -25,6 +25,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use DateTimeInterface;
@@ -138,7 +139,7 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
 
                 // Generate the transform
                 try {
-                    $this->generateTransform($index);
+                    $this->generateTransform($index, $asset);
                 } catch (Exception $e) {
                     $index->inProgress = false;
                     $index->fileExists = false;
@@ -351,9 +352,9 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
      *
      * @throws ImageTransformException
      */
-    private function generateTransform(ImageTransformIndex $index): void
+    private function generateTransform(ImageTransformIndex $index, ?Asset $asset = null): void
     {
-        $asset = app(Assets::class)->getAssetById($index->assetId);
+        $asset ??= app(Assets::class)->getAssetById($index->assetId);
 
         if (! $asset) {
             throw new ImageTransformException('Asset not found - '.$index->assetId);
@@ -497,18 +498,20 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
 
     public function storeTransformIndexData(ImageTransformIndex $index): void
     {
-        $values = $index->toArray([
-            'assetId',
-            'transformer',
-            'filename',
-            'format',
-            'transformString',
-            'volumeId',
-            'fileExists',
-            'inProgress',
-            'error',
-            'dateIndexed',
-        ], [], false);
+        $values = Query::prepareValuesForDb(
+            $index->toArray([
+                'assetId',
+                'transformer',
+                'filename',
+                'format',
+                'transformString',
+                'volumeId',
+                'fileExists',
+                'inProgress',
+                'error',
+                'dateIndexed',
+            ], [], false)
+        );
 
         $now = now();
 

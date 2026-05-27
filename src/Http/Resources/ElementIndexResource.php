@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Resources;
 
+use CraftCms\Cms\Cp\JsonResource;
 use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\InteractsWithElementIndexes;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
@@ -12,7 +13,6 @@ use CraftCms\Cms\Support\Facades\ElementExporters;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -77,13 +77,19 @@ class ElementIndexResource extends JsonResource
             return $responseData;
         }
 
+        // get the return URL with `?` replaced with a token
+        // (see https://github.com/craftcms/cms/issues/18923)
+        if ($returnUrl = $request->input('returnUrl')) {
+            $returnUrl = str_replace('?', ':QS:', $returnUrl);
+        }
+
         $responseData['html'] = $elementType::indexHtml(
             elementQuery: $elementQuery,
             disabledElementIds: $request->array('disabledElementIds'),
             viewState: [
                 ...$viewState,
                 'fieldLayouts' => $this->resolveFieldLayouts(),
-                'returnUrl' => $request->input('returnUrl'),
+                'returnUrl' => $returnUrl,
             ],
             sourceKey: $sourceKey,
             context: $request->context(),

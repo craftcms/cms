@@ -31,6 +31,27 @@ it('succeeds when admin edits another user', function () {
     expect($updatedUser->lastName)->toBe('User');
 });
 
+it('clears existing user name fields', function () {
+    $admin = UserFactory::new()->admin()->createElement();
+    $targetUser = UserFactory::new()->createElement([
+        'firstName' => 'Existing',
+        'lastName' => 'User',
+    ]);
+
+    actingAs($admin)->post(action(SaveUserController::class), [
+        'userId' => $targetUser->id,
+        'firstName' => '',
+        'lastName' => '',
+    ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $updatedUser = User::find()->id($targetUser->id)->one();
+    expect($updatedUser)->not->toBeNull();
+    expect($updatedUser->firstName)->toBeNull();
+    expect($updatedUser->lastName)->toBeNull();
+});
+
 it('fails when user without permission edits another user', function () {
     $regularUser = UserFactory::new()->createElement();
     $targetUser = UserFactory::new()->createElement();

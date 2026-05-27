@@ -48,8 +48,8 @@ describe('ArrayTwigExtension', function () {
     it('supports map/filter pipeline helpers', function () {
         $extension = new ArrayTwigExtension($this->pageLifecycle, $this->env);
 
-        $filtered = $extension->filterFilter($this->env, [0, 1, 2, null]);
-        $mapped = $extension->mapFilter($this->env, [1, 2, 3], fn (int $v) => $v * 2);
+        $filtered = $extension->filterFilter($this->env, false, [0, 1, 2, null]);
+        $mapped = $extension->mapFilter($this->env, false, [1, 2, 3], fn (int $v) => $v * 2);
 
         expect(array_values($filtered))->toBe([1, 2]);
         expect($mapped)->toBe([2, 4, 6]);

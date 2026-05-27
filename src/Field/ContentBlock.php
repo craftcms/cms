@@ -488,7 +488,9 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
 
         // Existing element?
         if ($owner?->id) {
-            $query->owner($owner);
+            $query
+                ->owner($owner)
+                ->excludeEagerLoadCriteria(['ownerId', 'primaryOwnerId']);
 
             $query->beforeQuery(function (ContentBlockQuery $query) use ($owner) {
                 // Clear out id=false if this query was populated previously

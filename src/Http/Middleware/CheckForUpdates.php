@@ -10,6 +10,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Update\Updates;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -59,6 +60,8 @@ readonly class CheckForUpdates
             }
 
             File::cleanDirectory(Path::compiledTemplates(create: false));
+
+            TemplateMode::set(TemplateMode::Cp);
 
             return response()->view('_special/dbupdate');
         }

@@ -75,7 +75,7 @@ readonly class License
             return CRAFT_LICENSE_KEY_PATH;
         }
 
-        return config_path('license.key');
+        return config_path('craft/license.key');
     }
 
     /**

@@ -170,11 +170,11 @@ class ElementRequest extends FormRequest
         abort(400, 'Request missing required param.');
     }
 
-    private function elementQuery(): ElementQueryInterface
+    private function elementQuery(bool $withNestedContext = true): ElementQueryInterface
     {
         $query = $this->elementType::find();
 
-        if ($query instanceof NestedElementQueryInterface) {
+        if ($withNestedContext && $query instanceof NestedElementQueryInterface) {
             $fieldId = Arr::get($this->overrides, 'fieldId', $this->input('fieldId'));
             $ownerId = Arr::get($this->overrides, 'ownerId', $this->input('ownerId'));
 
@@ -236,20 +236,24 @@ class ElementRequest extends FormRequest
         $provisional = Arr::get($this->overrides, 'isProvisionalDraft', $this->input('provisional'));
         [$siteId, $preferSites] = $this->site();
 
-        $query = $this->elementQuery()
-            ->draftId($draftId ? (int) $draftId : null)
-            ->revisionId($revisionId ? (int) $revisionId : null)
-            ->provisionalDrafts($hasExplicitProvisional ? (bool) $provisional : null)
-            ->siteId($siteId)
-            ->preferSites($preferSites)
-            ->unique()
-            ->status(null);
+        $createQuery = function (bool $withNestedContext = true) use ($draftId, $revisionId, $hasExplicitProvisional, $provisional, $siteId, $preferSites) {
+            $elementQuery = $this->elementQuery($withNestedContext)
+                ->draftId($draftId ? (int) $draftId : null)
+                ->revisionId($revisionId ? (int) $revisionId : null)
+                ->provisionalDrafts($hasExplicitProvisional ? (bool) $provisional : null)
+                ->siteId($siteId)
+                ->preferSites($preferSites)
+                ->unique()
+                ->status(null);
 
-        if ($revisionId) {
-            $query->trashed(null);
-        }
+            if ($revisionId) {
+                $elementQuery->trashed(null);
+            }
 
-        $element = $query->first();
+            return $elementQuery;
+        };
+
+        $element = $createQuery()->first() ?? $createQuery(false)->first();
 
         if (! $element) {
             // check for the canonical element as a fallback

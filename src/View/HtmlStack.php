@@ -738,7 +738,7 @@ class HtmlStack
             ->unless(
                 empty($this->js[$position->value]),
                 fn (Collection $c) => $c->concat([
-                    Html::script(implode(PHP_EOL, $this->js[$position->value])),
+                    Html::script(implode(PHP_EOL, $this->js[$position->value]), ['type' => 'module']),
                 ]),
             )
             ->when(

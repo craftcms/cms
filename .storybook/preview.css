@@ -1,0 +1,57 @@
+/* Storybook preview utilities */
+
+/* Layout helpers for stories */
+.sb-flex {
+  display: flex;
+}
+
+.sb-flex-col {
+  flex-direction: column;
+}
+
+.sb-items-center {
+  align-items: center;
+}
+
+.sb-justify-center {
+  justify-content: center;
+}
+
+.sb-gap-2 {
+  gap: 0.5rem;
+}
+
+.sb-gap-4 {
+  gap: 1rem;
+}
+
+.sb-p-4 {
+  padding: 1rem;
+}
+
+/* Grid utilities */
+.sb-grid {
+  display: grid;
+}
+
+.sb-grid-cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.sb-grid-cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* Stack layout */
+.sb-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sb-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}

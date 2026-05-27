@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[8160,9770],{8160:function(a,i,e){e.r(i);var n=e(9770);i.default={...n.default}},9770:function(a,i,e){e.r(i),i.default={validationError:"Hiba,",validationWarning:"Figyelmeztetés,",validationSuccess:"Sikeres,",validationInfo:"Információ,"}}}]);
+//# sourceMappingURL=8160.js.map

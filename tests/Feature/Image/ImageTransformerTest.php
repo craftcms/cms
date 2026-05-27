@@ -2,11 +2,14 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Assets;
+use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\Data\ImageTransformIndex;
 use CraftCms\Cms\Image\ImageTransformer;
 use Illuminate\Support\Facades\DB;
 
@@ -117,4 +120,44 @@ it('invalidates stale eager-loaded indexes when dateModified is a string', funct
     );
 
     expect(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $index->id)->exists())->toBeFalse();
+});
+
+it('stores dateIndexed as a DB-compatible UTC datetime string', function () {
+    $asset = ($this->createImageAsset)();
+
+    $index = new ImageTransformIndex([
+        'assetId' => $asset->id,
+        'transformer' => ImageTransformer::class,
+        'filename' => 'transform-test.jpg',
+        'transformString' => '_30x20_crop_center-center_none',
+        'dateIndexed' => new DateTime('2026-05-17 15:32:16', new DateTimeZone('Europe/Vienna')),
+    ]);
+
+    $this->transformer->storeTransformIndexData($index);
+
+    $storedDateIndexed = DB::table(Table::IMAGETRANSFORMINDEX)
+        ->where('id', $index->id)
+        ->value('dateIndexed');
+
+    expect($storedDateIndexed)->toBe('2026-05-17 13:32:16')
+        ->and($storedDateIndexed)->not->toContain('T')
+        ->and($storedDateIndexed)->not->toContain('+');
+});
+
+it('uses the provided asset when immediately generating transforms', function () {
+    $asset = ($this->createImageAsset)([
+        'filename' => 'transform-test.txt',
+    ]);
+    $assets = Mockery::mock(Assets::class);
+    $assets->shouldNotReceive('getAssetById');
+    app()->instance(Assets::class, $assets);
+
+    $transform = new ImageTransform([
+        'width' => 100,
+        'height' => 100,
+        'mode' => 'crop',
+    ]);
+
+    expect(fn () => $this->transformer->getTransformUrl($asset, $transform, true))
+        ->toThrow(ImageTransformException::class);
 });

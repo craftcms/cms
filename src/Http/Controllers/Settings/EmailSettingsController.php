@@ -9,13 +9,12 @@ use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Email\Actions\SendTestMailAction;
 use CraftCms\Cms\Http\Requests\EmailSettingsRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Throwable;
 
@@ -30,7 +29,7 @@ readonly class EmailSettingsController
         private Sites $sites,
     ) {}
 
-    public function index(GeneralConfig $generalConfig): Response
+    public function index(GeneralConfig $generalConfig): CpScreenResponse
     {
         $sites = [];
         if ($this->sites->isMultiSite()) {
@@ -42,22 +41,24 @@ readonly class EmailSettingsController
             }
         }
 
-        return Inertia::render('SettingsEmailPage', [
-            'emailConfig' => $this->projectConfig->get('email') ?? [],
-            'mailerOptions' => $this->getMailerOptions(),
-            'envSuggestions' => SelectOptions::getEnvSuggestions(),
-            'templateSuggestions' => SelectOptions::getTemplateSuggestions(),
-            'sites' => $sites,
-            'crumbs' => [
+        return new CpScreenResponse()
+            ->title(t('Email Settings'))
+            ->crumbs([
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Email')],
-            ],
-            'readOnly' => ! $generalConfig->allowAdminChanges,
-            'defaultToEmail' => auth()->user()->email,
-        ]);
+            ])
+            ->redirectUrl('settings')
+            ->inertiaPage('settings/Email', [
+                'emailConfig' => $this->projectConfig->get('email') ?? [],
+                'mailerOptions' => $this->getMailerOptions(),
+                'envSuggestions' => SelectOptions::getEnvSuggestions(),
+                'templateSuggestions' => SelectOptions::getTemplateSuggestions(),
+                'sites' => $sites,
+                'defaultToEmail' => auth()->user()->email,
+            ]);
     }
 
-    public function store(EmailSettingsRequest $request): RedirectResponse
+    public function store(EmailSettingsRequest $request): SymfonyResponse
     {
         $validated = $request->validated();
 
@@ -85,7 +86,7 @@ readonly class EmailSettingsController
 
         $this->projectConfig->set('email', $emailSettings, 'Update email settings.');
 
-        return back()->with('success', t('Email settings saved.'));
+        return $this->asSuccess(t('Email settings saved.'));
     }
 
     public function test(Request $request, SendTestMailAction $sendTestMail): SymfonyResponse|RedirectResponse

@@ -387,11 +387,19 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         if (actions.length) {
           Craft.addActionsToChip($element, actions);
 
-          const disclosureMenu = $element
-            .find(
-              '> .chip-content > .chip-actions .action-btn, > .card-titlebar > .card-actions-container > .card-actions .action-btn'
-            )
-            .data('disclosureMenu');
+          const disclosureMenu =
+            // Old div.chip / card structure
+            $element
+              .find(
+                '> .chip-content > .chip-actions .action-btn, > .card-titlebar > .card-actions-container > .card-actions .action-btn'
+              )
+              .data('disclosureMenu') ||
+            // New craft-chip structure: [slot="suffix"] with a disclosure trigger
+            $element
+              .children('[slot="suffix"]')
+              .find('[data-disclosure-trigger]')
+              .first()
+              .data('disclosureMenu');
           const moveForwardBtn = disclosureMenu.$container.find(
             '[data-move-forward]'
           )[0];

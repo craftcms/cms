@@ -36,6 +36,14 @@ test('EncodeSpaces', function (string $expected, string $str) {
     ['foo%20%20bar', 'foo  bar'],
 ]);
 
+test('Ul', function () {
+    expect((string) Html::ul(['One', 'Two'], ['class' => 'errors']))->toMatchSnapshot();
+});
+
+test('Ol', function () {
+    expect((string) Html::ol(['One', 'Two'], ['class' => 'steps']))->toMatchSnapshot();
+});
+
 test('DisableInputs', function (?string $expected, callable|string|null $html) {
     $this->assertSame($expected, Html::disableInputs($html));
 })->with([
@@ -229,8 +237,8 @@ test('ModifyTagAttributes', function (string|false $expected, string $tag, array
     [false, '<!-- comment -->', []],
     [false, '<?xml?>', []],
     // https://github.com/craftcms/cms/issues/4984
-    ['<img class="foo" src="image.jpg?width=100&amp;height=100">', '<img src="image.jpg?width=100&height=100">', ['class' => 'foo']],
-    ['<img class="foo" src="image.jpg?width=100&amp;height=100">', '<img src="image.jpg?width=100&amp;height=100">', ['class' => 'foo']],
+    ['<img src="image.jpg?width=100&amp;height=100" class="foo">', '<img src="image.jpg?width=100&height=100">', ['class' => 'foo']],
+    ['<img src="image.jpg?width=100&amp;height=100" class="foo">', '<img src="image.jpg?width=100&amp;height=100">', ['class' => 'foo']],
     // https://github.com/craftcms/cms/issues/6973
     ['<custom-element class="foo"></custom-element>', '<custom-element></custom-element>', ['class' => 'foo']],
     // https://github.com/craftcms/cms/issues/7234
@@ -337,6 +345,12 @@ test('NamespaceInputs', function (string $expected, string $html, string $namesp
     ['<textarea name="foo[bar]">blah</textarea>', '<textarea name="bar">blah</textarea>', 'foo'],
     ['<textarea name="foo[bar]"><input name="foo"></textarea>', '<textarea name="bar"><input name="foo"></textarea>', 'foo'],
     ['<input name="3[foo]">', '<input name="foo">', '3'],
+    // Excluded elements should NOT have name attributes namespaced
+    ['<craft-icon name="check">', '<craft-icon name="check">', 'foo'],
+    ['<slot name="prefix">', '<slot name="prefix">', 'foo'],
+    // Form elements mixed with excluded elements
+    ['<input name="foo[bar]"><craft-icon name="check">', '<input name="bar"><craft-icon name="check">', 'foo'],
+    ['<slot name="input"><input name="foo[field]"></slot>', '<slot name="input"><input name="field"></slot>', 'foo'],
 ]);
 
 test('NamespaceAttributes', function (string $expected, string $html, string $namespace, bool $classNames): void {

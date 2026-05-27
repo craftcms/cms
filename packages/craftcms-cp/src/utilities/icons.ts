@@ -99,7 +99,7 @@ export function getIconUrl(
     folder = 'brands';
   }
 
-  if (resolvedVariant === 'custom-icons') {
+  if (family === 'custom-icons' || resolvedVariant === 'custom-icons') {
     folder = 'custom-icons';
   }
 

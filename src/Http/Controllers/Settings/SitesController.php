@@ -8,6 +8,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Site\SiteGroups;
@@ -54,7 +55,7 @@ readonly class SitesController
             (isset($group) ? ['label' => $group->getName()] : null),
         ]);
 
-        return Inertia::render('SettingsSitesIndex', [
+        return Inertia::render('settings/Sites', [
             'crumbs' => $crumbs,
             'newSiteUrl' => Url::cpUrl('settings/sites/new'),
             'nameSuggestions' => Inertia::defer(fn () => SelectOptions::getEnvSuggestions()),
@@ -66,7 +67,7 @@ readonly class SitesController
         ]);
     }
 
-    public function create(Request $request, Sites $sitesService): Response
+    public function create(Request $request)
     {
         $allGroups = $this->siteGroups->getAllGroups();
 
@@ -77,11 +78,10 @@ readonly class SitesController
             'Site group not found'
         );
 
-        return Inertia::render('SettingsSitesEdit', [
-            ...$this->getViewData(),
-            'title' => t('Create a new site'),
-            'isMultisite' => $sitesService->isMultiSite(),
-            'crumbs' => [
+        return new CpScreenResponse()
+            ->title(t('Create a new site'))
+            ->redirectUrl('settings/sites')
+            ->crumbs([
                 [
                     'label' => t('Settings'),
                     'url' => Url::url('settings'),
@@ -95,23 +95,25 @@ readonly class SitesController
                     'url' => Url::url('settings/sites/new'),
                     'active' => true,
                 ],
-            ],
-            'site' => new Site([
-                'name' => '',
-                'handle' => '',
-                'language' => $this->sites->getPrimarySite()->getLanguage(false),
-                'groupId' => $request->integer('groupId'),
-            ]),
-            'groupId' => $request->input('groupId', $allGroups->first()->id),
-            'groupOptions' => $allGroups->map(fn ($group) => [
-                'label' => $group->name,
-                'value' => $group->id,
-            ])->all(),
-            'readOnly' => $this->readOnly,
-        ]);
+            ])
+            ->inertiaPage('settings/SitesEdit', [
+                ...$this->getViewData(),
+                'site' => new Site([
+                    'name' => '',
+                    'handle' => '',
+                    'language' => $this->sites->getPrimarySite()->getLanguage(false),
+                    'groupId' => $request->integer('groupId'),
+                ]),
+                'groupId' => $request->input('groupId', $allGroups->first()->id),
+                'groupOptions' => $allGroups->map(fn ($group) => [
+                    'label' => $group->name,
+                    'value' => $group->id,
+                ])->all(),
+                'readOnly' => $this->readOnly,
+            ]);
     }
 
-    public function edit(SiteModel $site, Sites $sitesService): Response
+    public function edit(SiteModel $site, Sites $sitesService): CpScreenResponse
     {
         $allGroups = $this->siteGroups->getAllGroups();
 
@@ -120,11 +122,10 @@ readonly class SitesController
         $siteData = new Site($site->except('dateDeleted'));
         $siteGroup = $siteData->getGroup();
 
-        return Inertia::render('SettingsSitesEdit', [
-            ...$this->getViewData(),
-            'title' => trim($siteData->getName()) ?: t('Edit Site'),
-            'isMultisite' => $sitesService->isMultiSite(),
-            'crumbs' => [
+        return new CpScreenResponse()
+            ->title(trim($siteData->getName()) ?: t('Edit Site'))
+            ->redirectUrl('settings/sites')
+            ->crumbs([
                 [
                     'label' => t('Settings'),
                     'url' => Url::url('settings'),
@@ -140,19 +141,22 @@ readonly class SitesController
                 [
                     'label' => $siteData->getName(),
                 ],
-            ],
-            'site' => $siteData,
-            'groupId' => $siteData->groupId,
-            'groupOptions' => $allGroups->map(fn ($group) => [
-                'label' => $group->getName(),
-                'value' => $group->id,
-            ])->all(),
-            'readOnly' => $this->readOnly,
-            'transferContentOptions' => Inertia::defer(fn () => $sitesService->getAllSites()->values()),
-        ]);
+
+            ])
+            ->redirectUrl('settings/sites')
+            ->inertiaPage('settings/SitesEdit', [
+                ...$this->getViewData(),
+                'site' => $siteData,
+                'groupId' => $siteData->groupId,
+                'groupOptions' => $allGroups->map(fn ($group) => [
+                    'label' => $group->getName(),
+                    'value' => $group->id,
+                ])->all(),
+                'transferContentOptions' => Inertia::defer(fn () => $sitesService->getAllSites()->values()),
+            ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): \Symfony\Component\HttpFoundation\Response
     {
         $request->validate([
             'siteId' => ['nullable', Rule::exists(Table::SITES, 'id')],
@@ -185,7 +189,7 @@ readonly class SitesController
             return to_route('craft.cp.settings.sites.index')->with('success', t('Site created'));
         }
 
-        return back()->with('success', t('Site saved.'));
+        return $this->asSuccess(t('Site saved.'));
     }
 
     public function reorder(Request $request): RedirectResponse

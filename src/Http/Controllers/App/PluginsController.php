@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\App;
 
+use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Api;
@@ -18,6 +19,8 @@ use function CraftCms\Cms\t;
 
 readonly class PluginsController
 {
+    use RespondsWithFlash;
+
     public function __construct(
         private Api $api,
         private Plugins $plugins,
@@ -33,7 +36,7 @@ readonly class PluginsController
         return new JsonResponse($result);
     }
 
-    public function updateLicense(Request $request): JsonResponse
+    public function updateLicense(Request $request)
     {
         $data = $request->validate([
             'handle' => ['required', 'string'],
@@ -43,8 +46,8 @@ readonly class PluginsController
         // Get the current key and set the new one
         $this->plugins->setPluginLicenseKey($data['handle'], $data['key'] ?? null);
 
-        // Return the new plugin license info
-        return new JsonResponse(1);
+        // Return success
+        return $this->asSuccess(t('License updated'));
     }
 
     /**

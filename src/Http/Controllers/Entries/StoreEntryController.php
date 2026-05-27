@@ -219,14 +219,17 @@ readonly class StoreEntryController
     private function populateEntry(Entry $entry): void
     {
         // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
-        $entry->setAttributesFromRequest(array_filter([
+        $attributes = [
             'authorIds' => $this->request->input('authors') ?? $this->request->input('author') ?? $entry->getAuthorId() ?? $this->request->user()->id,
-            'expiryDate' => $this->request->input('expiryDate'),
-            'postDate' => $this->request->input('postDate'),
-            'slug' => $this->request->input('slug'),
-            'title' => $this->request->input('title'),
-            'typeId' => $this->request->input('typeId'),
-        ], fn ($value) => $value !== null));
+        ];
+
+        foreach (['expiryDate', 'postDate', 'slug', 'title', 'typeId'] as $attribute) {
+            if ($this->request->has($attribute)) {
+                $attributes[$attribute] = $this->request->input($attribute);
+            }
+        }
+
+        $entry->setAttributesFromRequest($attributes);
 
         $enabledForSite = $this->enabledForSiteValue();
         if (is_array($enabledForSite)) {

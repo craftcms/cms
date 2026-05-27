@@ -108,9 +108,12 @@
     <span>{{ label }}</span>
   {% endif %}
 
-  {% tag 'button' with {
-    class: ['btn', 'menubtn'],
+  {% tag 'craft-button' with {
     type: 'button',
+    appearance: 'plain',
+    variant: 'inherit',
+    icon: 'craft-icon' in (buttonHtml ?? ''),
+    size: 'small',
     aria: {
       controls: id,
       label: hiddenLabel ?? null

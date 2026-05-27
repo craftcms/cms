@@ -217,6 +217,11 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     private ?array $beforeQueryCallbacksBeforePrepare = null;
 
     /**
+     * @var array<string,array<int,string>>
+     */
+    private static array $columnListings = [];
+
+    /**
      * The current element query instance being prepared, for reference by fields’ `queryCondition()` methods.
      */
     public static ?self $activeQuery = null;
@@ -264,7 +269,9 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         if ($this->hasElementSourceTable) {
-            foreach (DB::getSchemaBuilder()->getColumnListing($this->table) as $column) {
+            $columnListing = self::$columnListings[$this->table] ??= DB::getSchemaBuilder()->getColumnListing($this->table);
+
+            foreach ($columnListing as $column) {
                 if (! isset($this->columnMap[$column])) {
                     $this->columnMap[$column] = "$this->table.$column";
                 }

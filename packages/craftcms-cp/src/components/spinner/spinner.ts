@@ -2,11 +2,14 @@ import {html, LitElement} from 'lit';
 import {property, query} from 'lit/decorators.js';
 import componentStyles from './spinner.styles.js';
 import {classMap} from 'lit/directives/class-map.js';
+import visuallyHiddenStyles from '@src/styles/visually-hidden.styles';
+
+import '../visually-hidden/visually-hidden';
 
 export default class CraftSpinner extends LitElement {
-  static override styles = [componentStyles];
+  static override styles = [visuallyHiddenStyles, componentStyles];
 
-  @property({reflect: true})
+  @property({reflect: true, type: Boolean})
   visible: boolean = true;
 
   @query('.wrapper')
@@ -36,7 +39,7 @@ export default class CraftSpinner extends LitElement {
         })}"
       >
         <div class="spinner"></div>
-        <span class="message visually-hidden"><slot /></span>
+        <span class="cp-visually-hidden"><slot /></span>
       </div>
     `;
   }

@@ -1,0 +1,1 @@
+{"version":3,"file":"9627.js","mappings":"iGAAA,WACEA,aAAc,sC","sources":["webpack:///../../../../node_modules/@lion/ui/components/combobox/translations/de.js"],"sourcesContent":["export default {\n  optionsPopup: 'Popup-Fenster für Kombibox-Optionen',\n};\n"],"names":["optionsPopup"],"sourceRoot":""}

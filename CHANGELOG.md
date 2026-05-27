@@ -2,14 +2,63 @@
 
 ## Unreleased
 
+- Added Laravel event dispatching to Craft’s `Yiisoft\Translator\Translator` instance, enabling `Yiisoft\Translator\Event\MissingTranslationEvent` listeners. ([#18952](https://github.com/craftcms/cms/pull/18952))
+- The default value for `GeneralConfig::$loginPath` is now `false`.
+- Fixed some errors that could occur when running Craft through Laravel Octane ([#18921](https://github.com/craftcms/cms/pull/18921))
+- Fixed an error that occurred when rendering the database update screen outside Control Panel template mode.
+- Fixed an error that occurred when Redis was configured as the session driver.
+- Fixed an error that could occur when request context was dehydrated after a matched element route was resolved.
+- Fixed a bug where `CraftCms\Cms\Support\Typecast` could skip setters that used a same-name private backing property.
+- Updated section queries to always select `minAuthors`.
+- Fixed a bug where `CraftCms\Cms\Support\Typecast` could attempt to assign read-only, private-set, protected-set, or setterless virtual properties.
+- Fixed a bug where publishable Craft assets were registered during web requests.
+- Improved emoji shortcode handling performance for strings without shortcode delimiters.
+- Fixed a bug where eager-loading didn’t treat address, content block, and entry queries as nested element queries.
+- Improved element query performance by caching element source table column listings in memory.
+- Improved nested entry type resolution by avoiding unnecessary owner element queries.
+- Fixed a bug where lazy eager-loading nested element fields could reuse owner criteria and return the wrong elements.
+- Fixed an error that occurred when Updates were cached and deserialized.
+- Fixed an error that prevented link fields from saving.
+- Fixed a bug where Money fields could throw an error during element validation when the field value was falsy.
+- Fixed a bug where `CraftCms\Cms\Validation\Contracts\Validatable::prepareForValidation()` wasn’t called consistently, and plain `Validatable` classes without a configured ruleset couldn’t be validated. ([#18944](https://github.com/craftcms/cms/pull/18944))
+- Fixed a bug where invalid element query filters could return all results. ([#18937](https://github.com/craftcms/cms/pull/18937))
+- Fixed an error that occurred when uploading assets to fields with dynamic default upload locations. ([#18949](https://github.com/craftcms/cms/pull/18949))
+- Fixed a bug where Craft could look for the license key in `config/license.key` instead of `config/craft/license.key`.
+- Fixed a styling issue that occurred when editable table cells had a `code` class. ([#18900](https://github.com/craftcms/cms/issues/18900))
+
+## 6.0.0-alpha.4 - 2026-05-19
+
+- Added support for plugins to register Laravel scheduled tasks that run via `php artisan schedule:run`.
+- Updated `yiisoft/html` to 4.1.0. ([#18920](https://github.com/craftcms/cms/pull/18920))
+- Updated `elvanto/litemoji` to 5.2.0. ([#18917](https://github.com/craftcms/cms/pull/18917))
+- Updated `pragmarx/google2fa` to 9.0.0. ([#18919](https://github.com/craftcms/cms/pull/18919))
+- Fixed an error that occurred when opening element selector modals with string `sources` values. ([#18915](https://github.com/craftcms/cms/pull/18915))
+- Added “Elements” and “Deprecations” panels to Laravel Debugbar. ([#18897](https://github.com/craftcms/cms/pull/18897))
+- Fixed a bug where legacy redirect responses were not being returned as a redirect ([#18893](https://github.com/craftcms/cms/pull/18893))
+- Fixed an error that could occur when saving filesystems with null transient settings. ([#18909](https://github.com/craftcms/cms/pull/18909))
+- Fixed a bug where plugin routes were not being registered with the `web` middleware.
+- Fixed an error that could occur when storing image transform indexes. ([#18899](https://github.com/craftcms/cms/pull/18899))
+- Fixed an error when `loginPath` or `logoutPath` was set to `false` in `GeneralConfig`. ([#18894](https://github.com/craftcms/cms/issue/18894))
+- Fixed a bug where plugin-registered Twig variables weren’t available via the `craft` template variable. ([#18903](https://github.com/craftcms/cms/pull/18903))
+- Fixed an error that occurred when using the legacy cache service with a new dependency object ([#18904](https://github.com/craftcms/cms/pull/18904))
+- Fixed a bug where clearing submitted values could retain the previous value. ([#18905](https://github.com/craftcms/cms/issues/18905))
+- Fixed a bug where a legacy Yii action controller would result in a 404 when returning `null` as the response ([#18907](https://github.com/craftcms/cms/pull/18907))
+- Fixed an error that could occur because `ol` and `ul` were not normalizing the attributes ([#18907](https://github.com/craftcms/cms/pull/18907))
+- Fixed an error that occurred when trying to upload an asset through a legacy filesystem plugin ([#18908](https://github.com/craftcms/cms/pull/18908))
+
+## 6.0.0-alpha.3 - 2026-05-15
+
 - Added the `compiledTemplatesPath` config setting. ([#18861](https://github.com/craftcms/cms/pull/18861))
 - Added a missing migration that adds `minAuthors` to the section table ([#18875](https://github.com/craftcms/cms/pull/18875))
 - Fixed a bug where the `cpTrigger` would be appended twice to the URL after running migrations from the control panel. ([#18858](https://github.com/craftcms/cms/pull/18858))
+- Fixed an error that occurred when rendering element indexes with blank source headings. ([#18891](https://github.com/craftcms/cms/pull/18891))
 - Fixed an error that occurred when uninstalling plugins. ([#18862](https://github.com/craftcms/cms/pull/18862))
 - Fixed an error that could occur when Control Panel HTML values were passed as `Stringable` objects. ([#18883](https://github.com/craftcms/cms/pull/18883))
+- Fixed a bug where plugin package config files could affect plugin settings before being published. ([#18885](https://github.com/craftcms/cms/pull/18885))
 - Fixed a bug where the control panel would continuously poll for queue job info, even if there were no active jobs. ([#18853](https://github.com/craftcms/cms/issues/18853))
 - Fixed a bug where legacy redirect responses were not being handled. ([#18860](https://github.com/craftcms/cms/pull/18860))
 - Fixed a bug where email addresses couldn’t be saved when applying unpublished user drafts. ([#18882](https://github.com/craftcms/cms/pull/18882))
+- Fixed a bug where the Updates utility wasn’t showing available updates. ([#18884](https://github.com/craftcms/cms/pull/18884))
 
 ## 6.0.0-alpha.2 - 2026-05-13
 
@@ -86,7 +135,7 @@
 - Added `CraftCms\Cms\Support\Facades\Markdown`.
 - Added `CraftCms\Cms\Support\Path`.
 - Added `CraftCms\Cms\Support\Str`.
-- Added `CraftCms\Cms\Support\URL`.
+- Added `CraftCms\Cms\Support\Url`.
 - Added `CraftCms\Cms\action_url()`, `CraftCms\Cms\cp_url()`, and `CraftCms\Cms\site_url()` helper functions.
 - `craft\services\Elements::stopCollectingCacheInfo()` no longer sets the returned duration to the `cacheDuration` config setting if a duration wasn’t explicitly declared. ([#16796](https://github.com/craftcms/cms/pull/16796))
 - Deprecated `craft\helpers\ArrayHelper`. `CraftCms\Cms\Support\Arr` should be used instead.
@@ -167,7 +216,7 @@
   -
 - Deprecated `Craft::createGuzzleClient()`. `CraftCms\Cms\Support\Facades\Http::create()` should be used instead.
 - Deprecated `craft\helpers\FileHelper`. `CraftCms\Cms\Support\File` should be used instead.
-- Deprecated `craft\helpers\UrlHelper`. `CraftCms\Cms\Support\URL` should be used instead.
+- Deprecated `craft\helpers\UrlHelper`. `CraftCms\Cms\Support\Url` should be used instead.
 
 #### Deprecator
 - Added `CraftCms\Cms\Support\Facades\Deprecator`.

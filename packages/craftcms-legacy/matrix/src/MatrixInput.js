@@ -273,6 +273,10 @@
           Craft.initUiElements($newEntries);
 
           $newEntries.each((i, entry) => {
+            if (entry.nodeType !== 1) {
+              return;
+            }
+
             const $entry = $(entry);
             new Craft.MatrixInput.Entry(this, $entry);
             this.trigger('entryAdded', {
@@ -311,7 +315,9 @@
             this.$pasteBtn = Craft.ui
               .createPasteButton()
               .appendTo(this.$addEntryBtnContainer);
-            this.addListener(this.$pasteBtn, 'activate', 'pasteEntries');
+            this.addListener(this.$pasteBtn, 'activate', () => {
+              this.pasteEntries();
+            });
           } else {
             this.$pasteBtn.removeClass('hidden');
           }

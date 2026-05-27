@@ -37,16 +37,6 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
     ['url' => '/users', 'title' => 'Users'],
 
     [
-        'url' => '/settings/users',
-        'title' => 'User Settings',
-        'extraContent' => [
-            ['rendered' => 'User Groups'],
-            ['rendered' => 'Fields'],
-            ['rendered' => 'Settings'],
-            ['rendered' => 'New user group'],
-        ],
-    ],
-    [
         'url' => '/settings/users/settings',
         'title' => 'User Settings',
         'extraContent' => [
@@ -72,29 +62,7 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
             ['rendered' => 'No routes exist yet.'],
         ],
     ],
-    [
-        'url' => '/settings/fields',
-        'title' => 'Fields',
-        'extraContent' => [
-            ['rendered' => 'New field'],
-        ],
-    ],
 
-    [
-        'url' => '/settings/assets',
-        'title' => 'Volumes - Asset Settings',
-        'extraContent' => [
-            ['rendered' => 'New volume'],
-            ['rendered' => 'Image Transforms'],
-        ],
-    ],
-    [
-        'url' => '/settings/assets/transforms',
-        'title' => 'Image Transforms - Asset Settings',
-        'extraContent' => [
-            ['rendered' => 'New image transform'],
-        ],
-    ],
 ]);
 
 it('renders inertia pages', function (string $url, string $component, string $title) {
@@ -110,8 +78,28 @@ it('renders inertia pages', function (string $url, string $component, string $ti
 })->with([
     [
         'url' => '/settings/sections',
-        'component' => 'SettingsSectionsIndexPage',
+        'component' => 'settings/Sections',
         'title' => 'Sections',
+    ],
+    [
+        'url' => '/settings/users',
+        'title' => 'User Settings',
+        'component' => 'settings/UserGroups',
+    ],
+    [
+        'url' => '/settings/fields',
+        'title' => 'Fields',
+        'component' => 'settings/Fields',
+    ],
+    [
+        'url' => '/settings/assets',
+        'title' => 'Asset Settings',
+        'component' => 'settings/Volumes',
+    ],
+    [
+        'url' => '/settings/assets/transforms',
+        'title' => 'Image Transforms',
+        'component' => 'settings/ImageTransforms',
     ],
 ]);
 

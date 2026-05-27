@@ -190,7 +190,7 @@ describe('js registration', function () {
 
         $body = $this->registry->bodyEndHtml();
 
-        expect($body)->toContain('<script>var x = 1;</script>');
+        expect($body)->toContain('<script type="module">var x = 1;</script>');
     });
 });
 
@@ -298,7 +298,7 @@ describe('cssFile registration', function () {
 
         $head = $this->registry->headHtml();
 
-        expect($head)->toContain('<link href="/style.css" rel="stylesheet">');
+        expect($head)->toContain('<link rel="stylesheet" href="/style.css">');
     });
 
     it('deduplicates by URL', function () {
@@ -422,7 +422,7 @@ describe('linkTag registration', function () {
 
         $head = $this->registry->headHtml();
 
-        expect($head)->toContain('<link href="/favicon.ico" rel="icon">');
+        expect($head)->toContain('<link rel="icon" href="/favicon.ico">');
     });
 
     it('deduplicates by explicit key', function () {

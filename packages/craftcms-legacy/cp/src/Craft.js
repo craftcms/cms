@@ -87,7 +87,6 @@ import './js/LinkField.js';
 import './js/LinkInput.js';
 import './js/Listbox.js';
 import './js/LivePreview.js';
-import './js/LoginForm.js';
 import './js/NestedElementManager.js';
 import './js/PasswordInput.js';
 import './js/Preview.js';
@@ -111,8 +110,6 @@ import './js/UserIndex.js';
 // Custom elements
 import './js/CraftGlobalSidebar.js';
 import './js/CraftDisclosure.js';
-import './js/CraftSpinner.js';
 import './js/CraftTooltip.js';
 import './js/CraftElementLabel';
 import './js/CraftProxyScrollbar';
-import './js/CraftCopyAttribute.js';

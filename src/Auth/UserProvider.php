@@ -67,7 +67,7 @@ readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProvider
             return null;
         }
 
-        $loginName = $credentials['loginName'];
+        $loginName = $credentials['loginName'] ?? $credentials['email'] ?? $credentials['username'];
 
         event($event = new LoginUserRetrieving($loginName));
 

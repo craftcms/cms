@@ -63,8 +63,8 @@ readonly class UploadController
 
             abort_if(! $field instanceof AssetsField, 400, 'The field provided is not an Assets field');
 
-            if ($elementId = $request->input('elementId')) {
-                $siteId = $request->input('siteId') ?: null;
+            if ($elementId = $request->integer('elementId')) {
+                $siteId = $request->integer('siteId') ?: null;
                 $element = $this->elements->getElementById($elementId, null, $siteId);
             } else {
                 $element = null;

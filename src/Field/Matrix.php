@@ -649,7 +649,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         // Existing element?
         if ($owner && $owner->id) {
-            $query->owner($owner);
+            $query
+                ->owner($owner)
+                ->excludeEagerLoadCriteria(['ownerId', 'primaryOwnerId']);
 
             // Clear out id=false if this query was populated previously
             if ($query->id === false) {
@@ -1108,7 +1110,7 @@ JS,
             'showHeaderColumn' => Collection::make($entryTypes)->contains(fn (EntryType $entryType) => (
                 $entryType->hasTitleField ||
                 $entryType->titleFormat ||
-                $entryType->uiLabelFormat !== '{title}'
+                ($entryType->uiLabelFormat && $entryType->uiLabelFormat !== '{title}')
             )),
             'pageSize' => $this->pageSize ?? 50,
             'storageKey' => sprintf('field:%s', $this->uid),
@@ -1292,6 +1294,9 @@ JS,
                 'revisions' => Collection::make($sourceElements)
                     ->contains(fn ($sourceElement) => $sourceElement->getIsRevision()),
             ],
+            'createElement' => fn (EntryQuery $query, array $result, ElementInterface $sourceElement) => $query
+                ->owner($sourceElement)
+                ->createElement($result),
         ];
     }
 
@@ -1684,16 +1689,16 @@ JS,
                 $entry->propagateAll = true;
             }
 
-            if (isset($entryData['title']) && $entry->getType()->hasTitleField) {
+            if (array_key_exists('title', $entryData) && $entry->getType()->hasTitleField) {
                 $entry->title = $entryData['title'];
             }
 
-            if (isset($entryData['slug']) && $entry->getType()->showSlugField) {
+            if (array_key_exists('slug', $entryData) && $entry->getType()->showSlugField) {
                 $entry->slug = $entryData['slug'];
             }
 
             // Allow setting the UID for the entry
-            if (isset($entryData['uid'])) {
+            if (array_key_exists('uid', $entryData)) {
                 $entry->uid = $entryData['uid'];
             }
 

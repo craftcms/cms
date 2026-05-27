@@ -112,6 +112,44 @@ export default css`
   /*
   Appearances 
    */
+  :host([appearance~='inline']) {
+    display: inline;
+    appearance: none;
+    background-color: transparent;
+    border-color: currentColor;
+    color: inherit;
+    font: inherit;
+    padding: 0;
+    min-height: auto;
+    min-width: auto;
+
+    &::before {
+      /* remove the sizer added by lion */
+      display: none;
+    }
+
+    .button-content {
+      padding: 0;
+    }
+  }
+
+  :host([appearance='inline']:not(:disabled):not(.loading):hover) {
+    background-color: color-mix(
+      in oklab,
+      var(--c-color-fill-quiet, var(--c-button-default-fill)),
+      var(--c-color-mix-hover)
+    );
+    color: var(--c-color-on-quiet);
+  }
+
+  :host([appearance='inline']:not(:disabled):not(.loading):active) {
+    color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
+    background-color: color-mix(
+      in oklab,
+      var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
+      var(--c-color-mix-active)
+    );
+  }
 
   /* None */
   :host([appearance~='none']),
@@ -121,6 +159,12 @@ export default css`
     border-color: transparent;
     color: inherit;
     padding: 0;
+    min-height: auto;
+    min-width: auto;
+
+    &:before {
+      display: none;
+    }
   }
 
   /* Plain */
@@ -128,9 +172,13 @@ export default css`
     background-color: transparent;
     border-color: transparent;
     color: inherit;
+
+    &:before {
+      display: none;
+    }
   }
 
-  :host([appearance~='plain']:not(:disabled):not(.loading):hover) {
+  :host([appearance='plain']:not(:disabled):not(.loading):hover) {
     background-color: color-mix(
       in oklab,
       var(--c-color-fill-quiet, var(--c-button-default-fill)),
@@ -139,7 +187,7 @@ export default css`
     color: var(--c-color-on-quiet);
   }
 
-  :host([appearance~='plain']:not(:disabled):not(.loading):active) {
+  :host([appearance='plain']:not(:disabled):not(.loading):active) {
     color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
     background-color: color-mix(
       in oklab,
@@ -158,7 +206,7 @@ export default css`
     color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
   }
 
-  :host([appearance~='filled']:not(:disabled):not(.loading):hover) {
+  :host([appearance='filled']:not(:disabled):not(.loading):hover) {
     background-color: color-mix(
       in oklab,
       var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)),
@@ -167,7 +215,7 @@ export default css`
     color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
   }
 
-  :host([appearance~='filled']:not(:disabled):not(.loading):active) {
+  :host([appearance='filled']:not(:disabled):not(.loading):active) {
     color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
     background-color: color-mix(
       in oklab,
@@ -184,7 +232,7 @@ export default css`
     color: var(--c-color-on-quiet);
   }
 
-  :host([appearance~='dashed']:not(:disabled):not(.loading):hover) {
+  :host([appearance='dashed']:not(:disabled):not(.loading):hover) {
     background-color: color-mix(
       in oklab,
       var(--c-color-fill-quiet, var(--c-button-default-fill)),
@@ -193,7 +241,7 @@ export default css`
     color: var(--c-color-on-quiet);
   }
 
-  :host([appearance~='dashed']:not(:disabled):not(.loading):active) {
+  :host([appearance='dashed']:not(:disabled):not(.loading):active) {
     color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
     background-color: color-mix(
       in oklab,

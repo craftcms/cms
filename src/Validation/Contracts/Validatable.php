@@ -81,6 +81,11 @@ interface Validatable extends ValidatesWithRuleset
     public function afterValidate(?Validator $validator = null): void;
 
     /**
+     * Handle a passed validation attempt.
+     */
+    public function passedValidation(): void;
+
+    /**
      * Returns the first error message for each attribute that has errors.
      *
      * @return array<string, string>
