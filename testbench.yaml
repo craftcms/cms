@@ -6,6 +6,8 @@ providers:
   - CraftCms\DependencyAwareCache\CacheServiceProvider
   - CraftCms\Cms\Providers\CraftServiceProvider
   - Laravel\Wayfinder\WayfinderServiceProvider
+  - Spatie\LaravelTypeScriptTransformer\TypeScriptTransformerServiceProvider
+  - Workbench\App\Providers\TypeScriptTransformerServiceProvider
 
 seeders:
   - Workbench\Database\Seeders\DatabaseSeeder
