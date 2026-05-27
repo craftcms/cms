@@ -65,7 +65,7 @@
     "symfony/yaml": "^7.0|^8.0",
     "theiconic/name-parser": "^1.2",
     "tpetry/laravel-query-expressions": "^1.5",
-    "twig/twig": "~3.26.0",
+    "twig/twig": "~3.27.0",
     "voku/portable-ascii": "^2.0",
     "web-auth/webauthn-lib": "~5.2.4",
     "yiisoft/arrays": "^3.2",
