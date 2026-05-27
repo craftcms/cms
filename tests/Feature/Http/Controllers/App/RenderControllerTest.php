@@ -121,7 +121,7 @@ test('render markdown validates required flavor', function () {
 test('render markdown rejects invalid flavors', function () {
     postJson(action([RenderController::class, 'markdown']), [
         'markdown' => '**bold**',
-        'flavor' => 'pre-encoded',
+        'flavor' => MarkdownService::FLAVOR_PRE_ENCODED,
     ])->assertJsonValidationErrors(['flavor']);
 });
 
@@ -131,6 +131,26 @@ test('render markdown returns html using the requested flavor', function () {
         'flavor' => MarkdownService::FLAVOR_GFM_COMMENT,
     ])->assertExactJson([
         'html' => "<p>line one<br>\nline two</p>\n",
+    ]);
+});
+
+test('render markdown can return inline-only html', function () {
+    postJson(action([RenderController::class, 'markdown']), [
+        'markdown' => '**bold**',
+        'flavor' => MarkdownService::FLAVOR_GFM,
+        'inlineOnly' => true,
+    ])->assertExactJson([
+        'html' => '<strong>bold</strong>',
+    ]);
+});
+
+test('render markdown encodes markdown before parsing', function () {
+    postJson(action([RenderController::class, 'markdown']), [
+        'markdown' => '<b>**bold**</b>',
+        'flavor' => MarkdownService::FLAVOR_GFM,
+        'encode' => true,
+    ])->assertExactJson([
+        'html' => "<p>&lt;b&gt;<strong>bold</strong>&lt;/b&gt;</p>\n",
     ]);
 });
 

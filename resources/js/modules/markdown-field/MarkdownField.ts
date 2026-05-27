@@ -39,6 +39,12 @@ class MarkdownField extends LitElement {
   @property()
   flavor = 'gfm';
 
+  @property({type: Boolean})
+  encode = false;
+
+  @property({attribute: 'inline-only', type: Boolean})
+  inlineOnly = false;
+
   @property({attribute: 'max-length', type: Number})
   maxLength: number | null = null;
 
@@ -114,6 +120,8 @@ class MarkdownField extends LitElement {
     const previewController = createPreviewController(
       editor,
       this.flavor,
+      this.encode,
+      this.inlineOnly,
       this.previewDelay
     );
     this.previewController = previewController;

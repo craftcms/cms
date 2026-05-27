@@ -4,7 +4,9 @@ import type {OverType as OverTypeInstance} from 'overtype';
 import {markdown as renderMarkdown} from '@actions/App/RenderController';
 
 type PreviewRequest = {
+  encode: boolean;
   flavor: string;
+  inlineOnly: boolean;
   markdown: string;
 };
 
@@ -22,13 +24,17 @@ export type PreviewController = {
 export function createPreviewController(
   editor: OverTypeInstance,
   flavor: string,
+  encode: boolean,
+  inlineOnly: boolean,
   previewDelay: number
 ): PreviewController {
   let active = false;
   let requestId = 0;
   let timeout: number | null = null;
   const previewRequest = useHttp<PreviewRequest, PreviewResponse>({
+    encode,
     flavor,
+    inlineOnly,
     markdown: '',
   });
 
@@ -54,7 +60,9 @@ export function createPreviewController(
 
     timeout = window.setTimeout(async () => {
       try {
+        previewRequest.encode = encode;
         previewRequest.flavor = flavor;
+        previewRequest.inlineOnly = inlineOnly;
         previewRequest.markdown = markdown;
 
         const data = await previewRequest.post(renderMarkdown().url);

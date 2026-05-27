@@ -13,11 +13,11 @@ use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
+use CraftCms\Cms\Field\Data\MarkdownData;
 use CraftCms\Cms\Field\Markdown as MarkdownField;
+use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -175,10 +175,21 @@ readonly class RenderController
         $validated = $request->validate([
             'markdown' => ['nullable', 'string'],
             'flavor' => ['required', 'string', Rule::in(Arr::pluck(MarkdownField::flavorOptions(), 'value'))],
+            'encode' => ['boolean'],
+            'inlineOnly' => ['boolean'],
         ]);
 
+        $encode = $request->boolean('encode');
+
+        $html = new MarkdownData(
+            $validated['markdown'] ?? '',
+            $encode ? MarkdownService::FLAVOR_PRE_ENCODED : $validated['flavor'],
+            encode: $encode,
+            inlineOnly: $request->boolean('inlineOnly'),
+        )->getHtml();
+
         return new JsonResponse([
-            'html' => Markdown::parse(Elements::parseRefs($validated['markdown'] ?? ''), $validated['flavor']),
+            'html' => $html,
         ]);
     }
 }

@@ -30,6 +30,19 @@ it('renders empty markdown as an empty string', function () {
         ->and($value->serialize())->toBe('');
 });
 
+it('can encode markdown before rendering', function () {
+    $value = new MarkdownData('<b>**bold**</b>', 'pre-encoded', encode: true);
+
+    expect($value->getRaw())->toBe('<b>**bold**</b>')
+        ->and($value->getHtml())->toBe("<p>&lt;b&gt;<strong>bold</strong>&lt;/b&gt;</p>\n");
+});
+
+it('can render inline-only markdown', function () {
+    $value = new MarkdownData('**bold**', 'gfm', inlineOnly: true);
+
+    expect($value->getHtml())->toBe('<strong>bold</strong>');
+});
+
 it('parses element reference tags before rendering markdown', function () {
     Elements::shouldReceive('parseRefs')
         ->once()

@@ -1,13 +1,25 @@
 {% import "_includes/forms" as forms %}
 
-{{ forms.selectField({
-    label: 'Markdown Flavor'|t('app'),
-    instructions: 'The Markdown flavor that should be used when rendering this field.'|t('app'),
-    id: 'flavor',
-    name: 'flavor',
-    options: flavorOptions,
-    value: field.flavor,
-    errors: field.errors.get('flavor'),
+<div id="markdown-flavor-settings" class="{{ field.encode ? 'hidden' }}">
+    {{ forms.selectField({
+        label: 'Markdown Flavor'|t('app'),
+        instructions: 'The Markdown flavor that should be used when rendering this field.'|t('app'),
+        id: 'flavor',
+        name: 'flavor',
+        options: flavorOptions,
+        value: field.flavor,
+        errors: field.errors.get('flavor'),
+        disabled: readOnly,
+    }) }}
+</div>
+
+{{ forms.lightswitchField({
+    label: 'Inline Only'|t('app'),
+    instructions: 'Whether the field should only render inline Markdown, without wrapping paragraphs.'|t('app'),
+    id: 'inlineOnly',
+    name: 'inlineOnly',
+    on: field.inlineOnly,
+    errors: field.errors.get('inlineOnly'),
     disabled: readOnly,
 }) }}
 
@@ -158,6 +170,18 @@
 
 <a class="fieldtoggle" data-target="advanced">{{ 'Advanced'|t('app') }}</a>
 <div id="advanced" class="hidden">
+    {{ forms.lightswitchField({
+        label: 'Encode HTML'|t('app'),
+        instructions: 'Whether HTML should be encoded before rendering the Markdown.'|t('app'),
+        warning: 'Enabling this will enforce the Original Markdown flavor.'|t('app'),
+        id: 'encode',
+        name: 'encode',
+        on: field.encode,
+        reverseToggle: 'markdown-flavor-settings',
+        errors: field.errors.get('encode'),
+        disabled: readOnly,
+    }) }}
+
     {{ forms.lightswitchField({
         label: 'Sanitize HTML'|t('app'),
         instructions: 'Removes any potentially-malicious code on save, by running the submitted data through an HTML sanitizer.'|t('app'),

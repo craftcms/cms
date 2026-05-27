@@ -93,6 +93,10 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
 
     public string $flavor = MarkdownService::FLAVOR_GFM;
 
+    public bool $encode = false;
+
+    public bool $inlineOnly = false;
+
     public bool $showToolbar = true;
 
     public bool $showStats = false;
@@ -258,6 +262,8 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
     {
         return array_merge(parent::getRules(), [
             'flavor' => ['required', Rule::in(Arr::pluck(self::flavorOptions(), 'value'))],
+            'encode' => ['boolean'],
+            'inlineOnly' => ['boolean'],
             'showToolbar' => ['boolean'],
             'showStats' => ['boolean'],
             'sanitizeHtml' => ['boolean'],
@@ -384,7 +390,9 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                 ->map(fn (string $id) => InputNamespace::namespaceId($id))
                 ->implode(' '),
             'disabled' => $static,
+            'encode' => $this->encode,
             'flavor' => $this->flavor,
+            'inlineOnly' => $this->inlineOnly,
             'maxLength' => $static ? null : $this->charLimit,
             'placeholder' => $placeholder,
             'rows' => $this->initialRows,
@@ -521,7 +529,8 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
     #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
-        $html = $value instanceof MarkdownData ? $value->getHtml() : (string) $this->normalizeValue($value, $element);
+        $raw = $this->rawValue($value);
+        $html = $raw === null ? '' : $this->markdownData($raw)->getHtml();
 
         return Html::tag('div', $html, [
             'class' => 'markdown-field-preview',
@@ -565,7 +574,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                 $raw = $this->rawValue($value);
                 $resolved = ($arguments['raw'] ?? false) || $raw === null
                     ? $raw
-                    : new MarkdownData($raw, $this->flavor)->getHtml();
+                    : $this->markdownData($raw)->getHtml();
 
                 return GqlHelper::applyDirectives($source, $resolveInfo, $resolved);
             },
@@ -575,9 +584,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
     private function normalizeMarkdownValue(mixed $value, bool $fromRequest): ?MarkdownData
     {
         if ($value instanceof MarkdownData) {
-            return $value->getFlavor() === $this->flavor
-                ? $value
-                : new MarkdownData($value->getRaw(), $this->flavor);
+            return $this->markdownData($value->getRaw());
         }
 
         if ($value === null) {
@@ -602,7 +609,17 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             }
         }
 
-        return new MarkdownData($value, $this->flavor);
+        return $this->markdownData($value);
+    }
+
+    private function markdownData(string $value): MarkdownData
+    {
+        return new MarkdownData(
+            $value,
+            $this->encode ? MarkdownService::FLAVOR_PRE_ENCODED : $this->flavor,
+            encode: $this->encode,
+            inlineOnly: $this->inlineOnly,
+        );
     }
 
     private function rawValue(mixed $value): ?string

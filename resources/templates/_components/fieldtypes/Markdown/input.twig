@@ -13,8 +13,10 @@
         upload-site-id="{{ settings.uploadSiteId }}"
         toolbar-buttons="{{ settings.toolbarButtons|json_encode|e('html_attr') }}"
         asset-sources="{{ settings.assetSources|json_encode|e('html_attr') }}"
+        {% if settings.encode %}encode{% endif %}
         {% if settings.showToolbar %}show-toolbar{% endif %}
         {% if settings.showStats %}show-stats{% endif %}
+        {% if settings.inlineOnly %}inline-only{% endif %}
         {% if settings.placeholder is not empty %}placeholder="{{ settings.placeholder }}"{% endif %}
         {% if settings.maxLength %}max-length="{{ settings.maxLength }}"{% endif %}
         {% if settings.describedBy is not empty %}described-by="{{ settings.describedBy }}"{% endif %}

@@ -75,10 +75,51 @@ it('validates supported authoring flavors', function () {
         MarkdownService::FLAVOR_EXTRA,
     )->not()->toContain(MarkdownService::FLAVOR_PRE_ENCODED);
 
-    $field = new MarkdownField(['flavor' => MarkdownService::FLAVOR_PRE_ENCODED]);
+    $field = new MarkdownField([
+        'name' => 'Body',
+        'handle' => 'body',
+        'flavor' => 'missing',
+    ]);
 
     expect($field->validate())->toBeFalse()
         ->and($field->errors()->has('flavor'))->toBeTrue();
+});
+
+it('encodes markdown when configured to encode html', function () {
+    $field = new MarkdownField([
+        'name' => 'Body',
+        'handle' => 'body',
+        'encode' => true,
+    ]);
+
+    expect($field->validate())->toBeTrue()
+        ->and($field->normalizeValue('<b>**bold**</b>', null)->getHtml())->toBe("<p>&lt;b&gt;<strong>bold</strong>&lt;/b&gt;</p>\n")
+        ->and($field->getSettingsHtml())->toContain('name="encode"')
+        ->and($field->getSettingsHtml())->toContain('Enabling this will enforce the Original Markdown flavor.')
+        ->and($field->getSettingsHtml())->toContain('id="markdown-flavor-settings" class="hidden"')
+        ->and($field->getInputHtml('**bold**', null))->toContain(' encode');
+});
+
+it('can render inline-only markdown', function () {
+    $field = new MarkdownField([
+        'name' => 'Body',
+        'handle' => 'body',
+        'inlineOnly' => true,
+    ]);
+
+    expect($field->validate())->toBeTrue()
+        ->and($field->normalizeValue("**bold**\nline", null)->getHtml())->toBe("<strong>bold</strong>\nline")
+        ->and($field->getSettingsHtml())->toContain('name="inlineOnly"')
+        ->and($field->getInputHtml('**bold**', null))->toContain('inline-only');
+});
+
+it('encodes markdown in field previews', function () {
+    $field = new MarkdownField([
+        'encode' => true,
+    ]);
+
+    expect($field->getPreviewHtml(new MarkdownData('<b>**bold**</b>', MarkdownService::FLAVOR_GFM), new Entry))
+        ->toBe("<div class=\"markdown-field-preview\"><p>&lt;b&gt;<strong>bold</strong>&lt;/b&gt;</p>\n</div>");
 });
 
 it('allows extended markdown flavors in field settings', function () {
@@ -372,6 +413,29 @@ it('returns rendered html by default and raw markdown when requested through gra
     expect($type['args']['raw']['defaultValue'])->toBeFalse()
         ->and($type['resolve']($source, [], null, markdownFieldResolveInfo('body')))->toBe("<p>line one<br>\nline two</p>\n")
         ->and($type['resolve']($source, ['raw' => true], null, markdownFieldResolveInfo('body')))->toBe("line one\nline two");
+});
+
+it('encodes markdown before resolving graphql html', function () {
+    $field = new MarkdownField([
+        'handle' => 'body',
+        'encode' => true,
+    ]);
+    $type = $field->getContentGqlType();
+    $source = ['body' => '<b>**bold**</b>'];
+
+    expect($type['resolve']($source, [], null, markdownFieldResolveInfo('body')))->toBe("<p>&lt;b&gt;<strong>bold</strong>&lt;/b&gt;</p>\n")
+        ->and($type['resolve']($source, ['raw' => true], null, markdownFieldResolveInfo('body')))->toBe('<b>**bold**</b>');
+});
+
+it('resolves inline-only markdown through graphql', function () {
+    $field = new MarkdownField([
+        'handle' => 'body',
+        'inlineOnly' => true,
+    ]);
+    $type = $field->getContentGqlType();
+    $source = ['body' => '**bold**'];
+
+    expect($type['resolve']($source, [], null, markdownFieldResolveInfo('body')))->toBe('<strong>bold</strong>');
 });
 
 it('uses a raw markdown string as its graphql mutation input', function () {
