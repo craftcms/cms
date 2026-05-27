@@ -24,6 +24,7 @@
 - Fixed a bug where invalid element query filters could return all results. ([#18937](https://github.com/craftcms/cms/pull/18937))
 - Fixed an error that occurred when uploading assets to fields with dynamic default upload locations. ([#18949](https://github.com/craftcms/cms/pull/18949))
 - Fixed a bug where Craft could look for the license key in `config/license.key` instead of `config/craft/license.key`.
+- Fixed a styling issue that occurred when editable table cells had a `code` class. ([#18900](https://github.com/craftcms/cms/issues/18900))
 
 ## 6.0.0-alpha.4 - 2026-05-19
 
