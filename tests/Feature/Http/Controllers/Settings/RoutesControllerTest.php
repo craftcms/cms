@@ -46,7 +46,7 @@ it('requires admin changes for mutations', function () {
     get(action([RoutesController::class, 'index']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('settings/routes/RoutesIndexPage')
+            ->component('settings/routes/Index')
             ->where('readOnly', true));
 
     get(action([RoutesController::class, 'create']))->assertForbidden();
@@ -67,7 +67,7 @@ it('can show the routes screen', function () {
     get(action([RoutesController::class, 'index']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('settings/routes/RoutesIndexPage')
+            ->component('settings/routes/Index')
             ->where('title', 'Routes')
             ->where('routes.0.uid', $uid)
             ->where('routes.0.siteUid', $siteUid)
@@ -85,7 +85,7 @@ it('can show the create route screen', function () {
     get(action([RoutesController::class, 'create']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('settings/routes/EditRoutePage')
+            ->component('settings/routes/Edit')
             ->where('title', 'Create a new route')
             ->where('route.uid', null)
             ->where('route.siteUid', null)
@@ -111,7 +111,7 @@ it('can show the edit route screen', function () {
     get(action([RoutesController::class, 'edit'], ['uid' => $uid]))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('settings/routes/EditRoutePage')
+            ->component('settings/routes/Edit')
             ->where('title', 'Edit Route')
             ->where('route.uid', $uid)
             ->where('route.siteUid', $siteUid)
@@ -142,7 +142,7 @@ it('can show the edit route screen in read-only mode', function () {
     get(action([RoutesController::class, 'edit'], ['uid' => $uid]))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('settings/routes/EditRoutePage')
+            ->component('settings/routes/Edit')
             ->where('route.uid', $uid)
             ->where('actionMenu', null)
             ->where('actionMenuItems', null)

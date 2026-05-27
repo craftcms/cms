@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Http\Requests\RouteRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -35,7 +36,7 @@ readonly class RoutesController
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Routes')],
             ])
-            ->inertiaPage('settings/routes/RoutesIndexPage', [
+            ->inertiaPage('settings/routes/Index', [
                 'routes' => $this->routes->getProjectConfigRoutes()->values(),
             ]);
     }
@@ -117,10 +118,11 @@ readonly class RoutesController
             ]]);
         }
 
-        return $response->inertiaPage('settings/routes/EditRoutePage', [
+        return $response->inertiaPage('settings/routes/Edit', [
             'route' => $route,
             'tokens' => $this->tokenProps(),
             'sites' => $this->siteProps(),
+            'templateOptions' => SelectOptions::getTemplateSuggestions(),
         ]);
     }
 

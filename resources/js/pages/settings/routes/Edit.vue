@@ -1,17 +1,17 @@
 <script setup lang="ts">
   import AppLayout from '@/common/layouts/AppLayout.vue';
+  import type {MixedInputPart} from '@/common/form/MixedInput.vue';
   import MixedInput from '@/common/form/MixedInput.vue';
   import Pane from '@/common/components/Pane.vue';
   import Select from '@/common/form/Select.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
-  import type {MixedInputPart} from '@/common/form/MixedInput.vue';
   import type {RouteActionMenuItem, RouteData, RouteFormData} from './types';
   import {store, update} from '@actions/Settings/RoutesController';
   import {router, useForm} from '@inertiajs/vue3';
   import {t} from '@craftcms/cp';
-  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import {computed, shallowRef} from 'vue';
-  import type {BaseOption} from '@/common/types';
+  import type {BaseOption, SelectItem} from '@/common/types';
+  import CraftCombobox from '@/common/form/CraftCombobox.vue';
 
   const props = defineProps<{
     title: string;
@@ -22,6 +22,7 @@
     readOnly?: boolean;
     actionMenuItems?: Array<RouteActionMenuItem> | null;
     errors: Record<string, string> | null;
+    templateOptions: Array<SelectItem>;
   }>();
 
   const mixedInput = shallowRef<InstanceType<typeof MixedInput> | null>(null);
@@ -147,24 +148,26 @@
         />
 
         <div class="route-uri-field">
-          <div class="route-uri-field__label">
-            {{ t('If the URI looks like this') }}:
-          </div>
-
-          <MixedInput
-            ref="mixedInput"
-            v-model="form.uriParts"
-            class="route-uri-input"
-            :invalid="!!form.errors.uriParts"
-            :disabled="form.processing || readOnly"
-            :aria-label="t('URI')"
+          <craft-input
+            :label="t('If the URI looks like this')"
+            :has-feedback-for="form.errors.uriParts ? 'error' : ''"
           >
-            <template v-if="form.errors.uriParts" #error>
-              <ul class="error-list">
+            <MixedInput
+              slot="input"
+              ref="mixedInput"
+              v-model="form.uriParts"
+              class="route-uri-input"
+              :invalid="!!form.errors.uriParts"
+              :disabled="form.processing || readOnly"
+              :aria-label="t('URI')"
+            />
+
+            <div slot="feedback">
+              <ul class="error-list" v-if="form.errors.uriParts">
                 <li>{{ form.errors.uriParts }}</li>
               </ul>
-            </template>
-          </MixedInput>
+            </div>
+          </craft-input>
 
           <div class="route-token-picker">
             <h3>{{ t('Add a token') }}</h3>
@@ -182,7 +185,7 @@
           </div>
         </div>
 
-        <CraftInput
+        <CraftCombobox
           :label="t('Load this template')"
           id="route-template"
           name="template"
@@ -191,6 +194,7 @@
           :disabled="form.processing || readOnly"
           :error="form.errors.template"
           required
+          :options="templateOptions"
         />
       </div>
     </Pane>

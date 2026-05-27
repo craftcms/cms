@@ -436,21 +436,8 @@
   }
 
   .mixed-input__editor {
-    align-items: center;
-    background: var(--c-input-fill);
-    border: var(--c-input-border-width) var(--c-input-border-style)
-      var(--c-input-border-color);
-    border-radius: var(--c-input-radius);
-    box-shadow: var(--c-input-shadow);
-    box-sizing: border-box;
     display: flex;
-    flex: 1 1 auto;
-    flex-wrap: wrap;
-    gap: 0;
-    min-height: var(--c-size-control-md);
-    min-width: 0;
-    padding-block: 0;
-    padding-inline: var(--c-input-spacing-inline);
+    align-items: center;
   }
 
   .mixed-input__editor--error {

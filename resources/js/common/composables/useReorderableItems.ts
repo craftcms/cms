@@ -31,6 +31,7 @@ export interface UseReorderableItemsReturn {
   getDragState: (id: string | number) => DragState;
   getDropState: (id: string | number) => DropState;
   refreshRegistrations: () => void;
+  getRowPosition: (index: number) => 'first' | 'middle' | 'last';
 }
 
 export function useReorderableItems(
@@ -176,11 +177,24 @@ export function useReorderableItems(
     monitorCleanup?.();
   });
 
+  function getRowPosition(index: number) {
+    if (index === 0) {
+      return 'first';
+    }
+
+    if (index === itemRefs.value.size - 1) {
+      return 'last';
+    }
+
+    return 'middle';
+  }
+
   return {
     setItemRef,
     setHandleRef,
     getDragState,
     getDropState,
+    getRowPosition,
     refreshRegistrations,
   };
 }

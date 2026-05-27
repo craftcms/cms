@@ -9,9 +9,12 @@
     edit,
     reorder,
   } from '@actions/Settings/RoutesController';
-  import {router, Link} from '@inertiajs/vue3';
+  import {Link, router} from '@inertiajs/vue3';
   import {t} from '@craftcms/cp';
   import type {Edge} from '@atlaskit/pragmatic-drag-and-drop-hitbox/types';
+  import Empty from '@/common/components/Empty.vue';
+  import Pane from '@/common/components/Pane.vue';
+  import ReorderButton from '@/common/components/ReorderButton.vue';
 
   const props = defineProps<{
     title: string;
@@ -20,7 +23,7 @@
     readOnly?: boolean;
   }>();
 
-  const {setItemRef, setHandleRef, getDragState, getDropState} =
+  const {setItemRef, setHandleRef, getDragState, getDropState, getRowPosition} =
     useReorderableItems({
       getItemIds: () => props.routes.map((route) => route.uid),
       enabled: () => !props.readOnly && props.routes.length > 1,
@@ -87,13 +90,13 @@
     </template>
 
     <div v-if="routes.length === 0" class="empty-routes">
-      {{ t('No routes exist yet.') }}
+      <Pane appearance="raised">
+        <Empty :label="t('No routes exist yet.')" />
+      </Pane>
     </div>
 
     <div v-else class="routes-list">
-      <Link
-        as="article"
-        :href="edit(route.uid)"
+      <div
         v-for="(route, index) in routes"
         :key="route.uid"
         :ref="(el) => setItemRef(el, route.uid)"
@@ -105,10 +108,18 @@
         }"
       >
         <div class="route__uri">
-          <span v-if="isMultiSite" class="route__site">
-            {{ route.siteName }}
-          </span>
-          <span class="route__parts" v-html="route.uriDisplayHtml"></span>
+          <Link :href="edit(route.uid)">
+            <span v-if="isMultiSite" class="route__site">
+              {{ route.siteName }}
+            </span>
+            <span class="route__parts" v-html="route.uriDisplayHtml"></span>
+          </Link>
+        </div>
+
+        <div class="route__icon">
+          <div class="route-icon">
+            <craft-icon name="arrow-right"></craft-icon>
+          </div>
         </div>
 
         <div class="route__template">
@@ -116,61 +127,28 @@
           <span>{{ route.template }}</span>
         </div>
 
-        <div class="route__actions" v-if="!readOnly" @click.stop>
-          <Link
-            as="craft-button"
+        <div class="flex-1"></div>
+
+        <div class="flex gap-1 items-center px-2" v-if="!readOnly" @click.stop>
+          <ReorderButton
+            :ref="(el) => setHandleRef(el, route.uid)"
+            :position="getRowPosition(index)"
+            @click:up="handleReorder(index, index - 1)"
+            @click:down="handleReorder(index, index + 1)"
+          />
+          <craft-button
+            @click="deleteRoute(route)"
+            variant="danger"
             size="small"
             appearance="plain"
-            :href="edit(route.uid)"
+            icon
           >
-            <craft-icon name="pencil" :label="t('Edit')"></craft-icon>
-          </Link>
-
-          <craft-action-menu>
-            <craft-button slot="invoker" size="small" appearance="plain">
-              <craft-icon name="ellipsis" :label="t('Actions')"></craft-icon>
-            </craft-button>
-
-            <div slot="content">
-              <craft-action-item
-                v-if="index !== 0"
-                icon="arrow-up"
-                @click="handleReorder(index, index - 1)"
-              >
-                {{ t('Move up') }}
-              </craft-action-item>
-              <craft-action-item
-                v-if="index !== routes.length - 1"
-                icon="arrow-down"
-                @click="handleReorder(index, index + 1)"
-              >
-                {{ t('Move down') }}
-              </craft-action-item>
-              <craft-action-item
-                icon="trash"
-                variant="danger"
-                @click="deleteRoute(route)"
-              >
-                {{ t('Delete') }}
-              </craft-action-item>
-            </div>
-          </craft-action-menu>
-
-          <span
-            :ref="(el) => setHandleRef(el, route.uid)"
-            class="route__reorder"
-          >
-            <craft-button size="small" appearance="plain" @click.prevent>
-              <craft-icon
-                name="custom-icons/grip-dots"
-                :label="t('Reorder')"
-              ></craft-icon>
-            </craft-button>
-          </span>
+            <craft-icon name="trash" :label="t('Delete')"></craft-icon>
+          </craft-button>
         </div>
 
         <DropIndicator contained :edge="routeDropEdge(route.uid)" />
-      </Link>
+      </div>
     </div>
   </AppLayout>
 </template>
@@ -187,10 +165,9 @@
 
   .route {
     align-items: stretch;
-    background: var(--c-color-neutral-fill-quiet);
-    border: 1px solid var(--c-color-neutral-border-quiet);
-    border-radius: var(--c-radius-lg);
-    box-shadow: var(--c-shadow-raised);
+    background: var(--c-color-fill-quiet);
+    border: 1px solid var(--c-color-border-quiet);
+    border-radius: var(--c-radius-md);
     cursor: pointer;
     display: flex;
     min-height: 2.5rem;
@@ -216,6 +193,30 @@
     min-width: min(26rem, 55%);
     padding: var(--c-spacing-sm) var(--c-spacing-md);
     position: relative;
+  }
+
+  .route__icon {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-image: linear-gradient(
+      to right,
+      var(--c-surface-raised) 50%,
+      transparent 50.1%
+    );
+  }
+
+  .route-icon {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 2em;
+    aspect-ratio: 1;
+    border-radius: var(--c-radius-full);
+    border: 1px solid var(--c-color-border-quiet);
+    align-self: center;
+    background-color: var(--c-surface-raised);
   }
 
   .route__site {
@@ -272,14 +273,6 @@
     gap: var(--c-spacing-xs);
     margin-left: auto;
     padding: var(--c-spacing-xs) var(--c-spacing-sm);
-  }
-
-  .route__reorder {
-    display: inline-flex;
-  }
-
-  .route__reorder craft-button {
-    cursor: move;
   }
 
   @media (max-width: 720px) {
