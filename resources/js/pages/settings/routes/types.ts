@@ -1,16 +1,11 @@
 export type MixedInputPart = string | [string, string];
 
-export interface RouteData {
-  uid: string | null;
-  siteUid: string | null;
+export interface RouteData extends CraftCms.Cms.Route.Data.Route {
   uriParts: Array<MixedInputPart>;
   uriDisplayHtml: string;
-  template: string;
-  sortOrder: number | null;
 }
 
 export interface RouteIndexData extends Omit<RouteData, 'siteUid' | 'uid'> {
-  uid: string;
   siteName: string;
 }
 
