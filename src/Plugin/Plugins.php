@@ -18,9 +18,10 @@ use CraftCms\Cms\Plugin\Events\PluginEnabling;
 use CraftCms\Cms\Plugin\Events\PluginInstalled;
 use CraftCms\Cms\Plugin\Events\PluginInstalling;
 use CraftCms\Cms\Plugin\Events\PluginRegistered;
+use CraftCms\Cms\Plugin\Events\PluginsBooted;
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
-use CraftCms\Cms\Plugin\Events\PluginsLoaded;
 use CraftCms\Cms\Plugin\Events\PluginsLoading;
+use CraftCms\Cms\Plugin\Events\PluginsRegistered;
 use CraftCms\Cms\Plugin\Events\PluginUninstalled;
 use CraftCms\Cms\Plugin\Events\PluginUninstalling;
 use CraftCms\Cms\Plugin\Events\PluginUnregistered;
@@ -251,7 +252,9 @@ class Plugins
         $this->loadingPlugins = false;
         $this->pluginsLoaded = true;
 
-        event(PluginsLoaded::class);
+        event(new PluginsRegistered);
+
+        app()->booted(fn () => event(new PluginsBooted));
     }
 
     /**
