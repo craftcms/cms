@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
-use CraftCms\Cms\Plugin\Events\PluginsLoaded;
 use CraftCms\Cms\Plugin\Events\PluginsLoading;
+use CraftCms\Cms\Plugin\Events\PluginsRegistered;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
@@ -47,25 +47,25 @@ test('plugins are singletons', function () {
         ->toBe(TestPlugin::getInstance());
 });
 
-it('dispatches a loading event', function () {
+it('dispatches plugin lifecycle events', function () {
     app()->forgetInstance(Plugins::class);
     $this->plugins = app(Plugins::class);
 
-    $triggeredLoading = false;
-    $triggeredLoaded = false;
+    $events = [];
 
-    Event::listen(PluginsLoading::class, function () use (&$triggeredLoading) {
-        $triggeredLoading = true;
+    Event::listen(PluginsLoading::class, function (PluginsLoading $event) use (&$events) {
+        $events[] = PluginsLoading::class;
     });
-
-    Event::listen(PluginsLoaded::class, function () use (&$triggeredLoaded) {
-        $triggeredLoaded = true;
+    Event::listen(PluginsRegistered::class, function (PluginsRegistered $event) use (&$events) {
+        $events[] = PluginsRegistered::class;
     });
 
     $this->plugins->loadPlugins();
 
-    expect($triggeredLoading)->toBeTrue('PluginsLoading not triggered');
-    expect($triggeredLoaded)->toBeTrue('PluginsLoaded not triggered');
+    expect($events)->toBe([
+        PluginsLoading::class,
+        PluginsRegistered::class,
+    ]);
 });
 
 it('can get a plugin by handle', function () {
