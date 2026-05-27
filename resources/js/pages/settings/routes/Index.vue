@@ -107,24 +107,24 @@
             !readOnly && getDragState(route.uid).type === 'is-dragging',
         }"
       >
-        <div class="route__uri">
-          <Link :href="edit(route.uid)">
-            <span v-if="isMultiSite" class="route__site">
-              {{ route.siteName }}
-            </span>
-            <div class="route__parts"></div>
+        <div v-if="isMultiSite" class="route__site">
+          <div class="route-site">
+            {{ route.siteName }}
+          </div>
+        </div>
+
+        <Link :href="edit(route.uid)" class="route__parts">
+          <div>
             <span
               v-if="route.uriDisplayHtml"
               v-html="route.uriDisplayHtml"
             ></span>
             <craft-icon v-else name="home" :label="t('Home')"></craft-icon>
-          </Link>
-        </div>
+          </div>
+        </Link>
 
         <div class="route__icon">
-          <div class="route-icon">
-            <craft-icon name="arrow-right"></craft-icon>
-          </div>
+          <craft-icon name="arrow-right" :label="t('Resolves to')"></craft-icon>
         </div>
 
         <div class="route__template">
@@ -132,9 +132,7 @@
           <span>{{ route.template }}</span>
         </div>
 
-        <div class="flex-1"></div>
-
-        <div class="flex gap-1 items-center px-2" v-if="!readOnly" @click.stop>
+        <div class="route__actions" v-if="!readOnly" @click.stop>
           <Link
             as="craft-button"
             size="small"
@@ -167,24 +165,23 @@
 </template>
 
 <style scoped lang="scss">
-  .empty-routes {
-    color: var(--c-text-quiet);
-  }
-
   .routes-list {
     display: grid;
-    gap: var(--c-spacing-md);
+    grid-template-areas: 'site parts icon template actions';
+    grid-template-columns: auto auto auto 1fr auto;
+    gap: var(--c-spacing-sm) 0;
   }
 
   .route {
-    align-items: stretch;
-    background: var(--c-color-fill-quiet);
+    grid-column: 1 / -1;
+    display: grid;
+    align-items: center;
     border: 1px solid var(--c-color-border-quiet);
     border-radius: var(--c-radius-md);
-    cursor: pointer;
-    display: flex;
-    min-height: 2.5rem;
     position: relative;
+    padding: var(--c-spacing-sm) var(--c-spacing-md);
+    background: var(--c-surface-raised);
+    grid-template-columns: subgrid;
   }
 
   .route--readonly {
@@ -196,84 +193,53 @@
     opacity: 0.45;
   }
 
-  .route__uri {
-    align-items: center;
-    background: var(--c-surface-raised);
-    border-radius: var(--c-radius-lg) 0 0 var(--c-radius-lg);
-    color: var(--c-text-link);
-    display: flex;
-    gap: var(--c-spacing-sm);
-    min-width: min(26rem, 55%);
-    padding: var(--c-spacing-sm) var(--c-spacing-md);
-    position: relative;
-  }
-
-  .route__icon {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    background-image: linear-gradient(
-      to right,
-      var(--c-surface-raised) 50%,
-      transparent 50.1%
-    );
-  }
-
-  .route-icon {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 2em;
-    aspect-ratio: 1;
-    border-radius: var(--c-radius-full);
-    border: 1px solid var(--c-color-border-quiet);
-    align-self: center;
-    background-color: var(--c-surface-raised);
-  }
-
-  .route__site {
+  .route-site {
     background: var(--c-color-neutral-fill-quiet);
     border-radius: var(--c-radius-sm);
     box-shadow: inset 0 0 0 1px var(--c-color-neutral-border-quiet);
     color: var(--c-text-quiet);
     display: inline-flex;
     font-size: var(--c-text-sm);
-    line-height: 1.2;
     padding: 0.125rem 0.35rem;
     white-space: nowrap;
   }
 
+  .route__site {
+    grid-area: site;
+    padding-inline-end: var(--c-spacing-md);
+  }
+
+  .route__icon {
+    grid-area: icon;
+    padding-inline: var(--c-spacing-md);
+  }
+
   .route__parts {
     align-items: center;
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: 0.125rem;
-    min-width: 0;
+    display: block;
+    grid-area: parts;
     word-break: break-word;
+    padding-inline-end: var(--c-spacing-md);
   }
 
   .route__parts ::v-deep(.token) {
     align-items: center;
-    background: var(--c-color-neutral-fill-normal);
-    border: 0;
+    background: var(--c-color-accent-fill-quiet);
+    border: 1px solid transparent;
     border-radius: var(--c-radius-sm);
-    color: var(--c-color-neutral-on-normal);
+    color: var(--c-color-accent-on-quiet);
     display: inline-flex;
     font-family: var(--c-font-mono);
     font-size: var(--c-text-sm);
-    gap: 0.25rem;
-    line-height: 1.3;
-    padding: 0.125rem 0.4rem;
+    padding: 0 0.25em;
   }
 
   .route__template {
-    align-items: center;
     color: var(--c-text-quiet);
-    display: flex;
-    gap: var(--c-spacing-xs);
-    min-width: 0;
-    padding: var(--c-spacing-sm) var(--c-spacing-md);
+    font-family: var(--c-font-mono);
+    font-size: var(--c-text-sm);
+    grid-area: template;
+    padding-inline-end: var(--c-spacing-md);
   }
 
   .route__template span {
@@ -284,22 +250,22 @@
     align-items: center;
     display: flex;
     gap: var(--c-spacing-xs);
-    margin-left: auto;
-    padding: var(--c-spacing-xs) var(--c-spacing-sm);
+    grid-area: actions;
   }
 
   @media (max-width: 720px) {
     .route {
-      display: grid;
+      grid-template-areas: 'site actions' 'parts parts' 'template template';
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--c-spacing-sm) 0;
     }
 
-    .route__uri {
-      border-radius: var(--c-radius-lg) var(--c-radius-lg) 0 0;
-      min-width: 0;
+    .route__icon {
+      display: none;
     }
 
     .route__actions {
-      justify-content: flex-end;
+      justify-self: end;
     }
   }
 </style>
