@@ -22,6 +22,7 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -96,6 +97,10 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
 
     public bool $showStats = false;
 
+    public bool $sanitizeHtml = true;
+
+    public ?string $htmlSanitizer = null;
+
     public array $toolbarButtons = self::DEFAULT_TOOLBAR_BUTTONS;
 
     public ?string $placeholder = null;
@@ -145,6 +150,10 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
 
         if (($config['uploadVolume'] ?? null) === '') {
             $config['uploadVolume'] = null;
+        }
+
+        if (($config['htmlSanitizer'] ?? null) === '') {
+            $config['htmlSanitizer'] = null;
         }
 
         unset(
@@ -251,6 +260,17 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             'flavor' => ['required', Rule::in(Arr::pluck(self::flavorOptions(), 'value'))],
             'showToolbar' => ['boolean'],
             'showStats' => ['boolean'],
+            'sanitizeHtml' => ['boolean'],
+            'htmlSanitizer' => [
+                'nullable',
+                function ($attribute, mixed $value, Closure $fail) {
+                    if (! $this->sanitizeHtml || $value === null || in_array($value, $this->htmlSanitizerOptions()->pluck('value')->all(), true)) {
+                        return;
+                    }
+
+                    $fail(t('Invalid HTML sanitizer.'));
+                },
+            ],
             'toolbarButtons' => [
                 'array',
                 function ($attribute, mixed $value, Closure $fail) {
@@ -309,10 +329,21 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         return template('_components/fieldtypes/Markdown/settings', [
             'field' => $this,
             'flavorOptions' => self::flavorOptions(),
+            'htmlSanitizerOptions' => $this->htmlSanitizerOptions(),
             'toolbarButtonOptions' => self::toolbarButtonOptions(),
             'volumeOptions' => $this->volumeOptions(),
             'readOnly' => $readOnly,
         ]);
+    }
+
+    private function htmlSanitizerOptions(): Collection
+    {
+        return collect(app(HtmlSanitizers::class)->names())
+            ->map(fn (string $name) => [
+                'label' => $name === 'default' ? t('Default') : $name,
+                'value' => $name,
+            ])
+            ->values();
     }
 
     #[Override]
@@ -561,6 +592,14 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
 
         if (trim($value) === '') {
             return null;
+        }
+
+        if ($fromRequest && $this->sanitizeHtml) {
+            $value = app(HtmlSanitizers::class)->sanitize($value, $this->htmlSanitizer);
+
+            if (trim($value) === '') {
+                return null;
+            }
         }
 
         return new MarkdownData($value, $this->flavor);

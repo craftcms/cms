@@ -14,6 +14,7 @@ use CraftCms\Cms\Markdown\Flavors\GfmFlavor;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
 use CraftCms\Cms\Twig\TemplateRenderer;
 use GraphQL\Language\AST\FieldNode;
 use GraphQL\Language\AST\NameNode;
@@ -25,6 +26,8 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
+use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
+use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 
 function markdownFieldResolveInfo(string $fieldName): ResolveInfo
 {
@@ -173,6 +176,67 @@ it('can show editor stats', function () {
     expect($field->validate())->toBeTrue()
         ->and($html)->toContain('show-stats')
         ->and($field->getSettingsHtml())->toContain('name="showStats"');
+});
+
+it('sanitizes submitted html with the configured html sanitizer', function () {
+    app(HtmlSanitizers::class)->register('paragraphs-only', new HtmlSanitizer(
+        (new HtmlSanitizerConfig)->allowElement('p')
+    ));
+
+    $field = new MarkdownField([
+        'name' => 'Body',
+        'handle' => 'body',
+        'sanitizeHtml' => true,
+        'htmlSanitizer' => 'paragraphs-only',
+    ]);
+
+    $value = $field->normalizeValueFromRequest('<p onclick="bad()">Hi</p><h1>Heading</h1>', null);
+
+    expect($field->validate())->toBeTrue()
+        ->and($value->getRaw())->toBe('<p>Hi</p>');
+});
+
+it('can disable submitted html sanitization', function () {
+    $field = new MarkdownField([
+        'name' => 'Body',
+        'handle' => 'body',
+        'sanitizeHtml' => false,
+    ]);
+    $value = $field->normalizeValueFromRequest('<script>alert(1)</script>**bold**', null);
+
+    expect($field->validate())->toBeTrue()
+        ->and($value->getRaw())->toBe('<script>alert(1)</script>**bold**');
+});
+
+it('validates and renders html sanitizer settings', function () {
+    app(HtmlSanitizers::class)->register('paragraphs-only', new HtmlSanitizer(
+        (new HtmlSanitizerConfig)->allowElement('p')
+    ));
+
+    $field = new MarkdownField([
+        'name' => 'Body',
+        'handle' => 'body',
+        'htmlSanitizer' => 'paragraphs-only',
+    ]);
+    $invalidField = new MarkdownField([
+        'name' => 'Body',
+        'handle' => 'body',
+        'htmlSanitizer' => 'missing',
+    ]);
+    $disabledField = new MarkdownField([
+        'name' => 'Body',
+        'handle' => 'body',
+        'sanitizeHtml' => false,
+        'htmlSanitizer' => 'missing',
+    ]);
+
+    expect($field->validate())->toBeTrue()
+        ->and($field->getSettingsHtml())->toContain('name="sanitizeHtml"')
+        ->and($field->getSettingsHtml())->toContain('name="htmlSanitizer"')
+        ->and($field->getSettingsHtml())->toContain('value="paragraphs-only" selected')
+        ->and($invalidField->validate())->toBeFalse()
+        ->and($invalidField->errors()->has('htmlSanitizer'))->toBeTrue()
+        ->and($disabledField->validate())->toBeTrue();
 });
 
 it('only shows toolbar button settings when the toolbar is enabled', function () {

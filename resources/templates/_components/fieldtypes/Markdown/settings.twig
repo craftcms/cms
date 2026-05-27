@@ -45,6 +45,57 @@
     disabled: readOnly,
 }) }}
 
+{{ forms.textField({
+    label: "Placeholder Text"|t('app'),
+    instructions: "The text that will be shown if the field doesn’t have a value."|t('app'),
+    id: 'placeholder',
+    name: 'placeholder',
+    value: field.placeholder,
+    errors: field.errors.get('placeholder'),
+    disabled: readOnly,
+}) }}
+
+{{ forms.textField({
+    label: "Initial Rows"|t('app'),
+    id: 'initialRows',
+    name: 'initialRows',
+    value: field.initialRows,
+    size: 3,
+    errors: field.errors.get('initialRows'),
+    disabled: readOnly,
+}) }}
+
+{% embed '_includes/forms/field' with {
+    label: 'Field Limit'|t('app'),
+    instructions: "The maximum number of characters or bytes the field is allowed to have."|t('app'),
+    id: 'fieldLimit',
+    errors: field.errors.get(field.byteLimit ? 'byteLimit' : 'charLimit'),
+    disabled: readOnly,
+} %}
+    {% import "_includes/forms" as forms %}
+    {% block input %}
+        <div class="flex">
+            {{ forms.text({
+                id: 'fieldLimit',
+                name: 'fieldLimit',
+                value: field.charLimit ?? field.byteLimit,
+                size: 3,
+                disabled: readOnly,
+            }) }}
+            {{ forms.select({
+                id: 'limitUnit',
+                name: 'limitUnit',
+                options: [
+                    { value: 'chars', label: 'Characters'|t('app') },
+                    { value: 'bytes', label: 'Bytes'|t('app') },
+                ],
+                value: field.byteLimit ? 'bytes' : 'chars',
+                disabled: readOnly,
+            }) }}
+        </div>
+    {% endblock %}
+{% endembed %}
+
 <hr>
 
 <a class="fieldtoggle" data-target="assets">{{ 'Assets'|t('app') }}</a>
@@ -103,53 +154,35 @@
     {% endif %}
 </div>
 
-{{ forms.textField({
-    label: "Placeholder Text"|t('app'),
-    instructions: "The text that will be shown if the field doesn’t have a value."|t('app'),
-    id: 'placeholder',
-    name: 'placeholder',
-    value: field.placeholder,
-    errors: field.errors.get('placeholder'),
-    disabled: readOnly,
-}) }}
+<hr>
 
-{{ forms.textField({
-    label: "Initial Rows"|t('app'),
-    id: 'initialRows',
-    name: 'initialRows',
-    value: field.initialRows,
-    size: 3,
-    errors: field.errors.get('initialRows'),
-    disabled: readOnly,
-}) }}
+<a class="fieldtoggle" data-target="advanced">{{ 'Advanced'|t('app') }}</a>
+<div id="advanced" class="hidden">
+    {{ forms.lightswitchField({
+        label: 'Sanitize HTML'|t('app'),
+        instructions: 'Removes any potentially-malicious code on save, by running the submitted data through an HTML sanitizer.'|t('app'),
+        warning: 'Disable this at your own risk!'|t('app'),
+        id: 'sanitizeHtml',
+        name: 'sanitizeHtml',
+        on: field.sanitizeHtml,
+        toggle: 'html-sanitizer-settings',
+        errors: field.errors.get('sanitizeHtml'),
+        disabled: readOnly,
+    }) }}
 
-{% embed '_includes/forms/field' with {
-    label: 'Field Limit'|t('app'),
-    instructions: "The maximum number of characters or bytes the field is allowed to have."|t('app'),
-    id: 'fieldLimit',
-    errors: field.errors.get(field.byteLimit ? 'byteLimit' : 'charLimit'),
-    disabled: readOnly,
-} %}
-    {% import "_includes/forms" as forms %}
-    {% block input %}
-        <div class="flex">
-            {{ forms.text({
-                id: 'fieldLimit',
-                name: 'fieldLimit',
-                value: field.charLimit ?? field.byteLimit,
-                size: 3,
-                disabled: readOnly,
-            }) }}
-            {{ forms.select({
-                id: 'limitUnit',
-                name: 'limitUnit',
-                options: [
-                    { value: 'chars', label: 'Characters'|t('app') },
-                    { value: 'bytes', label: 'Bytes'|t('app') },
-                ],
-                value: field.byteLimit ? 'bytes' : 'chars',
-                disabled: readOnly,
-            }) }}
-        </div>
-    {% endblock %}
-{% endembed %}
+    <div id="html-sanitizer-settings" class="{{ not field.sanitizeHtml ? 'hidden' }}">
+        {{ forms.selectField({
+            label: 'HTML Sanitizer'|t('app'),
+            instructions: 'You can register custom HTML sanitizers as {ext} files in {path}.'|t('app', {
+                ext: '`.php`',
+                path: '`config/craft/sanitizers/`',
+            }),
+            id: 'htmlSanitizer',
+            name: 'htmlSanitizer',
+            options: htmlSanitizerOptions,
+            value: field.htmlSanitizer ?? 'default',
+            errors: field.errors.get('htmlSanitizer'),
+            disabled: readOnly,
+        }) }}
+    </div>
+</div>
