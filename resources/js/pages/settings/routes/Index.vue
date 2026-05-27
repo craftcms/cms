@@ -112,7 +112,12 @@
             <span v-if="isMultiSite" class="route__site">
               {{ route.siteName }}
             </span>
-            <span class="route__parts" v-html="route.uriDisplayHtml"></span>
+            <div class="route__parts"></div>
+            <span
+              v-if="route.uriDisplayHtml"
+              v-html="route.uriDisplayHtml"
+            ></span>
+            <craft-icon v-else name="home" :label="t('Home')"></craft-icon>
           </Link>
         </div>
 
@@ -130,6 +135,14 @@
         <div class="flex-1"></div>
 
         <div class="flex gap-1 items-center px-2" v-if="!readOnly" @click.stop>
+          <Link
+            as="craft-button"
+            size="small"
+            appearance="plain"
+            :href="edit(route.uid)"
+          >
+            <craft-icon name="pencil" :label="t('Edit')"></craft-icon>
+          </Link>
           <ReorderButton
             :ref="(el) => setHandleRef(el, route.uid)"
             :position="getRowPosition(index)"

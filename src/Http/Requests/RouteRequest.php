@@ -18,7 +18,7 @@ class RouteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'uriParts' => ['present', 'filled', 'array'],
+            'uriParts' => ['present', 'array'],
             'template' => ['required', 'string'],
             'siteUid' => ['nullable', 'uuid'],
         ];
