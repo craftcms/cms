@@ -402,7 +402,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                 ? array_values(array_diff($this->toolbarButtons, [self::TOOLBAR_ASSET]))
                 : $this->toolbarButtons,
             'uploadFolderId' => $static ? null : $this->uploadFolderId(),
-            'uploadSiteId' => $element?->siteId ?? Sites::getCurrentSite()->id,
+            'uploadSiteId' => $element->siteId ?? Sites::getCurrentSite()->id,
             'value' => $this->rawValue($value),
         ];
 
