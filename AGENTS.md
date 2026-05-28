@@ -10,6 +10,38 @@ New core work should be Laravel-first. Do not add Yii dependencies to `src/`; pu
 
 This is a large codebase with some large files. Search narrowly before reading full files.
 
+## Commands
+
+### PHP
+
+```bash
+composer tests                # Run all Pest tests
+composer tests-adapter        # Run yii2-adapter tests only
+./vendor/bin/pest path/to/TestFile.php          # Run a single test file
+./vendor/bin/pest --filter "test description"   # Run tests matching a name
+composer fix-cs               # Run Rector + Pint + ECS (auto-fixes code style)
+composer phpstan              # Run PHPStan static analysis (level 5)
+composer ci                   # Full CI pipeline: pint, rector, phpstan, tests, tests-adapter
+composer serve                # Start the testbench dev server
+```
+
+### Frontend
+
+```bash
+npm run dev           # Vite dev server (HMR) for the Inertia/Vue CP
+npm run build         # Production Vite build (cp.ts + legacy.ts + cp.css)
+npm run build:all     # Build legacy bundles + CP component package + Vite
+npm run dev:bundles   # Webpack dev watch for legacy jQuery bundles
+npm run dev:cp        # Dev build for the @craftcms/cp component package
+npm run build:cp      # Production build for the @craftcms/cp component package
+npm run lint          # ESLint + Stylelint + TypeScript type-check
+npm run typecheck     # TypeScript type-check only (vue-tsc)
+npm run test:cp       # Vitest tests for the @craftcms/cp package
+```
+
+> **Note:** `@craftcms/cp` must be built (`npm run build:cp`) before building or running the main Vite app if you've
+> made changes to it.
+
 ## Testing
 
 - Pest tests using `tests/TestCase.php` or `yii2-adapter/tests-laravel/TestCase.php` share a database lock. If another process has the lock, the next process will wait and print `Another Pest process is already using the shared test database. Waiting for the lock...`.
@@ -28,9 +60,38 @@ This is a large codebase with some large files. Search narrowly before reading f
 - Laravel events are the native event system. Yii event constants and bridge registration belong in `yii2-adapter` for compatibility only.
 - Services that should be singletons generally use Laravel's `#[Singleton]` or `#[Scoped]` attribute.
 
-## Frontend
+## Frontend Architecture
 
-The Control Panel contains both legacy Twig/jQuery surfaces and newer Inertia + Vue screens. Prefer `@craftcms/cp` components when building UI, and match whichever surface the surrounding feature already uses.
+The CP has two parallel rendering stacks that are actively being consolidated:
+
+**Inertia/Vue (new):** `resources/js/cp.ts` is the entrypoint. Inertia pages live in `resources/js/pages/`, shared Vue
+components in `resources/js/common/`. `HandleInertiaRequests` middleware provides shared CP config, navigation, and
+global props to all Inertia pages. The root Blade template is `resources/views/app.blade.php`.
+
+**Legacy jQuery (old):** `resources/js/legacy.ts` loads the old surface. The individual jQuery modules live in
+`packages/craftcms-legacy/` and are bundled with webpack (separate from Vite). Pages still on this stack return `view()`
+from their controllers.
+
+**`CpScreenResponse`** is an intermediate state used by pages mid-migration: the outer CP shell is rendered via Inertia,
+but the inner content is PHP-rendered HTML injected into the page. Controllers returning `CpScreenResponse` are
+partially migrated; full migration means converting the inner form to a Vue component and switching to
+`Inertia::render()`.
+
+**Packages:**
+
+- `packages/craftcms-cp` — the `@craftcms/cp` component library (Web Components built on Lit/WebAwesome). Imported as
+  `@craftcms/cp` in Vue pages. Has its own build (`npm run build:cp`) and Vitest tests (`npm run test:cp`).
+- `packages/craftcms-legacy` — webpack-bundled jQuery modules used by legacy CP surfaces.
+
+**TypeScript types** for PHP classes are auto-generated via `spatie/laravel-typescript-transformer` and written to
+`resources/js/generated/`. This runs automatically on `vite dev`/`vite build` when relevant PHP files change; run
+`./vendor/bin/testbench typescript:transform` manually if needed.
+
+**Wayfinder** generates typed route URL helpers into `resources/js/` from Laravel routes. Regenerate with
+`./vendor/bin/testbench wayfinder:generate`.
+
+**Custom elements** (anything with a hyphen in the tag name) are treated as native web components by the Vue compiler —
+they pass through to the browser without Vue trying to resolve them as Vue components.
 
 ## Adapter Work
 
