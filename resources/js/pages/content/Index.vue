@@ -77,10 +77,10 @@
         columnHelper.accessor('slug', {
           header: t('Slug'),
         }),
-        columnHelper.accessor('dateCreated', {
+        columnHelper.date('dateCreated', {
           header: t('Date Created'),
         }),
-        columnHelper.accessor('dateUpdated', {
+        columnHelper.date('dateUpdated', {
           header: t('Date Updated'),
         }),
         columnHelper.accessor('status', {
