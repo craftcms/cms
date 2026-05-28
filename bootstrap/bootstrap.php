@@ -297,8 +297,8 @@ if (function_exists('craft_modify_app_config')) {
     craft_modify_app_config($config, $appType);
 }
 
-// Create the storage/runtime/ folder if it doesn't already exist
-$runtimePath = Craft::getAlias($config['runtimePath'] ?? $storagePath . DIRECTORY_SEPARATOR . 'runtime');
+// Create the runtime folder if it doesn't already exist
+$runtimePath = Craft::getAlias($config['runtimePath']);
 $createFolder($runtimePath);
 $ensureFolderIsReadable($runtimePath, true);
 
