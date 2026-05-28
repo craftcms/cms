@@ -4,6 +4,7 @@
 
 - Fixed a bug where JavaScript and CSS registered by utility pages weren’t executed when navigating between utility
   pages, and weren’t cleaned up when navigating away. ([#18978](https://github.com/craftcms/cms/issues/18978))
+- Fixed a bug where custom element authorization methods weren’t respected by Laravel element policies. ([#18983](https://github.com/craftcms/cms/pull/18983))
 
 ## 6.0.0-alpha.5 - 2026-05-27
 
