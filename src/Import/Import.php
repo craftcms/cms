@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Import;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Import\Data\ImportRun;
 use CraftCms\Cms\Import\DataTypes\Csv;
 use CraftCms\Cms\Import\DataTypes\Json;
@@ -437,7 +436,7 @@ class Import
 
         $element->setAttributesFromRequest($attributes);
 
-        $fields = $this->normalizeNestedFields($element, $fields);
+        $fields = $this->normalizeFields($element, $fields);
 
         $element->setFieldValues($fields);
 
@@ -446,7 +445,7 @@ class Import
         event(new DataImported($config, $data));
     }
 
-    private function normalizeNestedFields(ElementInterface $element, array $fields): array
+    private function normalizeFields(ElementInterface $element, array $fields): array
     {
         $fieldLayout = $element->getFieldLayout();
 
@@ -455,14 +454,10 @@ class Import
         }
 
         foreach ($fields as $handle => $value) {
-            if (! is_array($value)) {
-                continue;
-            }
-
             $field = $fieldLayout->getFieldByHandle($handle);
-            // if we don't have a field, or it's not an importable nested elements type field,
+            // if we don't have a field, or it doesn't have a normalizeValueForImport() method,
             // we don't have to worry about extra normalization, so carry on
-            if (! $field instanceof ImportableElementContainerFieldInterface) {
+            if (! method_exists($field, 'normalizeValueForImport')) {
                 continue;
             }
 

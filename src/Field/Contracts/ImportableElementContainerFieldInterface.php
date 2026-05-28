@@ -14,11 +14,6 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 interface ImportableElementContainerFieldInterface extends FieldInterface
 {
     /**
-     * Normalizes field's value for import.
-     */
-    public function normalizeValueForImport(mixed $value, ?ElementInterface $owner = null): array;
-
-    /**
      * Normalize the nested entry data for import, applying the specified field layout configuration.
      *
      * @param  array  $dataItem  The data item to be normalized.
