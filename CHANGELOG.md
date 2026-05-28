@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where an empty `@storage/runtime` directory could be created within the webroot. ([#18986](https://github.com/craftcms/cms/pull/18986))
+
 ## 5.10.4 - 2026-05-27
 
 - Updated Twig to 3.27. ([#18980](https://github.com/craftcms/cms/pull/18980))
