@@ -921,7 +921,7 @@ JS, [
 
             // try to match existing address entries,
             // but only if owner already has an ID; no point trying to match nested entry for a brand new owner element
-            if ($owner->id && isset($address['matchCriteria']) && is_array($address['matchCriteria'])) {
+            if (($owner?->id) && isset($address['matchCriteria']) && is_array($address['matchCriteria'])) {
                 // try to find an existing entry
                 $query = Address::find()
                     ->fieldId($this->id)
