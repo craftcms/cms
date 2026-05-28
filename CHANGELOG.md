@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.10.4.1 - 2026-05-28
 
 - Fixed a bug where an empty `@storage/runtime` directory could be created within the webroot. ([#18986](https://github.com/craftcms/cms/pull/18986))
 
