@@ -565,7 +565,7 @@ class UsersController extends Controller
                 return ExitCode::OK;
             }
             $methodToRemove = $this->method;
-        } else {
+        } elseif ($this->interactive && count($activeMethods) > 1) {
             $methodToRemove = $this->select(
                 "Which two-step verification method would you like to remove for user “{$user->username}”",
                 [
@@ -573,6 +573,8 @@ class UsersController extends Controller
                     ...array_combine(array_keys($activeMethods), array_keys($activeMethods)),
                 ],
             );
+        } else {
+            $methodToRemove = 'all';
         }
 
         if ($methodToRemove === 'all') {
