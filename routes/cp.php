@@ -9,6 +9,7 @@ use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
+use CraftCms\Cms\Http\Controllers\ContentIndexController;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementRedirectController;
@@ -132,8 +133,13 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     Route::get('entries/{section}/new', CreateEntryController::class);
 
     Route::get('content', EntriesIndexController::class);
-    Route::view('content/{page}', 'entries.index')->where('page', '[^\/]+');
-    Route::view('content/{page}/{sectionHandle}', 'entries.index')->where('page', '[^\/]+');
+
+    // Route::view('content/{page}', 'entries.index')->where('page', '[^\/]+');
+    // Route::view('content/{page}/{sectionHandle}', 'entries.index')->where('page', '[^\/]+');
+    Route::get('content/{page}/{sectionHandle?}', ContentIndexController::class)
+        ->name('content.index')
+        ->where('page', '[^\/]+');
+
     Route::get('content/{section}/new', CreateEntryController::class);
 
     /**
