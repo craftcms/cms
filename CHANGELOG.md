@@ -5,6 +5,9 @@
 - Fixed a bug where JavaScript and CSS registered by utility pages weren’t executed when navigating between utility
   pages, and weren’t cleaned up when navigating away. ([#18978](https://github.com/craftcms/cms/issues/18978))
 - Fixed a bug where custom element authorization methods weren’t respected by Laravel element policies. ([#18983](https://github.com/craftcms/cms/pull/18983))
+- Fixed a JavaScript error that could occur in the Control Panel when a custom element was registered more than once.
+- Fixed a bug where Control Panel action menu items could trigger their action twice when clicked.
+- Fixed a bug where legacy Control Panel JavaScript wasn’t loaded and initialized on all Control Panel pages.
 
 ## 6.0.0-alpha.5 - 2026-05-27
 
