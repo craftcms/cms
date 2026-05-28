@@ -48,7 +48,7 @@
     />
     <Text
       v-else-if="issue === 'mismatched'"
-      template="This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href='{buyUrl}'>buy a new license</a>."
+      template="This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href=&quot;{buyUrl}&quot;>buy a new license</a>."
       :params="{accountLink: accountLink, buyUrl: plugin.buyUrl}"
     />
     <Text
