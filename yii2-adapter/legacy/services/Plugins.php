@@ -18,7 +18,6 @@ use CraftCms\Cms\Plugin\Events\PluginInstalled;
 use CraftCms\Cms\Plugin\Events\PluginInstalling;
 use CraftCms\Cms\Plugin\Events\PluginRegistered;
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
-use CraftCms\Cms\Plugin\Events\PluginsLoaded;
 use CraftCms\Cms\Plugin\Events\PluginsLoading;
 use CraftCms\Cms\Plugin\Events\PluginUninstalled;
 use CraftCms\Cms\Plugin\Events\PluginUninstalling;
@@ -509,10 +508,9 @@ class Plugins extends Component
             fn() => $pluginService->trigger(self::EVENT_BEFORE_LOAD_PLUGINS),
         );
 
-        Event::listen(
-            PluginsLoaded::class,
-            fn() => $pluginService->trigger(self::EVENT_AFTER_LOAD_PLUGINS),
-        );
+        app()->booted(function() use ($pluginService) {
+            $pluginService->trigger(self::EVENT_AFTER_LOAD_PLUGINS);
+        });
 
         Event::listen(
             PluginEnabling::class,
