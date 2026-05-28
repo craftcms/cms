@@ -29,19 +29,42 @@ beforeEach(function () {
         'type' => PlainText::class,
     ]);
 
-    $simpleType = EntryType::factory()
+    $firstEntryTypeForMatrix = EntryType::factory()
         ->withField($plainTextField)
         ->create([
-            'name' => 'Simple',
-            'handle' => 'simple',
+            'name' => 'First ET',
+            'handle' => 'firstEt',
             'hasTitleField' => true,
         ]);
 
-    $secondArticleType = EntryType::factory()
+    $secondEntryTypeForMatrix = EntryType::factory()
         ->withField($plainTextField)
         ->create([
-            'name' => 'Second Article',
-            'handle' => 'secondArticle',
+            'name' => 'Second ET',
+            'handle' => 'secondEt',
+            'hasTitleField' => true,
+        ]);
+
+    $nestedMatrixField = Field::factory()->create([
+        'name' => 'My Nested Matrix',
+        'handle' => 'myNestedMatrix',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$firstEntryTypeForMatrix->id, $secondEntryTypeForMatrix->id]],
+    ]);
+
+    $thirdEntryTypeForMatrix = EntryType::factory()
+        ->withFieldLayout(
+            FieldLayout::factory()
+                ->withContentTab([
+                    ['uid' => Str::uuid()->toString(), 'type' => EntryTitleField::class, 'required' => true],
+                    ['uid' => Str::uuid()->toString(), 'type' => CustomField::class, 'fieldUid' => $plainTextField->uid, 'required' => false],
+                    ['uid' => Str::uuid()->toString(), 'type' => CustomField::class, 'fieldUid' => $nestedMatrixField->uid, 'required' => false],
+                ])
+                ->create()
+        )
+        ->create([
+            'name' => 'Third ET',
+            'handle' => 'thirdEt',
             'hasTitleField' => true,
         ]);
 
@@ -49,7 +72,7 @@ beforeEach(function () {
         'name' => 'My Matrix',
         'handle' => 'myMatrix',
         'type' => Matrix::class,
-        'settings' => ['entryTypes' => [$secondArticleType->id, $simpleType->id]],
+        'settings' => ['entryTypes' => [$firstEntryTypeForMatrix->id, $secondEntryTypeForMatrix->id, $thirdEntryTypeForMatrix->id]],
     ]);
 
     EntryTypes::refreshEntryTypes();
@@ -111,7 +134,7 @@ beforeEach(function () {
 it('imports an entry with a matrix field', function () {
     $this->import->importItem($this->importer, ($this->entryData)([
         [
-            'type' => 'secondArticle',
+            'type' => 'secondEt',
             'title' => 'block 1',
             'fields' => ['plainText' => 'foo'],
         ],
@@ -125,8 +148,8 @@ it('imports an entry with a matrix field', function () {
 
 it('imports multiple blocks of different entry types', function () {
     $this->import->importItem($this->importer, ($this->entryData)([
-        ['type' => 'secondArticle', 'title' => 'block 1', 'fields' => ['plainText' => 'foo']],
-        ['type' => 'simple', 'title' => 'block 2', 'fields' => ['plainText' => 'bar']],
+        ['type' => 'secondEt', 'title' => 'block 1', 'fields' => ['plainText' => 'foo']],
+        ['type' => 'firstEt', 'title' => 'block 2', 'fields' => ['plainText' => 'bar']],
     ]));
 
     $entry = EntryElement::find()->title('imported entry')->one();
@@ -136,7 +159,7 @@ it('imports multiple blocks of different entry types', function () {
 
 it('maps block field values and title correctly', function () {
     $this->import->importItem($this->importer, ($this->entryData)([
-        ['type' => 'secondArticle', 'title' => 'block 1', 'fields' => ['plainText' => 'foo']],
+        ['type' => 'secondEt', 'title' => 'block 1', 'fields' => ['plainText' => 'foo']],
     ]));
 
     $entry = EntryElement::find()->title('imported entry')->one();
@@ -151,7 +174,7 @@ it('updates an existing block when match criteria matches', function () {
 
     $this->import->importItem($importer, ($this->entryData)([
         [
-            'type' => 'secondArticle',
+            'type' => 'secondEt',
             'title' => 'block 1',
             'matchCriteria' => ['title' => 'title'],
             'fields' => ['plainText' => 'foo'],
@@ -163,7 +186,7 @@ it('updates an existing block when match criteria matches', function () {
 
     $this->import->importItem($importer, ($this->entryData)([
         [
-            'type' => 'secondArticle',
+            'type' => 'secondEt',
             'title' => 'block 1',
             'matchCriteria' => ['title' => 'title'],
             'fields' => ['plainText' => 'updated foo'],
@@ -180,7 +203,7 @@ it('creates a new block when match criteria does not match any existing block', 
 
     $this->import->importItem($importer, ($this->entryData)([
         [
-            'type' => 'secondArticle',
+            'type' => 'secondEt',
             'title' => 'block 1',
             'matchCriteria' => ['title' => 'title'],
             'fields' => ['plainText' => 'foo'],
@@ -192,13 +215,13 @@ it('creates a new block when match criteria does not match any existing block', 
 
     $this->import->importItem($importer, ($this->entryData)([
         [
-            'type' => 'secondArticle',
+            'type' => 'secondEt',
             'title' => 'block 1',
             'matchCriteria' => ['title' => 'title'],
             'fields' => ['plainText' => 'foo'],
         ],
         [
-            'type' => 'secondArticle',
+            'type' => 'secondEt',
             'title' => 'block 2',
             'matchCriteria' => ['title' => 'title'],
             'fields' => ['plainText' => 'bar'],
@@ -207,4 +230,146 @@ it('creates a new block when match criteria does not match any existing block', 
 
     $entry = EntryElement::find()->title('imported entry')->one();
     expect($entry->getFieldValue('myMatrix')->count())->toBe(2);
+});
+
+describe('nested matrix', function () {
+    it('imports an entry with a matrix field inside a matrix field', function () {
+        $this->import->importItem($this->importer, ($this->entryData)([
+            [
+                'type' => 'thirdEt',
+                'title' => 'outer block 1',
+                'fields' => [
+                    'plainText' => 'outer text',
+                    'myNestedMatrix' => [
+                        ['type' => 'firstEt', 'title' => 'inner block 1', 'fields' => ['plainText' => 'nested foo']],
+                    ],
+                ],
+            ],
+        ]));
+
+        $entry = EntryElement::find()->title('imported entry')->one();
+
+        expect($entry)->not()->toBeNull();
+
+        $outerBlocks = $entry->getFieldValue('myMatrix');
+        expect($outerBlocks->count())->toBe(1);
+
+        $outerBlock = $outerBlocks->one();
+        expect($outerBlock->title)->toBe('outer block 1');
+        expect($outerBlock->getFieldValue('plainText'))->toBe('outer text');
+
+        $innerBlocks = $outerBlock->getFieldValue('myNestedMatrix');
+        expect($innerBlocks->count())->toBe(1);
+        expect($innerBlocks->one()->getFieldValue('plainText'))->toBe('nested foo');
+    });
+
+    it('imports multiple nested blocks of different entry types', function () {
+        $this->import->importItem($this->importer, ($this->entryData)([
+            [
+                'type' => 'thirdEt',
+                'title' => 'outer block 1',
+                'fields' => [
+                    'plainText' => 'outer text',
+                    'myNestedMatrix' => [
+                        ['type' => 'firstEt', 'title' => 'inner block 1', 'fields' => ['plainText' => 'nested foo']],
+                        ['type' => 'secondEt', 'title' => 'inner block 2', 'fields' => ['plainText' => 'nested bar']],
+                    ],
+                ],
+            ],
+        ]));
+
+        $entry = EntryElement::find()->title('imported entry')->one();
+        $outerBlock = $entry->getFieldValue('myMatrix')->one();
+
+        expect($outerBlock->getFieldValue('myNestedMatrix')->count())->toBe(2);
+    });
+
+    it('updates an existing nested block when match criteria matches', function () {
+        $importer = (clone $this->importer)->matchCriteria(['title' => 'title']);
+
+        $outerBlock = [
+            'type' => 'thirdEt',
+            'title' => 'outer block 1',
+            'matchCriteria' => ['title' => 'title'],
+            'fields' => [
+                'plainText' => 'outer text',
+                'myNestedMatrix' => [
+                    [
+                        'type' => 'firstEt',
+                        'title' => 'inner block 1',
+                        'matchCriteria' => ['title' => 'title'],
+                        'fields' => ['plainText' => 'nested foo'],
+                    ],
+                ],
+            ],
+        ];
+
+        $this->import->importItem($importer, ($this->entryData)([$outerBlock]));
+
+        $entry = EntryElement::find()->title('imported entry')->one();
+        expect($entry->getFieldValue('myMatrix')->one()->getFieldValue('myNestedMatrix')->count())->toBe(1);
+
+        $outerBlock['fields']['myNestedMatrix'][0]['fields']['plainText'] = 'updated nested foo';
+
+        $this->import->importItem($importer, ($this->entryData)([$outerBlock]));
+
+        $entry = EntryElement::find()->title('imported entry')->one();
+        $innerBlocks = $entry->getFieldValue('myMatrix')->one()->getFieldValue('myNestedMatrix');
+        expect($innerBlocks->count())->toBe(1)
+            ->and($innerBlocks->one()->getFieldValue('plainText'))->toBe('updated nested foo');
+    });
+
+    it('creates a new nested block when match criteria does not match any existing nested block', function () {
+        $importer = (clone $this->importer)->matchCriteria(['title' => 'title']);
+
+        $this->import->importItem($importer, ($this->entryData)([
+            [
+                'type' => 'thirdEt',
+                'title' => 'outer block 1',
+                'matchCriteria' => ['title' => 'title'],
+                'fields' => [
+                    'plainText' => 'outer text',
+                    'myNestedMatrix' => [
+                        [
+                            'type' => 'firstEt',
+                            'title' => 'inner block 1',
+                            'matchCriteria' => ['title' => 'title'],
+                            'fields' => ['plainText' => 'nested foo'],
+                        ],
+                    ],
+                ],
+            ],
+        ]));
+
+        $entry = EntryElement::find()->title('imported entry')->one();
+        expect($entry->getFieldValue('myMatrix')->one()->getFieldValue('myNestedMatrix')->count())->toBe(1);
+
+        $this->import->importItem($importer, ($this->entryData)([
+            [
+                'type' => 'thirdEt',
+                'title' => 'outer block 1',
+                'matchCriteria' => ['title' => 'title'],
+                'fields' => [
+                    'plainText' => 'outer text',
+                    'myNestedMatrix' => [
+                        [
+                            'type' => 'firstEt',
+                            'title' => 'inner block 1',
+                            'matchCriteria' => ['title' => 'title'],
+                            'fields' => ['plainText' => 'nested foo'],
+                        ],
+                        [
+                            'type' => 'secondEt',
+                            'title' => 'inner block 2',
+                            'matchCriteria' => ['title' => 'title'],
+                            'fields' => ['plainText' => 'nested bar'],
+                        ],
+                    ],
+                ],
+            ],
+        ]));
+
+        $entry = EntryElement::find()->title('imported entry')->one();
+        expect($entry->getFieldValue('myMatrix')->one()->getFieldValue('myNestedMatrix')->count())->toBe(2);
+    });
 });

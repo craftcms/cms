@@ -1801,7 +1801,7 @@ JS,
 
             // try to match existing matrix entries,
             // but only if owner already has an ID; no point trying to match nested entry for a brand new owner element
-            if ($owner->id && isset($entry['matchCriteria']) && is_array($entry['matchCriteria'])) {
+            if (($owner?->id) && isset($entry['matchCriteria']) && is_array($entry['matchCriteria'])) {
                 // try to find an existing entry
                 $query = Entry::find()
                     ->type($entry['type'])
