@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where the runtime path wasn’t getting set correctly. ([#18986](https://github.com/craftcms/cms/pull/18986))
+
 ## 5.10.4 - 2026-05-27
 
 - Updated Twig to 3.27. ([#18980](https://github.com/craftcms/cms/pull/18980))
