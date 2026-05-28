@@ -1,1 +1,0 @@
-{"version":3,"file":"310.js","mappings":"+FAAA,WACEA,aAAc,oB","sources":["webpack:///../../../../node_modules/@lion/ui/components/combobox/translations/nl.js"],"sourcesContent":["export default {\n  optionsPopup: 'Pop-up van opties',\n};\n"],"names":["optionsPopup"],"sourceRoot":""}
