@@ -27,6 +27,8 @@ beforeEach(function () {
         'type' => AddressesField::class,
     ]);
 
+    Fields::refreshFields();
+
     $fieldLayout = FieldLayout::factory()
         ->withContentTab([
             [
