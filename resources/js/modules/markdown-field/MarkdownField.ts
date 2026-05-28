@@ -2,6 +2,7 @@ import OverType, {
   type Options,
   type OverType as OverTypeInstance,
 } from 'overtype';
+import {t} from '@craftcms/cp';
 import {LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {createAssetController, type AssetController} from './behaviors/assets';
@@ -14,6 +15,7 @@ import {registerShortcutBehavior} from './behaviors/shortcuts';
 import {themeOptions} from './behaviors/theme';
 import {toolbarItems} from './behaviors/toolbar';
 import {fileUploadOptions} from './behaviors/uploads';
+import markdownIcon from '@icons/brands/markdown.svg?raw';
 import './MarkdownField.css';
 
 @customElement('craft-markdown-field')
@@ -67,7 +69,7 @@ class MarkdownField extends LitElement {
   toolbarButtons: string[] = [];
 
   @property({attribute: 'show-toolbar', type: Boolean})
-  showToolbar = true;
+  showToolbar = false;
 
   @property({attribute: 'upload-folder-id', type: Number})
   uploadFolderId: number | null = null;
@@ -117,6 +119,9 @@ class MarkdownField extends LitElement {
     this.editor = editor;
     this.editor.preview.classList.add('markdown-field-preview');
 
+    const charCounterCleanup = this.addCharCounter(editor);
+    this.addTypeIndicator(editor);
+
     const previewController = createPreviewController(
       editor,
       this.flavor,
@@ -133,6 +138,7 @@ class MarkdownField extends LitElement {
     );
     this.cleanups = [
       () => previewController.destroy(),
+      ...(charCounterCleanup ? [charCounterCleanup] : []),
       registerLinkPasteBehavior(editor, previewController),
       registerShortcutBehavior(editor, previewController),
     ];
@@ -170,6 +176,7 @@ class MarkdownField extends LitElement {
       padding: 'var(--c-spacing-md) var(--c-input-spacing-inline)',
       placeholder: this.placeholder ?? '',
       showStats: this.showStats,
+      statsFormatter: this.statsFormatter,
       smartLists: true,
       spellcheck: false,
       textareaProps: this.textareaProps(inputId),
@@ -190,6 +197,77 @@ class MarkdownField extends LitElement {
 
     return options;
   }
+
+  private statsFormatter: NonNullable<Options['statsFormatter']> = (stats) => {
+    return `
+      <div class="overtype-stat">
+        <span>${stats.chars} ${t('chars')}, ${stats.words} ${t('words')}, ${stats.lines} ${t('lines')}</span>
+      </div>
+      <div class="overtype-stat">${t('Line')} ${stats.line}, ${t('Col')} ${stats.column}</div>
+    `;
+  };
+
+  private addTypeIndicator(editor: OverTypeInstance): void {
+    if (this.showToolbar) {
+      return;
+    }
+
+    const indicator = document.createElement('div');
+    indicator.className = 'markdown-field-type-indicator';
+    indicator.setAttribute('aria-label', t('Markdown'));
+    indicator.setAttribute('role', 'img');
+    indicator.innerHTML = markdownIcon.replace(
+      '<svg ',
+      '<svg aria-hidden="true" focusable="false" '
+    );
+
+    this.footerControls(editor).appendChild(indicator);
+  }
+
+  private addCharCounter(editor: OverTypeInstance): (() => void) | null {
+    if (!this.maxLength) {
+      return null;
+    }
+
+    const maxLength = this.maxLength;
+    const counter = document.createElement('div');
+    counter.className = 'markdown-field-char-counter';
+    counter.setAttribute('aria-live', 'polite');
+
+    const updateCounter = () => {
+      const charsLeft = maxLength - editor.textarea.value.length;
+
+      counter.textContent = String(charsLeft);
+      counter.setAttribute(
+        'aria-label',
+        t('Characters left: {chars, number}', {chars: charsLeft})
+      );
+      counter.classList.toggle('negative-chars-left', charsLeft < 0);
+    };
+
+    updateCounter();
+    editor.textarea.addEventListener('input', updateCounter);
+    this.footerControls(editor).appendChild(counter);
+
+    return () => {
+      editor.textarea.removeEventListener('input', updateCounter);
+    };
+  }
+
+  private footerControls(editor: OverTypeInstance): HTMLElement {
+    let controls = editor.wrapper.querySelector<HTMLElement>(
+      '.markdown-field-footer-controls'
+    );
+
+    if (!controls) {
+      controls = document.createElement('div');
+      controls.className = 'markdown-field-footer-controls';
+      editor.wrapper.appendChild(controls);
+    }
+
+    return controls;
+  }
+
 
   private textareaProps(inputId: string): Record<string, string | number> {
     const props: Record<string, string | number> = {

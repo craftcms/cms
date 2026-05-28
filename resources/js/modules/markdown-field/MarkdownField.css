@@ -117,6 +117,8 @@
 }
 
 .markdown-field .overtype-stats {
+  padding-block: var(--c-spacing-md) !important;
+  padding-inline: var(--c-input-spacing-inline) !important;
   z-index: 0 !important;
 }
 
@@ -129,6 +131,42 @@
 
 .markdown-field .overtype-wrapper {
   background: var(--markdown-field-bg) !important;
+}
+
+.markdown-field .markdown-field-footer-controls {
+  position: absolute !important;
+  inset-block-end: var(--c-spacing-md) !important;
+  inset-inline-end: var(--c-input-spacing-inline) !important;
+  z-index: 2 !important;
+  display: flex !important;
+  gap: var(--c-spacing-sm) !important;
+  align-items: center !important;
+  pointer-events: none !important;
+}
+
+.markdown-field .markdown-field-char-counter {
+  color: var(--c-text-quiet) !important;
+  font-family: var(--c-font-body) !important;
+  font-size: var(--c-text-base) !important;
+  line-height: 1 !important;
+}
+
+.markdown-field .markdown-field-char-counter.negative-chars-left {
+  color: var(--c-color-danger-on-quiet) !important;
+}
+
+.markdown-field .markdown-field-type-indicator {
+  width: calc(var(--c-size-icon-md) + var(--c-spacing-xs)) !important;
+  height: var(--c-size-icon-md) !important;
+  color: var(--c-text-quiet) !important;
+  opacity: 0.5 !important;
+}
+
+.markdown-field .markdown-field-type-indicator svg {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  fill: currentcolor !important;
 }
 
 .markdown-field .overtype-wrapper .overtype-input::selection {
