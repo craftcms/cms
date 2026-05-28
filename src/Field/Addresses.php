@@ -913,10 +913,10 @@ JS, [
     {
         $normalizedValue = [];
         $fieldLayout = app(\CraftCms\Cms\Address\Addresses::class)->getFieldLayout();
-        $addressElement = null;
         $i = 0;
 
         foreach ($value as $address) {
+            $addressElement = null;
             $newKey = null;
 
             // try to match existing address entries,
