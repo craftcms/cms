@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fixed a bug where the runtime path wasn’t getting set correctly. ([#18986](https://github.com/craftcms/cms/pull/18986))
+- Fixed a bug where an empty `@storage/runtime` directory could be created within the webroot. ([#18986](https://github.com/craftcms/cms/pull/18986))
 
 ## 5.10.4 - 2026-05-27
 
