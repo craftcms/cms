@@ -7,6 +7,9 @@
   pages, and weren’t cleaned up when navigating away. ([#18978](https://github.com/craftcms/cms/issues/18978))
 - Fixed a bug where custom element authorization methods weren’t respected by Laravel element policies. ([#18983](https://github.com/craftcms/cms/pull/18983))
 - Fixed a bug where removing all permissions from a user wouldn’t save. ([#18995](https://github.com/craftcms/cms/pull/18995))
+- Fixed a bug where Single sections had Max Authors settings. ([#19001](https://github.com/craftcms/cms/pull/19001))
+- Fixed a bug where Channel and Structure sections didn’t have Max Authors settings. ([#19001](https://github.com/craftcms/cms/pull/19001))
+- Fixed a bug where sections’ Min Authors settings were defaulting to `1` when blank. ([#19001](https://github.com/craftcms/cms/pull/19001))
 
 ## 6.0.0-alpha.5 - 2026-05-27
 

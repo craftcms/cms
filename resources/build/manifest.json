@@ -269,59 +269,6 @@
     "file": "assets/bg-Chst73Jv.js",
     "name": "bg"
   },
-  "_cp-CmCS7b7c.js": {
-    "file": "assets/cp-CmCS7b7c.js",
-    "name": "cp",
-    "imports": [
-      "__plugin-vue_export-helper-QKFMMAHA.js",
-      "_cp-DBw9TANf.js",
-      "_preload-helper-I1wKxk_B.js",
-      "_AdminTable-3rUkyUV7.js",
-      "_keyboard-BaKqbFDa.js",
-      "_dist-LYoVBFtL.js",
-      "_dist-DfEcHFCI.js",
-      "_nav-item-CDlDuMpT-DENemU4x.js",
-      "_CraftTextarea-BLYGCwJA.js",
-      "_CraftInput-CGOATOXU.js",
-      "_Badge-BNWBhVu1.js",
-      "_InlineFlash-Cp9tUHHi.js",
-      "_createCraftColumnHelper-WT83RxkC.js",
-      "_Modal-6I0u77G6.js",
-      "_ModalForm-B4zcBt7u.js",
-      "_Pane-_ECBrQIr.js",
-      "_useCraftData-DQ9Mg_KR.js",
-      "_useFetch-DHLgd4Dp.js",
-      "_useFlashMessages-Cdd9gEAV.js",
-      "_DeleteButton-Diwghn7k.js",
-      "_wayfinder-K3R1_Wej.js"
-    ],
-    "dynamicImports": [
-      "resources/js/pages/auth/Login.vue",
-      "resources/js/pages/graphql/Schemas.vue",
-      "resources/js/pages/graphql/Tokens.vue",
-      "resources/js/pages/install/Install.vue",
-      "resources/js/pages/settings/Email.vue",
-      "resources/js/pages/settings/EntryTypes.vue",
-      "resources/js/pages/settings/Fields.vue",
-      "resources/js/pages/settings/Filesystems.vue",
-      "resources/js/pages/settings/General.vue",
-      "resources/js/pages/settings/ImageTransforms.vue",
-      "resources/js/pages/settings/Index.vue",
-      "resources/js/pages/settings/Plugins.vue",
-      "resources/js/pages/settings/Sections.vue",
-      "resources/js/pages/settings/SectionsEdit.vue",
-      "resources/js/pages/settings/Sites.vue",
-      "resources/js/pages/settings/SitesEdit.vue",
-      "resources/js/pages/settings/UserGroups.vue",
-      "resources/js/pages/settings/UserGroupsEdit.vue",
-      "resources/js/pages/settings/Volumes.vue",
-      "resources/js/pages/updater/Index.vue",
-      "resources/js/pages/utilities/Show.vue"
-    ],
-    "css": [
-      "assets/cp-DjytCPhP.css"
-    ]
-  },
   "_cp-DBw9TANf.js": {
     "file": "assets/cp-DBw9TANf.js",
     "name": "cp",
@@ -424,6 +371,59 @@
   "_cp-DjytCPhP.css": {
     "file": "assets/cp-DjytCPhP.css",
     "src": "_cp-DjytCPhP.css"
+  },
+  "_cp-DvxDeGTu.js": {
+    "file": "assets/cp-DvxDeGTu.js",
+    "name": "cp",
+    "imports": [
+      "__plugin-vue_export-helper-QKFMMAHA.js",
+      "_cp-DBw9TANf.js",
+      "_preload-helper-I1wKxk_B.js",
+      "_AdminTable-3rUkyUV7.js",
+      "_keyboard-BaKqbFDa.js",
+      "_dist-LYoVBFtL.js",
+      "_dist-DfEcHFCI.js",
+      "_nav-item-CDlDuMpT-DENemU4x.js",
+      "_CraftTextarea-BLYGCwJA.js",
+      "_CraftInput-CGOATOXU.js",
+      "_Badge-BNWBhVu1.js",
+      "_InlineFlash-Cp9tUHHi.js",
+      "_createCraftColumnHelper-WT83RxkC.js",
+      "_Modal-6I0u77G6.js",
+      "_ModalForm-B4zcBt7u.js",
+      "_Pane-_ECBrQIr.js",
+      "_useCraftData-DQ9Mg_KR.js",
+      "_useFetch-DHLgd4Dp.js",
+      "_useFlashMessages-Cdd9gEAV.js",
+      "_DeleteButton-Diwghn7k.js",
+      "_wayfinder-K3R1_Wej.js"
+    ],
+    "dynamicImports": [
+      "resources/js/pages/auth/Login.vue",
+      "resources/js/pages/graphql/Schemas.vue",
+      "resources/js/pages/graphql/Tokens.vue",
+      "resources/js/pages/install/Install.vue",
+      "resources/js/pages/settings/Email.vue",
+      "resources/js/pages/settings/EntryTypes.vue",
+      "resources/js/pages/settings/Fields.vue",
+      "resources/js/pages/settings/Filesystems.vue",
+      "resources/js/pages/settings/General.vue",
+      "resources/js/pages/settings/ImageTransforms.vue",
+      "resources/js/pages/settings/Index.vue",
+      "resources/js/pages/settings/Plugins.vue",
+      "resources/js/pages/settings/Sections.vue",
+      "resources/js/pages/settings/SectionsEdit.vue",
+      "resources/js/pages/settings/Sites.vue",
+      "resources/js/pages/settings/SitesEdit.vue",
+      "resources/js/pages/settings/UserGroups.vue",
+      "resources/js/pages/settings/UserGroupsEdit.vue",
+      "resources/js/pages/settings/Volumes.vue",
+      "resources/js/pages/updater/Index.vue",
+      "resources/js/pages/utilities/Show.vue"
+    ],
+    "css": [
+      "assets/cp-DjytCPhP.css"
+    ]
   },
   "_createCraftColumnHelper-WT83RxkC.js": {
     "file": "assets/createCraftColumnHelper-WT83RxkC.js",
@@ -1457,28 +1457,28 @@
     "isEntry": true
   },
   "resources/js/bootstrap/cp.ts": {
-    "file": "assets/cp-BSvRjlTo.js",
+    "file": "assets/cp-DVIU4RkY.js",
     "name": "cp",
     "src": "resources/js/bootstrap/cp.ts",
     "isDynamicEntry": true,
     "imports": [
-      "_cp-CmCS7b7c.js"
+      "_cp-DvxDeGTu.js"
     ]
   },
   "resources/js/cp.ts": {
-    "file": "assets/cp-DX-EeM-q.js",
+    "file": "assets/cp-C2OIEqwO.js",
     "name": "cp",
     "src": "resources/js/cp.ts",
     "isEntry": true,
     "imports": [
       "_cp-DBw9TANf.js",
-      "_cp-CmCS7b7c.js",
+      "_cp-DvxDeGTu.js",
       "_CpQueueIndicator-CXouFr79.js",
       "_CpGlobalSidebar-BJPMRU9_.js"
     ]
   },
   "resources/js/legacy.ts": {
-    "file": "assets/legacy-B4QQF4zR.js",
+    "file": "assets/legacy-D5zICgUt.js",
     "name": "legacy",
     "src": "resources/js/legacy.ts",
     "isEntry": true,
@@ -1489,7 +1489,7 @@
       "_login-form-CWxGitPF.js",
       "_totp-form-DCD3TIoX.js",
       "_recovery-code-form-CWjXHrwU.js",
-      "_cp-CmCS7b7c.js",
+      "_cp-DvxDeGTu.js",
       "_nav-list.ts-DjsniC4m.js",
       "packages/craftcms-cp/dist/components/nav-item/nav-item.ts.mjs",
       "_CpGlobalSidebar-BJPMRU9_.js",
@@ -1823,7 +1823,7 @@
     ]
   },
   "resources/js/pages/settings/SectionsEdit.vue": {
-    "file": "assets/SectionsEdit-RUcp3WOC.js",
+    "file": "assets/SectionsEdit-DkJGlR4V.js",
     "name": "SectionsEdit",
     "src": "resources/js/pages/settings/SectionsEdit.vue",
     "isDynamicEntry": true,
