@@ -120,6 +120,46 @@ function legacyUmdGlobalThis() {
   };
 }
 
+/**
+ * Stubs unresolvable relative imports inside vendored legacy UMD bundles.
+ *
+ * UMD wrappers reference both AMD and CommonJS dependencies at the top of the
+ * file (e.g. fileupload does `require("./vendor/jquery.ui.widget")`). Rolldown
+ * parses every require/import string statically and fails the build on the
+ * unresolved relative path, even though the runtime never enters that branch
+ * (it takes the `else` global-jQuery branch). Replacing the unresolved id with
+ * a virtual empty module lets the build succeed without changing runtime
+ * behavior.
+ *
+ * Keep this list of stubbed specifiers tight — only add paths that have been
+ * verified to be unreachable at runtime.
+ */
+function legacyStubMissingModules() {
+  const VIRTUAL_ID = '\0craftcms-legacy-empty';
+  const STUBBED_SPECIFIERS = new Set(['./vendor/jquery.ui.widget']);
+
+  return {
+    name: 'craftcms-legacy-stub-missing',
+    resolveId(source, importer) {
+      if (
+        STUBBED_SPECIFIERS.has(source) &&
+        importer?.includes('/resources/legacy/')
+      ) {
+        return VIRTUAL_ID;
+      }
+
+      return null;
+    },
+    load(id) {
+      if (id === VIRTUAL_ID) {
+        return 'export default {};';
+      }
+
+      return null;
+    },
+  };
+}
+
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, process.cwd(), '');
   const url = new URL(env.APP_URL);
@@ -170,6 +210,7 @@ export default defineConfig(({mode}) => {
     plugins: [
       serveResourcesLegacy(),
       legacyUmdGlobalThis(),
+      legacyStubMissingModules(),
       tailwindcss(),
       typescriptTransformer(),
       wayfinder({

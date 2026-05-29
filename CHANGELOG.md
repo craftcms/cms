@@ -10,6 +10,9 @@
 - Fixed a bug where Single sections had Max Authors settings. ([#19001](https://github.com/craftcms/cms/pull/19001))
 - Fixed a bug where Channel and Structure sections didn’t have Max Authors settings. ([#19001](https://github.com/craftcms/cms/pull/19001))
 - Fixed a bug where sections’ Min Authors settings were defaulting to `1` when blank. ([#19001](https://github.com/craftcms/cms/pull/19001))
+- Fixed a JavaScript error that could occur in the Control Panel when a custom element was registered more than once.
+- Fixed a bug where Control Panel action menu items could trigger their action twice when clicked.
+- Fixed a bug where legacy Control Panel JavaScript wasn’t loaded and initialized on all Control Panel pages.
 
 ## 6.0.0-alpha.5 - 2026-05-27
 
