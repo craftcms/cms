@@ -212,6 +212,7 @@ trait ProvidesLinkField
     protected function orderedLinkSettingsTypes(): iterable
     {
         $allTypes = Link::types();
+        /** @var Collection<string, class-string<BaseLinkType>> $selectedTypes */
         $selectedTypes = Collection::make();
         $allowedTypes = $this->{$this->namespacedAttribute('types')};
 
@@ -221,6 +222,7 @@ trait ProvidesLinkField
             }
         }
 
+        /** @var Collection<string, class-string<BaseLinkType>> $remainingTypes */
         $remainingTypes = Collection::make();
         if ($selectedTypes->count() < count($allTypes)) {
             $remainingTypes = Collection::make($allTypes)
