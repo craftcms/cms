@@ -3,7 +3,13 @@
 //
 // To disable: comment out the import of this file in resources/js/cp.ts.
 // To remove for good: delete resources/js/shims/ and that import line.
-import '../../legacy/jquery/dist/jquery.js';
+//
+// Note on ordering: ES module imports are hoisted and fully evaluated before
+// any module-body statement, so the `window.jQuery = $` assignment lives in
+// its own module (./jquery) that is imported first. That guarantees the global
+// is set before any plugin below evaluates — important for plugins that read
+// the global jQuery at load time.
+import './jquery';
 
 import '../../legacy/jquerytouchevents/dist/jquery.mobile-events.js';
 import '../../legacy/jqueryui/dist/jquery-ui.js';

@@ -25,11 +25,4 @@ import '../../legacy/iframeresizer/dist/iframeResizer';
 // JQuery (+ Garnish and plugins)
 import './legacy-jquery.js';
 
-// CP — DON'T import the webpack-built legacy CP bundle through Vite:
-//   1. It's already loaded as a classic <script> by CpAsset on every CP
-//      request (via the legacy asset pipeline), so importing it here would
-//      double-execute.
-//   2. Rolldown trips on for-of `const` bindings in that file
-//      (ILLEGAL_REASSIGNMENT) — likely a false positive, but still a hard
-//      build failure.
-// import '../../legacy/cp/dist/cp';
+import '../../legacy/cp/dist/cp';

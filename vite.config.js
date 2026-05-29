@@ -93,14 +93,29 @@ function typescriptTransformer() {
 }
 
 /**
- * The vendored, webpack-built legacy bundles in `resources/legacy/` are UMD
- * wrappers that pass top-level `this` as the global (e.g. `}(this, ...)`) and
- * fall back to `this.jQuery` when there's no AMD/CommonJS environment. They were
- * written to run as classic <script>s, where top-level `this` is `window`.
+ * Wraps every vendored legacy JS bundle in `resources/legacy/` to make Vite
+ * evaluate them as if they were classic <script>s.
  *
- * When imported through Vite they're evaluated as ES modules, where top-level
- * `this` is `undefined` — so the global fallback blows up (e.g. selectize's
- * `this.jQuery`). Re-bind `this` to `window` by wrapping the module body.
+ * Two things happen here:
+ *
+ * 1. The wrapper runs with `.call(window)`, so top-level `this` resolves to
+ *    `window` instead of `undefined` (the ESM-strict default). UMD wrappers
+ *    invoked with `(this, …)` then receive `window` as expected.
+ *
+ * 2. The wrapper declares `module`, `exports`, and `require` as parameters and
+ *    is called with none of them, so all three are `undefined` inside the
+ *    bundle. This short-circuits the UMD AMD/CommonJS branch checks and
+ *    forces each bundle into its browser-global branch — the branch that
+ *    attaches the library to `window` (e.g. `window.jQuery`, `window.Selectize`,
+ *    jQuery UI's `$.widget`). Without this, Vite/Rolldown's CJS interop
+ *    convinces the UMDs they're in a CommonJS environment, so they export via
+ *    `module.exports` and skip the `window.*` registration that the rest of
+ *    the legacy code (and any inline server-rendered JS) relies on.
+ *
+ * Consequence: do NOT default-import these files (`import x from '…/foo.js'`)
+ * — `module.exports` is empty inside the wrapper, so the default would be
+ * `undefined`. Side-effect imports (`import '…/foo.js'`) are the only
+ * supported usage.
  */
 function legacyUmdGlobalThis() {
   const legacyJs = /\/resources\/legacy\/.*\.js(\?|$)/;
@@ -113,7 +128,7 @@ function legacyUmdGlobalThis() {
       }
 
       return {
-        code: `(function () {\n${code}\n}).call(window);`,
+        code: `(function (module, exports, require) {\n${code}\n}).call(window);`,
         map: null,
       };
     },

@@ -1326,7 +1326,7 @@ Craft.CP = Garnish.Base.extend(
       if (Array.isArray(alerts) && alerts.length) {
         this.$alerts = $('<ul id="alerts"/>').prependTo(this.$pageContainer);
 
-        for (const alert of alerts) {
+        for (let alert of alerts) {
           if (!$.isPlainObject(alert)) {
             alert = {
               content: alert,

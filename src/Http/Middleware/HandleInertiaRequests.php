@@ -20,8 +20,6 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\HtmlStack;
-use CraftCms\Cms\View\LegacyAssets\CpAsset;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -39,7 +37,6 @@ class HandleInertiaRequests extends Middleware
     {
         $htmlStack = app(HtmlStack::class);
 
-        app(InternalAssetRegistry::class)->register(CpAsset::class);
         View::composer('app', function ($view) use ($htmlStack) {
             $view->with([
                 'headHtml' => $htmlStack->headHtml(),
