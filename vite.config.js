@@ -128,7 +128,8 @@ export default defineConfig(({mode}) => {
     },
 
     optimizeDeps: {
-      include: ['@awesome.me/webawesome', 'lit'],
+      include: ['lit'],
+      exclude: ['@awesome.me/webawesome'],
     },
 
     plugins: [
