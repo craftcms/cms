@@ -131,7 +131,8 @@ abstract class BaseOptionsField extends Field implements
                 }
             }
 
-            return $negate ? ['not', $condition] : $condition;
+            // if we're negating, include elements with empty value (or no value) as they don't match any of the values that can be specified
+            return $negate ? ['or', $emptyCondition, ['not', $condition]] : $condition;
         }
 
         return parent::queryCondition($instances, $value, $params);
