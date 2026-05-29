@@ -37,7 +37,7 @@ class ActivationUrlCommand extends Command implements PromptsForMissingInput
             return self::FAILURE;
         }
 
-        info("Activation URL for “{$user->username}”:".$users->getActivationUrl($user));
+        info("Activation URL for “{$user->username}”: ".$users->getActivationUrl($user));
 
         return self::SUCCESS;
     }
