@@ -2,8 +2,11 @@
 
 ## Unreleased
 
+- Fixed a bug where legacy plugin-defined `actions.php` routes could collide between plugins. ([#18994](https://github.com/craftcms/cms/pull/18994))
 - Fixed a bug where JavaScript and CSS registered by utility pages weren’t executed when navigating between utility
   pages, and weren’t cleaned up when navigating away. ([#18978](https://github.com/craftcms/cms/issues/18978))
+- Fixed a bug where custom element authorization methods weren’t respected by Laravel element policies. ([#18983](https://github.com/craftcms/cms/pull/18983))
+- Fixed a bug where removing all permissions from a user wouldn’t save. ([#18995](https://github.com/craftcms/cms/pull/18995))
 
 ## 6.0.0-alpha.5 - 2026-05-27
 

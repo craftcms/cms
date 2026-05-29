@@ -167,20 +167,20 @@ readonly class PermissionsController
             return;
         }
 
-        // Save any user permissions
+        // Resolve the permission set
         if ($user->admin) {
+            // Granular permissions aren’t stored for administrators, because they’re implicitly authorized to do anything:
             $permissions = [];
         } else {
-            $permissions = $request->input('permissions');
+            // Laravel’s {@see \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull} middleware makes `$request->input()` ambiguous when an empty set of permissions is sent.
 
-            if ($permissions === null) {
+            // If the request doesn’t indicate the current user is trying to update permissions, we can just bail:
+            if (! $request->has('permissions')) {
                 return;
             }
 
-            // it will be an empty string if no permissions were assigned during user saving.
-            if ($permissions === '') {
-                $permissions = [];
-            }
+            // Now it’s safe to normalize whatever was sent (including an empty set) into an array:
+            $permissions = $request->array('permissions');
         }
 
         // See if there are any new permissions in here

@@ -419,7 +419,9 @@ class CraftLinkField extends LitElement {
     return html`
       <button
         type="button"
-        class=${this.advancedExpanded ? 'fieldtoggle mb-0 expanded' : 'fieldtoggle mb-0'}
+        class=${this.advancedExpanded
+          ? 'fieldtoggle mb-0 expanded'
+          : 'fieldtoggle mb-0'}
         data-target=${this.advancedPanelId}
         aria-expanded=${String(this.advancedExpanded)}
         aria-controls=${this.advancedPanelId}

@@ -1,0 +1,1 @@
+import{H as e,L as t,T as n,g as r,v as i,y as a}from"./dist-LYoVBFtL.js";var o=n({__name:`DynamicHtmlRenderer`,props:{html:{}},setup(o){let s=o,c=r(()=>n({template:s.html}));return(n,r)=>o.html?(t(),i(e(c.value),{key:0})):a(``,!0)}});export{o as t};

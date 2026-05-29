@@ -8,11 +8,13 @@ use BadMethodCallException;
 use CraftCms\Cms\Auth\Events\ElementAuthorizing;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
+use ReflectionMethod;
 
 class ElementPolicy
 {
@@ -26,6 +28,17 @@ class ElementPolicy
         'createDrafts',
         'deleteForSite',
         'duplicateAsDraft',
+    ];
+
+    private const array ELEMENT_AUTHORIZATION_METHODS = [
+        'view' => 'canView',
+        'save' => 'canSave',
+        'delete' => 'canDelete',
+        'duplicate' => 'canDuplicate',
+        'copy' => 'canCopy',
+        'createDrafts' => 'canCreateDrafts',
+        'deleteForSite' => 'canDeleteForSite',
+        'duplicateAsDraft' => 'canDuplicateAsDraft',
     ];
 
     /**
@@ -76,10 +89,33 @@ class ElementPolicy
     public function __call(string $method, array $arguments): bool
     {
         if (in_array($method, self::ABILITIES, true)) {
+            [$user, $element] = $arguments + [null, null];
+
+            if (
+                $user instanceof User &&
+                $element instanceof ElementInterface &&
+                $this->hasCustomElementAuthorizationMethod($element, $method)
+            ) {
+                return $element->{self::ELEMENT_AUTHORIZATION_METHODS[$method]}($user);
+            }
+
             return false;
         }
 
         throw new BadMethodCallException("Method {$method} does not exist.");
+    }
+
+    private function hasCustomElementAuthorizationMethod(ElementInterface $element, string $ability): bool
+    {
+        $method = self::ELEMENT_AUTHORIZATION_METHODS[$ability] ?? null;
+
+        if (! $method || ! method_exists($element, $method)) {
+            return false;
+        }
+
+        return new ReflectionMethod($element, $method)
+            ->getDeclaringClass()
+            ->getName() !== Element::class;
     }
 
     private function checkSiteAuthorization(User $user, ElementInterface $element): ?bool
