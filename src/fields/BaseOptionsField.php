@@ -135,7 +135,26 @@ abstract class BaseOptionsField extends Field implements
             return $negate ? ['or', $emptyCondition, ['not', $condition]] : $condition;
         }
 
-        return parent::queryCondition($instances, $value, $params);
+        $condition = parent::queryCondition($instances, $value, $params);
+
+        $param = QueryParam::parse($value);
+        if ($param->operator === QueryParam::NOT) {
+            $negate = true;
+        } else {
+            $negate = false;
+        }
+
+        // same as with multi options;
+        // if we're negating, include elements with empty value (or no value)
+        // as they don't match any of the values that could have been specified
+        if ($negate) {
+            $valueSql = static::valueSql($instances);
+            $emptyCondition = ['or', [$valueSql => null], [$valueSql => '']];
+
+            return ['or', $emptyCondition, $condition];
+        }
+
+        return $condition;
     }
 
     /**
