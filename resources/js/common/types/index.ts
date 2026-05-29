@@ -121,6 +121,7 @@ export interface SectionResource {
   handle: string | null;
   type: string;
   enableVersioning: boolean;
+  minAuthors: number;
   maxAuthors: number | null;
   maxLevels: number | null;
   propagationMethod: string;
