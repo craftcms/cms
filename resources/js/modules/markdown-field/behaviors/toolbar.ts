@@ -31,6 +31,7 @@ type ToolbarOptions = {
 };
 
 type ToolbarCallbacks = {
+  openLinkPopover: (event?: Event | null) => void;
   openAssetSelector: () => void;
   togglePreview: () => void | Promise<void>;
 };
@@ -162,7 +163,13 @@ function toolbarButtonGroups(
       ),
     ],
     [
-      customizeToolbarButton(toolbarButtons.link, t('Link'), 'link'),
+      customToolbarButton(
+        'link',
+        'link',
+        t('Link'),
+        ({event}) => callbacks.openLinkPopover(event),
+        'insertLink'
+      ),
       customToolbarButton(
         'asset',
         'paperclip',
@@ -224,9 +231,11 @@ function customToolbarButton(
   name: string,
   icon: string,
   title: string,
-  action: ToolbarAction
+  action: ToolbarAction,
+  actionId?: string
 ): CraftToolbarButton {
   return {
+    actionId,
     action,
     icon: customIcons[icon] ?? '',
     name,

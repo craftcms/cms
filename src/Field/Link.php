@@ -11,6 +11,7 @@ use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Field\Concerns\ProvidesLinkField;
 use CraftCms\Cms\Field\Concerns\RelationalField;
 use CraftCms\Cms\Field\Conditions\LinkFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -37,21 +38,21 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\Template;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Support\Collection;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Link represents a Link field.
  */
 class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, RelationalFieldInterface
 {
+    use ProvidesLinkField;
     use RelationalField;
 
     private static array $_types;
@@ -171,33 +172,11 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
 
     public function __construct($config = [])
     {
-        if (isset($config['types'], $config['typeSettings'])) {
-            // Filter out any unneeded type settings
-            foreach (array_keys($config['typeSettings']) as $typeId) {
-                if (! in_array($typeId, $config['types'])) {
-                    unset($config['typeSettings'][$typeId]);
-                }
-            }
-        }
+        $config = $this->prepareLegacyAdvancedFieldConfig($config);
+        $config = $this->prepareLinkSettingsConfig($config);
 
         if (array_key_exists('placeholder', $config)) {
             unset($config['placeholder']);
-        }
-
-        $config['advancedFields'] ??= [];
-
-        if (isset($config['showTargetField'])) {
-            if ($config['showTargetField'] === true) {
-                $config['advancedFields'][] = 'target';
-            }
-            unset($config['showTargetField']);
-        }
-
-        if (isset($config['showUrlSuffixField'])) {
-            if ($config['showUrlSuffixField'] === true) {
-                $config['advancedFields'][] = 'urlSuffix';
-            }
-            unset($config['showUrlSuffixField']);
         }
 
         if (isset($config['graphqlMode'])) {
@@ -216,9 +195,8 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [
-            'types' => ['required', 'array'],
             'maxLength' => ['required', 'integer', 'min:10'],
-        ]);
+        ], $this->linkSettingsRules());
     }
 
     /**
@@ -287,108 +265,9 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
 
     private function settingsHtml(bool $readOnly): string
     {
-        // Sort types by the order from the config and if anything remains by the label, with URL at the top
-        // get only the selected types
-        /** @var Collection<string,class-string<BaseLinkType>> $selectedTypes */
-        $selectedTypes = Collection::make();
-        foreach (self::types() as $typeId => $type) {
-            if (in_array($typeId, $this->types)) {
-                $selectedTypes[$typeId] = $type;
-            }
-        }
-
-        // now get the remaining types (if there are any)
-        $remainingTypes = Collection::make();
-        if ($selectedTypes->count() < count(self::types())) {
-            $remainingTypes = Collection::make(self::types())
-                ->reject(fn ($value, $key): bool => isset($selectedTypes[$key]))
-                // and sort them by label, with URL at the top
-                ->sort(function (string $a, string $b) {
-                    /** @var class-string<BaseLinkType> $a */
-                    /** @var class-string<BaseLinkType> $b */
-                    if ($a === UrlType::class) {
-                        return -1;
-                    }
-                    if ($b === UrlType::class) {
-                        return 1;
-                    }
-
-                    return $a::displayName() <=> $b::displayName();
-                });
-        }
-
-        // combine both array of types
-        $types = $selectedTypes->merge($remainingTypes);
-
-        $linkTypeOptions = $types->map(fn (string $type) => [
-            'label' => $type::displayName(),
-            'value' => $type::id(),
-        ])->all();
-
-        $html = FormFields::checkboxSelectFieldHtml([
-            'label' => t('Allowed Link Types'),
-            'id' => 'types',
-            'fieldClass' => 'mb-0',
-            'name' => 'types',
-            'options' => $linkTypeOptions,
-            'values' => $this->types,
-            'required' => true,
-            'targetPrefix' => 'types-',
-            'sortable' => true,
-            'disabled' => $readOnly,
-        ]);
-
-        $linkTypes = $this->getLinkTypes();
-
-        foreach ($types->all() as $typeId => $typeClass) {
-            /** @var BaseLinkType $linkType */
-            $linkType = $linkTypes[$typeId] ?? ComponentHelper::createComponent($typeClass, BaseLinkType::class);
-            $typeSettingsHtml = InputNamespace::namespaceInputs(
-                fn () => $readOnly ? $linkType->getReadOnlySettingsHtml() : $linkType->getSettingsHtml(),
-                "typeSettings[$typeId]",
-            );
-            if ($typeSettingsHtml) {
-                $html .=
-                    Html::beginTag('div', [
-                        'id' => "types-$typeId",
-                        'class' => array_keys(array_filter([
-                            'pt-xl' => true,
-                            'hidden' => ! isset($linkTypes[$typeId]),
-                        ])),
-                    ]).
-                    Html::tag('hr').
-                    $typeSettingsHtml.
-                    Html::endTag('div');
-            }
-        }
+        $html = template('_components/fieldtypes/Link/link-settings', $this->linkSettingsProps($readOnly));
 
         $html .=
-            Html::tag('hr').
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Show the “Label” field'),
-                'id' => 'show-label-field',
-                'name' => 'showLabelField',
-                'on' => $this->showLabelField,
-                'disabled' => $readOnly,
-            ]).
-            FormFields::checkboxSelectFieldHtml([
-                'label' => t('Advanced Fields'),
-                'id' => 'attribute-fields',
-                'name' => 'advancedFields',
-                'options' => [
-                    ['label' => t('URL Suffix'), 'value' => 'urlSuffix'],
-                    ['label' => t('Target'), 'value' => 'target'],
-                    ['label' => t('Title Text'), 'value' => 'title'],
-                    ['label' => t('Class Name'), 'value' => 'class'],
-                    ['label' => t('ID'), 'value' => 'id'],
-                    ['label' => Template::raw(t('Relation ({ex})', ['ex' => '<code>rel</code>'])), 'value' => 'rel'],
-                    ['label' => t('ARIA Label'), 'value' => 'ariaLabel'],
-                    ['label' => t('Download'), 'value' => 'download'],
-                ],
-                'values' => $this->advancedFields,
-                'sortable' => true,
-                'disabled' => $readOnly,
-            ]).
             Html::tag('hr').
             Html::button(t('Advanced'), attributes: [
                 'class' => 'fieldtoggle',
@@ -428,6 +307,26 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         }
 
         return $html.Html::endTag('div');
+    }
+
+    private function prepareLegacyAdvancedFieldConfig(array $config): array
+    {
+        $config['advancedFields'] ??= [];
+
+        if (Arr::pull($config, 'showTargetField') === true) {
+            $config['advancedFields'][] = 'target';
+        }
+
+        if (Arr::pull($config, 'showUrlSuffixField') === true) {
+            $config['advancedFields'][] = 'urlSuffix';
+        }
+
+        return $config;
+    }
+
+    protected function configuredLinkTypesForSettings(): array
+    {
+        return $this->getLinkTypes();
     }
 
     #[Override]

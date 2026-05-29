@@ -110,6 +110,15 @@
 
 <hr>
 
+<a class="fieldtoggle" data-target="links">{{ 'Links'|t('app') }}</a>
+<div id="links" class="hidden">
+    <div class="indent">
+        {% include '_components/fieldtypes/Link/link-settings' with linkSettings only %}
+    </div>
+</div>
+
+<hr>
+
 <a class="fieldtoggle" data-target="assets">{{ 'Assets'|t('app') }}</a>
 <div id="assets" class="hidden">
     {% if volumeOptions|length %}

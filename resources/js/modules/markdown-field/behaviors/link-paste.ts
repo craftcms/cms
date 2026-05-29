@@ -2,7 +2,7 @@ import type {OverType as OverTypeInstance} from 'overtype';
 import type {PreviewController} from './preview';
 import {isModifierKeyPressed} from './utilities';
 
-const linkProtocols = ['http:', 'https:', 'mailto:', 'tel:'];
+const linkProtocols = ['http:', 'https:', 'mailto:', 'sms:', 'tel:'];
 
 export function registerLinkPasteBehavior(
   editor: OverTypeInstance,

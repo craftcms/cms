@@ -71,6 +71,7 @@ interface SlideoutInstance {
 
 interface ElementSelectorModalInstance {
   show(): void;
+  on(event: string, callback: () => void): void;
 }
 
 interface ElementSelectorModalSettings {

@@ -238,3 +238,38 @@
 .markdown-field-preview > :last-child {
   margin-block-end: 0;
 }
+
+.markdown-link-popover {
+  --max-width: min(360px, calc(100vw - var(--c-spacing-xl)));
+}
+
+.markdown-link-popover::part(dialog) {
+  z-index: 10001;
+}
+
+.markdown-link-popover::part(body) {
+  width: min(360px, calc(100vw - var(--c-spacing-xl)));
+}
+
+.markdown-link-popover .craft-link-field > * + * {
+  margin-block-start: var(--c-spacing-lg);
+}
+
+.markdown-link-popover .field {
+  margin-block: 0 var(--c-spacing-lg);
+}
+
+.markdown-link-popover .buttons {
+  margin-block-start: var(--c-spacing-lg);
+}
+
+.craft-link-selected-label {
+  display: inline-block;
+  max-width: 100%;
+  margin-inline-start: var(--c-spacing-sm);
+  overflow: hidden;
+  color: var(--c-text-quiet);
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  white-space: nowrap;
+}

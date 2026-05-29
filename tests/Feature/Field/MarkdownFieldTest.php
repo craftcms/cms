@@ -8,6 +8,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Data\MarkdownData;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\Markdown as MarkdownField;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Markdown\Flavors\GfmFlavor;
@@ -26,6 +27,7 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
+use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 
@@ -205,6 +207,78 @@ it('can disable the editor toolbar', function () {
         ->and($html)->not()->toContain('show-toolbar');
 });
 
+it('defaults markdown link settings to link field defaults', function () {
+    $field = new MarkdownField([
+        'name' => 'Body',
+        'handle' => 'body',
+    ]);
+
+    expect($field->linkSettingsTypes)->toBe((new Link)->types)
+        ->and($field->linkSettingsShowLabelField)->toBeFalse()
+        ->and($field->linkSettingsAdvancedFields)->toBe([]);
+});
+
+it('validates markdown link settings', function () {
+    $field = new MarkdownField([
+        'name' => 'Body',
+        'handle' => 'body',
+        'linkSettingsTypes' => ['entry', 'url'],
+        'linkSettingsAdvancedFields' => ['urlSuffix', 'title'],
+    ]);
+    $invalidTypeField = new MarkdownField([
+        'name' => 'Body',
+        'handle' => 'body',
+        'linkSettingsTypes' => ['missing'],
+    ]);
+    $invalidAdvancedField = new MarkdownField([
+        'name' => 'Body',
+        'handle' => 'body',
+        'linkSettingsAdvancedFields' => ['target'],
+    ]);
+
+    expect($field->validate())->toBeTrue()
+        ->and($invalidTypeField->validate())->toBeFalse()
+        ->and($invalidTypeField->errors()->has('linkSettingsTypes'))->toBeTrue()
+        ->and($invalidAdvancedField->validate())->toBeFalse()
+        ->and($invalidAdvancedField->errors()->has('linkSettingsAdvancedFields'))->toBeTrue();
+});
+
+it('maps shared link settings to markdown link settings', function () {
+    $field = new MarkdownField([
+        'name' => 'Body',
+        'handle' => 'body',
+        'linkSettings' => [
+            'types' => ['entry'],
+            'typeSettings' => [
+                'entry' => ['sources' => ['section:news']],
+            ],
+            'showLabelField' => true,
+            'advancedFields' => ['title'],
+        ],
+    ]);
+
+    expect($field->linkSettingsTypes)->toBe(['entry'])
+        ->and($field->linkSettingsTypeSettings)->toBe([
+            'entry' => ['sources' => ['section:news']],
+        ])
+        ->and($field->linkSettingsShowLabelField)->toBeTrue()
+        ->and($field->linkSettingsAdvancedFields)->toBe(['title']);
+});
+
+it('renders only supported markdown link advanced field settings', function () {
+    $field = new MarkdownField([
+        'name' => 'Body',
+        'handle' => 'body',
+        'linkSettingsAdvancedFields' => ['urlSuffix', 'title'],
+    ]);
+
+    $advancedFieldValues = new Crawler($field->getSettingsHtml())
+        ->filter('input[name="linkSettings[advancedFields][]"]')
+        ->each(fn (Crawler $input): ?string => $input->attr('value'));
+
+    expect($advancedFieldValues)->toEqualCanonicalizing(['urlSuffix', 'title']);
+});
+
 it('can show editor stats', function () {
     $field = new MarkdownField([
         'name' => 'Body',
@@ -246,13 +320,23 @@ it('preserves element reference tags when sanitizing submitted markdown', functi
 
     $value = $field->normalizeValueFromRequest(implode("\n", [
         '[Global Transit Overhaul Widens Washington]({entry:925@1:url})',
+        '[Global Transit Overhaul Widens Washington]({entry:925@1:url}?foo "Foo")',
+        '[Foo](/some/url?foo="bar")',
+        '[Foo](/some/url "A title")',
+        "[Foo](/some/url 'A title')",
         '[Unknown]({unknown:925@1:url})',
+        '[Unknown]({unknown:925@1:url}?foo "Foo")',
     ]), null);
 
     expect($field->validate())->toBeTrue()
         ->and($value->getRaw())->toBe(implode("\n", [
             '[Global Transit Overhaul Widens Washington]({entry:925@1:url})',
+            '[Global Transit Overhaul Widens Washington]({entry:925@1:url}?foo "Foo")',
+            '[Foo](/some/url?foo&#61;"bar")',
+            '[Foo](/some/url "A title")',
+            "[Foo](/some/url 'A title')",
             '[Unknown]({unknown:925&#64;1:url})',
+            '[Unknown]({unknown:925&#64;1:url}?foo "Foo")',
         ]));
 });
 
@@ -345,6 +429,8 @@ it('validates and applies asset selector volume settings', function () {
 
 it('warns and resolves no asset sources when no volumes exist', function () {
     Volumes::shouldReceive('getAllVolumes')
+        ->andReturn(collect());
+    Volumes::shouldReceive('getAllVolumeIds')
         ->andReturn(collect());
 
     $field = new MarkdownField([

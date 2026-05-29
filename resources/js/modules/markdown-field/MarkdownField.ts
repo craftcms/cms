@@ -8,6 +8,10 @@ import {customElement, property} from 'lit/decorators.js';
 import {createAssetController, type AssetController} from './behaviors/assets';
 import {registerLinkPasteBehavior} from './behaviors/link-paste';
 import {
+  createLinkPopoverController,
+  type LinkPopoverController,
+} from './behaviors/link-popover';
+import {
   createPreviewController,
   type PreviewController,
 } from './behaviors/preview';
@@ -23,6 +27,7 @@ class MarkdownField extends LitElement {
   private assetController: AssetController | null = null;
   private cleanups: Array<() => void> = [];
   private editor: OverTypeInstance | null = null;
+  private linkPopoverController: LinkPopoverController | null = null;
   private previewController: PreviewController | null = null;
   private resolvedInputId: string | null = null;
 
@@ -47,6 +52,12 @@ class MarkdownField extends LitElement {
   @property({attribute: 'inline-only', type: Boolean})
   inlineOnly = false;
 
+  @property({attribute: 'link-advanced-fields', type: Array})
+  linkAdvancedFields: string[] = [];
+
+  @property({attribute: 'link-types', type: Array})
+  linkTypes: unknown[] = [];
+
   @property({attribute: 'max-length', type: Number})
   maxLength: number | null = null;
 
@@ -64,6 +75,9 @@ class MarkdownField extends LitElement {
 
   @property({attribute: 'show-stats', type: Boolean})
   showStats = false;
+
+  @property({attribute: 'show-link-label-field', type: Boolean})
+  showLinkLabelField = false;
 
   @property({attribute: 'toolbar-buttons', type: Array})
   toolbarButtons: string[] = [];
@@ -103,6 +117,7 @@ class MarkdownField extends LitElement {
         uploadFolderId: this.uploadFolderId,
       },
       {
+        openLinkPopover: (event) => this.linkPopoverController?.open(event),
         openAssetSelector: () => this.assetController?.open(),
         togglePreview: () => this.previewController?.toggle(),
       }
@@ -130,6 +145,15 @@ class MarkdownField extends LitElement {
       this.previewDelay
     );
     this.previewController = previewController;
+    this.linkPopoverController = createLinkPopoverController(
+      editor,
+      previewController,
+      {
+        advancedFields: this.linkAdvancedFields,
+        showLabelField: this.showLinkLabelField,
+        types: this.linkTypes,
+      }
+    );
     this.assetController = createAssetController(
       editor,
       this.assetAnyUploader ? {uploaderId: null} : {},
@@ -138,6 +162,7 @@ class MarkdownField extends LitElement {
     );
     this.cleanups = [
       () => previewController.destroy(),
+      () => this.linkPopoverController?.destroy(),
       ...(charCounterCleanup ? [charCounterCleanup] : []),
       registerLinkPasteBehavior(editor, previewController),
       registerShortcutBehavior(editor, previewController),
@@ -268,7 +293,6 @@ class MarkdownField extends LitElement {
     return controls;
   }
 
-
   private textareaProps(inputId: string): Record<string, string | number> {
     const props: Record<string, string | number> = {
       class: 'nicetext code',
@@ -358,6 +382,7 @@ class MarkdownField extends LitElement {
     this.assetController = null;
     this.cleanups = [];
     this.editor = null;
+    this.linkPopoverController = null;
     this.previewController = null;
   }
 

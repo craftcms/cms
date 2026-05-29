@@ -12,9 +12,12 @@
         rows="{{ settings.rows }}"
         upload-site-id="{{ settings.uploadSiteId }}"
         toolbar-buttons="{{ settings.toolbarButtons|json_encode|e('html_attr') }}"
+        link-types="{{ settings.linkTypes|json_encode|e('html_attr') }}"
+        link-advanced-fields="{{ settings.linkAdvancedFields|json_encode|e('html_attr') }}"
         asset-sources="{{ settings.assetSources|json_encode|e('html_attr') }}"
         {% if settings.encode %}encode{% endif %}
         {% if settings.showToolbar %}show-toolbar{% endif %}
+        {% if settings.showLinkLabelField %}show-link-label-field{% endif %}
         {% if settings.showStats %}show-stats{% endif %}
         {% if settings.inlineOnly %}inline-only{% endif %}
         {% if settings.placeholder is not empty %}placeholder="{{ settings.placeholder }}"{% endif %}

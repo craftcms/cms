@@ -9,6 +9,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Concerns\PreservesElementRefs;
+use CraftCms\Cms\Field\Concerns\ProvidesLinkField;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -30,6 +31,7 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Pipeline;
 use Illuminate\Validation\Rule;
 use Override;
 
@@ -39,6 +41,7 @@ use function CraftCms\Cms\template;
 class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     use PreservesElementRefs;
+    use ProvidesLinkField;
 
     public const string TOOLBAR_BOLD = 'bold';
 
@@ -94,6 +97,16 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         self::TOOLBAR_GUIDE,
     ];
 
+    public const array DEFAULT_LINK_TYPES = [
+        'entry',
+        'url',
+    ];
+
+    public const array SUPPORTED_LINK_ADVANCED_FIELDS = [
+        'urlSuffix',
+        'title',
+    ];
+
     public string $flavor = MarkdownService::FLAVOR_GFM;
 
     public bool $encode = false;
@@ -109,6 +122,14 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
     public ?string $htmlSanitizer = null;
 
     public array $toolbarButtons = self::DEFAULT_TOOLBAR_BUTTONS;
+
+    public array $linkSettingsTypes = self::DEFAULT_LINK_TYPES;
+
+    public array $linkSettingsTypeSettings = [];
+
+    public bool $linkSettingsShowLabelField = false;
+
+    public array $linkSettingsAdvancedFields = [];
 
     public ?string $placeholder = null;
 
@@ -144,6 +165,8 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                 default => [$config['toolbarButtons']],
             };
         }
+
+        $config = $this->prepareLinkSettingsConfig($config);
 
         if (array_key_exists('availableVolumes', $config)) {
             $config['availableVolumes'] = match (true) {
@@ -319,7 +342,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             ],
             'showUnpermittedVolumes' => ['boolean'],
             'showUnpermittedFiles' => ['boolean'],
-        ]);
+        ], $this->linkSettingsRules());
     }
 
     public function getSettingsHtml(): string
@@ -339,10 +362,21 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             'field' => $this,
             'flavorOptions' => self::flavorOptions(),
             'htmlSanitizerOptions' => $this->htmlSanitizerOptions(),
+            'linkSettings' => $this->linkSettingsProps($readOnly),
             'toolbarButtonOptions' => self::toolbarButtonOptions(),
             'volumeOptions' => $this->volumeOptions(),
             'readOnly' => $readOnly,
         ]);
+    }
+
+    protected function linkSettingsNamespace(): ?string
+    {
+        return 'linkSettings';
+    }
+
+    protected function supportedLinkAdvancedFields(): array
+    {
+        return self::SUPPORTED_LINK_ADVANCED_FIELDS;
     }
 
     private function htmlSanitizerOptions(): Collection
@@ -396,9 +430,12 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             'encode' => $this->encode,
             'flavor' => $this->flavor,
             'inlineOnly' => $this->inlineOnly,
+            'linkAdvancedFields' => $this->linkSettingsAdvancedFields,
+            'linkTypes' => $this->linkPickerConfig(),
             'maxLength' => $static ? null : $this->charLimit,
             'placeholder' => $placeholder,
             'rows' => $this->initialRows,
+            'showLinkLabelField' => $this->linkSettingsShowLabelField,
             'showStats' => $this->showStats,
             'showToolbar' => $this->showToolbar && ! $inline && ! $static,
             'toolbarButtons' => $assetSourceKeys === []
@@ -605,10 +642,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         }
 
         if ($fromRequest && $this->sanitizeHtml) {
-            $value = $this->sanitizePreservingElementRefs(
-                $value,
-                fn (string $value): string => app(HtmlSanitizers::class)->sanitize($value, $this->htmlSanitizer),
-            );
+            $value = $this->sanitizeSubmittedMarkdown($value);
 
             if (trim($value) === '') {
                 return null;
@@ -616,6 +650,53 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         }
 
         return $this->markdownData($value);
+    }
+
+    private function sanitizeSubmittedMarkdown(string $value): string
+    {
+        $doubleQuoteToken = Str::random(32);
+        $singleQuoteToken = Str::random(32);
+
+        return Pipeline::send($value)
+            ->through(
+                fn (string $value, Closure $next) => $next($this->protectMarkdownLinkQuotes(
+                    value: $value,
+                    doubleQuoteToken: $doubleQuoteToken,
+                    singleQuoteToken: $singleQuoteToken
+                )),
+                fn (string $value, Closure $next) => $next($this->sanitizePreservingElementRefs(
+                    value: $value,
+                    sanitize: fn (string $value): string => app(HtmlSanitizers::class)->sanitize($value, $this->htmlSanitizer),
+                )),
+                fn (string $value, Closure $next) => $next(strtr($value, [
+                    $doubleQuoteToken => '"',
+                    $singleQuoteToken => "'",
+                ])),
+            )
+            ->thenReturn();
+    }
+
+    private function protectMarkdownLinkQuotes(
+        string $value,
+        string $doubleQuoteToken,
+        string $singleQuoteToken,
+    ): string {
+        if (! str_contains($value, '](')) {
+            return $value;
+        }
+
+        if (! str_contains($value, '"') && ! str_contains($value, "'")) {
+            return $value;
+        }
+
+        return preg_replace_callback(
+            '/]\((?<contents>[^\n)]*)\)/',
+            fn (array $matches) => ']('.strtr($matches['contents'], [
+                '"' => $doubleQuoteToken,
+                "'" => $singleQuoteToken,
+            ]).')',
+            $value,
+        ) ?? $value;
     }
 
     private function markdownData(string $value): MarkdownData
