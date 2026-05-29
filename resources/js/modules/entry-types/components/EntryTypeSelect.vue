@@ -175,7 +175,7 @@
     });
 
     // Bind up the buttons
-    form.querySelectorAll('[data-action]').forEach((el: HTMLElement) => {
+    form.querySelectorAll('[data-action]').forEach((el: Element) => {
       el.addEventListener('click', (e: Event) => {
         const target = e.target as HTMLElement;
         if (!target) {
@@ -225,7 +225,9 @@
         await appendBodyHtml(bodyHtml);
       }
 
-      Craft?.initUiElements(slideout.value?.$container);
+      if (slideout.value?.$container && slideout.value.$container.length > 0) {
+        Craft.initUiElements(slideout.value.$container);
+      }
     } catch (e: any) {
       Craft.cp?.displayError?.(e?.response?.data?.message);
       throw e;
