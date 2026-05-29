@@ -10,6 +10,8 @@
 - Fixed a bug where Single sections had Max Authors settings. ([#19001](https://github.com/craftcms/cms/pull/19001))
 - Fixed a bug where Channel and Structure sections didn’t have Max Authors settings. ([#19001](https://github.com/craftcms/cms/pull/19001))
 - Fixed a bug where sections’ Min Authors settings were defaulting to `1` when blank. ([#19001](https://github.com/craftcms/cms/pull/19001))
+- Fixes a bug where the “View entry” permission was listed twice for Single sections, causing a SQL error when both were selected. ([#19002](https://github.com/craftcms/cms/pull/19002))
+- Fixes a bug where user group handles weren’t getting auto-generated. ([#19002](https://github.com/craftcms/cms/pull/19002))
 
 ## 6.0.0-alpha.5 - 2026-05-27
 
