@@ -49,7 +49,8 @@
       ({actions, ...rest}) => rest
     ),
     enableVersioning: props.section.enableVersioning,
-    maxAuthors: props.section.maxAuthors ?? 1,
+    minAuthors: props.section.minAuthors ?? 0,
+    maxAuthors: props.section.maxAuthors ?? '',
     maxLevels: props.section.maxLevels ?? '',
     propagationMethod: props.section.propagationMethod,
     defaultPlacement: props.section.defaultPlacement,
@@ -349,8 +350,25 @@
 
       <hr class="my-6" />
 
-      <!-- Max Authors -->
-      <div class="grid gap-3">
+      <div class="grid gap-3" v-if="isChannelOrStructure">
+        <!-- Min Authors -->
+        <CraftInput
+          :label="t('Min Authors')"
+          :help-text="
+            t(
+              'The minimum number of authors that entries in this section can have.'
+            )
+          "
+          id="minAuthors"
+          name="minAuthors"
+          v-model="form.minAuthors"
+          :disabled="readOnly"
+          inputmode="numeric"
+          maxlength="5"
+          :error="errors?.minAuthors"
+        />
+
+        <!-- Max Authors -->
         <CraftInput
           :label="t('Max Authors')"
           :help-text="
