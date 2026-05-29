@@ -92,6 +92,34 @@ function typescriptTransformer() {
   };
 }
 
+/**
+ * The vendored, webpack-built legacy bundles in `resources/legacy/` are UMD
+ * wrappers that pass top-level `this` as the global (e.g. `}(this, ...)`) and
+ * fall back to `this.jQuery` when there's no AMD/CommonJS environment. They were
+ * written to run as classic <script>s, where top-level `this` is `window`.
+ *
+ * When imported through Vite they're evaluated as ES modules, where top-level
+ * `this` is `undefined` — so the global fallback blows up (e.g. selectize's
+ * `this.jQuery`). Re-bind `this` to `window` by wrapping the module body.
+ */
+function legacyUmdGlobalThis() {
+  const legacyJs = /\/resources\/legacy\/.*\.js(\?|$)/;
+
+  return {
+    name: 'craftcms-legacy-umd-global-this',
+    transform(code, id) {
+      if (!legacyJs.test(id)) {
+        return null;
+      }
+
+      return {
+        code: `(function () {\n${code}\n}).call(window);`,
+        map: null,
+      };
+    },
+  };
+}
+
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, process.cwd(), '');
   const url = new URL(env.APP_URL);
@@ -128,11 +156,20 @@ export default defineConfig(({mode}) => {
     },
 
     optimizeDeps: {
-      include: ['@awesome.me/webawesome', 'lit'],
+      include: ['lit'],
+      // WebAwesome must NOT be pre-bundled. It's imported through many deep
+      // entry points (dist/components/*/*.js), and esbuild's dep optimizer
+      // duplicates their shared component modules across chunks — which makes
+      // custom elements like `wa-icon` get registered twice
+      // (NotSupportedError: "wa-icon" has already been used). Serving it as
+      // native ESM means each module file loads once, so each element is
+      // defined once. Do not move this back into `include`.
+      exclude: ['@awesome.me/webawesome'],
     },
 
     plugins: [
       serveResourcesLegacy(),
+      legacyUmdGlobalThis(),
       tailwindcss(),
       typescriptTransformer(),
       wayfinder({
