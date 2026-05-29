@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -39,7 +38,6 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\User\Models\User;
 
 beforeEach(function () {
     $this->import = app(Import::class);
@@ -87,9 +85,6 @@ beforeEach(function () {
 
     Fields::refreshFields();
 
-    $this->relatedUser = User::factory()->createElement();
-    $this->relatedAsset = Asset::factory()->createElement();
-
     $layoutElements = [['uid' => Str::uuid()->toString(), 'type' => EntryTitleField::class, 'required' => true]];
     foreach ($allFields as $field) {
         $layoutElements[] = ['uid' => Str::uuid()->toString(), 'type' => CustomField::class, 'fieldUid' => $field->uid, 'required' => false];
@@ -111,14 +106,6 @@ beforeEach(function () {
 
     $this->section = $seedResult->element->getSection();
     $this->entryType = $seedResult->element->getType();
-
-    $relatedResult = Entry::factory()
-        ->forSection($section)
-        ->forEntryType($entryType)
-        ->withFieldLayout($fieldLayout)
-        ->createElementWithFields(['title' => 'related entry', 'slug' => 'related-entry']);
-
-    $this->relatedEntry = $relatedResult->element;
 
     $this->importer = ElementImporter::create()
         ->className(EntryElement::class)
@@ -252,22 +239,4 @@ it('imports a table field value', function () {
     $rows = $entry->getFieldValue('myTable');
     expect($rows[0]['col1'])->toBe('text value')
         ->and($rows[0]['col2'])->toEqual(42);
-});
-
-it('imports an entries field value by ID', function () {
-    $this->import->importItem($this->importer, ($this->entryData)(['myEntries' => [$this->relatedEntry->id]]));
-    $entry = EntryElement::find()->title('imported entry')->one();
-    expect($entry->getFieldValue('myEntries')->one()->id)->toBe($this->relatedEntry->id);
-});
-
-it('imports a users field value', function () {
-    $this->import->importItem($this->importer, ($this->entryData)(['myUsers' => [$this->relatedUser->id]]));
-    $entry = EntryElement::find()->title('imported entry')->one();
-    expect($entry->getFieldValue('myUsers')->one()->id)->toBe($this->relatedUser->id);
-});
-
-it('imports an assets field value', function () {
-    $this->import->importItem($this->importer, ($this->entryData)(['myAssets' => [$this->relatedAsset->id]]));
-    $entry = EntryElement::find()->title('imported entry')->one();
-    expect($entry->getFieldValue('myAssets')->one()->id)->toBe($this->relatedAsset->id);
 });

@@ -162,7 +162,8 @@ class ElementImporter extends BaseImporter
     public function transformer(string|null|TransformerAbstract $transformer): self
     {
         if ($transformer === null) {
-            // use the default for this element type
+            // use the default transformer for a given element;
+            // e.g. Entry has an EntryTransformer that always has to be used, unless you're bringing your own transformer
             $transformer = $this->className::getDefaultTransformer();
         }
 
