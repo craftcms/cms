@@ -51,7 +51,7 @@
 
 <template>
   <template v-if="inertia">
-    <Link :as="as" :href="href" :class="classes">
+    <Link :as="as" :href="href" :class="classes" v-bind="$attrs">
       <div class="flex gap-1 items-center">
         <template v-if="icon"><craft-icon :name="icon"></craft-icon></template>
         <slot></slot>

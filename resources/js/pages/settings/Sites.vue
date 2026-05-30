@@ -257,9 +257,9 @@
 
     <template #interior-nav>
       <craft-nav-list class="-mx-2">
-        <craft-nav-item :href="index.url()" :active="!group">
+        <CpLink as="craft-nav-item" :href="index.url()" :active="!group">
           {{ t('All Sites') }}
-        </craft-nav-item>
+        </CpLink>
         <CpLink
           as="craft-nav-item"
           v-for="g in groups"

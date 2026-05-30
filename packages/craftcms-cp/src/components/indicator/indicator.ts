@@ -9,12 +9,13 @@ export default class CraftIndicator extends LitElement {
     variantsStyles,
     css`
       .indicator {
+        --_background: var(--background, var(--c-color-fill-loud));
         display: inline-flex;
         aspect-ratio: 1;
         width: var(--c-indicator-size, 0.5em);
         border-radius: var(--c-radius-full);
         color: var(--c-color-on-loud);
-        background-color: var(--c-color-fill-loud);
+        background: var(--_background);
         border: 1px solid var(--c-color-border-loud);
       }
 
@@ -26,7 +27,7 @@ export default class CraftIndicator extends LitElement {
   ];
 
   @property({reflect: true})
-  variant: VariantKey | 'empty' = Variant.Default;
+  variant: VariantKey | 'custom' | 'empty' = Variant.Default;
 
   @property()
   label: string | null = null;

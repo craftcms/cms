@@ -24,8 +24,11 @@ export interface CraftData {
     };
   };
   site: {
+    id: number;
+    name: string;
+    handle: string;
     url: string;
-  };
+  } | null;
   readOnly: boolean;
   allowAdminChanges: boolean;
   currentUser: CpUser | null;
