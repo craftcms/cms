@@ -60,9 +60,15 @@ class ContentIndexController
             ['field' => 'dateCreated', 'direction' => 'desc'],
         ];
 
+        $criteria = [];
+        if ($request->has('status')) {
+            $criteria['status'] = $request->input('status');
+        }
+
         $params = ElementIndexParams::fromContext(
             elementType: $elementType,
             sourceKey: $sourceKey,
+            criteria: $criteria,
             elementSources: $this->elementSources,
             page: max(1, $request->integer('page', 1)),
             perPage: max(1, $request->integer('per_page', 100)),
@@ -70,6 +76,12 @@ class ContentIndexController
         );
 
         $result = $this->elementIndexService->getElementsJson($params);
+        $elementStatuses = $elementType::statuses();
+
+        $statusOptions = collect($elementStatuses)
+            ->map(fn ($label, $value) => ['label' => $label, 'value' => $value])
+            ->values()
+            ->all();
 
         return new CpScreenResponse()
             ->title(t('Entries'))
@@ -87,6 +99,11 @@ class ContentIndexController
                 'elements' => $result['elements'],
                 'pagination' => $result['pagination'],
                 'sort' => $sort,
+                'q' => $request->input('q'),
+                'viewMode' => $request->input('viewMode', 'table'),
+                'status' => $request->input('status'),
+                'elementStatuses' => $elementStatuses,
+                'statusOptions' => $statusOptions,
             ]));
     }
 }
