@@ -1478,7 +1478,7 @@
     ]
   },
   "resources/js/legacy.ts": {
-    "file": "assets/legacy-D5zICgUt.js",
+    "file": "assets/legacy-By_DeTHx.js",
     "name": "legacy",
     "src": "resources/js/legacy.ts",
     "isEntry": true,
@@ -1525,7 +1525,7 @@
     ]
   },
   "resources/js/modules/markdown-field/MarkdownField.ts": {
-    "file": "assets/MarkdownField-B9C38m4g.js",
+    "file": "assets/MarkdownField-fW_37MAM.js",
     "name": "MarkdownField",
     "src": "resources/js/modules/markdown-field/MarkdownField.ts",
     "isDynamicEntry": true,

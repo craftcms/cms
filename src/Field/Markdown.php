@@ -435,6 +435,8 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             'maxLength' => $static ? null : $this->charLimit,
             'placeholder' => $placeholder,
             'rows' => $this->initialRows,
+            'sanitizeHtml' => $this->sanitizeHtml,
+            'htmlSanitizer' => $this->htmlSanitizer,
             'showLinkLabelField' => $this->linkSettingsShowLabelField,
             'showStats' => $this->showStats,
             'showToolbar' => $this->showToolbar && ! $inline && ! $static,

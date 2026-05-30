@@ -9,8 +9,11 @@ use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
+use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -151,6 +154,21 @@ test('render markdown encodes markdown before parsing', function () {
         'encode' => true,
     ])->assertExactJson([
         'html' => "<p>&lt;b&gt;<strong>bold</strong>&lt;/b&gt;</p>\n",
+    ]);
+});
+
+test('render markdown sanitizes preview html when requested', function () {
+    app(HtmlSanitizers::class)->register('paragraphs-only', new HtmlSanitizer(
+        (new HtmlSanitizerConfig)->allowElement('p')
+    ));
+
+    postJson(action([RenderController::class, 'markdown']), [
+        'markdown' => '<p onclick="bad()">Hi</p><h1>Heading</h1>',
+        'flavor' => MarkdownService::FLAVOR_GFM,
+        'sanitizeHtml' => true,
+        'htmlSanitizer' => 'paragraphs-only',
+    ])->assertExactJson([
+        'html' => "<p>Hi</p>\n",
     ]);
 });
 

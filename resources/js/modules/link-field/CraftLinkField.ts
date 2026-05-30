@@ -16,6 +16,7 @@ type LinkTypeConfig = {
 
 export type LinkFieldValue = {
   defaultLabel: string;
+  href: string;
   label: string;
   title: string;
   type: string;
@@ -211,6 +212,42 @@ class CraftLinkField extends LitElement {
     return this.validateTextValue(prefixed) ? prefixed : value;
   }
 
+  private normalizeUrlSuffix(value: string): string {
+    value = value.trim();
+
+    if (!value || value.startsWith('#') || value.startsWith('?')) {
+      return value;
+    }
+
+    return `?${value}`;
+  }
+
+  private renderTextDestination(typeId: string, value: string): string {
+    if (typeId === 'url' || typeId === 'email') {
+      return value.replaceAll(' ', '+');
+    }
+
+    if (typeId === 'sms') {
+      return this.renderSmsDestination(value);
+    }
+
+    if (typeId === 'tel') {
+      return value.replaceAll(' ', '-');
+    }
+
+    return value;
+  }
+
+  private renderSmsDestination(value: string): string {
+    const [, root = '', queryString = ''] =
+      value.match(/^([^?&]*)(?:[?&]+(.*))?$/) ?? [];
+    const destination = queryString
+      ? `${root}&${queryString.replaceAll(' ', '%20')}`
+      : root;
+
+    return destination.replaceAll(' ', '-');
+  }
+
   private validateTextValue(value: string): boolean {
     const pattern = this.selectedType?.pattern;
 
@@ -269,15 +306,20 @@ class CraftLinkField extends LitElement {
 
     this.valueError = '';
 
+    const urlSuffix = this.normalizeUrlSuffix(this.urlSuffix);
+    const destination =
+      type.kind === 'text' ? this.renderTextDestination(type.id, value) : value;
+
     this.dispatchEvent(
       new CustomEvent<LinkFieldValue>('apply', {
         bubbles: true,
         detail: {
           defaultLabel: this.defaultLabelFor(value),
+          href: `${destination}${urlSuffix}`,
           label: this.label.trim(),
           title: this.linkTitle.trim(),
           type: type.id,
-          urlSuffix: this.urlSuffix.trim(),
+          urlSuffix,
           value,
         },
       })

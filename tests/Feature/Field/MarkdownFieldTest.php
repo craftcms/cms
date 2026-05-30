@@ -306,9 +306,12 @@ it('sanitizes submitted html with the configured html sanitizer', function () {
     ]);
 
     $value = $field->normalizeValueFromRequest('<p onclick="bad()">Hi</p><h1>Heading</h1>', null);
+    $inputHtml = $field->getInputHtml('**bold**', null);
 
     expect($field->validate())->toBeTrue()
-        ->and($value->getRaw())->toBe('<p>Hi</p>');
+        ->and($value->getRaw())->toBe('<p>Hi</p>')
+        ->and($inputHtml)->toContain('sanitize-html')
+        ->and($inputHtml)->toContain('html-sanitizer="paragraphs-only"');
 });
 
 it('preserves element reference tags when sanitizing submitted markdown', function () {

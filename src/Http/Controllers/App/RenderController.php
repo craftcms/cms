@@ -18,6 +18,7 @@ use CraftCms\Cms\Field\Markdown as MarkdownField;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -177,6 +178,8 @@ readonly class RenderController
             'flavor' => ['required', 'string', Rule::in(Arr::pluck(MarkdownField::flavorOptions(), 'value'))],
             'encode' => ['boolean'],
             'inlineOnly' => ['boolean'],
+            'sanitizeHtml' => ['boolean'],
+            'htmlSanitizer' => ['nullable', 'string', Rule::in(app(HtmlSanitizers::class)->names())],
         ]);
 
         $encode = $request->boolean('encode');
@@ -187,6 +190,10 @@ readonly class RenderController
             encode: $encode,
             inlineOnly: $request->boolean('inlineOnly'),
         )->getHtml();
+
+        if ($request->boolean('sanitizeHtml')) {
+            $html = app(HtmlSanitizers::class)->sanitize($html, $validated['htmlSanitizer'] ?? null);
+        }
 
         return new JsonResponse([
             'html' => $html,

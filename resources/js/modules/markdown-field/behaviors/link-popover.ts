@@ -106,7 +106,7 @@ export function createLinkPopoverController(
     );
     const label =
       detail.label || selectedText || detail.defaultLabel || detail.value;
-    const destination = `${detail.value}${detail.urlSuffix}`;
+    const destination = markdownDestination(detail.href);
     const markdown = detail.title
       ? `[${escapeMarkdownLabel(label)}](${destination} "${escapeMarkdownTitle(detail.title)}")`
       : `[${escapeMarkdownLabel(label)}](${destination})`;
@@ -157,6 +157,10 @@ export function createLinkPopoverController(
 
   function escapeMarkdownTitle(title: string): string {
     return title.replace(/(["\\])/g, '\\$1');
+  }
+
+  function markdownDestination(destination: string): string {
+    return `<${destination.replace(/([\\<>])/g, '\\$1')}>`;
   }
 
   function focusFirstControl(): void {

@@ -52,6 +52,12 @@ class MarkdownField extends LitElement {
   @property({attribute: 'inline-only', type: Boolean})
   inlineOnly = false;
 
+  @property({attribute: 'sanitize-html', type: Boolean})
+  sanitizeHtml = false;
+
+  @property({attribute: 'html-sanitizer'})
+  htmlSanitizer: string | null = null;
+
   @property({attribute: 'link-advanced-fields', type: Array})
   linkAdvancedFields: string[] = [];
 
@@ -142,6 +148,8 @@ class MarkdownField extends LitElement {
       this.flavor,
       this.encode,
       this.inlineOnly,
+      this.sanitizeHtml,
+      this.htmlSanitizer,
       this.previewDelay
     );
     this.previewController = previewController;

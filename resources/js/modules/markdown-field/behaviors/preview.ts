@@ -6,8 +6,10 @@ import {markdown as renderMarkdown} from '@actions/App/RenderController';
 type PreviewRequest = {
   encode: boolean;
   flavor: string;
+  htmlSanitizer: string | null;
   inlineOnly: boolean;
   markdown: string;
+  sanitizeHtml: boolean;
 };
 
 type PreviewResponse = {
@@ -26,6 +28,8 @@ export function createPreviewController(
   flavor: string,
   encode: boolean,
   inlineOnly: boolean,
+  sanitizeHtml: boolean,
+  htmlSanitizer: string | null,
   previewDelay: number
 ): PreviewController {
   let active = false;
@@ -34,8 +38,10 @@ export function createPreviewController(
   const previewRequest = useHttp<PreviewRequest, PreviewResponse>({
     encode,
     flavor,
+    htmlSanitizer,
     inlineOnly,
     markdown: '',
+    sanitizeHtml,
   });
 
   function updateButton(): void {
@@ -62,8 +68,10 @@ export function createPreviewController(
       try {
         previewRequest.encode = encode;
         previewRequest.flavor = flavor;
+        previewRequest.htmlSanitizer = htmlSanitizer;
         previewRequest.inlineOnly = inlineOnly;
         previewRequest.markdown = markdown;
+        previewRequest.sanitizeHtml = sanitizeHtml;
 
         const data = await previewRequest.post(renderMarkdown().url);
 
