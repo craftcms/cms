@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\User\Contracts\CraftUser;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -141,19 +142,9 @@ it('uses a valid CP user language preference', function () {
     Cms::setIsInstalled();
     Cms::config()->cpTrigger = 'admin';
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(false);
-    Auth::shouldReceive('guard')->once()->with('craft')->andReturn(new class
-    {
-        public function user(): object
-        {
-            return new class
-            {
-                public function getAuthIdentifier(): int
-                {
-                    return 42;
-                }
-            };
-        }
-    });
+    $user = Mockery::mock(CraftUser::class);
+    $user->shouldReceive('getAuthIdentifier')->once()->andReturn(42);
+    Auth::shouldReceive('craftUser')->once()->andReturn($user);
     Users::shouldReceive('getUserPreference')->once()->with(42, 'language')->andReturn('pt-BR');
     I18N::shouldReceive('validateAppLocaleId')->once()->with('pt-BR')->andReturn(true);
 
@@ -165,13 +156,7 @@ it('falls back to the configured default CP language', function () {
     Cms::config()->cpTrigger = 'admin';
     Cms::config()->defaultCpLanguage = 'es';
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(false);
-    Auth::shouldReceive('guard')->once()->with('craft')->andReturn(new class
-    {
-        public function user(): null
-        {
-            return null;
-        }
-    });
+    Auth::shouldReceive('craftUser')->once()->andReturnNull();
 
     expect(Cms::targetLanguage(Request::create('/admin')))->toBe('es');
 });
@@ -181,19 +166,9 @@ it('falls back to the accepted language when the CP user preference is invalid a
     Cms::config()->cpTrigger = 'admin';
     Cms::config()->defaultCpLanguage = null;
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(false);
-    Auth::shouldReceive('guard')->once()->with('craft')->andReturn(new class
-    {
-        public function user(): object
-        {
-            return new class
-            {
-                public function getAuthIdentifier(): int
-                {
-                    return 42;
-                }
-            };
-        }
-    });
+    $user = Mockery::mock(CraftUser::class);
+    $user->shouldReceive('getAuthIdentifier')->once()->andReturn(42);
+    Auth::shouldReceive('craftUser')->once()->andReturn($user);
     Users::shouldReceive('getUserPreference')->once()->with(42, 'language')->andReturn('not-real');
     I18N::shouldReceive('validateAppLocaleId')->once()->with('not-real')->andReturn(false);
     I18N::shouldReceive('getAppLocaleIds')->once()->andReturn(collect(['it', 'en']));

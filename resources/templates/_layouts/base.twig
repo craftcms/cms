@@ -6,9 +6,9 @@
 
 {% set bodyClass = (bodyClass ?? [])|explodeClass|merge([
   orientation,
-  (Auth.user.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false) ? 'use-shapes',
-  (Auth.user.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false) ? 'underline-links',
-  "notifications--#{Auth.user.getPreference('notificationPosition') ?? a11yDefaults['notificationPosition'] ?? 'end-start'}",
+  (currentUser.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false) ? 'use-shapes',
+  (currentUser.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false) ? 'underline-links',
+  "notifications--#{currentUser.getPreference('notificationPosition') ?? a11yDefaults['notificationPosition'] ?? 'end-start'}",
   requestedSite ? "site--#{requestedSite.handle}",
   'cp-legacy-reset',
   'cp-legacy'

@@ -50,9 +50,12 @@ readonly class AddressesController
 
     public function store(Request $request, Elements $elements): Response
     {
-        $user = $request->user();
+        $user = $request->craftUser();
+        if (! $user) {
+            abort(401);
+        }
 
-        $userId = (int) ($request->input('userId') ?? $user->id);
+        $userId = (int) ($request->input('userId') ?? $user->getCraftUserId());
         $addressId = $request->input('addressId');
 
         if ($addressId) {

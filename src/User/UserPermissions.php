@@ -119,7 +119,7 @@ class UserPermissions
     public function getAssignablePermissions(?User $user = null): Collection
     {
         // If either user is an admin, all permissions are fair game
-        if (Auth::user()?->isAdmin() || ($user !== null && $user->admin)) {
+        if (Auth::craftUser()?->isAdmin() || ($user !== null && $user->admin)) {
             return $this->getAllPermissions();
         }
 
@@ -752,7 +752,7 @@ class UserPermissions
      */
     private function filterUnassignablePermissions(Collection $permissions, ?User $user = null): Collection
     {
-        $currentUser = Auth::user();
+        $currentUser = Auth::craftUser();
 
         if (! $currentUser && ! $user) {
             return new Collection;

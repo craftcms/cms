@@ -72,7 +72,7 @@ readonly class VerifyEmailController extends AuthenticationController
             $users->activateUser($user);
         }
 
-        if ($request->user()) {
+        if ($request->craftUser()) {
             Flash::success(t('Email verified'));
         }
 

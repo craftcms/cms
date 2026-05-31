@@ -9,7 +9,8 @@ use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Contracts\CraftUser;
+use Illuminate\Auth\SessionGuard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -42,9 +43,11 @@ readonly class PasskeyController extends AuthenticationController
             return $this->asFailure(t('Passkey authentication failed.'));
         }
 
-        $user = User::findOne(['id' => $credential->userId]);
+        /** @var SessionGuard $guard */
+        $guard = auth('craft');
+        $user = $guard->getProvider()->retrieveById($credential->userId);
 
-        if ($user === null) {
+        if (! $user instanceof CraftUser) {
             return $this->handleLoginFailure($request);
         }
 
@@ -54,7 +57,7 @@ readonly class PasskeyController extends AuthenticationController
 
         // if we're impersonating, pass the user we're impersonating to the complete method
         if ($impersonation->isImpersonating()) {
-            $user = $request->user();
+            $user = $request->craftUser() ?? $user;
         }
 
         return $this->completeLogin($request, $user, true);

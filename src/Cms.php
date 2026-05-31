@@ -111,7 +111,7 @@ readonly class Cms
             return Sites::getCurrentSite()->getLanguage();
         }
 
-        $user = Auth::guard('craft')->user();
+        $user = Auth::craftUser();
 
         if (
             ($id = $user?->getAuthIdentifier()) &&

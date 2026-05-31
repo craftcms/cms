@@ -667,7 +667,7 @@ readonly class ElementWrites
                 }
 
                 if ($trackChanges) {
-                    $userId = Auth::user()?->id;
+                    $userId = Auth::craftUser()?->getCraftUserId();
                     $timestamp = now();
 
                     foreach ($dirtyAttributes as $attributeName) {
@@ -886,7 +886,7 @@ readonly class ElementWrites
         $propagateToSite = $this->sites->getSiteById($siteElement->siteId);
 
         /** @var ?User $user */
-        $user = Auth::user();
+        $user = Auth::craftUser();
         $message = t('Validation errors for site: “{siteName}“', [
             'siteName' => $propagateToSite?->getName(),
         ]);

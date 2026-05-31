@@ -54,7 +54,7 @@ class UpdaterController extends BaseUpdaterController
         parent::__construct($request, $generalConfig, $composer, $plugins, $updates);
 
         if ($request->has('install') && $this->request->fullUrlIs(action([self::class, 'index']))) {
-            abort_unless($request->user()->can('performUpdates'), 403, 'You do not have permission to perform updates.');
+            abort_unless($request->craftUser()->can('performUpdates'), 403, 'You do not have permission to perform updates.');
         }
     }
 

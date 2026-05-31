@@ -178,7 +178,7 @@ trait FieldConditionRuleTrait
 
     public function showLabelHint(): bool
     {
-        return Auth::user()?->getPreference('showFieldHandles') ?? false;
+        return Auth::craftUser()?->getPreference('showFieldHandles') ?? false;
     }
 
     public function getExclusiveQueryParams(): array

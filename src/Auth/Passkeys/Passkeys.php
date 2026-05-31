@@ -7,7 +7,8 @@ namespace CraftCms\Cms\Auth\Passkeys;
 use Carbon\CarbonInterface;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Contracts\CraftUser;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -40,8 +41,10 @@ class Passkeys
         public readonly string $passkeyCreationOptionsParam = 'pkCredCreationOptions'
     ) {}
 
-    public function hasPasskeys(User $user): bool
+    public function hasPasskeys(CraftUser $user): bool
     {
+        $user = $this->userElement($user);
+
         if (! $user->id) {
             return false;
         }
@@ -58,8 +61,10 @@ class Passkeys
      *     uid:string
      * }>
      */
-    public function getPasskeys(User $user): Collection
+    public function getPasskeys(CraftUser $user): Collection
     {
+        $user = $this->userElement($user);
+
         if (! $user->id) {
             return new Collection;
         }
@@ -78,7 +83,7 @@ class Passkeys
     /**
      * Generates new passkey credential creation options for the given user.
      */
-    public function getPasskeyCreationOptions(User $user): PublicKeyCredentialOptions
+    public function getPasskeyCreationOptions(CraftUser $user): PublicKeyCredentialOptions
     {
         $userEntity = $this->passkeyUserEntity($user);
         $credentialRepository = $this->webauthnServer()->getCredentialRepository();
@@ -172,7 +177,7 @@ class Passkeys
      * @param  string  $response  The authentication response data
      */
     public function verifyPasskey(
-        User $user,
+        CraftUser $user,
         string $requestOptions,
         string $response,
         bool $checkOldUserHandle = false,
@@ -231,8 +236,10 @@ class Passkeys
         return true;
     }
 
-    public function deletePasskey(User $user, string $uid): void
+    public function deletePasskey(CraftUser $user, string $uid): void
     {
+        $user = $this->userElement($user);
+
         WebAuthn::where('userId', $user->id)->where('uid', $uid)->delete();
     }
 
@@ -251,8 +258,10 @@ class Passkeys
     /**
      * Returns User Entity for given User element
      */
-    public function passkeyUserEntity(User $user): PublicKeyCredentialUserEntity
+    public function passkeyUserEntity(CraftUser $user): PublicKeyCredentialUserEntity
     {
+        $user = $this->userElement($user);
+
         return PublicKeyCredentialUserEntity::create(
             name: $user->email,
             id: Base64UrlSafe::encodeUnpadded($user->uid),
@@ -269,5 +278,10 @@ class Passkeys
             name: Cms::systemName(),
             id: request()->host(),
         );
+    }
+
+    private function userElement(CraftUser $user): UserElement
+    {
+        return $user->asElement();
     }
 }

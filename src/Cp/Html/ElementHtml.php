@@ -570,7 +570,7 @@ JS, [
 
     private function baseElementAttributes(ElementInterface $element, array $config): array
     {
-        $user = Auth::user();
+        $user = Auth::craftUser();
         $editable = $user && $user->can('view', $element);
 
         return Arr::merge(

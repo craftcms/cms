@@ -166,7 +166,7 @@ class EntryType extends Component implements Actionable, Chippable, Colorable, C
             return [];
         }
 
-        if (! Auth::user()?->isAdmin()) {
+        if (! Auth::craftUser()?->isAdmin()) {
             return [];
         }
 
@@ -220,7 +220,7 @@ JS, [
 
     public function getCpEditUrl(): ?string
     {
-        if (! $this->id || ! Auth::user()?->isAdmin()) {
+        if (! $this->id || ! Auth::craftUser()?->isAdmin()) {
             return null;
         }
 

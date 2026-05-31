@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth\Events;
 
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Contracts\CraftUser;
 
 /**
  * @event LoginUserRetrieving The event that is triggered before attempting to find a user to sign in
  *
  * ```php
- * use CraftCms\Cms\User\Elements\User;
+ * use CraftCms\Cms\User\Models\User;
  * use CraftCms\Cms\User\Events\LoginUserRetrieving;
  * use Illuminate\Support\Facades\Event;
  *
@@ -30,6 +30,6 @@ class LoginUserRetrieving
 {
     public function __construct(
         public string $loginName,
-        public ?User $user = null,
+        public ?CraftUser $user = null,
     ) {}
 }

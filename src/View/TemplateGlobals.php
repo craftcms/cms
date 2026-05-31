@@ -13,8 +13,8 @@ use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\Events\TemplateGlobalsResolving;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Auth;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 #[Scoped]
@@ -50,7 +50,7 @@ readonly class TemplateGlobals
         $globals = [
             'craft' => $this->craftVariable,
             'currentSite' => $currentSite,
-            'currentUser' => Auth::user(),
+            'currentUser' => currentUserElement(),
             'siteName' => $siteName,
             'siteUrl' => $siteUrl,
             'systemName' => $systemName,
