@@ -23,7 +23,7 @@ test('sendPasswordResetEmail dispatches ResetPasswordNotification', function () 
     Users::sendPasswordResetEmail($user);
 
     Notification::assertSentTo(
-        UserModel::find(),
+        UserModel::findOrFail($user->id),
         ResetPasswordNotification::class,
         fn ($notification, $channels) => in_array(MailChannel::class, $channels)
     );
