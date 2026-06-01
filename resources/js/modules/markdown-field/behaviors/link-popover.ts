@@ -160,7 +160,15 @@ export function createLinkPopoverController(
   }
 
   function markdownDestination(destination: string): string {
+    if (isReferenceTag(destination)) {
+      return destination;
+    }
+
     return `<${destination.replace(/([\\<>])/g, '\\$1')}>`;
+  }
+
+  function isReferenceTag(destination: string): boolean {
+    return /^\{[\w\\]+:[^}\s]+\}$/.test(destination);
   }
 
   function focusFirstControl(): void {
